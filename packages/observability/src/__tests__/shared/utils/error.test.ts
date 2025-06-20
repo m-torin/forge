@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect } from 'vitest';
 
 import {
   createError,
@@ -9,9 +9,9 @@ import {
   normalizeError,
 } from '../../../shared/utils/error';
 
-describe('Error Utilities', () => {
+describe('error Utilities', () => {
   describe('createError', () => {
-    it('should create error with message and code', () => {
+    test('should create error with message and code', () => {
       const error = createError('Test error', ErrorCode.INTERNAL_ERROR);
 
       expect(error).toBeInstanceOf(Error);
@@ -19,25 +19,25 @@ describe('Error Utilities', () => {
       expect(error.code).toBe(ErrorCode.INTERNAL_ERROR);
     });
 
-    it('should create error with custom code', () => {
+    test('should create error with custom code', () => {
       const error = createError('Custom error', 'CUSTOM_CODE' as ErrorCode);
 
       expect(error.code).toBe('CUSTOM_CODE');
     });
 
-    it('should create error with metadata', () => {
+    test('should create error with metadata', () => {
       const error = createError('Error with data', ErrorCode.VALIDATION_ERROR, {
         field: 'email',
         value: 'invalid',
       });
 
-      expect(error.data).toEqual({
+      expect(error.data).toStrictEqual({
         field: 'email',
         value: 'invalid',
       });
     });
 
-    it('should have stack trace', () => {
+    test('should have stack trace', () => {
       const error = createError('Stack test', ErrorCode.INTERNAL_ERROR);
 
       expect(error.stack).toBeDefined();
@@ -46,63 +46,63 @@ describe('Error Utilities', () => {
   });
 
   describe('isError', () => {
-    it('should return true for Error instances', () => {
-      expect(isError(new Error('Test'))).toBe(true);
-      expect(isError(new TypeError('Test'))).toBe(true);
-      expect(isError(new RangeError('Test'))).toBe(true);
+    test('should return true for Error instances', () => {
+      expect(isError(new Error('Test'))).toBeTruthy();
+      expect(isError(new TypeError('Test'))).toBeTruthy();
+      expect(isError(new RangeError('Test'))).toBeTruthy();
     });
 
-    it('should return true for error-like objects', () => {
+    test('should return true for error-like objects', () => {
       const errorLike = {
         name: 'CustomError',
         message: 'Custom error message',
         stack: 'Error: Custom error message\n    at test.js:1',
       };
 
-      expect(isError(errorLike)).toBe(true);
+      expect(isError(errorLike)).toBeTruthy();
     });
 
-    it('should return false for non-error objects', () => {
-      expect(isError(null)).toBe(false);
-      expect(isError(undefined)).toBe(false);
-      expect(isError('string')).toBe(false);
-      expect(isError(123)).toBe(false);
-      expect(isError({})).toBe(false);
-      expect(isError({ message: 'Not an error' })).toBe(false);
-      expect(isError({ name: 'NotError' })).toBe(false);
+    test('should return false for non-error objects', () => {
+      expect(isError(null)).toBeFalsy();
+      expect(isError(undefined)).toBeFalsy();
+      expect(isError('string')).toBeFalsy();
+      expect(isError(123)).toBeFalsy();
+      expect(isError({})).toBeFalsy();
+      expect(isError({ message: 'Not an error' })).toBeFalsy();
+      expect(isError({ name: 'NotError' })).toBeFalsy();
     });
   });
 
   describe('getErrorMessage', () => {
-    it('should get message from Error instance', () => {
+    test('should get message from Error instance', () => {
       const error = new Error('Test error message');
       expect(getErrorMessage(error)).toBe('Test error message');
     });
 
-    it('should get message from error-like object', () => {
+    test('should get message from error-like object', () => {
       const errorLike = { message: 'Custom message' };
       expect(getErrorMessage(errorLike)).toBe('Custom message');
     });
 
-    it('should convert string to message', () => {
+    test('should convert string to message', () => {
       expect(getErrorMessage('String error')).toBe('String error');
     });
 
-    it('should convert number to message', () => {
+    test('should convert number to message', () => {
       expect(getErrorMessage(404)).toBe('404');
     });
 
-    it('should handle null and undefined', () => {
+    test('should handle null and undefined', () => {
       expect(getErrorMessage(null)).toBe('Unknown error');
       expect(getErrorMessage(undefined)).toBe('Unknown error');
     });
 
-    it('should stringify objects', () => {
+    test('should stringify objects', () => {
       const obj = { code: 'ERROR', details: 'Something went wrong' };
       expect(getErrorMessage(obj)).toBe(JSON.stringify(obj));
     });
 
-    it('should handle circular references', () => {
+    test('should handle circular references', () => {
       const circular: any = { prop: 'value' };
       circular.self = circular;
 
@@ -111,19 +111,19 @@ describe('Error Utilities', () => {
   });
 
   describe('getErrorStack', () => {
-    it('should get stack from Error instance', () => {
+    test('should get stack from Error instance', () => {
       const error = new Error('Test');
       expect(getErrorStack(error)).toBe(error.stack);
     });
 
-    it('should get stack from error-like object', () => {
+    test('should get stack from error-like object', () => {
       const errorLike = {
         stack: 'Error: Test\n    at function (_: any)file.js:10:5)',
       };
       expect(getErrorStack(errorLike)).toBe(errorLike.stack);
     });
 
-    it('should return undefined for non-error objects', () => {
+    test('should return undefined for non-error objects', () => {
       expect(getErrorStack('string')).toBeUndefined();
       expect(getErrorStack(123)).toBeUndefined();
       expect(getErrorStack({})).toBeUndefined();
@@ -132,27 +132,27 @@ describe('Error Utilities', () => {
   });
 
   describe('normalizeError', () => {
-    it('should normalize Error instance', () => {
+    test('should normalize Error instance', () => {
       const error = new Error('Test error');
       error.stack = 'Error: Test error\n    at test.js:1';
 
       const normalized = normalizeError(error);
 
-      expect(normalized).toEqual({
+      expect(normalized).toStrictEqual({
         name: 'Error',
         message: 'Test error',
         stack: error.stack,
       });
     });
 
-    it('should normalize custom error with code', () => {
+    test('should normalize custom error with code', () => {
       const error = createError('Custom error', ErrorCode.VALIDATION_ERROR, {
         field: 'email',
       });
 
       const normalized = normalizeError(error);
 
-      expect(normalized).toEqual({
+      expect(normalized).toStrictEqual({
         name: 'Error',
         code: ErrorCode.VALIDATION_ERROR,
         data: { field: 'email' },
@@ -161,7 +161,7 @@ describe('Error Utilities', () => {
       });
     });
 
-    it('should normalize error-like object', () => {
+    test('should normalize error-like object', () => {
       const errorLike = {
         name: 'CustomError',
         code: 'CUSTOM_CODE',
@@ -171,7 +171,7 @@ describe('Error Utilities', () => {
 
       const normalized = normalizeError(errorLike);
 
-      expect(normalized).toEqual({
+      expect(normalized).toStrictEqual({
         name: 'CustomError',
         code: 'CUSTOM_CODE',
         extra: 'data',
@@ -179,50 +179,50 @@ describe('Error Utilities', () => {
       });
     });
 
-    it('should normalize string error', () => {
+    test('should normalize string error', () => {
       const normalized = normalizeError('String error');
 
-      expect(normalized).toEqual({
+      expect(normalized).toStrictEqual({
         name: 'Error',
         message: 'String error',
       });
     });
 
-    it('should normalize number error', () => {
+    test('should normalize number error', () => {
       const normalized = normalizeError(500);
 
-      expect(normalized).toEqual({
+      expect(normalized).toStrictEqual({
         name: 'Error',
         message: '500',
       });
     });
 
-    it('should normalize object error', () => {
+    test('should normalize object error', () => {
       const obj = { code: 'FAIL', error: 'Something failed' };
       const normalized = normalizeError(obj);
 
-      expect(normalized).toEqual({
+      expect(normalized).toStrictEqual({
         name: 'Error',
         message: JSON.stringify(obj),
         ...obj,
       });
     });
 
-    it('should handle null and undefined', () => {
-      expect(normalizeError(null)).toEqual({
+    test('should handle null and undefined', () => {
+      expect(normalizeError(null)).toStrictEqual({
         name: 'Error',
         message: 'Unknown error',
       });
 
-      expect(normalizeError(undefined)).toEqual({
+      expect(normalizeError(undefined)).toStrictEqual({
         name: 'Error',
         message: 'Unknown error',
       });
     });
   });
 
-  describe('ErrorCode enum', () => {
-    it('should have all expected error codes', () => {
+  describe('errorCode enum', () => {
+    test('should have all expected error codes', () => {
       expect(ErrorCode.INTERNAL_ERROR).toBe('INTERNAL_ERROR');
       expect(ErrorCode.VALIDATION_ERROR).toBe('VALIDATION_ERROR');
       expect(ErrorCode.NOT_FOUND).toBe('NOT_FOUND');

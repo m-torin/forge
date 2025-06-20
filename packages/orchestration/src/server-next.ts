@@ -11,6 +11,7 @@
 import { Redis } from '@upstash/redis';
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { createServerObservability } from '@repo/observability/shared-env';
 
 import {
   AlertRule,
@@ -20,7 +21,7 @@ import {
 } from './shared/features/monitoring';
 import { EnhancedScheduleConfig, ScheduleStatus } from './shared/features/scheduler';
 import { WorkflowData, WorkflowDefinition, WorkflowProvider } from './shared/types/index';
-import { createSafeLogger, createMaskedError } from './shared/utils/data-masking';
+import { createMaskedError } from './shared/utils/data-masking';
 import {
   validateRequestBody,
   validatePathParams,
@@ -93,7 +94,12 @@ export function createApiRoute<T extends Record<string, unknown>>(
     try {
       return await handler(request, context);
     } catch (error: any) {
-      console.error('API route error:', error);
+      const logger = await createServerObservability({
+        providers: {
+          console: { enabled: true },
+        },
+      });
+      await logger.log('error', 'API route error', error);
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
   };
@@ -105,25 +111,31 @@ export function createApiRoute<T extends Record<string, unknown>>(
 export function createWorkflowActions(provider: WorkflowProvider) {
   return {
     /**
-     * Cancel execution
+     * Cancel execution action
      */
-    async cancelExecution(executionId: string): Promise<void> {
+    async cancelExecutionAction(executionId: string): Promise<void> {
+      'use server';
       await provider.cancelExecution(executionId);
     },
 
     /**
-     * Create schedule
+     * Create schedule action
      */
-    async createSchedule(workflowId: string, config: EnhancedScheduleConfig): Promise<string> {
+    async createScheduleAction(
+      _workflowId: string,
+      _config: EnhancedScheduleConfig,
+    ): Promise<string> {
+      'use server';
       // This would call a schedule provider method
       // For now, this is a placeholder
       return 'placeholder_schedule_id'; // await provider.createSchedule(workflowId, config);
     },
 
     /**
-     * Execute workflow (Server Action)
+     * Execute workflow action
      */
-    async executeWorkflow(workflowId: string, input?: unknown): Promise<string> {
+    async executeWorkflowAction(workflowId: string, input?: unknown): Promise<string> {
+      'use server';
       // Create a basic workflow definition
       const workflowDefinition: WorkflowDefinition = {
         id: workflowId,
@@ -136,12 +148,13 @@ export function createWorkflowActions(provider: WorkflowProvider) {
     },
 
     /**
-     * Update schedule
+     * Update schedule action
      */
-    async updateSchedule(
-      scheduleId: string,
-      config: Partial<EnhancedScheduleConfig>,
+    async updateScheduleAction(
+      _scheduleId: string,
+      _config: Partial<EnhancedScheduleConfig>,
     ): Promise<void> {
+      'use server';
       // This would call a schedule provider method
       // await provider.updateSchedule(scheduleId, config);
     },
@@ -151,29 +164,33 @@ export function createWorkflowActions(provider: WorkflowProvider) {
 /**
  * Create workflow API route handlers
  */
-export function createWorkflowApi(config: WorkflowApiConfig) {
+export async function createWorkflowApi(config: WorkflowApiConfig) {
   const { onError, provider, rateLimit, redis } = config;
 
   // Create rate limiter if configured
   const rateLimiter = rateLimit ? createRateLimiter({ ...rateLimit, useRedis: !!redis }) : null;
 
-  // Create safe logger
-  const logger = createSafeLogger('WorkflowAPI');
+  // Create logger instance
+  const logger = await createServerObservability({
+    providers: {
+      console: { enabled: true },
+    },
+  });
 
   /**
    * Error handler wrapper
    */
   async function handleError(error: Error, request: NextRequest): Promise<NextResponse> {
-    // Use safe logger to mask sensitive data
-    logger.error('Workflow API error', error);
+    // Log error with observability logger
+    await logger.log('error', 'Workflow API error', error);
 
     if (onError) {
       try {
         const maskedError = createMaskedError(error);
         const result = onError(maskedError, request);
         return result instanceof Promise ? await result : result;
-      } catch (error: any) {
-        logger.error('Error in onError handler', error);
+      } catch (error) {
+        await logger.log('error', 'Error in onError handler', error);
       }
     }
 
@@ -187,7 +204,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
      */
     async acknowledgeAlert(
       request: NextRequest,
-      { params }: { params: { alertId: string; workflowId: string } },
+      { params: _params }: { params: { alertId: string; workflowId: string } },
     ): Promise<NextResponse> {
       try {
         // Apply rate limiting if configured
@@ -200,21 +217,26 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
                 { status: 429, headers: createRateLimitHeaders(rateLimitResult) },
               );
             }
-          } catch (rateLimitError: any) {
+          } catch (rateLimitError) {
             // Log rate limiting error but don't block the request
-            logger.warn('Rate limiting error', rateLimitError);
+            const localLogger = await createServerObservability({
+              providers: {
+                console: { enabled: true },
+              },
+            });
+            await localLogger.log('warn', 'Rate limiting error', rateLimitError);
           }
         }
         // Validate request body
         const body = await request.json();
         const validatedBody = validateRequestBody(apiSchemas.acknowledgeAlert, body);
-        const note = validatedBody.note;
+        const _note = validatedBody.note;
 
         // This would call an alert provider method
         // await provider.acknowledgeAlert(params.alertId, note);
 
         return NextResponse.json({ message: 'Alert acknowledged' }, { status: 200 });
-      } catch (error: any) {
+      } catch (error) {
         return handleError(error as Error, request);
       }
     },
@@ -225,13 +247,13 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
      */
     async cancelExecution(
       request: NextRequest,
-      { params }: { params: { executionId: string; workflowId: string } },
+      { params: _params }: { params: { executionId: string; workflowId: string } },
     ): Promise<NextResponse> {
       try {
-        await provider.cancelExecution(params.executionId);
+        await provider.cancelExecution(_params.executionId);
 
         return NextResponse.json({ message: 'Execution cancelled' }, { status: 200 });
-      } catch (error: any) {
+      } catch (error) {
         return handleError(error as Error, request);
       }
     },
@@ -242,18 +264,18 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
      */
     async createAlertRule(
       request: NextRequest,
-      { params }: { params: { workflowId: string } },
+      { params: _params }: { params: { workflowId: string } },
     ): Promise<NextResponse> {
       try {
         const body = await request.json();
-        const rule: Omit<AlertRule, 'createdAt' | 'id'> = body.rule;
+        const _rule: Omit<AlertRule, 'createdAt' | 'id'> = body.rule;
 
         // This would call an alert provider method
         // For now, this is a placeholder
         const ruleId = 'placeholder_rule_id'; // await provider.createAlertRule(rule);
 
         return NextResponse.json({ ruleId }, { status: 201 });
-      } catch (error: any) {
+      } catch (error) {
         return handleError(error as Error, request);
       }
     },
@@ -264,18 +286,18 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
      */
     async createSchedule(
       request: NextRequest,
-      { params }: { params: { workflowId: string } },
+      { params: _params }: { params: { workflowId: string } },
     ): Promise<NextResponse> {
       try {
         const body = await request.json();
-        const config: EnhancedScheduleConfig = body.config;
+        const _config: EnhancedScheduleConfig = body.config;
 
         // This would call a schedule provider method
         // For now, this is a placeholder
         const scheduleId = 'placeholder_schedule_id'; // await provider.createSchedule(params.workflowId, config);
 
         return NextResponse.json({ scheduleId }, { status: 201 });
-      } catch (error: any) {
+      } catch (error) {
         return handleError(error as Error, request);
       }
     },
@@ -293,7 +315,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
         const workflowId = workflow.id;
 
         return NextResponse.json({ workflow, workflowId }, { status: 201 });
-      } catch (error: any) {
+      } catch (error) {
         return handleError(error as Error, request);
       }
     },
@@ -304,14 +326,14 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
      */
     async deleteSchedule(
       request: NextRequest,
-      { params }: { params: { scheduleId: string; workflowId: string } },
+      { params: _params }: { params: { scheduleId: string; workflowId: string } },
     ): Promise<NextResponse> {
       try {
         // This would call a schedule provider method
         // await provider.deleteSchedule(params.scheduleId);
 
         return NextResponse.json({ message: 'Schedule deleted' }, { status: 200 });
-      } catch (error: any) {
+      } catch (error) {
         return handleError(error as Error, request);
       }
     },
@@ -322,13 +344,13 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
      */
     async executeWorkflow(
       request: NextRequest,
-      { params }: { params: { workflowId: string } },
+      { params: _params }: { params: { workflowId: string } },
     ): Promise<NextResponse> {
       try {
         // Validate path parameters
         const validatedParams = validatePathParams(
           z.object({ workflowId: commonSchemas.workflowId }),
-          params,
+          _params,
         );
 
         // Validate request body
@@ -349,7 +371,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
         const executionId = execution.id;
 
         return NextResponse.json({ executionId }, { status: 202 });
-      } catch (error: any) {
+      } catch (error) {
         return handleError(error as Error, request);
       }
     },
@@ -360,7 +382,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
      */
     async getActiveAlerts(
       request: NextRequest,
-      { params }: { params: { workflowId: string } },
+      { params: _params }: { params: { workflowId: string } },
     ): Promise<NextResponse> {
       try {
         // This would call an alert provider method
@@ -368,7 +390,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
         const alerts: WorkflowAlert[] = []; // await provider.getActiveAlerts(params.workflowId);
 
         return NextResponse.json({ alerts });
-      } catch (error: any) {
+      } catch (error) {
         return handleError(error as Error, request);
       }
     },
@@ -379,7 +401,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
      */
     async getExecutionHistory(
       request: NextRequest,
-      { params }: { params: { workflowId: string } },
+      { params: _params }: { params: { workflowId: string } },
     ): Promise<NextResponse> {
       try {
         const url = new URL(request.url);
@@ -409,7 +431,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
             offset,
           },
         });
-      } catch (error: any) {
+      } catch (error) {
         return handleError(error as Error, request);
       }
     },
@@ -420,16 +442,16 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
      */
     async getExecutionStatus(
       request: NextRequest,
-      { params }: { params: { executionId: string; workflowId: string } },
+      { params: _params }: { params: { executionId: string; workflowId: string } },
     ): Promise<NextResponse> {
       try {
-        const execution = await provider.getExecution(params.executionId);
+        const execution = await provider.getExecution(_params.executionId);
         if (!execution) {
           return NextResponse.json({ error: 'Execution not found' }, { status: 404 });
         }
 
         return NextResponse.json({ execution });
-      } catch (error: any) {
+      } catch (error) {
         return handleError(error as Error, request);
       }
     },
@@ -440,7 +462,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
      */
     async getSchedule(
       request: NextRequest,
-      { params }: { params: { scheduleId: string; workflowId: string } },
+      { params: _params }: { params: { scheduleId: string; workflowId: string } },
     ): Promise<NextResponse> {
       try {
         // This would call a schedule provider method
@@ -452,7 +474,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
         }
 
         return NextResponse.json({ schedule });
-      } catch (error: any) {
+      } catch (error) {
         return handleError(error as Error, request);
       }
     },
@@ -463,7 +485,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
      */
     async getWorkflow(
       request: NextRequest,
-      { params }: { params: { workflowId: string } },
+      { params: _params }: { params: { workflowId: string } },
     ): Promise<NextResponse> {
       try {
         // Note: getWorkflow is not available in the current WorkflowProvider interface
@@ -473,7 +495,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
         }
 
         return NextResponse.json({ workflow });
-      } catch (error: any) {
+      } catch (error) {
         return handleError(error as Error, request);
       }
     },
@@ -484,7 +506,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
      */
     async getWorkflowMetrics(
       request: NextRequest,
-      { params }: { params: { workflowId: string } },
+      { params: _params }: { params: { workflowId: string } },
     ): Promise<NextResponse> {
       try {
         const url = new URL(request.url);
@@ -504,7 +526,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
         const metrics: null | WorkflowMetrics = null; // await provider.getWorkflowMetrics(params.workflowId, timeRange);
 
         return NextResponse.json({ metrics });
-      } catch (error: any) {
+      } catch (error) {
         return handleError(error as Error, request);
       }
     },
@@ -523,7 +545,7 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
         const workflows: WorkflowDefinition[] = [];
 
         return NextResponse.json({ workflows });
-      } catch (error: any) {
+      } catch (error) {
         return handleError(error as Error, request);
       }
     },
@@ -534,14 +556,14 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
      */
     async pauseSchedule(
       request: NextRequest,
-      { params }: { params: { scheduleId: string; workflowId: string } },
+      { params: _params }: { params: { scheduleId: string; workflowId: string } },
     ): Promise<NextResponse> {
       try {
         // This would call a schedule provider method
         // await provider.pauseSchedule(params.scheduleId);
 
         return NextResponse.json({ message: 'Schedule paused' }, { status: 200 });
-      } catch (error: any) {
+      } catch (error) {
         return handleError(error as Error, request);
       }
     },
@@ -552,14 +574,14 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
      */
     async resolveAlert(
       request: NextRequest,
-      { params }: { params: { alertId: string; workflowId: string } },
+      { params: _params }: { params: { alertId: string; workflowId: string } },
     ): Promise<NextResponse> {
       try {
         // This would call an alert provider method
         // await provider.resolveAlert(params.alertId);
 
         return NextResponse.json({ message: 'Alert resolved' }, { status: 200 });
-      } catch (error: any) {
+      } catch (error) {
         return handleError(error as Error, request);
       }
     },
@@ -570,14 +592,14 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
      */
     async resumeSchedule(
       request: NextRequest,
-      { params }: { params: { scheduleId: string; workflowId: string } },
+      { params: _params }: { params: { scheduleId: string; workflowId: string } },
     ): Promise<NextResponse> {
       try {
         // This would call a schedule provider method
         // await provider.resumeSchedule(params.scheduleId);
 
         return NextResponse.json({ message: 'Schedule resumed' }, { status: 200 });
-      } catch (error: any) {
+      } catch (error) {
         return handleError(error as Error, request);
       }
     },
@@ -588,17 +610,17 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
      */
     async updateSchedule(
       request: NextRequest,
-      { params }: { params: { scheduleId: string; workflowId: string } },
+      { params: _params }: { params: { scheduleId: string; workflowId: string } },
     ): Promise<NextResponse> {
       try {
         const body = await request.json();
-        const config: Partial<EnhancedScheduleConfig> = body.config;
+        const _config: Partial<EnhancedScheduleConfig> = body.config;
 
         // This would call a schedule provider method
         // await provider.updateSchedule(params.scheduleId, config);
 
         return NextResponse.json({ message: 'Schedule updated' }, { status: 200 });
-      } catch (error: any) {
+      } catch (error) {
         return handleError(error as Error, request);
       }
     },
@@ -608,8 +630,8 @@ export function createWorkflowApi(config: WorkflowApiConfig) {
 /**
  * Workflow middleware for Next.js
  */
-export function createWorkflowMiddleware(config: WorkflowApiConfig) {
-  const api = createWorkflowApi(config);
+export async function createWorkflowMiddleware(config: WorkflowApiConfig) {
+  const api = await createWorkflowApi(config);
 
   return {
     api,
@@ -672,8 +694,12 @@ export function createWorkflowWebhookHandler(config: {
 
       return NextResponse.json({ message: 'Event processed' }, { status: 200 });
     } catch (error: any) {
-      const logger = createSafeLogger('WebhookHandler');
-      logger.error('Webhook processing error', error);
+      const logger = await createServerObservability({
+        providers: {
+          console: { enabled: true },
+        },
+      });
+      await logger.log('error', 'Webhook processing error', error);
       return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 });
     }
   };
@@ -825,7 +851,7 @@ export function withStepCircuitBreaker(
         const result = await step.execute(input);
         failures = 0; // Reset on success
         return result;
-      } catch (error: any) {
+      } catch (error) {
         failures++;
         lastFailureTime = now;
 
@@ -853,7 +879,7 @@ export function withStepMonitoring(
         const result = await step.execute(input);
         success = true;
         return result;
-      } catch (error: any) {
+      } catch (error) {
         throw error;
       } finally {
         const duration = Date.now() - startTime;
@@ -879,7 +905,7 @@ export function withStepRetry(
       for (let attempt = 0; attempt <= maxRetries; attempt++) {
         try {
           return await step.execute(input);
-        } catch (error: any) {
+        } catch (error) {
           lastError = error;
 
           if (attempt < maxRetries) {
@@ -900,7 +926,7 @@ export function withStepTimeout(step: any, timeoutMs: number = 30000) {
     execute: async (input: any) => {
       return Promise.race([
         step.execute(input),
-        new Promise((_, reject: any) => {
+        new Promise((_resolve, reject) => {
           setTimeout(
             () => reject(new Error(`Step ${step.name} timed out after ${timeoutMs}ms`)),
             timeoutMs,
@@ -932,7 +958,7 @@ export function withStepCallback(
           callbacks.onSuccess(result);
         }
         return result;
-      } catch (error: any) {
+      } catch (error) {
         if (callbacks.onError) {
           callbacks.onError(error);
         }
@@ -961,9 +987,14 @@ export function withFallback<T>(
     return (async () => {
       try {
         return await primaryFnOrStep();
-      } catch (error: any) {
+      } catch (error) {
         if (options?.logError) {
-          console.error('Primary function failed, using fallback: ', error);
+          const logger = await createServerObservability({
+            providers: {
+              console: { enabled: true },
+            },
+          });
+          await logger.log('error', 'Primary function failed, using fallback', error);
         }
         return await (fallbackFnOrErrorHandler as () => Promise<T>)();
       }
@@ -976,7 +1007,7 @@ export function withFallback<T>(
     execute: async (input: any) => {
       try {
         return await primaryFnOrStep.execute(input);
-      } catch (error: any) {
+      } catch (error) {
         return await (fallbackFnOrErrorHandler as (error: any, input: any) => Promise<any>)(
           error,
           input,
@@ -1224,7 +1255,12 @@ export const StepTemplates = {
 
   log: (message: string) =>
     createStep(async (input: any) => {
-      console.log(message, input);
+      const logger = await createServerObservability({
+        providers: {
+          console: { enabled: true },
+        },
+      });
+      await logger.log('info', message, input);
       return input;
     }),
 
@@ -1236,13 +1272,27 @@ export const StepTemplates = {
   database: (name: string, description?: string) =>
     createStep(async (input: any) => {
       // Mock database operation
-      console.log(`Database operation: ${name}${description ? ` - ${description}` : ''}`, input);
+      const logger = await createServerObservability({
+        providers: {
+          console: { enabled: true },
+        },
+      });
+      await logger.log(
+        'info',
+        `Database operation: ${name}${description ? ` - ${description}` : ''}`,
+        input,
+      );
       return input;
     }),
 
   notification: (message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') =>
     createStep(async (input: any) => {
-      console.log(`[${type.toUpperCase()}] ${message}`, input);
+      const logger = await createServerObservability({
+        providers: {
+          console: { enabled: true },
+        },
+      });
+      await logger.log(type, `${message}`, input);
       return input;
     }),
 
@@ -1266,14 +1316,28 @@ export const StepTemplates = {
   api: (url: string, options?: any) =>
     createStep(async (input: any) => {
       // Mock API call
-      console.log(`API call to ${url}`, { input, options });
+      const logger = await createServerObservability({
+        providers: {
+          console: { enabled: true },
+        },
+      });
+      await logger.log('info', `API call to ${url}`, { input, options });
       return { ...input, apiResponse: { status: 'success', url } };
     }),
 
   cache: (key: string, ttl?: number) =>
     createStep(async (input: any) => {
       // Mock cache operation
-      console.log(`Cache operation with key: ${key}${ttl ? ` (TTL: ${ttl}s)` : ''}`, input);
+      const logger = await createServerObservability({
+        providers: {
+          console: { enabled: true },
+        },
+      });
+      await logger.log(
+        'info',
+        `Cache operation with key: ${key}${ttl ? ` (TTL: ${ttl}s)` : ''}`,
+        input,
+      );
       return input;
     }),
 };
@@ -1347,6 +1411,9 @@ export const RETRY_STRATEGIES = {
   exponential: { maxRetries: 3, delay: 1000, backoff: true },
   aggressive: { maxRetries: 5, delay: 500, backoff: true },
 };
+
+// Re-export utilities for external packages
+// Note: createSafeLogger has been removed - use @repo/observability instead
 
 export const ValidationUtils = {
   /**

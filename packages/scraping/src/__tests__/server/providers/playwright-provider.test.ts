@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, vi } from 'vitest';
 
 import { PlaywrightProvider } from '../../../server/providers/playwright-provider';
 
@@ -97,7 +97,7 @@ vi.mock('../../../server/providers/playwright-provider', (_: any) => {
   };
 });
 
-describe('PlaywrightProvider', () => {
+describe('playwrightProvider', () => {
   let provider: PlaywrightProvider;
 
   beforeEach(async () => {
@@ -122,13 +122,13 @@ describe('PlaywrightProvider', () => {
     }
   });
 
-  describe('initialization', (_: any) => {
-    it('should create provider with default options', (_: any) => {
+  describe('initialization', () => {
+    test('should create provider with default options', () => {
       const defaultProvider = new PlaywrightProvider();
       expect(defaultProvider).toBeDefined();
     });
 
-    it('should create provider with custom browser type', async () => {
+    test('should create provider with custom browser type', async () => {
       const firefoxProvider = new PlaywrightProvider();
       await firefoxProvider.initialize({
         options: {
@@ -138,7 +138,7 @@ describe('PlaywrightProvider', () => {
       expect(firefoxProvider).toBeDefined();
     });
 
-    it('should handle browser launch options', async () => {
+    test('should handle browser launch options', async () => {
       const customProvider = new PlaywrightProvider();
       await customProvider.initialize({
         options: {
@@ -151,8 +151,8 @@ describe('PlaywrightProvider', () => {
     });
   });
 
-  describe('scrape', (_: any) => {
-    it('should scrape a URL successfully', async () => {
+  describe('scrape', () => {
+    test('should scrape a URL successfully', async () => {
       const result = await provider.scrape('https://example.com');
 
       expect(result).toMatchObject({
@@ -165,7 +165,7 @@ describe('PlaywrightProvider', () => {
       });
     });
 
-    it('should wait for selector if specified', async () => {
+    test('should wait for selector if specified', async () => {
       const result = await provider.scrape('https://example.com', {
         waitForSelector: '.content' as any,
       });
@@ -174,7 +174,7 @@ describe('PlaywrightProvider', () => {
       expect(result.url).toBe('https://example.com');
     });
 
-    it('should execute JavaScript if provided', async () => {
+    test('should execute JavaScript if provided', async () => {
       const result = await provider.scrape('https://example.com', {
         executeScript: (() => ({ data: 'extracted' })) as any,
       });
@@ -183,7 +183,7 @@ describe('PlaywrightProvider', () => {
       expect(result.url).toBe('https://example.com');
     });
 
-    it('should handle viewport settings', async () => {
+    test('should handle viewport settings', async () => {
       const result = await provider.scrape('https://example.com', {
         viewport: { width: 1920, height: 1080 },
       });
@@ -192,7 +192,7 @@ describe('PlaywrightProvider', () => {
       expect(result.url).toBe('https://example.com');
     });
 
-    it('should handle custom headers', async () => {
+    test('should handle custom headers', async () => {
       const result = await provider.scrape('https://example.com', {
         headers: {
           'User-Agent': 'Custom Agent',
@@ -204,7 +204,7 @@ describe('PlaywrightProvider', () => {
       expect(result.url).toBe('https://example.com');
     });
 
-    it('should handle cookies', async () => {
+    test('should handle cookies', async () => {
       const result = await provider.scrape('https://example.com', {
         cookies: [{ name: 'session', value: 'abc123', domain: 'example.com', path: '/' }],
       });
@@ -213,7 +213,7 @@ describe('PlaywrightProvider', () => {
       expect(result.url).toBe('https://example.com');
     });
 
-    it('should handle screenshot capture', async () => {
+    test('should handle screenshot capture', async () => {
       const result = await provider.scrape('https://example.com', {
         screenshot: true,
       });
@@ -222,7 +222,7 @@ describe('PlaywrightProvider', () => {
       expect(result.screenshot).toBeInstanceOf(Buffer);
     });
 
-    it('should handle PDF generation', async () => {
+    test('should handle PDF generation', async () => {
       const result = await provider.scrape('https://example.com', {
         pdf: true,
       });
@@ -231,13 +231,13 @@ describe('PlaywrightProvider', () => {
       expect(result.pdf).toBeInstanceOf(Buffer);
     });
 
-    it('should handle navigation errors', async () => {
+    test('should handle navigation errors', async () => {
       await expect(provider.scrape('https://this-url-does-not-exist.com')).rejects.toThrow(
         'Network error',
       );
     });
 
-    it('should handle timeout errors', async () => {
+    test('should handle timeout errors', async () => {
       await expect(provider.scrape('https://this-url-does-not-exist.com')).rejects.toThrow(
         'Network error',
       );
@@ -245,14 +245,14 @@ describe('PlaywrightProvider', () => {
   });
 
   describe('browser management', () => {
-    it('should launch browser on first use', async () => {
+    test('should launch browser on first use', async () => {
       const result = await provider.scrape('https://example.com');
 
       expect(result).toBeDefined();
       expect(result.url).toBe('https://example.com');
     });
 
-    it('should reuse browser for multiple requests', async () => {
+    test('should reuse browser for multiple requests', async () => {
       const result1 = await provider.scrape('https://example1.com');
       const result2 = await provider.scrape('https://example2.com');
 
@@ -260,7 +260,7 @@ describe('PlaywrightProvider', () => {
       expect(result2.url).toBe('https://example2.com');
     });
 
-    it('should launch different browser types', async () => {
+    test('should launch different browser types', async () => {
       const firefoxProvider = new PlaywrightProvider();
       await firefoxProvider.initialize({
         options: {
@@ -275,7 +275,7 @@ describe('PlaywrightProvider', () => {
       await firefoxProvider.dispose();
     });
 
-    it('should handle browser crashes', async () => {
+    test('should handle browser crashes', async () => {
       // First request succeeds
       const result1 = await provider.scrape('https://example.com');
       expect(result1).toBeDefined();
@@ -287,25 +287,25 @@ describe('PlaywrightProvider', () => {
   });
 
   describe('dispose', () => {
-    it('should close browser on dispose', async () => {
+    test('should close browser on dispose', async () => {
       await provider.scrape('https://example.com');
       await expect(provider.dispose()).resolves.not.toThrow();
     });
 
-    it('should handle dispose without browser', async () => {
+    test('should handle dispose without browser', async () => {
       // Dispose without scraping
       await expect(provider.dispose()).resolves.not.toThrow();
     });
 
-    it('should handle multiple dispose calls', async () => {
+    test('should handle multiple dispose calls', async () => {
       await provider.scrape('https://example.com');
       await provider.dispose();
       await expect(provider.dispose()).resolves.not.toThrow();
     });
   });
 
-  describe('advanced features', (_: any) => {
-    it('should handle cookies', async () => {
+  describe('advanced features', () => {
+    test('should handle cookies in advanced features', async () => {
       const result = await provider.scrape('https://example.com', {
         cookies: [{ name: 'session', value: 'abc123' }],
       });
@@ -314,7 +314,7 @@ describe('PlaywrightProvider', () => {
       expect(result.url).toBe('https://example.com');
     });
 
-    it('should handle proxy settings', async () => {
+    test('should handle proxy settings', async () => {
       const result = await provider.scrape('https://example.com', {
         proxy: {
           server: 'http://proxy.example.com:8080',
@@ -327,7 +327,7 @@ describe('PlaywrightProvider', () => {
       expect(result.url).toBe('https://example.com');
     });
 
-    it('should handle proxy settings', async () => {
+    test('should handle proxy settings with initialization', async () => {
       const proxyProvider = new PlaywrightProvider();
       await proxyProvider.initialize({
         options: {

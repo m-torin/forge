@@ -1,8 +1,8 @@
 'use server';
 
-import { prisma } from '@repo/database/prisma';
+import { prisma, type MediaType, type Prisma } from '@repo/database/prisma';
 import { uploadMediaAction, getMediaUrlAction, deleteMediaAction } from './mediaActions';
-import type { MediaType, Prisma } from '@repo/database/prisma';
+// Using console logging until observability integration is fixed
 
 interface UploadAndCreateMediaParams {
   file: File | ArrayBuffer | Blob | Buffer;
@@ -34,10 +34,8 @@ interface MediaActionDbResponse<T = any> {
  * This combines storage upload with database persistence
  */
 export async function uploadAndCreateMediaAction(
-  params: UploadAndCreateMediaParams
+  params: UploadAndCreateMediaParams,
 ): Promise<MediaActionDbResponse<{ media: any; url: string }>> {
-  'use server';
-  
   try {
     const {
       file,
@@ -77,7 +75,7 @@ export async function uploadAndCreateMediaAction(
     // Generate storage key based on entity type and associations
     let folder = 'general';
     let entityId = null;
-    
+
     if (productId) {
       folder = 'products';
       entityId = productId;
@@ -105,7 +103,7 @@ export async function uploadAndCreateMediaAction(
     const timestamp = Date.now();
     const randomString = Math.random().toString(36).substring(2, 8);
     let filename = `${timestamp}-${randomString}`;
-    
+
     // Add file extension if available
     if (file instanceof File) {
       const ext = file.name.split('.').pop();
@@ -117,7 +115,7 @@ export async function uploadAndCreateMediaAction(
     // Get file size and mime type
     let size = 0;
     let mimeType = '';
-    
+
     if (file instanceof File) {
       size = file.size;
       mimeType = file.type;
@@ -166,7 +164,7 @@ export async function uploadAndCreateMediaAction(
 
     // Create Media record in database
     const mediaData: Prisma.MediaCreateInput = {
-      url: urlResult.data,
+      url: urlResult.data || '',
       type,
       altText,
       mimeType,
@@ -176,8 +174,8 @@ export async function uploadAndCreateMediaAction(
       sortOrder,
       copy: {
         storageKey: key,
-        originalUrl: uploadResult.data.url,
-        metadata: uploadResult.data.metadata,
+        originalUrl: uploadResult.data?.url || '',
+        metadata: (uploadResult.data as any)?.metadata || {},
       },
       // Entity associations
       product: productId ? { connect: { id: productId } } : undefined,
@@ -208,11 +206,20 @@ export async function uploadAndCreateMediaAction(
       success: true,
       data: {
         media,
-        url: urlResult.data,
+        url: urlResult.data || '',
       },
     };
   } catch (error) {
-    console.error('Error in uploadAndCreateMediaAction:', error);
+    const { storageLogger } = await import('../utils/logger');
+    void storageLogger.error('Error in uploadAndCreateMedia', error as Error, {
+      operation: 'uploadAndCreateMedia',
+      provider: 'media-db',
+      metadata: {
+        entityType: 'unknown',
+        entityId: 'none',
+        userId: params.userId || 'system',
+      },
+    });
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to upload and create media',
@@ -229,10 +236,8 @@ export async function getMediaSignedUrlAction(
   options?: {
     expiresIn?: number;
     forceRefresh?: boolean;
-  }
+  },
 ): Promise<MediaActionDbResponse<string>> {
-  'use server';
-  
   try {
     const media = await prisma.media.findUnique({
       where: { id: mediaId },
@@ -251,9 +256,8 @@ export async function getMediaSignedUrlAction(
     }
 
     // Extract storage key from metadata
-    const storageKey = media.copy && typeof media.copy === 'object' 
-      ? (media.copy as any).storageKey 
-      : null;
+    const storageKey =
+      media.copy && typeof media.copy === 'object' ? (media.copy as any).storageKey : null;
 
     if (!storageKey) {
       // No storage key, return existing URL
@@ -265,7 +269,7 @@ export async function getMediaSignedUrlAction(
 
     // Determine context based on associations
     const context = media.productId ? 'product' : 'admin';
-    
+
     // Get signed URL
     const urlResult = await getMediaUrlAction(storageKey, {
       context,
@@ -293,7 +297,12 @@ export async function getMediaSignedUrlAction(
       data: urlResult.data,
     };
   } catch (error) {
-    console.error('Error in getMediaSignedUrlAction:', error);
+    const { storageLogger } = await import('../utils/logger');
+    void storageLogger.error('Error getting media signed URL', error as Error, {
+      operation: 'getMediaSignedUrl',
+      provider: 'media-db',
+      metadata: { mediaId },
+    });
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to get signed URL',
@@ -306,10 +315,8 @@ export async function getMediaSignedUrlAction(
  */
 export async function deleteMediaAndStorageAction(
   mediaId: string,
-  userId?: string
+  userId?: string,
 ): Promise<MediaActionDbResponse<void>> {
-  'use server';
-  
   try {
     const media = await prisma.media.findUnique({
       where: { id: mediaId },
@@ -334,9 +341,8 @@ export async function deleteMediaAndStorageAction(
     }
 
     // Extract storage key from metadata
-    const storageKey = media.copy && typeof media.copy === 'object' 
-      ? (media.copy as any).storageKey 
-      : null;
+    const storageKey =
+      media.copy && typeof media.copy === 'object' ? (media.copy as any).storageKey : null;
 
     // Soft delete the media record
     await prisma.media.update({
@@ -351,7 +357,17 @@ export async function deleteMediaAndStorageAction(
     if (storageKey) {
       const deleteResult = await deleteMediaAction(storageKey);
       if (!deleteResult.success) {
-        console.error('Failed to delete from storage:', deleteResult.error);
+        const { storageLogger } = await import('../utils/logger');
+        void storageLogger.error(
+          'Storage deletion failed',
+          new Error(deleteResult.error || 'Storage deletion failed'),
+          {
+            operation: 'deleteFromStorage',
+            key: storageKey,
+            provider: 'media-db',
+            metadata: { mediaId },
+          },
+        );
         // Don't fail the operation if storage deletion fails
         // The database record is already soft-deleted
       }
@@ -359,7 +375,12 @@ export async function deleteMediaAndStorageAction(
 
     return { success: true };
   } catch (error) {
-    console.error('Error in deleteMediaAndStorageAction:', error);
+    const { storageLogger } = await import('../utils/logger');
+    void storageLogger.error('Error deleting media and storage', error as Error, {
+      operation: 'deleteMediaAndStorage',
+      provider: 'media-db',
+      metadata: { mediaId, userId },
+    });
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to delete media',
@@ -375,10 +396,8 @@ export async function bulkRefreshMediaUrlsAction(
   mediaIds: string[],
   options?: {
     expiresIn?: number;
-  }
+  },
 ): Promise<MediaActionDbResponse<Record<string, string>>> {
-  'use server';
-  
   try {
     const mediaRecords = await prisma.media.findMany({
       where: {
@@ -398,10 +417,9 @@ export async function bulkRefreshMediaUrlsAction(
 
     // Process each media record
     await Promise.all(
-      mediaRecords.map(async (media) => {
-        const storageKey = media.copy && typeof media.copy === 'object' 
-          ? (media.copy as any).storageKey 
-          : null;
+      mediaRecords.map(async (media: any) => {
+        const storageKey =
+          media.copy && typeof media.copy === 'object' ? (media.copy as any).storageKey : null;
 
         if (!storageKey) {
           urls[media.id] = media.url;
@@ -415,14 +433,14 @@ export async function bulkRefreshMediaUrlsAction(
         });
 
         if (urlResult.success) {
-          urls[media.id] = urlResult.data;
+          urls[media.id] = urlResult.data || '';
           if (urlResult.data !== media.url) {
-            updates.push({ id: media.id, url: urlResult.data });
+            updates.push({ id: media.id, url: urlResult.data || '' });
           }
         } else {
           urls[media.id] = media.url; // Fall back to existing URL
         }
-      })
+      }),
     );
 
     // Batch update URLs in database
@@ -432,8 +450,8 @@ export async function bulkRefreshMediaUrlsAction(
           prisma.media.update({
             where: { id: update.id },
             data: { url: update.url },
-          })
-        )
+          }),
+        ),
       );
     }
 
@@ -442,10 +460,364 @@ export async function bulkRefreshMediaUrlsAction(
       data: urls,
     };
   } catch (error) {
-    console.error('Error in bulkRefreshMediaUrlsAction:', error);
+    const { storageLogger } = await import('../utils/logger');
+    void storageLogger.error('Error in bulk refresh media URLs', error as Error, {
+      operation: 'bulkRefreshMediaUrls',
+      provider: 'media-db',
+      metadata: { mediaIdCount: mediaIds.length },
+    });
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to refresh URLs',
+    };
+  }
+}
+
+/**
+ * Import product photos from external URLs (CDN, vendor sites, etc.)
+ * Creates Media records and uploads to appropriate storage
+ */
+export async function importProductPhotosAction(
+  productId: string,
+  photoUrls: string[],
+  userId: string,
+  options?: {
+    sortOrderStart?: number;
+    skipDuplicates?: boolean;
+  },
+): Promise<
+  MediaActionDbResponse<{
+    imported: Array<{
+      url: string;
+      mediaId: string;
+      storageKey: string;
+    }>;
+    failed: Array<{
+      url: string;
+      error: string;
+    }>;
+    skipped: string[];
+  }>
+> {
+  try {
+    // Verify product exists
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      select: { id: true, name: true },
+    });
+
+    if (!product) {
+      return {
+        success: false,
+        error: 'Product not found',
+      };
+    }
+
+    const results = {
+      imported: [] as Array<{ url: string; mediaId: string; storageKey: string }>,
+      failed: [] as Array<{ url: string; error: string }>,
+      skipped: [] as string[],
+    };
+
+    // Check for duplicates if requested
+    let existingUrls: Set<string> = new Set();
+    if (options?.skipDuplicates) {
+      const existingMedia = await prisma.media.findMany({
+        where: {
+          productId,
+          deletedAt: null,
+        },
+        select: { url: true },
+      });
+      existingUrls = new Set(existingMedia.map((m: any) => m.url));
+    }
+
+    // Process URLs in batches
+    const batchSize = 3;
+    let sortOrder = options?.sortOrderStart ?? 0;
+
+    for (let i = 0; i < photoUrls.length; i += batchSize) {
+      const batch = photoUrls.slice(i, i + batchSize);
+
+      await Promise.all(
+        batch.map(async (url, index) => {
+          // Skip if duplicate
+          if (existingUrls.has(url)) {
+            results.skipped.push(url);
+            return;
+          }
+
+          try {
+            // Import the image
+            const { importFromUrlAction } = await import('./mediaActions');
+            const importResult = await importFromUrlAction(url, undefined, {
+              metadata: {
+                productId,
+                userId,
+                type: 'IMAGE',
+              },
+            });
+
+            if (!importResult.success || !importResult.data) {
+              throw new Error(importResult.error || 'Import failed');
+            }
+
+            const { key: storageKey, url: storageUrl, size, contentType } = importResult.data;
+
+            // Extract image dimensions if possible
+            let width: number | undefined;
+            let height: number | undefined;
+
+            // For Cloudflare Images, dimensions might be in metadata
+            if (importResult.data.metadata && typeof importResult.data.metadata === 'object') {
+              const meta = importResult.data.metadata as Record<string, any>;
+              if (meta.width) {
+                width = Number(meta.width);
+                height = Number(meta.height);
+              }
+            }
+
+            // Create Media record
+            const media = await prisma.media.create({
+              data: {
+                url: storageUrl,
+                type: 'IMAGE',
+                productId,
+                userId,
+                altText: `${product.name} - Image ${sortOrder + index + 1}`,
+                sortOrder: sortOrder + index,
+                width,
+                height,
+                copy: {
+                  storageKey,
+                  originalUrl: url,
+                  importedAt: new Date().toISOString(),
+                  size,
+                  contentType,
+                },
+              },
+            });
+
+            results.imported.push({
+              url,
+              mediaId: media.id,
+              storageKey,
+            });
+          } catch (error) {
+            results.failed.push({
+              url,
+              error: error instanceof Error ? error.message : 'Unknown error',
+            });
+          }
+        }),
+      );
+
+      sortOrder += batch.length;
+    }
+
+    return {
+      success: true,
+      data: results,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to import product photos',
+    };
+  }
+}
+
+/**
+ * Bulk import media from external URLs with database integration
+ * Supports various entity types and automatic organization
+ */
+export async function bulkImportMediaWithDbAction(
+  imports: Array<{
+    url: string;
+    type: 'IMAGE' | 'VIDEO' | 'DOCUMENT';
+    entityType?: 'product' | 'collection' | 'brand' | 'article' | 'user';
+    entityId?: string;
+    altText?: string;
+    metadata?: Record<string, any>;
+  }>,
+  userId: string,
+  options?: {
+    batchSize?: number;
+    skipExisting?: boolean;
+    autoGenerateAltText?: boolean;
+  },
+): Promise<
+  MediaActionDbResponse<{
+    created: Array<{
+      url: string;
+      mediaId: string;
+      storageKey: string;
+    }>;
+    failed: Array<{
+      url: string;
+      error: string;
+    }>;
+    skipped: string[];
+    stats: {
+      total: number;
+      succeeded: number;
+      failed: number;
+      skipped: number;
+    };
+  }>
+> {
+  try {
+    const results = {
+      created: [] as Array<{ url: string; mediaId: string; storageKey: string }>,
+      failed: [] as Array<{ url: string; error: string }>,
+      skipped: [] as string[],
+    };
+
+    // Check for existing URLs if requested
+    let existingUrls: Set<string> = new Set();
+    if (options?.skipExisting) {
+      const existingMedia = await prisma.media.findMany({
+        where: {
+          url: { in: imports.map((i) => i.url) },
+          deletedAt: null,
+        },
+        select: { url: true },
+      });
+      existingUrls = new Set(existingMedia.map((m: any) => m.url));
+    }
+
+    // Import the URLs using the bulk import action
+    const { bulkImportFromUrlsAction } = await import('./mediaActions');
+    const importResult = await bulkImportFromUrlsAction(
+      imports
+        .filter((i) => !existingUrls.has(i.url))
+        .map((i) => ({
+          sourceUrl: i.url,
+          metadata: {
+            ...i.metadata,
+            type: i.type,
+            entityType: i.entityType,
+            entityId: i.entityId,
+            userId,
+          },
+        })),
+      {
+        batchSize: options?.batchSize || 5,
+      },
+    );
+
+    if (!importResult.success || !importResult.data) {
+      return {
+        success: false,
+        error: importResult.error || 'Bulk import failed',
+      };
+    }
+
+    // Create Media records for successful imports
+    for (const imported of importResult.data.succeeded) {
+      try {
+        const importMetadata = imports.find((i) => i.url === imported.sourceUrl);
+        if (!importMetadata) continue;
+
+        // Prepare entity relationships
+        const entityRelations: any = {};
+        if (importMetadata.entityType && importMetadata.entityId) {
+          switch (importMetadata.entityType) {
+            case 'product':
+              entityRelations.productId = importMetadata.entityId;
+              break;
+            case 'collection':
+              entityRelations.collectionId = importMetadata.entityId;
+              break;
+            case 'brand':
+              entityRelations.brandId = importMetadata.entityId;
+              break;
+            case 'article':
+              entityRelations.articleId = importMetadata.entityId;
+              break;
+            case 'user':
+              entityRelations.userId = importMetadata.entityId;
+              break;
+          }
+        }
+
+        // Generate alt text if requested and not provided
+        let altText = importMetadata.altText;
+        if (!altText && options?.autoGenerateAltText) {
+          const filename = imported.sourceUrl.split('/').pop()?.split('.')[0] || 'image';
+          altText = filename.replace(/[-_]/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+        }
+
+        const media = await prisma.media.create({
+          data: {
+            url: imported.storageObject.url,
+            type: importMetadata.type,
+            altText,
+            userId,
+            width:
+              imported.storageObject.metadata && typeof imported.storageObject.metadata === 'object'
+                ? Number((imported.storageObject.metadata as Record<string, any>).width) ||
+                  undefined
+                : undefined,
+            height:
+              imported.storageObject.metadata && typeof imported.storageObject.metadata === 'object'
+                ? Number((imported.storageObject.metadata as Record<string, any>).height) ||
+                  undefined
+                : undefined,
+            copy: {
+              storageKey: imported.storageObject.key,
+              originalUrl: imported.sourceUrl,
+              importedAt: new Date().toISOString(),
+              size: imported.storageObject.size,
+              contentType: imported.storageObject.contentType,
+              ...importMetadata.metadata,
+            },
+            ...entityRelations,
+          },
+        });
+
+        results.created.push({
+          url: imported.sourceUrl,
+          mediaId: media.id,
+          storageKey: imported.storageObject.key,
+        });
+      } catch (error) {
+        results.failed.push({
+          url: imported.sourceUrl,
+          error: `Database error: ${error instanceof Error ? error.message : 'Unknown'}`,
+        });
+      }
+    }
+
+    // Add import failures to results
+    for (const failed of importResult.data.failed) {
+      results.failed.push({
+        url: failed.sourceUrl,
+        error: failed.error,
+      });
+    }
+
+    // Add skipped URLs
+    results.skipped = Array.from(existingUrls);
+
+    const stats = {
+      total: imports.length,
+      succeeded: results.created.length,
+      failed: results.failed.length,
+      skipped: results.skipped.length,
+    };
+
+    return {
+      success: true,
+      data: {
+        ...results,
+        stats,
+      },
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Bulk import with database failed',
     };
   }
 }

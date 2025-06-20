@@ -1,12 +1,12 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock createEnv from @t3-oss/env-nextjs
 const mockCreateEnv = vi.fn();
-vi.mock('@t3-oss/env-nextjs', (_: any) => ({
+vi.mock('@t3-oss/env-nextjs', () => ({
   createEnv: mockCreateEnv,
 }));
 
-describe('Observability Keys Configuration', (_: any) => {
+describe('observability Keys Configuration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.resetModules();
@@ -22,7 +22,7 @@ describe('Observability Keys Configuration', (_: any) => {
     });
   });
 
-  it('should create environment configuration with required schema', async () => {
+  test('should create environment configuration with required schema', async () => {
     const { keys } = await import('../../keys');
 
     // Call the keys function to trigger createEnv
@@ -51,7 +51,7 @@ describe('Observability Keys Configuration', (_: any) => {
     expect(call.client).toHaveProperty('NEXT_PUBLIC_SENTRY_DSN');
   });
 
-  it('should handle missing optional Sentry configuration', async () => {
+  test('should handle missing optional Sentry configuration', async () => {
     mockCreateEnv.mockReturnValue({
       LOGTAIL_SOURCE_TOKEN: undefined,
       NEXT_PUBLIC_SENTRY_DSN: undefined,
@@ -69,7 +69,7 @@ describe('Observability Keys Configuration', (_: any) => {
     expect(keys.SENTRY_AUTH_TOKEN).toBeUndefined();
   });
 
-  it('should provide Sentry configuration when available', async () => {
+  test('should provide Sentry configuration when available', async () => {
     const { observabilityKeys } = await import('../../keys');
     const keys = observabilityKeys();
 
@@ -78,21 +78,21 @@ describe('Observability Keys Configuration', (_: any) => {
     expect(keys.NEXT_PUBLIC_SENTRY_DSN).toBe('https://test@sentry.io/12345');
   });
 
-  it('should provide Logtail configuration when available', async () => {
+  test('should provide Logtail configuration when available', async () => {
     const { observabilityKeys } = await import('../../keys');
     const keys = observabilityKeys();
 
     expect(keys.LOGTAIL_SOURCE_TOKEN).toBe('test-logtail-token');
   });
 
-  it('should include NODE_ENV in configuration', async () => {
+  test('should include NODE_ENV in configuration', async () => {
     const { observabilityKeys } = await import('../../keys');
     const keys = observabilityKeys();
 
     expect(keys.NODE_ENV).toBe('test');
   });
 
-  it('should allow empty strings for optional fields', async () => {
+  test('should allow empty strings for optional fields', async () => {
     mockCreateEnv.mockReturnValue({
       LOGTAIL_SOURCE_TOKEN: '',
       NEXT_PUBLIC_SENTRY_DSN: '',

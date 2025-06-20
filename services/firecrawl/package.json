@@ -27,8 +27,8 @@
     "firecrawl": "./scripts/firecrawl-cli.ts"
   },
   "dependencies": {
-    "zod": "catalog:",
-    "commander": "catalog:",
+    "zod": "^3.25.67",
+    "commander": "^14.0.0",
     "axios": "^1.7.9",
     "dotenv": "^16.4.7",
     "dockerode": "^4.0.2",
@@ -40,9 +40,9 @@
     "@repo/config": "workspace:*",
     "@repo/testing": "workspace:*",
     "@types/dockerode": "^3.3.33",
-    "typescript": "catalog:",
-    "vitest": "catalog:",
-    "tsx": "catalog:"
+    "typescript": "5.8.3",
+    "vitest": "^3.2.4",
+    "tsx": "^4.20.3"
   },
   "peerDependencies": {
     "typescript": ">=5.0.0"

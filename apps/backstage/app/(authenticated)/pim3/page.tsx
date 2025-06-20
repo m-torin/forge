@@ -15,7 +15,6 @@ import {
   IconPackage,
   IconPhoto,
   IconPhotoPlus,
-  IconTag,
   IconTags,
 } from '@tabler/icons-react';
 import Link from 'next/link';
@@ -153,7 +152,7 @@ export default function PIM3Page() {
               </Text>
 
               <Button
-                href={module.href}
+                href={module.href as any}
                 color={module.color}
                 component={Link}
                 mt="auto"

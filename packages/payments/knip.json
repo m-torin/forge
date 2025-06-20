@@ -1,12 +1,3 @@
 {
-  "extends": ["@repo/config/knip/base.json"],
-  "entry": [
-    "index.ts",
-    "ai.ts",
-    "keys.ts",
-    "**/*.config.{js,ts,mjs}",
-    "**/*.test.{ts,tsx}",
-    "**/*.spec.{ts,tsx}",
-    "__tests__/**/*.{ts,tsx}"
-  ]
+  "extends": ["@repo/config/knip"]
 }

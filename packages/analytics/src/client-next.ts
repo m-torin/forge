@@ -1,146 +1,85 @@
 /**
- * Client-side Next.js analytics exports
- * Complete Next.js 15 integration for client components and browser environments
- *
- * @example
- * ```typescript
- * import {
- *   createNextJSClientAnalytics,
- *   usePageTracking,
- *   useTrackEvent,
- *   track
- * } from '@repo/analytics/client/next';
- *
- * // Create Next.js optimized analytics
- * const analytics = createNextJSClientAnalytics({
- *   providers: { segment: { writeKey: 'xxx' } },
- *   nextjs: { strategy: 'afterInteractive', bufferEvents: true }
- * });
- *
- * // Use in client components
- * function MyComponent() {
- *   const trackEvent = useTrackEvent();
- *   usePageTracking(); // Auto page tracking
- *
- *   return <button onClick={() => trackEvent('Button Clicked', { color: 'blue' })}>
- *     Click me
- *   </button>;
- * }
- * ```
+ * Next.js client exports
  */
 
-// ============================================================================
-// CORE CLIENT ANALYTICS (re-export everything from client)
-// ============================================================================
+'use client';
 
-// Re-export everything from client for convenience
-// Re-export everything from client for convenience
-export * from './client';
-
-// ============================================================================
-// NEXT.JS CLIENT COMPONENTS & HOOKS
-// ============================================================================
-
-export {
-  // Context providers
-  AnalyticsProvider,
-  // Tracked components
-  TrackedButton,
-  TrackedLink,
-  useAnalytics,
-  // React hooks for client components
-  usePageTracking,
-  useTrackEvent,
-} from './next/app-router';
-
-// Note: Export types only if they exist in the app-router module
-// Many of these types may not be implemented yet
-
-// ============================================================================
-// NEXT.JS CLIENT ANALYTICS MANAGER
-// ============================================================================
-
+// Export Next.js specific analytics manager
 export {
   createNextJSClientAnalytics,
-  // PostHog bootstrap helpers
-  createPostHogConfigWithBootstrap,
+  createNextJSClientAnalyticsUninitialized,
+} from './client/next/manager';
 
-  // Script integration helpers
-  getAnalyticsScriptProps,
+// Export Next.js hooks
+export {
+  useAnalytics,
+  usePageTracking,
+  useTrackEvent,
+  useIdentifyUser,
+  resetAnalytics,
+} from './client/next/hooks';
 
-  // Next.js client analytics manager
-  NextJSClientAnalyticsManager,
-} from './next/client';
+// Export Next.js components
+export {
+  AnalyticsProvider,
+  TrackedButton,
+  TrackedLink,
+  withViewTracking,
+} from './client/next/components';
 
-export type { NextJSClientAnalyticsConfig } from './next/client';
+// Export all emitters - these are the preferred way to track events
+export {
+  alias,
+  // Emitter utilities
+  ContextBuilder,
+  createAnonymousSession,
+  createUserSession,
+  // Ecommerce emitters namespace
+  ecommerce,
+  EventBatch,
+  group,
+  // Core Segment.io spec emitters
+  identify,
+  isAliasPayload,
+  isGroupPayload,
+  isIdentifyPayload,
+  isPagePayload,
+  // Type guards
+  isTrackPayload,
+  page,
+  PayloadBuilder,
+  screen,
+  track,
+  withMetadata,
+  withUTM,
+} from './shared/emitters';
 
-// ============================================================================
-// NEXT.JS TYPES
-// ============================================================================
+// Export adapter utilities
+export {
+  createEmitterProcessor,
+  // Emitter processing utilities
+  processEmitterPayload,
+  trackEcommerceEvent,
+} from './shared/utils/emitter-adapter';
 
-export type {
-  AddToCartEvent,
-  // Next.js specific types that actually exist
-  AnalyticsEvent,
-  AnalyticsMiddlewareContext,
-  AnalyticsProviderProps,
-  CheckoutEvent,
-  EventName,
-  EventProperties,
-  FormErrorEvent,
-  FormStartEvent,
-  FormSubmitEvent,
-  PageViewEvent,
-  ProductViewEvent,
-  PurchaseEvent,
-  TrackedComponentProps,
-  TypedTrackFunction,
-  UseAnalyticsReturn,
-} from './next/types';
+// Export client-safe configuration utilities
+export {
+  createConfigBuilder,
+  getAnalyticsConfig,
+  PROVIDER_REQUIREMENTS,
+  validateConfig,
+} from './shared/utils/config-client';
 
-// ============================================================================
-// USAGE EXAMPLES & PATTERNS
-// ============================================================================
+// Validation utilities removed - validation should happen on the server side only
+// This follows the four-file export pattern to avoid importing server-only dependencies
 
-/**
- * Example usage patterns for client-side Next.js analytics
- *
- * @example Basic setup in layout.tsx
- * ```typescript
- * 'use client';
- * import { AnalyticsProvider, usePageTracking } from '@repo/analytics/client/next';
- *
- * function RootLayoutContent({ children }) {
- *   usePageTracking(); // Auto page tracking
- *   return <>{children}</>;
- * }
- *
- * export default function RootLayout({ children }) {
- *   return (
- *     <AnalyticsProvider config={{
- *       providers: {
- *         segment: { writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY }
- *       }
- *     }}>
- *       <RootLayoutContent>{children}</RootLayoutContent>
- *     </AnalyticsProvider>
- *   );
- * }
- * ```
- *
- * @example Event tracking in components
- * ```typescript
- * 'use client';
- * import { useTrackEvent, track } from '@repo/analytics/client/next';
- *
- * function MyComponent() {
- *   const trackEvent = useTrackEvent();
- *
- *   const handleClick = () => {
- *     trackEvent('Button Clicked', { location: 'hero' });
- *   };
- *
- *   return <button onClick={handleClick}>Click me</button>;
- * }
- * ```
- */
+// Export PostHog utilities
+export {
+  createBootstrapData,
+  createMinimalBootstrapData,
+  generateDistinctId,
+  getDistinctIdFromCookies,
+} from './shared/utils/posthog-bootstrap';
+
+// Export types
+export type * from './types';

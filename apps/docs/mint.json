@@ -46,18 +46,24 @@
               "pages": [
                 "packages/database/overview",
                 "packages/database/prisma",
+                "packages/database/validation",
                 "packages/database/redis",
+                "packages/database/firestore",
                 "packages/database/vector"
               ]
             },
             {
               "group": "Storage",
               "pages": [
-                "packages/storage",
+                "packages/storage/overview",
                 "packages/storage/cloudflare-r2",
                 "packages/storage/cloudflare-images",
                 "packages/storage/configuration",
-                "packages/storage/client-usage"
+                "packages/storage/client-usage",
+                "packages/storage/signed-urls",
+                "packages/storage/database-integration",
+                "packages/storage/server-actions",
+                "packages/storage/bulk-import"
               ]
             }
           ]
@@ -121,7 +127,13 @@
         {
           "group": "Frontend",
           "icon": "browser",
-          "pages": ["apps/web", "apps/web-template/overview", "apps/web-template/components"]
+          "pages": [
+            "apps/web",
+            "apps/web-template/overview",
+            "apps/web-template/authentication",
+            "apps/web-template/auth-migration",
+            "apps/web-template/components"
+          ]
         },
         {
           "group": "Admin & Internal",

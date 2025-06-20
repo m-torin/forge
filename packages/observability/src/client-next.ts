@@ -52,7 +52,10 @@ const NEXTJS_CLIENT_PROVIDERS: ProviderRegistry = {
     const { GrafanaClientProvider } = await import('./client/providers/grafana-client');
     return new GrafanaClientProvider();
   },
-  // Better Stack/Logtail is not available on client side due to Node.js dependencies
+  logtail: async () => {
+    const { LogtailClientNextProvider } = await import('./client/providers/logtail-client-next');
+    return new LogtailClientNextProvider();
+  },
 };
 
 /**
@@ -146,11 +149,83 @@ export {
 export { getObservabilityConfig, mergeObservabilityConfig } from './next/config';
 
 // ============================================================================
+// NEXT.JS CLIENT INITIALIZATION
+// ============================================================================
+
+/**
+ * Initialize client-side observability for Next.js
+ * This should be called from instrumentation-client.ts
+ *
+ * @example
+ * ```typescript
+ * // instrumentation-client.ts
+ * import { initializeClient } from '@repo/observability/client/next';
+ *
+ * initializeClient({
+ *   providers: {
+ *     sentry: {
+ *       dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+ *       browserTracingEnabled: true,
+ *       replayEnabled: true,
+ *       feedbackEnabled: true,
+ *     }
+ *   }
+ * });
+ * ```
+ */
+export async function initializeClient(config?: ObservabilityConfig): Promise<void> {
+  // Only initialize in browser environment
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    const manager = createClientObservabilityManager(
+      config || getDefaultClientConfig(),
+      NEXTJS_CLIENT_PROVIDERS,
+    );
+    await manager.initialize();
+
+    // Store manager globally for access by hooks
+    if (typeof window !== 'undefined') {
+      (window as any).__observabilityManager = manager;
+    }
+  } catch (error) {
+    console.error('[Observability] Failed to initialize client:', error);
+  }
+}
+
+/**
+ * Get default client configuration
+ * Used when no config is provided to initializeClient
+ */
+function getDefaultClientConfig(): ObservabilityConfig {
+  const hasSentryDSN = Boolean(process.env.NEXT_PUBLIC_SENTRY_DSN);
+
+  return {
+    providers: {
+      console: {
+        enabled: process.env.NODE_ENV === 'development',
+      },
+      ...(hasSentryDSN && {
+        sentry: {
+          dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+          environment: process.env.NODE_ENV,
+          tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+          replaysSessionSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 0,
+          replaysOnErrorSampleRate: 1.0,
+        },
+      }),
+    },
+  };
+}
+
+// ============================================================================
 // NEXT.JS CLIENT CONFIGURATION
 // ============================================================================
 
 export {
-  initializeClient,
+  initializeClient as initializeClientLegacy,
   default as initializeClientDefault,
   onRouterTransitionStart,
 } from './next/instrumentation-client';

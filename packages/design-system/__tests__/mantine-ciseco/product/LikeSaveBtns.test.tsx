@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '../test-utils';
-import LikeSaveBtns from '../../../mantine-ciseco/components/LikeSaveBtns';
+import LikeSaveBtns from '../../../src/mantine-ciseco/components/LikeSaveBtns';
 
 describe('LikeSaveBtns', (_: any) => {
   it('renders both share and save buttons', (_: any) => {

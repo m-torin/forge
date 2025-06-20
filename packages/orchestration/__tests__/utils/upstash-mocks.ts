@@ -38,6 +38,7 @@ export const createMockQStashClient = () => ({
 // Mock Redis Client
 export const createMockRedisClient = () => {
   const storage = new Map<string, string>();
+  const sortedSets = new Map<string, Array<{ score: number; member: string }>>();
 
   return {
     decr: vi.fn().mockImplementation(async (key: string) => {
@@ -47,12 +48,13 @@ export const createMockRedisClient = () => {
       return newValue;
     }),
     del: vi.fn().mockImplementation(async (key: string) => {
-      const existed = storage.has(key);
+      const existed = storage.has(key) || sortedSets.has(key);
       storage.delete(key);
+      sortedSets.delete(key);
       return existed ? 1 : 0;
     }),
     exists: vi.fn().mockImplementation(async (key: string) => {
-      return storage.has(key) ? 1 : 0;
+      return storage.has(key) || sortedSets.has(key) ? 1 : 0;
     }),
     expire: vi.fn().mockResolvedValue(1),
     get: vi.fn().mockImplementation(async (key: string) => {
@@ -81,10 +83,72 @@ export const createMockRedisClient = () => {
       return 'OK';
     }),
     ttl: vi.fn().mockResolvedValue(3600),
-
-    _clear: () => storage.clear(),
+    // Sorted set methods
+    zadd: vi.fn().mockImplementation(async (key: string, { score, member }: { score: number; member: string }) => {
+      let set = sortedSets.get(key);
+      if (!set) {
+        set = [];
+        sortedSets.set(key, set);
+      }
+      // Remove if already exists
+      set = set.filter((item) => item.member !== member);
+      set.push({ score, member });
+      // Sort by score ascending
+      set.sort((a, b) => a.score - b.score);
+      sortedSets.set(key, set);
+      return 1;
+    }),
+    zrange: vi.fn().mockImplementation(async (key: string, start: number, stop: number, opts?: any) => {
+      let set = sortedSets.get(key) || [];
+      // If opts.rev, reverse the set
+      if (opts && opts.rev) {
+        set = [...set].reverse();
+      }
+      // Redis zrange is inclusive for start and stop
+      if (stop < 0) {
+        stop = set.length + stop;
+      }
+      return set.slice(start, stop + 1).map((item) => item.member);
+    }),
+    zremrangebyrank: vi.fn().mockImplementation(async (key: string, start: number, stop: number) => {
+      let set = sortedSets.get(key) || [];
+      if (stop < 0) {
+        stop = set.length + stop;
+      }
+      const removed = set.slice(start, stop + 1);
+      set = set.slice(0, start).concat(set.slice(stop + 1));
+      sortedSets.set(key, set);
+      return removed.length;
+    }),
+    pipeline: vi.fn().mockImplementation(() => {
+      const commands: Array<{ type: string; key: string }> = [];
+      const pipelineObj = {
+        get: (key: string) => {
+          commands.push({ type: 'get', key });
+          return pipelineObj;
+        },
+        exec: async () => {
+          return commands.map((cmd) => {
+            const value = storage.get(cmd.key);
+            return [null, value];
+          });
+        },
+      };
+      return pipelineObj;
+    }),
+    scan: vi.fn().mockImplementation(async (cursor: string, { match, count }: { match: string; count: number }) => {
+      const regex = new RegExp(match.replace('*', '.*'));
+      const keys = Array.from(storage.keys()).filter((key) => regex.test(key));
+      // For simplicity, return all at once
+      return ['0', keys];
+    }),
+    _clear: () => {
+      storage.clear();
+      sortedSets.clear();
+    },
     // Helper to access internal storage for testing
     _getStorage: () => storage,
+    _getSortedSets: () => sortedSets,
   };
 };
 

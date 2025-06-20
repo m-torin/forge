@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '../test-utils';
-import Label from '../../../mantine-ciseco/components/Label/Label';
+import Label from '../../../src/mantine-ciseco/components/Label/Label';
 
 describe('Label', (_: any) => {
   it('renders label with text', (_: any) => {

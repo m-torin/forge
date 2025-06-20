@@ -4,32 +4,33 @@
  */
 
 import 'server-only';
-
+import { syncLogger as logger } from '../shared/utils/logger';
 import { randomUUID } from 'crypto';
 
-import { headers } from 'next/headers';
-
-import { auth } from './auth';
+import { auth } from '../shared/auth.config';
+import { getAuthHeaders } from './get-headers';
 
 import type { User } from '../shared/types';
 
 /**
  * List all API keys (admin function)
  */
-export async function listApiKeys(): Promise<{
+export async function listApiKeysAction(): Promise<{
   success: boolean;
   data?: any[];
   error?: string;
 }> {
   try {
-    const result = await auth.api.listApiKeys();
+    const result = await auth.api.listApiKeys({
+      headers: await getAuthHeaders(),
+    });
 
     return {
       data: Array.isArray(result) ? result : [],
       success: true,
     };
   } catch (error) {
-    console.error('Failed to list API keys:', error);
+    logger.error('Failed to list API keys:', error);
     return {
       error: 'Failed to list API keys',
       success: false,
@@ -40,26 +41,30 @@ export async function listApiKeys(): Promise<{
 /**
  * Delete a user session (admin function)
  */
-export async function deleteSession(sessionId?: string): Promise<{
+export async function deleteSessionAction(sessionId?: string): Promise<{
   success: boolean;
   error?: string;
 }> {
   try {
     // If no sessionId provided, delete current session
     if (!sessionId) {
-      const result = await auth.api.signOut({ headers: await headers() });
+      await auth.api.signOut({ headers: await getAuthHeaders() });
       return {
-        error: undefined,
         success: true,
       };
     }
 
-    // TODO: Implement session deletion by ID when Better Auth supports it
-    throw new Error(
-      'Session deletion by ID not implemented yet - requires Better Auth admin features',
-    );
+    // Use Better Auth admin function to revoke session by ID
+    await auth.api.revokeSession({
+      body: { sessionId },
+      headers: await getAuthHeaders(),
+    });
+
+    return {
+      success: true,
+    };
   } catch (error) {
-    console.error('Failed to delete session:', error);
+    logger.error('Failed to delete session:', error);
     return {
       error: error instanceof Error ? error.message : 'Failed to delete session',
       success: false,
@@ -70,7 +75,7 @@ export async function deleteSession(sessionId?: string): Promise<{
 /**
  * Create a new user (admin function)
  */
-export async function createUser(data: {
+export async function createUserAction(data: {
   email: string;
   name?: string;
   password?: string;
@@ -88,16 +93,15 @@ export async function createUser(data: {
         password: data.password || randomUUID().substring(0, 12),
         role: (data.role as 'admin' | 'super-admin' | 'moderator' | 'support') || undefined,
       },
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     return {
       data: result.user,
-      error: undefined,
       success: true,
     };
   } catch (error) {
-    console.error('Failed to create user:', error);
+    logger.error('Failed to create user:', error);
     return {
       error: error instanceof Error ? error.message : 'Failed to create user',
       success: false,
@@ -108,22 +112,21 @@ export async function createUser(data: {
 /**
  * Delete a user (admin function)
  */
-export async function deleteUser(userId: string): Promise<{
+export async function deleteUserAction(userId: string): Promise<{
   success: boolean;
   error?: string;
 }> {
   try {
-    const result = await auth.api.removeUser({
+    await auth.api.removeUser({
       body: { userId },
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     return {
-      error: undefined,
       success: true,
     };
   } catch (error) {
-    console.error('Failed to delete user:', error);
+    logger.error('Failed to delete user:', error);
     return {
       error: error instanceof Error ? error.message : 'Failed to delete user',
       success: false,
@@ -134,7 +137,7 @@ export async function deleteUser(userId: string): Promise<{
 /**
  * List all users (admin function)
  */
-export async function listUsers(options?: {
+export async function listUsersAction(options?: {
   limit?: number;
   offset?: number;
   search?: string;
@@ -145,7 +148,7 @@ export async function listUsers(options?: {
 }> {
   try {
     const result = await auth.api.listUsers({
-      headers: await headers(),
+      headers: await getAuthHeaders(),
       query: {
         limit: options?.limit || 100,
         offset: options?.offset || 0,
@@ -155,11 +158,10 @@ export async function listUsers(options?: {
 
     return {
       data: result.users || [],
-      error: undefined,
       success: true,
     };
   } catch (error) {
-    console.error('Failed to list users:', error);
+    logger.error('Failed to list users:', error);
     return {
       error: error instanceof Error ? error.message : 'Failed to list users',
       success: false,
@@ -170,7 +172,7 @@ export async function listUsers(options?: {
 /**
  * Get a specific user by ID (admin function)
  */
-export async function getUserById(userId: string): Promise<{
+export async function getUserByIdAction(userId: string): Promise<{
   success: boolean;
   data?: User;
   error?: string;
@@ -179,7 +181,7 @@ export async function getUserById(userId: string): Promise<{
     // Better Auth doesn't have a direct getUserById admin API,
     // so we'll use listUsers with a search
     const result = await auth.api.listUsers({
-      headers: await headers(),
+      headers: await getAuthHeaders(),
       query: {
         limit: 100,
         offset: 0,
@@ -197,11 +199,10 @@ export async function getUserById(userId: string): Promise<{
 
     return {
       data: user,
-      error: undefined,
       success: true,
     };
   } catch (error) {
-    console.error('Failed to get user:', error);
+    logger.error('Failed to get user:', error);
     return {
       error: error instanceof Error ? error.message : 'Failed to get user',
       success: false,
@@ -212,7 +213,7 @@ export async function getUserById(userId: string): Promise<{
 /**
  * List all sessions (admin function)
  */
-export async function listSessions(options?: {
+export async function listSessionsAction(options?: {
   limit?: number;
   offset?: number;
   userId?: string;
@@ -223,7 +224,7 @@ export async function listSessions(options?: {
 }> {
   try {
     const result = await auth.api.listSessions({
-      headers: await headers(),
+      headers: await getAuthHeaders(),
       query: {
         limit: options?.limit || 100,
         offset: options?.offset || 0,
@@ -233,11 +234,10 @@ export async function listSessions(options?: {
 
     return {
       data: Array.isArray(result) ? result : [],
-      error: undefined,
       success: true,
     };
   } catch (error) {
-    console.error('Failed to list sessions:', error);
+    logger.error('Failed to list sessions:', error);
     return {
       error: error instanceof Error ? error.message : 'Failed to list sessions',
       success: false,
@@ -248,7 +248,7 @@ export async function listSessions(options?: {
 /**
  * Impersonate a user (admin function)
  */
-export async function impersonateUser(userId: string): Promise<{
+export async function impersonateUserAction(userId: string): Promise<{
   success: boolean;
   data?: any;
   error?: string;
@@ -256,16 +256,15 @@ export async function impersonateUser(userId: string): Promise<{
   try {
     const result = await auth.api.impersonateUser({
       body: { userId },
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     return {
       data: result.session,
-      error: undefined,
       success: true,
     };
   } catch (error) {
-    console.error('Failed to impersonate user:', error);
+    logger.error('Failed to impersonate user:', error);
     return {
       error: error instanceof Error ? error.message : 'Failed to impersonate user',
       success: false,
@@ -276,21 +275,20 @@ export async function impersonateUser(userId: string): Promise<{
 /**
  * Stop impersonating a user (admin function)
  */
-export async function stopImpersonating(): Promise<{
+export async function stopImpersonatingAction(): Promise<{
   success: boolean;
   error?: string;
 }> {
   try {
-    const result = await auth.api.stopImpersonating({
-      headers: await headers(),
+    await auth.api.stopImpersonating({
+      headers: await getAuthHeaders(),
     });
 
     return {
-      error: undefined,
       success: true,
     };
   } catch (error) {
-    console.error('Failed to stop impersonating:', error);
+    logger.error('Failed to stop impersonating:', error);
     return {
       error: error instanceof Error ? error.message : 'Failed to stop impersonating',
       success: false,
@@ -301,7 +299,7 @@ export async function stopImpersonating(): Promise<{
 /**
  * Ban a user (admin function)
  */
-export async function banUser(
+export async function banUserAction(
   userId: string,
   reason?: string,
   expiresAt?: Date,
@@ -310,21 +308,20 @@ export async function banUser(
   error?: string;
 }> {
   try {
-    const result = await auth.api.banUser({
+    await auth.api.banUser({
       body: {
         userId,
         ...(reason && { reason }),
         ...(expiresAt && { expiresAt: expiresAt.toISOString() }),
       },
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     return {
-      error: undefined,
       success: true,
     };
   } catch (error) {
-    console.error('Failed to ban user:', error);
+    logger.error('Failed to ban user:', error);
     return {
       error: error instanceof Error ? error.message : 'Failed to ban user',
       success: false,
@@ -335,22 +332,21 @@ export async function banUser(
 /**
  * Unban a user (admin function)
  */
-export async function unbanUser(userId: string): Promise<{
+export async function unbanUserAction(userId: string): Promise<{
   success: boolean;
   error?: string;
 }> {
   try {
-    const result = await auth.api.unbanUser({
+    await auth.api.unbanUser({
       body: { userId },
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     return {
-      error: undefined,
       success: true,
     };
   } catch (error) {
-    console.error('Failed to unban user:', error);
+    logger.error('Failed to unban user:', error);
     return {
       error: error instanceof Error ? error.message : 'Failed to unban user',
       success: false,
@@ -361,7 +357,7 @@ export async function unbanUser(userId: string): Promise<{
 /**
  * Set user role (admin function)
  */
-export async function setUserRole(
+export async function setUserRoleAction(
   userId: string,
   role: 'admin' | 'super-admin' | 'moderator' | 'support',
 ): Promise<{
@@ -369,17 +365,16 @@ export async function setUserRole(
   error?: string;
 }> {
   try {
-    const result = await auth.api.setRole({
+    await auth.api.setRole({
       body: { userId, role },
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     return {
-      error: undefined,
       success: true,
     };
   } catch (error) {
-    console.error('Failed to set user role:', error);
+    logger.error('Failed to set user role:', error);
     return {
       error: error instanceof Error ? error.message : 'Failed to set user role',
       success: false,
@@ -390,22 +385,21 @@ export async function setUserRole(
 /**
  * Revoke user sessions (admin function)
  */
-export async function revokeUserSessions(userId: string): Promise<{
+export async function revokeUserSessionsAction(userId: string): Promise<{
   success: boolean;
   error?: string;
 }> {
   try {
-    const result = await auth.api.revokeUserSessions({
+    await auth.api.revokeUserSessions({
       body: { userId },
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     return {
-      error: undefined,
       success: true,
     };
   } catch (error) {
-    console.error('Failed to revoke user sessions:', error);
+    logger.error('Failed to revoke user sessions:', error);
     return {
       error: error instanceof Error ? error.message : 'Failed to revoke user sessions',
       success: false,
@@ -416,7 +410,7 @@ export async function revokeUserSessions(userId: string): Promise<{
 /**
  * Get a single user by ID (admin function)
  */
-export async function getUser(userId: string): Promise<{
+export async function getUserAction(userId: string): Promise<{
   success: boolean;
   data?: User;
   error?: string;
@@ -424,7 +418,7 @@ export async function getUser(userId: string): Promise<{
   try {
     // List users and find the one with matching ID
     const result = await auth.api.listUsers({
-      headers: await headers(),
+      headers: await getAuthHeaders(),
       query: {
         limit: 1000, // High limit to ensure we find the user
       },
@@ -441,11 +435,10 @@ export async function getUser(userId: string): Promise<{
 
     return {
       data: user,
-      error: undefined,
       success: true,
     };
   } catch (error) {
-    console.error('Failed to get user:', error);
+    logger.error('Failed to get user:', error);
     return {
       error: error instanceof Error ? error.message : 'Failed to get user',
       success: false,
@@ -456,14 +449,16 @@ export async function getUser(userId: string): Promise<{
 /**
  * Get a single API key by ID (admin function)
  */
-export async function getApiKey(apiKeyId: string): Promise<{
+export async function getApiKeyAction(apiKeyId: string): Promise<{
   success: boolean;
   data?: any;
   error?: string;
 }> {
   try {
     // List API keys and find the one with matching ID
-    const result = await auth.api.listApiKeys();
+    const result = await auth.api.listApiKeys({
+      headers: await getAuthHeaders(),
+    });
 
     const apiKey = Array.isArray(result)
       ? result.find((key: any) => key.id === apiKeyId)
@@ -478,11 +473,10 @@ export async function getApiKey(apiKeyId: string): Promise<{
 
     return {
       data: apiKey,
-      error: undefined,
       success: true,
     };
   } catch (error) {
-    console.error('Failed to get API key:', error);
+    logger.error('Failed to get API key:', error);
     return {
       error: error instanceof Error ? error.message : 'Failed to get API key',
       success: false,
@@ -493,26 +487,153 @@ export async function getApiKey(apiKeyId: string): Promise<{
 /**
  * Get a single organization by ID (admin function)
  */
-export async function getOrganization(organizationId: string): Promise<{
+export async function getOrganizationAction(organizationId: string): Promise<{
   success: boolean;
   data?: any;
   error?: string;
 }> {
   try {
     const result = await auth.api.getFullOrganization({
-      headers: await headers(),
+      headers: await getAuthHeaders(),
       query: { organizationId },
     });
 
     return {
       data: result,
-      error: undefined,
       success: true,
     };
   } catch (error) {
-    console.error('Failed to get organization:', error);
+    logger.error('Failed to get organization:', error);
     return {
       error: error instanceof Error ? error.message : 'Failed to get organization',
+      success: false,
+    };
+  }
+}
+
+/**
+ * List all organizations (admin function)
+ */
+export async function listOrganizationsAction(options?: {
+  limit?: number;
+  offset?: number;
+  search?: string;
+}): Promise<{
+  success: boolean;
+  data?: any[];
+  error?: string;
+}> {
+  try {
+    const result = await auth.api.listOrganizations({
+      headers: await getAuthHeaders(),
+      body: {
+        limit: options?.limit || 100,
+        offset: options?.offset || 0,
+        ...(options?.search && { search: options.search }),
+      },
+    });
+
+    return {
+      data: result.organizations || [],
+      success: true,
+    };
+  } catch (error) {
+    logger.error('Failed to list organizations:', error);
+    return {
+      error: error instanceof Error ? error.message : 'Failed to list organizations',
+      success: false,
+    };
+  }
+}
+
+/**
+ * Force delete organization (admin function)
+ */
+export async function forceDeleteOrganizationAction(organizationId: string): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  try {
+    await auth.api.deleteOrganization({
+      body: { organizationId },
+      headers: await getAuthHeaders(),
+    });
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    logger.error('Failed to force delete organization:', error);
+    return {
+      error: error instanceof Error ? error.message : 'Failed to force delete organization',
+      success: false,
+    };
+  }
+}
+
+/**
+ * Get system statistics (admin function)
+ */
+export async function getSystemStatsAction(): Promise<{
+  success: boolean;
+  data?: {
+    totalUsers: number;
+    totalOrganizations: number;
+    totalApiKeys: number;
+    totalSessions: number;
+  };
+  error?: string;
+}> {
+  try {
+    // Get all the data in parallel
+    const [usersResult, orgsResult, apiKeysResult, sessionsResult] = await Promise.allSettled([
+      auth.api.listUsers({
+        headers: await getAuthHeaders(),
+        query: { limit: 10000 }, // High limit to get total count
+      }),
+      auth.api.listOrganizations({
+        headers: await getAuthHeaders(),
+        body: { limit: 10000 },
+      }),
+      auth.api.listApiKeys({
+        headers: await getAuthHeaders(),
+      }),
+      auth.api.listSessions({
+        headers: await getAuthHeaders(),
+        query: { limit: 10000 },
+      }),
+    ]);
+
+    const totalUsers =
+      usersResult.status === 'fulfilled' ? usersResult.value.users?.length || 0 : 0;
+    const totalOrganizations =
+      orgsResult.status === 'fulfilled' ? orgsResult.value.organizations?.length || 0 : 0;
+    const totalApiKeys =
+      apiKeysResult.status === 'fulfilled'
+        ? Array.isArray(apiKeysResult.value)
+          ? apiKeysResult.value.length
+          : 0
+        : 0;
+    const totalSessions =
+      sessionsResult.status === 'fulfilled'
+        ? Array.isArray(sessionsResult.value)
+          ? sessionsResult.value.length
+          : 0
+        : 0;
+
+    return {
+      success: true,
+      data: {
+        totalUsers,
+        totalOrganizations,
+        totalApiKeys,
+        totalSessions,
+      },
+    };
+  } catch (error) {
+    logger.error('Failed to get system stats:', error);
+    return {
+      error: error instanceof Error ? error.message : 'Failed to get system stats',
       success: false,
     };
   }

@@ -5,6 +5,7 @@
 
 import type { ConsoleConfig } from '../types/console-types';
 import type { AnalyticsProvider, ProviderConfig } from '../types/types';
+import { analyticsLogger } from '../utils/logger';
 
 export class ConsoleProvider implements AnalyticsProvider {
   readonly name = 'console';
@@ -35,7 +36,11 @@ export class ConsoleProvider implements AnalyticsProvider {
 
   async track(event: string, properties: any = {}, _context?: any): Promise<void> {
     if (!this.isInitialized) {
-      console.warn('Console provider not initialized');
+      void analyticsLogger.logWarning('Console provider not initialized', {
+        provider: 'console',
+        operation: 'track',
+        event,
+      });
       return;
     }
 
@@ -48,7 +53,11 @@ export class ConsoleProvider implements AnalyticsProvider {
 
   async identify(userId: string, traits: any = {}, _context?: any): Promise<void> {
     if (!this.isInitialized) {
-      console.warn('Console provider not initialized');
+      void analyticsLogger.logWarning('Console provider not initialized', {
+        provider: 'console',
+        operation: 'identify',
+        userId,
+      });
       return;
     }
 
@@ -61,7 +70,11 @@ export class ConsoleProvider implements AnalyticsProvider {
 
   async page(name?: string, properties: any = {}, _context?: any): Promise<void> {
     if (!this.isInitialized) {
-      console.warn('Console provider not initialized');
+      void analyticsLogger.logWarning('Console provider not initialized', {
+        provider: 'console',
+        operation: 'page',
+        metadata: { name },
+      });
       return;
     }
 
@@ -74,7 +87,11 @@ export class ConsoleProvider implements AnalyticsProvider {
 
   async group(groupId: string, traits: any = {}, _context?: any): Promise<void> {
     if (!this.isInitialized) {
-      console.warn('Console provider not initialized');
+      void analyticsLogger.logWarning('Console provider not initialized', {
+        provider: 'console',
+        operation: 'group',
+        metadata: { groupId },
+      });
       return;
     }
 
@@ -87,7 +104,12 @@ export class ConsoleProvider implements AnalyticsProvider {
 
   async alias(userId: string, previousId: string, _context?: any): Promise<void> {
     if (!this.isInitialized) {
-      console.warn('Console provider not initialized');
+      void analyticsLogger.logWarning('Console provider not initialized', {
+        provider: 'console',
+        operation: 'alias',
+        userId,
+        metadata: { previousId },
+      });
       return;
     }
 
@@ -99,30 +121,17 @@ export class ConsoleProvider implements AnalyticsProvider {
   }
 
   private log(action: string, data: any): void {
-    const { enableColors, logLevel, prefix, pretty } = this.config.options!;
+    const { logLevel, prefix } = this.config.options!;
 
     if (logLevel === 'error') return; // Don't log analytics in error-only mode
 
     const message = `${prefix} ${action}`;
 
-    if (pretty) {
-      if (enableColors) {
-        // With colors (typically Node.js environments)
-        console.log(`\x1b[36m${message}\x1b[0m`, JSON.stringify(data, null, 2));
-      } else {
-        // Without colors - use grouping if available
-        if (console.group) {
-          console.group(message);
-          console.log(data);
-          console.groupEnd();
-        } else {
-          // Fallback for environments without console.group
-          console.log(message, JSON.stringify(data, null, 2));
-        }
-      }
-    } else {
-      // Simple one-line format
-      console.log(message, data);
-    }
+    // Use analytics logger instead of console directly
+    void analyticsLogger.logDebug(message, {
+      provider: 'console',
+      operation: action.toLowerCase(),
+      metadata: data,
+    });
   }
 }

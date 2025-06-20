@@ -42,8 +42,6 @@ import {
   IconFile,
   IconFileText,
   IconFolder,
-  IconGridDots,
-  IconList,
   IconMovie,
   IconMusic,
   IconPhoto,
@@ -55,12 +53,11 @@ import {
 } from '@tabler/icons-react';
 import { useCallback, useEffect, useState } from 'react';
 
-import { formatDate, formatFileSize } from '../utils/pim-helpers';
-import { SignedImage } from '../components/SignedImage';
+import { formatDate, formatFileSize } from '@/utils/pim3/pim-helpers';
+import { SignedImage } from '@/components/pim3/SignedImage';
 
 import {
   bulkDeleteMedia,
-  createMedia,
   deleteMedia,
   getMedia,
   getMediaStats,
@@ -528,8 +525,8 @@ export default function MediaPage() {
             file,
             type: mediaType,
             altText: file.name,
-            entityType: entityFilter,
-            entityId: entityFilterId,
+            entityType: filter.entityType?.[0],
+            entityId: (filter as any).entityId,
           });
 
           if (!uploadResult.success) {

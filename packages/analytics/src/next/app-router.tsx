@@ -211,7 +211,7 @@ export function withViewTracking<P extends object>(
         const properties = getProperties ? getProperties(props) : {};
         track(eventName, properties);
       }
-    }, [track, eventName, getProperties]);
+    }, [track, props]);
 
     return <Component {...props} />;
   };
@@ -283,7 +283,7 @@ export function TrackedLink({
         router.push(href);
       }
     },
-    [track, eventName, properties, href, onClick, router, children],
+    [track, eventName, properties, href, onClick, router, children, props.target],
   );
 
   return (

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Import after mocking
 import { PinoProvider } from '../../../server/providers/pino-provider';
@@ -39,7 +39,7 @@ vi.mock('../../../server/providers/pino-provider', async () => {
   };
 });
 
-describe('PinoProvider', () => {
+describe('pinoProvider', () => {
   let provider: PinoProvider;
 
   beforeEach(() => {
@@ -52,7 +52,7 @@ describe('PinoProvider', () => {
   });
 
   describe('constructor', () => {
-    it('should initialize pino with provided options', () => {
+    test('should initialize pino with provided options', () => {
       provider = new PinoProvider({
         level: 'info',
         transport: {
@@ -65,7 +65,7 @@ describe('PinoProvider', () => {
       expect((provider as any).logger).toBe(mockPino);
     });
 
-    it('should use default options when none provided', () => {
+    test('should use default options when none provided', () => {
       provider = new PinoProvider();
 
       // Since we're mocking the provider itself, just verify it was created
@@ -73,9 +73,9 @@ describe('PinoProvider', () => {
       expect((provider as any).logger).toBe(mockPino);
     });
 
-    it('should always be enabled', () => {
+    test('should always be enabled', () => {
       provider = new PinoProvider();
-      expect(provider.isEnabled()).toBe(true);
+      expect(provider.isEnabled()).toBeTruthy();
     });
   });
 
@@ -84,7 +84,7 @@ describe('PinoProvider', () => {
       provider = new PinoProvider();
     });
 
-    it('should log debug messages', async () => {
+    test('should log debug messages', async () => {
       const entry: LogEntry = {
         level: 'debug',
         message: 'Debug message',
@@ -97,7 +97,7 @@ describe('PinoProvider', () => {
       expect(mockPino.debug).toHaveBeenCalledWith({ userId: '123' }, 'Debug message');
     });
 
-    it('should log info messages', async () => {
+    test('should log info messages', async () => {
       const entry: LogEntry = {
         level: 'info',
         message: 'Info message',
@@ -109,7 +109,7 @@ describe('PinoProvider', () => {
       expect(mockPino.info).toHaveBeenCalledWith({}, 'Info message');
     });
 
-    it('should log warn messages', async () => {
+    test('should log warn messages', async () => {
       const entry: LogEntry = {
         level: 'warn',
         message: 'Warning message',
@@ -122,7 +122,7 @@ describe('PinoProvider', () => {
       expect(mockPino.warn).toHaveBeenCalledWith({ code: 'WARN001' }, 'Warning message');
     });
 
-    it('should log error messages', async () => {
+    test('should log error messages', async () => {
       const entry: LogEntry = {
         level: 'error',
         message: 'Error message',
@@ -134,7 +134,7 @@ describe('PinoProvider', () => {
       expect(mockPino.error).toHaveBeenCalledWith({}, 'Error message');
     });
 
-    it('should handle entries without metadata', async () => {
+    test('should handle entries without metadata', async () => {
       const entry: LogEntry = {
         level: 'info',
         message: 'Simple message',
@@ -152,7 +152,7 @@ describe('PinoProvider', () => {
       provider = new PinoProvider();
     });
 
-    it('should log error with stack trace', async () => {
+    test('should log error with stack trace', async () => {
       const error = new Error('Test exception');
       error.stack = 'Error: Test exception\n    at test.js:123';
 
@@ -167,7 +167,7 @@ describe('PinoProvider', () => {
       );
     });
 
-    it('should handle errors without context', async () => {
+    test('should handle errors without context', async () => {
       const error = new Error('Simple error');
 
       await provider.captureException(error);
@@ -180,7 +180,7 @@ describe('PinoProvider', () => {
       );
     });
 
-    it('should handle non-Error objects', async () => {
+    test('should handle non-Error objects', async () => {
       const error = { code: 500, message: 'Custom error' };
 
       await provider.captureException(error as any, { endpoint: '/api/test' });
@@ -194,7 +194,7 @@ describe('PinoProvider', () => {
       );
     });
 
-    it('should handle string errors', async () => {
+    test('should handle string errors', async () => {
       await provider.captureException('String error' as any);
 
       expect(mockPino.error).toHaveBeenCalledWith(
@@ -211,7 +211,7 @@ describe('PinoProvider', () => {
       provider = new PinoProvider();
     });
 
-    it('should create child logger with user context', async () => {
+    test('should create child logger with user context', async () => {
       await provider.identify('user-123', {
         name: 'Test User',
         email: 'test@example.com',
@@ -226,7 +226,7 @@ describe('PinoProvider', () => {
       });
     });
 
-    it('should handle identification without traits', async () => {
+    test('should handle identification without traits', async () => {
       await provider.identify('user-456');
 
       expect(mockPino.child).toHaveBeenCalledWith({
@@ -234,7 +234,7 @@ describe('PinoProvider', () => {
       });
     });
 
-    it('should log subsequent messages with user context', async () => {
+    test('should log subsequent messages with user context', async () => {
       const childLogger = {
         ...mockPino,
         info: vi.fn(),
@@ -253,7 +253,7 @@ describe('PinoProvider', () => {
       provider = new PinoProvider();
     });
 
-    it('should create child logger with context', () => {
+    test('should create child logger with context', () => {
       provider.setContext('app', {
         environment: 'production',
         region: 'us-east-1',
@@ -269,7 +269,7 @@ describe('PinoProvider', () => {
       });
     });
 
-    it('should merge multiple context calls', () => {
+    test('should merge multiple context calls', () => {
       provider.setContext('env', { environment: 'prod' });
       provider.setContext('version', { number: '1.0' });
 
@@ -282,13 +282,13 @@ describe('PinoProvider', () => {
       provider = new PinoProvider();
     });
 
-    it('should flush pino logger', async () => {
+    test('should flush pino logger', async () => {
       await provider.flush();
 
-      expect(mockPino.flush).toHaveBeenCalled();
+      expect(mockPino.flush).toHaveBeenCalledWith();
     });
 
-    it('should handle flush timeout', async () => {
+    test('should handle flush timeout', async () => {
       mockPino.flush.mockImplementation(() => {
         // Don't call callback to simulate timeout
       });
@@ -301,7 +301,7 @@ describe('PinoProvider', () => {
       expect(duration).toBeLessThan(150);
     });
 
-    it('should handle flush errors', async () => {
+    test('should handle flush errors', async () => {
       mockPino.flush.mockImplementation((cb: any) => {
         cb(new Error('Flush failed'));
       });
@@ -312,7 +312,7 @@ describe('PinoProvider', () => {
   });
 
   describe('configuration', () => {
-    it('should support custom transports', () => {
+    test('should support custom transports', () => {
       const customProvider = new PinoProvider({
         transport: {
           targets: [
@@ -327,7 +327,7 @@ describe('PinoProvider', () => {
       expect((customProvider as any).logger).toBe(mockPino);
     });
 
-    it('should support custom serializers', () => {
+    test('should support custom serializers', () => {
       const customProvider = new PinoProvider({
         serializers: {
           req: (req: any) => ({ url: req.url }),
@@ -340,7 +340,7 @@ describe('PinoProvider', () => {
       expect((customProvider as any).logger).toBe(mockPino);
     });
 
-    it('should support custom formatters', () => {
+    test('should support custom formatters', () => {
       const customProvider = new PinoProvider({
         formatters: {
           level: (label: string) => ({ level: label }),

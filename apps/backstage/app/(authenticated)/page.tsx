@@ -8,7 +8,6 @@ import {
   Group,
   Paper,
   SimpleGrid,
-  Skeleton,
   Stack,
   Text,
   ThemeIcon,
@@ -25,7 +24,7 @@ import {
   IconUsers,
 } from '@tabler/icons-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, memo } from 'react';
 
 const sections = [
   {
@@ -106,19 +105,40 @@ const statsData = [
   },
 ];
 
+// Memoized stat card component
+const StatCard = memo(({ stat }: { stat: (typeof statsData)[0] }) => (
+  <Paper shadow="xs" withBorder p="md" radius="md">
+    <Stack gap="xs">
+      <ThemeIcon color={stat.color} radius="md" size="lg" variant="light">
+        <stat.icon size={24} />
+      </ThemeIcon>
+      <Text c="dimmed" fw={500} size="sm">
+        {stat.title}
+      </Text>
+      <Group align="flex-end" justify="space-between">
+        <Text fw={700} size="xl">
+          {stat.value}
+        </Text>
+        <Badge color={stat.change.startsWith('+') ? 'green' : 'red'} size="sm" variant="light">
+          {stat.change}
+        </Badge>
+      </Group>
+    </Stack>
+  </Paper>
+));
+
+StatCard.displayName = 'StatCard';
+
 export default function HomePage() {
-  const [loading, setLoading] = useState(true);
-
   useEffect(() => {
-    console.log('Page Viewed', { page: 'backstage_dashboard' });
-    console.log('Track Event', {
-      action: 'view',
-      category: 'admin_dashboard',
-      label: 'backstage_home',
-    });
-
-    // Simulate loading
-    setTimeout(() => setLoading(false), 500);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Page Viewed', { page: 'backstage_dashboard' });
+      console.log('Track Event', {
+        action: 'view',
+        category: 'admin_dashboard',
+        label: 'backstage_home',
+      });
+    }
   }, []);
 
   return (
@@ -129,43 +149,14 @@ export default function HomePage() {
             Welcome back!
           </Title>
           <Text c="dimmed" size="lg">
-            Here's what's happening with your platform today
+            Here&apos;s what&apos;s happening with your platform today
           </Text>
         </div>
 
         {/* Stats Cards */}
         <SimpleGrid cols={{ base: 1, lg: 4, sm: 2 }} spacing="lg">
           {statsData.map((stat) => (
-            <Paper key={stat.title} shadow="xs" withBorder p="md" radius="md">
-              {loading ? (
-                <Stack gap="xs">
-                  <Skeleton width={40} height={40} radius="md" />
-                  <Skeleton width="60%" height={16} />
-                  <Skeleton width="40%" height={24} />
-                </Stack>
-              ) : (
-                <Stack gap="xs">
-                  <ThemeIcon color={stat.color} radius="md" size="lg" variant="light">
-                    <stat.icon size={24} />
-                  </ThemeIcon>
-                  <Text c="dimmed" fw={500} size="sm">
-                    {stat.title}
-                  </Text>
-                  <Group align="flex-end" justify="space-between">
-                    <Text fw={700} size="xl">
-                      {stat.value}
-                    </Text>
-                    <Badge
-                      color={stat.change.startsWith('+') ? 'green' : 'red'}
-                      size="sm"
-                      variant="light"
-                    >
-                      {stat.change}
-                    </Badge>
-                  </Group>
-                </Stack>
-              )}
-            </Paper>
+            <StatCard key={stat.title} stat={stat} />
           ))}
         </SimpleGrid>
 

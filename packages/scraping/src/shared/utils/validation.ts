@@ -15,7 +15,7 @@ export function isValidUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
     return ['http:', 'https:'].includes(parsed.protocol);
-  } catch (_error: any) {
+  } catch (error) {
     // URL parsing failures are expected for invalid URLs, so we return false
     return false;
   }
@@ -29,7 +29,7 @@ export function normalizeUrl(url: string): string {
   try {
     const parsed = new URL(url);
     return parsed.toString();
-  } catch (_error: any) {
+  } catch (error) {
     throw new ConfigurationError(`Invalid URL: ${url}`);
   }
 }
@@ -52,7 +52,7 @@ export function isValidSelector(selector: string): boolean {
     ];
 
     return !invalidPatterns.some((pattern: any) => pattern.test(selector));
-  } catch (_error: any) {
+  } catch (error) {
     return false;
   }
 }

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '../test-utils';
-import VerifyIcon from '../../../mantine-ciseco/components/VerifyIcon';
+import VerifyIcon from '../../../src/mantine-ciseco/components/VerifyIcon';
 
 describe('VerifyIcon', (_: any) => {
   it('renders verify icon', (_: any) => {

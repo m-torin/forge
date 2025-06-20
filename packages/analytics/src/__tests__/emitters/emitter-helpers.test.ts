@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 import {
   ContextBuilder,
@@ -73,20 +73,20 @@ vi.mock('../../shared/emitters/emitters', () => ({
   })),
 }));
 
-describe('Emitter Helpers', () => {
+describe('emitter Helpers', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('ContextBuilder', () => {
-    it('should create empty context by default', () => {
+  describe('contextBuilder', () => {
+    test('should create empty context by default', () => {
       const builder = new ContextBuilder();
       const context = builder.build();
 
       expect(context).toEqual({});
     });
 
-    it('should accept initial context', () => {
+    test('should accept initial context', () => {
       const initialContext: Partial<EmitterContext> = {
         app: { name: 'Test App', version: '1.0.0' },
       };
@@ -99,7 +99,7 @@ describe('Emitter Helpers', () => {
       });
     });
 
-    it('should set user information', () => {
+    test('should set user information', () => {
       const builder = new ContextBuilder();
       const context = builder
         .setUser('user123', { name: 'John Doe', email: 'john@example.com' })
@@ -110,7 +110,7 @@ describe('Emitter Helpers', () => {
       });
     });
 
-    it('should set organization information', () => {
+    test('should set organization information', () => {
       const builder = new ContextBuilder();
       const context = builder.setOrganization('org456').build();
 
@@ -119,7 +119,7 @@ describe('Emitter Helpers', () => {
       });
     });
 
-    it('should set page information', () => {
+    test('should set page information', () => {
       const pageInfo = {
         url: 'https://example.com/products',
         path: '/products',
@@ -135,7 +135,7 @@ describe('Emitter Helpers', () => {
       });
     });
 
-    it('should set campaign information', () => {
+    test('should set campaign information', () => {
       const utmParams = {
         utm_campaign: 'summer_sale',
         utm_content: 'ad_variant_a',
@@ -152,7 +152,7 @@ describe('Emitter Helpers', () => {
       });
     });
 
-    it('should set device information', () => {
+    test('should set device information', () => {
       const deviceInfo = {
         type: 'mobile',
         brand: 'Apple',
@@ -169,7 +169,7 @@ describe('Emitter Helpers', () => {
       });
     });
 
-    it('should chain methods and merge contexts', () => {
+    test('should chain methods and merge contexts', () => {
       const builder = new ContextBuilder();
       const context = builder
         .setUser('user123', { name: 'Jane Doe' })
@@ -188,7 +188,7 @@ describe('Emitter Helpers', () => {
       });
     });
 
-    it('should merge with existing context properties', () => {
+    test('should merge with existing context properties', () => {
       const initialContext: Partial<EmitterContext> = {
         page: { url: 'https://initial.com' },
         traits: { email: 'initial@example.com' },
@@ -206,7 +206,7 @@ describe('Emitter Helpers', () => {
       });
     });
 
-    it('should return new instance on build', () => {
+    test('should return new instance on build', () => {
       const builder = new ContextBuilder();
       builder.setUser('user1');
       const context1 = builder.build();
@@ -220,8 +220,8 @@ describe('Emitter Helpers', () => {
     });
   });
 
-  describe('PayloadBuilder', () => {
-    it('should create payload builder without context', () => {
+  describe('payloadBuilder', () => {
+    test('should create payload builder without context', () => {
       const builder = new PayloadBuilder();
       const trackPayload = builder.track('test_event', { prop: 'value' });
 
@@ -230,7 +230,7 @@ describe('Emitter Helpers', () => {
       expect(trackPayload.properties).toEqual({ prop: 'value' });
     });
 
-    it('should create payload builder with context', () => {
+    test('should create payload builder with context', () => {
       const context: EmitterContext = {
         app: { name: 'Test App' },
       };
@@ -241,7 +241,7 @@ describe('Emitter Helpers', () => {
       expect(trackPayload.context).toEqual(context);
     });
 
-    it('should set timestamp', () => {
+    test('should set timestamp', () => {
       const timestamp = new Date('2024-01-01T00:00:00Z');
       const builder = new PayloadBuilder();
       const trackPayload = builder.withTimestamp(timestamp).track('test_event');
@@ -249,7 +249,7 @@ describe('Emitter Helpers', () => {
       expect(trackPayload.timestamp).toBe(timestamp);
     });
 
-    it('should set anonymous ID', () => {
+    test('should set anonymous ID', () => {
       const anonymousId = 'anon_123';
       const builder = new PayloadBuilder();
       const trackPayload = builder.withAnonymousId(anonymousId).track('test_event');
@@ -257,7 +257,7 @@ describe('Emitter Helpers', () => {
       expect(trackPayload.anonymousId).toBe(anonymousId);
     });
 
-    it('should set integrations', () => {
+    test('should set integrations', () => {
       const integrations = {
         'Facebook Pixel': false,
         'Google Analytics': true,
@@ -270,7 +270,7 @@ describe('Emitter Helpers', () => {
       expect(trackPayload.integrations).toEqual(integrations);
     });
 
-    it('should chain options and create track payload', () => {
+    test('should chain options and create track payload', () => {
       const context: EmitterContext = { app: { name: 'Test' } };
       const timestamp = new Date();
       const anonymousId = 'anon_456';
@@ -294,7 +294,7 @@ describe('Emitter Helpers', () => {
       });
     });
 
-    it('should create identify payload', () => {
+    test('should create identify payload', () => {
       const builder = new PayloadBuilder();
       const identifyPayload = builder
         .withTimestamp(new Date())
@@ -307,7 +307,7 @@ describe('Emitter Helpers', () => {
       });
     });
 
-    it('should create page payload', () => {
+    test('should create page payload', () => {
       const builder = new PayloadBuilder();
       const pagePayload = builder.page('Product Page', { category: 'ecommerce' });
 
@@ -318,7 +318,7 @@ describe('Emitter Helpers', () => {
       });
     });
 
-    it('should create group payload', () => {
+    test('should create group payload', () => {
       const builder = new PayloadBuilder();
       const groupPayload = builder.group('group123', { name: 'Test Organization' });
 
@@ -329,7 +329,7 @@ describe('Emitter Helpers', () => {
       });
     });
 
-    it('should create alias payload', () => {
+    test('should create alias payload', () => {
       const builder = new PayloadBuilder();
       const aliasPayload = builder.alias('user123', 'anon_456');
 
@@ -341,15 +341,15 @@ describe('Emitter Helpers', () => {
     });
   });
 
-  describe('EventBatch', () => {
-    it('should create empty batch', () => {
+  describe('eventBatch', () => {
+    test('should create empty batch', () => {
       const batch = new EventBatch();
       const events = batch.getEvents();
 
       expect(events).toEqual([]);
     });
 
-    it('should create batch with shared context', () => {
+    test('should create batch with shared context', () => {
       const sharedContext: EmitterContext = {
         app: { name: 'Batch App' },
       };
@@ -361,7 +361,7 @@ describe('Emitter Helpers', () => {
       expect(events[0].context).toMatchObject(sharedContext);
     });
 
-    it('should add custom payload to batch', () => {
+    test('should add custom payload to batch', () => {
       const batch = new EventBatch();
       const customPayload: EmitterTrackPayload = {
         type: 'track',
@@ -377,7 +377,7 @@ describe('Emitter Helpers', () => {
       expect(events[0]).toEqual(customPayload);
     });
 
-    it('should add track event to batch', () => {
+    test('should add track event to batch', () => {
       const batch = new EventBatch();
       batch.addTrack('batch_track', { value: 100 });
 
@@ -387,7 +387,7 @@ describe('Emitter Helpers', () => {
       expect((events[0] as any).event).toBe('batch_track');
     });
 
-    it('should add identify event to batch', () => {
+    test('should add identify event to batch', () => {
       const batch = new EventBatch();
       batch.addIdentify('user123', { name: 'Batch User' });
 
@@ -396,7 +396,7 @@ describe('Emitter Helpers', () => {
       expect(events[0].type).toBe('identify');
     });
 
-    it('should add page event to batch', () => {
+    test('should add page event to batch', () => {
       const batch = new EventBatch();
       batch.addPage('Batch Page', { section: 'products' });
 
@@ -405,7 +405,7 @@ describe('Emitter Helpers', () => {
       expect(events[0].type).toBe('page');
     });
 
-    it('should add group event to batch', () => {
+    test('should add group event to batch', () => {
       const batch = new EventBatch();
       batch.addGroup('group123', { plan: 'enterprise' });
 
@@ -414,7 +414,7 @@ describe('Emitter Helpers', () => {
       expect(events[0].type).toBe('group');
     });
 
-    it('should merge shared context with event context', () => {
+    test('should merge shared context with event context', () => {
       const sharedContext: EmitterContext = {
         app: { name: 'Shared App' },
         device: { type: 'mobile' },
@@ -444,7 +444,7 @@ describe('Emitter Helpers', () => {
       });
     });
 
-    it('should clear batch events', () => {
+    test('should clear batch events', () => {
       const batch = new EventBatch();
       batch.addTrack('event1');
       batch.addTrack('event2');
@@ -455,7 +455,7 @@ describe('Emitter Helpers', () => {
       expect(batch.getEvents()).toHaveLength(0);
     });
 
-    it('should chain batch operations', () => {
+    test('should chain batch operations', () => {
       const batch = new EventBatch();
       batch.addTrack('event1').addIdentify('user1').addPage('page1').addGroup('group1');
 
@@ -464,7 +464,7 @@ describe('Emitter Helpers', () => {
       expect(events.map((e) => e.type)).toEqual(['track', 'identify', 'page', 'group']);
     });
 
-    it('should return copy of events array', () => {
+    test('should return copy of events array', () => {
       const batch = new EventBatch();
       batch.addTrack('test_event');
 
@@ -479,7 +479,7 @@ describe('Emitter Helpers', () => {
   });
 
   describe('createUserSession', () => {
-    it('should create user session with basic identify', () => {
+    test('should create user session with basic identify', () => {
       const session = createUserSession('user123', 'session456');
       const identifyPayload = session.identify({ email: 'user@example.com' });
 
@@ -491,7 +491,7 @@ describe('Emitter Helpers', () => {
       });
     });
 
-    it('should create user session track event', () => {
+    test('should create user session track event', () => {
       const session = createUserSession('user123', 'session456');
       const trackPayload = session.track('button_clicked', { button: 'signup' });
 
@@ -503,7 +503,7 @@ describe('Emitter Helpers', () => {
       });
     });
 
-    it('should create user session page event', () => {
+    test('should create user session page event', () => {
       const session = createUserSession('user123', 'session456');
       const pagePayload = session.page('Product Page', { product_id: 'p123' });
 
@@ -515,7 +515,7 @@ describe('Emitter Helpers', () => {
       });
     });
 
-    it('should create user session group event', () => {
+    test('should create user session group event', () => {
       const session = createUserSession('user123', 'session456');
       const groupPayload = session.group('org123', { plan: 'pro' });
 
@@ -527,7 +527,7 @@ describe('Emitter Helpers', () => {
       });
     });
 
-    it('should include user context in all events', () => {
+    test('should include user context in all events', () => {
       const session = createUserSession('user123', 'session456');
       const trackPayload = session.track('test_event');
 
@@ -536,7 +536,7 @@ describe('Emitter Helpers', () => {
   });
 
   describe('createAnonymousSession', () => {
-    it('should create anonymous track event', () => {
+    test('should create anonymous track event', () => {
       const session = createAnonymousSession('anon_123');
       const trackPayload = session.track('page_viewed', { page: 'home' });
 
@@ -546,7 +546,7 @@ describe('Emitter Helpers', () => {
       expect(trackPayload.properties).toEqual({ page: 'home' });
     });
 
-    it('should create anonymous page event', () => {
+    test('should create anonymous page event', () => {
       const session = createAnonymousSession('anon_123');
       const pagePayload = session.page('Home Page', { section: 'hero' });
 
@@ -555,7 +555,7 @@ describe('Emitter Helpers', () => {
       expect(pagePayload.anonymousId).toBe('anon_123');
     });
 
-    it('should convert anonymous to identified user', () => {
+    test('should convert anonymous to identified user', () => {
       const session = createAnonymousSession('anon_123');
       const identifyPayload = session.identify('user456', { email: 'new@example.com' });
 
@@ -565,7 +565,7 @@ describe('Emitter Helpers', () => {
       expect(identifyPayload.traits).toEqual({ email: 'new@example.com' });
     });
 
-    it('should create alias for user signup', () => {
+    test('should create alias for user signup', () => {
       const session = createAnonymousSession('anon_123');
       const aliasPayload = session.alias('user456');
 
@@ -576,7 +576,7 @@ describe('Emitter Helpers', () => {
     });
   });
 
-  describe('Type Guards', () => {
+  describe('type Guards', () => {
     const samplePayloads: EmitterPayload[] = [
       { type: 'track', context: {}, event: 'test', properties: {} },
       { type: 'identify', context: {}, traits: {}, userId: 'user1' },
@@ -585,59 +585,59 @@ describe('Emitter Helpers', () => {
       { type: 'alias', context: {}, previousId: 'anon1', userId: 'user1' },
     ];
 
-    it('should identify track payloads', () => {
+    test('should identify track payloads', () => {
       const trackPayload = samplePayloads[0];
       const nonTrackPayloads = samplePayloads.slice(1);
 
-      expect(isTrackPayload(trackPayload)).toBe(true);
+      expect(isTrackPayload(trackPayload)).toBeTruthy();
       nonTrackPayloads.forEach((payload) => {
-        expect(isTrackPayload(payload)).toBe(false);
+        expect(isTrackPayload(payload)).toBeFalsy();
       });
     });
 
-    it('should identify identify payloads', () => {
+    test('should identify identify payloads', () => {
       const identifyPayload = samplePayloads[1];
       const nonIdentifyPayloads = samplePayloads.filter((_, i) => i !== 1);
 
-      expect(isIdentifyPayload(identifyPayload)).toBe(true);
+      expect(isIdentifyPayload(identifyPayload)).toBeTruthy();
       nonIdentifyPayloads.forEach((payload) => {
-        expect(isIdentifyPayload(payload)).toBe(false);
+        expect(isIdentifyPayload(payload)).toBeFalsy();
       });
     });
 
-    it('should identify page payloads', () => {
+    test('should identify page payloads', () => {
       const pagePayload = samplePayloads[2];
       const nonPagePayloads = samplePayloads.filter((_, i) => i !== 2);
 
-      expect(isPagePayload(pagePayload)).toBe(true);
+      expect(isPagePayload(pagePayload)).toBeTruthy();
       nonPagePayloads.forEach((payload) => {
-        expect(isPagePayload(payload)).toBe(false);
+        expect(isPagePayload(payload)).toBeFalsy();
       });
     });
 
-    it('should identify group payloads', () => {
+    test('should identify group payloads', () => {
       const groupPayload = samplePayloads[3];
       const nonGroupPayloads = samplePayloads.filter((_, i) => i !== 3);
 
-      expect(isGroupPayload(groupPayload)).toBe(true);
+      expect(isGroupPayload(groupPayload)).toBeTruthy();
       nonGroupPayloads.forEach((payload) => {
-        expect(isGroupPayload(payload)).toBe(false);
+        expect(isGroupPayload(payload)).toBeFalsy();
       });
     });
 
-    it('should identify alias payloads', () => {
+    test('should identify alias payloads', () => {
       const aliasPayload = samplePayloads[4];
       const nonAliasPayloads = samplePayloads.filter((_, i) => i !== 4);
 
-      expect(isAliasPayload(aliasPayload)).toBe(true);
+      expect(isAliasPayload(aliasPayload)).toBeTruthy();
       nonAliasPayloads.forEach((payload) => {
-        expect(isAliasPayload(payload)).toBe(false);
+        expect(isAliasPayload(payload)).toBeFalsy();
       });
     });
   });
 
   describe('withMetadata', () => {
-    it('should add metadata to payload app context', () => {
+    test('should add metadata to payload app context', () => {
       const payload: EmitterTrackPayload = {
         type: 'track',
         context: {},
@@ -656,7 +656,7 @@ describe('Emitter Helpers', () => {
       expect(result.context?.app).toEqual(metadata);
     });
 
-    it('should merge with existing app context', () => {
+    test('should merge with existing app context', () => {
       const payload: EmitterTrackPayload = {
         type: 'track',
         context: {
@@ -684,7 +684,7 @@ describe('Emitter Helpers', () => {
       });
     });
 
-    it('should preserve other context properties', () => {
+    test('should preserve other context properties', () => {
       const payload: EmitterTrackPayload = {
         type: 'track',
         context: {
@@ -703,7 +703,7 @@ describe('Emitter Helpers', () => {
       expect(result.context?.app).toEqual({ version: '1.0.0' });
     });
 
-    it('should work with different payload types', () => {
+    test('should work with different payload types', () => {
       const identifyPayload: EmitterIdentifyPayload = {
         type: 'identify',
         context: {},
@@ -720,7 +720,7 @@ describe('Emitter Helpers', () => {
   });
 
   describe('withUTM', () => {
-    it('should add UTM parameters to payload campaign context', () => {
+    test('should add UTM parameters to payload campaign context', () => {
       const payload: EmitterTrackPayload = {
         type: 'track',
         context: {},
@@ -741,7 +741,7 @@ describe('Emitter Helpers', () => {
       expect(result.context?.campaign).toEqual(utm);
     });
 
-    it('should merge with existing campaign context', () => {
+    test('should merge with existing campaign context', () => {
       const payload: EmitterTrackPayload = {
         type: 'track',
         context: {
@@ -769,7 +769,7 @@ describe('Emitter Helpers', () => {
       });
     });
 
-    it('should handle partial UTM parameters', () => {
+    test('should handle partial UTM parameters', () => {
       const payload: EmitterTrackPayload = {
         type: 'track',
         context: {},
@@ -790,7 +790,7 @@ describe('Emitter Helpers', () => {
       });
     });
 
-    it('should preserve other context properties', () => {
+    test('should preserve other context properties', () => {
       const payload: EmitterTrackPayload = {
         type: 'track',
         context: {
@@ -809,7 +809,7 @@ describe('Emitter Helpers', () => {
       expect(result.context?.campaign).toEqual({ source: 'twitter' });
     });
 
-    it('should work with different payload types', () => {
+    test('should work with different payload types', () => {
       const pagePayload: EmitterPagePayload = {
         name: 'Landing Page',
         type: 'page',
@@ -830,8 +830,8 @@ describe('Emitter Helpers', () => {
   });
 
   // Integration and performance tests
-  describe('Integration and Performance', () => {
-    it('should handle complex workflow with all helpers', () => {
+  describe('integration and Performance', () => {
+    test('should handle complex workflow with all helpers', () => {
       // 1. Build complex context
       const context = new ContextBuilder()
         .setUser('user123', { name: 'John Doe', plan: 'premium' })
@@ -871,7 +871,7 @@ describe('Emitter Helpers', () => {
       expect(events[1].context?.traits?.name).toBe('John Doe');
     });
 
-    it('should handle performance with large batches', () => {
+    test('should handle performance with large batches', () => {
       const batch = new EventBatch();
       const startTime = performance.now();
 
@@ -887,7 +887,7 @@ describe('Emitter Helpers', () => {
       expect(duration).toBeLessThan(100); // Should complete in under 100ms
     });
 
-    it('should handle memory efficiency with context builders', () => {
+    test('should handle memory efficiency with context builders', () => {
       const contexts = [];
 
       // Create 100 context builders
@@ -907,7 +907,7 @@ describe('Emitter Helpers', () => {
       expect(contexts[99].groupId).toBe('org_99');
     });
 
-    it('should maintain type safety across all helpers', () => {
+    test('should maintain type safety across all helpers', () => {
       // This test ensures TypeScript types work correctly
       const context = new ContextBuilder().build();
       const builder = new PayloadBuilder(context);
@@ -921,11 +921,11 @@ describe('Emitter Helpers', () => {
       const aliasPayload = builder.alias('user1', 'anon1');
 
       // Type guards should work
-      expect(isTrackPayload(trackPayload)).toBe(true);
-      expect(isIdentifyPayload(identifyPayload)).toBe(true);
-      expect(isPagePayload(pagePayload)).toBe(true);
-      expect(isGroupPayload(groupPayload)).toBe(true);
-      expect(isAliasPayload(aliasPayload)).toBe(true);
+      expect(isTrackPayload(trackPayload)).toBeTruthy();
+      expect(isIdentifyPayload(identifyPayload)).toBeTruthy();
+      expect(isPagePayload(pagePayload)).toBeTruthy();
+      expect(isGroupPayload(groupPayload)).toBeTruthy();
+      expect(isAliasPayload(aliasPayload)).toBeTruthy();
 
       // Batch operations should work
       batch.add(trackPayload);
@@ -934,7 +934,7 @@ describe('Emitter Helpers', () => {
       expect(batch.getEvents()).toHaveLength(2);
     });
 
-    it('should handle edge cases gracefully', () => {
+    test('should handle edge cases gracefully', () => {
       // Empty context builder
       const emptyContext = new ContextBuilder().build();
       expect(emptyContext).toEqual({});

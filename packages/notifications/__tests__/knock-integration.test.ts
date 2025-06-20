@@ -1,5 +1,5 @@
 // Test file with mocked Knock SDK that doesn't exactly match types
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock Knock SDK with proper structure to match the actual SDK API
 const mockKnock = {
@@ -35,17 +35,17 @@ const mockKnock = {
 
 const MockKnockConstructor = vi.fn().mockImplementation(() => mockKnock);
 
-vi.mock('@knocklabs/node', (_: any) => ({
+vi.mock('@knocklabs/node', () => ({
   Knock: MockKnockConstructor,
 }));
 
 // Mock the keys module
 const mockKeys = vi.fn();
-vi.mock('../keys', (_: any) => ({
+vi.mock('../keys', () => ({
   keys: mockKeys,
 }));
 
-describe('Knock Integration', (_: any) => {
+describe('knock Integration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.resetModules();
@@ -53,11 +53,11 @@ describe('Knock Integration', (_: any) => {
     // Reset warning state
     (global as any).hasLoggedWarning = false;
 
-    // Clear console.warn spy
-    vi.clearAllMocks();
+    // Ensure mock constructor returns the correct mock object
+    MockKnockConstructor.mockImplementation(() => mockKnock);
   });
 
-  describe('with valid Knock API key', (_: any) => {
+  describe('with valid Knock API key', () => {
     beforeEach(() => {
       mockKeys.mockReturnValue({
         KNOCK_SECRET_API_KEY: 'sk_test_123456789',
@@ -66,7 +66,7 @@ describe('Knock Integration', (_: any) => {
       });
     });
 
-    it('should initialize Knock instance with API key', async () => {
+    test('should initialize Knock instance with API key', async () => {
       await import('../index');
 
       expect(MockKnockConstructor).toHaveBeenCalledWith({
@@ -74,7 +74,7 @@ describe('Knock Integration', (_: any) => {
       });
     });
 
-    it('should provide access to Knock methods through proxy', async () => {
+    test('should provide access to Knock methods through proxy', async () => {
       const { notifications } = await import('../index');
 
       expect(notifications.workflows.trigger).toBe(mockKnock.workflows.trigger);
@@ -83,7 +83,7 @@ describe('Knock Integration', (_: any) => {
       expect(notifications.messages).toBe(mockKnock.messages);
     });
 
-    it('should support user identification', async () => {
+    test('should support user identification', async () => {
       const { notifications } = await import('../index');
 
       const userData = {
@@ -97,10 +97,10 @@ describe('Knock Integration', (_: any) => {
       const result = await notifications.users.update('user_123', userData);
 
       expect(mockKnock.users.update).toHaveBeenCalledWith('user_123', userData);
-      expect(result).toEqual({ success: true });
+      expect(result).toStrictEqual({ success: true });
     });
 
-    it('should support workflow triggering', async () => {
+    test('should support workflow triggering', async () => {
       const { notifications } = await import('../index');
 
       const workflowData = {
@@ -120,13 +120,13 @@ describe('Knock Integration', (_: any) => {
       const result = await notifications.workflows.trigger(workflowData.workflow, workflowData);
 
       expect(mockKnock.workflows.trigger).toHaveBeenCalledWith(workflowData.workflow, workflowData);
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         workflow_run_id: 'run_123',
         status: 'queued',
       });
     });
 
-    it('should support notification sending', async () => {
+    test('should support notification sending', async () => {
       const { notifications } = await import('../index');
 
       const notificationData = {
@@ -152,13 +152,13 @@ describe('Knock Integration', (_: any) => {
         ...triggerData,
         recipients: users,
       });
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         message_id: 'msg_123',
         status: 'sent',
       });
     });
 
-    it('should support message operations', async () => {
+    test('should support message operations', async () => {
       const { notifications } = await import('../index');
 
       mockKnock.messages.get.mockResolvedValue({
@@ -170,14 +170,14 @@ describe('Knock Integration', (_: any) => {
       const result = await notifications.messages.get('msg_123');
 
       expect(mockKnock.messages.get).toHaveBeenCalledWith('msg_123');
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         id: 'msg_123',
         recipient: 'user_123',
         status: 'delivered',
       });
     });
 
-    it('should support message status updates', async () => {
+    test('should support message status updates', async () => {
       const { notifications } = await import('../index');
 
       mockKnock.messages.markAsRead.mockResolvedValue({ success: true });
@@ -185,10 +185,10 @@ describe('Knock Integration', (_: any) => {
       const result = await notifications.messages.markAsRead('msg_123');
 
       expect(mockKnock.messages.markAsRead).toHaveBeenCalledWith('msg_123');
-      expect(result).toEqual({ success: true });
+      expect(result).toStrictEqual({ success: true });
     });
 
-    it('should support tenant operations', async () => {
+    test('should support tenant operations', async () => {
       const { notifications } = await import('../index');
 
       const tenantData = {
@@ -206,11 +206,11 @@ describe('Knock Integration', (_: any) => {
       const result = await notifications.tenants.set('tenant_123', tenantData);
 
       expect(mockKnock.tenants.set).toHaveBeenCalledWith('tenant_123', tenantData);
-      expect(result).toEqual(tenantData);
+      expect(result).toStrictEqual(tenantData);
     });
   });
 
-  describe('without Knock API key', (_: any) => {
+  describe('without Knock API key', () => {
     beforeEach(() => {
       mockKeys.mockReturnValue({
         KNOCK_SECRET_API_KEY: undefined,
@@ -219,7 +219,7 @@ describe('Knock Integration', (_: any) => {
       });
     });
 
-    it('should use fallback API key when none provided', async () => {
+    test('should use fallback API key when none provided', async () => {
       await import('../index');
 
       expect(MockKnockConstructor).toHaveBeenCalledWith({
@@ -227,7 +227,7 @@ describe('Knock Integration', (_: any) => {
       });
     });
 
-    it('should not log warning when fallback key is used', async () => {
+    test('should not log warning when fallback key is used', async () => {
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       const { notifications } = await import('../index');
@@ -240,7 +240,7 @@ describe('Knock Integration', (_: any) => {
       consoleSpy.mockRestore();
     });
 
-    it('should provide access to Knock methods with fallback key', async () => {
+    test('should provide access to Knock methods with fallback key', async () => {
       const { notifications } = await import('../index');
 
       expect(notifications.workflows.trigger).toBe(mockKnock.workflows.trigger);
@@ -248,7 +248,7 @@ describe('Knock Integration', (_: any) => {
     });
   });
 
-  describe('with empty API key', (_: any) => {
+  describe('with empty API key', () => {
     beforeEach(() => {
       mockKeys.mockReturnValue({
         KNOCK_SECRET_API_KEY: '',
@@ -257,7 +257,7 @@ describe('Knock Integration', (_: any) => {
       });
     });
 
-    it('should use fallback key when API key is empty string', async () => {
+    test('should use fallback key when API key is empty string', async () => {
       await import('../index');
 
       expect(MockKnockConstructor).toHaveBeenCalledWith({
@@ -266,7 +266,7 @@ describe('Knock Integration', (_: any) => {
     });
   });
 
-  describe('proxy behavior', (_: any) => {
+  describe('proxy behavior', () => {
     beforeEach(() => {
       mockKeys.mockReturnValue({
         KNOCK_SECRET_API_KEY: 'sk_test_123456789',
@@ -275,7 +275,7 @@ describe('Knock Integration', (_: any) => {
       });
     });
 
-    it('should initialize Knock on first property access', async () => {
+    test('should initialize Knock on first property access', async () => {
       const { notifications } = await import('../index');
 
       // Knock should be initialized during module import
@@ -288,7 +288,7 @@ describe('Knock Integration', (_: any) => {
       expect(MockKnockConstructor).toHaveBeenCalledTimes(1);
     });
 
-    it('should forward all property access to Knock instance', async () => {
+    test('should forward all property access to Knock instance', async () => {
       const { notifications } = await import('../index');
 
       // Mock additional properties
@@ -299,7 +299,7 @@ describe('Knock Integration', (_: any) => {
       expect((notifications as any).customProperty).toBe((mockKnock as any).customProperty);
     });
 
-    it('should return undefined for non-existent properties', async () => {
+    test('should return undefined for non-existent properties', async () => {
       const { notifications } = await import('../index');
 
       const nonExistentProperty = (notifications as any).nonExistentProperty;
@@ -308,7 +308,7 @@ describe('Knock Integration', (_: any) => {
     });
   });
 
-  describe('error handling', (_: any) => {
+  describe('error handling', () => {
     beforeEach(() => {
       mockKeys.mockReturnValue({
         KNOCK_SECRET_API_KEY: 'sk_test_123456789',
@@ -317,7 +317,7 @@ describe('Knock Integration', (_: any) => {
       });
     });
 
-    it('should propagate Knock API errors', async () => {
+    test('should propagate Knock API errors', async () => {
       const { notifications } = await import('../index');
 
       const error = new Error('Invalid API key');
@@ -330,7 +330,7 @@ describe('Knock Integration', (_: any) => {
       ).rejects.toThrow('Invalid API key');
     });
 
-    it('should handle Knock constructor errors', async () => {
+    test('should handle Knock constructor errors', async () => {
       MockKnockConstructor.mockImplementationOnce(() => {
         throw new Error('Knock initialization failed');
       });
@@ -338,7 +338,7 @@ describe('Knock Integration', (_: any) => {
       await expect(() => import('../index')).rejects.toThrow('Knock initialization failed');
     });
 
-    it('should handle keys function errors', async () => {
+    test('should handle keys function errors', async () => {
       mockKeys.mockImplementation(() => {
         throw new Error('Keys configuration error');
       });
@@ -347,7 +347,7 @@ describe('Knock Integration', (_: any) => {
     });
   });
 
-  describe('API compatibility', (_: any) => {
+  describe('aPI compatibility', () => {
     beforeEach(() => {
       mockKeys.mockReturnValue({
         KNOCK_SECRET_API_KEY: 'sk_test_123456789',
@@ -356,7 +356,7 @@ describe('Knock Integration', (_: any) => {
       });
     });
 
-    it('should support all Knock SDK user methods', async () => {
+    test('should support all Knock SDK user methods', async () => {
       const { notifications } = await import('../index');
 
       expect(notifications.users.get).toBe(mockKnock.users.get);
@@ -365,14 +365,14 @@ describe('Knock Integration', (_: any) => {
       expect(notifications.users.list).toBe(mockKnock.users.list);
     });
 
-    it('should support all Knock SDK workflow methods', async () => {
+    test('should support all Knock SDK workflow methods', async () => {
       const { notifications } = await import('../index');
 
       expect(notifications.workflows.trigger).toBe(mockKnock.workflows.trigger);
       expect(notifications.workflows.cancel).toBe(mockKnock.workflows.cancel);
     });
 
-    it('should support all Knock SDK message methods', async () => {
+    test('should support all Knock SDK message methods', async () => {
       const { notifications } = await import('../index');
 
       expect(notifications.messages.get).toBe(mockKnock.messages.get);
@@ -381,7 +381,7 @@ describe('Knock Integration', (_: any) => {
       expect(notifications.messages.batch.markAsRead).toBe(mockKnock.messages.batch.markAsRead);
     });
 
-    it('should support all Knock SDK tenant methods', async () => {
+    test('should support all Knock SDK tenant methods', async () => {
       const { notifications } = await import('../index');
 
       expect(notifications.tenants.get).toBe(mockKnock.tenants.get);

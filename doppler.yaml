@@ -18,9 +18,6 @@ setup:
   - path: apps/web
     project: next-apps
     config: webapp
-  - path: apps/workers
-    project: next-app-workers
-    config: dev
 
   # Only database package needs runtime secrets for CLI commands
   - path: packages/database

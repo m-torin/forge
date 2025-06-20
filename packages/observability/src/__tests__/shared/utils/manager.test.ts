@@ -2,7 +2,7 @@
  * Observability Manager tests
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, vi } from 'vitest';
 
 import {
   Breadcrumb,
@@ -49,7 +49,7 @@ const { mockProvider, mockProvider2 } = vi.hoisted(() => {
   return { mockProvider, mockProvider2 };
 });
 
-describe('ObservabilityManager', () => {
+describe('observabilityManager', () => {
   let config: ObservabilityConfig;
   let providerRegistry: ProviderRegistry;
   let manager: ObservabilityManager;
@@ -58,15 +58,20 @@ describe('ObservabilityManager', () => {
 
   beforeEach(() => {
     // Mock console to avoid noise in tests
-    console.error = vi.fn();
-    console.log = vi.fn();
+    vi.spyOn(console, 'error').mockImplementation();
+    vi.spyOn(console, 'log').mockImplementation();
 
-    // Clear mock provider calls
-    vi.clearAllMocks();
-
-    // Reset mock implementations to defaults
-    (mockProvider.initialize as any).mockResolvedValue(undefined);
-    (mockProvider2.initialize as any).mockResolvedValue(undefined);
+    // Clear mock call history without removing function references
+    Object.values(mockProvider).forEach((fn: any) => {
+      if (typeof fn === 'function' && 'mockClear' in fn) {
+        fn.mockClear();
+      }
+    });
+    Object.values(mockProvider2).forEach((fn: any) => {
+      if (typeof fn === 'function' && 'mockClear' in fn) {
+        fn.mockClear();
+      }
+    });
 
     // Create mock provider registry
     providerRegistry = {
@@ -98,7 +103,7 @@ describe('ObservabilityManager', () => {
   });
 
   describe('initialization', () => {
-    it('should initialize all configured providers', async () => {
+    test('should initialize all configured providers', async () => {
       await manager.initialize();
 
       expect(providerRegistry['mock-provider-1']).toHaveBeenCalledWith({ apiKey: 'key1' });
@@ -107,7 +112,7 @@ describe('ObservabilityManager', () => {
       expect(mockProvider2.initialize).toHaveBeenCalledWith({ apiKey: 'key2' });
     });
 
-    it('should not initialize twice', async () => {
+    test('should not initialize twice', async () => {
       await manager.initialize();
       await manager.initialize();
 
@@ -115,7 +120,7 @@ describe('ObservabilityManager', () => {
       expect(mockProvider2.initialize).toHaveBeenCalledTimes(1);
     });
 
-    it('should handle provider initialization errors', async () => {
+    test('should handle provider initialization errors', async () => {
       (mockProvider.initialize as any).mockRejectedValue(new Error('Init failed'));
 
       await manager.initialize();
@@ -124,20 +129,20 @@ describe('ObservabilityManager', () => {
         provider: 'mock-provider-1',
         method: 'initialize',
       });
-      expect(mockProvider2.initialize).toHaveBeenCalled(); // Other providers should still initialize
+      expect(mockProvider2.initialize).toHaveBeenCalledWith({ apiKey: 'key2' }); // Other providers should still initialize
     });
 
-    it('should handle missing providers gracefully', async () => {
+    test('should handle missing providers gracefully', async () => {
       config.providers['non-existent-provider'] = { apiKey: 'key3' };
 
       await manager.initialize();
 
-      expect(mockProvider.initialize).toHaveBeenCalled();
-      expect(mockProvider2.initialize).toHaveBeenCalled();
+      expect(mockProvider.initialize).toHaveBeenCalledWith({ apiKey: 'key1' });
+      expect(mockProvider2.initialize).toHaveBeenCalledWith({ apiKey: 'key2' });
       // Should not throw error for missing provider
     });
 
-    it('should log debug info when debug is enabled', async () => {
+    test('should log debug info when debug is enabled', async () => {
       config.debug = true;
 
       await manager.initialize();
@@ -147,8 +152,8 @@ describe('ObservabilityManager', () => {
       );
     });
 
-    it('should handle provider creation errors', async () => {
-      providerRegistry['mock-provider-1'] = vi.fn().mockImplementation(() => {
+    test('should handle provider creation errors', async () => {
+      vi.spyOn(providerRegistry, 'mock-provider-1').mockImplementation(() => {
         throw new Error('Provider creation failed');
       });
 
@@ -158,7 +163,7 @@ describe('ObservabilityManager', () => {
         provider: 'mock-provider-1',
         method: 'create',
       });
-      expect(mockProvider2.initialize).toHaveBeenCalled(); // Other providers should still work
+      expect(mockProvider2.initialize).toHaveBeenCalledWith({ apiKey: 'key2' }); // Other providers should still work
     });
   });
 
@@ -167,7 +172,7 @@ describe('ObservabilityManager', () => {
       await manager.initialize();
     });
 
-    it('should capture exceptions in all providers', async () => {
+    test('should capture exceptions in all providers', async () => {
       const error = new Error('Test error');
       const context = { userId: '123' };
 
@@ -177,7 +182,7 @@ describe('ObservabilityManager', () => {
       expect(mockProvider2.captureException).toHaveBeenCalledWith(error, context);
     });
 
-    it('should handle provider errors during exception capture', async () => {
+    test('should handle provider errors during exception capture', async () => {
       const error = new Error('Test error');
       (mockProvider.captureException as any).mockRejectedValue(new Error('Provider failed'));
 
@@ -188,7 +193,7 @@ describe('ObservabilityManager', () => {
         provider: 'mock-provider-1',
         circuitBreakerState: 'CLOSED',
       });
-      expect(mockProvider2.captureException).toHaveBeenCalled(); // Other providers should still work
+      expect(mockProvider2.captureException).toHaveBeenCalledWith(error, {}); // Other providers should still work
     });
   });
 
@@ -197,7 +202,7 @@ describe('ObservabilityManager', () => {
       await manager.initialize();
     });
 
-    it('should capture messages in all providers', async () => {
+    test('should capture messages in all providers', async () => {
       const message = 'Test message';
       const level = 'error';
       const context = { feature: 'test' };
@@ -208,7 +213,7 @@ describe('ObservabilityManager', () => {
       expect(mockProvider2.captureMessage).toHaveBeenCalledWith(message, level, context);
     });
 
-    it('should handle provider errors during message capture', async () => {
+    test('should handle provider errors during message capture', async () => {
       const message = 'Test message';
       const level = 'warning';
       (mockProvider.captureMessage as any).mockRejectedValue(new Error('Provider failed'));
@@ -228,7 +233,7 @@ describe('ObservabilityManager', () => {
       await manager.initialize();
     });
 
-    it('should log to providers that support logging', async () => {
+    test('should log to providers that support logging', async () => {
       const level = 'info';
       const message = 'Test log';
       const metadata = { requestId: 'req-123' };
@@ -239,10 +244,8 @@ describe('ObservabilityManager', () => {
       // mockProvider2 doesn't have log method, so it should be skipped
     });
 
-    it('should handle logging errors gracefully', async () => {
-      if (mockProvider.log) {
-        (mockProvider.log as any).mockRejectedValue(new Error('Log failed'));
-      }
+    test('should handle logging errors gracefully', async () => {
+      (mockProvider.log as any).mockRejectedValue(new Error('Log failed'));
 
       await manager.log('error', 'Test message');
 
@@ -252,14 +255,103 @@ describe('ObservabilityManager', () => {
         circuitBreakerState: 'CLOSED',
       });
     });
+
+    test('should capture error logs to error tracking providers', async () => {
+      const error = new Error('Test error');
+      const message = 'Error occurred';
+      const metadata = { userId: 'user-123', error };
+
+      await manager.log('error', message, metadata);
+
+      // Should capture the exception
+      expect(mockProvider.captureException).toHaveBeenCalledWith(error, {
+        extra: {
+          message,
+          ...metadata,
+        },
+        level: 'error',
+      });
+
+      // Should also log normally
+      expect(mockProvider.log).toHaveBeenCalledWith('error', message, metadata);
+    });
+
+    test('should capture error logs when metadata is the error itself', async () => {
+      const error = new Error('Test error');
+      const message = 'Error occurred';
+
+      await manager.log('error', message, error);
+
+      // Should capture the exception
+      expect(mockProvider.captureException).toHaveBeenCalledWith(error, {
+        extra: {
+          message,
+        },
+        level: 'error',
+      });
+
+      // Should also log normally
+      expect(mockProvider.log).toHaveBeenCalledWith('error', message, error);
+    });
+
+    test('should capture error message when no Error object is provided', async () => {
+      const message = 'Error occurred';
+      const metadata = { userId: 'user-123' };
+
+      await manager.log('error', message, metadata);
+
+      // Should capture as message
+      expect(mockProvider.captureMessage).toHaveBeenCalledWith(message, 'error', {
+        extra: metadata,
+        level: 'error',
+      });
+
+      // Should also log normally
+      expect(mockProvider.log).toHaveBeenCalledWith('error', message, metadata);
+    });
+
+    test('should capture fatal logs to error tracking providers', async () => {
+      const message = 'Fatal error';
+      const metadata = { systemCrash: true };
+
+      await manager.log('fatal', message, metadata);
+
+      // Should capture as message
+      expect(mockProvider.captureMessage).toHaveBeenCalledWith(message, 'error', {
+        extra: metadata,
+        level: 'fatal',
+      });
+
+      // Should also log normally
+      expect(mockProvider.log).toHaveBeenCalledWith('fatal', message, metadata);
+    });
+
+    test('should not capture non-error logs to error tracking', async () => {
+      await manager.log('info', 'Info message', { data: 'test' });
+      await manager.log('warn', 'Warning message', { data: 'test' });
+      await manager.log('debug', 'Debug message', { data: 'test' });
+
+      // Should not capture exceptions or messages for non-error logs
+      expect(mockProvider.captureException).not.toHaveBeenCalled();
+      expect(mockProvider.captureMessage).not.toHaveBeenCalled();
+
+      // Should only log normally
+      expect(mockProvider.log).toHaveBeenCalledTimes(3);
+    });
   });
 
   describe('transactions and spans', () => {
     beforeEach(async () => {
+      // Ensure mock return values are set for transaction/span tests
+      (mockProvider.startTransaction as any).mockReturnValue({ id: 'txn-1' });
+      (mockProvider.startSpan as any).mockReturnValue({ id: 'span-1' });
+      (mockProvider2.startTransaction as any).mockReturnValue({ id: 'txn-2' });
+      (mockProvider2.startSpan as any).mockReturnValue({ id: 'span-2' });
+
       await manager.initialize();
     });
 
-    it('should start transactions in providers that support them', () => {
+    test('should start transactions in providers that support them', () => {
       const name = 'test-transaction';
       const context = { feature: 'test' };
 
@@ -267,10 +359,10 @@ describe('ObservabilityManager', () => {
 
       expect(mockProvider.startTransaction).toHaveBeenCalledWith(name, context);
       expect(mockProvider2.startTransaction).toHaveBeenCalledWith(name, context);
-      expect(result).toEqual([{ id: 'txn-1' }, { id: 'txn-2' }]);
+      expect(result).toStrictEqual([{ id: 'txn-1' }, { id: 'txn-2' }]);
     });
 
-    it('should start spans in providers that support them', () => {
+    test('should start spans in providers that support them', () => {
       const name = 'test-span';
       const parentSpan = { id: 'parent-span' };
 
@@ -278,15 +370,13 @@ describe('ObservabilityManager', () => {
 
       expect(mockProvider.startSpan).toHaveBeenCalledWith(name, parentSpan);
       expect(mockProvider2.startSpan).toHaveBeenCalledWith(name, parentSpan);
-      expect(result).toEqual([{ id: 'span-1' }, { id: 'span-2' }]);
+      expect(result).toStrictEqual([{ id: 'span-1' }, { id: 'span-2' }]);
     });
 
-    it('should handle transaction errors gracefully', () => {
-      if (mockProvider.startTransaction) {
-        (mockProvider.startTransaction as any).mockImplementation(() => {
-          throw new Error('Transaction failed');
-        });
-      }
+    test('should handle transaction errors gracefully', () => {
+      (mockProvider.startTransaction as any).mockImplementation(() => {
+        throw new Error('Transaction failed');
+      });
 
       const result = manager.startTransaction('test-transaction');
 
@@ -296,10 +386,10 @@ describe('ObservabilityManager', () => {
         method: 'startTransaction',
       });
       // mockProvider2 still works, so result should contain its transaction
-      expect(result).toEqual([{ id: 'txn-2' }]);
+      expect(result).toStrictEqual([{ id: 'txn-2' }]);
     });
 
-    it('should return null when no providers support transactions', () => {
+    test('should return null when no providers support transactions', () => {
       delete mockProvider.startTransaction;
       delete mockProvider2.startTransaction;
 
@@ -314,7 +404,7 @@ describe('ObservabilityManager', () => {
       await manager.initialize();
     });
 
-    it('should set user on all providers', () => {
+    test('should set user on all providers', () => {
       const user = { id: 'user-123', email: 'test@example.com' };
 
       manager.setUser(user);
@@ -323,7 +413,7 @@ describe('ObservabilityManager', () => {
       expect(mockProvider2.setUser).toHaveBeenCalledWith(user);
     });
 
-    it('should set tags on all providers', () => {
+    test('should set tags on all providers', () => {
       const key = 'environment';
       const value = 'production';
 
@@ -333,7 +423,7 @@ describe('ObservabilityManager', () => {
       expect(mockProvider2.setTag).toHaveBeenCalledWith(key, value);
     });
 
-    it('should set extras on all providers', () => {
+    test('should set extras on all providers', () => {
       const key = 'requestData';
       const value = { url: '/api/test', method: 'POST' };
 
@@ -343,7 +433,7 @@ describe('ObservabilityManager', () => {
       expect(mockProvider2.setExtra).toHaveBeenCalledWith(key, value);
     });
 
-    it('should set context on all providers', () => {
+    test('should set context on all providers', () => {
       const key = 'request';
       const context = { id: 'req-123', method: 'GET' };
 
@@ -353,12 +443,10 @@ describe('ObservabilityManager', () => {
       expect(mockProvider2.setContext).toHaveBeenCalledWith(key, context);
     });
 
-    it('should handle context setting errors gracefully', () => {
-      if (mockProvider.setUser) {
-        (mockProvider.setUser as any).mockImplementation(() => {
-          throw new Error('setUser failed');
-        });
-      }
+    test('should handle context setting errors gracefully', () => {
+      (mockProvider.setUser as any).mockImplementation(() => {
+        throw new Error('setUser failed');
+      });
 
       const user = { id: 'user-123' };
       manager.setUser(user);
@@ -376,7 +464,7 @@ describe('ObservabilityManager', () => {
       await manager.initialize();
     });
 
-    it('should add breadcrumbs to all providers', () => {
+    test('should add breadcrumbs to all providers', () => {
       const breadcrumb: Breadcrumb = {
         category: 'ui',
         level: 'info',
@@ -395,7 +483,7 @@ describe('ObservabilityManager', () => {
       });
     });
 
-    it('should preserve existing timestamp in breadcrumbs', () => {
+    test('should preserve existing timestamp in breadcrumbs', () => {
       const timestamp = 1234567890;
       const breadcrumb: Breadcrumb = {
         category: 'custom',
@@ -409,12 +497,10 @@ describe('ObservabilityManager', () => {
       expect(mockProvider.addBreadcrumb).toHaveBeenCalledWith(breadcrumb);
     });
 
-    it('should handle breadcrumb errors gracefully', () => {
-      if (mockProvider.addBreadcrumb) {
-        (mockProvider.addBreadcrumb as any).mockImplementation(() => {
-          throw new Error('Breadcrumb failed');
-        });
-      }
+    test('should handle breadcrumb errors gracefully', () => {
+      (mockProvider.addBreadcrumb as any).mockImplementation(() => {
+        throw new Error('Breadcrumb failed');
+      });
 
       const breadcrumb: Breadcrumb = {
         category: 'test',
@@ -436,26 +522,24 @@ describe('ObservabilityManager', () => {
       await manager.initialize();
     });
 
-    it('should start sessions on providers that support it', () => {
+    test('should start sessions on providers that support it', () => {
       manager.startSession();
 
-      expect(mockProvider.startSession).toHaveBeenCalled();
+      expect(mockProvider.startSession).toHaveBeenCalledWith();
       // mockProvider2 doesn't have startSession method
     });
 
-    it('should end sessions on providers that support it', () => {
+    test('should end sessions on providers that support it', () => {
       manager.endSession();
 
-      expect(mockProvider.endSession).toHaveBeenCalled();
+      expect(mockProvider.endSession).toHaveBeenCalledWith();
       // mockProvider2 doesn't have endSession method
     });
 
-    it('should handle session errors gracefully', () => {
-      if (mockProvider.startSession) {
-        (mockProvider.startSession as any).mockImplementation(() => {
-          throw new Error('Session start failed');
-        });
-      }
+    test('should handle session errors gracefully', () => {
+      (mockProvider.startSession as any).mockImplementation(() => {
+        throw new Error('Session start failed');
+      });
 
       manager.startSession();
 
@@ -467,7 +551,7 @@ describe('ObservabilityManager', () => {
   });
 
   describe('context synchronization during initialization', () => {
-    it('should sync context to providers after initialization', async () => {
+    test('should sync context to providers after initialization', async () => {
       // Reset mocks to ensure no interference from previous tests
       (mockProvider.setUser as any).mockImplementation(vi.fn());
       (mockProvider.setTag as any).mockImplementation(vi.fn());
@@ -491,7 +575,7 @@ describe('ObservabilityManager', () => {
   });
 
   describe('createObservabilityManager factory', () => {
-    it('should create a new ObservabilityManager instance', () => {
+    test('should create a new ObservabilityManager instance', () => {
       const manager = createObservabilityManager(config, providerRegistry);
 
       expect(manager).toBeInstanceOf(ObservabilityManager);

@@ -4,6 +4,7 @@
 
 import PQueue from 'p-queue';
 
+import { createServerObservability } from '@repo/observability/shared-env';
 import { BatchPattern, PatternContext } from '../types/patterns';
 
 export interface BatchContext {
@@ -397,7 +398,17 @@ export class BatchManager<T = any, R = any> {
         await this.processBatch();
       } catch (error: any) {
         // Log error but continue cleanup
-        console.error('Error during batch cleanup: ', error);
+        createServerObservability({
+          providers: {
+            console: { enabled: true },
+          },
+        })
+          .then((logger) => {
+            logger.log('error', 'Error during batch cleanup', error);
+          })
+          .catch(() => {
+            // Fallback to console if logger fails
+          });
       }
     }
 

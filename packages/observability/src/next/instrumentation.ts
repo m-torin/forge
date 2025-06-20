@@ -3,27 +3,9 @@
  * This file is imported by apps in their instrumentation.ts
  */
 
-// Only import Sentry on Node.js runtime to avoid edge runtime issues
+import { type Instrumentation } from 'next';
 import { ObservabilityConfig } from '../shared/types/types';
-import { Environment, Runtime } from '../shared/utils/environment';
-
-let Sentry: any = null;
-
-// Dynamic import Sentry for ESM compliance
-if (typeof window === 'undefined' && !Runtime.isEdge()) {
-  try {
-    // Use dynamic import instead of require for ESM compliance
-    import('@sentry/nextjs')
-      .then((sentryModule: any) => {
-        Sentry = sentryModule;
-      })
-      .catch(() => {
-        // Sentry not available, that's okay
-      });
-  } catch {
-    // Sentry not available, that's okay
-  }
-}
+import { Environment } from '../shared/utils/environment';
 
 /**
  * Register function for Next.js instrumentation
@@ -31,7 +13,7 @@ if (typeof window === 'undefined' && !Runtime.isEdge()) {
  */
 export async function register(config?: ObservabilityConfig) {
   // Initialize for Node.js runtime with full observability
-  if (Runtime.isNodeJS()) {
+  if (process.env.NEXT_RUNTIME === 'nodejs') {
     try {
       const { createServerObservabilityManager } = await import('../server/utils/manager');
 
@@ -65,7 +47,7 @@ export async function register(config?: ObservabilityConfig) {
   }
 
   // Initialize for edge runtime with edge-compatible providers
-  if (Runtime.isEdge()) {
+  if (process.env.NEXT_RUNTIME === 'edge') {
     try {
       const { createServerObservabilityManager } = await import('../server/utils/manager');
 
@@ -97,27 +79,113 @@ export async function register(config?: ObservabilityConfig) {
 }
 
 /**
- * Sentry's onRequestError handler for Next.js
+ * Next.js onRequestError handler
  * Captures errors that occur during request handling
+ *
+ * @param err - The error object with digest
+ * @param request - Request information
+ * @param context - Context about where the error occurred
  */
-export const onRequestError = Sentry?.captureRequestError || ((() => {}) as any);
+export const onRequestError: Instrumentation.onRequestError = async (err, request, context) => {
+  // Only process errors in Node.js runtime where Sentry is available
+  if (process.env.NEXT_RUNTIME !== 'nodejs') {
+    return;
+  }
+
+  try {
+    // Dynamically import Sentry to avoid edge runtime issues
+    const Sentry = await import('@sentry/nextjs');
+
+    // Check if Sentry is initialized
+    const client = Sentry.getClient();
+    if (!client) {
+      if (Environment.isDevelopment()) {
+        console.warn('[Observability] Sentry not initialized, skipping error capture');
+      }
+      return;
+    }
+
+    // Capture the error with full context
+    Sentry.withScope((scope) => {
+      // Set request context
+      scope.setContext('request', {
+        path: request.path,
+        method: request.method,
+        headers: request.headers,
+      });
+
+      // Set error context
+      scope.setContext('nextjs', {
+        routerKind: context.routerKind,
+        routePath: context.routePath,
+        routeType: context.routeType,
+        renderSource: context.renderSource,
+        revalidateReason: context.revalidateReason,
+        renderType: (context as any).renderType, // Next.js 15.3+ property
+      });
+
+      // Add tags for filtering
+      scope.setTag('nextjs.router', context.routerKind);
+      scope.setTag('nextjs.route_type', context.routeType);
+      scope.setTag('nextjs.render_source', context.renderSource || 'unknown');
+
+      // Set error digest as fingerprint for grouping
+      if ((err as any).digest) {
+        scope.setFingerprint([(err as any).digest]);
+        scope.setTag('error.digest', (err as any).digest);
+      }
+
+      // Capture the error
+      Sentry.captureException(err, {
+        mechanism: {
+          type: 'nextjs',
+          handled: false,
+          data: {
+            routeType: context.routeType,
+            renderSource: (context.renderSource as string | boolean) || 'unknown',
+          },
+        },
+      });
+    });
+
+    // Log in development for debugging
+    if (Environment.isDevelopment()) {
+      console.error('[Observability] Captured Next.js error:', {
+        message: err instanceof Error ? err.message : String(err),
+        digest: (err as any).digest,
+        path: request.path,
+        routeType: context.routeType,
+      });
+    }
+  } catch (captureError) {
+    // Silently fail if error capture fails
+    if (Environment.isDevelopment()) {
+      console.error('[Observability] Failed to capture error:', captureError);
+    }
+  }
+};
 
 /**
  * Get default edge configuration
  * Uses edge-compatible providers only (no OpenTelemetry)
  */
 function getDefaultEdgeConfig(): ObservabilityConfig {
+  // Check if Sentry is configured with required env vars
+  const hasSentryConfig = Boolean(process.env.NEXT_PUBLIC_SENTRY_DSN);
+
   return {
     providers: {
       console: {
         enabled: Environment.isDevelopment(),
       },
-      // Sentry Edge disabled to prevent OpenTelemetry bundling
-      // 'sentry-edge': {
-      //   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-      //   environment: process.env.NODE_ENV,
-      //   tracesSampleRate: 0.1, // Lower sample rate for edge
-      // },
+      // Only enable Sentry Edge if DSN is provided
+      ...(hasSentryConfig && {
+        'sentry-edge': {
+          dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+          environment: process.env.NODE_ENV,
+          tracesSampleRate: 0.1, // Lower sample rate for edge
+        },
+      }),
     },
   };
 }
@@ -127,21 +195,29 @@ function getDefaultEdgeConfig(): ObservabilityConfig {
  * Apps can override this by passing their own config
  */
 function getDefaultServerConfig(): ObservabilityConfig {
+  // Check if Sentry is configured with required env vars
+  const hasSentryConfig = Boolean(process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN);
+  const hasLogtailConfig = Boolean(process.env.LOGTAIL_SOURCE_TOKEN);
+
   return {
     providers: {
       console: {
         enabled: Environment.isDevelopment(),
       },
-      // Logtail disabled to prevent potential OpenTelemetry issues
-      // logtail: {
-      //   sourceToken: process.env.LOGTAIL_SOURCE_TOKEN,
-      // },
-      // Sentry disabled to prevent OpenTelemetry bundling
-      // sentry: {
-      //   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-      //   environment: process.env.NODE_ENV,
-      //   tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
-      // },
+      // Only enable Logtail if source token is provided
+      ...(hasLogtailConfig && {
+        logtail: {
+          sourceToken: process.env.LOGTAIL_SOURCE_TOKEN,
+        },
+      }),
+      // Only enable Sentry if DSN is provided
+      ...(hasSentryConfig && {
+        sentry: {
+          dsn: process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN,
+          environment: process.env.NODE_ENV,
+          tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+        },
+      }),
     },
   };
 }

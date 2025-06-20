@@ -2,6 +2,26 @@
   "name": "@repo/email",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./keys": {
+      "types": "./keys.ts",
+      "import": "./keys.ts"
+    },
+    "./templates/api-key-created": "./src/templates/api-key-created.tsx",
+    "./templates/contact": "./src/templates/contact.tsx",
+    "./templates/magic-link": "./src/templates/magic-link.tsx",
+    "./templates/organization-invitation": "./src/templates/organization-invitation.tsx",
+    "./templates/password-reset": "./src/templates/password-reset.tsx",
+    "./templates/registry-created": "./src/templates/registry-created.tsx",
+    "./templates/registry-invitation": "./src/templates/registry-invitation.tsx",
+    "./templates/registry-item-added": "./src/templates/registry-item-added.tsx",
+    "./templates/registry-purchase-confirmation": "./src/templates/registry-purchase-confirmation.tsx",
+    "./templates/registry-purchase": "./src/templates/registry-purchase.tsx",
+    "./templates/registry-thank-you": "./src/templates/registry-thank-you.tsx",
+    "./templates/verification": "./src/templates/verification.tsx",
+    "./templates/welcome": "./src/templates/welcome.tsx"
+  },
   "scripts": {
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
     "lint": "eslint . --fix",
@@ -11,27 +31,27 @@
     "test:coverage": "vitest --coverage --run"
   },
   "dependencies": {
-    "@react-email/components": "0.0.42",
-    "@react-email/render": "1.1.2",
-    "@t3-oss/env-nextjs": "catalog:",
+    "@react-email/components": "^0.1.0",
+    "@react-email/render": "^1.1.2",
+    "@t3-oss/env-nextjs": "^0.13.8",
     "chalk": "^5.4.1",
-    "react": "catalog:",
-    "react-dom": "catalog:",
-    "resend": "^4.5.2",
-    "zod": "catalog:"
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "resend": "^4.6.0",
+    "zod": "^3.25.67"
   },
   "devDependencies": {
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/testing": "workspace:*",
     "@types/eslint": "^9.6.1",
-    "@types/node": "catalog:",
-    "@types/react": "catalog:",
-    "@types/react-dom": "catalog:",
-    "@vitest/coverage-v8": "catalog:",
-    "eslint": "catalog:",
-    "jsdom": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "@types/node": "^24.0.3",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitest/coverage-v8": "^3.2.4",
+    "eslint": "^9.29.0",
+    "jsdom": "^26.1.0",
+    "typescript": "5.8.3",
+    "vitest": "^3.2.4"
   }
 }

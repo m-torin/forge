@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '../test-utils';
-import Prices from '../../../mantine-ciseco/components/Prices';
+import Prices from '../../../src/mantine-ciseco/components/Prices';
 
 describe('Prices', (_: any) => {
   it('renders price correctly', (_: any) => {

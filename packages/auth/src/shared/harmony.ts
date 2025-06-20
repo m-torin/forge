@@ -3,6 +3,8 @@
  * This provides utilities that work with the better-auth-harmony plugins
  */
 
+import { syncLogger as logger } from './utils/logger';
+
 // Re-export better-auth-harmony plugins for server configuration
 export { emailHarmony, phoneHarmony } from 'better-auth-harmony';
 
@@ -129,8 +131,8 @@ export const harmonyMigration = {
    * Check if migration is needed
    */
   isMigrationNeeded: () => {
-    console.warn('Run: npx @better-auth/cli migrate');
-    console.warn('This will add normalizedEmail and phone fields to your user table');
+    logger.warn('Run: npx @better-auth/cli migrate');
+    logger.warn('This will add normalizedEmail and phone fields to your user table');
   },
 };
 

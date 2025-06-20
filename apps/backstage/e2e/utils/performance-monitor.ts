@@ -213,7 +213,7 @@ export class PerformanceMonitor {
       const startTime = Date.now();
 
       // Find a clickable element
-      const clickableElement = await this.page.locator('button, a, input, [role="button"]').first();
+      const clickableElement = this.page.locator('button, a, input, [role="button"]').first();
       if (await clickableElement.isVisible()) {
         await clickableElement.click({ force: true });
         const endTime = Date.now();

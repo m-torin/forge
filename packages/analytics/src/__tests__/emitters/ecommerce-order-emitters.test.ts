@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 import {
   orderCancelled,
@@ -29,7 +29,7 @@ vi.mock('../../shared/emitters/ecommerce/track-ecommerce', () => ({
   })),
 }));
 
-describe('Order Emitters', () => {
+describe('order Emitters', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -47,7 +47,7 @@ describe('Order Emitters', () => {
       total: 299.99,
     };
 
-    it('should create a valid order completed event', () => {
+    test('should create a valid order completed event', () => {
       const result = orderCompleted(baseOrderProperties);
 
       expect(result).toEqual({
@@ -67,7 +67,7 @@ describe('Order Emitters', () => {
       });
     });
 
-    it('should create order completed event with products', () => {
+    test('should create order completed event with products', () => {
       const products: BaseProductProperties[] = [
         { product_id: 'p1', name: 'Product 1', price: 99.99, quantity: 2 },
         { product_id: 'p2', name: 'Product 2', price: 149.99, quantity: 1 },
@@ -83,7 +83,7 @@ describe('Order Emitters', () => {
       expect(result.properties!.products).toEqual(products);
     });
 
-    it('should normalize products when provided', () => {
+    test('should normalize products when provided', () => {
       const rawProducts = [
         { price: '99.99', productId: 'p1', title: 'Product 1' },
         { id: 'p2', name: 'Product 2', price: 149.99 },
@@ -102,7 +102,7 @@ describe('Order Emitters', () => {
       ]);
     });
 
-    it('should validate and normalize currency', () => {
+    test('should validate and normalize currency', () => {
       const properties: OrderProperties = {
         ...baseOrderProperties,
         currency: 'eur',
@@ -112,7 +112,7 @@ describe('Order Emitters', () => {
       expect(result.properties!.currency).toBe('EUR');
     });
 
-    it('should handle invalid currency gracefully', () => {
+    test('should handle invalid currency gracefully', () => {
       const properties: OrderProperties = {
         ...baseOrderProperties,
         currency: 'invalid',
@@ -122,7 +122,7 @@ describe('Order Emitters', () => {
       expect(result.properties!.currency).toBeUndefined();
     });
 
-    it('should accept emitter options', () => {
+    test('should accept emitter options', () => {
       const options = { context: { traits: { userId: 'user123' } }, timestamp: new Date() };
       const result = orderCompleted(baseOrderProperties, options);
 
@@ -130,14 +130,14 @@ describe('Order Emitters', () => {
       expect(result.context?.traits?.userId).toBe('user123');
     });
 
-    it('should handle minimal order properties', () => {
+    test('should handle minimal order properties', () => {
       const minimal: OrderProperties = { order_id: 'order_456' };
       const result = orderCompleted(minimal);
 
       expect(result.properties).toEqual({ order_id: 'order_456' });
     });
 
-    it('should clean undefined properties', () => {
+    test('should clean undefined properties', () => {
       const properties: OrderProperties = {
         order_id: 'order_123',
         coupon: undefined,
@@ -158,13 +158,13 @@ describe('Order Emitters', () => {
       });
     });
 
-    it('should throw error when order_id is missing', () => {
+    test('should throw error when order_id is missing', () => {
       expect(() => {
         orderCompleted({ total: 100 } as any);
       }).toThrow('Missing required properties: order_id');
     });
 
-    it('should handle zero values correctly', () => {
+    test('should handle zero values correctly', () => {
       const properties: OrderProperties = {
         order_id: 'order_123',
         discount: 0,
@@ -194,7 +194,7 @@ describe('Order Emitters', () => {
       total: 199.99,
     };
 
-    it('should create a valid order failed event', () => {
+    test('should create a valid order failed event', () => {
       const properties = {
         ...baseOrderProperties,
         error_code: 'CARD_DECLINED',
@@ -217,7 +217,7 @@ describe('Order Emitters', () => {
       });
     });
 
-    it('should handle order failure without error details', () => {
+    test('should handle order failure without error details', () => {
       const result = orderFailed(baseOrderProperties);
 
       expect(result.properties).toEqual({
@@ -227,7 +227,7 @@ describe('Order Emitters', () => {
       });
     });
 
-    it('should handle different failure reasons', () => {
+    test('should handle different failure reasons', () => {
       const failureReasons = [
         'Payment declined',
         'Insufficient funds',
@@ -247,7 +247,7 @@ describe('Order Emitters', () => {
       });
     });
 
-    it('should handle different error codes', () => {
+    test('should handle different error codes', () => {
       const errorCodes = [
         'CARD_DECLINED',
         'INSUFFICIENT_FUNDS',
@@ -268,7 +268,7 @@ describe('Order Emitters', () => {
       });
     });
 
-    it('should normalize products in failed order', () => {
+    test('should normalize products in failed order', () => {
       const products = [{ price: '99.99', productId: 'p1', title: 'Failed Product' }];
 
       const properties = {
@@ -284,13 +284,13 @@ describe('Order Emitters', () => {
       ]);
     });
 
-    it('should throw error when order_id is missing', () => {
+    test('should throw error when order_id is missing', () => {
       expect(() => {
         orderFailed({ failure_reason: 'test', total: 100 } as any);
       }).toThrow('Missing required properties: order_id');
     });
 
-    it('should clean undefined properties', () => {
+    test('should clean undefined properties', () => {
       const properties = {
         order_id: 'order_123',
         error_code: undefined,
@@ -317,7 +317,7 @@ describe('Order Emitters', () => {
       total: 299.99,
     };
 
-    it('should create a valid order refunded event', () => {
+    test('should create a valid order refunded event', () => {
       const result = orderRefunded(baseOrderProperties);
 
       expect(result).toEqual({
@@ -333,7 +333,7 @@ describe('Order Emitters', () => {
       });
     });
 
-    it('should handle partial refund with products', () => {
+    test('should handle partial refund with products', () => {
       const products: BaseProductProperties[] = [
         { product_id: 'p1', name: 'Refunded Product', price: 99.99, quantity: 1 },
       ];
@@ -350,7 +350,7 @@ describe('Order Emitters', () => {
       expect(result.properties!.total).toBe(99.99);
     });
 
-    it('should normalize currency', () => {
+    test('should normalize currency', () => {
       const properties: OrderProperties = {
         ...baseOrderProperties,
         currency: 'gbp',
@@ -360,7 +360,7 @@ describe('Order Emitters', () => {
       expect(result.properties!.currency).toBe('GBP');
     });
 
-    it('should handle full refund', () => {
+    test('should handle full refund', () => {
       const properties: OrderProperties = {
         order_id: 'order_123',
         revenue: 299.99, // Full refund
@@ -380,13 +380,13 @@ describe('Order Emitters', () => {
       });
     });
 
-    it('should throw error when order_id is missing', () => {
+    test('should throw error when order_id is missing', () => {
       expect(() => {
         orderRefunded({ total: 100 } as any);
       }).toThrow('Missing required properties: order_id');
     });
 
-    it('should clean undefined properties', () => {
+    test('should clean undefined properties', () => {
       const properties: OrderProperties = {
         order_id: 'order_123',
         revenue: undefined,
@@ -410,7 +410,7 @@ describe('Order Emitters', () => {
       total: 199.99,
     };
 
-    it('should create a valid order cancelled event', () => {
+    test('should create a valid order cancelled event', () => {
       const result = orderCancelled(baseOrderProperties);
 
       expect(result).toEqual({
@@ -425,7 +425,7 @@ describe('Order Emitters', () => {
       });
     });
 
-    it('should handle cancellation with products', () => {
+    test('should handle cancellation with products', () => {
       const products: BaseProductProperties[] = [
         { product_id: 'p1', name: 'Cancelled Product', price: 99.99 },
         { product_id: 'p2', name: 'Another Cancelled Product', price: 99.99 },
@@ -441,7 +441,7 @@ describe('Order Emitters', () => {
       expect(result.properties!.products).toEqual(products);
     });
 
-    it('should normalize products when provided', () => {
+    test('should normalize products when provided', () => {
       const rawProducts = [{ productId: 'p1', title: 'Cancelled Product' }];
 
       const properties: OrderProperties = {
@@ -456,7 +456,7 @@ describe('Order Emitters', () => {
       ]);
     });
 
-    it('should handle early cancellation', () => {
+    test('should handle early cancellation', () => {
       const properties: OrderProperties = {
         order_id: 'order_early_cancel',
         total: 0, // No payment processed yet
@@ -470,7 +470,7 @@ describe('Order Emitters', () => {
       });
     });
 
-    it('should throw error when order_id is missing', () => {
+    test('should throw error when order_id is missing', () => {
       expect(() => {
         orderCancelled({ total: 100 } as any);
       }).toThrow('Missing required properties: order_id');
@@ -478,7 +478,7 @@ describe('Order Emitters', () => {
   });
 
   describe('orderStatusUpdated', () => {
-    it('should create a valid order status updated event', () => {
+    test('should create a valid order status updated event', () => {
       const properties: OrderStatusProperties = {
         order_id: 'order_123',
         carrier: 'UPS',
@@ -505,7 +505,7 @@ describe('Order Emitters', () => {
       });
     });
 
-    it('should handle different order statuses', () => {
+    test('should handle different order statuses', () => {
       const statuses = [
         'confirmed',
         'processing',
@@ -527,7 +527,7 @@ describe('Order Emitters', () => {
       });
     });
 
-    it('should handle minimal status update', () => {
+    test('should handle minimal status update', () => {
       const properties: OrderStatusProperties = {
         order_id: 'order_456',
         status: 'confirmed',
@@ -541,7 +541,7 @@ describe('Order Emitters', () => {
       });
     });
 
-    it('should handle delivery status with tracking', () => {
+    test('should handle delivery status with tracking', () => {
       const properties: OrderStatusProperties = {
         order_id: 'order_789',
         carrier: 'FedEx',
@@ -560,25 +560,25 @@ describe('Order Emitters', () => {
       });
     });
 
-    it('should throw error when order_id is missing', () => {
+    test('should throw error when order_id is missing', () => {
       expect(() => {
         orderStatusUpdated({ status: 'shipped' } as any);
       }).toThrow('Missing required properties: order_id');
     });
 
-    it('should throw error when status is missing', () => {
+    test('should throw error when status is missing', () => {
       expect(() => {
         orderStatusUpdated({ order_id: 'order_123' } as any);
       }).toThrow('Missing required properties: status');
     });
 
-    it('should throw error when both required properties are missing', () => {
+    test('should throw error when both required properties are missing', () => {
       expect(() => {
         orderStatusUpdated({} as any);
       }).toThrow('Missing required properties: order_id, status');
     });
 
-    it('should clean undefined properties', () => {
+    test('should clean undefined properties', () => {
       const properties: OrderStatusProperties = {
         order_id: 'order_123',
         carrier: undefined,
@@ -602,7 +602,7 @@ describe('Order Emitters', () => {
       { product_id: 'p1', name: 'Defective Product', price: 99.99, quantity: 1 },
     ];
 
-    it('should create a valid return requested event', () => {
+    test('should create a valid return requested event', () => {
       const properties: ReturnProperties = {
         order_id: 'order_123',
         products: baseProducts,
@@ -625,7 +625,7 @@ describe('Order Emitters', () => {
       });
     });
 
-    it('should normalize products when provided', () => {
+    test('should normalize products when provided', () => {
       const rawProducts = [{ price: '49.99', productId: 'p1', title: 'Return Product' }];
 
       const properties: ReturnProperties = {
@@ -641,7 +641,7 @@ describe('Order Emitters', () => {
       ]);
     });
 
-    it('should handle different return reasons', () => {
+    test('should handle different return reasons', () => {
       const reasons = [
         'Product arrived damaged',
         'Wrong item received',
@@ -663,7 +663,7 @@ describe('Order Emitters', () => {
       });
     });
 
-    it('should handle different return methods', () => {
+    test('should handle different return methods', () => {
       const methods = ['mail', 'store', 'pickup'] as const;
 
       methods.forEach((method) => {
@@ -679,7 +679,7 @@ describe('Order Emitters', () => {
       });
     });
 
-    it('should handle return with refund amount', () => {
+    test('should handle return with refund amount', () => {
       const properties: ReturnProperties = {
         order_id: 'order_123',
         products: baseProducts,
@@ -692,7 +692,7 @@ describe('Order Emitters', () => {
       expect(result.properties!.refund_amount).toBe(99.99);
     });
 
-    it('should throw error when order_id is missing', () => {
+    test('should throw error when order_id is missing', () => {
       expect(() => {
         returnRequested({
           products: baseProducts,
@@ -701,7 +701,7 @@ describe('Order Emitters', () => {
       }).toThrow('Missing required properties: order_id');
     });
 
-    it('should throw error when reason is missing', () => {
+    test('should throw error when reason is missing', () => {
       expect(() => {
         returnRequested({
           order_id: 'order_123',
@@ -710,13 +710,13 @@ describe('Order Emitters', () => {
       }).toThrow('Missing required properties: reason');
     });
 
-    it('should throw error when both required properties are missing', () => {
+    test('should throw error when both required properties are missing', () => {
       expect(() => {
         returnRequested({ products: baseProducts } as any);
       }).toThrow('Missing required properties: order_id, reason');
     });
 
-    it('should clean undefined properties', () => {
+    test('should clean undefined properties', () => {
       const properties: ReturnProperties = {
         order_id: 'order_123',
         return_id: undefined,
@@ -741,7 +741,7 @@ describe('Order Emitters', () => {
       { product_id: 'p1', name: 'Returned Product', price: 99.99 },
     ];
 
-    it('should create a valid return completed event', () => {
+    test('should create a valid return completed event', () => {
       const properties = {
         order_id: 'order_123',
         return_id: 'return_456',
@@ -770,7 +770,7 @@ describe('Order Emitters', () => {
       });
     });
 
-    it('should handle different refund statuses', () => {
+    test('should handle different refund statuses', () => {
       const statuses = ['pending', 'completed', 'failed'] as const;
 
       statuses.forEach((status) => {
@@ -787,7 +787,7 @@ describe('Order Emitters', () => {
       });
     });
 
-    it('should normalize products when provided', () => {
+    test('should normalize products when provided', () => {
       const rawProducts = [{ price: '75.00', productId: 'p1', title: 'Returned Item' }];
 
       const properties = {
@@ -804,7 +804,7 @@ describe('Order Emitters', () => {
       ]);
     });
 
-    it('should handle minimal return completion', () => {
+    test('should handle minimal return completion', () => {
       const properties = {
         order_id: 'order_123',
         return_id: 'return_456',
@@ -822,7 +822,7 @@ describe('Order Emitters', () => {
       });
     });
 
-    it('should throw error when order_id is missing', () => {
+    test('should throw error when order_id is missing', () => {
       expect(() => {
         returnCompleted({
           return_id: 'return_456',
@@ -832,7 +832,7 @@ describe('Order Emitters', () => {
       }).toThrow('Missing required properties: order_id');
     });
 
-    it('should throw error when return_id is missing', () => {
+    test('should throw error when return_id is missing', () => {
       expect(() => {
         returnCompleted({
           order_id: 'order_123',
@@ -842,7 +842,7 @@ describe('Order Emitters', () => {
       }).toThrow('Missing required properties: return_id');
     });
 
-    it('should throw error when both required properties are missing', () => {
+    test('should throw error when both required properties are missing', () => {
       expect(() => {
         returnCompleted({
           products: baseProducts,
@@ -851,7 +851,7 @@ describe('Order Emitters', () => {
       }).toThrow('Missing required properties: order_id, return_id');
     });
 
-    it('should clean undefined properties', () => {
+    test('should clean undefined properties', () => {
       const properties = {
         order_id: 'order_123',
         return_id: 'return_456',
@@ -874,8 +874,8 @@ describe('Order Emitters', () => {
   });
 
   // Edge cases and integration tests
-  describe('Edge Cases and Integration', () => {
-    it('should handle order lifecycle from completion to return', () => {
+  describe('edge Cases and Integration', () => {
+    test('should handle order lifecycle from completion to return', () => {
       const orderId = 'lifecycle_order_123';
       const products: BaseProductProperties[] = [
         { product_id: 'p1', name: 'Lifecycle Product', price: 199.99, quantity: 1 },
@@ -930,7 +930,7 @@ describe('Order Emitters', () => {
       expect(returnCompletedResult.properties!.products).toEqual(products);
     });
 
-    it('should handle large orders with many products efficiently', () => {
+    test('should handle large orders with many products efficiently', () => {
       const largeProductList = Array.from({ length: 1000 }, (_, i) => ({
         product_id: `bulk_p${i}`,
         name: `Bulk Product ${i}`,
@@ -958,7 +958,7 @@ describe('Order Emitters', () => {
       expect(result.properties!.total).toBe(totalValue);
     });
 
-    it('should ensure consistent event naming across all order emitters', () => {
+    test('should ensure consistent event naming across all order emitters', () => {
       const eventNames = [
         orderCompleted({ order_id: 'o1' }).event,
         orderFailed({ order_id: 'o2' }).name,
@@ -979,7 +979,7 @@ describe('Order Emitters', () => {
       expect(uniqueNames.size).toBe(eventNames.length);
     });
 
-    it('should handle complex monetary calculations correctly', () => {
+    test('should handle complex monetary calculations correctly', () => {
       const properties: OrderProperties = {
         order_id: 'complex_order',
         discount: 10.0,
@@ -1003,7 +1003,7 @@ describe('Order Emitters', () => {
       expect(refundResult.properties!.total).toBe(149.99);
     });
 
-    it('should maintain type safety across all order emitters', () => {
+    test('should maintain type safety across all order emitters', () => {
       // This test ensures TypeScript types are working correctly
 
       // orderCompleted requires order_id
@@ -1026,7 +1026,7 @@ describe('Order Emitters', () => {
       expect(() => returnRequested(returnProps)).not.toThrow();
     });
 
-    it('should handle malformed data gracefully', () => {
+    test('should handle malformed data gracefully', () => {
       // Test with invalid currency
       const invalidCurrencyResult = orderCompleted({
         order_id: 'test',

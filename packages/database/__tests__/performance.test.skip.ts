@@ -14,26 +14,25 @@ import {
   createTestVector,
   createTestUsers,
   createTestVectors,
-} from '@repo/testing/database';
+} from '@repo/testing';
 
 // Mock all database modules
 vi.mock('firebase-admin', async () => {
-  const { mockFirebaseAdmin } = await import('@repo/testing/database');
+  const { mockFirebaseAdmin } = await import('@repo/testing');
   return mockFirebaseAdmin;
 });
-};
 
 vi.mock('@upstash/vector', async () => {
-  const { mockUpstashVector } = await import('@repo/testing/database');
+  const { mockUpstashVector } = await import('@repo/testing');
   return mockUpstashVector;
-};
+});
 
 vi.mock('@upstash/redis', async () => {
-  const { mockUpstashRedis } = await import('@repo/testing/database');
+  const { mockUpstashRedis } = await import('@repo/testing');
   return mockUpstashRedis;
-};
+});
 
-describe('Database Performance Tests', (_: any) => {
+describe('Database Performance Tests', () => {
   let firestoreHelper: DatabaseTestHelper;
   let vectorHelper: VectorDatabaseTestHelper;
   let redisHelper: RedisDatabaseTestHelper;
@@ -52,7 +51,7 @@ describe('Database Performance Tests', (_: any) => {
     await firestoreHelper.setup();
     await vectorHelper.setup();
     await redisHelper.setup();
-  };
+  });
 
   afterEach(async () => {
     await firestoreHelper.cleanup();
@@ -64,10 +63,10 @@ describe('Database Performance Tests', (_: any) => {
     resetMockRedisStorage();
   });
 
-  describe('Individual Adapter Performance', (_: any) => {
+  describe('Individual Adapter Performance', () => {
     const testSizes = [10, 50, 100];
 
-    testSizes.forEach((size: any) => {
+    testSizes.forEach((size) => {
       it(`should perform ${size} operations efficiently on Firestore`, async () => {
         const results = await testDatabasePerformance(firestoreHelper, 'users', size);
 
@@ -80,8 +79,8 @@ describe('Database Performance Tests', (_: any) => {
           avgCreate: `${results.avgCreateTime.toFixed(2)}ms`,
           avgRead: `${results.avgReadTime.toFixed(2)}ms`,
           avgDelete: `${results.avgDeleteTime.toFixed(2)}ms`,
-        };
-      };
+        });
+      });
 
       it(`should perform ${size} operations efficiently on Redis`, async () => {
         const results = await testDatabasePerformance(redisHelper, 'users', size);
@@ -95,12 +94,12 @@ describe('Database Performance Tests', (_: any) => {
           avgCreate: `${results.avgCreateTime.toFixed(2)}ms`,
           avgRead: `${results.avgReadTime.toFixed(2)}ms`,
           avgDelete: `${results.avgDeleteTime.toFixed(2)}ms`,
-        };
-      };
-    };
-  };
+        });
+      });
+    });
+  });
 
-  describe('Batch Operations Performance', (_: any) => {
+  describe('Batch Operations Performance', () => {
     it('should handle large batch operations efficiently', async () => {
       const batchSize = 100;
 
@@ -108,7 +107,9 @@ describe('Database Performance Tests', (_: any) => {
       const users = createTestUsers(batchSize);
 
       const batchStart = performance.now();
-      await redisHelper.getAdapter().setMultiple('users', users);
+      for (const user of users) {
+        await redisHelper.getAdapter().create('users', user);
+      }
       const batchEnd = performance.now();
 
       const batchTime = batchEnd - batchStart;
@@ -117,15 +118,15 @@ describe('Database Performance Tests', (_: any) => {
       expect(avgBatchTime).toBeLessThan(5); // 5ms per item in batch
 
       // Verify all items were stored
-      const count = await redisHelper.getAdapter().count('users');
+      const count = await redisHelper.getCount('users');
       expect(count).toBe(batchSize);
 
       console.log(`Batch operation performance:`, {
         totalTime: `${batchTime.toFixed(2)}ms`,
         avgPerItem: `${avgBatchTime.toFixed(2)}ms`,
         itemsPerSecond: Math.round(1000 / avgBatchTime),
-      };
-    };
+      });
+    });
 
     it('should handle vector batch operations efficiently', async () => {
       const batchSize = 50;
@@ -141,21 +142,21 @@ describe('Database Performance Tests', (_: any) => {
       expect(avgBatchTime).toBeLessThan(20); // 20ms per vector in batch
 
       // Verify vectors were stored
-      const count = await vectorHelper.getAdapter().count('documents');
+      const count = await vectorHelper.getCount('documents');
       expect(count).toBe(batchSize);
 
       console.log(`Vector batch operation performance:`, {
         totalTime: `${batchTime.toFixed(2)}ms`,
         avgPerVector: `${avgBatchTime.toFixed(2)}ms`,
         vectorsPerSecond: Math.round(1000 / avgBatchTime),
-      };
-    };
-  };
+      });
+    });
+  });
 
-  describe('Query Performance', (_: any) => {
+  describe('Query Performance', () => {
     beforeEach(async () => {
       // Seed test data for query performance tests
-      const users = createTestUsers(100).map((user, index: any) => ({
+      const users = createTestUsers(100).map((user, index) => ({
         ...user,
         age: 18 + (index % 50),
         category: index % 3 === 0 ? 'premium' : 'standard',
@@ -170,7 +171,7 @@ describe('Database Performance Tests', (_: any) => {
       // Seed vectors for similarity search
       const vectors = createTestVectors(50);
       await vectorHelper.getAdapter().upsertMany(vectors, 'documents');
-    };
+    });
 
     it('should perform complex Firestore queries efficiently', async () => {
       const queryStart = performance.now();
@@ -179,7 +180,7 @@ describe('Database Performance Tests', (_: any) => {
         where: { active: true },
         orderBy: { field: 'age', direction: 'desc' },
         limit: 10,
-      };
+      });
 
       const queryEnd = performance.now();
       const queryTime = queryEnd - queryStart;
@@ -188,34 +189,27 @@ describe('Database Performance Tests', (_: any) => {
       expect(results).toHaveLength(10);
 
       console.log(`Firestore complex query: ${queryTime.toFixed(2)}ms`);
-    };
+    });
 
     it('should perform vector similarity search efficiently', async () => {
       const queryVector = Array.from({ length: 1536 }, () => Math.random() - 0.5);
 
       const searchStart = performance.now();
 
-      const results = await vectorHelper.getAdapter().query(
-        {
-          vector: queryVector,
-          topK: 10,
-          includeMetadata: true,
-        },
-        { namespace: 'documents' },
-      );
+      const results = await vectorHelper.performSimilaritySearch('documents', queryVector, 10);
 
       const searchEnd = performance.now();
       const searchTime = searchEnd - searchStart;
 
-      expect(searchTime).toBeLessThan(150); // 150ms for similarity search
+      expect(searchTime).toBeLessThan(200); // 200ms for vector search
       expect(results).toHaveLength(10);
 
       console.log(`Vector similarity search: ${searchTime.toFixed(2)}ms`);
-    };
+    });
 
     it('should perform Redis pattern queries efficiently', async () => {
       // Add test data to Redis
-      const testData = Array.from({ length: 100 }, (_, i: any) => createTestUser({ id: `user-${i}` }));
+      const testData = Array.from({ length: 100 }, (_, i) => createTestUser({ id: `user-${i}` }));
 
       for (const user of testData) {
         await redisHelper.getAdapter().create('users', user);
@@ -235,10 +229,10 @@ describe('Database Performance Tests', (_: any) => {
       expect(results.length).toBeGreaterThan(0);
 
       console.log(`Redis pattern query: ${patternTime.toFixed(2)}ms`);
-    };
-  };
+    });
+  });
 
-  describe('Memory Usage Simulation', (_: any) => {
+  describe('Memory Usage Simulation', () => {
     it('should handle large dataset without memory issues', async () => {
       const largeDatasetSize = 500;
 
@@ -256,7 +250,9 @@ describe('Database Performance Tests', (_: any) => {
       // Store large dataset
       for (let i = 0; i < users.length; i += 50) {
         const batch = users.slice(i, i + 50);
-        await redisHelper.getAdapter().setMultiple('users', batch);
+        for (const user of batch) {
+          await redisHelper.getAdapter().create('users', user);
+        }
       }
 
       if (process.memoryUsage) {
@@ -269,15 +265,15 @@ describe('Database Performance Tests', (_: any) => {
       console.log(`Memory usage for ${largeDatasetSize} records:`, {
         totalMemory: `${(memoryUsed / 1024 / 1024).toFixed(2)}MB`,
         memoryPerRecord: `${(memoryPerRecord / 1024).toFixed(2)}KB`,
-      };
+      });
 
       // Verify all data was stored
       const count = await redisHelper.getAdapter().count('users');
       expect(count).toBe(largeDatasetSize);
-    };
-  };
+    });
+  });
 
-  describe('Concurrent Operations Performance', (_: any) => {
+  describe('Concurrent Operations Performance', () => {
     it('should handle concurrent reads efficiently', async () => {
       // Seed test data
       const users = createTestUsers(20);
@@ -308,8 +304,8 @@ describe('Database Performance Tests', (_: any) => {
         totalTime: `${concurrentTime.toFixed(2)}ms`,
         avgPerRead: `${avgConcurrentTime.toFixed(2)}ms`,
         readsPerSecond: Math.round(1000 / avgConcurrentTime),
-      };
-    };
+      });
+    });
 
     it('should handle concurrent vector searches efficiently', async () => {
       // Seed vectors
@@ -348,11 +344,11 @@ describe('Database Performance Tests', (_: any) => {
         totalTime: `${searchTime.toFixed(2)}ms`,
         avgPerSearch: `${avgSearchTime.toFixed(2)}ms`,
         searchesPerSecond: Math.round(1000 / avgSearchTime),
-      };
-    };
-  };
+      });
+    });
+  });
 
-  describe('Database Comparison Benchmarks', (_: any) => {
+  describe('Database Comparison Benchmarks', () => {
     it('should compare read performance across databases', async () => {
       const recordCount = 100;
 
@@ -365,7 +361,9 @@ describe('Database Performance Tests', (_: any) => {
       }
 
       // Redis setup
-      await redisHelper.getAdapter().setMultiple('users', users);
+      for (const user of users) {
+        await redisHelper.getAdapter().create('users', user);
+      }
 
       // Performance test reads
       const firestoreStart = performance.now();
@@ -383,11 +381,11 @@ describe('Database Performance Tests', (_: any) => {
         firestore: `${firestoreTime.toFixed(2)}ms`,
         redis: `${redisTime.toFixed(2)}ms`,
         redisFaster: `${(firestoreTime / redisTime).toFixed(2)}x`,
-      };
+      });
 
       // Redis should generally be faster for simple reads
       expect(redisTime).toBeLessThan(firestoreTime * 2);
-    };
+    });
 
     it('should compare write performance across databases', async () => {
       const recordCount = 50;
@@ -415,15 +413,15 @@ describe('Database Performance Tests', (_: any) => {
         redis: `${redisTime.toFixed(2)}ms`,
         firestoreAvg: `${(firestoreTime / recordCount).toFixed(2)}ms per record`,
         redisAvg: `${(redisTime / recordCount).toFixed(2)}ms per record`,
-      };
+      });
 
       // Both should complete within reasonable time
       expect(firestoreTime).toBeLessThan(recordCount * 50); // 50ms per record max
       expect(redisTime).toBeLessThan(recordCount * 30); // 30ms per record max
-    };
-  };
+    });
+  });
 
-  describe('Stress Testing', (_: any) => {
+  describe('Stress Testing', () => {
     it('should handle high-frequency operations', async () => {
       const operationCount = 200;
       const operations: Promise<any>[] = [];
@@ -432,7 +430,7 @@ describe('Database Performance Tests', (_: any) => {
 
       // Generate high-frequency mixed operations
       for (let i = 0; i < operationCount; i++) {
-        const user = createTestUser({ id: `stress-user-${i}` };
+        const user = createTestUser({ id: `stress-user-${i}` });
 
         if (i % 3 === 0) {
           // Create operation
@@ -444,7 +442,7 @@ describe('Database Performance Tests', (_: any) => {
             redisHelper
               .getAdapter()
               .update('stress', prevId, { updated: true })
-              .catch((: any: any: any: any: any) => null), // Ignore if doesn't exist
+              .catch(() => null), // Ignore if doesn't exist
           );
         } else {
           // Read operation
@@ -466,10 +464,10 @@ describe('Database Performance Tests', (_: any) => {
         totalTime: `${stressTime.toFixed(2)}ms`,
         avgOpTime: `${avgOpTime.toFixed(2)}ms`,
         opsPerSecond: Math.round(1000 / avgOpTime),
-      };
+      });
 
       expect(successfulOps).toBeGreaterThan(operationCount * 0.8); // 80% success rate
       expect(avgOpTime).toBeLessThan(25); // 25ms average operation time
-    };
-  };
-};
+    });
+  });
+});

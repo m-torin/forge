@@ -1,6 +1,6 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, vi } from 'vitest';
 
-describe('Storage Keys Configuration', (_: any) => {
+describe('storage Keys Configuration', (_: any) => {
   let originalEnv: NodeJS.ProcessEnv;
 
   beforeEach(() => {
@@ -13,10 +13,10 @@ describe('Storage Keys Configuration', (_: any) => {
   });
 
   describe('environment configuration behavior', (_: any) => {
-    it('should handle Vercel Blob configuration in production', async () => {
-      process.env.NODE_ENV = 'production';
-      process.env.STORAGE_PROVIDER = 'vercel-blob';
-      process.env.BLOB_READ_WRITE_TOKEN = 'vercel_blob_token_123';
+    test('should handle Vercel Blob configuration in production', async () => {
+      vi.stubEnv('NODE_ENV', 'production');
+      vi.stubEnv('STORAGE_PROVIDER', 'vercel-blob');
+      vi.stubEnv('BLOB_READ_WRITE_TOKEN', 'vercel_blob_token_123');
 
       const { keys } = await import('../keys');
 
@@ -28,13 +28,13 @@ describe('Storage Keys Configuration', (_: any) => {
       expect(typeof result).toBe('object');
     });
 
-    it('should handle Cloudflare R2 configuration in production', async () => {
-      process.env.NODE_ENV = 'production';
-      process.env.STORAGE_PROVIDER = 'cloudflare-r2';
-      process.env.R2_ACCOUNT_ID = 'account_123';
-      process.env.R2_ACCESS_KEY_ID = 'access_key_123';
-      process.env.R2_SECRET_ACCESS_KEY = 'secret_key_123';
-      process.env.R2_BUCKET = 'my-bucket';
+    test('should handle Cloudflare R2 configuration in production', async () => {
+      vi.stubEnv('NODE_ENV', 'production');
+      vi.stubEnv('STORAGE_PROVIDER', 'cloudflare-r2');
+      vi.stubEnv('R2_ACCOUNT_ID', 'account_123');
+      vi.stubEnv('R2_ACCESS_KEY_ID', 'access_key_123');
+      vi.stubEnv('R2_SECRET_ACCESS_KEY', 'secret_key_123');
+      vi.stubEnv('R2_BUCKET', 'my-bucket');
 
       const { keys } = await import('../keys');
 
@@ -48,10 +48,10 @@ describe('Storage Keys Configuration', (_: any) => {
   });
 
   describe('development environment', (_: any) => {
-    it('should handle development environment gracefully', async () => {
-      process.env.NODE_ENV = 'development';
-      process.env.STORAGE_PROVIDER = 'vercel-blob';
-      process.env.BLOB_READ_WRITE_TOKEN = 'vercel_blob_token_123';
+    test('should handle development environment gracefully', async () => {
+      vi.stubEnv('NODE_ENV', 'development');
+      vi.stubEnv('STORAGE_PROVIDER', 'vercel-blob');
+      vi.stubEnv('BLOB_READ_WRITE_TOKEN', 'vercel_blob_token_123');
 
       const { keys } = await import('../keys');
 
@@ -63,10 +63,10 @@ describe('Storage Keys Configuration', (_: any) => {
       expect(typeof result).toBe('object');
     });
 
-    it('should handle missing configuration in development', async () => {
-      process.env.NODE_ENV = 'development';
-      process.env.STORAGE_PROVIDER = undefined;
-      process.env.BLOB_READ_WRITE_TOKEN = undefined;
+    test('should handle missing configuration in development', async () => {
+      vi.stubEnv('NODE_ENV', 'development');
+      vi.stubEnv('STORAGE_PROVIDER', undefined);
+      vi.stubEnv('BLOB_READ_WRITE_TOKEN', undefined);
 
       const { keys } = await import('../keys');
 
@@ -80,15 +80,15 @@ describe('Storage Keys Configuration', (_: any) => {
   });
 
   describe('function behavior', (_: any) => {
-    it('should return a function', async () => {
+    test('should return a function', async () => {
       const { keys } = await import('../keys');
       expect(typeof keys).toBe('function');
     });
 
-    it('should return consistent results', async () => {
-      process.env.NODE_ENV = 'development';
-      process.env.STORAGE_PROVIDER = 'vercel-blob';
-      process.env.BLOB_READ_WRITE_TOKEN = 'token_123';
+    test('should return consistent results', async () => {
+      vi.stubEnv('NODE_ENV', 'development');
+      vi.stubEnv('STORAGE_PROVIDER', 'vercel-blob');
+      vi.stubEnv('BLOB_READ_WRITE_TOKEN', 'token_123');
 
       const { keys } = await import('../keys');
 
@@ -101,13 +101,13 @@ describe('Storage Keys Configuration', (_: any) => {
       expect(typeof result2).toBe('object');
     });
 
-    it('should handle environment variable parsing', async () => {
-      process.env.NODE_ENV = 'development';
-      process.env.STORAGE_PROVIDER = 'cloudflare-r2';
-      process.env.R2_ACCOUNT_ID = 'test-account';
-      process.env.R2_ACCESS_KEY_ID = 'test-key';
-      process.env.R2_SECRET_ACCESS_KEY = 'test-secret';
-      process.env.R2_BUCKET = 'test-bucket';
+    test('should handle environment variable parsing', async () => {
+      vi.stubEnv('NODE_ENV', 'development');
+      vi.stubEnv('STORAGE_PROVIDER', 'cloudflare-r2');
+      vi.stubEnv('R2_ACCOUNT_ID', 'test-account');
+      vi.stubEnv('R2_ACCESS_KEY_ID', 'test-key');
+      vi.stubEnv('R2_SECRET_ACCESS_KEY', 'test-secret');
+      vi.stubEnv('R2_BUCKET', 'test-bucket');
 
       const { keys } = await import('../keys');
 

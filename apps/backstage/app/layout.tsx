@@ -1,9 +1,12 @@
 import { env } from '@/env';
 import { ColorSchemeScript, MantineProvider } from '@mantine/core';
+import { Notifications } from '@mantine/notifications';
+import { AuthProvider } from '@repo/auth/client/next';
 import { ObservabilityProvider } from '@repo/observability/client/next';
 import { VercelToolbar } from '@vercel/toolbar/next';
 import { type Metadata } from 'next';
 import '@mantine/core/styles.css';
+import '@mantine/notifications/styles.css';
 import React, { type ReactNode } from 'react';
 
 interface RootLayoutProperties {
@@ -37,8 +40,14 @@ export default function RootLayout({ children }: RootLayoutProperties): React.Re
               },
             },
           }}
+          enableConcurrent={false}
         >
-          <MantineProvider>{children}</MantineProvider>
+          <AuthProvider>
+            <MantineProvider>
+              <Notifications />
+              {children}
+            </MantineProvider>
+          </AuthProvider>
         </ObservabilityProvider>
         {process.env.NODE_ENV === 'development' && <VercelToolbar />}
       </body>

@@ -29,4 +29,10 @@ export default [
       },
     },
   },
+  {
+    // Allow console statements in backstage admin app
+    rules: {
+      'no-console': 'off',
+    },
+  },
 ];

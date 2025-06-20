@@ -24,7 +24,7 @@ export async function scrapeMultiple(
     onError,
     onProgress,
     provider = 'auto',
-    retries: _retries = 3,
+    retries: retries = 3,
     timeout = 30000,
   } = options;
 
@@ -79,7 +79,7 @@ export async function scrapeMultiple(
         let lastError: Error | undefined;
 
         // Retry logic
-        for (let attempt = 0; attempt < _retries; attempt++) {
+        for (let attempt = 0; attempt < retries; attempt++) {
           try {
             result = await manager.scrape(url, {
               extract: selectors,
@@ -89,7 +89,7 @@ export async function scrapeMultiple(
           } catch (error: any) {
             lastError = error instanceof Error ? error : new Error(String(error));
 
-            if (attempt < _retries - 1) {
+            if (attempt < retries - 1) {
               // Wait before retry
               await humanDelay(1000 * (attempt + 1), 2000 * (attempt + 1));
             }
@@ -209,7 +209,7 @@ export async function* scrapeMultipleStream(
     onError,
     onProgress,
     provider = 'auto',
-    retries: _retries = 3,
+    retries: retries = 3,
     timeout = 30000,
   } = options;
 

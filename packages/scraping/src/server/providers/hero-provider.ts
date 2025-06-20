@@ -5,11 +5,7 @@
  */
 
 import { ScrapingError, ScrapingErrorCode } from '../../shared/errors';
-import {
-  type ExtractionResult,
-  type SelectorMap,
-  type SelectorConfig,
-} from '../../shared/types/scraping-types';
+import { type ExtractionResult, type SelectorMap } from '../../shared/types/scraping-types';
 import {
   ScrapingProvider,
   ProviderConfig,
@@ -173,7 +169,7 @@ export class HeroProvider implements ScrapingProvider {
         },
       };
     } catch (error: any) {
-      const _endTime = Date.now();
+      const endTime = Date.now();
 
       if (error instanceof ScrapingError) {
         throw error;
@@ -257,7 +253,7 @@ export class HeroProvider implements ScrapingProvider {
     // Basic HTML parsing (simplified implementation)
     // In production, this would use a proper HTML parser like cheerio
     for (const [key, selectorOrConfig] of Object.entries(selectors)) {
-      const _config: SelectorConfig =
+      const config =
         typeof selectorOrConfig === 'string' ? { selector: selectorOrConfig } : selectorOrConfig;
 
       // Placeholder extraction logic
@@ -320,7 +316,7 @@ export class HeroProvider implements ScrapingProvider {
       // Check if Hero is still connected
       await this.hero.url;
       return true;
-    } catch (_error: any) {
+    } catch (error) {
       // Health check failures should return false but not throw
       return false;
     }
@@ -334,7 +330,7 @@ export class HeroProvider implements ScrapingProvider {
   }
 
   // Additional Hero-specific methods for enhanced functionality
-  async click(selector: string, _options: { timeout?: number } = {}): Promise<void> {
+  async click(selector: string, options = {}): Promise<void> {
     if (!this.hero) {
       throw new ScrapingError('Hero not initialized', ScrapingErrorCode.PROVIDER_ERROR);
     }

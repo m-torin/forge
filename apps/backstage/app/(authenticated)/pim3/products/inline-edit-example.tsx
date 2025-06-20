@@ -1,13 +1,13 @@
 'use client';
 
-import { Button, Group, Stack, Text, Title } from '@mantine/core';
+import { Group, Stack, Text, Title } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 import { IconCheck, IconX } from '@tabler/icons-react';
 import { type MRT_ColumnDef, type MRT_TableOptions } from 'mantine-react-table';
 import { useState } from 'react';
 
-import { DataTable } from '../components/DataTable';
+import { DataTable } from '@/components/pim3/DataTable';
 
 interface Product {
   id: string;

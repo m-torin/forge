@@ -21,7 +21,7 @@ interface ScheduledExecution {
 // Create alias for backward compatibility with tests
 const createSchedulingService = createAdvancedScheduler;
 
-describe('Scheduling Service', (_: any) => {
+describe('scheduling Service', (_: any) => {
   let mocks: ReturnType<typeof setupUpstashMocks>;
   let provider: UpstashWorkflowProvider;
   let schedulingService: ReturnType<typeof createSchedulingService>;
@@ -44,7 +44,7 @@ describe('Scheduling Service', (_: any) => {
     resetUpstashMocks(mocks);
   });
 
-  describe('Schedule Creation', (_: any) => {
+  describe('schedule Creation', (_: any) => {
     test.skip('should create simple cron schedule', async () => {
       const scheduleConfig: ScheduleConfig = {
         cron: '0 9 * * *', // Daily at 9 AM
@@ -141,7 +141,7 @@ describe('Scheduling Service', (_: any) => {
     });
   });
 
-  describe('Schedule Management', (_: any) => {
+  describe('schedule Management', (_: any) => {
     test.skip('should update existing schedule', async () => {
       const originalConfig: ScheduleConfig = {
         cron: '0 2 * * *', // 2 AM daily
@@ -185,13 +185,13 @@ describe('Scheduling Service', (_: any) => {
       await schedulingService.pauseSchedule(scheduleId);
 
       const pausedSchedule = await schedulingService.getSchedule(scheduleId);
-      expect(pausedSchedule?.enabled).toBe(false);
+      expect(pausedSchedule?.enabled).toBeFalsy();
 
       // Resume schedule
       await schedulingService.resumeSchedule(scheduleId);
 
       const resumedSchedule = await schedulingService.getSchedule(scheduleId);
-      expect(resumedSchedule?.enabled).toBe(true);
+      expect(resumedSchedule?.enabled).toBeTruthy();
     });
 
     test.skip('should delete schedule', async () => {
@@ -209,7 +209,7 @@ describe('Scheduling Service', (_: any) => {
 
       const deleted = await schedulingService.deleteSchedule(scheduleId);
 
-      expect(deleted).toBe(true);
+      expect(deleted).toBeTruthy();
       expect(mocks.redis.del).toHaveBeenCalledWith(`workflow:schedule:${scheduleId}`);
     });
 
@@ -257,7 +257,7 @@ describe('Scheduling Service', (_: any) => {
     });
   });
 
-  describe('Schedule Execution', (_: any) => {
+  describe('schedule Execution', (_: any) => {
     test.skip('should trigger schedule manually', async () => {
       const scheduleConfig: ScheduleConfig = {
         cron: '0 9 * * *',
@@ -275,7 +275,7 @@ describe('Scheduling Service', (_: any) => {
 
       expect(execution).toBeDefined();
       expect(execution.scheduleId).toBe(scheduleId);
-      expect(execution.triggeredManually).toBe(true);
+      expect(execution.triggeredManually).toBeTruthy();
       expect(mocks.qstash.publishJSON).toHaveBeenCalledWith(
         expect.objectContaining({
           url: expect.stringContaining('/api/workflows/manual-trigger-test/execute'),
@@ -324,7 +324,7 @@ describe('Scheduling Service', (_: any) => {
     });
   });
 
-  describe('Schedule History', (_: any) => {
+  describe('schedule History', (_: any) => {
     test.skip('should track execution history', async () => {
       const scheduleConfig: ScheduleConfig = {
         cron: '*/5 * * * *', // Every 5 minutes
@@ -430,7 +430,7 @@ describe('Scheduling Service', (_: any) => {
     });
   });
 
-  describe('Complex Scheduling Scenarios', (_: any) => {
+  describe('complex Scheduling Scenarios', (_: any) => {
     test.skip('should handle overlapping schedule conflicts', async () => {
       const scheduleConfig: ScheduleConfig = {
         cron: '*/10 * * * *', // Every 10 minutes
@@ -530,7 +530,7 @@ describe('Scheduling Service', (_: any) => {
     });
   });
 
-  describe('Error Handling and Resilience', (_: any) => {
+  describe('error Handling and Resilience', (_: any) => {
     test.skip('should handle QStash errors gracefully', async () => {
       mocks.qstash.schedules.create.mockRejectedValue(new Error('QStash service unavailable'));
 

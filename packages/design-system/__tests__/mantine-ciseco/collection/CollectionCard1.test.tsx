@@ -1,10 +1,10 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '../test-utils';
-import CollectionCard1 from '../../../mantine-ciseco/components/CollectionCard1';
+import CollectionCard1 from '../../../src/mantine-ciseco/components/CollectionCard1';
 import { mockCollection } from '../test-utils';
 
 // Mock the Link component
-vi.mock('../../../mantine-ciseco/components/Link', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/components/Link', (_: any) => ({
   Link: ({ children, className, href, ...props }: any) => (
     <a className={className} href={href} {...props}>
       {children}
@@ -13,12 +13,12 @@ vi.mock('../../../mantine-ciseco/components/Link', (_: any) => ({
 }));
 
 // Mock the useLocalizeHref hook
-vi.mock('../../../mantine-ciseco/hooks/useLocale', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/hooks/useLocale', (_: any) => ({
   useLocalizeHref: () => (href: string) => `/en${href}`,
 }));
 
 // Mock NcImage component to avoid Next.js Image issues
-vi.mock('../../../mantine-ciseco/components/shared/NcImage/NcImage', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/components/shared/NcImage/NcImage', (_: any) => ({
   default: ({ alt, src, containerClassName, fill, sizes, ...props }: any) => (
     <div className={containerClassName}>
       <img alt={alt} src={typeof src === 'object' ? src.src : src} {...props} />

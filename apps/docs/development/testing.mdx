@@ -86,30 +86,32 @@ export function AddToCardButton({
     - Add state modifiers when relevant (`-active`, `-disabled`)
     - Provide testId props for flexibility
     - Test behavior, not implementation details
-    
+
     **Performance Considerations:**
     - Use specific testids to reduce DOM traversal
     - Pre-calculate testids when possible
     - Keep testid values concise
+
   </Tab>
-  
+
   <Tab title="Testing Examples">
     ```tsx
     // Good practice - using data-testid
     test('should add item to cart', () => {
       render(<AddToCardButton />);
-      
+
       const button = screen.getByTestId('add-to-cart-button');
       fireEvent.click(button);
-      
+
       const badge = screen.getByTestId('add-to-cart-badge');
       expect(badge).toHaveTextContent('1');
     });
-    
+
     // Playwright/Cypress usage
     await page.getByTestId('add-to-cart-button').click();
     cy.get('[data-testid="add-to-cart-button"]').click();
     ```
+
   </Tab>
 </Tabs>
 
@@ -170,28 +172,30 @@ standards:
     pnpm install
     ```
   </Step>
-  
+
   <Step title="Configure Vitest">
     ```typescript
     // vitest.config.ts
     export { default } from '@repo/testing';
-    
+
     // Or use environment-specific config
     import { createReactConfig } from '@repo/testing/config/react';
     export default createReactConfig();
     ```
+
   </Step>
-  
+
   <Step title="Setup Test File">
     ```typescript
     // test-setup.ts
     import '@repo/testing/setup/nextjs';
-    
+
     // Add package-specific setup
     process.env.TEST_API_KEY = 'test_key';
     ```
+
   </Step>
-  
+
   <Step title="Run Tests">
     ```bash
     pnpm test                    # All tests
@@ -232,7 +236,7 @@ standards:
     ```
 
   </Tab>
-  
+
   <Tab title="Next.js Applications">
     ```typescript
     // vitest.config.ts
@@ -259,7 +263,7 @@ standards:
     ```
 
   </Tab>
-  
+
   <Tab title="Node.js Packages">
     ```typescript
     // vitest.config.ts
@@ -295,7 +299,7 @@ standards:
     }
     ```
   </Accordion>
-  
+
   <Accordion title="React Config Options" icon="react">
     ```typescript
     interface ReactConfigOptions extends BaseConfigOptions {
@@ -308,7 +312,7 @@ standards:
     }
     ```
   </Accordion>
-  
+
   <Accordion title="Next.js Config Options" icon="next-js">
     ```typescript
     interface NextConfigOptions extends ReactConfigOptions {
@@ -427,12 +431,12 @@ describe('ThemedComponent', () => {
     ```
 
   </Tab>
-  
+
   <Tab title="Server Actions">
     ```typescript
     import { render, screen, userEvent } from '@repo/testing/utils/render';
     import { updateUserAction } from './actions';
-    
+
     // Mock server action
     vi.mock('./actions', () => ({
       updateUserAction: vi.fn(),
@@ -465,7 +469,7 @@ describe('ThemedComponent', () => {
 ### Database Test Helpers
 
 <CodeGroup>
-```typescript Basic Database Testing
+```typescript Database Testing
 import {
   DatabaseTestHelper,
   testDatabaseOperations,
@@ -479,13 +483,27 @@ DatabaseTestHelper(adapter, { provider: 'upstash-redis' }); await helper.setup()
 
 afterEach(async () => { await helper.cleanup(); });
 
-it('performs basic CRUD operations', async () => { await testDatabaseOperations(helper, 'users');
+it('performs basic CRUD operations', async () => { const results = await
+testDatabaseOperations(helper, 'users');
+
+    expect(results.created).toHaveProperty('id');
+    expect(results.createdWithoutId).toMatchObject(results.testDataWithoutId);
+    expect(results.found).toBeTruthy();
+    expect(results.foundWithoutId).toMatchObject(results.testDataWithoutId);
+    expect(results.updated).toMatchObject({ ...results.testDataWithoutId, ...results.updateData });
+    expect(results.many).toHaveLength(1);
+    expect(results.manyWithoutId).toMatchObject({ ...results.testDataWithoutId, ...results.updateData });
+    expect(results.count).toBe(1);
+    expect(results.deleted).toMatchObject({ ...results.testDataWithoutId, ...results.updateData });
+    expect(results.notFound).toBeNull();
+    expect(results.finalCount).toBe(0);
+
 });
 
-it('handles user creation and retrieval', async () => { const userId = await helper.create('users',
-{ email: 'test@example.com', name: 'Test User', });
+it('handles user creation and retrieval', async () => { const userId = await
+helper.getAdapter().create('users', { email: 'test@example.com', name: 'Test User', });
 
-    const user = await helper.findById('users', userId);
+    const user = await helper.findItem('users', userId.id);
     expect(user).toMatchObject({
       email: 'test@example.com',
       name: 'Test User',
@@ -569,7 +587,7 @@ describe('Vector Search Operations', () => {
     ```
 
   </Tab>
-  
+
   <Tab title="Redis Mock">
     ```typescript
     import { createUpstashRedisAdapter } from '@repo/testing';
@@ -592,7 +610,7 @@ describe('Vector Search Operations', () => {
     ```
 
   </Tab>
-  
+
   <Tab title="Vector Mock">
     ```typescript
     import { createVectorAdapter } from '@repo/testing';
@@ -752,7 +770,7 @@ describe('/api/users/[id]', () => {
     ```
 
   </Tab>
-  
+
   <Tab title="Dynamic Mocking">
     ```typescript
     import { server } from './setup-msw';
@@ -816,7 +834,7 @@ describe('/api/users/[id]', () => {
     ```
 
   </Accordion>
-  
+
   <Accordion title="Browser Mocks" icon="globe">
     ```typescript
     import { setupBrowserMocks } from '@repo/testing/mocks/browser';
@@ -839,7 +857,7 @@ describe('/api/users/[id]', () => {
     ```
 
   </Accordion>
-  
+
   <Accordion title="Console Management" icon="terminal">
     ```typescript
     import { suppressConsoleErrors } from '@repo/testing/setup/common';
@@ -950,14 +968,14 @@ export function createProductWithReviews(productOverrides?: Partial<ProductData>
       timeout = 5000
     ): Promise<HTMLElement> {
       const start = Date.now();
-      
+
       while (Date.now() - start < timeout) {
         const element = getElement();
         if (element) return element;
-        
+
         await new Promise(resolve => setTimeout(resolve, 100));
       }
-      
+
       throw new Error('Element not found within timeout');
     }
 
@@ -981,7 +999,7 @@ export function createProductWithReviews(productOverrides?: Partial<ProductData>
     ```
 
   </Tab>
-  
+
   <Tab title="Form Testing Utilities">
     ```typescript
     // test/utils/forms.ts

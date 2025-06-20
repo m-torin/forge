@@ -3,42 +3,88 @@
  */
 
 export interface SentryConfig {
+  // Required
+  dsn: string;
+
+  // Core Options
+  debug?: boolean;
+  release?: string;
+  environment?: string;
+  tunnel?: string; // For working around ad-blockers
+  sendDefaultPii?: boolean;
+  maxBreadcrumbs?: number;
+  attachStacktrace?: boolean;
+  serverName?: string; // Server-only
+  initialScope?: Record<string, any> | ((scope: any) => any);
+  maxValueLength?: number;
+  normalizeDepth?: number;
+  normalizeMaxBreadth?: number;
+  enabled?: boolean;
+  sendClientReports?: boolean;
+  includeLocalVariables?: boolean; // Server-only
+  integrations?: any[] | string[];
+  defaultIntegrations?: false; // Set to false to disable default integrations
+  beforeBreadcrumb?: (breadcrumb: any, hint?: any) => any | null;
+  transport?: (transportOptions: any) => any;
+  transportOptions?: {
+    headers?: Record<string, string>;
+    // Node transport options
+    proxy?: string;
+    caCerts?: string | string[] | Buffer;
+    httpModule?: any;
+    keepAlive?: boolean;
+    // Browser transport options
+    fetchOptions?: RequestInit;
+  };
+  shutdownTimeout?: number; // Server-only
+  disableInstrumentationWarnings?: boolean; // Server-only
+
+  // Error Monitoring Options
+  sampleRate?: number;
+  beforeSend?: (event: any, hint: any) => any;
+  ignoreErrors?: Array<string | RegExp>;
+  denyUrls?: Array<string | RegExp>; // Client-only
+  allowUrls?: Array<string | RegExp>; // Client-only
+
+  // Tracing Options
+  tracesSampleRate?: number;
+  tracesSampler?: (samplingContext: any) => number | boolean;
+  tracePropagationTargets?: Array<string | RegExp>;
+  beforeSendTransaction?: (event: any, hint: any) => any;
+  beforeSendSpan?: (span: any) => any;
+  ignoreTransactions?: Array<string | RegExp>;
+
+  // Session Replay Options (Client-only)
+  replaysSessionSampleRate?: number;
+  replaysOnErrorSampleRate?: number;
+  replayMaskAllText?: boolean;
+  replayBlockAllMedia?: boolean;
+
+  // Profiling Options
+  profilesSampleRate?: number;
+
   // Next.js specific build options
   automaticVercelMonitors?: boolean;
-  beforeSend?: (event: any, hint: any) => any;
-  beforeSendTransaction?: (event: any, hint: any) => any;
-  debug?: boolean;
   disableLogger?: boolean;
-  dsn: string;
-  environment?: string;
   hideSourceMaps?: boolean;
-  integrations?: any[] | string[];
+  tunnelRoute?: string;
+  widenClientFileUpload?: boolean;
+
+  // New features from Sentry documentation
+  browserTracingEnabled?: boolean;
+  feedbackEnabled?: boolean;
+  loggingEnabled?: boolean;
+  _experiments?: {
+    enableLogs?: boolean;
+  };
 
   // Additional options to spread into Sentry.init()
   options?: Record<string, any>;
-  profilesSampleRate?: number;
-  release?: string;
-  replayBlockAllMedia?: boolean;
-
-  replayMaskAllText?: boolean;
-  replaysOnErrorSampleRate?: number;
-  // Replay integration options
-  replaysSessionSampleRate?: number;
-  tracesSampleRate?: number;
-  tunnelRoute?: string;
-
-  widenClientFileUpload?: boolean;
 }
 
 export interface SentryOptions {
   // Additional runtime options
-  attachStacktrace?: boolean;
   autoSessionTracking?: boolean;
-  maxBreadcrumbs?: number;
-  normalizeDepth?: number;
-  transportOptions?: {
-    headers?: Record<string, string>;
-  };
 }
 
 export interface SentryUser {

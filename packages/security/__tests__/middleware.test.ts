@@ -1,5 +1,5 @@
 import { createMiddleware } from '@nosecone/next';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, vi } from 'vitest';
 
 // Import after mocks
 import { noseconeMiddleware, noseconeOptions } from '../middleware';
@@ -26,13 +26,13 @@ vi.mock('@nosecone/next', (_: any) => ({
   },
 }));
 
-describe('middleware', (_: any) => {
-  describe('noseconeOptions', (_: any) => {
-    it('should have contentSecurityPolicy disabled', (_: any) => {
-      expect(noseconeOptions.contentSecurityPolicy).toBe(false);
+describe('middleware', () => {
+  describe('noseconeOptions', () => {
+    test('should have contentSecurityPolicy disabled', () => {
+      expect(noseconeOptions.contentSecurityPolicy).toBeFalsy();
     });
 
-    it('should include default options', (_: any) => {
+    test('should include default options', () => {
       // Check that defaults are spread into options
       expect(noseconeOptions).toMatchObject({
         contentSecurityPolicy: false,
@@ -40,8 +40,8 @@ describe('middleware', (_: any) => {
     });
   });
 
-  describe('noseconeMiddleware', (_: any) => {
-    it('should export createMiddleware function', (_: any) => {
+  describe('noseconeMiddleware', () => {
+    test('should export createMiddleware function', () => {
       expect(noseconeMiddleware).toBe(createMiddleware);
     });
   });

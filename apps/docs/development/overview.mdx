@@ -39,35 +39,38 @@ developer productivity, and maintainable architecture across all applications an
     pnpm install
     ```
   </Step>
-  
+
   <Step title="Environment Configuration">
     ```bash
     # Download secrets for local development
     pnpm doppler:pull:all
-    
+
     # Or use local environment files
     cp .env.example .env.local
     ```
+
   </Step>
-  
+
   <Step title="Database Setup">
     ```bash
     # Run database migrations
     pnpm migrate
-    
+
     # Generate Prisma client
     pnpm --filter @repo/database generate
     ```
+
   </Step>
-  
+
   <Step title="Start Development">
     ```bash
     # Start all applications
     pnpm dev
-    
+
     # Or start specific application
     pnpm dev --filter=backstage
     ```
+
   </Step>
 </Steps>
 
@@ -202,7 +205,7 @@ The project uses **Vitest** with React Testing Library for comprehensive testing
     ```
 
   </Tab>
-  
+
   <Tab title="Next.js Applications">
     ```typescript
     // vitest.config.ts
@@ -216,7 +219,7 @@ The project uses **Vitest** with React Testing Library for comprehensive testing
     ```
 
   </Tab>
-  
+
   <Tab title="Node.js Packages">
     ```typescript
     // vitest.config.ts
@@ -282,7 +285,12 @@ describe('Database Operations', () => {
   });
 
   it('performs CRUD operations', async () => {
-    await testDatabaseOperations(helper, 'users');
+    const results = await testDatabaseOperations(helper, 'users');
+
+    expect(results.created).toHaveProperty('id');
+    expect(results.found).toBeTruthy();
+    expect(results.count).toBe(1);
+    expect(results.finalCount).toBe(0);
   });
 
   it('handles transactions correctly', async () => {
@@ -318,13 +326,13 @@ describe('Database Operations', () => {
     ```
 
   </Accordion>
-  
+
   <Accordion title="Database Mocks" icon="database">
     ```typescript
-    import { 
+    import {
       createUpstashRedisAdapter,
       createFirestoreAdapter,
-      createVectorAdapter 
+      createVectorAdapter
     } from '@repo/testing';
 
     // Redis mocking
@@ -338,7 +346,7 @@ describe('Database Operations', () => {
     ```
 
   </Accordion>
-  
+
   <Accordion title="API Mocking" icon="cloud">
     ```typescript
     import { http, HttpResponse } from 'msw';
@@ -390,7 +398,7 @@ The monorepo uses strict TypeScript configurations for different environments:
     }
     ```
   </Tab>
-  
+
   <Tab title="React Libraries">
     ```json
     // tsconfig.json
@@ -406,7 +414,7 @@ The monorepo uses strict TypeScript configurations for different environments:
     }
     ```
   </Tab>
-  
+
   <Tab title="Node.js Packages">
     ```json
     // tsconfig.json
@@ -500,7 +508,7 @@ export function createNextServerClient() {
     ```
 
   </Tab>
-  
+
   <Tab title="React Libraries">
     ```javascript
     // eslint.config.ts
@@ -519,7 +527,7 @@ export function createNextServerClient() {
     ```
 
   </Tab>
-  
+
   <Tab title="Node.js Packages">
     ```javascript
     // eslint.config.ts
@@ -608,42 +616,45 @@ export function ExpensiveComponent() {
     ```bash
     # Open Prisma Studio
     pnpm studio
-    
+
     # View database schema
     pnpm --filter @repo/database db:introspect
-    
+
     # Reset database
     pnpm --filter @repo/database db:reset
     ```
+
   </Accordion>
-  
+
   <Accordion title="API Debugging" icon="bug">
     ```typescript
     // Enable debug logging
     process.env.DEBUG = 'api:*';
-    
+
     // Use debug middleware
     import { createDebugMiddleware } from '@repo/observability';
-    
+
     app.use(createDebugMiddleware({
       logRequests: true,
       logResponses: true,
       includeStackTrace: true,
     }));
     ```
+
   </Accordion>
-  
+
   <Accordion title="Build Debugging" icon="wrench">
     ```bash
     # Verbose build output
     pnpm build --verbose
-    
+
     # Debug TypeScript compilation
     pnpm typecheck --listFiles
-    
+
     # Analyze build dependencies
     pnpm list --depth=0
     ```
+
   </Accordion>
 </AccordionGroup>
 

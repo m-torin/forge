@@ -73,25 +73,25 @@ When creating new packages with AI assistance:
     ```typescript
     // AI can follow this pattern for new server actions
     'use server';
-    
+
     import { z } from 'zod';
     import { auth } from '@repo/auth/server/next';
-    import { database } from '@repo/database';
-    
+    import { prisma } from '@repo/database/prisma/server/next';
+
     const schema = z.object({
       name: z.string().min(2),
       email: z.string().email(),
     });
-    
+
     export async function createUser(formData: FormData) {
       const session = await auth();
       if (!session?.user) {
         throw new Error('Unauthorized');
       }
-      
+
       const data = schema.parse(Object.fromEntries(formData));
-      
-      return await database.user.create({
+
+      return await prisma.user.create({
         data: {
           ...data,
           organizationId: session.user.organizationId,
@@ -99,36 +99,37 @@ When creating new packages with AI assistance:
       });
     }
     ```
+
   </Accordion>
-  
+
   <Accordion title="React Components" icon="react">
     ```typescript
     // Standard component pattern with Mantine UI
     import { Button, TextInput } from '@mantine/core';
     import { useForm, zodResolver } from '@mantine/form';
     import { z } from 'zod';
-    
+
     const schema = z.object({
       name: z.string().min(2),
       email: z.string().email(),
     });
-    
+
     interface ComponentProps {
       'data-testid'?: string;
       onSubmit: (data: z.infer<typeof schema>) => void;
     }
-    
-    export function UserForm({ 
+
+    export function UserForm({
       'data-testid': testId = 'user-form',
-      onSubmit 
+      onSubmit
     }: ComponentProps) {
       const form = useForm({
         validate: zodResolver(schema),
         initialValues: { name: '', email: '' },
       });
-      
+
       return (
-        <form 
+        <form
           data-testid={testId}
           onSubmit={form.onSubmit(onSubmit)}
         >
@@ -145,40 +146,42 @@ When creating new packages with AI assistance:
       );
     }
     ```
+
   </Accordion>
-  
+
   <Accordion title="API Routes" icon="api">
     ```typescript
     // Standard API route with auth and validation
     import { NextRequest } from 'next/server';
     import { auth } from '@repo/auth/server/next';
     import { z } from 'zod';
-    
+
     const schema = z.object({
       name: z.string().min(2),
     });
-    
+
     export async function POST(request: NextRequest) {
       try {
         const session = await auth();
         if (!session?.user) {
           return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
-        
+
         const body = await request.json();
         const data = schema.parse(body);
-        
+
         // Implementation
-        
+
         return Response.json({ success: true });
       } catch (error) {
         return Response.json(
-          { error: 'Internal server error' }, 
+          { error: 'Internal server error' },
           { status: 500 }
         );
       }
     }
     ```
+
   </Accordion>
 </AccordionGroup>
 
@@ -196,9 +199,10 @@ When working with AI on Forge, provide comprehensive context:
     - Tech stack: Next.js 15, TypeScript, Mantine UI
     - Architecture: ESM modules, server/client separation
     - Patterns: Four-file exports, T3 Env validation
-    
+
     Please create a new analytics event tracking function that...
     ```
+
   </Tab>
 
 <Tab title="Component Context">
@@ -214,9 +218,10 @@ When working with AI on Forge, provide comprehensive context:
     - Follows server action pattern over API routes
     - Implements proper error handling
     - Uses Zod for request validation
-    
+
     Create an endpoint that...
     ```
+
   </Tab>
 </Tabs>
 

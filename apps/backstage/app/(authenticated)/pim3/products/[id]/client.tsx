@@ -44,38 +44,24 @@ import {
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { InventoryManagement } from '../../components/InventoryManagement';
-import { MediaManagement } from '../../components/MediaManagement';
-import { PDPManagement } from '../../components/PDPManagement';
-import { PriceHistory } from '../../components/PriceHistory';
-import { ProductBundling } from '../../components/ProductBundling';
-import { ProductLifecycle } from '../../components/ProductLifecycle';
-import { ProductVariants } from '../../components/ProductVariants';
-import { SupplierProcurement } from '../../components/SupplierProcurement';
-import { createProduct, updateProduct } from '../../actions';
+import { InventoryManagement } from '@/components/pim3/InventoryManagement';
+import { MediaManagement } from '@/components/pim3/MediaManagement';
+import { PDPManagement } from '@/components/pim3/PDPManagement';
+import { PriceHistory } from '@/components/pim3/PriceHistory';
+import { ProductBundling } from '@/components/pim3/ProductBundling';
+import { ProductLifecycle } from '@/components/pim3/ProductLifecycle';
+import { ProductVariants } from '@/components/pim3/ProductVariants';
+import { SupplierProcurement } from '@/components/pim3/SupplierProcurement';
+import { createProduct, updateProduct } from '@/actions/pim3/actions';
 
-import type {
-  PdpJoin,
-  Product,
-  ProductAsset,
-  ProductBarcode,
-  ScanHistory,
-} from '@repo/database/prisma';
+import type { PdpJoin, Product, Media, ProductIdentifiers } from '@repo/database/prisma';
 
 interface ExtendedProduct extends Product {
   _count: {
-    scanHistory: number;
     soldBy: number;
   };
-  barcodes: ProductBarcode[];
-  digitalAssets: ProductAsset[];
-  scanHistory: (ScanHistory & {
-    user: {
-      id: string;
-      name: string | null;
-      email: string;
-    } | null;
-  })[];
+  identifiers: ProductIdentifiers[];
+  media: Media[];
   soldBy: (PdpJoin & {
     brand: {
       id: string;
@@ -104,7 +90,7 @@ export function ProductDetailClient({ product, isCreating = false }: ProductDeta
     validate: {
       name: (value) => (!value ? 'Product name is required' : null),
       category: (value) => (!value ? 'Category is required' : null),
-      description: (value) => {
+      description: (value: any) => {
         if (value && value.length > 5000) return 'Description is too long (max 5000 characters)';
         return null;
       },
@@ -130,7 +116,7 @@ export function ProductDetailClient({ product, isCreating = false }: ProductDeta
       brand: product?.brand || '',
       category: product?.category || '',
       currency: product?.currency || 'USD',
-      description: product?.description || '',
+      description: (product as any)?.description || '',
       price: product?.price || 0,
       sku: product?.sku || '',
       status: product?.status || 'DRAFT',
@@ -655,9 +641,9 @@ export function ProductDetailClient({ product, isCreating = false }: ProductDeta
                 <Tabs.Tab
                   leftSection={<IconPhoto size={16} />}
                   rightSection={
-                    product.digitalAssets.length > 0 && (
+                    product.media.length > 0 && (
                       <Badge circle size="xs">
-                        {product.digitalAssets.length}
+                        {product.media.length}
                       </Badge>
                     )
                   }
@@ -668,13 +654,13 @@ export function ProductDetailClient({ product, isCreating = false }: ProductDeta
                 <Tabs.Tab
                   leftSection={<IconBarcode size={16} />}
                   rightSection={
-                    product.barcodes.length > 0 && (
+                    product.identifiers.length > 0 && (
                       <Badge circle size="xs">
-                        {product.barcodes.length}
+                        {product.identifiers.length}
                       </Badge>
                     )
                   }
-                  value="barcodes"
+                  value="identifiers"
                 >
                   Barcodes
                 </Tabs.Tab>
@@ -682,7 +668,7 @@ export function ProductDetailClient({ product, isCreating = false }: ProductDeta
                   leftSection={<IconHistory size={16} />}
                   rightSection={
                     <Badge circle size="xs">
-                      {product._count.scanHistory}
+                      {(product._count as any).media || 0}
                     </Badge>
                   }
                   value="history"
@@ -851,16 +837,16 @@ export function ProductDetailClient({ product, isCreating = false }: ProductDeta
                   </Button>
                 </Group>
 
-                {product.digitalAssets.length > 0 ? (
+                {product.media.length > 0 ? (
                   <SimpleGrid cols={2} spacing="md">
-                    {product.digitalAssets
+                    {product.media
                       .sort((a, b) => a.sortOrder - b.sortOrder)
                       .map((asset) => (
                         <Card key={asset.id} withBorder>
                           <Stack>
                             {asset.type === 'IMAGE' && (
                               <Image
-                                alt={asset.alt || asset.filename}
+                                alt={asset.altText || asset.url.split('/').pop() || 'Media'}
                                 fit="cover"
                                 h={120}
                                 radius="sm"
@@ -869,14 +855,14 @@ export function ProductDetailClient({ product, isCreating = false }: ProductDeta
                             )}
                             <div>
                               <Text fw={500} size="sm">
-                                {asset.filename}
+                                {asset.url.split('/').pop() || 'Media'}
                               </Text>
                               <Badge size="xs" variant="light">
                                 {asset.type}
                               </Badge>
-                              {asset.description && (
+                              {(asset.copy as any)?.description && (
                                 <Text c="dimmed" mt="xs" size="xs">
-                                  {asset.description}
+                                  {(asset.copy as any).description}
                                 </Text>
                               )}
                             </div>
@@ -900,129 +886,92 @@ export function ProductDetailClient({ product, isCreating = false }: ProductDeta
                 )}
               </Tabs.Panel>
 
-              <Tabs.Panel pt="md" value="barcodes">
-                {product.barcodes.length > 0 ? (
+              <Tabs.Panel pt="md" value="identifiers">
+                {product.identifiers.length > 0 ? (
                   <Table>
                     <Table.Thead>
                       <Table.Tr>
-                        <Table.Th>Barcode</Table.Th>
-                        <Table.Th>Type</Table.Th>
-                        <Table.Th>Primary</Table.Th>
-                        <Table.Th>Created</Table.Th>
+                        <Table.Th>Identifier Type</Table.Th>
+                        <Table.Th>Value</Table.Th>
                         <Table.Th>Actions</Table.Th>
                       </Table.Tr>
                     </Table.Thead>
                     <Table.Tbody>
-                      {product.barcodes.map((barcode) => (
-                        <Table.Tr key={barcode.id}>
-                          <Table.Td>
-                            <Group gap="xs">
-                              <Text ff="monospace">{barcode.barcode}</Text>
-                              <CopyButton value={barcode.barcode}>
-                                {({ copied, copy }) => (
-                                  <Tooltip label={copied ? 'Copied' : 'Copy barcode'}>
-                                    <ActionIcon
-                                      color={copied ? 'teal' : 'gray'}
-                                      onClick={copy}
-                                      size="xs"
-                                      variant="subtle"
-                                    >
-                                      {copied ? <IconCheck size={12} /> : <IconCopy size={12} />}
+                      {product.identifiers.map((identifier) => {
+                        const identifierTypes = [
+                          { key: 'mpn', label: 'MPN' },
+                          { key: 'upcA', label: 'UPC-A' },
+                          { key: 'ean13', label: 'EAN-13' },
+                          { key: 'gs1128', label: 'GS1-128' },
+                          { key: 'upcE', label: 'UPC-E' },
+                          { key: 'ean8', label: 'EAN-8' },
+                          { key: 'isbn10', label: 'ISBN-10' },
+                          { key: 'isbn13', label: 'ISBN-13' },
+                        ];
+
+                        return identifierTypes
+                          .filter((type) => identifier[type.key as keyof ProductIdentifiers])
+                          .map((type) => (
+                            <Table.Tr key={`${identifier.id}-${type.key}`}>
+                              <Table.Td>
+                                <Badge size="sm" variant="light">
+                                  {type.label}
+                                </Badge>
+                              </Table.Td>
+                              <Table.Td>
+                                <Group gap="xs">
+                                  <Text ff="monospace">
+                                    {String(identifier[type.key as keyof ProductIdentifiers])}
+                                  </Text>
+                                  <CopyButton
+                                    value={String(identifier[type.key as keyof ProductIdentifiers])}
+                                  >
+                                    {({ copied, copy }) => (
+                                      <Tooltip label={copied ? 'Copied' : 'Copy identifier'}>
+                                        <ActionIcon
+                                          color={copied ? 'teal' : 'gray'}
+                                          onClick={copy}
+                                          size="xs"
+                                          variant="subtle"
+                                        >
+                                          {copied ? (
+                                            <IconCheck size={12} />
+                                          ) : (
+                                            <IconCopy size={12} />
+                                          )}
+                                        </ActionIcon>
+                                      </Tooltip>
+                                    )}
+                                  </CopyButton>
+                                </Group>
+                              </Table.Td>
+                              <Table.Td>
+                                <CopyButton
+                                  value={String(identifier[type.key as keyof ProductIdentifiers])}
+                                >
+                                  {({ copied, copy }) => (
+                                    <ActionIcon onClick={copy} size="sm" variant="light">
+                                      {copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
                                     </ActionIcon>
-                                  </Tooltip>
-                                )}
-                              </CopyButton>
-                            </Group>
-                          </Table.Td>
-                          <Table.Td>
-                            <Badge size="sm" variant="light">
-                              {barcode.type}
-                            </Badge>
-                          </Table.Td>
-                          <Table.Td>
-                            {barcode.isPrimary && (
-                              <Badge color="blue" size="sm">
-                                Primary
-                              </Badge>
-                            )}
-                          </Table.Td>
-                          <Table.Td>{formatDate(barcode.createdAt)}</Table.Td>
-                          <Table.Td>
-                            <CopyButton value={barcode.barcode}>
-                              {({ copied, copy }) => (
-                                <ActionIcon onClick={copy} size="sm" variant="light">
-                                  {copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
-                                </ActionIcon>
-                              )}
-                            </CopyButton>
-                          </Table.Td>
-                        </Table.Tr>
-                      ))}
+                                  )}
+                                </CopyButton>
+                              </Table.Td>
+                            </Table.Tr>
+                          ));
+                      })}
                     </Table.Tbody>
                   </Table>
                 ) : (
                   <Text c="dimmed" py="xl" ta="center">
-                    No barcodes found
+                    No identifiers found
                   </Text>
                 )}
               </Tabs.Panel>
 
               <Tabs.Panel pt="md" value="history">
-                {product.scanHistory && product.scanHistory.length > 0 ? (
-                  <Table>
-                    <Table.Thead>
-                      <Table.Tr>
-                        <Table.Th>Barcode</Table.Th>
-                        <Table.Th>User</Table.Th>
-                        <Table.Th>Platform</Table.Th>
-                        <Table.Th>Status</Table.Th>
-                        <Table.Th>Scanned At</Table.Th>
-                      </Table.Tr>
-                    </Table.Thead>
-                    <Table.Tbody>
-                      {product.scanHistory.slice(0, 10).map((scan) => (
-                        <Table.Tr key={scan.id}>
-                          <Table.Td>
-                            <Text ff="monospace" size="sm">
-                              {scan.barcode}
-                            </Text>
-                          </Table.Td>
-                          <Table.Td>
-                            {scan.user ? (
-                              <div>
-                                <Text size="sm">{scan.user.name}</Text>
-                                <Text c="dimmed" size="xs">
-                                  {scan.user.email}
-                                </Text>
-                              </div>
-                            ) : (
-                              <Text c="dimmed" size="sm">
-                                Anonymous
-                              </Text>
-                            )}
-                          </Table.Td>
-                          <Table.Td>
-                            {scan.platform && (
-                              <Badge size="sm" variant="light">
-                                {scan.platform}
-                              </Badge>
-                            )}
-                          </Table.Td>
-                          <Table.Td>
-                            <Badge color={scan.success ? 'green' : 'red'} size="sm" variant="light">
-                              {scan.success ? 'Success' : 'Failed'}
-                            </Badge>
-                          </Table.Td>
-                          <Table.Td>{formatDate(scan.scannedAt)}</Table.Td>
-                        </Table.Tr>
-                      ))}
-                    </Table.Tbody>
-                  </Table>
-                ) : (
-                  <Text c="dimmed" py="xl" ta="center">
-                    No scan history found
-                  </Text>
-                )}
+                <Text c="dimmed" py="xl" ta="center">
+                  History tracking has been deprecated
+                </Text>
               </Tabs.Panel>
             </Tabs>
           )}

@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '../test-utils';
-import Input from '../../../mantine-ciseco/components/shared/Input/Input';
+import Input from '../../../src/mantine-ciseco/components/shared/Input/Input';
 
 describe('Input', (_: any) => {
   it('renders input with default props', (_: any) => {

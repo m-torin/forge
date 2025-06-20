@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '../test-utils';
-import ProductCard from '../../../mantine-ciseco/components/ProductCard';
+import ProductCard from '../../../src/mantine-ciseco/components/ProductCard';
 
 // Mock Next.js Image component
 vi.mock('next/image', (_: any) => ({
@@ -10,7 +10,7 @@ vi.mock('next/image', (_: any) => ({
 }));
 
 // Mock ProgressiveImage component
-vi.mock('../../../mantine-ciseco/components/ProgressiveImage', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/components/ProgressiveImage', (_: any) => ({
   ProgressiveImage: ({ src, alt, 'data-testid': testId, priority, ...props }: any) => (
     <img
       src={src}
@@ -25,7 +25,7 @@ vi.mock('../../../mantine-ciseco/components/ProgressiveImage', (_: any) => ({
 }));
 
 // Mock AddToCardButton to avoid notification issues
-vi.mock('../../../mantine-ciseco/components/AddToCardButton', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/components/AddToCardButton', (_: any) => ({
   default: ({ children, onClick, 'data-testid': testId, imageUrl, ...props }: any) => (
     <button onClick={onClick} data-testid={testId} {...props}>
       {children}
@@ -34,12 +34,12 @@ vi.mock('../../../mantine-ciseco/components/AddToCardButton', (_: any) => ({
 }));
 
 // Mock the locale hook
-vi.mock('../../../mantine-ciseco/hooks/useLocale', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/hooks/useLocale', (_: any) => ({
   useLocalizeHref: () => (href: string) => href,
 }));
 
 // Mock Prices component
-vi.mock('../../../mantine-ciseco/components/Prices', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/components/Prices', (_: any) => ({
   default: ({ price, salePrice, showDiscount }: any) => (
     <div>
       {salePrice ? (
@@ -56,14 +56,14 @@ vi.mock('../../../mantine-ciseco/components/Prices', (_: any) => ({
 }));
 
 // Mock ProductStatus component
-vi.mock('../../../mantine-ciseco/components/ProductStatus', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/components/ProductStatus', (_: any) => ({
   default: ({ status, 'data-testid': testId }: any) => (
     <div data-testid={testId}>{status && <span>{status}</span>}</div>
   ),
 }));
 
 // Mock LikeButton component
-vi.mock('../../../mantine-ciseco/components/LikeButton', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/components/LikeButton', (_: any) => ({
   default: ({ 'data-testid': testId, onClick, ...props }: any) => (
     <button data-testid={testId} onClick={onClick} {...props}>
       Like

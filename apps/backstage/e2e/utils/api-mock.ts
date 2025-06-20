@@ -1,4 +1,4 @@
-import { Page, Request, Route } from '@playwright/test';
+import { Page, Route } from '@playwright/test';
 
 export interface MockResponse {
   body?: any;

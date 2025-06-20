@@ -1,64 +1,36 @@
 /**
- * Next.js client-side authentication exports
+ * Next.js client exports
  */
 
 'use client';
 
-import { useRouter } from 'next/navigation';
-import React, { type ReactNode } from 'react';
-import { createContext, useContext } from 'react';
-
-import { useAuth } from './client/hooks';
-
-// Next.js specific client features
-import type { AuthContextType } from './shared/types';
-
-// Re-export all client functionality
+// Re-export everything from client
 export * from './client';
 
-// Explicitly export authClient for compatibility
-export { authClient } from './client/auth-client';
+// Export Next.js specific features
+export { AuthProvider, useAuthContext } from './client/auth-provider';
+export { useAuth, useUser, useIsAuthenticated, useRequireAuth, useAuthGuard } from './client/hooks';
 
-// Auth context
-const AuthContext = createContext<AuthContextType | null>(null);
+// Export navigation helpers
+export { useAuthRedirect } from './client/navigation';
 
-/**
- * Auth provider component for Next.js apps
- */
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const auth = useAuth();
-  return React.createElement(AuthContext.Provider, { value: auth }, children);
-}
-
-/**
- * Hook to access auth context
- */
-export function useAuthContext(): AuthContextType {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuthContext must be used within an AuthProvider');
-  }
-  return context;
-}
-
-/**
- * Auth redirect utilities for Next.js
- */
-export function useAuthRedirect() {
-  const router = useRouter();
-
-  return {
-    redirectAfterLogin: (returnUrl?: string) => {
-      const url = returnUrl || '/dashboard';
-      router.replace(url);
-    },
-    redirectToLogin: (returnUrl?: string) => {
-      const url = returnUrl ? `/sign-in?returnUrl=${encodeURIComponent(returnUrl)}` : '/sign-in';
-      router.push(url);
-    },
-    redirectToSignUp: (returnUrl?: string) => {
-      const url = returnUrl ? `/sign-up?returnUrl=${encodeURIComponent(returnUrl)}` : '/sign-up';
-      router.push(url);
-    },
-  };
-}
+// Re-export specific client methods that might not be included in the wildcard export
+export {
+  sendMagicLink,
+  enableTwoFactor,
+  disableTwoFactor,
+  verifyTwoFactor,
+  getTwoFactorQRCode,
+  getTwoFactorStatus,
+  getTwoFactorBackupCodes,
+  regenerateTwoFactorBackupCodes,
+  addPasskey,
+  listPasskeys,
+  deletePasskey,
+  signInWithPasskey,
+  signUpWithPasskey,
+  changePassword,
+  setPassword,
+  verifyMagicLink,
+  revokeUserSession,
+} from './client/methods';

@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock environment variables
 const mockCreateEnv = vi.fn();
@@ -6,7 +6,7 @@ vi.mock('@t3-oss/env-nextjs', () => ({
   createEnv: mockCreateEnv,
 }));
 
-describe('Email Keys Configuration', () => {
+describe('email Keys Configuration', () => {
   let originalEnv: NodeJS.ProcessEnv;
 
   beforeEach(() => {
@@ -26,7 +26,7 @@ describe('Email Keys Configuration', () => {
       process.env.RESEND_TOKEN = 're_123456789';
     });
 
-    it('should require valid Resend keys in production', async () => {
+    test('should require valid Resend keys in production', async () => {
       mockCreateEnv.mockReturnValue({
         RESEND_FROM: 'noreply@example.com',
         RESEND_TOKEN: 're_123456789',
@@ -58,7 +58,7 @@ describe('Email Keys Configuration', () => {
       expect(result.RESEND_TOKEN).toBe('re_123456789');
     });
 
-    it('should validate email format for RESEND_FROM in production', async () => {
+    test('should validate email format for RESEND_FROM in production', async () => {
       const { keys } = await import('../keys');
 
       // The actual validation happens in @t3-oss/env-nextjs
@@ -70,12 +70,12 @@ describe('Email Keys Configuration', () => {
 
       // Check that it's an email validation schema
       const fromSchema = call.server.RESEND_FROM;
-      expect(fromSchema._def.checks).toEqual(
+      expect(fromSchema._def.checks).toStrictEqual(
         expect.arrayContaining([expect.objectContaining({ kind: 'email' })]),
       );
     });
 
-    it('should validate token format for RESEND_TOKEN in production', async () => {
+    test('should validate token format for RESEND_TOKEN in production', async () => {
       const { keys } = await import('../keys');
       keys();
 
@@ -84,7 +84,7 @@ describe('Email Keys Configuration', () => {
 
       // Check that it validates startsWith 're_'
       const tokenSchema = call.server.RESEND_TOKEN;
-      expect(tokenSchema._def.checks).toEqual(
+      expect(tokenSchema._def.checks).toStrictEqual(
         expect.arrayContaining([
           expect.objectContaining({
             kind: 'startsWith',
@@ -102,7 +102,7 @@ describe('Email Keys Configuration', () => {
       process.env.RESEND_TOKEN = 're_dev_123456789';
     });
 
-    it('should make keys optional in development', async () => {
+    test('should make keys optional in development', async () => {
       mockCreateEnv.mockReturnValue({
         RESEND_FROM: 'dev@example.com',
         RESEND_TOKEN: 're_dev_123456789',
@@ -115,7 +115,7 @@ describe('Email Keys Configuration', () => {
       expect(result.RESEND_TOKEN).toBe('re_dev_123456789');
     });
 
-    it('should handle missing keys in development', async () => {
+    test('should handle missing keys in development', async () => {
       process.env.RESEND_FROM = undefined;
       process.env.RESEND_TOKEN = undefined;
 
@@ -159,7 +159,7 @@ describe('Email Keys Configuration', () => {
       process.env.RESEND_TOKEN = undefined;
     });
 
-    it('should make keys optional when env vars are missing in production', async () => {
+    test('should make keys optional when env vars are missing in production', async () => {
       mockCreateEnv.mockReturnValue({
         RESEND_FROM: undefined,
         RESEND_TOKEN: undefined,
@@ -200,7 +200,7 @@ describe('Email Keys Configuration', () => {
       process.env.RESEND_TOKEN = 're_test_123456789';
     });
 
-    it('should validate email format', async () => {
+    test('should validate email format', async () => {
       const { keys } = await import('../keys');
       keys();
 
@@ -208,12 +208,12 @@ describe('Email Keys Configuration', () => {
       const fromSchema = call.server.RESEND_FROM;
 
       // The schema should validate email format
-      expect(fromSchema._def.checks).toEqual(
+      expect(fromSchema._def.checks).toStrictEqual(
         expect.arrayContaining([expect.objectContaining({ kind: 'email' })]),
       );
     });
 
-    it('should validate token prefix', async () => {
+    test('should validate token prefix', async () => {
       const { keys } = await import('../keys');
       keys();
 
@@ -221,7 +221,7 @@ describe('Email Keys Configuration', () => {
       const tokenSchema = call.server.RESEND_TOKEN;
 
       // The schema should validate that the token starts with 're_'
-      expect(tokenSchema._def.checks).toEqual(
+      expect(tokenSchema._def.checks).toStrictEqual(
         expect.arrayContaining([
           expect.objectContaining({
             kind: 'startsWith',
@@ -239,7 +239,7 @@ describe('Email Keys Configuration', () => {
       process.env.RESEND_TOKEN = 're_test_123456789';
     });
 
-    it('should map environment variables correctly', async () => {
+    test('should map environment variables correctly', async () => {
       const { keys } = await import('../keys');
       keys();
 
@@ -252,7 +252,7 @@ describe('Email Keys Configuration', () => {
       });
     });
 
-    it('should handle undefined environment variables', async () => {
+    test('should handle undefined environment variables', async () => {
       process.env.RESEND_FROM = undefined;
       process.env.RESEND_TOKEN = undefined;
 
@@ -268,7 +268,7 @@ describe('Email Keys Configuration', () => {
       });
     });
 
-    it('should handle empty string environment variables', async () => {
+    test('should handle empty string environment variables', async () => {
       process.env.RESEND_FROM = '';
       process.env.RESEND_TOKEN = '';
 
@@ -286,7 +286,7 @@ describe('Email Keys Configuration', () => {
   });
 
   describe('configuration logic', () => {
-    it('should determine requireInProduction correctly for production with keys', async () => {
+    test('should determine requireInProduction correctly for production with keys', async () => {
       process.env.NODE_ENV = 'production';
       process.env.RESEND_FROM = 'prod@example.com';
       process.env.RESEND_TOKEN = 're_prod_123';
@@ -300,7 +300,7 @@ describe('Email Keys Configuration', () => {
       expect(call.server.RESEND_TOKEN._def.typeName).not.toBe('ZodOptional');
     });
 
-    it('should determine requireInProduction correctly for production without keys', async () => {
+    test('should determine requireInProduction correctly for production without keys', async () => {
       process.env.NODE_ENV = 'production';
       process.env.RESEND_FROM = undefined;
       process.env.RESEND_TOKEN = undefined;
@@ -314,7 +314,7 @@ describe('Email Keys Configuration', () => {
       expect(call.server.RESEND_TOKEN._def.typeName).toBe('ZodOptional');
     });
 
-    it('should determine requireInProduction correctly for development', async () => {
+    test('should determine requireInProduction correctly for development', async () => {
       process.env.NODE_ENV = 'development';
       process.env.RESEND_FROM = 'dev@example.com';
       process.env.RESEND_TOKEN = 're_dev_123';
@@ -328,7 +328,7 @@ describe('Email Keys Configuration', () => {
       expect(call.server.RESEND_TOKEN._def.typeName).toBe('ZodOptional');
     });
 
-    it('should handle partial env vars correctly', async () => {
+    test('should handle partial env vars correctly', async () => {
       process.env.NODE_ENV = 'production';
       process.env.RESEND_FROM = 'test@example.com';
       process.env.RESEND_TOKEN = undefined; // Missing one required var
@@ -350,7 +350,7 @@ describe('Email Keys Configuration', () => {
       process.env.RESEND_TOKEN = 're_test_123456789';
     });
 
-    it('should propagate createEnv errors', async () => {
+    test('should propagate createEnv errors', async () => {
       const error = new Error('Invalid environment configuration');
       mockCreateEnv.mockImplementation(() => {
         throw error;
@@ -374,19 +374,19 @@ describe('Email Keys Configuration', () => {
       });
     });
 
-    it('should return a function', async () => {
+    test('should return a function', async () => {
       const { keys } = await import('../keys');
       expect(typeof keys).toBe('function');
     });
 
-    it('should call createEnv when invoked', async () => {
+    test('should call createEnv when invoked', async () => {
       const { keys } = await import('../keys');
       keys();
 
       expect(mockCreateEnv).toHaveBeenCalledTimes(1);
     });
 
-    it('should return the result from createEnv', async () => {
+    test('should return the result from createEnv', async () => {
       const expectedResult = {
         RESEND_FROM: 'test@example.com',
         RESEND_TOKEN: 're_test_123456789',
@@ -397,10 +397,10 @@ describe('Email Keys Configuration', () => {
       const { keys } = await import('../keys');
       const result = keys();
 
-      expect(result).toEqual(expectedResult);
+      expect(result).toStrictEqual(expectedResult);
     });
 
-    it('should call createEnv every time invoked', async () => {
+    test('should call createEnv every time invoked', async () => {
       const { keys } = await import('../keys');
 
       keys();
@@ -412,7 +412,7 @@ describe('Email Keys Configuration', () => {
   });
 
   describe('hasRequiredEnvVars logic', () => {
-    it('should detect when both env vars are present', async () => {
+    test('should detect when both env vars are present', async () => {
       process.env.NODE_ENV = 'production';
       process.env.RESEND_FROM = 'test@example.com';
       process.env.RESEND_TOKEN = 're_test_123';
@@ -425,7 +425,7 @@ describe('Email Keys Configuration', () => {
       expect(call.server.RESEND_FROM._def.typeName).not.toBe('ZodOptional');
     });
 
-    it('should detect when one env var is missing', async () => {
+    test('should detect when one env var is missing', async () => {
       process.env.NODE_ENV = 'production';
       process.env.RESEND_FROM = 'test@example.com';
       process.env.RESEND_TOKEN = undefined;
@@ -438,7 +438,7 @@ describe('Email Keys Configuration', () => {
       expect(call.server.RESEND_FROM._def.typeName).toBe('ZodOptional');
     });
 
-    it('should detect when both env vars are missing', async () => {
+    test('should detect when both env vars are missing', async () => {
       process.env.NODE_ENV = 'production';
       process.env.RESEND_FROM = undefined;
       process.env.RESEND_TOKEN = undefined;

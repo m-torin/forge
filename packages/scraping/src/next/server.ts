@@ -11,28 +11,26 @@ import {
   ScrapingManager,
   SelectorMap,
 } from '../shared/types/scraping-types';
+import { ScrapingError, ScrapingErrorCode } from '../shared/errors';
 
-// Simple error types for Next.js
-export class ScrapingError extends Error {
-  constructor(
-    message: string,
-    public code: string,
-    public details?: any,
-  ) {
-    super(message);
-    this.name = 'ScrapingError';
-  }
+// Utility function to escape regex special characters
+function escapeRegex(string: string): string {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-export const ScrapingErrorCode = {
-  BLOCKED: 'BLOCKED',
-  CAPTCHA_DETECTED: 'CAPTCHA_DETECTED',
-  NETWORK_ERROR: 'NETWORK_ERROR',
-  PROVIDER_ERROR: 'PROVIDER_ERROR',
-  RATE_LIMITED: 'RATE_LIMITED',
-  TIMEOUT: 'TIMEOUT',
-  VALIDATION_ERROR: 'VALIDATION_ERROR',
-} as const;
+// Utility function to create safe regex patterns for ID selectors
+function createIdRegex(id: string): RegExp {
+  const escapedId = escapeRegex(id);
+  // eslint-disable-next-line security/detect-non-literal-regexp
+  return new RegExp(`<[^>]*id=["']${escapedId}["'][^>]*>([^<]*)<`, 'i');
+}
+
+// Utility function to create safe regex patterns for class selectors
+function createClassRegex(selector: string): RegExp {
+  const escapedSelector = escapeRegex(selector);
+  // eslint-disable-next-line security/detect-non-literal-regexp
+  return new RegExp(`<[^>]*${escapedSelector}[^>]*>([^<]*)<`, 'i');
+}
 
 // Global manager instance for reuse
 let globalManager: null | ScrapingManager = null;
@@ -93,11 +91,11 @@ export async function edgeScrape(
         // Very basic CSS selector to regex conversion
         if (selector.startsWith('#')) {
           const id = selector.slice(1);
-          const match = html.match(new RegExp(`<[^>]*id=["']${id}["'][^>]*>([^<]*)<`, 'i'));
+          const match = html.match(createIdRegex(id));
           if (match) data[key] = match[1].trim();
         } else if (selector.includes('class=')) {
           // Basic class matching
-          const match = html.match(new RegExp(`<[^>]*${selector}[^>]*>([^<]*)<`, 'i'));
+          const match = html.match(createClassRegex(selector));
           if (match) data[key] = match[1].trim();
         }
       }

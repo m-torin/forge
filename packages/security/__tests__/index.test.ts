@@ -2,14 +2,14 @@
  * @vitest-environment node
  */
 import arcjetDefault, { detectBot, request, shield } from '@arcjet/next';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-
-// Mock server-only before any imports
-vi.mock('server-only', () => ({}));
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 import { keys } from '../keys';
 // Now import after mocks are set up
 import { secure } from '../src/server-next';
+
+// Mock server-only before any imports
+vi.mock('server-only', () => ({}));
 
 // Define mocks before imports
 const mockProtect = vi.fn();
@@ -33,7 +33,7 @@ vi.mock('../keys', (_: any) => ({
   })),
 }));
 
-describe('secure', (_: any) => {
+describe('secure', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -59,7 +59,7 @@ describe('secure', (_: any) => {
     mockDetectBot.mockReturnValue({ allow: [], mode: 'LIVE' });
   });
 
-  it('should not initialize arcjet if no key is provided', async () => {
+  test('should not initialize arcjet if no key is provided', async () => {
     vi.mocked(keys).mockReturnValue({
       ARCJET_KEY: undefined,
     } as any);
@@ -79,7 +79,7 @@ describe('secure', (_: any) => {
     expect(arcjetDefault).not.toHaveBeenCalled();
   });
 
-  it('should initialize arcjet with correct configuration', async () => {
+  test('should initialize arcjet with correct configuration', async () => {
     await secure(['GOOGLEBOT' as any]);
 
     expect(mockArcjet).toHaveBeenCalledWith({
@@ -89,7 +89,7 @@ describe('secure', (_: any) => {
     });
   });
 
-  it('should detect bots with allowed list', async () => {
+  test('should detect bots with allowed list', async () => {
     await secure(['GOOGLEBOT' as any, 'CRAWLER' as any]);
 
     expect(mockDetectBot).toHaveBeenCalledWith({
@@ -98,7 +98,7 @@ describe('secure', (_: any) => {
     });
   });
 
-  it('should use custom request if provided', async () => {
+  test('should use custom request if provided', async () => {
     const customRequest = { url: 'https://custom.com' } as any;
 
     await secure(['GOOGLEBOT' as any], customRequest);
@@ -107,17 +107,17 @@ describe('secure', (_: any) => {
     expect(mockProtect).toHaveBeenCalledWith(customRequest);
   });
 
-  it('should use default request if not provided', async () => {
+  test('should use default request if not provided', async () => {
     const defaultRequest = { url: 'https://example.com' } as any;
     mockRequest.mockResolvedValue(defaultRequest);
 
     await secure(['GOOGLEBOT' as any]);
 
-    expect(mockRequest).toHaveBeenCalled();
+    expect(mockRequest).toHaveBeenCalledWith();
     expect(mockProtect).toHaveBeenCalledWith(defaultRequest);
   });
 
-  it('should throw error if bot is detected', async () => {
+  test('should throw error if bot is detected', async () => {
     mockProtect.mockResolvedValue({
       isDenied: vi.fn(() => true),
       reason: {
@@ -129,7 +129,7 @@ describe('secure', (_: any) => {
     await expect(secure([])).rejects.toThrow('No bots allowed');
   });
 
-  it('should throw error if rate limit is exceeded', async () => {
+  test('should throw error if rate limit is exceeded', async () => {
     mockProtect.mockResolvedValue({
       isDenied: vi.fn(() => true),
       reason: {
@@ -141,7 +141,7 @@ describe('secure', (_: any) => {
     await expect(secure([])).rejects.toThrow('Rate limit exceeded');
   });
 
-  it('should throw generic error for other denials', async () => {
+  test('should throw generic error for other denials', async () => {
     mockProtect.mockResolvedValue({
       isDenied: vi.fn(() => true),
       reason: {
@@ -153,7 +153,7 @@ describe('secure', (_: any) => {
     await expect(secure([])).rejects.toThrow('Access denied');
   });
 
-  it('should not log warning when request is denied', async () => {
+  test('should not log warning when request is denied', async () => {
     const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     mockProtect.mockResolvedValue({

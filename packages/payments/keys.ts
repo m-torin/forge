@@ -18,6 +18,7 @@ export const keys = () =>
     runtimeEnv: {
       STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY ?? undefined,
       STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET ?? undefined,
+      PAYMENTS_LOG_PROVIDER: process.env.PAYMENTS_LOG_PROVIDER ?? undefined,
     },
     server: {
       STRIPE_SECRET_KEY: requireInProduction
@@ -26,5 +27,6 @@ export const keys = () =>
       STRIPE_WEBHOOK_SECRET: requireInProduction
         ? z.string().startsWith('whsec_')
         : z.string().startsWith('whsec_').optional().or(z.literal('')),
+      PAYMENTS_LOG_PROVIDER: z.string().optional(),
     },
   });

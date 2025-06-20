@@ -20,13 +20,13 @@ import {
   StepTemplates,
 } from '../src/shared/index';
 
-describe('Step Factory System', (_: any) => {
+describe('step Factory System', (_: any) => {
   beforeEach(() => {
     // Clear registries before each test
     defaultStepRegistry.clear();
   });
 
-  describe('Step Creation', (_: any) => {
+  describe('step Creation', (_: any) => {
     test('should create a basic workflow step', (_: any) => {
       const step = createWorkflowStep(
         {
@@ -113,7 +113,7 @@ describe('Step Factory System', (_: any) => {
     });
   });
 
-  describe('StandardWorkflowStep Execution', (_: any) => {
+  describe('standardWorkflowStep Execution', (_: any) => {
     test('should execute step successfully', async () => {
       const step = createWorkflowStep(
         {
@@ -132,7 +132,7 @@ describe('Step Factory System', (_: any) => {
       const executableStep = new StandardWorkflowStep(step);
       const result = await executableStep.execute({ test: 'data' }, 'workflow_123');
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.output?.data).toEqual({ test: 'data' });
       expect(result.performance).toBeDefined();
     });
@@ -169,7 +169,7 @@ describe('Step Factory System', (_: any) => {
       const executableStep = new StandardWorkflowStep(step);
       const result = await executableStep.execute({}, 'workflow_123');
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.output?.attempts).toBe(3);
     });
 
@@ -199,7 +199,7 @@ describe('Step Factory System', (_: any) => {
       const executableStep = new StandardWorkflowStep(step);
       const result = await executableStep.execute({ required: 'test' }, 'workflow_123');
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.output).toEqual({});
     });
 
@@ -224,8 +224,8 @@ describe('Step Factory System', (_: any) => {
       const executableStep = new StandardWorkflowStep(step);
       const result = await executableStep.execute({}, 'workflow_123', { skipStep: false });
 
-      expect(result.success).toBe(true);
-      expect(result.metadata?.skipped).toBe(true);
+      expect(result.success).toBeTruthy();
+      expect(result.metadata?.skipped).toBeTruthy();
       expect(result.output).toBeUndefined();
     });
 
@@ -253,7 +253,7 @@ describe('Step Factory System', (_: any) => {
       const executableStep = new StandardWorkflowStep(step);
       const result = await executableStep.execute({}, 'workflow_123');
 
-      expect(result.success).toBe(false);
+      expect(result.success).toBeFalsy();
       expect(result.error?.code).toBe('STEP_TIMEOUT_ERROR');
     });
 
@@ -281,18 +281,18 @@ describe('Step Factory System', (_: any) => {
       );
       const executableStep = new StandardWorkflowStep(step);
       const result = await executableStep.execute({ required: 'test' }, 'workflow_123');
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
     });
   });
 
-  describe('Step Templates', (_: any) => {
+  describe('step Templates', (_: any) => {
     test('should create HTTP request step from template', (_: any) => {
       const httpStep = StepTemplates.http('API Call', 'Call external API');
 
       expect(httpStep.metadata.name).toBe('API Call');
       expect(httpStep.metadata.category).toBe('http');
       expect(httpStep.metadata.tags).toContain('http');
-      expect(httpStep.validationConfig?.validateInput).toBe(true);
+      expect(httpStep.validationConfig?.validateInput).toBeTruthy();
     });
 
     test('should create database query step from template', (_: any) => {
@@ -327,20 +327,20 @@ describe('Step Factory System', (_: any) => {
       const result = await executableStep.execute({}, 'workflow_123');
       const duration = Date.now() - startTime;
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.output?.delayMs).toBe(50);
       expect(duration).toBeGreaterThanOrEqual(40); // Allow some tolerance
     });
   });
 
-  describe('Step Factory', (_: any) => {
+  describe('step Factory', (_: any) => {
     let factory: StepFactory;
 
     beforeEach(() => {
       factory = new StepFactory();
     });
 
-    describe('Step Registration', (_: any) => {
+    describe('step Registration', (_: any) => {
       const mockStep: WorkflowStepDefinition = {
         id: 'test-step',
         execute: vi.fn(),
@@ -383,7 +383,7 @@ describe('Step Factory System', (_: any) => {
       });
     });
 
-    describe('Step Retrieval', (_: any) => {
+    describe('step Retrieval', (_: any) => {
       const mockSteps = [
         {
           id: 'step-1',
@@ -435,7 +435,7 @@ describe('Step Factory System', (_: any) => {
       });
     });
 
-    describe('Step Creation', (_: any) => {
+    describe('step Creation', (_: any) => {
       const metadata: StepMetadata = {
         name: 'Test Step',
         category: 'test',
@@ -475,7 +475,7 @@ describe('Step Factory System', (_: any) => {
       });
     });
 
-    describe('Default Factory', (_: any) => {
+    describe('default Factory', (_: any) => {
       test('should create default factory', (_: any) => {
         expect(defaultStepFactory).toBeDefined();
         expect(defaultStepFactory).toBeInstanceOf(StepFactory);
@@ -488,7 +488,7 @@ describe('Step Factory System', (_: any) => {
     });
   });
 
-  describe('Step Registry', (_: any) => {
+  describe('step Registry', (_: any) => {
     test('should register and retrieve steps', (_: any) => {
       const registry = new StepRegistry();
 
@@ -579,7 +579,7 @@ describe('Step Factory System', (_: any) => {
       registry.register(step2);
 
       const validation = registry.validateDependencies([step1.id, step2.id]);
-      expect(validation.valid).toBe(true);
+      expect(validation.valid).toBeTruthy();
 
       // Test with missing dependency
       const step3 = createWorkflowStep(
@@ -590,7 +590,7 @@ describe('Step Factory System', (_: any) => {
 
       registry.register(step3);
       const invalidValidation = registry.validateDependencies([step3.id]);
-      expect(invalidValidation.valid).toBe(false);
+      expect(invalidValidation.valid).toBeFalsy();
       expect(invalidValidation.errors).toContain('Step missing-step not found');
     });
 
@@ -685,7 +685,7 @@ describe('Step Factory System', (_: any) => {
     });
   });
 
-  describe('OrchestrationManager Integration', (_: any) => {
+  describe('orchestrationManager Integration', (_: any) => {
     test('should integrate step factory with manager', (_: any) => {
       const manager = new OrchestrationManager({
         enableStepFactory: true,
@@ -711,7 +711,7 @@ describe('Step Factory System', (_: any) => {
       expect(retrieved).toBe(step);
 
       const status = manager.getStatus();
-      expect(status.stepFactoryEnabled).toBe(true);
+      expect(status.stepFactoryEnabled).toBeTruthy();
       expect(status.stepRegistry?.totalSteps).toBe(1);
     });
 
@@ -731,7 +731,7 @@ describe('Step Factory System', (_: any) => {
       }).toThrow('Step factory is not enabled');
 
       const status = manager.getStatus();
-      expect(status.stepFactoryEnabled).toBe(false);
+      expect(status.stepFactoryEnabled).toBeFalsy();
     });
 
     test('should execute single step through manager', async () => {
@@ -757,7 +757,7 @@ describe('Step Factory System', (_: any) => {
 
       const result = await manager.executeStep(step.id, { data: 'test' }, 'workflow_123');
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.output?.processed).toEqual({ data: 'test' });
     });
 
@@ -792,7 +792,7 @@ describe('Step Factory System', (_: any) => {
     });
   });
 
-  describe('Step Definition Validation', (_: any) => {
+  describe('step Definition Validation', (_: any) => {
     test('should validate correct step definition', (_: any) => {
       const step = createWorkflowStep(
         {
@@ -809,7 +809,7 @@ describe('Step Factory System', (_: any) => {
       );
 
       const validation = StandardWorkflowStep.validateDefinition(step);
-      expect(validation.valid).toBe(true);
+      expect(validation.valid).toBeTruthy();
       expect(validation.errors).toBeUndefined();
     });
 
@@ -824,7 +824,7 @@ describe('Step Factory System', (_: any) => {
       } as any;
 
       const validation = StandardWorkflowStep.validateDefinition(invalidStep);
-      expect(validation.valid).toBe(false);
+      expect(validation.valid).toBeFalsy();
       expect(validation.errors).toHaveLength(4); // Missing id, name, version, execute
     });
 
@@ -847,7 +847,7 @@ describe('Step Factory System', (_: any) => {
       );
 
       const validation = StandardWorkflowStep.validateDefinition(step);
-      expect(validation.valid).toBe(false);
+      expect(validation.valid).toBeFalsy();
       expect(validation.errors).toContain('Retry maxAttempts must be at least 1');
       expect(validation.errors).toContain('Retry delay must be non-negative');
     });

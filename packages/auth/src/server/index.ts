@@ -1,61 +1,89 @@
 /**
- * Server-side authentication exports
+ * Server exports for Node.js environments (non-Next.js)
  */
 
-export { auth, getCurrentUser, getSession } from './auth';
-export * from './utils';
+import 'server-only';
 
-// Server-side API key functionality
+// Export configured auth instance
+export { auth } from '../shared/auth.config';
+
+// Export types
+export type * from '../types';
+export type { AuthInstance } from '../shared/auth.config';
+
+// Export server utilities
+export { createAuthMiddleware } from 'better-auth/api';
+
+// Export server modules - use explicit exports to avoid conflicts
+export {
+  getSession,
+  getCurrentUser as getServerCurrentUser,
+  requireAuth as requireServerAuth,
+} from './session';
+
+export * from './actions';
+export * from './user-actions';
+
+// API Keys
+export {
+  validateApiKeyAction as validateServerApiKey,
+  // Re-export others
+} from './api-keys';
 export * from './api-keys';
 
-// Server-side team functionality - specific exports to avoid conflicts
-export * from './teams/actions';
-export * from './teams/permissions';
-export { inviteToTeam, listTeamInvitations, respondToInvitation } from './teams/invitations';
+// Teams - avoid cancelInvitation conflict
+export {
+  createTeamAction,
+  updateTeamAction,
+  deleteTeamAction,
+  getTeamAction,
+  listTeamsAction,
+  updateTeamMemberAction,
+  removeTeamMemberAction,
+  getTeamStatsAction,
+  // Aliases
+  addTeamMemberAction,
+  updateTeamMemberRoleAction,
+  getTeamMembersAction,
+  getUserTeamsAction,
+  getTeamByIdAction,
+  transferTeamOwnershipAction,
+  archiveTeamAction,
+  restoreTeamAction,
+  getTeamStatisticsAction,
+} from './teams';
 
-// Server-side organization functionality
+// Team invitations - explicit exports to avoid conflicts
+export {
+  inviteToTeamAction,
+  listTeamInvitationsAction,
+  respondToInvitationAction,
+  cancelInvitationAction as cancelTeamInvitationAction,
+  getUserPendingInvitationsAction,
+} from './teams';
+
 export * from './organizations';
 
-// Actions - only export what actually exists
+// Admin management functions - explicit exports to avoid conflicts
 export {
-  getActiveOrganization,
-  updateUser,
-  changePassword,
-  setPassword,
-  listAccounts,
-  unlinkAccount,
-  createApiKey,
-  updateApiKey,
-  deleteApiKey,
-  listAllOrganizations,
-} from './actions';
-
-// Admin management functions
-export {
-  banUser,
-  deleteSession,
-  deleteUser,
-  getApiKey,
-  getOrganization,
-  getUser,
-  getUserById,
-  impersonateUser,
-  listApiKeys,
-  listSessions,
-  listUsers,
-  unbanUser,
+  listUsersAction,
+  getUserByIdAction,
+  getUserAction,
+  listOrganizationsAction,
+  getOrganizationAction,
+  banUserAction,
+  unbanUserAction,
+  impersonateUserAction,
+  stopImpersonatingAction,
+  setUserRoleAction,
+  revokeUserSessionsAction,
+  listSessionsAction,
+  createUserAction,
+  getSystemStatsAction,
+  forceDeleteOrganizationAction,
+  // Aliases to avoid conflicts with existing exports
+  deleteUserAction as adminDeleteUserAction,
+  deleteSessionAction as adminDeleteSessionAction,
+  listApiKeysAction as adminListApiKeysAction,
+  getApiKeyAction as adminGetApiKeyAction,
 } from './admin-management';
-
-// Types and permissions
-export * from '../shared/types';
-export * from '../shared/permissions';
-export * from '../shared/admin-permissions';
-
-// Configuration
-export { createAuthConfig } from '../shared/config';
-
-// Note: For client-side functionality, use:
-// - '@repo/auth/client' for client utilities
-// - '@repo/auth/api-keys/client' for client API key management
-// - '@repo/auth/teams/client' for client team management
-// - '@repo/auth/middleware' for middleware variants

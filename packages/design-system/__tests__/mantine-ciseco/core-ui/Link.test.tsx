@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '../test-utils';
-import { Link } from '../../../mantine-ciseco/components/Link';
+import { Link } from '../../../src/mantine-ciseco/components/Link';
 
 describe('Link', (_: any) => {
   it('renders link with text', (_: any) => {

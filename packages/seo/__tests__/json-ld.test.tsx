@@ -1,12 +1,12 @@
 import { render } from '@testing-library/react';
 import * as React from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect } from 'vitest';
 
 // Import the component to test
-import { JsonLd } from '../client';
+import { JsonLd } from '../src/client';
 
-describe('@repo/seo/json-ld', (_: any) => {
-  it('renders JSON-LD script tag with the provided data', (_: any) => {
+describe('@repo/seo/json-ld', () => {
+  test('renders JSON-LD script tag with the provided data', () => {
     const testData = {
       name: 'Test Website',
       '@type': 'WebSite',
@@ -29,10 +29,10 @@ describe('@repo/seo/json-ld', (_: any) => {
     const scriptContent = scriptElement.textContent;
     const parsedContent = JSON.parse(scriptContent ?? '{}');
 
-    expect(parsedContent).toEqual(testData);
+    expect(parsedContent).toStrictEqual(testData);
   });
 
-  it('renders with the correct type attribute', (_: any) => {
+  test('renders with the correct type attribute', () => {
     const testData = { name: 'Test Person', '@type': 'Person' };
 
     const { container } = render(<JsonLd data={testData as any} />);
@@ -44,7 +44,7 @@ describe('@repo/seo/json-ld', (_: any) => {
     expect(scriptElement.type).toBe('application/ld+json');
   });
 
-  it('passes through additional properties to the script tag', (_: any) => {
+  test('passes through additional properties to the script tag', () => {
     const testData = { name: 'Test Person', '@type': 'Person' };
 
     const { container } = render(<JsonLd data={testData as any} />);
@@ -58,7 +58,7 @@ describe('@repo/seo/json-ld', (_: any) => {
     expect(scriptElement.type).toBe('application/ld+json');
   });
 
-  it('renders nested objects correctly', (_: any) => {
+  test('renders nested objects correctly', () => {
     const testData = {
       name: 'Test Person',
       '@type': 'Person',

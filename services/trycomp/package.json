@@ -24,8 +24,8 @@
     "trycomp": "./scripts/trycomp-cli.ts"
   },
   "dependencies": {
-    "zod": "catalog:",
-    "commander": "catalog:",
+    "zod": "^3.25.67",
+    "commander": "^14.0.0",
     "diff": "^6.0.0",
     "openai": "^4.75.1",
     "@anthropic-ai/sdk": "^0.54.0"
@@ -35,9 +35,9 @@
     "@repo/config": "workspace:*",
     "@repo/testing": "workspace:*",
     "@types/diff": "^6.0.0",
-    "typescript": "catalog:",
-    "vitest": "catalog:",
-    "tsx": "catalog:"
+    "typescript": "^14.0.0",
+    "vitest": "^14.0.0",
+    "tsx": "^14.0.0"
   },
   "peerDependencies": {
     "typescript": ">=5.0.0"

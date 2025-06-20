@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '../test-utils';
-import Button from '../../../mantine-ciseco/components/shared/Button/Button';
+import Button from '../../../src/mantine-ciseco/components/shared/Button/Button';
 
 describe('Button', (_: any) => {
   const mockOnClick = vi.fn();

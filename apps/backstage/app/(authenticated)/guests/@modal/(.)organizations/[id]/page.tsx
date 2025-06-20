@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation';
 import { notifications } from '@mantine/notifications';
 
 import { ModalWrapper } from '../../modal-wrapper';
-import { OrganizationForm } from '../../../components/forms/OrganizationForm';
-import { getOrganizationById } from '@repo/auth/server/next';
-import type { Organization } from '../../../types';
+import { OrganizationForm } from '@/components/pim3/forms/OrganizationForm';
+import { getOrganizationAction } from '@/actions/pim3/actions';
+import type { Organization } from '@/types/pim3';
 
 interface OrganizationModalPageProps {
   params: Promise<{ id: string }>;
@@ -38,9 +38,14 @@ export default function OrganizationModalPage({ params }: OrganizationModalPageP
 
     setLoading(true);
     try {
-      const result = await getOrganizationById(paramsData.id);
+      const result = await getOrganizationAction(paramsData.id);
       if (result) {
-        setOrganization(result as Organization);
+        const orgData = result as any;
+        setOrganization({
+          ...orgData,
+          createdAt:
+            orgData.createdAt instanceof Date ? orgData.createdAt.toISOString() : orgData.createdAt,
+        });
       } else {
         notifications.show({
           title: 'Error',

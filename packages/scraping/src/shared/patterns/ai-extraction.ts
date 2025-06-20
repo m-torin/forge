@@ -46,7 +46,7 @@ export async function extractWithAI(
   prompt: string,
   options: AIExtractionOptions = { prompt },
 ): Promise<AIExtractionResult> {
-  const { confidence = 0.8, model = 'auto', schema: _schema } = options;
+  const { confidence = 0.8, model = 'auto', schema: schema } = options;
 
   const startTime = Date.now();
 

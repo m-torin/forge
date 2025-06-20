@@ -181,28 +181,28 @@ export function createMaskedError(error: Error): Error {
  */
 export const safeConsole = {
   log: (...args: unknown[]) => {
-    console.info(...args.map((arg: any) => maskSensitiveData(arg)));
+    // console.info(...args.map((arg: any) => maskSensitiveData(arg)));
   },
 
   error: (...args: unknown[]) => {
-    console.error(
-      ...args.map((arg: any) =>
-        arg instanceof Error ? createMaskedError(arg) : maskSensitiveData(arg),
-      ),
-    );
+    // console.error(
+    //   ...args.map((arg: any) =>
+    //     arg instanceof Error ? createMaskedError(arg) : maskSensitiveData(arg),
+    //   ),
+    // );
   },
 
   warn: (...args: unknown[]) => {
-    console.warn(...args.map((arg: any) => maskSensitiveData(arg)));
+    // console.warn(...args.map((arg: any) => maskSensitiveData(arg)));
   },
 
   info: (...args: unknown[]) => {
-    console.info(...args.map((arg: any) => maskSensitiveData(arg)));
+    // console.info(...args.map((arg: any) => maskSensitiveData(arg)));
   },
 
   debug: (...args: unknown[]) => {
     if (process.env.NODE_ENV === 'development') {
-      console.debug(...args.map((arg: any) => maskSensitiveData(arg)));
+      // console.debug(...args.map((arg: any) => maskSensitiveData(arg)));
     }
   },
 };

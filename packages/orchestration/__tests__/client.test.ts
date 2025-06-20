@@ -9,7 +9,7 @@ import { createTestWorkflow } from './fixtures';
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-describe('Workflow Client', (_: any) => {
+describe('workflow Client', (_: any) => {
   let client: WorkflowClient;
   const mockConfig: WorkflowClientConfig = {
     apiKey: 'test-key',
@@ -23,7 +23,7 @@ describe('Workflow Client', (_: any) => {
     client = new WorkflowClient(mockConfig);
   });
 
-  describe('Client Creation', (_: any) => {
+  describe('client Creation', (_: any) => {
     test('should create client with valid config', (_: any) => {
       expect(client).toBeDefined();
     });
@@ -37,7 +37,7 @@ describe('Workflow Client', (_: any) => {
     });
   });
 
-  describe('Workflow Execution', (_: any) => {
+  describe('workflow Execution', (_: any) => {
     const mockWorkflow = createTestWorkflow();
 
     test('should submit workflow successfully', async () => {
@@ -84,7 +84,7 @@ describe('Workflow Client', (_: any) => {
     });
   });
 
-  describe('Execution Status', (_: any) => {
+  describe('execution Status', (_: any) => {
     test('should get execution status', async () => {
       const mockStatus: WorkflowExecution = {
         id: 'exec_123',
@@ -125,7 +125,7 @@ describe('Workflow Client', (_: any) => {
     });
   });
 
-  describe('Execution Management', (_: any) => {
+  describe('execution Management', (_: any) => {
     test('should cancel execution', async () => {
       mockFetch.mockResolvedValueOnce({
         json: () => Promise.resolve({ cancelled: true }),
@@ -133,7 +133,7 @@ describe('Workflow Client', (_: any) => {
       });
 
       const result = await client.cancelExecution('exec_123');
-      expect(result).toBe(true);
+      expect(result).toBeTruthy();
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:3000/api/workflows/executions/exec_123/cancel',
         expect.objectContaining({
@@ -187,7 +187,7 @@ describe('Workflow Client', (_: any) => {
     });
   });
 
-  describe('Error Handling', (_: any) => {
+  describe('error Handling', (_: any) => {
     test('should handle network errors', async () => {
       // Create client with retries disabled for faster error tests
       const errorClient = new WorkflowClient({

@@ -3,10 +3,10 @@
  */
 
 import 'server-only';
-import { headers } from 'next/headers';
 
-import { auth } from '../auth';
-
+import { syncLogger as logger } from '../../shared/utils/logger';
+import { auth } from '../../shared/auth.config';
+import { getAuthHeaders } from '../get-headers';
 import { getUserRoleInOrganization } from './helpers';
 
 import type { Session } from '../../shared/types';
@@ -127,7 +127,7 @@ export async function checkPermission(
 ): Promise<boolean> {
   try {
     const session = await auth.api.getSession({
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     if (!session) {
@@ -149,7 +149,7 @@ export async function checkPermission(
 
     return roleHasPermission(userRole, permission);
   } catch (error) {
-    console.error('Check permission error:', error);
+    logger.error('Check permission error:', error);
     return false;
   }
 }
@@ -165,7 +165,7 @@ export async function checkPermissions(
     // auth.api.hasPermission doesn't exist, fall through to fallback implementation
     throw new Error('Fallback to individual permission checks');
   } catch (error) {
-    console.error('Check permissions error:', error);
+    logger.error('Check permissions error:', error);
 
     // Fallback to individual permission checks
     try {
@@ -180,7 +180,7 @@ export async function checkPermissions(
       }
       return true;
     } catch (fallbackError) {
-      console.error('Fallback permission check error:', fallbackError);
+      logger.error('Fallback permission check error:', fallbackError);
       return false;
     }
   }
@@ -196,7 +196,7 @@ export async function canActOnUser(
 ): Promise<boolean> {
   try {
     const session = await auth.api.getSession({
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     if (!session) {
@@ -252,7 +252,7 @@ export async function canActOnUser(
 
     return currentLevel > targetLevel;
   } catch (error) {
-    console.error('Can act on user error:', error);
+    logger.error('Can act on user error:', error);
     return false;
   }
 }
@@ -266,7 +266,7 @@ export async function getUserPermissions(
 ): Promise<string[]> {
   try {
     const session = await auth.api.getSession({
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     if (!session) {
@@ -289,7 +289,7 @@ export async function getUserPermissions(
 
     return [...(ROLE_PERMISSIONS[userRole as keyof typeof ROLE_PERMISSIONS] || [])];
   } catch (error) {
-    console.error('Get user permissions error:', error);
+    logger.error('Get user permissions error:', error);
     return [];
   }
 }
@@ -364,14 +364,14 @@ export async function canViewBilling(organizationId?: string): Promise<boolean> 
 export async function hasOrganizationAccess(organizationId: string): Promise<boolean> {
   try {
     const session = await auth.api.getSession({
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
     if (!session) return false;
 
     const role = await getUserRoleInOrganization(session.user.id, organizationId);
     return !!role;
   } catch (error) {
-    console.error('Has organization access error:', error);
+    logger.error('Has organization access error:', error);
     return false;
   }
 }
@@ -379,14 +379,14 @@ export async function hasOrganizationAccess(organizationId: string): Promise<boo
 export async function hasOrganizationRole(organizationId: string, role: string): Promise<boolean> {
   try {
     const session = await auth.api.getSession({
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
     if (!session) return false;
 
     const userRole = await getUserRoleInOrganization(session.user.id, organizationId);
     return userRole === role;
   } catch (error) {
-    console.error('Has organization role error:', error);
+    logger.error('Has organization role error:', error);
     return false;
   }
 }

@@ -149,15 +149,13 @@ export function createPostHogMiddleware(apiKey: string) {
       const distinctId = getDistinctIdFromCookies(cookies, apiKey) ?? generateDistinctId();
 
       // Create tracking context
-      const trackingContext = {
+      return {
         distinctId,
         ip,
         referer,
         timestamp: new Date().toISOString(),
         userAgent,
       };
-
-      return trackingContext;
     } catch (_error: any) {
       return null;
     }

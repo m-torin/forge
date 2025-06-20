@@ -144,7 +144,7 @@ export function createHttpRequestStep(
         const signals = [controller.signal, abortSignal, processedInput.signal].filter(Boolean);
         if (signals.length > 1) {
           // Use AbortSignal.any if available (newer browsers), otherwise manual combination
-          const combinedSignal = (AbortSignal as any).any?.(signals) ?? controller.signal;
+          const _combinedSignal = (AbortSignal as any).any?.(signals) ?? controller.signal;
           if (!AbortSignal.any && abortSignal) {
             abortSignal.addEventListener('abort', (_: any) => controller.abort());
           }
@@ -382,7 +382,7 @@ export function createDatabaseQueryStep(
         await context.reportProgress?.(20, 100, 'Validating query');
 
         // Get database connection
-        const connection = customConfig?.connectionProvider
+        const _connection = customConfig?.connectionProvider
           ? await customConfig.connectionProvider()
           : null; // Mock connection for template
 

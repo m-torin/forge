@@ -36,7 +36,6 @@ import {
   IconPlus,
   IconSearch,
   IconTrash,
-  IconX,
 } from '@tabler/icons-react';
 import React, { useEffect, useState } from 'react';
 

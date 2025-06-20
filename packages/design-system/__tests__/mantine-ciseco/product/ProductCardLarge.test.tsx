@@ -1,7 +1,7 @@
 // @ts-nocheck - Test file with component prop compatibility issues
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '../test-utils';
-import ProductCardLarge from '../../../mantine-ciseco/components/ProductCardLarge';
+import ProductCardLarge from '../../../src/mantine-ciseco/components/ProductCardLarge';
 import { mockProduct } from '../test-utils';
 
 // Mock the Link component
@@ -14,12 +14,12 @@ vi.mock('next/link', (_: any) => ({
 }));
 
 // Mock the useLocalizeHref hook
-vi.mock('../../../mantine-ciseco/hooks/useLocale', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/hooks/useLocale', (_: any) => ({
   useLocalizeHref: () => (href: string) => `/en${href}`,
 }));
 
 // Mock NcImage to avoid Next.js Image issues
-vi.mock('../../../mantine-ciseco/components/shared/NcImage/NcImage', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/components/shared/NcImage/NcImage', (_: any) => ({
   default: ({ alt, src, containerClassName, fill, sizes, ...props }: any) => {
     const imgSrc = typeof src === 'object' ? src.src : src;
     const imgAlt = alt || (typeof src === 'object' ? src.alt : '');

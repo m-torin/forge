@@ -1,11 +1,15 @@
-import { expect, test } from '@repo/testing/e2e';
-import { AppTestHelpers, PerformanceUtils, WaitUtils } from '@repo/testing/e2e';
+import {
+  expect,
+  test,
+  AppTestHelpers,
+  PerformanceUtils,
+  WaitUtils,
+  AppTestConfig,
+} from '@repo/testing/e2e';
 
 import { createApiMocker } from './utils/api-mock';
 import { withPerformanceMonitoring } from './utils/performance-monitor';
 import { createVisualTester } from './utils/visual-testing';
-
-import { AppTestConfig } from '@repo/testing/e2e';
 
 test.describe('Backstage Dashboard', (_: any) => {
   let helpers: AppTestHelpers;
@@ -107,8 +111,8 @@ test.describe('Backstage Dashboard', (_: any) => {
     }
 
     // Check that the page has some navigation content
-    const bodyText = await page.textContent('body');
-    expect(bodyText).toBeTruthy();
+    const bodyText = page;
+    await expect(bodyText).toHaveText('body');
   });
 
   test('should have good performance metrics', async ({ page }: any) => {
@@ -206,11 +210,11 @@ test.describe('Backstage Dashboard', (_: any) => {
     await waitUtils.forNavigation();
 
     // Check if stats are displayed
-    const statsText = await page.textContent('body');
+    const statsText = page;
     const hasNumericData = /\d+/.test(statsText || '');
 
     // Should have some numeric content or at least load successfully
-    expect(statsText).toBeTruthy();
+    await expect(statsText).toHaveText('body');
   });
 
   test('responsive design', async ({ page }: any) => {

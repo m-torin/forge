@@ -84,7 +84,7 @@ export class ConnectionPool<T extends ObservabilityProvider = ObservabilityProvi
       this.connections.set(providerType, connections);
 
       return connection;
-    } catch (error: any) {
+    } catch (_error: any) {
       // Failed to create provider, fail gracefully
       return null;
     }
@@ -161,7 +161,7 @@ export class ConnectionPool<T extends ObservabilityProvider = ObservabilityProvi
   private cleanup(): void {
     const now = Date.now();
 
-    for (const [providerType, connections] of this.connections.entries()) {
+    for (const [_providerType, connections] of this.connections.entries()) {
       const toRemove: PooledConnection<T>[] = [];
 
       for (const connection of connections) {
@@ -214,7 +214,7 @@ export class ConnectionPool<T extends ObservabilityProvider = ObservabilityProvi
     }
 
     // Close all connections
-    for (const [_, connections] of this.connections.entries()) {
+    for (const [_providerType, connections] of this.connections.entries()) {
       for (const connection of connections) {
         this.options.onConnectionClose(connection.id, 'pool_shutdown');
       }

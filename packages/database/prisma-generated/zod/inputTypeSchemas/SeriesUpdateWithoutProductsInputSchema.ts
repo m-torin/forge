@@ -1,0 +1,32 @@
+import type { Prisma } from '../../client';
+
+import { z } from 'zod';
+import { StringFieldUpdateOperationsInputSchema } from './StringFieldUpdateOperationsInputSchema';
+import { IntFieldUpdateOperationsInputSchema } from './IntFieldUpdateOperationsInputSchema';
+import { BoolFieldUpdateOperationsInputSchema } from './BoolFieldUpdateOperationsInputSchema';
+import { JsonNullValueInputSchema } from './JsonNullValueInputSchema';
+import { InputJsonValueSchema } from './InputJsonValueSchema';
+import { DateTimeFieldUpdateOperationsInputSchema } from './DateTimeFieldUpdateOperationsInputSchema';
+import { NullableDateTimeFieldUpdateOperationsInputSchema } from './NullableDateTimeFieldUpdateOperationsInputSchema';
+import { FandomUpdateOneRequiredWithoutSeriesNestedInputSchema } from './FandomUpdateOneRequiredWithoutSeriesNestedInputSchema';
+import { StoryUpdateManyWithoutSeriesNestedInputSchema } from './StoryUpdateManyWithoutSeriesNestedInputSchema';
+import { JrFindReplaceRejectUpdateManyWithoutSeriesNestedInputSchema } from './JrFindReplaceRejectUpdateManyWithoutSeriesNestedInputSchema';
+import { UserUpdateOneWithoutDeletedSeriesNestedInputSchema } from './UserUpdateOneWithoutDeletedSeriesNestedInputSchema';
+
+export const SeriesUpdateWithoutProductsInputSchema: z.ZodType<Prisma.SeriesUpdateWithoutProductsInput> = z.object({
+  id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  displayOrder: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  isFictional: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
+  copy: z.union([ z.lazy(() => JsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  deletedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  fandom: z.lazy(() => FandomUpdateOneRequiredWithoutSeriesNestedInputSchema).optional(),
+  stories: z.lazy(() => StoryUpdateManyWithoutSeriesNestedInputSchema).optional(),
+  jrFindReplaceRejects: z.lazy(() => JrFindReplaceRejectUpdateManyWithoutSeriesNestedInputSchema).optional(),
+  deletedBy: z.lazy(() => UserUpdateOneWithoutDeletedSeriesNestedInputSchema).optional()
+}).strict();
+
+export default SeriesUpdateWithoutProductsInputSchema;

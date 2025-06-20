@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Import after mocks are set up
 import { createScraper, createServerScraper } from '../../../shared/factories/scraper-factory';
@@ -55,7 +55,7 @@ describe('createScraper', () => {
   });
 
   describe('environment detection', () => {
-    it('should create server scraper by default', async () => {
+    test('should create server scraper by default', async () => {
       const scraper = await createScraper();
 
       // Verify it returns a provider
@@ -64,9 +64,9 @@ describe('createScraper', () => {
       expect(typeof scraper.scrape).toBe('function');
     });
 
-    it('should create client scraper when specified', async () => {
+    test('should create client scraper when specified', async () => {
       // Mock window object for client environment
-      const _originalWindow = global.window;
+      const originalWindow = global.window;
       global.window = {} as any;
 
       try {
@@ -84,7 +84,7 @@ describe('createScraper', () => {
   });
 
   describe('provider selection', () => {
-    it('should create playwright provider by default', async () => {
+    test('should create playwright provider by default', async () => {
       const scraper = await createServerScraper('playwright');
 
       expect(scraper).toBeDefined();
@@ -92,7 +92,7 @@ describe('createScraper', () => {
       expect(result.provider).toBe('playwright');
     });
 
-    it('should pass config to provider', async () => {
+    test('should pass config to provider', async () => {
       const config = { timeout: 5000 };
       const scraper = await createServerScraper('auto', config);
 

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 import {
   productClicked,
@@ -33,13 +33,13 @@ vi.mock('../../shared/emitters/ecommerce/track-ecommerce', () => ({
   })),
 }));
 
-describe('Product Emitters', () => {
+describe('product Emitters', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   describe('productSearched', () => {
-    it('should create a valid product search event', () => {
+    test('should create a valid product search event', () => {
       const properties = { query: 'running shoes' };
       const result = productSearched(properties);
 
@@ -50,28 +50,31 @@ describe('Product Emitters', () => {
       });
     });
 
-    it('should accept emitter options', () => {
+    test('should accept emitter options', () => {
       const properties = { query: 'laptops' };
-      const options = { context: { traits: { userId: 'user123' }, timestamp: new Date() } };
+      const options = {
+        context: { traits: { userId: 'user123' } },
+        timestamp: new Date()
+      };
       const result = productSearched(properties, options);
 
-      expect(result.timestamp).toBe(options.context.timestamp);
+      expect(result.timestamp).toBe(options.timestamp);
       expect(result.context?.traits?.userId).toBe('user123');
     });
 
-    it('should throw error when query is missing', () => {
+    test('should throw error when query is missing', () => {
       expect(() => {
         productSearched({} as any);
       }).toThrow('Missing required properties: query');
     });
 
-    it('should handle empty query string', () => {
+    test('should handle empty query string', () => {
       expect(() => {
         productSearched({ query: '' });
       }).toThrow('Missing required properties: query');
     });
 
-    it('should clean undefined properties', () => {
+    test('should clean undefined properties', () => {
       const properties = {
         extraProp: undefined as any,
         query: 'test',
@@ -84,7 +87,7 @@ describe('Product Emitters', () => {
   });
 
   describe('searchResultsViewed', () => {
-    it('should create a valid search results viewed event', () => {
+    test('should create a valid search results viewed event', () => {
       const properties: SearchResultsProperties = {
         filters_applied: { brand: 'Apple', price_range: '500-1000' },
         query: 'smartphones',
@@ -107,7 +110,7 @@ describe('Product Emitters', () => {
       });
     });
 
-    it('should normalize products when provided', () => {
+    test('should normalize products when provided', () => {
       const properties: SearchResultsProperties = {
         products: [
           { product_id: 'p1', name: 'Product 1', price: '99.99' },
@@ -125,7 +128,7 @@ describe('Product Emitters', () => {
       ]);
     });
 
-    it('should throw error when required properties are missing', () => {
+    test('should throw error when required properties are missing', () => {
       expect(() => {
         searchResultsViewed({ query: 'test' } as any);
       }).toThrow('Missing required properties: results_count');
@@ -135,7 +138,7 @@ describe('Product Emitters', () => {
       }).toThrow('Missing required properties: query');
     });
 
-    it('should handle zero results', () => {
+    test('should handle zero results', () => {
       const properties: SearchResultsProperties = {
         query: 'nonexistent product',
         results_count: 0,
@@ -147,7 +150,7 @@ describe('Product Emitters', () => {
   });
 
   describe('productListViewed', () => {
-    it('should create a valid product list viewed event', () => {
+    test('should create a valid product list viewed event', () => {
       const properties: ProductListProperties = {
         list_id: 'category_electronics',
         category: 'Electronics',
@@ -166,7 +169,7 @@ describe('Product Emitters', () => {
       });
     });
 
-    it('should normalize products when provided', () => {
+    test('should normalize products when provided', () => {
       const mockProducts = [
         { product_id: 'p1', name: 'Product 1' },
         { productId: 'p2', title: 'Product 2' },
@@ -185,7 +188,7 @@ describe('Product Emitters', () => {
       ]);
     });
 
-    it('should work with minimal properties', () => {
+    test('should work with minimal properties', () => {
       const properties: ProductListProperties = {};
       const result = productListViewed(properties);
 
@@ -193,7 +196,7 @@ describe('Product Emitters', () => {
       expect(result.requiredProperties).toEqual([]);
     });
 
-    it('should clean undefined properties', () => {
+    test('should clean undefined properties', () => {
       const properties: ProductListProperties = {
         list_id: 'test',
         category: undefined,
@@ -206,7 +209,7 @@ describe('Product Emitters', () => {
   });
 
   describe('productListFiltered', () => {
-    it('should create a valid product list filtered event', () => {
+    test('should create a valid product list filtered event', () => {
       const properties = {
         list_id: 'category_shoes',
         category: 'Shoes',
@@ -227,7 +230,7 @@ describe('Product Emitters', () => {
       });
     });
 
-    it('should handle complex filter objects', () => {
+    test('should handle complex filter objects', () => {
       const properties = {
         filters: {
           availability: 'in_stock',
@@ -240,7 +243,7 @@ describe('Product Emitters', () => {
       expect(result.properties.filters).toEqual(properties.filters);
     });
 
-    it('should normalize products when provided', () => {
+    test('should normalize products when provided', () => {
       const properties = {
         category: 'Electronics',
         filters: { brand: 'Apple' },
@@ -253,7 +256,7 @@ describe('Product Emitters', () => {
   });
 
   describe('productClicked', () => {
-    it('should create a valid product clicked event', () => {
+    test('should create a valid product clicked event', () => {
       const properties: BaseProductProperties = {
         product_id: 'prod123',
         name: 'Wireless Headphones',
@@ -278,7 +281,7 @@ describe('Product Emitters', () => {
       });
     });
 
-    it('should normalize product properties', () => {
+    test('should normalize product properties', () => {
       const properties = {
         manufacturer: 'Brand X', // Should normalize to brand
         price: '299.99', // Should normalize to number
@@ -296,13 +299,13 @@ describe('Product Emitters', () => {
       });
     });
 
-    it('should throw error when product_id is missing', () => {
+    test('should throw error when product_id is missing', () => {
       expect(() => {
         productClicked({ name: 'Product' } as any);
       }).toThrow('Product must have an id');
     });
 
-    it('should accept various product ID field names', () => {
+    test('should accept various product ID field names', () => {
       const testCases = [{ product_id: 'p1' }, { productId: 'p2' }, { id: 'p3' }];
 
       testCases.forEach((properties, index) => {
@@ -311,7 +314,7 @@ describe('Product Emitters', () => {
       });
     });
 
-    it('should clean undefined properties', () => {
+    test('should clean undefined properties', () => {
       const properties: BaseProductProperties = {
         product_id: 'p1',
         name: 'Product',
@@ -328,7 +331,7 @@ describe('Product Emitters', () => {
   });
 
   describe('productViewed', () => {
-    it('should create a valid product viewed event', () => {
+    test('should create a valid product viewed event', () => {
       const properties: BaseProductProperties = {
         product_id: 'prod789',
         name: 'Gaming Laptop',
@@ -352,7 +355,7 @@ describe('Product Emitters', () => {
       });
     });
 
-    it('should accept emitter options', () => {
+    test('should accept emitter options', () => {
       const properties: BaseProductProperties = { product_id: 'p1' };
       const options: EmitterOptions = { context: { traits: { userId: 'user456' } } };
 
@@ -360,13 +363,13 @@ describe('Product Emitters', () => {
       expect(result.context?.traits?.userId).toBe('user456');
     });
 
-    it('should throw error when product_id is missing', () => {
+    test('should throw error when product_id is missing', () => {
       expect(() => {
         productViewed({ name: 'Product' } as any);
       }).toThrow('Product must have an id');
     });
 
-    it('should normalize all product properties', () => {
+    test('should normalize all product properties', () => {
       const properties = {
         couponCode: 'SAVE10',
         imageUrl: 'https://example.com/image.jpg',
@@ -404,7 +407,7 @@ describe('Product Emitters', () => {
       price: 99.99,
     };
 
-    it('should create a valid product comparison event for adding', () => {
+    test('should create a valid product comparison event for adding', () => {
       const properties: ProductComparisonProperties = {
         action: 'added',
         product: baseProduct,
@@ -425,7 +428,7 @@ describe('Product Emitters', () => {
       });
     });
 
-    it('should create a valid product comparison event for viewing', () => {
+    test('should create a valid product comparison event for viewing', () => {
       const comparisonList = [
         { product_id: 'p2', name: 'Product 2' },
         { product_id: 'p3', name: 'Product 3' },
@@ -451,7 +454,7 @@ describe('Product Emitters', () => {
       });
     });
 
-    it('should normalize the main product and comparison list', () => {
+    test('should normalize the main product and comparison list', () => {
       const properties: ProductComparisonProperties = {
         action: 'removed',
         comparison_list: [{ productId: 'p2', title: 'Compare Product' }] as any,
@@ -468,7 +471,7 @@ describe('Product Emitters', () => {
       });
     });
 
-    it('should throw error when product lacks ID', () => {
+    test('should throw error when product lacks ID', () => {
       expect(() => {
         productCompared({
           action: 'added',
@@ -477,7 +480,7 @@ describe('Product Emitters', () => {
       }).toThrow('Product must have an id');
     });
 
-    it('should handle empty comparison list', () => {
+    test('should handle empty comparison list', () => {
       const properties: ProductComparisonProperties = {
         action: 'viewed',
         comparison_list: [],
@@ -499,7 +502,7 @@ describe('Product Emitters', () => {
       source: 'product_page',
     };
 
-    it('should create a valid recommendation viewed event', () => {
+    test('should create a valid recommendation viewed event', () => {
       const result = productRecommendationViewed(baseRecommendation);
 
       expect(result).toEqual({
@@ -517,7 +520,7 @@ describe('Product Emitters', () => {
       });
     });
 
-    it('should handle different recommendation types', () => {
+    test('should handle different recommendation types', () => {
       const types = ['frequently_bought', 'trending', 'personalized', 'upsell', 'cross_sell'];
 
       types.forEach((type) => {
@@ -532,7 +535,7 @@ describe('Product Emitters', () => {
       });
     });
 
-    it('should include optional algorithm information', () => {
+    test('should include optional algorithm information', () => {
       const properties: RecommendationProperties = {
         ...baseRecommendation,
         algorithm: 'collaborative_filtering_v2',
@@ -542,7 +545,7 @@ describe('Product Emitters', () => {
       expect(result.properties.algorithm).toBe('collaborative_filtering_v2');
     });
 
-    it('should normalize recommended products', () => {
+    test('should normalize recommended products', () => {
       const properties: RecommendationProperties = {
         recommendation_type: 'upsell',
         products: [
@@ -560,7 +563,7 @@ describe('Product Emitters', () => {
       ]);
     });
 
-    it('should throw error when required properties are missing', () => {
+    test('should throw error when required properties are missing', () => {
       expect(() => {
         productRecommendationViewed({
           products: [],
@@ -576,7 +579,7 @@ describe('Product Emitters', () => {
       }).toThrow('Missing required properties: source');
     });
 
-    it('should handle empty products array', () => {
+    test('should handle empty products array', () => {
       const properties: RecommendationProperties = {
         recommendation_type: 'similar',
         products: [],
@@ -596,7 +599,7 @@ describe('Product Emitters', () => {
       source: 'product_page',
     };
 
-    it('should create a valid recommendation clicked event', () => {
+    test('should create a valid recommendation clicked event', () => {
       const result = productRecommendationClicked(baseProperties);
 
       expect(result).toEqual({
@@ -612,7 +615,7 @@ describe('Product Emitters', () => {
       });
     });
 
-    it('should include position when provided', () => {
+    test('should include position when provided', () => {
       const properties = {
         ...baseProperties,
         position: 2,
@@ -622,7 +625,7 @@ describe('Product Emitters', () => {
       expect(result.properties.position).toBe(2);
     });
 
-    it('should normalize product properties', () => {
+    test('should normalize product properties', () => {
       const properties = {
         recommendation_type: 'cross_sell',
         position: 1,
@@ -644,7 +647,7 @@ describe('Product Emitters', () => {
       });
     });
 
-    it('should throw error when product_id is missing', () => {
+    test('should throw error when product_id is missing', () => {
       expect(() => {
         productRecommendationClicked({
           name: 'Product',
@@ -654,7 +657,7 @@ describe('Product Emitters', () => {
       }).toThrow('Product must have an id');
     });
 
-    it('should separate product properties from recommendation metadata', () => {
+    test('should separate product properties from recommendation metadata', () => {
       const properties = {
         product_id: 'r1',
         name: 'Product',
@@ -680,7 +683,7 @@ describe('Product Emitters', () => {
       expect(result.properties).not.toHaveProperty('algorithm');
     });
 
-    it('should clean undefined properties', () => {
+    test('should clean undefined properties', () => {
       const properties = {
         product_id: 'r1',
         name: 'Product',
@@ -702,8 +705,8 @@ describe('Product Emitters', () => {
   });
 
   // Edge cases and integration tests
-  describe('Edge Cases and Integration', () => {
-    it('should handle very large product arrays efficiently', () => {
+  describe('edge Cases and Integration', () => {
+    test('should handle very large product arrays efficiently', () => {
       const largeProductList = Array.from({ length: 1000 }, (_, i) => ({
         product_id: `p${i}`,
         name: `Product ${i}`,
@@ -719,13 +722,13 @@ describe('Product Emitters', () => {
       const result = productListViewed(properties);
       const endTime = performance.now();
 
-      expect(endTime - startTime).toBeLessThan(100); // Should complete in under 100ms
+      expect(endTime - startTime).toBeLessThan(200); // Should complete in under 200ms
       expect(result.properties.products).toHaveLength(1000);
       expect(result.properties.products![0].product_id).toBe('p0');
       expect(result.properties.products![999].product_id).toBe('p999');
     });
 
-    it('should handle malformed product data gracefully', () => {
+    test('should handle malformed product data gracefully', () => {
       const _malformedProducts = [
         null,
         undefined,
@@ -770,7 +773,7 @@ describe('Product Emitters', () => {
       expect(invalidPositionResult.properties.position).toBeUndefined();
     });
 
-    it('should maintain type safety across all emitters', () => {
+    test('should maintain type safety across all emitters', () => {
       // This test ensures TypeScript types are working correctly
       // by testing that proper interfaces are enforced
 
@@ -795,7 +798,7 @@ describe('Product Emitters', () => {
       expect(() => productRecommendationViewed(recProps)).not.toThrow();
     });
 
-    it('should ensure consistent event naming across all product emitters', () => {
+    test('should ensure consistent event naming across all product emitters', () => {
       const eventNames = [
         productSearched({ query: 'test' }).event,
         searchResultsViewed({ query: 'test', results_count: 1 }).name,

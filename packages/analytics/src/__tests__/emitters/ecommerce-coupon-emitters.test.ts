@@ -1,17 +1,17 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect } from 'vitest';
 
 import { couponApplied, couponRemoved } from '../../shared/emitters/ecommerce/events/coupon';
 import { ECOMMERCE_EVENTS } from '../../shared/emitters/ecommerce/types';
 
 import type { CouponProperties } from '../../shared/emitters/ecommerce/types';
 
-describe('Coupon Emitters', () => {
+describe('coupon Emitters', () => {
   beforeEach(() => {
     // Clear any mocks if needed
   });
 
   describe('couponApplied', () => {
-    it('should create a valid coupon applied event with all properties', () => {
+    test('should create a valid coupon applied event with all properties', () => {
       const properties: CouponProperties = {
         cart_id: 'cart_456',
         coupon_id: 'COUPON123',
@@ -38,7 +38,7 @@ describe('Coupon Emitters', () => {
       });
     });
 
-    it('should create coupon applied event with minimal properties', () => {
+    test('should create coupon applied event with minimal properties', () => {
       const properties: CouponProperties = {};
 
       const result = couponApplied(properties);
@@ -51,7 +51,7 @@ describe('Coupon Emitters', () => {
       });
     });
 
-    it('should create coupon applied event for cart', () => {
+    test('should create coupon applied event for cart', () => {
       const properties: CouponProperties = {
         cart_id: 'cart_789',
         coupon_id: 'CART10',
@@ -69,7 +69,7 @@ describe('Coupon Emitters', () => {
       });
     });
 
-    it('should create coupon applied event for order', () => {
+    test('should create coupon applied event for order', () => {
       const properties: CouponProperties = {
         coupon_id: 'ORDER20',
         order_id: 'order_456',
@@ -87,7 +87,7 @@ describe('Coupon Emitters', () => {
       });
     });
 
-    it('should handle different discount amounts', () => {
+    test('should handle different discount amounts', () => {
       const discountAmounts = [5.99, 10.0, 25.5, 100.0, 0];
 
       discountAmounts.forEach((discount) => {
@@ -101,7 +101,7 @@ describe('Coupon Emitters', () => {
       });
     });
 
-    it('should handle various coupon types and names', () => {
+    test('should handle various coupon types and names', () => {
       const coupons = [
         { coupon_id: 'PERCENT20', coupon_name: '20% Off Everything' },
         { coupon_id: 'FIXED10', coupon_name: '$10 Off Your Order' },
@@ -122,7 +122,7 @@ describe('Coupon Emitters', () => {
       });
     });
 
-    it('should clean undefined properties', () => {
+    test('should clean undefined properties', () => {
       const properties: CouponProperties = {
         cart_id: undefined,
         coupon_id: 'TEST123',
@@ -144,7 +144,7 @@ describe('Coupon Emitters', () => {
       expect(result.properties).not.toHaveProperty('reason');
     });
 
-    it('should handle zero discount coupon', () => {
+    test('should handle zero discount coupon', () => {
       const properties: CouponProperties = {
         coupon_id: 'FREE_ITEM',
         coupon_name: 'Free Gift with Purchase',
@@ -155,7 +155,7 @@ describe('Coupon Emitters', () => {
       expect(result.properties.discount).toBe(0);
     });
 
-    it('should handle coupon with reason/description', () => {
+    test('should handle coupon with reason/description', () => {
       const properties: CouponProperties = {
         coupon_id: 'LOYALTY10',
         coupon_name: 'Loyalty Member Discount',
@@ -168,7 +168,7 @@ describe('Coupon Emitters', () => {
       expect(result.properties.reason).toBe('Reward for customer loyalty');
     });
 
-    it('should handle both cart_id and order_id simultaneously', () => {
+    test('should handle both cart_id and order_id simultaneously', () => {
       const properties: CouponProperties = {
         cart_id: 'cart_123',
         coupon_id: 'CHECKOUT10',
@@ -186,7 +186,7 @@ describe('Coupon Emitters', () => {
       });
     });
 
-    it('should handle special characters in coupon codes', () => {
+    test('should handle special characters in coupon codes', () => {
       const properties: CouponProperties = {
         coupon_id: 'SAVE-20%_OFF!',
         coupon_name: 'Special Characters Coupon',
@@ -201,7 +201,7 @@ describe('Coupon Emitters', () => {
   });
 
   describe('couponRemoved', () => {
-    it('should create a valid coupon removed event with all properties', () => {
+    test('should create a valid coupon removed event with all properties', () => {
       const properties: CouponProperties = {
         cart_id: 'cart_456',
         coupon_id: 'REMOVE123',
@@ -228,7 +228,7 @@ describe('Coupon Emitters', () => {
       });
     });
 
-    it('should create coupon removed event with minimal properties', () => {
+    test('should create coupon removed event with minimal properties', () => {
       const properties: CouponProperties = {};
 
       const result = couponRemoved(properties);
@@ -241,7 +241,7 @@ describe('Coupon Emitters', () => {
       });
     });
 
-    it('should handle coupon removal from cart', () => {
+    test('should handle coupon removal from cart', () => {
       const properties: CouponProperties = {
         cart_id: 'cart_789',
         coupon_id: 'CART15',
@@ -259,7 +259,7 @@ describe('Coupon Emitters', () => {
       });
     });
 
-    it('should handle coupon removal from order', () => {
+    test('should handle coupon removal from order', () => {
       const properties: CouponProperties = {
         coupon_id: 'ORDER25',
         order_id: 'order_456',
@@ -277,7 +277,7 @@ describe('Coupon Emitters', () => {
       });
     });
 
-    it('should handle different removal reasons', () => {
+    test('should handle different removal reasons', () => {
       const reasons = [
         'Customer manually removed',
         'Coupon expired during checkout',
@@ -298,7 +298,7 @@ describe('Coupon Emitters', () => {
       });
     });
 
-    it('should handle coupon removal with lost discount amount', () => {
+    test('should handle coupon removal with lost discount amount', () => {
       const properties: CouponProperties = {
         cart_id: 'cart_123',
         coupon_id: 'LOST_SAVINGS',
@@ -317,7 +317,7 @@ describe('Coupon Emitters', () => {
       });
     });
 
-    it('should clean undefined properties', () => {
+    test('should clean undefined properties', () => {
       const properties: CouponProperties = {
         cart_id: undefined,
         coupon_id: 'REMOVE_TEST',
@@ -339,7 +339,7 @@ describe('Coupon Emitters', () => {
       expect(result.properties).not.toHaveProperty('reason');
     });
 
-    it('should handle removal of zero-value coupon', () => {
+    test('should handle removal of zero-value coupon', () => {
       const properties: CouponProperties = {
         coupon_id: 'FREE_GIFT_REMOVED',
         coupon_name: 'Free Gift Coupon',
@@ -353,7 +353,7 @@ describe('Coupon Emitters', () => {
       expect(result.properties.reason).toBe('Free gift item out of stock');
     });
 
-    it('should handle simultaneous cart and order context', () => {
+    test('should handle simultaneous cart and order context', () => {
       const properties: CouponProperties = {
         cart_id: 'cart_123',
         coupon_id: 'DUAL_CONTEXT',
@@ -374,8 +374,8 @@ describe('Coupon Emitters', () => {
   });
 
   // Integration and edge case tests
-  describe('Integration and Edge Cases', () => {
-    it('should handle coupon lifecycle from apply to remove', () => {
+  describe('integration and Edge Cases', () => {
+    test('should handle coupon lifecycle from apply to remove', () => {
       const couponData: CouponProperties = {
         cart_id: 'lifecycle_cart',
         coupon_id: 'LIFECYCLE_COUPON',
@@ -402,7 +402,7 @@ describe('Coupon Emitters', () => {
       expect(removedResult.name).toBe(ECOMMERCE_EVENTS.COUPON_REMOVED);
     });
 
-    it('should handle multiple coupon operations in sequence', () => {
+    test('should handle multiple coupon operations in sequence', () => {
       const coupons = [
         { coupon_id: 'FIRST10', discount: 10.0 },
         { coupon_id: 'SECOND15', discount: 15.0 },
@@ -439,7 +439,7 @@ describe('Coupon Emitters', () => {
       expect(results).toHaveLength(4);
     });
 
-    it('should ensure consistent event naming', () => {
+    test('should ensure consistent event naming', () => {
       const appliedEvent = couponApplied({ coupon_id: 'test' });
       const removedEvent = couponRemoved({ coupon_id: 'test' });
 
@@ -453,7 +453,7 @@ describe('Coupon Emitters', () => {
       expect(removedEvent.name).toBe(ECOMMERCE_EVENTS.COUPON_REMOVED);
     });
 
-    it('should handle edge cases with special characters and formatting', () => {
+    test('should handle edge cases with special characters and formatting', () => {
       const edgeCaseProperties: CouponProperties = {
         coupon_id: 'SPECIAL-chars_123!@#',
         coupon_name: 'Coupon with "quotes" & ampersands',
@@ -472,7 +472,7 @@ describe('Coupon Emitters', () => {
       );
     });
 
-    it('should handle very large discount values', () => {
+    test('should handle very large discount values', () => {
       const largeDiscountProperties: CouponProperties = {
         coupon_id: 'MASSIVE_DISCOUNT',
         coupon_name: 'Huge Sale Coupon',
@@ -486,7 +486,7 @@ describe('Coupon Emitters', () => {
       expect(removedResult.properties.discount).toBe(9999.99);
     });
 
-    it('should handle floating point precision correctly', () => {
+    test('should handle floating point precision correctly', () => {
       const precisionTest: CouponProperties = {
         coupon_id: 'PRECISION_TEST',
         discount: 12.345, // Floating point with decimals
@@ -499,7 +499,7 @@ describe('Coupon Emitters', () => {
       expect(removedResult.properties.discount).toBe(12.345);
     });
 
-    it('should maintain type safety across both emitters', () => {
+    test('should maintain type safety across both emitters', () => {
       // This test ensures TypeScript types are working correctly
 
       // Both emitters accept CouponProperties
@@ -517,7 +517,7 @@ describe('Coupon Emitters', () => {
       expect(() => couponRemoved({})).not.toThrow();
     });
 
-    it('should handle performance with rapid coupon operations', () => {
+    test('should handle performance with rapid coupon operations', () => {
       const operations = 1000;
       const startTime = performance.now();
 
@@ -543,7 +543,7 @@ describe('Coupon Emitters', () => {
       expect(duration).toBeLessThan(100);
     });
 
-    it('should validate required properties structure', () => {
+    test('should validate required properties structure', () => {
       // Both emitters should have empty required properties arrays
       const appliedEvent = couponApplied({});
       const removedEvent = couponRemoved({});
@@ -556,7 +556,7 @@ describe('Coupon Emitters', () => {
       expect(removedEvent.category).toBe('ecommerce');
     });
 
-    it('should handle cart-to-order conversion scenario', () => {
+    test('should handle cart-to-order conversion scenario', () => {
       const couponData = {
         coupon_id: 'CONVERSION_COUPON',
         coupon_name: 'Cart to Order Coupon',

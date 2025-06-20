@@ -1,6 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-// Mock Resend SDK
+// Create mocks first
 const mockResend = {
   emails: {
     create: vi.fn(),
@@ -8,28 +8,43 @@ const mockResend = {
   },
 };
 
-const MockResendConstructor = vi.fn().mockImplementation(() => mockResend);
+const MockResendConstructor = vi.fn(() => mockResend);
+const mockKeys = vi.fn();
+const mockLogger = {
+  warn: vi.fn(),
+  info: vi.fn(),
+  error: vi.fn(),
+};
 
+// Set global logger mock
+(global as any).mockLogger = mockLogger;
+
+// Mock modules
 vi.mock('resend', () => ({
   Resend: MockResendConstructor,
 }));
 
-// Mock the keys module
-const mockKeys = vi.fn();
 vi.mock('../keys', () => ({
   keys: mockKeys,
 }));
 
-describe('Resend Proxy', () => {
-  beforeEach(() => {
+describe('resend Proxy', () => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     vi.resetModules();
 
-    // Reset warning state
-    (global as any).hasLoggedWarning = false;
+    // Reset module state by clearing cache
+    vi.resetModules();
 
-    // Clear console.warn spy
-    vi.clearAllMocks();
+    // Reset warning state
+    if ((global as any).emailPackageReset) {
+      (global as any).emailPackageReset();
+    }
+
+    // Clear mocks
+    MockResendConstructor.mockClear();
+    mockLogger.warn.mockClear();
+    mockKeys.mockClear();
   });
 
   describe('with valid Resend token', () => {
@@ -40,8 +55,11 @@ describe('Resend Proxy', () => {
       });
     });
 
-    it('should initialize Resend instance when token is available', async () => {
-      const { resend } = await import('../index');
+    test('should initialize Resend instance when token is available', async () => {
+      const { resend } = await import('../src/index');
+
+      // Reset the package state after import
+      (global as any).emailPackageReset?.();
 
       // Access a property to trigger initialization
       const emails = resend.emails;
@@ -50,8 +68,8 @@ describe('Resend Proxy', () => {
       expect(MockResendConstructor).toHaveBeenCalledWith('re_123456789');
     });
 
-    it('should reuse same Resend instance on subsequent access', async () => {
-      const { resend } = await import('../index');
+    test('should reuse same Resend instance on subsequent access', async () => {
+      const { resend } = await import('../src/index');
 
       const emails1 = resend.emails;
       const emails2 = resend.emails;
@@ -60,16 +78,16 @@ describe('Resend Proxy', () => {
       expect(MockResendConstructor).toHaveBeenCalledTimes(1);
     });
 
-    it('should provide access to Resend methods', async () => {
-      const { resend } = await import('../index');
+    test('should provide access to Resend methods', async () => {
+      const { resend } = await import('../src/index');
 
       expect(resend.emails).toBe(mockResend.emails);
       expect(resend.emails.send).toBe(mockResend.emails.send);
       expect(resend.emails.create).toBe(mockResend.emails.create);
     });
 
-    it('should support email sending', async () => {
-      const { resend } = await import('../index');
+    test('should support email sending', async () => {
+      const { resend } = await import('../src/index');
 
       const emailData = {
         from: 'noreply@example.com',
@@ -84,7 +102,7 @@ describe('Resend Proxy', () => {
       const result = await resend.emails.send(emailData);
 
       expect(mockResend.emails.send).toHaveBeenCalledWith(emailData);
-      expect(result).toEqual(mockResponse);
+      expect(result).toStrictEqual(mockResponse);
     });
   });
 
@@ -96,25 +114,21 @@ describe('Resend Proxy', () => {
       });
     });
 
-    it('should log warning once when token is missing', async () => {
-      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-
-      const { resend } = await import('../index');
+    test('should log warning once when token is missing', async () => {
+      const { resend } = await import('../src/index');
 
       // Access a property to trigger the warning
       resend.emails;
       resend.emails; // Second access should not log again
 
-      expect(consoleSpy).toHaveBeenCalledTimes(1);
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(mockLogger.warn).toHaveBeenCalledTimes(1);
+      expect(mockLogger.warn).toHaveBeenCalledWith(
         'Resend email service is disabled: Missing RESEND_TOKEN',
       );
-
-      consoleSpy.mockRestore();
     });
 
-    it('should return mock email object when token is missing', async () => {
-      const { resend } = await import('../index');
+    test('should return mock email object when token is missing', async () => {
+      const { resend } = await import('../src/index');
 
       const emails = resend.emails;
 
@@ -123,8 +137,8 @@ describe('Resend Proxy', () => {
       expect(emails.send).toBeDefined();
     });
 
-    it('should return mock response for email sending', async () => {
-      const { resend } = await import('../index');
+    test('should return mock response for email sending', async () => {
+      const { resend } = await import('../src/index');
 
       const result = await resend.emails.send({
         from: 'test@example.com',
@@ -133,11 +147,11 @@ describe('Resend Proxy', () => {
         to: 'recipient@example.com',
       });
 
-      expect(result).toEqual({ data: { id: 'mock-email-id' }, error: null });
+      expect(result).toStrictEqual({ data: { id: 'mock-email-id' }, error: null });
     });
 
-    it('should return mock response for email create', async () => {
-      const { resend } = await import('../index');
+    test('should return mock response for email create', async () => {
+      const { resend } = await import('../src/index');
 
       const result = await resend.emails.create({
         from: 'test@example.com',
@@ -146,19 +160,19 @@ describe('Resend Proxy', () => {
         to: 'recipient@example.com',
       });
 
-      expect(result).toEqual({ data: { id: 'mock-email-id' }, error: null });
+      expect(result).toStrictEqual({ data: { id: 'mock-email-id' }, error: null });
     });
 
-    it('should return undefined for unsupported properties', async () => {
-      const { resend } = await import('../index');
+    test('should return undefined for unsupported properties', async () => {
+      const { resend } = await import('../src/index');
 
       const unsupportedProperty = (resend as any).unsupportedProperty;
 
       expect(unsupportedProperty).toBeUndefined();
     });
 
-    it('should not initialize Resend instance when token is missing', async () => {
-      const { resend } = await import('../index');
+    test('should not initialize Resend instance when token is missing', async () => {
+      const { resend } = await import('../src/index');
 
       // Access properties
       resend.emails;
@@ -175,19 +189,15 @@ describe('Resend Proxy', () => {
       });
     });
 
-    it('should treat empty string as missing token', async () => {
-      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-
-      const { resend } = await import('../index');
+    test('should treat empty string as missing token', async () => {
+      const { resend } = await import('../src/index');
 
       resend.emails;
 
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(mockLogger.warn).toHaveBeenCalledWith(
         'Resend email service is disabled: Missing RESEND_TOKEN',
       );
       expect(MockResendConstructor).not.toHaveBeenCalled();
-
-      consoleSpy.mockRestore();
     });
   });
 
@@ -199,8 +209,8 @@ describe('Resend Proxy', () => {
       });
     });
 
-    it('should lazily initialize Resend instance', async () => {
-      const { resend } = await import('../index');
+    test('should lazily initialize Resend instance', async () => {
+      const { resend } = await import('../src/index');
 
       // Resend should not be called until we access a property
       expect(MockResendConstructor).not.toHaveBeenCalled();
@@ -211,8 +221,8 @@ describe('Resend Proxy', () => {
       expect(MockResendConstructor).toHaveBeenCalledWith('re_123456789');
     });
 
-    it('should only initialize Resend once', async () => {
-      const { resend } = await import('../index');
+    test('should only initialize Resend once', async () => {
+      const { resend } = await import('../src/index');
 
       // Access multiple properties
       resend.emails;
@@ -222,8 +232,8 @@ describe('Resend Proxy', () => {
       expect(MockResendConstructor).toHaveBeenCalledTimes(1);
     });
 
-    it('should forward all property access to Resend instance', async () => {
-      const { resend } = await import('../index');
+    test('should forward all property access to Resend instance', async () => {
+      const { resend } = await import('../src/index');
 
       // Mock additional properties
       (mockResend as any).apiKeys = { list: vi.fn() };
@@ -243,8 +253,8 @@ describe('Resend Proxy', () => {
       });
     });
 
-    it('should propagate Resend API errors', async () => {
-      const { resend } = await import('../index');
+    test('should propagate Resend API errors', async () => {
+      const { resend } = await import('../src/index');
 
       const error = new Error('Invalid API key');
       mockResend.emails.send.mockRejectedValue(error);
@@ -259,22 +269,22 @@ describe('Resend Proxy', () => {
       ).rejects.toThrow('Invalid API key');
     });
 
-    it('should handle Resend constructor errors', async () => {
+    test('should handle Resend constructor errors', async () => {
       MockResendConstructor.mockImplementationOnce(() => {
         throw new Error('Invalid token format');
       });
 
-      const { resend } = await import('../index');
+      const { resend } = await import('../src/index');
 
       expect(() => resend.emails).toThrow('Invalid token format');
     });
 
-    it('should handle keys function errors', async () => {
+    test('should handle keys function errors', async () => {
       mockKeys.mockImplementation(() => {
         throw new Error('Keys configuration error');
       });
 
-      const { resend } = await import('../index');
+      const { resend } = await import('../src/index');
 
       expect(() => resend.emails).toThrow('Keys configuration error');
     });

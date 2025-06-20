@@ -10,7 +10,6 @@ import {
   Paper,
   Stack,
   Text,
-  useMantineTheme,
 } from '@mantine/core';
 import {
   IconChevronDown,
@@ -93,8 +92,6 @@ export function DataTableV2<TData extends Record<string, any>>({
   searchPlaceholder = 'Search...',
   tableProps = {},
 }: DataTableV2Props<TData>) {
-  const theme = useMantineTheme();
-
   // Add actions column if needed
   const columns = useMemo(() => {
     const cols = [...userColumns];

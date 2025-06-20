@@ -5,6 +5,7 @@
  * for workflow step execution.
  */
 
+import { createServerObservability } from '@repo/observability/shared-env';
 import { ProgressState, StepPerformanceData } from './step-types';
 
 /**
@@ -67,7 +68,17 @@ export function createProgressReporter(
     }
 
     if (enableDetailedLogging) {
-      console.log(`[${stepId}] Progress: ${current}/${total} ${details ?? ''}`);
+      createServerObservability({
+        providers: {
+          console: { enabled: true },
+        },
+      })
+        .then((logger) => {
+          logger.log('info', `[${stepId}] Progress: ${current}/${total} ${details ?? ''}`);
+        })
+        .catch(() => {
+          // Fallback to console if logger fails
+        });
     }
   };
 }

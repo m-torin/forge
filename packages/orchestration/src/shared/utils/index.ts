@@ -55,7 +55,6 @@ export {
   maskSensitiveData,
   createMaskedError,
   safeConsole,
-  createSafeLogger,
   withMaskedErrors,
 } from './data-masking';
 

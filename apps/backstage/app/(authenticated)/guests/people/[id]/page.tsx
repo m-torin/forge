@@ -10,8 +10,6 @@ import {
   SimpleGrid,
   Divider,
   Button,
-  ActionIcon,
-  Tooltip,
   Container,
   Alert,
 } from '@mantine/core';
@@ -19,10 +17,6 @@ import {
   IconShield,
   IconBan,
   IconActivity,
-  IconBuilding,
-  IconMail,
-  IconCalendar,
-  IconEdit,
   IconArrowLeft,
   IconInfoCircle,
 } from '@tabler/icons-react';
@@ -30,9 +24,9 @@ import { useEffect, useState } from 'react';
 import { notifications } from '@mantine/notifications';
 import { useRouter } from 'next/navigation';
 
-import { getUserById } from '@repo/auth/server/next';
-import { PageHeader } from '../../../components/page-header';
-import type { User } from '../../types';
+import { getUserByIdAction } from '@/actions/pim3/actions';
+import { PageHeader } from '@/components/pim3/page-header';
+import type { User } from '@/types/pim3';
 
 interface UserPageProps {
   params: Promise<{ id: string }>;
@@ -63,13 +57,18 @@ export default function UserPage({ params }: UserPageProps) {
 
     setLoading(true);
     try {
-      const result = await getUserById(paramsData.id);
-      if (result.success && result.data) {
+      const result = await getUserByIdAction(paramsData.id);
+      if (result.success && (result as any).data) {
+        const userData = (result as any).data;
         setUser({
-          ...result.data,
-          role: (result.data as any).role || 'user',
-          banned: (result.data as any).banned || false,
-        } as User);
+          ...userData,
+          role: userData.role || 'user',
+          banned: userData.banned || false,
+          createdAt:
+            userData.createdAt instanceof Date
+              ? userData.createdAt.toISOString()
+              : userData.createdAt,
+        });
       } else {
         notifications.show({
           title: 'Error',
@@ -178,7 +177,6 @@ export default function UserPage({ params }: UserPageProps) {
                 icon: <IconBan size={16} />,
                 label: user.banned ? 'Unban' : 'Ban',
                 onClick: () => console.log('Toggle ban'),
-                color: 'red',
               },
             ],
           }}

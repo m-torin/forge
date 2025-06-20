@@ -391,7 +391,7 @@ export function useWorkflow(workflowId: string, options: UseWorkflowOptions): Us
           setCurrentExecutionId(null);
           clearPolling();
         }
-      } catch (err: any) {
+      } catch (err) {
         if (!isMountedRef.current) return;
         setError(err instanceof Error ? err : new Error(String(err)));
         clearPolling();
@@ -453,7 +453,7 @@ export function useWorkflow(workflowId: string, options: UseWorkflowOptions): Us
 
         setCurrentExecutionId(execution.id);
         return execution.id;
-      } catch (err: any) {
+      } catch (err) {
         if (signal.aborted || !isMountedRef.current) {
           throw new Error('Operation cancelled');
         }
@@ -589,7 +589,7 @@ export function useWorkflowAlerts(
   }, [workflowId, provider]);
 
   const acknowledgeAlert = useCallback(
-    async (alertId: string, user: string, note?: string): Promise<void> => {
+    async (_alertId: string, _user: string, _note?: string): Promise<void> => {
       if (!provider || !isMountedRef.current) {
         throw new Error('Provider not available or component unmounted');
       }
@@ -598,7 +598,7 @@ export function useWorkflowAlerts(
         // This would call an alert provider method
         // await provider.acknowledgeAlert(alertId, user, note);
         await refresh();
-      } catch (err: any) {
+      } catch (err) {
         const error = err instanceof Error ? err : new Error(String(err));
         if (isMountedRef.current) {
           setError(error);
@@ -610,7 +610,7 @@ export function useWorkflowAlerts(
   );
 
   const resolveAlert = useCallback(
-    async (alertId: string): Promise<void> => {
+    async (_alertId: string): Promise<void> => {
       if (!provider || !isMountedRef.current) {
         throw new Error('Provider not available or component unmounted');
       }
@@ -619,7 +619,7 @@ export function useWorkflowAlerts(
         // This would call an alert provider method
         // await provider.resolveAlert(alertId);
         await refresh();
-      } catch (err: any) {
+      } catch (err) {
         const error = err instanceof Error ? err : new Error(String(err));
         if (isMountedRef.current) {
           setError(error);
@@ -919,7 +919,7 @@ export function useWorkflowSchedule(
   }, [currentScheduleId, provider]);
 
   const createSchedule = useCallback(
-    async (config: EnhancedScheduleConfig): Promise<string> => {
+    async (_config: EnhancedScheduleConfig): Promise<string> => {
       if (!provider || !isMountedRef.current) {
         throw new Error('Provider not available or component unmounted');
       }
@@ -939,7 +939,7 @@ export function useWorkflowSchedule(
         setCurrentScheduleId(newScheduleId);
         await refresh();
         return newScheduleId;
-      } catch (err: any) {
+      } catch (err) {
         const error = err instanceof Error ? err : new Error(String(err));
         if (isMountedRef.current) {
           setError(error);
@@ -952,7 +952,7 @@ export function useWorkflowSchedule(
   );
 
   const updateSchedule = useCallback(
-    async (config: Partial<EnhancedScheduleConfig>): Promise<void> => {
+    async (_config: Partial<EnhancedScheduleConfig>): Promise<void> => {
       if (!currentScheduleId) {
         throw new Error('No schedule to update');
       }
@@ -968,7 +968,7 @@ export function useWorkflowSchedule(
         // This would call a schedule provider method
         // await provider.updateSchedule(currentScheduleId, config);
         await refresh();
-      } catch (err: any) {
+      } catch (err) {
         const error = err instanceof Error ? err : new Error(String(err));
         if (isMountedRef.current) {
           setError(error);

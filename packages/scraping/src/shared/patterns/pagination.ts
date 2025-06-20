@@ -299,7 +299,7 @@ export async function scrapeWithPagination(
     while (pageNum <= maxPages) {
       try {
         // Extract the nextPageSelector from selectors for this iteration
-        const { nextPageSelector: _, ...pageSelectors } = selectors;
+        const { nextPageSelector: _ignored, ...pageSelectors } = selectors;
         const currentNextPageSelector = nextPageSelector ?? selectors.nextPageSelector;
 
         const result = await retryWithBackoff(

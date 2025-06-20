@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect } from 'vitest';
 
 import {
   cleanProperties,
@@ -10,9 +10,9 @@ import {
   validateRequiredProperties,
 } from '../../shared/emitters/ecommerce/utils';
 
-describe('Ecommerce Utils', () => {
+describe('ecommerce Utils', () => {
   describe('normalizeProductProperties', () => {
-    it('should normalize product with all standard properties', () => {
+    test('should normalize product with all standard properties', () => {
       const input = {
         product_id: 'p123',
         name: 'Wireless Headphones',
@@ -46,7 +46,7 @@ describe('Ecommerce Utils', () => {
       });
     });
 
-    it('should normalize product ID field variations', () => {
+    test('should normalize product ID field variations', () => {
       const testCases = [{ product_id: 'p1' }, { productId: 'p2' }, { id: 'p3' }];
 
       testCases.forEach((input, index) => {
@@ -55,7 +55,7 @@ describe('Ecommerce Utils', () => {
       });
     });
 
-    it('should normalize name field variations', () => {
+    test('should normalize name field variations', () => {
       const testCases = [
         { id: 'p1', name: 'Product Name' },
         { id: 'p2', title: 'Product Title' },
@@ -78,7 +78,7 @@ describe('Ecommerce Utils', () => {
       ).toBe('Product ProductName');
     });
 
-    it('should normalize brand field variations', () => {
+    test('should normalize brand field variations', () => {
       const brandCases = [
         { id: 'p1', brand: 'Brand Name' },
         { id: 'p2', manufacturer: 'Manufacturer Name' },
@@ -88,7 +88,7 @@ describe('Ecommerce Utils', () => {
       expect(normalizeProductProperties(brandCases[1]).brand).toBe('Manufacturer Name');
     });
 
-    it('should normalize variant field variations', () => {
+    test('should normalize variant field variations', () => {
       const variantCases = [
         { id: 'p1', variant: 'Size Large' },
         { id: 'p2', variation: 'Color Red' },
@@ -98,7 +98,7 @@ describe('Ecommerce Utils', () => {
       expect(normalizeProductProperties(variantCases[1]).variant).toBe('Color Red');
     });
 
-    it('should normalize price correctly', () => {
+    test('should normalize price correctly', () => {
       const priceCases = [
         { id: 'p1', price: 99.99 },
         { id: 'p2', price: '149.99' },
@@ -118,7 +118,7 @@ describe('Ecommerce Utils', () => {
       expect(normalizeProductProperties(priceCases[6]).price).toBeUndefined();
     });
 
-    it('should normalize quantity correctly', () => {
+    test('should normalize quantity correctly', () => {
       const quantityCases = [
         { id: 'p1', quantity: 5 },
         { id: 'p2', quantity: '3' },
@@ -138,7 +138,7 @@ describe('Ecommerce Utils', () => {
       expect(normalizeProductProperties(quantityCases[6]).quantity).toBe(3); // Truncated
     });
 
-    it('should normalize position correctly', () => {
+    test('should normalize position correctly', () => {
       const positionCases = [
         { id: 'p1', position: 1 },
         { id: 'p2', position: '5' },
@@ -156,7 +156,7 @@ describe('Ecommerce Utils', () => {
       expect(normalizeProductProperties(positionCases[5]).position).toBe(2); // Truncated
     });
 
-    it('should normalize SKU field variations', () => {
+    test('should normalize SKU field variations', () => {
       const skuCases = [
         { id: 'p1', sku: 'sku-123' },
         { id: 'p2', SKU: 'SKU-456' },
@@ -166,7 +166,7 @@ describe('Ecommerce Utils', () => {
       expect(normalizeProductProperties(skuCases[1]).sku).toBe('SKU-456');
     });
 
-    it('should normalize coupon field variations', () => {
+    test('should normalize coupon field variations', () => {
       const couponCases = [
         { id: 'p1', coupon: 'SAVE10' },
         { id: 'p2', couponCode: 'SAVE20' },
@@ -178,7 +178,7 @@ describe('Ecommerce Utils', () => {
       expect(normalizeProductProperties(couponCases[2]).coupon).toBe('SAVE30');
     });
 
-    it('should normalize URL field variations', () => {
+    test('should normalize URL field variations', () => {
       const urlCases = [
         { id: 'p1', url: 'https://example.com/product' },
         { id: 'p2', link: 'https://example.com/link' },
@@ -190,7 +190,7 @@ describe('Ecommerce Utils', () => {
       expect(normalizeProductProperties(urlCases[2]).url).toBe('https://example.com/product_url');
     });
 
-    it('should normalize image URL field variations', () => {
+    test('should normalize image URL field variations', () => {
       const imageCases = [
         { id: 'p1', image_url: 'https://example.com/image.jpg' },
         { id: 'p2', imageUrl: 'https://example.com/imageUrl.jpg' },
@@ -208,14 +208,14 @@ describe('Ecommerce Utils', () => {
       );
     });
 
-    it('should throw error when product is null or undefined', () => {
+    test('should throw error when product is null or undefined', () => {
       expect(() => normalizeProductProperties(null)).toThrow('Product properties are required');
       expect(() => normalizeProductProperties(undefined)).toThrow(
         'Product properties are required',
       );
     });
 
-    it('should throw error when product ID is missing', () => {
+    test('should throw error when product ID is missing', () => {
       expect(() => normalizeProductProperties({})).toThrow('Product must have an id');
       expect(() => normalizeProductProperties({ name: 'Product' })).toThrow(
         'Product must have an id',
@@ -228,14 +228,14 @@ describe('Ecommerce Utils', () => {
       );
     });
 
-    it('should handle minimal valid product', () => {
+    test('should handle minimal valid product', () => {
       const minimal = { product_id: 'p1' };
       const result = normalizeProductProperties(minimal);
 
       expect(result).toEqual({ product_id: 'p1' });
     });
 
-    it('should not include undefined values in output', () => {
+    test('should not include undefined values in output', () => {
       const input = {
         product_id: 'p1',
         name: 'Product',
@@ -257,7 +257,7 @@ describe('Ecommerce Utils', () => {
   });
 
   describe('normalizeProducts', () => {
-    it('should normalize an array of products', () => {
+    test('should normalize an array of products', () => {
       const products = [
         { product_id: 'p1', name: 'Product 1' },
         { productId: 'p2', title: 'Product 2' },
@@ -273,18 +273,18 @@ describe('Ecommerce Utils', () => {
       ]);
     });
 
-    it('should return empty array for non-array input', () => {
+    test('should return empty array for non-array input', () => {
       expect(normalizeProducts(null as any)).toEqual([]);
       expect(normalizeProducts(undefined as any)).toEqual([]);
       expect(normalizeProducts('not-array' as any)).toEqual([]);
       expect(normalizeProducts({} as any)).toEqual([]);
     });
 
-    it('should handle empty array', () => {
+    test('should handle empty array', () => {
       expect(normalizeProducts([])).toEqual([]);
     });
 
-    it('should handle mixed valid and invalid products', () => {
+    test('should handle mixed valid and invalid products', () => {
       const products = [
         { product_id: 'p1', name: 'Valid Product' },
         null,
@@ -297,7 +297,7 @@ describe('Ecommerce Utils', () => {
       expect(() => normalizeProducts(products)).toThrow();
     });
 
-    it('should handle large arrays efficiently', () => {
+    test('should handle large arrays efficiently', () => {
       const largeArray = Array.from({ length: 10000 }, (_, i) => ({
         product_id: `p${i}`,
         name: `Product ${i}`,
@@ -315,7 +315,7 @@ describe('Ecommerce Utils', () => {
   });
 
   describe('validateRequiredProperties', () => {
-    it('should pass validation when all required properties are present', () => {
+    test('should pass validation when all required properties are present', () => {
       const properties = {
         product_id: 'p1',
         name: 'Product',
@@ -327,7 +327,7 @@ describe('Ecommerce Utils', () => {
       }).not.toThrow();
     });
 
-    it('should throw error when required properties are missing', () => {
+    test('should throw error when required properties are missing', () => {
       const properties = {
         product_id: 'p1',
         price: 99.99,
@@ -341,7 +341,7 @@ describe('Ecommerce Utils', () => {
       }).toThrow('Missing required properties: name');
     });
 
-    it('should throw error for multiple missing properties', () => {
+    test('should throw error for multiple missing properties', () => {
       const properties = {
         category: 'Electronics',
       };
@@ -351,7 +351,7 @@ describe('Ecommerce Utils', () => {
       }).toThrow('Missing required properties: product_id, name, price');
     });
 
-    it('should handle empty required properties array', () => {
+    test('should handle empty required properties array', () => {
       const properties = { anything: 'value' };
 
       expect(() => {
@@ -359,7 +359,7 @@ describe('Ecommerce Utils', () => {
       }).not.toThrow();
     });
 
-    it('should handle falsy values correctly', () => {
+    test('should handle falsy values correctly', () => {
       const properties = {
         product_id: 'p1',
         active: false,
@@ -378,7 +378,7 @@ describe('Ecommerce Utils', () => {
       }).not.toThrow();
     });
 
-    it('should fail for null and undefined values', () => {
+    test('should fail for null and undefined values', () => {
       const properties = {
         product_id: 'p1',
         name: null,
@@ -392,7 +392,7 @@ describe('Ecommerce Utils', () => {
   });
 
   describe('cleanProperties', () => {
-    it('should remove undefined values', () => {
+    test('should remove undefined values', () => {
       const input = {
         product_id: 'p1',
         name: 'Product',
@@ -410,7 +410,7 @@ describe('Ecommerce Utils', () => {
       });
     });
 
-    it('should preserve falsy values that are not undefined', () => {
+    test('should preserve falsy values that are not undefined', () => {
       const input = {
         product_id: 'p1',
         active: false,
@@ -432,11 +432,11 @@ describe('Ecommerce Utils', () => {
       expect(result).not.toHaveProperty('missing');
     });
 
-    it('should handle empty objects', () => {
+    test('should handle empty objects', () => {
       expect(cleanProperties({})).toEqual({});
     });
 
-    it('should handle objects with all undefined values', () => {
+    test('should handle objects with all undefined values', () => {
       const input = {
         a: undefined,
         b: undefined,
@@ -446,7 +446,7 @@ describe('Ecommerce Utils', () => {
       expect(cleanProperties(input)).toEqual({});
     });
 
-    it('should handle nested objects (shallow clean only)', () => {
+    test('should handle nested objects (shallow clean only)', () => {
       const input = {
         product_id: 'p1',
         metadata: {
@@ -469,7 +469,7 @@ describe('Ecommerce Utils', () => {
   });
 
   describe('mergeEventProperties', () => {
-    it('should merge specific properties with common properties', () => {
+    test('should merge specific properties with common properties', () => {
       const specific = {
         product_id: 'p1',
         name: 'Product',
@@ -490,7 +490,7 @@ describe('Ecommerce Utils', () => {
       });
     });
 
-    it('should prioritize specific properties over common properties', () => {
+    test('should prioritize specific properties over common properties', () => {
       const specific = {
         product_id: 'p1',
         category: 'Specific Category',
@@ -511,7 +511,7 @@ describe('Ecommerce Utils', () => {
       });
     });
 
-    it('should handle undefined common properties', () => {
+    test('should handle undefined common properties', () => {
       const specific = {
         product_id: 'p1',
         name: 'Product',
@@ -522,7 +522,7 @@ describe('Ecommerce Utils', () => {
       expect(result).toEqual(specific);
     });
 
-    it('should handle empty objects', () => {
+    test('should handle empty objects', () => {
       expect(mergeEventProperties({}, {})).toEqual({});
       expect(mergeEventProperties({}, { common: 'value' })).toEqual({ common: 'value' });
       expect(mergeEventProperties({ specific: 'value' } as any, {})).toEqual({ specific: 'value' });
@@ -530,7 +530,7 @@ describe('Ecommerce Utils', () => {
   });
 
   describe('validateCurrency', () => {
-    it('should validate valid currency codes', () => {
+    test('should validate valid currency codes', () => {
       const validCurrencies = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD'];
 
       validCurrencies.forEach((currency) => {
@@ -538,19 +538,19 @@ describe('Ecommerce Utils', () => {
       });
     });
 
-    it('should normalize lowercase currency codes', () => {
+    test('should normalize lowercase currency codes', () => {
       expect(validateCurrency('usd')).toBe('USD');
       expect(validateCurrency('eur')).toBe('EUR');
       expect(validateCurrency('gbp')).toBe('GBP');
     });
 
-    it('should normalize mixed case currency codes', () => {
+    test('should normalize mixed case currency codes', () => {
       expect(validateCurrency('uSd')).toBe('USD');
       expect(validateCurrency('EuR')).toBe('EUR');
       expect(validateCurrency('gBp')).toBe('GBP');
     });
 
-    it('should return undefined for invalid currency codes', () => {
+    test('should return undefined for invalid currency codes', () => {
       const invalidCurrencies = [
         'US', // Too short
         'USDA', // Too long
@@ -565,12 +565,12 @@ describe('Ecommerce Utils', () => {
       });
     });
 
-    it('should return undefined for undefined/null input', () => {
+    test('should return undefined for undefined/null input', () => {
       expect(validateCurrency(undefined)).toBeUndefined();
       expect(validateCurrency(null as any)).toBeUndefined();
     });
 
-    it('should handle non-string input gracefully', () => {
+    test('should handle non-string input gracefully', () => {
       expect(validateCurrency(123 as any)).toBeUndefined();
       expect(validateCurrency({} as any)).toBeUndefined();
       expect(validateCurrency([] as any)).toBeUndefined();
@@ -578,7 +578,7 @@ describe('Ecommerce Utils', () => {
   });
 
   describe('createEcommerceContext', () => {
-    it('should create basic ecommerce context', () => {
+    test('should create basic ecommerce context', () => {
       const result = createEcommerceContext();
 
       expect(result).toEqual({
@@ -586,7 +586,7 @@ describe('Ecommerce Utils', () => {
       });
     });
 
-    it('should merge additional context', () => {
+    test('should merge additional context', () => {
       const additionalContext = {
         experiment_id: 'exp123',
         source: 'product_page',
@@ -601,7 +601,7 @@ describe('Ecommerce Utils', () => {
       });
     });
 
-    it('should prioritize ecommerce category over additional context', () => {
+    test('should prioritize ecommerce category over additional context', () => {
       const additionalContext = {
         category: 'other', // Should be overridden
         source: 'product_page',
@@ -615,19 +615,19 @@ describe('Ecommerce Utils', () => {
       });
     });
 
-    it('should handle empty additional context', () => {
+    test('should handle empty additional context', () => {
       expect(createEcommerceContext({})).toEqual({
         category: 'ecommerce',
       });
     });
 
-    it('should handle undefined additional context', () => {
+    test('should handle undefined additional context', () => {
       expect(createEcommerceContext(undefined)).toEqual({
         category: 'ecommerce',
       });
     });
 
-    it('should handle complex additional context', () => {
+    test('should handle complex additional context', () => {
       const complexContext = {
         experiment: {
           id: 'exp123',
@@ -664,8 +664,8 @@ describe('Ecommerce Utils', () => {
   });
 
   // Integration and performance tests
-  describe('Integration Tests', () => {
-    it('should work together in a typical product normalization flow', () => {
+  describe('integration Tests', () => {
+    test('should work together in a typical product normalization flow', () => {
       const rawProduct = {
         couponCode: 'SAVE10',
         extraField: undefined,
@@ -717,7 +717,7 @@ describe('Ecommerce Utils', () => {
       });
     });
 
-    it('should handle batch processing efficiently', () => {
+    test('should handle batch processing efficiently', () => {
       const rawProducts = Array.from({ length: 1000 }, (_, i) => ({
         price: `${Math.random() * 1000}`,
         productId: `p${i}`,
@@ -741,7 +741,7 @@ describe('Ecommerce Utils', () => {
       expect(withCommon[999]).toHaveProperty('user_id', 'user123');
     });
 
-    it('should maintain data integrity through the entire flow', () => {
+    test('should maintain data integrity through the entire flow', () => {
       const originalData = {
         url: 'https://example.com/product?id=123&ref=homepage',
         category: 'Electronics & Gadgets',

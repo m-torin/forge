@@ -9,7 +9,8 @@ export function PerformanceMonitor() {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!manager || !manager.startTransaction) return;
+    // Only track if manager is available and has the method
+    if (!manager?.startTransaction) return;
 
     // Start a navigation transaction
     const transaction = manager.startTransaction('navigation', {
@@ -27,7 +28,7 @@ export function PerformanceMonitor() {
       // Finish the transaction when the component unmounts
       transaction?.finish();
     };
-  }, [pathname, manager]);
+  }, [pathname]); // Remove manager from dependencies to avoid unnecessary re-runs
 
   return null;
 }

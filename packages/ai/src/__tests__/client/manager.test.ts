@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 import { ClientAIManager } from '../../client/manager';
 
@@ -8,7 +8,7 @@ import { CompletionOptions, StreamOptions } from '../../shared/types';
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-describe('ClientAIManager', (_: any) => {
+describe('clientAIManager', (_: any) => {
   let clientManager: ClientAIManager;
   const baseUrl = 'https://api.example.com';
 
@@ -18,17 +18,17 @@ describe('ClientAIManager', (_: any) => {
   });
 
   describe('constructor', (_: any) => {
-    it('should initialize with default baseUrl when not provided', (_: any) => {
+    test('should initialize with default baseUrl when not provided', (_: any) => {
       const manager = new ClientAIManager();
       expect(manager).toBeInstanceOf(ClientAIManager);
     });
 
-    it('should initialize with provided baseUrl', (_: any) => {
+    test('should initialize with provided baseUrl', (_: any) => {
       const manager = new ClientAIManager({ baseUrl });
       expect(manager).toBeInstanceOf(ClientAIManager);
     });
 
-    it('should initialize with config options', (_: any) => {
+    test('should initialize with config options', (_: any) => {
       const config = {
         baseUrl,
         maxRetries: 3,
@@ -46,7 +46,7 @@ describe('ClientAIManager', (_: any) => {
       temperature: 0.7,
     };
 
-    it('should make successful completion request', async () => {
+    test('should make successful completion request', async () => {
       const mockResponse = {
         id: 'completion-123',
         choices: [{ index: 0, text: 'Generated text' }],
@@ -70,7 +70,7 @@ describe('ClientAIManager', (_: any) => {
       expect(result).toEqual(mockResponse);
     });
 
-    it('should handle HTTP errors', async () => {
+    test('should handle HTTP errors', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 500,
@@ -79,14 +79,14 @@ describe('ClientAIManager', (_: any) => {
       await expect(clientManager.complete(mockOptions)).rejects.toThrow('HTTP error! status: 500');
     });
 
-    it('should handle network errors', async () => {
+    test('should handle network errors', async () => {
       const networkError = new Error('Network error');
       mockFetch.mockRejectedValueOnce(networkError);
 
       await expect(clientManager.complete(mockOptions)).rejects.toThrow('Network error');
     });
 
-    it('should send correct headers and body', async () => {
+    test('should send correct headers and body', async () => {
       const mockResponse = { id: 'completion-123' };
       mockFetch.mockResolvedValueOnce({
         json: () => Promise.resolve(mockResponse),
@@ -114,7 +114,7 @@ describe('ClientAIManager', (_: any) => {
       prompt: 'Test streaming prompt',
     };
 
-    it('should handle successful streaming response', async () => {
+    test('should handle successful streaming response', async () => {
       const mockChunks = [
         'data: {"choices":[{"delta":{"content":"Hello"}}]}\n\n',
         'data: {"choices":[{"delta":{"content":" world"}}]}\n\n',
@@ -160,7 +160,7 @@ describe('ClientAIManager', (_: any) => {
       });
     });
 
-    it('should handle streaming HTTP errors', async () => {
+    test('should handle streaming HTTP errors', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 400,
@@ -170,7 +170,7 @@ describe('ClientAIManager', (_: any) => {
       await expect(generator.next()).rejects.toThrow('HTTP error! status: 400');
     });
 
-    it('should handle streaming network errors', async () => {
+    test('should handle streaming network errors', async () => {
       const networkError = new Error('Streaming network error');
       mockFetch.mockRejectedValueOnce(networkError);
 
@@ -182,7 +182,7 @@ describe('ClientAIManager', (_: any) => {
   describe('classify', (_: any) => {
     const mockText = 'This is a test message';
 
-    it('should make successful classification request', async () => {
+    test('should make successful classification request', async () => {
       const mockResponse = {
         confidence: 0.95,
         categories: ['sentiment'],
@@ -206,7 +206,7 @@ describe('ClientAIManager', (_: any) => {
       expect(result).toEqual(mockResponse);
     });
 
-    it('should handle classification errors', async () => {
+    test('should handle classification errors', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 422,
@@ -219,7 +219,7 @@ describe('ClientAIManager', (_: any) => {
   describe('extractEntities', (_: any) => {
     const mockText = 'John Doe works at Acme Corp in New York';
 
-    it('should make successful entity extraction request', async () => {
+    test('should make successful entity extraction request', async () => {
       const mockResponse = {
         entities: [
           { confidence: 0.99, type: 'person', text: 'John Doe' },
@@ -249,7 +249,7 @@ describe('ClientAIManager', (_: any) => {
   describe('analyzeSentiment', (_: any) => {
     const mockText = 'I love this product!';
 
-    it('should make successful sentiment analysis request', async () => {
+    test('should make successful sentiment analysis request', async () => {
       const mockResponse = {
         confidence: 0.98,
         score: 0.85,
@@ -277,7 +277,7 @@ describe('ClientAIManager', (_: any) => {
   describe('moderate', (_: any) => {
     const mockText = 'This is a test message for moderation';
 
-    it('should make successful moderation request', async () => {
+    test('should make successful moderation request', async () => {
       const mockResponse = {
         categories: {
           harassment: false,
@@ -309,7 +309,7 @@ describe('ClientAIManager', (_: any) => {
       expect(result).toEqual(mockResponse);
     });
 
-    it('should handle moderation with flagged content', async () => {
+    test('should handle moderation with flagged content', async () => {
       const mockResponse = {
         confidence: 0.95,
         explanation: 'Content contains hate speech',
@@ -324,7 +324,7 @@ describe('ClientAIManager', (_: any) => {
 
       const result = await clientManager.moderate(mockText);
 
-      expect(result.safe).toBe(false);
+      expect(result.safe).toBeFalsy();
       expect(result.violations).toContain('hate');
       expect(result.confidence).toBe(0.95);
     });

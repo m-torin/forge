@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock Stripe Agent Toolkit
 const mockStripeAgentToolkit = {
@@ -29,7 +29,7 @@ vi.mock('../keys', () => ({
   keys: mockKeys,
 }));
 
-describe('Stripe AI Agent Toolkit', () => {
+describe('stripe AI Agent Toolkit', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.resetModules();
@@ -43,8 +43,8 @@ describe('Stripe AI Agent Toolkit', () => {
       });
     });
 
-    it('should create StripeAgentToolkit when secret key is available', async () => {
-      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
+    test('should create StripeAgentToolkit when secret key is available', async () => {
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../src/ai');
 
       expect(MockStripeAgentToolkit).toHaveBeenCalledWith({
         configuration: {
@@ -67,12 +67,12 @@ describe('Stripe AI Agent Toolkit', () => {
       expect(_paymentsAgentToolkit).not.toBeNull();
     });
 
-    it('should configure toolkit with correct actions', async () => {
-      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
+    test('should configure toolkit with correct actions', async () => {
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../src/ai');
 
       const toolkitCall = MockStripeAgentToolkit.mock.calls[0][0];
 
-      expect(toolkitCall.configuration.actions).toEqual({
+      expect(toolkitCall.configuration.actions).toStrictEqual({
         paymentLinks: {
           create: true,
         },
@@ -85,32 +85,32 @@ describe('Stripe AI Agent Toolkit', () => {
       });
     });
 
-    it('should pass secret key to toolkit', async () => {
-      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
+    test('should pass secret key to toolkit', async () => {
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../src/ai');
 
       const toolkitCall = MockStripeAgentToolkit.mock.calls[0][0];
       expect(toolkitCall.secretKey).toBe('sk_test_123456789');
     });
 
-    it('should support payment link creation action', async () => {
-      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
+    test('should support payment link creation action', async () => {
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../src/ai');
 
       const toolkitCall = MockStripeAgentToolkit.mock.calls[0][0];
-      expect(toolkitCall.configuration.actions.paymentLinks.create).toBe(true);
+      expect(toolkitCall.configuration.actions.paymentLinks.create).toBeTruthy();
     });
 
-    it('should support price creation action', async () => {
-      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
+    test('should support price creation action', async () => {
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../src/ai');
 
       const toolkitCall = MockStripeAgentToolkit.mock.calls[0][0];
-      expect(toolkitCall.configuration.actions.prices.create).toBe(true);
+      expect(toolkitCall.configuration.actions.prices.create).toBeTruthy();
     });
 
-    it('should support product creation action', async () => {
-      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
+    test('should support product creation action', async () => {
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../src/ai');
 
       const toolkitCall = MockStripeAgentToolkit.mock.calls[0][0];
-      expect(toolkitCall.configuration.actions.products.create).toBe(true);
+      expect(toolkitCall.configuration.actions.products.create).toBeTruthy();
     });
   });
 
@@ -122,15 +122,15 @@ describe('Stripe AI Agent Toolkit', () => {
       });
     });
 
-    it('should return null when secret key is not available', async () => {
-      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
+    test('should return null when secret key is not available', async () => {
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../src/ai');
 
       expect(MockStripeAgentToolkit).not.toHaveBeenCalled();
       expect(_paymentsAgentToolkit).toBeNull();
     });
 
-    it('should not create toolkit instance when key is missing', async () => {
-      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
+    test('should not create toolkit instance when key is missing', async () => {
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../src/ai');
 
       expect(_paymentsAgentToolkit).toBeNull();
       expect(MockStripeAgentToolkit).not.toHaveBeenCalled();
@@ -145,8 +145,8 @@ describe('Stripe AI Agent Toolkit', () => {
       });
     });
 
-    it('should return null when secret key is empty string', async () => {
-      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
+    test('should return null when secret key is empty string', async () => {
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../src/ai');
 
       expect(MockStripeAgentToolkit).not.toHaveBeenCalled();
       expect(_paymentsAgentToolkit).toBeNull();
@@ -154,37 +154,46 @@ describe('Stripe AI Agent Toolkit', () => {
   });
 
   describe('key validation behavior', () => {
-    it('should handle truthy string values', async () => {
+    test('should handle truthy string values', async () => {
       mockKeys.mockReturnValue({
         STRIPE_SECRET_KEY: 'sk_live_valid_key',
         STRIPE_WEBHOOK_SECRET: 'whsec_123456789',
       });
 
-      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../src/ai');
 
       expect(_paymentsAgentToolkit).not.toBeNull();
-      expect(MockStripeAgentToolkit).toHaveBeenCalled();
+      expect(MockStripeAgentToolkit).toHaveBeenCalledWith({
+        configuration: {
+          actions: {
+            paymentLinks: { create: true },
+            prices: { create: true },
+            products: { create: true },
+          },
+        },
+        secretKey: 'sk_live_valid_key',
+      });
     });
 
-    it('should handle false values correctly', async () => {
+    test('should handle false values correctly', async () => {
       mockKeys.mockReturnValue({
         STRIPE_SECRET_KEY: false,
         STRIPE_WEBHOOK_SECRET: 'whsec_123456789',
       });
 
-      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../src/ai');
 
       expect(_paymentsAgentToolkit).toBeNull();
       expect(MockStripeAgentToolkit).not.toHaveBeenCalled();
     });
 
-    it('should handle null values correctly', async () => {
+    test('should handle null values correctly', async () => {
       mockKeys.mockReturnValue({
         STRIPE_SECRET_KEY: null,
         STRIPE_WEBHOOK_SECRET: 'whsec_123456789',
       });
 
-      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../src/ai');
 
       expect(_paymentsAgentToolkit).toBeNull();
       expect(MockStripeAgentToolkit).not.toHaveBeenCalled();
@@ -199,8 +208,8 @@ describe('Stripe AI Agent Toolkit', () => {
       });
     });
 
-    it('should have correct configuration structure', async () => {
-      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
+    test('should have correct configuration structure', async () => {
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../src/ai');
 
       const expectedConfig = {
         configuration: {
@@ -222,31 +231,31 @@ describe('Stripe AI Agent Toolkit', () => {
       expect(MockStripeAgentToolkit).toHaveBeenCalledWith(expectedConfig);
     });
 
-    it('should only enable create actions', async () => {
-      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
+    test('should only enable create actions', async () => {
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../src/ai');
 
       const toolkitCall = MockStripeAgentToolkit.mock.calls[0][0];
       const actions = toolkitCall.configuration.actions;
 
       // Check that only create actions are enabled
-      expect(actions.paymentLinks.create).toBe(true);
-      expect(actions.prices.create).toBe(true);
-      expect(actions.products.create).toBe(true);
+      expect(actions.paymentLinks.create).toBeTruthy();
+      expect(actions.prices.create).toBeTruthy();
+      expect(actions.products.create).toBeTruthy();
 
       // Verify no other actions are defined
-      expect(Object.keys(actions.paymentLinks)).toEqual(['create']);
-      expect(Object.keys(actions.prices)).toEqual(['create']);
-      expect(Object.keys(actions.products)).toEqual(['create']);
+      expect(Object.keys(actions.paymentLinks)).toStrictEqual(['create']);
+      expect(Object.keys(actions.prices)).toStrictEqual(['create']);
+      expect(Object.keys(actions.products)).toStrictEqual(['create']);
     });
 
-    it('should not include other Stripe resource actions', async () => {
-      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
+    test('should not include other Stripe resource actions', async () => {
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../src/ai');
 
       const toolkitCall = MockStripeAgentToolkit.mock.calls[0][0];
       const actions = toolkitCall.configuration.actions;
 
       // Should only have the three specified resources
-      expect(Object.keys(actions)).toEqual(['paymentLinks', 'prices', 'products']);
+      expect(Object.keys(actions)).toStrictEqual(['paymentLinks', 'prices', 'products']);
 
       // Should not include other common Stripe resources
       expect(actions.customers).toBeUndefined();
@@ -257,25 +266,25 @@ describe('Stripe AI Agent Toolkit', () => {
   });
 
   describe('integration with keys module', () => {
-    it('should call keys function to get secret key', async () => {
+    test('should call keys function to get secret key', async () => {
       mockKeys.mockReturnValue({
         STRIPE_SECRET_KEY: 'sk_test_123456789',
         STRIPE_WEBHOOK_SECRET: 'whsec_123456789',
       });
 
-      await import('../ai');
+      await import('../src/ai');
 
       expect(mockKeys).toHaveBeenCalledTimes(1);
     });
 
-    it('should use the exact key returned from keys function', async () => {
+    test('should use the exact key returned from keys function', async () => {
       const testKey = 'sk_test_very_specific_key_12345';
       mockKeys.mockReturnValue({
         STRIPE_SECRET_KEY: testKey,
         STRIPE_WEBHOOK_SECRET: 'whsec_123456789',
       });
 
-      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../ai');
+      const { paymentsAgentToolkit: _paymentsAgentToolkit } = await import('../src/ai');
 
       const toolkitCall = MockStripeAgentToolkit.mock.calls[0][0];
       expect(toolkitCall.secretKey).toBe(testKey);
@@ -283,15 +292,15 @@ describe('Stripe AI Agent Toolkit', () => {
   });
 
   describe('error handling', () => {
-    it('should handle keys function throwing error', async () => {
+    test('should handle keys function throwing error', async () => {
       mockKeys.mockImplementation(() => {
         throw new Error('Keys configuration error');
       });
 
-      await expect(import('../ai')).rejects.toThrow('Keys configuration error');
+      await expect(import('../src/ai')).rejects.toThrow('Keys configuration error');
     });
 
-    it('should handle StripeAgentToolkit constructor throwing error', async () => {
+    test('should handle StripeAgentToolkit constructor throwing error', async () => {
       mockKeys.mockReturnValue({
         STRIPE_SECRET_KEY: 'sk_test_123456789',
         STRIPE_WEBHOOK_SECRET: 'whsec_123456789',
@@ -301,7 +310,7 @@ describe('Stripe AI Agent Toolkit', () => {
         throw new Error('Toolkit initialization failed');
       });
 
-      await expect(import('../ai')).rejects.toThrow('Toolkit initialization failed');
+      await expect(import('../src/ai')).rejects.toThrow('Toolkit initialization failed');
     });
   });
 
@@ -315,26 +324,26 @@ describe('Stripe AI Agent Toolkit', () => {
       }));
     });
 
-    it('should export paymentsAgentToolkit', async () => {
+    test('should export paymentsAgentToolkit', async () => {
       mockKeys.mockReturnValue({
         STRIPE_SECRET_KEY: 'sk_test_123456789',
         STRIPE_WEBHOOK_SECRET: 'whsec_123456789',
       });
 
-      const module = await import('../ai');
+      const module = await import('../src/ai');
 
       expect(module).toHaveProperty('paymentsAgentToolkit');
     });
 
-    it('should be the only export', async () => {
+    test('should be the only export', async () => {
       mockKeys.mockReturnValue({
         STRIPE_SECRET_KEY: 'sk_test_123456789',
         STRIPE_WEBHOOK_SECRET: 'whsec_123456789',
       });
 
-      const module = await import('../ai');
+      const module = await import('../src/ai');
 
-      expect(Object.keys(module)).toEqual(['paymentsAgentToolkit']);
+      expect(Object.keys(module)).toStrictEqual(['paymentsAgentToolkit']);
     });
   });
 });

@@ -1,11 +1,18 @@
 import { env } from '@/env';
-
-import { config, withAnalyzer } from '@repo/config/next';
 import { withVercelToolbar } from '@vercel/toolbar/plugins/next';
+
+// @ts-ignore - Next.js transpilation issue with workspace imports
+const configModule = require('../../packages/config/src/next/index.ts');
+const { config, withAnalyzer } = configModule;
+
+// @ts-ignore - Next.js transpilation issue with workspace imports
+const observabilityModule = require('../../packages/observability/src/server-next.ts');
+const { withSentry } = observabilityModule;
 
 async function buildConfig() {
   let nextConfig = {
     ...config,
+    transpilePackages: ['@repo/observability'],
     eslint: {
       ignoreDuringBuilds: true,
     },
@@ -38,24 +45,27 @@ async function buildConfig() {
     },
   } as any;
 
-  // Apply observability configuration for Sentry
-  // Temporarily disabled for build:local
-  // nextConfig = await withObservability(nextConfig, {
-  //   sentry: {
-  //     authToken: env.SENTRY_AUTH_TOKEN,
-  //     org: env.SENTRY_ORG,
-  //     project: env.SENTRY_PROJECT,
-  //     silent: !process.env.CI,
-  //     tunnelRoute: '/monitoring',
-  //     automaticVercelMonitors: true,
-  //     widenClientFileUpload: true,
-  //     disableLogger: true,
-  //     sourcemaps: {
-  //       deleteSourcemapsAfterUpload: true,
-  //       disable: false,
-  //     },
-  //   },
-  // };
+  // Apply Sentry configuration using observability package
+  if (env.SENTRY_DSN || env.NEXT_PUBLIC_SENTRY_DSN) {
+    try {
+      nextConfig = await withSentry(nextConfig, {
+        authToken: env.SENTRY_AUTH_TOKEN,
+        org: env.SENTRY_ORG,
+        project: env.SENTRY_PROJECT,
+        silent: !process.env.CI,
+        tunnelRoute: '/monitoring',
+        automaticVercelMonitors: true,
+        widenClientFileUpload: true,
+        disableLogger: true,
+        sourcemaps: {
+          deleteSourcemapsAfterUpload: true,
+          disable: false,
+        },
+      });
+    } catch (error) {
+      console.warn('Could not initialize Sentry build integration:', error);
+    }
+  }
 
   // Apply Vercel Toolbar in development
   nextConfig = withVercelToolbar()(nextConfig) as any;

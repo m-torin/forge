@@ -8,8 +8,8 @@ export interface User {
   email: string;
   role: string;
   banned: boolean;
-  createdAt: string;
-  lastActive?: string;
+  createdAt: string | Date;
+  lastActive?: string | Date;
   organizations?: Array<{
     id: string;
     name: string;
@@ -21,8 +21,10 @@ export interface Organization {
   id: string;
   name: string;
   slug: string;
-  description?: string;
-  createdAt: string;
+  logo?: string | null;
+  description?: string | null;
+  createdAt: string | Date;
+  updatedAt?: string | Date | null;
   metadata?: any;
   members?: Array<{
     id: string;
@@ -54,9 +56,10 @@ export interface ApiKey {
   start?: string;
   prefix?: string;
   enabled: boolean;
-  lastUsedAt?: string;
-  expiresAt?: string;
-  createdAt: string;
+  lastUsedAt?: string | Date;
+  expiresAt?: string | Date;
+  createdAt: string | Date;
+  updatedAt?: string | Date;
   requestCount?: number;
   permissions?: string[];
   userId?: string;

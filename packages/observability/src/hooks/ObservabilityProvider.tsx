@@ -50,7 +50,7 @@ export function ObservabilityProvider({
   config,
   enableConcurrent = true,
   errorBoundary = false,
-  fallback = null,
+  _fallback = null,
   onError,
   onInitialized,
   priority = 'normal',
@@ -89,36 +89,36 @@ export function ObservabilityProvider({
   if (enableConcurrent && managerPromise) {
     // React 19: use() hook must be called outside try-catch
     manager = use(managerPromise);
-
-    // React 19: Use useEffect for side effects after successful initialization
-    React.useEffect(() => {
-      if (manager && onInitialized) {
-        onInitialized(manager);
-      }
-    }, [manager, onInitialized]);
   } else {
     // Use sync manager for non-concurrent mode
     manager = syncManager;
-
-    // Initialize manager asynchronously for non-concurrent mode
-    React.useEffect(() => {
-      if (!enableConcurrent) {
-        createObservabilityManagerPromise(config, onError)
-          .then((initializedManager: any) => {
-            setSyncManager(initializedManager);
-            if (onInitialized) {
-              onInitialized(initializedManager);
-            }
-          })
-          .catch((error: any) => {
-            console.error('Failed to initialize observability in sync mode:', error);
-            if (onError) {
-              onError(error);
-            }
-          });
-      }
-    }, [config, enableConcurrent, onError, onInitialized]);
   }
+
+  // React 19: Use useEffect for side effects after successful initialization
+  React.useEffect(() => {
+    if (manager && onInitialized) {
+      onInitialized(manager);
+    }
+  }, [manager, onInitialized]);
+
+  // Initialize manager asynchronously for non-concurrent mode
+  React.useEffect(() => {
+    if (!enableConcurrent) {
+      createObservabilityManagerPromise(config, onError)
+        .then((initializedManager: any) => {
+          setSyncManager(initializedManager);
+          if (onInitialized) {
+            onInitialized(initializedManager);
+          }
+        })
+        .catch((error: any) => {
+          console.error('Failed to initialize observability in sync mode:', error);
+          if (onError) {
+            onError(error);
+          }
+        });
+    }
+  }, [config, enableConcurrent, onError, onInitialized]);
 
   return <ObservabilityContext.Provider value={manager}>{children}</ObservabilityContext.Provider>;
 }

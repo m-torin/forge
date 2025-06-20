@@ -11,16 +11,23 @@
     "lint": "eslint . --fix"
   },
   "dependencies": {
-    "react": "catalog:",
-    "next": "catalog:"
+    "@repo/observability": "workspace:*",
+    "@t3-oss/env-nextjs": "^0.13.8",
+    "next": "^15.3.4",
+    "react": "^19.1.0",
+    "zod": "^3.25.67"
   },
   "peerDependencies": {
+    "@segment/analytics-core": "^1.8.1",
     "@segment/analytics-next": "^1.70.0",
+    "@vercel/analytics": "^1.1.0",
     "posthog-js": "^1.100.0",
-    "posthog-node": "^4.0.0",
-    "@vercel/analytics": "^1.1.0"
+    "posthog-node": "^4.0.0"
   },
   "peerDependenciesMeta": {
+    "@segment/analytics-core": {
+      "optional": true
+    },
     "@segment/analytics-next": {
       "optional": true
     },
@@ -38,22 +45,28 @@
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/testing": "workspace:*",
+    "@segment/analytics-next": "^1.81.0",
+    "@testing-library/jest-dom": "^6.6.3",
     "@types/eslint": "^9.6.1",
-    "@types/node": "catalog:",
-    "@types/react": "catalog:",
-    "@types/react-dom": "catalog:",
-    "eslint": "catalog:",
-    "typescript": "catalog:",
-    "@segment/analytics-next": "^1.70.0",
-    "posthog-js": "^1.100.0",
-    "posthog-node": "^4.0.0",
-    "@vercel/analytics": "^1.1.0"
+    "@types/node": "^24.0.3",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vercel/analytics": "^1.5.0",
+    "eslint": "^9.29.0",
+    "posthog-js": "^1.255.0",
+    "posthog-node": "^5.1.1",
+    "typescript": "5.8.3"
   },
   "exports": {
     "./client": "./src/client.ts",
     "./server": "./src/server.ts",
     "./client/next": "./src/client-next.ts",
     "./server/next": "./src/server-next.ts",
-    "./types": "./src/shared/types/types.ts"
+    "./shared-env": "./src/shared-env.ts",
+    "./types": "./src/types/index.ts",
+    "./keys": {
+      "types": "./keys.ts",
+      "import": "./keys.ts"
+    }
   }
 }

@@ -9,6 +9,7 @@
     "export:local": "email export",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
     "lint": "echo 'Skipping ESLint check for email app'",
+    "knip": "knip",
     "doppler:secrets": "doppler secrets",
     "doppler:secrets:upload": "doppler secrets upload .env.local",
     "doppler:secrets:download": "doppler secrets download --no-file --format env",
@@ -16,19 +17,19 @@
     "doppler:open": "doppler open"
   },
   "dependencies": {
-    "@react-email/components": "0.0.42",
+    "@react-email/components": "0.1.0",
     "@repo/email": "workspace:*",
-    "react": "catalog:",
+    "react": "^19.1.0",
     "react-email": "4.0.16"
   },
   "devDependencies": {
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@types/eslint": "^9.6.1",
-    "@types/node": "catalog:",
-    "@types/react": "catalog:",
-    "eslint": "catalog:",
-    "next": "catalog:",
-    "typescript": "catalog:"
+    "@types/node": "^24.0.3",
+    "@types/react": "^19.1.8",
+    "eslint": "^9.29.0",
+    "next": "^15.3.4",
+    "typescript": "5.8.3"
   }
 }

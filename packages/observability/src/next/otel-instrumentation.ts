@@ -74,10 +74,10 @@ export async function registerOTel(config: VercelOTelConfig): Promise<void> {
     if (process.env.NODE_ENV === 'development') {
       console.info(`[OTel] Instrumentation registered for service: ${config.serviceName}`);
     }
-  } catch (error: any) {
+  } catch (_error: any) {
     // If dependencies are missing, silently skip instead of throwing
     if (
-      (error instanceof Error && (error as Error)?.message) ||
+      (_error instanceof Error && (_error as Error)?.message) ||
       'Unknown error'.includes('Cannot resolve module')
     ) {
       if (process.env.NODE_ENV === 'development') {
@@ -85,7 +85,7 @@ export async function registerOTel(config: VercelOTelConfig): Promise<void> {
       }
       return;
     }
-    console.error('[OTel] Failed to register instrumentation: ', error);
+    console.error('[OTel] Failed to register instrumentation: ', _error);
   }
 }
 
@@ -115,7 +115,7 @@ async function checkOTelDependencies(): Promise<void> {
   try {
     // Try to import OpenTelemetry API to check if it's available
     await import('@opentelemetry/api' as any);
-  } catch (error: any) {
+  } catch (_error: any) {
     throw new Error(
       'Cannot resolve module @opentelemetry/api - OpenTelemetry dependencies not available',
     );
@@ -227,7 +227,7 @@ async function registerVercelOTel(config: VercelOTelConfig): Promise<void> {
     }
 
     registerOTel(registerConfig);
-  } catch (error: any) {
+  } catch (_error: any) {
     if (process.env.NODE_ENV === 'development') {
       console.warn('[OTel] Vercel OTel not available, falling back to standard OTel');
     }

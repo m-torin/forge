@@ -499,7 +499,7 @@ test.describe('PIM3 Relationship Management E2E Tests', () => {
 
         // The current collection should not appear in options
         const selfOption = page.getByRole('option', { name: testData.collection.name });
-        await expect(selfOption).not.toBeVisible();
+        await expect(selfOption).toBeHidden();
 
         await page.keyboard.press('Escape');
       }
@@ -576,8 +576,8 @@ test.describe('PIM3 Form Validation Tests', () => {
     await page.getByLabel('SKU').fill('VALID-SKU');
 
     // Validation errors should disappear
-    await expect(page.getByText('Product name is required')).not.toBeVisible();
-    await expect(page.getByText('SKU is required')).not.toBeVisible();
+    await expect(page.getByText('Product name is required')).toBeHidden();
+    await expect(page.getByText('SKU is required')).toBeHidden();
 
     // Test SKU uniqueness validation (would need API mock)
     await page.getByLabel('SKU').clear();

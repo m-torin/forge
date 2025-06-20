@@ -7,8 +7,8 @@ import { Text, Stack, Badge, Group, Avatar, Divider, Alert } from '@mantine/core
 import { IconInfoCircle } from '@tabler/icons-react';
 
 import { ModalWrapper } from '../../modal-wrapper';
-import { getUserById } from '@repo/auth/server/next';
-import type { User } from '../../../types';
+import { getUserAction } from '@/actions/pim3/actions';
+import type { User } from '@/types/pim3';
 
 interface UserModalPageProps {
   params: Promise<{ id: string }>;
@@ -18,7 +18,7 @@ export default function UserModalPage({ params }: UserModalPageProps) {
   const [paramsData, setParamsData] = useState<{ id: string } | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
+  const _router = useRouter();
 
   useEffect(() => {
     params.then((p) => setParamsData(p));
@@ -39,17 +39,22 @@ export default function UserModalPage({ params }: UserModalPageProps) {
 
     setLoading(true);
     try {
-      const result = await getUserById(paramsData.id);
-      if (result.success && result.data) {
+      const result = await getUserAction(paramsData.id);
+      if (result && !result.error) {
+        const userData = result as any;
         setUser({
-          ...result.data,
-          role: (result.data as any).role || 'user',
-          banned: (result.data as any).banned || false,
-        } as User);
+          ...userData,
+          role: userData.role || 'user',
+          banned: userData.banned || false,
+          createdAt:
+            userData.createdAt instanceof Date
+              ? userData.createdAt.toISOString()
+              : userData.createdAt,
+        });
       } else {
         notifications.show({
           title: 'Error',
-          message: result.error || 'Failed to load user',
+          message: result?.error || 'Failed to load user',
           color: 'red',
         });
       }

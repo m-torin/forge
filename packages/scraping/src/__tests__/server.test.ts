@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, expect, beforeEach, vi } from 'vitest';
 
 import { createServerScraping, quickScrape } from '../server';
 import { ScrapingConfig, SelectorMap } from '../shared/types/scraping-types';
@@ -64,7 +64,7 @@ vi.mock('../server/providers/cheerio-provider', () => ({
   CheerioProvider: mockCheerioProvider,
 }));
 
-describe('Server Scraping', () => {
+describe('server Scraping', () => {
   let scraper: Awaited<ReturnType<typeof createServerScraping>>;
 
   beforeEach(async () => {
@@ -76,12 +76,12 @@ describe('Server Scraping', () => {
     scraper = await createServerScraping(config);
   });
 
-  it('should create a server scraping instance', () => {
+  test('should create a server scraping instance', () => {
     expect(scraper).toBeDefined();
     expect(scraper.scrape).toBeDefined();
   });
 
-  it('should perform a quick scrape using node-fetch', async () => {
+  test('should perform a quick scrape using node-fetch', async () => {
     const selectors: SelectorMap = {
       title: 'h1',
       description: { selector: 'meta[name="description"]', attribute: 'content' },
@@ -94,13 +94,13 @@ describe('Server Scraping', () => {
     expect(result).toBeDefined();
     expect(result?.data).toBeDefined();
     // The mock returns data as { title: 'Example Domain' } in the scrape result
-    expect(result?.data).toEqual({
+    expect(result?.data).toStrictEqual({
       title: 'Example Domain',
       description: 'Example description',
     });
   });
 
-  it('should handle errors gracefully', async () => {
+  test('should handle errors gracefully', async () => {
     const selectors: SelectorMap = {
       title: 'h1',
     };

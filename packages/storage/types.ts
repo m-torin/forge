@@ -51,6 +51,7 @@ export interface StorageObject {
   lastModified?: Date;
   size: number;
   url: string;
+  metadata?: Record<string, any>;
 }
 
 export interface StorageProvider {

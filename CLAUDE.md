@@ -109,6 +109,9 @@ pnpm bump-deps                     # Update dependencies
 - **NEVER run `pnpm dev` or `npm dev` commands** - These should only be run by the user
 - **Use the Grep tool for searching** - Don't use `rg` command directly (use Claude Code's Grep tool
   which uses rg internally)
+- **PREFER Grep tool over grep command** - When searching for patterns in files, use the Grep tool
+  instead of the bash `grep` command. The Grep tool doesn't require permission for each search,
+  making it more efficient for multiple searches.
 - **NEVER use localStorage/sessionStorage in artifacts** - Use React state or JavaScript variables
 - **NO file extensions in imports** - ESLint handles resolution automatically
 - **COMMAND PERMISSIONS**: Only use commands that don't require special permissions. Avoid commands
@@ -289,7 +292,7 @@ lower layers:
 **Critical Rule**: In Next.js apps, ALWAYS use `/next` variants. In other environments, use base
 exports.
 
-````typescript
+```typescript
 // ✅ CORRECT - Next.js app
 import { useAuth } from '@repo/auth/client/next';
 import { auth } from '@repo/auth/server/next';
@@ -299,6 +302,19 @@ import { createAuth } from '@repo/auth/server';
 
 // ❌ WRONG - Using non-Next.js import in Next.js
 import { createAuth } from '@repo/auth/client'; // NO!
+```
+
+### Environment-Agnostic Exception
+
+For packages that run in both environments (database, storage, analytics), use `shared-env`:
+
+```typescript
+// ✅ Environment-agnostic packages only
+import { createServerObservability } from '@repo/observability/shared-env';
+import { createAnalytics } from '@repo/analytics/shared-env';
+```
+
+Auto-detects environment and imports appropriate `/server` or `/server/next` export.
 
 ### Standard Imports
 
@@ -311,7 +327,7 @@ import { ... } from '@/components/...';
 
 // External packages
 import { ... } from 'external-package';
-````
+```
 
 ### Catalog Versions
 

@@ -3,11 +3,11 @@
 import { Button, Group, Stack, Text, Title } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
-import { IconCheck, IconFolder, IconPlus, IconX } from '@tabler/icons-react';
+import { IconCheck, IconFolder, IconX } from '@tabler/icons-react';
 import { type MRT_ColumnDef, type MRT_TableOptions } from 'mantine-react-table';
 import { useState } from 'react';
 
-import { DataTable } from '../components/DataTable';
+import { DataTable } from '@/components/pim3/DataTable';
 
 interface Category {
   id: string;

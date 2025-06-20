@@ -9,7 +9,6 @@ import {
   Group,
   ThemeIcon,
   Button,
-  Badge,
   ActionIcon,
   Tooltip,
 } from '@mantine/core';
@@ -26,109 +25,82 @@ import {
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import {
-  listUsers,
-  listAllOrganizations,
-  listApiKeys,
-  getApiKeyStatistics,
-} from '@repo/auth/server/next';
+import { getUsersAction, getOrganizationsAction, getApiKeysAction } from './actions';
 
-import { PageHeader } from '../components/page-header';
-import { StatsCard } from '../components/stats-card';
+import { PageHeader } from '@/components/pim3/page-header';
+import { StatsCard } from '@/components/pim3/stats-card';
+import { DashboardSkeleton } from '@/components/pim3/loading';
 
-interface DashboardStats {
-  users: {
-    total: number;
-    active: number;
-    banned: number;
-    admins: number;
-  };
-  companies: {
-    total: number;
-    totalMembers: number;
-    pendingInvitations: number;
-    averageMembers: number;
-  };
-  apiKeys: {
-    total: number;
-    active: number;
-    expired: number;
-    totalRequests: number;
-  };
-}
+import type { DashboardStats } from './types';
 
-export default function GuestsPage() {
-  const router = useRouter();
-  const [stats, setStats] = useState<DashboardStats>({
-    users: { total: 0, active: 0, banned: 0, admins: 0 },
-    companies: { total: 0, totalMembers: 0, pendingInvitations: 0, averageMembers: 0 },
-    apiKeys: { total: 0, active: 0, expired: 0, totalRequests: 0 },
+// Custom hook for dashboard data
+const useDashboardData = () => {
+  const [state, setState] = useState({
+    stats: {
+      users: { total: 0, active: 0, banned: 0, admins: 0 },
+      companies: { total: 0, totalMembers: 0, pendingInvitations: 0, averageMembers: 0 },
+      apiKeys: { total: 0, active: 0, expired: 0, totalRequests: 0 },
+    } as DashboardStats,
+    loading: true,
   });
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadDashboardStats();
-  }, []);
+  const calculateStats = (users: any[], companies: any[], apiKeys: any[]) => ({
+    users: {
+      total: users.length,
+      active: users.filter((u) => !u.banned).length,
+      banned: users.filter((u) => u.banned).length,
+      admins: users.filter((u) => ['admin', 'super-admin'].includes(u.role)).length,
+    },
+    companies: {
+      total: companies.length,
+      totalMembers: companies.reduce((acc, org) => acc + (org._count?.members || 0), 0),
+      pendingInvitations: companies.reduce((acc, org) => acc + (org._count?.invitations || 0), 0),
+      averageMembers: companies.length
+        ? Math.round(
+            companies.reduce((acc, org) => acc + (org._count?.members || 0), 0) / companies.length,
+          )
+        : 0,
+    },
+    apiKeys: {
+      total: apiKeys.length,
+      active: apiKeys.filter(
+        (k) => k.enabled && (!k.expiresAt || new Date(k.expiresAt) > new Date()),
+      ).length,
+      expired: apiKeys.filter((k) => k.expiresAt && new Date(k.expiresAt) < new Date()).length,
+      totalRequests: apiKeys.reduce((acc, key) => acc + (key.requestCount || 0), 0),
+    },
+  });
 
-  const loadDashboardStats = async () => {
-    setLoading(true);
+  const loadData = async () => {
+    setState((prev) => ({ ...prev, loading: true }));
     try {
-      const [usersRes, companiesRes, apiKeysRes, apiStatsRes] = await Promise.all([
-        listUsers(),
-        listAllOrganizations(),
-        listApiKeys(),
-        getApiKeyStatistics(),
+      const [usersRes, companiesRes, apiKeysRes] = await Promise.all([
+        getUsersAction(),
+        getOrganizationsAction(),
+        getApiKeysAction(),
       ]);
 
       const users = usersRes.success ? usersRes.data || [] : [];
       const companies = companiesRes.success ? companiesRes.data || [] : [];
       const apiKeys = apiKeysRes.success ? apiKeysRes.data || [] : [];
-      const apiStats = apiStatsRes.success ? apiStatsRes.data : null;
 
-      setStats({
-        users: {
-          total: users.length,
-          active: users.filter((u: any) => !u.banned).length,
-          banned: users.filter((u: any) => u.banned).length,
-          admins: users.filter((u: any) => u.role === 'admin' || u.role === 'super-admin').length,
-        },
-        companies: {
-          total: companies.length,
-          totalMembers: companies.reduce(
-            (acc: number, org: any) => acc + (org._count?.members || 0),
-            0,
-          ),
-          pendingInvitations: companies.reduce(
-            (acc: number, org: any) => acc + (org._count?.invitations || 0),
-            0,
-          ),
-          averageMembers:
-            companies.length > 0
-              ? Math.round(
-                  companies.reduce((acc: number, org: any) => acc + (org._count?.members || 0), 0) /
-                    companies.length,
-                )
-              : 0,
-        },
-        apiKeys: {
-          total: apiKeys.length,
-          active: apiKeys.filter(
-            (k: any) => k.enabled && (!k.expiresAt || new Date(k.expiresAt) > new Date()),
-          ).length,
-          expired: apiKeys.filter((k: any) => k.expiresAt && new Date(k.expiresAt) < new Date())
-            .length,
-          totalRequests: apiKeys.reduce(
-            (acc: number, key: any) => acc + (key.requestCount || 0),
-            0,
-          ),
-        },
-      });
+      setState({ stats: calculateStats(users, companies, apiKeys), loading: false });
     } catch (error) {
       console.error('Failed to load dashboard stats:', error);
-    } finally {
-      setLoading(false);
+      setState((prev) => ({ ...prev, loading: false }));
     }
   };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  return { ...state, refetch: loadData };
+};
+
+export default function GuestsPage() {
+  const router = useRouter();
+  const { stats, loading, refetch } = useDashboardData();
 
   const managementSections = [
     {
@@ -138,13 +110,13 @@ export default function GuestsPage() {
       color: 'blue',
       path: '/guests/people',
       stats: [
-        { label: 'Total Users', value: stats.users.total.toString() },
-        { label: 'Active Users', value: stats.users.active.toString() },
-        { label: 'Admin Users', value: stats.users.admins.toString() },
+        { label: 'Total Users', value: stats.users.total },
+        { label: 'Active Users', value: stats.users.active },
+        { label: 'Admin Users', value: stats.users.admins },
       ],
       actions: [
-        { icon: IconPlus, label: 'Create User', onClick: () => router.push('/guests/people/new') },
-        { icon: IconShield, label: 'Manage Roles', onClick: () => router.push('/guests/people') },
+        { icon: IconPlus, label: 'Create User', path: '/guests/people/new' },
+        { icon: IconShield, label: 'Manage Roles', path: '/guests/people' },
       ],
     },
     {
@@ -154,21 +126,13 @@ export default function GuestsPage() {
       color: 'green',
       path: '/guests/organizations',
       stats: [
-        { label: 'Organizations', value: stats.companies.total.toString() },
-        { label: 'Total Members', value: stats.companies.totalMembers.toString() },
-        { label: 'Pending Invites', value: stats.companies.pendingInvitations.toString() },
+        { label: 'Organizations', value: stats.companies.total },
+        { label: 'Total Members', value: stats.companies.totalMembers },
+        { label: 'Pending Invites', value: stats.companies.pendingInvitations },
       ],
       actions: [
-        {
-          icon: IconPlus,
-          label: 'Create Organization',
-          onClick: () => router.push('/guests/organizations/new'),
-        },
-        {
-          icon: IconUsers,
-          label: 'Manage Members',
-          onClick: () => router.push('/guests/organizations'),
-        },
+        { icon: IconPlus, label: 'Create Organization', path: '/guests/organizations/new' },
+        { icon: IconUsers, label: 'Manage Members', path: '/guests/organizations' },
       ],
     },
     {
@@ -178,17 +142,13 @@ export default function GuestsPage() {
       color: 'orange',
       path: '/guests/api-keys',
       stats: [
-        { label: 'Total Keys', value: stats.apiKeys.total.toString() },
-        { label: 'Active Keys', value: stats.apiKeys.active.toString() },
-        { label: 'Total Requests', value: stats.apiKeys.totalRequests.toLocaleString() },
+        { label: 'Total Keys', value: stats.apiKeys.total },
+        { label: 'Active Keys', value: stats.apiKeys.active },
+        { label: 'Total Requests', value: stats.apiKeys.totalRequests },
       ],
       actions: [
-        {
-          icon: IconPlus,
-          label: 'Create API Key',
-          onClick: () => router.push('/guests/api-keys/new'),
-        },
-        { icon: IconActivity, label: 'View Usage', onClick: () => router.push('/guests/api-keys') },
+        { icon: IconPlus, label: 'Create API Key', path: '/guests/api-keys/new' },
+        { icon: IconActivity, label: 'View Usage', path: '/guests/api-keys' },
       ],
     },
   ];
@@ -223,6 +183,14 @@ export default function GuestsPage() {
     },
   ];
 
+  if (loading) {
+    return (
+      <Container py="xl" size="xl">
+        <DashboardSkeleton />
+      </Container>
+    );
+  }
+
   return (
     <Container py="xl" size="xl">
       <Stack gap="xl">
@@ -236,13 +204,13 @@ export default function GuestsPage() {
           }}
           description="Comprehensive management dashboard for users, organizations, and API keys"
           title="System Management Dashboard"
-          onRefresh={loadDashboardStats}
+          onRefresh={refetch}
         />
 
         {/* Overall Statistics */}
         <SimpleGrid cols={{ base: 1, lg: 4, sm: 2 }} spacing="lg">
           {overallStats.map((stat) => (
-            <StatsCard key={stat.title} {...stat} loading={loading} />
+            <StatsCard key={stat.title} {...stat} loading={false} />
           ))}
         </SimpleGrid>
 
@@ -279,7 +247,7 @@ export default function GuestsPage() {
                   {section.stats.map((stat, index) => (
                     <div key={index} style={{ textAlign: 'center' }}>
                       <Text fw={700} size="lg">
-                        {stat.value}
+                        {typeof stat.value === 'number' ? stat.value.toLocaleString() : stat.value}
                       </Text>
                       <Text size="xs" c="dimmed">
                         {stat.label}
@@ -295,7 +263,7 @@ export default function GuestsPage() {
                       <ActionIcon
                         variant="light"
                         color={section.color}
-                        onClick={action.onClick}
+                        onClick={() => router.push(action.path as any)}
                         size="sm"
                       >
                         <action.icon size={14} />

@@ -136,33 +136,108 @@ export class SentryServerProvider implements ObservabilityProvider {
       // Dynamically import Sentry to avoid bundling if not used
       const Sentry = await import('@sentry/nextjs');
 
-      // Initialize with configuration similar to original instrumentation.ts
-      Sentry.init({
+      // Default ignored errors for server-side
+      const defaultIgnoreErrors = [
+        'ECONNRESET',
+        'ECONNREFUSED',
+        'ETIMEDOUT',
+        'EPIPE',
+        'ENOTFOUND',
+        'Network request failed',
+        'socket hang up',
+        'Request aborted',
+      ];
+
+      // Default ignored transactions for server
+      const defaultIgnoreTransactions = [
+        '/health',
+        '/ping',
+        '/_next',
+        '/api/health',
+        '/api/ping',
+        '/favicon.ico',
+        '/robots.txt',
+        '/sitemap.xml',
+      ];
+
+      // Build integrations
+      const integrations = [
+        // Default server integrations
+        Sentry.httpIntegration(),
+        Sentry.nativeNodeFetchIntegration(),
+      ];
+
+      // Add custom integrations
+      if (Array.isArray(sentryConfig.integrations)) {
+        integrations.push(...sentryConfig.integrations);
+      }
+
+      // Merge configuration with sensible defaults
+      const finalConfig = {
+        // Core configuration
+        dsn: sentryConfig.dsn,
+        environment: sentryConfig.environment || process.env.NODE_ENV || 'production',
+        release: sentryConfig.release,
+        debug: sentryConfig.debug ?? false,
+        enabled: sentryConfig.enabled ?? true,
+        serverName: sentryConfig.serverName,
+
+        // User privacy
+        sendDefaultPii: sentryConfig.sendDefaultPii ?? false,
+
+        // Core options with defaults
+        maxBreadcrumbs: sentryConfig.maxBreadcrumbs ?? 100,
+        attachStacktrace: sentryConfig.attachStacktrace ?? true,
+        maxValueLength: sentryConfig.maxValueLength ?? 250,
+        normalizeDepth: sentryConfig.normalizeDepth ?? 3,
+        normalizeMaxBreadth: sentryConfig.normalizeMaxBreadth ?? 1000,
+        sendClientReports: sentryConfig.sendClientReports ?? true,
+        includeLocalVariables: sentryConfig.includeLocalVariables ?? false, // Off by default for performance
+        shutdownTimeout: sentryConfig.shutdownTimeout ?? 2000,
+        disableInstrumentationWarnings: sentryConfig.disableInstrumentationWarnings ?? false,
+
+        // Error monitoring with defaults
+        sampleRate: sentryConfig.sampleRate ?? 1.0, // Capture all errors by default
+        ignoreErrors: [...defaultIgnoreErrors, ...(sentryConfig.ignoreErrors || [])],
+
+        // Tracing with defaults
+        tracesSampleRate:
+          sentryConfig.tracesSampleRate ?? (process.env.NODE_ENV === 'production' ? 0.1 : 1.0),
+        tracesSampler: sentryConfig.tracesSampler,
+        tracePropagationTargets: sentryConfig.tracePropagationTargets, // Default to all on server
+        ignoreTransactions: [
+          ...defaultIgnoreTransactions,
+          ...(sentryConfig.ignoreTransactions || []),
+        ],
+
+        // Profiling
+        profilesSampleRate:
+          sentryConfig.profilesSampleRate ?? (process.env.NODE_ENV === 'production' ? 0.1 : 0),
+
         // Callbacks
         beforeSend: sentryConfig.beforeSend,
         beforeSendTransaction: sentryConfig.beforeSendTransaction,
-        dsn: sentryConfig.dsn,
+        beforeSendSpan: sentryConfig.beforeSendSpan,
+        beforeBreadcrumb: sentryConfig.beforeBreadcrumb,
 
-        environment: sentryConfig.environment || 'production',
+        // Transport options
+        tunnel: sentryConfig.tunnel,
+        transport: sentryConfig.transport,
+        transportOptions: sentryConfig.transportOptions,
+
         // Integrations
-        integrations: [
-          // Default integrations
-          Sentry.httpIntegration(),
-          Sentry.nativeNodeFetchIntegration(),
-          ...(sentryConfig.integrations || []),
-        ],
+        integrations,
+        defaultIntegrations: sentryConfig.defaultIntegrations,
 
-        // Debug mode removed to avoid non-debug bundle conflicts
-
-        profilesSampleRate: sentryConfig.profilesSampleRate ?? 0.1,
-
-        release: sentryConfig.release,
-        // Sampling rates
-        tracesSampleRate: sentryConfig.tracesSampleRate ?? 1,
+        // Initial scope
+        initialScope: sentryConfig.initialScope,
 
         // Additional options from config
         ...(sentryConfig.options || {}),
-      });
+      };
+
+      // Initialize with merged configuration
+      Sentry.init(finalConfig);
 
       this.client = Sentry;
       this.isInitialized = true;

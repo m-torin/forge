@@ -4,7 +4,7 @@ import { createSaga } from '../../src/shared/features/saga';
 import { SagaContext } from '../../src/shared/types/index';
 import { resetUpstashMocks, setupUpstashMocks } from '../utils/upstash-mocks';
 
-describe('Saga Pattern', (_: any) => {
+describe('saga Pattern', (_: any) => {
   let mocks: ReturnType<typeof setupUpstashMocks>;
 
   beforeEach(() => {
@@ -15,7 +15,7 @@ describe('Saga Pattern', (_: any) => {
     resetUpstashMocks(mocks);
   });
 
-  describe('Saga Creation', (_: any) => {
+  describe('saga Creation', (_: any) => {
     test('should create saga with basic configuration', (_: any) => {
       const sagaBuilder = createSaga('order-processing-saga', 'Order Processing');
 
@@ -70,11 +70,8 @@ describe('Saga Pattern', (_: any) => {
     });
   });
 
-  describe('Saga Execution', (_: any) => {
-    test.skip('should execute all steps successfully', async () => {
-      // TODO: Implement saga execution tests using SagaOrchestrator
-      // The saga builder creates definitions, execution happens through the orchestrator
-    });
+  describe('saga Execution', (_: any) => {
+    test.todo('should execute all steps successfully');
 
     test.skip('should compensate on step failure', async () => {
       const executeStep1 = vi.fn().mockResolvedValue({ reservationId: 'res_123' });
@@ -126,7 +123,7 @@ describe('Saga Pattern', (_: any) => {
       // TODO: Use SagaOrchestrator to execute saga
       const result = { error: 'Payment failed', success: false };
 
-      expect(result.success).toBe(false);
+      expect(result.success).toBeFalsy();
       expect(result.error).toBe('Payment failed');
 
       // Step 1 should have been compensated
@@ -192,7 +189,7 @@ describe('Saga Pattern', (_: any) => {
         success: false,
       };
 
-      expect(result.success).toBe(false);
+      expect(result.success).toBeFalsy();
       expect(result.error).toBe('Step 2 failed');
       expect(result.compensationErrors).toHaveLength(1);
       expect(result.compensationErrors?.[0]).toBe('Compensation failed');
@@ -292,7 +289,7 @@ describe('Saga Pattern', (_: any) => {
     });
   });
 
-  describe('Saga State Management', (_: any) => {
+  describe('saga State Management', (_: any) => {
     test.skip('should persist state between steps', async () => {
       const saga = createSaga('stateful-saga', 'Stateful Saga')
         .step(
@@ -363,7 +360,7 @@ describe('Saga Pattern', (_: any) => {
         success: true,
       };
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.state).toEqual({
         amount: 50,
         charged: 50,
@@ -433,7 +430,7 @@ describe('Saga Pattern', (_: any) => {
     });
   });
 
-  describe('Complex Saga Scenarios', (_: any) => {
+  describe('complex Saga Scenarios', (_: any) => {
     test.skip('should handle distributed transaction scenario', async () => {
       interface BookingInput {
         amount: number;

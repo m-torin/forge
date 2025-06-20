@@ -21,21 +21,50 @@ function createHeaderString(headers: Record<string, string>): string {
  * Sentry configuration options for Next.js builds
  */
 export interface SentryBuildOptions {
-  authToken?: string;
-  automaticVercelMonitors?: boolean;
-  disableLogger?: boolean;
+  // Core Options
   org?: string;
   project?: string;
+  authToken?: string;
+  sentryUrl?: string;
+  headers?: Record<string, string>;
+  telemetry?: boolean;
+  silent?: boolean;
+  debug?: boolean;
+
+  // Source Maps Options
+  sourcemaps?: {
+    disable?: boolean;
+    assets?: string | string[];
+    ignore?: string | string[];
+    deleteSourcemapsAfterUpload?: boolean;
+  };
+
+  // Release Options
   release?: {
     name?: string;
+    create?: boolean;
+    finalize?: boolean;
+    dist?: string;
   };
-  silent?: boolean;
-  sourcemaps?: {
-    deleteSourcemapsAfterUpload?: boolean;
-    disable?: boolean;
+
+  // Bundle Size Optimizations
+  bundleSizeOptimizations?: {
+    excludeDebugStatements?: boolean;
+    excludeTracing?: boolean;
   };
-  tunnelRoute?: string;
+
+  // Next.js Specific Options
   widenClientFileUpload?: boolean;
+  autoInstrumentServerFunctions?: boolean;
+  autoInstrumentMiddleware?: boolean;
+  autoInstrumentAppDirectory?: boolean;
+  excludeServerRoutes?: Array<RegExp | string>;
+  tunnelRoute?: string;
+  automaticVercelMonitors?: boolean;
+  unstable_sentryWebpackPluginOptions?: Record<string, any>;
+
+  // Deprecated but kept for backward compatibility
+  disableLogger?: boolean;
 }
 
 /**
@@ -152,49 +181,121 @@ export async function withSentry(
   nextConfig: NextConfig,
   sentryBuildOptions?: SentryBuildOptions,
 ): Promise<NextConfig> {
+  // Check if we have minimum required config for source map upload
+  const hasRequiredConfig = Boolean(
+    (sentryBuildOptions?.authToken || process.env.SENTRY_AUTH_TOKEN) &&
+      (sentryBuildOptions?.org || process.env.SENTRY_ORG) &&
+      (sentryBuildOptions?.project || process.env.SENTRY_PROJECT),
+  );
+
+  // Determine if we're in production
+  const isProduction = process.env.NODE_ENV === 'production';
+
   // Dynamically import Sentry to avoid edge runtime issues
   const { withSentryConfig } = await import('@sentry/nextjs');
 
   const defaultOptions: Parameters<typeof withSentryConfig>[1] = {
-    authToken: sentryBuildOptions?.authToken || process.env.SENTRY_AUTH_TOKEN,
-    // Enable automatic Vercel Cron monitoring
-    automaticVercelMonitors: sentryBuildOptions?.automaticVercelMonitors ?? true,
-    // Automatically tree-shake Sentry logger statements
-    disableLogger: sentryBuildOptions?.disableLogger ?? true,
-
-    // Organization and project from env vars
+    // Core Options
     org: sentryBuildOptions?.org || process.env.SENTRY_ORG,
-
     project: sentryBuildOptions?.project || process.env.SENTRY_PROJECT,
-
-    // Release configuration
-    release: sentryBuildOptions?.release,
-
-    // Only print logs for uploading source maps in CI
+    authToken: sentryBuildOptions?.authToken || process.env.SENTRY_AUTH_TOKEN,
+    sentryUrl: sentryBuildOptions?.sentryUrl || 'https://sentry.io/',
+    headers: sentryBuildOptions?.headers,
+    telemetry: sentryBuildOptions?.telemetry ?? true,
     silent: sentryBuildOptions?.silent ?? !process.env.CI,
+    debug: sentryBuildOptions?.debug ?? !isProduction,
 
-    // Source maps configuration
-    sourcemaps: sentryBuildOptions?.sourcemaps || {
-      deleteSourcemapsAfterUpload: true, // Default in v9
-      disable: false,
+    // Source Maps Options - only upload if we have required config
+    sourcemaps: {
+      disable: sentryBuildOptions?.sourcemaps?.disable ?? !hasRequiredConfig,
+      assets: sentryBuildOptions?.sourcemaps?.assets,
+      ignore: sentryBuildOptions?.sourcemaps?.ignore,
+      deleteSourcemapsAfterUpload:
+        sentryBuildOptions?.sourcemaps?.deleteSourcemapsAfterUpload ?? true,
     },
 
-    // Route browser requests to Sentry through a Next.js rewrite
-    tunnelRoute: sentryBuildOptions?.tunnelRoute ?? '/monitoring',
+    // Release Options
+    release: {
+      name: sentryBuildOptions?.release?.name,
+      create: sentryBuildOptions?.release?.create ?? true,
+      finalize: sentryBuildOptions?.release?.finalize ?? true,
+      dist: sentryBuildOptions?.release?.dist,
+    },
 
-    // Upload a larger set of source maps for prettier stack traces
+    // Bundle Size Optimizations
+    bundleSizeOptimizations: {
+      excludeDebugStatements:
+        sentryBuildOptions?.bundleSizeOptimizations?.excludeDebugStatements ?? isProduction,
+      excludeTracing: sentryBuildOptions?.bundleSizeOptimizations?.excludeTracing ?? false,
+    },
+
+    // Next.js Specific Options
     widenClientFileUpload: sentryBuildOptions?.widenClientFileUpload ?? true,
+    autoInstrumentServerFunctions: sentryBuildOptions?.autoInstrumentServerFunctions ?? true,
+    autoInstrumentMiddleware: sentryBuildOptions?.autoInstrumentMiddleware ?? true,
+    autoInstrumentAppDirectory: sentryBuildOptions?.autoInstrumentAppDirectory ?? true,
+    excludeServerRoutes: sentryBuildOptions?.excludeServerRoutes,
+    tunnelRoute: sentryBuildOptions?.tunnelRoute ?? '/monitoring',
+    automaticVercelMonitors: sentryBuildOptions?.automaticVercelMonitors ?? true,
+
+    // Deprecated options (mapped to new options)
+    disableLogger: sentryBuildOptions?.disableLogger ?? true,
+
+    // Pass through any unstable options
+    ...sentryBuildOptions?.unstable_sentryWebpackPluginOptions,
   };
 
   // Apply Sentry configuration with enhanced webpack externals for edge runtime
   const configWithSentry = withSentryConfig(nextConfig, defaultOptions);
 
-  // Enhance webpack configuration to better handle edge runtime
+  // Enhance webpack configuration to better handle edge runtime and enable tree shaking
   const originalWebpack = configWithSentry.webpack;
   configWithSentry.webpack = (config: any, options: any) => {
     // Apply original webpack config first
     if (originalWebpack) {
       config = originalWebpack(config, options);
+    }
+
+    // Add DefinePlugin for tree shaking based on build options
+    config.plugins = config.plugins || [];
+
+    // Only add DefinePlugin in client bundles to avoid server-side issues
+    if (!options.isServer) {
+      try {
+        // Use eval to prevent webpack from analyzing this require
+        const webpack = eval('require')('webpack');
+        const { DefinePlugin } = webpack;
+
+        // Add DefinePlugin configuration for tree shaking
+        const definePluginConfig: Record<string, any> = {
+          // Enable/disable debug based on environment and build options
+          __SENTRY_DEBUG__: JSON.stringify(
+            sentryBuildOptions?.debug ?? process.env.NODE_ENV !== 'production',
+          ),
+        };
+
+        // Add feature flags for tree shaking
+        if (sentryBuildOptions?.bundleSizeOptimizations?.excludeDebugStatements) {
+          definePluginConfig.__SENTRY_DEBUG__ = JSON.stringify(false);
+        }
+
+        if (sentryBuildOptions?.bundleSizeOptimizations?.excludeTracing) {
+          definePluginConfig.__SENTRY_TRACING__ = JSON.stringify(false);
+        }
+
+        // Add experimental feature flags if provided
+        if (sentryBuildOptions?.unstable_sentryWebpackPluginOptions?.definePlugin) {
+          Object.assign(
+            definePluginConfig,
+            sentryBuildOptions.unstable_sentryWebpackPluginOptions.definePlugin,
+          );
+        }
+
+        config.plugins.push(new DefinePlugin(definePluginConfig));
+      } catch (error) {
+        // Silently skip DefinePlugin if webpack is not available
+        // This is fine as the DefinePlugin is optional for optimizations
+      }
     }
 
     // Add additional externals for edge runtime to prevent OpenTelemetry bundling

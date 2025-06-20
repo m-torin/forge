@@ -1,20 +1,16 @@
 {
-  "extends": ["@repo/config/knip/base.json"],
+  "extends": ["@repo/config/knip"],
   "entry": [
-    "index.ts",
-    "auth-helpers.ts",
-    "database.ts",
-    "playwright.ts",
-    "render.tsx",
-    "vitest-presets.ts",
-    "config/**/*.ts",
-    "e2e/**/*.ts",
-    "mocks/**/*.ts",
-    "setup/**/*.ts",
-    "utils/**/*.tsx",
-    "**/*.config.{js,ts,mjs}",
-    "**/*.test.{ts,tsx}",
-    "**/*.spec.{ts,tsx}",
-    "__tests__/**/*.{ts,tsx}"
+    "src/vitest/index.ts",
+    "src/playwright/index.ts",
+    "src/shared/index.ts",
+    "src/vitest/configs/**/*.ts",
+    "src/vitest/mocks/**/*.ts",
+    "src/vitest/setup/**/*.ts",
+    "src/vitest/utils/**/*.{ts,tsx}",
+    "src/playwright/configs/**/*.ts",
+    "src/playwright/helpers/**/*.ts",
+    "src/playwright/templates/**/*.ts",
+    "src/shared/**/*.{ts,tsx}"
   ]
 }

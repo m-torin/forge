@@ -3,7 +3,7 @@
  * Tests the primary emitter functions following Segment.io specification
  */
 
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect } from 'vitest';
 
 import { alias, group, identify, page, screen, track } from '../../shared/emitters/emitters';
 
@@ -17,7 +17,7 @@ import type {
   EmitterTrackPayload,
 } from '../../shared/emitters/emitter-types';
 
-describe('Core Analytics Emitters', () => {
+describe('core Analytics Emitters', () => {
   let mockTimestamp: Date;
   let mockContext: EmitterContext;
   let mockOptions: EmitterOptions;
@@ -52,7 +52,7 @@ describe('Core Analytics Emitters', () => {
   });
 
   describe('identify() emitter', () => {
-    it('should create valid identify payload with minimal params', () => {
+    test('should create valid identify payload with minimal params', () => {
       const result = identify('user-123');
 
       expect(result).toEqual({
@@ -61,7 +61,7 @@ describe('Core Analytics Emitters', () => {
       });
     });
 
-    it('should create identify payload with traits', () => {
+    test('should create identify payload with traits', () => {
       const traits = {
         name: 'John Doe',
         age: 25,
@@ -78,7 +78,7 @@ describe('Core Analytics Emitters', () => {
       });
     });
 
-    it('should create identify payload with full options', () => {
+    test('should create identify payload with full options', () => {
       const traits = { email: 'user@example.com' };
       const result = identify('user-123', traits, mockOptions);
 
@@ -93,7 +93,7 @@ describe('Core Analytics Emitters', () => {
       });
     });
 
-    it('should handle empty traits object', () => {
+    test('should handle empty traits object', () => {
       const result = identify('user-123', {});
 
       expect(result).toEqual({
@@ -103,7 +103,7 @@ describe('Core Analytics Emitters', () => {
       });
     });
 
-    it('should handle undefined traits', () => {
+    test('should handle undefined traits', () => {
       const result = identify('user-123', undefined);
 
       expect(result).toEqual({
@@ -112,7 +112,7 @@ describe('Core Analytics Emitters', () => {
       });
     });
 
-    it('should preserve trait types correctly', () => {
+    test('should preserve trait types correctly', () => {
       const traits = {
         array: ['a', 'b', 'c'],
         boolean: true,
@@ -130,12 +130,12 @@ describe('Core Analytics Emitters', () => {
       expect(typeof result.traits?.string).toBe('string');
       expect(typeof result.traits?.number).toBe('number');
       expect(typeof result.traits?.boolean).toBe('boolean');
-      expect(Array.isArray(result.traits?.array)).toBe(true);
+      expect(Array.isArray(result.traits?.array)).toBeTruthy();
     });
   });
 
   describe('track() emitter', () => {
-    it('should create valid track payload with minimal params', () => {
+    test('should create valid track payload with minimal params', () => {
       const result = track('Button Clicked');
 
       expect(result).toEqual({
@@ -144,7 +144,7 @@ describe('Core Analytics Emitters', () => {
       });
     });
 
-    it('should create track payload with properties', () => {
+    test('should create track payload with properties', () => {
       const properties = {
         button_id: 'cta-primary',
         page: 'homepage',
@@ -161,7 +161,7 @@ describe('Core Analytics Emitters', () => {
       });
     });
 
-    it('should create track payload with full options', () => {
+    test('should create track payload with full options', () => {
       const properties = { page: 'checkout' };
       const result = track('Purchase Completed', properties, mockOptions);
 
@@ -176,7 +176,7 @@ describe('Core Analytics Emitters', () => {
       });
     });
 
-    it('should handle complex property types', () => {
+    test('should handle complex property types', () => {
       const properties = {
         currency: 'USD',
         metadata: {
@@ -198,11 +198,11 @@ describe('Core Analytics Emitters', () => {
       const result = track('Order Completed', properties);
 
       expect(result.properties).toEqual(properties);
-      expect(Array.isArray(result.properties?.products)).toBe(true);
+      expect(Array.isArray(result.properties?.products)).toBeTruthy();
       expect(typeof result.properties?.metadata).toBe('object');
     });
 
-    it('should handle event names with special characters', () => {
+    test('should handle event names with special characters', () => {
       const specialEvents = [
         'Event with spaces',
         'Event-with-dashes',
@@ -220,7 +220,7 @@ describe('Core Analytics Emitters', () => {
       });
     });
 
-    it('should handle empty properties object', () => {
+    test('should handle empty properties object', () => {
       const result = track('Event', {});
 
       expect(result).toEqual({
@@ -232,7 +232,7 @@ describe('Core Analytics Emitters', () => {
   });
 
   describe('page() emitter', () => {
-    it('should create valid page payload with no params', () => {
+    test('should create valid page payload with no params', () => {
       const result = page();
 
       expect(result).toEqual({
@@ -240,7 +240,7 @@ describe('Core Analytics Emitters', () => {
       });
     });
 
-    it('should create page payload with category only', () => {
+    test('should create page payload with category only', () => {
       const result = page('marketing');
 
       expect(result).toEqual({
@@ -251,7 +251,7 @@ describe('Core Analytics Emitters', () => {
       });
     });
 
-    it('should create page payload with category and name', () => {
+    test('should create page payload with category and name', () => {
       const result = page('marketing', 'Landing Page');
 
       expect(result).toEqual({
@@ -263,7 +263,7 @@ describe('Core Analytics Emitters', () => {
       });
     });
 
-    it('should create page payload with all parameters', () => {
+    test('should create page payload with all parameters', () => {
       const properties = {
         url: 'https://example.com/products',
         path: '/products',
@@ -283,7 +283,7 @@ describe('Core Analytics Emitters', () => {
       });
     });
 
-    it('should merge category into properties correctly', () => {
+    test('should merge category into properties correctly', () => {
       const properties = {
         category: 'existing_category', // Should be overridden
         existing_prop: 'value',
@@ -295,7 +295,7 @@ describe('Core Analytics Emitters', () => {
       expect(result.properties?.existing_prop).toBe('value');
     });
 
-    it('should handle full options', () => {
+    test('should handle full options', () => {
       const result = page('blog', 'Article', { author: 'John' }, mockOptions);
 
       expect(result).toEqual({
@@ -314,7 +314,7 @@ describe('Core Analytics Emitters', () => {
   });
 
   describe('screen() emitter', () => {
-    it('should create valid screen payload with minimal params', () => {
+    test('should create valid screen payload with minimal params', () => {
       const result = screen('Home Screen');
 
       expect(result).toEqual({
@@ -323,7 +323,7 @@ describe('Core Analytics Emitters', () => {
       });
     });
 
-    it('should create screen payload with properties', () => {
+    test('should create screen payload with properties', () => {
       const properties = {
         build: '1234',
         previous_screen: 'Login Screen',
@@ -339,7 +339,7 @@ describe('Core Analytics Emitters', () => {
       });
     });
 
-    it('should create screen payload with full options', () => {
+    test('should create screen payload with full options', () => {
       const properties = { tab: 'profile' };
       const result = screen('Settings Screen', properties, mockOptions);
 
@@ -356,7 +356,7 @@ describe('Core Analytics Emitters', () => {
   });
 
   describe('group() emitter', () => {
-    it('should create valid group payload with minimal params', () => {
+    test('should create valid group payload with minimal params', () => {
       const result = group('group-123');
 
       expect(result).toEqual({
@@ -365,7 +365,7 @@ describe('Core Analytics Emitters', () => {
       });
     });
 
-    it('should create group payload with traits', () => {
+    test('should create group payload with traits', () => {
       const traits = {
         name: 'Acme Corp',
         employees: 100,
@@ -382,7 +382,7 @@ describe('Core Analytics Emitters', () => {
       });
     });
 
-    it('should create group payload with full options', () => {
+    test('should create group payload with full options', () => {
       const traits = { name: 'Test Organization' };
       const result = group('group-123', traits, mockOptions);
 
@@ -399,7 +399,7 @@ describe('Core Analytics Emitters', () => {
   });
 
   describe('alias() emitter', () => {
-    it('should create valid alias payload with minimal params', () => {
+    test('should create valid alias payload with minimal params', () => {
       const result = alias('new-user-id', 'old-user-id');
 
       expect(result).toEqual({
@@ -409,7 +409,7 @@ describe('Core Analytics Emitters', () => {
       });
     });
 
-    it('should create alias payload with previous user ID', () => {
+    test('should create alias payload with previous user ID', () => {
       const result = alias('new-user-id', 'old-user-id');
 
       expect(result).toEqual({
@@ -419,7 +419,7 @@ describe('Core Analytics Emitters', () => {
       });
     });
 
-    it('should create alias payload with full options', () => {
+    test('should create alias payload with full options', () => {
       const result = alias('new-user-id', 'old-user-id', mockOptions);
 
       expect(result).toEqual({
@@ -434,8 +434,8 @@ describe('Core Analytics Emitters', () => {
     });
   });
 
-  describe('Options handling', () => {
-    it('should handle partial options correctly', () => {
+  describe('options handling', () => {
+    test('should handle partial options correctly', () => {
       const partialOptions: EmitterOptions = {
         context: { app: { name: 'Test' } },
         timestamp: mockTimestamp,
@@ -449,7 +449,7 @@ describe('Core Analytics Emitters', () => {
       expect(result.integrations).toBeUndefined();
     });
 
-    it('should handle empty options object', () => {
+    test('should handle empty options object', () => {
       const result = track('Test Event', {}, {});
 
       expect(result).toEqual({
@@ -459,7 +459,7 @@ describe('Core Analytics Emitters', () => {
       });
     });
 
-    it('should handle undefined options', () => {
+    test('should handle undefined options', () => {
       const result = track('Test Event', {}, undefined);
 
       expect(result).toEqual({
@@ -470,8 +470,8 @@ describe('Core Analytics Emitters', () => {
     });
   });
 
-  describe('Context handling', () => {
-    it('should handle complex context objects', () => {
+  describe('context handling', () => {
+    test('should handle complex context objects', () => {
       const complexContext: EmitterContext = {
         app: {
           name: 'My App',
@@ -549,8 +549,8 @@ describe('Core Analytics Emitters', () => {
     });
   });
 
-  describe('Integration settings', () => {
-    it('should handle integration settings correctly', () => {
+  describe('integration settings', () => {
+    test('should handle integration settings correctly', () => {
       const integrations = {
         'Custom Integration': {
           apiKey: 'custom-key',
@@ -569,8 +569,8 @@ describe('Core Analytics Emitters', () => {
     });
   });
 
-  describe('Type safety and validation', () => {
-    it('should maintain proper TypeScript types', () => {
+  describe('type safety and validation', () => {
+    test('should maintain proper TypeScript types', () => {
       // Test that return types are properly typed
       const trackResult: EmitterTrackPayload = track('Test');
       const identifyResult: EmitterIdentifyPayload = identify('user-123');
@@ -585,7 +585,7 @@ describe('Core Analytics Emitters', () => {
       expect(aliasResult.type).toBe('alias');
     });
 
-    it('should handle edge cases gracefully', () => {
+    test('should handle edge cases gracefully', () => {
       // Empty strings
       expect(track('').event).toBe('');
       expect(identify('').userId).toBe('');
@@ -600,8 +600,8 @@ describe('Core Analytics Emitters', () => {
     });
   });
 
-  describe('Performance considerations', () => {
-    it('should handle large payloads efficiently', () => {
+  describe('performance considerations', () => {
+    test('should handle large payloads efficiently', () => {
       const largeProperties = Array.from({ length: 100 }, (_, i) => [
         `prop_${i}`,
         `value_${i}`,
@@ -615,7 +615,7 @@ describe('Core Analytics Emitters', () => {
       expect(duration).toBeLessThan(10); // Should complete in <10ms
     });
 
-    it('should handle many emitter calls efficiently', () => {
+    test('should handle many emitter calls efficiently', () => {
       const start = performance.now();
 
       const results = Array.from({ length: 1000 }, (_, i) => track(`Event ${i}`, { index: i }));

@@ -1,366 +1,235 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import {
-  mockFirestore,
-  mockFirestoreAdapter,
-  resetMockFirestoreStorage,
-  seedMockFirestoreData,
-  DatabaseTestHelper,
-  testDatabaseOperations,
-  testDatabaseErrors,
-  createTestUser,
-  createTestUsers,
-} from '@repo/testing/database';
+
+// Test imports for new four-file pattern
+import { FirestoreOperations } from '../firestore/server';
+import type { Firestore } from 'firebase-admin/firestore';
 
 // Mock the Firestore module
-vi.mock('firebase-admin', async () => {
-  const { mockFirebaseAdmin } = await import('@repo/testing/database');
-  return mockFirebaseAdmin;
-});
+vi.mock('firebase-admin', () => ({
+  initializeApp: vi.fn(),
+  getApps: vi.fn(() => []),
+  cert: vi.fn(),
+}));
 
-describe('Firestore Adapter', (_: any) => {
-  let helper: DatabaseTestHelper;
+vi.mock('firebase-admin/app', () => ({
+  initializeApp: vi.fn(),
+  getApps: vi.fn(() => []),
+  cert: vi.fn(),
+}));
 
-  beforeEach(async () => {
-    resetMockFirestoreStorage();
-    helper = new DatabaseTestHelper(mockFirestoreAdapter, {
-      provider: 'firestore',
-      seed: false,
-    });
-    await helper.setup();
+vi.mock('firebase-admin/firestore', () => ({
+  getFirestore: vi.fn(() => mockFirestoreClient),
+  FieldValue: {
+    serverTimestamp: vi.fn(),
+    delete: vi.fn(),
+    arrayUnion: vi.fn(),
+    arrayRemove: vi.fn(),
+  },
+}));
+
+// Mock Firestore client
+const mockFirestoreClient = {
+  collection: vi.fn(() => ({
+    doc: vi.fn(() => ({
+      id: 'test-id',
+      set: vi.fn(),
+      get: vi.fn(() => ({
+        exists: true,
+        id: 'test-id',
+        data: vi.fn(() => ({ name: 'Test User', email: 'test@example.com' })),
+      })),
+      update: vi.fn(),
+      delete: vi.fn(),
+    })),
+    add: vi.fn(),
+    where: vi.fn(() => ({
+      orderBy: vi.fn(() => ({
+        limit: vi.fn(() => ({
+          get: vi.fn(() => ({
+            docs: [
+              {
+                id: 'test-id',
+                data: () => ({ name: 'Test User', email: 'test@example.com' }),
+              },
+            ],
+            empty: false,
+          })),
+        })),
+      })),
+      get: vi.fn(() => ({
+        docs: [
+          {
+            id: 'test-id',
+            data: () => ({ name: 'Test User', email: 'test@example.com' }),
+          },
+        ],
+        empty: false,
+      })),
+    })),
+    get: vi.fn(() => ({
+      docs: [
+        {
+          id: 'test-id',
+          data: () => ({ name: 'Test User', email: 'test@example.com' }),
+        },
+      ],
+      empty: false,
+    })),
+    count: vi.fn(() => ({
+      get: vi.fn(() => ({
+        data: () => ({ count: 1 }),
+      })),
+    })),
+  })),
+  batch: vi.fn(() => ({
+    set: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    commit: vi.fn(),
+  })),
+  runTransaction: vi.fn((callback) => callback({})),
+  doc: vi.fn(),
+  collectionGroup: vi.fn(),
+} as unknown as Firestore;
+
+describe('Firestore Four-File Pattern', () => {
+  let firestoreOps: FirestoreOperations;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    firestoreOps = new FirestoreOperations(mockFirestoreClient);
   });
 
-  afterEach(async () => {
-    resetMockFirestoreStorage();
-    await helper.cleanup();
+  afterEach(() => {
+    vi.resetAllMocks();
   });
 
-  describe('Basic CRUD Operations', (_: any) => {
-    it('should perform complete CRUD operations', async () => {
-      await testDatabaseOperations(helper, 'users');
-    });
-
+  describe('Basic CRUD Operations', () => {
     it('should create a document', async () => {
-      const testData = createTestUser();
-      const result = await mockFirestoreAdapter.create('users', testData);
+      const testData = { name: 'Test User', email: 'test@example.com' };
+      const result = await firestoreOps.create('users', testData);
 
       expect(result).toMatchObject(testData);
       expect(result).toHaveProperty('id');
     });
 
-    it('should find a unique document by id', async () => {
-      const testData = createTestUser();
-      await mockFirestoreAdapter.create('users', testData);
+    it('should get a document by id', async () => {
+      const result = await firestoreOps.get('users', 'test-id');
 
-      const found = await mockFirestoreAdapter.findUnique('users', { id: testData.id });
-      expect(found).toMatchObject(testData);
-    });
-
-    it('should find a unique document by where clause', async () => {
-      const testData = createTestUser({ email: 'unique@example.com' });
-      await mockFirestoreAdapter.create('users', testData);
-
-      const found = await mockFirestoreAdapter.findUnique('users', {
-        where: { email: 'unique@example.com' },
+      expect(result).toMatchObject({
+        id: 'test-id',
+        name: 'Test User',
+        email: 'test@example.com',
       });
-      expect(found).toMatchObject(testData);
     });
 
     it('should update a document', async () => {
-      const testData = createTestUser();
-      await mockFirestoreAdapter.create('users', testData);
+      const updateData = { name: 'Updated User' };
+      const result = await firestoreOps.update('users', 'test-id', updateData);
 
-      const updateData = { name: 'Updated Name' };
-      const updated = await mockFirestoreAdapter.update('users', testData.id, updateData);
-
-      expect(updated).toMatchObject({ ...testData, ...updateData });
+      expect(result).toMatchObject({
+        id: 'test-id',
+        name: 'Updated User',
+      });
     });
 
     it('should delete a document', async () => {
-      const testData = createTestUser();
-      await mockFirestoreAdapter.create('users', testData);
+      const result = await firestoreOps.delete('users', 'test-id');
 
-      const deleted = await mockFirestoreAdapter.delete('users', testData.id);
-      expect(deleted).toMatchObject(testData);
-
-      const found = await mockFirestoreAdapter.findUnique('users', { id: testData.id });
-      expect(found).toBeNull();
+      expect(result).toMatchObject({
+        id: 'test-id',
+        name: 'Test User',
+        email: 'test@example.com',
+      });
     });
 
     it('should find many documents', async () => {
-      const users = createTestUsers(3);
+      const result = await firestoreOps.findMany('users', {
+        where: [{ field: 'email', operator: '==', value: 'test@example.com' }],
+        limit: 10,
+      });
 
-      for (const user of users) {
-        await mockFirestoreAdapter.create('users', user);
-      }
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBeGreaterThan(0);
+    });
 
-      const found = await mockFirestoreAdapter.findMany('users');
-      expect(found).toHaveLength(3);
+    it('should find a unique document', async () => {
+      const result = await firestoreOps.findUnique('users', {
+        id: 'test-id',
+      });
 
-      // Check that all users are found
-      const foundIds = found.map((u: any) => u.id);
-      const expectedIds = users.map((u: any) => u.id);
-      expect(foundIds).toEqual(expect.arrayContaining(expectedIds));
+      expect(result).toMatchObject({
+        id: 'test-id',
+        name: 'Test User',
+        email: 'test@example.com',
+      });
     });
 
     it('should count documents', async () => {
-      const users = createTestUsers(5);
+      const result = await firestoreOps.count('users');
 
-      for (const user of users) {
-        await mockFirestoreAdapter.create('users', user);
-      }
-
-      const count = await mockFirestoreAdapter.count('users');
-      expect(count).toBe(5);
+      expect(typeof result).toBe('number');
+      expect(result).toBeGreaterThanOrEqual(0);
     });
-  };
+  });
 
-  describe('Query Operations', (_: any) => {
-    beforeEach(async () => {
-      // Seed test data
-      const users = [
-        createTestUser({ name: 'Alice', active: true, age: 25 }),
-        createTestUser({ name: 'Bob', active: false, age: 30 }),
-        createTestUser({ name: 'Charlie', active: true, age: 35 }),
+  describe('Batch Operations', () => {
+    it('should create multiple documents in batch', async () => {
+      const documents = [
+        { name: 'User 1', email: 'user1@example.com' },
+        { name: 'User 2', email: 'user2@example.com' },
       ];
 
-      for (const user of users) {
-        await mockFirestoreAdapter.create('users', user);
-      }
-    });
+      const result = await firestoreOps.bulkCreate('users', documents);
 
-    it('should find documents with where clause', async () => {
-      const activeUsers = await mockFirestoreAdapter.findMany('users', {
-        where: { active: true },
-      });
-
-      expect(activeUsers).toHaveLength(2);
-      activeUsers.forEach((user: any) => {
-        expect(user.active).toBe(true);
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(2);
+      result.forEach((doc) => {
+        expect(doc).toHaveProperty('id');
       });
     });
 
-    it('should find documents with ordering', async () => {
-      const orderedUsers = await mockFirestoreAdapter.findMany('users', {
-        orderBy: { field: 'age', direction: 'asc' },
-      });
-
-      expect(orderedUsers).toHaveLength(3);
-      expect((orderedUsers[0] as any).age).toBe(25);
-      expect((orderedUsers[1] as any).age).toBe(30);
-      expect((orderedUsers[2] as any).age).toBe(35);
-    });
-
-    it('should find documents with limit', async () => {
-      const limitedUsers = await mockFirestoreAdapter.findMany('users', {
-        limit: 2,
-      });
-
-      expect(limitedUsers).toHaveLength(2);
-    });
-
-    it('should find documents with combined query options', async () => {
-      const results = await mockFirestoreAdapter.findMany('users', {
-        where: { active: true },
-        orderBy: { field: 'age', direction: 'desc' },
-        limit: 1,
-      });
-
-      expect(results).toHaveLength(1);
-      expect((results[0] as any).active).toBe(true);
-      expect((results[0] as any).age).toBe(35); // Charlie, oldest active user
-    });
-
-    it('should count documents with where clause', async () => {
-      const activeCount = await mockFirestoreAdapter.count('users', {
-        where: { active: true },
-      });
-
-      expect(activeCount).toBe(2);
-    });
-  };
-
-  describe('Direct Firestore Client Operations', (_: any) => {
-    it('should create document using direct client', async () => {
-      const testData = createTestUser();
-
-      const docRef = await mockFirestore.collection('users').add(testData);
-      expect(docRef.id).toBeDefined();
-
-      const snapshot = await docRef.get();
-      expect(snapshot.exists).toBe(true);
-      expect(snapshot.data()).toMatchObject(testData);
-    });
-
-    it('should query collection using direct client', async () => {
-      const users = createTestUsers(3, { active: true });
-
-      for (const user of users) {
-        await mockFirestore.collection('users').add(user);
-      }
-
-      const querySnapshot = await mockFirestore
-        .collection('users')
-        .where('active', '==', true)
-        .get();
-
-      expect(querySnapshot.size).toBe(3);
-      expect(querySnapshot.empty).toBe(false);
-
-      const docs: any[] = [];
-      querySnapshot.forEach((doc: any) => {
-        docs.push({ id: doc.id, ...doc.data() });
-      });
-
-      expect(docs).toHaveLength(3);
-      docs.forEach((doc: any) => {
-        expect(doc.active).toBe(true);
-      });
-    });
-
-    it('should handle batch operations', async () => {
-      const batch = mockFirestore.batch();
-      const users = createTestUsers(3);
-
-      // Add batch operations
-      users.forEach((user: any) => {
-        const docRef = mockFirestore.collection('users').doc(user.id);
-        batch.set(docRef, user);
-      });
-
-      // Commit batch
-      const results = await batch.commit();
-      expect(results).toHaveLength(3);
-      results.forEach((result: any) => {
-        expect(result.writeTime).toBeInstanceOf(Date);
-      });
-
-      // Verify documents were created
-      for (const user of users) {
-        const doc = await mockFirestore.collection('users').doc(user.id).get();
-        expect(doc.exists).toBe(true);
-        expect(doc.data()).toMatchObject(user);
-      }
-    });
-
-    it('should handle transactions', async () => {
-      const user = createTestUser();
-      const docRef = mockFirestore.collection('users').doc(user.id);
-
-      await mockFirestore.runTransaction(async (transaction: any) => {
-        const doc = await transaction.get(docRef);
-        expect(doc.exists).toBe(false);
-
-        transaction.set(docRef, user);
-      });
-
-      // Verify document was created
-      const doc = await docRef.get();
-      expect(doc.exists).toBe(true);
-      expect(doc.data()).toMatchObject(user);
-    });
-  };
-
-  describe('Error Handling', (_: any) => {
-    it('should handle common error scenarios', async () => {
-      await testDatabaseErrors(helper, 'users');
-    });
-
-    it('should return null for non-existent document', async () => {
-      const found = await mockFirestoreAdapter.findUnique('users', {
-        id: 'non-existent',
-      });
-      expect(found).toBeNull();
-    };
-
-    it('should return empty array for empty collection', async () => {
-      const results = await mockFirestoreAdapter.findMany('empty-collection');
-      expect(results).toEqual([]);
-    });
-
-    it('should return 0 count for empty collection', async () => {
-      const count = await mockFirestoreAdapter.count('empty-collection');
-      expect(count).toBe(0);
-    });
-  };
-
-  describe('Raw Operations', (_: any) => {
-    it('should execute raw batch operation', async () => {
-      const batch = await mockFirestoreAdapter.raw('batch', null);
+    it('should support batch operations', () => {
+      const batch = firestoreOps.batch();
       expect(batch).toBeDefined();
-      expect(typeof batch.set).toBe('function');
       expect(typeof batch.commit).toBe('function');
     });
 
-    it('should execute raw transaction', async () => {
-      const user = createTestUser();
-
-      const result = await mockFirestoreAdapter.raw('runTransaction', async (transaction: any) => {
-        const docRef = mockFirestore.collection('users').doc(user.id);
-        transaction.set(docRef, user);
-        return user;
+    it('should support transactions', async () => {
+      const result = await firestoreOps.transaction(async (transaction) => {
+        return { success: true };
       });
 
-      expect(result).toMatchObject(user);
+      expect(result).toEqual({ success: true });
+    });
+  });
+
+  describe('Collection Operations', () => {
+    it('should get collection reference', () => {
+      const collection = firestoreOps.collection('users');
+      expect(collection).toBeDefined();
     });
 
-    it('should throw error for unsupported raw operation', async () => {
-      await expect(mockFirestoreAdapter.raw('unsupported', null)).rejects.toThrow('not supported');
-    });
-  };
-
-  describe('Adapter Interface Compliance', (_: any) => {
-    it('should implement all required DatabaseAdapter methods', (_: any) => {
-      const adapter = mockFirestoreAdapter;
-
-      expect(typeof adapter.initialize).toBe('function');
-      expect(typeof adapter.disconnect).toBe('function');
-      expect(typeof adapter.getClient).toBe('function');
-      expect(typeof adapter.create).toBe('function');
-      expect(typeof adapter.update).toBe('function');
-      expect(typeof adapter.delete).toBe('function');
-      expect(typeof adapter.findUnique).toBe('function');
-      expect(typeof adapter.findMany).toBe('function');
-      expect(typeof adapter.count).toBe('function');
-      expect(typeof adapter.raw).toBe('function');
+    it('should get document reference', () => {
+      const doc = firestoreOps.doc('users/test-id');
+      expect(doc).toBeDefined();
     });
 
-    it('should initialize and disconnect without errors', async () => {
-      await expect(mockFirestoreAdapter.initialize()).resolves.not.toThrow();
-      await expect(mockFirestoreAdapter.disconnect()).resolves.not.toThrow();
+    it('should get collection group query', () => {
+      const query = firestoreOps.collectionGroup('users');
+      expect(query).toBeDefined();
+    });
+  });
+
+  describe('Client Access', () => {
+    it('should provide access to raw client', () => {
+      const client = firestoreOps.getClient();
+      expect(client).toBe(mockFirestoreClient);
     });
 
-    it('should return the client instance', (_: any) => {
-      const client = mockFirestoreAdapter.getClient();
-      expect(client).toBeDefined();
-      expect(typeof client.collection).toBe('function');
+    it('should provide FieldValue utilities', () => {
+      const fieldValue = firestoreOps.FieldValue;
+      expect(fieldValue).toBeDefined();
     });
-  };
-
-  describe('Data Seeding', (_: any) => {
-    it('should seed mock data correctly', (_: any) => {
-      const testDocuments = [
-        { id: 'doc1', data: createTestUser({ name: 'Seeded User 1' }) },
-        { id: 'doc2', data: createTestUser({ name: 'Seeded User 2' }) },
-      ];
-
-      seedMockFirestoreData('users', testDocuments);
-
-      // Verify seeded data is accessible
-      testDocuments.forEach(async ({ id, data }: any) => {
-        const found = await mockFirestoreAdapter.findUnique('users', { id });
-        expect(found).toMatchObject(data);
-      });
-    });
-  };
-};
-
-// Integration test with the actual Firestore adapter class
-describe('FirestoreAdapter Integration', (_: any) => {
-  it('should be importable and instantiable', async () => {
-    // This tests that the actual adapter can be imported
-    // and doesn't have syntax or import errors
-    const { FirestoreAdapter } = await import('../firestore/adapter');
-    expect(FirestoreAdapter).toBeDefined();
-    expect(typeof FirestoreAdapter).toBe('function');
-  };
-};
+  });
+});

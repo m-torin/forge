@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect } from 'vitest';
 
 describe('labs/pckg-new', () => {
-  it('should have a placeholder test', () => {
-    expect(true).toBe(true);
+  test('should have a placeholder test', () => {
+    expect(true).toBeTruthy();
   });
 });

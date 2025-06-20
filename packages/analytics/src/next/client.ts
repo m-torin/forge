@@ -105,19 +105,42 @@ export class NextJSClientAnalyticsManager {
         }
       }
 
-      // Dynamically import client providers
+      // Import only what we need for Next.js environment
       const { createAnalyticsManager } = await import('../shared/utils/manager');
-      const { SegmentClientProvider } = await import('../client/providers/segment-client');
-      const { PostHogClientProvider } = await import('../client/providers/posthog-client');
-      const { VercelClientProvider } = await import('../client/providers/vercel-client');
       const { ConsoleProvider } = await import('../shared/providers/console-provider');
 
-      const CLIENT_PROVIDERS = {
+      const CLIENT_PROVIDERS: any = {
         console: (config: any) => new ConsoleProvider(config),
-        posthog: (config: any) => new PostHogClientProvider(config),
-        segment: (config: any) => new SegmentClientProvider(config),
-        vercel: (config: any) => new VercelClientProvider(config),
       };
+
+      // Only import providers that are configured
+      const configuredProviders = Object.keys(this.config.providers);
+
+      // Dynamically import only configured providers to avoid webpack bundling unused ones
+      for (const providerName of configuredProviders) {
+        if (providerName === 'console') continue; // Already loaded above
+
+        switch (providerName) {
+          case 'posthog': {
+            const { PostHogClientProvider } = await import('../providers/posthog/client');
+            CLIENT_PROVIDERS.posthog = (config: any) => new PostHogClientProvider(config);
+            break;
+          }
+          case 'segment': {
+            const { SegmentClientProvider } = await import('../providers/segment/client');
+            CLIENT_PROVIDERS.segment = (config: any) => new SegmentClientProvider(config);
+            break;
+          }
+          case 'vercel': {
+            const { VercelClientProvider } = await import('../providers/vercel/client');
+            CLIENT_PROVIDERS.vercel = (config: any) => new VercelClientProvider(config);
+            break;
+          }
+          default:
+            // Skip unknown providers
+            break;
+        }
+      }
 
       this.manager = createAnalyticsManager(this.config, CLIENT_PROVIDERS);
       await this.manager.initialize();

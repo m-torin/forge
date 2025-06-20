@@ -1,13 +1,14 @@
 ---
 title: 'Database Package Overview'
-description: 'Multi-provider database abstraction with Prisma ORM, Redis, and vector databases'
+description: 'Multi-provider database package with four-file export pattern for all database types'
 icon: 'database'
 ---
 
 # Database Package Overview
 
-Multi-provider database abstraction layer with Prisma ORM, Redis, Firestore, and vector database
-support for comprehensive data storage needs.
+Comprehensive database package providing Prisma ORM, Redis, Firestore, and Vector database support
+with a consistent four-file export pattern for optimal developer experience across client and server
+environments.
 
 ## Overview
 
@@ -35,7 +36,41 @@ support, each optimized for specific use cases:
 - **Product Information Management**: Barcode scanning, product catalogs, and asset management
 - **Workflow Orchestration**: Workflow configuration, execution tracking, and scheduling
 - **Type Safety**: Full TypeScript integration across all providers
+- **Zod Schema Validation**: Auto-generated validation schemas from Prisma models
 - **Environment Management**: Doppler integration with local development fallbacks
+
+## Four-File Export Pattern
+
+The database package implements a consistent four-file export pattern for optimal Next.js
+integration:
+
+<CodeGroup>
+```typescript Client (Browser)
+// Types and client-safe utilities only
+import type { User, Product } from '@repo/database/prisma/client';
+import type { RedisKey } from '@repo/database/redis/client';
+```
+
+```typescript Server (Node.js)
+// Full server operations and client instances
+import { prisma } from '@repo/database/prisma/server';
+import { RedisOperations } from '@repo/database/redis/server';
+import { FirestoreOperations } from '@repo/database/firestore/server';
+```
+
+```typescript Client/Next (Next.js Client)
+// Next.js optimized client hooks
+import { useRedisState } from '@repo/database/redis/client/next';
+import { useFirestoreDoc } from '@repo/database/firestore/client/next';
+```
+
+```typescript Server/Next (Next.js Server)
+// Next.js optimized server operations
+import { redis } from '@repo/database/redis/server/next';
+import { firestore } from '@repo/database/firestore/server/next';
+```
+
+</CodeGroup>
 
 ## Installation
 
@@ -47,17 +82,34 @@ pnpm add @repo/database
 
 <Tabs>
   <Tab title="Production (Doppler)">
-    ```bash # Primary Database (Prisma + PostgreSQL)
-    DATABASE_URL=postgresql://username:password@host:port/database # Upstash Redis
-    UPSTASH_REDIS_REST_URL=https://... UPSTASH_REDIS_REST_TOKEN=... # Upstash Vector Database
-    UPSTASH_VECTOR_REST_URL=https://... UPSTASH_VECTOR_REST_TOKEN=... # Google Firestore (optional)
-    GOOGLE_APPLICATION_CREDENTIALS=path/to/service-account.json FIREBASE_PROJECT_ID=your-project-id
+    ```bash
+    # Primary Database (Prisma + PostgreSQL)
+    DATABASE_URL=postgresql://username:password@host:port/database
+    
+    # Upstash Redis
+    UPSTASH_REDIS_REST_URL=https://...
+    UPSTASH_REDIS_REST_TOKEN=...
+    
+    # Upstash Vector Database
+    UPSTASH_VECTOR_REST_URL=https://...
+    UPSTASH_VECTOR_REST_TOKEN=...
+    
+    # Google Firestore (optional)
+    FIREBASE_PROJECT_ID=your-project-id
+    FIREBASE_CLIENT_EMAIL=service-account@project.iam.gserviceaccount.com
+    FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
     ```
   </Tab>
 
   <Tab title="Local Development">
-    ```bash # .env.local DATABASE_URL=postgresql://localhost:5432/forge_dev # Optional: Add Upstash
-    for full testing # UPSTASH_REDIS_REST_URL=... # UPSTASH_REDIS_REST_TOKEN=... ```
+    ```bash
+    # .env.local
+    DATABASE_URL=postgresql://localhost:5432/forge_dev
+    
+    # Optional: Add Upstash for full testing
+    # UPSTASH_REDIS_REST_URL=...
+    # UPSTASH_REDIS_REST_TOKEN=...
+    ```
   </Tab>
 </Tabs>
 
@@ -143,8 +195,12 @@ const userWithOrgs: User & {
 <Step title="Generate Client">```bash pnpm --filter @repo/database generate ```</Step>
 
   <Step title="Start Using">
-    ```typescript import {prisma} from '@repo/database/prisma'; const users = await
-    prisma.user.findMany(); ```
+    ```typescript
+    // Next.js server component or server action
+    import { prisma } from '@repo/database/prisma/server/next';
+    
+    const users = await prisma.user.findMany();
+    ```
   </Step>
 </Steps>
 

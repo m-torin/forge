@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, mockScrollTo } from '../test-utils';
-import { SectionHero } from '../../../mantine-ciseco';
+import { SectionHero } from '../../../src/mantine-ciseco';
 
 describe('SectionHero', (_: any) => {
   const defaultProps = {

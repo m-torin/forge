@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '../test-utils';
-import NcInputNumber from '../../../mantine-ciseco/components/NcInputNumber';
+import NcInputNumber from '../../../src/mantine-ciseco/components/NcInputNumber';
 
 describe('NcInputNumber', (_: any) => {
   const mockOnChange = vi.fn();

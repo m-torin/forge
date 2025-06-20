@@ -51,10 +51,10 @@ directory:
     - **No ReturnType**: Functions avoid explicit ReturnType annotations
 
   </Accordion>
-  
+
   <Accordion title="Application Configuration (env.ts)" icon="cog">
     Located in the root of each app (never in `src/`):
-    
+
     ```typescript
     import { keys as analyticsKeys } from '@repo/analytics/keys';
     import { keys as authKeys } from '@repo/auth/keys';
@@ -121,7 +121,7 @@ Services requiring configuration use the provider pattern for flexibility:
     }
     ```
   </Accordion>
-  
+
   <Accordion title="Implement Multiple Providers" icon="puzzle">
     ```typescript
     class S3Provider implements StorageProvider {
@@ -144,7 +144,7 @@ Services requiring configuration use the provider pattern for flexibility:
     ```
 
   </Accordion>
-  
+
   <Accordion title="Factory Function" icon="factory">
     ```typescript
     export function createStorageProvider(config: Config): StorageProvider {
@@ -252,7 +252,7 @@ import { format } from 'date-fns';
 
 // 3. Internal packages (@repo/*)
 import { auth } from '@repo/auth';
-import { database } from '@repo/database';
+import { prisma } from '@repo/database/prisma/server/next';
 
 // 4. Local imports
 import { Button } from './components/button';

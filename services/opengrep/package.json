@@ -23,16 +23,16 @@
     "scan-repo": "./scripts/scan-repo.ts"
   },
   "dependencies": {
-    "zod": "catalog:",
-    "commander": "catalog:"
+    "zod": "^3.25.67",
+    "commander": "^14.0.0"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/config": "workspace:*",
     "@repo/testing": "workspace:*",
-    "typescript": "catalog:",
-    "vitest": "catalog:",
-    "tsx": "catalog:"
+    "typescript": "^14.0.0",
+    "vitest": "^14.0.0",
+    "tsx": "^14.0.0"
   },
   "peerDependencies": {
     "typescript": ">=5.0.0"

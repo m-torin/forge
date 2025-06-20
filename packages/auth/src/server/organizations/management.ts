@@ -3,30 +3,31 @@
  */
 
 import 'server-only';
-import { headers } from 'next/headers';
 
-import { auth } from '../auth';
+import { syncLogger as logger } from '../../shared/utils/logger';
+import { auth } from '../../shared/auth.config';
+import { getAuthHeaders } from '../get-headers';
 
 import type { OrganizationRole } from '../../shared/types';
 
 /**
  * Sets the active organization for the current user session
  */
-export async function setActiveOrganization(organizationId: string): Promise<{
+export async function setActiveOrganizationAction(organizationId: string): Promise<{
   success: boolean;
   error?: string;
 }> {
   try {
     await auth.api.setActiveOrganization({
       body: { organizationId },
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     return {
       success: true,
     };
   } catch (error) {
-    console.error('Set active organization error:', error);
+    logger.error('Set active organization error:', error);
     return {
       error: 'Failed to set active organization',
       success: false,
@@ -37,7 +38,7 @@ export async function setActiveOrganization(organizationId: string): Promise<{
 /**
  * Gets the full organization data including members for current session
  */
-export async function getFullOrganization(organizationId?: string): Promise<{
+export async function getFullOrganizationAction(organizationId?: string): Promise<{
   success: boolean;
   organization?: any;
   error?: string;
@@ -45,7 +46,7 @@ export async function getFullOrganization(organizationId?: string): Promise<{
   try {
     const result = await auth.api.getFullOrganization({
       query: organizationId ? { organizationId } : {},
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     return {
@@ -53,7 +54,7 @@ export async function getFullOrganization(organizationId?: string): Promise<{
       organization: result,
     };
   } catch (error) {
-    console.error('Get full organization error:', error);
+    logger.error('Get full organization error:', error);
     return {
       error: 'Failed to get organization',
       success: false,
@@ -64,7 +65,7 @@ export async function getFullOrganization(organizationId?: string): Promise<{
 /**
  * Server-side helper to add a member directly to an organization using better-auth native method
  */
-export async function addMember(data: {
+export async function addMemberAction(data: {
   userId: string;
   organizationId: string;
   role: OrganizationRole | OrganizationRole[];
@@ -82,14 +83,14 @@ export async function addMember(data: {
         role: data.role,
         ...(data.teamId && { teamId: data.teamId }),
       },
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     return {
       success: true,
     };
   } catch (error) {
-    console.error('Add member error:', error);
+    logger.error('Add member error:', error);
     return {
       error: 'Failed to add member',
       success: false,
@@ -100,7 +101,10 @@ export async function addMember(data: {
 /**
  * Removes a member from an organization using better-auth native method
  */
-export async function removeMember(data: { userId: string; organizationId: string }): Promise<{
+export async function removeMemberAction(data: {
+  userId: string;
+  organizationId: string;
+}): Promise<{
   success: boolean;
   error?: string;
 }> {
@@ -111,14 +115,14 @@ export async function removeMember(data: { userId: string; organizationId: strin
         memberIdOrEmail: data.userId,
         organizationId: data.organizationId,
       },
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     return {
       success: true,
     };
   } catch (error) {
-    console.error('Remove member error:', error);
+    logger.error('Remove member error:', error);
     return {
       error: 'Failed to remove member',
       success: false,
@@ -129,7 +133,7 @@ export async function removeMember(data: { userId: string; organizationId: strin
 /**
  * Updates a member's role in an organization using better-auth native method
  */
-export async function updateMemberRole(data: {
+export async function updateMemberRoleAction(data: {
   userId: string;
   organizationId: string;
   role: OrganizationRole;
@@ -144,14 +148,14 @@ export async function updateMemberRole(data: {
         memberId: data.userId,
         role: data.role,
       },
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     return {
       success: true,
     };
   } catch (error) {
-    console.error('Update member role error:', error);
+    logger.error('Update member role error:', error);
     return {
       error: 'Failed to update member role',
       success: false,
@@ -162,7 +166,7 @@ export async function updateMemberRole(data: {
 /**
  * Creates a new organization using better-auth native method
  */
-export async function createOrganization(data: {
+export async function createOrganizationAction(data: {
   name: string;
   slug?: string;
   description?: string;
@@ -179,7 +183,7 @@ export async function createOrganization(data: {
         slug: data.slug || data.name.toLowerCase().replace(/\s+/g, '-'),
         metadata: data.description ? { description: data.description } : {},
       },
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     return {
@@ -187,7 +191,7 @@ export async function createOrganization(data: {
       success: true,
     };
   } catch (error) {
-    console.error('Create organization error:', error);
+    logger.error('Create organization error:', error);
     return {
       error: 'Failed to create organization',
       success: false,
@@ -198,7 +202,7 @@ export async function createOrganization(data: {
 /**
  * Updates an organization using better-auth native method
  */
-export async function updateOrganization(data: {
+export async function updateOrganizationAction(data: {
   organizationId: string;
   name?: string;
   slug?: string;
@@ -219,7 +223,7 @@ export async function updateOrganization(data: {
           ...(data.description !== undefined && { metadata: { description: data.description } }),
         },
       },
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     return {
@@ -227,7 +231,7 @@ export async function updateOrganization(data: {
       success: true,
     };
   } catch (error) {
-    console.error('Update organization error:', error);
+    logger.error('Update organization error:', error);
     return {
       error: 'Failed to update organization',
       success: false,
@@ -238,7 +242,7 @@ export async function updateOrganization(data: {
 /**
  * Deletes an organization using better-auth native method
  */
-export async function deleteOrganization(organizationId: string): Promise<{
+export async function deleteOrganizationAction(organizationId: string): Promise<{
   success: boolean;
   error?: string;
 }> {
@@ -246,14 +250,14 @@ export async function deleteOrganization(organizationId: string): Promise<{
     // Use better-auth native deleteOrganization API
     await auth.api.deleteOrganization({
       body: { organizationId },
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     return {
       success: true,
     };
   } catch (error) {
-    console.error('Delete organization error:', error);
+    logger.error('Delete organization error:', error);
     return {
       error: 'Failed to delete organization',
       success: false,
@@ -264,7 +268,7 @@ export async function deleteOrganization(organizationId: string): Promise<{
 /**
  * Invites a user to an organization using better-auth native method
  */
-export async function inviteUser(data: {
+export async function inviteUserAction(data: {
   email: string;
   organizationId: string;
   role: OrganizationRole;
@@ -285,7 +289,7 @@ export async function inviteUser(data: {
         ...(data.teamId && { teamId: data.teamId }),
         ...(data.message && { message: data.message }),
       },
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     return {
@@ -293,7 +297,7 @@ export async function inviteUser(data: {
       success: true,
     };
   } catch (error) {
-    console.error('Invite user error:', error);
+    logger.error('Invite user error:', error);
     return {
       error: 'Failed to invite user',
       success: false,
@@ -304,7 +308,7 @@ export async function inviteUser(data: {
 /**
  * Cancels an organization invitation using better-auth native method
  */
-export async function cancelInvitation(invitationId: string): Promise<{
+export async function cancelInvitationAction(invitationId: string): Promise<{
   success: boolean;
   error?: string;
 }> {
@@ -312,14 +316,14 @@ export async function cancelInvitation(invitationId: string): Promise<{
     // Use better-auth native cancelInvitation API
     await auth.api.cancelInvitation({
       body: { invitationId },
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     return {
       success: true,
     };
   } catch (error) {
-    console.error('Cancel invitation error:', error);
+    logger.error('Cancel invitation error:', error);
     return {
       error: 'Failed to cancel invitation',
       success: false,
@@ -330,7 +334,7 @@ export async function cancelInvitation(invitationId: string): Promise<{
 /**
  * Accepts an organization invitation using better-auth native method
  */
-export async function acceptInvitation(invitationId: string): Promise<{
+export async function acceptInvitationAction(invitationId: string): Promise<{
   success: boolean;
   organizationId?: string;
   error?: string;
@@ -339,7 +343,7 @@ export async function acceptInvitation(invitationId: string): Promise<{
     // Use better-auth native acceptInvitation API
     const result = await auth.api.acceptInvitation({
       body: { invitationId },
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     return {
@@ -347,7 +351,7 @@ export async function acceptInvitation(invitationId: string): Promise<{
       success: true,
     };
   } catch (error) {
-    console.error('Accept invitation error:', error);
+    logger.error('Accept invitation error:', error);
     return {
       error: 'Failed to accept invitation',
       success: false,
@@ -358,7 +362,7 @@ export async function acceptInvitation(invitationId: string): Promise<{
 /**
  * Declines an organization invitation using better-auth native method
  */
-export async function declineInvitation(invitationId: string): Promise<{
+export async function declineInvitationAction(invitationId: string): Promise<{
   success: boolean;
   error?: string;
 }> {
@@ -366,14 +370,14 @@ export async function declineInvitation(invitationId: string): Promise<{
     // Use better-auth native rejectInvitation API
     await auth.api.rejectInvitation({
       body: { invitationId },
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     return {
       success: true,
     };
   } catch (error) {
-    console.error('Decline invitation error:', error);
+    logger.error('Decline invitation error:', error);
     return {
       error: 'Failed to decline invitation',
       success: false,
@@ -384,7 +388,7 @@ export async function declineInvitation(invitationId: string): Promise<{
 /**
  * Lists organization invitations using better-auth native method
  */
-export async function listInvitations(organizationId?: string): Promise<{
+export async function listInvitationsAction(organizationId?: string): Promise<{
   success: boolean;
   invitations?: any[];
   error?: string;
@@ -393,7 +397,7 @@ export async function listInvitations(organizationId?: string): Promise<{
     // Use better-auth native listInvitations API
     const result = await auth.api.listInvitations({
       query: organizationId ? { organizationId } : {},
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     return {
@@ -401,7 +405,7 @@ export async function listInvitations(organizationId?: string): Promise<{
       success: true,
     };
   } catch (error) {
-    console.error('List invitations error:', error);
+    logger.error('List invitations error:', error);
     return {
       error: 'Failed to list invitations',
       success: false,
@@ -412,7 +416,7 @@ export async function listInvitations(organizationId?: string): Promise<{
 /**
  * Gets organization members using better-auth native method
  */
-export async function getOrganizationMembers(organizationId: string): Promise<{
+export async function getOrganizationMembersAction(organizationId: string): Promise<{
   success: boolean;
   members?: any[];
   error?: string;
@@ -420,7 +424,7 @@ export async function getOrganizationMembers(organizationId: string): Promise<{
   try {
     // Use better-auth native getFullOrganization which includes members
     const result = await auth.api.getFullOrganization({
-      headers: await headers(),
+      headers: await getAuthHeaders(),
       query: { organizationId },
     });
 
@@ -436,7 +440,7 @@ export async function getOrganizationMembers(organizationId: string): Promise<{
       success: true,
     };
   } catch (error) {
-    console.error('Get organization members error:', error);
+    logger.error('Get organization members error:', error);
     return {
       error: 'Failed to get organization members',
       success: false,
@@ -447,7 +451,7 @@ export async function getOrganizationMembers(organizationId: string): Promise<{
 /**
  * Bulk invite multiple users to an organization
  */
-export async function bulkInviteUsers(data: {
+export async function bulkInviteUsersAction(data: {
   emails: string[];
   organizationId: string;
   role: OrganizationRole;
@@ -466,7 +470,7 @@ export async function bulkInviteUsers(data: {
   try {
     const results = await Promise.allSettled(
       data.emails.map((email) =>
-        inviteUser({
+        inviteUserAction({
           email,
           organizationId: data.organizationId,
           role: data.role,
@@ -495,7 +499,7 @@ export async function bulkInviteUsers(data: {
       results: mappedResults,
     };
   } catch (error) {
-    console.error('Bulk invite users error:', error);
+    logger.error('Bulk invite users error:', error);
     return {
       error: 'Failed to bulk invite users',
       success: false,
@@ -506,7 +510,7 @@ export async function bulkInviteUsers(data: {
 /**
  * Bulk remove members from an organization
  */
-export async function bulkRemoveMembers(data: {
+export async function bulkRemoveMembersAction(data: {
   userIds: string[];
   organizationId: string;
 }): Promise<{
@@ -521,7 +525,7 @@ export async function bulkRemoveMembers(data: {
   try {
     const results = await Promise.allSettled(
       data.userIds.map((userId) =>
-        removeMember({
+        removeMemberAction({
           userId,
           organizationId: data.organizationId,
         }),
@@ -546,7 +550,7 @@ export async function bulkRemoveMembers(data: {
       results: mappedResults,
     };
   } catch (error) {
-    console.error('Bulk remove members error:', error);
+    logger.error('Bulk remove members error:', error);
     return {
       error: 'Failed to bulk remove members',
       success: false,
@@ -557,7 +561,7 @@ export async function bulkRemoveMembers(data: {
 /**
  * Bulk update member roles in an organization
  */
-export async function bulkUpdateMemberRoles(data: {
+export async function bulkUpdateMemberRolesAction(data: {
   updates: Array<{
     userId: string;
     role: OrganizationRole;
@@ -575,7 +579,7 @@ export async function bulkUpdateMemberRoles(data: {
   try {
     const results = await Promise.allSettled(
       data.updates.map((update) =>
-        updateMemberRole({
+        updateMemberRoleAction({
           userId: update.userId,
           organizationId: data.organizationId,
           role: update.role,
@@ -601,7 +605,7 @@ export async function bulkUpdateMemberRoles(data: {
       results: mappedResults,
     };
   } catch (error) {
-    console.error('Bulk update member roles error:', error);
+    logger.error('Bulk update member roles error:', error);
     return {
       error: 'Failed to bulk update member roles',
       success: false,
@@ -612,7 +616,7 @@ export async function bulkUpdateMemberRoles(data: {
 /**
  * Get organization statistics
  */
-export async function getOrganizationStatistics(organizationId: string): Promise<{
+export async function getOrganizationStatisticsAction(organizationId: string): Promise<{
   success: boolean;
   data?: {
     totalMembers: number;
@@ -625,7 +629,7 @@ export async function getOrganizationStatistics(organizationId: string): Promise
 }> {
   try {
     // Get members
-    const membersResult = await getOrganizationMembers(organizationId);
+    const membersResult = await getOrganizationMembersAction(organizationId);
     if (!membersResult.success) {
       return {
         success: false,
@@ -634,7 +638,7 @@ export async function getOrganizationStatistics(organizationId: string): Promise
     }
 
     // Get invitations
-    const invitationsResult = await listInvitations(organizationId);
+    const invitationsResult = await listInvitationsAction(organizationId);
     if (!invitationsResult.success) {
       return {
         success: false,
@@ -670,7 +674,7 @@ export async function getOrganizationStatistics(organizationId: string): Promise
       },
     };
   } catch (error) {
-    console.error('Get organization statistics error:', error);
+    logger.error('Get organization statistics error:', error);
     return {
       error: 'Failed to get organization statistics',
       success: false,
@@ -678,7 +682,6 @@ export async function getOrganizationStatistics(organizationId: string): Promise
   }
 }
 
-// Aliases for backward compatibility
-export { inviteUser as inviteMember } from './management';
-export { cancelInvitation as revokeInvitation } from './management';
-export { getOrganizationStats } from './helpers';
+// Backward compatibility aliases
+export const inviteMember = inviteUserAction;
+export const revokeInvitation = cancelInvitationAction;

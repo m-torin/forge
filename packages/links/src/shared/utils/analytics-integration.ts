@@ -38,9 +38,9 @@ export class LinkAnalyticsIntegration implements AnalyticsIntegration {
       // Attempt to load analytics package without breaking if it's not available
       const analyticsModule = await import('@repo/analytics/server/next').catch(() => null);
 
-      if (analyticsModule?.createNextJSServerAnalytics) {
+      if (analyticsModule?.createServerAnalytics) {
         // Create a minimal analytics wrapper
-        const observability = await analyticsModule.createNextJSServerAnalytics({
+        const observability = await analyticsModule.createServerAnalytics({
           providers: {
             console: {
               /* enabled: this.config.debugMode */
@@ -56,12 +56,19 @@ export class LinkAnalyticsIntegration implements AnalyticsIntegration {
         };
 
         if (this.config.debugMode) {
-          console.debug('[LinkAnalytics] Analytics provider initialized');
+          const { linksLogger } = await import('./logger');
+          void linksLogger.debug('Analytics provider initialized', {
+            operation: 'initialize_analytics_provider',
+          });
         }
       }
     } catch (error: any) {
       if (this.config.debugMode) {
-        console.debug('[LinkAnalytics] Analytics provider not available: ', error);
+        const { linksLogger } = await import('./logger');
+        void linksLogger.debug('Analytics provider not available', {
+          operation: 'initialize_analytics_provider',
+          error,
+        });
       }
       // Graceful degradation - links package continues to work
     }

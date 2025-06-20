@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '../test-utils';
-import Avatar from '../../../mantine-ciseco/components/shared/Avatar/Avatar';
+import Avatar from '../../../src/mantine-ciseco/components/shared/Avatar/Avatar';
 
 // Mock Next.js Image component
 vi.mock('next/image', (_: any) => ({
@@ -10,7 +10,7 @@ vi.mock('next/image', (_: any) => ({
 }));
 
 // Mock the avatar image import
-vi.mock('../../../mantine-ciseco/images/users/avatar4.jpg', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/images/users/avatar4.jpg', (_: any) => ({
   default: { src: '/default-avatar.jpg', width: 100, height: 100 },
 }));
 

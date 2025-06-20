@@ -160,6 +160,10 @@ export function createMockUsersWithRoles(): Record<OrganizationRole, User> {
       name: 'Owner User',
       email: 'owner@example.com',
     }),
+    guest: createMockUser({
+      name: 'Guest User',
+      email: 'guest@example.com',
+    }),
   };
 }
 

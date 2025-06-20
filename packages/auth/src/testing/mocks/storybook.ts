@@ -23,6 +23,9 @@ export function createMockAuthContext(
       isLoading: false,
       session: null,
       user: null,
+      signIn: async () => ({}),
+      signOut: async () => {},
+      requireAuth: () => null,
     };
   }
 
@@ -34,6 +37,9 @@ export function createMockAuthContext(
     isLoading: false,
     session: session.session,
     user: session.user,
+    signIn: async () => ({}),
+    signOut: async () => {},
+    requireAuth: () => null,
   };
 }
 
@@ -80,6 +86,9 @@ export const authDecorators = {
       isLoading: true,
       session: null,
       user: null,
+      signIn: async () => ({}),
+      signOut: async () => {},
+      requireAuth: () => null,
     };
 
     // Mock useAuth hook
@@ -214,6 +223,9 @@ export const storybookMockImplementations = {
           isLoading: true,
           session: null,
           user: null,
+          signIn: async () => ({}),
+          signOut: async () => {},
+          requireAuth: () => null,
         };
       case 'unauthenticated':
         return {
@@ -221,6 +233,9 @@ export const storybookMockImplementations = {
           isLoading: false,
           session: null,
           user: null,
+          signIn: async () => ({}),
+          signOut: async () => {},
+          requireAuth: () => null,
         };
       default:
         return createMockAuthContext(true, 'member');

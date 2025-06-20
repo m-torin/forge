@@ -19,12 +19,12 @@
  * ```
  */
 
-import { ConsoleProvider } from '../shared/providers/console-provider';
+import { ConsoleProvider } from '../providers/console/server';
 import { createAnalyticsManager } from '../shared/utils/manager';
 
-import { PostHogServerProvider } from './providers/posthog-server';
-import { SegmentServerProvider } from './providers/segment-server';
-import { VercelServerProvider } from './providers/vercel-server';
+import { PostHogServerProvider } from '../providers/posthog/server';
+import { SegmentServerProvider } from '../providers/segment/server';
+import { VercelServerProvider } from '../providers/vercel/server';
 
 import type { AnalyticsConfig, AnalyticsManager, ProviderRegistry } from '../shared/types/types';
 

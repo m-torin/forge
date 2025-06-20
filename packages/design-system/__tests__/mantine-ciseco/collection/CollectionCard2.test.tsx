@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '../test-utils';
-import CollectionCard2 from '../../../mantine-ciseco/components/CollectionCard2';
+import CollectionCard2 from '../../../src/mantine-ciseco/components/CollectionCard2';
 import { mockCollection } from '../test-utils';
 
 // Mock next/image
@@ -11,7 +11,7 @@ vi.mock('next/image', (_: any) => ({
 }));
 
 // Mock useLocalizeHref hook
-vi.mock('../../../mantine-ciseco/hooks/useLocale', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/hooks/useLocale', (_: any) => ({
   useLocalizeHref: () => (href: string) => `/en${href}`,
 }));
 

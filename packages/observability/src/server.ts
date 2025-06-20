@@ -56,15 +56,10 @@ const SERVER_PROVIDERS: ProviderRegistry = {
     const { GrafanaServerProvider } = await import('./server/providers/grafana-server');
     return new GrafanaServerProvider();
   },
-  // TODO: Re-enable Better Stack providers once bundling issues are resolved
-  // 'better-stack': async () => {
-  //   const { BetterStackProvider } = await import('./shared/providers/better-stack-provider');
-  //   return new BetterStackProvider();
-  // },
-  // logtail: async () => {
-  //   const { BetterStackProvider } = await import('./shared/providers/better-stack-provider');
-  //   return new BetterStackProvider();
-  // },
+  logtail: async () => {
+    const { LogtailServerProvider } = await import('./server/providers/logtail-server');
+    return new LogtailServerProvider();
+  },
 };
 
 // ============================================================================

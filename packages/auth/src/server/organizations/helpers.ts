@@ -3,9 +3,10 @@
  */
 
 import 'server-only';
-import { headers } from 'next/headers';
 
-import { auth } from '../auth';
+import { syncLogger as logger } from '../../shared/utils/logger';
+import { auth } from '../../shared/auth.config';
+import { getAuthHeaders } from '../get-headers';
 
 import type { OrganizationRole, Session } from '../../shared/types';
 import type { Member, Organization } from '@repo/database/prisma';
@@ -16,7 +17,7 @@ import type { Member, Organization } from '@repo/database/prisma';
 export async function getCurrentOrganization(): Promise<Organization | null> {
   try {
     const session = await auth.api.getSession({
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     const sessionWithOrg = session?.session as Session;
@@ -26,12 +27,12 @@ export async function getCurrentOrganization(): Promise<Organization | null> {
 
     // Use better-auth native getFullOrganization for the active organization
     const result = await auth.api.getFullOrganization({
-      headers: await headers(),
+      headers: await getAuthHeaders(),
       query: { organizationId: sessionWithOrg.activeOrganizationId },
     });
     return result?.organization || null;
   } catch (error) {
-    console.error('Get current organization error:', error);
+    logger.error('Get current organization error:', error);
     return null;
   }
 }
@@ -43,12 +44,12 @@ export async function getOrganizationById(organizationId: string): Promise<Organ
   try {
     // Use better-auth native getFullOrganization method
     const result = await auth.api.getFullOrganization({
-      headers: await headers(),
+      headers: await getAuthHeaders(),
       query: { organizationId },
     });
     return result?.organization || null;
   } catch (error) {
-    console.error('Get organization by ID error:', error);
+    logger.error('Get organization by ID error:', error);
     return null;
   }
 }
@@ -60,12 +61,12 @@ export async function getOrganizationBySlug(slug: string): Promise<Organization 
   try {
     // Use better-auth native getFullOrganization with slug
     const result = await auth.api.getFullOrganization({
-      headers: await headers(),
+      headers: await getAuthHeaders(),
       query: { organizationSlug: slug },
     });
     return result?.organization || null;
   } catch (error) {
-    console.error('Get organization by slug error:', error);
+    logger.error('Get organization by slug error:', error);
     return null;
   }
 }
@@ -79,7 +80,7 @@ export async function getUserOrganizations(
 ): Promise<Organization[]> {
   try {
     const session = await auth.api.getSession({
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     if (!session?.user) {
@@ -95,11 +96,11 @@ export async function getUserOrganizations(
         limit: options?.limit || 100,
         offset: options?.offset || 0,
       },
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
     return result?.organizations || [];
   } catch (error) {
-    console.error('Get user organizations error:', error);
+    logger.error('Get user organizations error:', error);
     return [];
   }
 }
@@ -114,7 +115,7 @@ export async function getOrganizationWithMembers(organizationId: string): Promis
   try {
     // Use better-auth native getFullOrganization which includes members
     const result = await auth.api.getFullOrganization({
-      headers: await headers(),
+      headers: await getAuthHeaders(),
       query: { organizationId },
     });
 
@@ -128,7 +129,7 @@ export async function getOrganizationWithMembers(organizationId: string): Promis
       members: result.members || [],
     };
   } catch (error) {
-    console.error('Get organization with members error:', error);
+    logger.error('Get organization with members error:', error);
     return null;
   }
 }
@@ -143,12 +144,12 @@ export async function getUserRoleInOrganization(
   try {
     // Use better-auth native getActiveMember to get role information
     const activeMember = await auth.api.getActiveMember({
-      headers: await headers(),
+      headers: await getAuthHeaders(),
       query: { organizationId, userId },
     });
     return (activeMember?.role as OrganizationRole) || null;
   } catch (error) {
-    console.error('Get user role in organization error:', error);
+    logger.error('Get user role in organization error:', error);
     return null;
   }
 }
@@ -159,7 +160,7 @@ export async function getUserRoleInOrganization(
 export async function getCurrentUserRole(): Promise<OrganizationRole | null> {
   try {
     const session = await auth.api.getSession({
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     const sessionWithOrg = session?.session as Session;
@@ -169,7 +170,7 @@ export async function getCurrentUserRole(): Promise<OrganizationRole | null> {
 
     return getUserRoleInOrganization(session!.user.id, sessionWithOrg.activeOrganizationId);
   } catch (error) {
-    console.error('Get current user role error:', error);
+    logger.error('Get current user role error:', error);
     return null;
   }
 }
@@ -183,7 +184,7 @@ export async function isOrganizationOwner(
 ): Promise<boolean> {
   try {
     const session = await auth.api.getSession({
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     if (!session) {
@@ -201,7 +202,7 @@ export async function isOrganizationOwner(
     const role = await getUserRoleInOrganization(targetUserId, targetOrgId);
     return role === 'owner';
   } catch (error) {
-    console.error('Is organization owner error:', error);
+    logger.error('Is organization owner error:', error);
     return false;
   }
 }
@@ -215,7 +216,7 @@ export async function isOrganizationAdmin(
 ): Promise<boolean> {
   try {
     const session = await auth.api.getSession({
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     if (!session) {
@@ -233,7 +234,7 @@ export async function isOrganizationAdmin(
     const role = await getUserRoleInOrganization(targetUserId, targetOrgId);
     return role === 'owner' || role === 'admin';
   } catch (error) {
-    console.error('Is organization admin error:', error);
+    logger.error('Is organization admin error:', error);
     return false;
   }
 }
@@ -250,7 +251,7 @@ export async function getOrganizationStats(organizationId: string): Promise<{
   try {
     // Use better-auth native getFullOrganization to get members and basic data
     const orgResult = await auth.api.getFullOrganization({
-      headers: await headers(),
+      headers: await getAuthHeaders(),
       query: { organizationId },
     });
 
@@ -263,14 +264,14 @@ export async function getOrganizationStats(organizationId: string): Promise<{
 
     // Get teams using better-auth listTeams
     const teamsResult = await auth.api.listTeams({
-      headers: await headers(),
+      headers: await getAuthHeaders(),
       query: { organizationId },
     });
     const teamCount = teamsResult?.teams?.length || 0;
 
     // Get API keys using better-auth listApiKeys and filter by organization
     const apiKeysResult = await auth.api.listApiKeys({
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
     const apiKeyCount = (apiKeysResult || []).filter(
       (key: any) => key.organizationId === organizationId,
@@ -278,7 +279,7 @@ export async function getOrganizationStats(organizationId: string): Promise<{
 
     // Get invitations using better-auth listInvitations
     const invitationsResult = await auth.api.listInvitations({
-      headers: await headers(),
+      headers: await getAuthHeaders(),
       query: { organizationId },
     });
     const invitations = Array.isArray(invitationsResult) ? invitationsResult : [invitationsResult];
@@ -291,7 +292,7 @@ export async function getOrganizationStats(organizationId: string): Promise<{
       teamCount,
     };
   } catch (error) {
-    console.error('Get organization stats error:', error);
+    logger.error('Get organization stats error:', error);
     return null;
   }
 }
@@ -304,11 +305,11 @@ export async function switchOrganization(organizationId: string): Promise<boolea
     // Use better-auth native setActiveOrganization method
     await auth.api.setActiveOrganization({
       body: { organizationId },
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
     return true;
   } catch (error) {
-    console.error('Switch organization error:', error);
+    logger.error('Switch organization error:', error);
     return false;
   }
 }
@@ -334,11 +335,11 @@ export async function createDefaultOrganization(
           isDefault: true,
         },
       },
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
     return result?.organization || null;
   } catch (error) {
-    console.error('Create default organization error:', error);
+    logger.error('Create default organization error:', error);
     return null;
   }
 }
@@ -349,7 +350,7 @@ export async function createDefaultOrganization(
 export async function ensureActiveOrganization(options?: { headers?: any }): Promise<boolean> {
   try {
     const session = await auth.api.getSession({
-      headers: options?.headers || (await headers()),
+      headers: options?.headers || (await getAuthHeaders()),
     });
 
     const sessionWithOrg = session?.session as Session;
@@ -359,7 +360,7 @@ export async function ensureActiveOrganization(options?: { headers?: any }): Pro
 
     return true;
   } catch (error) {
-    console.error('Ensure active organization error:', error);
+    logger.error('Ensure active organization error:', error);
     return false;
   }
 }

@@ -199,7 +199,7 @@ export function validateCurrency(currency: string) {
  */
 export function validateNumericValue(value: number, allowZero = true) {
   expect(typeof value).toBe('number');
-  expect(isNaN(value)).toBe(false);
+  expect(isNaN(value)).toBeFalsy();
   if (!allowZero) {
     expect(value).toBeGreaterThan(0);
   }

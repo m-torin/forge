@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Group, SegmentedControl, Stack, Title } from '@mantine/core';
+import { Group, SegmentedControl, Stack, Title } from '@mantine/core';
 import { useState } from 'react';
 
 import CategoriesPage from './page';

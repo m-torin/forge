@@ -350,7 +350,7 @@ export async function clientExample() {
 /**
  * Next.js API route example
  */
-export async function apiRouteExample(req: any, res: any) {
+export async function apiRouteExample(_req: any, res: any) {
   const { createServerObservability } = await import('@repo/observability/server/next');
 
   const observability = await createServerObservability(productionConfig);
@@ -358,32 +358,32 @@ export async function apiRouteExample(req: any, res: any) {
 
   try {
     // Your API logic here
-    const result = await processApiNextRequest(req);
+    const result = await processApiNextRequest(_req);
 
     const grafanaProvider = (observability as any).providers?.grafanaMonitoring;
     if (grafanaProvider) {
       // Track successful request
       await grafanaProvider.trackRequestMetrics({
-        method: req.method,
-        path: req.url,
+        method: _req.method,
+        path: _req.url,
         statusCode: 200,
         duration: Date.now() - startTime,
-        userAgent: req.headers['user-agent'],
+        userAgent: _req.headers['user-agent'],
       });
     }
 
     res.status(200).json(result);
   } catch (error: any) {
     await observability.captureException(error as Error, {
-      tags: { api_route: req.url },
+      tags: { api_route: _req.url },
     });
 
     const grafanaProvider = (observability as any).providers?.grafanaMonitoring;
     if (grafanaProvider) {
       // Track failed request
       await grafanaProvider.trackRequestMetrics({
-        method: req.method,
-        path: req.url,
+        method: _req.method,
+        path: _req.url,
         statusCode: 500,
         duration: Date.now() - startTime,
       });
@@ -501,7 +501,7 @@ LOG_LEVEL=info
 `;
 
 // Helper function stub
-async function processApiNextRequest(req: any): Promise<any> {
+async function processApiNextRequest(_req: any): Promise<any> {
   // Placeholder for actual API logic
   return { success: true };
 }

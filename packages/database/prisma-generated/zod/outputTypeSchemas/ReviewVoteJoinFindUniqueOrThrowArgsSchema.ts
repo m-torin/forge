@@ -1,0 +1,27 @@
+import { z } from 'zod';
+import type { Prisma } from '../../client';
+import { ReviewVoteJoinIncludeSchema } from '../inputTypeSchemas/ReviewVoteJoinIncludeSchema'
+import { ReviewVoteJoinWhereUniqueInputSchema } from '../inputTypeSchemas/ReviewVoteJoinWhereUniqueInputSchema'
+import { UserArgsSchema } from "../outputTypeSchemas/UserArgsSchema"
+import { ReviewArgsSchema } from "../outputTypeSchemas/ReviewArgsSchema"
+// Select schema needs to be in file to prevent circular imports
+//------------------------------------------------------
+
+export const ReviewVoteJoinSelectSchema: z.ZodType<Prisma.ReviewVoteJoinSelect> = z.object({
+  id: z.boolean().optional(),
+  createdAt: z.boolean().optional(),
+  updatedAt: z.boolean().optional(),
+  voteType: z.boolean().optional(),
+  userId: z.boolean().optional(),
+  reviewId: z.boolean().optional(),
+  user: z.union([z.boolean(),z.lazy(() => UserArgsSchema)]).optional(),
+  review: z.union([z.boolean(),z.lazy(() => ReviewArgsSchema)]).optional(),
+}).strict()
+
+export const ReviewVoteJoinFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.ReviewVoteJoinFindUniqueOrThrowArgs> = z.object({
+  select: ReviewVoteJoinSelectSchema.optional(),
+  include: z.lazy(() => ReviewVoteJoinIncludeSchema).optional(),
+  where: ReviewVoteJoinWhereUniqueInputSchema,
+}).strict() ;
+
+export default ReviewVoteJoinFindUniqueOrThrowArgsSchema;

@@ -108,7 +108,7 @@ export function useAIStream({
                   setText(fullText);
 
                   onChunk?.(chunk);
-                } catch (error: any) {
+                } catch (_error: any) {
                   // eslint-disable-next-line no-console
                   console.error('Failed to parse chunk: ', data);
                 }

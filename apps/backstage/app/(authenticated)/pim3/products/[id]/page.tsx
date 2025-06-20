@@ -1,7 +1,7 @@
 import { Alert, Stack } from '@mantine/core';
 import { IconAlertCircle } from '@tabler/icons-react';
 
-import { getProductById } from '../../actions';
+import { getProductById } from '@/actions/pim3/actions';
 
 import { ProductDetailClient } from './client';
 

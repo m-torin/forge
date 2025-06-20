@@ -11,11 +11,12 @@
     "lint": "eslint . --fix"
   },
   "dependencies": {
-    "dub": "^0.63.2",
-    "@t3-oss/env-nextjs": "catalog:",
-    "next": "catalog:",
-    "react": "catalog:",
-    "zod": "catalog:"
+    "@repo/observability": "workspace:*",
+    "@t3-oss/env-nextjs": "^0.13.8",
+    "dub": "^0.63.4",
+    "next": "^15.3.4",
+    "react": "^19.1.0",
+    "zod": "^3.25.67"
   },
   "peerDependencies": {
     "@repo/analytics": "workspace:*"
@@ -29,16 +30,16 @@
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/testing": "workspace:*",
-    "@testing-library/jest-dom": "catalog:",
-    "@testing-library/react": "catalog:",
-    "@types/node": "catalog:",
-    "@types/react": "catalog:",
-    "@types/react-dom": "catalog:",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@types/node": "^24.0.3",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.5.2",
-    "eslint": "catalog:",
-    "jsdom": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "eslint": "^9.29.0",
+    "jsdom": "^26.1.0",
+    "typescript": "5.8.3",
+    "vitest": "^3.2.4"
   },
   "exports": {
     "./client": "./src/client.ts",

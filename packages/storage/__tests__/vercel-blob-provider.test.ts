@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock Vercel Blob SDK
 const mockPut = vi.fn();
@@ -17,21 +17,21 @@ vi.mock('@vercel/blob', (_: any) => ({
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-describe('VercelBlobProvider', (_: any) => {
+describe('vercelBlobProvider', (_: any) => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.resetModules();
   });
 
   describe('constructor', (_: any) => {
-    it('should create provider with valid token', async () => {
+    test('should create provider with valid token', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       const provider = new VercelBlobProvider('test-token');
       expect(provider).toBeDefined();
     });
 
-    it('should throw error when token is missing', async () => {
+    test('should throw error when token is missing', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       expect(() => new VercelBlobProvider('')).toThrow('Vercel Blob token is required');
@@ -56,7 +56,7 @@ describe('VercelBlobProvider', (_: any) => {
       });
     });
 
-    it('should upload Buffer data successfully', async () => {
+    test('should upload Buffer data successfully', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       const provider = new VercelBlobProvider('test-token');
@@ -89,7 +89,7 @@ describe('VercelBlobProvider', (_: any) => {
       });
     });
 
-    it('should upload Blob data successfully', async () => {
+    test('should upload Blob data successfully', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       const provider = new VercelBlobProvider('test-token');
@@ -109,7 +109,7 @@ describe('VercelBlobProvider', (_: any) => {
       expect(result.url).toBe('https://blob.vercel.com/test-key');
     });
 
-    it('should upload File data successfully', async () => {
+    test('should upload File data successfully', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       const provider = new VercelBlobProvider('test-token');
@@ -121,7 +121,7 @@ describe('VercelBlobProvider', (_: any) => {
       expect(result).toBeDefined();
     });
 
-    it('should upload ArrayBuffer data successfully', async () => {
+    test('should upload ArrayBuffer data successfully', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       const provider = new VercelBlobProvider('test-token');
@@ -133,7 +133,7 @@ describe('VercelBlobProvider', (_: any) => {
       expect(result).toBeDefined();
     });
 
-    it('should upload ReadableStream data successfully', async () => {
+    test('should upload ReadableStream data successfully', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       const provider = new VercelBlobProvider('test-token');
@@ -150,7 +150,7 @@ describe('VercelBlobProvider', (_: any) => {
       expect(result).toBeDefined();
     });
 
-    it('should handle upload without options', async () => {
+    test('should handle upload without options', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       const provider = new VercelBlobProvider('test-token');
@@ -167,7 +167,7 @@ describe('VercelBlobProvider', (_: any) => {
       });
     });
 
-    it('should handle put API errors', async () => {
+    test('should handle put API errors', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       mockPut.mockRejectedValue(new Error('Vercel API error'));
@@ -178,7 +178,7 @@ describe('VercelBlobProvider', (_: any) => {
       await expect(provider.upload('test-key', buffer)).rejects.toThrow('Vercel API error');
     });
 
-    it('should handle head API errors after successful put', async () => {
+    test('should handle head API errors after successful put', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       mockHead.mockRejectedValue(new Error('Head request failed'));
@@ -191,7 +191,7 @@ describe('VercelBlobProvider', (_: any) => {
   });
 
   describe('download', (_: any) => {
-    it('should download blob successfully', async () => {
+    test('should download blob successfully', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       const mockBlob = new Blob(['test data'], { type: 'text/plain' });
@@ -212,7 +212,7 @@ describe('VercelBlobProvider', (_: any) => {
       expect(result).toBe(mockBlob);
     });
 
-    it('should handle download errors', async () => {
+    test('should handle download errors', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       mockFetch.mockResolvedValue({
@@ -227,7 +227,7 @@ describe('VercelBlobProvider', (_: any) => {
       );
     });
 
-    it('should handle fetch network errors', async () => {
+    test('should handle fetch network errors', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       mockFetch.mockRejectedValue(new Error('Network error'));
@@ -239,7 +239,7 @@ describe('VercelBlobProvider', (_: any) => {
   });
 
   describe('delete', (_: any) => {
-    it('should delete blob successfully', async () => {
+    test('should delete blob successfully', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       mockDel.mockResolvedValue(undefined);
@@ -252,7 +252,7 @@ describe('VercelBlobProvider', (_: any) => {
       });
     });
 
-    it('should handle delete errors', async () => {
+    test('should handle delete errors', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       mockDel.mockRejectedValue(new Error('Delete failed'));
@@ -264,7 +264,7 @@ describe('VercelBlobProvider', (_: any) => {
   });
 
   describe('exists', (_: any) => {
-    it('should return true when blob exists', async () => {
+    test('should return true when blob exists', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       mockHead.mockResolvedValue({
@@ -280,10 +280,10 @@ describe('VercelBlobProvider', (_: any) => {
         token: 'test-token',
       });
 
-      expect(result).toBe(true);
+      expect(result).toBeTruthy();
     });
 
-    it('should return false when blob does not exist', async () => {
+    test('should return false when blob does not exist', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       mockHead.mockRejectedValue(new Error('Not found'));
@@ -291,10 +291,10 @@ describe('VercelBlobProvider', (_: any) => {
       const provider = new VercelBlobProvider('test-token');
       const result = await provider.exists('test-key');
 
-      expect(result).toBe(false);
+      expect(result).toBeFalsy();
     });
 
-    it('should return false for any head request error', async () => {
+    test('should return false for any head request error', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       mockHead.mockRejectedValue(new Error('Network timeout'));
@@ -302,7 +302,7 @@ describe('VercelBlobProvider', (_: any) => {
       const provider = new VercelBlobProvider('test-token');
       const result = await provider.exists('test-key');
 
-      expect(result).toBe(false);
+      expect(result).toBeFalsy();
     });
   });
 
@@ -344,7 +344,7 @@ describe('VercelBlobProvider', (_: any) => {
       });
     });
 
-    it('should list blobs successfully', async () => {
+    test('should list blobs successfully', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       const provider = new VercelBlobProvider('test-token');
@@ -376,7 +376,7 @@ describe('VercelBlobProvider', (_: any) => {
       });
     });
 
-    it('should list blobs with options', async () => {
+    test('should list blobs with options', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       const provider = new VercelBlobProvider('test-token');
@@ -396,7 +396,7 @@ describe('VercelBlobProvider', (_: any) => {
       expect(result).toHaveLength(2);
     });
 
-    it('should handle empty list results', async () => {
+    test('should handle empty list results', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       mockList.mockResolvedValue({ blobs: [] });
@@ -407,7 +407,7 @@ describe('VercelBlobProvider', (_: any) => {
       expect(result).toEqual([]);
     });
 
-    it('should handle list API errors', async () => {
+    test('should handle list API errors', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       mockList.mockRejectedValue(new Error('List failed'));
@@ -417,7 +417,7 @@ describe('VercelBlobProvider', (_: any) => {
       await expect(provider.list()).rejects.toThrow('List failed');
     });
 
-    it('should handle head errors for individual blobs during list', async () => {
+    test('should handle head errors for individual blobs during list', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       mockHead.mockRejectedValue(new Error('Head failed'));
@@ -438,7 +438,7 @@ describe('VercelBlobProvider', (_: any) => {
       });
     });
 
-    it('should get URL for blob', async () => {
+    test('should get URL for blob', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       const provider = new VercelBlobProvider('test-token');
@@ -451,7 +451,7 @@ describe('VercelBlobProvider', (_: any) => {
       expect(result).toBe('https://blob.vercel.com/test-key');
     });
 
-    it('should get URL with expiration options (ignored for Vercel)', async () => {
+    test('should get URL with expiration options (ignored for Vercel)', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       const provider = new VercelBlobProvider('test-token');
@@ -460,7 +460,7 @@ describe('VercelBlobProvider', (_: any) => {
       expect(result).toBe('https://blob.vercel.com/test-key');
     });
 
-    it('should handle getUrl errors', async () => {
+    test('should handle getUrl errors', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       mockHead.mockRejectedValue(new Error('Blob not found'));
@@ -482,7 +482,7 @@ describe('VercelBlobProvider', (_: any) => {
       });
     });
 
-    it('should get metadata for blob', async () => {
+    test('should get metadata for blob', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       const provider = new VercelBlobProvider('test-token');
@@ -502,7 +502,7 @@ describe('VercelBlobProvider', (_: any) => {
       });
     });
 
-    it('should handle missing contentType in metadata', async () => {
+    test('should handle missing contentType in metadata', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       mockHead.mockResolvedValue({
@@ -518,7 +518,7 @@ describe('VercelBlobProvider', (_: any) => {
       expect(result.contentType).toBeUndefined();
     });
 
-    it('should handle getMetadata errors', async () => {
+    test('should handle getMetadata errors', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       mockHead.mockRejectedValue(new Error('Metadata not found'));
@@ -530,7 +530,7 @@ describe('VercelBlobProvider', (_: any) => {
   });
 
   describe('error handling and edge cases', (_: any) => {
-    it('should handle API responses with missing fields', async () => {
+    test('should handle API responses with missing fields', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       mockPut.mockResolvedValue({
@@ -550,7 +550,7 @@ describe('VercelBlobProvider', (_: any) => {
       expect(result.etag).toBeUndefined();
     });
 
-    it('should handle concurrent operations', async () => {
+    test('should handle concurrent operations', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       mockHead.mockResolvedValue({
@@ -569,7 +569,7 @@ describe('VercelBlobProvider', (_: any) => {
       expect(mockHead).toHaveBeenCalledTimes(5);
     });
 
-    it('should handle token in different request types', async () => {
+    test('should handle token in different request types', async () => {
       const { VercelBlobProvider } = await import('../providers/vercel-blob');
 
       const provider = new VercelBlobProvider('secret-token-123');

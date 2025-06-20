@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '../test-utils';
-import MySwitch from '../../../mantine-ciseco/components/MySwitch';
+import MySwitch from '../../../src/mantine-ciseco/components/MySwitch';
 
 describe('MySwitch', (_: any) => {
   const mockOnChange = vi.fn();

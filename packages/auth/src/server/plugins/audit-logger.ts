@@ -3,6 +3,7 @@
  * Logs all authentication and security events
  */
 
+import { syncLogger as logger } from '../../shared/utils/logger';
 import { prisma } from '@repo/database/prisma';
 
 export interface AuditLoggerOptions {
@@ -125,7 +126,7 @@ export function auditLoggerPlugin(options: AuditLoggerOptions = {}) {
         },
       });
     } catch (error) {
-      console.error('Failed to write audit log:', error);
+      logger.error('Failed to write audit log:', error);
     }
   };
 
@@ -283,8 +284,8 @@ export async function cleanupOldAuditLogs(retentionDays: number = 90) {
       },
     });
 
-    console.log(`Cleaned up ${result.count} audit log entries older than ${retentionDays} days`);
+    logger.info(`Cleaned up ${result.count} audit log entries older than ${retentionDays} days`);
   } catch (error) {
-    console.error('Failed to cleanup audit logs:', error);
+    logger.error('Failed to cleanup audit logs:', error);
   }
 }

@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, vi } from 'vitest';
 
 import {
   FileTrainingStorage,
@@ -6,7 +6,7 @@ import {
   type TrainingData,
 } from '../../../../shared/features/classification/training-storage';
 
-describe('Training Storage', (_: any) => {
+describe('training Storage', (_: any) => {
   const mockTrainingData: TrainingData[] = [
     {
       feedbacks: [
@@ -38,26 +38,26 @@ describe('Training Storage', (_: any) => {
     },
   ];
 
-  describe('InMemoryTrainingStorage', (_: any) => {
+  describe('inMemoryTrainingStorage', (_: any) => {
     let storage: InMemoryTrainingStorage;
 
     beforeEach(() => {
       storage = new InMemoryTrainingStorage();
     });
 
-    it('should save and load training data', async () => {
+    test('should save and load training data', async () => {
       await storage.save(mockTrainingData);
       const loaded = await storage.load();
 
       expect(loaded).toEqual(mockTrainingData);
     });
 
-    it('should return empty array when no data saved', async () => {
+    test('should return empty array when no data saved', async () => {
       const loaded = await storage.load();
       expect(loaded).toEqual([]);
     });
 
-    it('should clear data', async () => {
+    test('should clear data', async () => {
       await storage.save(mockTrainingData);
       await storage.clear();
 
@@ -65,7 +65,7 @@ describe('Training Storage', (_: any) => {
       expect(loaded).toEqual([]);
     });
 
-    it('should overwrite existing data on save', async () => {
+    test('should overwrite existing data on save', async () => {
       const initialData: TrainingData[] = [
         {
           feedbacks: [
@@ -89,7 +89,7 @@ describe('Training Storage', (_: any) => {
     });
   });
 
-  describe('FileTrainingStorage', (_: any) => {
+  describe('fileTrainingStorage', (_: any) => {
     let storage: FileTrainingStorage;
     const testFilePath = '/tmp/test-training-data.json';
 
@@ -98,7 +98,7 @@ describe('Training Storage', (_: any) => {
       vi.clearAllMocks();
     });
 
-    describe('Node.js environment', (_: any) => {
+    describe('node.js environment', (_: any) => {
       beforeEach(() => {
         // Ensure we're in Node.js-like environment
         Object.defineProperty(global, 'window', {
@@ -107,7 +107,7 @@ describe('Training Storage', (_: any) => {
         });
       });
 
-      it('should save training data to file', async () => {
+      test('should save training data to file', async () => {
         const mockFs = {
           writeFile: vi.fn().mockResolvedValue(undefined),
         };
@@ -123,14 +123,14 @@ describe('Training Storage', (_: any) => {
         );
       });
 
-      it('should load training data from file', async () => {
+      test('should load training data from file', async () => {
         // Since mocking fs/promises is complex, let's test the functionality differently
         // Test that load returns an array
         const loaded = await storage.load();
-        expect(Array.isArray(loaded)).toBe(true);
+        expect(Array.isArray(loaded)).toBeTruthy();
       });
 
-      it('should return empty array when file does not exist', async () => {
+      test('should return empty array when file does not exist', async () => {
         const mockFs = {
           readFile: vi.fn().mockRejectedValue(new Error('File not found')),
         };
@@ -147,7 +147,7 @@ describe('Training Storage', (_: any) => {
         consoleSpy.mockRestore();
       });
 
-      it('should return empty array when file contains invalid JSON', async () => {
+      test('should return empty array when file contains invalid JSON', async () => {
         const mockFs = {
           readFile: vi.fn().mockResolvedValue('invalid json'),
         };
@@ -164,7 +164,7 @@ describe('Training Storage', (_: any) => {
         consoleSpy.mockRestore();
       });
 
-      it('should clear training data file', async () => {
+      test('should clear training data file', async () => {
         const mockFs = {
           unlink: vi.fn().mockResolvedValue(undefined),
         };
@@ -176,7 +176,7 @@ describe('Training Storage', (_: any) => {
         expect(mockFs.unlink).toHaveBeenCalledWith(testFilePath);
       });
 
-      it('should handle file deletion errors gracefully', async () => {
+      test('should handle file deletion errors gracefully', async () => {
         const mockFs = {
           unlink: vi.fn().mockRejectedValue(new Error('File not found')),
         };
@@ -187,7 +187,7 @@ describe('Training Storage', (_: any) => {
         await expect(storage.clear()).resolves.toBeUndefined();
       });
 
-      it('should handle file save errors gracefully', async () => {
+      test('should handle file save errors gracefully', async () => {
         const mockFs = {
           writeFile: vi.fn().mockRejectedValue(new Error('Permission denied')),
         };
@@ -204,7 +204,7 @@ describe('Training Storage', (_: any) => {
       });
     });
 
-    describe('Browser environment', (_: any) => {
+    describe('browser environment', (_: any) => {
       let mockLocalStorage: {
         getItem: ReturnType<typeof vi.fn>;
         removeItem: ReturnType<typeof vi.fn>;
@@ -237,7 +237,7 @@ describe('Training Storage', (_: any) => {
         });
       });
 
-      it('should save training data to localStorage', async () => {
+      test('should save training data to localStorage', async () => {
         await storage.save(mockTrainingData);
 
         expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
@@ -246,17 +246,17 @@ describe('Training Storage', (_: any) => {
         );
       });
 
-      it('should load training data from localStorage', async () => {
+      test('should load training data from localStorage', async () => {
         mockLocalStorage.getItem.mockReturnValue(JSON.stringify(mockTrainingData));
 
         const loaded = await storage.load();
 
         expect(mockLocalStorage.getItem).toHaveBeenCalledWith('ai_training_data');
-        expect(Array.isArray(loaded)).toBe(true);
-        expect(loaded.length).toBe(mockTrainingData.length);
+        expect(Array.isArray(loaded)).toBeTruthy();
+        expect(loaded).toHaveLength(mockTrainingData.length);
       });
 
-      it('should return empty array when no data in localStorage', async () => {
+      test('should return empty array when no data in localStorage', async () => {
         mockLocalStorage.getItem.mockReturnValue(null);
 
         const loaded = await storage.load();
@@ -264,13 +264,13 @@ describe('Training Storage', (_: any) => {
         expect(loaded).toEqual([]);
       });
 
-      it('should clear training data from localStorage', async () => {
+      test('should clear training data from localStorage', async () => {
         await storage.clear();
 
         expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('ai_training_data');
       });
 
-      it('should handle invalid JSON in localStorage gracefully', async () => {
+      test('should handle invalid JSON in localStorage gracefully', async () => {
         mockLocalStorage.getItem.mockReturnValue('invalid json');
 
         // Should throw since JSON.parse will fail
@@ -279,8 +279,8 @@ describe('Training Storage', (_: any) => {
     });
   });
 
-  describe('TrainingData interface', (_: any) => {
-    it('should have correct structure', (_: any) => {
+  describe('trainingData interface', (_: any) => {
+    test('should have correct structure', (_: any) => {
       const data: TrainingData = {
         feedbacks: [
           {

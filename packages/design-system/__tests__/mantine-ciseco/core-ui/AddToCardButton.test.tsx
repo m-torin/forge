@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '../test-utils';
-import AddToCardButton from '../../../mantine-ciseco/components/AddToCardButton';
+import AddToCardButton from '../../../src/mantine-ciseco/components/AddToCardButton';
 import { notify } from '@repo/notifications/mantine-notifications';
 
 // Mock next/image

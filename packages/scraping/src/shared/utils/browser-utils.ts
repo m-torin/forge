@@ -34,7 +34,7 @@ export function createBrowserPool(
     acquireTimeoutMillis?: number;
   } = {},
 ): BrowserPool {
-  const { min: _min = 1, max = 5 } = options;
+  const { min: min = 1, max = 5 } = options;
   const pool: ScrapingProvider[] = [];
   const available: ScrapingProvider[] = [];
   const pending: Array<(provider: ScrapingProvider) => void> = [];

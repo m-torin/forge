@@ -6,11 +6,7 @@
 import { Browser, Page } from 'puppeteer';
 
 import { ScrapingError, ScrapingErrorCode } from '../../shared/errors';
-import {
-  type ExtractionResult,
-  type SelectorMap,
-  type SelectorConfig,
-} from '../../shared/types/scraping-types';
+import { type ExtractionResult, type SelectorMap } from '../../shared/types/scraping-types';
 import {
   ScrapingProvider,
   ProviderConfig,
@@ -211,7 +207,7 @@ export class PuppeteerProvider implements ScrapingProvider {
         },
       };
     } catch (error: any) {
-      const _endTime = Date.now();
+      const endTime = Date.now();
 
       if (error instanceof ScrapingError) {
         throw error;
@@ -305,7 +301,7 @@ export class PuppeteerProvider implements ScrapingProvider {
     // Basic HTML parsing (simplified implementation)
     // In production, this would use a proper HTML parser like cheerio
     for (const [key, selectorOrConfig] of Object.entries(selectors)) {
-      const _config: SelectorConfig =
+      const config =
         typeof selectorOrConfig === 'string' ? { selector: selectorOrConfig } : selectorOrConfig;
 
       // Placeholder extraction logic
@@ -324,7 +320,7 @@ export class PuppeteerProvider implements ScrapingProvider {
 
       const pages = await this.browser.pages();
       return pages.length >= 0;
-    } catch (_error: any) {
+    } catch (error) {
       // Health check failures should return false but not throw
       return false;
     }
@@ -345,11 +341,7 @@ export class PuppeteerProvider implements ScrapingProvider {
     }
   }
 
-  async click(
-    page: Page,
-    selector: string,
-    _options: { timeout?: number; force?: boolean } = {},
-  ): Promise<void> {
+  async click(page: Page, selector: string, options = {}): Promise<void> {
     await page.click(selector);
   }
 

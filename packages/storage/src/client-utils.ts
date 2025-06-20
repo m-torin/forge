@@ -162,7 +162,7 @@ export class ClientMultipartUpload {
     partNumber: number,
     presignedUrl: string,
     data: Blob,
-    onProgress?: (progress: UploadProgress) => void,
+    _onProgress?: (progress: UploadProgress) => void,
   ): Promise<void> {
     const response = await fetch(presignedUrl, {
       method: 'PUT',

@@ -2,6 +2,17 @@
   "name": "@repo/payments",
   "private": true,
   "type": "module",
+  "exports": {
+    "./client": "./src/client.ts",
+    "./server": "./src/server.ts",
+    "./client/next": "./src/client-next.ts",
+    "./server/next": "./src/server-next.ts",
+    "./ai": "./src/ai.ts",
+    "./keys": {
+      "types": "./keys.ts",
+      "import": "./keys.ts"
+    }
+  },
   "scripts": {
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
     "lint": "eslint . --fix",
@@ -10,20 +21,25 @@
     "test:coverage": "vitest --coverage --run"
   },
   "dependencies": {
+    "@repo/observability": "workspace:*",
     "@stripe/agent-toolkit": "^0.7.9",
-    "@t3-oss/env-nextjs": "catalog:",
+    "@t3-oss/env-nextjs": "^0.13.8",
     "chalk": "^5.4.1",
-    "server-only": "catalog:",
+    "next": "^15.3.4",
+    "react": "^19.1.0",
+    "server-only": "^0.0.1",
     "stripe": "^18.2.1",
-    "zod": "catalog:"
+    "zod": "^3.25.67"
   },
   "devDependencies": {
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
+    "@repo/testing": "workspace:*",
     "@types/eslint": "^9.6.1",
-    "@types/node": "catalog:",
-    "eslint": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "@types/node": "^24.0.3",
+    "@types/react": "^19.1.8",
+    "eslint": "^9.29.0",
+    "typescript": "5.8.3",
+    "vitest": "^3.2.4"
   }
 }

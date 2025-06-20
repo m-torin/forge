@@ -1,0 +1,33 @@
+import type { Prisma } from '../../client';
+
+import { z } from 'zod';
+import { TaxonomyTypeSchema } from './TaxonomyTypeSchema';
+import { ContentStatusSchema } from './ContentStatusSchema';
+import { JsonNullValueInputSchema } from './JsonNullValueInputSchema';
+import { InputJsonValueSchema } from './InputJsonValueSchema';
+import { CollectionCreateNestedManyWithoutTaxonomiesInputSchema } from './CollectionCreateNestedManyWithoutTaxonomiesInputSchema';
+import { PdpJoinCreateNestedManyWithoutTaxonomiesInputSchema } from './PdpJoinCreateNestedManyWithoutTaxonomiesInputSchema';
+import { LocationCreateNestedManyWithoutTaxonomiesInputSchema } from './LocationCreateNestedManyWithoutTaxonomiesInputSchema';
+import { MediaCreateNestedManyWithoutTaxonomyInputSchema } from './MediaCreateNestedManyWithoutTaxonomyInputSchema';
+import { JrFindReplaceRejectCreateNestedManyWithoutTaxonomiesInputSchema } from './JrFindReplaceRejectCreateNestedManyWithoutTaxonomiesInputSchema';
+import { UserCreateNestedOneWithoutDeletedTaxonomiesInputSchema } from './UserCreateNestedOneWithoutDeletedTaxonomiesInputSchema';
+
+export const TaxonomyCreateWithoutProductsInputSchema: z.ZodType<Prisma.TaxonomyCreateWithoutProductsInput> = z.object({
+  id: z.string().cuid().optional(),
+  name: z.string(),
+  slug: z.string(),
+  type: z.lazy(() => TaxonomyTypeSchema).optional(),
+  status: z.lazy(() => ContentStatusSchema).optional(),
+  copy: z.union([ z.lazy(() => JsonNullValueInputSchema),InputJsonValueSchema ]),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+  deletedAt: z.coerce.date().optional().nullable(),
+  collections: z.lazy(() => CollectionCreateNestedManyWithoutTaxonomiesInputSchema).optional(),
+  pdpJoins: z.lazy(() => PdpJoinCreateNestedManyWithoutTaxonomiesInputSchema).optional(),
+  locations: z.lazy(() => LocationCreateNestedManyWithoutTaxonomiesInputSchema).optional(),
+  media: z.lazy(() => MediaCreateNestedManyWithoutTaxonomyInputSchema).optional(),
+  jrFindReplaceRejects: z.lazy(() => JrFindReplaceRejectCreateNestedManyWithoutTaxonomiesInputSchema).optional(),
+  deletedBy: z.lazy(() => UserCreateNestedOneWithoutDeletedTaxonomiesInputSchema).optional()
+}).strict();
+
+export default TaxonomyCreateWithoutProductsInputSchema;

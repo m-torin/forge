@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, vi } from 'vitest';
 
 import { LogLevel, ObservabilityConfig } from '../../../shared/types/types';
 import {
@@ -12,19 +12,19 @@ import {
   validateProviderConfig,
 } from '../../../shared/utils/validation';
 
-describe('Validation Utilities', () => {
+describe('validation Utilities', () => {
   describe('validateObservabilityConfig', () => {
-    it('should validate empty providers', () => {
+    test('should validate empty providers', () => {
       const config: ObservabilityConfig = {
         providers: {},
       };
 
       const result = validateObservabilityConfig(config);
-      expect(result.valid).toBe(true);
+      expect(result.valid).toBeTruthy();
       expect(result.errors).toHaveLength(0);
     });
 
-    it('should validate Sentry config', () => {
+    test('should validate Sentry config', () => {
       const config: ObservabilityConfig = {
         providers: {
           sentry: {
@@ -34,11 +34,11 @@ describe('Validation Utilities', () => {
       };
 
       const result = validateObservabilityConfig(config);
-      expect(result.valid).toBe(true);
+      expect(result.valid).toBeTruthy();
       expect(result.errors).toHaveLength(0);
     });
 
-    it('should require DSN for Sentry', () => {
+    test('should require DSN for Sentry', () => {
       const config: ObservabilityConfig = {
         providers: {
           sentry: {},
@@ -46,7 +46,7 @@ describe('Validation Utilities', () => {
       };
 
       const result = validateObservabilityConfig(config);
-      expect(result.valid).toBe(false);
+      expect(result.valid).toBeFalsy();
       expect(result.errors).toHaveLength(1);
       expect(result.errors[0]).toMatchObject({
         provider: 'sentry',
@@ -55,7 +55,7 @@ describe('Validation Utilities', () => {
       });
     });
 
-    it('should require service name for OpenTelemetry', () => {
+    test('should require service name for OpenTelemetry', () => {
       const config: ObservabilityConfig = {
         providers: {
           opentelemetry: {},
@@ -63,7 +63,7 @@ describe('Validation Utilities', () => {
       };
 
       const result = validateObservabilityConfig(config);
-      expect(result.valid).toBe(false);
+      expect(result.valid).toBeFalsy();
       expect(result.errors).toHaveLength(1);
       expect(result.errors[0]).toMatchObject({
         provider: 'opentelemetry',
@@ -72,7 +72,7 @@ describe('Validation Utilities', () => {
       });
     });
 
-    it('should validate console provider without required fields', () => {
+    test('should validate console provider without required fields', () => {
       const config: ObservabilityConfig = {
         providers: {
           console: {},
@@ -80,13 +80,13 @@ describe('Validation Utilities', () => {
       };
 
       const result = validateObservabilityConfig(config);
-      expect(result.valid).toBe(true);
+      expect(result.valid).toBeTruthy();
       expect(result.errors).toHaveLength(0);
     });
   });
 
   describe('validateProvider', () => {
-    it('should validate provider with required methods', () => {
+    test('should validate provider with required methods', () => {
       const validProvider = {
         name: 'test',
         captureException: async () => {},
@@ -98,7 +98,7 @@ describe('Validation Utilities', () => {
       expect(() => validateProvider(validProvider)).not.toThrow();
     });
 
-    it('should throw for missing log method', () => {
+    test('should throw for missing log method', () => {
       const provider = {
         name: 'test',
         captureException: async () => {},
@@ -109,7 +109,7 @@ describe('Validation Utilities', () => {
       expect(() => validateProvider(provider)).toThrow('Provider must implement log method');
     });
 
-    it('should throw for missing captureException method', () => {
+    test('should throw for missing captureException method', () => {
       const provider = {
         name: 'test',
         captureMessage: async () => {},
@@ -122,22 +122,22 @@ describe('Validation Utilities', () => {
       );
     });
 
-    it('should throw for null provider', () => {
+    test('should throw for null provider', () => {
       expect(() => validateProvider(null)).toThrow('Provider cannot be null or undefined');
     });
 
-    it('should throw for undefined provider', () => {
+    test('should throw for undefined provider', () => {
       expect(() => validateProvider(undefined)).toThrow('Provider cannot be null or undefined');
     });
 
-    it('should throw for non-object provider', () => {
+    test('should throw for non-object provider', () => {
       expect(() => validateProvider('string' as any)).toThrow('Provider must be an object');
       expect(() => validateProvider(123 as any)).toThrow('Provider must be an object');
     });
   });
 
   describe('validateConfig', () => {
-    it('should validate minimal config', () => {
+    test('should validate minimal config', () => {
       const config = {
         providers: [],
       };
@@ -145,7 +145,7 @@ describe('Validation Utilities', () => {
       expect(() => validateConfig(config)).not.toThrow();
     });
 
-    it('should validate config with all options', () => {
+    test('should validate config with all options', () => {
       const config = {
         providers: [],
         defaultLogLevel: 'info' as LogLevel,
@@ -156,7 +156,7 @@ describe('Validation Utilities', () => {
       expect(() => validateConfig(config)).not.toThrow();
     });
 
-    it('should throw for invalid default log level', () => {
+    test('should throw for invalid default log level', () => {
       const config = {
         providers: [],
         defaultLogLevel: 'invalid',
@@ -165,7 +165,7 @@ describe('Validation Utilities', () => {
       expect(() => validateConfig(config)).toThrow('Invalid log level');
     });
 
-    it('should throw for non-array providers', () => {
+    test('should throw for non-array providers', () => {
       const config = {
         providers: 'not an array',
       } as any;
@@ -173,7 +173,7 @@ describe('Validation Utilities', () => {
       expect(() => validateConfig(config)).toThrow('Providers must be an array');
     });
 
-    it('should throw for non-boolean enableConsoleInDev', () => {
+    test('should throw for non-boolean enableConsoleInDev', () => {
       const config = {
         providers: [],
         enableConsoleInDev: 'true',
@@ -182,7 +182,7 @@ describe('Validation Utilities', () => {
       expect(() => validateConfig(config)).toThrow('enableConsoleInDev must be a boolean');
     });
 
-    it('should throw for non-array enabledEnvironments', () => {
+    test('should throw for non-array enabledEnvironments', () => {
       const config = {
         providers: [],
         enabledEnvironments: 'production',
@@ -191,7 +191,7 @@ describe('Validation Utilities', () => {
       expect(() => validateConfig(config)).toThrow('enabledEnvironments must be an array');
     });
 
-    it('should throw for non-string environments', () => {
+    test('should throw for non-string environments', () => {
       const config = {
         providers: [],
         enabledEnvironments: ['production', 123],
@@ -200,14 +200,14 @@ describe('Validation Utilities', () => {
       expect(() => validateConfig(config)).toThrow('All environments must be strings');
     });
 
-    it('should throw for missing config', () => {
+    test('should throw for missing config', () => {
       expect(() => validateConfig(null)).toThrow('Configuration is required');
       expect(() => validateConfig(undefined)).toThrow('Configuration is required');
     });
   });
 
   describe('validateLogLevel', () => {
-    it('should validate all valid levels', () => {
+    test('should validate all valid levels', () => {
       const validLevels: LogLevel[] = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'];
 
       for (const level of validLevels) {
@@ -215,87 +215,87 @@ describe('Validation Utilities', () => {
       }
     });
 
-    it('should throw for invalid level', () => {
+    test('should throw for invalid level', () => {
       expect(() => validateLogLevel('invalid' as any)).toThrow('Invalid log level: invalid');
     });
   });
 
   describe('isValidEmail', () => {
-    it('should validate correct emails', () => {
-      expect(isValidEmail('test@example.com')).toBe(true);
-      expect(isValidEmail('user.name@domain.co.uk')).toBe(true);
-      expect(isValidEmail('user+tag@example.org')).toBe(true);
-      expect(isValidEmail('123@456.com')).toBe(true);
+    test('should validate correct emails', () => {
+      expect(isValidEmail('test@example.com')).toBeTruthy();
+      expect(isValidEmail('user.name@domain.co.uk')).toBeTruthy();
+      expect(isValidEmail('user+tag@example.org')).toBeTruthy();
+      expect(isValidEmail('123@456.com')).toBeTruthy();
     });
 
-    it('should reject invalid emails', () => {
-      expect(isValidEmail('not-an-email')).toBe(false);
-      expect(isValidEmail('@example.com')).toBe(false);
-      expect(isValidEmail('user@')).toBe(false);
-      expect(isValidEmail('user@.com')).toBe(false);
-      expect(isValidEmail('user@domain')).toBe(false);
-      expect(isValidEmail('user @example.com')).toBe(false);
-      expect(isValidEmail('user@example .com')).toBe(false);
-      expect(isValidEmail('.user@example.com')).toBe(false);
-      expect(isValidEmail('user.@example.com')).toBe(false);
-      expect(isValidEmail('user@.example.com')).toBe(false);
-      expect(isValidEmail('user@example.com.')).toBe(false);
+    test('should reject invalid emails', () => {
+      expect(isValidEmail('not-an-email')).toBeFalsy();
+      expect(isValidEmail('@example.com')).toBeFalsy();
+      expect(isValidEmail('user@')).toBeFalsy();
+      expect(isValidEmail('user@.com')).toBeFalsy();
+      expect(isValidEmail('user@domain')).toBeFalsy();
+      expect(isValidEmail('user @example.com')).toBeFalsy();
+      expect(isValidEmail('user@example .com')).toBeFalsy();
+      expect(isValidEmail('.user@example.com')).toBeFalsy();
+      expect(isValidEmail('user.@example.com')).toBeFalsy();
+      expect(isValidEmail('user@.example.com')).toBeFalsy();
+      expect(isValidEmail('user@example.com.')).toBeFalsy();
     });
 
-    it('should reject non-string inputs', () => {
-      expect(isValidEmail(null as any)).toBe(false);
-      expect(isValidEmail(undefined as any)).toBe(false);
-      expect(isValidEmail(123 as any)).toBe(false);
-      expect(isValidEmail({} as any)).toBe(false);
+    test('should reject non-string inputs', () => {
+      expect(isValidEmail(null as any)).toBeFalsy();
+      expect(isValidEmail(undefined as any)).toBeFalsy();
+      expect(isValidEmail(123 as any)).toBeFalsy();
+      expect(isValidEmail({} as any)).toBeFalsy();
     });
   });
 
   describe('isValidUrl', () => {
-    it('should validate correct URLs', () => {
-      expect(isValidUrl('http://example.com')).toBe(true);
-      expect(isValidUrl('https://example.com')).toBe(true);
-      expect(isValidUrl('https://subdomain.example.com')).toBe(true);
-      expect(isValidUrl('https://example.com/path')).toBe(true);
-      expect(isValidUrl('https://example.com/path?query=value')).toBe(true);
-      expect(isValidUrl('https://example.com:8080')).toBe(true);
-      expect(isValidUrl('https://user:pass@example.com')).toBe(true);
+    test('should validate correct URLs', () => {
+      expect(isValidUrl('http://example.com')).toBeTruthy();
+      expect(isValidUrl('https://example.com')).toBeTruthy();
+      expect(isValidUrl('https://subdomain.example.com')).toBeTruthy();
+      expect(isValidUrl('https://example.com/path')).toBeTruthy();
+      expect(isValidUrl('https://example.com/path?query=value')).toBeTruthy();
+      expect(isValidUrl('https://example.com:8080')).toBeTruthy();
+      expect(isValidUrl('https://user:pass@example.com')).toBeTruthy();
     });
 
-    it('should reject invalid URLs', () => {
-      expect(isValidUrl('not-a-url')).toBe(false);
-      expect(isValidUrl('ftp://example.com')).toBe(false); // Only HTTP/HTTPS allowed
-      expect(isValidUrl('javascript:alert(1)')).toBe(false);
-      expect(isValidUrl('//example.com')).toBe(false);
-      expect(isValidUrl('example.com')).toBe(false);
+    test('should reject invalid URLs', () => {
+      expect(isValidUrl('not-a-url')).toBeFalsy();
+      expect(isValidUrl('ftp://example.com')).toBeFalsy(); // Only HTTP/HTTPS allowed
+      expect(isValidUrl('javascript:alert(1)')).toBeFalsy();
+      expect(isValidUrl('//example.com')).toBeFalsy();
+      expect(isValidUrl('example.com')).toBeFalsy();
     });
 
-    it('should reject non-string inputs', () => {
-      expect(isValidUrl(null as any)).toBe(false);
-      expect(isValidUrl(undefined as any)).toBe(false);
-      expect(isValidUrl(123 as any)).toBe(false);
-      expect(isValidUrl({} as any)).toBe(false);
+    test('should reject non-string inputs', () => {
+      expect(isValidUrl(null as any)).toBeFalsy();
+      expect(isValidUrl(undefined as any)).toBeFalsy();
+      expect(isValidUrl(123 as any)).toBeFalsy();
+      expect(isValidUrl({} as any)).toBeFalsy();
     });
   });
 
   describe('validateProviderConfig', () => {
-    it('should validate unknown providers', () => {
+    test('should validate unknown providers', () => {
       const errors = validateProviderConfig('custom', { apiKey: 'test' });
       expect(errors).toHaveLength(0);
     });
 
-    it('should validate pino provider', () => {
+    test('should validate pino provider', () => {
       const errors = validateProviderConfig('pino', {});
       expect(errors).toHaveLength(0);
     });
 
-    it('should validate winston provider', () => {
+    test('should validate winston provider', () => {
       const errors = validateProviderConfig('winston', {});
       expect(errors).toHaveLength(0);
     });
   });
 
   describe('debugConfig', () => {
-    it('should log valid config', () => {
+    test('should log valid config', () => {
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
       const config: ObservabilityConfig = {
@@ -313,7 +313,7 @@ describe('Validation Utilities', () => {
       consoleSpy.mockRestore();
     });
 
-    it('should log config errors', () => {
+    test('should log config errors', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       const config: ObservabilityConfig = {

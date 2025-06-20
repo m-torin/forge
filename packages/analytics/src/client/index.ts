@@ -19,12 +19,12 @@
  * ```
  */
 
-import { ConsoleProvider } from '../shared/providers/console-provider';
+import { ConsoleProvider } from '../providers/console/client';
 import { createAnalyticsManager } from '../shared/utils/manager';
 
-import { PostHogClientProvider } from './providers/posthog-client';
-import { SegmentClientProvider } from './providers/segment-client';
-import { VercelClientProvider } from './providers/vercel-client';
+import { PostHogClientProvider } from '../providers/posthog/client';
+import { SegmentClientProvider } from '../providers/segment/client';
+import { VercelClientProvider } from '../providers/vercel/client';
 
 import type { AnalyticsConfig, AnalyticsManager, ProviderRegistry } from '../shared/types/types';
 
@@ -161,14 +161,8 @@ export type { ConfigBuilder, ConfigRequirements } from '../shared/utils/config';
 // VALIDATION UTILITIES
 // ============================================================================
 
-export {
-  debugConfig,
-  validateAnalyticsConfig,
-  validateConfigOrThrow,
-  validateProvider,
-} from '../shared/utils/validation';
-
-export type { ValidationError, ValidationResult } from '../shared/utils/validation';
+// Validation should happen on the server side only
+// Client-side validation is removed to follow the four-file export pattern
 
 // ============================================================================
 // ADVANCED UTILITIES

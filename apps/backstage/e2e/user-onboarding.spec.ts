@@ -1,10 +1,14 @@
-import { expect, test } from '@repo/testing/e2e';
-import { AppTestHelpers, PerformanceUtils, WaitUtils } from '@repo/testing/e2e';
+import {
+  expect,
+  test,
+  AppTestHelpers,
+  PerformanceUtils,
+  WaitUtils,
+  AppTestConfig,
+} from '@repo/testing/e2e';
 
 import { withPerformanceMonitoring } from './utils/performance-monitor';
 import { createVisualTester } from './utils/visual-testing';
-
-import { AppTestConfig } from '@repo/testing/e2e';
 
 test.describe('User Onboarding Workflow', (_: any) => {
   let helpers: AppTestHelpers;

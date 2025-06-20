@@ -74,10 +74,10 @@ const NEXTJS_SERVER_PROVIDERS: ProviderRegistry = {
     const { VercelOTelProvider } = await import('./server/providers/vercel-otel-provider');
     return new VercelOTelProvider();
   },
-  // Logtail provider (Next.js compatible)
+  // Logtail provider (Next.js server-side)
   logtail: async () => {
-    const { LogtailProvider } = await import('./shared/providers/logtail-provider');
-    return new LogtailProvider();
+    const { LogtailServerNextProvider } = await import('./server/providers/logtail-server-next');
+    return new LogtailServerNextProvider();
   },
   grafanaMonitoring: async () => {
     // Grafana monitoring works in both Edge and Node.js runtime

@@ -109,14 +109,14 @@ const createEventBus = (options?: {
   };
 };
 
-describe('Event Bus', (_: any) => {
+describe('event Bus', (_: any) => {
   let eventBus: EventBus;
 
   beforeEach(() => {
     eventBus = createEventBus();
   });
 
-  describe('Event Subscription', (_: any) => {
+  describe('event Subscription', (_: any) => {
     test('should subscribe to events with exact pattern', async () => {
       const handler = vi.fn();
 
@@ -205,7 +205,7 @@ describe('Event Bus', (_: any) => {
     });
   });
 
-  describe('Event Emission', (_: any) => {
+  describe('event Emission', (_: any) => {
     test('should emit events with automatic ID and timestamp', async () => {
       const handler = vi.fn();
 
@@ -271,7 +271,7 @@ describe('Event Bus', (_: any) => {
     });
   });
 
-  describe('Pattern Matching', (_: any) => {
+  describe('pattern Matching', (_: any) => {
     test('should match single-level wildcards', async () => {
       const handler = vi.fn();
 
@@ -314,7 +314,7 @@ describe('Event Bus', (_: any) => {
     });
   });
 
-  describe('Error Handling', (_: any) => {
+  describe('error Handling', (_: any) => {
     test('should handle subscriber errors gracefully', async () => {
       const goodHandler = vi.fn();
       const errorHandler = vi.fn().mockRejectedValue(new Error('Handler error'));
@@ -347,7 +347,7 @@ describe('Event Bus', (_: any) => {
     });
   });
 
-  describe('Performance and Memory', (_: any) => {
+  describe('performance and Memory', (_: any) => {
     test('should handle many subscribers efficiently', async () => {
       const handlers = Array.from({ length: 1000 }, () => vi.fn());
 
@@ -388,7 +388,7 @@ describe('Event Bus', (_: any) => {
     });
   });
 
-  describe('Event History and Replay', (_: any) => {
+  describe('event History and Replay', (_: any) => {
     test('should maintain event history when configured', async () => {
       const eventBusWithHistory = createEventBus({
         enableHistory: true,
@@ -463,7 +463,7 @@ describe('Event Bus', (_: any) => {
     });
   });
 
-  describe('Workflow Integration', (_: any) => {
+  describe('workflow Integration', (_: any) => {
     test('should handle workflow lifecycle events', async () => {
       const lifecycleHandler = vi.fn();
 

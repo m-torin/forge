@@ -70,7 +70,7 @@ export function extractFromCurrentPage(
       } else {
         result[key] = Array.from(elements).map((el: any) => el.textContent?.trim() || '');
       }
-    } catch (_error: any) {
+    } catch (error) {
       // Set null on extraction error instead of throwing for client utils
       result[key] = null;
     }

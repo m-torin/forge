@@ -11,12 +11,14 @@
     "lint": "eslint . --fix"
   },
   "dependencies": {
-    "@t3-oss/env-nextjs": "catalog:",
-    "next": "catalog:",
-    "react": "catalog:",
-    "zod": "catalog:"
+    "@t3-oss/env-nextjs": "^0.13.8",
+    "next": "^15.3.4",
+    "react": "^19.1.0",
+    "zod": "^3.25.67"
   },
   "peerDependencies": {
+    "@grafana/faro-web-sdk": "^1.4.0",
+    "@logtail/js": "^0.5.5",
     "@logtail/next": "^0.2.0",
     "@logtail/node": "^0.5.5",
     "@opentelemetry/api": "^1.9.0",
@@ -30,8 +32,7 @@
     "@sentry/react": "^9.28.1",
     "@vercel/otel": "^1.13.0",
     "pino": "^9.7.0",
-    "winston": "^3.17.0",
-    "@grafana/faro-web-sdk": "^1.4.0"
+    "winston": "^3.17.0"
   },
   "peerDependenciesMeta": {
     "@sentry/node": {
@@ -64,6 +65,9 @@
     "@vercel/otel": {
       "optional": true
     },
+    "@logtail/js": {
+      "optional": true
+    },
     "@logtail/node": {
       "optional": true
     },
@@ -81,10 +85,11 @@
     }
   },
   "devDependencies": {
+    "@logtail/js": "^0.5.5",
     "@logtail/next": "^0.2.0",
     "@logtail/node": "^0.5.5",
     "@opentelemetry/api": "^1.9.0",
-    "@opentelemetry/auto-instrumentations-node": "^0.60.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.60.1",
     "@opentelemetry/exporter-jaeger": "^2.0.1",
     "@opentelemetry/exporter-trace-otlp-http": "^0.202.0",
     "@opentelemetry/resources": "^2.0.1",
@@ -94,28 +99,33 @@
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/testing": "workspace:*",
-    "@sentry/nextjs": "^9.28.1",
-    "@sentry/node": "^9.28.1",
-    "@sentry/react": "^9.28.1",
-    "@testing-library/jest-dom": "catalog:",
-    "@testing-library/react": "catalog:",
+    "@sentry/nextjs": "^9.30.0",
+    "@sentry/node": "^9.30.0",
+    "@sentry/react": "^9.30.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
     "@types/eslint": "^9.6.1",
-    "@types/node": "catalog:",
-    "@types/react": "catalog:",
-    "@types/react-dom": "catalog:",
+    "@types/node": "^24.0.3",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
     "@vercel/otel": "^1.13.0",
     "@vitejs/plugin-react": "^4.5.2",
-    "eslint": "catalog:",
-    "jsdom": "catalog:",
+    "eslint": "^9.29.0",
+    "jsdom": "^26.1.0",
     "pino": "^9.7.0",
-    "typescript": "catalog:",
-    "vitest": "catalog:",
+    "typescript": "5.8.3",
+    "vitest": "^3.2.4",
     "winston": "^3.17.0"
   },
   "exports": {
     "./client": "./src/client.ts",
     "./server": "./src/server.ts",
     "./client/next": "./src/client-next.ts",
-    "./server/next": "./src/server-next.ts"
+    "./server/next": "./src/server-next.ts",
+    "./shared-env": "./src/shared-env.ts",
+    "./keys": {
+      "types": "./keys.ts",
+      "import": "./keys.ts"
+    }
   }
 }

@@ -1,12 +1,12 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock environment variables
 const mockCreateEnv = vi.fn();
-vi.mock('@t3-oss/env-nextjs', (_: any) => ({
+vi.mock('@t3-oss/env-nextjs', () => ({
   createEnv: mockCreateEnv,
 }));
 
-describe('Notifications Keys Configuration', (_: any) => {
+describe('notifications Keys Configuration', () => {
   let originalEnv: NodeJS.ProcessEnv;
 
   beforeEach(() => {
@@ -19,7 +19,7 @@ describe('Notifications Keys Configuration', (_: any) => {
     process.env = originalEnv;
   });
 
-  describe('development environment', (_: any) => {
+  describe('development environment', () => {
     beforeEach(() => {
       process.env.NODE_ENV = 'development';
       process.env.KNOCK_SECRET_API_KEY = 'sk_test_123456789';
@@ -27,7 +27,7 @@ describe('Notifications Keys Configuration', (_: any) => {
       process.env.NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID = 'channel_123';
     });
 
-    it('should make all keys optional in development', async () => {
+    test('should make all keys optional in development', async () => {
       mockCreateEnv.mockReturnValue({
         KNOCK_SECRET_API_KEY: 'sk_test_123456789',
         NEXT_PUBLIC_KNOCK_API_KEY: 'pk_test_123456789',
@@ -42,7 +42,7 @@ describe('Notifications Keys Configuration', (_: any) => {
       expect(result.NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID).toBe('channel_123');
     });
 
-    it('should handle missing keys in development', async () => {
+    test('should handle missing keys in development', async () => {
       process.env.KNOCK_SECRET_API_KEY = undefined;
       process.env.NEXT_PUBLIC_KNOCK_API_KEY = undefined;
       process.env.NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID = undefined;
@@ -89,7 +89,7 @@ describe('Notifications Keys Configuration', (_: any) => {
     });
   });
 
-  describe('production environment', (_: any) => {
+  describe('production environment', () => {
     beforeEach(() => {
       process.env.NODE_ENV = 'production';
       process.env.KNOCK_SECRET_API_KEY = 'sk_live_123456789';
@@ -97,7 +97,7 @@ describe('Notifications Keys Configuration', (_: any) => {
       process.env.NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID = 'channel_live_123';
     });
 
-    it('should make keys optional even in production', async () => {
+    test('should make keys optional even in production', async () => {
       mockCreateEnv.mockReturnValue({
         KNOCK_SECRET_API_KEY: 'sk_live_123456789',
         NEXT_PUBLIC_KNOCK_API_KEY: 'pk_live_123456789',
@@ -141,7 +141,7 @@ describe('Notifications Keys Configuration', (_: any) => {
     });
   });
 
-  describe('key validation', (_: any) => {
+  describe('key validation', () => {
     beforeEach(() => {
       process.env.NODE_ENV = 'development';
       process.env.KNOCK_SECRET_API_KEY = 'sk_test_123456789';
@@ -149,7 +149,7 @@ describe('Notifications Keys Configuration', (_: any) => {
       process.env.NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID = 'channel_123';
     });
 
-    it('should validate minimum length for all keys', async () => {
+    test('should validate minimum length for all keys', async () => {
       const { keys } = await import('../keys');
       keys();
 
@@ -157,7 +157,7 @@ describe('Notifications Keys Configuration', (_: any) => {
 
       // Check server key validation
       const serverKeySchema = call.server.KNOCK_SECRET_API_KEY;
-      expect(serverKeySchema._def.innerType._def.checks).toEqual(
+      expect(serverKeySchema._def.innerType._def.checks).toStrictEqual(
         expect.arrayContaining([
           expect.objectContaining({
             kind: 'min',
@@ -168,7 +168,7 @@ describe('Notifications Keys Configuration', (_: any) => {
 
       // Check client key validation
       const clientKeySchema = call.client.NEXT_PUBLIC_KNOCK_API_KEY;
-      expect(clientKeySchema._def.innerType._def.checks).toEqual(
+      expect(clientKeySchema._def.innerType._def.checks).toStrictEqual(
         expect.arrayContaining([
           expect.objectContaining({
             kind: 'min',
@@ -179,7 +179,7 @@ describe('Notifications Keys Configuration', (_: any) => {
 
       // Check feed channel ID validation
       const feedChannelSchema = call.client.NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID;
-      expect(feedChannelSchema._def.innerType._def.checks).toEqual(
+      expect(feedChannelSchema._def.innerType._def.checks).toStrictEqual(
         expect.arrayContaining([
           expect.objectContaining({
             kind: 'min',
@@ -190,7 +190,7 @@ describe('Notifications Keys Configuration', (_: any) => {
     });
   });
 
-  describe('runtime environment mapping', (_: any) => {
+  describe('runtime environment mapping', () => {
     beforeEach(() => {
       process.env.NODE_ENV = 'development';
       process.env.KNOCK_SECRET_API_KEY = 'sk_test_123456789';
@@ -198,7 +198,7 @@ describe('Notifications Keys Configuration', (_: any) => {
       process.env.NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID = 'channel_123';
     });
 
-    it('should map environment variables correctly', async () => {
+    test('should map environment variables correctly', async () => {
       const { keys } = await import('../keys');
       keys();
 
@@ -213,7 +213,7 @@ describe('Notifications Keys Configuration', (_: any) => {
       });
     });
 
-    it('should handle undefined environment variables', async () => {
+    test('should handle undefined environment variables', async () => {
       process.env.KNOCK_SECRET_API_KEY = undefined;
       process.env.NEXT_PUBLIC_KNOCK_API_KEY = undefined;
       process.env.NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID = undefined;
@@ -232,7 +232,7 @@ describe('Notifications Keys Configuration', (_: any) => {
       });
     });
 
-    it('should handle empty string environment variables', async () => {
+    test('should handle empty string environment variables', async () => {
       process.env.KNOCK_SECRET_API_KEY = '';
       process.env.NEXT_PUBLIC_KNOCK_API_KEY = '';
       process.env.NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID = '';
@@ -252,8 +252,8 @@ describe('Notifications Keys Configuration', (_: any) => {
     });
   });
 
-  describe('hasRequiredEnvVars logic', (_: any) => {
-    it('should detect when any env var is present', async () => {
+  describe('hasRequiredEnvVars logic', () => {
+    test('should detect when any env var is present', async () => {
       process.env.NODE_ENV = 'production';
       process.env.KNOCK_SECRET_API_KEY = 'sk_test_123';
       process.env.NEXT_PUBLIC_KNOCK_API_KEY = undefined;
@@ -267,7 +267,7 @@ describe('Notifications Keys Configuration', (_: any) => {
       expect(call.server.KNOCK_SECRET_API_KEY._def.typeName).toBe('ZodOptional');
     });
 
-    it('should detect when all env vars are missing', async () => {
+    test('should detect when all env vars are missing', async () => {
       process.env.NODE_ENV = 'production';
       process.env.KNOCK_SECRET_API_KEY = undefined;
       process.env.NEXT_PUBLIC_KNOCK_API_KEY = undefined;
@@ -283,7 +283,7 @@ describe('Notifications Keys Configuration', (_: any) => {
       expect(call.client.NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID._def.typeName).toBe('ZodOptional');
     });
 
-    it('should handle partial env var presence', async () => {
+    test('should handle partial env var presence', async () => {
       process.env.NODE_ENV = 'production';
       process.env.KNOCK_SECRET_API_KEY = undefined;
       process.env.NEXT_PUBLIC_KNOCK_API_KEY = 'pk_test_123';
@@ -300,7 +300,7 @@ describe('Notifications Keys Configuration', (_: any) => {
     });
   });
 
-  describe('client vs server configuration', (_: any) => {
+  describe('client vs server configuration', () => {
     beforeEach(() => {
       process.env.NODE_ENV = 'development';
       process.env.KNOCK_SECRET_API_KEY = 'sk_test_123456789';
@@ -308,13 +308,13 @@ describe('Notifications Keys Configuration', (_: any) => {
       process.env.NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID = 'channel_123';
     });
 
-    it('should configure server keys correctly', async () => {
+    test('should configure server keys correctly', async () => {
       const { keys } = await import('../keys');
       keys();
 
       const call = mockCreateEnv.mock.calls[0][0];
 
-      expect(call.server).toEqual({
+      expect(call.server).toStrictEqual({
         KNOCK_SECRET_API_KEY: expect.objectContaining({
           _def: expect.objectContaining({
             typeName: 'ZodOptional',
@@ -323,13 +323,13 @@ describe('Notifications Keys Configuration', (_: any) => {
       });
     });
 
-    it('should configure client keys correctly', async () => {
+    test('should configure client keys correctly', async () => {
       const { keys } = await import('../keys');
       keys();
 
       const call = mockCreateEnv.mock.calls[0][0];
 
-      expect(call.client).toEqual({
+      expect(call.client).toStrictEqual({
         NEXT_PUBLIC_KNOCK_API_KEY: expect.objectContaining({
           _def: expect.objectContaining({
             typeName: 'ZodOptional',
@@ -343,7 +343,7 @@ describe('Notifications Keys Configuration', (_: any) => {
       });
     });
 
-    it('should not include client keys in server config', async () => {
+    test('should not include client keys in server config', async () => {
       const { keys } = await import('../keys');
       keys();
 
@@ -353,7 +353,7 @@ describe('Notifications Keys Configuration', (_: any) => {
       expect(call.server.NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID).toBeUndefined();
     });
 
-    it('should not include server keys in client config', async () => {
+    test('should not include server keys in client config', async () => {
       const { keys } = await import('../keys');
       keys();
 
@@ -363,7 +363,7 @@ describe('Notifications Keys Configuration', (_: any) => {
     });
   });
 
-  describe('error handling', (_: any) => {
+  describe('error handling', () => {
     beforeEach(() => {
       process.env.NODE_ENV = 'development';
       process.env.KNOCK_SECRET_API_KEY = 'sk_test_123456789';
@@ -371,7 +371,7 @@ describe('Notifications Keys Configuration', (_: any) => {
       process.env.NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID = 'channel_123';
     });
 
-    it('should propagate createEnv errors', async () => {
+    test('should propagate createEnv errors', async () => {
       const error = new Error('Invalid environment configuration');
       mockCreateEnv.mockImplementation(() => {
         throw error;
@@ -383,7 +383,7 @@ describe('Notifications Keys Configuration', (_: any) => {
     });
   });
 
-  describe('function invocation', (_: any) => {
+  describe('function invocation', () => {
     beforeEach(() => {
       process.env.NODE_ENV = 'development';
       process.env.KNOCK_SECRET_API_KEY = 'sk_test_123456789';
@@ -397,19 +397,19 @@ describe('Notifications Keys Configuration', (_: any) => {
       });
     });
 
-    it('should return a function', async () => {
+    test('should return a function', async () => {
       const { keys } = await import('../keys');
       expect(typeof keys).toBe('function');
     });
 
-    it('should call createEnv when invoked', async () => {
+    test('should call createEnv when invoked', async () => {
       const { keys } = await import('../keys');
       keys();
 
       expect(mockCreateEnv).toHaveBeenCalledTimes(1);
     });
 
-    it('should return the result from createEnv', async () => {
+    test('should return the result from createEnv', async () => {
       const expectedResult = {
         KNOCK_SECRET_API_KEY: 'sk_test_123456789',
         NEXT_PUBLIC_KNOCK_API_KEY: 'pk_test_123456789',
@@ -421,10 +421,10 @@ describe('Notifications Keys Configuration', (_: any) => {
       const { keys } = await import('../keys');
       const result = keys();
 
-      expect(result).toEqual(expectedResult);
+      expect(result).toStrictEqual(expectedResult);
     });
 
-    it('should call createEnv every time invoked', async () => {
+    test('should call createEnv every time invoked', async () => {
       const { keys } = await import('../keys');
 
       keys();
@@ -435,8 +435,8 @@ describe('Notifications Keys Configuration', (_: any) => {
     });
   });
 
-  describe('configuration consistency', (_: any) => {
-    it('should always make notifications keys optional', async () => {
+  describe('configuration consistency', () => {
+    test('should always make notifications keys optional', async () => {
       // Test production with all keys present
       process.env.NODE_ENV = 'production';
       process.env.KNOCK_SECRET_API_KEY = 'sk_live_123';
@@ -454,7 +454,7 @@ describe('Notifications Keys Configuration', (_: any) => {
       expect(call.client.NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID._def.typeName).toBe('ZodOptional');
     });
 
-    it('should handle mixed environment scenarios', async () => {
+    test('should handle mixed environment scenarios', async () => {
       process.env.NODE_ENV = 'production';
       process.env.KNOCK_SECRET_API_KEY = 'sk_live_123';
       process.env.NEXT_PUBLIC_KNOCK_API_KEY = '';
@@ -465,7 +465,7 @@ describe('Notifications Keys Configuration', (_: any) => {
 
       const call = mockCreateEnv.mock.calls[0][0];
 
-      expect(call.runtimeEnv).toEqual({
+      expect(call.runtimeEnv).toStrictEqual({
         KNOCK_SECRET_API_KEY: 'sk_live_123',
         NEXT_PUBLIC_KNOCK_API_KEY: undefined,
         NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID: undefined,

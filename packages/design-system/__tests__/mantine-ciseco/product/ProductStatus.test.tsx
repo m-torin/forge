@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '../test-utils';
-import ProductStatus from '../../../mantine-ciseco/components/ProductStatus';
+import ProductStatus from '../../../src/mantine-ciseco/components/ProductStatus';
 
 describe('ProductStatus', (_: any) => {
   it('renders new in status', (_: any) => {

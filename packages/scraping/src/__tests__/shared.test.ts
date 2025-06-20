@@ -1,12 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect } from 'vitest';
 
 import { extractFromHtml } from '../shared/patterns/quick-scrape';
 import { ScrapingConfig, SelectorMap } from '../shared/types/scraping-types';
 import { validateConfigOrThrow } from '../shared/utils/validation';
 
-describe('Shared Scraping Utilities', () => {
+describe('shared Scraping Utilities', () => {
   describe('extractFromHtml', () => {
-    it('should extract data from HTML string', async () => {
+    test('should extract data from HTML string', async () => {
       const html = `
         <html>
           <head>
@@ -28,14 +28,14 @@ describe('Shared Scraping Utilities', () => {
 
       const result = await extractFromHtml(html, selectors);
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         title: 'Test Heading',
         description: 'Test description',
         content: 'Test content',
       });
     });
 
-    it('should handle missing elements', async () => {
+    test('should handle missing elements', async () => {
       const html = '<div>Test</div>';
       const selectors: SelectorMap = {
         title: { selector: 'h1' },
@@ -44,7 +44,7 @@ describe('Shared Scraping Utilities', () => {
 
       const result = await extractFromHtml(html, selectors);
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         title: null,
         content: null,
       });
@@ -52,7 +52,7 @@ describe('Shared Scraping Utilities', () => {
   });
 
   describe('validateConfigOrThrow', () => {
-    it('should validate a valid config', () => {
+    test('should validate a valid config', () => {
       const config: ScrapingConfig = {
         providers: {
           'node-fetch': { timeout: 5000 },
@@ -62,7 +62,7 @@ describe('Shared Scraping Utilities', () => {
       expect(() => validateConfigOrThrow(config)).not.toThrow();
     });
 
-    it('should reject an invalid config', () => {
+    test('should reject an invalid config', () => {
       const config = {
         providers: {
           'node-fetch': {
@@ -71,7 +71,7 @@ describe('Shared Scraping Utilities', () => {
         },
       };
 
-      expect(() => validateConfigOrThrow(config)).toThrow();
+      expect(() => validateConfigOrThrow(config)).toThrow('Invalid scraping configuration');
     });
   });
 });

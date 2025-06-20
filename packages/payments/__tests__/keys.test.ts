@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock environment variables
 const mockCreateEnv = vi.fn();
@@ -6,7 +6,7 @@ vi.mock('@t3-oss/env-nextjs', () => ({
   createEnv: mockCreateEnv,
 }));
 
-describe('Payment Keys Configuration', () => {
+describe('payment Keys Configuration', () => {
   let originalEnv: Record<string, string | undefined>;
 
   beforeEach(() => {
@@ -21,13 +21,13 @@ describe('Payment Keys Configuration', () => {
 
   describe('production environment', () => {
     beforeEach(() => {
-      process.env.NODE_ENV = 'production';
+      (process.env as any).NODE_ENV = 'production';
       process.env.VERCEL = '1'; // Simulate Vercel deployment
       process.env.STRIPE_SECRET_KEY = 'sk_live_123456789';
       process.env.STRIPE_WEBHOOK_SECRET = 'whsec_123456789';
     });
 
-    it('should require valid Stripe keys in production', async () => {
+    test('should require valid Stripe keys in production', async () => {
       mockCreateEnv.mockReturnValue({
         STRIPE_SECRET_KEY: 'sk_live_123456789',
         STRIPE_WEBHOOK_SECRET: 'whsec_123456789',
@@ -40,6 +40,7 @@ describe('Payment Keys Configuration', () => {
         runtimeEnv: {
           STRIPE_SECRET_KEY: 'sk_live_123456789',
           STRIPE_WEBHOOK_SECRET: 'whsec_123456789',
+          PAYMENTS_LOG_PROVIDER: undefined,
         },
         server: {
           STRIPE_SECRET_KEY: expect.objectContaining({
@@ -52,6 +53,11 @@ describe('Payment Keys Configuration', () => {
               typeName: 'ZodString',
             }),
           }),
+          PAYMENTS_LOG_PROVIDER: expect.objectContaining({
+            _def: expect.objectContaining({
+              typeName: 'ZodOptional',
+            }),
+          }),
         },
       });
 
@@ -59,7 +65,7 @@ describe('Payment Keys Configuration', () => {
       expect(result.STRIPE_WEBHOOK_SECRET).toBe('whsec_123456789');
     });
 
-    it('should validate Stripe secret key format in production', async () => {
+    test('should validate Stripe secret key format in production', async () => {
       const { keys } = await import('../keys');
 
       // The actual validation happens in @t3-oss/env-nextjs
@@ -74,12 +80,12 @@ describe('Payment Keys Configuration', () => {
 
   describe('development environment', () => {
     beforeEach(() => {
-      process.env.NODE_ENV = 'development';
+      (process.env as any).NODE_ENV = 'development';
       process.env.STRIPE_SECRET_KEY = 'sk_test_123456789';
       process.env.STRIPE_WEBHOOK_SECRET = 'whsec_123456789';
     });
 
-    it('should make keys optional in development', async () => {
+    test('should make keys optional in development', async () => {
       mockCreateEnv.mockReturnValue({
         STRIPE_SECRET_KEY: 'sk_test_123456789',
         STRIPE_WEBHOOK_SECRET: 'whsec_123456789',
@@ -92,7 +98,7 @@ describe('Payment Keys Configuration', () => {
       expect(result.STRIPE_WEBHOOK_SECRET).toBe('whsec_123456789');
     });
 
-    it('should handle missing keys in development', async () => {
+    test('should handle missing keys in development', async () => {
       process.env.STRIPE_SECRET_KEY = undefined;
       process.env.STRIPE_WEBHOOK_SECRET = undefined;
 
@@ -108,6 +114,7 @@ describe('Payment Keys Configuration', () => {
         runtimeEnv: {
           STRIPE_SECRET_KEY: undefined,
           STRIPE_WEBHOOK_SECRET: undefined,
+          PAYMENTS_LOG_PROVIDER: undefined,
         },
         server: {
           STRIPE_SECRET_KEY: expect.objectContaining({
@@ -120,6 +127,11 @@ describe('Payment Keys Configuration', () => {
               typeName: 'ZodUnion',
             }),
           }),
+          PAYMENTS_LOG_PROVIDER: expect.objectContaining({
+            _def: expect.objectContaining({
+              typeName: 'ZodOptional',
+            }),
+          }),
         },
       });
 
@@ -130,13 +142,13 @@ describe('Payment Keys Configuration', () => {
 
   describe('production with missing required env vars', () => {
     beforeEach(() => {
-      process.env.NODE_ENV = 'production';
+      (process.env as any).NODE_ENV = 'production';
       // Missing required env vars
       process.env.STRIPE_SECRET_KEY = undefined;
       process.env.STRIPE_WEBHOOK_SECRET = undefined;
     });
 
-    it('should make keys optional when env vars are missing in production', async () => {
+    test('should make keys optional when env vars are missing in production', async () => {
       mockCreateEnv.mockReturnValue({
         STRIPE_SECRET_KEY: undefined,
         STRIPE_WEBHOOK_SECRET: undefined,
@@ -150,6 +162,7 @@ describe('Payment Keys Configuration', () => {
         runtimeEnv: {
           STRIPE_SECRET_KEY: undefined,
           STRIPE_WEBHOOK_SECRET: undefined,
+          PAYMENTS_LOG_PROVIDER: undefined,
         },
         server: {
           STRIPE_SECRET_KEY: expect.objectContaining({
@@ -162,6 +175,11 @@ describe('Payment Keys Configuration', () => {
               typeName: 'ZodUnion',
             }),
           }),
+          PAYMENTS_LOG_PROVIDER: expect.objectContaining({
+            _def: expect.objectContaining({
+              typeName: 'ZodOptional',
+            }),
+          }),
         },
       });
 
@@ -172,12 +190,12 @@ describe('Payment Keys Configuration', () => {
 
   describe('key format validation', () => {
     beforeEach(() => {
-      process.env.NODE_ENV = 'production';
+      (process.env as any).NODE_ENV = 'production';
       process.env.STRIPE_SECRET_KEY = 'sk_test_123456789';
       process.env.STRIPE_WEBHOOK_SECRET = 'whsec_123456789';
     });
 
-    it('should validate secret key starts with sk_', async () => {
+    test('should validate secret key starts with sk_', async () => {
       const { keys } = await import('../keys');
       keys();
 
@@ -188,7 +206,7 @@ describe('Payment Keys Configuration', () => {
       expect(secretKeySchema).toBeDefined();
     });
 
-    it('should validate webhook secret starts with whsec_', async () => {
+    test('should validate webhook secret starts with whsec_', async () => {
       const { keys } = await import('../keys');
       keys();
 
@@ -202,12 +220,12 @@ describe('Payment Keys Configuration', () => {
 
   describe('runtime environment mapping', () => {
     beforeEach(() => {
-      process.env.NODE_ENV = 'development';
+      (process.env as any).NODE_ENV = 'development';
       process.env.STRIPE_SECRET_KEY = 'sk_test_123456789';
       process.env.STRIPE_WEBHOOK_SECRET = 'whsec_123456789';
     });
 
-    it('should map environment variables correctly', async () => {
+    test('should map environment variables correctly', async () => {
       const { keys } = await import('../keys');
       keys();
 
@@ -220,7 +238,7 @@ describe('Payment Keys Configuration', () => {
       });
     });
 
-    it('should handle undefined environment variables', async () => {
+    test('should handle undefined environment variables', async () => {
       process.env.STRIPE_SECRET_KEY = undefined;
       process.env.STRIPE_WEBHOOK_SECRET = undefined;
 
@@ -238,8 +256,8 @@ describe('Payment Keys Configuration', () => {
   });
 
   describe('configuration logic', () => {
-    it('should determine requireInProduction correctly for production with keys', async () => {
-      process.env.NODE_ENV = 'production';
+    test('should determine requireInProduction correctly for production with keys', async () => {
+      (process.env as any).NODE_ENV = 'production';
       process.env.VERCEL = '1'; // Simulate Vercel deployment
       process.env.STRIPE_SECRET_KEY = 'sk_live_123';
       process.env.STRIPE_WEBHOOK_SECRET = 'whsec_123';
@@ -252,8 +270,8 @@ describe('Payment Keys Configuration', () => {
       expect(call.server.STRIPE_SECRET_KEY._def.typeName).toBe('ZodString');
     });
 
-    it('should determine requireInProduction correctly for production without keys', async () => {
-      process.env.NODE_ENV = 'production';
+    test('should determine requireInProduction correctly for production without keys', async () => {
+      (process.env as any).NODE_ENV = 'production';
       process.env.STRIPE_SECRET_KEY = undefined;
       process.env.STRIPE_WEBHOOK_SECRET = undefined;
 
@@ -265,8 +283,8 @@ describe('Payment Keys Configuration', () => {
       expect(call.server.STRIPE_SECRET_KEY._def.typeName).toBe('ZodUnion');
     });
 
-    it('should determine requireInProduction correctly for development', async () => {
-      process.env.NODE_ENV = 'development';
+    test('should determine requireInProduction correctly for development', async () => {
+      (process.env as any).NODE_ENV = 'development';
       process.env.STRIPE_SECRET_KEY = 'sk_test_123';
       process.env.STRIPE_WEBHOOK_SECRET = 'whsec_123';
 
@@ -281,12 +299,12 @@ describe('Payment Keys Configuration', () => {
 
   describe('error handling', () => {
     beforeEach(() => {
-      process.env.NODE_ENV = 'production';
+      (process.env as any).NODE_ENV = 'production';
       process.env.STRIPE_SECRET_KEY = 'sk_live_123456789';
       process.env.STRIPE_WEBHOOK_SECRET = 'whsec_123456789';
     });
 
-    it('should propagate createEnv errors', async () => {
+    test('should propagate createEnv errors', async () => {
       const error = new Error('Invalid environment configuration');
       mockCreateEnv.mockImplementation(() => {
         throw error;
@@ -300,7 +318,7 @@ describe('Payment Keys Configuration', () => {
 
   describe('function invocation', () => {
     beforeEach(() => {
-      process.env.NODE_ENV = 'development';
+      (process.env as any).NODE_ENV = 'development';
       process.env.STRIPE_SECRET_KEY = 'sk_test_123456789';
       process.env.STRIPE_WEBHOOK_SECRET = 'whsec_123456789';
 
@@ -310,19 +328,19 @@ describe('Payment Keys Configuration', () => {
       });
     });
 
-    it('should return a function', async () => {
+    test('should return a function', async () => {
       const { keys } = await import('../keys');
       expect(typeof keys).toBe('function');
     });
 
-    it('should call createEnv when invoked', async () => {
+    test('should call createEnv when invoked', async () => {
       const { keys } = await import('../keys');
       keys();
 
       expect(mockCreateEnv).toHaveBeenCalledTimes(1);
     });
 
-    it('should return the result from createEnv', async () => {
+    test('should return the result from createEnv', async () => {
       const expectedResult = {
         STRIPE_SECRET_KEY: 'sk_test_123456789',
         STRIPE_WEBHOOK_SECRET: 'whsec_123456789',
@@ -333,7 +351,7 @@ describe('Payment Keys Configuration', () => {
       const { keys } = await import('../keys');
       const result = keys();
 
-      expect(result).toEqual(expectedResult);
+      expect(result).toStrictEqual(expectedResult);
     });
   });
 });

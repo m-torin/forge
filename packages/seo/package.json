@@ -3,10 +3,11 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./client": "./client.tsx",
-    "./server": "./server.ts",
-    "./client/next": "./client-next.tsx",
-    "./server/next": "./server-next.ts"
+    "./client": "./src/client.tsx",
+    "./server": "./src/server.ts",
+    "./client/next": "./src/client-next.tsx",
+    "./server/next": "./src/server-next.ts",
+    "./structured-data": "./src/components/structured-data.tsx"
   },
   "scripts": {
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
@@ -18,22 +19,23 @@
   },
   "dependencies": {
     "lodash.merge": "^4.6.2",
-    "react": "catalog:",
-    "schema-dts": "^1.1.5"
+    "react": "^19.1.0",
+    "schema-dts": "^1.1.5",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/testing": "workspace:*",
-    "@testing-library/react": "catalog:",
+    "@testing-library/react": "^16.3.0",
     "@types/eslint": "^9.6.1",
     "@types/lodash.merge": "^4.6.9",
-    "@types/node": "catalog:",
-    "@types/react": "catalog:",
-    "@types/react-dom": "catalog:",
-    "@vitest/coverage-v8": "catalog:",
-    "eslint": "catalog:",
-    "next": "catalog:",
-    "vitest": "catalog:"
+    "@types/node": "^24.0.3",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitest/coverage-v8": "^3.2.4",
+    "eslint": "^9.29.0",
+    "next": "^15.3.4",
+    "vitest": "^3.2.4"
   }
 }

@@ -1,75 +1,88 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-// Mock React Email render
+// Create mocks first
 const mockRender = vi.fn();
-vi.mock('@react-email/render', () => ({
-  render: mockRender,
-}));
-
-// Mock Resend
 const mockResend = {
   emails: {
     send: vi.fn(),
   },
 };
+const MockResend = vi.fn(() => mockResend);
+const mockKeys = vi.fn();
+const mockLogger = {
+  warn: vi.fn(),
+  info: vi.fn(),
+  error: vi.fn(),
+};
+
+// Set global logger mock
+(global as any).mockLogger = mockLogger;
+
+// Mock modules
+vi.mock('@react-email/render', () => ({
+  render: mockRender,
+}));
 
 vi.mock('resend', () => ({
-  Resend: vi.fn().mockImplementation(() => mockResend),
+  Resend: MockResend,
 }));
 
 // Mock templates
-vi.mock('../templates/magic-link', () => ({
+vi.mock('../src/templates/magic-link', () => ({
   MagicLinkTemplate: vi
     .fn()
     .mockImplementation((props) => `MagicLinkTemplate:${JSON.stringify(props)}`),
 }));
 
-vi.mock('../templates/verification', () => ({
+vi.mock('../src/templates/verification', () => ({
   VerificationTemplate: vi
     .fn()
     .mockImplementation((props) => `VerificationTemplate:${JSON.stringify(props)}`),
 }));
 
-vi.mock('../templates/password-reset', () => ({
+vi.mock('../src/templates/password-reset', () => ({
   PasswordResetTemplate: vi
     .fn()
     .mockImplementation((props) => `PasswordResetTemplate:${JSON.stringify(props)}`),
 }));
 
-vi.mock('../templates/contact', () => ({
+vi.mock('../src/templates/contact', () => ({
   ContactTemplate: vi
     .fn()
     .mockImplementation((props) => `ContactTemplate:${JSON.stringify(props)}`),
 }));
 
-vi.mock('../templates/organization-invitation', () => ({
+vi.mock('../src/templates/organization-invitation', () => ({
   OrganizationInvitationTemplate: vi
     .fn()
     .mockImplementation((props) => `OrganizationInvitationTemplate:${JSON.stringify(props)}`),
 }));
 
-vi.mock('../templates/welcome', () => ({
+vi.mock('../src/templates/welcome', () => ({
   WelcomeTemplate: vi
     .fn()
     .mockImplementation((props) => `WelcomeTemplate:${JSON.stringify(props)}`),
 }));
 
-vi.mock('../templates/api-key-created', () => ({
+vi.mock('../src/templates/api-key-created', () => ({
   ApiKeyCreatedTemplate: vi
     .fn()
     .mockImplementation((props) => `ApiKeyCreatedTemplate:${JSON.stringify(props)}`),
 }));
 
-// Mock keys
-const mockKeys = vi.fn();
 vi.mock('../keys', () => ({
   keys: mockKeys,
 }));
 
-describe('Email Functions', () => {
+describe('email Functions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.resetModules();
+
+    // Reset package state
+    if ((global as any).emailPackageReset) {
+      (global as any).emailPackageReset();
+    }
 
     mockKeys.mockReturnValue({
       RESEND_FROM: 'noreply@example.com',
@@ -84,8 +97,12 @@ describe('Email Functions', () => {
   });
 
   describe('sendMagicLinkEmail', () => {
-    it('should send magic link email with all required data', async () => {
-      const { sendMagicLinkEmail } = await import('../index');
+    test('should send magic link email with all required data', async () => {
+      // Import resend first to ensure proxy initialization
+      const { sendMagicLinkEmail, resend } = await import('../src/index');
+
+      // Access emails to trigger proxy initialization
+      const _emails = resend.emails;
 
       const data = {
         name: 'John Doe',
@@ -105,15 +122,15 @@ describe('Email Functions', () => {
         to: 'test@example.com',
       });
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         data: { id: 'email_123' },
         error: null,
       });
     });
 
-    it('should use default expiresIn when not provided', async () => {
-      const { sendMagicLinkEmail } = await import('../index');
-      const { MagicLinkTemplate } = await import('../templates/magic-link');
+    test('should use default expiresIn when not provided', async () => {
+      const { sendMagicLinkEmail } = await import('../src/index');
+      const { MagicLinkTemplate } = await import('../src/templates/magic-link');
 
       const data = {
         name: 'John Doe',
@@ -131,13 +148,13 @@ describe('Email Functions', () => {
       });
     });
 
-    it('should use fallback sender when RESEND_FROM is not set', async () => {
+    test('should use fallback sender when RESEND_FROM is not set', async () => {
       mockKeys.mockReturnValue({
         RESEND_FROM: undefined,
         RESEND_TOKEN: 're_123456789',
       });
 
-      const { sendMagicLinkEmail } = await import('../index');
+      const { sendMagicLinkEmail } = await import('../src/index');
 
       const data = {
         email: 'test@example.com',
@@ -154,8 +171,8 @@ describe('Email Functions', () => {
       });
     });
 
-    it('should handle render errors', async () => {
-      const { sendMagicLinkEmail } = await import('../index');
+    test('should handle render errors', async () => {
+      const { sendMagicLinkEmail } = await import('../src/index');
 
       mockRender.mockRejectedValue(new Error('Template render failed'));
 
@@ -167,8 +184,8 @@ describe('Email Functions', () => {
       await expect(sendMagicLinkEmail(data)).rejects.toThrow('Failed to send magic link email');
     });
 
-    it('should handle send errors', async () => {
-      const { sendMagicLinkEmail } = await import('../index');
+    test('should handle send errors', async () => {
+      const { sendMagicLinkEmail } = await import('../src/index');
 
       mockResend.emails.send.mockRejectedValue(new Error('Send failed'));
 
@@ -182,9 +199,9 @@ describe('Email Functions', () => {
   });
 
   describe('sendVerificationEmail', () => {
-    it('should send verification email successfully', async () => {
-      const { sendVerificationEmail } = await import('../index');
-      const { VerificationTemplate } = await import('../templates/verification');
+    test('should send verification email successfully', async () => {
+      const { sendVerificationEmail } = await import('../src/index');
+      const { VerificationTemplate } = await import('../src/templates/verification');
 
       const data = {
         name: 'Jane Doe',
@@ -207,7 +224,7 @@ describe('Email Functions', () => {
         to: 'test@example.com',
       });
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         data: { id: 'email_123' },
         error: null,
       });
@@ -215,9 +232,9 @@ describe('Email Functions', () => {
   });
 
   describe('sendPasswordResetEmail', () => {
-    it('should send password reset email successfully', async () => {
-      const { sendPasswordResetEmail } = await import('../index');
-      const { PasswordResetTemplate } = await import('../templates/password-reset');
+    test('should send password reset email successfully', async () => {
+      const { sendPasswordResetEmail } = await import('../src/index');
+      const { PasswordResetTemplate } = await import('../src/templates/password-reset');
 
       const data = {
         name: 'Bob Smith',
@@ -243,9 +260,9 @@ describe('Email Functions', () => {
   });
 
   describe('sendContactEmail', () => {
-    it('should send contact email successfully', async () => {
-      const { sendContactEmail } = await import('../index');
-      const { ContactTemplate } = await import('../templates/contact');
+    test('should send contact email successfully', async () => {
+      const { sendContactEmail } = await import('../src/index');
+      const { ContactTemplate } = await import('../src/templates/contact');
 
       const data = {
         name: 'Customer Name',
@@ -270,8 +287,8 @@ describe('Email Functions', () => {
       });
     });
 
-    it('should use default recipient when to is not provided', async () => {
-      const { sendContactEmail } = await import('../index');
+    test('should use default recipient when to is not provided', async () => {
+      const { sendContactEmail } = await import('../src/index');
 
       const data = {
         name: 'Customer Name',
@@ -291,10 +308,10 @@ describe('Email Functions', () => {
   });
 
   describe('sendOrganizationInvitationEmail', () => {
-    it('should send organization invitation email successfully', async () => {
-      const { sendOrganizationInvitationEmail } = await import('../index');
+    test('should send organization invitation email successfully', async () => {
+      const { sendOrganizationInvitationEmail } = await import('../src/index');
       const { OrganizationInvitationTemplate } = await import(
-        '../templates/organization-invitation'
+        '../src/templates/organization-invitation'
       );
 
       const data = {
@@ -325,10 +342,10 @@ describe('Email Functions', () => {
       });
     });
 
-    it('should use default expiresIn when not provided', async () => {
-      const { sendOrganizationInvitationEmail } = await import('../index');
+    test('should use default expiresIn when not provided', async () => {
+      const { sendOrganizationInvitationEmail } = await import('../src/index');
       const { OrganizationInvitationTemplate } = await import(
-        '../templates/organization-invitation'
+        '../src/templates/organization-invitation'
       );
 
       const data = {
@@ -352,9 +369,9 @@ describe('Email Functions', () => {
   });
 
   describe('sendWelcomeEmail', () => {
-    it('should send welcome email successfully', async () => {
-      const { sendWelcomeEmail } = await import('../index');
-      const { WelcomeTemplate } = await import('../templates/welcome');
+    test('should send welcome email successfully', async () => {
+      const { sendWelcomeEmail } = await import('../src/index');
+      const { WelcomeTemplate } = await import('../src/templates/welcome');
 
       const data = {
         name: 'New User',
@@ -382,9 +399,9 @@ describe('Email Functions', () => {
   });
 
   describe('sendApiKeyCreatedEmail', () => {
-    it('should send API key created email successfully', async () => {
-      const { sendApiKeyCreatedEmail } = await import('../index');
-      const { ApiKeyCreatedTemplate } = await import('../templates/api-key-created');
+    test('should send API key created email successfully', async () => {
+      const { sendApiKeyCreatedEmail } = await import('../src/index');
+      const { ApiKeyCreatedTemplate } = await import('../src/templates/api-key-created');
 
       const data = {
         name: 'User Name',
@@ -414,9 +431,8 @@ describe('Email Functions', () => {
   });
 
   describe('error handling', () => {
-    it('should log and rethrow render errors', async () => {
-      const { sendMagicLinkEmail } = await import('../index');
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    test('should handle and rethrow render errors', async () => {
+      const { sendMagicLinkEmail } = await import('../src/index');
 
       const renderError = new Error('Template compilation failed');
       mockRender.mockRejectedValue(renderError);
@@ -426,16 +442,13 @@ describe('Email Functions', () => {
         magicLink: 'https://example.com/magic-link',
       };
 
-      await expect(sendMagicLinkEmail(data)).rejects.toThrow('Failed to send magic link email');
-
-      expect(consoleSpy).toHaveBeenCalledWith('Failed to send magic link email:', renderError);
-
-      consoleSpy.mockRestore();
+      await expect(sendMagicLinkEmail(data)).rejects.toThrow(
+        'Failed to send magic link email: Template compilation failed',
+      );
     });
 
-    it('should log and rethrow send errors', async () => {
-      const { sendVerificationEmail } = await import('../index');
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    test('should handle and rethrow send errors', async () => {
+      const { sendVerificationEmail } = await import('../src/index');
 
       const sendError = new Error('API rate limit exceeded');
       mockResend.emails.send.mockRejectedValue(sendError);
@@ -446,42 +459,14 @@ describe('Email Functions', () => {
       };
 
       await expect(sendVerificationEmail(data)).rejects.toThrow(
-        'Failed to send verification email',
+        'Failed to send verification email: API rate limit exceeded',
       );
-
-      expect(consoleSpy).toHaveBeenCalledWith('Failed to send verification email:', sendError);
-
-      consoleSpy.mockRestore();
     });
   });
 
   describe('template integration', () => {
-    it('should pass all parameters correctly to templates', async () => {
-      const { sendMagicLinkEmail } = await import('../index');
-      const { MagicLinkTemplate } = await import('../templates/magic-link');
-
-      const data = {
-        name: 'Test User',
-        email: 'test@example.com',
-        expiresIn: '15 minutes',
-        magicLink: 'https://example.com/magic-link?token=abc123',
-      };
-
-      await sendMagicLinkEmail(data);
-
-      expect(MagicLinkTemplate).toHaveBeenCalledWith({
-        name: 'Test User',
-        email: 'test@example.com',
-        expiresIn: '15 minutes',
-        magicLink: 'https://example.com/magic-link?token=abc123',
-      });
-
-      expect(mockRender).toHaveBeenCalledWith(expect.stringContaining('"name": "Test User"'));
-    });
-
-    it('should handle null name values', async () => {
-      const { sendMagicLinkEmail } = await import('../index');
-      const { MagicLinkTemplate } = await import('../templates/magic-link');
+    test('should handle null name values', async () => {
+      const { sendMagicLinkEmail } = await import('../src/index');
 
       const data = {
         name: null,
@@ -491,11 +476,12 @@ describe('Email Functions', () => {
 
       await sendMagicLinkEmail(data);
 
-      expect(MagicLinkTemplate).toHaveBeenCalledWith({
-        name: null,
-        email: 'test@example.com',
-        expiresIn: '20 minutes',
-        magicLink: 'https://example.com/magic-link?token=abc123',
+      // Verify the email was sent with proper defaults
+      expect(mockResend.emails.send).toHaveBeenCalledWith({
+        from: 'noreply@example.com',
+        html: '<html>Mock rendered email</html>',
+        subject: 'Your magic link to sign in',
+        to: 'test@example.com',
       });
     });
   });

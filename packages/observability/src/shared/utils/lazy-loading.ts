@@ -238,7 +238,7 @@ function createStableCacheKey(name: string, config: any): string {
  * Get provider module path for preloading (environment-agnostic)
  * Each environment should provide its own provider registry for preloading
  */
-function getProviderModulePath(providerName: string): string {
+function _getProviderModulePath(providerName: string): string {
   // Only include shared providers that are available in all environments
   const sharedModuleMap: Record<string, string> = {
     console: '../providers/console-provider',

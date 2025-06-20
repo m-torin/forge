@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation';
 import { notifications } from '@mantine/notifications';
 
 import { ModalWrapper } from '../../modal-wrapper';
-import { ApiKeyForm } from '../../../components/forms/ApiKeyForm';
-import { getApiKey } from '@repo/auth/server/next';
-import type { ApiKey } from '../../../types';
+import { ApiKeyForm } from '@/components/pim3/forms/ApiKeyForm';
+import { getApiKeyAction } from '@/actions/pim3/actions';
+import type { ApiKey } from '@/types/pim3';
 
 interface ApiKeyModalPageProps {
   params: Promise<{ id: string }>;
@@ -38,7 +38,7 @@ export default function ApiKeyModalPage({ params }: ApiKeyModalPageProps) {
 
     setLoading(true);
     try {
-      const result = await getApiKey(paramsData.id);
+      const result = await getApiKeyAction(paramsData.id);
       if (result.success && result.data) {
         setApiKey(result.data as ApiKey);
       } else {

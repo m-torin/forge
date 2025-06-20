@@ -2,6 +2,7 @@
  * Type-safe auth factory with conditional feature support
  */
 
+import { syncLogger as logger } from './utils/logger';
 import type {
   AuthConfig,
   ConditionalAuthMethods,
@@ -176,7 +177,7 @@ export async function conditionalImport<T>(
     try {
       return await importFn();
     } catch (error) {
-      console.warn('Failed to conditionally import module:', error);
+      logger.warn('Failed to conditionally import module:', error);
       return null;
     }
   }

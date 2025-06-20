@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '../test-utils';
-import ProductQuickView from '../../../mantine-ciseco/components/ProductQuickView';
+import ProductQuickView from '../../../src/mantine-ciseco/components/ProductQuickView';
 
 // Mock Next.js Image component
 vi.mock('next/image', (_: any) => ({
@@ -13,17 +13,17 @@ vi.mock('next/link', (_: any) => ({
 }));
 
 // Mock the locale hook
-vi.mock('../../../mantine-ciseco/hooks/useLocale', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/hooks/useLocale', (_: any) => ({
   useLocalizeHref: () => (href: string) => href,
 }));
 
 // Mock AddToCardButton
-vi.mock('../../../mantine-ciseco/components/AddToCardButton', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/components/AddToCardButton', (_: any) => ({
   default: ({ children, onClick }: any) => <button onClick={onClick}>{children}</button>,
 }));
 
 // Mock AccordionInfo
-vi.mock('../../../mantine-ciseco/components/AccordionInfo', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/components/AccordionInfo', (_: any) => ({
   default: ({ data }: any) => (
     <div>
       {data.map((item: any, index: number) => (
@@ -37,7 +37,7 @@ vi.mock('../../../mantine-ciseco/components/AccordionInfo', (_: any) => ({
 }));
 
 // Mock LikeButton
-vi.mock('../../../mantine-ciseco/components/LikeButton', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/components/LikeButton', (_: any) => ({
   default: ({ className, onClick }: any) => (
     <button className={className} onClick={onClick} aria-label="Like product">
       Like
@@ -46,7 +46,7 @@ vi.mock('../../../mantine-ciseco/components/LikeButton', (_: any) => ({
 }));
 
 // Mock other components
-vi.mock('../../../mantine-ciseco/components/NcInputNumber', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/components/NcInputNumber', (_: any) => ({
   default: ({ onChange, defaultValue }: any) => (
     <input
       type="number"
@@ -57,20 +57,20 @@ vi.mock('../../../mantine-ciseco/components/NcInputNumber', (_: any) => ({
   ),
 }));
 
-vi.mock('../../../mantine-ciseco/components/Prices', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/components/Prices', (_: any) => ({
   default: ({ price }: any) => <span>${price}</span>,
 }));
 
-vi.mock('../../../mantine-ciseco/components/Divider', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/components/Divider', (_: any) => ({
   Divider: () => <hr />,
 }));
 
-vi.mock('../../../mantine-ciseco/components/shared/Button/ButtonPrimary', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/components/shared/Button/ButtonPrimary', (_: any) => ({
   default: ({ children, onClick }: any) => <button onClick={onClick}>{children}</button>,
 }));
 
 // Mock data function
-vi.mock('../../../mantine-ciseco/data/data', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/data/data', (_: any) => ({
   getProductDetailByHandle: vi.fn(),
 }));
 

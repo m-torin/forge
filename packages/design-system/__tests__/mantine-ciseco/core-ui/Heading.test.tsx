@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '../test-utils';
-import Heading from '../../../mantine-ciseco/components/Heading/Heading';
+import Heading from '../../../src/mantine-ciseco/components/Heading/Heading';
 
 describe('Heading', (_: any) => {
   it('renders heading with text', (_: any) => {

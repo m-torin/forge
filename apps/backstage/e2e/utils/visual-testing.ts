@@ -1,9 +1,7 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
-import { expect } from '@playwright/test';
-
-import { Locator, Page } from '@playwright/test';
+import { expect, Locator, Page } from '@playwright/test';
 
 export interface VisualTestOptions {
   animations?: 'disabled' | 'allow'; // How to handle animations

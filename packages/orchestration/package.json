@@ -38,26 +38,27 @@
   "dependencies": {
     "@repo/ai": "workspace:*",
     "@repo/database": "workspace:*",
+    "@repo/observability": "workspace:*",
     "@upstash/qstash": "^2.8.1",
     "@upstash/ratelimit": "^2.0.5",
     "@upstash/redis": "^1.35.0",
-    "@upstash/workflow": "^0.2.13",
-    "date-fns": "catalog:",
-    "nanoid": "catalog:",
-    "next": "catalog:",
+    "@upstash/workflow": "^0.2.14",
+    "date-fns": "^4.1.0",
+    "nanoid": "^5.1.5",
+    "next": "^15.3.4",
     "opossum": "^9.0.0",
     "p-queue": "^8.1.0",
     "p-retry": "^6.2.1",
-    "react": "catalog:",
-    "zod": "catalog:"
+    "react": "^19.1.0",
+    "zod": "^3.25.67"
   },
   "devDependencies": {
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/testing": "workspace:*",
     "@types/opossum": "^8.1.8",
-    "@types/react": "catalog:",
-    "eslint": "catalog:",
-    "typescript": "catalog:"
+    "@types/react": "^19.1.8",
+    "eslint": "^9.29.0",
+    "typescript": "5.8.3"
   }
 }

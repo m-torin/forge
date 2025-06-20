@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '../test-utils';
-import { ListingImageGallery } from '../../../mantine-ciseco';
-import { ListingGalleryImage } from '../../../mantine-ciseco/components/listing-image-gallery/utils/types';
+import { ListingImageGallery } from '../../../src/mantine-ciseco';
+import { ListingGalleryImage } from '../../../src/mantine-ciseco/components/listing-image-gallery/utils/types';
 
 // Mock Next.js Image
 vi.mock('next/image', (_: any) => ({
@@ -30,14 +30,14 @@ vi.mock('react-hooks-global-state', (_: any) => ({
 
 // Mock useLastViewedPhoto hook
 vi.mock(
-  '../../../mantine-ciseco/components/listing-image-gallery/utils/useLastViewedPhoto',
+  '../../../src/mantine-ciseco/components/listing-image-gallery/utils/useLastViewedPhoto',
   () => ({
     useLastViewedPhoto: () => [null, vi.fn()],
   }),
 );
 
 // Mock LikeSaveBtns
-vi.mock('../../../mantine-ciseco/components/LikeSaveBtns', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/components/LikeSaveBtns', (_: any) => ({
   default: ({ 'data-testid': testId }: any) => (
     <div data-testid={testId || 'like-save-btns'}>Like Save Buttons</div>
   ),

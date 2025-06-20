@@ -148,7 +148,7 @@ The platform uses a consistent four-file export pattern for environment-specific
 {
   "exports": {
     "./client": "./src/client.ts",           // Browser (non-Next.js)
-    "./server": "./src/server.ts",           // Node.js (non-Next.js) 
+    "./server": "./src/server.ts",           // Node.js (non-Next.js)
     "./client/next": "./src/client-next.ts", // Next.js client (REQUIRED)
     "./server/next": "./src/server-next.ts"  // Next.js server (REQUIRED)
   }
@@ -185,7 +185,7 @@ Multiple packages implement the provider pattern for maximum flexibility:
     const ai = createAI({
       providers: [
         { name: 'openai', type: 'ai-sdk' },      // ~90% use cases
-        { name: 'anthropic', type: 'direct' },    // Provider-specific features  
+        { name: 'anthropic', type: 'direct' },    // Provider-specific features
         { name: 'custom', type: 'custom' },       // Specialized needs
       ],
       routing: {
@@ -195,8 +195,8 @@ Multiple packages implement the provider pattern for maximum flexibility:
     });
     ```
   </Tab>
-  
-  <Tab title="Scraping Package">  
+
+  <Tab title="Scraping Package">
     ```typescript
     // Multi-provider web scraping
     const scraper = createServerScraping({
@@ -207,7 +207,7 @@ Multiple packages implement the provider pattern for maximum flexibility:
       ],
       routing: {
         static: 'cheerio',
-        dynamic: 'playwright', 
+        dynamic: 'playwright',
         protected: 'scrapingbee',
       },
     });
@@ -286,7 +286,7 @@ export const env = createEnv({
     ```
 
   </Tab>
-  
+
   <Tab title="Turborepo Caching">
     ```json
     {
@@ -354,20 +354,15 @@ import { rateLimit } from '@repo/security/rate-limit';
 export async function secureAction() {
   // Rate limiting
   await rateLimit('user-action', { requests: 10, window: '1m' });
-  
-  // Authentication
-  const session = await auth();
-  if (!session?.user) throw new Error('Unauthorized');
-  
-  // Authorization
-  if (!session.user.permissions.includes('admin')) {
-    throw new Error('Insufficient permissions');
-  }
-  
-  // Action implementation
-  return performSecureOperation();
-}
-```
+
+// Authentication const session = await auth(); if (!session?.user) throw new Error('Unauthorized');
+
+// Authorization if (!session.user.permissions.includes('admin')) { throw new Error('Insufficient
+permissions'); }
+
+// Action implementation return performSecureOperation(); }
+
+````
 
 ```typescript Content Security Policy
 // Security headers configuration
@@ -394,7 +389,7 @@ export default {
     },
   ],
 };
-```
+````
 
 </CodeGroup>
 

@@ -16,7 +16,6 @@ import {
 } from '@mantine/core';
 import {
   IconKey,
-  IconCalendar,
   IconEdit,
   IconActivity,
   IconShield,
@@ -28,10 +27,10 @@ import { notifications } from '@mantine/notifications';
 import { useClipboard } from '@mantine/hooks';
 import { useRouter } from 'next/navigation';
 
-import { getApiKey } from '@repo/auth/server/next';
-import { ApiKeyForm } from '../../components/forms/ApiKeyForm';
-import { PageHeader } from '../../../components/page-header';
-import type { ApiKey } from '../../types';
+import { getApiKeyAction } from '@/actions/pim3/actions';
+import { ApiKeyForm } from '@/components/pim3/forms/ApiKeyForm';
+import { PageHeader } from '@/components/pim3/page-header';
+import type { ApiKey } from '@/types/pim3';
 
 interface ApiKeyPageProps {
   params: Promise<{ id: string }>;
@@ -64,7 +63,7 @@ export default function ApiKeyPage({ params }: ApiKeyPageProps) {
 
     setLoading(true);
     try {
-      const result = await getApiKey(paramsData.id);
+      const result = await getApiKeyAction(paramsData.id);
       if (result.success && result.data) {
         setApiKey(result.data as ApiKey);
       } else {

@@ -1,70 +1,11 @@
 /**
- * Client-side analytics exports
- * Complete analytics solution for browser/client environments
- *
- * @example
- * ```typescript
- * import { createClientAnalytics, track, ecommerce } from '@repo/analytics/client';
- *
- * const analytics = await createClientAnalytics({
- *   providers: {
- *     segment: { writeKey: 'xxx' },
- *     posthog: { apiKey: 'yyy' }
- *   }
- * });
- *
- * // Preferred: Use emitters
- * await analytics.emit(track('Button Clicked', { color: 'blue' }));
- * await analytics.emit(ecommerce.productViewed({ product_id: '123' }));
- * ```
+ * Client exports for browser environments (non-Next.js)
  */
 
-import { PostHogClientProvider } from './client/providers/posthog-client';
-import { SegmentClientProvider } from './client/providers/segment-client';
-import { VercelClientProvider } from './client/providers/vercel-client';
-import { ConsoleProvider } from './shared/providers/console-provider';
-import { createAnalyticsManager } from './shared/utils/manager';
+// Export core client functions
+export { createClientAnalytics, createClientAnalyticsUninitialized } from './client/manager';
 
-// ============================================================================
-// CONVENIENCE EXPORTS
-// ============================================================================
-import type { AnalyticsConfig, AnalyticsManager, ProviderRegistry } from './shared/types/types';
-
-// Client-specific provider registry
-const CLIENT_PROVIDERS: ProviderRegistry = {
-  console: (config) => new ConsoleProvider(config),
-  posthog: (config) => new PostHogClientProvider(config),
-  segment: (config) => new SegmentClientProvider(config),
-  vercel: (config) => new VercelClientProvider(config),
-};
-
-// ============================================================================
-// CORE ANALYTICS FUNCTIONS
-// ============================================================================
-
-/**
- * Create and initialize a client analytics instance
- * This is the primary way to create analytics for client-side applications
- */
-export async function createClientAnalytics(config: AnalyticsConfig): Promise<AnalyticsManager> {
-  const manager = createAnalyticsManager(config, CLIENT_PROVIDERS);
-  await manager.initialize();
-  return manager;
-}
-
-/**
- * Create a client analytics instance without initializing
- * Useful when you need to control initialization timing
- */
-export function createClientAnalyticsUninitialized(config: AnalyticsConfig): AnalyticsManager {
-  return createAnalyticsManager(config, CLIENT_PROVIDERS);
-}
-
-// ============================================================================
-// EMITTERS - PRIMARY INTERFACE
-// ============================================================================
-
-// Export all core emitters - these are the preferred way to track events
+// Export all emitters - these are the preferred way to track events
 export {
   alias,
   // Emitter utilities
@@ -91,10 +32,7 @@ export {
   withUTM,
 } from './shared/emitters';
 
-// ============================================================================
-// ADAPTER UTILITIES
-// ============================================================================
-
+// Export adapter utilities
 export {
   createEmitterProcessor,
   // Emitter processing utilities
@@ -102,88 +40,28 @@ export {
   trackEcommerceEvent,
 } from './shared/utils/emitter-adapter';
 
-// ============================================================================
-// TYPES
-// ============================================================================
-
-// Core analytics types
-export type {
-  AnalyticsConfig,
-  AnalyticsContext,
-  AnalyticsManager,
-  AnalyticsProvider,
-  ProviderConfig,
-  TrackingOptions,
-} from './shared/types/types';
-
-// Emitter types
-export type {
-  EmitterAliasPayload,
-  EmitterContext,
-  EmitterGroupPayload,
-  EmitterIdentifyPayload,
-  EmitterOptions,
-  EmitterPagePayload,
-  EmitterPayload,
-  EmitterTrackPayload,
-} from './shared/emitters/emitter-types';
-
-// Provider-specific types
-export type { SegmentConfig, SegmentOptions } from './shared/types/segment-types';
-
-export type { BootstrapData, PostHogConfig, PostHogOptions } from './shared/types/posthog-types';
-
-export type { VercelConfig, VercelOptions } from './shared/types/vercel-types';
-
-export type { ConsoleConfig, ConsoleOptions } from './shared/types/console-types';
-
-// Ecommerce types
-export type {
-  BaseProductProperties,
-  CartProperties,
-  EcommerceEventSpec,
-  ExtendedProductProperties,
-  OrderProperties,
-} from './shared/emitters/ecommerce/types';
-
-// ============================================================================
-// CONFIGURATION UTILITIES
-// ============================================================================
-
+// Export client-safe configuration utilities
 export {
   createConfigBuilder,
   getAnalyticsConfig,
   PROVIDER_REQUIREMENTS,
   validateConfig,
-} from './shared/utils/config';
+} from './shared/utils/config-client';
 
-export type { ConfigBuilder, ConfigRequirements } from './shared/utils/config';
+// Export client-safe validation utilities
+export { validateAnalyticsConfig, validateProvider } from './shared/utils/validation-client';
 
-// ============================================================================
-// VALIDATION UTILITIES
-// ============================================================================
-
-export {
-  debugConfig,
-  validateAnalyticsConfig,
-  validateConfigOrThrow,
-  validateProvider,
-} from './shared/utils/validation';
-
-export type { ValidationError, ValidationResult } from './shared/utils/validation';
-
-// ============================================================================
-// ADVANCED UTILITIES
-// ============================================================================
-
-// Manager utilities
+// Export manager utilities
 export { createAnalyticsManager } from './shared/utils/manager';
 export { AnalyticsManager as AnalyticsManagerClass } from './shared/utils/manager';
 
-// PostHog utilities
+// Export PostHog utilities
 export {
   createBootstrapData,
   createMinimalBootstrapData,
   generateDistinctId,
   getDistinctIdFromCookies,
 } from './shared/utils/posthog-bootstrap';
+
+// Export types
+export type * from './types';

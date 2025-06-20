@@ -4,6 +4,6 @@
     "baseUrl": ".",
     "types": ["vitest/globals"]
   },
-  "include": ["**/*.ts", "**/*.tsx", "types/**/*.d.ts"],
-  "exclude": ["node_modules"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "types/**/*.d.ts"],
+  "exclude": ["node_modules", "__tests__"]
 }

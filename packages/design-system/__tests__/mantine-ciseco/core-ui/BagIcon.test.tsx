@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '../test-utils';
-import BagIcon from '../../../mantine-ciseco/components/BagIcon';
+import BagIcon from '../../../src/mantine-ciseco/components/BagIcon';
 
 describe('BagIcon', (_: any) => {
   it('renders bag icon SVG', (_: any) => {

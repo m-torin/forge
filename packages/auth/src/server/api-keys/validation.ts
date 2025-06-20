@@ -3,22 +3,20 @@
  */
 
 import 'server-only';
+import { syncLogger as logger } from '../../shared/utils/logger';
 import { headers } from 'next/headers';
 import { type NextRequest } from 'next/server';
 
 import {
   checkApiKeyPermissions,
   permissionsArrayToStructure,
-} from '../../shared/api-keys/permissions';
-import { auth } from '../auth';
-
-import type {
-  ApiKeyPermissions,
-  ApiKeyValidationResult,
-  PermissionCheck,
-  RateLimitResult,
-} from '../../shared/api-keys/types';
-import type { AuthSession } from '../../shared/types';
+  type ApiKeyPermissions,
+  type ApiKeyValidationResult,
+  type PermissionCheck,
+  type RateLimitResult,
+} from '../../shared/api-keys';
+import { auth } from '../../shared/auth.config';
+import type { Session } from '../../types';
 
 /**
  * Validates an API key from request headers and optionally checks permissions
@@ -121,7 +119,7 @@ export async function validateApiKey(
       },
     };
   } catch (error) {
-    console.error('API key validation error:', error);
+    logger.error('API key validation error:', error);
     return {
       isValid: false,
       error: 'Failed to validate API key',
@@ -132,7 +130,7 @@ export async function validateApiKey(
 /**
  * Ensures the request has valid authentication (API key or session)
  */
-export async function requireAuth(request: NextRequest): Promise<AuthSession | null> {
+export async function requireAuth(request: NextRequest): Promise<Session | null> {
   // First check for API key
   const apiKeyResult = await validateApiKey(request.headers);
 
@@ -218,6 +216,7 @@ export async function validateApiKeyWithRateLimit(
   // This would typically involve checking a rate limit store (Redis, etc.)
   // For now, we'll return success with placeholder rate limit data
   const rateLimit: RateLimitResult = {
+    success: true,
     allowed: true,
     limit: 100,
     remaining: 100,

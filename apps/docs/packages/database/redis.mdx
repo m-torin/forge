@@ -32,23 +32,38 @@ frequently used data and enabling real-time features.
 
 ## Quick Start
 
-```typescript
-import { redis } from '@repo/database/redis';
+<CodeGroup>
+```typescript Next.js Server (Recommended)
+import { redis } from '@repo/database/redis/server/next';
 
-// Basic operations
-await redis.set('user:123', { name: 'John', email: 'john@example.com' });
-const user = await redis.get('user:123');
+// Basic operations await redis.set('user:123', { name: 'John', email: 'john@example.com' }); const
+user = await redis.get('user:123');
 
-// With expiration
-await redis.set('temp:token', 'abc123', 'EX', 3600); // 1 hour
+// With expiration await redis.setex('temp:token', 3600, 'abc123'); // 1 hour
 
-// Lists and queues
-await redis.lpush(
-  'notifications',
-  JSON.stringify({ type: 'email', recipient: 'user@example.com' })
-);
-const notification = await redis.rpop('notifications');
+// Lists and queues await redis.lpush( 'notifications', JSON.stringify({ type: 'email', recipient:
+'user@example.com' }) ); const notification = await redis.rpop('notifications');
+
+````
+
+```typescript Node.js Server
+import { RedisOperations } from '@repo/database/redis/server';
+
+const redisOps = new RedisOperations();
+
+// Same operations as above
+await redisOps.set('user:123', { name: 'John', email: 'john@example.com' });
+const user = await redisOps.get('user:123');
+````
+
+```typescript Next.js Client
+import { useRedisState } from '@repo/database/redis/client/next';
+
+// Client-side Redis state management
+const [cachedData, setCachedData] = useRedisState('user:profile', null);
 ```
+
+</CodeGroup>
 
 ## Core Operations
 
@@ -110,7 +125,7 @@ await redis.expireat('daily:report', Math.floor(tomorrow.getTime() / 1000));
       priority: number;
       createdAt: number;
     }
-    
+
     // Add job to queue
     const job: Job = {
       id: crypto.randomUUID(),
@@ -123,15 +138,15 @@ await redis.expireat('daily:report', Math.floor(tomorrow.getTime() / 1000));
       priority: 1,
       createdAt: Date.now(),
     };
-    
+
     await redis.lpush('jobs:email', JSON.stringify(job));
-    
+
     // Process jobs (FIFO)
     const jobData = await redis.brpop('jobs:email', 10); // 10 second timeout
     if (jobData) {
       const [queueName, jobJson] = jobData;
       const job = JSON.parse(jobJson);
-      
+
       try {
         await processJob(job);
         console.log(`Job ${job.id} completed successfully`);
@@ -140,13 +155,14 @@ await redis.expireat('daily:report', Math.floor(tomorrow.getTime() / 1000));
         await redis.lpush('jobs:email:retry', JSON.stringify(job));
       }
     }
-    
+
     // Priority queues using sorted sets
     await redis.zadd('jobs:priority', job.priority, JSON.stringify(job));
     const highPriorityJob = await redis.zpopmax('jobs:priority');
     ```
+
   </Tab>
-  
+
   <Tab title="Real-time Notifications">
     ```typescript
     // Notification system
@@ -159,7 +175,7 @@ await redis.expireat('daily:report', Math.floor(tomorrow.getTime() / 1000));
       read: boolean;
       createdAt: number;
     }
-    
+
     // Add notification
     const notification: Notification = {
       id: crypto.randomUUID(),
@@ -170,16 +186,16 @@ await redis.expireat('daily:report', Math.floor(tomorrow.getTime() / 1000));
       read: false,
       createdAt: Date.now(),
     };
-    
+
     await redis.lpush(`notifications:${notification.userId}`, JSON.stringify(notification));
-    
+
     // Limit notification history (keep last 50)
     await redis.ltrim(`notifications:${notification.userId}`, 0, 49);
-    
+
     // Get user notifications
     const notifications = await redis.lrange(`notifications:user123`, 0, 9); // Last 10
     const parsedNotifications = notifications.map(n => JSON.parse(n));
-    
+
     // Mark as read
     const notificationList = await redis.lrange(`notifications:user123`, 0, -1);
     const updatedList = notificationList.map(n => {
@@ -189,13 +205,14 @@ await redis.expireat('daily:report', Math.floor(tomorrow.getTime() / 1000));
       }
       return JSON.stringify(notification);
     });
-    
+
     // Replace entire list (atomic operation)
     await redis.multi()
       .del(`notifications:user123`)
       .lpush(`notifications:user123`, ...updatedList)
       .exec();
     ```
+
   </Tab>
 </Tabs>
 
@@ -208,10 +225,10 @@ await redis.expireat('daily:report', Math.floor(tomorrow.getTime() / 1000));
     await redis.zadd('leaderboard:monthly', 1250, 'user:123');
     await redis.zadd('leaderboard:monthly', 980, 'user:456');
     await redis.zadd('leaderboard:monthly', 1580, 'user:789');
-    
+
     // Get top 10 users
     const topUsers = await redis.zrevrange('leaderboard:monthly', 0, 9, 'WITHSCORES');
-    
+
     // Format results
     const leaderboard = [];
     for (let i = 0; i < topUsers.length; i += 2) {
@@ -221,11 +238,11 @@ await redis.expireat('daily:report', Math.floor(tomorrow.getTime() / 1000));
         rank: Math.floor(i / 2) + 1,
       });
     }
-    
+
     // Get user's rank
     const userRank = await redis.zrevrank('leaderboard:monthly', 'user:123');
     const userScore = await redis.zscore('leaderboard:monthly', 'user:123');
-    
+
     // Users around current user
     const userPosition = userRank || 0;
     const context = await redis.zrevrange(
@@ -235,24 +252,25 @@ await redis.expireat('daily:report', Math.floor(tomorrow.getTime() / 1000));
       'WITHSCORES'
     );
     ```
+
   </Accordion>
-  
+
   <Accordion title="Time-based Analytics" icon="chart-line">
     ```typescript
     // Daily active users tracking
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
     const timestamp = Date.now();
-    
+
     // Track user activity
     await redis.zadd(`active:${today}`, timestamp, `user:123`);
-    
+
     // Count unique active users for the day
     const dailyActiveUsers = await redis.zcard(`active:${today}`);
-    
+
     // Get users active in last hour
     const oneHourAgo = timestamp - (60 * 60 * 1000);
     const recentlyActive = await redis.zrangebyscore(`active:${today}`, oneHourAgo, timestamp);
-    
+
     // Weekly analytics
     const weekDates = [];
     for (let i = 6; i >= 0; i--) {
@@ -260,7 +278,7 @@ await redis.expireat('daily:report', Math.floor(tomorrow.getTime() / 1000));
       date.setDate(date.getDate() - i);
       weekDates.push(date.toISOString().split('T')[0]);
     }
-    
+
     // Get daily counts for the week
     const weeklyStats = await Promise.all(
       weekDates.map(async (date) => ({
@@ -268,13 +286,14 @@ await redis.expireat('daily:report', Math.floor(tomorrow.getTime() / 1000));
         activeUsers: await redis.zcard(`active:${date}`),
       }))
     );
-    
+
     // Cleanup old data
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const oldKey = `active:${thirtyDaysAgo.toISOString().split('T')[0]}`;
     await redis.del(oldKey);
     ```
+
   </Accordion>
 </AccordionGroup>
 
@@ -287,34 +306,17 @@ await redis.expireat('daily:report', Math.floor(tomorrow.getTime() / 1000));
 // Database query caching
 async function getCachedProducts(organizationId: string, category?: string) {
   const cacheKey = `products:${organizationId}${category ? `:${category}` : ''}`;
-  
-  // Try cache first
-  const cached = await redis.get(cacheKey);
-  if (cached) {
-    return JSON.parse(cached);
-  }
-  
-  // Fetch from database
-  const products = await prisma.product.findMany({
-    where: {
-      organizationId,
-      ...(category && { category }),
-      status: 'active',
-    },
-    include: {
-      assets: {
-        where: { type: 'image' },
-        orderBy: { position: 'asc' },
-        take: 1,
-      },
-    },
-  });
-  
-  // Cache for 15 minutes
-  await redis.setex(cacheKey, 900, JSON.stringify(products));
-  
-  return products;
-}
+
+// Try cache first const cached = await redis.get(cacheKey); if (cached) { return
+JSON.parse(cached); }
+
+// Fetch from database const products = await prisma.product.findMany({ where: { organizationId,
+...(category && { category }), status: 'active', }, include: { assets: { where: { type: 'image' },
+orderBy: { position: 'asc' }, take: 1, }, }, });
+
+// Cache for 15 minutes await redis.setex(cacheKey, 900, JSON.stringify(products));
+
+return products; }
 
 // Cache invalidation async function invalidateProductCache(organizationId: string, category?:
 string) { const patterns = [ `products:${organizationId}`, `products:${organizationId}:*`, ];
@@ -394,7 +396,7 @@ async function revokeUserSessions(userId: string) {
         where: { id: userId },
         data: updates,
       });
-      
+
       // Update cache
       await redis.set(
         `user:profile:${userId}`,
@@ -402,12 +404,13 @@ async function revokeUserSessions(userId: string) {
         'EX',
         3600 // 1 hour
       );
-      
+
       return updatedUser;
     }
     ```
+
   </Tab>
-  
+
   <Tab title="Write-Behind Cache">
     ```typescript
     // Write-behind: Update cache immediately, database asynchronously
@@ -419,7 +422,7 @@ async function revokeUserSessions(userId: string) {
         'EX',
         86400 // 24 hours
       );
-      
+
       // Queue database update
       await redis.lpush('db_updates', JSON.stringify({
         type: 'user_preferences',
@@ -427,10 +430,10 @@ async function revokeUserSessions(userId: string) {
         data: preferences,
         timestamp: Date.now(),
       }));
-      
+
       return preferences;
     }
-    
+
     // Background worker processes db_updates queue
     async function processDatabaseUpdates() {
       while (true) {
@@ -438,7 +441,7 @@ async function revokeUserSessions(userId: string) {
         if (updateData) {
           const [_, updateJson] = updateData;
           const update = JSON.parse(updateJson);
-          
+
           try {
             switch (update.type) {
               case 'user_preferences':
@@ -457,8 +460,9 @@ async function revokeUserSessions(userId: string) {
       }
     }
     ```
+
   </Tab>
-  
+
   <Tab title="Cache-Aside">
     ```typescript
     // Cache-aside: Application manages cache explicitly
@@ -468,7 +472,7 @@ async function revokeUserSessions(userId: string) {
       if (cached) {
         return JSON.parse(cached);
       }
-      
+
       // Load from database
       const user = await prisma.user.findUnique({
         where: { id: userId },
@@ -477,7 +481,7 @@ async function revokeUserSessions(userId: string) {
           preferences: true,
         },
       });
-      
+
       if (user) {
         // Store in cache for future requests
         await redis.setex(
@@ -486,15 +490,16 @@ async function revokeUserSessions(userId: string) {
           JSON.stringify(user)
         );
       }
-      
+
       return user;
     }
-    
+
     // Manual cache invalidation on updates
     async function invalidateUserCache(userId: string) {
       await redis.del(`user:profile:${userId}`);
     }
     ```
+
   </Tab>
 </Tabs>
 
@@ -512,23 +517,14 @@ async function publishProductUpdate(productId: string, update: any) {
     data: update,
     timestamp: Date.now(),
   };
-  
-  // Publish to all subscribers
-  await redis.publish('product:updates', JSON.stringify(message));
-  
-  // Also publish to organization-specific channel
-  const product = await prisma.product.findUnique({
-    where: { id: productId },
-    select: { organizationId: true },
-  });
-  
-  if (product) {
-    await redis.publish(
-      `org:${product.organizationId}:products`,
-      JSON.stringify(message)
-    );
-  }
-}
+
+// Publish to all subscribers await redis.publish('product:updates', JSON.stringify(message));
+
+// Also publish to organization-specific channel const product = await prisma.product.findUnique({
+where: { id: productId }, select: { organizationId: true }, });
+
+if (product) { await redis.publish( `org:${product.organizationId}:products`,
+JSON.stringify(message) ); } }
 
 // Workflow status updates async function publishWorkflowStatus(workflowId: string, status: string,
 result?: any) { const message = { type: 'workflow.status', workflowId, status, result, timestamp:
@@ -596,31 +592,31 @@ subscriber.on('pmessage', (pattern, channel, message) => {
       current: number;
       resetTime: number;
     }
-    
+
     async function checkRateLimit(key: string, limit: number, windowSeconds: number): Promise<RateLimit> {
       const now = Date.now();
       const windowStart = Math.floor(now / (windowSeconds * 1000)) * windowSeconds;
       const windowKey = `rate_limit:${key}:${windowStart}`;
-      
+
       // Use Lua script for atomic operation
       const luaScript = `
         local key = KEYS[1]
         local limit = tonumber(ARGV[1])
         local window = tonumber(ARGV[2])
         local now = tonumber(ARGV[3])
-        
+
         local current = redis.call('INCR', key)
-        
+
         if current == 1 then
           redis.call('EXPIRE', key, window)
         end
-        
+
         local ttl = redis.call('TTL', key)
         local resetTime = now + (ttl * 1000)
-        
+
         return {current, limit, resetTime}
       `;
-      
+
       const result = await redis.eval(
         luaScript,
         1,
@@ -629,7 +625,7 @@ subscriber.on('pmessage', (pattern, channel, message) => {
         windowSeconds.toString(),
         now.toString()
       ) as [number, number, number];
-      
+
       return {
         current: result[0],
         limit: result[1],
@@ -637,7 +633,7 @@ subscriber.on('pmessage', (pattern, channel, message) => {
         window: windowSeconds,
       };
     }
-    
+
     // Usage in API middleware
     async function rateLimitMiddleware(userId: string, endpoint: string) {
       const rateLimit = await checkRateLimit(
@@ -645,16 +641,17 @@ subscriber.on('pmessage', (pattern, channel, message) => {
         100, // 100 requests
         3600 // per hour
       );
-      
+
       if (rateLimit.current > rateLimit.limit) {
         throw new Error(`Rate limit exceeded. Reset at ${new Date(rateLimit.resetTime)}`);
       }
-      
+
       return rateLimit;
     }
     ```
+
   </Accordion>
-  
+
   <Accordion title="Token Bucket Rate Limiting" icon="bucket">
     ```typescript
     interface TokenBucket {
@@ -663,7 +660,7 @@ subscriber.on('pmessage', (pattern, channel, message) => {
       lastRefill: number;
       refillRate: number; // tokens per second
     }
-    
+
     async function consumeTokens(key: string, tokensRequested: number, config: TokenBucket): Promise<boolean> {
       const luaScript = `
         local key = KEYS[1]
@@ -671,16 +668,16 @@ subscriber.on('pmessage', (pattern, channel, message) => {
         local capacity = tonumber(ARGV[2])
         local refillRate = tonumber(ARGV[3])
         local now = tonumber(ARGV[4])
-        
+
         local bucket = redis.call('HMGET', key, 'tokens', 'lastRefill')
         local tokens = tonumber(bucket[1]) or capacity
         local lastRefill = tonumber(bucket[2]) or now
-        
+
         -- Calculate tokens to add based on time elapsed
         local elapsed = (now - lastRefill) / 1000
         local tokensToAdd = math.floor(elapsed * refillRate)
         tokens = math.min(capacity, tokens + tokensToAdd)
-        
+
         if tokens >= requested then
           tokens = tokens - requested
           redis.call('HMSET', key, 'tokens', tokens, 'lastRefill', now)
@@ -692,7 +689,7 @@ subscriber.on('pmessage', (pattern, channel, message) => {
           return 0
         end
       `;
-      
+
       const result = await redis.eval(
         luaScript,
         1,
@@ -702,17 +699,17 @@ subscriber.on('pmessage', (pattern, channel, message) => {
         config.refillRate.toString(),
         Date.now().toString()
       ) as number;
-      
+
       return result === 1;
     }
-    
+
     // Usage for different API tiers
     const apiLimits = {
       free: { capacity: 100, refillRate: 1/60 }, // 1 token per minute, burst 100
       pro: { capacity: 1000, refillRate: 1/6 }, // 10 per minute, burst 1000
       enterprise: { capacity: 10000, refillRate: 1 }, // 60 per minute, burst 10000
     };
-    
+
     async function checkApiAccess(userId: string, tier: keyof typeof apiLimits) {
       const config = apiLimits[tier];
       const allowed = await consumeTokens(`api:${userId}`, 1, {
@@ -720,12 +717,13 @@ subscriber.on('pmessage', (pattern, channel, message) => {
         tokens: config.capacity,
         lastRefill: Date.now(),
       });
-      
+
       if (!allowed) {
         throw new Error(`API rate limit exceeded for ${tier} tier`);
       }
     }
     ```
+
   </Accordion>
 </AccordionGroup>
 
@@ -806,9 +804,9 @@ async function batchGetCache(keys: string[]) {
     async function getCacheStats(period: string = 'hourly') {
       const now = Date.now();
       const key = `cache:stats:${period}:${Math.floor(now / (60 * 60 * 1000))}`;
-      
+
       const stats = await redis.hmget(key, 'hits', 'misses', 'total');
-      
+
       return {
         hits: parseInt(stats[0] || '0'),
         misses: parseInt(stats[1] || '0'),
@@ -816,15 +814,15 @@ async function batchGetCache(keys: string[]) {
         hitRate: stats[2] ? (parseInt(stats[0] || '0') / parseInt(stats[2])) * 100 : 0,
       };
     }
-    
+
     // Record cache hit/miss
     async function recordCacheHit(hit: boolean) {
       const now = Date.now();
       const hourKey = `cache:stats:hourly:${Math.floor(now / (60 * 60 * 1000))}`;
       const dailyKey = `cache:stats:daily:${Math.floor(now / (24 * 60 * 60 * 1000))}`;
-      
+
       const pipeline = redis.pipeline();
-      
+
       if (hit) {
         pipeline.hincrby(hourKey, 'hits', 1);
         pipeline.hincrby(dailyKey, 'hits', 1);
@@ -832,19 +830,20 @@ async function batchGetCache(keys: string[]) {
         pipeline.hincrby(hourKey, 'misses', 1);
         pipeline.hincrby(dailyKey, 'misses', 1);
       }
-      
+
       pipeline.hincrby(hourKey, 'total', 1);
       pipeline.hincrby(dailyKey, 'total', 1);
-      
+
       // Set expiration for cleanup
       pipeline.expire(hourKey, 7 * 24 * 60 * 60); // 7 days
       pipeline.expire(dailyKey, 30 * 24 * 60 * 60); // 30 days
-      
+
       await pipeline.exec();
     }
     ```
+
   </Tab>
-  
+
   <Tab title="Memory Usage">
     ```typescript
     // Monitor Redis memory usage
@@ -852,31 +851,31 @@ async function batchGetCache(keys: string[]) {
       const info = await redis.info('memory');
       const lines = info.split('\r\n');
       const memoryInfo = {} as Record<string, string>;
-      
+
       lines.forEach(line => {
         if (line.includes(':')) {
           const [key, value] = line.split(':');
           memoryInfo[key] = value;
         }
       });
-      
+
       return {
         usedMemory: parseInt(memoryInfo.used_memory),
         usedMemoryHuman: memoryInfo.used_memory_human,
         maxMemory: parseInt(memoryInfo.maxmemory || '0'),
-        memoryUsageRatio: memoryInfo.maxmemory ? 
+        memoryUsageRatio: memoryInfo.maxmemory ?
           (parseInt(memoryInfo.used_memory) / parseInt(memoryInfo.maxmemory)) * 100 : 0,
         keyCount: await redis.dbsize(),
       };
     }
-    
+
     // Cleanup old data based on memory pressure
     async function cleanupOldData() {
       const info = await getRedisInfo();
-      
+
       if (info.memoryUsageRatio > 80) {
         console.log('High memory usage detected, cleaning up old data...');
-        
+
         // Clean up expired sessions
         const sessionKeys = await redis.keys('session:*');
         for (const key of sessionKeys) {
@@ -885,11 +884,11 @@ async function batchGetCache(keys: string[]) {
             await redis.expire(key, 24 * 60 * 60); // Set 24 hour expiration
           }
         }
-        
+
         // Clean up old analytics data
         const analyticsKeys = await redis.keys('cache:stats:hourly:*');
         const cutoff = Date.now() - (7 * 24 * 60 * 60 * 1000); // 7 days ago
-        
+
         for (const key of analyticsKeys) {
           const timestamp = parseInt(key.split(':')[3]) * 60 * 60 * 1000;
           if (timestamp < cutoff) {
@@ -899,6 +898,7 @@ async function batchGetCache(keys: string[]) {
       }
     }
     ```
+
   </Tab>
 </Tabs>
 

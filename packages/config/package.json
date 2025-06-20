@@ -3,31 +3,35 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./typescript": "./typescript/",
-    "./typescript/*": "./typescript/*",
-    "./next": "./next/index.ts",
-    "./next/keys": "./next/keys.ts",
-    "./knip": "./knip/",
-    "./knip/*": "./knip/*"
+    "./typescript": "./src/typescript/",
+    "./typescript/*": "./src/typescript/*",
+    "./next": "./src/next/index.ts",
+    "./next/keys": "./keys.ts",
+    "./knip": "./src/knip/package.json",
+    "./knip/*": "./src/knip/*",
+    "./keys": {
+      "types": "./keys.ts",
+      "import": "./keys.ts"
+    }
   },
   "scripts": {
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
     "@next/bundle-analyzer": "15.4.0-canary.42",
-    "@prisma/nextjs-monorepo-workaround-plugin": "^6.9.0",
-    "@t3-oss/env-core": "catalog:",
-    "@t3-oss/env-nextjs": "catalog:",
+    "@prisma/nextjs-monorepo-workaround-plugin": "^6.10.1",
+    "@t3-oss/env-core": "^0.13.8",
+    "@t3-oss/env-nextjs": "^0.13.8",
     "chalk": "^5.4.1",
-    "zod": "catalog:"
+    "zod": "^3.25.67"
   },
   "devDependencies": {
     "@types/eslint": "^9.6.1",
-    "eslint": "catalog:",
-    "next": "catalog:",
-    "typescript": "catalog:"
+    "eslint": "^9.29.0",
+    "next": "^15.3.4",
+    "typescript": "5.8.3"
   },
   "peerDependencies": {
-    "next": "catalog:"
+    "next": "^15.3.4"
   }
 }

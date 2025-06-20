@@ -19,7 +19,6 @@ import {
   Paper,
   Progress,
   rem,
-  ScrollArea,
   SegmentedControl,
   Select,
   Stack,
@@ -34,7 +33,7 @@ import {
   Transition,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { useDebouncedValue, useDisclosure, useMediaQuery, useToggle } from '@mantine/hooks';
+import { useDisclosure, useMediaQuery, useToggle } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 import {
@@ -50,7 +49,6 @@ import {
   IconDots,
   IconEdit,
   IconEye,
-  IconEyeOff,
   IconFolder,
   IconHistory,
   IconInfoCircle,
@@ -66,7 +64,7 @@ import {
 import { type MRT_ColumnDef } from 'mantine-react-table';
 import React, { useEffect, useMemo, useState } from 'react';
 
-import { DataTableV2 } from '../../components/data-table-v2';
+import { DataTableV2 } from '@/components/pim3/data-table-v2';
 import {
   createCategory,
   deleteCategory,

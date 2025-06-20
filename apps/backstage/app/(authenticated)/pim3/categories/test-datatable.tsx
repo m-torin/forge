@@ -5,7 +5,7 @@ import { IconFolder, IconPlus } from '@tabler/icons-react';
 import { type MRT_ColumnDef } from 'mantine-react-table';
 import { useMemo } from 'react';
 
-import { DataTableV2 } from '../../components/data-table-v2';
+import { DataTableV2 } from '@/components/pim3/data-table-v2';
 
 interface TestCategory {
   id: string;

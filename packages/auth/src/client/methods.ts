@@ -4,7 +4,8 @@
 
 'use client';
 
-import { authClient } from './auth-client';
+import { logger } from './utils/logger';
+import { authClient } from './client.config';
 
 import type { AuthClientMethods } from '../shared/types';
 
@@ -171,7 +172,7 @@ export const createOrganization = async (data: { name: string; slug?: string; lo
       logo: data.logo,
     });
   } catch (error) {
-    console.error('Create organization failed:', error);
+    logger.error('Create organization failed:', error);
     throw error;
   }
 };
@@ -194,7 +195,7 @@ export const updateOrganization = async (data: {
       },
     });
   } catch (error) {
-    console.error('Update organization failed:', error);
+    logger.error('Update organization failed:', error);
     throw error;
   }
 };
@@ -203,7 +204,7 @@ export const deleteOrganization = async (organizationId: string) => {
   try {
     return await authClient.organization.delete({ organizationId });
   } catch (error) {
-    console.error('Delete organization failed:', error);
+    logger.error('Delete organization failed:', error);
     throw error;
   }
 };
@@ -212,7 +213,7 @@ export const checkSlug = async (slug: string) => {
   try {
     return await authClient.organization.checkSlug({ slug });
   } catch (error) {
-    console.error('Check slug failed:', error);
+    logger.error('Check slug failed:', error);
     throw error;
   }
 };
@@ -225,7 +226,7 @@ export const inviteMember = async (data: {
   try {
     return await authClient.organization.inviteMember(data);
   } catch (error) {
-    console.error('Invite member failed:', error);
+    logger.error('Invite member failed:', error);
     throw error;
   }
 };
@@ -237,7 +238,7 @@ export const removeOrganizationMember = async (data: {
   try {
     return await authClient.organization.removeMember(data);
   } catch (error) {
-    console.error('Remove member failed:', error);
+    logger.error('Remove member failed:', error);
     throw error;
   }
 };
@@ -249,7 +250,7 @@ export const updateMemberRole = async (data: {
   try {
     return await authClient.organization.updateMemberRole(data);
   } catch (error) {
-    console.error('Update member role failed:', error);
+    logger.error('Update member role failed:', error);
     throw error;
   }
 };
@@ -261,7 +262,7 @@ export const leaveOrganization = async (organizationId?: string) => {
     }
     return await authClient.organization.leave({ organizationId });
   } catch (error) {
-    console.error('Leave organization failed:', error);
+    logger.error('Leave organization failed:', error);
     throw error;
   }
 };
@@ -272,7 +273,7 @@ export const getOrganization = async (organizationId?: string) => {
       query: organizationId ? { organizationId } : {},
     });
   } catch (error) {
-    console.error('Get organization failed:', error);
+    logger.error('Get organization failed:', error);
     throw error;
   }
 };
@@ -281,7 +282,7 @@ export const listOrganizations = async () => {
   try {
     return await authClient.organization.list();
   } catch (error) {
-    console.error('List organizations failed:', error);
+    logger.error('List organizations failed:', error);
     throw error;
   }
 };
@@ -292,7 +293,7 @@ export const listInvitations = async (organizationId?: string) => {
       query: organizationId ? { organizationId } : {},
     });
   } catch (error) {
-    console.error('List invitations failed:', error);
+    logger.error('List invitations failed:', error);
     throw error;
   }
 };
@@ -303,7 +304,7 @@ export const getInvitation = async (invitationId: string) => {
       query: { id: invitationId },
     });
   } catch (error) {
-    console.error('Get invitation failed:', error);
+    logger.error('Get invitation failed:', error);
     throw error;
   }
 };
@@ -312,7 +313,7 @@ export const acceptInvitation = async (invitationId: string) => {
   try {
     return await authClient.organization.acceptInvitation({ invitationId });
   } catch (error) {
-    console.error('Accept invitation failed:', error);
+    logger.error('Accept invitation failed:', error);
     throw error;
   }
 };
@@ -321,7 +322,7 @@ export const rejectInvitation = async (invitationId: string) => {
   try {
     return await authClient.organization.rejectInvitation({ invitationId });
   } catch (error) {
-    console.error('Reject invitation failed:', error);
+    logger.error('Reject invitation failed:', error);
     throw error;
   }
 };
@@ -330,7 +331,7 @@ export const cancelInvitation = async (invitationId: string) => {
   try {
     return await authClient.organization.cancelInvitation({ invitationId });
   } catch (error) {
-    console.error('Cancel invitation failed:', error);
+    logger.error('Cancel invitation failed:', error);
     throw error;
   }
 };
@@ -341,7 +342,7 @@ export const getActiveMember = async (organizationId?: string) => {
       query: organizationId ? { organizationId } : {},
     });
   } catch (error) {
-    console.error('Get active member failed:', error);
+    logger.error('Get active member failed:', error);
     throw error;
   }
 };
@@ -350,7 +351,7 @@ export const setActiveOrganization = async (organizationId: string) => {
   try {
     return await authClient.organization.setActive({ organizationId });
   } catch (error) {
-    console.error('Set active organization failed:', error);
+    logger.error('Set active organization failed:', error);
     throw error;
   }
 };
@@ -367,7 +368,7 @@ export const createTeam = async (data: any) => {
     }
     throw new Error('Team management not available');
   } catch (error) {
-    console.error('Create team failed:', error);
+    logger.error('Create team failed:', error);
     throw error;
   }
 };
@@ -383,7 +384,7 @@ export const updateTeam = async (data: any) => {
     }
     throw new Error('Team management not available');
   } catch (error) {
-    console.error('Update team failed:', error);
+    logger.error('Update team failed:', error);
     throw error;
   }
 };
@@ -399,7 +400,7 @@ export const removeTeam = async (teamId: string) => {
     }
     throw new Error('Team management not available');
   } catch (error) {
-    console.error('Remove team failed:', error);
+    logger.error('Remove team failed:', error);
     throw error;
   }
 };
@@ -415,7 +416,7 @@ export const listTeams = async (organizationId?: string) => {
     }
     throw new Error('Team management not available');
   } catch (error) {
-    console.error('List teams failed:', error);
+    logger.error('List teams failed:', error);
     throw error;
   }
 };
@@ -437,7 +438,6 @@ export const setUserRole = authClient.admin?.setRole;
 export const banUser = authClient.admin?.banUser;
 export const unbanUser = authClient.admin?.unbanUser;
 export const listUserSessions = authClient.admin?.listUserSessions;
-export const revokeUserSession = authClient.admin?.revokeUserSession;
 export const revokeUserSessions = authClient.admin?.revokeUserSessions;
 export const impersonateUser = authClient.admin?.impersonateUser;
 export const stopImpersonating = authClient.admin?.stopImpersonating;
@@ -453,7 +453,7 @@ export const enableTwoFactor = async () => {
     }
     throw new Error('Two-factor authentication not available');
   } catch (error) {
-    console.error('Enable two-factor failed:', error);
+    logger.error('Enable two-factor failed:', error);
     throw error;
   }
 };
@@ -465,7 +465,7 @@ export const disableTwoFactor = async () => {
     }
     throw new Error('Two-factor authentication not available');
   } catch (error) {
-    console.error('Disable two-factor failed:', error);
+    logger.error('Disable two-factor failed:', error);
     throw error;
   }
 };
@@ -477,7 +477,7 @@ export const verifyTwoFactor = async (code: string) => {
     }
     throw new Error('Two-factor authentication not available');
   } catch (error) {
-    console.error('Verify two-factor failed:', error);
+    logger.error('Verify two-factor failed:', error);
     throw error;
   }
 };
@@ -489,7 +489,7 @@ export const getTwoFactorQRCode = async () => {
     }
     throw new Error('Two-factor authentication not available');
   } catch (error) {
-    console.error('Get two-factor QR code failed:', error);
+    logger.error('Get two-factor QR code failed:', error);
     throw error;
   }
 };
@@ -501,7 +501,7 @@ export const getTwoFactorStatus = async () => {
     }
     throw new Error('Two-factor authentication not available');
   } catch (error) {
-    console.error('Get two-factor status failed:', error);
+    logger.error('Get two-factor status failed:', error);
     throw error;
   }
 };
@@ -513,7 +513,7 @@ export const getTwoFactorBackupCodes = async () => {
     }
     throw new Error('Two-factor authentication not available');
   } catch (error) {
-    console.error('Get two-factor backup codes failed:', error);
+    logger.error('Get two-factor backup codes failed:', error);
     throw error;
   }
 };
@@ -525,7 +525,7 @@ export const regenerateTwoFactorBackupCodes = async () => {
     }
     throw new Error('Two-factor authentication not available');
   } catch (error) {
-    console.error('Regenerate two-factor backup codes failed:', error);
+    logger.error('Regenerate two-factor backup codes failed:', error);
     throw error;
   }
 };
@@ -538,7 +538,7 @@ export const addPasskey = async (data?: any) => {
     }
     throw new Error('Passkey authentication not available');
   } catch (error) {
-    console.error('Add passkey failed:', error);
+    logger.error('Add passkey failed:', error);
     throw error;
   }
 };
@@ -550,7 +550,7 @@ export const listPasskeys = async () => {
     }
     throw new Error('Passkey authentication not available');
   } catch (error) {
-    console.error('List passkeys failed:', error);
+    logger.error('List passkeys failed:', error);
     throw error;
   }
 };
@@ -562,7 +562,7 @@ export const deletePasskey = async (passkeyId: string) => {
     }
     throw new Error('Passkey authentication not available');
   } catch (error) {
-    console.error('Delete passkey failed:', error);
+    logger.error('Delete passkey failed:', error);
     throw error;
   }
 };
@@ -574,7 +574,7 @@ export const signInWithPasskey = async () => {
     }
     throw new Error('Passkey authentication not available');
   } catch (error) {
-    console.error('Sign in with passkey failed:', error);
+    logger.error('Sign in with passkey failed:', error);
     throw error;
   }
 };
@@ -586,7 +586,24 @@ export const signUpWithPasskey = async (data: any) => {
     }
     throw new Error('Passkey authentication not available');
   } catch (error) {
-    console.error('Sign up with passkey failed:', error);
+    logger.error('Sign up with passkey failed:', error);
+    throw error;
+  }
+};
+
+export const getSession = async () => {
+  return authClient.getSession();
+};
+
+// Session management
+export const revokeUserSession = async (sessionId: string) => {
+  try {
+    if ('session' in authClient && authClient.session) {
+      return await (authClient.session as any).revoke({ sessionId });
+    }
+    throw new Error('Session management not available');
+  } catch (error) {
+    logger.error('Revoke session failed:', error);
     throw error;
   }
 };

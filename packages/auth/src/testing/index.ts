@@ -4,4 +4,4 @@
 
 export * from './mocks';
 export * from './utilities';
-export * from './setup';
+export * from './vitest';

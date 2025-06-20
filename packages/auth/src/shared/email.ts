@@ -4,6 +4,7 @@
 
 import 'server-only';
 
+import { syncLogger as logger } from './utils/logger';
 import {
   sendApiKeyCreatedEmail as sendApiKeyCreatedEmailTemplate,
   sendMagicLinkEmail,
@@ -67,7 +68,7 @@ export async function sendOrganizationInvitation(data: InvitationEmailData): Pro
       organizationName: data.organization.name,
     });
   } catch (error) {
-    console.error('Failed to send organization invitation email:', error);
+    logger.error('Failed to send organization invitation email:', error);
     throw new Error('Failed to send invitation email');
   }
 }
@@ -84,7 +85,7 @@ export async function sendWelcomeEmail(data: WelcomeEmailData): Promise<void> {
       organizationName: data.organizationName,
     });
   } catch (error) {
-    console.error('Failed to send welcome email:', error);
+    logger.error('Failed to send welcome email:', error);
     throw new Error('Failed to send welcome email');
   }
 }
@@ -102,7 +103,7 @@ export async function sendApiKeyCreatedEmail(data: ApiKeyEmailData): Promise<voi
       email: data.email,
     });
   } catch (error) {
-    console.error('Failed to send API key created email:', error);
+    logger.error('Failed to send API key created email:', error);
     throw new Error('Failed to send API key created email');
   }
 }
@@ -118,7 +119,7 @@ export async function sendVerificationEmail(data: UserEmailData & EmailUrlData):
       verificationLink: data.url,
     });
   } catch (error) {
-    console.error('Failed to send verification email:', error);
+    logger.error('Failed to send verification email:', error);
     throw new Error('Failed to send verification email');
   }
 }
@@ -134,7 +135,7 @@ export async function sendPasswordResetEmail(data: UserEmailData & EmailUrlData)
       resetLink: data.url,
     });
   } catch (error) {
-    console.error('Failed to send password reset email:', error);
+    logger.error('Failed to send password reset email:', error);
     throw new Error('Failed to send password reset email');
   }
 }
@@ -151,7 +152,7 @@ export async function sendMagicLinkEmailAuth(data: UserEmailData & EmailUrlData)
       magicLink: data.url,
     });
   } catch (error) {
-    console.error('Failed to send magic link email:', error);
+    logger.error('Failed to send magic link email:', error);
     throw new Error('Failed to send magic link email');
   }
 }

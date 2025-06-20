@@ -1,46 +1,46 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
-import { getDictionary, locales } from '../index';
+import { getDictionary, locales } from '../src/index';
 
 // Mock dictionary imports
-vi.mock('../dictionaries/en.json', () => ({
+vi.mock('../src/dictionaries/en.json', () => ({
   default: { hello: 'Hello', welcome: 'Welcome' },
 }));
 
-vi.mock('../dictionaries/es.json', () => ({
+vi.mock('../src/dictionaries/es.json', () => ({
   default: { hello: 'Hola', welcome: 'Bienvenido' },
 }));
 
-vi.mock('../dictionaries/fr.json', () => ({
+vi.mock('../src/dictionaries/fr.json', () => ({
   default: { hello: 'Bonjour', welcome: 'Bienvenue' },
 }));
 
-vi.mock('../dictionaries/de.json', () => ({
+vi.mock('../src/dictionaries/de.json', () => ({
   default: { hello: 'Hallo', welcome: 'Willkommen' },
 }));
 
-vi.mock('../dictionaries/pt.json', () => ({
+vi.mock('../src/dictionaries/pt.json', () => ({
   default: { hello: 'Olá', welcome: 'Bem-vindo' },
 }));
 
-vi.mock('../dictionaries/zh.json', () => ({
+vi.mock('../src/dictionaries/zh.json', () => ({
   default: { hello: '你好', welcome: '欢迎' },
 }));
 
 // Mock languine.json is already mocked in test-setup.ts
 
-describe('Internationalization Index', () => {
+describe('internationalization Index', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Remove references to custom console spies that don't exist
   });
 
   describe('locales', () => {
-    it('exports all available locales', () => {
-      expect(locales).toEqual(['en', 'es', 'fr', 'de', 'pt', 'zh']);
+    test('exports all available locales', () => {
+      expect(locales).toStrictEqual(['en', 'es', 'fr', 'de', 'pt', 'zh']);
     });
 
-    it('includes source locale and all target locales', () => {
+    test('includes source locale and all target locales', () => {
       expect(locales).toContain('en');
       expect(locales).toContain('es');
       expect(locales).toContain('fr');
@@ -51,22 +51,22 @@ describe('Internationalization Index', () => {
   });
 
   describe('getDictionary', () => {
-    it('returns dictionary for valid locale', async () => {
+    test('returns dictionary for valid locale', async () => {
       const dictionary = await getDictionary('en');
-      expect(dictionary).toEqual({ hello: 'Hello', welcome: 'Welcome' });
+      expect(dictionary).toStrictEqual({ hello: 'Hello', welcome: 'Welcome' });
     });
 
-    it('returns dictionary for supported locale', async () => {
+    test('returns dictionary for supported locale', async () => {
       const dictionary = await getDictionary('es');
-      expect(dictionary).toEqual({ hello: 'Hola', welcome: 'Bienvenido' });
+      expect(dictionary).toStrictEqual({ hello: 'Hola', welcome: 'Bienvenido' });
     });
 
-    it('handles locale with region code', async () => {
+    test('handles locale with region code', async () => {
       const dictionary = await getDictionary('en-US');
-      expect(dictionary).toEqual({ hello: 'Hello', welcome: 'Welcome' });
+      expect(dictionary).toStrictEqual({ hello: 'Hello', welcome: 'Welcome' });
     });
 
-    it('falls back to English for unsupported locale', async () => {
+    test('falls back to English for unsupported locale', async () => {
       const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       const dictionary = await getDictionary('it');
@@ -74,10 +74,10 @@ describe('Internationalization Index', () => {
       expect(consoleWarnSpy).toHaveBeenCalledWith(
         'Locale "it" is not supported, defaulting to "en"',
       );
-      expect(dictionary).toEqual({ hello: 'Hello', welcome: 'Welcome' });
+      expect(dictionary).toStrictEqual({ hello: 'Hello', welcome: 'Welcome' });
     });
 
-    it('returns correct dictionary for all supported locales', async () => {
+    test('returns correct dictionary for all supported locales', async () => {
       const expectedDictionaries = {
         de: { hello: 'Hallo', welcome: 'Willkommen' },
         en: { hello: 'Hello', welcome: 'Welcome' },
@@ -89,7 +89,7 @@ describe('Internationalization Index', () => {
 
       for (const [locale, expected] of Object.entries(expectedDictionaries)) {
         const dictionary = await getDictionary(locale);
-        expect(dictionary).toEqual(expected);
+        expect(dictionary).toStrictEqual(expected);
       }
     });
   });

@@ -4,6 +4,7 @@
  */
 
 import { z } from 'zod';
+import { createServerObservability } from '@repo/observability/shared-env';
 
 import { StepExecutionContext } from '../factories/step-factory/step-types';
 import { CircuitBreakerPattern } from '../types/patterns';
@@ -143,7 +144,7 @@ export async function processBatch<T, R>(
   // Process batches with concurrency control
   const processBatchWithIndex = async (batch: T[], batchIndex: number): Promise<void> => {
     try {
-      const timeoutPromise = new Promise<never>((_, reject: any) => {
+      const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(
           () => reject(new Error(`Batch ${batchIndex} timed out after ${timeout}ms`)),
           timeout,
@@ -468,13 +469,27 @@ export async function withFallback<T>(
       }
 
       if (logError) {
-        console.warn(`Primary operation failed (attempt ${attempt}/${maxAttempts}): `, lastError);
+        createServerObservability({
+          providers: {
+            console: { enabled: true },
+          },
+        })
+          .then((logger) => {
+            logger.log(
+              'warn',
+              `Primary operation failed (attempt ${attempt}/${maxAttempts})`,
+              lastError,
+            );
+          })
+          .catch(() => {
+            // Fallback to console if logger fails
+          });
       }
 
       if (attempt === maxAttempts) break;
 
       // Wait before retry with timeout cleanup
-      await new Promise((resolve: any) => {
+      await new Promise((resolve) => {
         const timeoutId = setTimeout(resolve, 1000 * attempt);
         // Ensure cleanup in case of abortion
         return timeoutId;
@@ -485,7 +500,17 @@ export async function withFallback<T>(
   // Try fallback operation
   try {
     if (logError) {
-      console.info('Attempting fallback operation...');
+      createServerObservability({
+        providers: {
+          console: { enabled: true },
+        },
+      })
+        .then((logger) => {
+          logger.log('info', 'Attempting fallback operation...');
+        })
+        .catch(() => {
+          // Fallback to console if logger fails
+        });
     }
     return await fallback();
   } catch (error: any) {
@@ -498,9 +523,9 @@ export async function withFallback<T>(
 
 // ===== MEMORY MANAGEMENT UTILITIES =====
 
-export async function* streamProcess<T, R>(
-  items: T[],
-  processor: (item: T) => Promise<R>,
+export async function* streamProcess<_T, R>(
+  items: _T[],
+  processor: (item: _T) => Promise<R>,
   chunkSize: number = 1000,
 ): AsyncGenerator<R[], void, undefined> {
   for (let i = 0; i < items.length; i += chunkSize) {
@@ -515,15 +540,15 @@ export async function* streamProcess<T, R>(
   }
 }
 
-export function createMemoryEfficientProcessor<T, R>(
-  processor: (item: T) => Promise<R>,
+export function createMemoryEfficientProcessor<_T, R>(
+  processor: (item: _T) => Promise<R>,
   maxMemoryMB: number = 512,
-): (items: T[]) => AsyncGenerator<R[], void, undefined> {
+): (items: _T[]) => AsyncGenerator<R[], void, undefined> {
   const estimatedItemSize = 1024; // 1KB per item estimate
   const maxItemsInMemory = Math.floor((maxMemoryMB * 1024 * 1024) / estimatedItemSize);
   const chunkSize = Math.max(100, Math.min(maxItemsInMemory, 10000));
 
-  return async function* (items: T[]) {
+  return async function* (items: _T[]) {
     yield* streamProcess(items, processor, chunkSize);
   };
 }

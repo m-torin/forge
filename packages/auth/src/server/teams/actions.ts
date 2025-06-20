@@ -4,9 +4,10 @@
 
 import 'server-only';
 
-import { isValidRole } from '../../shared/teams/permissions';
-import { auth } from '../auth';
-import { getAuthHeaders } from '../helpers/get-headers';
+import { syncLogger as logger } from '../../shared/utils/logger';
+import { isValidRole } from '../../shared/teams';
+import { auth } from '../../shared/auth.config';
+import { getAuthHeaders } from '../get-headers';
 
 import type {
   CreateTeamData,
@@ -22,13 +23,13 @@ import type {
   UpdateTeamMemberData,
   UpdateTeamMemberResult,
   UpdateTeamResult,
-} from '../../shared/teams/types';
-import type { Session } from '../../shared/types';
+} from '../../shared/teams';
+import type { Session } from '../../types';
 
 /**
  * Creates a new team using better-auth native method
  */
-export async function createTeam(data: CreateTeamData): Promise<CreateTeamResult> {
+export async function createTeamAction(data: CreateTeamData): Promise<CreateTeamResult> {
   try {
     const { name, description, initialMembers = [], organizationId } = data;
 
@@ -61,7 +62,7 @@ export async function createTeam(data: CreateTeamData): Promise<CreateTeamResult
           });
         }
       } catch (memberError) {
-        console.warn('Failed to add some initial members:', memberError);
+        logger.warn('Failed to add some initial members:', memberError);
         // Continue - team was created successfully
       }
     }
@@ -92,7 +93,7 @@ export async function createTeam(data: CreateTeamData): Promise<CreateTeamResult
 
     return { success: true, team: teamWithMembers };
   } catch (error) {
-    console.error('Create team error:', error);
+    logger.error('Create team error:', error);
     return { error: 'Failed to create team', success: false };
   }
 }
@@ -100,7 +101,10 @@ export async function createTeam(data: CreateTeamData): Promise<CreateTeamResult
 /**
  * Updates a team using better-auth native method
  */
-export async function updateTeam(teamId: string, data: UpdateTeamData): Promise<UpdateTeamResult> {
+export async function updateTeamAction(
+  teamId: string,
+  data: UpdateTeamData,
+): Promise<UpdateTeamResult> {
   try {
     // Build update data with metadata for description
     const updateData: any = {
@@ -151,7 +155,7 @@ export async function updateTeam(teamId: string, data: UpdateTeamData): Promise<
 
     return { success: true, team: teamWithMembers };
   } catch (error) {
-    console.error('Update team error:', error);
+    logger.error('Update team error:', error);
     return { error: 'Failed to update team', success: false };
   }
 }
@@ -159,7 +163,7 @@ export async function updateTeam(teamId: string, data: UpdateTeamData): Promise<
 /**
  * Deletes a team using better-auth native method
  */
-export async function deleteTeam(teamId: string): Promise<DeleteTeamResult> {
+export async function deleteTeamAction(teamId: string): Promise<DeleteTeamResult> {
   try {
     // Use better-auth native removeTeam API
     await auth.api.removeTeam({
@@ -169,7 +173,7 @@ export async function deleteTeam(teamId: string): Promise<DeleteTeamResult> {
 
     return { success: true };
   } catch (error) {
-    console.error('Delete team error:', error);
+    logger.error('Delete team error:', error);
 
     // Check if it's a permission error
     if (error instanceof Error && error.message.includes('permission')) {
@@ -183,7 +187,7 @@ export async function deleteTeam(teamId: string): Promise<DeleteTeamResult> {
 /**
  * Gets a team by ID using better-auth native method
  */
-export async function getTeam(teamId: string): Promise<GetTeamResult> {
+export async function getTeamAction(teamId: string): Promise<GetTeamResult> {
   try {
     // Use better-auth native getTeam API
     const result = await auth.api.getTeam({
@@ -221,7 +225,7 @@ export async function getTeam(teamId: string): Promise<GetTeamResult> {
 
     return { success: true, team: teamWithMembers };
   } catch (error) {
-    console.error('Get team error:', error);
+    logger.error('Get team error:', error);
     return { error: 'Failed to get team', success: false };
   }
 }
@@ -229,7 +233,7 @@ export async function getTeam(teamId: string): Promise<GetTeamResult> {
 /**
  * Lists teams for the current user using better-auth native method
  */
-export async function listTeams(organizationId?: string): Promise<ListTeamsResult> {
+export async function listTeamsAction(organizationId?: string): Promise<ListTeamsResult> {
   try {
     const session = await auth.api.getSession({ headers: await getAuthHeaders() });
 
@@ -276,7 +280,7 @@ export async function listTeams(organizationId?: string): Promise<ListTeamsResul
 
     return { success: true, teams: teamsWithMembers, total: teamsWithMembers.length };
   } catch (error) {
-    console.error('List teams error:', error);
+    logger.error('List teams error:', error);
     return { error: 'Failed to list teams', success: false };
   }
 }
@@ -284,7 +288,7 @@ export async function listTeams(organizationId?: string): Promise<ListTeamsResul
 /**
  * Updates a team member's role using better-auth native method
  */
-export async function updateTeamMember(
+export async function updateTeamMemberAction(
   data: UpdateTeamMemberData,
 ): Promise<UpdateTeamMemberResult> {
   try {
@@ -325,7 +329,7 @@ export async function updateTeamMember(
 
     return { member: memberWithUser, success: true };
   } catch (error) {
-    console.error('Update team member error:', error);
+    logger.error('Update team member error:', error);
 
     // Check if it's a permission error
     if (error instanceof Error && error.message.includes('permission')) {
@@ -339,7 +343,7 @@ export async function updateTeamMember(
 /**
  * Removes a team member using better-auth native method
  */
-export async function removeTeamMember(
+export async function removeTeamMemberAction(
   teamId: string,
   userId: string,
 ): Promise<RemoveTeamMemberResult> {
@@ -355,7 +359,7 @@ export async function removeTeamMember(
 
     return { success: true };
   } catch (error) {
-    console.error('Remove team member error:', error);
+    logger.error('Remove team member error:', error);
 
     // Check if it's a permission error
     if (error instanceof Error && error.message.includes('permission')) {
@@ -374,7 +378,7 @@ export async function removeTeamMember(
 /**
  * Gets team statistics using better-auth data sources
  */
-export async function getTeamStats(teamId: string): Promise<GetTeamStatsResult> {
+export async function getTeamStatsAction(teamId: string): Promise<GetTeamStatsResult> {
   try {
     // First get the team to verify access and get basic data
     const teamResult = await auth.api.getTeam({
@@ -405,7 +409,7 @@ export async function getTeamStats(teamId: string): Promise<GetTeamStatsResult> 
         ).length;
       }
     } catch (invitationError) {
-      console.warn('Could not fetch team invitation count:', invitationError);
+      logger.warn('Could not fetch team invitation count:', invitationError);
       // Continue without invitation count
     }
 
@@ -419,7 +423,18 @@ export async function getTeamStats(teamId: string): Promise<GetTeamStatsResult> 
 
     return { stats, success: true };
   } catch (error) {
-    console.error('Get team stats error:', error);
+    logger.error('Get team stats error:', error);
     return { error: 'Failed to get team statistics', success: false };
   }
 }
+
+// Aliases for server-actions.ts compatibility
+export const addTeamMemberAction = removeTeamMemberAction; // TODO: Implement proper addTeamMember
+export const updateTeamMemberRoleAction = updateTeamMemberAction;
+export const getTeamMembersAction = getTeamAction; // Returns team with members
+export const getUserTeamsAction = listTeamsAction;
+export const getTeamByIdAction = getTeamAction;
+export const transferTeamOwnershipAction = updateTeamMemberAction; // TODO: Implement proper transfer
+export const archiveTeamAction = deleteTeamAction; // TODO: Implement proper archive
+export const restoreTeamAction = updateTeamAction; // TODO: Implement proper restore
+export const getTeamStatisticsAction = getTeamStatsAction;

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 import { createPostHogClientAdapter } from '../../adapters/posthog-client';
 
@@ -38,7 +38,7 @@ Object.defineProperty(global, 'window', {
   writable: true,
 });
 
-describe('PostHogClientAdapter', () => {
+describe('postHogClientAdapter', () => {
   let adapter: ReturnType<typeof createPostHogClientAdapter>;
 
   beforeEach(() => {
@@ -50,7 +50,7 @@ describe('PostHogClientAdapter', () => {
   });
 
   describe('isFeatureEnabled adapter', () => {
-    it('should return true when flag is enabled', async () => {
+    test('should return true when flag is enabled', async () => {
       mockIsFeatureEnabled.mockReturnValue(true);
 
       const flagAdapter = adapter.isFeatureEnabled();
@@ -61,11 +61,11 @@ describe('PostHogClientAdapter', () => {
         key: 'test-flag',
       });
 
-      expect(result).toBe(true);
+      expect(result).toBeTruthy();
       expect(mockIsFeatureEnabled).toHaveBeenCalledWith('test-flag');
     });
 
-    it('should return false when flag is disabled', async () => {
+    test('should return false when flag is disabled', async () => {
       mockIsFeatureEnabled.mockReturnValue(false);
 
       const flagAdapter = adapter.isFeatureEnabled();
@@ -76,10 +76,10 @@ describe('PostHogClientAdapter', () => {
         key: 'test-flag',
       });
 
-      expect(result).toBe(false);
+      expect(result).toBeFalsy();
     });
 
-    it('should identify user when different from current', async () => {
+    test('should identify user when different from current', async () => {
       mockGetDistinctId.mockReturnValue('different-user');
       mockIsFeatureEnabled.mockReturnValue(true);
 
@@ -94,7 +94,7 @@ describe('PostHogClientAdapter', () => {
       expect(mockIdentify).toHaveBeenCalledWith('user-123');
     });
 
-    it('should handle anonymous users', async () => {
+    test('should handle anonymous users', async () => {
       mockIsFeatureEnabled.mockReturnValue(false);
 
       const flagAdapter = adapter.isFeatureEnabled();
@@ -105,11 +105,11 @@ describe('PostHogClientAdapter', () => {
         key: 'test-flag',
       });
 
-      expect(result).toBe(false);
+      expect(result).toBeFalsy();
       expect(mockIdentify).not.toHaveBeenCalled();
     });
 
-    it('should throw error when used outside browser', async () => {
+    test('should throw error when used outside browser', async () => {
       const originalWindow = global.window;
       delete (global as any).window;
 
@@ -129,7 +129,7 @@ describe('PostHogClientAdapter', () => {
   });
 
   describe('featureFlagValue adapter', () => {
-    it('should return flag value when available', async () => {
+    test('should return flag value when available', async () => {
       mockGetFeatureFlag.mockReturnValue('variant-a');
 
       const flagAdapter = adapter.featureFlagValue();
@@ -144,7 +144,7 @@ describe('PostHogClientAdapter', () => {
       expect(mockGetFeatureFlag).toHaveBeenCalledWith('test-flag');
     });
 
-    it('should return false when flag is undefined', async () => {
+    test('should return false when flag is undefined', async () => {
       mockGetFeatureFlag.mockReturnValue(undefined);
 
       const flagAdapter = adapter.featureFlagValue();
@@ -155,10 +155,10 @@ describe('PostHogClientAdapter', () => {
         key: 'test-flag',
       });
 
-      expect(result).toBe(false);
+      expect(result).toBeFalsy();
     });
 
-    it('should return boolean values', async () => {
+    test('should return boolean values', async () => {
       mockGetFeatureFlag.mockReturnValue(true);
 
       const flagAdapter = adapter.featureFlagValue();
@@ -169,12 +169,12 @@ describe('PostHogClientAdapter', () => {
         key: 'bool-flag',
       });
 
-      expect(result).toBe(true);
+      expect(result).toBeTruthy();
     });
   });
 
   describe('featureFlagPayload adapter', () => {
-    it('should return payload when available', async () => {
+    test('should return payload when available', async () => {
       const payload = { config: { timeout: 5000 }, variant: 'A' };
       mockGetFeatureFlagPayload.mockReturnValue(payload);
 
@@ -186,11 +186,11 @@ describe('PostHogClientAdapter', () => {
         key: 'test-flag',
       });
 
-      expect(result).toEqual(payload);
+      expect(result).toStrictEqual(payload);
       expect(mockGetFeatureFlagPayload).toHaveBeenCalledWith('test-flag');
     });
 
-    it('should transform payload when transform function provided', async () => {
+    test('should transform payload when transform function provided', async () => {
       const payload = { value: 'raw' };
       mockGetFeatureFlagPayload.mockReturnValue(payload);
 
@@ -203,10 +203,10 @@ describe('PostHogClientAdapter', () => {
         key: 'test-flag',
       });
 
-      expect(result).toEqual({ transformed: 'raw' });
+      expect(result).toStrictEqual({ transformed: 'raw' });
     });
 
-    it('should return default payload when no payload available', async () => {
+    test('should return default payload when no payload available', async () => {
       mockGetFeatureFlagPayload.mockReturnValue(null);
 
       const flagAdapter = adapter.featureFlagPayload();
@@ -217,21 +217,21 @@ describe('PostHogClientAdapter', () => {
         key: 'test-flag',
       });
 
-      expect(result).toEqual({});
+      expect(result).toStrictEqual({});
     });
   });
 
   describe('adapter configuration', () => {
-    it('should have correct adapter configuration', () => {
+    test('should have correct adapter configuration', () => {
       const flagAdapter = adapter.isFeatureEnabled();
 
-      expect(flagAdapter.config).toEqual({ reportValue: true });
-      expect(flagAdapter.origin).toEqual({ provider: 'posthog' });
+      expect(flagAdapter.config).toStrictEqual({ reportValue: true });
+      expect(flagAdapter.origin).toStrictEqual({ provider: 'posthog' });
     });
   });
 
   describe('createPostHogClientAdapter', () => {
-    it('should throw error when no API key provided', () => {
+    test('should throw error when no API key provided', () => {
       vi.stubEnv('NEXT_PUBLIC_POSTHOG_KEY', '');
 
       expect(() => createPostHogClientAdapter()).toThrow(
@@ -239,7 +239,7 @@ describe('PostHogClientAdapter', () => {
       );
     });
 
-    it('should use provided options', () => {
+    test('should use provided options', () => {
       const adapter = createPostHogClientAdapter({
         postHogKey: 'custom-key',
         postHogOptions: {
@@ -251,7 +251,7 @@ describe('PostHogClientAdapter', () => {
       expect(adapter).toBeDefined();
     });
 
-    it('should use environment variables when no options provided', () => {
+    test('should use environment variables when no options provided', () => {
       vi.stubEnv('NEXT_PUBLIC_POSTHOG_KEY', 'env-key');
       vi.stubEnv('NEXT_PUBLIC_POSTHOG_HOST', 'https://env.posthog.com');
 

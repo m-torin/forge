@@ -149,7 +149,7 @@ export async function browserScrapeWithInteractions(
     await manager.initialize();
 
     // Initial page load
-    const _initialResult = await manager.scrape(url, {
+    const initialResult = await manager.scrape(url, {
       ...scrapeOptions,
       extract: undefined, // Don't extract yet
     });
@@ -312,7 +312,7 @@ export async function workflowScrape(
  * Execute a single interaction step
  */
 async function executeInteraction(manager: any, step: InteractionStep): Promise<void> {
-  const { delay = 500, options: _options = {}, selector, type, value } = step;
+  const { delay = 500, options: options = {}, selector, type, value } = step;
 
   try {
     switch (type) {

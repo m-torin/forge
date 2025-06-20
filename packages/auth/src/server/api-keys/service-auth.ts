@@ -3,11 +3,12 @@
  */
 
 import 'server-only';
+import { syncLogger as logger } from '../../shared/utils/logger';
 import { headers } from 'next/headers';
 
-import { auth } from '../auth';
+import { auth } from '../../shared/auth.config';
 
-import type { ServiceAuthOptions, ServiceAuthResult } from '../../shared/api-keys/types';
+import type { ServiceAuthOptions, ServiceAuthResult } from '../../shared/api-keys';
 
 /**
  * Creates a service-to-service authentication token
@@ -18,26 +19,33 @@ export async function createServiceAuth(options: ServiceAuthOptions): Promise<Se
 
     // Calculate expiration date
     const expiresAt = new Date();
-    const match = expiresIn.match(/^(\d+)([dhm])$/);
 
-    if (match) {
-      const [, amount, unit] = match;
-      const value = parseInt(amount, 10);
-
-      switch (unit) {
-        case 'd':
-          expiresAt.setDate(expiresAt.getDate() + value);
-          break;
-        case 'h':
-          expiresAt.setHours(expiresAt.getHours() + value);
-          break;
-        case 'm':
-          expiresAt.setMinutes(expiresAt.getMinutes() + value);
-          break;
-      }
+    if (typeof expiresIn === 'number') {
+      // If it's a number, treat as days
+      expiresAt.setDate(expiresAt.getDate() + expiresIn);
     } else {
-      // Default to 30 days
-      expiresAt.setDate(expiresAt.getDate() + 30);
+      // If it's a string, parse the format like "30d", "24h", "60m"
+      const match = expiresIn.match(/^(\d+)([dhm])$/);
+
+      if (match) {
+        const [, amount, unit] = match;
+        const value = parseInt(amount, 10);
+
+        switch (unit) {
+          case 'd':
+            expiresAt.setDate(expiresAt.getDate() + value);
+            break;
+          case 'h':
+            expiresAt.setHours(expiresAt.getHours() + value);
+            break;
+          case 'm':
+            expiresAt.setMinutes(expiresAt.getMinutes() + value);
+            break;
+        }
+      } else {
+        // Default to 30 days
+        expiresAt.setDate(expiresAt.getDate() + 30);
+      }
     }
 
     // Create API key for service authentication using better-auth API
@@ -66,7 +74,7 @@ export async function createServiceAuth(options: ServiceAuthOptions): Promise<Se
       token: result.key,
     };
   } catch (error) {
-    console.error('Service auth creation error:', error);
+    logger.error('Service auth creation error:', error);
     return {
       error: 'Failed to create service authentication',
       success: false,
@@ -115,7 +123,7 @@ export async function validateServiceAuth(token: string): Promise<{
       serviceId: metadata.serviceId,
     };
   } catch (error) {
-    console.error('Service auth validation error:', error);
+    logger.error('Service auth validation error:', error);
     return {
       isValid: false,
       error: 'Failed to validate service authentication',
@@ -172,7 +180,7 @@ export async function revokeServiceAuth(serviceId: string): Promise<{
       success: true,
     };
   } catch (error) {
-    console.error('Service auth revocation error:', error);
+    logger.error('Service auth revocation error:', error);
     return {
       error: 'Failed to revoke service authentication',
       success: false,
@@ -221,7 +229,7 @@ export async function listServiceAuth(): Promise<{
       success: true,
     };
   } catch (error) {
-    console.error('Service auth listing error:', error);
+    logger.error('Service auth listing error:', error);
     return {
       error: 'Failed to list service authentications',
       success: false,
@@ -328,7 +336,7 @@ export async function bulkCreateApiKeys(data: {
       results: mappedResults,
     };
   } catch (error) {
-    console.error('Bulk create API keys error:', error);
+    logger.error('Bulk create API keys error:', error);
     return {
       error: 'Failed to bulk create API keys',
       success: false,
@@ -371,7 +379,7 @@ export async function bulkRevokeApiKeys(keyIds: string[]): Promise<{
       results: mappedResults,
     };
   } catch (error) {
-    console.error('Bulk revoke API keys error:', error);
+    logger.error('Bulk revoke API keys error:', error);
     return {
       error: 'Failed to bulk revoke API keys',
       success: false,
@@ -431,7 +439,7 @@ export async function bulkUpdateApiKeys(
       results: mappedResults,
     };
   } catch (error) {
-    console.error('Bulk update API keys error:', error);
+    logger.error('Bulk update API keys error:', error);
     return {
       error: 'Failed to bulk update API keys',
       success: false,
@@ -494,7 +502,7 @@ export async function getApiKeyStatistics(): Promise<{
       },
     };
   } catch (error) {
-    console.error('Get API key statistics error:', error);
+    logger.error('Get API key statistics error:', error);
     return {
       error: 'Failed to get API key statistics',
       success: false,

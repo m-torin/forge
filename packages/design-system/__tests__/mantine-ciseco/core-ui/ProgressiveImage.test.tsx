@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '../test-utils';
-import { ProgressiveImage } from '../../../mantine-ciseco/components/ProgressiveImage';
+import { ProgressiveImage } from '../../../src/mantine-ciseco/components/ProgressiveImage';
 
 describe('ProgressiveImage', (_: any) => {
   const defaultProps = {

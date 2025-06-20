@@ -12,198 +12,172 @@ import {
   Text,
   TextInput,
   Select,
-  Alert,
+  Box,
 } from '@mantine/core';
-import Link from 'next/link';
 import {
   IconActivity,
   IconBan,
-  IconBuilding,
-  IconKey,
   IconShield,
-  IconTrash,
   IconUserCheck,
   IconUserPlus,
   IconUsers,
-  IconAlertTriangle,
 } from '@tabler/icons-react';
 import { useDisclosure } from '@mantine/hooks';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { notifications } from '@mantine/notifications';
 
-import { listUsers, deleteUser, banUser, unbanUser, impersonateUser } from '@repo/auth/server/next';
+import {
+  getUsersAction,
+  deleteUserAction,
+  banUserAction,
+  unbanUserAction,
+  impersonateUserAction,
+} from '@/actions/pim3/actions';
 
-import { DataTable } from '../../components/data-table';
-import { PageHeader } from '../../components/page-header';
-import { StatsCard } from '../../components/stats-card';
+import { DataTable } from '@/components/pim3/data-table';
+import { PageHeader } from '@/components/pim3/page-header';
+import { StatsCard } from '@/components/pim3/stats-card';
+import { ResponsiveDataTable } from '@/components/pim3/responsive-data-table';
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  banned: boolean;
-  createdAt: string;
-  lastActive?: string;
-  organizations?: Array<{
-    id: string;
-    name: string;
-    role: string;
-  }>;
-}
+import type { User } from '@/types/pim3';
 
-export default function UsersPage() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [createModalOpened, { open: openCreateModal, close: closeCreateModal }] =
-    useDisclosure(false);
-  const [banModalOpened, { open: openBanModal, close: closeBanModal }] = useDisclosure(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [newUser, setNewUser] = useState({
-    name: '',
-    email: '',
-    password: '',
-    role: 'user',
+// Constants
+const USER_ROLES = [
+  { value: 'user', label: 'User' },
+  { value: 'moderator', label: 'Moderator' },
+  { value: 'admin', label: 'Admin' },
+  { value: 'super-admin', label: 'Super Admin' },
+];
+
+const ROLE_COLORS = {
+  'super-admin': 'red',
+  admin: 'red',
+  moderator: 'orange',
+  user: 'blue',
+} as const;
+
+// Custom hook for users data
+const useUsersData = () => {
+  const [state, setState] = useState({
+    users: [] as User[],
+    loading: true,
   });
 
-  const statsData = [
-    {
-      title: 'Total Users',
-      value: users.length.toString(),
-      color: 'blue',
-      icon: IconUsers,
-      change: { value: 12 },
-    },
-    {
-      title: 'Active Users',
-      value: users.filter((u) => !u.banned).length.toString(),
-      color: 'green',
-      icon: IconUserCheck,
-      progress: {
-        label: 'of total users',
-        value:
-          users.length > 0
-            ? Math.round((users.filter((u) => !u.banned).length / users.length) * 100)
-            : 0,
-      },
-    },
-    {
-      title: 'Banned Users',
-      value: users.filter((u) => u.banned).length.toString(),
-      color: 'red',
-      icon: IconBan,
-    },
-    {
-      title: 'Admin Users',
-      value: users.filter((u) => u.role === 'admin' || u.role === 'super-admin').length.toString(),
-      color: 'orange',
-      icon: IconShield,
-    },
-  ];
-
-  useEffect(() => {
-    loadUsers();
-
-    // Listen for refresh events from modals
-    const handleRefresh = () => loadUsers();
-    window.addEventListener('refreshPeople', handleRefresh);
-
-    return () => {
-      window.removeEventListener('refreshPeople', handleRefresh);
-    };
-  }, []);
-
-  const loadUsers = async () => {
-    setLoading(true);
+  const loadData = async () => {
+    setState((prev) => ({ ...prev, loading: true }));
     try {
-      const result = await listUsers();
+      const result = await getUsersAction();
       if (result.success && result.data) {
-        setUsers(
-          result.data.map((user: any) => ({
-            ...user,
-            role: user.role || 'user',
-            banned: user.banned || false,
-          })) || [],
-        );
+        const users = result.data.map((user: any) => ({
+          ...user,
+          role: user.role || 'user',
+          banned: user.banned || false,
+        }));
+        setState({ users, loading: false });
       } else {
         notifications.show({
           title: 'Error',
           message: result.error || 'Failed to load users',
           color: 'red',
         });
+        setState((prev) => ({ ...prev, loading: false }));
       }
     } catch (error) {
       console.error('Failed to load users:', error);
-      notifications.show({
-        title: 'Error',
-        message: 'Failed to load users',
-        color: 'red',
-      });
-    } finally {
-      setLoading(false);
+      notifications.show({ title: 'Error', message: 'Failed to load users', color: 'red' });
+      setState((prev) => ({ ...prev, loading: false }));
     }
   };
 
-  const handleCreateUser = async () => {
-    try {
-      // Note: User creation through better-auth typically happens through the sign-up flow
-      // For admin-created users, you might need to implement a custom solution
-      // or use the invitation system
-      notifications.show({
-        title: 'Info',
-        message: 'User creation should be done through the sign-up flow or invitation system',
+  useEffect(() => {
+    loadData();
+    const handleRefresh = () => loadData();
+    window.addEventListener('refreshPeople', handleRefresh);
+    return () => window.removeEventListener('refreshPeople', handleRefresh);
+  }, []);
+
+  return { ...state, refetch: loadData };
+};
+
+export default function UsersPage() {
+  const { users, loading, refetch } = useUsersData();
+  const [createModalOpened, { open: openCreateModal, close: closeCreateModal }] =
+    useDisclosure(false);
+  const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: 'user' });
+
+  const statsData = useMemo(() => {
+    const active = users.filter((u) => !u.banned);
+    const banned = users.filter((u) => u.banned);
+    const admins = users.filter((u) => ['admin', 'super-admin'].includes(u.role));
+
+    return [
+      {
+        title: 'Total Users',
+        value: users.length.toString(),
         color: 'blue',
-      });
-      closeCreateModal();
-    } catch (error) {
-      console.error('Failed to create user:', error);
-      notifications.show({
-        title: 'Error',
-        message: 'Failed to create user',
-        color: 'red',
-      });
-    }
+        icon: IconUsers,
+        change: { value: 12 },
+      },
+      {
+        title: 'Active Users',
+        value: active.length.toString(),
+        color: 'green',
+        icon: IconUserCheck,
+        progress: {
+          label: 'of total users',
+          value: users.length ? Math.round((active.length / users.length) * 100) : 0,
+        },
+      },
+      { title: 'Banned Users', value: banned.length.toString(), color: 'red', icon: IconBan },
+      { title: 'Admin Users', value: admins.length.toString(), color: 'orange', icon: IconShield },
+    ];
+  }, [users]);
+
+  const handleCreateUser = async () => {
+    notifications.show({
+      title: 'Info',
+      message: 'User creation should be done through the sign-up flow or invitation system',
+      color: 'blue',
+    });
+    closeCreateModal();
   };
 
   const handleBanUser = async (userId: string, ban: boolean) => {
     try {
-      const result = ban ? await banUser(userId) : await unbanUser(userId);
+      const result = ban ? await banUserAction(userId) : await unbanUserAction(userId);
+      const action = ban ? 'banned' : 'unbanned';
 
       if (result.success) {
         notifications.show({
           title: 'Success',
-          message: `User ${ban ? 'banned' : 'unbanned'} successfully`,
+          message: `User ${action} successfully`,
           color: 'green',
         });
-        await loadUsers();
+        await refetch();
       } else {
         notifications.show({
           title: 'Error',
-          message: result.error || `Failed to ${ban ? 'ban' : 'unban'} user`,
+          message: result.error || `Failed to ${action.slice(0, -2)} user`,
           color: 'red',
         });
       }
     } catch (error) {
-      console.error(`Failed to ${ban ? 'ban' : 'unban'} user:`, error);
-      notifications.show({
-        title: 'Error',
-        message: `Failed to ${ban ? 'ban' : 'unban'} user`,
-        color: 'red',
-      });
+      const action = ban ? 'ban' : 'unban';
+      console.error(`Failed to ${action} user:`, error);
+      notifications.show({ title: 'Error', message: `Failed to ${action} user`, color: 'red' });
     }
   };
 
   const handleDeleteUser = async (userId: string) => {
     try {
-      const result = await deleteUser(userId);
-
+      const result = await deleteUserAction(userId);
       if (result.success) {
         notifications.show({
           title: 'Success',
           message: 'User deleted successfully',
           color: 'green',
         });
-        await loadUsers();
+        await refetch();
       } else {
         notifications.show({
           title: 'Error',
@@ -213,25 +187,19 @@ export default function UsersPage() {
       }
     } catch (error) {
       console.error('Failed to delete user:', error);
-      notifications.show({
-        title: 'Error',
-        message: 'Failed to delete user',
-        color: 'red',
-      });
+      notifications.show({ title: 'Error', message: 'Failed to delete user', color: 'red' });
     }
   };
 
   const handleImpersonateUser = async (userId: string) => {
     try {
-      const result = await impersonateUser(userId);
-
+      const result = await impersonateUserAction(userId);
       if (result.success) {
         notifications.show({
           title: 'Success',
           message: 'User impersonation started',
           color: 'green',
         });
-        // Redirect to main app or refresh page
         window.location.href = '/';
       } else {
         notifications.show({
@@ -242,11 +210,7 @@ export default function UsersPage() {
       }
     } catch (error) {
       console.error('Failed to impersonate user:', error);
-      notifications.show({
-        title: 'Error',
-        message: 'Failed to impersonate user',
-        color: 'red',
-      });
+      notifications.show({ title: 'Error', message: 'Failed to impersonate user', color: 'red' });
     }
   };
 
@@ -278,16 +242,7 @@ export default function UsersPage() {
       key: 'role',
       label: 'Role',
       render: (value: string) => (
-        <Badge
-          color={
-            value === 'admin' || value === 'super-admin'
-              ? 'red'
-              : value === 'moderator'
-                ? 'orange'
-                : 'blue'
-          }
-          variant="light"
-        >
+        <Badge color={ROLE_COLORS[value as keyof typeof ROLE_COLORS] || 'blue'} variant="light">
           {value}
         </Badge>
       ),
@@ -339,7 +294,7 @@ export default function UsersPage() {
             ],
           }}
           description="Manage user accounts, roles, and permissions"
-          onRefresh={loadUsers}
+          onRefresh={refetch}
           title="User Management"
         />
 
@@ -349,56 +304,87 @@ export default function UsersPage() {
           ))}
         </SimpleGrid>
 
-        <DataTable
-          actions={{
-            custom: [
-              {
-                icon: <IconShield size={14} />,
-                label: 'Impersonate',
-                onClick: (row) => handleImpersonateUser(row.id),
-              },
-              {
-                icon: <IconBan size={14} />,
-                label: 'Ban/Unban',
-                onClick: (row) => handleBanUser(row.id, !row.banned),
-                color: 'orange',
-              },
-              {
-                icon: <IconActivity size={14} />,
-                label: 'View Sessions',
-                onClick: (row) => console.log('View sessions', row),
-              },
-            ],
-            onDelete: (row) => handleDeleteUser(row.id),
-            onEdit: (row) => console.log('Edit user', row),
-            onView: (row) => window.open(`/guests/people/${row.id}`, '_blank'),
-          }}
-          bulkActions={[
+        {/* Mobile-responsive table */}
+        <ResponsiveDataTable
+          data={users}
+          loading={loading}
+          type="users"
+          onView={(user) => window.open(`/guests/people/${user.id}`, '_blank')}
+          onEdit={(user) => console.log('Edit user', user)}
+          onDelete={(user) => handleDeleteUser(user.id)}
+          customActions={[
             {
-              color: 'red',
-              label: 'Ban Selected',
-              onClick: (rows) => console.log('Ban users', rows),
+              icon: <IconShield size={14} />,
+              label: 'Impersonate',
+              onClick: (user) => handleImpersonateUser(user.id),
             },
             {
-              label: 'Export Selected',
-              onClick: (rows) => console.log('Export users', rows),
+              icon: <IconBan size={14} />,
+              label: 'Ban/Unban',
+              onClick: (user) => handleBanUser(user.id, !user.banned),
+              color: 'orange',
+            },
+            {
+              icon: <IconActivity size={14} />,
+              label: 'View Sessions',
+              onClick: (user) => console.log('View sessions', user),
             },
           ]}
-          columns={columns}
-          loading={loading}
-          pagination={{
-            pageSize: 25,
-            total: users.length,
-          }}
-          searchPlaceholder="Search users..."
-          data={users}
-          emptyState={{
-            description: 'Create your first user to get started',
-            icon: IconUsers,
-            title: 'No users found',
-          }}
-          selectable
         />
+
+        {/* Desktop table - hidden on mobile */}
+        <Box hiddenFrom="sm">
+          <DataTable
+            actions={{
+              custom: [
+                {
+                  icon: <IconShield size={14} />,
+                  label: 'Impersonate',
+                  onClick: (row) => handleImpersonateUser(row.id),
+                },
+                {
+                  icon: <IconBan size={14} />,
+                  label: 'Ban/Unban',
+                  onClick: (row) => handleBanUser(row.id, !row.banned),
+                  color: 'orange',
+                },
+                {
+                  icon: <IconActivity size={14} />,
+                  label: 'View Sessions',
+                  onClick: (row) => console.log('View sessions', row),
+                },
+              ],
+              onDelete: (row) => handleDeleteUser(row.id),
+              onEdit: (row) => console.log('Edit user', row),
+              onView: (row) => window.open(`/guests/people/${row.id}`, '_blank'),
+            }}
+            bulkActions={[
+              {
+                color: 'red',
+                label: 'Ban Selected',
+                onClick: (rows) => console.log('Ban users', rows),
+              },
+              {
+                label: 'Export Selected',
+                onClick: (rows) => console.log('Export users', rows),
+              },
+            ]}
+            columns={columns}
+            loading={loading}
+            pagination={{
+              pageSize: 25,
+              total: users.length,
+            }}
+            searchPlaceholder="Search users..."
+            data={users}
+            emptyState={{
+              description: 'Create your first user to get started',
+              icon: IconUsers,
+              title: 'No users found',
+            }}
+            selectable
+          />
+        </Box>
       </Stack>
 
       {/* Create User Modal */}
@@ -431,12 +417,7 @@ export default function UsersPage() {
             placeholder="Select user role"
             value={newUser.role}
             onChange={(value) => setNewUser((prev) => ({ ...prev, role: value || 'user' }))}
-            data={[
-              { value: 'user', label: 'User' },
-              { value: 'moderator', label: 'Moderator' },
-              { value: 'admin', label: 'Admin' },
-              { value: 'super-admin', label: 'Super Admin' },
-            ]}
+            data={USER_ROLES}
           />
           <Group justify="flex-end" mt="md">
             <Button variant="light" onClick={closeCreateModal}>

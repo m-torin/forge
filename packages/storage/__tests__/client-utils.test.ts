@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   uploadWithPresignedUrl,
   uploadDirectToUrl,
@@ -28,7 +28,7 @@ describe('client-utils', () => {
     global.XMLHttpRequest = vi.fn(() => mockXHR) as any;
 
     // Mock fetch
-    global.fetch = vi.fn();
+    vi.spyOn(global, 'fetch').mockImplementation();
   });
 
   afterEach(() => {
@@ -37,7 +37,7 @@ describe('client-utils', () => {
   });
 
   describe('uploadWithPresignedUrl', () => {
-    it('should upload with POST and form data', async () => {
+    test('should upload with POST and form data', async () => {
       const presignedData = {
         url: 'https://bucket.s3.amazonaws.com/',
         fields: {
@@ -67,7 +67,7 @@ describe('client-utils', () => {
       );
     });
 
-    it('should track upload progress with XMLHttpRequest', async () => {
+    test('should track upload progress with XMLHttpRequest', async () => {
       const presignedData = {
         url: 'https://bucket.s3.amazonaws.com/',
         fields: { key: 'test-file.txt' },
@@ -110,7 +110,7 @@ describe('client-utils', () => {
       });
     });
 
-    it('should handle upload failure', async () => {
+    test('should handle upload failure', async () => {
       const presignedData = {
         url: 'https://bucket.s3.amazonaws.com/',
         fields: {},
@@ -132,7 +132,7 @@ describe('client-utils', () => {
   });
 
   describe('uploadDirectToUrl', () => {
-    it('should upload with PUT method', async () => {
+    test('should upload with PUT method', async () => {
       const url = 'https://bucket.s3.amazonaws.com/test-file.txt?signature=...';
       const file = new Blob(['test content'], { type: 'text/plain' });
       const headers = {
@@ -154,7 +154,7 @@ describe('client-utils', () => {
       });
     });
 
-    it('should track progress with XMLHttpRequest', async () => {
+    test('should track progress with XMLHttpRequest', async () => {
       const url = 'https://bucket.s3.amazonaws.com/test-file.txt?signature=...';
       const file = new Blob(['test content'], { type: 'text/plain' });
       const onProgress = vi.fn();
@@ -192,7 +192,7 @@ describe('client-utils', () => {
       expect(mockXHR.open).toHaveBeenCalledWith('PUT', url);
     });
 
-    it('should handle network error', async () => {
+    test('should handle network error', async () => {
       const url = 'https://bucket.s3.amazonaws.com/test-file.txt';
       const file = new Blob(['test content']);
       const onProgress = vi.fn();
@@ -208,8 +208,8 @@ describe('client-utils', () => {
     });
   });
 
-  describe('ClientMultipartUpload', () => {
-    it('should manage multipart upload parts', async () => {
+  describe('clientMultipartUpload', () => {
+    test('should manage multipart upload parts', async () => {
       const uploadId = 'test-upload-id';
       const key = 'large-file.bin';
       const upload = new ClientMultipartUpload(uploadId, key);
@@ -237,7 +237,7 @@ describe('client-utils', () => {
       });
     });
 
-    it('should sort parts by part number', async () => {
+    test('should sort parts by part number', async () => {
       const upload = new ClientMultipartUpload('upload-id', 'file.bin');
 
       // Mock part uploads
@@ -258,7 +258,7 @@ describe('client-utils', () => {
       expect(parts.map((p) => p.PartNumber)).toEqual([1, 2, 3]);
     });
 
-    it('should handle part upload failure', async () => {
+    test('should handle part upload failure', async () => {
       const upload = new ClientMultipartUpload('upload-id', 'file.bin');
 
       (global.fetch as any).mockResolvedValue({
@@ -273,7 +273,7 @@ describe('client-utils', () => {
   });
 
   describe('splitFileIntoChunks', () => {
-    it('should split file into chunks', async () => {
+    test('should split file into chunks', async () => {
       const fileSize = 15 * 1024 * 1024; // 15MB
       const chunkSize = 5 * 1024 * 1024; // 5MB
       const file = new Blob([new ArrayBuffer(fileSize)]);
@@ -304,7 +304,7 @@ describe('client-utils', () => {
       });
     });
 
-    it('should handle file smaller than chunk size', async () => {
+    test('should handle file smaller than chunk size', async () => {
       const file = new Blob(['small content']);
       const chunks = [];
 
@@ -320,7 +320,7 @@ describe('client-utils', () => {
   });
 
   describe('downloadFromUrl', () => {
-    it('should download file without progress tracking', async () => {
+    test('should download file without progress tracking', async () => {
       const mockBlob = new Blob(['downloaded content'], { type: 'text/plain' });
 
       (global.fetch as any).mockResolvedValue({
@@ -335,7 +335,7 @@ describe('client-utils', () => {
       expect(global.fetch).toHaveBeenCalledWith('https://example.com/file.txt');
     });
 
-    it('should download with progress tracking', async () => {
+    test('should download with progress tracking', async () => {
       const onProgress = vi.fn();
       const chunks = [
         new Uint8Array([1, 2, 3]),
@@ -389,7 +389,7 @@ describe('client-utils', () => {
       expect(result.type).toBe('application/octet-stream');
     });
 
-    it('should handle download failure', async () => {
+    test('should handle download failure', async () => {
       (global.fetch as any).mockResolvedValue({
         ok: false,
         status: 404,
@@ -400,7 +400,7 @@ describe('client-utils', () => {
       );
     });
 
-    it('should handle missing content-length header', async () => {
+    test('should handle missing content-length header', async () => {
       const onProgress = vi.fn();
       const chunk = new Uint8Array([1, 2, 3, 4, 5]);
 

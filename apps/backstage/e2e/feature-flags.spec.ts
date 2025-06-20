@@ -276,8 +276,8 @@ test.describe('Backstage Feature Flags - Management and Configuration Testing', 
 
           // Verify state changed (if it's a checkbox)
           if (await firstToggle.evaluate((el: any) => el.type === 'checkbox')) {
-            const newState = await firstToggle.isChecked();
-            expect(newState).toBe(!isChecked);
+            const newState = firstToggle;
+            await expect(newState).toBeChecked();
           }
 
           toggleTested = true;

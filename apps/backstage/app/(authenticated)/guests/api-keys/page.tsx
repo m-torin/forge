@@ -24,8 +24,6 @@ import {
   IconEye,
   IconEyeOff,
   IconPlus,
-  IconTrash,
-  IconSettings,
   IconCalendar,
   IconActivity,
   IconShield,
@@ -33,176 +31,145 @@ import {
   IconRefresh,
 } from '@tabler/icons-react';
 import { useDisclosure, useClipboard } from '@mantine/hooks';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { notifications } from '@mantine/notifications';
 
 import {
-  listApiKeys,
-  createApiKey,
-  updateApiKey,
-  deleteApiKey,
-  listAllOrganizations,
-  getApiKeyStatistics,
-} from '@repo/auth/server/next';
+  getApiKeysAction,
+  createApiKeyAction,
+  updateApiKeyAction,
+  deleteApiKeyAction,
+  getOrganizationsAction,
+} from '@/actions/pim3/actions';
 
-import { DataTable } from '../../components/data-table';
-import { PageHeader } from '../../components/page-header';
-import { StatsCard } from '../../components/stats-card';
+import { DataTable } from '@/components/pim3/data-table';
+import { PageHeader } from '@/components/pim3/page-header';
+import { StatsCard } from '@/components/pim3/stats-card';
 
-interface ApiKey {
-  id: string;
-  name: string;
-  start?: string;
-  prefix?: string;
-  enabled: boolean;
-  lastUsedAt?: string;
-  expiresAt?: string;
-  createdAt: string;
-  permissions?: string[];
-  metadata?: {
-    type?: string;
-    serviceId?: string;
-    description?: string;
+import type { ApiKey, Organization } from '@/types/pim3';
+
+// Constants
+const AVAILABLE_PERMISSIONS = [
+  { value: 'read', label: 'Read' },
+  { value: 'write', label: 'Write' },
+  { value: 'admin', label: 'Admin' },
+  { value: 'delete', label: 'Delete' },
+  { value: 'manage_users', label: 'Manage Users' },
+  { value: 'manage_organizations', label: 'Manage Organizations' },
+  { value: 'manage_api_keys', label: 'Manage API Keys' },
+];
+
+const KEY_TYPES = [
+  { value: 'user', label: 'User Key' },
+  { value: 'service', label: 'Service Key' },
+];
+
+// Utility
+const isKeyExpired = (expiresAt?: string | Date) => {
+  if (!expiresAt) return false;
+  const expiryDate = expiresAt instanceof Date ? expiresAt : new Date(expiresAt);
+  return expiryDate < new Date();
+};
+
+// Custom hook for API keys data
+const useApiKeysData = () => {
+  const [state, setState] = useState({
+    apiKeys: [] as ApiKey[],
+    organizations: [] as Organization[],
+    loading: true,
+  });
+
+  const loadData = async () => {
+    setState((prev) => ({ ...prev, loading: true }));
+    try {
+      const [keysResult, orgsResult] = await Promise.all([
+        getApiKeysAction(),
+        getOrganizationsAction(),
+      ]);
+
+      const apiKeys = keysResult.success && keysResult.data ? keysResult.data : [];
+      const organizations = orgsResult?.success && orgsResult.data ? orgsResult.data : [];
+
+      setState({ apiKeys, organizations, loading: false });
+
+      if (!keysResult.success) {
+        notifications.show({
+          title: 'Error',
+          message: keysResult.error || 'Failed to load API keys',
+          color: 'red',
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load API keys:', error);
+      notifications.show({ title: 'Error', message: 'Failed to load API keys', color: 'red' });
+      setState((prev) => ({ ...prev, loading: false }));
+    }
   };
-  requestCount: number;
-  remaining?: number;
-}
 
-interface Organization {
-  id: string;
-  name: string;
-  slug: string;
-}
+  useEffect(() => {
+    loadData();
+    const handleRefresh = () => loadData();
+    window.addEventListener('refreshApiKeys', handleRefresh);
+    return () => window.removeEventListener('refreshApiKeys', handleRefresh);
+  }, []);
+
+  return { ...state, refetch: loadData };
+};
 
 export default function ApiKeysPage() {
-  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
-  const [organizations, setOrganizations] = useState<Organization[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { apiKeys, organizations, loading, refetch } = useApiKeysData();
   const [createModalOpened, { open: openCreateModal, close: closeCreateModal }] =
     useDisclosure(false);
   const [keyModalOpened, { open: openKeyModal, close: closeKeyModal }] = useDisclosure(false);
   const [createdKey, setCreatedKey] = useState<string>('');
   const [showKey, setShowKey] = useState(false);
   const clipboard = useClipboard({ timeout: 2000 });
-
   const [newKey, setNewKey] = useState({
     name: '',
     organizationId: '',
     permissions: [] as string[],
     expiresAt: '',
-    metadata: {
-      type: 'user',
-      description: '',
-    },
+    metadata: { type: 'user', description: '' },
   });
 
-  const availablePermissions = [
-    { value: 'read', label: 'Read' },
-    { value: 'write', label: 'Write' },
-    { value: 'admin', label: 'Admin' },
-    { value: 'delete', label: 'Delete' },
-    { value: 'manage_users', label: 'Manage Users' },
-    { value: 'manage_organizations', label: 'Manage Organizations' },
-    { value: 'manage_api_keys', label: 'Manage API Keys' },
-  ];
+  const statsData = useMemo(() => {
+    const active = apiKeys.filter((k) => k.enabled && !isKeyExpired(k.expiresAt));
+    const expired = apiKeys.filter((k) => isKeyExpired(k.expiresAt));
+    const totalRequests = apiKeys.reduce((acc, key) => acc + (key.requestCount || 0), 0);
 
-  const statsData = [
-    {
-      title: 'Total API Keys',
-      value: apiKeys.length.toString(),
-      color: 'blue',
-      icon: IconKey,
-      change: { value: 5 },
-    },
-    {
-      title: 'Active Keys',
-      value: apiKeys
-        .filter((k) => k.enabled && (!k.expiresAt || new Date(k.expiresAt) > new Date()))
-        .length.toString(),
-      color: 'green',
-      icon: IconShield,
-      progress: {
-        label: 'of total keys',
-        value:
-          apiKeys.length > 0
+    return [
+      {
+        title: 'Total API Keys',
+        value: apiKeys.length.toString(),
+        color: 'blue',
+        icon: IconKey,
+        change: { value: 5 },
+      },
+      {
+        title: 'Active Keys',
+        value: active.length.toString(),
+        color: 'green',
+        icon: IconShield,
+        progress: {
+          label: 'of total keys',
+          value: apiKeys.length
             ? Math.round((apiKeys.filter((k) => k.enabled).length / apiKeys.length) * 100)
             : 0,
+        },
       },
-    },
-    {
-      title: 'Expired Keys',
-      value: apiKeys
-        .filter((k) => k.expiresAt && new Date(k.expiresAt) < new Date())
-        .length.toString(),
-      color: 'red',
-      icon: IconCalendar,
-    },
-    {
-      title: 'Total Requests',
-      value: apiKeys.reduce((acc, key) => acc + key.requestCount, 0).toLocaleString(),
-      color: 'violet',
-      icon: IconActivity,
-    },
-  ];
-
-  useEffect(() => {
-    loadApiKeys();
-    loadOrganizations();
-
-    // Listen for refresh events from modals
-    const handleRefresh = () => loadApiKeys();
-    window.addEventListener('refreshApiKeys', handleRefresh);
-
-    return () => {
-      window.removeEventListener('refreshApiKeys', handleRefresh);
-    };
-  }, []);
-
-  const loadApiKeys = async () => {
-    setLoading(true);
-    try {
-      const result = await listApiKeys();
-      if (result.success && result.data) {
-        setApiKeys(result.data);
-
-        // Also load statistics
-        const statsResult = await getApiKeyStatistics();
-        if (statsResult.success && statsResult.data) {
-          // Statistics data is available in statsResult.data
-        }
-      } else {
-        notifications.show({
-          title: 'Error',
-          message: result.error || 'Failed to load API keys',
-          color: 'red',
-        });
-      }
-    } catch (error) {
-      console.error('Failed to load API keys:', error);
-      notifications.show({
-        title: 'Error',
-        message: 'Failed to load API keys',
-        color: 'red',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadOrganizations = async () => {
-    try {
-      const result = await listAllOrganizations();
-      if (result.success && result.data) {
-        setOrganizations(result.data || []);
-      }
-    } catch (error) {
-      console.error('Failed to load organizations:', error);
-    }
-  };
+      { title: 'Expired Keys', value: expired.length.toString(), color: 'red', icon: IconCalendar },
+      {
+        title: 'Total Requests',
+        value: totalRequests.toLocaleString(),
+        color: 'violet',
+        icon: IconActivity,
+      },
+    ];
+  }, [apiKeys]);
 
   const handleCreateApiKey = async () => {
     try {
-      const result = await createApiKey({
+      const result = await createApiKeyAction({
         name: newKey.name,
         organizationId: newKey.organizationId || undefined,
         permissions: newKey.permissions.length > 0 ? newKey.permissions : ['read'],
@@ -221,7 +188,7 @@ export default function ApiKeysPage() {
           expiresAt: '',
           metadata: { type: 'user', description: '' },
         });
-        await loadApiKeys();
+        await refetch();
       } else {
         notifications.show({
           title: 'Error',
@@ -231,53 +198,46 @@ export default function ApiKeysPage() {
       }
     } catch (error) {
       console.error('Failed to create API key:', error);
-      notifications.show({
-        title: 'Error',
-        message: 'Failed to create API key',
-        color: 'red',
-      });
+      notifications.show({ title: 'Error', message: 'Failed to create API key', color: 'red' });
     }
   };
 
   const handleToggleKey = async (keyId: string, enabled: boolean) => {
     try {
-      const result = await updateApiKey(keyId, { enabled });
+      const result = await updateApiKeyAction(keyId, { enabled });
+      const action = enabled ? 'enabled' : 'disabled';
 
       if (result.success) {
         notifications.show({
           title: 'Success',
-          message: `API key ${enabled ? 'enabled' : 'disabled'} successfully`,
+          message: `API key ${action} successfully`,
           color: 'green',
         });
-        await loadApiKeys();
+        await refetch();
       } else {
         notifications.show({
           title: 'Error',
-          message: result.error || `Failed to ${enabled ? 'enable' : 'disable'} API key`,
+          message: result.error || `Failed to ${action.slice(0, -1)} API key`,
           color: 'red',
         });
       }
     } catch (error) {
-      console.error(`Failed to ${enabled ? 'enable' : 'disable'} API key:`, error);
-      notifications.show({
-        title: 'Error',
-        message: `Failed to ${enabled ? 'enable' : 'disable'} API key`,
-        color: 'red',
-      });
+      const action = enabled ? 'enable' : 'disable';
+      console.error(`Failed to ${action} API key:`, error);
+      notifications.show({ title: 'Error', message: `Failed to ${action} API key`, color: 'red' });
     }
   };
 
   const handleDeleteApiKey = async (keyId: string) => {
     try {
-      const result = await deleteApiKey(keyId);
-
+      const result = await deleteApiKeyAction(keyId);
       if (result.success) {
         notifications.show({
           title: 'Success',
           message: 'API key deleted successfully',
           color: 'green',
         });
-        await loadApiKeys();
+        await refetch();
       } else {
         notifications.show({
           title: 'Error',
@@ -287,25 +247,13 @@ export default function ApiKeysPage() {
       }
     } catch (error) {
       console.error('Failed to delete API key:', error);
-      notifications.show({
-        title: 'Error',
-        message: 'Failed to delete API key',
-        color: 'red',
-      });
+      notifications.show({ title: 'Error', message: 'Failed to delete API key', color: 'red' });
     }
   };
 
   const copyApiKey = () => {
     clipboard.copy(createdKey);
-    notifications.show({
-      title: 'Copied',
-      message: 'API key copied to clipboard',
-      color: 'green',
-    });
-  };
-
-  const isKeyExpired = (expiresAt?: string) => {
-    return expiresAt && new Date(expiresAt) < new Date();
+    notifications.show({ title: 'Copied', message: 'API key copied to clipboard', color: 'green' });
   };
 
   const columns = [
@@ -373,14 +321,14 @@ export default function ApiKeysPage() {
     {
       key: 'lastUsedAt',
       label: 'Last Used',
-      render: (value: string) => {
+      render: (value: string | Date | undefined) => {
         if (!value)
           return (
             <Text c="dimmed" size="sm">
               Never
             </Text>
           );
-        const date = new Date(value);
+        const date = value instanceof Date ? value : new Date(value);
         const now = new Date();
         const diff = now.getTime() - date.getTime();
         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -393,14 +341,14 @@ export default function ApiKeysPage() {
     {
       key: 'expiresAt',
       label: 'Expires',
-      render: (value: string) => {
+      render: (value: string | Date | undefined) => {
         if (!value)
           return (
             <Text c="dimmed" size="sm">
               Never
             </Text>
           );
-        const date = new Date(value);
+        const date = value instanceof Date ? value : new Date(value);
         const expired = date < new Date();
         return (
           <Text size="sm" c={expired ? 'red' : undefined}>
@@ -430,7 +378,7 @@ export default function ApiKeysPage() {
             ],
           }}
           description="Manage API keys for service authentication and access control"
-          onRefresh={loadApiKeys}
+          onRefresh={refetch}
           title="API Key Management"
         />
 
@@ -523,7 +471,7 @@ export default function ApiKeysPage() {
             placeholder="Select permissions for this API key"
             value={newKey.permissions}
             onChange={(value) => setNewKey((prev) => ({ ...prev, permissions: value }))}
-            data={availablePermissions}
+            data={AVAILABLE_PERMISSIONS}
             description="Leave empty to use default read permissions"
           />
 
@@ -545,10 +493,7 @@ export default function ApiKeysPage() {
                 metadata: { ...prev.metadata, type: value || 'user' },
               }))
             }
-            data={[
-              { value: 'user', label: 'User Key' },
-              { value: 'service', label: 'Service Key' },
-            ]}
+            data={KEY_TYPES}
           />
 
           <Textarea

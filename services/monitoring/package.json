@@ -30,8 +30,8 @@
     "monitoring": "./scripts/monitoring-cli.ts"
   },
   "dependencies": {
-    "zod": "catalog:",
-    "commander": "catalog:",
+    "zod": "^14.0.0",
+    "commander": "^14.0.0",
     "axios": "^1.7.9",
     "dotenv": "^16.4.7",
     "dockerode": "^4.0.2",
@@ -47,9 +47,9 @@
     "@repo/testing": "workspace:*",
     "@types/dockerode": "^3.3.33",
     "@types/fs-extra": "^11.0.4",
-    "typescript": "catalog:",
-    "vitest": "catalog:",
-    "tsx": "catalog:"
+    "typescript": "5.8.3",
+    "vitest": "^3.2.4",
+    "tsx": "^4.20.3"
   },
   "peerDependencies": {
     "typescript": ">=5.0.0"

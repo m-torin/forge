@@ -14,7 +14,15 @@ export function useFlag<T>(flagFunction: () => Promise<T>, initialValue?: T): T 
 
   useEffect(() => {
     // Evaluate flag on client side
-    flagFunction().then(setValue).catch(console.error);
+    const evaluateFlag = async () => {
+      try {
+        const result = await flagFunction();
+        setValue(result);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    evaluateFlag();
   }, [flagFunction]);
 
   return value;
@@ -63,10 +71,15 @@ export function useFeatureFlag(key: string): boolean {
   const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
-    adapter
-      .isEnabled(key)
-      .then(setEnabled)
-      .catch(() => setEnabled(false));
+    const checkEnabled = async () => {
+      try {
+        const result = await adapter.isEnabled(key);
+        setEnabled(result);
+      } catch {
+        setEnabled(false);
+      }
+    };
+    checkEnabled();
   }, [adapter, key]);
 
   return enabled;
@@ -80,10 +93,15 @@ export function useFeatureFlagPayload<T = any>(key: string, defaultValue?: T): T
   const [value, setValue] = useState<T | undefined>(defaultValue);
 
   useEffect(() => {
-    adapter
-      .getFlag(key, defaultValue)
-      .then(setValue)
-      .catch(() => setValue(defaultValue));
+    const getFlagValue = async () => {
+      try {
+        const result = await adapter.getFlag(key, defaultValue);
+        setValue(result);
+      } catch {
+        setValue(defaultValue);
+      }
+    };
+    getFlagValue();
   }, [adapter, key, defaultValue]);
 
   return value;
@@ -97,10 +115,15 @@ export function useFeatureFlags(): Record<string, any> {
   const [flags, setFlags] = useState<Record<string, any>>({});
 
   useEffect(() => {
-    adapter
-      .getAllFlags()
-      .then(setFlags)
-      .catch(() => setFlags({}));
+    const getAllFlags = async () => {
+      try {
+        const result = await adapter.getAllFlags();
+        setFlags(result);
+      } catch {
+        setFlags({});
+      }
+    };
+    getAllFlags();
   }, [adapter]);
 
   return flags;

@@ -25,7 +25,7 @@ export class ServerAIManager extends AIManager {
 
     // Validate configuration
     const errors = validateConfig(config);
-    if (errors.length > 0) {
+    if (errors && errors.length > 0) {
       throw new Error(
         `Configuration validation failed:\n${errors.map((e: any) => `  - ${e}`).join('\n')}`,
       );

@@ -33,32 +33,51 @@ including product recommendations, semantic search, and content matching.
 
 ## Quick Start
 
-```typescript
-import { upstash } from '@repo/database/upstash';
+<CodeGroup>
+```typescript Next.js Server (Recommended)
+import { vector } from '@repo/database/upstash/server/next';
 
-// Store product embedding
-await upstash.upsert({
+// Store product embedding await vector.upsert([{ id: 'product-123', vector: [0.1, 0.2, 0.3, ...],
+// 1536 dimensions for OpenAI embeddings metadata: { title: 'iPhone 15 Pro', category:
+'electronics', price: 999.99, brand: 'Apple', }, }]);
+
+// Find similar products const results = await vector.query({ vector: queryEmbedding, topK: 10,
+includeMetadata: true, filter: { category: { $eq: 'electronics' }, price: { $lte: 1200 }, }, });
+
+````
+
+```typescript Node.js Server
+import { VectorOperations } from '@repo/database/upstash/server';
+
+const vectorOps = new VectorOperations();
+
+// Same operations as above
+await vectorOps.upsert([{
   id: 'product-123',
-  vector: [0.1, 0.2, 0.3, ...], // 1536 dimensions for OpenAI embeddings
-  metadata: {
-    title: 'iPhone 15 Pro',
-    category: 'electronics',
-    price: 999.99,
-    brand: 'Apple',
-  },
-});
+  vector: [0.1, 0.2, 0.3, ...],
+  metadata: { title: 'iPhone 15 Pro', category: 'electronics' }
+}]);
 
-// Find similar products
-const results = await upstash.query({
+const results = await vectorOps.query({
   vector: queryEmbedding,
   topK: 10,
-  includeMetadata: true,
-  filter: {
-    category: { $eq: 'electronics' },
-    price: { $lte: 1200 },
-  },
+  includeMetadata: true
 });
+````
+
+```typescript Types Only (Client)
+import type { VectorMetadata, QueryOptions } from '@repo/database/upstash/client';
+
+// Use for TypeScript typing in client components
+interface ProductVector extends VectorMetadata {
+  title: string;
+  category: string;
+  price: number;
+  brand: string;
+}
 ```
+
+</CodeGroup>
 
 ## Core Operations
 
@@ -148,7 +167,7 @@ async function storeUserBehaviorEmbedding(userId: string, behaviorVector: number
     ```typescript
     // Find similar products
     async function findSimilarProducts(
-      productId: string, 
+      productId: string,
       options: {
         limit?: number;
         category?: string;
@@ -162,27 +181,27 @@ async function storeUserBehaviorEmbedding(userId: string, behaviorVector: number
       if (!referenceProduct || referenceProduct.length === 0) {
         throw new Error('Reference product not found');
       }
-    
+
       const referenceVector = referenceProduct[0].vector;
-      
+
       // Build filter conditions
       const filters: any = {};
-      
+
       if (options.category) {
         filters.category = { $eq: options.category };
       }
-      
+
       if (options.priceRange) {
         filters.price = {
           $gte: options.priceRange.min,
           $lte: options.priceRange.max,
         };
       }
-      
+
       if (options.brand) {
         filters.brand = { $eq: options.brand };
       }
-    
+
       // Perform similarity search
       const results = await upstash.query({
         vector: referenceVector,
@@ -191,7 +210,7 @@ async function storeUserBehaviorEmbedding(userId: string, behaviorVector: number
         includeValues: false,
         filter: Object.keys(filters).length > 0 ? filters : undefined,
       });
-    
+
       // Filter out the reference product if requested
       let recommendations = results.matches || [];
       if (options.excludeSelf) {
@@ -199,14 +218,14 @@ async function storeUserBehaviorEmbedding(userId: string, behaviorVector: number
           match => match.id !== `product:${productId}`
         );
       }
-    
+
       return recommendations.slice(0, options.limit || 10).map(match => ({
         productId: match.id.replace('product:', ''),
         similarity: match.score,
         metadata: match.metadata,
       }));
     }
-    
+
     // Personalized recommendations based on user behavior
     async function getPersonalizedRecommendations(
       userId: string,
@@ -222,21 +241,21 @@ async function storeUserBehaviorEmbedding(userId: string, behaviorVector: number
         // Fallback to popular products if no user behavior data
         return getPopularProducts(options.limit || 10);
       }
-    
+
       const userVector = userBehavior[0].vector;
-      
+
       const filters: any = {};
       if (options.categories && options.categories.length > 0) {
         filters.category = { $in: options.categories };
       }
-    
+
       const results = await upstash.query({
         vector: userVector,
         topK: options.limit || 20,
         includeMetadata: true,
         filter: Object.keys(filters).length > 0 ? filters : undefined,
       });
-    
+
       return (results.matches || []).map(match => ({
         productId: match.id.replace('product:', ''),
         relevanceScore: match.score,
@@ -244,8 +263,9 @@ async function storeUserBehaviorEmbedding(userId: string, behaviorVector: number
       }));
     }
     ```
+
   </Tab>
-  
+
   <Tab title="Semantic Search">
     ```typescript
     // Semantic search across content
@@ -260,30 +280,30 @@ async function storeUserBehaviorEmbedding(userId: string, behaviorVector: number
     ) {
       // Generate embedding for the search query
       const queryEmbedding = await generateEmbedding(query);
-      
+
       const filters: any = {};
-      
+
       if (options.types && options.types.length > 0) {
         filters.type = { $in: options.types };
       }
-      
+
       if (options.language) {
         filters.language = { $eq: options.language };
       }
-    
+
       const results = await upstash.query({
         vector: queryEmbedding,
         topK: options.limit || 20,
         includeMetadata: true,
         filter: Object.keys(filters).length > 0 ? filters : undefined,
       });
-    
+
       // Filter by minimum score if specified
       let matches = results.matches || [];
       if (options.minScore) {
         matches = matches.filter(match => match.score >= options.minScore);
       }
-    
+
       return matches.map(match => ({
         id: match.id,
         type: match.metadata?.type,
@@ -293,11 +313,11 @@ async function storeUserBehaviorEmbedding(userId: string, behaviorVector: number
         metadata: match.metadata,
       }));
     }
-    
+
     // Smart content categorization
     async function categorizeContent(content: string, existingCategories: string[]) {
       const contentEmbedding = await generateEmbedding(content);
-      
+
       // Find similar existing content to infer category
       const results = await upstash.query({
         vector: contentEmbedding,
@@ -307,17 +327,17 @@ async function storeUserBehaviorEmbedding(userId: string, behaviorVector: number
           type: { $eq: 'article' },
         },
       });
-    
+
       // Analyze categories of similar content
       const categoryScores = {} as Record<string, number>;
-      
+
       for (const match of results.matches || []) {
         const category = match.metadata?.category;
         if (category && existingCategories.includes(category)) {
           categoryScores[category] = (categoryScores[category] || 0) + match.score;
         }
       }
-    
+
       // Return top suggested categories
       return Object.entries(categoryScores)
         .sort(([, a], [, b]) => b - a)
@@ -325,8 +345,9 @@ async function storeUserBehaviorEmbedding(userId: string, behaviorVector: number
         .map(([category, score]) => ({ category, confidence: score }));
     }
     ```
+
   </Tab>
-  
+
   <Tab title="Duplicate Detection">
     ```typescript
     // Detect duplicate or near-duplicate content
@@ -336,19 +357,19 @@ async function storeUserBehaviorEmbedding(userId: string, behaviorVector: number
       contentType?: string
     ) {
       const contentEmbedding = await generateEmbedding(content);
-      
+
       const filters: any = {};
       if (contentType) {
         filters.type = { $eq: contentType };
       }
-    
+
       const results = await upstash.query({
         vector: contentEmbedding,
         topK: 10,
         includeMetadata: true,
         filter: Object.keys(filters).length > 0 ? filters : undefined,
       });
-    
+
       const duplicates = (results.matches || [])
         .filter(match => match.score >= threshold)
         .map(match => ({
@@ -359,21 +380,21 @@ async function storeUserBehaviorEmbedding(userId: string, behaviorVector: number
           isDuplicate: match.score >= 0.98,
           isNearDuplicate: match.score >= threshold && match.score < 0.98,
         }));
-    
+
       return {
         hasDuplicates: duplicates.length > 0,
         duplicates,
         maxSimilarity: Math.max(...duplicates.map(d => d.similarity), 0),
       };
     }
-    
+
     // Detect similar products for deduplication
     async function findSimilarProductsForDedup(
       product: ProductVector,
       threshold: number = 0.90
     ) {
       const productEmbedding = await generateProductEmbedding(product);
-      
+
       const results = await upstash.query({
         vector: productEmbedding,
         topK: 20,
@@ -382,10 +403,10 @@ async function storeUserBehaviorEmbedding(userId: string, behaviorVector: number
           category: { $eq: product.category },
         },
       });
-    
+
       const similar = (results.matches || [])
-        .filter(match => 
-          match.score >= threshold && 
+        .filter(match =>
+          match.score >= threshold &&
           match.id !== `product:${product.id}`
         )
         .map(match => ({
@@ -396,10 +417,11 @@ async function storeUserBehaviorEmbedding(userId: string, behaviorVector: number
           price: match.metadata?.price,
           isDuplicate: match.score >= 0.95,
         }));
-    
+
       return similar;
     }
     ```
+
   </Tab>
 </Tabs>
 
@@ -416,7 +438,7 @@ async function storeUserBehaviorEmbedding(userId: string, behaviorVector: number
       imageEmbedding: number[];
       combinedEmbedding: number[];
     }
-    
+
     async function storeMultiModalProduct(
       product: ProductVector,
       embeddings: MultiModalEmbedding
@@ -432,7 +454,7 @@ async function storeUserBehaviorEmbedding(userId: string, behaviorVector: number
             searchType: 'text',
           },
         }),
-        
+
         // Image-based search
         upstash.upsert({
           id: `product:image:${product.id}`,
@@ -442,7 +464,7 @@ async function storeUserBehaviorEmbedding(userId: string, behaviorVector: number
             searchType: 'image',
           },
         }),
-        
+
         // Combined multi-modal search
         upstash.upsert({
           id: `product:multimodal:${product.id}`,
@@ -454,25 +476,25 @@ async function storeUserBehaviorEmbedding(userId: string, behaviorVector: number
         }),
       ]);
     }
-    
+
     // Search by image similarity
     async function searchByImage(imageEmbedding: number[], options: {
       category?: string;
       limit?: number;
     } = {}) {
       const filters: any = { searchType: { $eq: 'image' } };
-      
+
       if (options.category) {
         filters.category = { $eq: options.category };
       }
-    
+
       const results = await upstash.query({
         vector: imageEmbedding,
         topK: options.limit || 20,
         includeMetadata: true,
         filter: filters,
       });
-    
+
       return (results.matches || []).map(match => ({
         productId: match.id.replace('product:image:', ''),
         similarity: match.score,
@@ -480,8 +502,9 @@ async function storeUserBehaviorEmbedding(userId: string, behaviorVector: number
       }));
     }
     ```
+
   </Accordion>
-  
+
   <Accordion title="Hybrid Search" icon="merge">
     ```typescript
     // Combine vector similarity with traditional search
@@ -494,7 +517,7 @@ async function storeUserBehaviorEmbedding(userId: string, behaviorVector: number
       } = {}
     ) {
       const alpha = options.alpha || 0.7; // Default: 70% vector, 30% text
-      
+
       // Vector similarity search
       const queryEmbedding = await generateEmbedding(query);
       const vectorResults = await upstash.query({
@@ -503,16 +526,16 @@ async function storeUserBehaviorEmbedding(userId: string, behaviorVector: number
         includeMetadata: true,
         filter: options.textFilters,
       });
-    
+
       // Text-based search (would typically use another search engine)
       const textScores = await performTextSearch(query, options.textFilters);
-    
+
       // Combine scores
       const combinedResults = (vectorResults.matches || []).map(match => {
         const textScore = textScores[match.id] || 0;
         const vectorScore = match.score;
         const combinedScore = alpha * vectorScore + (1 - alpha) * textScore;
-    
+
         return {
           ...match,
           vectorScore,
@@ -520,16 +543,16 @@ async function storeUserBehaviorEmbedding(userId: string, behaviorVector: number
           combinedScore,
         };
       });
-    
+
       // Sort by combined score and return top results
       return combinedResults
         .sort((a, b) => b.combinedScore - a.combinedScore)
         .slice(0, options.limit || 20);
     }
-    
+
     // Text search implementation (placeholder)
     async function performTextSearch(
-      query: string, 
+      query: string,
       filters?: Record<string, any>
     ): Promise<Record<string, number>> {
       // This would typically integrate with Elasticsearch, Algolia, or similar
@@ -537,6 +560,7 @@ async function storeUserBehaviorEmbedding(userId: string, behaviorVector: number
       return {};
     }
     ```
+
   </Accordion>
 </AccordionGroup>
 
@@ -783,11 +807,11 @@ class RecommendationEngine {
   <Tab title="OpenAI Integration">
     ```typescript
     import OpenAI from 'openai';
-    
+
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
-    
+
     async function generateEmbedding(text: string): Promise<number[]> {
       try {
         const response = await openai.embeddings.create({
@@ -795,14 +819,14 @@ class RecommendationEngine {
           input: text,
           encoding_format: 'float',
         });
-        
+
         return response.data[0].embedding;
       } catch (error) {
         console.error('Error generating embedding:', error);
         throw error;
       }
     }
-    
+
     // Batch embedding generation for efficiency
     async function generateBatchEmbeddings(texts: string[]): Promise<number[][]> {
       const response = await openai.embeddings.create({
@@ -810,30 +834,31 @@ class RecommendationEngine {
         input: texts,
         encoding_format: 'float',
       });
-      
+
       return response.data.map(item => item.embedding);
     }
-    
+
     // Product-specific embedding
     async function generateProductEmbedding(product: ProductVector): Promise<number[]> {
       const text = `${product.title} ${product.description} ${product.category} ${product.brand} ${product.features.join(' ')} ${product.tags.join(' ')}`;
       return generateEmbedding(text);
     }
     ```
+
   </Tab>
-  
+
   <Tab title="Custom Embeddings">
     ```typescript
     // Custom embedding service for domain-specific models
     class CustomEmbeddingService {
       private modelEndpoint: string;
       private apiKey: string;
-      
+
       constructor(endpoint: string, apiKey: string) {
         this.modelEndpoint = endpoint;
         this.apiKey = apiKey;
       }
-      
+
       async generateEmbedding(text: string, model: string = 'default'): Promise<number[]> {
         const response = await fetch(`${this.modelEndpoint}/embed`, {
           method: 'POST',
@@ -846,15 +871,15 @@ class RecommendationEngine {
             model,
           }),
         });
-        
+
         if (!response.ok) {
           throw new Error(`Embedding generation failed: ${response.statusText}`);
         }
-        
+
         const result = await response.json();
         return result.embedding;
       }
-      
+
       // Specialized embeddings for different content types
       async generateProductEmbedding(product: ProductVector): Promise<number[]> {
         return this.generateEmbedding(
@@ -862,12 +887,12 @@ class RecommendationEngine {
           'product-model'
         );
       }
-      
+
       async generateUserBehaviorEmbedding(interactions: UserInteraction[]): Promise<number[]> {
         const behaviorText = this.formatBehaviorText(interactions);
         return this.generateEmbedding(behaviorText, 'behavior-model');
       }
-      
+
       private formatProductText(product: ProductVector): string {
         return [
           product.title,
@@ -879,15 +904,16 @@ class RecommendationEngine {
           `Tags: ${product.tags.join(', ')}`,
         ].join('\n');
       }
-      
+
       private formatBehaviorText(interactions: UserInteraction[]): string {
         const recentInteractions = interactions.slice(-20);
-        return recentInteractions.map(interaction => 
+        return recentInteractions.map(interaction =>
           `${interaction.type}:${interaction.productId}`
         ).join(' ');
       }
     }
     ```
+
   </Tab>
 </Tabs>
 
@@ -903,15 +929,14 @@ async function processBatchVectors(
   batchSize: number = 100
 ) {
   const results = [];
-  
-  for (let i = 0; i < items.length; i += batchSize) {
-    const batch = items.slice(i, i + batchSize);
-    
+
+for (let i = 0; i < items.length; i += batchSize) { const batch = items.slice(i, i + batchSize);
+
     // Generate embeddings in parallel
     const embeddings = await Promise.all(
       batch.map(item => generateEmbedding(item.data))
     );
-    
+
     // Prepare vectors for batch upsert
     const vectors = batch.map((item, index) => ({
       id: item.id,
@@ -921,20 +946,20 @@ async function processBatchVectors(
         processedAt: Date.now(),
       },
     }));
-    
+
     // Batch upsert to vector database
     await upstash.upsert(vectors);
-    
+
     results.push(...vectors);
-    
+
     // Rate limiting - wait between batches
     if (i + batchSize < items.length) {
       await new Promise(resolve => setTimeout(resolve, 100));
     }
-  }
-  
-  return results;
+
 }
+
+return results; }
 
 // Parallel search across multiple categories async function parallelCategorySearch( queryVector:
 number[], categories: string[], limit: number = 10 ) { const searchPromises =
@@ -1045,18 +1070,18 @@ async function optimizedVectorSearch(
           topScore: query.results[0]?.score || 0,
           avgScore: query.results.reduce((sum, r) => sum + r.score, 0) / query.results.length,
         }));
-        
+
         // Keep only recent logs
         await redis.ltrim('search:logs', 0, 9999); // Keep last 10k searches
       }
-      
+
       async getSearchStats(period: 'hour' | 'day' | 'week' = 'day') {
         const logs = await redis.lrange('search:logs', 0, -1);
         const searches = logs.map(log => JSON.parse(log));
-        
+
         const cutoff = Date.now() - this.getPeriodMs(period);
         const recentSearches = searches.filter(s => s.timestamp >= cutoff);
-        
+
         return {
           totalSearches: recentSearches.length,
           avgLatency: recentSearches.reduce((sum, s) => sum + s.latency, 0) / recentSearches.length,
@@ -1066,7 +1091,7 @@ async function optimizedVectorSearch(
           userDistribution: this.groupBy(recentSearches, 'userId'),
         };
       }
-      
+
       private getPeriodMs(period: string): number {
         const periods = {
           hour: 60 * 60 * 1000,
@@ -1075,7 +1100,7 @@ async function optimizedVectorSearch(
         };
         return periods[period] || periods.day;
       }
-      
+
       private groupBy(items: any[], key: string) {
         return items.reduce((groups, item) => {
           const group = item[key] || 'unknown';
@@ -1085,8 +1110,9 @@ async function optimizedVectorSearch(
       }
     }
     ```
+
   </Accordion>
-  
+
   <Accordion title="Recommendation Quality" icon="star">
     ```typescript
     // Track recommendation effectiveness
@@ -1099,7 +1125,7 @@ async function optimizedVectorSearch(
       ) {
         await redis.hincrby(`rec:clicks:${recommendationId}`, 'total', 1);
         await redis.hincrby(`rec:clicks:${recommendationId}`, `position:${position}`, 1);
-        
+
         // Track user engagement
         await redis.lpush(`user:${userId}:rec_clicks`, JSON.stringify({
           recommendationId,
@@ -1108,14 +1134,14 @@ async function optimizedVectorSearch(
           timestamp: Date.now(),
         }));
       }
-      
+
       async getRecommendationMetrics(recommendationId: string) {
         const clicks = await redis.hgetall(`rec:clicks:${recommendationId}`);
         const impressions = await redis.get(`rec:impressions:${recommendationId}`);
-        
+
         const totalClicks = parseInt(clicks.total || '0');
         const totalImpressions = parseInt(impressions || '0');
-        
+
         return {
           ctr: totalImpressions > 0 ? totalClicks / totalImpressions : 0,
           totalClicks,
@@ -1128,7 +1154,7 @@ async function optimizedVectorSearch(
             })),
         };
       }
-      
+
       // A/B test different recommendation algorithms
       async trackRecommendationExperiment(
         userId: string,
@@ -1138,7 +1164,7 @@ async function optimizedVectorSearch(
       ) {
         await redis.sadd(`experiment:${experimentId}:users`, userId);
         await redis.hset(`experiment:${experimentId}:variants`, userId, variant);
-        
+
         await redis.lpush(`experiment:${experimentId}:recommendations`, JSON.stringify({
           userId,
           variant,
@@ -1148,6 +1174,7 @@ async function optimizedVectorSearch(
       }
     }
     ```
+
   </Accordion>
 </AccordionGroup>
 

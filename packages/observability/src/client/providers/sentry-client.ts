@@ -120,41 +120,149 @@ export class SentryClientProvider implements ObservabilityProvider {
       // Dynamically import Sentry to avoid bundling if not used
       const Sentry = await import('@sentry/nextjs');
 
-      // Initialize with configuration similar to original
-      Sentry.init({
+      // Build integrations array
+      const integrations = [];
+
+      // Browser tracing integration
+      if (sentryConfig.browserTracingEnabled) {
+        integrations.push(
+          Sentry.browserTracingIntegration({
+            // Automatically start page loads and navigation transactions
+          }),
+        );
+      }
+
+      // Replay integration
+      if (sentryConfig.replaysSessionSampleRate || sentryConfig.replaysOnErrorSampleRate) {
+        integrations.push(
+          Sentry.replayIntegration({
+            blockAllMedia: sentryConfig.replayBlockAllMedia ?? true,
+            maskAllText: sentryConfig.replayMaskAllText ?? true,
+          }),
+        );
+      }
+
+      // Feedback integration
+      if (sentryConfig.feedbackEnabled) {
+        integrations.push(
+          Sentry.feedbackIntegration({
+            colorScheme: 'system',
+          }),
+        );
+      }
+
+      // Logging integration (for _experiments.enableLogs)
+      if (sentryConfig.loggingEnabled || sentryConfig._experiments?.enableLogs) {
+        integrations.push(
+          Sentry.consoleLoggingIntegration({
+            levels: ['log', 'info', 'warn', 'error', 'debug'],
+          }),
+        );
+      }
+
+      // Add any custom integrations
+      if (Array.isArray(sentryConfig.integrations)) {
+        integrations.push(...sentryConfig.integrations.filter((i: any) => typeof i !== 'string'));
+      }
+
+      // Default ignored errors for client-side
+      const defaultIgnoreErrors = [
+        'ResizeObserver loop limit exceeded',
+        'ResizeObserver loop completed with undelivered notifications',
+        'Non-Error promise rejection captured',
+        /^Non-Error/,
+        'Network request failed',
+        'NetworkError',
+        'Failed to fetch',
+        'Load failed',
+        'The operation was aborted',
+        'cancelled',
+        'AbortError',
+      ];
+
+      // Default ignored transactions
+      const defaultIgnoreTransactions = [
+        '/health',
+        '/ping',
+        '/_next',
+        '/api/health',
+        '/api/ping',
+        '/favicon.ico',
+      ];
+
+      // Merge configuration with sensible defaults
+      const finalConfig = {
+        // Core configuration
+        dsn: sentryConfig.dsn,
+        environment: sentryConfig.environment || process.env.NODE_ENV || 'production',
+        release: sentryConfig.release,
+        debug: sentryConfig.debug ?? false,
+        enabled: sentryConfig.enabled ?? true,
+
+        // User privacy
+        sendDefaultPii: sentryConfig.sendDefaultPii ?? false,
+
+        // Core options with defaults
+        maxBreadcrumbs: sentryConfig.maxBreadcrumbs ?? 100,
+        attachStacktrace: sentryConfig.attachStacktrace ?? true,
+        maxValueLength: sentryConfig.maxValueLength ?? 250,
+        normalizeDepth: sentryConfig.normalizeDepth ?? 3,
+        normalizeMaxBreadth: sentryConfig.normalizeMaxBreadth ?? 1000,
+        sendClientReports: sentryConfig.sendClientReports ?? true,
+
+        // Error monitoring with defaults
+        sampleRate: sentryConfig.sampleRate ?? 1.0, // Capture all errors by default
+        ignoreErrors: [...defaultIgnoreErrors, ...(sentryConfig.ignoreErrors || [])],
+        denyUrls: sentryConfig.denyUrls || [],
+        allowUrls: sentryConfig.allowUrls || [],
+
+        // Tracing with defaults
+        tracesSampleRate:
+          sentryConfig.tracesSampleRate ?? (process.env.NODE_ENV === 'production' ? 0.1 : 1.0),
+        tracesSampler: sentryConfig.tracesSampler,
+        tracePropagationTargets: sentryConfig.tracePropagationTargets || [
+          'localhost',
+          /^\//, // Same origin
+        ],
+        ignoreTransactions: [
+          ...defaultIgnoreTransactions,
+          ...(sentryConfig.ignoreTransactions || []),
+        ],
+
+        // Session replay
+        replaysSessionSampleRate: sentryConfig.replaysSessionSampleRate ?? 0.1,
+        replaysOnErrorSampleRate: sentryConfig.replaysOnErrorSampleRate ?? 1.0,
+
+        // Profiling
+        profilesSampleRate: sentryConfig.profilesSampleRate,
+
         // Callbacks
         beforeSend: sentryConfig.beforeSend,
         beforeSendTransaction: sentryConfig.beforeSendTransaction,
-        dsn: sentryConfig.dsn,
+        beforeSendSpan: sentryConfig.beforeSendSpan,
+        beforeBreadcrumb: sentryConfig.beforeBreadcrumb,
 
-        environment: sentryConfig.environment || 'production',
-        // Integrations
-        integrations: [
-          ...(sentryConfig.integrations?.includes('replay')
-            ? [
-                Sentry.replayIntegration({
-                  blockAllMedia: sentryConfig.replayBlockAllMedia ?? true,
-                  maskAllText: sentryConfig.replayMaskAllText ?? true,
-                }),
-              ]
-            : []),
-          ...(Array.isArray(sentryConfig.integrations)
-            ? sentryConfig.integrations.filter((i: any) => typeof i !== 'string')
-            : []),
-        ],
-        release: sentryConfig.release,
+        // Transport options
+        tunnel: sentryConfig.tunnel,
+        transport: sentryConfig.transport,
+        transportOptions: sentryConfig.transportOptions,
 
-        // Debug mode removed to avoid non-debug bundle conflicts
+        // Integrations (already built above)
+        integrations,
+        defaultIntegrations: sentryConfig.defaultIntegrations,
 
-        replaysOnErrorSampleRate: sentryConfig.replaysOnErrorSampleRate ?? 1.0,
+        // Initial scope
+        initialScope: sentryConfig.initialScope,
 
-        replaysSessionSampleRate: sentryConfig.replaysSessionSampleRate ?? 0.1,
-        // Sampling rates from config
-        tracesSampleRate: sentryConfig.tracesSampleRate ?? 1,
+        // Experimental features
+        _experiments: sentryConfig._experiments,
 
         // Additional options from config
         ...(sentryConfig.options || {}),
-      });
+      };
+
+      // Initialize with merged configuration
+      Sentry.init(finalConfig);
 
       this.client = Sentry;
       this.isInitialized = true;
@@ -199,37 +307,43 @@ export class SentryClientProvider implements ObservabilityProvider {
   startSpan(name: string, parentSpan?: any): any {
     if (!this.isInitialized || !this.client) return null;
 
-    if (parentSpan?.startChild) {
-      return parentSpan.startChild({
-        description: name,
-        op: name,
-      });
-    }
-
-    // If no parent, create a new transaction
-    return this.startTransaction(name);
+    // Use the modern startSpan API
+    return this.client.startSpan({
+      name,
+      op: name,
+      ...(parentSpan && { parentSpan }),
+    });
   }
 
   startTransaction(name: string, context?: ObservabilityContext): any {
     if (!this.isInitialized || !this.client) return null;
 
-    const transaction = this.client.startTransaction({
-      data: context?.extra,
-      name,
-      op: context?.operation || 'navigation',
-      tags: context?.tags,
-      ...(context?.traceId && { traceId: context.traceId }),
-    });
-
-    // Set transaction on scope for child spans
-    this.client.getCurrentScope().setSpan(transaction);
-
-    return {
-      finish: () => transaction.finish(),
-      setData: (key: string, value: any) => transaction.setData(key, value),
-      setStatus: (status: string) => transaction.setStatus(status),
-      setTag: (key: string, value: string) => transaction.setTag(key, value),
-      startChild: (op: string, description?: string) => transaction.startChild({ description, op }),
-    };
+    // Use the modern startSpan API
+    return this.client.startSpan(
+      {
+        name,
+        op: context?.operation || 'navigation',
+        attributes: {
+          ...(context?.tags || {}),
+          ...(context?.extra || {}),
+        },
+      },
+      (span: any) => {
+        // Return a wrapper that mimics the old transaction API
+        return {
+          finish: () => span.end(),
+          setData: (key: string, value: any) => span.setAttribute(key, value),
+          setStatus: (status: string) => span.setStatus({ code: status === 'ok' ? 0 : 2 }),
+          setTag: (key: string, value: string) => span.setAttribute(key, value),
+          startChild: (op: string, description?: string) => {
+            return this.client.startSpan({
+              name: description || op,
+              op,
+              parentSpan: span,
+            });
+          },
+        };
+      },
+    );
   }
 }

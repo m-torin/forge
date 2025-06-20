@@ -49,7 +49,7 @@ test.describe('Backstage App - Root Integration Tests', (_: any) => {
     for (const route of betterAuthRoutes) {
       const response = await page.goto(route);
       // Should be accessible (not 404)
-      expect([200, 301, 302, 307, 308, 401, 405, 422].includes(response?.status() || 0)).toBe(true);
+      expect([200, 301, 302, 307, 308, 401, 405, 422]).toContain(response?.status() || 0);
     }
   });
 

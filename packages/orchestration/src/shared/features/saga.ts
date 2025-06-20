@@ -449,7 +449,7 @@ export class SagaOrchestrator {
         }
 
         execution.context.log('info', `Step ${stepId} compensated successfully`);
-      } catch (error: any) {
+      } catch (error) {
         execution.context.log('error', `Compensation failed for step ${stepId}`, {
           error:
             error instanceof Error ? (error as Error)?.message || 'Unknown error' : String(error),
@@ -478,14 +478,14 @@ export class SagaOrchestrator {
         if (step.timeout) {
           return await Promise.race([
             step.action(context),
-            new Promise((_, reject: any) =>
+            new Promise((_resolve, reject) =>
               setTimeout(() => reject(new Error('Step timeout')), step.timeout),
             ),
           ]);
         } else {
           return await step.action(context);
         }
-      } catch (error: any) {
+      } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
 
         if (attempt < maxAttempts && step.retry) {
@@ -570,7 +570,7 @@ export class SagaOrchestrator {
           }
 
           execution.context.log('info', `Step ${step.id} completed successfully`);
-        } catch (error: any) {
+        } catch (error) {
           const stepCompletedTime = new Date();
           const duration = stepCompletedTime.getTime() - stepStartTime.getTime();
 

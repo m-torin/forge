@@ -6,7 +6,11 @@
     "./client": "./src/client.ts",
     "./server": "./src/server.ts",
     "./client/next": "./src/client-next.ts",
-    "./server/next": "./src/server-next.ts"
+    "./server/next": "./src/server-next.ts",
+    "./keys": {
+      "types": "./keys.ts",
+      "import": "./keys.ts"
+    }
   },
   "scripts": {
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
@@ -17,21 +21,26 @@
     "test:coverage": "vitest --coverage --run"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.826.0",
-    "@aws-sdk/lib-storage": "^3.826.0",
-    "@aws-sdk/s3-request-presigner": "^3.826.0",
-    "@t3-oss/env-nextjs": "catalog:",
-    "@vercel/blob": "^1.1.1",
+    "@aws-sdk/client-s3": "^3.637.0",
+    "@aws-sdk/lib-storage": "^3.637.0",
+    "@aws-sdk/s3-request-presigner": "^3.658.1",
+    "@repo/database": "workspace:*",
+    "@repo/observability": "workspace:*",
+    "@t3-oss/env-nextjs": "^0.13.8",
+    "@vercel/blob": "^0.25.1",
     "chalk": "^5.4.1",
-    "zod": "catalog:"
+    "zod": "^3.25.67"
   },
   "devDependencies": {
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/testing": "workspace:*",
     "@types/eslint": "^9.6.1",
-    "@vitest/coverage-v8": "catalog:",
-    "eslint": "catalog:",
-    "vitest": "catalog:"
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitest/coverage-v8": "^3.2.4",
+    "eslint": "^9.29.0",
+    "react": "^19.1.0",
+    "vitest": "^3.2.4"
   }
 }

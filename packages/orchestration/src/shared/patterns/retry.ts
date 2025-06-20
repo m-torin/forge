@@ -58,9 +58,9 @@ export function calculateDelay(
  * Create a retry decorator for class methods
  */
 export function Retry(options: RetryOptions = {}) {
-  return function <T extends (...args: any[]) => Promise<any>>(
-    target: any,
-    propertyName: string,
+  return function <_T extends (...args: any[]) => Promise<any>>(
+    _target: any,
+    _propertyName: string,
     descriptor: PropertyDescriptor,
   ) {
     const method = descriptor.value;

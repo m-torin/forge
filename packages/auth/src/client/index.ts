@@ -3,7 +3,7 @@
  */
 
 // Core client and hooks
-export { authClient as default } from './auth-client';
+export { authClient as default } from './client.config';
 export { useAuth, useOrganization, useSession, useUser } from './hooks';
 
 // Authentication methods - explicit exports to avoid ambiguity
@@ -85,6 +85,7 @@ export {
   verifyEmail,
   verifyMagicLink,
   verifyTwoFactor,
+  getSession,
 } from './methods';
 
 // Client-side API key functionality
@@ -113,6 +114,12 @@ export {
   useTeams,
   useTeamStats,
 } from './teams';
+
+// Components
+export { ProtectedRoute, withAuth } from './protected-route';
+
+// Harmony hooks
+export * from './harmony-hooks';
 
 // Types
 export * from '../shared/types';

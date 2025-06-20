@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '../test-utils';
-import PostCard1 from '../../../mantine-ciseco/components/blog/PostCard1';
+import PostCard1 from '../../../src/mantine-ciseco/components/blog/PostCard1';
 import { mockPost } from '../test-utils';
 
 // Mock next/image
@@ -20,7 +20,7 @@ vi.mock('next/link', (_: any) => ({
 }));
 
 // Mock useLocalizeHref hook
-vi.mock('../../../mantine-ciseco/hooks/useLocale', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/hooks/useLocale', (_: any) => ({
   useLocalizeHref: () => (href: string) => `/en${href}`,
 }));
 

@@ -1,11 +1,11 @@
 // Test file uses proper types with minimal viable implementations
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 import { ProviderRegistry } from '../../../shared/providers/registry';
 
 import { AIProvider } from '../../../shared/types';
 
-describe('ProviderRegistry', (_: any) => {
+describe('providerRegistry', (_: any) => {
   let registry: ProviderRegistry;
 
   beforeEach(() => {
@@ -13,7 +13,7 @@ describe('ProviderRegistry', (_: any) => {
   });
 
   describe('register', (_: any) => {
-    it('should register a valid provider', (_: any) => {
+    test('should register a valid provider', (_: any) => {
       const provider: AIProvider = {
         name: 'test-provider',
         type: 'custom',
@@ -26,7 +26,7 @@ describe('ProviderRegistry', (_: any) => {
       expect(registry.get('test-provider')).toBe(provider);
     });
 
-    it('should throw error for provider without name', (_: any) => {
+    test('should throw error for provider without name', (_: any) => {
       const provider = {
         type: 'custom',
         capabilities: new Set(['complete']),
@@ -36,7 +36,7 @@ describe('ProviderRegistry', (_: any) => {
       expect(() => registry.register(provider)).toThrow('Provider must have a valid name');
     });
 
-    it('should throw error for provider with invalid name type', (_: any) => {
+    test('should throw error for provider with invalid name type', (_: any) => {
       const provider = {
         name: 123,
         type: 'custom',
@@ -47,7 +47,7 @@ describe('ProviderRegistry', (_: any) => {
       expect(() => registry.register(provider)).toThrow('Provider must have a valid name');
     });
 
-    it('should throw error for provider without type', (_: any) => {
+    test('should throw error for provider without type', (_: any) => {
       const provider = {
         name: 'test-provider',
         capabilities: new Set(['complete']),
@@ -57,7 +57,7 @@ describe('ProviderRegistry', (_: any) => {
       expect(() => registry.register(provider)).toThrow('has invalid type');
     });
 
-    it('should throw error for provider with invalid type', (_: any) => {
+    test('should throw error for provider with invalid type', (_: any) => {
       const provider = {
         name: 'test-provider',
         type: 'invalid-type',
@@ -70,7 +70,7 @@ describe('ProviderRegistry', (_: any) => {
       );
     });
 
-    it('should throw error for provider without capabilities', (_: any) => {
+    test('should throw error for provider without capabilities', (_: any) => {
       const provider = {
         name: 'test-provider',
         type: 'custom',
@@ -81,7 +81,7 @@ describe('ProviderRegistry', (_: any) => {
       expect(() => registry.register(provider)).toThrow('Cannot read properties of undefined');
     });
 
-    it('should throw error for provider with empty capabilities', (_: any) => {
+    test('should throw error for provider with empty capabilities', (_: any) => {
       const provider: AIProvider = {
         name: 'test-provider',
         type: 'custom',
@@ -95,7 +95,7 @@ describe('ProviderRegistry', (_: any) => {
       );
     });
 
-    it('should throw error for provider missing required methods', (_: any) => {
+    test('should throw error for provider missing required methods', (_: any) => {
       const provider = {
         name: 'test-provider',
         type: 'custom',
@@ -113,7 +113,7 @@ describe('ProviderRegistry', (_: any) => {
     });
 
     describe('method validation by capability', (_: any) => {
-      it('should validate complete method for complete capability', (_: any) => {
+      test('should validate complete method for complete capability', (_: any) => {
         const provider = {
           name: 'test-provider',
           type: 'custom',
@@ -126,7 +126,7 @@ describe('ProviderRegistry', (_: any) => {
         expect(() => registry.register(provider)).toThrow('missing methods: complete');
       });
 
-      it('should validate stream method for stream capability', (_: any) => {
+      test('should validate stream method for stream capability', (_: any) => {
         const provider = {
           name: 'test-provider',
           type: 'custom',
@@ -139,7 +139,7 @@ describe('ProviderRegistry', (_: any) => {
         expect(() => registry.register(provider)).toThrow('missing methods: stream');
       });
 
-      it('should validate embed method for embed capability', (_: any) => {
+      test('should validate embed method for embed capability', (_: any) => {
         const provider = {
           name: 'test-provider',
           type: 'custom',
@@ -153,7 +153,7 @@ describe('ProviderRegistry', (_: any) => {
         expect(() => registry.register(provider)).toThrow('missing methods: embed');
       });
 
-      it('should validate generateObject method for generateObject capability', (_: any) => {
+      test('should validate generateObject method for generateObject capability', (_: any) => {
         const provider = {
           name: 'test-provider',
           type: 'custom',
@@ -167,7 +167,7 @@ describe('ProviderRegistry', (_: any) => {
         expect(() => registry.register(provider)).toThrow('missing methods: generateObject');
       });
 
-      it('should validate moderate method for moderate capability', (_: any) => {
+      test('should validate moderate method for moderate capability', (_: any) => {
         const provider = {
           name: 'test-provider',
           type: 'custom',
@@ -181,7 +181,7 @@ describe('ProviderRegistry', (_: any) => {
         expect(() => registry.register(provider)).toThrow('missing methods: moderate');
       });
 
-      it('should validate classify method for classify capability', (_: any) => {
+      test('should validate classify method for classify capability', (_: any) => {
         const provider = {
           name: 'test-provider',
           type: 'custom',
@@ -195,7 +195,7 @@ describe('ProviderRegistry', (_: any) => {
         expect(() => registry.register(provider)).toThrow('missing methods: classify');
       });
 
-      it('should validate analyzeSentiment method for sentiment capability', (_: any) => {
+      test('should validate analyzeSentiment method for sentiment capability', (_: any) => {
         const provider = {
           name: 'test-provider',
           type: 'custom',
@@ -209,7 +209,7 @@ describe('ProviderRegistry', (_: any) => {
         expect(() => registry.register(provider)).toThrow('missing methods: analyzeSentiment');
       });
 
-      it('should validate extractEntities method for extraction capability', (_: any) => {
+      test('should validate extractEntities method for extraction capability', (_: any) => {
         const provider = {
           name: 'test-provider',
           type: 'custom',
@@ -224,7 +224,7 @@ describe('ProviderRegistry', (_: any) => {
       });
     });
 
-    it('should update capability map when registering provider', (_: any) => {
+    test('should update capability map when registering provider', (_: any) => {
       const provider: AIProvider = {
         name: 'test-provider',
         type: 'custom',
@@ -245,7 +245,7 @@ describe('ProviderRegistry', (_: any) => {
   });
 
   describe('get', (_: any) => {
-    it('should return registered provider', (_: any) => {
+    test('should return registered provider', (_: any) => {
       const provider: AIProvider = {
         name: 'test-provider',
         type: 'custom',
@@ -260,14 +260,14 @@ describe('ProviderRegistry', (_: any) => {
       expect(result).toBe(provider);
     });
 
-    it('should return undefined for unregistered provider', (_: any) => {
+    test('should return undefined for unregistered provider', (_: any) => {
       const result = registry.get('nonexistent');
       expect(result).toBeUndefined();
     });
   });
 
   describe('getAll', (_: any) => {
-    it('should return all registered providers', (_: any) => {
+    test('should return all registered providers', (_: any) => {
       const provider1: AIProvider = {
         name: 'provider-1',
         type: 'custom',
@@ -295,14 +295,14 @@ describe('ProviderRegistry', (_: any) => {
       expect(result).toContain(provider2);
     });
 
-    it('should return empty array when no providers registered', (_: any) => {
+    test('should return empty array when no providers registered', (_: any) => {
       const result = registry.getAll();
       expect(result).toEqual([]);
     });
   });
 
   describe('getByCapability', (_: any) => {
-    it('should return providers with specific capability', (_: any) => {
+    test('should return providers with specific capability', (_: any) => {
       const provider1: AIProvider = {
         name: 'provider-1',
         type: 'custom',
@@ -350,14 +350,14 @@ describe('ProviderRegistry', (_: any) => {
       expect(classifyProviders).toContain(provider2);
     });
 
-    it('should return empty array for capability with no providers', (_: any) => {
+    test('should return empty array for capability with no providers', (_: any) => {
       const result = registry.getByCapability('moderate');
       expect(result).toEqual([]);
     });
   });
 
   describe('hasCapability', (_: any) => {
-    it('should return true when provider has capability', (_: any) => {
+    test('should return true when provider has capability', (_: any) => {
       const provider: AIProvider = {
         name: 'test-provider',
         type: 'custom',
@@ -369,11 +369,11 @@ describe('ProviderRegistry', (_: any) => {
 
       registry.register(provider);
 
-      expect(registry.hasCapability('test-provider', 'complete')).toBe(true);
-      expect(registry.hasCapability('test-provider', 'moderate')).toBe(true);
+      expect(registry.hasCapability('test-provider', 'complete')).toBeTruthy();
+      expect(registry.hasCapability('test-provider', 'moderate')).toBeTruthy();
     });
 
-    it('should return false when provider lacks capability', (_: any) => {
+    test('should return false when provider lacks capability', (_: any) => {
       const provider: AIProvider = {
         name: 'test-provider',
         type: 'custom',
@@ -384,17 +384,17 @@ describe('ProviderRegistry', (_: any) => {
 
       registry.register(provider);
 
-      expect(registry.hasCapability('test-provider', 'moderate')).toBe(false);
-      expect(registry.hasCapability('test-provider', 'classify')).toBe(false);
+      expect(registry.hasCapability('test-provider', 'moderate')).toBeFalsy();
+      expect(registry.hasCapability('test-provider', 'classify')).toBeFalsy();
     });
 
-    it('should return false for unregistered provider', (_: any) => {
-      expect(registry.hasCapability('nonexistent', 'complete')).toBe(false);
+    test('should return false for unregistered provider', (_: any) => {
+      expect(registry.hasCapability('nonexistent', 'complete')).toBeFalsy();
     });
   });
 
   describe('remove', (_: any) => {
-    it('should remove provider and update capability map', (_: any) => {
+    test('should remove provider and update capability map', (_: any) => {
       const provider: AIProvider = {
         name: 'test-provider',
         type: 'custom',
@@ -411,18 +411,18 @@ describe('ProviderRegistry', (_: any) => {
 
       const result = registry.remove('test-provider');
 
-      expect(result).toBe(true);
+      expect(result).toBeTruthy();
       expect(registry.get('test-provider')).toBeUndefined();
       expect(registry.getByCapability('complete')).not.toContain(provider);
       expect(registry.getByCapability('moderate')).not.toContain(provider);
     });
 
-    it('should return false for unregistered provider', (_: any) => {
+    test('should return false for unregistered provider', (_: any) => {
       const result = registry.remove('nonexistent');
-      expect(result).toBe(false);
+      expect(result).toBeFalsy();
     });
 
-    it('should clean up empty capability sets', (_: any) => {
+    test('should clean up empty capability sets', (_: any) => {
       const provider: AIProvider = {
         name: 'test-provider',
         type: 'custom',
@@ -438,7 +438,7 @@ describe('ProviderRegistry', (_: any) => {
       expect(registry.getByCapability('complete')).toEqual([]);
     });
 
-    it('should not affect other providers with same capabilities', (_: any) => {
+    test('should not affect other providers with same capabilities', (_: any) => {
       const provider1: AIProvider = {
         name: 'provider-1',
         type: 'custom',
@@ -468,7 +468,7 @@ describe('ProviderRegistry', (_: any) => {
   });
 
   describe('clear', (_: any) => {
-    it('should remove all providers and capabilities', (_: any) => {
+    test('should remove all providers and capabilities', (_: any) => {
       const provider1: AIProvider = {
         name: 'provider-1',
         type: 'custom',

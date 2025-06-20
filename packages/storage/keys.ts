@@ -25,6 +25,9 @@ export const keys = () =>
       // New multi-R2 config as JSON array
       R2_CREDENTIALS: process.env.R2_CREDENTIALS ?? undefined,
       STORAGE_CONFIG: process.env.STORAGE_CONFIG ?? undefined,
+      STORAGE_LOG_LEVEL: process.env.STORAGE_LOG_LEVEL ?? undefined,
+      STORAGE_LOG_PERFORMANCE: process.env.STORAGE_LOG_PERFORMANCE ?? undefined,
+      STORAGE_LOG_PROVIDER: process.env.STORAGE_LOG_PROVIDER ?? undefined,
       STORAGE_PROVIDER: process.env.STORAGE_PROVIDER ?? undefined,
     },
     server: {
@@ -77,6 +80,12 @@ export const keys = () =>
           }
         })
         .optional(),
+      STORAGE_LOG_LEVEL: z.enum(['info', 'warn', 'error']).default('error'),
+      STORAGE_LOG_PERFORMANCE: z
+        .string()
+        .transform((val: any) => val === 'true')
+        .default('false'),
+      STORAGE_LOG_PROVIDER: z.enum(['console', 'sentry', 'pino']).default('console'),
       STORAGE_PROVIDER: requireInProduction
         ? z.enum(['vercel-blob', 'cloudflare-r2', 'cloudflare-images', 'multi'])
         : z.enum(['vercel-blob', 'cloudflare-r2', 'cloudflare-images', 'multi']).optional(),

@@ -3,7 +3,7 @@
  */
 import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 import { ObservabilityProvider } from '../../hooks/ObservabilityProvider';
 import { useObservability } from '../../hooks/use-observability';
@@ -37,7 +37,7 @@ describe('useObservability', () => {
     vi.clearAllMocks();
   });
 
-  it('should provide observability methods from context', async () => {
+  test('should provide observability methods from context', async () => {
     let isInitialized = false;
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -57,7 +57,7 @@ describe('useObservability', () => {
     // Wait for provider to initialize
     await waitFor(
       () => {
-        expect(isInitialized).toBe(true);
+        expect(isInitialized).toBeTruthy();
         expect(result.current).not.toBeNull();
       },
       { timeout: 2000 },
@@ -71,7 +71,7 @@ describe('useObservability', () => {
     expect(typeof result.current.setContext).toBe('function');
   });
 
-  it('should log messages through provider', async () => {
+  test('should log messages through provider', async () => {
     let isInitialized = false;
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -91,7 +91,7 @@ describe('useObservability', () => {
     // Wait for provider to initialize
     await waitFor(
       () => {
-        expect(isInitialized).toBe(true);
+        expect(isInitialized).toBeTruthy();
         expect(result.current).not.toBeNull();
       },
       { timeout: 2000 },
@@ -105,7 +105,7 @@ describe('useObservability', () => {
     expect(typeof result.current.log).toBe('function');
   });
 
-  it('should capture exceptions through provider', async () => {
+  test('should capture exceptions through provider', async () => {
     let isInitialized = false;
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -125,7 +125,7 @@ describe('useObservability', () => {
     // Wait for provider to initialize
     await waitFor(
       () => {
-        expect(isInitialized).toBe(true);
+        expect(isInitialized).toBeTruthy();
         expect(result.current).not.toBeNull();
       },
       { timeout: 2000 },
@@ -140,7 +140,7 @@ describe('useObservability', () => {
     expect(typeof result.current.captureException).toBe('function');
   });
 
-  it('should identify users through provider', async () => {
+  test('should identify users through provider', async () => {
     let isInitialized = false;
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -160,7 +160,7 @@ describe('useObservability', () => {
     // Wait for provider to initialize
     await waitFor(
       () => {
-        expect(isInitialized).toBe(true);
+        expect(isInitialized).toBeTruthy();
         expect(result.current).not.toBeNull();
       },
       { timeout: 2000 },
@@ -173,7 +173,7 @@ describe('useObservability', () => {
     expect(typeof result.current.identify).toBe('function');
   });
 
-  it('should set context through provider', async () => {
+  test('should set context through provider', async () => {
     let isInitialized = false;
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -193,7 +193,7 @@ describe('useObservability', () => {
     // Wait for provider to initialize
     await waitFor(
       () => {
-        expect(isInitialized).toBe(true);
+        expect(isInitialized).toBeTruthy();
         expect(result.current).not.toBeNull();
       },
       { timeout: 2000 },
@@ -206,7 +206,7 @@ describe('useObservability', () => {
     expect(typeof result.current.setContext).toBe('function');
   });
 
-  it('should handle multiple providers', async () => {
+  test('should handle multiple providers', async () => {
     let isInitialized = false;
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -226,7 +226,7 @@ describe('useObservability', () => {
     // Wait for provider to initialize
     await waitFor(
       () => {
-        expect(isInitialized).toBe(true);
+        expect(isInitialized).toBeTruthy();
         expect(result.current).not.toBeNull();
       },
       { timeout: 2000 },
@@ -240,7 +240,7 @@ describe('useObservability', () => {
     expect(typeof result.current.log).toBe('function');
   });
 
-  it('should skip disabled providers', async () => {
+  test('should skip disabled providers', async () => {
     let isInitialized = false;
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -260,7 +260,7 @@ describe('useObservability', () => {
     // Wait for provider to initialize
     await waitFor(
       () => {
-        expect(isInitialized).toBe(true);
+        expect(isInitialized).toBeTruthy();
         expect(result.current).not.toBeNull();
       },
       { timeout: 2000 },
@@ -276,7 +276,7 @@ describe('useObservability', () => {
     expect(typeof result.current.log).toBe('function');
   });
 
-  it('should provide helper methods', async () => {
+  test('should provide helper methods', async () => {
     let isInitialized = false;
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -296,7 +296,7 @@ describe('useObservability', () => {
     // Wait for provider to initialize
     await waitFor(
       () => {
-        expect(isInitialized).toBe(true);
+        expect(isInitialized).toBeTruthy();
         expect(result.current).not.toBeNull();
       },
       { timeout: 2000 },
@@ -310,7 +310,7 @@ describe('useObservability', () => {
     expect(typeof result.current.debug).toBe('function');
   });
 
-  it('should throw when used outside provider', () => {
+  test('should throw when used outside provider', () => {
     // Suppress console.error for this test
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
@@ -321,7 +321,7 @@ describe('useObservability', () => {
     consoleSpy.mockRestore();
   });
 
-  it('should handle provider errors gracefully', async () => {
+  test('should handle provider errors gracefully', async () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (

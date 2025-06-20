@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '../test-utils';
-import AccordionInfo from '../../../mantine-ciseco/components/AccordionInfo';
+import AccordionInfo from '../../../src/mantine-ciseco/components/AccordionInfo';
 
 describe('AccordionInfo', (_: any) => {
   const customData = [

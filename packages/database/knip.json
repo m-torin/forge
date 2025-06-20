@@ -1,16 +1,4 @@
 {
-  "extends": ["@repo/config/knip/base.json"],
-  "entry": [
-    "keys.ts",
-    "types.ts",
-    "prisma/**/*.ts",
-    "firestore/**/*.ts",
-    "redis/**/*.ts",
-    "upstash/**/*.ts",
-    "**/*.config.{js,ts,mjs}",
-    "**/*.test.{ts,tsx}",
-    "**/*.spec.{ts,tsx}",
-    "__tests__/**/*.{ts,tsx}"
-  ],
+  "extends": ["@repo/config/knip"],
   "ignoreDependencies": ["@prisma/client", "prisma"]
 }

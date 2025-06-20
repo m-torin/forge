@@ -18,24 +18,24 @@
     "test:redis": "vitest run __tests__/upstash-redis.test.ts",
     "test:integration": "vitest run __tests__/integration.test.ts",
     "test:performance": "vitest run __tests__/performance.test.ts",
-    "prisma:generate": "pnpm clean && doppler run -- prisma generate --schema=./prisma",
-    "prisma:generate:local": "pnpm clean && prisma generate --schema=./prisma",
-    "prisma:migrate": "doppler run -- prisma migrate dev --schema=./prisma",
-    "prisma:migrate:local": "prisma migrate dev --schema=./prisma",
-    "prisma:migrate:deploy": "doppler run -- prisma migrate deploy --schema=./prisma",
-    "prisma:migrate:deploy:local": "prisma migrate deploy --schema=./prisma",
-    "prisma:migrate:reset": "doppler run -- prisma migrate reset --schema=./prisma",
-    "prisma:migrate:reset:local": "prisma migrate reset --schema=./prisma",
-    "prisma:push": "doppler run -- prisma db push --schema=./prisma",
-    "prisma:push:local": "prisma db push --schema=./prisma",
-    "prisma:studio": "doppler run -- prisma studio --schema=./prisma",
-    "prisma:studio:local": "prisma studio --schema=./prisma",
-    "prisma:format": "prisma format --schema=./prisma",
-    "prisma:validate": "prisma validate --schema=./prisma",
-    "seed": "doppler run -- tsx prisma/src/seed.ts",
-    "seed:local": "tsx prisma/src/seed.ts",
-    "create-users": "doppler run -- tsx scripts/create-users.ts",
-    "create-users:local": "tsx scripts/create-users.ts",
+    "prisma:generate": "pnpm clean && doppler run -- prisma generate --schema=./src/prisma",
+    "prisma:generate:local": "pnpm clean && prisma generate --schema=./src/prisma",
+    "prisma:migrate": "doppler run -- prisma migrate dev --schema=./src/prisma",
+    "prisma:migrate:local": "prisma migrate dev --schema=./src/prisma",
+    "prisma:migrate:deploy": "doppler run -- prisma migrate deploy --schema=./src/prisma",
+    "prisma:migrate:deploy:local": "prisma migrate deploy --schema=./src/prisma",
+    "prisma:migrate:reset": "doppler run -- prisma migrate reset --schema=./src/prisma",
+    "prisma:migrate:reset:local": "prisma migrate reset --schema=./src/prisma",
+    "prisma:push": "doppler run -- prisma db push --schema=./src/prisma",
+    "prisma:push:local": "prisma db push --schema=./src/prisma",
+    "prisma:studio": "doppler run -- prisma studio --schema=./src/prisma",
+    "prisma:studio:local": "prisma studio --schema=./src/prisma",
+    "prisma:format": "prisma format --schema=./src/prisma",
+    "prisma:validate": "prisma validate --schema=./src/prisma",
+    "seed": "doppler run -- tsx src/prisma/src/seed/seed.ts",
+    "seed:local": "tsx src/prisma/src/seed/seed.ts",
+    "create-users": "doppler run -- tsx src/prisma/scripts/create-users.ts",
+    "create-users:local": "tsx src/prisma/scripts/create-users.ts",
     "doppler:secrets": "doppler secrets",
     "doppler:secrets:upload": "doppler secrets upload .env.local",
     "doppler:secrets:download": "doppler secrets download --no-file --format env",
@@ -43,18 +43,20 @@
     "doppler:open": "doppler open"
   },
   "dependencies": {
-    "@prisma/adapter-pg": "^6.9.0",
-    "@prisma/client": "catalog:",
+    "@prisma/adapter-pg": "^6.10.1",
+    "@prisma/client": "^6.10.1",
     "@prisma/extension-accelerate": "^2.0.1",
     "@repo/observability": "workspace:*",
-    "@t3-oss/env-nextjs": "catalog:",
+    "@t3-oss/env-nextjs": "^0.13.8",
     "@upstash/redis": "^1.35.0",
     "@upstash/vector": "^1.2.1",
     "chalk": "^5.4.1",
     "firebase-admin": "^13.4.0",
-    "pg": "^8.16.0",
-    "server-only": "catalog:",
-    "zod": "catalog:"
+    "next": "^15.3.4",
+    "pg": "^8.16.1",
+    "react": "^19.1.0",
+    "server-only": "^0.0.1",
+    "zod": "^3.25.67"
   },
   "devDependencies": {
     "@faker-js/faker": "^9.8.0",
@@ -62,49 +64,56 @@
     "@repo/eslint-config": "workspace:*",
     "@repo/testing": "workspace:*",
     "@types/eslint": "^9.6.1",
-    "@types/node": "catalog:",
+    "@types/node": "^24.0.3",
     "@types/pg": "^8.15.4",
-    "eslint": "catalog:",
-    "prisma": "catalog:",
-    "tsx": "^4.20.1",
-    "typescript": "catalog:"
+    "@types/react": "^19.1.8",
+    "eslint": "^9.29.0",
+    "prisma": "^6.10.1",
+    "tsx": "^4.20.3",
+    "typescript": "5.8.3"
   },
   "prisma": {
-    "seed": "tsx prisma/src/seed.ts",
-    "schema": "./prisma"
+    "seed": "tsx src/prisma/src/seed/seed.ts",
+    "schema": "./src/prisma"
   },
   "exports": {
+    "./prisma/server": "./src/prisma/server.ts",
+    "./prisma/server/next": "./src/prisma/server-next.ts",
     "./prisma": {
-      "types": "./prisma/index.ts",
-      "import": "./prisma/index.ts"
+      "types": "./src/prisma/index.ts",
+      "import": "./src/prisma/index.ts"
     },
     "./prisma/edge": {
-      "types": "./prisma/clients/edge.ts",
-      "import": "./prisma/clients/edge.ts"
+      "types": "./src/prisma/clients/edge.ts",
+      "import": "./src/prisma/clients/edge.ts"
     },
     "./prisma/accelerate": {
-      "types": "./prisma/clients/accelerate.ts",
-      "import": "./prisma/clients/accelerate.ts"
+      "types": "./src/prisma/clients/accelerate.ts",
+      "import": "./src/prisma/clients/accelerate.ts"
     },
-    "./firestore": {
-      "types": "./firestore/index.ts",
-      "import": "./firestore/index.ts"
-    },
-    "./upstash": {
-      "types": "./upstash/index.ts",
-      "import": "./upstash/index.ts"
-    },
-    "./redis": {
-      "types": "./redis/index.ts",
-      "import": "./redis/index.ts"
-    },
+    "./firestore/client": "./src/firestore/client.ts",
+    "./firestore/server": "./src/firestore/server.ts",
+    "./firestore/client/next": "./src/firestore/client-next.ts",
+    "./firestore/server/next": "./src/firestore/server-next.ts",
+    "./redis/client": "./src/redis/client.ts",
+    "./redis/server": "./src/redis/server.ts",
+    "./redis/client/next": "./src/redis/client-next.ts",
+    "./redis/server/next": "./src/redis/server-next.ts",
+    "./upstash/client": "./src/upstash/client.ts",
+    "./upstash/server": "./src/upstash/server.ts",
+    "./upstash/client/next": "./src/upstash/client-next.ts",
+    "./upstash/server/next": "./src/upstash/server-next.ts",
     "./types": {
-      "types": "./types.ts",
-      "import": "./types.ts"
+      "types": "./src/types.ts",
+      "import": "./src/types.ts"
     },
     "./keys": {
       "types": "./keys.ts",
       "import": "./keys.ts"
+    },
+    "./zod": {
+      "types": "./prisma-generated/zod/index.ts",
+      "import": "./prisma-generated/zod/index.ts"
     }
   }
 }

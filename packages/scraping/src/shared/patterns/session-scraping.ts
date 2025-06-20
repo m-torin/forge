@@ -67,8 +67,8 @@ export async function createSession(
   options: SessionOptions & { provider?: string } = {},
 ): Promise<string> {
   const {
-    cookies: _cookies = true,
-    localStorage: _localStorage = true,
+    cookies: cookies = true,
+    localStorage: localStorage = true,
     persistent = true,
     provider = 'playwright',
     timeout = 3600000, // 1 hour default

@@ -1,8 +1,7 @@
 'use client';
 
-import { Alert, Button, Container, Stack, Text, Title } from '@mantine/core';
+import { Alert, Button, Container, Stack, Text } from '@mantine/core';
 import { IconAlertCircle } from '@tabler/icons-react';
-import { useObservability } from '@repo/observability/client/next';
 import React, { Component, type ReactNode } from 'react';
 
 interface ErrorBoundaryProps {
@@ -52,18 +51,11 @@ interface ErrorFallbackProps {
 }
 
 function ErrorFallback({ error, reset }: ErrorFallbackProps): React.ReactElement {
-  const observability = useObservability();
-
   React.useEffect(() => {
-    // Send error to Sentry
-    observability?.captureException(error, {
-      tags: {
-        type: 'error_boundary',
-        component: 'backstage',
-      },
-      level: 'error',
-    });
-  }, [error, observability]);
+    // Log error to console
+    console.error('Error caught by error boundary:', error);
+    // TODO: Add direct Sentry error capture here if needed
+  }, [error]);
 
   return (
     <Container size="sm" py="xl">

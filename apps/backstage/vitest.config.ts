@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitest/config';
-import { nextPreset } from '@repo/testing/vitest-presets';
+import { nextPreset } from '@repo/testing/vitest/presets';
 import path from 'node:path';
 
 export default defineConfig({

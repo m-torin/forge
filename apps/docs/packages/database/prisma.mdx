@@ -75,7 +75,7 @@ const org = await prisma.organization.create({
         image: 'https://example.com/avatar.jpg',
       },
     });
-    
+
     // User with organization membership
     const userWithOrgs = await prisma.user.findUnique({
       where: { id: userId },
@@ -91,8 +91,9 @@ const org = await prisma.organization.create({
       },
     });
     ```
+
   </Accordion>
-  
+
   <Accordion title="Organization Management" icon="building">
     ```typescript
     // Create organization with initial member
@@ -114,7 +115,7 @@ const org = await prisma.organization.create({
         },
       },
     });
-    
+
     // Add team members
     await prisma.member.create({
       data: {
@@ -125,8 +126,9 @@ const org = await prisma.organization.create({
       },
     });
     ```
+
   </Accordion>
-  
+
   <Accordion title="API Key Management" icon="key">
     ```typescript
     // Create API key for organization
@@ -140,7 +142,7 @@ const org = await prisma.organization.create({
         expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
       },
     });
-    
+
     // Validate API key
     const validKey = await prisma.apiKey.findFirst({
       where: {
@@ -155,6 +157,7 @@ const org = await prisma.organization.create({
       },
     });
     ```
+
   </Accordion>
 </AccordionGroup>
 
@@ -215,7 +218,7 @@ const org = await prisma.organization.create({
     });
     ```
   </Tab>
-  
+
   <Tab title="Barcode Management">
     ```typescript
     // Barcode scanning and lookup
@@ -232,7 +235,7 @@ const org = await prisma.organization.create({
         assets: true,
       },
     });
-    
+
     // Record scan event
     const scanEvent = await prisma.scanEvent.create({
       data: {
@@ -250,7 +253,7 @@ const org = await prisma.organization.create({
         },
       },
     });
-    
+
     // Analytics: Most scanned products
     const topScanned = await prisma.product.findMany({
       include: {
@@ -268,8 +271,9 @@ const org = await prisma.organization.create({
       take: 10,
     });
     ```
+
   </Tab>
-  
+
   <Tab title="Asset Management">
     ```typescript
     // Upload and manage product assets
@@ -288,7 +292,7 @@ const org = await prisma.organization.create({
         },
       },
     });
-    
+
     // Reorder assets
     await prisma.$transaction([
       prisma.productAsset.update({
@@ -300,7 +304,7 @@ const org = await prisma.organization.create({
         data: { position: 1 },
       }),
     ]);
-    
+
     // Get optimized asset URLs
     const productWithAssets = await prisma.product.findUnique({
       where: { id: productId },
@@ -312,6 +316,7 @@ const org = await prisma.organization.create({
       },
     });
     ```
+
   </Tab>
 </Tabs>
 
@@ -439,7 +444,7 @@ const upcomingRuns = await prisma.workflowSchedule.findMany({
         },
       },
     });
-    
+
     // Organization product analytics
     const orgAnalytics = await prisma.organization.findUnique({
       where: { id: organizationId },
@@ -469,13 +474,14 @@ const upcomingRuns = await prisma.workflowSchedule.findMany({
       },
     });
     ```
+
   </Accordion>
-  
+
   <Accordion title="Performance Optimization" icon="gauge">
     ```typescript
     // Optimized queries with proper indexing
     const recentActivity = await prisma.$queryRaw`
-      SELECT 
+      SELECT
         p.id,
         p.title,
         COUNT(se.id) as scan_count,
@@ -487,7 +493,7 @@ const upcomingRuns = await prisma.workflowSchedule.findMany({
       ORDER BY scan_count DESC
       LIMIT 20
     `;
-    
+
     // Batch operations for better performance
     const batchUpdate = await prisma.$transaction([
       prisma.product.updateMany({
@@ -510,6 +516,7 @@ const upcomingRuns = await prisma.workflowSchedule.findMany({
       }),
     ]);
     ```
+
   </Accordion>
 </AccordionGroup>
 

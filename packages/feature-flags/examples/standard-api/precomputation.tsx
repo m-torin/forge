@@ -78,7 +78,7 @@ export async function Page({ params }: PageProps) {
   const themeValue = await theme(params.code, precomputeFlags);
 
   // Method 3: Get all flags as a record
-  const _allFlags = await deserialize(precomputeFlags, params.code);
+  const allFlags = await deserialize(precomputeFlags, params.code);
   // _allFlags = { 'show-banner': true, 'sale-discount': 20, 'theme': 'light' }
 
   return (
@@ -109,7 +109,7 @@ export async function generateStaticParams() {
   const codes = await generatePermutations(precomputeFlags);
 
   // With filter - only generate specific combinations
-  const _filteredCodes = await generatePermutations(precomputeFlags, (combination) => {
+  const filteredCodes = await generatePermutations(precomputeFlags, (combination) => {
     // Only prerender when banner is shown
     return combination['show-banner'] === true;
   });

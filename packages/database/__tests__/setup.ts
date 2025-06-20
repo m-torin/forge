@@ -1,6 +1,6 @@
 import { beforeAll, beforeEach, afterEach, afterAll, vi } from 'vitest';
 
-// Mock the adapters before importing them
+// Mock the database clients before importing them
 vi.mock('@upstash/vector', (_: any) => ({
   Index: vi.fn(),
 }));

@@ -145,7 +145,7 @@ export class CheerioProvider implements ScrapingProvider {
         },
       };
     } catch (error: any) {
-      const _endTime = Date.now();
+      const endTime = Date.now();
 
       if (error instanceof ScrapingError) {
         throw error;

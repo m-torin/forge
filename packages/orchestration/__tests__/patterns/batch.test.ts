@@ -8,7 +8,7 @@ import {
 } from '../../src/shared/patterns/batch';
 import { resetUpstashMocks, setupUpstashMocks } from '../utils/upstash-mocks';
 
-describe('Batch Processing', () => {
+describe('batch Processing', () => {
   let mocks: ReturnType<typeof setupUpstashMocks>;
 
   beforeEach(() => {
@@ -19,7 +19,7 @@ describe('Batch Processing', () => {
     resetUpstashMocks(mocks);
   });
 
-  describe('Batch Processor Creation', () => {
+  describe('batch Processor Creation', () => {
     test('should create batch processor with basic configuration', () => {
       interface DataRecord {
         id: string;
@@ -63,7 +63,7 @@ describe('Batch Processing', () => {
     });
   });
 
-  describe('Batch Processing Execution', () => {
+  describe('batch Processing Execution', () => {
     test('should process simple batch successfully', async () => {
       interface SimpleData {
         id: number;
@@ -152,10 +152,10 @@ describe('Batch Processing', () => {
       const results = await processor.processBatch(items, mockContext);
 
       expect(results).toHaveLength(3);
-      expect(results[0].success).toBe(true);
-      expect(results[1].success).toBe(false);
+      expect(results[0].success).toBeTruthy();
+      expect(results[1].success).toBeFalsy();
       expect(results[1].error).toBe('Processing failed for item 2');
-      expect(results[2].success).toBe(true);
+      expect(results[2].success).toBeTruthy();
     });
 
     test('should call progress callbacks', async () => {
@@ -218,7 +218,7 @@ describe('Batch Processing', () => {
     });
   });
 
-  describe('Large Dataset Processing', () => {
+  describe('large Dataset Processing', () => {
     test('should handle large batches with chunking', async () => {
       interface LargeData {
         id: number;
@@ -347,13 +347,13 @@ describe('Batch Processing', () => {
       const results = await processor.processBatch(items, mockContext);
 
       expect(results).toHaveLength(50);
-      expect(results.every((r: any) => r.success)).toBe(true);
+      expect(results.every((r: any) => r.success)).toBeTruthy();
       expect(mockContext.events.emit).toHaveBeenCalledTimes(50);
       expect(processedItems).toBe(50);
     });
   });
 
-  describe('Error Handling and Resilience', () => {
+  describe('error Handling and Resilience', () => {
     test('should handle partial batch failures', async () => {
       interface FailureData {
         id: number;
@@ -408,10 +408,10 @@ describe('Batch Processing', () => {
       const results = await processor.processBatch(items, mockContext);
 
       expect(results).toHaveLength(3);
-      expect(results[0].success).toBe(true);
-      expect(results[1].success).toBe(false);
+      expect(results[0].success).toBeTruthy();
+      expect(results[1].success).toBeFalsy();
       expect(results[1].error).toBe('Business logic failure for 2');
-      expect(results[2].success).toBe(true);
+      expect(results[2].success).toBeTruthy();
     });
 
     test('should handle processor-level errors', async () => {
@@ -439,7 +439,7 @@ describe('Batch Processing', () => {
     });
   });
 
-  describe('Complex Batch Scenarios', () => {
+  describe('complex Batch Scenarios', () => {
     test('should handle data transformation pipeline', async () => {
       interface RawData {
         category: string;
@@ -570,15 +570,15 @@ describe('Batch Processing', () => {
       expect(results).toHaveLength(4);
 
       // Check successful transformations
-      expect(results[0].success).toBe(true);
+      expect(results[0].success).toBeTruthy();
       expect((results[0].result as ProcessedData).normalizedValue).toBe(123.45);
       expect((results[0].result as ProcessedData).category).toBe('sales');
 
       // Check validation failures
-      expect(results[1].success).toBe(false);
+      expect(results[1].success).toBeFalsy();
       expect(results[1].error).toBe('Invalid numeric value');
 
-      expect(results[3].success).toBe(false);
+      expect(results[3].success).toBeFalsy();
       expect(results[3].error).toBe('Missing required fields');
 
       // Verify events were emitted

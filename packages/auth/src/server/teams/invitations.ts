@@ -4,9 +4,10 @@
 
 import 'server-only';
 
-import { isValidRole, roleHasPermission } from '../../shared/teams/permissions';
-import { auth } from '../auth';
-import { getAuthHeaders } from '../helpers/get-headers';
+import { syncLogger as logger } from '../../shared/utils/logger';
+import { isValidRole, roleHasPermission } from '../../shared/teams';
+import { auth } from '../../shared/auth.config';
+import { getAuthHeaders } from '../get-headers';
 
 import type {
   CancelInvitationResult,
@@ -16,12 +17,12 @@ import type {
   RespondToInvitationData,
   RespondToInvitationResult,
   TeamInvitation,
-} from '../../shared/teams/types';
+} from '../../shared/teams';
 
 /**
  * Invites a user to join a team using better-auth native method
  */
-export async function inviteToTeam(data: InviteToTeamData): Promise<InviteToTeamResult> {
+export async function inviteToTeamAction(data: InviteToTeamData): Promise<InviteToTeamResult> {
   try {
     const session = await auth.api.getSession({ headers: await getAuthHeaders() });
 
@@ -103,7 +104,7 @@ export async function inviteToTeam(data: InviteToTeamData): Promise<InviteToTeam
 
     return { invitation: teamInvitation, success: true };
   } catch (error) {
-    console.error('Invite to team error:', error);
+    logger.error('Invite to team error:', error);
 
     // Handle specific better-auth errors
     if (error instanceof Error) {
@@ -122,7 +123,7 @@ export async function inviteToTeam(data: InviteToTeamData): Promise<InviteToTeam
 /**
  * Lists team invitations using better-auth native method
  */
-export async function listTeamInvitations(
+export async function listTeamInvitationsAction(
   teamId?: string,
   includeExpired = false,
 ): Promise<ListTeamInvitationsResult> {
@@ -249,7 +250,7 @@ export async function listTeamInvitations(
             });
           });
         } catch (teamError) {
-          console.warn(`Failed to get invitations for team ${team.id}:`, teamError);
+          logger.warn(`Failed to get invitations for team ${team.id}:`, teamError);
         }
       }
 
@@ -261,7 +262,7 @@ export async function listTeamInvitations(
       return { invitations: allInvitations, success: true };
     }
   } catch (error) {
-    console.error('List team invitations error:', error);
+    logger.error('List team invitations error:', error);
     return { error: 'Failed to list invitations', success: false };
   }
 }
@@ -269,7 +270,7 @@ export async function listTeamInvitations(
 /**
  * Responds to a team invitation using better-auth native method
  */
-export async function respondToInvitation(
+export async function respondToInvitationAction(
   data: RespondToInvitationData,
 ): Promise<RespondToInvitationResult> {
   try {
@@ -305,7 +306,7 @@ export async function respondToInvitation(
       return { success: true };
     }
   } catch (error) {
-    console.error('Respond to invitation error:', error);
+    logger.error('Respond to invitation error:', error);
 
     // Handle specific better-auth errors
     if (error instanceof Error) {
@@ -330,7 +331,9 @@ export async function respondToInvitation(
 /**
  * Cancels a team invitation using better-auth native method
  */
-export async function cancelInvitation(invitationId: string): Promise<CancelInvitationResult> {
+export async function cancelInvitationAction(
+  invitationId: string,
+): Promise<CancelInvitationResult> {
   try {
     const session = await auth.api.getSession({ headers: await getAuthHeaders() });
 
@@ -347,7 +350,7 @@ export async function cancelInvitation(invitationId: string): Promise<CancelInvi
 
     return { success: true };
   } catch (error) {
-    console.error('Cancel invitation error:', error);
+    logger.error('Cancel invitation error:', error);
 
     // Handle specific better-auth errors
     if (error instanceof Error) {
@@ -366,7 +369,7 @@ export async function cancelInvitation(invitationId: string): Promise<CancelInvi
 /**
  * Gets pending invitations for the current user using better-auth native method
  */
-export async function getUserPendingInvitations(): Promise<ListTeamInvitationsResult> {
+export async function getUserPendingInvitationsAction(): Promise<ListTeamInvitationsResult> {
   try {
     const session = await auth.api.getSession({ headers: await getAuthHeaders() });
 
@@ -424,7 +427,7 @@ export async function getUserPendingInvitations(): Promise<ListTeamInvitationsRe
           });
         }
       } catch (teamError) {
-        console.warn(`Failed to get team details for invitation ${invitation.id}:`, teamError);
+        logger.warn(`Failed to get team details for invitation ${invitation.id}:`, teamError);
         // Continue with other invitations even if one team lookup fails
       }
     }
@@ -436,7 +439,7 @@ export async function getUserPendingInvitations(): Promise<ListTeamInvitationsRe
 
     return { invitations: formattedInvitations, success: true };
   } catch (error) {
-    console.error('Get user pending invitations error:', error);
+    logger.error('Get user pending invitations error:', error);
     return { error: 'Failed to get pending invitations', success: false };
   }
 }

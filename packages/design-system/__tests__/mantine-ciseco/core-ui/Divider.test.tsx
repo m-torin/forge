@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '../test-utils';
-import { Divider } from '../../../mantine-ciseco/components/Divider';
+import { Divider } from '../../../src/mantine-ciseco/components/Divider';
 
 describe('Divider', (_: any) => {
   it('renders horizontal divider by default', (_: any) => {

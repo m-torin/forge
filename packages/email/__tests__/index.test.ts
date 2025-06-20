@@ -1,14 +1,14 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
-describe('Email Package Exports', () => {
+describe('email Package Exports', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.resetModules();
   });
 
   describe('module exports', () => {
-    it('should export all email sending functions', async () => {
-      const module = await import('../index');
+    test('should export all email sending functions', async () => {
+      const module = await import('../src/index');
 
       expect(module.sendMagicLinkEmail).toBeDefined();
       expect(module.sendVerificationEmail).toBeDefined();
@@ -27,8 +27,8 @@ describe('Email Package Exports', () => {
       expect(typeof module.sendApiKeyCreatedEmail).toBe('function');
     });
 
-    it('should export all email templates', async () => {
-      const module = await import('../index');
+    test('should export all email templates', async () => {
+      const module = await import('../src/index');
 
       expect(module.MagicLinkTemplate).toBeDefined();
       expect(module.VerificationTemplate).toBeDefined();
@@ -47,15 +47,15 @@ describe('Email Package Exports', () => {
       expect(typeof module.ApiKeyCreatedTemplate).toBe('function');
     });
 
-    it('should export resend proxy instance', async () => {
-      const module = await import('../index');
+    test('should export resend proxy instance', async () => {
+      const module = await import('../src/index');
 
       expect(module.resend).toBeDefined();
       expect(typeof module.resend).toBe('object');
     });
 
-    it('should have consistent export structure', async () => {
-      const module = await import('../index');
+    test('should have consistent export structure', async () => {
+      const module = await import('../src/index');
       const exports = Object.keys(module);
 
       // Should have expected number of exports
@@ -65,24 +65,24 @@ describe('Email Package Exports', () => {
       const sendFunctions = exports.filter((exp) => exp.startsWith('send'));
       const templates = exports.filter((exp) => exp.includes('Template'));
 
-      expect(sendFunctions.length).toBe(7); // 7 send functions
-      expect(templates.length).toBe(7); // 7 templates
+      expect(sendFunctions).toHaveLength(13); // 13 send functions (7 original + 6 registry)
+      expect(templates).toHaveLength(13); // 13 templates (7 original + 6 registry)
       expect(exports).toContain('resend');
     });
   });
 
   describe('template re-exports', () => {
-    it('should re-export templates from their original modules', async () => {
-      const indexModule = await import('../index');
-      const magicLinkModule = await import('../templates/magic-link');
-      const contactModule = await import('../templates/contact');
+    test('should re-export templates from their original modules', async () => {
+      const indexModule = await import('../src/index');
+      const magicLinkModule = await import('../src/templates/magic-link');
+      const contactModule = await import('../src/templates/contact');
 
       expect(indexModule.MagicLinkTemplate).toBe(magicLinkModule.MagicLinkTemplate);
       expect(indexModule.ContactTemplate).toBe(contactModule.ContactTemplate);
     });
 
-    it('should maintain template functionality through re-exports', async () => {
-      const { MagicLinkTemplate } = await import('../index');
+    test('should maintain template functionality through re-exports', async () => {
+      const { MagicLinkTemplate } = await import('../src/index');
 
       const result = MagicLinkTemplate({
         name: 'Test User',
@@ -95,8 +95,8 @@ describe('Email Package Exports', () => {
   });
 
   describe('type safety', () => {
-    it('should have proper TypeScript types for functions', async () => {
-      const module = await import('../index');
+    test('should have proper TypeScript types for functions', async () => {
+      const module = await import('../src/index');
 
       // Functions should be callable with proper parameters
       expect(() => {

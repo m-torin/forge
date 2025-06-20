@@ -79,9 +79,9 @@ export const enabledAnalyticsConfig: LinkConfig = {
  */
 export async function manualAnalyticsIntegration() {
   // Create analytics manager first
-  const { createNextJSServerAnalytics } = await import('@repo/analytics/server/next');
+  const { createServerAnalytics } = await import('@repo/analytics/server/next');
 
-  const analytics = await createNextJSServerAnalytics({
+  const analytics = await createServerAnalytics({
     providers: {
       posthog: {
         apiKey: process.env.POSTHOG_API_KEY,

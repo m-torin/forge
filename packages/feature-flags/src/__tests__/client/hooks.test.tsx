@@ -1,6 +1,6 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 import {
   FeatureFlagProvider,
@@ -24,7 +24,7 @@ const mockAdapter = {
   track: vi.fn(),
 };
 
-describe('Feature Flag Hooks', () => {
+describe('feature Flag Hooks', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetFlag.mockResolvedValue(false);
@@ -37,33 +37,33 @@ describe('Feature Flag Hooks', () => {
   );
 
   describe('useFeatureFlag', () => {
-    it('should return flag value', async () => {
+    test('should return flag value', async () => {
       mockIsEnabled.mockResolvedValue(true);
 
       const { result } = renderHook(() => useFeatureFlag('test-flag'), { wrapper });
 
       await waitFor(() => {
-        expect(result.current).toBe(true);
+        expect(result.current).toBeTruthy();
       });
 
       expect(mockIsEnabled).toHaveBeenCalledWith('test-flag');
     });
 
-    it('should return false by default', async () => {
+    test('should return false by default', async () => {
       const { result } = renderHook(() => useFeatureFlag('unknown-flag'), { wrapper });
 
       await waitFor(() => {
-        expect(result.current).toBe(false);
+        expect(result.current).toBeFalsy();
       });
     });
 
-    it('should update when flag changes', async () => {
+    test('should update when flag changes', async () => {
       mockIsEnabled.mockResolvedValue(false);
 
       const { rerender, result } = renderHook(() => useFeatureFlag('test-flag'), { wrapper });
 
       await waitFor(() => {
-        expect(result.current).toBe(false);
+        expect(result.current).toBeFalsy();
       });
 
       // Change flag value
@@ -73,45 +73,45 @@ describe('Feature Flag Hooks', () => {
       rerender();
 
       await waitFor(() => {
-        expect(result.current).toBe(true);
+        expect(result.current).toBeTruthy();
       });
     });
 
-    it('should handle loading state', () => {
+    test('should handle loading state', () => {
       mockIsEnabled.mockImplementation(() => new Promise(() => {})); // Never resolves
 
       const { result } = renderHook(() => useFeatureFlag('slow-flag'), { wrapper });
 
       // Should start with false while loading
-      expect(result.current).toBe(false);
+      expect(result.current).toBeFalsy();
     });
 
-    it('should handle errors gracefully', async () => {
+    test('should handle errors gracefully', async () => {
       mockIsEnabled.mockRejectedValue(new Error('Failed to fetch flag'));
 
       const { result } = renderHook(() => useFeatureFlag('error-flag'), { wrapper });
 
       await waitFor(() => {
-        expect(result.current).toBe(false);
+        expect(result.current).toBeFalsy();
       });
     });
   });
 
   describe('useFeatureFlagPayload', () => {
-    it('should return flag payload', async () => {
+    test('should return flag payload', async () => {
       const payload = { config: { color: 'blue' }, variant: 'A' };
       mockGetFlag.mockResolvedValue(payload);
 
       const { result } = renderHook(() => useFeatureFlagPayload('test-flag'), { wrapper });
 
       await waitFor(() => {
-        expect(result.current).toEqual(payload);
+        expect(result.current).toStrictEqual(payload);
       });
 
       expect(mockGetFlag).toHaveBeenCalledWith('test-flag', undefined);
     });
 
-    it('should return default value when flag is not set', async () => {
+    test('should return default value when flag is not set', async () => {
       mockGetFlag.mockResolvedValue(undefined);
 
       const defaultValue = { variant: 'default' };
@@ -120,13 +120,13 @@ describe('Feature Flag Hooks', () => {
       });
 
       await waitFor(() => {
-        expect(result.current).toEqual(defaultValue);
+        expect(result.current).toStrictEqual(defaultValue);
       });
 
       expect(mockGetFlag).toHaveBeenCalledWith('test-flag', defaultValue);
     });
 
-    it('should handle string payloads', async () => {
+    test('should handle string payloads', async () => {
       mockGetFlag.mockResolvedValue('variant-b');
 
       const { result } = renderHook(() => useFeatureFlagPayload('string-flag'), { wrapper });
@@ -136,17 +136,17 @@ describe('Feature Flag Hooks', () => {
       });
     });
 
-    it('should handle boolean payloads', async () => {
+    test('should handle boolean payloads', async () => {
       mockGetFlag.mockResolvedValue(true);
 
       const { result } = renderHook(() => useFeatureFlagPayload('bool-flag'), { wrapper });
 
       await waitFor(() => {
-        expect(result.current).toBe(true);
+        expect(result.current).toBeTruthy();
       });
     });
 
-    it('should handle numeric payloads', async () => {
+    test('should handle numeric payloads', async () => {
       mockGetFlag.mockResolvedValue(42);
 
       const { result } = renderHook(() => useFeatureFlagPayload('number-flag'), { wrapper });
@@ -158,7 +158,7 @@ describe('Feature Flag Hooks', () => {
   });
 
   describe('useFeatureFlags', () => {
-    it('should return all flags', async () => {
+    test('should return all flags', async () => {
       const allFlags = {
         'feature-1': true,
         'feature-2': false,
@@ -169,25 +169,25 @@ describe('Feature Flag Hooks', () => {
       const { result } = renderHook(() => useFeatureFlags(), { wrapper });
 
       await waitFor(() => {
-        expect(result.current).toEqual(allFlags);
+        expect(result.current).toStrictEqual(allFlags);
       });
     });
 
-    it('should return empty object initially', () => {
+    test('should return empty object initially', () => {
       mockGetAllFlags.mockImplementation(() => new Promise(() => {})); // Never resolves
 
       const { result } = renderHook(() => useFeatureFlags(), { wrapper });
 
-      expect(result.current).toEqual({});
+      expect(result.current).toStrictEqual({});
     });
 
-    it('should update when flags reload', async () => {
+    test('should update when flags reload', async () => {
       mockGetAllFlags.mockResolvedValue({ 'flag-1': true });
 
       const { result } = renderHook(() => useFeatureFlags(), { wrapper });
 
       await waitFor(() => {
-        expect(result.current).toEqual({ 'flag-1': true });
+        expect(result.current).toStrictEqual({ 'flag-1': true });
       });
 
       // Update flags
@@ -208,8 +208,8 @@ describe('Feature Flag Hooks', () => {
     });
   });
 
-  describe('FeatureFlagProvider', () => {
-    it('should provide adapter to children', async () => {
+  describe('featureFlagProvider', () => {
+    test('should provide adapter to children', async () => {
       let contextValue: any;
 
       const TestComponent = () => {
@@ -231,7 +231,7 @@ describe('Feature Flag Hooks', () => {
       });
     });
 
-    it('should throw when hooks are used outside provider', () => {
+    test('should throw when hooks are used outside provider', () => {
       // Suppress console.error for this test
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
@@ -242,7 +242,7 @@ describe('Feature Flag Hooks', () => {
       consoleSpy.mockRestore();
     });
 
-    it('should memoize context value', () => {
+    test('should memoize context value', () => {
       const { result: result1 } = renderHook(() => useFeatureFlag('flag1'), { wrapper });
       const { result: result2 } = renderHook(() => useFeatureFlag('flag2'), { wrapper });
 
@@ -253,7 +253,7 @@ describe('Feature Flag Hooks', () => {
   });
 
   describe('concurrent requests', () => {
-    it('should handle multiple flags being fetched simultaneously', async () => {
+    test('should handle multiple flags being fetched simultaneously', async () => {
       mockIsEnabled
         .mockResolvedValueOnce(true)
         .mockResolvedValueOnce(false)
@@ -264,9 +264,9 @@ describe('Feature Flag Hooks', () => {
       const { result: result3 } = renderHook(() => useFeatureFlag('flag3'), { wrapper });
 
       await waitFor(() => {
-        expect(result1.current).toBe(true);
-        expect(result2.current).toBe(false);
-        expect(result3.current).toBe(true);
+        expect(result1.current).toBeTruthy();
+        expect(result2.current).toBeFalsy();
+        expect(result3.current).toBeTruthy();
       });
 
       expect(mockIsEnabled).toHaveBeenCalledTimes(3);
@@ -274,7 +274,7 @@ describe('Feature Flag Hooks', () => {
   });
 
   describe('error boundaries', () => {
-    it('should not crash the app on adapter errors', async () => {
+    test('should not crash the app on adapter errors', async () => {
       mockGetFlag.mockRejectedValue(new Error('Adapter error'));
       mockIsEnabled.mockRejectedValue(new Error('Adapter error'));
 
@@ -288,7 +288,7 @@ describe('Feature Flag Hooks', () => {
       );
 
       await waitFor(() => {
-        expect(result.current.flag).toBe(false);
+        expect(result.current.flag).toBeFalsy();
         expect(result.current.payload).toBeUndefined();
       });
     });

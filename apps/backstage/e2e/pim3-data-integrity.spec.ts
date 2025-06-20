@@ -304,10 +304,10 @@ test.describe('PIM3 Data Integrity Tests', () => {
       await parentSelectInEdit.click();
       // Parent should not see itself as an option
       const selfOption = page.getByRole('option', { name: parentName });
-      await expect(selfOption).not.toBeVisible();
+      await expect(selfOption).toBeHidden();
       // Child should not be selectable as parent (circular dependency)
       const childOption = page.getByRole('option', { name: childName });
-      await expect(childOption).not.toBeVisible();
+      await expect(childOption).toBeHidden();
       await page.keyboard.press('Escape');
     }
 

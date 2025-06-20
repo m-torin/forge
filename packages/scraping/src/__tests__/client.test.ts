@@ -1,25 +1,37 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, expect, beforeEach, vi } from 'vitest';
 
 import { createClientScraping, quickScrape } from '../client';
 import { ScrapingConfig, SelectorMap } from '../shared/types/scraping-types';
 
 // Mock fetch for client tests
-global.fetch = vi.fn().mockResolvedValue({
+vi.spyOn(global, 'fetch').mockResolvedValue({
   ok: true,
   status: 200,
+  statusText: 'OK',
+  redirected: false,
+  type: 'basic' as ResponseType,
+  url: 'https://example.com',
   text: vi.fn().mockResolvedValue('<html><body><h1>Example Domain</h1></body></html>'),
+  json: vi.fn().mockResolvedValue({}),
+  blob: vi.fn().mockResolvedValue(new Blob()),
+  arrayBuffer: vi.fn().mockResolvedValue(new ArrayBuffer(0)),
+  formData: vi.fn().mockResolvedValue(new FormData()),
+  bytes: vi.fn().mockResolvedValue(new Uint8Array()),
+  clone: vi.fn().mockReturnThis(),
   headers: new Headers({ 'content-type': 'text/html' }),
-});
+  body: null,
+  bodyUsed: false,
+} as unknown as Response);
 
 // Use vi.hoisted to ensure mock is available before module import
 const { mockFetchProvider } = vi.hoisted(() => {
   const mockFetchProvider = vi.fn();
-  const _mockScrapeError = vi.fn();
+  const mockScrapeError = vi.fn();
 
   // Default implementation
   mockFetchProvider.mockImplementation(() => ({
     initialize: vi.fn().mockResolvedValue(undefined),
-    scrape: _mockScrapeError.mockResolvedValue({
+    scrape: mockScrapeError.mockResolvedValue({
       url: 'https://example.com',
       html: '<html><body><h1>Example Domain</h1></body></html>',
       metadata: {
@@ -51,7 +63,7 @@ vi.mock('../../client/providers/fetch-provider', () => ({
   FetchProvider: mockFetchProvider,
 }));
 
-describe('Client Scraping', () => {
+describe('client Scraping', () => {
   let scraper: Awaited<ReturnType<typeof createClientScraping>>;
 
   beforeEach(async () => {
@@ -64,12 +76,12 @@ describe('Client Scraping', () => {
     scraper = await createClientScraping(config);
   });
 
-  it('should create a client scraping instance', () => {
+  test('should create a client scraping instance', () => {
     expect(scraper).toBeDefined();
     expect(scraper.scrape).toBeDefined();
   });
 
-  it('should perform a quick scrape', async () => {
+  test('should perform a quick scrape', async () => {
     const selectors: SelectorMap = {
       title: 'h1',
       description: { selector: 'meta[name="description"]', attribute: 'content' },
@@ -82,14 +94,14 @@ describe('Client Scraping', () => {
     expect(result?.data.title).toBeDefined();
   });
 
-  it('should handle errors gracefully', async () => {
+  test('should handle errors gracefully', async () => {
     const selectors: SelectorMap = {
       title: 'h1',
     };
 
     // Mock global fetch to reject with an error
     const originalFetch = global.fetch;
-    global.fetch = vi.fn().mockRejectedValueOnce(new Error('Network error'));
+    vi.spyOn(global, 'fetch').mockRejectedValue(new Error('Network error'));
 
     await expect(quickScrape('https://this-url-does-not-exist.com', selectors)).rejects.toThrow(
       'Quick scrape failed',

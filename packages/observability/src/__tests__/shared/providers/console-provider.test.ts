@@ -1,8 +1,8 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, vi } from 'vitest';
 
 import { ConsoleProvider } from '../../../shared/providers/console-provider';
 
-describe('ConsoleProvider', () => {
+describe('consoleProvider', () => {
   let provider: ConsoleProvider;
   let consoleLogSpy: any;
   let consoleWarnSpy: any;
@@ -25,31 +25,31 @@ describe('ConsoleProvider', () => {
   });
 
   describe('log', () => {
-    it('should log info level messages to console.info', async () => {
+    test('should log info level messages to console.info', async () => {
       await provider.log('info', 'Test info message');
 
       expect(consoleInfoSpy).toHaveBeenCalledWith('[OBS] INFO:', 'Test info message', '');
     });
 
-    it('should log warn level messages to console.warn', async () => {
+    test('should log warn level messages to console.warn', async () => {
       await provider.log('warn', 'Test warning');
 
       expect(consoleWarnSpy).toHaveBeenCalledWith('[OBS] WARN:', 'Test warning', '');
     });
 
-    it('should log error level messages to console.error', async () => {
+    test('should log error level messages to console.error', async () => {
       await provider.log('error', 'Test error');
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('[OBS] ERROR:', 'Test error', '');
     });
 
-    it('should log debug level messages to console.log', async () => {
+    test('should log debug level messages to console.log', async () => {
       await provider.log('debug', 'Test debug');
 
       expect(consoleLogSpy).toHaveBeenCalledWith('[OBS] DEBUG:', 'Test debug', '');
     });
 
-    it('should include metadata when provided', async () => {
+    test('should include metadata when provided', async () => {
       await provider.log('info', 'Test with metadata', {
         action: 'login',
         userId: '123',
@@ -61,7 +61,7 @@ describe('ConsoleProvider', () => {
       });
     });
 
-    it('should handle different log levels', async () => {
+    test('should handle different log levels', async () => {
       const levels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'];
 
       for (const level of levels) {
@@ -78,13 +78,13 @@ describe('ConsoleProvider', () => {
           consoleLogSpy.mock.calls.length > 0 ||
           consoleWarnSpy.mock.calls.length > 0 ||
           consoleErrorSpy.mock.calls.length > 0;
-        expect(anyCalled).toBe(true);
+        expect(anyCalled).toBeTruthy();
       }
     });
   });
 
   describe('captureException', () => {
-    it('should log exceptions to console.error', async () => {
+    test('should log exceptions to console.error', async () => {
       const error = new Error('Test exception');
       error.stack = 'Error: Test exception\n    at test.js:123';
 
@@ -100,7 +100,7 @@ describe('ConsoleProvider', () => {
       );
     });
 
-    it('should include context when provided', async () => {
+    test('should include context when provided', async () => {
       const error = new Error('Test error');
       const context = {
         action: 'login',
@@ -122,7 +122,7 @@ describe('ConsoleProvider', () => {
   });
 
   describe('captureMessage', () => {
-    it('should log info messages', async () => {
+    test('should log info messages', async () => {
       await provider.captureMessage('Info message', 'info');
 
       expect(consoleInfoSpy).toHaveBeenCalledWith(
@@ -134,7 +134,7 @@ describe('ConsoleProvider', () => {
       );
     });
 
-    it('should log warning messages', async () => {
+    test('should log warning messages', async () => {
       await provider.captureMessage('Warning message', 'warning');
 
       expect(consoleWarnSpy).toHaveBeenCalledWith(
@@ -146,7 +146,7 @@ describe('ConsoleProvider', () => {
       );
     });
 
-    it('should log error messages', async () => {
+    test('should log error messages', async () => {
       await provider.captureMessage('Error message', 'error');
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(
@@ -160,7 +160,7 @@ describe('ConsoleProvider', () => {
   });
 
   describe('setUser', () => {
-    it('should log user setting', () => {
+    test('should log user setting', () => {
       provider.setUser({
         id: 'user-123',
         name: 'Test User',
@@ -176,7 +176,7 @@ describe('ConsoleProvider', () => {
   });
 
   describe('setTag', () => {
-    it('should log tag setting', () => {
+    test('should log tag setting', () => {
       provider.setTag('environment', 'production');
 
       expect(consoleLogSpy).toHaveBeenCalledWith('[OBS] Tag set:', {
@@ -187,7 +187,7 @@ describe('ConsoleProvider', () => {
   });
 
   describe('setExtra', () => {
-    it('should log extra data setting', () => {
+    test('should log extra data setting', () => {
       provider.setExtra('version', '1.0.0');
 
       expect(consoleLogSpy).toHaveBeenCalledWith('[OBS] Extra set:', {
@@ -198,7 +198,7 @@ describe('ConsoleProvider', () => {
   });
 
   describe('setContext', () => {
-    it('should log context setting', () => {
+    test('should log context setting', () => {
       provider.setContext('app', {
         environment: 'production',
         version: '1.0.0',
@@ -215,7 +215,7 @@ describe('ConsoleProvider', () => {
   });
 
   describe('addBreadcrumb', () => {
-    it('should log breadcrumb', () => {
+    test('should log breadcrumb', () => {
       provider.addBreadcrumb({
         category: 'ui',
         level: 'info',
@@ -231,7 +231,7 @@ describe('ConsoleProvider', () => {
   });
 
   describe('startTransaction', () => {
-    it('should log transaction start and finish', () => {
+    test('should log transaction start and finish', () => {
       const transaction = provider.startTransaction('test-transaction');
 
       expect(consoleLogSpy).toHaveBeenCalledWith(
@@ -254,7 +254,7 @@ describe('ConsoleProvider', () => {
   });
 
   describe('startSpan', () => {
-    it('should log span start and finish', () => {
+    test('should log span start and finish', () => {
       const span = provider.startSpan('test-span');
 
       expect(consoleLogSpy).toHaveBeenCalledWith(
@@ -277,7 +277,7 @@ describe('ConsoleProvider', () => {
   });
 
   describe('session management', () => {
-    it('should log session start', () => {
+    test('should log session start', () => {
       provider.startSession();
 
       expect(consoleLogSpy).toHaveBeenCalledWith(
@@ -288,7 +288,7 @@ describe('ConsoleProvider', () => {
       );
     });
 
-    it('should log session end', () => {
+    test('should log session end', () => {
       provider.endSession();
 
       expect(consoleLogSpy).toHaveBeenCalledWith(
@@ -301,7 +301,7 @@ describe('ConsoleProvider', () => {
   });
 
   describe('disabled state', () => {
-    it('should not log when disabled', async () => {
+    test('should not log when disabled', async () => {
       const disabledProvider = new ConsoleProvider();
       await disabledProvider.initialize({ enabled: false });
 

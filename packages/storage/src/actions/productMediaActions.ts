@@ -22,37 +22,37 @@ export async function uploadProductMediaAction(
     altText?: string;
     description?: string;
     tags?: string[];
-  }
+  },
 ): Promise<MediaActionResponse<Array<{ key: string; url: string; mediaId: string }>>> {
   'use server';
-  
+
   try {
     // TODO: Add authentication check
     // const session = await auth();
     // if (!session?.user) throw new Error('Unauthorized');
-    
+
     // TODO: Add permission check for product access
     // const hasPermission = await canUserManageProduct(session.user.id, productId);
     // if (!hasPermission) throw new Error('Insufficient permissions');
-    
+
     const storage = getStorage();
     const results = [];
-    
+
     for (const [index, file] of files.entries()) {
       // Generate storage key
       const timestamp = Date.now();
       const key = `products/${productId}/images/${timestamp}-${index}-${file.filename}`;
-      
+
       // Upload to storage
-      const uploadResult = await storage.upload(key, file.data, {
+      const _uploadResult = await storage.upload(key, file.data, {
         contentType: file.contentType,
         metadata: {
           productId,
           uploadedBy: options?.context || 'admin',
-          altText: options?.altText,
-        }
+          altText: options?.altText || '',
+        },
       });
-      
+
       // TODO: Create database record
       // const mediaRecord = await createProductMediaRecord({
       //   productId,
@@ -66,17 +66,17 @@ export async function uploadProductMediaAction(
       //   tags: options?.tags,
       //   sortOrder: index,
       // });
-      
+
       // Generate signed URL for immediate use
       const signedUrl = await storage.getUrl(key, { expiresIn: 3600 });
-      
+
       results.push({
         key,
         url: signedUrl,
         mediaId: `temp-${timestamp}-${index}`, // TODO: Replace with actual mediaRecord.id
       });
     }
-    
+
     return {
       success: true,
       data: results,
@@ -98,24 +98,28 @@ export async function getProductMediaAction(
     context: 'admin' | 'customer' | 'vendor';
     variant?: 'thumbnail' | 'gallery' | 'hero' | 'public';
     expiresIn?: number;
-  }
-): Promise<MediaActionResponse<Array<{
-  id: string;
-  key: string;
-  url: string;
-  altText?: string;
-  sortOrder: number;
-  contentType: string;
-  size: number;
-}>>> {
+  },
+): Promise<
+  MediaActionResponse<
+    Array<{
+      id: string;
+      key: string;
+      url: string;
+      altText?: string;
+      sortOrder: number;
+      contentType: string;
+      size: number;
+    }>
+  >
+> {
   'use server';
-  
+
   try {
     // TODO: Get media from database
     // const productMedia = await getProductMediaFromDatabase(productId, {
     //   includeDeleted: options?.context === 'admin',
     // });
-    
+
     // Mock data for now
     const productMedia = [
       {
@@ -127,7 +131,7 @@ export async function getProductMediaAction(
         size: 1024000,
       },
       {
-        id: 'media-2', 
+        id: 'media-2',
         key: `products/${productId}/images/gallery-1.jpg`,
         altText: 'Product gallery image 1',
         sortOrder: 1,
@@ -135,29 +139,29 @@ export async function getProductMediaAction(
         size: 856000,
       },
     ];
-    
+
     const storage = getStorage();
     const expiresIn = options?.expiresIn || 3600; // 1 hour default
-    
+
     // Generate signed URLs for all media
     const mediaWithUrls = await Promise.all(
       productMedia.map(async (media) => {
         let key = media.key;
-        
+
         // For Cloudflare Images, append variant
         if (options?.variant && options.variant !== 'public') {
           key = `${media.key}/${options.variant}`;
         }
-        
+
         const signedUrl = await storage.getUrl(key, { expiresIn });
-        
+
         return {
           ...media,
           url: signedUrl,
         };
-      })
+      }),
     );
-    
+
     return {
       success: true,
       data: mediaWithUrls,
@@ -179,38 +183,38 @@ export async function deleteProductMediaAction(
   options?: {
     context: 'admin' | 'vendor';
     hardDelete?: boolean;
-  }
+  },
 ): Promise<MediaActionResponse<void>> {
   'use server';
-  
+
   try {
     // TODO: Add authentication and permission checks
-    
+
     // TODO: Get media record from database
     // const mediaRecord = await getProductMediaById(mediaId);
     // if (!mediaRecord || mediaRecord.productId !== productId) {
     //   throw new Error('Media not found');
     // }
-    
+
     // Mock media record
     const mediaRecord = {
       id: mediaId,
       key: `products/${productId}/images/example.jpg`,
       productId,
     };
-    
+
     if (options?.hardDelete) {
       // Delete from storage
       const storage = getStorage();
       await storage.delete(mediaRecord.key);
-      
+
       // TODO: Hard delete from database
       // await deleteProductMediaRecord(mediaId);
     } else {
       // TODO: Soft delete in database
       // await softDeleteProductMediaRecord(mediaId, session.user.id);
     }
-    
+
     return { success: true };
   } catch (error) {
     return {
@@ -224,20 +228,20 @@ export async function deleteProductMediaAction(
  * Reorder product media
  */
 export async function reorderProductMediaAction(
-  productId: string,
-  mediaOrder: Array<{ mediaId: string; sortOrder: number }>,
-  options?: {
+  _productId: string,
+  _mediaOrder: Array<{ mediaId: string; sortOrder: number }>,
+  _options?: {
     context: 'admin' | 'vendor';
-  }
+  },
 ): Promise<MediaActionResponse<void>> {
   'use server';
-  
+
   try {
     // TODO: Add authentication and permission checks
-    
+
     // TODO: Update sort order in database
     // await updateMediaSortOrder(productId, mediaOrder);
-    
+
     return { success: true };
   } catch (error) {
     return {
@@ -257,39 +261,43 @@ export async function getProductUploadPresignedUrlsAction(
     context: 'admin' | 'vendor';
     expiresIn?: number;
     maxSizeBytes?: number;
-  }
-): Promise<MediaActionResponse<Array<{
-  filename: string;
-  uploadUrl: string;
-  key: string;
-  fields?: Record<string, string>;
-}>>> {
+  },
+): Promise<
+  MediaActionResponse<
+    Array<{
+      filename: string;
+      uploadUrl: string;
+      key: string;
+      fields?: Record<string, string>;
+    }>
+  >
+> {
   'use server';
-  
+
   try {
     // TODO: Add authentication and permission checks
-    
+
     const storage = getStorage();
     const expiresIn = options?.expiresIn || 1800; // 30 minutes for uploads
-    
+
     const uploadUrls = await Promise.all(
       filenames.map(async (filename, index) => {
         const timestamp = Date.now();
         const key = `products/${productId}/images/${timestamp}-${index}-${filename}`;
-        
+
         // TODO: Use actual presigned POST URL when storage provider supports it
         // For now, use signed GET URL as placeholder
         const uploadUrl = await storage.getUrl(key, { expiresIn });
-        
+
         return {
           filename,
           uploadUrl,
           key,
           // fields: presignedPost.fields, // For S3-style presigned POST
         };
-      })
+      }),
     );
-    
+
     return {
       success: true,
       data: uploadUrls,
@@ -306,25 +314,25 @@ export async function getProductUploadPresignedUrlsAction(
  * Bulk operations for product media
  */
 export async function bulkUpdateProductMediaAction(
-  productId: string,
-  updates: Array<{
+  _productId: string,
+  _updates: Array<{
     mediaId: string;
     altText?: string;
     description?: string;
     tags?: string[];
   }>,
-  options?: {
+  _options?: {
     context: 'admin' | 'vendor';
-  }
+  },
 ): Promise<MediaActionResponse<void>> {
   'use server';
-  
+
   try {
     // TODO: Add authentication and permission checks
-    
+
     // TODO: Bulk update in database
     // await bulkUpdateProductMedia(productId, updates);
-    
+
     return { success: true };
   } catch (error) {
     return {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
   uploadMediaAction,
   listMediaAction,
@@ -28,15 +28,11 @@ export function StorageActionsExample() {
     try {
       // Convert file to ArrayBuffer
       const buffer = await file.arrayBuffer();
-      
+
       // Upload using server action
-      const result = await uploadMediaAction(
-        `uploads/${Date.now()}-${file.name}`,
-        buffer,
-        {
-          contentType: file.type,
-        }
-      );
+      const result = await uploadMediaAction(`uploads/${Date.now()}-${file.name}`, buffer, {
+        contentType: file.type,
+      });
 
       if (result.success && result.data) {
         setMessage('Upload successful!');
@@ -56,19 +52,19 @@ export function StorageActionsExample() {
     setLoading(true);
     try {
       const result = await listMediaAction({ prefix: 'uploads/' });
-      
+
       if (result.success && result.data) {
         // Get URLs for each file
         const filesWithUrls = await Promise.all(
-          result.data.map(async (file) => {
+          result.data.map(async (file: { key: string }) => {
             const urlResult = await getMediaUrlAction(file.key);
             return {
               key: file.key,
               url: urlResult.success && urlResult.data ? urlResult.data : '',
             };
-          })
+          }),
         );
-        
+
         setFiles(filesWithUrls);
         setMessage(`Found ${filesWithUrls.length} files`);
       } else {
@@ -86,7 +82,7 @@ export function StorageActionsExample() {
     setLoading(true);
     try {
       const result = await deleteMediaAction(key);
-      
+
       if (result.success) {
         setMessage(`Deleted ${key}`);
         await refreshFileList();
@@ -103,16 +99,15 @@ export function StorageActionsExample() {
   // Delete all files
   const handleDeleteAll = async () => {
     if (files.length === 0) return;
-    
+
     setLoading(true);
     try {
-      const keys = files.map(f => f.key);
+      const keys = files.map((f: { key: string; url: string }) => f.key);
       const result = await bulkDeleteMediaAction(keys);
-      
+
       if (result.success && result.data) {
         setMessage(
-          `Deleted ${result.data.succeeded.length} files, ` +
-          `${result.data.failed.length} failed`
+          `Deleted ${result.data.succeeded.length} files, ` + `${result.data.failed.length} failed`,
         );
         await refreshFileList();
       } else {
@@ -128,19 +123,12 @@ export function StorageActionsExample() {
   return (
     <div className="p-4 max-w-2xl mx-auto">
       <h2 className="text-2xl font-bold mb-4">Storage Server Actions Example</h2>
-      
+
       {/* Upload Section */}
       <div className="mb-6 p-4 border rounded">
         <h3 className="text-lg font-semibold mb-2">Upload File</h3>
-        <input
-          type="file"
-          onChange={handleUpload}
-          disabled={loading}
-          className="mb-2"
-        />
-        <p className="text-sm text-gray-600">
-          Files will be uploaded to the 'uploads/' prefix
-        </p>
+        <input type="file" onChange={handleUpload} disabled={loading} className="mb-2" />
+        <p className="text-sm text-gray-600">Files will be uploaded to the 'uploads/' prefix</p>
       </div>
 
       {/* Actions */}
@@ -162,11 +150,7 @@ export function StorageActionsExample() {
       </div>
 
       {/* Status Message */}
-      {message && (
-        <div className="mb-4 p-3 bg-gray-100 rounded">
-          {message}
-        </div>
-      )}
+      {message && <div className="mb-4 p-3 bg-gray-100 rounded">{message}</div>}
 
       {/* File List */}
       <div className="space-y-2">
@@ -174,7 +158,7 @@ export function StorageActionsExample() {
         {files.length === 0 ? (
           <p className="text-gray-500">No files found</p>
         ) : (
-          files.map((file) => (
+          files.map((file: { key: string; url: string }) => (
             <div key={file.key} className="flex items-center justify-between p-3 border rounded">
               <div>
                 <p className="font-mono text-sm">{file.key}</p>
@@ -203,9 +187,7 @@ export function StorageActionsExample() {
 
       {loading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-4 rounded">
-            Loading...
-          </div>
+          <div className="bg-white p-4 rounded">Loading...</div>
         </div>
       )}
     </div>

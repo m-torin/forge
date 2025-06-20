@@ -6,7 +6,11 @@
     "./client": "./src/client.ts",
     "./server": "./src/server.ts",
     "./client/next": "./src/client-next.ts",
-    "./server/next": "./src/server-next.ts"
+    "./server/next": "./src/server-next.ts",
+    "./keys": {
+      "types": "./keys.ts",
+      "import": "./keys.ts"
+    }
   },
   "scripts": {
     "test": "vitest --run",
@@ -19,19 +23,19 @@
   "dependencies": {
     "@arcjet/next": "1.0.0-beta.8",
     "@nosecone/next": "1.0.0-beta.8",
-    "@t3-oss/env-nextjs": "catalog:",
+    "@t3-oss/env-nextjs": "^0.13.8",
     "@upstash/ratelimit": "^2.0.5",
     "@upstash/redis": "^1.35.0",
     "chalk": "^5.4.1",
-    "zod": "catalog:"
+    "zod": "^3.25.67"
   },
   "devDependencies": {
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/testing": "workspace:*",
     "@types/eslint": "^9.6.1",
-    "@types/node": "catalog:",
-    "eslint": "catalog:",
-    "typescript": "catalog:"
+    "@types/node": "^24.0.3",
+    "eslint": "^9.29.0",
+    "typescript": "5.8.3"
   }
 }

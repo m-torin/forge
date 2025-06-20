@@ -191,7 +191,7 @@ export class GrafanaServerProvider extends GrafanaMonitoringProvider {
       }
 
       await this.reportHealthCheck(health);
-    } catch (error: any) {
+    } catch (_error: any) {
       const health: Omit<GrafanaHealthCheck, 'timestamp'> = {
         service: this.config!.monitoring.service.name,
         status: 'unhealthy',

@@ -1,10 +1,11 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { describe, expect, vi, beforeEach } from 'vitest';
 import { CloudflareImagesProvider } from '../providers/cloudflare-images';
 
 // Mock fetch globally
+// vi.spyOn(global, 'fetch').mockImplementation();
 global.fetch = vi.fn();
 
-describe('CloudflareImagesProvider', () => {
+describe('cloudflareImagesProvider', () => {
   let provider: CloudflareImagesProvider;
   const mockConfig = {
     accountId: 'test-account-id',
@@ -19,7 +20,7 @@ describe('CloudflareImagesProvider', () => {
   });
 
   describe('upload', () => {
-    it('should upload an image successfully', async () => {
+    test('should upload an image successfully', async () => {
       const mockResponse = {
         success: true,
         result: {
@@ -64,7 +65,7 @@ describe('CloudflareImagesProvider', () => {
       );
     });
 
-    it('should handle upload errors', async () => {
+    test('should handle upload errors', async () => {
       const mockResponse = {
         success: false,
         errors: [{ code: 10001, message: 'Unauthorized' }],
@@ -85,7 +86,7 @@ describe('CloudflareImagesProvider', () => {
   });
 
   describe('delete', () => {
-    it('should delete an image successfully', async () => {
+    test('should delete an image successfully', async () => {
       const mockResponse = {
         success: true,
         result: {},
@@ -113,7 +114,7 @@ describe('CloudflareImagesProvider', () => {
   });
 
   describe('getMetadata', () => {
-    it('should get image metadata successfully', async () => {
+    test('should get image metadata successfully', async () => {
       const mockResponse = {
         success: true,
         result: {
@@ -145,7 +146,7 @@ describe('CloudflareImagesProvider', () => {
   });
 
   describe('exists', () => {
-    it('should return true if image exists', async () => {
+    test('should return true if image exists', async () => {
       const mockResponse = {
         success: true,
         result: { id: 'test-image-id' },
@@ -159,19 +160,19 @@ describe('CloudflareImagesProvider', () => {
       });
 
       const exists = await provider.exists('test-image-id');
-      expect(exists).toBe(true);
+      expect(exists).toBeTruthy();
     });
 
-    it('should return false if image does not exist', async () => {
+    test('should return false if image does not exist', async () => {
       (global.fetch as any).mockRejectedValueOnce(new Error('Not found'));
 
       const exists = await provider.exists('non-existent-id');
-      expect(exists).toBe(false);
+      expect(exists).toBeFalsy();
     });
   });
 
   describe('list', () => {
-    it('should list images successfully', async () => {
+    test('should list images successfully', async () => {
       const mockResponse = {
         success: true,
         result: {
@@ -206,7 +207,7 @@ describe('CloudflareImagesProvider', () => {
   });
 
   describe('createVariant', () => {
-    it('should create a variant successfully', async () => {
+    test('should create a variant successfully', async () => {
       const mockResponse = {
         success: true,
         result: {},
@@ -246,7 +247,7 @@ describe('CloudflareImagesProvider', () => {
   });
 
   describe('getDirectUploadUrl', () => {
-    it('should get direct upload URL successfully', async () => {
+    test('should get direct upload URL successfully', async () => {
       const mockResponse = {
         success: true,
         result: {
@@ -272,7 +273,7 @@ describe('CloudflareImagesProvider', () => {
   });
 
   describe('download', () => {
-    it('should download an image as blob', async () => {
+    test('should download an image as blob', async () => {
       const mockBlob = new Blob(['image data'], { type: 'image/jpeg' });
 
       (global.fetch as any).mockResolvedValueOnce({
@@ -291,12 +292,12 @@ describe('CloudflareImagesProvider', () => {
   });
 
   describe('getUrl', () => {
-    it('should generate URL with variant', async () => {
+    test('should generate URL with variant', async () => {
       const url = await provider.getUrl('test-image-id', { variant: 'thumbnail' });
       expect(url).toBe('https://imagedelivery.net/test-account/test-image-id/thumbnail');
     });
 
-    it('should generate default public URL', async () => {
+    test('should generate default public URL', async () => {
       const url = await provider.getUrl('test-image-id');
       expect(url).toBe('https://imagedelivery.net/test-account/test-image-id/public');
     });

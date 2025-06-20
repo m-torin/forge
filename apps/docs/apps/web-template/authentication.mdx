@@ -1,0 +1,565 @@
+---
+title: 'Authentication System'
+description:
+  'Complete authentication implementation with Better Auth, route protection, and user management'
+icon: 'shield-check'
+---
+
+# Authentication System
+
+The Web Template includes a fully integrated authentication system built with Better Auth, providing
+secure user authentication, route protection, and comprehensive account management features.
+
+<Note>
+  Authentication is fully implemented and production-ready, supporting multiple authentication
+  methods, protected routes, and user session management.
+</Note>
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Multiple Auth Methods" icon="key">
+    Email/password, social logins, and magic links
+  </Card>
+  <Card title="Route Protection" icon="lock">
+    Edge-level middleware protecting account pages
+  </Card>
+  <Card title="Session Management" icon="clock">
+    30-minute sessions with timeout warnings
+  </Card>
+  <Card title="Account Management" icon="user">
+    Comprehensive user profile and security settings
+  </Card>
+</CardGroup>
+
+## Authentication Methods
+
+### Email & Password
+
+Traditional authentication with enhanced security:
+
+```typescript
+// Login with email and password
+import { signIn } from '@repo/auth/client/next';
+
+const result = await signIn({
+  email: 'user@example.com',
+  password: 'securepassword',
+});
+
+if (result.success) {
+  // Redirect to account or return URL
+}
+```
+
+### Social Authentication
+
+Integrated OAuth providers for seamless login:
+
+<Tabs>
+  <Tab title="Google">
+    ```typescript
+    await authClient.signIn.social({
+      provider: 'google',
+      callbackURL: '/account',
+    });
+    ```
+  </Tab>
+  
+  <Tab title="Facebook">
+    ```typescript
+    await authClient.signIn.social({
+      provider: 'facebook',
+      callbackURL: '/account',
+    });
+    ```
+  </Tab>
+  
+  <Tab title="Twitter">
+    ```typescript
+    await authClient.signIn.social({
+      provider: 'twitter',
+      callbackURL: '/account',
+    });
+    ```
+  </Tab>
+</Tabs>
+
+### Magic Link Authentication
+
+Passwordless authentication via email:
+
+```typescript
+import { sendMagicLink } from '@repo/auth/client/next';
+
+// Send magic link
+await sendMagicLink('user@example.com');
+
+// User clicks link in email and is automatically signed in
+```
+
+## Route Protection
+
+### Protected Routes
+
+The following routes require authentication:
+
+| Route Pattern                 | Description            |
+| ----------------------------- | ---------------------- |
+| `/[locale]/account`           | Main account dashboard |
+| `/[locale]/account-password`  | Password management    |
+| `/[locale]/account-billing`   | Billing information    |
+| `/[locale]/account-wishlists` | Favorite products      |
+| `/[locale]/orders`            | Order history          |
+
+### Middleware Implementation
+
+Edge-level protection with automatic redirects:
+
+```typescript
+// middleware.ts
+export function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  const locale = pathname.match(/^\/([a-z]{2})/)?.[1] || 'en';
+
+  const protectedRoutes = [
+    `/${locale}/account`,
+    `/${locale}/account-password`,
+    `/${locale}/account-billing`,
+    `/${locale}/account-wishlists`,
+    `/${locale}/orders`,
+  ];
+
+  const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
+
+  if (isProtectedRoute) {
+    const sessionToken = request.cookies.get('better-auth.session_token');
+
+    if (!sessionToken) {
+      const url = new URL(`/${locale}/login`, request.url);
+      url.searchParams.set('returnUrl', pathname);
+      return NextResponse.redirect(url);
+    }
+  }
+
+  return NextResponse.next();
+}
+```
+
+## Login Page Features
+
+### Tabbed Interface
+
+The login page provides multiple authentication options:
+
+<AccordionGroup>
+  <Accordion title="Password Tab" icon="key">
+    - Email and password fields - Remember me checkbox - Forgot password link - Form validation with
+    error messages
+  </Accordion>
+
+  <Accordion title="Magic Link Tab" icon="envelope">
+    - Email-only authentication - Instant link delivery - 20-minute link expiration - Success
+    notification
+  </Accordion>
+</AccordionGroup>
+
+### Deep Linking Support
+
+Return URL preservation for seamless navigation:
+
+```typescript
+// Accessing protected page without auth
+/en/orders → Redirect to /en/login?returnUrl=%2Fen%2Forders
+
+// After successful login
+Automatic redirect back to /en/orders
+```
+
+### Remember Me Functionality
+
+Extended session duration for returning users:
+
+```typescript
+<Checkbox
+  label="Remember me"
+  {...form.getInputProps('rememberMe')}
+/>
+```
+
+## Account Management
+
+### Account Page Structure
+
+The account page uses a tabbed interface for organization:
+
+<CodeGroup>
+```typescript Profile Tab
+<Tabs.Panel value="profile">
+  <ProfileForm
+    user={user}
+    onUpdate={handleProfileUpdate}
+  />
+</Tabs.Panel>
+```
+
+```typescript Security Tab
+<Tabs.Panel value="security">
+  <SecuritySettings
+    user={user}
+    twoFactorEnabled={twoFactorEnabled}
+    passkeysEnabled={passkeysEnabled}
+  />
+</Tabs.Panel>
+```
+
+```typescript Linked Accounts Tab
+<Tabs.Panel value="accounts">
+  <SocialAccountsSection
+    user={user}
+    connectedProviders={connectedProviders}
+  />
+</Tabs.Panel>
+```
+
+```typescript Sessions Tab
+<Tabs.Panel value="sessions">
+  <SessionManager
+    currentSessionId={currentSessionId}
+    sessions={sessions}
+  />
+</Tabs.Panel>
+```
+
+</CodeGroup>
+
+### Profile Management
+
+Comprehensive user profile editing:
+
+```typescript
+const profileForm = useForm({
+  initialValues: {
+    name: user.name || '',
+    email: user.email,
+    phone: user.phone || '',
+    bio: user.bio || '',
+  },
+  validate: zodResolver(profileSchema),
+});
+
+const handleSubmit = async (values) => {
+  const result = await updateUser(values);
+  if (result.success) {
+    notifications.show({
+      title: 'Profile updated',
+      message: 'Your changes have been saved',
+      color: 'green',
+    });
+  }
+};
+```
+
+### Security Settings
+
+Advanced security options (UI ready, backend integration pending):
+
+<CardGroup cols={2}>
+  <Card title="Two-Factor Authentication" icon="mobile">
+    Enable/disable 2FA with authenticator apps
+  </Card>
+  <Card title="Passkey Support" icon="fingerprint">
+    Add biometric authentication methods
+  </Card>
+  <Card title="Password Management" icon="lock">
+    Change password with security validation
+  </Card>
+  <Card title="Login History" icon="clock">
+    View active sessions and device information
+  </Card>
+</CardGroup>
+
+## Session Management
+
+### Session Configuration
+
+30-minute sessions with automatic renewal:
+
+```typescript
+// Session timeout: 30 minutes
+const SESSION_TIMEOUT = 30 * 60 * 1000;
+
+// Warning shown: 5 minutes before expiry
+const WARNING_THRESHOLD = 5 * 60 * 1000;
+```
+
+### Session Timeout Warning
+
+Proactive user notification before session expiry:
+
+```typescript
+export function SessionTimeoutWarning() {
+  const [showWarning, setShowWarning] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(5);
+
+  // Activity tracking
+  useEffect(() => {
+    const handleActivity = () => {
+      lastActivity.current = Date.now();
+    };
+
+    window.addEventListener('mousedown', handleActivity);
+    window.addEventListener('keydown', handleActivity);
+    window.addEventListener('scroll', handleActivity);
+
+    return () => {
+      // Cleanup listeners
+    };
+  }, []);
+
+  // Warning modal
+  return (
+    <Modal opened={showWarning} onClose={handleExtend}>
+      <Text>Your session will expire in {timeLeft} minutes</Text>
+      <Button onClick={handleExtend}>
+        Extend Session
+      </Button>
+    </Modal>
+  );
+}
+```
+
+## Server Actions
+
+Authentication-related server actions:
+
+### Update User Profile
+
+```typescript
+// src/actions/user.ts
+export async function updateUser(data: UpdateUserData) {
+  'use server';
+
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: 'Not authenticated' };
+  }
+
+  const result = await updateUserAction({
+    where: { id: session.user.id },
+    data,
+  });
+
+  return { success: true, data: result };
+}
+```
+
+### Get Current User
+
+```typescript
+export async function getCurrentUser() {
+  'use server';
+
+  const session = await auth();
+  if (!session?.user?.id) {
+    return null;
+  }
+
+  return await getUser(session.user.id);
+}
+```
+
+## Social Account Management
+
+### Linking Social Accounts
+
+Add additional login methods to existing account:
+
+```typescript
+const linkSocialAccount = async (provider: 'google' | 'facebook' | 'twitter') => {
+  try {
+    await authClient.signIn.social({
+      provider,
+      callbackURL: window.location.pathname,
+    });
+
+    notifications.show({
+      title: 'Account linked',
+      message: `Your ${provider} account has been linked successfully.`,
+      color: 'green',
+    });
+  } catch (error) {
+    // Handle error
+  }
+};
+```
+
+### Security Validation
+
+Prevent removal of last authentication method:
+
+```typescript
+const canUnlinkAccount = () => {
+  const hasPassword = user.hasPassword ?? true;
+  const connectedAccounts = user.accounts?.length || 0;
+
+  // Must have either password or another social account
+  return hasPassword || connectedAccounts > 1;
+};
+```
+
+## Email Verification
+
+### Verification Banner
+
+Prompt users to verify their email:
+
+```typescript
+export function EmailVerificationBanner() {
+  const { user } = useAuth();
+
+  if (!user || user.emailVerified) return null;
+
+  return (
+    <Alert
+      icon={<IconMail size={16} />}
+      title="Verify your email"
+      color="yellow"
+    >
+      <Text size="sm">
+        Please check your email and click the verification link
+      </Text>
+    </Alert>
+  );
+}
+```
+
+## Implementation Details
+
+### Auth Context Provider
+
+Wrap your app with the auth provider:
+
+```typescript
+// app/[locale]/providers.tsx
+import { AuthProvider } from '@repo/auth/client/next';
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <MantineProvider theme={theme}>
+      <AuthProvider>
+        <SessionTimeoutWarning />
+        {children}
+      </AuthProvider>
+    </MantineProvider>
+  );
+}
+```
+
+### Type Extensions
+
+Extended user types for additional properties:
+
+```typescript
+// src/types/auth.ts
+import type { User as BaseUser } from '@repo/auth/types';
+
+export interface ExtendedUser extends BaseUser {
+  hasPassword?: boolean;
+  accounts?: Array<{
+    id: string;
+    provider: string;
+    providerId: string;
+  }>;
+}
+```
+
+## Current Limitations
+
+### Features Pending Backend Integration
+
+<Warning>
+  Some features have UI implementations ready but require additional backend configuration:
+</Warning>
+
+- **Session Listing**: Requires admin API or dedicated endpoint
+- **Social Account Unlinking**: Not yet available in Better Auth client API
+- **Two-Factor Authentication**: UI ready, backend configuration needed
+- **Passkey Management**: UI ready, WebAuthn setup required
+
+### Workarounds
+
+For features pending full integration:
+
+```typescript
+// Placeholder implementations
+const loadSessions = async () => {
+  // TODO: Session management requires admin API
+  setSessions([]);
+  notifications.show({
+    title: 'Coming soon',
+    message: 'Session management is not yet available',
+    color: 'blue',
+  });
+};
+```
+
+## Security Best Practices
+
+### Route Protection
+
+- All account-related routes protected at edge level
+- No client-side-only protection
+- Session validation on every request
+
+### Return URL Validation
+
+Prevent open redirect attacks:
+
+```typescript
+function isValidRedirect(url: string): boolean {
+  // Must be relative URL starting with /
+  if (!url.startsWith('/')) return false;
+
+  // Must not be protocol-relative
+  if (url.startsWith('//')) return false;
+
+  // Must not contain @ (prevents user@host URLs)
+  if (url.includes('@')) return false;
+
+  return true;
+}
+```
+
+### Session Security
+
+- HTTPOnly session cookies
+- Automatic session refresh on activity
+- Configurable timeout periods
+- Activity-based session extension
+
+## Next Steps
+
+To fully utilize the authentication system:
+
+<Steps>
+  <Step title="Configure OAuth Providers">
+    Set up OAuth apps for Google, Facebook, and Twitter in their respective developer consoles
+  </Step>
+
+<Step title="Set Environment Variables">
+  ```bash BETTER_AUTH_SECRET=your-secret-key GOOGLE_CLIENT_ID=your-google-client-id
+  GOOGLE_CLIENT_SECRET=your-google-client-secret # Add other providers... ```
+</Step>
+
+<Step title="Customize Protected Routes">
+  Modify the `protectedRoutes` array in `middleware.ts` to match your application needs
+</Step>
+
+  <Step title="Extend User Profile">
+    Add custom fields to the user profile form and update the schema accordingly
+  </Step>
+</Steps>
+
+The authentication system provides a solid foundation for secure user management in your e-commerce
+application, with room for customization and extension based on your specific requirements.

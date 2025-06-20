@@ -53,7 +53,11 @@ export class LinkManagerClass implements LinkManager {
       const { createAnalyticsIntegration } = await import('./analytics-integration');
       this.analytics = createAnalyticsIntegration(this.config.analytics);
     } catch (error: any) {
-      console.debug('[LinkManager] Analytics integration not available:', error);
+      const { linksLogger } = await import('./logger');
+      void linksLogger.debug('Analytics integration not available', {
+        operation: 'initialize_analytics',
+        error,
+      });
       // Graceful degradation - links work without analytics
     }
   }
@@ -156,22 +160,22 @@ export class LinkManagerClass implements LinkManager {
   }
 
   async getAnalytics(
-    id: string,
+    _id: string,
     interval: '1h' | '24h' | '7d' | '30d' | '90d' | 'all' = '7d',
-    providerName?: string,
+    _providerName?: string,
   ): Promise<LinkAnalytics> {
-    const provider = this.getProvider(providerName);
-    return provider.getAnalytics(id, interval);
+    const provider = this.getProvider(_providerName);
+    return provider.getAnalytics(_id, interval);
   }
 
   async getClicks(
-    id: string,
+    _id: string,
     page = 1,
     pageSize = 100,
-    providerName?: string,
+    _providerName?: string,
   ): Promise<ClickEvent[]> {
-    const provider = this.getProvider(providerName);
-    return provider.getClicks(id, page, pageSize);
+    const provider = this.getProvider(_providerName);
+    return provider.getClicks(_id, page, pageSize);
   }
 
   async getMetrics(id: string, providerName?: string): Promise<LinkMetrics> {

@@ -1,11 +1,15 @@
-import { expect, test } from '@repo/testing/e2e';
-import { AppTestHelpers, PerformanceUtils, WaitUtils } from '@repo/testing/e2e';
+import {
+  expect,
+  test,
+  AppTestHelpers,
+  PerformanceUtils,
+  WaitUtils,
+  AppTestConfig,
+} from '@repo/testing/e2e';
 
 import { createApiMocker } from './utils/api-mock';
 import { withPerformanceMonitoring } from './utils/performance-monitor';
 import { createVisualTester } from './utils/visual-testing';
-
-import { AppTestConfig } from '@repo/testing/e2e';
 
 test.describe('Backstage Workflows', (_: any) => {
   let helpers: AppTestHelpers;
@@ -97,8 +101,8 @@ test.describe('Backstage Workflows', (_: any) => {
     }
 
     // Check that the page has some content
-    const bodyText = await page.textContent('body');
-    expect(bodyText).toBeTruthy();
+    const bodyText = page;
+    await expect(bodyText).toHaveText('body');
   });
 
   test('should have good performance metrics', async ({ page }: any) => {
@@ -168,8 +172,8 @@ test.describe('Backstage Workflows', (_: any) => {
     }
 
     // Verify the page is functional even if no create flow found
-    const pageContent = await page.textContent('body');
-    expect(pageContent).toBeTruthy();
+    const pageContent = page;
+    await expect(pageContent).toHaveText('body');
   });
 
   test('workflow execution with API mocking', async ({ page }: any) => {
@@ -206,8 +210,8 @@ test.describe('Backstage Workflows', (_: any) => {
     }
 
     // Verify the page responds to interactions
-    const pageContent = await page.textContent('body');
-    expect(pageContent).toBeTruthy();
+    const pageContent = page;
+    await expect(pageContent).toHaveText('body');
   });
 
   test('visual regression testing', async ({ page }: any) => {

@@ -15,7 +15,7 @@ import {
   StepTemplates,
 } from '../src/shared/index';
 
-describe('Basic Step Factory', (_: any) => {
+describe('basic Step Factory', (_: any) => {
   beforeEach(() => {
     // Clear registries before each test
     defaultStepRegistry.clear();
@@ -60,7 +60,7 @@ describe('Basic Step Factory', (_: any) => {
     const executableStep = new StandardWorkflowStep(step);
     const result = await executableStep.execute({ test: 'data' }, 'workflow_123');
 
-    expect(result.success).toBe(true);
+    expect(result.success).toBeTruthy();
     expect(result.output?.data).toEqual({ test: 'data' });
     expect(result.performance).toBeDefined();
   });
@@ -71,7 +71,7 @@ describe('Basic Step Factory', (_: any) => {
     expect(httpStep.metadata.name).toBe('API Call');
     expect(httpStep.metadata.category).toBe('http');
     expect(httpStep.metadata.tags).toContain('http');
-    expect(httpStep.validationConfig?.validateInput).toBe(true);
+    expect(httpStep.validationConfig?.validateInput).toBeTruthy();
   });
 
   test('should create delay step and execute it', async () => {
@@ -82,7 +82,7 @@ describe('Basic Step Factory', (_: any) => {
     const result = await executableStep.execute({}, 'workflow_123');
     const duration = Date.now() - startTime;
 
-    expect(result.success).toBe(true);
+    expect(result.success).toBeTruthy();
     expect(result.output?.delayMs).toBe(50);
     expect(duration).toBeGreaterThanOrEqual(40); // Allow some tolerance
   });
@@ -155,7 +155,7 @@ describe('Basic Step Factory', (_: any) => {
     );
 
     const validation = StandardWorkflowStep.validateDefinition(validStep);
-    expect(validation.valid).toBe(true);
+    expect(validation.valid).toBeTruthy();
     expect(validation.errors).toBeUndefined();
   });
 

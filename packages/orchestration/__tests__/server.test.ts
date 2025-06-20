@@ -36,7 +36,7 @@ vi.mock('@upstash/redis', (_: any) => ({
   })),
 }));
 
-describe('Workflow Engine', (_: any) => {
+describe('workflow Engine', (_: any) => {
   let engine: ReturnType<typeof createWorkflowEngine>;
   const upstashConfig = createUpstashWorkflowConfig();
   const mockConfig = {
@@ -57,7 +57,7 @@ describe('Workflow Engine', (_: any) => {
     engine = createWorkflowEngine(mockConfig);
   });
 
-  describe('Engine Creation', (_: any) => {
+  describe('engine Creation', (_: any) => {
     test('should create engine with valid config', (_: any) => {
       expect(engine).toBeDefined();
       expect(engine.manager).toBeDefined();
@@ -70,7 +70,7 @@ describe('Workflow Engine', (_: any) => {
     });
   });
 
-  describe('Engine Initialization', (_: any) => {
+  describe('engine Initialization', (_: any) => {
     test('should initialize successfully', async () => {
       await expect(engine.initialize()).resolves.not.toThrow();
     });
@@ -82,7 +82,7 @@ describe('Workflow Engine', (_: any) => {
     });
   });
 
-  describe('Workflow Execution', (_: any) => {
+  describe('workflow Execution', (_: any) => {
     const mockWorkflow: WorkflowDefinition = {
       id: 'test-workflow',
       name: 'Test Workflow',
@@ -138,7 +138,7 @@ describe('Workflow Engine', (_: any) => {
     });
   });
 
-  describe('Execution Management', (_: any) => {
+  describe('execution Management', (_: any) => {
     beforeEach(async () => {
       await engine.initialize();
     });
@@ -190,7 +190,7 @@ describe('Workflow Engine', (_: any) => {
     });
   });
 
-  describe('Scheduling', (_: any) => {
+  describe('scheduling', (_: any) => {
     beforeEach(async () => {
       await engine.initialize();
     });
@@ -235,7 +235,7 @@ describe('Workflow Engine', (_: any) => {
     });
   });
 
-  describe('Health and Status', (_: any) => {
+  describe('health and Status', (_: any) => {
     beforeEach(async () => {
       await engine.initialize();
     });
@@ -281,7 +281,7 @@ describe('Workflow Engine', (_: any) => {
     });
   });
 
-  describe('Shutdown', (_: any) => {
+  describe('shutdown', (_: any) => {
     beforeEach(async () => {
       await engine.initialize();
     });

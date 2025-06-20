@@ -11,6 +11,50 @@ import {
   ExtractedData,
 } from '../../shared/types/scraping-types';
 
+// Utility function to escape regex special characters
+function escapeRegex(string: string): string {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Utility function to create safe regex patterns for ID selectors
+function createIdRegex(id: string, attribute?: string): RegExp {
+  const escapedId = escapeRegex(id);
+  if (attribute === 'text' || !attribute) {
+    // eslint-disable-next-line security/detect-non-literal-regexp
+    return new RegExp(`<[^>]*id=["']${escapedId}["'][^>]*>([^<]*)<`, 'gi');
+  } else {
+    // eslint-disable-next-line security/detect-non-literal-regexp
+    return new RegExp(`<[^>]*id=["']${escapedId}["'][^>]*${attribute}=["']([^"']*?)["']`, 'gi');
+  }
+}
+
+// Utility function to create safe regex patterns for class selectors
+function createClassRegex(className: string, attribute?: string): RegExp {
+  const escapedClassName = escapeRegex(className);
+  if (attribute === 'text' || !attribute) {
+    // eslint-disable-next-line security/detect-non-literal-regexp
+    return new RegExp(`<[^>]*class=["'][^"']*${escapedClassName}[^"']*["'][^>]*>([^<]*)<`, 'gi');
+  } else {
+    // eslint-disable-next-line security/detect-non-literal-regexp
+    return new RegExp(
+      `<[^>]*class=["'][^"']*${escapedClassName}[^"']*["'][^>]*${attribute}=["']([^"']*?)["']`,
+      'gi',
+    );
+  }
+}
+
+// Utility function to create safe regex patterns for tag selectors
+function createTagRegex(selector: string, attribute?: string): RegExp {
+  const escapedSelector = escapeRegex(selector);
+  if (attribute === 'text' || !attribute) {
+    // eslint-disable-next-line security/detect-non-literal-regexp
+    return new RegExp(`<${escapedSelector}[^>]*>([^<]*)</${escapedSelector}>`, 'gi');
+  } else {
+    // eslint-disable-next-line security/detect-non-literal-regexp
+    return new RegExp(`<${escapedSelector}[^>]*${attribute}=["']([^"']*?)["']`, 'gi');
+  }
+}
+
 export class NodeFetchProvider implements ScrapingProvider {
   readonly name = 'node-fetch';
   readonly type = 'html' as const;
@@ -94,10 +138,7 @@ export class NodeFetchProvider implements ScrapingProvider {
         if (selector.startsWith('#')) {
           // ID selector
           const id = selector.slice(1);
-          const pattern =
-            attribute === 'text' || !attribute
-              ? new RegExp(`<[^>]*id=["']${id}["'][^>]*>([^<]*)<`, 'gi')
-              : new RegExp(`<[^>]*id=["']${id}["'][^>]*${attribute}=["']([^"']*?)["']`, 'gi');
+          const pattern = createIdRegex(id, attribute);
 
           if (multiple) {
             const matches = Array.from(html.matchAll(pattern));
@@ -109,13 +150,7 @@ export class NodeFetchProvider implements ScrapingProvider {
         } else if (selector.startsWith('.')) {
           // Class selector
           const className = selector.slice(1);
-          const pattern =
-            attribute === 'text' || !attribute
-              ? new RegExp(`<[^>]*class=["'][^"']*${className}[^"']*["'][^>]*>([^<]*)<`, 'gi')
-              : new RegExp(
-                  `<[^>]*class=["'][^"']*${className}[^"']*["'][^>]*${attribute}=["']([^"']*?)["']`,
-                  'gi',
-                );
+          const pattern = createClassRegex(className, attribute);
 
           if (multiple) {
             const matches = Array.from(html.matchAll(pattern));
@@ -126,10 +161,7 @@ export class NodeFetchProvider implements ScrapingProvider {
           }
         } else {
           // Tag selector
-          const pattern =
-            attribute === 'text' || !attribute
-              ? new RegExp(`<${selector}[^>]*>([^<]*)</${selector}>`, 'gi')
-              : new RegExp(`<${selector}[^>]*${attribute}=["']([^"']*?)["']`, 'gi');
+          const pattern = createTagRegex(selector, attribute);
 
           if (multiple) {
             const matches = Array.from(html.matchAll(pattern));
@@ -153,7 +185,7 @@ export class NodeFetchProvider implements ScrapingProvider {
       // Health check by testing fetch
       const response = await fetch('data:text/html,<html></html>');
       return response.ok;
-    } catch (_error: any) {
+    } catch {
       // Health check failures should return false but not throw
       return false;
     }

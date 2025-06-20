@@ -1,9 +1,17 @@
 /**
- * Client-side authentication exports
- *
- * This file provides the main client-side authentication functionality.
- * Use this for React components and client-side logic.
+ * Client exports for browser environments (non-Next.js)
  */
 
-// Re-export everything from client module
-export * from './client/index';
+'use client';
+
+// Export configured client
+export { authClient } from './client/client.config';
+
+// Export hooks
+export { useSession } from './client/hooks';
+
+// Export types
+export type * from './types';
+
+// Export client utilities
+export { signIn, signUp, signOut, getSession } from './client/methods';

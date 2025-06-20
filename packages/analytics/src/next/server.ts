@@ -49,10 +49,10 @@ export class NextJSServerAnalyticsManager {
     try {
       // Dynamically import server providers
       const { createAnalyticsManager } = await import('../shared/utils/manager');
-      const { SegmentServerProvider } = await import('../server/providers/segment-server');
-      const { PostHogServerProvider } = await import('../server/providers/posthog-server');
-      const { VercelServerProvider } = await import('../server/providers/vercel-server');
-      const { ConsoleProvider } = await import('../shared/providers/console-provider');
+      const { SegmentServerProvider } = await import('../providers/segment/server');
+      const { PostHogServerProvider } = await import('../providers/posthog/server');
+      const { VercelServerProvider } = await import('../providers/vercel/server');
+      const { ConsoleProvider } = await import('../providers/console/server');
 
       const SERVER_PROVIDERS = {
         console: (config: any) => new ConsoleProvider(config),

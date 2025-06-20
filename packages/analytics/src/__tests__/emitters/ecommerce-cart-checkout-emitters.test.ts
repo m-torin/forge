@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 import {
   cartAbandoned,
@@ -27,7 +27,7 @@ vi.mock('../../shared/emitters/ecommerce/track-ecommerce', () => ({
   })),
 }));
 
-describe('Cart and Checkout Emitters', () => {
+describe('cart and Checkout Emitters', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -40,7 +40,7 @@ describe('Cart and Checkout Emitters', () => {
       quantity: 2,
     };
 
-    it('should create a valid cart update event for adding a product', () => {
+    test('should create a valid cart update event for adding a product', () => {
       const properties: CartUpdateProperties = {
         cart_id: 'cart123',
         action: 'added',
@@ -67,7 +67,7 @@ describe('Cart and Checkout Emitters', () => {
       });
     });
 
-    it('should create a valid cart update event for removing a product', () => {
+    test('should create a valid cart update event for removing a product', () => {
       const properties: CartUpdateProperties = {
         cart_id: 'cart123',
         action: 'removed',
@@ -86,7 +86,7 @@ describe('Cart and Checkout Emitters', () => {
       });
     });
 
-    it('should create a valid cart update event for updating a product', () => {
+    test('should create a valid cart update event for updating a product', () => {
       const properties: CartUpdateProperties = {
         action: 'updated',
         cart_total: 299.97,
@@ -104,7 +104,7 @@ describe('Cart and Checkout Emitters', () => {
       });
     });
 
-    it('should accept emitter options', () => {
+    test('should accept emitter options', () => {
       const properties: CartUpdateProperties = {
         action: 'added',
         product: baseProduct,
@@ -117,7 +117,7 @@ describe('Cart and Checkout Emitters', () => {
       expect(result.context?.traits?.userId).toBe('user123');
     });
 
-    it('should normalize product properties', () => {
+    test('should normalize product properties', () => {
       const rawProduct = {
         manufacturer: 'Brand X', // Should normalize to brand
         price: '149.99', // Should normalize to number
@@ -141,7 +141,7 @@ describe('Cart and Checkout Emitters', () => {
       });
     });
 
-    it('should handle minimal properties', () => {
+    test('should handle minimal properties', () => {
       const properties: CartUpdateProperties = {
         action: 'added',
         product: { product_id: 'p1' },
@@ -155,7 +155,7 @@ describe('Cart and Checkout Emitters', () => {
       });
     });
 
-    it('should clean undefined properties', () => {
+    test('should clean undefined properties', () => {
       const properties: CartUpdateProperties = {
         cart_id: undefined,
         action: 'added',
@@ -171,13 +171,13 @@ describe('Cart and Checkout Emitters', () => {
       expect(result.properties!).not.toHaveProperty('cart_id');
     });
 
-    it('should throw error when action is missing', () => {
+    test('should throw error when action is missing', () => {
       expect(() => {
         cartUpdated({ product: baseProduct } as any);
       }).toThrow('Missing required properties: action');
     });
 
-    it('should throw error when product ID is missing', () => {
+    test('should throw error when product ID is missing', () => {
       expect(() => {
         cartUpdated({
           action: 'added',
@@ -186,7 +186,7 @@ describe('Cart and Checkout Emitters', () => {
       }).toThrow('Product must have an id');
     });
 
-    it('should handle different action types', () => {
+    test('should handle different action types', () => {
       const actions = ['added', 'removed', 'updated'] as const;
 
       actions.forEach((action) => {
@@ -200,7 +200,7 @@ describe('Cart and Checkout Emitters', () => {
       });
     });
 
-    it('should handle zero cart total', () => {
+    test('should handle zero cart total', () => {
       const properties: CartUpdateProperties = {
         action: 'removed',
         cart_total: 0,
@@ -211,7 +211,7 @@ describe('Cart and Checkout Emitters', () => {
       expect(result.properties!.cart_total).toBe(0);
     });
 
-    it('should handle negative quantity changes', () => {
+    test('should handle negative quantity changes', () => {
       const properties: CartUpdateProperties = {
         action: 'removed',
         product: baseProduct,
@@ -224,7 +224,7 @@ describe('Cart and Checkout Emitters', () => {
   });
 
   describe('cartViewed', () => {
-    it('should create a valid cart viewed event with minimal properties', () => {
+    test('should create a valid cart viewed event with minimal properties', () => {
       const properties: CartProperties = {};
 
       const result = cartViewed(properties);
@@ -237,7 +237,7 @@ describe('Cart and Checkout Emitters', () => {
       });
     });
 
-    it('should create a valid cart viewed event with cart ID', () => {
+    test('should create a valid cart viewed event with cart ID', () => {
       const properties: CartProperties = {
         cart_id: 'cart123',
       };
@@ -254,7 +254,7 @@ describe('Cart and Checkout Emitters', () => {
       });
     });
 
-    it('should create a valid cart viewed event with products', () => {
+    test('should create a valid cart viewed event with products', () => {
       const products = [
         { product_id: 'p1', name: 'Product 1', price: 99.99 },
         { product_id: 'p2', name: 'Product 2', price: 149.99 },
@@ -273,7 +273,7 @@ describe('Cart and Checkout Emitters', () => {
       });
     });
 
-    it('should normalize products when provided', () => {
+    test('should normalize products when provided', () => {
       const rawProducts = [
         { price: '99.99', productId: 'p1', title: 'Product 1' },
         { id: 'p2', name: 'Product 2', price: 149.99 },
@@ -292,7 +292,7 @@ describe('Cart and Checkout Emitters', () => {
       ]);
     });
 
-    it('should handle empty products array', () => {
+    test('should handle empty products array', () => {
       const properties: CartProperties = {
         cart_id: 'cart123',
         products: [],
@@ -303,7 +303,7 @@ describe('Cart and Checkout Emitters', () => {
       expect(result.properties!.products).toEqual([]);
     });
 
-    it('should clean undefined properties', () => {
+    test('should clean undefined properties', () => {
       const properties: CartProperties = {
         cart_id: 'cart123',
         products: undefined,
@@ -317,7 +317,7 @@ describe('Cart and Checkout Emitters', () => {
       expect(result.properties).not.toHaveProperty('products');
     });
 
-    it('should handle large product arrays efficiently', () => {
+    test('should handle large product arrays efficiently', () => {
       const largeProductArray = Array.from({ length: 1000 }, (_, i) => ({
         product_id: `p${i}`,
         name: `Product ${i}`,
@@ -344,7 +344,7 @@ describe('Cart and Checkout Emitters', () => {
       { product_id: 'p2', name: 'Product 2', price: 149.99, quantity: 1 },
     ];
 
-    it('should create a valid cart abandoned event', () => {
+    test('should create a valid cart abandoned event', () => {
       const properties: CartAbandonmentProperties = {
         cart_id: 'cart123',
         abandonment_reason: 'timeout',
@@ -369,7 +369,7 @@ describe('Cart and Checkout Emitters', () => {
       });
     });
 
-    it('should create a valid cart abandoned event with minimal properties', () => {
+    test('should create a valid cart abandoned event with minimal properties', () => {
       const properties: CartAbandonmentProperties = {
         cart_id: 'cart456',
         cart_value: 199.99,
@@ -385,7 +385,7 @@ describe('Cart and Checkout Emitters', () => {
       });
     });
 
-    it('should handle different abandonment reasons', () => {
+    test('should handle different abandonment reasons', () => {
       const reasons = ['timeout', 'navigation', 'closed'] as const;
 
       reasons.forEach((reason) => {
@@ -401,7 +401,7 @@ describe('Cart and Checkout Emitters', () => {
       });
     });
 
-    it('should normalize products', () => {
+    test('should normalize products', () => {
       const rawProducts = [
         { price: '99.99', productId: 'p1', title: 'Product 1' },
         { id: 'p2', name: 'Product 2', price: 149.99 },
@@ -421,7 +421,7 @@ describe('Cart and Checkout Emitters', () => {
       ]);
     });
 
-    it('should throw error when cart_id is missing', () => {
+    test('should throw error when cart_id is missing', () => {
       expect(() => {
         cartAbandoned({
           cart_value: 100,
@@ -430,7 +430,7 @@ describe('Cart and Checkout Emitters', () => {
       }).toThrow('Missing required properties: cart_id');
     });
 
-    it('should throw error when cart_value is missing', () => {
+    test('should throw error when cart_value is missing', () => {
       expect(() => {
         cartAbandoned({
           cart_id: 'cart123',
@@ -439,7 +439,7 @@ describe('Cart and Checkout Emitters', () => {
       }).toThrow('Missing required properties: cart_value');
     });
 
-    it('should throw error when both required properties are missing', () => {
+    test('should throw error when both required properties are missing', () => {
       expect(() => {
         cartAbandoned({
           products: baseProducts,
@@ -447,7 +447,7 @@ describe('Cart and Checkout Emitters', () => {
       }).toThrow('Missing required properties: cart_id, cart_value');
     });
 
-    it('should handle zero cart value', () => {
+    test('should handle zero cart value', () => {
       const properties: CartAbandonmentProperties = {
         cart_id: 'cart123',
         cart_value: 0,
@@ -458,7 +458,7 @@ describe('Cart and Checkout Emitters', () => {
       expect(result.properties!.cart_value).toBe(0);
     });
 
-    it('should handle empty products array', () => {
+    test('should handle empty products array', () => {
       const properties: CartAbandonmentProperties = {
         cart_id: 'cart123',
         cart_value: 0,
@@ -469,7 +469,7 @@ describe('Cart and Checkout Emitters', () => {
       expect(result.properties!.products).toEqual([]);
     });
 
-    it('should handle zero time in cart', () => {
+    test('should handle zero time in cart', () => {
       const properties: CartAbandonmentProperties = {
         cart_id: 'cart123',
         cart_value: 100,
@@ -481,7 +481,7 @@ describe('Cart and Checkout Emitters', () => {
       expect(result.properties!.time_in_cart).toBe(0);
     });
 
-    it('should clean undefined properties', () => {
+    test('should clean undefined properties', () => {
       const properties: CartAbandonmentProperties = {
         cart_id: 'cart123',
         abandonment_reason: undefined,
@@ -506,7 +506,7 @@ describe('Cart and Checkout Emitters', () => {
       { product_id: 'p2', name: 'Product 2', price: 149.99 },
     ];
 
-    it('should create a valid checkout progress event', () => {
+    test('should create a valid checkout progress event', () => {
       const properties: CheckoutProgressProperties = {
         checkout_id: 'checkout123',
         step_name: 'Shipping Information',
@@ -535,7 +535,7 @@ describe('Cart and Checkout Emitters', () => {
       });
     });
 
-    it('should create a valid checkout progress event with minimal properties', () => {
+    test('should create a valid checkout progress event with minimal properties', () => {
       const properties: CheckoutProgressProperties = {
         step_name: 'Payment Information',
         action: 'completed',
@@ -551,7 +551,7 @@ describe('Cart and Checkout Emitters', () => {
       });
     });
 
-    it('should handle different step actions', () => {
+    test('should handle different step actions', () => {
       const actions = ['viewed', 'completed', 'abandoned', 'error'] as const;
 
       actions.forEach((action, index) => {
@@ -566,7 +566,7 @@ describe('Cart and Checkout Emitters', () => {
       });
     });
 
-    it('should handle checkout error with error message', () => {
+    test('should handle checkout error with error message', () => {
       const properties: CheckoutProgressProperties = {
         checkout_id: 'checkout123',
         step_name: 'Payment Processing',
@@ -586,7 +586,7 @@ describe('Cart and Checkout Emitters', () => {
       });
     });
 
-    it('should normalize products when provided', () => {
+    test('should normalize products when provided', () => {
       const rawProducts = [
         { price: '99.99', productId: 'p1', title: 'Product 1' },
         { id: 'p2', name: 'Product 2', price: 149.99 },
@@ -607,7 +607,7 @@ describe('Cart and Checkout Emitters', () => {
       ]);
     });
 
-    it('should handle different payment methods', () => {
+    test('should handle different payment methods', () => {
       const paymentMethods = ['credit_card', 'paypal', 'apple_pay', 'google_pay', 'bank_transfer'];
 
       paymentMethods.forEach((method) => {
@@ -623,7 +623,7 @@ describe('Cart and Checkout Emitters', () => {
       });
     });
 
-    it('should handle different shipping methods', () => {
+    test('should handle different shipping methods', () => {
       const shippingMethods = ['standard', 'express', 'overnight', 'pickup', 'digital'];
 
       shippingMethods.forEach((method) => {
@@ -639,7 +639,7 @@ describe('Cart and Checkout Emitters', () => {
       });
     });
 
-    it('should throw error when step is missing', () => {
+    test('should throw error when step is missing', () => {
       expect(() => {
         checkoutProgressed({
           step_name: 'Step Name',
@@ -648,7 +648,7 @@ describe('Cart and Checkout Emitters', () => {
       }).toThrow('Missing required properties: step');
     });
 
-    it('should throw error when step_name is missing', () => {
+    test('should throw error when step_name is missing', () => {
       expect(() => {
         checkoutProgressed({
           action: 'viewed',
@@ -657,7 +657,7 @@ describe('Cart and Checkout Emitters', () => {
       }).toThrow('Missing required properties: step_name');
     });
 
-    it('should throw error when action is missing', () => {
+    test('should throw error when action is missing', () => {
       expect(() => {
         checkoutProgressed({
           step_name: 'Step Name',
@@ -666,13 +666,13 @@ describe('Cart and Checkout Emitters', () => {
       }).toThrow('Missing required properties: action');
     });
 
-    it('should throw error when multiple required properties are missing', () => {
+    test('should throw error when multiple required properties are missing', () => {
       expect(() => {
         checkoutProgressed({} as any);
       }).toThrow('Missing required properties: step, step_name, action');
     });
 
-    it('should handle step 0', () => {
+    test('should handle step 0', () => {
       const properties: CheckoutProgressProperties = {
         step_name: 'Cart Review',
         action: 'viewed',
@@ -683,7 +683,7 @@ describe('Cart and Checkout Emitters', () => {
       expect(result.properties!.step).toBe(0);
     });
 
-    it('should handle empty products array', () => {
+    test('should handle empty products array', () => {
       const properties: CheckoutProgressProperties = {
         step_name: 'Empty Cart',
         action: 'viewed',
@@ -695,7 +695,7 @@ describe('Cart and Checkout Emitters', () => {
       expect(result.properties!.products).toEqual([]);
     });
 
-    it('should clean undefined properties', () => {
+    test('should clean undefined properties', () => {
       const properties: CheckoutProgressProperties = {
         checkout_id: undefined,
         step_name: 'Shipping',
@@ -716,7 +716,7 @@ describe('Cart and Checkout Emitters', () => {
       });
     });
 
-    it('should handle complex checkout flow scenario', () => {
+    test('should handle complex checkout flow scenario', () => {
       const checkoutSteps = [
         { step_name: 'Shipping Info', action: 'viewed' as const, step: 1 },
         { step_name: 'Shipping Info', action: 'completed' as const, step: 1 },
@@ -755,8 +755,8 @@ describe('Cart and Checkout Emitters', () => {
   });
 
   // Edge cases and integration tests
-  describe('Edge Cases and Integration', () => {
-    it('should handle very large product arrays in cart operations efficiently', () => {
+  describe('edge Cases and Integration', () => {
+    test('should handle very large product arrays in cart operations efficiently', () => {
       const largeProductList = Array.from({ length: 5000 }, (_, i) => ({
         product_id: `p${i}`,
         name: `Product ${i}`,
@@ -784,7 +784,7 @@ describe('Cart and Checkout Emitters', () => {
       expect(result.properties!.cart_value).toBe(cartValue);
     });
 
-    it('should maintain data consistency across cart lifecycle', () => {
+    test('should maintain data consistency across cart lifecycle', () => {
       const product = { product_id: 'p1', name: 'Lifecycle Product', price: 99.99 };
 
       // 1. Add to cart
@@ -833,7 +833,7 @@ describe('Cart and Checkout Emitters', () => {
       expect(checkoutResult.properties!.products![0].product_id).toBe('p1');
     });
 
-    it('should ensure consistent event naming across all cart emitters', () => {
+    test('should ensure consistent event naming across all cart emitters', () => {
       const eventNames = [
         cartUpdated({ action: 'added', product: { product_id: 'p1' } }).event,
         cartViewed({}).name,
@@ -851,7 +851,7 @@ describe('Cart and Checkout Emitters', () => {
       expect(uniqueNames.size).toBe(eventNames.length);
     });
 
-    it('should handle malformed data gracefully', () => {
+    test('should handle malformed data gracefully', () => {
       // Test with malformed product in cart update
       expect(() => {
         cartUpdated({
@@ -878,7 +878,7 @@ describe('Cart and Checkout Emitters', () => {
       expect(result.properties!.step).toBe(-1); // Should preserve the value, validation is up to the application
     });
 
-    it('should handle floating point precision in cart calculations', () => {
+    test('should handle floating point precision in cart calculations', () => {
       const product = {
         product_id: 'p1',
         name: 'Precision Product',
@@ -898,7 +898,7 @@ describe('Cart and Checkout Emitters', () => {
       expect(result.properties!.price).toBe(99.99);
     });
 
-    it('should maintain type safety across all cart emitters', () => {
+    test('should maintain type safety across all cart emitters', () => {
       // This test ensures TypeScript types are working correctly
 
       // cartUpdated requires action and product

@@ -23,7 +23,6 @@ import {
   StorageObject,
   StorageProvider,
   UploadOptions,
-  UploadProgress,
 } from '../types';
 
 export class CloudflareR2Provider implements StorageProvider {
@@ -230,7 +229,7 @@ export class CloudflareR2Provider implements StorageProvider {
     data: ArrayBuffer | Blob | Buffer | File | ReadableStream | Readable,
     options?: UploadOptions,
   ): Promise<MultipartUploadResult> {
-    const contentType = options?.contentType || 'application/octet-stream';
+    const _contentType = options?.contentType || 'application/octet-stream';
 
     // Determine if we should use multipart upload
     const shouldUseMultipart = await this.shouldUseMultipart(data, options);
@@ -400,7 +399,14 @@ export class CloudflareR2Provider implements StorageProvider {
       } as MultipartUploadResult;
     } catch (error) {
       // Log error details for debugging
-      console.error('Multipart upload failed:', error);
+      const { storageLogger } = await import('../src/utils/logger');
+      void storageLogger.error('Multipart upload failed', error as Error, {
+        operation: 'multipart-upload',
+        key,
+        provider: 'cloudflare-r2',
+        contentType: options?.contentType,
+        size: contentLength,
+      });
       throw error;
     }
   }

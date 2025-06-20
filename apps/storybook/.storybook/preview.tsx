@@ -1,7 +1,8 @@
 import { MantineProvider } from '@mantine/core';
 import { withThemeByClassName } from '@storybook/addon-themes';
 
-import { withAuthMock } from '@repo/auth/mocks/storybook-decorator';
+// Temporarily comment out auth decorator until proper export is available
+// import { authDecorators } from '@repo/auth/testing/mocks';
 
 import { Preview } from '@storybook/nextjs';
 
@@ -17,7 +18,7 @@ const preview: Preview = {
         light: 'light',
       },
     }),
-    withAuthMock,
+    // authDecorators.authenticated(),
     (Story: any) => {
       return (
         <MantineProvider>

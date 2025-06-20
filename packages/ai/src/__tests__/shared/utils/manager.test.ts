@@ -1,24 +1,24 @@
 // Test file uses proper types with minimal viable implementations
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 import { AIManager } from '../../../shared/utils/manager';
 
 import { AIProvider } from '../../../shared/types';
 
-describe('AIManager', (_: any) => {
+describe('aIManager', () => {
   let manager: AIManager;
 
   beforeEach(() => {
     manager = new AIManager();
   });
 
-  describe('constructor', (_: any) => {
-    it('should create instance without config', (_: any) => {
+  describe('constructor', () => {
+    test('should create instance without config', () => {
       const instance = new AIManager();
       expect(instance).toBeInstanceOf(AIManager);
     });
 
-    it('should create instance with config', (_: any) => {
+    test('should create instance with config', () => {
       const config = {
         defaultProvider: 'test-provider',
         routing: {
@@ -31,8 +31,8 @@ describe('AIManager', (_: any) => {
     });
   });
 
-  describe('configure', (_: any) => {
-    it('should set default provider', (_: any) => {
+  describe('configure', () => {
+    test('should set default provider', () => {
       const config = {
         defaultProvider: 'my-provider',
       };
@@ -52,7 +52,7 @@ describe('AIManager', (_: any) => {
       expect(provider?.name).toBe('my-provider');
     });
 
-    it('should set capability routing', (_: any) => {
+    test('should set capability routing', () => {
       const mockProvider1: AIProvider = {
         name: 'provider-1',
         type: 'custom',
@@ -87,8 +87,8 @@ describe('AIManager', (_: any) => {
     });
   });
 
-  describe('registerProvider', (_: any) => {
-    it('should register provider successfully', (_: any) => {
+  describe('registerProvider', () => {
+    test('should register provider successfully', () => {
       const mockProvider: AIProvider = {
         name: 'test-provider',
         type: 'custom',
@@ -98,11 +98,11 @@ describe('AIManager', (_: any) => {
       };
 
       const result = manager.registerProvider(mockProvider);
-      expect(result).toBe(true);
+      expect(result).toBeTruthy();
       expect(manager.getProvider('test-provider')).toBe(mockProvider);
     });
 
-    it('should handle registration errors gracefully', (_: any) => {
+    test('should handle registration errors gracefully', () => {
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       // Create a provider that will fail validation
@@ -116,15 +116,18 @@ describe('AIManager', (_: any) => {
       delete (invalidProvider as any).complete;
 
       const result = manager.registerProvider(invalidProvider);
-      expect(result).toBe(false);
-      expect(consoleSpy).toHaveBeenCalled();
+      expect(result).toBeFalsy();
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Failed to register provider "invalid":',
+        expect.any(Error),
+      );
 
       consoleSpy.mockRestore();
     });
   });
 
-  describe('getProvider', (_: any) => {
-    it('should return registered provider', (_: any) => {
+  describe('getProvider', () => {
+    test('should return registered provider', () => {
       const mockProvider: AIProvider = {
         name: 'test-provider',
         type: 'custom',
@@ -138,14 +141,14 @@ describe('AIManager', (_: any) => {
       expect(result).toBe(mockProvider);
     });
 
-    it('should return undefined for unregistered provider', (_: any) => {
+    test('should return undefined for unregistered provider', () => {
       const result = manager.getProvider('nonexistent');
       expect(result).toBeUndefined();
     });
   });
 
-  describe('getProviderForCapability', (_: any) => {
-    it('should return routed provider for capability', (_: any) => {
+  describe('getProviderForCapability', () => {
+    test('should return routed provider for capability', () => {
       const provider1: AIProvider = {
         name: 'provider-1',
         type: 'custom',
@@ -172,7 +175,7 @@ describe('AIManager', (_: any) => {
       expect(result?.name).toBe('provider-2');
     });
 
-    it('should return first capable provider when no routing', (_: any) => {
+    test('should return first capable provider when no routing', () => {
       const provider1: AIProvider = {
         name: 'provider-1',
         type: 'custom',
@@ -197,7 +200,7 @@ describe('AIManager', (_: any) => {
       expect(result?.name).toBe('provider-2');
     });
 
-    it('should return default provider if capable', (_: any) => {
+    test('should return default provider if capable', () => {
       const provider1: AIProvider = {
         name: 'provider-1',
         type: 'custom',
@@ -223,7 +226,7 @@ describe('AIManager', (_: any) => {
       expect(result?.name).toBe('default-provider');
     });
 
-    it('should return undefined when no capable provider', (_: any) => {
+    test('should return undefined when no capable provider', () => {
       const provider: AIProvider = {
         name: 'provider',
         type: 'custom',
@@ -239,8 +242,8 @@ describe('AIManager', (_: any) => {
     });
   });
 
-  describe('complete', (_: any) => {
-    it('should complete using appropriate provider', async () => {
+  describe('complete', () => {
+    test('should complete using appropriate provider', async () => {
       const mockProvider: AIProvider = {
         name: 'test-provider',
         type: 'custom',
@@ -265,7 +268,7 @@ describe('AIManager', (_: any) => {
       expect(result.id).toBe('completion-123');
     });
 
-    it('should throw error when no provider available', async () => {
+    test('should throw error when no provider available', async () => {
       const options = { model: 'test', prompt: 'Test' };
       await expect(manager.complete(options)).rejects.toThrow(
         'No provider available for completion',
@@ -273,8 +276,8 @@ describe('AIManager', (_: any) => {
     });
   });
 
-  describe('stream', (_: any) => {
-    it('should stream using appropriate provider', async () => {
+  describe('stream', () => {
+    test('should stream using appropriate provider', async () => {
       const mockChunks = [
         { choices: [{ delta: { content: 'Hello' } }] },
         { choices: [{ delta: { content: ' world' } }] },
@@ -308,15 +311,15 @@ describe('AIManager', (_: any) => {
       expect(chunks).toEqual(mockChunks);
     });
 
-    it('should throw error when no provider available', async () => {
+    test('should throw error when no provider available', async () => {
       const options = { model: 'test', prompt: 'Test' };
       const generator = manager.stream(options);
       await expect(generator.next()).rejects.toThrow('No provider available for streaming');
     });
   });
 
-  describe('moderate', (_: any) => {
-    it('should moderate using appropriate provider', async () => {
+  describe('moderate', () => {
+    test('should moderate using appropriate provider', async () => {
       const mockProvider: AIProvider = {
         name: 'test-provider',
         type: 'custom',
@@ -336,16 +339,16 @@ describe('AIManager', (_: any) => {
       const result = await manager.moderate('Test content');
 
       expect(mockProvider.moderate).toHaveBeenCalledWith('Test content');
-      expect(result.safe).toBe(true);
+      expect(result.safe).toBeTruthy();
     });
 
-    it('should throw error when no provider available', async () => {
+    test('should throw error when no provider available', async () => {
       await expect(manager.moderate('Test')).rejects.toThrow(
         'No provider available for moderation',
       );
     });
 
-    it('should throw error when provider lacks moderate method', async () => {
+    test('should throw error when provider lacks moderate method', async () => {
       const mockProvider = {
         name: 'incomplete-provider',
         type: 'custom',
@@ -364,8 +367,8 @@ describe('AIManager', (_: any) => {
     });
   });
 
-  describe('classify', (_: any) => {
-    it('should classify using appropriate provider', async () => {
+  describe('classify', () => {
+    test('should classify using appropriate provider', async () => {
       const mockProvider: AIProvider = {
         name: 'test-provider',
         type: 'custom',
@@ -387,15 +390,15 @@ describe('AIManager', (_: any) => {
       expect(result.category).toBe('positive');
     });
 
-    it('should throw error when no provider available', async () => {
+    test('should throw error when no provider available', async () => {
       await expect(manager.classify('Test')).rejects.toThrow(
         'No provider available for classification',
       );
     });
   });
 
-  describe('analyzeSentiment', (_: any) => {
-    it('should analyze sentiment using appropriate provider', async () => {
+  describe('analyzeSentiment', () => {
+    test('should analyze sentiment using appropriate provider', async () => {
       const mockProvider: AIProvider = {
         name: 'test-provider',
         type: 'custom',
@@ -417,15 +420,15 @@ describe('AIManager', (_: any) => {
       expect(result.sentiment).toBe('positive');
     });
 
-    it('should throw error when no provider available', async () => {
+    test('should throw error when no provider available', async () => {
       await expect(manager.analyzeSentiment('Test')).rejects.toThrow(
         'No provider available for sentiment analysis',
       );
     });
   });
 
-  describe('extractEntities', (_: any) => {
-    it('should extract entities using appropriate provider', async () => {
+  describe('extractEntities', () => {
+    test('should extract entities using appropriate provider', async () => {
       const mockProvider: AIProvider = {
         name: 'test-provider',
         type: 'custom',
@@ -446,15 +449,15 @@ describe('AIManager', (_: any) => {
       expect(result.entities[0].value).toBe('John Doe');
     });
 
-    it('should throw error when no provider available', async () => {
+    test('should throw error when no provider available', async () => {
       await expect(manager.extractEntities('Test')).rejects.toThrow(
         'No provider available for entity extraction',
       );
     });
   });
 
-  describe('getAvailableCapabilities', (_: any) => {
-    it('should return all unique capabilities from registered providers', (_: any) => {
+  describe('getAvailableCapabilities', () => {
+    test('should return all unique capabilities from registered providers', () => {
       const provider1: AIProvider = {
         name: 'provider-1',
         type: 'custom',
@@ -485,14 +488,14 @@ describe('AIManager', (_: any) => {
       expect(capabilities).toHaveLength(3);
     });
 
-    it('should return empty array when no providers registered', (_: any) => {
+    test('should return empty array when no providers registered', () => {
       const capabilities = manager.getAvailableCapabilities();
       expect(capabilities).toEqual([]);
     });
   });
 
-  describe('getProviderStatus', (_: any) => {
-    it('should return status for all providers', (_: any) => {
+  describe('getProviderStatus', () => {
+    test('should return status for all providers', () => {
       const provider1: AIProvider = {
         name: 'provider-1',
         type: 'custom',
@@ -531,7 +534,7 @@ describe('AIManager', (_: any) => {
       });
     });
 
-    it('should return empty array when no providers registered', (_: any) => {
+    test('should return empty array when no providers registered', () => {
       const status = manager.getProviderStatus();
       expect(status).toEqual([]);
     });

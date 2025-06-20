@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '../test-utils';
-import Header from '../../../mantine-ciseco/components/Header/Header';
+import Header from '../../../src/mantine-ciseco/components/Header/Header';
 
 // Mock next/image
 vi.mock('next/image', (_: any) => ({
@@ -8,7 +8,7 @@ vi.mock('next/image', (_: any) => ({
 }));
 
 // Mock the sub-components that might not be available
-vi.mock('../../../mantine-ciseco/components/Header/SearchBtnPopover', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/components/Header/SearchBtnPopover', (_: any) => ({
   default: ({ 'data-testid': testId }: any) => (
     <button data-testid={testId} aria-label="Search">
       Search
@@ -16,7 +16,7 @@ vi.mock('../../../mantine-ciseco/components/Header/SearchBtnPopover', (_: any) =
   ),
 }));
 
-vi.mock('../../../mantine-ciseco/components/Header/AvatarDropdown', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/components/Header/AvatarDropdown', (_: any) => ({
   default: ({ 'data-testid': testId }: any) => (
     <div data-testid={testId} role="button" aria-label="User menu">
       User Menu
@@ -24,7 +24,7 @@ vi.mock('../../../mantine-ciseco/components/Header/AvatarDropdown', (_: any) => 
   ),
 }));
 
-vi.mock('../../../mantine-ciseco/components/Header/CartBtn', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/components/Header/CartBtn', (_: any) => ({
   default: ({ 'data-testid': testId, onClick }: any) => (
     <button data-testid={testId} onClick={onClick} aria-label="Shopping cart">
       Cart
@@ -32,7 +32,7 @@ vi.mock('../../../mantine-ciseco/components/Header/CartBtn', (_: any) => ({
   ),
 }));
 
-vi.mock('../../../mantine-ciseco/components/Header/HamburgerBtnMenu', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/components/Header/HamburgerBtnMenu', (_: any) => ({
   default: ({ onClick }: any) => (
     <button onClick={onClick} aria-label="Toggle menu">
       Menu
@@ -40,19 +40,19 @@ vi.mock('../../../mantine-ciseco/components/Header/HamburgerBtnMenu', (_: any) =
   ),
 }));
 
-vi.mock('../../../mantine-ciseco/components/shared/Logo/Logo', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/components/shared/Logo/Logo', (_: any) => ({
   default: ({ 'data-testid': testId }: any) => <div data-testid={testId}>Logo</div>,
 }));
 
-vi.mock('../../../mantine-ciseco/components/Header/CategoriesDropdown', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/components/Header/CategoriesDropdown', (_: any) => ({
   default: () => <div>Categories</div>,
 }));
 
-vi.mock('../../../mantine-ciseco/components/Header/MegaMenuPopover', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/components/Header/MegaMenuPopover', (_: any) => ({
   default: () => <div>Mega Menu</div>,
 }));
 
-vi.mock('../../../mantine-ciseco/components/Header/CurrLangDropdown', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/components/Header/CurrLangDropdown', (_: any) => ({
   default: () => <div>Language</div>,
 }));
 

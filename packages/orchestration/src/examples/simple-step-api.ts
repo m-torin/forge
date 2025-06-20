@@ -28,6 +28,7 @@
  * @see ./step-factory-simple.ts for class-based approach
  */
 
+import { createServerObservability } from '@repo/observability/shared-env';
 import {
   compose,
   createStep,
@@ -48,7 +49,12 @@ const sendEmailStep = createStep(
   'send-welcome-email',
   async (input: { email: string; name: string }) => {
     // Simulate email sending
-    console.log(`Sending welcome email to ${input.email} for ${input.name}`);
+    const logger = await createServerObservability({
+      providers: {
+        console: { enabled: true },
+      },
+    });
+    await logger.log('info', `Sending welcome email to ${input.email} for ${input.name}`);
     return { messageId: 'msg_123', status: 'sent' };
   },
 );
@@ -76,8 +82,13 @@ const processPaymentStep = createStepWithValidation(
  * Only when you need detailed logging and metrics
  */
 const monitoredStep = withStepMonitoring(sendEmailStep, {
-  onStepComplete: (stepName: string, duration: number, success: boolean) => {
-    console.log(`Step ${stepName} completed in ${duration}ms, success: ${success}`);
+  onStepComplete: async (stepName: string, duration: number, success: boolean) => {
+    const logger = await createServerObservability({
+      providers: {
+        console: { enabled: true },
+      },
+    });
+    await logger.log('info', `Step ${stepName} completed in ${duration}ms, success: ${success}`);
   },
 });
 
@@ -103,8 +114,16 @@ const robustEmailStep = compose(
   (step: any) => withStepCircuitBreaker(step, { failureThreshold: 5 }),
   (step: any) =>
     withStepMonitoring(step, {
-      onStepComplete: (stepName: string, duration: number, success: boolean) => {
-        console.log(`Step ${stepName} completed in ${duration}ms, success: ${success}`);
+      onStepComplete: async (stepName: string, duration: number, success: boolean) => {
+        const logger = await createServerObservability({
+          providers: {
+            console: { enabled: true },
+          },
+        });
+        await logger.log(
+          'info',
+          `Step ${stepName} completed in ${duration}ms, success: ${success}`,
+        );
       },
     }),
 );
@@ -112,42 +131,48 @@ const robustEmailStep = compose(
 // ===== USAGE EXAMPLES =====
 
 async function demonstrateSimpleAPI() {
-  console.log('=== Simple Step Factory API Demo ===\n');
+  const logger = await createServerObservability({
+    providers: {
+      console: { enabled: true },
+    },
+  });
+
+  await logger.log('info', '=== Simple Step Factory API Demo ===\n');
 
   // Example 1: Basic usage
-  console.log('1. Basic step execution:');
+  await logger.log('info', '1. Basic step execution:');
   const emailResult = await sendEmailStep.execute({
     email: 'user@example.com',
     name: 'John Doe',
   });
-  console.log('Result:', emailResult);
-  console.log();
+  await logger.log('info', 'Result:', emailResult);
+  await logger.log('info', '');
 
   // Example 2: Step with validation
-  console.log('2. Step with validation:');
+  await logger.log('info', '2. Step with validation:');
   const paymentResult = await processPaymentStep.execute({
     amount: 100,
     currency: 'USD',
   });
-  console.log('Result:', paymentResult);
-  console.log();
+  await logger.log('info', 'Result:', paymentResult);
+  await logger.log('info', '');
 
   // Example 3: Enhanced step with monitoring
-  console.log('3. Enhanced step with monitoring:');
+  await logger.log('info', '3. Enhanced step with monitoring:');
   const monitoredResult = await monitoredStep.execute({
     email: 'monitored@example.com',
     name: 'Jane Smith',
   });
-  console.log('Result:', monitoredResult);
-  console.log();
+  await logger.log('info', 'Result:', monitoredResult);
+  await logger.log('info', '');
 
   // Example 4: Robust step with multiple enhancers
-  console.log('4. Robust step with multiple enhancers:');
+  await logger.log('info', '4. Robust step with multiple enhancers:');
   const robustResult = await robustEmailStep.execute({
     email: 'robust@example.com',
     name: 'Bob Wilson',
   });
-  console.log('Result: ', robustResult);
+  await logger.log('info', 'Result: ', robustResult);
 }
 
 // ===== COMPARISON WITH OLD API =====

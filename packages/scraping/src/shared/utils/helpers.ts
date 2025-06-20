@@ -61,7 +61,7 @@ export async function retryWithBackoff<T>(
   const {
     attempts = 3,
     delay = 1000,
-    multiplier: _multiplier = 2,
+    multiplier: multiplier = 2,
     maxDelay = 30000,
     shouldRetry = () => true,
     onRetry,
@@ -325,10 +325,10 @@ export class Queue<T> {
  * Check if URL is allowed by robots.txt rules
  * This is a simplified implementation
  */
-export async function checkRobotsTxt(url: string, _userAgent = '*'): Promise<boolean> {
+export async function checkRobotsTxt(url: string, userAgent = '*'): Promise<boolean> {
   try {
     const urlObj = new URL(url);
-    const _robotsUrl = `${urlObj.protocol}//${urlObj.host}/robots.txt`;
+    const robotsUrl = `${urlObj.protocol}//${urlObj.host}/robots.txt`;
 
     // In production, fetch and parse robots.txt
     // For now, always return true

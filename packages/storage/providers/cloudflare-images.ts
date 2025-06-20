@@ -11,6 +11,7 @@ import {
   CloudflareImagesStats,
   CloudflareImagesTransformOptions,
 } from '../types';
+// Using console logging until observability integration is fixed
 
 export interface CloudflareImagesConfig {
   accountId: string;
@@ -130,9 +131,15 @@ export class CloudflareImagesProvider implements StorageProvider {
     if (this.signingKey && options?.expiresIn) {
       // Note: In production, you'd use a JWT library for this
       // This is a simplified example
-      const expiration = Math.floor(Date.now() / 1000) + (options.expiresIn || 3600);
+      const _expiration = Math.floor(Date.now() / 1000) + (options.expiresIn || 3600);
       // TODO: Implement JWT signing
-      console.warn('Signed URLs not yet implemented for Cloudflare Images');
+      const { storageLogger } = await import('../src/utils/logger');
+      void storageLogger.warn('Signed URLs not yet implemented for Cloudflare Images', {
+        operation: 'getUrl',
+        key,
+        provider: 'cloudflare-images',
+        metadata: { variant, expiresIn: options.expiresIn },
+      });
       return baseUrl;
     }
 
@@ -398,7 +405,12 @@ export class CloudflareImagesProvider implements StorageProvider {
           });
         }
       } catch (error) {
-        console.error(`Failed to upload from URL ${item.url}:`, error);
+        const { storageLogger } = await import('../src/utils/logger');
+        void storageLogger.error('Batch upload from URL failed', error as Error, {
+          operation: 'batchUploadFromUrl',
+          provider: 'cloudflare-images',
+          metadata: { sourceUrl: item.url, id: item.id },
+        });
       }
     }
 

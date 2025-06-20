@@ -11,6 +11,32 @@ import {
   SelectorMap,
 } from '../../shared/types/scraping-types';
 
+// Utility function to escape regex special characters
+function escapeRegex(string: string): string {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Utility function to create safe regex patterns for ID selectors
+function createIdRegex(id: string): RegExp {
+  const escapedId = escapeRegex(id);
+  // eslint-disable-next-line security/detect-non-literal-regexp
+  return new RegExp(`<[^>]*id=["']${escapedId}["'][^>]*>([^<]*)<`, 'i');
+}
+
+// Utility function to create safe regex patterns for class selectors
+function createClassRegex(selector: string): RegExp {
+  const escapedSelector = escapeRegex(selector);
+  // eslint-disable-next-line security/detect-non-literal-regexp
+  return new RegExp(`<[^>]*${escapedSelector}[^>]*>([^<]*)<`, 'i');
+}
+
+// Utility function to create safe regex patterns for tag selectors
+function createTagRegex(selector: string): RegExp {
+  const escapedSelector = escapeRegex(selector);
+  // eslint-disable-next-line security/detect-non-literal-regexp
+  return new RegExp(`<${escapedSelector}[^>]*>([^<]*)</${escapedSelector}>`, 'i');
+}
+
 export class FetchProvider implements ScrapingProvider {
   readonly name = 'fetch';
   readonly type = 'html' as const;
@@ -25,18 +51,18 @@ export class FetchProvider implements ScrapingProvider {
       // Very basic CSS selector to regex conversion
       if (selector.startsWith('#')) {
         const id = selector.slice(1);
-        const match = html.match(new RegExp(`<[^>]*id=["']${id}["'][^>]*>([^<]*)<`, 'i'));
+        const match = html.match(createIdRegex(id));
         if (match) data[key] = match[1].trim();
       } else if (selector.includes('title')) {
         const match = html.match(/<title[^>]*>([^<]*)<\/title>/i);
         if (match) data[key] = match[1].trim();
       } else if (selector.includes('class=')) {
         // Basic class matching
-        const match = html.match(new RegExp(`<[^>]*${selector}[^>]*>([^<]*)<`, 'i'));
+        const match = html.match(createClassRegex(selector));
         if (match) data[key] = match[1].trim();
       } else {
         // Generic tag matching
-        const match = html.match(new RegExp(`<${selector}[^>]*>([^<]*)</${selector}>`, 'i'));
+        const match = html.match(createTagRegex(selector));
         if (match) data[key] = match[1].trim();
       }
     }

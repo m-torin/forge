@@ -219,7 +219,7 @@ export async function createLinkFromServer(
 export async function getLinkAnalyticsServer(
   linkManager: LinkManager,
   linkId: string,
-  interval: '1h' | '24h' | '7d' | '30d' | '90d' | 'all' = '7d',
+  _interval: '1h' | '24h' | '7d' | '30d' | '90d' | 'all' = '7d',
 ): Promise<LinkAnalytics> {
   // Use server-side caching for better performance
   const { getLinkMetricsWithCache } = await import('./server');
@@ -437,7 +437,7 @@ export function createLinkAction(linkManager: LinkManager) {
  */
 export function withLinkAnalytics<T extends Record<string, any>>(
   Component: React.ComponentType<T>,
-  linkManager: LinkManager,
+  _linkManager: LinkManager,
 ) {
   return async function WrappedComponent(props: T) {
     // This would track page views if the page contains links

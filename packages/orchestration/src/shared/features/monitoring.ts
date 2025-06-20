@@ -3,6 +3,7 @@
  * Workflow metrics, execution history tracking, and performance monitoring
  */
 
+import { createServerObservability } from '@repo/observability/shared-env';
 import { WorkflowProvider } from '../types/index';
 
 export interface AlertRule {
@@ -737,9 +738,14 @@ export class WorkflowMonitor {
     return `alert_rule_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
-  private sendAlertNotifications(alert: WorkflowAlert, rule: AlertRule): void {
+  private async sendAlertNotifications(alert: WorkflowAlert, rule: AlertRule): Promise<void> {
     // Implementation would send notifications through configured channels
-    console.info(`Alert triggered: ${alert.message}`);
+    const logger = await createServerObservability({
+      providers: {
+        console: { enabled: true },
+      },
+    });
+    await logger.log('info', `Alert triggered: ${alert.message}`);
   }
 
   private triggerAlert(rule: AlertRule, workflowId: string, metrics: WorkflowMetrics): void {
@@ -778,7 +784,9 @@ export class WorkflowMonitor {
     rule.lastTriggered = new Date();
 
     // Send alert notifications (would integrate with notification service)
-    this.sendAlertNotifications(alert, rule);
+    this.sendAlertNotifications(alert, rule).catch(() => {
+      // Ignore notification errors to prevent breaking the monitoring flow
+    });
   }
 
   private updateMetrics(workflowId: string): void {

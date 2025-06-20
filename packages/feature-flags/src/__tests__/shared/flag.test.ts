@@ -1,10 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect } from 'vitest';
 
 import { flag } from '../../shared/flag';
 
 describe('flag utility', () => {
   describe('basic flag creation', () => {
-    it('should create a boolean flag', () => {
+    test('should create a boolean flag', () => {
       const testFlag = flag({
         decide: () => true,
         key: 'test-flag',
@@ -14,7 +14,7 @@ describe('flag utility', () => {
       expect(typeof testFlag).toBe('function');
     });
 
-    it('should create a string flag with payload', () => {
+    test('should create a string flag with payload', () => {
       const stringFlag = flag({
         decide: () => 'variant-a',
         key: 'string-flag',
@@ -24,7 +24,7 @@ describe('flag utility', () => {
       expect(typeof stringFlag).toBe('function');
     });
 
-    it('should create a complex object flag', () => {
+    test('should create a complex object flag', () => {
       const complexFlag = flag({
         decide: () => ({
           config: { timeout: 5000 },
@@ -39,7 +39,7 @@ describe('flag utility', () => {
   });
 
   describe('flag with simple decide function', () => {
-    it('should handle basic boolean flags', async () => {
+    test('should handle basic boolean flags', async () => {
       const boolFlag = flag({
         decide: () => true,
         key: 'bool-flag',
@@ -48,7 +48,7 @@ describe('flag utility', () => {
       expect(boolFlag).toBeDefined();
     });
 
-    it('should handle string flags', async () => {
+    test('should handle string flags', async () => {
       const stringFlag = flag({
         decide: () => 'enabled',
         key: 'string-flag',
@@ -57,7 +57,7 @@ describe('flag utility', () => {
       expect(stringFlag).toBeDefined();
     });
 
-    it('should handle object flags', async () => {
+    test('should handle object flags', async () => {
       const objectFlag = flag({
         decide: () => ({ variant: 'A' }),
         key: 'object-flag',
@@ -68,7 +68,7 @@ describe('flag utility', () => {
   });
 
   describe('flag composition', () => {
-    it('should support flag metadata through description', () => {
+    test('should support flag metadata through description', () => {
       const documentedFlag = flag({
         decide: () => false,
         description: 'This flag controls the new feature rollout',
@@ -78,7 +78,7 @@ describe('flag utility', () => {
       expect(documentedFlag).toBeDefined();
     });
 
-    it('should support default values', () => {
+    test('should support default values', () => {
       const defaultFlag = flag({
         decide: () => {
           throw new Error('Should use default');
@@ -92,7 +92,7 @@ describe('flag utility', () => {
   });
 
   describe('error handling', () => {
-    it('should handle flags with throwing decide functions', () => {
+    test('should handle flags with throwing decide functions', () => {
       const errorFlag = flag({
         decide: () => {
           throw new Error('Flag error');

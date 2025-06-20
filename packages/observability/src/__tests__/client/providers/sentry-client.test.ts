@@ -2,7 +2,7 @@
  * Sentry client provider tests
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, vi } from 'vitest';
 
 import { SentryClientProvider } from '../../../client/providers/sentry-client';
 import { SentryConfig } from '../../../shared/types/sentry-types';
@@ -32,7 +32,7 @@ vi.mock('@sentry/nextjs', () => ({
   ...mockSentry,
 }));
 
-describe('SentryClientProvider', () => {
+describe('sentryClientProvider', () => {
   let provider: SentryClientProvider;
   let config: SentryConfig;
 
@@ -42,7 +42,7 @@ describe('SentryClientProvider', () => {
     vi.clearAllMocks();
 
     // Mock console to avoid noise in tests
-    console.error = vi.fn();
+    vi.spyOn(console, 'error').mockImplementation();
 
     // Reset mockSentry.init to not throw by default
     mockSentry.init.mockImplementation(() => {});
@@ -93,7 +93,7 @@ describe('SentryClientProvider', () => {
   });
 
   describe('initialization', () => {
-    it('should initialize Sentry with correct configuration', async () => {
+    test('should initialize Sentry with correct configuration', async () => {
       await provider.initialize(config);
 
       expect(mockSentry.init).toHaveBeenCalledWith({
@@ -109,7 +109,7 @@ describe('SentryClientProvider', () => {
       });
     });
 
-    it('should skip initialization without DSN', async () => {
+    test('should skip initialization without DSN', async () => {
       const configWithoutDsn = { ...config } as any;
       delete configWithoutDsn.dsn;
 
@@ -120,7 +120,7 @@ describe('SentryClientProvider', () => {
       expect(mockSentry.init).not.toHaveBeenCalled();
     });
 
-    it('should use default values for optional config', async () => {
+    test('should use default values for optional config', async () => {
       const minimalConfig = { dsn: 'https://test@sentry.io/123456' };
 
       await provider.initialize(minimalConfig);
@@ -137,7 +137,7 @@ describe('SentryClientProvider', () => {
       );
     });
 
-    it('should include custom integrations', async () => {
+    test('should include custom integrations', async () => {
       const customIntegration = { name: 'CustomIntegration' };
       const configWithIntegrations = {
         ...config,
@@ -153,7 +153,7 @@ describe('SentryClientProvider', () => {
       );
     });
 
-    it('should include custom options', async () => {
+    test('should include custom options', async () => {
       const configWithOptions = {
         ...config,
         options: {
@@ -172,7 +172,7 @@ describe('SentryClientProvider', () => {
       );
     });
 
-    it('should handle initialization errors', async () => {
+    test('should handle initialization errors', async () => {
       mockSentry.init.mockImplementation(() => {
         throw new Error('Sentry init failed');
       });
@@ -187,7 +187,7 @@ describe('SentryClientProvider', () => {
       await provider.initialize(config);
     });
 
-    it('should capture exceptions with context', async () => {
+    test('should capture exceptions with context', async () => {
       const error = new Error('Test error');
       const context: ObservabilityContext = {
         extra: { requestId: 'req-123' },
@@ -201,7 +201,7 @@ describe('SentryClientProvider', () => {
 
       await provider.captureException(error, context);
 
-      expect(mockSentry.withScope).toHaveBeenCalled();
+      expect(mockSentry.withScope).toHaveBeenCalledWith();
       expect(mockSentry.captureException).toHaveBeenCalledWith(error);
 
       // Verify scope was configured correctly
@@ -225,16 +225,16 @@ describe('SentryClientProvider', () => {
       expect(mockScope.setFingerprint).toHaveBeenCalledWith(['custom', 'fingerprint']);
     });
 
-    it('should capture exceptions without context', async () => {
+    test('should capture exceptions without context', async () => {
       const error = new Error('Simple error');
 
       await provider.captureException(error);
 
-      expect(mockSentry.withScope).toHaveBeenCalled();
+      expect(mockSentry.withScope).toHaveBeenCalledWith();
       expect(mockSentry.captureException).toHaveBeenCalledWith(error);
     });
 
-    it('should not capture when not initialized', async () => {
+    test('should not capture when not initialized', async () => {
       const uninitializedProvider = new SentryClientProvider();
       const error = new Error('Test error');
 
@@ -249,7 +249,7 @@ describe('SentryClientProvider', () => {
       await provider.initialize(config);
     });
 
-    it('should capture messages with correct level mapping', async () => {
+    test('should capture messages with correct level mapping', async () => {
       const message = 'Test message';
       const context: ObservabilityContext = {
         tags: { component: 'test' },
@@ -257,23 +257,23 @@ describe('SentryClientProvider', () => {
 
       await provider.captureMessage(message, 'warning', context);
 
-      expect(mockSentry.withScope).toHaveBeenCalled();
+      expect(mockSentry.withScope).toHaveBeenCalledWith();
       expect(mockSentry.captureMessage).toHaveBeenCalledWith(message, 'warning');
     });
 
-    it('should map info level correctly', async () => {
+    test('should map info level correctly', async () => {
       await provider.captureMessage('Info message', 'info');
 
       expect(mockSentry.captureMessage).toHaveBeenCalledWith('Info message', 'info');
     });
 
-    it('should map error level correctly', async () => {
+    test('should map error level correctly', async () => {
       await provider.captureMessage('Error message', 'error');
 
       expect(mockSentry.captureMessage).toHaveBeenCalledWith('Error message', 'error');
     });
 
-    it('should not capture when not initialized', async () => {
+    test('should not capture when not initialized', async () => {
       const uninitializedProvider = new SentryClientProvider();
 
       await uninitializedProvider.captureMessage('Test', 'info');
@@ -287,7 +287,7 @@ describe('SentryClientProvider', () => {
       await provider.initialize(config);
     });
 
-    it('should start transactions with context', () => {
+    test('should start transactions with context', () => {
       const name = 'test-transaction';
       const context: ObservabilityContext = {
         extra: { data: 'test' },
@@ -306,7 +306,7 @@ describe('SentryClientProvider', () => {
         traceId: 'trace-123',
       });
 
-      expect(transaction).toEqual({
+      expect(transaction).toStrictEqual({
         finish: expect.any(Function),
         setData: expect.any(Function),
         setStatus: expect.any(Function),
@@ -315,7 +315,7 @@ describe('SentryClientProvider', () => {
       });
     });
 
-    it('should start transactions with default operation', () => {
+    test('should start transactions with default operation', () => {
       const name = 'default-transaction';
 
       provider.startTransaction(name);
@@ -328,7 +328,7 @@ describe('SentryClientProvider', () => {
       });
     });
 
-    it('should start spans with parent', () => {
+    test('should start spans with parent', () => {
       const parentSpan = {
         startChild: vi.fn().mockReturnValue({ id: 'child-span' }),
       };
@@ -339,10 +339,10 @@ describe('SentryClientProvider', () => {
         description: 'test-span',
         op: 'test-span',
       });
-      expect(span).toEqual({ id: 'child-span' });
+      expect(span).toStrictEqual({ id: 'child-span' });
     });
 
-    it('should start transaction when no parent span', () => {
+    test('should start transaction when no parent span', () => {
       const _span = provider.startSpan('test-span');
 
       expect(mockSentry.startTransaction).toHaveBeenCalledWith({
@@ -353,7 +353,7 @@ describe('SentryClientProvider', () => {
       });
     });
 
-    it('should return null for transactions when not initialized', () => {
+    test('should return null for transactions when not initialized', () => {
       const uninitializedProvider = new SentryClientProvider();
 
       const transaction = uninitializedProvider.startTransaction('test');
@@ -367,7 +367,7 @@ describe('SentryClientProvider', () => {
       await provider.initialize(config);
     });
 
-    it('should set user', () => {
+    test('should set user', () => {
       const user = {
         id: 'user-123',
         username: 'testuser',
@@ -385,13 +385,13 @@ describe('SentryClientProvider', () => {
       });
     });
 
-    it('should set tags', () => {
+    test('should set tags', () => {
       provider.setTag('environment', 'test');
 
       expect(mockSentry.setTag).toHaveBeenCalledWith('environment', 'test');
     });
 
-    it('should set extra data', () => {
+    test('should set extra data', () => {
       const extra = { metadata: { test: true }, requestId: 'req-123' };
 
       provider.setExtra('request', extra);
@@ -399,7 +399,7 @@ describe('SentryClientProvider', () => {
       expect(mockSentry.setExtra).toHaveBeenCalledWith('request', extra);
     });
 
-    it('should set context', () => {
+    test('should set context', () => {
       const context = { features: ['a', 'b'], version: '1.0.0' };
 
       provider.setContext('app', context);
@@ -407,7 +407,7 @@ describe('SentryClientProvider', () => {
       expect(mockSentry.setContext).toHaveBeenCalledWith('app', context);
     });
 
-    it('should not set context when not initialized', () => {
+    test('should not set context when not initialized', () => {
       const uninitializedProvider = new SentryClientProvider();
 
       uninitializedProvider.setUser({ id: 'test' });
@@ -427,7 +427,7 @@ describe('SentryClientProvider', () => {
       await provider.initialize(config);
     });
 
-    it('should add breadcrumbs with full data', () => {
+    test('should add breadcrumbs with full data', () => {
       const breadcrumb: Breadcrumb = {
         type: 'navigation',
         category: 'ui',
@@ -449,7 +449,7 @@ describe('SentryClientProvider', () => {
       });
     });
 
-    it('should add breadcrumbs with default values', () => {
+    test('should add breadcrumbs with default values', () => {
       const breadcrumb: Breadcrumb = {
         category: 'custom',
         message: 'Custom event',
@@ -467,7 +467,7 @@ describe('SentryClientProvider', () => {
       });
     });
 
-    it('should not add breadcrumbs when not initialized', () => {
+    test('should not add breadcrumbs when not initialized', () => {
       const uninitializedProvider = new SentryClientProvider();
       const breadcrumb: Breadcrumb = {
         category: 'test',
@@ -485,19 +485,19 @@ describe('SentryClientProvider', () => {
       await provider.initialize(config);
     });
 
-    it('should start sessions', () => {
+    test('should start sessions', () => {
       provider.startSession();
 
-      expect(mockSentry.startSession).toHaveBeenCalled();
+      expect(mockSentry.startSession).toHaveBeenCalledWith();
     });
 
-    it('should end sessions', () => {
+    test('should end sessions', () => {
       provider.endSession();
 
-      expect(mockSentry.endSession).toHaveBeenCalled();
+      expect(mockSentry.endSession).toHaveBeenCalledWith();
     });
 
-    it('should not manage sessions when not initialized', () => {
+    test('should not manage sessions when not initialized', () => {
       const uninitializedProvider = new SentryClientProvider();
 
       uninitializedProvider.startSession();
@@ -509,7 +509,7 @@ describe('SentryClientProvider', () => {
   });
 
   describe('provider metadata', () => {
-    it('should have correct name', () => {
+    test('should have correct name', () => {
       expect(provider.name).toBe('sentry-client');
     });
   });

@@ -4,7 +4,7 @@
 
 generator client {
   provider        = "prisma-client-js"
-  output          = "../prisma-generated/client"
+  output          = "../../prisma-generated/client"
   binaryTargets   = ["native", "darwin-arm64"]
   previewFeatures = ["driverAdapters"]
 }
@@ -12,6 +12,26 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+generator zod {
+  provider         = "npx  zod-prisma-types"
+  output           = "../../prisma-generated/zod" // default is ./generated/zod
+  useMultipleFiles = true // default is false
+  // writeBarrelFiles                 = false // default is true
+  // createInputTypes                 = false // default is true
+  // createModelTypes                 = false // default is true
+  // addInputTypeValidation           = false // default is true
+  // addIncludeType                   = false // default is true
+  // addSelectType                    = false // default is true
+  // validateWhereUniqueInput         = false // default is true
+  // createOptionalDefaultValuesTypes = true // default is false
+  // createRelationValuesTypes        = true // default is false
+  // createPartialTypes               = true // default is false
+  // useDefaultValidators             = false // default is true
+  // coerceDate                       = false // default is true
+  // writeNullishInModelTypes         = true // default is false
+  // prismaClientPath                 = "./path/to/prisma/client" // default is client output path
 }
 
 // auth.prisma - Authentication and User Management Models

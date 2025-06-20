@@ -30,7 +30,7 @@ export class FileTrainingStorage implements TrainingStorage {
     try {
       const fs = await import('fs/promises');
       await fs.unlink(this.filePath);
-    } catch (error: any) {
+    } catch (_error: any) {
       // File doesn't exist, ignore
     }
   }
@@ -47,7 +47,7 @@ export class FileTrainingStorage implements TrainingStorage {
       const fs = await import('fs/promises');
       const content = await fs.readFile(this.filePath, 'utf-8');
       return JSON.parse(content);
-    } catch (error: any) {
+    } catch (_error: any) {
       // eslint-disable-next-line no-console
       console.error('Failed to load training data');
       // File doesn't exist or is invalid
@@ -66,7 +66,7 @@ export class FileTrainingStorage implements TrainingStorage {
     try {
       const fs = await import('fs/promises');
       await fs.writeFile(this.filePath, JSON.stringify(data, null, 2), 'utf-8');
-    } catch (error: any) {
+    } catch (_error: any) {
       // eslint-disable-next-line no-console
       console.error('Failed to save training data');
     }

@@ -2,11 +2,11 @@ import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 
 import { prisma as database } from '@repo/database/prisma';
-import { stripe } from '@repo/payments';
+import { stripe } from '@repo/payments/server/next';
 
 import { env } from '../../../env';
 
-import type { Stripe } from '@repo/payments';
+import type { Stripe } from '@repo/payments/server/next';
 
 export const dynamic = 'force-dynamic';
 

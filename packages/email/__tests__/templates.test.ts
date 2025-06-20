@@ -1,13 +1,13 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
-describe('Email Templates', () => {
+describe('email Templates', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('MagicLinkTemplate', () => {
-    it('should be importable and callable', async () => {
-      const { MagicLinkTemplate } = await import('../templates/magic-link');
+  describe('magicLinkTemplate', () => {
+    test('should be importable and callable', async () => {
+      const { MagicLinkTemplate } = await import('../src/templates/magic-link');
 
       expect(typeof MagicLinkTemplate).toBe('function');
 
@@ -21,8 +21,8 @@ describe('Email Templates', () => {
       expect(() => MagicLinkTemplate(props)).not.toThrow();
     });
 
-    it('should work with minimal required props', async () => {
-      const { MagicLinkTemplate } = await import('../templates/magic-link');
+    test('should work with minimal required props', async () => {
+      const { MagicLinkTemplate } = await import('../src/templates/magic-link');
 
       const props = {
         email: 'test@example.com',
@@ -32,8 +32,8 @@ describe('Email Templates', () => {
       expect(() => MagicLinkTemplate(props)).not.toThrow();
     });
 
-    it('should handle null name gracefully', async () => {
-      const { MagicLinkTemplate } = await import('../templates/magic-link');
+    test('should handle null name gracefully', async () => {
+      const { MagicLinkTemplate } = await import('../src/templates/magic-link');
 
       const props = {
         name: null,
@@ -45,9 +45,9 @@ describe('Email Templates', () => {
     });
   });
 
-  describe('VerificationTemplate', () => {
-    it('should be importable and callable', async () => {
-      const { VerificationTemplate } = await import('../templates/verification');
+  describe('verificationTemplate', () => {
+    test('should be importable and callable', async () => {
+      const { VerificationTemplate } = await import('../src/templates/verification');
 
       expect(typeof VerificationTemplate).toBe('function');
 
@@ -60,8 +60,8 @@ describe('Email Templates', () => {
       expect(() => VerificationTemplate(props)).not.toThrow();
     });
 
-    it('should work without name', async () => {
-      const { VerificationTemplate } = await import('../templates/verification');
+    test('should work without name', async () => {
+      const { VerificationTemplate } = await import('../src/templates/verification');
 
       const props = {
         email: 'test@example.com',
@@ -72,9 +72,9 @@ describe('Email Templates', () => {
     });
   });
 
-  describe('PasswordResetTemplate', () => {
-    it('should be importable and callable', async () => {
-      const { PasswordResetTemplate } = await import('../templates/password-reset');
+  describe('passwordResetTemplate', () => {
+    test('should be importable and callable', async () => {
+      const { PasswordResetTemplate } = await import('../src/templates/password-reset');
 
       expect(typeof PasswordResetTemplate).toBe('function');
 
@@ -88,9 +88,9 @@ describe('Email Templates', () => {
     });
   });
 
-  describe('ContactTemplate', () => {
-    it('should be importable and callable', async () => {
-      const { ContactTemplate } = await import('../templates/contact');
+  describe('contactTemplate', () => {
+    test('should be importable and callable', async () => {
+      const { ContactTemplate } = await import('../src/templates/contact');
 
       expect(typeof ContactTemplate).toBe('function');
 
@@ -104,10 +104,10 @@ describe('Email Templates', () => {
     });
   });
 
-  describe('OrganizationInvitationTemplate', () => {
-    it('should be importable and callable', async () => {
+  describe('organizationInvitationTemplate', () => {
+    test('should be importable and callable', async () => {
       const { OrganizationInvitationTemplate } = await import(
-        '../templates/organization-invitation'
+        '../src/templates/organization-invitation'
       );
 
       expect(typeof OrganizationInvitationTemplate).toBe('function');
@@ -124,9 +124,9 @@ describe('Email Templates', () => {
       expect(() => OrganizationInvitationTemplate(props)).not.toThrow();
     });
 
-    it('should handle missing inviterName', async () => {
+    test('should handle missing inviterName', async () => {
       const { OrganizationInvitationTemplate } = await import(
-        '../templates/organization-invitation'
+        '../src/templates/organization-invitation'
       );
 
       const props = {
@@ -141,9 +141,9 @@ describe('Email Templates', () => {
     });
   });
 
-  describe('WelcomeTemplate', () => {
-    it('should be importable and callable', async () => {
-      const { WelcomeTemplate } = await import('../templates/welcome');
+  describe('welcomeTemplate', () => {
+    test('should be importable and callable', async () => {
+      const { WelcomeTemplate } = await import('../src/templates/welcome');
 
       expect(typeof WelcomeTemplate).toBe('function');
 
@@ -157,8 +157,8 @@ describe('Email Templates', () => {
       expect(() => WelcomeTemplate(props)).not.toThrow();
     });
 
-    it('should handle missing dashboardUrl', async () => {
-      const { WelcomeTemplate } = await import('../templates/welcome');
+    test('should handle missing dashboardUrl', async () => {
+      const { WelcomeTemplate } = await import('../src/templates/welcome');
 
       const props = {
         name: 'New User',
@@ -170,9 +170,9 @@ describe('Email Templates', () => {
     });
   });
 
-  describe('ApiKeyCreatedTemplate', () => {
-    it('should be importable and callable', async () => {
-      const { ApiKeyCreatedTemplate } = await import('../templates/api-key-created');
+  describe('apiKeyCreatedTemplate', () => {
+    test('should be importable and callable', async () => {
+      const { ApiKeyCreatedTemplate } = await import('../src/templates/api-key-created');
 
       expect(typeof ApiKeyCreatedTemplate).toBe('function');
 
@@ -187,8 +187,8 @@ describe('Email Templates', () => {
       expect(() => ApiKeyCreatedTemplate(props)).not.toThrow();
     });
 
-    it('should handle missing dashboardUrl', async () => {
-      const { ApiKeyCreatedTemplate } = await import('../templates/api-key-created');
+    test('should handle missing dashboardUrl', async () => {
+      const { ApiKeyCreatedTemplate } = await import('../src/templates/api-key-created');
 
       const props = {
         name: 'User Name',
@@ -201,16 +201,16 @@ describe('Email Templates', () => {
     });
   });
 
-  describe('Template structure consistency', () => {
-    it('should have consistent structure across all templates', async () => {
+  describe('template structure consistency', () => {
+    test('should have consistent structure across all templates', async () => {
       const templates = [
-        await import('../templates/magic-link'),
-        await import('../templates/verification'),
-        await import('../templates/password-reset'),
-        await import('../templates/contact'),
-        await import('../templates/organization-invitation'),
-        await import('../templates/welcome'),
-        await import('../templates/api-key-created'),
+        await import('../src/templates/magic-link'),
+        await import('../src/templates/verification'),
+        await import('../src/templates/password-reset'),
+        await import('../src/templates/contact'),
+        await import('../src/templates/organization-invitation'),
+        await import('../src/templates/welcome'),
+        await import('../src/templates/api-key-created'),
       ];
 
       templates.forEach((template) => {
@@ -224,9 +224,9 @@ describe('Email Templates', () => {
     });
   });
 
-  describe('Props validation', () => {
-    it('should handle required vs optional props correctly', async () => {
-      const { MagicLinkTemplate } = await import('../templates/magic-link');
+  describe('props validation', () => {
+    test('should handle required vs optional props correctly', async () => {
+      const { MagicLinkTemplate } = await import('../src/templates/magic-link');
 
       // Should work with only required props
       expect(() => {
@@ -247,8 +247,8 @@ describe('Email Templates', () => {
       }).not.toThrow();
     });
 
-    it('should handle readonly props correctly', async () => {
-      const { ContactTemplate } = await import('../templates/contact');
+    test('should handle readonly props correctly', async () => {
+      const { ContactTemplate } = await import('../src/templates/contact');
 
       const props = {
         name: 'Test User',
@@ -262,10 +262,10 @@ describe('Email Templates', () => {
     });
   });
 
-  describe('Example components', () => {
-    it('should export example components for development', async () => {
-      const magicLinkModule = await import('../templates/magic-link');
-      const contactModule = await import('../templates/contact');
+  describe('example components', () => {
+    test('should export example components for development', async () => {
+      const magicLinkModule = await import('../src/templates/magic-link');
+      const contactModule = await import('../src/templates/contact');
 
       // Check for default exports (example components)
       expect(magicLinkModule.default).toBeDefined();
@@ -276,9 +276,9 @@ describe('Email Templates', () => {
       expect(typeof contactModule.default).toBe('function');
     });
 
-    it('should render example components without errors', async () => {
-      const { default: ExampleMagicLink } = await import('../templates/magic-link');
-      const { default: ExampleContact } = await import('../templates/contact');
+    test('should render example components without errors', async () => {
+      const { default: ExampleMagicLink } = await import('../src/templates/magic-link');
+      const { default: ExampleContact } = await import('../src/templates/contact');
 
       expect(() => {
         ExampleMagicLink();

@@ -90,7 +90,7 @@ export async function createServerLinkManagerWithAnalytics(
       // const { createServerObservability } = await import('@repo/analytics/server/next'); // Commented: property doesn't exist
       // const analytics = await createServerObservability(analyticsConfig); // Commented: property doesn't exist
       const analyticsModule = await import('@repo/analytics/server/next');
-      const analytics = await analyticsModule.createNextJSServerAnalytics(analyticsConfig);
+      const analytics = await analyticsModule.createServerAnalytics(analyticsConfig);
 
       enhancedConfig.analytics = {
         enabled: true,
@@ -128,7 +128,7 @@ export async function bulkCreateShortLinks(
     concurrency?: number;
   } = {},
 ): Promise<BulkCreateResponse> {
-  const { validateUrls = true, chunkSize = 100, concurrency = 5 } = options;
+  const { validateUrls = true, chunkSize = 100, concurrency: _concurrency = 5 } = options;
 
   // Validate URLs if requested
   if (validateUrls) {
@@ -150,7 +150,7 @@ export async function bulkCreateShortLinks(
       const result = await linkManager.bulkCreate({ links: chunk });
       allResults.created.push(...result.created);
       allResults.errors.push(...result.errors);
-    } catch (error: any) {
+    } catch (_error: any) {
       // If bulk creation fails, fall back to individual creation
       for (const request of chunk) {
         try {
@@ -223,8 +223,8 @@ export async function getLinkMetricsWithCache(
     redisKey?: string;
   } = {},
 ): Promise<LinkMetrics> {
-  const { ttl = 300, useRedis = false, redisKey } = cacheOptions;
-  const key = redisKey || `link_metrics:${linkId}`;
+  const { ttl: _ttl = 300, useRedis = false, redisKey: _redisKey } = cacheOptions;
+  const key = _redisKey || `link_metrics:${linkId}`;
 
   // Try to get from cache first (simplified - would use Redis in production)
   let cached: LinkMetrics | null = null;
@@ -331,7 +331,7 @@ function chunkArray<T>(array: T[], chunkSize: number): T[][] {
   return chunks;
 }
 
-async function getGeolocationFromIP(ip: string): Promise<{
+async function getGeolocationFromIP(_ip: string): Promise<{
   country?: string;
   city?: string;
   region?: string;

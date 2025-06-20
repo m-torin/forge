@@ -3,6 +3,8 @@
  * Handles account lockout, failed attempts tracking, and suspicious login detection
  */
 
+import { syncLogger as logger } from '../../shared/utils/logger';
+
 export interface AccountSecurityOptions {
   maxFailedAttempts?: number;
   lockoutDuration?: number; // in minutes
@@ -179,7 +181,7 @@ export function accountSecurityPlugin(options: AccountSecurityOptions = {}) {
 
                 if (isSuspicious && config.notifySuspiciousLogin) {
                   // Log suspicious login (integrate with your notification system)
-                  console.warn('Suspicious login detected', {
+                  logger.warn('Suspicious login detected', {
                     userId: context.context.user.id,
                     email: context.context.user.email,
                     ipAddress,

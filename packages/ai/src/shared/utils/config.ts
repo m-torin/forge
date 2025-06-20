@@ -67,6 +67,11 @@ export function createConfigFromEnv(): AIConfig {
 export function validateConfig(config: AIConfig): string[] {
   const errors: string[] = [];
 
+  if (!config) {
+    errors.push('Configuration is required');
+    return errors;
+  }
+
   if (!config.providers || Object.keys(config.providers || {}).length === 0) {
     errors.push('At least one provider must be configured');
     return errors;

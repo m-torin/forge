@@ -4,13 +4,13 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import {
-  listUsers,
-  listAllOrganizations,
-  listApiKeys,
-  getApiKeyStatistics,
-} from '@repo/auth/server/next';
-import { handleApiError } from '../utils/error-handler';
-import type { User, Organization, ApiKey, DashboardStats } from '../types';
+  getUsersAction,
+  getOrganizationsAction,
+  getApiKeysAction,
+  getApiKeyStatisticsAction,
+} from '@/actions/pim3/actions';
+import { handleApiError } from '@/utils/pim3/error-handler';
+import type { User, Organization, ApiKey, DashboardStats } from '@/types/pim3';
 
 /**
  * Hook to fetch and manage users data
@@ -24,7 +24,7 @@ export function useUsers() {
     setLoading(true);
     setError(null);
     try {
-      const result = await listUsers();
+      const result = await getUsersAction();
       if (result.success && result.data) {
         setUsers(
           result.data.map((user: any) => ({
@@ -70,12 +70,12 @@ export function useOrganizations() {
     setLoading(true);
     setError(null);
     try {
-      const result = await listAllOrganizations();
+      const result = await getOrganizationsAction();
       if (result.success && result.data) {
         setOrganizations(result.data || []);
       } else {
-        setError(result.error || 'Failed to load organizations');
-        handleApiError(result.error, {
+        setError((result as any).error || 'Failed to load organizations');
+        handleApiError((result as any).error, {
           title: 'Failed to load organizations',
           fallbackMessage: 'Unable to fetch organization data',
         });
@@ -110,7 +110,7 @@ export function useApiKeys() {
     setLoading(true);
     setError(null);
     try {
-      const result = await listApiKeys();
+      const result = await getApiKeysAction();
       if (result.success && result.data) {
         setApiKeys(result.data);
       } else {
@@ -154,11 +154,11 @@ export function useDashboardStats() {
     setLoading(true);
     setError(null);
     try {
-      const [usersRes, companiesRes, apiKeysRes, apiStatsRes] = await Promise.all([
-        listUsers(),
-        listAllOrganizations(),
-        listApiKeys(),
-        getApiKeyStatistics(),
+      const [usersRes, companiesRes, apiKeysRes, _apiStatsRes] = await Promise.all([
+        getUsersAction(),
+        getOrganizationsAction(),
+        getApiKeysAction(),
+        getApiKeyStatisticsAction(),
       ]);
 
       const users = usersRes.success ? usersRes.data || [] : [];

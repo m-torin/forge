@@ -4,11 +4,12 @@
 
 import 'server-only';
 
-import { roleHasPermission } from '../../shared/teams/permissions';
-import { auth } from '../auth';
-import { getAuthHeaders } from '../helpers/get-headers';
+import { syncLogger as logger } from '../../shared/utils/logger';
+import { roleHasPermission } from '../../shared/teams';
+import { auth } from '../../shared/auth.config';
+import { getAuthHeaders } from '../get-headers';
 
-import type { TeamPermissionCheck, TeamPermissionResult } from '../../shared/teams/types';
+import type { TeamPermissionCheck, TeamPermissionResult } from '../../shared/teams';
 
 /**
  * Checks if a user has permission to perform an action on a team
@@ -52,7 +53,7 @@ export async function checkTeamPermission(
       role: membership.role,
     };
   } catch (error) {
-    console.error('Check team permission error:', error);
+    logger.error('Check team permission error:', error);
     return { error: 'Failed to check permission', hasPermission: false };
   }
 }
@@ -105,14 +106,14 @@ export async function canManageTeamMember(teamId: string, targetUserId: string):
     const targetUserRole = targetUserMembership.role;
 
     // Import role data to check levels
-    const { DEFAULT_TEAM_ROLES } = await import('../../shared/teams/permissions');
+    const { DEFAULT_TEAM_ROLES } = await import('../../shared/teams');
 
     const currentLevel = DEFAULT_TEAM_ROLES[currentUserRole]?.level || 0;
     const targetLevel = DEFAULT_TEAM_ROLES[targetUserRole]?.level || 0;
 
     return currentLevel > targetLevel;
   } catch (error) {
-    console.error('Can manage team member error:', error);
+    logger.error('Can manage team member error:', error);
     return false;
   }
 }
@@ -157,7 +158,7 @@ export async function getUserTeamPermissions(
     }
 
     // Import role data to get permissions
-    const { DEFAULT_TEAM_ROLES } = await import('../../shared/teams/permissions');
+    const { DEFAULT_TEAM_ROLES } = await import('../../shared/teams');
     const roleData = DEFAULT_TEAM_ROLES[membership.role];
 
     return {
@@ -165,7 +166,7 @@ export async function getUserTeamPermissions(
       role: membership.role,
     };
   } catch (error) {
-    console.error('Get user team permissions error:', error);
+    logger.error('Get user team permissions error:', error);
     return { error: 'Failed to get permissions', permissions: [], role: '' };
   }
 }
@@ -200,7 +201,7 @@ export async function isTeamOwner(teamId: string, userId?: string): Promise<bool
 
     return membership?.role === 'owner';
   } catch (error) {
-    console.error('Is team owner error:', error);
+    logger.error('Is team owner error:', error);
     return false;
   }
 }
@@ -235,7 +236,7 @@ export async function isTeamAdmin(teamId: string, userId?: string): Promise<bool
 
     return membership?.role === 'owner' || membership?.role === 'admin';
   } catch (error) {
-    console.error('Is team admin error:', error);
+    logger.error('Is team admin error:', error);
     return false;
   }
 }
@@ -251,7 +252,7 @@ export async function getTeamRoleHierarchy(): Promise<
   }[]
 > {
   // Import role data
-  const { DEFAULT_TEAM_ROLES } = await import('../../shared/teams/permissions');
+  const { DEFAULT_TEAM_ROLES } = await import('../../shared/teams');
 
   return Object.values(DEFAULT_TEAM_ROLES).map((role) => ({
     level: role.level,
@@ -325,7 +326,7 @@ export async function hasTeamAccess(teamId: string, userId?: string): Promise<bo
 
     return !!membership;
   } catch (error) {
-    console.error('Has team access error:', error);
+    logger.error('Has team access error:', error);
     return false;
   }
 }
@@ -354,7 +355,7 @@ export async function hasTeamRole(teamId: string, role: string, userId?: string)
 
     return membership?.role === role;
   } catch (error) {
-    console.error('Has team role error:', error);
+    logger.error('Has team role error:', error);
     return false;
   }
 }

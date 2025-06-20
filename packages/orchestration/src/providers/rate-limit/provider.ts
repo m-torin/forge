@@ -5,7 +5,7 @@
 
 import { Ratelimit } from '@upstash/ratelimit';
 
-import { redis } from '@repo/database/redis';
+import { redis } from '@repo/database/redis/server';
 
 import { RateLimitConfig, RateLimitPattern, JsonObject } from '../../shared/types/index';
 import { createProviderError, RateLimitError } from '../../shared/utils/errors';
@@ -119,9 +119,9 @@ export class RateLimitProvider {
    * Create a rate limiting decorator
    */
   createRateLimitDecorator(pattern: RateLimitPattern) {
-    return function rateLimitDecorator<T extends (...args: unknown[]) => Promise<unknown>>(
-      target: unknown,
-      propertyName: string,
+    return function rateLimitDecorator<_T extends (...args: unknown[]) => Promise<unknown>>(
+      _target: unknown,
+      _propertyName: string,
       descriptor: PropertyDescriptor,
     ) {
       const method = descriptor.value;

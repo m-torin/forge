@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '../test-utils';
-import { Navigation } from '../../../mantine-ciseco/components/Header/Navigation/Navigation';
-import { type TCollection } from '../../../mantine-ciseco/data/data';
+import { Navigation } from '../../../src/mantine-ciseco/components/Header/Navigation/Navigation';
+import { type TCollection } from '../../../src/mantine-ciseco/data/data';
 
 // Mock next/link
 vi.mock('next/link', (_: any) => ({
@@ -13,12 +13,12 @@ vi.mock('next/link', (_: any) => ({
 }));
 
 // Mock the locale hook
-vi.mock('../../../mantine-ciseco/hooks/useLocale', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/hooks/useLocale', (_: any) => ({
   useLocalizeHref: () => (href: string) => href,
 }));
 
 // Mock CollectionCard3 component
-vi.mock('../../../mantine-ciseco/components/CollectionCard3', (_: any) => ({
+vi.mock('../../../src/mantine-ciseco/components/CollectionCard3', (_: any) => ({
   default: ({ collection }: { collection: TCollection }) => (
     <div data-testid="collection-card">{collection.title}</div>
   ),

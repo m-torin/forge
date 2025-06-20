@@ -1,0 +1,388 @@
+---
+title: 'Authentication Migration Guide'
+description: 'How to migrate from demo auth to production-ready Better Auth integration'
+icon: 'arrow-right'
+---
+
+# Authentication Migration Guide
+
+This guide walks you through migrating from the demo authentication state to a fully functional
+Better Auth implementation with production-ready features.
+
+<Warning>
+  This migration involves changes to your database schema, environment configuration, and
+  authentication flow. Test thoroughly in a development environment first.
+</Warning>
+
+## Migration Overview
+
+The web-template now includes a complete Better Auth integration with:
+
+- ✅ Email/password authentication
+- ✅ Social login (Google, Facebook, Twitter)
+- ✅ Magic link authentication
+- ✅ Route protection middleware
+- ✅ Account management pages
+- ✅ Session management with timeout warnings
+
+## Prerequisites
+
+Before starting the migration:
+
+<Steps>
+  <Step title="Database Ready">Ensure you have a PostgreSQL database running and accessible</Step>
+
+<Step title="OAuth Apps Created">
+  Set up OAuth applications for social login providers (optional)
+</Step>
+
+<Step title="Environment Variables">Prepare your production environment variables</Step>
+
+  <Step title="Backup Current State">
+    Backup your current authentication setup if you have custom implementations
+  </Step>
+</Steps>
+
+## Step 1: Environment Configuration
+
+### Required Environment Variables
+
+Add these to your `.env.local` file:
+
+```bash
+# Better Auth Configuration
+BETTER_AUTH_SECRET=your-very-secure-secret-key-here
+BETTER_AUTH_URL=http://localhost:3250
+
+# Database
+DATABASE_URL=postgresql://username:password@localhost:5432/your_database
+
+# OAuth Providers (Optional)
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
+
+# Email Service (for magic links and verification)
+RESEND_API_KEY=your-resend-api-key
+```
+
+### Generate Secret Key
+
+Generate a secure secret for Better Auth:
+
+```bash
+# Using Node.js
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+
+# Or using OpenSSL
+openssl rand -hex 32
+```
+
+## Step 2: Database Migration
+
+The Better Auth tables are already included in the database schema. Run the migration:
+
+```bash
+cd apps/web-template
+pnpm prisma migrate dev
+```
+
+This will create the necessary tables:
+
+- `User` - User accounts
+- `Session` - User sessions
+- `Account` - OAuth account linking
+- `VerificationToken` - Email verification tokens
+
+## Step 3: OAuth Provider Setup
+
+### Google OAuth Setup
+
+<Accordion title="Google Cloud Console Setup">
+  1. Go to [Google Cloud Console](https://console.cloud.google.com/) 2. Create a new project or
+  select existing one 3. Enable Google+ API 4. Go to "Credentials" → "Create Credentials" → "OAuth
+  2.0 Client ID" 5. Set application type to "Web application" 6. Add authorized redirect URIs: -
+  `http://localhost:3250/api/auth/callback/google` (development) -
+  `https://yourdomain.com/api/auth/callback/google` (production) 7. Copy Client ID and Client Secret
+  to your environment variables
+</Accordion>
+
+### Facebook OAuth Setup
+
+<Accordion title="Facebook Developers Setup">
+  1. Go to [Facebook Developers](https://developers.facebook.com/) 2. Create a new app 3. Add
+  "Facebook Login" product 4. Configure OAuth redirect URIs: -
+  `http://localhost:3250/api/auth/callback/facebook` (development) -
+  `https://yourdomain.com/api/auth/callback/facebook` (production) 5. Copy App ID and App Secret to
+  your environment variables
+</Accordion>
+
+### Twitter OAuth Setup
+
+<Accordion title="Twitter Developer Portal Setup">
+  1. Go to [Twitter Developer Portal](https://developer.twitter.com/) 2. Create a new app 3.
+  Configure OAuth 2.0 settings 4. Add callback URLs: -
+  `http://localhost:3250/api/auth/callback/twitter` (development) -
+  `https://yourdomain.com/api/auth/callback/twitter` (production) 5. Copy Client ID and Client
+  Secret to your environment variables
+</Accordion>
+
+## Step 4: Update App Configuration
+
+### Enable Authentication Features
+
+The authentication features are already implemented. Simply restart your development server:
+
+```bash
+cd apps/web-template
+pnpm dev
+```
+
+### Verify Integration
+
+Test the authentication flow:
+
+1. **Visit Login Page**: Navigate to `/en/login`
+2. **Test Email Signup**: Create an account with email/password
+3. **Test Social Login**: Try OAuth providers (if configured)
+4. **Test Magic Link**: Use the magic link tab
+5. **Test Route Protection**: Try accessing `/en/account` without authentication
+6. **Test Account Management**: Update profile, manage security settings
+
+## Step 5: Customize Authentication
+
+### Modify Protected Routes
+
+Edit the middleware to add/remove protected routes:
+
+```typescript
+// middleware.ts
+const protectedRoutes = [
+  `/${locale}/account`,
+  `/${locale}/account-password`,
+  `/${locale}/account-billing`,
+  `/${locale}/account-wishlists`,
+  `/${locale}/orders`,
+  // Add your custom protected routes
+  `/${locale}/dashboard`,
+  `/${locale}/settings`,
+];
+```
+
+### Customize User Profile
+
+Extend the user profile form with additional fields:
+
+```typescript
+// Update the profile schema
+const profileSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().email('Invalid email address'),
+  phone: z.string().optional(),
+  bio: z.string().max(500).optional(),
+  // Add custom fields
+  company: z.string().optional(),
+  website: z.string().url().optional(),
+});
+```
+
+### Style Customization
+
+The authentication pages use Mantine components. Customize the theme:
+
+```typescript
+// Update your Mantine theme
+const theme = createTheme({
+  primaryColor: 'blue', // Your brand color
+  components: {
+    Button: {
+      styles: {
+        root: {
+          // Custom button styles for auth pages
+        },
+      },
+    },
+  },
+});
+```
+
+## Step 6: Production Considerations
+
+### Security Configuration
+
+<CardGroup cols={2}>
+  <Card title="HTTPS Required" icon="lock">
+    Ensure all authentication endpoints use HTTPS in production
+  </Card>
+  <Card title="Secure Cookies" icon="shield">
+    Better Auth automatically uses secure cookies in production
+  </Card>
+  <Card title="CSRF Protection" icon="shield-check">
+    Built-in CSRF protection with Better Auth
+  </Card>
+  <Card title="Rate Limiting" icon="gauge">
+    Consider adding rate limiting for auth endpoints
+  </Card>
+</CardGroup>
+
+### Environment Variables
+
+Production environment setup:
+
+```bash
+# Production settings
+BETTER_AUTH_SECRET=your-production-secret-key
+BETTER_AUTH_URL=https://yourdomain.com
+DATABASE_URL=your-production-database-url
+
+# OAuth with production domains
+GOOGLE_CLIENT_ID=production-google-client-id
+GOOGLE_CLIENT_SECRET=production-google-client-secret
+
+# Email service
+RESEND_API_KEY=your-production-resend-key
+```
+
+### Session Configuration
+
+Adjust session settings for production:
+
+```typescript
+// src/components/auth/SessionTimeoutWarning.tsx
+const SESSION_TIMEOUT = 60 * 60 * 1000; // 1 hour for production
+const WARNING_THRESHOLD = 10 * 60 * 1000; // 10 minutes warning
+```
+
+## Step 7: Testing & Validation
+
+### Authentication Flow Testing
+
+<Tabs>
+  <Tab title="Manual Testing">
+    ```bash
+    # Test protected route access
+    curl -I http://localhost:3250/en/account
+    # Should return 302 redirect to login
+    
+    # Test login endpoint
+    curl -X POST http://localhost:3250/api/auth/sign-in \
+      -H "Content-Type: application/json" \
+      -d '{"email":"test@example.com","password":"password123"}'
+    ```
+  </Tab>
+  
+  <Tab title="Automated Testing">
+    ```typescript
+    // Example test for route protection
+    import { test, expect } from '@playwright/test';
+    
+    test('protected route redirects to login', async ({ page }) => {
+      await page.goto('/en/account');
+      await expect(page).toHaveURL(/.*\/en\/login/);
+    });
+    
+    test('successful login redirects to account', async ({ page }) => {
+      await page.goto('/en/login');
+      await page.fill('[data-testid="email"]', 'test@example.com');
+      await page.fill('[data-testid="password"]', 'password123');
+      await page.click('[data-testid="login-button"]');
+      await expect(page).toHaveURL(/.*\/en\/account/);
+    });
+    ```
+  </Tab>
+</Tabs>
+
+### Performance Testing
+
+Monitor authentication performance:
+
+```typescript
+// Add performance monitoring
+import { performance } from 'perf_hooks';
+
+const authStart = performance.now();
+const result = await signIn(credentials);
+const authEnd = performance.now();
+
+console.log(`Authentication took ${authEnd - authStart} milliseconds`);
+```
+
+## Common Issues & Solutions
+
+### Issue: OAuth Redirect Mismatch
+
+**Problem**: Social login fails with redirect URI mismatch
+
+**Solution**: Ensure OAuth redirect URIs match exactly:
+
+- Development: `http://localhost:3250/api/auth/callback/google`
+- Production: `https://yourdomain.com/api/auth/callback/google`
+
+### Issue: Database Connection Errors
+
+**Problem**: Better Auth can't connect to database
+
+**Solution**: Verify database URL format and permissions:
+
+```bash
+# Test database connection
+npx prisma db pull
+```
+
+### Issue: Session Persistence
+
+**Problem**: Users logged out after page refresh
+
+**Solution**: Check cookie settings and domain configuration:
+
+```typescript
+// Verify cookie domain in production
+const cookies = request.cookies.get('better-auth.session_token');
+```
+
+### Issue: Email Delivery
+
+**Problem**: Magic links and verification emails not sending
+
+**Solution**: Verify email service configuration:
+
+```bash
+# Test Resend API key
+curl -X POST https://api.resend.com/emails \
+  -H "Authorization: Bearer your-api-key" \
+  -H "Content-Type: application/json"
+```
+
+## Migration Checklist
+
+<CardGroup cols={1}>
+  <Card title="Pre-Migration" icon="list-check">
+    - [ ] Database backup created - [ ] Environment variables prepared - [ ] OAuth apps configured -
+    [ ] Testing plan ready
+  </Card>
+
+<Card title="Migration Steps" icon="arrow-right">
+  - [ ] Environment variables added - [ ] Database migration run - [ ] OAuth providers configured -
+  [ ] Authentication flow tested - [ ] Protected routes verified
+</Card>
+
+  <Card title="Post-Migration" icon="check-circle">
+    - [ ] All authentication methods working - [ ] Account management functional - [ ] Session
+    management tested - [ ] Production deployment ready
+  </Card>
+</CardGroup>
+
+## Support & Troubleshooting
+
+If you encounter issues during migration:
+
+1. **Check Server Logs**: Look for Better Auth error messages
+2. **Verify Database Schema**: Ensure all tables were created correctly
+3. **Test OAuth Endpoints**: Verify redirect URIs and credentials
+4. **Review Environment Variables**: Double-check all required values
+
+The authentication system is now fully functional and ready for production use. Users can securely
+sign up, log in, and manage their accounts with multiple authentication methods and comprehensive
+security features.

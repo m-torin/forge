@@ -16,7 +16,7 @@ import { QuickScrapeOptions } from './types';
 export async function extractFromHtml(
   html: string,
   selectors: SelectorMap,
-  _options: { transform?: boolean } = {},
+  options = {},
 ): Promise<Record<string, any>> {
   // Use Cheerio for HTML parsing if available
   try {
@@ -25,7 +25,7 @@ export async function extractFromHtml(
     await provider.initialize({ options: {} });
 
     return provider.extract(html, selectors);
-  } catch (_error: any) {
+  } catch (error) {
     // Fallback to basic extraction if Cheerio provider fails
     return basicHtmlExtraction(html, selectors);
   }
@@ -143,7 +143,7 @@ function basicHtmlExtraction(html: string, selectors: SelectorMap): Record<strin
           result[key] = extractTextFromHtml(html, selectorOrConfig.selector);
         }
       }
-    } catch (_error: any) {
+    } catch (error) {
       // For basic extraction fallback, set null on error instead of throwing
       result[key] = null;
     }

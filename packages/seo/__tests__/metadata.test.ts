@@ -1,9 +1,9 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Import the module to test
-import { createMetadata } from '../server-next';
+import { createMetadata } from '../src/server-next';
 
-describe('@repo/seo/metadata', (_: any) => {
+describe('@repo/seo/metadata', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -18,7 +18,7 @@ describe('@repo/seo/metadata', (_: any) => {
     });
   });
 
-  it('generates basic metadata with required fields', (_: any) => {
+  test('generates basic metadata with required fields', () => {
     const metadata = createMetadata({
       description: 'Test description',
       title: 'Test Page',
@@ -31,7 +31,7 @@ describe('@repo/seo/metadata', (_: any) => {
     expect(metadata.openGraph?.description).toBe('Test description');
   });
 
-  it('sets metadataBase based on production URL', (_: any) => {
+  test('sets metadataBase based on production URL', () => {
     const metadata = createMetadata({
       description: 'Test description',
       title: 'Test Page',
@@ -40,7 +40,7 @@ describe('@repo/seo/metadata', (_: any) => {
     expect(metadata.metadataBase?.href).toBe('http://test-project.vercel.app/');
   });
 
-  it('uses https protocol in production', (_: any) => {
+  test('uses https protocol in production', () => {
     // Setup production environment
     vi.stubGlobal('process', {
       ...process,
@@ -59,14 +59,14 @@ describe('@repo/seo/metadata', (_: any) => {
     expect(metadata.metadataBase?.href).toBe('https://test-project.vercel.app/');
   });
 
-  it('handles image URLs in OpenGraph', (_: any) => {
+  test('handles image URLs in OpenGraph', () => {
     const metadata = createMetadata({
       description: 'Test description',
       image: '/path/to/image.jpg',
       title: 'Test Page',
     });
 
-    expect(metadata.openGraph?.images).toEqual([
+    expect(metadata.openGraph?.images).toStrictEqual([
       {
         width: 1200,
         url: '/path/to/image.jpg',
@@ -76,7 +76,7 @@ describe('@repo/seo/metadata', (_: any) => {
     ]);
   });
 
-  it('merges custom properties with defaults', (_: any) => {
+  test('merges custom properties with defaults', () => {
     const metadata = createMetadata({
       description: 'Test description',
       openGraph: {
@@ -96,7 +96,7 @@ describe('@repo/seo/metadata', (_: any) => {
     expect(metadata.openGraph?.description).toBe('Test description');
   });
 
-  it('falls back to undefined metadataBase when no production URL is set', (_: any) => {
+  test('falls back to undefined metadataBase when no production URL is set', () => {
     // Setup environment without production URL
     vi.stubGlobal('process', {
       ...process,

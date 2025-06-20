@@ -214,7 +214,7 @@ test.describe('Backstage Auth - Better Auth Integration', (_: any) => {
     for (const endpoint of apiEndpoints) {
       const response = await page.request.get(`http://localhost:3300${endpoint}`);
       // Should not return 404 (endpoints exist)
-      expect([200, 401, 405, 422].includes(response.status())).toBe(true);
+      expect([200, 401, 405, 422]).toContain(response.status());
     }
   });
 });

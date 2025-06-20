@@ -41,7 +41,10 @@ const CLIENT_PROVIDERS: ProviderRegistry = {
     const { GrafanaClientProvider } = await import('./client/providers/grafana-client');
     return new GrafanaClientProvider();
   },
-  // Better Stack/Logtail is not available on client side due to Node.js dependencies
+  logtail: async () => {
+    const { LogtailClientProvider } = await import('./client/providers/logtail-client');
+    return new LogtailClientProvider();
+  },
 };
 
 // ============================================================================

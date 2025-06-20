@@ -1,13 +1,3 @@
 {
-  "extends": ["@repo/config/knip/base.json"],
-  "entry": [
-    "index.ts",
-    "keys.ts",
-    "middleware.ts",
-    "rate-limit.ts",
-    "**/*.config.{js,ts,mjs}",
-    "**/*.test.{ts,tsx}",
-    "**/*.spec.{ts,tsx}",
-    "__tests__/**/*.{ts,tsx}"
-  ]
+  "extends": ["@repo/config/knip"]
 }

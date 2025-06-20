@@ -3,6 +3,7 @@
  * Workflow mocking, testing utilities, and development server capabilities
  */
 
+import { createServerObservability } from '@repo/observability/shared-env';
 import {
   WorkflowDefinition,
   WorkflowExecution,
@@ -511,7 +512,12 @@ export class WorkflowDevServer {
    */
   async reloadWorkflow(workflowId: string): Promise<void> {
     // Implementation would reload workflow definition
-    console.log(`Reloading workflow ${workflowId}`);
+    const logger = await createServerObservability({
+      providers: {
+        console: { enabled: true },
+      },
+    });
+    await logger.log('info', `Reloading workflow ${workflowId}`);
   }
 
   /**
@@ -523,7 +529,12 @@ export class WorkflowDevServer {
     }
 
     this.isRunning = true;
-    console.log(`Workflow development server started on port ${port}`);
+    const logger = await createServerObservability({
+      providers: {
+        console: { enabled: true },
+      },
+    });
+    await logger.log('info', `Workflow development server started on port ${port}`);
 
     // Development server implementation would go here
     // This could include:
@@ -538,19 +549,29 @@ export class WorkflowDevServer {
    */
   async stop(): Promise<void> {
     this.isRunning = false;
-    console.log('Workflow development server stopped');
+    const logger = await createServerObservability({
+      providers: {
+        console: { enabled: true },
+      },
+    });
+    await logger.log('info', 'Workflow development server stopped');
   }
 
   /**
    * Run tests in watch mode
    */
   async watchTests(testSuites: WorkflowTestSuite[]): Promise<void> {
-    console.log('Starting test watcher...');
+    const logger = await createServerObservability({
+      providers: {
+        console: { enabled: true },
+      },
+    });
+    await logger.log('info', 'Starting test watcher...');
 
     // Implementation would watch for changes and re-run tests
     for (const suite of testSuites) {
       const result = await this.testRunner.runTestSuite(suite);
-      console.log(`Test suite ${suite.name}: ${result.status}`);
+      await logger.log('info', `Test suite ${suite.name}: ${result.status}`);
     }
   }
 }

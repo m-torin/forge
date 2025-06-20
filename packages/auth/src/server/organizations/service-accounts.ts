@@ -3,18 +3,18 @@
  */
 
 import 'server-only';
-import { headers } from 'next/headers';
 
-import { auth } from '../auth';
-
+import { syncLogger as logger } from '../../shared/utils/logger';
+import { auth } from '../../shared/auth.config';
+import { getAuthHeaders } from '../get-headers';
 import { checkPermission } from './permissions';
 
-import type { ServiceAuthResult } from '../../shared/api-keys/types';
+import type { ServiceAuthResult } from '../../shared/api-keys';
 
 /**
  * Creates a service account for an organization using better-auth API key metadata
  */
-export async function createServiceAccount(data: {
+export async function createServiceAccountAction(data: {
   organizationId: string;
   name: string;
   description?: string;
@@ -46,7 +46,7 @@ export async function createServiceAccount(data: {
           createdAt: new Date().toISOString(),
         },
       },
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     if (!result?.key) {
@@ -63,7 +63,7 @@ export async function createServiceAccount(data: {
       serviceAccountId: result.id,
     };
   } catch (error) {
-    console.error('Create service account error:', error);
+    logger.error('Create service account error:', error);
     return {
       error: 'Failed to create service account',
       success: false,
@@ -74,7 +74,7 @@ export async function createServiceAccount(data: {
 /**
  * Lists service accounts for an organization using better-auth API key methods
  */
-export async function listServiceAccounts(organizationId: string): Promise<{
+export async function listServiceAccountsAction(organizationId: string): Promise<{
   success: boolean;
   serviceAccounts?: {
     id: string;
@@ -100,7 +100,7 @@ export async function listServiceAccounts(organizationId: string): Promise<{
 
     // Use better-auth native listApiKeys method
     const apiKeys = await auth.api.listApiKeys({
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     // Filter for service accounts in this organization
@@ -128,7 +128,7 @@ export async function listServiceAccounts(organizationId: string): Promise<{
       success: true,
     };
   } catch (error) {
-    console.error('List service accounts error:', error);
+    logger.error('List service accounts error:', error);
     return {
       error: 'Failed to list service accounts',
       success: false,
@@ -139,7 +139,7 @@ export async function listServiceAccounts(organizationId: string): Promise<{
 /**
  * Updates a service account using better-auth API key methods
  */
-export async function updateServiceAccount(data: {
+export async function updateServiceAccountAction(data: {
   serviceAccountId: string;
   organizationId: string;
   name?: string;
@@ -184,12 +184,12 @@ export async function updateServiceAccount(data: {
     // Use better-auth native updateApiKey method
     await auth.api.updateApiKey({
       body: updateData,
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     return { success: true };
   } catch (error) {
-    console.error('Update service account error:', error);
+    logger.error('Update service account error:', error);
     return {
       error: 'Failed to update service account',
       success: false,
@@ -200,7 +200,7 @@ export async function updateServiceAccount(data: {
 /**
  * Revokes a service account using better-auth API key methods
  */
-export async function revokeServiceAccount(data: {
+export async function revokeServiceAccountAction(data: {
   serviceAccountId: string;
   organizationId: string;
 }): Promise<{
@@ -223,12 +223,12 @@ export async function revokeServiceAccount(data: {
       body: {
         keyId: data.serviceAccountId,
       },
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     return { success: true };
   } catch (error) {
-    console.error('Revoke service account error:', error);
+    logger.error('Revoke service account error:', error);
     return {
       error: 'Failed to revoke service account',
       success: false,
@@ -239,7 +239,7 @@ export async function revokeServiceAccount(data: {
 /**
  * Gets service account details using better-auth API key methods
  */
-export async function getServiceAccount(data: {
+export async function getServiceAccountAction(data: {
   serviceAccountId: string;
   organizationId: string;
 }): Promise<{
@@ -269,7 +269,7 @@ export async function getServiceAccount(data: {
 
     // Use better-auth native listApiKeys to find the specific key
     const apiKeys = await auth.api.listApiKeys({
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     const apiKey = (apiKeys || []).find(
@@ -306,7 +306,7 @@ export async function getServiceAccount(data: {
       success: true,
     };
   } catch (error) {
-    console.error('Get service account error:', error);
+    logger.error('Get service account error:', error);
     return {
       error: 'Failed to get service account',
       success: false,
@@ -317,7 +317,7 @@ export async function getServiceAccount(data: {
 /**
  * Regenerates service account token using better-auth API key methods
  */
-export async function regenerateServiceAccountToken(data: {
+export async function regenerateServiceAccountTokenAction(data: {
   serviceAccountId: string;
   organizationId: string;
   expiresIn?: string;
@@ -335,7 +335,7 @@ export async function regenerateServiceAccountToken(data: {
 
     // Get current service account details using better-auth
     const apiKeys = await auth.api.listApiKeys({
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     const currentAccount = (apiKeys || []).find(
@@ -355,7 +355,7 @@ export async function regenerateServiceAccountToken(data: {
     // Delete the old API key
     await auth.api.deleteApiKey({
       body: { keyId: data.serviceAccountId },
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     // Create a new API key with the same metadata but new token
@@ -375,7 +375,7 @@ export async function regenerateServiceAccountToken(data: {
           regeneratedAt: new Date().toISOString(),
         },
       },
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
 
     if (!result?.key) {
@@ -391,7 +391,7 @@ export async function regenerateServiceAccountToken(data: {
       expiresAt: result.expiresAt ? new Date(result.expiresAt) : undefined,
     };
   } catch (error) {
-    console.error('Regenerate service account token error:', error);
+    logger.error('Regenerate service account token error:', error);
     return {
       error: 'Failed to regenerate service account token',
       success: false,

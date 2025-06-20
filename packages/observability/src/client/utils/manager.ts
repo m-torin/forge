@@ -154,6 +154,36 @@ export class ClientObservabilityManager implements IObservabilityManager {
   }
 
   async log(level: string, message: string, metadata?: any): Promise<void> {
+    // If log level is 'error', also capture to error tracking providers (like Sentry)
+    if (level === 'error' || level === 'fatal') {
+      // Check if metadata contains an error object
+      if (metadata?.error instanceof Error) {
+        // Capture the error object with context
+        await this.captureException(metadata.error, {
+          extra: {
+            message,
+            ...metadata,
+          },
+          level: level as 'error' | 'fatal',
+        });
+      } else if (metadata instanceof Error) {
+        // If metadata itself is an error
+        await this.captureException(metadata, {
+          extra: {
+            message,
+          },
+          level: level as 'error' | 'fatal',
+        });
+      } else {
+        // Capture as an error message
+        await this.captureMessage(message, 'error', {
+          extra: metadata,
+          level: level as 'error' | 'fatal',
+        });
+      }
+    }
+
+    // Continue with normal log provider calls
     const providersWithLog = Array.from(this.providers.values()).filter(
       (provider: any) => provider.log,
     );

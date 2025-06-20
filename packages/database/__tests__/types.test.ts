@@ -1,476 +1,218 @@
 import { describe, expect, it } from 'vitest';
 
-import { DatabaseAdapter, RedisDatabaseAdapter, VectorDatabaseAdapter } from '../types';
+import {
+  DatabaseConnection,
+  DatabaseConfig,
+  QueryOptions,
+  BulkOperationResult,
+  VectorSearchResult,
+  VectorQuery,
+  RedisOperationResult,
+  FirestoreDocument,
+  FirestoreQuery,
+} from '../src/types';
 
-describe('Database Types', (_: any) => {
-  describe('DatabaseAdapter interface', (_: any) => {
-    it('should have all required methods', (_: any) => {
-      // This test ensures the interface structure is correct
-      const adapter: DatabaseAdapter = {
-        initialize: async () => {},
-        disconnect: async () => {},
-        create: async <T>(collection: string, data: any): Promise<T> => data as T,
-        findUnique: async <T>(collection: string, query: any): Promise<T | null> => null,
-        findMany: async <T>(collection: string, query?: any): Promise<T[]> => [],
-        update: async <T>(collection: string, id: string, data: any): Promise<T> => data as T,
-        delete: async <T>(collection: string, id: string): Promise<T> => ({ id }) as T,
-        count: async (collection: string, query?: any): Promise<number> => 0,
-        raw: async <T = any>(operation: string, params: any): Promise<T> => params as T,
-        getClient: () => ({}),
+describe('Database Types', () => {
+  describe('DatabaseConnection interface', () => {
+    it('should have required url property', () => {
+      const connection: DatabaseConnection = {
+        url: 'https://example.com',
       };
 
-      expect(adapter).toBeDefined();
-      expect(typeof adapter.initialize).toBe('function');
-      expect(typeof adapter.disconnect).toBe('function');
-      expect(typeof adapter.create).toBe('function');
-      expect(typeof adapter.findUnique).toBe('function');
-      expect(typeof adapter.findMany).toBe('function');
-      expect(typeof adapter.update).toBe('function');
-      expect(typeof adapter.delete).toBe('function');
-      expect(typeof adapter.count).toBe('function');
-      expect(typeof adapter.raw).toBe('function');
-      expect(typeof adapter.getClient).toBe('function');
+      expect(connection.url).toBe('https://example.com');
     });
 
-    it('should handle generic types correctly', async () => {
-      interface User {
-        id: string;
-        name: string;
-        email: string;
-      }
-
-      const adapter: DatabaseAdapter = {
-        initialize: async () => {},
-        disconnect: async () => {},
-        create: async <T>(collection: string, data: any): Promise<T> =>
-          ({
-            id: '1',
-            ...data,
-          }) as T,
-        findUnique: async <T>(collection: string, query: any): Promise<T | null> => null,
-        findMany: async <T>(collection: string, query?: any): Promise<T[]> => [],
-        update: async <T>(collection: string, id: string, data: any): Promise<T> =>
-          ({
-            id,
-            ...data,
-          }) as T,
-        delete: async <T>(collection: string, id: string): Promise<T> => ({ id }) as T,
-        count: async (collection: string, query?: any): Promise<number> => 0,
-        raw: async <T = any>(operation: string, params: any): Promise<T> => params as T,
-        getClient: () => ({}),
+    it('should support optional token property', () => {
+      const connection: DatabaseConnection = {
+        url: 'https://example.com',
+        token: 'secret-token',
       };
 
-      const userData = { name: 'John Doe', email: 'john@example.com' };
-      const result = await adapter.create<User>('users', userData);
-
-      expect(result.id).toBe('1');
-      expect(result.name).toBe('John Doe');
-      expect(result.email).toBe('john@example.com');
+      expect(connection.url).toBe('https://example.com');
+      expect(connection.token).toBe('secret-token');
     });
   });
 
-  describe('VectorDatabaseAdapter interface', (_: any) => {
-    it('should extend DatabaseAdapter with vector operations', (_: any) => {
-      const adapter: VectorDatabaseAdapter = {
-        // Base DatabaseAdapter methods
-        initialize: async () => {},
-        disconnect: async () => {},
-        create: async <T>(collection: string, data: any): Promise<T> => data as T,
-        findUnique: async <T>(collection: string, query: any): Promise<T | null> => null,
-        findMany: async <T>(collection: string, query?: any): Promise<T[]> => [],
-        update: async <T>(collection: string, id: string, data: any): Promise<T> => data as T,
-        delete: async <T>(collection: string, id: string): Promise<T> => ({ id }) as T,
-        count: async (collection: string, query?: any): Promise<number> => 0,
-        raw: async <T = any>(operation: string, params: any): Promise<T> => params as T,
-        getClient: () => ({}),
-
-        // Vector-specific methods
-        query: async <T>(options: any, queryOptions?: any): Promise<T[]> => [],
-        fetch: async <T>(ids: string | string[], options?: any): Promise<T[]> => [],
-        deleteMany: async <T>(ids: string | string[], options?: any): Promise<T> => ({}) as T,
-        upsertData: async <T>(data: any, options?: any): Promise<T> => data as T,
-        upsertMany: async <T>(vectors: any[], namespace?: string): Promise<T> => ({}) as T,
-        updateMetadata: async <T>(
-          id: string,
-          metadata: Record<string, any>,
-          options?: any,
-        ): Promise<T> => ({}) as T,
-        getInfo: async () => ({}),
-        reset: async () => ({}),
-        queryByText: async <T>(text: string, options?: any): Promise<T[]> => [],
-        upsertText: async <T>(
-          data: { data: string; id: string; metadata?: Record<string, any> }[],
-          options?: { namespace?: string },
-        ): Promise<T> => ({}) as T,
-        upsertDense: async <T>(
-          vectors: { id: string; metadata?: Record<string, any>; vector: number[] }[],
-          options?: { namespace?: string },
-        ): Promise<T> => ({}) as T,
-        upsertSparse: async <T>(
-          vectors: {
-            id: string;
-            metadata?: Record<string, any>;
-            sparseVector: { indices: number[]; values: number[] };
-          }[],
-          options?: { namespace?: string },
-        ): Promise<T> => ({}) as T,
-        upsertHybrid: async <T>(
-          vectors: {
-            id: string;
-            metadata?: Record<string, any>;
-            sparseVector: { indices: number[]; values: number[] };
-            vector: number[];
-          }[],
-          options?: { namespace?: string },
-        ): Promise<T> => ({}) as T,
-        querySparse: async <T>(
-          sparseVector: { indices: number[]; values: number[] },
-          options?: {
-            filter?: string;
-            includeMetadata?: boolean;
-            includeVectors?: boolean;
-            namespace?: string;
-            topK?: number;
-          },
-        ): Promise<T[]> => [],
-        queryHybrid: async <T>(
-          vector: number[],
-          sparseVector: { indices: number[]; values: number[] },
-          options?: {
-            filter?: string;
-            includeMetadata?: boolean;
-            includeVectors?: boolean;
-            namespace?: string;
-            topK?: number;
-          },
-        ): Promise<T[]> => [],
-        getNamespaceInfo: async (namespace: string) => ({}),
-        listNamespaces: async (): Promise<string[]> => [],
+  describe('VectorSearchResult interface', () => {
+    it('should have required properties', () => {
+      const result: VectorSearchResult = {
+        id: 'vector-1',
+        score: 0.95,
       };
 
-      expect(adapter).toBeDefined();
-      expect(typeof adapter.query).toBe('function');
-      expect(typeof adapter.fetch).toBe('function');
-      expect(typeof adapter.queryByText).toBe('function');
-      expect(typeof adapter.upsertDense).toBe('function');
+      expect(result.id).toBe('vector-1');
+      expect(result.score).toBe(0.95);
     });
 
-    it('should handle vector query options correctly', async () => {
-      const adapter: VectorDatabaseAdapter = {
-        // Base methods (simplified for test)
-        initialize: async () => {},
-        disconnect: async () => {},
-        create: async <T>(collection: string, data: any): Promise<T> => data as T,
-        findUnique: async <T>(collection: string, query: any): Promise<T | null> => null,
-        findMany: async <T>(collection: string, query?: any): Promise<T[]> => [],
-        update: async <T>(collection: string, id: string, data: any): Promise<T> => data as T,
-        delete: async <T>(collection: string, id: string): Promise<T> => ({ id }) as T,
-        count: async (collection: string, query?: any): Promise<number> => 0,
-        raw: async <T = any>(operation: string, params: any): Promise<T> => params as T,
-        getClient: () => ({}),
-
-        // Vector methods
-        query: async <T>(options: any): Promise<T[]> => {
-          // Should accept vector query options
-          const { vector, topK, filter, includeMetadata } = options;
-          return [
-            {
-              id: '1',
-              score: 0.95,
-              metadata: includeMetadata ? { category: 'test' } : undefined,
-            },
-          ] as T[];
-        },
-        fetch: async <T>(ids: string | string[]): Promise<T[]> => [],
-        deleteMany: async <T>(ids: string | string[]): Promise<T> => ({}) as T,
-        upsertData: async <T>(data: any): Promise<T> => data as T,
-        upsertMany: async <T>(vectors: any[]): Promise<T> => ({}) as T,
-        updateMetadata: async <T>(id: string, metadata: Record<string, any>): Promise<T> =>
-          ({}) as T,
-        getInfo: async () => ({ dimension: 1536, totalVectorCount: 1000 }),
-        reset: async () => ({ success: true }),
-        queryByText: async <T>(text: string, options?: any): Promise<T[]> => [],
-        upsertText: async <T>(
-          data: { data: string; id: string; metadata?: Record<string, any> }[],
-        ): Promise<T> => ({}) as T,
-        upsertDense: async <T>(
-          vectors: { id: string; metadata?: Record<string, any>; vector: number[] }[],
-        ): Promise<T> => ({}) as T,
-        upsertSparse: async <T>(
-          vectors: {
-            id: string;
-            metadata?: Record<string, any>;
-            sparseVector: { indices: number[]; values: number[] };
-          }[],
-        ): Promise<T> => ({}) as T,
-        upsertHybrid: async <T>(
-          vectors: {
-            id: string;
-            metadata?: Record<string, any>;
-            sparseVector: { indices: number[]; values: number[] };
-            vector: number[];
-          }[],
-        ): Promise<T> => ({}) as T,
-        querySparse: async <T>(sparseVector: {
-          indices: number[];
-          values: number[];
-        }): Promise<T[]> => [],
-        queryHybrid: async <T>(
-          vector: number[],
-          sparseVector: { indices: number[]; values: number[] },
-        ): Promise<T[]> => [],
-        getNamespaceInfo: async (namespace: string) => ({ name: namespace }),
-        listNamespaces: async (): Promise<string[]> => ['default', 'test'],
+    it('should support optional metadata and data', () => {
+      const result: VectorSearchResult = {
+        id: 'vector-1',
+        score: 0.95,
+        metadata: { category: 'test' },
+        data: 'example data',
       };
 
-      const queryOptions = {
+      expect(result.metadata?.category).toBe('test');
+      expect(result.data).toBe('example data');
+    });
+  });
+
+  describe('VectorQuery interface', () => {
+    it('should support vector queries', () => {
+      const query: VectorQuery = {
         vector: [0.1, 0.2, 0.3],
         topK: 10,
-        filter: 'category = "test"',
         includeMetadata: true,
       };
 
-      const results = await adapter.query(queryOptions);
-      expect(results).toHaveLength(1);
-      expect(results[0]).toHaveProperty('id', '1');
-      expect(results[0]).toHaveProperty('score', 0.95);
+      expect(query.vector).toEqual([0.1, 0.2, 0.3]);
+      expect(query.topK).toBe(10);
+      expect(query.includeMetadata).toBe(true);
+    });
+
+    it('should support text queries', () => {
+      const query: VectorQuery = {
+        data: 'search query text',
+        topK: 5,
+        filter: 'category = "test"',
+      };
+
+      expect(query.data).toBe('search query text');
+      expect(query.topK).toBe(5);
+      expect(query.filter).toBe('category = "test"');
     });
   });
 
-  describe('RedisDatabaseAdapter interface', (_: any) => {
-    it('should extend DatabaseAdapter with Redis operations', (_: any) => {
-      const adapter: RedisDatabaseAdapter = {
-        // Base DatabaseAdapter methods
-        initialize: async () => {},
-        disconnect: async () => {},
-        create: async <T>(collection: string, data: any): Promise<T> => data as T,
-        findUnique: async <T>(collection: string, query: any): Promise<T | null> => null,
-        findMany: async <T>(collection: string, query?: any): Promise<T[]> => [],
-        update: async <T>(collection: string, id: string, data: any): Promise<T> => data as T,
-        delete: async <T>(collection: string, id: string): Promise<T> => ({ id }) as T,
-        count: async (collection: string, query?: any): Promise<number> => 0,
-        raw: async <T = any>(operation: string, params: any): Promise<T> => params as T,
-        getClient: () => ({}),
-
-        // Redis-specific methods
-        getMultiple: async <T>(collection: string, ids: string[]): Promise<(T | null)[]> => [],
-        setMultiple: async <T>(collection: string, records: any[]): Promise<T[]> => [],
-        deleteMultiple: async <T>(collection: string, ids: string[]): Promise<T[]> => [],
-        setWithExpiration: async <T>(
-          collection: string,
-          id: string,
-          data: any,
-          expirationSeconds: number,
-        ): Promise<T> => data as T,
-        exists: async (collection: string, id: string): Promise<boolean> => false,
-        expire: async (collection: string, id: string, seconds: number): Promise<boolean> => true,
-        ttl: async (collection: string, id: string): Promise<number> => -1,
-        increment: async (
-          collection: string,
-          id: string,
-          field?: string,
-          by?: number,
-        ): Promise<number> => 1,
-        decrement: async (
-          collection: string,
-          id: string,
-          field?: string,
-          by?: number,
-        ): Promise<number> => 0,
-        listPush: async <T>(collection: string, id: string, ...values: T[]): Promise<number> =>
-          values.length,
-        listPop: async <T>(collection: string, id: string): Promise<T | null> => null,
-        listRange: async <T>(
-          collection: string,
-          id: string,
-          start?: number,
-          end?: number,
-        ): Promise<T[]> => [],
-        listLength: async (collection: string, id: string): Promise<number> => 0,
-        setAdd: async <T>(collection: string, id: string, ...members: T[]): Promise<number> =>
-          members.length,
-        setRemove: async <T>(collection: string, id: string, ...members: T[]): Promise<number> =>
-          members.length,
-        setMembers: async <T>(collection: string, id: string): Promise<T[]> => [],
-        setIsMember: async <T>(collection: string, id: string, member: T): Promise<boolean> =>
-          false,
-        hashSet: async (
-          collection: string,
-          id: string,
-          field: string,
-          value: any,
-        ): Promise<number> => 1,
-        hashGet: async <T>(collection: string, id: string, field: string): Promise<T | null> =>
-          null,
-        hashGetAll: async <T>(collection: string, id: string): Promise<Record<string, T>> => ({}),
-        hashDelete: async (collection: string, id: string, ...fields: string[]): Promise<number> =>
-          fields.length,
-        sortedSetAdd: async (collection: string, id: string, ...members: any[]): Promise<number> =>
-          members.length,
-        // @ts-expect-error - Complex generic type inference issue in test
-        sortedSetRange: async <T>(
-          collection: string,
-          id: string,
-          start: number,
-          end: number,
-          withScores?: boolean,
-        ): Promise<T[] | { member: T; score: number }[]> => {
-          if (withScores) {
-            return [] as { member: T; score: number }[];
-          }
-          return [] as T[];
-        },
-        sortedSetScore: async <T>(
-          collection: string,
-          id: string,
-          member: T,
-        ): Promise<number | null> => null,
-        ping: async (): Promise<string> => 'PONG',
-        flushDb: async (): Promise<string> => 'OK',
-        flushAll: async (): Promise<string> => 'OK',
+  describe('RedisOperationResult interface', () => {
+    it('should support successful operations', () => {
+      const result: RedisOperationResult = {
+        success: true,
+        value: 'test-value',
       };
 
-      expect(adapter).toBeDefined();
-      expect(typeof adapter.getMultiple).toBe('function');
-      expect(typeof adapter.setWithExpiration).toBe('function');
-      expect(typeof adapter.listPush).toBe('function');
-      expect(typeof adapter.hashSet).toBe('function');
-      expect(typeof adapter.sortedSetAdd).toBe('function');
+      expect(result.success).toBe(true);
+      expect(result.value).toBe('test-value');
     });
 
-    it('should handle Redis-specific operations correctly', async () => {
-      const adapter: RedisDatabaseAdapter = {
-        // Base methods (simplified)
-        initialize: async () => {},
-        disconnect: async () => {},
-        create: async <T>(collection: string, data: any): Promise<T> => data as T,
-        findUnique: async <T>(collection: string, query: any): Promise<T | null> => null,
-        findMany: async <T>(collection: string, query?: any): Promise<T[]> => [],
-        update: async <T>(collection: string, id: string, data: any): Promise<T> => data as T,
-        delete: async <T>(collection: string, id: string): Promise<T> => ({ id }) as T,
-        count: async (collection: string, query?: any): Promise<number> => 0,
-        raw: async <T = any>(operation: string, params: any): Promise<T> => params as T,
-        getClient: () => ({}),
-
-        // Redis methods with realistic implementations
-        getMultiple: async <T>(collection: string, ids: string[]): Promise<(T | null)[]> => {
-          return ids.map((id: any) => ({ id, data: `data-${id}` }) as T);
-        },
-        setMultiple: async <T>(
-          collection: string,
-          records: { id: string; [key: string]: any }[],
-        ): Promise<T[]> => {
-          return records as T[];
-        },
-        deleteMultiple: async <T>(collection: string, ids: string[]): Promise<T[]> => {
-          return ids.map((id: any) => ({ id }) as T);
-        },
-        setWithExpiration: async <T>(
-          collection: string,
-          id: string,
-          data: any,
-          expirationSeconds: number,
-        ): Promise<T> => {
-          return { id, ...data, ttl: expirationSeconds } as T;
-        },
-        exists: async (collection: string, id: string): Promise<boolean> => id === 'existing-key',
-        expire: async (collection: string, id: string, seconds: number): Promise<boolean> =>
-          seconds > 0,
-        ttl: async (collection: string, id: string): Promise<number> =>
-          id === 'expiring-key' ? 300 : -1,
-        increment: async (
-          collection: string,
-          id: string,
-          field?: string,
-          by: number = 1,
-        ): Promise<number> => by,
-        decrement: async (
-          collection: string,
-          id: string,
-          field?: string,
-          by: number = 1,
-        ): Promise<number> => -by,
-        listPush: async <T>(collection: string, id: string, ...values: T[]): Promise<number> =>
-          values.length,
-        listPop: async <T>(collection: string, id: string): Promise<T | null> => ({ id }) as T,
-        listRange: async <T>(
-          collection: string,
-          id: string,
-          start: number = 0,
-          end: number = -1,
-        ): Promise<T[]> => {
-          return [{ start, end } as T];
-        },
-        listLength: async (collection: string, id: string): Promise<number> => 5,
-        setAdd: async <T>(collection: string, id: string, ...members: T[]): Promise<number> =>
-          members.length,
-        setRemove: async <T>(collection: string, id: string, ...members: T[]): Promise<number> =>
-          members.length,
-        setMembers: async <T>(collection: string, id: string): Promise<T[]> => [{ id } as T],
-        setIsMember: async <T>(collection: string, id: string, member: T): Promise<boolean> => true,
-        hashSet: async (
-          collection: string,
-          id: string,
-          field: string,
-          value: any,
-        ): Promise<number> => 1,
-        hashGet: async <T>(collection: string, id: string, field: string): Promise<T | null> =>
-          ({ field, value: 'test' }) as T,
-        hashGetAll: async <T>(collection: string, id: string): Promise<Record<string, T>> => ({
-          field1: 'value1' as T,
-        }),
-        hashDelete: async (collection: string, id: string, ...fields: string[]): Promise<number> =>
-          fields.length,
-        sortedSetAdd: async (
-          collection: string,
-          id: string,
-          ...members: { score: number; member: any }[]
-        ): Promise<number> => members.length,
-        // @ts-expect-error - Complex generic type inference issue in test
-        sortedSetRange: async <T>(
-          collection: string,
-          id: string,
-          start: number,
-          end: number,
-          withScores?: boolean,
-        ): Promise<T[] | { member: T; score: number }[]> => {
-          if (withScores) {
-            return [{ member: { id } as T, score: 1.0 }] as { member: T; score: number }[];
-          }
-          return [{ id } as T] as T[];
-        },
-        sortedSetScore: async <T>(
-          collection: string,
-          id: string,
-          member: T,
-        ): Promise<number | null> => 1.0,
-        ping: async (): Promise<string> => 'PONG',
-        flushDb: async (): Promise<string> => 'OK',
-        flushAll: async (): Promise<string> => 'OK',
+    it('should support failed operations', () => {
+      const result: RedisOperationResult = {
+        success: false,
+        error: 'Operation failed',
       };
 
-      // Test basic operations
-      expect(await adapter.ping()).toBe('PONG');
-      expect(await adapter.exists('test', 'existing-key')).toBe(true);
-      expect(await adapter.exists('test', 'non-existing-key')).toBe(false);
-      expect(await adapter.increment('counter', 'key1', undefined, 5)).toBe(5);
-      expect(await adapter.listLength('list', 'key1')).toBe(5);
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Operation failed');
     });
   });
 
-  describe('Type compatibility', (_: any) => {
-    it('should allow VectorDatabaseAdapter to be used as DatabaseAdapter', (_: any) => {
-      const vectorAdapter: VectorDatabaseAdapter = {} as VectorDatabaseAdapter;
-      const baseAdapter: DatabaseAdapter = vectorAdapter;
+  describe('FirestoreDocument interface', () => {
+    it('should have required properties', () => {
+      const doc: FirestoreDocument = {
+        id: 'doc-1',
+        data: { name: 'Test Document', value: 42 },
+      };
 
-      expect(baseAdapter).toBe(vectorAdapter);
+      expect(doc.id).toBe('doc-1');
+      expect(doc.data.name).toBe('Test Document');
+      expect(doc.data.value).toBe(42);
     });
 
-    it('should allow RedisDatabaseAdapter to be used as DatabaseAdapter', (_: any) => {
-      const redisAdapter: RedisDatabaseAdapter = {} as RedisDatabaseAdapter;
-      const baseAdapter: DatabaseAdapter = redisAdapter;
+    it('should support optional timestamps', () => {
+      const created = new Date('2023-01-01');
+      const updated = new Date('2023-01-02');
 
-      expect(baseAdapter).toBe(redisAdapter);
+      const doc: FirestoreDocument = {
+        id: 'doc-1',
+        data: { name: 'Test Document' },
+        created,
+        updated,
+      };
+
+      expect(doc.created).toBe(created);
+      expect(doc.updated).toBe(updated);
+    });
+  });
+
+  describe('FirestoreQuery interface', () => {
+    it('should support basic queries', () => {
+      const query: FirestoreQuery = {
+        collection: 'users',
+        limit: 10,
+      };
+
+      expect(query.collection).toBe('users');
+      expect(query.limit).toBe(10);
+    });
+
+    it('should support complex queries with where clauses', () => {
+      const query: FirestoreQuery = {
+        collection: 'users',
+        where: [
+          { field: 'age', operator: '>=', value: 18 },
+          { field: 'status', operator: '==', value: 'active' },
+        ],
+        orderBy: [{ field: 'name', direction: 'asc' }],
+        limit: 50,
+      };
+
+      expect(query.where).toHaveLength(2);
+      expect(query.where?.[0].field).toBe('age');
+      expect(query.where?.[0].operator).toBe('>=');
+      expect(query.where?.[0].value).toBe(18);
+      expect(query.orderBy).toHaveLength(1);
+      expect(query.orderBy?.[0].field).toBe('name');
+      expect(query.orderBy?.[0].direction).toBe('asc');
+    });
+  });
+
+  describe('BulkOperationResult interface', () => {
+    it('should track operation results', () => {
+      const result: BulkOperationResult = {
+        success: true,
+        processed: 100,
+        errors: [],
+      };
+
+      expect(result.success).toBe(true);
+      expect(result.processed).toBe(100);
+      expect(result.errors).toEqual([]);
+    });
+
+    it('should track operation errors', () => {
+      const result: BulkOperationResult = {
+        success: false,
+        processed: 75,
+        errors: ['Item 76 failed validation', 'Item 80 network error'],
+      };
+
+      expect(result.success).toBe(false);
+      expect(result.processed).toBe(75);
+      expect(result.errors).toHaveLength(2);
+    });
+  });
+
+  describe('QueryOptions interface', () => {
+    it('should support pagination and ordering', () => {
+      const options: QueryOptions = {
+        limit: 25,
+        offset: 50,
+        orderBy: 'created_at',
+        orderDirection: 'desc',
+      };
+
+      expect(options.limit).toBe(25);
+      expect(options.offset).toBe(50);
+      expect(options.orderBy).toBe('created_at');
+      expect(options.orderDirection).toBe('desc');
+    });
+
+    it('should support minimal options', () => {
+      const options: QueryOptions = {
+        limit: 10,
+      };
+
+      expect(options.limit).toBe(10);
+      expect(options.offset).toBeUndefined();
     });
   });
 });

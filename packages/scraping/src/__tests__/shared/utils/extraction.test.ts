@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect } from 'vitest';
 
 import {
   extractText,
@@ -11,20 +11,20 @@ import {
   cleanText,
 } from '../../../shared/utils/extraction';
 
-describe('Extraction Utilities', (_: any) => {
-  describe('extractText', (_: any) => {
-    it('should extract text from HTML', (_: any) => {
+describe('extraction Utilities', () => {
+  describe('extractText', () => {
+    test('should extract text from HTML', () => {
       const html = '<div><p>Hello <strong>World</strong></p><span>Test</span></div>';
       const result = extractText(html);
 
       expect(result).toBe('Hello World Test');
     });
 
-    it('should handle empty HTML', (_: any) => {
+    test('should handle empty HTML', () => {
       expect(extractText('')).toBe('');
     });
 
-    it('should remove script and style tags', (_: any) => {
+    test('should remove script and style tags', () => {
       const html = `
         <div>
           <script>console.log('test');</script>
@@ -38,14 +38,14 @@ describe('Extraction Utilities', (_: any) => {
       expect(result).toBe('Visible text More text');
     });
 
-    it('should handle nested elements', (_: any) => {
+    test('should handle nested elements', () => {
       const html = '<div><p>Outer <span>Inner <em>Deep</em></span> Text</p></div>';
       const result = extractText(html);
 
       expect(result).toBe('Outer Inner Deep Text');
     });
 
-    it('should preserve spacing between elements', (_: any) => {
+    test('should preserve spacing between elements', () => {
       const html = '<div>First</div><div>Second</div>';
       const result = extractText(html);
 
@@ -53,106 +53,106 @@ describe('Extraction Utilities', (_: any) => {
     });
   });
 
-  describe('extractLinks', (_: any) => {
-    it('should extract absolute links', (_: any) => {
+  describe('extractLinks', () => {
+    test('should extract absolute links', () => {
       const html = `
         <a href="https://example.com">Example</a>
         <a href="https://test.com">Test</a>
       `;
       const result = extractLinks(html);
 
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         { href: 'https://example.com', text: 'Example' },
         { href: 'https://test.com', text: 'Test' },
       ]);
     });
 
-    it('should resolve relative links with base URL', (_: any) => {
+    test('should resolve relative links with base URL', () => {
       const html = `
         <a href="/about">About</a>
         <a href="contact">Contact</a>
       `;
       const result = extractLinks(html, 'https://example.com');
 
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         { href: 'https://example.com/about', text: 'About' },
         { href: 'https://example.com/contact', text: 'Contact' },
       ]);
     });
 
-    it('should handle links without href', (_: any) => {
+    test('should handle links without href', () => {
       const html = '<a>No href</a><a href="">Empty href</a>';
       const result = extractLinks(html);
 
-      expect(result).toEqual([]);
+      expect(result).toStrictEqual([]);
     });
 
-    it('should extract link text with nested elements', (_: any) => {
+    test('should extract link text with nested elements', () => {
       const html = '<a href="/test">Click <strong>here</strong> now</a>';
       const result = extractLinks(html);
 
-      expect(result).toEqual([{ href: '/test', text: 'Click here now' }]);
+      expect(result).toStrictEqual([{ href: '/test', text: 'Click here now' }]);
     });
 
-    it('should handle mailto and tel links', (_: any) => {
+    test('should handle mailto and tel links', () => {
       const html = `
         <a href="mailto:test@example.com">Email</a>
         <a href="tel:+1234567890">Phone</a>
       `;
       const result = extractLinks(html);
 
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         { href: 'mailto:test@example.com', text: 'Email' },
         { href: 'tel:+1234567890', text: 'Phone' },
       ]);
     });
   });
 
-  describe('extractImages', (_: any) => {
-    it('should extract image sources', (_: any) => {
+  describe('extractImages', () => {
+    test('should extract image sources', () => {
       const html = `
         <img src="https://example.com/image1.jpg" alt="Image 1">
         <img src="/images/photo.png" alt="Photo">
       `;
       const result = extractImages(html);
 
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         { src: 'https://example.com/image1.jpg', alt: 'Image 1' },
         { src: '/images/photo.png', alt: 'Photo' },
       ]);
     });
 
-    it('should resolve relative image URLs', (_: any) => {
+    test('should resolve relative image URLs', () => {
       const html = '<img src="logo.png" alt="Logo">';
       const result = extractImages(html, 'https://example.com');
 
-      expect(result).toEqual([{ src: 'https://example.com/logo.png', alt: 'Logo' }]);
+      expect(result).toStrictEqual([{ src: 'https://example.com/logo.png', alt: 'Logo' }]);
     });
 
-    it('should handle images without alt text', (_: any) => {
+    test('should handle images without alt text', () => {
       const html = '<img src="test.jpg">';
       const result = extractImages(html);
 
-      expect(result).toEqual([{ src: 'test.jpg', alt: '' }]);
+      expect(result).toStrictEqual([{ src: 'test.jpg', alt: '' }]);
     });
 
-    it('should skip images without src', (_: any) => {
+    test('should skip images without src', () => {
       const html = '<img alt="No source">';
       const result = extractImages(html);
 
-      expect(result).toEqual([]);
+      expect(result).toStrictEqual([]);
     });
 
-    it('should handle data URLs', (_: any) => {
+    test('should handle data URLs', () => {
       const html = '<img src="data:image/png;base64,iVBORw0KG..." alt="Data">';
       const result = extractImages(html);
 
-      expect(result).toEqual([{ src: 'data:image/png;base64,iVBORw0KG...', alt: 'Data' }]);
+      expect(result).toStrictEqual([{ src: 'data:image/png;base64,iVBORw0KG...', alt: 'Data' }]);
     });
   });
 
-  describe('extractMetadata', (_: any) => {
-    it('should extract meta tags', (_: any) => {
+  describe('extractMetadata', () => {
+    test('should extract meta tags', () => {
       const html = `
         <html>
           <head>
@@ -166,7 +166,7 @@ describe('Extraction Utilities', (_: any) => {
       `;
       const result = extractMetadata(html);
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         title: 'Page Title',
         description: 'Page description',
         keywords: 'test, example',
@@ -175,16 +175,16 @@ describe('Extraction Utilities', (_: any) => {
       });
     });
 
-    it('should handle missing metadata', (_: any) => {
+    test('should handle missing metadata', () => {
       const html = '<html><body>Content</body></html>';
       const result = extractMetadata(html);
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         title: '',
       });
     });
 
-    it('should prioritize property over name', (_: any) => {
+    test('should prioritize property over name', () => {
       const html = `
         <meta name="author" content="Name Author">
         <meta property="author" content="Property Author">
@@ -195,8 +195,8 @@ describe('Extraction Utilities', (_: any) => {
     });
   });
 
-  describe('extractStructuredData', (_: any) => {
-    it('should extract JSON-LD structured data', (_: any) => {
+  describe('extractStructuredData', () => {
+    test('should extract JSON-LD structured data', () => {
       const html = `
         <script type="application/ld+json">
         {
@@ -209,7 +209,7 @@ describe('Extraction Utilities', (_: any) => {
       `;
       const result = extractStructuredData(html);
 
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         {
           '@context': 'https://schema.org',
           '@type': 'Product',
@@ -219,7 +219,7 @@ describe('Extraction Utilities', (_: any) => {
       ]);
     });
 
-    it('should handle multiple structured data blocks', (_: any) => {
+    test('should handle multiple structured data blocks', () => {
       const html = `
         <script type="application/ld+json">
         {"@type": "Organization", "name": "Company"}
@@ -235,7 +235,7 @@ describe('Extraction Utilities', (_: any) => {
       expect(result[1]['@type']).toBe('Product');
     });
 
-    it('should handle invalid JSON gracefully', (_: any) => {
+    test('should handle invalid JSON gracefully', () => {
       const html = `
         <script type="application/ld+json">
         {invalid json}
@@ -243,93 +243,93 @@ describe('Extraction Utilities', (_: any) => {
       `;
       const result = extractStructuredData(html);
 
-      expect(result).toEqual([]);
+      expect(result).toStrictEqual([]);
     });
   });
 
-  describe('extractEmails', (_: any) => {
-    it('should extract email addresses', (_: any) => {
+  describe('extractEmails', () => {
+    test('should extract email addresses', () => {
       const text = 'Contact us at info@example.com or support@test.com';
       const result = extractEmails(text);
 
-      expect(result).toEqual(['info@example.com', 'support@test.com']);
+      expect(result).toStrictEqual(['info@example.com', 'support@test.com']);
     });
 
-    it('should handle complex email formats', (_: any) => {
+    test('should handle complex email formats', () => {
       const text = 'Email: user.name+tag@example.co.uk';
       const result = extractEmails(text);
 
-      expect(result).toEqual(['user.name+tag@example.co.uk']);
+      expect(result).toStrictEqual(['user.name+tag@example.co.uk']);
     });
 
-    it('should avoid false positives', (_: any) => {
+    test('should avoid false positives', () => {
       const text = 'Price is $10.99 @ store';
       const result = extractEmails(text);
 
-      expect(result).toEqual([]);
+      expect(result).toStrictEqual([]);
     });
 
-    it('should extract unique emails', (_: any) => {
+    test('should extract unique emails', () => {
       const text = 'Email test@example.com or test@example.com for info';
       const result = extractEmails(text);
 
-      expect(result).toEqual(['test@example.com']);
+      expect(result).toStrictEqual(['test@example.com']);
     });
   });
 
-  describe('extractPhoneNumbers', (_: any) => {
-    it('should extract US phone numbers', (_: any) => {
+  describe('extractPhoneNumbers', () => {
+    test('should extract US phone numbers', () => {
       const text = 'Call us at (555) 123-4567 or 555-987-6543';
       const result = extractPhoneNumbers(text);
 
-      expect(result).toEqual(['(555) 123-4567', '555-987-6543']);
+      expect(result).toStrictEqual(['(555) 123-4567', '555-987-6543']);
     });
 
-    it('should extract international format', (_: any) => {
+    test('should extract international format', () => {
       const text = 'International: +1-555-123-4567';
       const result = extractPhoneNumbers(text);
 
-      expect(result).toEqual(['+1-555-123-4567']);
+      expect(result).toStrictEqual(['+1-555-123-4567']);
     });
 
-    it('should handle different formats', (_: any) => {
+    test('should handle different formats', () => {
       const text = '555.123.4567 or 5551234567';
       const result = extractPhoneNumbers(text);
 
-      expect(result).toEqual(['555.123.4567', '5551234567']);
+      expect(result).toStrictEqual(['555.123.4567', '5551234567']);
     });
 
-    it('should avoid false positives', (_: any) => {
+    test('should avoid false positives', () => {
       const text = 'Product code: 12345';
       const result = extractPhoneNumbers(text);
 
-      expect(result).toEqual([]);
+      expect(result).toStrictEqual([]);
     });
   });
 
-  describe('cleanText', (_: any) => {
-    it('should clean whitespace', (_: any) => {
+  describe('cleanText', () => {
+    test('should clean whitespace', () => {
       const text = '  Hello   World  \n\n  Test  ';
       const result = cleanText(text);
 
       expect(result).toBe('Hello World Test');
     });
 
-    it('should remove HTML entities', (_: any) => {
+    test('should remove HTML entities', () => {
       const text = 'Hello &amp; World &lt;test&gt;';
       const result = cleanText(text);
 
       expect(result).toBe('Hello & World <test>');
     });
 
-    it('should handle special characters', (_: any) => {
+    test('should handle special characters', () => {
       const text = 'Price: $10.99 — Save 50%!';
       const result = cleanText(text);
 
       expect(result).toBe('Price: $10.99 — Save 50%!');
     });
 
-    it('should handle empty input', (_: any) => {
+    test('should handle empty input', () => {
       expect(cleanText('')).toBe('');
       expect(cleanText('   ')).toBe('');
     });

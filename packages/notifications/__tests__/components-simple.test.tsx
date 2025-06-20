@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock the keys module
 const mockKeys = vi.fn();
@@ -27,10 +27,10 @@ vi.mock('@knocklabs/react', (_: any) => ({
 }));
 
 // Mock CSS imports
-vi.mock('@knocklabs/react/dist/index.css', (_: any) => ({}));
-vi.mock('../styles.css', (_: any) => ({}));
+vi.mock('@knocklabs/react/dist/index.css', () => ({}));
+vi.mock('../styles.css', () => ({}));
 
-describe('Notifications Components Integration', (_: any) => {
+describe('notifications Components Integration', () => {
   const user = userEvent.setup();
 
   beforeEach(() => {
@@ -38,8 +38,8 @@ describe('Notifications Components Integration', (_: any) => {
     vi.resetModules();
   });
 
-  describe('NotificationsProvider', (_: any) => {
-    describe('with valid configuration', (_: any) => {
+  describe('notificationsProvider', () => {
+    describe('with valid configuration', () => {
       beforeEach(() => {
         mockKeys.mockReturnValue({
           NEXT_PUBLIC_KNOCK_API_KEY: 'pk_test_123456789',
@@ -47,7 +47,7 @@ describe('Notifications Components Integration', (_: any) => {
         });
       });
 
-      it('should render children within Knock providers when keys are available', async () => {
+      test('should render children within Knock providers when keys are available', async () => {
         const { NotificationsProvider } = await import('../components/provider');
 
         render(
@@ -61,7 +61,7 @@ describe('Notifications Components Integration', (_: any) => {
         expect(screen.getByTestId('test-child')).toBeInTheDocument();
       });
 
-      it('should nest providers correctly', async () => {
+      test('should nest providers correctly', async () => {
         const { NotificationsProvider } = await import('../components/provider');
 
         render(
@@ -79,8 +79,8 @@ describe('Notifications Components Integration', (_: any) => {
       });
     });
 
-    describe('without required keys', (_: any) => {
-      it('should render children directly when API key is missing', async () => {
+    describe('without required keys', () => {
+      test('should render children directly when API key is missing', async () => {
         mockKeys.mockReturnValue({
           NEXT_PUBLIC_KNOCK_API_KEY: undefined,
           NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID: 'channel_123',
@@ -99,7 +99,7 @@ describe('Notifications Components Integration', (_: any) => {
         expect(screen.getByTestId('test-child')).toBeInTheDocument();
       });
 
-      it('should render children directly when feed channel ID is missing', async () => {
+      test('should render children directly when feed channel ID is missing', async () => {
         mockKeys.mockReturnValue({
           NEXT_PUBLIC_KNOCK_API_KEY: 'pk_test_123456789',
           NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID: undefined,
@@ -120,8 +120,8 @@ describe('Notifications Components Integration', (_: any) => {
     });
   });
 
-  describe('NotificationsTrigger', (_: any) => {
-    describe('with valid API key', (_: any) => {
+  describe('notificationsTrigger', () => {
+    describe('with valid API key', () => {
       beforeEach(() => {
         mockKeys.mockReturnValue({
           NEXT_PUBLIC_KNOCK_API_KEY: 'pk_test_123456789',
@@ -129,7 +129,7 @@ describe('Notifications Components Integration', (_: any) => {
         });
       });
 
-      it('should render notification button when API key is available', async () => {
+      test('should render notification button when API key is available', async () => {
         const { NotificationsTrigger } = await import('../components/trigger');
 
         render(<NotificationsTrigger />);
@@ -137,7 +137,7 @@ describe('Notifications Components Integration', (_: any) => {
         expect(screen.getByTestId('notification-icon-button')).toBeInTheDocument();
       });
 
-      it('should not show popover initially', async () => {
+      test('should not show popover initially', async () => {
         const { NotificationsTrigger } = await import('../components/trigger');
 
         render(<NotificationsTrigger />);
@@ -145,7 +145,7 @@ describe('Notifications Components Integration', (_: any) => {
         expect(screen.queryByTestId('notification-feed-popover')).not.toBeInTheDocument();
       });
 
-      it('should show popover when button is clicked', async () => {
+      test('should show popover when button is clicked', async () => {
         const { NotificationsTrigger } = await import('../components/trigger');
 
         render(<NotificationsTrigger />);
@@ -156,7 +156,7 @@ describe('Notifications Components Integration', (_: any) => {
         expect(screen.getByTestId('notification-feed-popover')).toBeInTheDocument();
       });
 
-      it('should toggle popover visibility on button clicks', async () => {
+      test('should toggle popover visibility on button clicks', async () => {
         const { NotificationsTrigger } = await import('../components/trigger');
 
         render(<NotificationsTrigger />);
@@ -179,7 +179,7 @@ describe('Notifications Components Integration', (_: any) => {
         expect(screen.getByTestId('notification-feed-popover')).toBeInTheDocument();
       });
 
-      it('should handle multiple rapid clicks correctly', async () => {
+      test('should handle multiple rapid clicks correctly', async () => {
         const { NotificationsTrigger } = await import('../components/trigger');
 
         render(<NotificationsTrigger />);
@@ -195,7 +195,7 @@ describe('Notifications Components Integration', (_: any) => {
         expect(screen.getByTestId('notification-feed-popover')).toBeInTheDocument();
       });
 
-      it('should handle keyboard interactions', async () => {
+      test('should handle keyboard interactions', async () => {
         const { NotificationsTrigger } = await import('../components/trigger');
 
         render(<NotificationsTrigger />);
@@ -211,7 +211,7 @@ describe('Notifications Components Integration', (_: any) => {
       });
     });
 
-    describe('without API key', (_: any) => {
+    describe('without API key', () => {
       beforeEach(() => {
         mockKeys.mockReturnValue({
           NEXT_PUBLIC_KNOCK_API_KEY: undefined,
@@ -219,7 +219,7 @@ describe('Notifications Components Integration', (_: any) => {
         });
       });
 
-      it('should return null when API key is missing', async () => {
+      test('should return null when API key is missing', async () => {
         const { NotificationsTrigger } = await import('../components/trigger');
 
         const { container } = render(<NotificationsTrigger />);
@@ -229,7 +229,7 @@ describe('Notifications Components Integration', (_: any) => {
         expect(screen.queryByTestId('notification-feed-popover')).not.toBeInTheDocument();
       });
 
-      it('should return null when API key is empty string', async () => {
+      test('should return null when API key is empty string', async () => {
         mockKeys.mockReturnValue({
           NEXT_PUBLIC_KNOCK_API_KEY: '',
           NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID: 'channel_123',
@@ -244,8 +244,8 @@ describe('Notifications Components Integration', (_: any) => {
     });
   });
 
-  describe('Keys integration', (_: any) => {
-    it('should call keys function when components are rendered', async () => {
+  describe('keys integration', () => {
+    test('should call keys function when components are rendered', async () => {
       mockKeys.mockReturnValue({
         NEXT_PUBLIC_KNOCK_API_KEY: 'pk_test_123456789',
         NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID: 'channel_123',
@@ -260,10 +260,10 @@ describe('Notifications Components Integration', (_: any) => {
         </NotificationsProvider>,
       );
 
-      expect(mockKeys).toHaveBeenCalled();
+      expect(mockKeys).toHaveBeenCalledWith();
     });
 
-    it('should handle changing key values', async () => {
+    test('should handle changing key values', async () => {
       // Start with valid keys
       mockKeys.mockReturnValue({
         NEXT_PUBLIC_KNOCK_API_KEY: 'pk_test_123456789',
@@ -297,7 +297,7 @@ describe('Notifications Components Integration', (_: any) => {
     });
   });
 
-  describe('Component cleanup and unmounting', (_: any) => {
+  describe('component cleanup and unmounting', () => {
     beforeEach(() => {
       mockKeys.mockReturnValue({
         NEXT_PUBLIC_KNOCK_API_KEY: 'pk_test_123456789',
@@ -305,7 +305,7 @@ describe('Notifications Components Integration', (_: any) => {
       });
     });
 
-    it('should handle provider unmounting without errors', async () => {
+    test('should handle provider unmounting without errors', async () => {
       const { NotificationsProvider } = await import('../components/provider');
 
       const { unmount } = render(
@@ -317,7 +317,7 @@ describe('Notifications Components Integration', (_: any) => {
       expect(() => unmount()).not.toThrow();
     });
 
-    it('should handle trigger unmounting without errors', async () => {
+    test('should handle trigger unmounting without errors', async () => {
       const { NotificationsTrigger } = await import('../components/trigger');
 
       const { unmount } = render(<NotificationsTrigger />);
@@ -325,7 +325,7 @@ describe('Notifications Components Integration', (_: any) => {
       expect(() => unmount()).not.toThrow();
     });
 
-    it('should handle unmounting with popover visible', async () => {
+    test('should handle unmounting with popover visible', async () => {
       const { NotificationsTrigger } = await import('../components/trigger');
 
       const { unmount } = render(<NotificationsTrigger />);
@@ -338,7 +338,7 @@ describe('Notifications Components Integration', (_: any) => {
     });
   });
 
-  describe('Component re-rendering', (_: any) => {
+  describe('component re-rendering', () => {
     beforeEach(() => {
       mockKeys.mockReturnValue({
         NEXT_PUBLIC_KNOCK_API_KEY: 'pk_test_123456789',
@@ -346,7 +346,7 @@ describe('Notifications Components Integration', (_: any) => {
       });
     });
 
-    it('should handle userId prop changes', async () => {
+    test('should handle userId prop changes', async () => {
       const { NotificationsProvider } = await import('../components/provider');
 
       const { rerender } = render(
@@ -366,7 +366,7 @@ describe('Notifications Components Integration', (_: any) => {
       expect(screen.getByTestId('content')).toBeInTheDocument();
     });
 
-    it('should handle children changes', async () => {
+    test('should handle children changes', async () => {
       const { NotificationsProvider } = await import('../components/provider');
 
       const { rerender } = render(
@@ -388,8 +388,8 @@ describe('Notifications Components Integration', (_: any) => {
     });
   });
 
-  describe('Error handling', (_: any) => {
-    it('should handle keys function throwing error in provider', async () => {
+  describe('error handling', () => {
+    test('should handle keys function throwing error in provider', async () => {
       mockKeys.mockImplementation(() => {
         throw new Error('Keys configuration error');
       });
@@ -407,7 +407,7 @@ describe('Notifications Components Integration', (_: any) => {
       }).rejects.toThrow('Keys configuration error');
     });
 
-    it('should handle keys function throwing error in trigger', async () => {
+    test('should handle keys function throwing error in trigger', async () => {
       mockKeys.mockImplementation(() => {
         throw new Error('Keys configuration error');
       });

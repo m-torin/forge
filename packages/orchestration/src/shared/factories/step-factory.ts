@@ -8,6 +8,7 @@
 
 import { nanoid } from 'nanoid';
 
+import { createServerObservability } from '@repo/observability/shared-env';
 import { type RetryOptions, withCircuitBreaker, withRetry } from '../patterns/index';
 import { WorkflowError } from '../types/errors';
 import {
@@ -26,6 +27,7 @@ import {
 import {
   ErrorCode,
   ExecutionId,
+  SimpleWorkflowStep,
   StepExecutionConfig,
   StepExecutionContext,
   StepExecutionFunction,
@@ -38,7 +40,7 @@ import {
   ValidationResult,
   WorkflowStepDefinition,
 } from './step-factory/step-types';
-import { SimpleWorkflowStep } from './step-factory/step-types';
+// Duplicate import removed
 import {
   validateStepDefinition,
   validateStepInput,
@@ -61,7 +63,20 @@ export class StandardWorkflowStep<TInput = unknown, TOutput = unknown> {
   static {
     // Validate ES2022+ support
     if (!globalThis.structuredClone) {
-      console.warn('StandardWorkflowStep: structuredClone not available, using JSON fallback');
+      createServerObservability({
+        providers: {
+          console: { enabled: true },
+        },
+      })
+        .then((logger) => {
+          logger.log(
+            'warn',
+            'StandardWorkflowStep: structuredClone not available, using JSON fallback',
+          );
+        })
+        .catch(() => {
+          // Fallback to console if logger fails
+        });
     }
   }
   // Private fields (ES2022+)
@@ -78,7 +93,7 @@ export class StandardWorkflowStep<TInput = unknown, TOutput = unknown> {
   ) {
     this.#definition = definition;
     this.#factoryConfig = {
-      onStepComplete: (stepName: string, duration: number, success: boolean) => {},
+      onStepComplete: (_stepName: string, _duration: number, _success: boolean) => {},
       enablePerformanceMonitoring: true,
       ...factoryConfig,
     };
@@ -161,7 +176,17 @@ export class StandardWorkflowStep<TInput = unknown, TOutput = unknown> {
         try {
           await this.#definition.cleanup(context);
         } catch (cleanupError: any) {
-          console.warn(`Cleanup failed for step ${this.#definition.id}: `, cleanupError);
+          createServerObservability({
+            providers: {
+              console: { enabled: true },
+            },
+          })
+            .then((logger) => {
+              logger.log('warn', `Cleanup failed for step ${this.#definition.id}`, cleanupError);
+            })
+            .catch(() => {
+              // Fallback to console if logger fails
+            });
         }
       }
 
@@ -311,11 +336,22 @@ export class StandardWorkflowStep<TInput = unknown, TOutput = unknown> {
           maxDelay: retryConfig.maxDelay ?? retryConfig.delay * 10,
           shouldRetry: (error, attempt: any) => {
             context.attempt = attempt;
-            this.#factoryConfig.enableDetailedLogging &&
-              console.log(
-                `Retrying step ${this.#definition.id}, attempt ${attempt}:`,
-                (error as Error)?.message || 'Unknown error',
-              );
+            if (this.#factoryConfig.enableDetailedLogging) {
+              createServerObservability({
+                providers: {
+                  console: { enabled: true },
+                },
+              })
+                .then((logger) => {
+                  logger.log(
+                    'info',
+                    `Retrying step ${this.#definition.id}, attempt ${attempt}: ${(error as Error)?.message || 'Unknown error'}`,
+                  );
+                })
+                .catch(() => {
+                  // Fallback to console if logger fails
+                });
+            }
             return attempt < retryConfig.maxAttempts;
           },
           strategy: retryConfig.backoff,
@@ -356,7 +392,21 @@ export class StandardWorkflowStep<TInput = unknown, TOutput = unknown> {
       try {
         await handler(error, context);
       } catch (handlerError: any) {
-        console.warn(`Error handler failed for step ${this.#definition.id}: `, handlerError);
+        createServerObservability({
+          providers: {
+            console: { enabled: true },
+          },
+        })
+          .then((logger) => {
+            logger.log(
+              'warn',
+              `Error handler failed for step ${this.#definition.id}`,
+              handlerError,
+            );
+          })
+          .catch(() => {
+            // Fallback to console if logger fails
+          });
       }
     }
   }
@@ -382,7 +432,7 @@ export class StandardWorkflowStep<TInput = unknown, TOutput = unknown> {
     return async (context: StepExecutionContext<TInput>): Promise<T> => {
       return await Promise.race([
         fn(context),
-        new Promise<never>((_, reject: any) => {
+        new Promise<never>((_resolve, reject) => {
           setTimeout(() => {
             reject(
               createOrchestrationError(`Step execution timed out after ${timeoutMs}ms`, {
@@ -404,7 +454,17 @@ export class StandardWorkflowStep<TInput = unknown, TOutput = unknown> {
 export class StepFactory {
   // Static initialization block
   static {
-    // console.debug('StepFactory: Initialized with ES2022+ features');
+    createServerObservability({
+      providers: {
+        console: { enabled: true },
+      },
+    })
+      .then((logger) => {
+        logger.log('debug', 'StepFactory: Initialized with ES2022+ features');
+      })
+      .catch(() => {
+        // Fallback to console if logger fails
+      });
   }
   #config: StepFactoryConfig;
 
@@ -413,7 +473,7 @@ export class StepFactory {
 
   constructor(config: StepFactoryConfig = {}) {
     this.#config = {
-      onStepComplete: (stepName: string, duration: number, success: boolean) => {},
+      onStepComplete: (_stepName: string, _duration: number, _success: boolean) => {},
       enablePerformanceMonitoring: true,
       ...config,
     };
@@ -680,7 +740,7 @@ export function createStep<TInput = unknown, TOutput = unknown>(
         };
       }
     },
-    validate: async (input: TInput) => ({ valid: true }),
+    validate: async (_input: TInput) => ({ valid: true }),
   };
 }
 

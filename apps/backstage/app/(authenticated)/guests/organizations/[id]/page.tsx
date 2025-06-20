@@ -9,8 +9,6 @@ import {
   Card,
   SimpleGrid,
   Divider,
-  ActionIcon,
-  Tooltip,
   Container,
   Button,
 } from '@mantine/core';
@@ -27,10 +25,10 @@ import { useEffect, useState } from 'react';
 import { notifications } from '@mantine/notifications';
 import { useRouter } from 'next/navigation';
 
-import { getOrganizationById } from '@repo/auth/server/next';
-import { OrganizationForm } from '../../components/forms/OrganizationForm';
-import { PageHeader } from '../../../components/page-header';
-import type { Organization } from '../../types';
+import { getOrganizationAction } from '@/actions/pim3/actions';
+import { OrganizationForm } from '@/components/pim3/forms/OrganizationForm';
+import { PageHeader } from '@/components/pim3/page-header';
+import type { Organization } from '@/types/pim3';
 
 interface OrganizationPageProps {
   params: Promise<{ id: string }>;
@@ -62,16 +60,25 @@ export default function OrganizationPage({ params }: OrganizationPageProps) {
 
     setLoading(true);
     try {
-      const result = await getOrganizationById(paramsData.id);
-      if (result.success && result.data) {
+      const result = await getOrganizationAction(paramsData.id);
+      if (result && (result as any).success && (result as any).data) {
         // The organization data from better-auth may have a different structure
         // Add member count information
-        const org = result.data as any;
+        const org = (result as any).data;
         setOrganization({
           ...org,
           _count: {
             members: org.members?.length || 0,
             invitations: org.invitations?.length || 0,
+          },
+        });
+      } else if (result && (result as any).id) {
+        // Direct organization object returned
+        setOrganization({
+          ...(result as any),
+          _count: {
+            members: (result as any).members?.length || 0,
+            invitations: (result as any).invitations?.length || 0,
           },
         });
       } else {

@@ -58,9 +58,10 @@ relationships, and perform database operations safely.
     # Start Prisma Studio
     cd apps/studio
     pnpm dev
-    
+
     # Access at http://localhost:3600
     ```
+
   </Step>
 
 <Step title="Database Connection">
@@ -72,10 +73,11 @@ relationships, and perform database operations safely.
     ```bash
     # Sync schema changes
     pnpm --filter @repo/database db:push
-    
+
     # Generate fresh Prisma client
     pnpm --filter @repo/database generate
     ```
+
   </Step>
 </Steps>
 
@@ -91,7 +93,7 @@ relationships, and perform database operations safely.
       const [selectedTable, setSelectedTable] = useState<string>('Product');
       const [records, setRecords] = useState([]);
       const [pagination, setPagination] = useState({ page: 1, limit: 25 });
-      
+
       return (
         <div className="table-browser">
           <TableSidebar
@@ -99,7 +101,7 @@ relationships, and perform database operations safely.
             selectedTable={selectedTable}
             onTableSelect={setSelectedTable}
           />
-          
+
           <TableView
             table={selectedTable}
             records={records}
@@ -110,8 +112,9 @@ relationships, and perform database operations safely.
       );
     }
     ```
+
   </Tab>
-  
+
   <Tab title="Record Editor">
     ```typescript
     // Record editing interface
@@ -121,7 +124,7 @@ relationships, and perform database operations safely.
     }) {
       const [record, setRecord] = useState({});
       const [validationErrors, setValidationErrors] = useState({});
-      
+
       const handleSave = async () => {
         try {
           const result = await prisma[table].upsert({
@@ -129,7 +132,7 @@ relationships, and perform database operations safely.
             update: record,
             create: record,
           });
-          
+
           notifications.show({
             title: 'Success',
             message: `Record ${recordId ? 'updated' : 'created'} successfully`,
@@ -139,7 +142,7 @@ relationships, and perform database operations safely.
           setValidationErrors(parseValidationErrors(error));
         }
       };
-      
+
       return (
         <form onSubmit={handleSave}>
           <Stack>
@@ -153,7 +156,7 @@ relationships, and perform database operations safely.
                 error={validationErrors[field]}
               />
             ))}
-            
+
             <Group>
               <Button type="submit" loading={saving}>
                 {recordId ? 'Update' : 'Create'}
@@ -167,8 +170,9 @@ relationships, and perform database operations safely.
       );
     }
     ```
+
   </Tab>
-  
+
   <Tab title="Relationship Navigator">
     ```typescript
     // Relationship navigation
@@ -177,7 +181,7 @@ relationships, and perform database operations safely.
       recordId: string;
     }) {
       const relationships = useRelationships(table);
-      
+
       return (
         <Tabs defaultValue="belongsTo">
           <Tabs.List>
@@ -185,7 +189,7 @@ relationships, and perform database operations safely.
             <Tabs.Tab value="hasMany">Has Many</Tabs.Tab>
             <Tabs.Tab value="manyToMany">Many to Many</Tabs.Tab>
           </Tabs.List>
-          
+
           <Tabs.Panel value="belongsTo">
             {relationships.belongsTo.map(relation => (
               <RelationshipCard
@@ -199,7 +203,7 @@ relationships, and perform database operations safely.
               />
             ))}
           </Tabs.Panel>
-          
+
           <Tabs.Panel value="hasMany">
             {relationships.hasMany.map(relation => (
               <RelatedRecordsList
@@ -214,6 +218,7 @@ relationships, and perform database operations safely.
       );
     }
     ```
+
   </Tab>
 </Tabs>
 
@@ -225,68 +230,52 @@ relationships, and perform database operations safely.
 export function SchemaEditor() {
   const [schema, setSchema] = useState(currentSchema);
   const [pendingChanges, setPendingChanges] = useState([]);
-  
-  const addTable = () => {
-    const newTable = {
-      name: 'NewTable',
-      fields: {
-        id: { type: 'String', isId: true, default: 'cuid()' },
-        createdAt: { type: 'DateTime', default: 'now()' },
-        updatedAt: { type: 'DateTime', updatedAt: true },
-      },
-    };
-    
+
+const addTable = () => { const newTable = { name: 'NewTable', fields: { id: { type: 'String', isId:
+true, default: 'cuid()' }, createdAt: { type: 'DateTime', default: 'now()' }, updatedAt: { type:
+'DateTime', updatedAt: true }, }, };
+
     setSchema(prev => ({
       ...prev,
       tables: { ...prev.tables, NewTable: newTable },
     }));
-    
+
     setPendingChanges(prev => [...prev, {
       type: 'CREATE_TABLE',
       table: 'NewTable',
       definition: newTable,
     }]);
-  };
-  
-  const addField = (tableName: string, fieldConfig: FieldConfig) => {
-    setSchema(prev => ({
-      ...prev,
-      tables: {
-        ...prev.tables,
-        [tableName]: {
-          ...prev.tables[tableName],
-          fields: {
-            ...prev.tables[tableName].fields,
-            [fieldConfig.name]: fieldConfig,
-          },
-        },
-      },
-    }));
-    
+
+};
+
+const addField = (tableName: string, fieldConfig: FieldConfig) => { setSchema(prev => ({ ...prev,
+tables: { ...prev.tables, [tableName]: { ...prev.tables[tableName], fields: {
+...prev.tables[tableName].fields, [fieldConfig.name]: fieldConfig, }, }, }, }));
+
     setPendingChanges(prev => [...prev, {
       type: 'ADD_FIELD',
       table: tableName,
       field: fieldConfig,
     }]);
-  };
-  
-  return (
-    <div className="schema-editor">
-      <SchemaVisualization
+
+};
+
+return ( <div className="schema-editor"> <SchemaVisualization
         schema={schema}
         onTableClick={setSelectedTable}
         onFieldClick={setSelectedField}
       />
-      
+
       <ChangesSidebar
         changes={pendingChanges}
         onApply={applyChanges}
         onRevert={revertChanges}
       />
     </div>
-  );
-}
-```
+
+); }
+
+````
 
 ```typescript Migration Generator
 // Generate Prisma migrations from schema changes
@@ -330,7 +319,7 @@ export async function generateMigration(changes: SchemaChange[]) {
 
   return migrationSQL;
 }
-```
+````
 
 </CodeGroup>
 
@@ -346,16 +335,16 @@ export async function generateMigration(changes: SchemaChange[]) {
       const [file, setFile] = useState<File | null>(null);
       const [mapping, setMapping] = useState<Record<string, string>>({});
       const [progress, setProgress] = useState(0);
-      
+
       const handleImport = async () => {
         if (!file) return;
-        
+
         const csvData = await parseCsvFile(file);
         const totalRows = csvData.length;
-        
+
         // Validate data against schema
         const validationResults = await validateImportData(table, csvData, mapping);
-        
+
         if (validationResults.errors.length > 0) {
           notifications.show({
             title: 'Validation Errors',
@@ -364,27 +353,27 @@ export async function generateMigration(changes: SchemaChange[]) {
           });
           return;
         }
-        
+
         // Import data in batches
         const batchSize = 100;
         for (let i = 0; i < totalRows; i += batchSize) {
           const batch = csvData.slice(i, i + batchSize);
-          
+
           await prisma[table].createMany({
             data: batch.map(row => mapCsvRowToRecord(row, mapping)),
             skipDuplicates: true,
           });
-          
+
           setProgress((i + batchSize) / totalRows * 100);
         }
-        
+
         notifications.show({
           title: 'Import Complete',
           message: `Successfully imported ${totalRows} records`,
           color: 'green',
         });
       };
-      
+
       return (
         <Stack>
           <FileInput
@@ -393,7 +382,7 @@ export async function generateMigration(changes: SchemaChange[]) {
             accept=".csv"
             onChange={setFile}
           />
-          
+
           {file && (
             <FieldMapping
               csvHeaders={getCsvHeaders(file)}
@@ -402,11 +391,11 @@ export async function generateMigration(changes: SchemaChange[]) {
               onChange={setMapping}
             />
           )}
-          
+
           <Button onClick={handleImport} disabled={!file || !mapping}>
             Import Data
           </Button>
-          
+
           {progress > 0 && (
             <Progress value={progress} label={`${progress.toFixed(1)}%`} />
           )}
@@ -414,8 +403,9 @@ export async function generateMigration(changes: SchemaChange[]) {
       );
     }
     ```
+
   </Accordion>
-  
+
   <Accordion title="Bulk Export" icon="download">
     ```typescript
     // Data export functionality
@@ -423,38 +413,38 @@ export async function generateMigration(changes: SchemaChange[]) {
       const [filters, setFilters] = useState({});
       const [format, setFormat] = useState<'csv' | 'json' | 'sql'>('csv');
       const [selectedFields, setSelectedFields] = useState<string[]>([]);
-      
+
       const handleExport = async () => {
         const query = buildExportQuery(table, filters, selectedFields);
         const data = await executeQuery(query);
-        
+
         let exportData: string;
         let filename: string;
         let mimeType: string;
-        
+
         switch (format) {
           case 'csv':
             exportData = convertToCsv(data);
             filename = `${table}_export_${Date.now()}.csv`;
             mimeType = 'text/csv';
             break;
-          
+
           case 'json':
             exportData = JSON.stringify(data, null, 2);
             filename = `${table}_export_${Date.now()}.json`;
             mimeType = 'application/json';
             break;
-          
+
           case 'sql':
             exportData = generateInsertStatements(table, data);
             filename = `${table}_export_${Date.now()}.sql`;
             mimeType = 'text/plain';
             break;
         }
-        
+
         // Download file
         downloadFile(exportData, filename, mimeType);
-        
+
         // Track export
         analytics.track('Data Export', {
           table,
@@ -463,7 +453,7 @@ export async function generateMigration(changes: SchemaChange[]) {
           fields: selectedFields,
         });
       };
-      
+
       return (
         <Stack>
           <Select
@@ -476,20 +466,20 @@ export async function generateMigration(changes: SchemaChange[]) {
               { value: 'sql', label: 'SQL Insert Statements' },
             ]}
           />
-          
+
           <MultiSelect
             label="Fields to Export"
             value={selectedFields}
             onChange={setSelectedFields}
             data={getTableFields(table)}
           />
-          
+
           <FilterBuilder
             table={table}
             filters={filters}
             onChange={setFilters}
           />
-          
+
           <Button onClick={handleExport}>
             Export {format.toUpperCase()}
           </Button>
@@ -497,6 +487,7 @@ export async function generateMigration(changes: SchemaChange[]) {
       );
     }
     ```
+
   </Accordion>
 </AccordionGroup>
 
@@ -515,13 +506,13 @@ export async function generateMigration(changes: SchemaChange[]) {
         limit: 100,
       });
       const [results, setResults] = useState([]);
-      
+
       const executeQuery = async () => {
         try {
           const sql = buildSQL(query);
           const results = await prisma.$queryRawUnsafe(sql);
           setResults(results);
-          
+
           // Save to query history
           saveQueryHistory({
             sql,
@@ -536,7 +527,7 @@ export async function generateMigration(changes: SchemaChange[]) {
           });
         }
       };
-      
+
       return (
         <div className="query-builder">
           <div className="query-editor">
@@ -544,32 +535,33 @@ export async function generateMigration(changes: SchemaChange[]) {
               fields={query.select}
               onChange={(select) => setQuery(prev => ({ ...prev, select }))}
             />
-            
+
             <FromClause
               table={query.from}
               onChange={(from) => setQuery(prev => ({ ...prev, from }))}
             />
-            
+
             <WhereClause
               conditions={query.where}
               onChange={(where) => setQuery(prev => ({ ...prev, where }))}
             />
-            
+
             <OrderByClause
               ordering={query.orderBy}
               onChange={(orderBy) => setQuery(prev => ({ ...prev, orderBy }))}
             />
-            
+
             <Button onClick={executeQuery}>Execute Query</Button>
           </div>
-          
+
           <QueryResults results={results} />
         </div>
       );
     }
     ```
+
   </Tab>
-  
+
   <Tab title="Raw SQL Editor">
     ```typescript
     // Raw SQL query interface
@@ -577,20 +569,20 @@ export async function generateMigration(changes: SchemaChange[]) {
       const [sql, setSql] = useState('');
       const [results, setResults] = useState([]);
       const [execution, setExecution] = useState({ time: 0, rowCount: 0 });
-      
+
       const executeSql = async () => {
         const startTime = performance.now();
-        
+
         try {
           const results = await prisma.$queryRawUnsafe(sql);
           const endTime = performance.now();
-          
+
           setResults(results);
           setExecution({
             time: endTime - startTime,
             rowCount: Array.isArray(results) ? results.length : 1,
           });
-          
+
           notifications.show({
             title: 'Query Executed',
             message: `${execution.rowCount} rows in ${execution.time.toFixed(2)}ms`,
@@ -604,7 +596,7 @@ export async function generateMigration(changes: SchemaChange[]) {
           });
         }
       };
-      
+
       return (
         <Stack>
           <Textarea
@@ -621,12 +613,12 @@ export async function generateMigration(changes: SchemaChange[]) {
               },
             }}
           />
-          
+
           <Group>
             <Button onClick={executeSql} disabled={!sql.trim()}>
               Execute
             </Button>
-            
+
             <Text size="sm" c="dimmed">
               {execution.rowCount > 0 && (
                 <>
@@ -635,12 +627,13 @@ export async function generateMigration(changes: SchemaChange[]) {
               )}
             </Text>
           </Group>
-          
+
           <ResultsTable results={results} />
         </Stack>
       );
     }
     ```
+
   </Tab>
 </Tabs>
 
@@ -653,12 +646,12 @@ export async function generateMigration(changes: SchemaChange[]) {
 // Role-based access control for Studio
 export function useStudioAccess() {
   const { user } = useAuth();
-  
-  const permissions = useMemo(() => {
-    if (!user) return { canRead: false, canWrite: false, canAdmin: false };
-    
+
+const permissions = useMemo(() => { if (!user) return { canRead: false, canWrite: false, canAdmin:
+false };
+
     const roles = user.organizationMemberships?.map(m => m.role) || [];
-    
+
     return {
       canRead: roles.includes('viewer') || roles.includes('editor') || roles.includes('admin'),
       canWrite: roles.includes('editor') || roles.includes('admin'),
@@ -666,19 +659,20 @@ export function useStudioAccess() {
       canExecuteSQL: roles.includes('admin'),
       restrictedTables: getRestrictedTables(roles),
     };
-  }, [user]);
-  
-  const checkTableAccess = (tableName: string, operation: 'read' | 'write') => {
-    if (permissions.restrictedTables.includes(tableName)) {
-      return operation === 'read' ? permissions.canRead : false;
-    }
-    
+
+}, [user]);
+
+const checkTableAccess = (tableName: string, operation: 'read' | 'write') => { if
+(permissions.restrictedTables.includes(tableName)) { return operation === 'read' ?
+permissions.canRead : false; }
+
     return operation === 'read' ? permissions.canRead : permissions.canWrite;
-  };
-  
-  return { permissions, checkTableAccess };
-}
-```
+
+};
+
+return { permissions, checkTableAccess }; }
+
+````
 
 ```typescript Audit Logging
 // Audit trail for database operations
@@ -714,7 +708,7 @@ export async function logDatabaseOperation({
     });
   }
 }
-```
+````
 
 </CodeGroup>
 
@@ -727,7 +721,7 @@ export async function logDatabaseOperation({
     export function maskSensitiveData(table: string, record: any) {
       const sensitiveFields = getSensitiveFields(table);
       const maskedRecord = { ...record };
-      
+
       sensitiveFields.forEach(field => {
         if (maskedRecord[field]) {
           switch (getFieldType(table, field)) {
@@ -748,39 +742,40 @@ export async function logDatabaseOperation({
           }
         }
       });
-      
+
       return maskedRecord;
     }
-    
+
     function maskEmail(email: string): string {
       const [username, domain] = email.split('@');
       const maskedUsername = username.slice(0, 2) + '*'.repeat(username.length - 2);
       return `${maskedUsername}@${domain}`;
     }
     ```
+
   </Accordion>
-  
+
   <Accordion title="Backup Management" icon="database">
     ```typescript
     // Database backup and restore functionality
     export async function createBackup(options: BackupOptions) {
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const backupName = `forge-backup-${timestamp}`;
-      
+
       try {
         // Create database dump
         const dumpCommand = `pg_dump ${process.env.DATABASE_URL} --format=custom --file=${backupName}.dump`;
         await execAsync(dumpCommand);
-        
+
         // Compress backup
         const compressCommand = `gzip ${backupName}.dump`;
         await execAsync(compressCommand);
-        
+
         // Upload to storage
         if (options.uploadToCloud) {
           await uploadBackupToS3(`${backupName}.dump.gz`);
         }
-        
+
         // Record backup metadata
         await prisma.databaseBackup.create({
           data: {
@@ -791,13 +786,14 @@ export async function logDatabaseOperation({
             location: options.uploadToCloud ? 's3' : 'local',
           },
         });
-        
+
         return { success: true, backupName };
       } catch (error) {
         throw new Error(`Backup failed: ${error.message}`);
       }
     }
     ```
+
   </Accordion>
 </AccordionGroup>
 
@@ -815,7 +811,7 @@ export async function logDatabaseOperation({
         avgExecutionTime: 0,
         queryCount: 0,
       });
-      
+
       useEffect(() => {
         const fetchMetrics = async () => {
           const queryLogs = await prisma.queryLog.findMany({
@@ -826,28 +822,29 @@ export async function logDatabaseOperation({
             },
             orderBy: { executionTime: 'desc' },
           });
-          
+
           const slowQueries = queryLogs.filter(log => log.executionTime > 1000);
           const avgExecutionTime = queryLogs.reduce((sum, log) => sum + log.executionTime, 0) / queryLogs.length;
-          
+
           setMetrics({
             slowQueries,
             avgExecutionTime,
             queryCount: queryLogs.length,
           });
         };
-        
+
         fetchMetrics();
         const interval = setInterval(fetchMetrics, 60000); // Update every minute
-        
+
         return () => clearInterval(interval);
       }, []);
-      
+
       return metrics;
     }
     ```
+
   </Tab>
-  
+
   <Tab title="Connection Monitoring">
     ```typescript
     // Database connection health monitoring
@@ -857,7 +854,7 @@ export async function logDatabaseOperation({
         activeQueries: 0,
         connectionPool: { used: 0, available: 0 },
       });
-      
+
       useEffect(() => {
         const checkHealth = async () => {
           try {
@@ -865,7 +862,7 @@ export async function logDatabaseOperation({
               prisma.$queryRaw`SELECT count(*) as count FROM pg_stat_activity WHERE state = 'active'`,
               getConnectionPoolInfo(),
             ]);
-            
+
             setHealth({
               connectionCount: connectionInfo[0].count,
               activeQueries: connectionInfo[0].count,
@@ -875,13 +872,13 @@ export async function logDatabaseOperation({
             console.error('Health check failed:', error);
           }
         };
-        
+
         checkHealth();
         const interval = setInterval(checkHealth, 5000);
-        
+
         return () => clearInterval(interval);
       }, []);
-      
+
       return (
         <Card>
           <Title order={3}>Database Health</Title>
@@ -906,6 +903,7 @@ export async function logDatabaseOperation({
       );
     }
     ```
+
   </Tab>
 </Tabs>
 

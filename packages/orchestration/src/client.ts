@@ -8,6 +8,7 @@
  * For Next.js applications, use '@repo/orchestration/client/next' instead.
  */
 
+import { createServerObservability } from '@repo/observability/shared-env';
 import { RetryStrategies, withRetry } from './shared/patterns/retry';
 // Core types (re-export for client usage)
 // Import types for internal use
@@ -118,7 +119,7 @@ export class WorkflowClient {
       try {
         const result = await response.json();
         return result.cancelled || false;
-      } catch (_error: any) {
+      } catch (_error) {
         // If JSON parsing fails, assume operation was successful
         return true;
       }
@@ -163,7 +164,7 @@ export class WorkflowClient {
 
       try {
         return await response.json();
-      } catch (_error: any) {
+      } catch (_error) {
         throw new Error('Failed to parse response as JSON');
       }
     };
@@ -211,7 +212,7 @@ export class WorkflowClient {
 
       try {
         return await response.json();
-      } catch (_error: any) {
+      } catch (_error) {
         throw new Error('Failed to parse response as JSON');
       }
     };
@@ -259,7 +260,7 @@ export class WorkflowClient {
 
       try {
         return await response.json();
-      } catch (_error: any) {
+      } catch (_error) {
         throw new Error('Failed to parse response as JSON');
       }
     };
@@ -304,11 +305,19 @@ function createTimeoutSignal(timeout: number): AbortSignal | undefined {
       setTimeout(() => controller.abort(), timeout);
       return controller.signal;
     }
-  } catch (error: any) {
+  } catch (_error) {
     // If anything fails, log warning and return undefined
-    if (typeof console !== 'undefined' && console.warn) {
-      console.warn('[WorkflowClient] Failed to create timeout signal: ', error);
-    }
+    createServerObservability({
+      providers: {
+        console: { enabled: true },
+      },
+    })
+      .then((logger) => {
+        logger.log('warn', '[WorkflowClient] Failed to create timeout signal', _error);
+      })
+      .catch(() => {
+        // Silently fail - no logging available
+      });
   }
 
   return undefined;

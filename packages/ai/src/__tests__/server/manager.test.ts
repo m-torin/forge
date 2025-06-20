@@ -1,11 +1,23 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 import { ServerAIManager } from '../../server/manager';
 
 import { AIProvider } from '../../shared/types';
+import {
+  validateConfig,
+  convertToManagerConfig,
+  createConfigFromEnv,
+} from '../../shared/utils/config';
+import { createDirectAnthropicProvider } from '../../server/providers/direct-anthropic';
+import { createDirectOpenAIProvider } from '../../server/providers/direct-openai';
+import {
+  createAnthropicAISdkProvider,
+  createGoogleAISdkProvider,
+  createOpenAIAISdkProvider,
+} from '../../server/providers/ai-sdk-provider';
 
 // Mock the config utilities
-vi.mock('../../shared/utils/config', (_: any) => ({
+vi.mock('../../shared/utils/config', () => ({
   validateConfig: vi.fn().mockReturnValue([]),
   convertToManagerConfig: vi.fn().mockReturnValue({
     defaultProvider: 'openai',
@@ -15,6 +27,9 @@ vi.mock('../../shared/utils/config', (_: any) => ({
     },
   }),
   createConfigFromEnv: vi.fn().mockReturnValue({
+    defaultProvider: 'openai',
+    enableLogging: false,
+    enableRateLimit: false,
     providers: {
       anthropic: { apiKey: 'test-anthropic-key' },
       google: { apiKey: 'test-google-key' },
@@ -24,7 +39,7 @@ vi.mock('../../shared/utils/config', (_: any) => ({
 }));
 
 // Mock the provider creators
-vi.mock('../../server/providers/direct-anthropic', (_: any) => ({
+vi.mock('../../server/providers/direct-anthropic', () => ({
   createDirectAnthropicProvider: vi.fn().mockReturnValue({
     name: 'direct-anthropic',
     type: 'direct',
@@ -34,17 +49,18 @@ vi.mock('../../server/providers/direct-anthropic', (_: any) => ({
   }),
 }));
 
-vi.mock('../../server/providers/direct-openai', (_: any) => ({
+vi.mock('../../server/providers/direct-openai', () => ({
   createDirectOpenAIProvider: vi.fn().mockReturnValue({
     name: 'direct-openai',
     type: 'direct',
     capabilities: new Set(['complete', 'moderate']),
     complete: vi.fn().mockResolvedValue({ text: 'response' }),
     moderate: vi.fn().mockResolvedValue({ flagged: false }),
+    stream: vi.fn(),
   }),
 }));
 
-vi.mock('../../server/providers/ai-sdk-provider', (_: any) => ({
+vi.mock('../../server/providers/ai-sdk-provider', () => ({
   createAnthropicAISdkProvider: vi.fn().mockReturnValue({
     name: 'anthropic-sdk',
     type: 'ai-sdk',
@@ -57,6 +73,7 @@ vi.mock('../../server/providers/ai-sdk-provider', (_: any) => ({
     type: 'ai-sdk',
     capabilities: new Set(['complete']),
     complete: vi.fn().mockResolvedValue({ text: 'response' }),
+    stream: vi.fn(),
   }),
   createOpenAIAISdkProvider: vi.fn().mockReturnValue({
     name: 'openai-sdk',
@@ -78,21 +95,84 @@ const createMockProvider = (overrides: Partial<AIProvider> = {}): AIProvider => 
   ...overrides,
 });
 
-describe('ServerAIManager', (_: any) => {
+describe('serverAIManager', () => {
   let manager: ServerAIManager;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // Re-setup mocks after clearing
+    vi.mocked(validateConfig).mockReturnValue([]);
+    vi.mocked(convertToManagerConfig).mockReturnValue({
+      defaultProvider: 'openai',
+      routing: {
+        complete: 'openai',
+        moderate: 'openai',
+      },
+    });
+    vi.mocked(createConfigFromEnv).mockReturnValue({
+      defaultProvider: 'openai',
+      enableLogging: false,
+      enableRateLimit: false,
+      providers: {
+        anthropic: { apiKey: 'test-anthropic-key' },
+        google: { apiKey: 'test-google-key' },
+        openai: { apiKey: 'test-openai-key' },
+      },
+    });
+
+    // Re-setup provider creator mocks
+    vi.mocked(createDirectAnthropicProvider).mockReturnValue({
+      name: 'direct-anthropic',
+      type: 'direct',
+      capabilities: new Set(['complete', 'stream']),
+      complete: vi.fn().mockResolvedValue({ text: 'response' }),
+      stream: vi.fn(),
+    });
+
+    vi.mocked(createDirectOpenAIProvider).mockReturnValue({
+      name: 'direct-openai',
+      type: 'direct',
+      capabilities: new Set(['complete', 'moderate']),
+      complete: vi.fn().mockResolvedValue({ text: 'response' }),
+      moderate: vi.fn().mockResolvedValue({ flagged: false }),
+      stream: vi.fn(),
+    });
+
+    vi.mocked(createAnthropicAISdkProvider).mockReturnValue({
+      name: 'anthropic-sdk',
+      type: 'ai-sdk',
+      capabilities: new Set(['complete', 'stream']),
+      complete: vi.fn().mockResolvedValue({ text: 'response' }),
+      stream: vi.fn(),
+    });
+
+    vi.mocked(createGoogleAISdkProvider).mockReturnValue({
+      name: 'google-sdk',
+      type: 'ai-sdk',
+      capabilities: new Set(['complete']),
+      complete: vi.fn().mockResolvedValue({ text: 'response' }),
+      stream: vi.fn(),
+    });
+
+    vi.mocked(createOpenAIAISdkProvider).mockReturnValue({
+      name: 'openai-sdk',
+      type: 'ai-sdk',
+      capabilities: new Set(['complete', 'moderate', 'stream']),
+      complete: vi.fn().mockResolvedValue({ text: 'response' }),
+      moderate: vi.fn().mockResolvedValue({ flagged: false }),
+      stream: vi.fn(),
+    });
+
     manager = new ServerAIManager();
   });
 
-  describe('constructor', (_: any) => {
-    it('should create instance without config', (_: any) => {
+  describe('constructor', () => {
+    test('should create instance without config', () => {
       const instance = new ServerAIManager();
       expect(instance).toBeInstanceOf(ServerAIManager);
     });
 
-    it('should create instance with config', (_: any) => {
+    test('should create instance with config', () => {
       const config = {
         defaultProvider: 'test-provider',
         routing: {
@@ -104,19 +184,19 @@ describe('ServerAIManager', (_: any) => {
     });
   });
 
-  describe('fromEnv', (_: any) => {
-    it('should create manager from environment configuration', async () => {
+  describe('fromEnv', () => {
+    test('should create manager from environment configuration', async () => {
       const manager = await ServerAIManager.fromEnv();
       expect(manager).toBeInstanceOf(ServerAIManager);
     });
 
-    it('should register multiple providers successfully', async () => {
+    test('should register multiple providers successfully', async () => {
       const manager = await ServerAIManager.fromEnv();
       const capabilities = manager.getAvailableCapabilities();
       expect(capabilities.length).toBeGreaterThan(0);
     });
 
-    it('should handle provider registration failures gracefully', async () => {
+    test('should handle provider registration failures gracefully', async () => {
       const { createOpenAIAISdkProvider } = await import('../../server/providers/ai-sdk-provider');
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       vi.mocked(createOpenAIAISdkProvider).mockImplementationOnce(() => {
@@ -129,7 +209,7 @@ describe('ServerAIManager', (_: any) => {
       consoleSpy.mockRestore();
     });
 
-    it('should throw error when no providers are registered', async () => {
+    test('should throw error when no providers are registered', async () => {
       const { createDirectAnthropicProvider } = await import(
         '../../server/providers/direct-anthropic'
       );
@@ -156,7 +236,7 @@ describe('ServerAIManager', (_: any) => {
       consoleSpy.mockRestore();
     });
 
-    it('should throw error when config validation fails', async () => {
+    test('should throw error when config validation fails', async () => {
       const { validateConfig } = await import('../../shared/utils/config');
       vi.mocked(validateConfig).mockReturnValueOnce(['Invalid API key format']);
 
@@ -164,8 +244,8 @@ describe('ServerAIManager', (_: any) => {
     });
   });
 
-  describe('classifyProduct', (_: any) => {
-    it('should classify product successfully', async () => {
+  describe('classifyProduct', () => {
+    test('should classify product successfully', async () => {
       const mockProvider = createMockProvider({
         name: 'test-classifier',
         capabilities: new Set(['classify']),
@@ -184,13 +264,13 @@ describe('ServerAIManager', (_: any) => {
       expect(result.classification).toBe('electronics');
     });
 
-    it('should throw error when no classification provider available', async () => {
+    test('should throw error when no classification provider available', async () => {
       await expect(manager.classifyProduct({ name: 'test' })).rejects.toThrow(
         'No classification provider available',
       );
     });
 
-    it('should throw error when provider lacks classify method', async () => {
+    test('should throw error when provider lacks classify method', async () => {
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
       const mockProvider = createMockProvider({
         name: 'incomplete-provider',
@@ -200,7 +280,7 @@ describe('ServerAIManager', (_: any) => {
 
       // Registration should fail due to validation
       const result = manager.registerProvider(mockProvider);
-      expect(result).toBe(false);
+      expect(result).toBeFalsy();
 
       // Provider should not be registered
       await expect(manager.classifyProduct({ name: 'test' })).rejects.toThrow(
@@ -210,8 +290,8 @@ describe('ServerAIManager', (_: any) => {
     });
   });
 
-  describe('moderateContent', (_: any) => {
-    it('should moderate content successfully', async () => {
+  describe('moderateContent', () => {
+    test('should moderate content successfully', async () => {
       const mockProvider = createMockProvider({
         name: 'test-moderator',
         capabilities: new Set(['moderate']),
@@ -229,16 +309,16 @@ describe('ServerAIManager', (_: any) => {
       const result = await manager.moderateContent(content);
 
       expect(mockProvider.moderate).toHaveBeenCalledWith(content);
-      expect(result.safe).toBe(true);
+      expect(result.safe).toBeTruthy();
     });
 
-    it('should throw error when no moderation provider available', async () => {
+    test('should throw error when no moderation provider available', async () => {
       await expect(manager.moderateContent('test content')).rejects.toThrow(
         'No moderation provider available',
       );
     });
 
-    it('should throw error when provider lacks moderate method', async () => {
+    test('should throw error when provider lacks moderate method', async () => {
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
       const mockProvider = createMockProvider({
         name: 'incomplete-provider',
@@ -248,7 +328,7 @@ describe('ServerAIManager', (_: any) => {
 
       // Registration should fail due to validation
       const result = manager.registerProvider(mockProvider);
-      expect(result).toBe(false);
+      expect(result).toBeFalsy();
 
       // Provider should not be registered
       await expect(manager.moderateContent('test content')).rejects.toThrow(
@@ -257,7 +337,7 @@ describe('ServerAIManager', (_: any) => {
       consoleSpy.mockRestore();
     });
 
-    it('should handle flagged content correctly', async () => {
+    test('should handle flagged content correctly', async () => {
       const mockProvider = createMockProvider({
         name: 'test-moderator',
         capabilities: new Set(['moderate']),
@@ -273,14 +353,14 @@ describe('ServerAIManager', (_: any) => {
 
       const result = await manager.moderateContent('harmful content');
 
-      expect(result.safe).toBe(false);
+      expect(result.safe).toBeFalsy();
       expect(result.violations).toContain('hate');
       expect(result.confidence).toBe(0.95);
     });
   });
 
-  describe('provider management', (_: any) => {
-    it('should inherit all capabilities from base AIManager', (_: any) => {
+  describe('provider management', () => {
+    test('should inherit all capabilities from base AIManager', () => {
       const mockProvider = createMockProvider({
         name: 'full-provider',
         analyzeSentiment: vi.fn(),
@@ -308,7 +388,7 @@ describe('ServerAIManager', (_: any) => {
       expect(capabilities).toContain('extraction');
     });
 
-    it('should get provider status correctly', (_: any) => {
+    test('should get provider status correctly', () => {
       const mockProvider = createMockProvider({
         name: 'status-test',
         capabilities: new Set(['complete', 'moderate']),

@@ -61,7 +61,7 @@ import {
   getStatusColor,
   showErrorNotification,
   showSuccessNotification,
-} from '../utils/pim-helpers';
+} from '@/utils/pim3/pim-helpers';
 
 import {
   createCollection,

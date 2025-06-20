@@ -15,10 +15,10 @@ import {
  */
 export async function processUserUpload(formData: FormData) {
   'use server';
-  
+
   const file = formData.get('file') as File;
   const userId = formData.get('userId') as string;
-  
+
   if (!file || !userId) {
     return { success: false, error: 'Missing file or user ID' };
   }
@@ -26,7 +26,7 @@ export async function processUserUpload(formData: FormData) {
   try {
     // Convert file to buffer
     const buffer = await file.arrayBuffer();
-    
+
     // Upload to user's folder
     const uploadResult = await uploadMediaAction(
       `users/${userId}/uploads/${Date.now()}-${file.name}`,
@@ -37,7 +37,7 @@ export async function processUserUpload(formData: FormData) {
           uploadedBy: userId,
           originalName: file.name,
         },
-      }
+      },
     );
 
     if (!uploadResult.success) {
@@ -64,11 +64,11 @@ export async function processUserUpload(formData: FormData) {
  */
 export async function archiveOldFiles(daysOld: number = 30) {
   'use server';
-  
+
   try {
     // List all files in the uploads directory
     const listResult = await listMediaAction({ prefix: 'uploads/' });
-    
+
     if (!listResult.success || !listResult.data) {
       return { success: false, error: 'Failed to list files' };
     }
@@ -76,9 +76,9 @@ export async function archiveOldFiles(daysOld: number = 30) {
     // Filter files older than specified days
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysOld);
-    
+
     const filesToArchive = listResult.data.filter(
-      file => file.lastModified && file.lastModified < cutoffDate
+      (file) => file.lastModified && file.lastModified < cutoffDate,
     );
 
     if (filesToArchive.length === 0) {
@@ -86,13 +86,13 @@ export async function archiveOldFiles(daysOld: number = 30) {
     }
 
     // Move files to archive
-    const moveOperations = filesToArchive.map(file => ({
+    const moveOperations = filesToArchive.map((file) => ({
       sourceKey: file.key,
       destinationKey: file.key.replace('uploads/', 'archive/'),
     }));
 
     const moveResult = await bulkMoveMediaAction(moveOperations);
-    
+
     if (!moveResult.success || !moveResult.data) {
       return { success: false, error: 'Failed to archive files' };
     }
@@ -121,11 +121,11 @@ export async function migrateToProvider(
   prefix: string = '',
 ) {
   'use server';
-  
+
   try {
     // First, list available providers
     const providersResult = await listProvidersAction();
-    
+
     if (!providersResult.success || !providersResult.data) {
       return { success: false, error: 'Failed to list providers' };
     }
@@ -140,7 +140,7 @@ export async function migrateToProvider(
 
     // List files from source provider
     const listResult = await listMediaAction({ prefix });
-    
+
     if (!listResult.success || !listResult.data) {
       return { success: false, error: 'Failed to list files from source' };
     }
@@ -158,7 +158,7 @@ export async function migrateToProvider(
           destinationProvider,
           file.key,
         );
-        
+
         if (copyResult.success) {
           results.succeeded.push(file.key);
         } else {
@@ -193,10 +193,10 @@ export async function migrateToProvider(
  */
 export async function cleanupTempFiles() {
   'use server';
-  
+
   try {
     const listResult = await listMediaAction({ prefix: 'temp/' });
-    
+
     if (!listResult.success || !listResult.data) {
       return { success: false, error: 'Failed to list temp files' };
     }
@@ -205,9 +205,9 @@ export async function cleanupTempFiles() {
       return { success: true, message: 'No temp files to clean up' };
     }
 
-    const keys = listResult.data.map(file => file.key);
+    const keys = listResult.data.map((file) => file.key);
     const deleteResult = await bulkDeleteMediaAction(keys);
-    
+
     if (!deleteResult.success || !deleteResult.data) {
       return { success: false, error: 'Failed to delete temp files' };
     }

@@ -4,6 +4,7 @@
 
 import OpossumCircuitBreaker from 'opossum';
 
+import { createServerObservability } from '@repo/observability/shared-env';
 import { CircuitBreakerPattern, PatternContext, PatternResult } from '../types/patterns';
 import { CircuitBreakerError } from '../utils/errors';
 
@@ -24,7 +25,7 @@ export class CircuitBreakerManager {
    * Remove all circuit breakers
    */
   clear(): void {
-    for (const [name, breaker] of this.breakers) {
+    for (const [_name, breaker] of this.breakers) {
       // Remove all event listeners to prevent memory leaks
       if ('removeAllListeners' in breaker && typeof breaker.removeAllListeners === 'function') {
         (breaker as any).removeAllListeners();
@@ -96,15 +97,45 @@ export class CircuitBreakerManager {
 
     // Default event handlers for logging
     breaker.on('open', () => {
-      console.warn(`Circuit breaker '${name}' opened`);
+      createServerObservability({
+        providers: {
+          console: { enabled: true },
+        },
+      })
+        .then((logger) => {
+          logger.log('warn', `Circuit breaker '${name}' opened`);
+        })
+        .catch(() => {
+          // Fallback to console if logger fails
+        });
     });
 
     breaker.on('halfOpen', () => {
-      console.info(`Circuit breaker '${name}' half-opened`);
+      createServerObservability({
+        providers: {
+          console: { enabled: true },
+        },
+      })
+        .then((logger) => {
+          logger.log('info', `Circuit breaker '${name}' half-opened`);
+        })
+        .catch(() => {
+          // Fallback to console if logger fails
+        });
     });
 
     breaker.on('close', () => {
-      console.info(`Circuit breaker '${name}' closed`);
+      createServerObservability({
+        providers: {
+          console: { enabled: true },
+        },
+      })
+        .then((logger) => {
+          logger.log('info', `Circuit breaker '${name}' closed`);
+        })
+        .catch(() => {
+          // Fallback to console if logger fails
+        });
     });
 
     this.breakers.set(name, breaker);
@@ -255,14 +286,14 @@ const globalManager = new CircuitBreakerManager();
 /**
  * Create a circuit breaker decorator
  */
-export function CircuitBreaker(name?: string, options: CircuitBreakerOptions = {}) {
-  return function <T extends (...args: any[]) => Promise<any>>(
+export function CircuitBreaker(_name?: string, options: CircuitBreakerOptions = {}) {
+  return function <_T extends (...args: any[]) => Promise<any>>(
     target: any,
     propertyName: string,
     descriptor: PropertyDescriptor,
   ) {
     const method = descriptor.value;
-    const breakerName = name || `${target.constructor.name}.${propertyName}`;
+    const breakerName = _name || `${target.constructor.name}.${propertyName}`;
 
     descriptor.value = async function (...args: any[]) {
       const result = await globalManager.withCircuitBreaker(

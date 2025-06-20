@@ -327,7 +327,7 @@ export class SentryEdgeProvider implements ObservabilityProvider {
     this.context = {};
   }
 
-  startSpan(name: string, parentSpan?: any): any {
+  startSpan(name: string, _parentSpan?: any): any {
     // Limited span support in edge runtime
     // Return a minimal span object for compatibility
     const spanId = this.generateEventId();
@@ -337,23 +337,23 @@ export class SentryEdgeProvider implements ObservabilityProvider {
       finish: () => {
         // In a full implementation, this would send span data
       },
-      setData: (key: string, value: any) => {
+      setData: (_key: string, _value: any) => {
         // Store span data locally
       },
-      setHttpStatus: (code: number) => {
+      setHttpStatus: (_code: number) => {
         // Store HTTP status
       },
-      setStatus: (status: string) => {
+      setStatus: (_status: string) => {
         // Store span status
       },
-      setTag: (key: string, value: string) => {
+      setTag: (_key: string, _value: string) => {
         // Store span tag
       },
-      startChild: (childName: string) => this.startSpan(`${name}.${childName}`, spanId),
+      startChild: (_childName: string) => this.startSpan(`${name}.${_childName}`, spanId),
     };
   }
 
-  startTransaction(name: string, context?: ObservabilityContext): any {
+  startTransaction(name: string, _context?: ObservabilityContext): any {
     // Limited transaction support in edge runtime
     const transactionId = this.generateEventId();
 
@@ -363,11 +363,11 @@ export class SentryEdgeProvider implements ObservabilityProvider {
       finish: () => {
         // In a full implementation, this would send transaction data
       },
-      setData: (key: string, value: any) => this.setExtra(`transaction.${key}`, value),
-      setHttpStatus: (code: number) => this.setTag('http.status_code', code),
-      setStatus: (status: string) => this.setTag('transaction.status', status),
-      setTag: (key: string, value: string) => this.setTag(`transaction.${key}`, value),
-      startChild: (op: string, description?: string) => this.startSpan(`${name}.${op}`),
+      setData: (_key: string, _value: any) => this.setExtra(`transaction.${_key}`, _value),
+      setHttpStatus: (_code: number) => this.setTag('http.status_code', _code),
+      setStatus: (_status: string) => this.setTag('transaction.status', _status),
+      setTag: (_key: string, _value: string) => this.setTag(`transaction.${_key}`, _value),
+      startChild: (_op: string, _description?: string) => this.startSpan(`${name}.${_op}`),
     };
   }
 

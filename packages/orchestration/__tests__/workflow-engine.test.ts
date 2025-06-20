@@ -60,7 +60,7 @@ vi.mock('@upstash/redis', (_: any) => ({
   })),
 }));
 
-describe('Workflow Engine', () => {
+describe('workflow Engine', () => {
   let mockProvider: UpstashWorkflowProvider;
   let engineConfig: Parameters<typeof createWorkflowEngine>[0];
 
@@ -88,7 +88,7 @@ describe('Workflow Engine', () => {
     };
   });
 
-  describe('Engine Creation', () => {
+  describe('engine Creation', () => {
     test('should create workflow engine with basic config', () => {
       const engine = createWorkflowEngine(engineConfig);
 
@@ -146,7 +146,7 @@ describe('Workflow Engine', () => {
     });
   });
 
-  describe('Workflow Execution', () => {
+  describe('workflow Execution', () => {
     test('should execute workflow successfully', async () => {
       const engine = createWorkflowEngine(engineConfig);
       await engine.initialize();
@@ -213,7 +213,7 @@ describe('Workflow Engine', () => {
     });
   });
 
-  describe('Provider Management', () => {
+  describe('provider Management', () => {
     test('should register multiple providers', async () => {
       const provider1Config = createUpstashWorkflowConfig({ name: 'provider-1' });
       const provider2Config = createUpstashWorkflowConfig({
@@ -307,14 +307,14 @@ describe('Workflow Engine', () => {
     });
   });
 
-  describe('Health Checks', () => {
+  describe('health Checks', () => {
     test('should perform health check on all providers', async () => {
       const engine = createWorkflowEngine(engineConfig);
 
       // Health check returns array of provider health reports
       const health = await engine.healthCheck();
 
-      expect(Array.isArray(health)).toBe(true);
+      expect(Array.isArray(health)).toBeTruthy();
       // Health depends on registered providers
     });
 
@@ -324,12 +324,12 @@ describe('Workflow Engine', () => {
       // Health check returns array of provider health reports
       const health = await engine.healthCheck();
 
-      expect(Array.isArray(health)).toBe(true);
+      expect(Array.isArray(health)).toBeTruthy();
       // Health depends on registered providers
     });
   });
 
-  describe('Metrics and Monitoring', () => {
+  describe('metrics and Monitoring', () => {
     test('should collect execution metrics', async () => {
       const monitoringService = createMonitoringService(mockProvider);
       const config = {
@@ -400,7 +400,7 @@ describe('Workflow Engine', () => {
     });
   });
 
-  describe('Event Integration', () => {
+  describe('event Integration', () => {
     test('should emit workflow events', async () => {
       const eventBus = createEventBus();
       const config = {
@@ -450,7 +450,7 @@ describe('Workflow Engine', () => {
     });
   });
 
-  describe('Engine Lifecycle', () => {
+  describe('engine Lifecycle', () => {
     test('should initialize engine properly', async () => {
       const engine = createWorkflowEngine(engineConfig);
 
@@ -477,10 +477,10 @@ describe('Workflow Engine', () => {
 
       const status = engine.getStatus();
 
-      expect(status.initialized).toBe(false);
+      expect(status.initialized).toBeFalsy();
       expect(status.providerCount).toBe(0); // No providers registered yet
-      expect(status.healthChecksEnabled).toBe(true);
-      expect(status.metricsEnabled).toBe(true);
+      expect(status.healthChecksEnabled).toBeTruthy();
+      expect(status.metricsEnabled).toBeTruthy();
       expect(status.defaultProvider).toBe('test-upstash-workflow');
     });
   });

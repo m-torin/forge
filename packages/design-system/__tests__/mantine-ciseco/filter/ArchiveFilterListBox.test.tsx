@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '../test-utils';
-import ArchiveFilterListBox from '../../../mantine-ciseco/components/ArchiveFilterListBox';
+import ArchiveFilterListBox from '../../../src/mantine-ciseco/components/ArchiveFilterListBox';
 
 // Mock Mantine Select component
 vi.mock('@mantine/core', async () => {

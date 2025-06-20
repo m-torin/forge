@@ -6,7 +6,8 @@
 import { Ratelimit } from '@upstash/ratelimit';
 import { NextRequest } from 'next/server';
 
-import { redis } from '@repo/database/redis';
+import { redis } from '@repo/database/redis/server';
+import { createServerObservability } from '@repo/observability/shared-env';
 
 export interface RateLimitConfig {
   /** Maximum number of requests */
@@ -61,14 +62,24 @@ function getDefaultIdentifier(request: NextRequest): string {
 }
 
 /**
- * Check if Redis is available (uses shared instance from @repo/database)
+ * Check if Redis is available (uses shared instance from '@repo/database)
  */
 function isRedisAvailable(): boolean {
   try {
     // Try to access the shared Redis instance
     return !!redis;
   } catch (error: any) {
-    console.warn('[RateLimit] Redis instance not available:', error);
+    createServerObservability({
+      providers: {
+        console: { enabled: true },
+      },
+    })
+      .then((logger) => {
+        logger.log('warn', '[RateLimit] Redis instance not available', error);
+      })
+      .catch(() => {
+        // Fallback to console if logger fails
+      });
     return false;
   }
 }
@@ -91,10 +102,20 @@ export function createRateLimiter(config: RateLimitConfig) {
   // If no Redis instance available, return a no-op rate limiter
   if (!shouldUseRedis) {
     if (process.env.NODE_ENV === 'development') {
-      console.info('[RateLimit] No Redis instance available, rate limiting disabled');
+      createServerObservability({
+        providers: {
+          console: { enabled: true },
+        },
+      })
+        .then((logger) => {
+          logger.log('info', '[RateLimit] No Redis instance available, rate limiting disabled');
+        })
+        .catch(() => {
+          // Fallback to console if logger fails
+        });
     }
     return {
-      async limit(request: NextRequest): Promise<RateLimitResult> {
+      async limit(_request: NextRequest): Promise<RateLimitResult> {
         return {
           success: true,
           remaining: maxRequests,
@@ -131,7 +152,17 @@ export function createRateLimiter(config: RateLimitConfig) {
         };
       } catch (error: any) {
         // If rate limiting fails, allow the request but log the error
-        console.error('[RateLimit] Error checking rate limit:', error);
+        createServerObservability({
+          providers: {
+            console: { enabled: true },
+          },
+        })
+          .then((logger) => {
+            logger.log('error', '[RateLimit] Error checking rate limit', error);
+          })
+          .catch(() => {
+            // Fallback to console if logger fails
+          });
 
         return {
           success: true,

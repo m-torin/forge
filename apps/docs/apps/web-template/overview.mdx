@@ -61,6 +61,14 @@ Mantine UI v8.
 - **Multi-step Checkout**: Complete checkout flow with validation
 - **Order Management**: Order tracking, history, and status updates
 
+### Authentication & Account Management
+
+- **[Route Protection](/apps/web-template/authentication)**: Edge-level middleware protecting
+  account pages
+- **Multiple Auth Methods**: Email/password, social login (Google, Facebook, Twitter), magic links
+- **Account Dashboard**: Profile management, security settings, social account linking
+- **Session Management**: 30-minute sessions with timeout warnings and activity tracking
+
 ### Content Management
 
 <Tabs>
@@ -294,7 +302,8 @@ export function ProductGrid({ products }) {
 
 ### Backend Integration
 
-- **Better Auth**: Complete authentication system (UI ready)
+- **Better Auth**: [Complete authentication system](/apps/web-template/authentication) with route
+  protection, social login, and account management
 - **Prisma ORM**: Database layer configured for PostgreSQL
 - **Server Actions**: API layer with Zod validation
 - **Analytics**: PostHog, Segment integration ready
@@ -330,7 +339,24 @@ NEXT_PUBLIC_POSTHOG_KEY=your-posthog-key
 SEGMENT_WRITE_KEY=your-segment-key
 ```
 
-## Migration & Improvements
+## Recent Improvements
+
+### Authentication System Implementation
+
+<Info>
+  **Authentication Complete**: Full Better Auth integration with route protection, social login, and
+  account management is now production-ready.
+</Info>
+
+**New Authentication Features:**
+
+- ✅ Email/password, social login, and magic link authentication
+- ✅ Edge-level route protection with automatic redirects
+- ✅ Comprehensive account management dashboard
+- ✅ Session management with timeout warnings
+- ✅ Social account linking and security settings
+
+**[View Authentication Documentation →](/apps/web-template/authentication)**
 
 ### Headless UI → Mantine v8 Migration
 

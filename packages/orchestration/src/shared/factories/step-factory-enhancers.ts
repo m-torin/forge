@@ -5,6 +5,7 @@
  * to add advanced functionality like retry, circuit breaking, monitoring, etc.
  */
 
+import { createServerObservability } from '@repo/observability/shared-env';
 import { initializePerformanceData, updatePerformanceData } from './step-factory/step-performance';
 import { SimpleWorkflowStep, StepExecutionResult } from './step-factory/step-types';
 
@@ -98,11 +99,21 @@ export function withStepMonitoring<TInput = unknown, TOutput = unknown>(
 ): SimpleWorkflowStep<TInput, TOutput> {
   return {
     execute: async (input: TInput) => {
-      const startTime = Date.now();
+      // const startTime = Date.now();
       const performance = initializePerformanceData(true);
 
       if (options.enableDetailedLogging) {
-        console.log(`[MONITOR] Starting step execution at ${new Date().toISOString()}`);
+        createServerObservability({
+          providers: {
+            console: { enabled: true },
+          },
+        })
+          .then((logger) => {
+            logger.log('info', `[MONITOR] Starting step execution at ${new Date().toISOString()}`);
+          })
+          .catch(() => {
+            // Fallback to console if logger fails
+          });
       }
 
       const result = await step.execute(input);
@@ -112,7 +123,17 @@ export function withStepMonitoring<TInput = unknown, TOutput = unknown>(
       result.performance = performance;
 
       if (options.enableDetailedLogging) {
-        console.log(`[MONITOR] Step completed in ${performance.duration}ms`);
+        createServerObservability({
+          providers: {
+            console: { enabled: true },
+          },
+        })
+          .then((logger) => {
+            logger.log('info', `[MONITOR] Step completed in ${performance.duration}ms`);
+          })
+          .catch(() => {
+            // Fallback to console if logger fails
+          });
       }
 
       // Call the onStepComplete callback if provided
@@ -196,7 +217,7 @@ export function withStepTimeout<TInput = unknown, TOutput = unknown>(
 ): SimpleWorkflowStep<TInput, TOutput> {
   return {
     execute: async (input: TInput) => {
-      const timeoutPromise = new Promise<StepExecutionResult<TOutput>>((_, reject: any) => {
+      const timeoutPromise = new Promise<StepExecutionResult<TOutput>>((_resolve, reject) => {
         setTimeout(() => {
           reject(new Error(`Step execution timed out after ${timeoutMs}ms`));
         }, timeoutMs);
@@ -204,7 +225,7 @@ export function withStepTimeout<TInput = unknown, TOutput = unknown>(
 
       try {
         return await Promise.race([step.execute(input), timeoutPromise]);
-      } catch (error: any) {
+      } catch (error) {
         return {
           error: {
             code: 'STEP_TIMEOUT_ERROR',

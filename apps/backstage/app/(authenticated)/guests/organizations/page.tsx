@@ -13,186 +13,139 @@ import {
   TextInput,
   Textarea,
   Select,
-  MultiSelect,
   Alert,
 } from '@mantine/core';
 import {
   IconBuilding,
   IconBuildingStore,
-  IconCrown,
   IconMail,
   IconPlus,
-  IconTrash,
   IconUsers,
   IconUserPlus,
   IconSettings,
   IconAlertTriangle,
 } from '@tabler/icons-react';
 import { useDisclosure } from '@mantine/hooks';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { notifications } from '@mantine/notifications';
 
 import {
-  listAllOrganizations,
-  createOrganization,
-  deleteOrganization,
-  bulkInviteUsers,
-  listUsers,
-} from '@repo/auth/server/next';
+  getOrganizationsAction,
+  createOrganizationAction,
+  deleteOrganizationAction,
+  bulkInviteUsersAction,
+} from '@/actions/pim3/actions';
 
-import { DataTable } from '../../components/data-table';
-import { PageHeader } from '../../components/page-header';
-import { StatsCard } from '../../components/stats-card';
+import { DataTable } from '@/components/pim3/data-table';
+import { PageHeader } from '@/components/pim3/page-header';
+import { StatsCard } from '@/components/pim3/stats-card';
 
-interface Organization {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  createdAt: string;
-  members?: Array<{
-    id: string;
-    userId: string;
-    role: string;
-    user: {
-      id: string;
-      name: string;
-      email: string;
-    };
-  }>;
-  _count?: {
-    members: number;
-    invitations: number;
+import type { Organization } from '@/types/pim3';
+
+// Constants
+const ORG_ROLES = [
+  { value: 'member', label: 'Member' },
+  { value: 'admin', label: 'Admin' },
+  { value: 'owner', label: 'Owner' },
+];
+
+// Custom hook for organizations data
+const useOrganizationsData = () => {
+  const [state, setState] = useState({
+    organizations: [] as Organization[],
+    loading: true,
+  });
+
+  const loadData = async () => {
+    setState((prev) => ({ ...prev, loading: true }));
+    try {
+      const result = await getOrganizationsAction();
+      if (result.success && result.data) {
+        setState({ organizations: result.data || [], loading: false });
+      } else {
+        notifications.show({
+          title: 'Error',
+          message: (result as any).error || 'Failed to load organizations',
+          color: 'red',
+        });
+        setState((prev) => ({ ...prev, loading: false }));
+      }
+    } catch (error) {
+      console.error('Failed to load organizations:', error);
+      notifications.show({ title: 'Error', message: 'Failed to load organizations', color: 'red' });
+      setState((prev) => ({ ...prev, loading: false }));
+    }
   };
-}
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-}
+  useEffect(() => {
+    loadData();
+    const handleRefresh = () => loadData();
+    window.addEventListener('refreshOrganizations', handleRefresh);
+    return () => window.removeEventListener('refreshOrganizations', handleRefresh);
+  }, []);
+
+  return { ...state, refetch: loadData };
+};
 
 export default function OrganizationsPage() {
-  const [organizations, setOrganizations] = useState<Organization[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { organizations, loading, refetch } = useOrganizationsData();
   const [createModalOpened, { open: openCreateModal, close: closeCreateModal }] =
     useDisclosure(false);
   const [inviteModalOpened, { open: openInviteModal, close: closeInviteModal }] =
     useDisclosure(false);
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
-  const [newOrg, setNewOrg] = useState({
-    name: '',
-    slug: '',
-    description: '',
-  });
+  const [newOrg, setNewOrg] = useState({ name: '', slug: '', description: '' });
   const [inviteData, setInviteData] = useState({
     emails: '',
     role: 'member' as 'owner' | 'admin' | 'member',
     message: '',
   });
 
-  const statsData = [
-    {
-      title: 'Total Organizations',
-      value: organizations.length.toString(),
-      color: 'blue',
-      icon: IconBuilding,
-      change: { value: 8 },
-    },
-    {
-      title: 'Total Members',
-      value: organizations.reduce((acc, org) => acc + (org._count?.members || 0), 0).toString(),
-      color: 'green',
-      icon: IconUsers,
-    },
-    {
-      title: 'Pending Invitations',
-      value: organizations.reduce((acc, org) => acc + (org._count?.invitations || 0), 0).toString(),
-      color: 'orange',
-      icon: IconMail,
-    },
-    {
-      title: 'Average Members',
-      value:
-        organizations.length > 0
-          ? Math.round(
-              organizations.reduce((acc, org) => acc + (org._count?.members || 0), 0) /
-                organizations.length,
-            ).toString()
-          : '0',
-      color: 'violet',
-      icon: IconBuildingStore,
-    },
-  ];
+  const statsData = useMemo(() => {
+    const totalMembers = organizations.reduce((acc, org) => acc + (org._count?.members || 0), 0);
+    const totalInvitations = organizations.reduce(
+      (acc, org) => acc + (org._count?.invitations || 0),
+      0,
+    );
+    const avgMembers = organizations.length ? Math.round(totalMembers / organizations.length) : 0;
 
-  useEffect(() => {
-    loadOrganizations();
-    loadUsers();
+    return [
+      {
+        title: 'Total Organizations',
+        value: organizations.length.toString(),
+        color: 'blue',
+        icon: IconBuilding,
+        change: { value: 8 },
+      },
+      { title: 'Total Members', value: totalMembers.toString(), color: 'green', icon: IconUsers },
+      {
+        title: 'Pending Invitations',
+        value: totalInvitations.toString(),
+        color: 'orange',
+        icon: IconMail,
+      },
+      {
+        title: 'Average Members',
+        value: avgMembers.toString(),
+        color: 'violet',
+        icon: IconBuildingStore,
+      },
+    ];
+  }, [organizations]);
 
-    // Listen for refresh events from modals
-    const handleRefresh = () => loadOrganizations();
-    window.addEventListener('refreshOrganizations', handleRefresh);
-
-    return () => {
-      window.removeEventListener('refreshOrganizations', handleRefresh);
-    };
-  }, []);
-
-  const loadOrganizations = async () => {
-    setLoading(true);
-    try {
-      const result = await listAllOrganizations();
-      if (result.success && result.data) {
-        setOrganizations(result.data || []);
-      } else {
-        notifications.show({
-          title: 'Error',
-          message: result.error || 'Failed to load organizations',
-          color: 'red',
-        });
-      }
-    } catch (error) {
-      console.error('Failed to load organizations:', error);
-      notifications.show({
-        title: 'Error',
-        message: 'Failed to load organizations',
-        color: 'red',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadUsers = async () => {
-    try {
-      const result = await listUsers();
-      if (result.success && result.data) {
-        setUsers(result.data || []);
-      }
-    } catch (error) {
-      console.error('Failed to load users:', error);
-    }
-  };
-
-  const generateSlug = (name: string) => {
-    return name
+  const generateSlug = (name: string) =>
+    name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '');
-  };
 
   const handleNameChange = (name: string) => {
-    setNewOrg((prev) => ({
-      ...prev,
-      name,
-      slug: prev.slug || generateSlug(name),
-    }));
+    setNewOrg((prev) => ({ ...prev, name, slug: prev.slug || generateSlug(name) }));
   };
 
   const handleCreateOrganization = async () => {
     try {
-      const result = await createOrganization({
+      const result = await createOrganizationAction({
         name: newOrg.name,
         slug: newOrg.slug,
         metadata: newOrg.description ? { description: newOrg.description } : undefined,
@@ -206,7 +159,7 @@ export default function OrganizationsPage() {
         });
         closeCreateModal();
         setNewOrg({ name: '', slug: '', description: '' });
-        await loadOrganizations();
+        await refetch();
       } else {
         notifications.show({
           title: 'Error',
@@ -242,15 +195,18 @@ export default function OrganizationsPage() {
         return;
       }
 
-      const result = await bulkInviteUsers({
+      const result = await bulkInviteUsersAction({
         emails: emailList,
         organizationId: selectedOrg.id,
         role: inviteData.role as 'owner' | 'admin' | 'member',
         message: inviteData.message || undefined,
       });
 
-      if (result.success && result.data) {
-        const successCount = result.data.successful?.length || 0;
+      if ((result as any).success) {
+        const results = (result as any).results || (result as any).data || [];
+        const successCount = Array.isArray(results)
+          ? results.filter((r: any) => r.success).length
+          : (result as any).data?.successful?.length || 0;
         const totalCount = emailList.length;
 
         notifications.show({
@@ -260,11 +216,11 @@ export default function OrganizationsPage() {
         });
         closeInviteModal();
         setInviteData({ emails: '', role: 'member', message: '' });
-        await loadOrganizations();
+        await refetch();
       } else {
         notifications.show({
           title: 'Error',
-          message: result.error || 'Failed to send invitations',
+          message: (result as any).error || 'Failed to send invitations',
           color: 'red',
         });
       }
@@ -280,15 +236,14 @@ export default function OrganizationsPage() {
 
   const handleDeleteOrganization = async (orgId: string) => {
     try {
-      const result = await deleteOrganization(orgId);
-
+      const result = await deleteOrganizationAction(orgId);
       if (result.success) {
         notifications.show({
           title: 'Success',
           message: 'Organization deleted successfully',
           color: 'green',
         });
-        await loadOrganizations();
+        await refetch();
       } else {
         notifications.show({
           title: 'Error',
@@ -390,7 +345,7 @@ export default function OrganizationsPage() {
             ],
           }}
           description="Manage organizations, members, and invitations"
-          onRefresh={loadOrganizations}
+          onRefresh={refetch}
           title="Organization Management"
         />
 
@@ -515,11 +470,7 @@ export default function OrganizationsPage() {
             onChange={(value) =>
               setInviteData((prev) => ({ ...prev, role: (value as any) || 'member' }))
             }
-            data={[
-              { value: 'member', label: 'Member' },
-              { value: 'admin', label: 'Admin' },
-              { value: 'owner', label: 'Owner' },
-            ]}
+            data={ORG_ROLES}
           />
 
           <Textarea

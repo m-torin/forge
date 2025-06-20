@@ -3,8 +3,12 @@
  */
 
 import { PROVIDER_REQUIREMENTS } from './config';
+import { createServerObservability } from '@repo/observability/shared-env';
 
 import type { AnalyticsConfig, ProviderConfig } from '../types/types';
+
+// Global logger instance
+let logger: any = null;
 
 export interface ValidationError {
   field: string;
@@ -223,21 +227,28 @@ export function validateConfigOrThrow(config: AnalyticsConfig): void {
 /**
  * Development helper to check configuration
  */
-export function debugConfig(config: AnalyticsConfig): void {
-  console.group('Analytics Configuration Debug');
+export async function debugConfig(config: AnalyticsConfig): Promise<void> {
+  // Initialize logger if not already initialized
+  if (!logger) {
+    logger = await createServerObservability({
+      providers: {
+        console: { enabled: true },
+      },
+    });
+  }
 
   const result = validateAnalyticsConfig(config);
 
-  console.log('Configuration:', config);
-  console.log('Validation Result:', result);
+  await logger.log('info', 'Analytics Configuration Debug', {
+    config,
+    validationResult: result,
+  });
 
   if (result.errors.length > 0) {
-    console.error('Errors: ', result.errors);
+    await logger.log('error', 'Analytics configuration errors', { errors: result.errors });
   }
 
   if (result.warnings.length > 0) {
-    console.warn('Warnings: ', result.warnings);
+    await logger.log('warn', 'Analytics configuration warnings', { warnings: result.warnings });
   }
-
-  console.groupEnd();
 }

@@ -1,8 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 import { keys } from '../keys';
 
-describe('keys', (_: any) => {
+describe('keys', () => {
   const originalEnv = process.env;
   const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
@@ -17,7 +17,7 @@ describe('keys', (_: any) => {
     consoleErrorSpy.mockRestore();
   });
 
-  it('should return keys when ARCJET_KEY is set', (_: any) => {
+  test('should return keys when ARCJET_KEY is set', () => {
     process.env.ARCJET_KEY = 'ajkey_test_12345';
 
     const result = keys();
@@ -25,7 +25,7 @@ describe('keys', (_: any) => {
     expect(result.ARCJET_KEY).toBe('ajkey_test_12345');
   });
 
-  it('should return undefined when ARCJET_KEY is not set', (_: any) => {
+  test('should return undefined when ARCJET_KEY is not set', () => {
     delete process.env.ARCJET_KEY;
 
     const result = keys();
@@ -33,28 +33,28 @@ describe('keys', (_: any) => {
     expect(result.ARCJET_KEY).toBeUndefined();
   });
 
-  it('should validate that ARCJET_KEY starts with ajkey_ in production', (_: any) => {
+  test('should validate that ARCJET_KEY starts with ajkey_ in production', () => {
     process.env.NODE_ENV = 'production';
     process.env.ARCJET_KEY = 'invalid_key';
 
-    expect(() => keys()).toThrow();
+    expect(() => keys()).toThrow('Invalid environment variables');
   });
 
-  it('should validate that ARCJET_KEY has minimum length in production when set', (_: any) => {
+  test('should validate that ARCJET_KEY has minimum length in production when set', () => {
     process.env.NODE_ENV = 'production';
     process.env.ARCJET_KEY = 'ajkey'; // Set but missing underscore and content
 
-    expect(() => keys()).toThrow();
+    expect(() => keys()).toThrow('Invalid environment variables');
   });
 
-  it('should allow empty ARCJET_KEY in development', (_: any) => {
+  test('should allow empty ARCJET_KEY in development', () => {
     process.env.NODE_ENV = 'development';
     process.env.ARCJET_KEY = '';
 
     expect(() => keys()).not.toThrow();
   });
 
-  it('should accept valid ARCJET_KEY format', (_: any) => {
+  test('should accept valid ARCJET_KEY format', () => {
     process.env.ARCJET_KEY = 'ajkey_valid_api_key_12345';
 
     expect(() => keys()).not.toThrow();

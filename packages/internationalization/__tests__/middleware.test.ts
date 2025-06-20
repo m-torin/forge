@@ -1,9 +1,9 @@
 import { match as matchLocale } from '@formatjs/intl-localematcher';
 import { NextRequest } from 'next/server';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Import after mocks are set up
-import { internationalizationMiddleware } from '../middleware';
+import { internationalizationMiddleware } from '../src/middleware';
 
 // Mock modules first before imports
 vi.mock('next-international/middleware', () => ({
@@ -22,19 +22,19 @@ vi.mock('negotiator', () => {
   };
 });
 
-describe('Internationalization Middleware', () => {
+describe('internationalization Middleware', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   describe('internationalizationMiddleware', () => {
-    it('exports middleware function', () => {
+    test('exports middleware function', () => {
       // Verify the exported function exists and is callable
       expect(internationalizationMiddleware).toBeDefined();
       expect(typeof internationalizationMiddleware).toBe('function');
     });
 
-    it('handles different Accept-Language headers', () => {
+    test('handles different Accept-Language headers', () => {
       // Mock the match function
       vi.mocked(matchLocale).mockReturnValue('es');
 
@@ -50,7 +50,7 @@ describe('Internationalization Middleware', () => {
       expect(result).toBeDefined();
     });
 
-    it('works with requests without Accept-Language header', () => {
+    test('works with requests without Accept-Language header', () => {
       vi.mocked(matchLocale).mockReturnValue('en');
 
       const mockRequest = new NextRequest('http://localhost:3000/');
@@ -61,17 +61,17 @@ describe('Internationalization Middleware', () => {
   });
 
   describe('config', () => {
-    it('exports correct matcher configuration', async () => {
+    test('exports correct matcher configuration', async () => {
       // Import the config export
-      const { config } = await import('../middleware');
+      const { config } = await import('../src/middleware');
 
-      expect(config).toEqual({
+      expect(config).toStrictEqual({
         matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
       });
     });
 
-    it('matcher pattern is correct', async () => {
-      const { config } = await import('../middleware');
+    test('matcher pattern is correct', async () => {
+      const { config } = await import('../src/middleware');
 
       // The matcher is a negative lookahead pattern, not a regular string regex
       expect(config.matcher[0]).toBe('/((?!api|_next/static|_next/image|favicon.ico).*)');

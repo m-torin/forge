@@ -325,7 +325,7 @@ export class VercelOTelProvider implements ObservabilityProvider {
     try {
       // Try to import OpenTelemetry API to check if it's available
       await import('@opentelemetry/api' as any);
-    } catch (error: any) {
+    } catch (_error: any) {
       throw new Error(
         'Cannot resolve module @opentelemetry/api - OpenTelemetry dependencies not available',
       );
@@ -473,7 +473,7 @@ export class VercelOTelProvider implements ObservabilityProvider {
 
       this.api = otelAPI;
       this.tracer = otelAPI.trace.getTracer(config.serviceName, config.serviceVersion);
-    } catch (error: any) {
+    } catch (_error: any) {
       if (this.config?.debug) {
         console.warn('[Vercel OTel] Vercel OTel not available, falling back to standard OTel');
       }
