@@ -13,7 +13,7 @@
     "lint": "eslint . --fix"
   },
   "dependencies": {
-    "@next/third-parties": "15.3.3",
+    "@next/third-parties": "15.3.4",
     "@t3-oss/env-nextjs": "catalog:",
     "@vercel/analytics": "^1.5.0",
     "chalk": "^5.4.1",
