@@ -3,15 +3,20 @@ import type { Prisma } from '../../client';
 import { z } from 'zod';
 import { BackupCodeUncheckedCreateNestedManyWithoutTwoFactorInputSchema } from './BackupCodeUncheckedCreateNestedManyWithoutTwoFactorInputSchema';
 
-export const TwoFactorUncheckedCreateWithoutUserInputSchema: z.ZodType<Prisma.TwoFactorUncheckedCreateWithoutUserInput> = z.object({
-  id: z.string(),
-  secret: z.string(),
-  secretHash: z.string().optional().nullable(),
-  enabled: z.boolean().optional(),
-  verified: z.boolean().optional(),
-  createdAt: z.coerce.date(),
-  updatedAt: z.coerce.date(),
-  backupCodes: z.lazy(() => BackupCodeUncheckedCreateNestedManyWithoutTwoFactorInputSchema).optional()
-}).strict();
+export const TwoFactorUncheckedCreateWithoutUserInputSchema: z.ZodType<Prisma.TwoFactorUncheckedCreateWithoutUserInput> =
+  z
+    .object({
+      id: z.string(),
+      secret: z.string(),
+      secretHash: z.string().optional().nullable(),
+      enabled: z.boolean().optional(),
+      verified: z.boolean().optional(),
+      createdAt: z.coerce.date(),
+      updatedAt: z.coerce.date(),
+      backupCodes: z
+        .lazy(() => BackupCodeUncheckedCreateNestedManyWithoutTwoFactorInputSchema)
+        .optional(),
+    })
+    .strict();
 
 export default TwoFactorUncheckedCreateWithoutUserInputSchema;

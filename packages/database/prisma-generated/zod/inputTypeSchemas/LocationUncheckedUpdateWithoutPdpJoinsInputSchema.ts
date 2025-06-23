@@ -17,22 +17,56 @@ import { FandomUncheckedUpdateManyWithoutLocationsNestedInputSchema } from './Fa
 import { TaxonomyUncheckedUpdateManyWithoutLocationsNestedInputSchema } from './TaxonomyUncheckedUpdateManyWithoutLocationsNestedInputSchema';
 import { JrFindReplaceRejectUncheckedUpdateManyWithoutLocationsNestedInputSchema } from './JrFindReplaceRejectUncheckedUpdateManyWithoutLocationsNestedInputSchema';
 
-export const LocationUncheckedUpdateWithoutPdpJoinsInputSchema: z.ZodType<Prisma.LocationUncheckedUpdateWithoutPdpJoinsInput> = z.object({
-  id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  locationType: z.union([ z.lazy(() => LocationTypeSchema),z.lazy(() => EnumLocationTypeFieldUpdateOperationsInputSchema) ]).optional(),
-  lodgingType: z.union([ z.lazy(() => LodgingTypeSchema),z.lazy(() => NullableEnumLodgingTypeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  isFictional: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
-  copy: z.union([ z.lazy(() => JsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
-  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  deletedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  deletedById: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  products: z.lazy(() => ProductUncheckedUpdateManyWithoutLocationsNestedInputSchema).optional(),
-  fandoms: z.lazy(() => FandomUncheckedUpdateManyWithoutLocationsNestedInputSchema).optional(),
-  taxonomies: z.lazy(() => TaxonomyUncheckedUpdateManyWithoutLocationsNestedInputSchema).optional(),
-  jrFindReplaceRejects: z.lazy(() => JrFindReplaceRejectUncheckedUpdateManyWithoutLocationsNestedInputSchema).optional()
-}).strict();
+export const LocationUncheckedUpdateWithoutPdpJoinsInputSchema: z.ZodType<Prisma.LocationUncheckedUpdateWithoutPdpJoinsInput> =
+  z
+    .object({
+      id: z
+        .union([z.string().cuid(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+        .optional(),
+      name: z.union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)]).optional(),
+      slug: z.union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)]).optional(),
+      locationType: z
+        .union([
+          z.lazy(() => LocationTypeSchema),
+          z.lazy(() => EnumLocationTypeFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      lodgingType: z
+        .union([
+          z.lazy(() => LodgingTypeSchema),
+          z.lazy(() => NullableEnumLodgingTypeFieldUpdateOperationsInputSchema),
+        ])
+        .optional()
+        .nullable(),
+      isFictional: z
+        .union([z.boolean(), z.lazy(() => BoolFieldUpdateOperationsInputSchema)])
+        .optional(),
+      copy: z.union([z.lazy(() => JsonNullValueInputSchema), InputJsonValueSchema]).optional(),
+      createdAt: z
+        .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+        .optional(),
+      updatedAt: z
+        .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+        .optional(),
+      deletedAt: z
+        .union([z.coerce.date(), z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      deletedById: z
+        .union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      products: z
+        .lazy(() => ProductUncheckedUpdateManyWithoutLocationsNestedInputSchema)
+        .optional(),
+      fandoms: z.lazy(() => FandomUncheckedUpdateManyWithoutLocationsNestedInputSchema).optional(),
+      taxonomies: z
+        .lazy(() => TaxonomyUncheckedUpdateManyWithoutLocationsNestedInputSchema)
+        .optional(),
+      jrFindReplaceRejects: z
+        .lazy(() => JrFindReplaceRejectUncheckedUpdateManyWithoutLocationsNestedInputSchema)
+        .optional(),
+    })
+    .strict();
 
 export default LocationUncheckedUpdateWithoutPdpJoinsInputSchema;

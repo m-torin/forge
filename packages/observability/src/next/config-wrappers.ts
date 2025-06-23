@@ -191,8 +191,10 @@ export async function withSentry(
   // Determine if we're in production
   const isProduction = process.env.NODE_ENV === 'production';
 
-  // Dynamically import Sentry to avoid edge runtime issues
-  const { withSentryConfig } = await import('@sentry/nextjs');
+  // Dynamically import Sentry using eval wrapper to prevent static analysis
+  const dynamicImport = eval('(specifier) => import(specifier)');
+  const sentryModule = await dynamicImport('@sentry/nextjs');
+  const { withSentryConfig } = sentryModule;
 
   const defaultOptions: Parameters<typeof withSentryConfig>[1] = {
     // Core Options

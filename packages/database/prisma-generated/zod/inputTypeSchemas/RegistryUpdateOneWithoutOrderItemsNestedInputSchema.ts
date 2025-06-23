@@ -11,14 +11,28 @@ import { RegistryUpdateToOneWithWhereWithoutOrderItemsInputSchema } from './Regi
 import { RegistryUpdateWithoutOrderItemsInputSchema } from './RegistryUpdateWithoutOrderItemsInputSchema';
 import { RegistryUncheckedUpdateWithoutOrderItemsInputSchema } from './RegistryUncheckedUpdateWithoutOrderItemsInputSchema';
 
-export const RegistryUpdateOneWithoutOrderItemsNestedInputSchema: z.ZodType<Prisma.RegistryUpdateOneWithoutOrderItemsNestedInput> = z.object({
-  create: z.union([ z.lazy(() => RegistryCreateWithoutOrderItemsInputSchema),z.lazy(() => RegistryUncheckedCreateWithoutOrderItemsInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => RegistryCreateOrConnectWithoutOrderItemsInputSchema).optional(),
-  upsert: z.lazy(() => RegistryUpsertWithoutOrderItemsInputSchema).optional(),
-  disconnect: z.union([ z.boolean(),z.lazy(() => RegistryWhereInputSchema) ]).optional(),
-  delete: z.union([ z.boolean(),z.lazy(() => RegistryWhereInputSchema) ]).optional(),
-  connect: z.lazy(() => RegistryWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => RegistryUpdateToOneWithWhereWithoutOrderItemsInputSchema),z.lazy(() => RegistryUpdateWithoutOrderItemsInputSchema),z.lazy(() => RegistryUncheckedUpdateWithoutOrderItemsInputSchema) ]).optional(),
-}).strict();
+export const RegistryUpdateOneWithoutOrderItemsNestedInputSchema: z.ZodType<Prisma.RegistryUpdateOneWithoutOrderItemsNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => RegistryCreateWithoutOrderItemsInputSchema),
+          z.lazy(() => RegistryUncheckedCreateWithoutOrderItemsInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z.lazy(() => RegistryCreateOrConnectWithoutOrderItemsInputSchema).optional(),
+      upsert: z.lazy(() => RegistryUpsertWithoutOrderItemsInputSchema).optional(),
+      disconnect: z.union([z.boolean(), z.lazy(() => RegistryWhereInputSchema)]).optional(),
+      delete: z.union([z.boolean(), z.lazy(() => RegistryWhereInputSchema)]).optional(),
+      connect: z.lazy(() => RegistryWhereUniqueInputSchema).optional(),
+      update: z
+        .union([
+          z.lazy(() => RegistryUpdateToOneWithWhereWithoutOrderItemsInputSchema),
+          z.lazy(() => RegistryUpdateWithoutOrderItemsInputSchema),
+          z.lazy(() => RegistryUncheckedUpdateWithoutOrderItemsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default RegistryUpdateOneWithoutOrderItemsNestedInputSchema;

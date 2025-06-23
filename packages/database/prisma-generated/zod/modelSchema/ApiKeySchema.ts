@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema'
+import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema';
 
 /////////////////////////////////////////
 // API KEY SCHEMA
@@ -30,8 +30,8 @@ export const ApiKeySchema = z.object({
   updatedAt: z.coerce.date(),
   permissions: z.string().nullable(),
   metadata: JsonValueSchema.nullable(),
-})
+});
 
-export type ApiKey = z.infer<typeof ApiKeySchema>
+export type ApiKey = z.infer<typeof ApiKeySchema>;
 
 export default ApiKeySchema;

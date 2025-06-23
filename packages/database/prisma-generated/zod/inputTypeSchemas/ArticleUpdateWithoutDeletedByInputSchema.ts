@@ -11,17 +11,34 @@ import { EnumContentStatusFieldUpdateOperationsInputSchema } from './EnumContent
 import { UserUpdateOneWithoutArticlesNestedInputSchema } from './UserUpdateOneWithoutArticlesNestedInputSchema';
 import { MediaUpdateManyWithoutArticleNestedInputSchema } from './MediaUpdateManyWithoutArticleNestedInputSchema';
 
-export const ArticleUpdateWithoutDeletedByInputSchema: z.ZodType<Prisma.ArticleUpdateWithoutDeletedByInput> = z.object({
-  id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  deletedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  content: z.union([ z.lazy(() => JsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
-  status: z.union([ z.lazy(() => ContentStatusSchema),z.lazy(() => EnumContentStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  user: z.lazy(() => UserUpdateOneWithoutArticlesNestedInputSchema).optional(),
-  media: z.lazy(() => MediaUpdateManyWithoutArticleNestedInputSchema).optional()
-}).strict();
+export const ArticleUpdateWithoutDeletedByInputSchema: z.ZodType<Prisma.ArticleUpdateWithoutDeletedByInput> =
+  z
+    .object({
+      id: z
+        .union([z.string().cuid(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+        .optional(),
+      createdAt: z
+        .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+        .optional(),
+      updatedAt: z
+        .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+        .optional(),
+      deletedAt: z
+        .union([z.coerce.date(), z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      title: z.union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)]).optional(),
+      slug: z.union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)]).optional(),
+      content: z.union([z.lazy(() => JsonNullValueInputSchema), InputJsonValueSchema]).optional(),
+      status: z
+        .union([
+          z.lazy(() => ContentStatusSchema),
+          z.lazy(() => EnumContentStatusFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      user: z.lazy(() => UserUpdateOneWithoutArticlesNestedInputSchema).optional(),
+      media: z.lazy(() => MediaUpdateManyWithoutArticleNestedInputSchema).optional(),
+    })
+    .strict();
 
 export default ArticleUpdateWithoutDeletedByInputSchema;

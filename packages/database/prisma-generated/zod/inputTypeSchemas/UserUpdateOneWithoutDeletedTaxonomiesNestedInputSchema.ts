@@ -11,14 +11,30 @@ import { UserUpdateToOneWithWhereWithoutDeletedTaxonomiesInputSchema } from './U
 import { UserUpdateWithoutDeletedTaxonomiesInputSchema } from './UserUpdateWithoutDeletedTaxonomiesInputSchema';
 import { UserUncheckedUpdateWithoutDeletedTaxonomiesInputSchema } from './UserUncheckedUpdateWithoutDeletedTaxonomiesInputSchema';
 
-export const UserUpdateOneWithoutDeletedTaxonomiesNestedInputSchema: z.ZodType<Prisma.UserUpdateOneWithoutDeletedTaxonomiesNestedInput> = z.object({
-  create: z.union([ z.lazy(() => UserCreateWithoutDeletedTaxonomiesInputSchema),z.lazy(() => UserUncheckedCreateWithoutDeletedTaxonomiesInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => UserCreateOrConnectWithoutDeletedTaxonomiesInputSchema).optional(),
-  upsert: z.lazy(() => UserUpsertWithoutDeletedTaxonomiesInputSchema).optional(),
-  disconnect: z.union([ z.boolean(),z.lazy(() => UserWhereInputSchema) ]).optional(),
-  delete: z.union([ z.boolean(),z.lazy(() => UserWhereInputSchema) ]).optional(),
-  connect: z.lazy(() => UserWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => UserUpdateToOneWithWhereWithoutDeletedTaxonomiesInputSchema),z.lazy(() => UserUpdateWithoutDeletedTaxonomiesInputSchema),z.lazy(() => UserUncheckedUpdateWithoutDeletedTaxonomiesInputSchema) ]).optional(),
-}).strict();
+export const UserUpdateOneWithoutDeletedTaxonomiesNestedInputSchema: z.ZodType<Prisma.UserUpdateOneWithoutDeletedTaxonomiesNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => UserCreateWithoutDeletedTaxonomiesInputSchema),
+          z.lazy(() => UserUncheckedCreateWithoutDeletedTaxonomiesInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .lazy(() => UserCreateOrConnectWithoutDeletedTaxonomiesInputSchema)
+        .optional(),
+      upsert: z.lazy(() => UserUpsertWithoutDeletedTaxonomiesInputSchema).optional(),
+      disconnect: z.union([z.boolean(), z.lazy(() => UserWhereInputSchema)]).optional(),
+      delete: z.union([z.boolean(), z.lazy(() => UserWhereInputSchema)]).optional(),
+      connect: z.lazy(() => UserWhereUniqueInputSchema).optional(),
+      update: z
+        .union([
+          z.lazy(() => UserUpdateToOneWithWhereWithoutDeletedTaxonomiesInputSchema),
+          z.lazy(() => UserUpdateWithoutDeletedTaxonomiesInputSchema),
+          z.lazy(() => UserUncheckedUpdateWithoutDeletedTaxonomiesInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default UserUpdateOneWithoutDeletedTaxonomiesNestedInputSchema;

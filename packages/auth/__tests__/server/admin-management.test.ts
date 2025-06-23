@@ -1,16 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  banUser,
-  deleteSession,
-  deleteUser,
-  impersonateUser,
-  listApiKeys,
-  listSessions,
-  listUsers,
-  unbanUser,
-} from '../../server/admin-management';
-
 // Mock the auth module using vi.hoisted
 const { mockListApiKeys, mockSignOut } = vi.hoisted(() => {
   const mockListApiKeys = vi.fn();
@@ -19,7 +8,7 @@ const { mockListApiKeys, mockSignOut } = vi.hoisted(() => {
   return { mockListApiKeys, mockSignOut };
 });
 
-vi.mock('../../server/auth', () => ({
+vi.mock('../../src/shared/auth.config', () => ({
   auth: {
     api: {
       listApiKeys: mockListApiKeys,
@@ -27,6 +16,14 @@ vi.mock('../../server/auth', () => ({
     },
   },
 }));
+
+// Import after mocking
+import {
+  deleteUserAction,
+  deleteSessionAction,
+  listApiKeysAction,
+  getApiKeyAction,
+} from '../../src/server/admin-management';
 
 describe('Admin Management', () => {
   beforeEach(() => {
@@ -45,7 +42,7 @@ describe('Admin Management', () => {
         success: true,
       });
 
-      const result = await listApiKeys();
+      const result = await listApiKeysAction();
 
       expect(result).toEqual({
         data: mockApiKeys,
@@ -60,10 +57,10 @@ describe('Admin Management', () => {
         success: false,
       });
 
-      const result = await listApiKeys();
+      const result = await listApiKeysAction();
 
       expect(result).toEqual({
-        error: 'API error',
+        error: 'Failed to list API keys',
         success: false,
       });
     });
@@ -71,7 +68,7 @@ describe('Admin Management', () => {
     it('should handle exceptions', async () => {
       mockListApiKeys.mockRejectedValue(new Error('Network error'));
 
-      const result = await listApiKeys();
+      const result = await listApiKeysAction();
 
       expect(result).toEqual({
         error: 'Failed to list API keys',
@@ -85,7 +82,7 @@ describe('Admin Management', () => {
         success: true,
       });
 
-      const result = await listApiKeys();
+      const result = await listApiKeysAction();
 
       expect(result).toEqual({
         data: [],
@@ -100,7 +97,7 @@ describe('Admin Management', () => {
         success: true,
       });
 
-      const result = await deleteSession();
+      const result = await deleteSessionAction();
 
       expect(result).toEqual({
         success: true,
@@ -114,7 +111,7 @@ describe('Admin Management', () => {
         success: false,
       });
 
-      const result = await deleteSession();
+      const result = await deleteSessionAction();
 
       expect(result).toEqual({
         error: 'Sign out failed',
@@ -122,19 +119,10 @@ describe('Admin Management', () => {
       });
     });
 
-    it('should throw error when sessionId is provided', async () => {
-      const result = await deleteSession('session-123');
-
-      expect(result).toEqual({
-        error: 'Session deletion by ID not implemented yet - requires Better Auth admin features',
-        success: false,
-      });
-    });
-
     it('should handle sign out exceptions', async () => {
       mockSignOut.mockRejectedValue(new Error('Network error'));
 
-      const result = await deleteSession();
+      const result = await deleteSessionAction();
 
       expect(result).toEqual({
         error: 'Network error',
@@ -145,83 +133,19 @@ describe('Admin Management', () => {
 
   describe('deleteUser', () => {
     it('should return not implemented error', async () => {
-      const result = await deleteUser('user-123');
+      const result = await deleteUserAction('user-123');
 
       expect(result).toEqual({
-        error: 'User deletion not implemented yet - requires Better Auth admin features',
+        error: 'Failed to delete user',
         success: false,
       });
     });
 
     it('should handle missing userId', async () => {
-      const result = await deleteUser('');
+      const result = await deleteUserAction('');
 
       expect(result).toEqual({
-        error: 'User deletion not implemented yet - requires Better Auth admin features',
-        success: false,
-      });
-    });
-  });
-
-  describe('listUsers', () => {
-    it('should return not implemented error', async () => {
-      const result = await listUsers();
-
-      expect(result).toEqual({
-        error: 'User listing not implemented yet - requires Better Auth admin features',
-        success: false,
-      });
-    });
-  });
-
-  describe('listSessions', () => {
-    it('should return not implemented error', async () => {
-      const result = await listSessions();
-
-      expect(result).toEqual({
-        error: 'Session listing not implemented yet - requires Better Auth admin features',
-        success: false,
-      });
-    });
-  });
-
-  describe('impersonateUser', () => {
-    it('should return not implemented error', async () => {
-      const result = await impersonateUser('user-123');
-
-      expect(result).toEqual({
-        error: 'User impersonation not implemented yet - requires Better Auth admin features',
-        success: false,
-      });
-    });
-  });
-
-  describe('banUser', () => {
-    it('should return not implemented error with reason', async () => {
-      const result = await banUser('user-123', 'Violating terms');
-
-      expect(result).toEqual({
-        error: 'User banning not implemented yet - requires Better Auth admin features',
-        success: false,
-      });
-    });
-
-    it('should return not implemented error without reason', async () => {
-      const result = await banUser('user-123');
-
-      expect(result).toEqual({
-        error: 'User banning not implemented yet - requires Better Auth admin features',
-        success: false,
-      });
-    });
-  });
-
-  describe('unbanUser', () => {
-    it('should return not implemented error', async () => {
-      const result = await unbanUser('user-123');
-
-      expect(result).toEqual({
-        error: 'User unbanning not implemented yet - requires Better Auth admin features',
+        error: 'Failed to delete user',
         success: false,
       });
     });

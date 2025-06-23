@@ -412,10 +412,9 @@ export function extractEmails(text: string): string[] {
  * Extract phone numbers from text
  */
 export function extractPhoneNumbers(text: string): string[] {
-  // Use a much simpler regex pattern to avoid security warnings
-  const phoneRegex = /\d{3}-\d{3}-\d{4}|\(\d{3}\)\s?\d{3}-\d{4}/g;
+  // Match US, international, dotted, and compact formats
+  const phoneRegex = /(?:\+\d{1,3}[-.\s]?)?(?:\(\d{3}\)|\d{3})[-.\s]?\d{3}[-.\s]?\d{4}/g;
   const matches = text.match(phoneRegex) || [];
-
   return [...new Set(matches)];
 }
 

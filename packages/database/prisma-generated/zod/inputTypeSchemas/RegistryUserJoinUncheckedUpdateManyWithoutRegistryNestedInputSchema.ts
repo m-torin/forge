@@ -11,18 +11,73 @@ import { RegistryUserJoinUpdateWithWhereUniqueWithoutRegistryInputSchema } from 
 import { RegistryUserJoinUpdateManyWithWhereWithoutRegistryInputSchema } from './RegistryUserJoinUpdateManyWithWhereWithoutRegistryInputSchema';
 import { RegistryUserJoinScalarWhereInputSchema } from './RegistryUserJoinScalarWhereInputSchema';
 
-export const RegistryUserJoinUncheckedUpdateManyWithoutRegistryNestedInputSchema: z.ZodType<Prisma.RegistryUserJoinUncheckedUpdateManyWithoutRegistryNestedInput> = z.object({
-  create: z.union([ z.lazy(() => RegistryUserJoinCreateWithoutRegistryInputSchema),z.lazy(() => RegistryUserJoinCreateWithoutRegistryInputSchema).array(),z.lazy(() => RegistryUserJoinUncheckedCreateWithoutRegistryInputSchema),z.lazy(() => RegistryUserJoinUncheckedCreateWithoutRegistryInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => RegistryUserJoinCreateOrConnectWithoutRegistryInputSchema),z.lazy(() => RegistryUserJoinCreateOrConnectWithoutRegistryInputSchema).array() ]).optional(),
-  upsert: z.union([ z.lazy(() => RegistryUserJoinUpsertWithWhereUniqueWithoutRegistryInputSchema),z.lazy(() => RegistryUserJoinUpsertWithWhereUniqueWithoutRegistryInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => RegistryUserJoinCreateManyRegistryInputEnvelopeSchema).optional(),
-  set: z.union([ z.lazy(() => RegistryUserJoinWhereUniqueInputSchema),z.lazy(() => RegistryUserJoinWhereUniqueInputSchema).array() ]).optional(),
-  disconnect: z.union([ z.lazy(() => RegistryUserJoinWhereUniqueInputSchema),z.lazy(() => RegistryUserJoinWhereUniqueInputSchema).array() ]).optional(),
-  delete: z.union([ z.lazy(() => RegistryUserJoinWhereUniqueInputSchema),z.lazy(() => RegistryUserJoinWhereUniqueInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => RegistryUserJoinWhereUniqueInputSchema),z.lazy(() => RegistryUserJoinWhereUniqueInputSchema).array() ]).optional(),
-  update: z.union([ z.lazy(() => RegistryUserJoinUpdateWithWhereUniqueWithoutRegistryInputSchema),z.lazy(() => RegistryUserJoinUpdateWithWhereUniqueWithoutRegistryInputSchema).array() ]).optional(),
-  updateMany: z.union([ z.lazy(() => RegistryUserJoinUpdateManyWithWhereWithoutRegistryInputSchema),z.lazy(() => RegistryUserJoinUpdateManyWithWhereWithoutRegistryInputSchema).array() ]).optional(),
-  deleteMany: z.union([ z.lazy(() => RegistryUserJoinScalarWhereInputSchema),z.lazy(() => RegistryUserJoinScalarWhereInputSchema).array() ]).optional(),
-}).strict();
+export const RegistryUserJoinUncheckedUpdateManyWithoutRegistryNestedInputSchema: z.ZodType<Prisma.RegistryUserJoinUncheckedUpdateManyWithoutRegistryNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => RegistryUserJoinCreateWithoutRegistryInputSchema),
+          z.lazy(() => RegistryUserJoinCreateWithoutRegistryInputSchema).array(),
+          z.lazy(() => RegistryUserJoinUncheckedCreateWithoutRegistryInputSchema),
+          z.lazy(() => RegistryUserJoinUncheckedCreateWithoutRegistryInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => RegistryUserJoinCreateOrConnectWithoutRegistryInputSchema),
+          z.lazy(() => RegistryUserJoinCreateOrConnectWithoutRegistryInputSchema).array(),
+        ])
+        .optional(),
+      upsert: z
+        .union([
+          z.lazy(() => RegistryUserJoinUpsertWithWhereUniqueWithoutRegistryInputSchema),
+          z.lazy(() => RegistryUserJoinUpsertWithWhereUniqueWithoutRegistryInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => RegistryUserJoinCreateManyRegistryInputEnvelopeSchema).optional(),
+      set: z
+        .union([
+          z.lazy(() => RegistryUserJoinWhereUniqueInputSchema),
+          z.lazy(() => RegistryUserJoinWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      disconnect: z
+        .union([
+          z.lazy(() => RegistryUserJoinWhereUniqueInputSchema),
+          z.lazy(() => RegistryUserJoinWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      delete: z
+        .union([
+          z.lazy(() => RegistryUserJoinWhereUniqueInputSchema),
+          z.lazy(() => RegistryUserJoinWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => RegistryUserJoinWhereUniqueInputSchema),
+          z.lazy(() => RegistryUserJoinWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      update: z
+        .union([
+          z.lazy(() => RegistryUserJoinUpdateWithWhereUniqueWithoutRegistryInputSchema),
+          z.lazy(() => RegistryUserJoinUpdateWithWhereUniqueWithoutRegistryInputSchema).array(),
+        ])
+        .optional(),
+      updateMany: z
+        .union([
+          z.lazy(() => RegistryUserJoinUpdateManyWithWhereWithoutRegistryInputSchema),
+          z.lazy(() => RegistryUserJoinUpdateManyWithWhereWithoutRegistryInputSchema).array(),
+        ])
+        .optional(),
+      deleteMany: z
+        .union([
+          z.lazy(() => RegistryUserJoinScalarWhereInputSchema),
+          z.lazy(() => RegistryUserJoinScalarWhereInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default RegistryUserJoinUncheckedUpdateManyWithoutRegistryNestedInputSchema;

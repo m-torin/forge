@@ -5,9 +5,15 @@ import { TwoFactorWhereUniqueInputSchema } from './TwoFactorWhereUniqueInputSche
 import { TwoFactorCreateWithoutBackupCodesInputSchema } from './TwoFactorCreateWithoutBackupCodesInputSchema';
 import { TwoFactorUncheckedCreateWithoutBackupCodesInputSchema } from './TwoFactorUncheckedCreateWithoutBackupCodesInputSchema';
 
-export const TwoFactorCreateOrConnectWithoutBackupCodesInputSchema: z.ZodType<Prisma.TwoFactorCreateOrConnectWithoutBackupCodesInput> = z.object({
-  where: z.lazy(() => TwoFactorWhereUniqueInputSchema),
-  create: z.union([ z.lazy(() => TwoFactorCreateWithoutBackupCodesInputSchema),z.lazy(() => TwoFactorUncheckedCreateWithoutBackupCodesInputSchema) ]),
-}).strict();
+export const TwoFactorCreateOrConnectWithoutBackupCodesInputSchema: z.ZodType<Prisma.TwoFactorCreateOrConnectWithoutBackupCodesInput> =
+  z
+    .object({
+      where: z.lazy(() => TwoFactorWhereUniqueInputSchema),
+      create: z.union([
+        z.lazy(() => TwoFactorCreateWithoutBackupCodesInputSchema),
+        z.lazy(() => TwoFactorUncheckedCreateWithoutBackupCodesInputSchema),
+      ]),
+    })
+    .strict();
 
 export default TwoFactorCreateOrConnectWithoutBackupCodesInputSchema;

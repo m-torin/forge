@@ -7,6 +7,7 @@
   "exclude": [
     "node_modules",
     "generated/**",
+    "prisma-generated/**",
     "__tests__/performance.test.skip.ts",
     "__tests__/upstash-redis.test.skip.ts",
     "__tests__/upstash-vector.test.skip.ts",

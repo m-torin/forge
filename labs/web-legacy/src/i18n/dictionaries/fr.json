@@ -1,0 +1,69 @@
+{
+  "app": {
+    "welcome": "Bienvenue sur Web Template",
+    "description": "Un modèle Next.js moderne avec Mantine UI et support de l'internationalisation",
+    "brand": "Web Template",
+    "appDescription": "Un modèle d'application web moderne avec internationalisation",
+    "selectLanguage": "Sélectionner la langue",
+    "l": {
+      "en": "English",
+      "fr": "Français",
+      "es": "Español",
+      "de": "Deutsch",
+      "pt": "Português"
+    }
+  },
+  "search": {
+    "title": "Rechercher",
+    "placeholder": "Rechercher quelque chose...",
+    "button": "Rechercher",
+    "results": "Résultats de recherche",
+    "noResults": "Aucun résultat trouvé",
+    "tryAgain": "Essayez de rechercher autre chose"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "search": "Rechercher",
+    "account": "Mon compte",
+    "orders": "Mes commandes",
+    "wishlist": "Liste de souhaits",
+    "help": "Aide",
+    "logout": "Se déconnecter",
+    "login": "Se connecter"
+  },
+  "taxonomy": {
+    "noItems": "Aucun élément trouvé.",
+    "items": "éléments",
+    "backTo": "Retour à",
+    "save": "Enregistrer",
+    "share": "Partager",
+    "relatedItems": "Éléments connexes",
+    "exploreMore": "Explorez plus d'éléments dans cette",
+    "viewAll": "Voir tout",
+    "details": "Détails",
+    "type": "Type",
+    "totalItems": "Total des éléments",
+    "parent": "Parent",
+    "browseItems": "Parcourir les éléments",
+    "brands": {
+      "title": "Marques",
+      "description": "Découvrez les produits de nos marques et partenaires vedettes"
+    },
+    "categories": {
+      "title": "Catégories",
+      "description": "Parcourez les produits par catégorie pour trouver exactement ce dont vous avez besoin"
+    },
+    "collections": {
+      "title": "Collections",
+      "description": "Collections sélectionnées de produits pour des occasions spéciales et des thèmes"
+    },
+    "tags": {
+      "title": "Étiquettes",
+      "description": "Trouvez des produits par étiquettes et labels"
+    },
+    "attributes": {
+      "title": "Attributs",
+      "description": "Filtrez les produits par attributs et propriétés spécifiques"
+    }
+  }
+}

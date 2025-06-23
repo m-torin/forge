@@ -7,10 +7,19 @@ import { UserCreateWithoutAddressesInputSchema } from './UserCreateWithoutAddres
 import { UserUncheckedCreateWithoutAddressesInputSchema } from './UserUncheckedCreateWithoutAddressesInputSchema';
 import { UserWhereInputSchema } from './UserWhereInputSchema';
 
-export const UserUpsertWithoutAddressesInputSchema: z.ZodType<Prisma.UserUpsertWithoutAddressesInput> = z.object({
-  update: z.union([ z.lazy(() => UserUpdateWithoutAddressesInputSchema),z.lazy(() => UserUncheckedUpdateWithoutAddressesInputSchema) ]),
-  create: z.union([ z.lazy(() => UserCreateWithoutAddressesInputSchema),z.lazy(() => UserUncheckedCreateWithoutAddressesInputSchema) ]),
-  where: z.lazy(() => UserWhereInputSchema).optional()
-}).strict();
+export const UserUpsertWithoutAddressesInputSchema: z.ZodType<Prisma.UserUpsertWithoutAddressesInput> =
+  z
+    .object({
+      update: z.union([
+        z.lazy(() => UserUpdateWithoutAddressesInputSchema),
+        z.lazy(() => UserUncheckedUpdateWithoutAddressesInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => UserCreateWithoutAddressesInputSchema),
+        z.lazy(() => UserUncheckedCreateWithoutAddressesInputSchema),
+      ]),
+      where: z.lazy(() => UserWhereInputSchema).optional(),
+    })
+    .strict();
 
 export default UserUpsertWithoutAddressesInputSchema;

@@ -5,28 +5,47 @@ import { TaxonomyTypeSchema } from './TaxonomyTypeSchema';
 import { ContentStatusSchema } from './ContentStatusSchema';
 import { JsonNullValueInputSchema } from './JsonNullValueInputSchema';
 import { InputJsonValueSchema } from './InputJsonValueSchema';
+import { TaxonomyUncheckedCreateNestedManyWithoutParentInputSchema } from './TaxonomyUncheckedCreateNestedManyWithoutParentInputSchema';
 import { ProductUncheckedCreateNestedManyWithoutTaxonomiesInputSchema } from './ProductUncheckedCreateNestedManyWithoutTaxonomiesInputSchema';
 import { CollectionUncheckedCreateNestedManyWithoutTaxonomiesInputSchema } from './CollectionUncheckedCreateNestedManyWithoutTaxonomiesInputSchema';
 import { PdpJoinUncheckedCreateNestedManyWithoutTaxonomiesInputSchema } from './PdpJoinUncheckedCreateNestedManyWithoutTaxonomiesInputSchema';
 import { LocationUncheckedCreateNestedManyWithoutTaxonomiesInputSchema } from './LocationUncheckedCreateNestedManyWithoutTaxonomiesInputSchema';
 import { JrFindReplaceRejectUncheckedCreateNestedManyWithoutTaxonomiesInputSchema } from './JrFindReplaceRejectUncheckedCreateNestedManyWithoutTaxonomiesInputSchema';
 
-export const TaxonomyUncheckedCreateWithoutMediaInputSchema: z.ZodType<Prisma.TaxonomyUncheckedCreateWithoutMediaInput> = z.object({
-  id: z.string().cuid().optional(),
-  name: z.string(),
-  slug: z.string(),
-  type: z.lazy(() => TaxonomyTypeSchema).optional(),
-  status: z.lazy(() => ContentStatusSchema).optional(),
-  copy: z.union([ z.lazy(() => JsonNullValueInputSchema),InputJsonValueSchema ]),
-  createdAt: z.coerce.date().optional(),
-  updatedAt: z.coerce.date().optional(),
-  deletedAt: z.coerce.date().optional().nullable(),
-  deletedById: z.string().optional().nullable(),
-  products: z.lazy(() => ProductUncheckedCreateNestedManyWithoutTaxonomiesInputSchema).optional(),
-  collections: z.lazy(() => CollectionUncheckedCreateNestedManyWithoutTaxonomiesInputSchema).optional(),
-  pdpJoins: z.lazy(() => PdpJoinUncheckedCreateNestedManyWithoutTaxonomiesInputSchema).optional(),
-  locations: z.lazy(() => LocationUncheckedCreateNestedManyWithoutTaxonomiesInputSchema).optional(),
-  jrFindReplaceRejects: z.lazy(() => JrFindReplaceRejectUncheckedCreateNestedManyWithoutTaxonomiesInputSchema).optional()
-}).strict();
+export const TaxonomyUncheckedCreateWithoutMediaInputSchema: z.ZodType<Prisma.TaxonomyUncheckedCreateWithoutMediaInput> =
+  z
+    .object({
+      id: z.string().cuid().optional(),
+      name: z.string(),
+      slug: z.string(),
+      type: z.lazy(() => TaxonomyTypeSchema).optional(),
+      status: z.lazy(() => ContentStatusSchema).optional(),
+      copy: z.union([z.lazy(() => JsonNullValueInputSchema), InputJsonValueSchema]),
+      parentId: z.string().optional().nullable(),
+      displayOrder: z.number().int().optional(),
+      level: z.number().int().optional(),
+      path: z.string().optional().nullable(),
+      createdAt: z.coerce.date().optional(),
+      updatedAt: z.coerce.date().optional(),
+      deletedAt: z.coerce.date().optional().nullable(),
+      deletedById: z.string().optional().nullable(),
+      children: z.lazy(() => TaxonomyUncheckedCreateNestedManyWithoutParentInputSchema).optional(),
+      products: z
+        .lazy(() => ProductUncheckedCreateNestedManyWithoutTaxonomiesInputSchema)
+        .optional(),
+      collections: z
+        .lazy(() => CollectionUncheckedCreateNestedManyWithoutTaxonomiesInputSchema)
+        .optional(),
+      pdpJoins: z
+        .lazy(() => PdpJoinUncheckedCreateNestedManyWithoutTaxonomiesInputSchema)
+        .optional(),
+      locations: z
+        .lazy(() => LocationUncheckedCreateNestedManyWithoutTaxonomiesInputSchema)
+        .optional(),
+      jrFindReplaceRejects: z
+        .lazy(() => JrFindReplaceRejectUncheckedCreateNestedManyWithoutTaxonomiesInputSchema)
+        .optional(),
+    })
+    .strict();
 
 export default TaxonomyUncheckedCreateWithoutMediaInputSchema;

@@ -7,10 +7,19 @@ import { PdpUrlUncheckedUpdateWithoutPdpJoinInputSchema } from './PdpUrlUnchecke
 import { PdpUrlCreateWithoutPdpJoinInputSchema } from './PdpUrlCreateWithoutPdpJoinInputSchema';
 import { PdpUrlUncheckedCreateWithoutPdpJoinInputSchema } from './PdpUrlUncheckedCreateWithoutPdpJoinInputSchema';
 
-export const PdpUrlUpsertWithWhereUniqueWithoutPdpJoinInputSchema: z.ZodType<Prisma.PdpUrlUpsertWithWhereUniqueWithoutPdpJoinInput> = z.object({
-  where: z.lazy(() => PdpUrlWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => PdpUrlUpdateWithoutPdpJoinInputSchema),z.lazy(() => PdpUrlUncheckedUpdateWithoutPdpJoinInputSchema) ]),
-  create: z.union([ z.lazy(() => PdpUrlCreateWithoutPdpJoinInputSchema),z.lazy(() => PdpUrlUncheckedCreateWithoutPdpJoinInputSchema) ]),
-}).strict();
+export const PdpUrlUpsertWithWhereUniqueWithoutPdpJoinInputSchema: z.ZodType<Prisma.PdpUrlUpsertWithWhereUniqueWithoutPdpJoinInput> =
+  z
+    .object({
+      where: z.lazy(() => PdpUrlWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => PdpUrlUpdateWithoutPdpJoinInputSchema),
+        z.lazy(() => PdpUrlUncheckedUpdateWithoutPdpJoinInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => PdpUrlCreateWithoutPdpJoinInputSchema),
+        z.lazy(() => PdpUrlUncheckedCreateWithoutPdpJoinInputSchema),
+      ]),
+    })
+    .strict();
 
 export default PdpUrlUpsertWithWhereUniqueWithoutPdpJoinInputSchema;

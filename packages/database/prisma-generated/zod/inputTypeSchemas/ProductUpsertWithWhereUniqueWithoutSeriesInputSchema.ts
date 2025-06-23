@@ -7,10 +7,19 @@ import { ProductUncheckedUpdateWithoutSeriesInputSchema } from './ProductUncheck
 import { ProductCreateWithoutSeriesInputSchema } from './ProductCreateWithoutSeriesInputSchema';
 import { ProductUncheckedCreateWithoutSeriesInputSchema } from './ProductUncheckedCreateWithoutSeriesInputSchema';
 
-export const ProductUpsertWithWhereUniqueWithoutSeriesInputSchema: z.ZodType<Prisma.ProductUpsertWithWhereUniqueWithoutSeriesInput> = z.object({
-  where: z.lazy(() => ProductWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => ProductUpdateWithoutSeriesInputSchema),z.lazy(() => ProductUncheckedUpdateWithoutSeriesInputSchema) ]),
-  create: z.union([ z.lazy(() => ProductCreateWithoutSeriesInputSchema),z.lazy(() => ProductUncheckedCreateWithoutSeriesInputSchema) ]),
-}).strict();
+export const ProductUpsertWithWhereUniqueWithoutSeriesInputSchema: z.ZodType<Prisma.ProductUpsertWithWhereUniqueWithoutSeriesInput> =
+  z
+    .object({
+      where: z.lazy(() => ProductWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => ProductUpdateWithoutSeriesInputSchema),
+        z.lazy(() => ProductUncheckedUpdateWithoutSeriesInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => ProductCreateWithoutSeriesInputSchema),
+        z.lazy(() => ProductUncheckedCreateWithoutSeriesInputSchema),
+      ]),
+    })
+    .strict();
 
 export default ProductUpsertWithWhereUniqueWithoutSeriesInputSchema;

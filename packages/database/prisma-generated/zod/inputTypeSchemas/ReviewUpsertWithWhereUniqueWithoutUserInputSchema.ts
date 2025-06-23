@@ -7,10 +7,19 @@ import { ReviewUncheckedUpdateWithoutUserInputSchema } from './ReviewUncheckedUp
 import { ReviewCreateWithoutUserInputSchema } from './ReviewCreateWithoutUserInputSchema';
 import { ReviewUncheckedCreateWithoutUserInputSchema } from './ReviewUncheckedCreateWithoutUserInputSchema';
 
-export const ReviewUpsertWithWhereUniqueWithoutUserInputSchema: z.ZodType<Prisma.ReviewUpsertWithWhereUniqueWithoutUserInput> = z.object({
-  where: z.lazy(() => ReviewWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => ReviewUpdateWithoutUserInputSchema),z.lazy(() => ReviewUncheckedUpdateWithoutUserInputSchema) ]),
-  create: z.union([ z.lazy(() => ReviewCreateWithoutUserInputSchema),z.lazy(() => ReviewUncheckedCreateWithoutUserInputSchema) ]),
-}).strict();
+export const ReviewUpsertWithWhereUniqueWithoutUserInputSchema: z.ZodType<Prisma.ReviewUpsertWithWhereUniqueWithoutUserInput> =
+  z
+    .object({
+      where: z.lazy(() => ReviewWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => ReviewUpdateWithoutUserInputSchema),
+        z.lazy(() => ReviewUncheckedUpdateWithoutUserInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => ReviewCreateWithoutUserInputSchema),
+        z.lazy(() => ReviewUncheckedCreateWithoutUserInputSchema),
+      ]),
+    })
+    .strict();
 
 export default ReviewUpsertWithWhereUniqueWithoutUserInputSchema;

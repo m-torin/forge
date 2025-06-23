@@ -7,10 +7,19 @@ import { JrFindReplaceRejectUncheckedUpdateWithoutExtractionRulesInputSchema } f
 import { JrFindReplaceRejectCreateWithoutExtractionRulesInputSchema } from './JrFindReplaceRejectCreateWithoutExtractionRulesInputSchema';
 import { JrFindReplaceRejectUncheckedCreateWithoutExtractionRulesInputSchema } from './JrFindReplaceRejectUncheckedCreateWithoutExtractionRulesInputSchema';
 
-export const JrFindReplaceRejectUpsertWithWhereUniqueWithoutExtractionRulesInputSchema: z.ZodType<Prisma.JrFindReplaceRejectUpsertWithWhereUniqueWithoutExtractionRulesInput> = z.object({
-  where: z.lazy(() => JrFindReplaceRejectWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => JrFindReplaceRejectUpdateWithoutExtractionRulesInputSchema),z.lazy(() => JrFindReplaceRejectUncheckedUpdateWithoutExtractionRulesInputSchema) ]),
-  create: z.union([ z.lazy(() => JrFindReplaceRejectCreateWithoutExtractionRulesInputSchema),z.lazy(() => JrFindReplaceRejectUncheckedCreateWithoutExtractionRulesInputSchema) ]),
-}).strict();
+export const JrFindReplaceRejectUpsertWithWhereUniqueWithoutExtractionRulesInputSchema: z.ZodType<Prisma.JrFindReplaceRejectUpsertWithWhereUniqueWithoutExtractionRulesInput> =
+  z
+    .object({
+      where: z.lazy(() => JrFindReplaceRejectWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => JrFindReplaceRejectUpdateWithoutExtractionRulesInputSchema),
+        z.lazy(() => JrFindReplaceRejectUncheckedUpdateWithoutExtractionRulesInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => JrFindReplaceRejectCreateWithoutExtractionRulesInputSchema),
+        z.lazy(() => JrFindReplaceRejectUncheckedCreateWithoutExtractionRulesInputSchema),
+      ]),
+    })
+    .strict();
 
 export default JrFindReplaceRejectUpsertWithWhereUniqueWithoutExtractionRulesInputSchema;

@@ -7,10 +7,19 @@ import { JrFindReplaceRejectUncheckedUpdateWithoutTaxonomiesInputSchema } from '
 import { JrFindReplaceRejectCreateWithoutTaxonomiesInputSchema } from './JrFindReplaceRejectCreateWithoutTaxonomiesInputSchema';
 import { JrFindReplaceRejectUncheckedCreateWithoutTaxonomiesInputSchema } from './JrFindReplaceRejectUncheckedCreateWithoutTaxonomiesInputSchema';
 
-export const JrFindReplaceRejectUpsertWithWhereUniqueWithoutTaxonomiesInputSchema: z.ZodType<Prisma.JrFindReplaceRejectUpsertWithWhereUniqueWithoutTaxonomiesInput> = z.object({
-  where: z.lazy(() => JrFindReplaceRejectWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => JrFindReplaceRejectUpdateWithoutTaxonomiesInputSchema),z.lazy(() => JrFindReplaceRejectUncheckedUpdateWithoutTaxonomiesInputSchema) ]),
-  create: z.union([ z.lazy(() => JrFindReplaceRejectCreateWithoutTaxonomiesInputSchema),z.lazy(() => JrFindReplaceRejectUncheckedCreateWithoutTaxonomiesInputSchema) ]),
-}).strict();
+export const JrFindReplaceRejectUpsertWithWhereUniqueWithoutTaxonomiesInputSchema: z.ZodType<Prisma.JrFindReplaceRejectUpsertWithWhereUniqueWithoutTaxonomiesInput> =
+  z
+    .object({
+      where: z.lazy(() => JrFindReplaceRejectWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => JrFindReplaceRejectUpdateWithoutTaxonomiesInputSchema),
+        z.lazy(() => JrFindReplaceRejectUncheckedUpdateWithoutTaxonomiesInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => JrFindReplaceRejectCreateWithoutTaxonomiesInputSchema),
+        z.lazy(() => JrFindReplaceRejectUncheckedCreateWithoutTaxonomiesInputSchema),
+      ]),
+    })
+    .strict();
 
 export default JrFindReplaceRejectUpsertWithWhereUniqueWithoutTaxonomiesInputSchema;

@@ -13,7 +13,7 @@ import {
   hasOrganizationRole,
   isOrganizationAdmin,
   isOrganizationOwner,
-} from '../../../server/organizations/permissions';
+} from '../../../src/server/organizations/permissions';
 
 import type { OrganizationMember } from '../../../shared/types';
 

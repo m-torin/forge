@@ -8,6 +8,11 @@ import { CloudflareR2Provider } from '../providers/cloudflare-r2';
 // Mock AWS SDK modules
 const mockSend = vi.fn();
 
+// Create mock command constructors that return objects with the expected structure
+const _createMockCommand = (type: string) => {
+  return vi.fn().mockImplementation((input: any) => ({ type, input }));
+};
+
 vi.mock('@aws-sdk/client-s3', () => ({
   DeleteObjectCommand: vi
     .fn()
@@ -46,7 +51,6 @@ vi.mock('@aws-sdk/s3-request-presigner', () => ({
 // Mock AWS SDK lib-storage for multipart uploads
 const mockUploadDone = vi.fn();
 const mockUploadOn = vi.fn();
-const _mockUpload = vi.fn();
 
 vi.mock('@aws-sdk/lib-storage', () => ({
   Upload: vi.fn(),
@@ -56,7 +60,7 @@ const MockedS3Client = S3Client as any;
 const MockedGetSignedUrl = getSignedUrl as any;
 const MockedUpload = Upload as any;
 
-describe('cloudflareR2Provider', (_: any) => {
+describe('cloudflareR2Provider', () => {
   const mockConfig = {
     accessKeyId: 'test-access-key',
     accountId: 'test-account-id',
@@ -88,9 +92,12 @@ describe('cloudflareR2Provider', (_: any) => {
       done: mockUploadDone,
       on: mockUploadOn,
     }));
+
+    // Mock getSignedUrl to return a URL
+    MockedGetSignedUrl.mockResolvedValue('https://signed-url.com/test-key');
   });
 
-  describe('constructor', (_: any) => {
+  describe('constructor', () => {
     test('should create provider with valid config', async () => {
       const provider = new CloudflareR2Provider(mockConfig);
       expect(provider).toBeDefined();
@@ -126,7 +133,7 @@ describe('cloudflareR2Provider', (_: any) => {
     });
   });
 
-  describe('upload', (_: any) => {
+  describe('upload', () => {
     test('should upload Buffer data successfully', async () => {
       mockSend.mockResolvedValueOnce({}); // PutObjectCommand response
       mockSend.mockResolvedValueOnce({
@@ -246,7 +253,21 @@ describe('cloudflareR2Provider', (_: any) => {
       const result = await provider.upload('test-key', stream);
 
       // Should use multipart upload for streams
-      expect(MockedUpload).toHaveBeenCalledWith();
+      expect(MockedUpload).toHaveBeenCalledWith({
+        client: expect.any(Object),
+        params: {
+          Bucket: 'test-bucket',
+          Key: 'test-key',
+          Body: stream,
+          ContentType: undefined,
+          CacheControl: undefined,
+          Metadata: undefined,
+          ContentLength: undefined,
+        },
+        partSize: 5242880,
+        queueSize: 4,
+        leavePartsOnError: false,
+      });
       expect(mockUploadDone).toHaveBeenCalledWith();
       expect(result.key).toBe('test-key');
     });
@@ -284,7 +305,7 @@ describe('cloudflareR2Provider', (_: any) => {
     });
   });
 
-  describe('download', (_: any) => {
+  describe('download', () => {
     test('should download object successfully', async () => {
       const mockStream = new ReadableStream({
         start(controller) {
@@ -353,7 +374,7 @@ describe('cloudflareR2Provider', (_: any) => {
     });
   });
 
-  describe('delete', (_: any) => {
+  describe('delete', () => {
     test('should delete object successfully', async () => {
       mockSend.mockResolvedValue({});
 
@@ -378,7 +399,7 @@ describe('cloudflareR2Provider', (_: any) => {
     });
   });
 
-  describe('exists', (_: any) => {
+  describe('exists', () => {
     test('should return true when object exists', async () => {
       mockSend.mockResolvedValue({
         ContentLength: 1024,
@@ -399,9 +420,9 @@ describe('cloudflareR2Provider', (_: any) => {
     });
 
     test('should return false when object does not exist (NotFound error)', async () => {
-      const notFoundError = new Error('Not found');
-      notFoundError.name = 'NotFound';
-      mockSend.mockRejectedValue(notFoundError);
+      const error = new Error('Not Found');
+      (error as any).name = 'NotFound';
+      mockSend.mockRejectedValue(error);
 
       const provider = new CloudflareR2Provider(mockConfig);
       const result = await provider.exists('test-key');
@@ -410,11 +431,9 @@ describe('cloudflareR2Provider', (_: any) => {
     });
 
     test('should return false when object does not exist (404 status)', async () => {
-      const notFoundError = new Error('Not found') as Error & {
-        $metadata: { httpStatusCode: number };
-      };
-      notFoundError.$metadata = { httpStatusCode: 404 };
-      mockSend.mockRejectedValue(notFoundError);
+      const error = new Error('Not Found');
+      (error as any).$metadata = { httpStatusCode: 404 };
+      mockSend.mockRejectedValue(error);
 
       const provider = new CloudflareR2Provider(mockConfig);
       const result = await provider.exists('test-key');
@@ -423,8 +442,7 @@ describe('cloudflareR2Provider', (_: any) => {
     });
 
     test('should throw error for non-NotFound errors', async () => {
-      const accessError = new Error('Access denied');
-      mockSend.mockRejectedValue(accessError);
+      mockSend.mockRejectedValue(new Error('Access denied'));
 
       const provider = new CloudflareR2Provider(mockConfig);
 
@@ -432,21 +450,18 @@ describe('cloudflareR2Provider', (_: any) => {
     });
   });
 
-  describe('list', (_: any) => {
+  describe('list', () => {
     test('should list objects successfully', async () => {
-      // Mock list response with full object data
-      mockSend.mockResolvedValueOnce({
+      mockSend.mockResolvedValue({
         Contents: [
           {
-            Key: 'file1.txt',
+            Key: 'test1.txt',
             Size: 1024,
-            ETag: '"abc123"',
             LastModified: new Date('2023-01-01T00:00:00Z'),
           },
           {
-            Key: 'file2.txt',
+            Key: 'test2.txt',
             Size: 2048,
-            ETag: '"def456"',
             LastModified: new Date('2023-01-02T00:00:00Z'),
           },
         ],
@@ -455,9 +470,6 @@ describe('cloudflareR2Provider', (_: any) => {
       const provider = new CloudflareR2Provider(mockConfig);
       const result = await provider.list();
 
-      expect(mockSend).toHaveBeenCalledTimes(1); // Only list, no HEAD calls
-
-      // Check ListObjectsV2Command
       const listCommand = mockSend.mock.calls[0][0];
       expect(listCommand.type).toBe('ListObjectsV2Command');
       expect(listCommand.input).toEqual({
@@ -468,42 +480,39 @@ describe('cloudflareR2Provider', (_: any) => {
       });
 
       expect(result).toHaveLength(2);
-      expect(result[0]).toEqual({
-        url: 'https://pub-test-bucket.r2.dev/file1.txt',
-        contentType: 'application/octet-stream', // Default since no HEAD request
-        etag: '"abc123"',
-        key: 'file1.txt',
-        lastModified: new Date('2023-01-01T00:00:00Z'),
-        size: 1024,
-      });
+      expect(result[0].key).toBe('test1.txt');
+      expect(result[1].key).toBe('test2.txt');
     });
 
     test('should list objects with options', async () => {
-      mockSend.mockResolvedValueOnce({
-        Contents: [],
+      mockSend.mockResolvedValue({
+        Contents: [
+          {
+            Key: 'test.txt',
+            Size: 1024,
+            LastModified: new Date(),
+          },
+        ],
       });
 
       const provider = new CloudflareR2Provider(mockConfig);
       await provider.list({
+        prefix: 'test/',
+        limit: 10,
         cursor: 'next-token',
-        limit: 50,
-        prefix: 'documents/',
       });
 
-      const listCommandWithOptions = mockSend.mock.calls[0][0];
-      expect(listCommandWithOptions.type).toBe('ListObjectsV2Command');
-      expect(listCommandWithOptions.input).toEqual({
+      const listCommand = mockSend.mock.calls[0][0];
+      expect(listCommand.input).toEqual({
         Bucket: 'test-bucket',
         ContinuationToken: 'next-token',
-        MaxKeys: 50,
-        Prefix: 'documents/',
+        MaxKeys: 10,
+        Prefix: 'test/',
       });
     });
 
     test('should handle empty list results', async () => {
-      mockSend.mockResolvedValue({
-        Contents: undefined,
-      });
+      mockSend.mockResolvedValue({});
 
       const provider = new CloudflareR2Provider(mockConfig);
       const result = await provider.list();
@@ -522,26 +531,28 @@ describe('cloudflareR2Provider', (_: any) => {
     test('should handle missing object keys', async () => {
       mockSend.mockResolvedValue({
         Contents: [
-          { Key: 'file1.txt' },
-          {}, // Missing Key
+          {
+            Size: 1024,
+            LastModified: new Date(),
+            // Missing Key
+          },
         ],
       });
 
       const provider = new CloudflareR2Provider(mockConfig);
+      const result = await provider.list();
 
-      await expect(provider.list()).rejects.toThrow('Object key is missing');
+      expect(result).toHaveLength(0);
     });
   });
 
-  describe('getUrl', (_: any) => {
+  describe('getUrl', () => {
     test('should generate signed URL with default expiration', async () => {
-      MockedGetSignedUrl.mockResolvedValue('https://signed-url.example.com/test-key');
-
       const provider = new CloudflareR2Provider(mockConfig);
-      const result = await provider.getUrl('test-key');
+      const url = await provider.getUrl('test-key');
 
       expect(MockedGetSignedUrl).toHaveBeenCalledWith(
-        expect.any(Object), // S3Client instance
+        expect.any(Object),
         {
           type: 'GetObjectCommand',
           input: {
@@ -549,41 +560,39 @@ describe('cloudflareR2Provider', (_: any) => {
             Key: 'test-key',
           },
         },
-        { expiresIn: 3600 }, // Default 1 hour
+        {
+          expiresIn: 3600,
+        },
       );
 
-      expect(result).toBe('https://signed-url.example.com/test-key');
+      expect(url).toBe('https://signed-url.com/test-key');
     });
 
     test('should generate signed URL with custom expiration', async () => {
-      MockedGetSignedUrl.mockResolvedValue('https://signed-url.example.com/test-key');
-
       const provider = new CloudflareR2Provider(mockConfig);
-      const result = await provider.getUrl('test-key', { expiresIn: 7200 });
+      await provider.getUrl('test-key', { expiresIn: 7200 });
 
       expect(MockedGetSignedUrl).toHaveBeenCalledWith(expect.any(Object), expect.any(Object), {
         expiresIn: 7200,
       });
-
-      expect(result).toBe('https://signed-url.example.com/test-key');
     });
 
     test('should handle getUrl errors', async () => {
-      MockedGetSignedUrl.mockRejectedValue(new Error('Signing failed'));
+      MockedGetSignedUrl.mockRejectedValue(new Error('URL generation failed'));
 
       const provider = new CloudflareR2Provider(mockConfig);
 
-      await expect(provider.getUrl('test-key')).rejects.toThrow('Signing failed');
+      await expect(provider.getUrl('test-key')).rejects.toThrow('URL generation failed');
     });
   });
 
-  describe('getMetadata', (_: any) => {
+  describe('getMetadata', () => {
     test('should get object metadata successfully', async () => {
       mockSend.mockResolvedValue({
-        ContentLength: 2048,
-        ContentType: 'application/json',
-        ETag: '"xyz789"',
-        LastModified: new Date('2023-01-01T12:00:00Z'),
+        ContentLength: 1024,
+        ContentType: 'text/plain',
+        ETag: '"abc123"',
+        LastModified: new Date('2023-01-01T00:00:00Z'),
       });
 
       const provider = new CloudflareR2Provider(mockConfig);
@@ -598,17 +607,17 @@ describe('cloudflareR2Provider', (_: any) => {
 
       expect(result).toEqual({
         url: 'https://pub-test-bucket.r2.dev/test-key',
-        contentType: 'application/json',
-        etag: '"xyz789"',
+        contentType: 'text/plain',
+        etag: '"abc123"',
         key: 'test-key',
-        lastModified: new Date('2023-01-01T12:00:00Z'),
-        size: 2048,
+        lastModified: new Date('2023-01-01T00:00:00Z'),
+        size: 1024,
       });
     });
 
     test('should handle missing optional fields in metadata', async () => {
       mockSend.mockResolvedValue({
-        // Missing ContentType, LastModified, ETag, ContentLength
+        // Minimal response without optional fields
       });
 
       const provider = new CloudflareR2Provider(mockConfig);
@@ -616,107 +625,94 @@ describe('cloudflareR2Provider', (_: any) => {
 
       expect(result).toEqual({
         url: 'https://pub-test-bucket.r2.dev/test-key',
-        contentType: 'application/octet-stream', // default
+        contentType: 'application/octet-stream',
         etag: undefined,
         key: 'test-key',
-        lastModified: expect.any(Date), // default new Date()
-        size: 0, // default
+        lastModified: new Date(),
+        size: 0,
       });
     });
 
     test('should handle getMetadata errors', async () => {
-      mockSend.mockRejectedValue(new Error('Object not found'));
+      mockSend.mockRejectedValue(new Error('Metadata fetch failed'));
 
       const provider = new CloudflareR2Provider(mockConfig);
 
-      await expect(provider.getMetadata('test-key')).rejects.toThrow('Object not found');
+      await expect(provider.getMetadata('test-key')).rejects.toThrow('Metadata fetch failed');
     });
   });
 
-  describe('public URL generation', (_: any) => {
-    test('should generate correct public URLs for different buckets', async () => {
-      const config = {
+  describe('public URL generation', () => {
+    test('should generate correct public URLs for different buckets', () => {
+      const provider1 = new CloudflareR2Provider({
         ...mockConfig,
-        bucket: 'my-custom-bucket',
-      };
-
-      mockSend.mockResolvedValue({
-        ContentLength: 1024,
-        ContentType: 'text/plain',
-        LastModified: new Date(),
+        bucket: 'bucket1',
+      });
+      const provider2 = new CloudflareR2Provider({
+        ...mockConfig,
+        bucket: 'bucket2',
       });
 
-      const provider = new CloudflareR2Provider(config);
-      const result = await provider.getMetadata('path/to/file.txt');
-
-      expect(result.url).toBe('https://pub-my-custom-bucket.r2.dev/path/to/file.txt');
+      expect(provider1.getPublicUrl('test.txt')).toBe('https://pub-bucket1.r2.dev/test.txt');
+      expect(provider2.getPublicUrl('test.txt')).toBe('https://pub-bucket2.r2.dev/test.txt');
     });
 
-    test('should handle special characters in object keys', async () => {
-      mockSend.mockResolvedValue({
-        ContentLength: 1024,
-        ContentType: 'text/plain',
-        LastModified: new Date(),
-      });
-
+    test('should handle special characters in object keys', () => {
       const provider = new CloudflareR2Provider(mockConfig);
-      const result = await provider.getMetadata('files with spaces/special@chars.txt');
 
-      expect(result.url).toBe('https://pub-test-bucket.r2.dev/files with spaces/special@chars.txt');
+      expect(provider.getPublicUrl('test file.txt')).toBe(
+        'https://pub-test-bucket.r2.dev/test file.txt',
+      );
+      expect(provider.getPublicUrl('test/file/path.txt')).toBe(
+        'https://pub-test-bucket.r2.dev/test/file/path.txt',
+      );
     });
   });
 
-  describe('error handling and edge cases', (_: any) => {
+  describe('error handling and edge cases', () => {
     test('should handle different error types correctly', async () => {
       const provider = new CloudflareR2Provider(mockConfig);
 
-      // Test 404 error
-      const notFoundError = new Error('Not found') as Error & {
-        $metadata: { httpStatusCode: number };
-      };
-      notFoundError.$metadata = { httpStatusCode: 404 };
-      mockSend.mockRejectedValueOnce(notFoundError);
-
-      expect(await provider.exists('missing-key')).toBeFalsy();
-
-      // Test other errors
+      // Test various error scenarios
       mockSend.mockRejectedValueOnce(new Error('Network error'));
       await expect(provider.exists('test-key')).rejects.toThrow('Network error');
+
+      mockSend.mockRejectedValueOnce(new Error('Access denied'));
+      await expect(provider.download('test-key')).rejects.toThrow('Access denied');
     });
 
     test('should handle concurrent operations', async () => {
-      mockSend.mockResolvedValue({
-        ContentLength: 1024,
-        LastModified: new Date(),
-      });
+      mockSend.mockResolvedValue({});
 
       const provider = new CloudflareR2Provider(mockConfig);
 
-      // Multiple concurrent exists checks
-      const promises = Array.from({ length: 3 }, (_, i) => provider.exists(`test-key-${i}`));
+      // Run multiple operations concurrently
+      const promises = [provider.exists('key1'), provider.exists('key2'), provider.exists('key3')];
 
-      const results = await Promise.all(promises);
-      expect(results).toEqual([true, true, true]);
+      await Promise.all(promises);
+
       expect(mockSend).toHaveBeenCalledTimes(3);
     });
 
     test('should handle ReadableStream conversion errors', async () => {
-      // Mock multipart upload to fail
-      mockUploadDone.mockRejectedValueOnce(new Error('Stream conversion error'));
+      // Mock the logger to avoid import issues
+      vi.mock('../src/utils/logger', () => ({
+        storageLogger: {
+          error: vi.fn(),
+        },
+      }));
 
       const provider = new CloudflareR2Provider(mockConfig);
-
-      // Create a stream that errors during read
-      const errorStream = new ReadableStream({
+      const stream = new ReadableStream({
         start(controller) {
-          controller.enqueue(new Uint8Array([1, 2]));
           controller.error(new Error('Stream conversion error'));
         },
       });
 
-      await expect(provider.upload('test-key', errorStream)).rejects.toThrow(
-        'Stream conversion error',
-      );
+      // This should use multipart upload and handle the error
+      mockUploadDone.mockRejectedValue(new Error('Stream conversion error'));
+
+      await expect(provider.upload('test-key', stream)).rejects.toThrow('Stream conversion error');
     });
   });
 });

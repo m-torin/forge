@@ -7,11 +7,31 @@ import { BrandCreateOrConnectWithoutParentInputSchema } from './BrandCreateOrCon
 import { BrandCreateManyParentInputEnvelopeSchema } from './BrandCreateManyParentInputEnvelopeSchema';
 import { BrandWhereUniqueInputSchema } from './BrandWhereUniqueInputSchema';
 
-export const BrandUncheckedCreateNestedManyWithoutParentInputSchema: z.ZodType<Prisma.BrandUncheckedCreateNestedManyWithoutParentInput> = z.object({
-  create: z.union([ z.lazy(() => BrandCreateWithoutParentInputSchema),z.lazy(() => BrandCreateWithoutParentInputSchema).array(),z.lazy(() => BrandUncheckedCreateWithoutParentInputSchema),z.lazy(() => BrandUncheckedCreateWithoutParentInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => BrandCreateOrConnectWithoutParentInputSchema),z.lazy(() => BrandCreateOrConnectWithoutParentInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => BrandCreateManyParentInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => BrandWhereUniqueInputSchema),z.lazy(() => BrandWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const BrandUncheckedCreateNestedManyWithoutParentInputSchema: z.ZodType<Prisma.BrandUncheckedCreateNestedManyWithoutParentInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => BrandCreateWithoutParentInputSchema),
+          z.lazy(() => BrandCreateWithoutParentInputSchema).array(),
+          z.lazy(() => BrandUncheckedCreateWithoutParentInputSchema),
+          z.lazy(() => BrandUncheckedCreateWithoutParentInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => BrandCreateOrConnectWithoutParentInputSchema),
+          z.lazy(() => BrandCreateOrConnectWithoutParentInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => BrandCreateManyParentInputEnvelopeSchema).optional(),
+      connect: z
+        .union([
+          z.lazy(() => BrandWhereUniqueInputSchema),
+          z.lazy(() => BrandWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default BrandUncheckedCreateNestedManyWithoutParentInputSchema;

@@ -10,12 +10,26 @@ import { ReviewUpdateToOneWithWhereWithoutVotesInputSchema } from './ReviewUpdat
 import { ReviewUpdateWithoutVotesInputSchema } from './ReviewUpdateWithoutVotesInputSchema';
 import { ReviewUncheckedUpdateWithoutVotesInputSchema } from './ReviewUncheckedUpdateWithoutVotesInputSchema';
 
-export const ReviewUpdateOneRequiredWithoutVotesNestedInputSchema: z.ZodType<Prisma.ReviewUpdateOneRequiredWithoutVotesNestedInput> = z.object({
-  create: z.union([ z.lazy(() => ReviewCreateWithoutVotesInputSchema),z.lazy(() => ReviewUncheckedCreateWithoutVotesInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => ReviewCreateOrConnectWithoutVotesInputSchema).optional(),
-  upsert: z.lazy(() => ReviewUpsertWithoutVotesInputSchema).optional(),
-  connect: z.lazy(() => ReviewWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => ReviewUpdateToOneWithWhereWithoutVotesInputSchema),z.lazy(() => ReviewUpdateWithoutVotesInputSchema),z.lazy(() => ReviewUncheckedUpdateWithoutVotesInputSchema) ]).optional(),
-}).strict();
+export const ReviewUpdateOneRequiredWithoutVotesNestedInputSchema: z.ZodType<Prisma.ReviewUpdateOneRequiredWithoutVotesNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => ReviewCreateWithoutVotesInputSchema),
+          z.lazy(() => ReviewUncheckedCreateWithoutVotesInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z.lazy(() => ReviewCreateOrConnectWithoutVotesInputSchema).optional(),
+      upsert: z.lazy(() => ReviewUpsertWithoutVotesInputSchema).optional(),
+      connect: z.lazy(() => ReviewWhereUniqueInputSchema).optional(),
+      update: z
+        .union([
+          z.lazy(() => ReviewUpdateToOneWithWhereWithoutVotesInputSchema),
+          z.lazy(() => ReviewUpdateWithoutVotesInputSchema),
+          z.lazy(() => ReviewUncheckedUpdateWithoutVotesInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default ReviewUpdateOneRequiredWithoutVotesNestedInputSchema;

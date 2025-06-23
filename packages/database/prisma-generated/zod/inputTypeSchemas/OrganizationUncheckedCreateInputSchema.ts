@@ -7,18 +7,27 @@ import { MemberUncheckedCreateNestedManyWithoutOrganizationInputSchema } from '.
 import { TeamUncheckedCreateNestedManyWithoutOrganizationInputSchema } from './TeamUncheckedCreateNestedManyWithoutOrganizationInputSchema';
 import { InvitationUncheckedCreateNestedManyWithoutOrganizationInputSchema } from './InvitationUncheckedCreateNestedManyWithoutOrganizationInputSchema';
 
-export const OrganizationUncheckedCreateInputSchema: z.ZodType<Prisma.OrganizationUncheckedCreateInput> = z.object({
-  id: z.string(),
-  name: z.string(),
-  slug: z.string(),
-  logo: z.string().optional().nullable(),
-  description: z.string().optional().nullable(),
-  metadata: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
-  createdAt: z.coerce.date(),
-  updatedAt: z.coerce.date().optional().nullable(),
-  members: z.lazy(() => MemberUncheckedCreateNestedManyWithoutOrganizationInputSchema).optional(),
-  teams: z.lazy(() => TeamUncheckedCreateNestedManyWithoutOrganizationInputSchema).optional(),
-  invitations: z.lazy(() => InvitationUncheckedCreateNestedManyWithoutOrganizationInputSchema).optional()
-}).strict();
+export const OrganizationUncheckedCreateInputSchema: z.ZodType<Prisma.OrganizationUncheckedCreateInput> =
+  z
+    .object({
+      id: z.string(),
+      name: z.string(),
+      slug: z.string(),
+      logo: z.string().optional().nullable(),
+      description: z.string().optional().nullable(),
+      metadata: z
+        .union([z.lazy(() => NullableJsonNullValueInputSchema), InputJsonValueSchema])
+        .optional(),
+      createdAt: z.coerce.date(),
+      updatedAt: z.coerce.date().optional().nullable(),
+      members: z
+        .lazy(() => MemberUncheckedCreateNestedManyWithoutOrganizationInputSchema)
+        .optional(),
+      teams: z.lazy(() => TeamUncheckedCreateNestedManyWithoutOrganizationInputSchema).optional(),
+      invitations: z
+        .lazy(() => InvitationUncheckedCreateNestedManyWithoutOrganizationInputSchema)
+        .optional(),
+    })
+    .strict();
 
 export default OrganizationUncheckedCreateInputSchema;

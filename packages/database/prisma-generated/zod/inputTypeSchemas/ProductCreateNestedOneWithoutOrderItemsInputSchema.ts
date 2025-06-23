@@ -6,10 +6,18 @@ import { ProductUncheckedCreateWithoutOrderItemsInputSchema } from './ProductUnc
 import { ProductCreateOrConnectWithoutOrderItemsInputSchema } from './ProductCreateOrConnectWithoutOrderItemsInputSchema';
 import { ProductWhereUniqueInputSchema } from './ProductWhereUniqueInputSchema';
 
-export const ProductCreateNestedOneWithoutOrderItemsInputSchema: z.ZodType<Prisma.ProductCreateNestedOneWithoutOrderItemsInput> = z.object({
-  create: z.union([ z.lazy(() => ProductCreateWithoutOrderItemsInputSchema),z.lazy(() => ProductUncheckedCreateWithoutOrderItemsInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => ProductCreateOrConnectWithoutOrderItemsInputSchema).optional(),
-  connect: z.lazy(() => ProductWhereUniqueInputSchema).optional()
-}).strict();
+export const ProductCreateNestedOneWithoutOrderItemsInputSchema: z.ZodType<Prisma.ProductCreateNestedOneWithoutOrderItemsInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => ProductCreateWithoutOrderItemsInputSchema),
+          z.lazy(() => ProductUncheckedCreateWithoutOrderItemsInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z.lazy(() => ProductCreateOrConnectWithoutOrderItemsInputSchema).optional(),
+      connect: z.lazy(() => ProductWhereUniqueInputSchema).optional(),
+    })
+    .strict();
 
 export default ProductCreateNestedOneWithoutOrderItemsInputSchema;

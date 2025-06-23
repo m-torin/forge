@@ -29,8 +29,8 @@ export const WorkflowExecutionSchema = z.object({
   tags: z.string().array(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
-})
+});
 
-export type WorkflowExecution = z.infer<typeof WorkflowExecutionSchema>
+export type WorkflowExecution = z.infer<typeof WorkflowExecutionSchema>;
 
 export default WorkflowExecutionSchema;

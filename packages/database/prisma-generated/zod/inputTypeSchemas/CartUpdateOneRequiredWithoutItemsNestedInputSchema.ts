@@ -10,12 +10,26 @@ import { CartUpdateToOneWithWhereWithoutItemsInputSchema } from './CartUpdateToO
 import { CartUpdateWithoutItemsInputSchema } from './CartUpdateWithoutItemsInputSchema';
 import { CartUncheckedUpdateWithoutItemsInputSchema } from './CartUncheckedUpdateWithoutItemsInputSchema';
 
-export const CartUpdateOneRequiredWithoutItemsNestedInputSchema: z.ZodType<Prisma.CartUpdateOneRequiredWithoutItemsNestedInput> = z.object({
-  create: z.union([ z.lazy(() => CartCreateWithoutItemsInputSchema),z.lazy(() => CartUncheckedCreateWithoutItemsInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => CartCreateOrConnectWithoutItemsInputSchema).optional(),
-  upsert: z.lazy(() => CartUpsertWithoutItemsInputSchema).optional(),
-  connect: z.lazy(() => CartWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => CartUpdateToOneWithWhereWithoutItemsInputSchema),z.lazy(() => CartUpdateWithoutItemsInputSchema),z.lazy(() => CartUncheckedUpdateWithoutItemsInputSchema) ]).optional(),
-}).strict();
+export const CartUpdateOneRequiredWithoutItemsNestedInputSchema: z.ZodType<Prisma.CartUpdateOneRequiredWithoutItemsNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => CartCreateWithoutItemsInputSchema),
+          z.lazy(() => CartUncheckedCreateWithoutItemsInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z.lazy(() => CartCreateOrConnectWithoutItemsInputSchema).optional(),
+      upsert: z.lazy(() => CartUpsertWithoutItemsInputSchema).optional(),
+      connect: z.lazy(() => CartWhereUniqueInputSchema).optional(),
+      update: z
+        .union([
+          z.lazy(() => CartUpdateToOneWithWhereWithoutItemsInputSchema),
+          z.lazy(() => CartUpdateWithoutItemsInputSchema),
+          z.lazy(() => CartUncheckedUpdateWithoutItemsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default CartUpdateOneRequiredWithoutItemsNestedInputSchema;

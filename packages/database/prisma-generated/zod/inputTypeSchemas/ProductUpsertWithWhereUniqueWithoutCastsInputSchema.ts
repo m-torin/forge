@@ -7,10 +7,19 @@ import { ProductUncheckedUpdateWithoutCastsInputSchema } from './ProductUnchecke
 import { ProductCreateWithoutCastsInputSchema } from './ProductCreateWithoutCastsInputSchema';
 import { ProductUncheckedCreateWithoutCastsInputSchema } from './ProductUncheckedCreateWithoutCastsInputSchema';
 
-export const ProductUpsertWithWhereUniqueWithoutCastsInputSchema: z.ZodType<Prisma.ProductUpsertWithWhereUniqueWithoutCastsInput> = z.object({
-  where: z.lazy(() => ProductWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => ProductUpdateWithoutCastsInputSchema),z.lazy(() => ProductUncheckedUpdateWithoutCastsInputSchema) ]),
-  create: z.union([ z.lazy(() => ProductCreateWithoutCastsInputSchema),z.lazy(() => ProductUncheckedCreateWithoutCastsInputSchema) ]),
-}).strict();
+export const ProductUpsertWithWhereUniqueWithoutCastsInputSchema: z.ZodType<Prisma.ProductUpsertWithWhereUniqueWithoutCastsInput> =
+  z
+    .object({
+      where: z.lazy(() => ProductWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => ProductUpdateWithoutCastsInputSchema),
+        z.lazy(() => ProductUncheckedUpdateWithoutCastsInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => ProductCreateWithoutCastsInputSchema),
+        z.lazy(() => ProductUncheckedCreateWithoutCastsInputSchema),
+      ]),
+    })
+    .strict();
 
 export default ProductUpsertWithWhereUniqueWithoutCastsInputSchema;

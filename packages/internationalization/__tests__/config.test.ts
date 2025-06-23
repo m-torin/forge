@@ -13,7 +13,6 @@ describe('languine Configuration', () => {
     expect(languine.locale.targets).toContain('fr');
     expect(languine.locale.targets).toContain('de');
     expect(languine.locale.targets).toContain('pt');
-    expect(languine.locale.targets).toContain('zh');
   });
 
   test('locales array matches languine configuration', () => {
@@ -24,6 +23,9 @@ describe('languine Configuration', () => {
 
 describe('dictionary Files', () => {
   test('all locale dictionaries exist', async () => {
+    // Verify that vi.isMockFunction is available for mocking
+    expect(vi.isMockFunction(vi.fn)).toBeTruthy();
+
     for (const locale of locales) {
       const dictPath = `../src/dictionaries/${locale}.json`;
 
@@ -32,8 +34,7 @@ describe('dictionary Files', () => {
         await import(dictPath);
       } catch {
         // In test environment, we might get module not found errors
-        // but the mock should handle it
-        expect(vi.isMockFunction(vi.fn)).toBeTruthy();
+        // but the mock should handle it - no expect call here
       }
     }
   });

@@ -7,11 +7,31 @@ import { CartItemCreateOrConnectWithoutVariantInputSchema } from './CartItemCrea
 import { CartItemCreateManyVariantInputEnvelopeSchema } from './CartItemCreateManyVariantInputEnvelopeSchema';
 import { CartItemWhereUniqueInputSchema } from './CartItemWhereUniqueInputSchema';
 
-export const CartItemUncheckedCreateNestedManyWithoutVariantInputSchema: z.ZodType<Prisma.CartItemUncheckedCreateNestedManyWithoutVariantInput> = z.object({
-  create: z.union([ z.lazy(() => CartItemCreateWithoutVariantInputSchema),z.lazy(() => CartItemCreateWithoutVariantInputSchema).array(),z.lazy(() => CartItemUncheckedCreateWithoutVariantInputSchema),z.lazy(() => CartItemUncheckedCreateWithoutVariantInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => CartItemCreateOrConnectWithoutVariantInputSchema),z.lazy(() => CartItemCreateOrConnectWithoutVariantInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => CartItemCreateManyVariantInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => CartItemWhereUniqueInputSchema),z.lazy(() => CartItemWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const CartItemUncheckedCreateNestedManyWithoutVariantInputSchema: z.ZodType<Prisma.CartItemUncheckedCreateNestedManyWithoutVariantInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => CartItemCreateWithoutVariantInputSchema),
+          z.lazy(() => CartItemCreateWithoutVariantInputSchema).array(),
+          z.lazy(() => CartItemUncheckedCreateWithoutVariantInputSchema),
+          z.lazy(() => CartItemUncheckedCreateWithoutVariantInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => CartItemCreateOrConnectWithoutVariantInputSchema),
+          z.lazy(() => CartItemCreateOrConnectWithoutVariantInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => CartItemCreateManyVariantInputEnvelopeSchema).optional(),
+      connect: z
+        .union([
+          z.lazy(() => CartItemWhereUniqueInputSchema),
+          z.lazy(() => CartItemWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default CartItemUncheckedCreateNestedManyWithoutVariantInputSchema;

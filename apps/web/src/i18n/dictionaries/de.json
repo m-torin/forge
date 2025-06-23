@@ -1,69 +1,116 @@
 {
-  "app": {
-    "welcome": "Willkommen bei Web Template",
-    "description": "Eine moderne Next.js-Vorlage mit Mantine UI und Internationalisierungsunterstützung",
-    "brand": "Web Template",
-    "appDescription": "Eine moderne Webanwendungsvorlage mit Internationalisierung",
-    "selectLanguage": "Sprache auswählen",
-    "l": {
-      "en": "English",
-      "fr": "Français",
-      "es": "Español",
-      "de": "Deutsch",
-      "pt": "Português"
-    }
-  },
-  "search": {
-    "title": "Suchen",
-    "placeholder": "Nach etwas suchen...",
-    "button": "Suchen",
-    "results": "Suchergebnisse",
-    "noResults": "Keine Ergebnisse gefunden",
-    "tryAgain": "Versuchen Sie, nach etwas anderem zu suchen"
+  "metadata": {
+    "title": "Next App Mantine Tailwind Vorlage",
+    "description": "Eine moderne Next.js Vorlage mit Mantine UI und TailwindCSS"
   },
   "navigation": {
     "home": "Startseite",
-    "search": "Suchen",
-    "account": "Konto",
-    "orders": "Bestellungen",
-    "wishlist": "Wunschliste",
-    "help": "Hilfe",
-    "logout": "Abmelden",
-    "login": "Anmelden"
+    "about": "Über uns",
+    "contact": "Kontakt",
+    "languageSelector": "Sprache"
   },
-  "taxonomy": {
-    "noItems": "Keine Elemente gefunden.",
-    "items": "Elemente",
-    "backTo": "Zurück zu",
+  "home": {
+    "welcome": "Willkommen bei",
+    "subtitle": "Dieses Next.js Starter-Projekt enthält eine minimale Einrichtung für Mantine mit TailwindCSS. Um zu beginnen, bearbeite die page.tsx Datei.",
+    "getStarted": "Loslegen",
+    "documentation": "Dokumentation",
+    "features": {
+      "title": "Funktionen",
+      "mantine": "Mantine UI Komponenten",
+      "mantineDesc": "Schöne und barrierefreie React-Komponenten mit Dark Theme Unterstützung",
+      "tailwind": "TailwindCSS Styling",
+      "tailwindDesc": "Utility-first CSS Framework für schnelle UI-Entwicklung",
+      "typescript": "TypeScript Unterstützung",
+      "typescriptDesc": "Vollständige TypeScript Unterstützung mit strenger Typprüfung",
+      "i18n": "Internationalisierung",
+      "i18nDesc": "Mehrsprachige Unterstützung mit optimiertem Übersetzungsladen"
+    }
+  },
+  "theme": {
+    "light": "Hell",
+    "dark": "Dunkel",
+    "auto": "Automatisch",
+    "switchTheme": "Farbschema wechseln"
+  },
+  "common": {
+    "loading": "Lädt...",
+    "error": "Etwas ist schief gelaufen",
+    "errorDescription": "Wir haben einen unerwarteten Fehler festgestellt. Bitte aktualisieren Sie die Seite.",
+    "errorDetails": "Fehlerdetails",
+    "unknownError": "Ein unbekannter Fehler ist aufgetreten",
+    "errorId": "Fehler-ID",
+    "retry": "Erneut versuchen",
+    "close": "Schließen",
     "save": "Speichern",
-    "share": "Teilen",
-    "relatedItems": "Verwandte Elemente",
-    "exploreMore": "Entdecken Sie mehr Elemente in dieser",
-    "viewAll": "Alle anzeigen",
-    "details": "Details",
-    "type": "Typ",
-    "totalItems": "Gesamte Elemente",
-    "parent": "Übergeordnet",
-    "browseItems": "Elemente durchsuchen",
-    "brands": {
-      "title": "Marken",
-      "description": "Entdecken Sie Produkte unserer vorgestellten Marken und Partner"
+    "cancel": "Abbrechen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "confirm": "Bestätigen",
+    "pageNotFound": "Seite nicht gefunden",
+    "pageNotFoundDescription": "Die gesuchte Seite existiert nicht oder wurde verschoben.",
+    "goHome": "Zur Startseite",
+    "goBack": "Zurück",
+    "selectLanguage": "Sprache auswählen",
+    "login": "Anmelden",
+    "signup": "Registrieren",
+    "logout": "Abmelden",
+    "myAccount": "Mein Konto"
+  },
+  "auth": {
+    "login": {
+      "title": "Willkommen zurück",
+      "subtitle": "In Ihr Konto einloggen",
+      "email": "E-Mail",
+      "password": "Passwort",
+      "loginButton": "Anmelden",
+      "forgotPassword": "Passwort vergessen?",
+      "noAccount": "Haben Sie kein Konto?",
+      "signupLink": "Registrieren",
+      "or": "oder",
+      "magicLink": "Magic Link senden",
+      "magicLinkSent": "Magic Link gesendet!",
+      "magicLinkSentDescription": "Überprüfen Sie Ihre E-Mail für einen Anmeldelink",
+      "backToLogin": "Zurück zur Anmeldung"
     },
-    "categories": {
-      "title": "Kategorien",
-      "description": "Durchsuchen Sie Produkte nach Kategorie, um genau das zu finden, was Sie brauchen"
+    "signup": {
+      "title": "Konto erstellen",
+      "subtitle": "Beginnen Sie mit Ihrem neuen Konto",
+      "name": "Name",
+      "email": "E-Mail",
+      "password": "Passwort",
+      "confirmPassword": "Passwort bestätigen",
+      "signupButton": "Konto erstellen",
+      "haveAccount": "Haben Sie bereits ein Konto?",
+      "loginLink": "Anmelden",
+      "or": "oder",
+      "magicLink": "Mit Magic Link registrieren",
+      "magicLinkSent": "Magic Link gesendet!",
+      "magicLinkSentDescription": "Überprüfen Sie Ihre E-Mail um die Registrierung abzuschließen",
+      "backToSignup": "Zurück zur Registrierung"
     },
-    "collections": {
-      "title": "Kollektionen",
-      "description": "Kuratierte Produktkollektionen für besondere Anlässe und Themen"
+    "magicLink": {
+      "verifying": "Magic Link wird überprüft...",
+      "success": "Erfolgreich angemeldet!",
+      "error": "Ungültiger oder abgelaufener Magic Link",
+      "expired": "Dieser Magic Link ist abgelaufen. Bitte fordern Sie einen neuen an."
     },
-    "tags": {
-      "title": "Tags",
-      "description": "Finden Sie Produkte nach Tags und Labels"
-    },
-    "attributes": {
-      "title": "Attribute",
-      "description": "Filtern Sie Produkte nach spezifischen Attributen und Eigenschaften"
+    "unified": {
+      "welcome": "Willkommen",
+      "welcomeBack": "Willkommen zurück!",
+      "letsGetStarted": "Legen wir los",
+      "continueWith": "Weiter mit Ihrer E-Mail oder Social-Account",
+      "signInToContinue": "Melden Sie sich an, um fortzufahren",
+      "createAccount": "Erstellen Sie Ihr Konto in Sekunden",
+      "or": "oder",
+      "emailLabel": "E-Mail-Adresse",
+      "nameLabel": "Ihr Name (optional)",
+      "continueButton": "Mit E-Mail fortfahren",
+      "createAccountButton": "Konto erstellen und fortfahren",
+      "magicLinkSent": "Prüfen Sie Ihre E-Mail!",
+      "magicLinkInstructions": "Wir haben Ihnen einen Magic Link zum Anmelden gesendet",
+      "checkEmail": "Prüfen Sie Ihre E-Mail, um fortzufahren",
+      "tryAgain": "Erneut versuchen",
+      "privacyNotice": "Mit dem Fortfahren stimmen Sie unseren Nutzungsbedingungen und Datenschutzrichtlinien zu"
     }
   }
 }

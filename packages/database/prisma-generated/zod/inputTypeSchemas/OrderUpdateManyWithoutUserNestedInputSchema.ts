@@ -11,18 +11,73 @@ import { OrderUpdateWithWhereUniqueWithoutUserInputSchema } from './OrderUpdateW
 import { OrderUpdateManyWithWhereWithoutUserInputSchema } from './OrderUpdateManyWithWhereWithoutUserInputSchema';
 import { OrderScalarWhereInputSchema } from './OrderScalarWhereInputSchema';
 
-export const OrderUpdateManyWithoutUserNestedInputSchema: z.ZodType<Prisma.OrderUpdateManyWithoutUserNestedInput> = z.object({
-  create: z.union([ z.lazy(() => OrderCreateWithoutUserInputSchema),z.lazy(() => OrderCreateWithoutUserInputSchema).array(),z.lazy(() => OrderUncheckedCreateWithoutUserInputSchema),z.lazy(() => OrderUncheckedCreateWithoutUserInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => OrderCreateOrConnectWithoutUserInputSchema),z.lazy(() => OrderCreateOrConnectWithoutUserInputSchema).array() ]).optional(),
-  upsert: z.union([ z.lazy(() => OrderUpsertWithWhereUniqueWithoutUserInputSchema),z.lazy(() => OrderUpsertWithWhereUniqueWithoutUserInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => OrderCreateManyUserInputEnvelopeSchema).optional(),
-  set: z.union([ z.lazy(() => OrderWhereUniqueInputSchema),z.lazy(() => OrderWhereUniqueInputSchema).array() ]).optional(),
-  disconnect: z.union([ z.lazy(() => OrderWhereUniqueInputSchema),z.lazy(() => OrderWhereUniqueInputSchema).array() ]).optional(),
-  delete: z.union([ z.lazy(() => OrderWhereUniqueInputSchema),z.lazy(() => OrderWhereUniqueInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => OrderWhereUniqueInputSchema),z.lazy(() => OrderWhereUniqueInputSchema).array() ]).optional(),
-  update: z.union([ z.lazy(() => OrderUpdateWithWhereUniqueWithoutUserInputSchema),z.lazy(() => OrderUpdateWithWhereUniqueWithoutUserInputSchema).array() ]).optional(),
-  updateMany: z.union([ z.lazy(() => OrderUpdateManyWithWhereWithoutUserInputSchema),z.lazy(() => OrderUpdateManyWithWhereWithoutUserInputSchema).array() ]).optional(),
-  deleteMany: z.union([ z.lazy(() => OrderScalarWhereInputSchema),z.lazy(() => OrderScalarWhereInputSchema).array() ]).optional(),
-}).strict();
+export const OrderUpdateManyWithoutUserNestedInputSchema: z.ZodType<Prisma.OrderUpdateManyWithoutUserNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => OrderCreateWithoutUserInputSchema),
+          z.lazy(() => OrderCreateWithoutUserInputSchema).array(),
+          z.lazy(() => OrderUncheckedCreateWithoutUserInputSchema),
+          z.lazy(() => OrderUncheckedCreateWithoutUserInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => OrderCreateOrConnectWithoutUserInputSchema),
+          z.lazy(() => OrderCreateOrConnectWithoutUserInputSchema).array(),
+        ])
+        .optional(),
+      upsert: z
+        .union([
+          z.lazy(() => OrderUpsertWithWhereUniqueWithoutUserInputSchema),
+          z.lazy(() => OrderUpsertWithWhereUniqueWithoutUserInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => OrderCreateManyUserInputEnvelopeSchema).optional(),
+      set: z
+        .union([
+          z.lazy(() => OrderWhereUniqueInputSchema),
+          z.lazy(() => OrderWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      disconnect: z
+        .union([
+          z.lazy(() => OrderWhereUniqueInputSchema),
+          z.lazy(() => OrderWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      delete: z
+        .union([
+          z.lazy(() => OrderWhereUniqueInputSchema),
+          z.lazy(() => OrderWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => OrderWhereUniqueInputSchema),
+          z.lazy(() => OrderWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      update: z
+        .union([
+          z.lazy(() => OrderUpdateWithWhereUniqueWithoutUserInputSchema),
+          z.lazy(() => OrderUpdateWithWhereUniqueWithoutUserInputSchema).array(),
+        ])
+        .optional(),
+      updateMany: z
+        .union([
+          z.lazy(() => OrderUpdateManyWithWhereWithoutUserInputSchema),
+          z.lazy(() => OrderUpdateManyWithWhereWithoutUserInputSchema).array(),
+        ])
+        .optional(),
+      deleteMany: z
+        .union([
+          z.lazy(() => OrderScalarWhereInputSchema),
+          z.lazy(() => OrderScalarWhereInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default OrderUpdateManyWithoutUserNestedInputSchema;

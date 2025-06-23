@@ -15,8 +15,8 @@ export const SessionSchema = z.object({
   userId: z.string(),
   activeOrganizationId: z.string().nullable(),
   impersonatedBy: z.string().nullable(),
-})
+});
 
-export type Session = z.infer<typeof SessionSchema>
+export type Session = z.infer<typeof SessionSchema>;
 
 export default SessionSchema;

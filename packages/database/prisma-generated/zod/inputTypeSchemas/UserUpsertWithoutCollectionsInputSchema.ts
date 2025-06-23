@@ -7,10 +7,19 @@ import { UserCreateWithoutCollectionsInputSchema } from './UserCreateWithoutColl
 import { UserUncheckedCreateWithoutCollectionsInputSchema } from './UserUncheckedCreateWithoutCollectionsInputSchema';
 import { UserWhereInputSchema } from './UserWhereInputSchema';
 
-export const UserUpsertWithoutCollectionsInputSchema: z.ZodType<Prisma.UserUpsertWithoutCollectionsInput> = z.object({
-  update: z.union([ z.lazy(() => UserUpdateWithoutCollectionsInputSchema),z.lazy(() => UserUncheckedUpdateWithoutCollectionsInputSchema) ]),
-  create: z.union([ z.lazy(() => UserCreateWithoutCollectionsInputSchema),z.lazy(() => UserUncheckedCreateWithoutCollectionsInputSchema) ]),
-  where: z.lazy(() => UserWhereInputSchema).optional()
-}).strict();
+export const UserUpsertWithoutCollectionsInputSchema: z.ZodType<Prisma.UserUpsertWithoutCollectionsInput> =
+  z
+    .object({
+      update: z.union([
+        z.lazy(() => UserUpdateWithoutCollectionsInputSchema),
+        z.lazy(() => UserUncheckedUpdateWithoutCollectionsInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => UserCreateWithoutCollectionsInputSchema),
+        z.lazy(() => UserUncheckedCreateWithoutCollectionsInputSchema),
+      ]),
+      where: z.lazy(() => UserWhereInputSchema).optional(),
+    })
+    .strict();
 
 export default UserUpsertWithoutCollectionsInputSchema;

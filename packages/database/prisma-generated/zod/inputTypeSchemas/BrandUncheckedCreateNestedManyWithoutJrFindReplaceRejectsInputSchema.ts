@@ -6,10 +6,30 @@ import { BrandUncheckedCreateWithoutJrFindReplaceRejectsInputSchema } from './Br
 import { BrandCreateOrConnectWithoutJrFindReplaceRejectsInputSchema } from './BrandCreateOrConnectWithoutJrFindReplaceRejectsInputSchema';
 import { BrandWhereUniqueInputSchema } from './BrandWhereUniqueInputSchema';
 
-export const BrandUncheckedCreateNestedManyWithoutJrFindReplaceRejectsInputSchema: z.ZodType<Prisma.BrandUncheckedCreateNestedManyWithoutJrFindReplaceRejectsInput> = z.object({
-  create: z.union([ z.lazy(() => BrandCreateWithoutJrFindReplaceRejectsInputSchema),z.lazy(() => BrandCreateWithoutJrFindReplaceRejectsInputSchema).array(),z.lazy(() => BrandUncheckedCreateWithoutJrFindReplaceRejectsInputSchema),z.lazy(() => BrandUncheckedCreateWithoutJrFindReplaceRejectsInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => BrandCreateOrConnectWithoutJrFindReplaceRejectsInputSchema),z.lazy(() => BrandCreateOrConnectWithoutJrFindReplaceRejectsInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => BrandWhereUniqueInputSchema),z.lazy(() => BrandWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const BrandUncheckedCreateNestedManyWithoutJrFindReplaceRejectsInputSchema: z.ZodType<Prisma.BrandUncheckedCreateNestedManyWithoutJrFindReplaceRejectsInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => BrandCreateWithoutJrFindReplaceRejectsInputSchema),
+          z.lazy(() => BrandCreateWithoutJrFindReplaceRejectsInputSchema).array(),
+          z.lazy(() => BrandUncheckedCreateWithoutJrFindReplaceRejectsInputSchema),
+          z.lazy(() => BrandUncheckedCreateWithoutJrFindReplaceRejectsInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => BrandCreateOrConnectWithoutJrFindReplaceRejectsInputSchema),
+          z.lazy(() => BrandCreateOrConnectWithoutJrFindReplaceRejectsInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => BrandWhereUniqueInputSchema),
+          z.lazy(() => BrandWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default BrandUncheckedCreateNestedManyWithoutJrFindReplaceRejectsInputSchema;

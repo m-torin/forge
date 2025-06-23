@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema'
-import { JrChartRuleForSchema } from '../inputTypeSchemas/JrChartRuleForSchema'
+import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema';
+import { JrChartRuleForSchema } from '../inputTypeSchemas/JrChartRuleForSchema';
 
 /////////////////////////////////////////
 // JR EXTRACTION RULE SCHEMA
@@ -18,8 +18,8 @@ export const JrExtractionRuleSchema = z.object({
   successRate: z.number().nullable(),
   lastTestedAt: z.coerce.date().nullable(),
   notes: z.string().nullable(),
-})
+});
 
-export type JrExtractionRule = z.infer<typeof JrExtractionRuleSchema>
+export type JrExtractionRule = z.infer<typeof JrExtractionRuleSchema>;
 
 export default JrExtractionRuleSchema;

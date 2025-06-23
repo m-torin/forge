@@ -12,21 +12,56 @@ import { DateTimeFieldUpdateOperationsInputSchema } from './DateTimeFieldUpdateO
 import { UserUpdateOneWithoutCartsNestedInputSchema } from './UserUpdateOneWithoutCartsNestedInputSchema';
 import { CartItemUpdateManyWithoutCartNestedInputSchema } from './CartItemUpdateManyWithoutCartNestedInputSchema';
 
-export const CartUpdateInputSchema: z.ZodType<Prisma.CartUpdateInput> = z.object({
-  id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  sessionId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  status: z.union([ z.lazy(() => CartStatusSchema),z.lazy(() => EnumCartStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  expiresAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  currency: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  notes: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  metadata: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
-  abandonedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  recoveredAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  deletedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  user: z.lazy(() => UserUpdateOneWithoutCartsNestedInputSchema).optional(),
-  items: z.lazy(() => CartItemUpdateManyWithoutCartNestedInputSchema).optional()
-}).strict();
+export const CartUpdateInputSchema: z.ZodType<Prisma.CartUpdateInput> = z
+  .object({
+    id: z
+      .union([z.string().cuid(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    sessionId: z
+      .union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputSchema)])
+      .optional()
+      .nullable(),
+    status: z
+      .union([
+        z.lazy(() => CartStatusSchema),
+        z.lazy(() => EnumCartStatusFieldUpdateOperationsInputSchema),
+      ])
+      .optional(),
+    expiresAt: z
+      .union([z.coerce.date(), z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema)])
+      .optional()
+      .nullable(),
+    currency: z
+      .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    notes: z
+      .union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputSchema)])
+      .optional()
+      .nullable(),
+    metadata: z
+      .union([z.lazy(() => NullableJsonNullValueInputSchema), InputJsonValueSchema])
+      .optional(),
+    abandonedAt: z
+      .union([z.coerce.date(), z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema)])
+      .optional()
+      .nullable(),
+    recoveredAt: z
+      .union([z.coerce.date(), z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema)])
+      .optional()
+      .nullable(),
+    createdAt: z
+      .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+      .optional(),
+    updatedAt: z
+      .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+      .optional(),
+    deletedAt: z
+      .union([z.coerce.date(), z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema)])
+      .optional()
+      .nullable(),
+    user: z.lazy(() => UserUpdateOneWithoutCartsNestedInputSchema).optional(),
+    items: z.lazy(() => CartItemUpdateManyWithoutCartNestedInputSchema).optional(),
+  })
+  .strict();
 
 export default CartUpdateInputSchema;

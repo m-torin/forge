@@ -5,9 +5,15 @@ import { ProductIdentifiersWhereUniqueInputSchema } from './ProductIdentifiersWh
 import { ProductIdentifiersUpdateWithoutProductInputSchema } from './ProductIdentifiersUpdateWithoutProductInputSchema';
 import { ProductIdentifiersUncheckedUpdateWithoutProductInputSchema } from './ProductIdentifiersUncheckedUpdateWithoutProductInputSchema';
 
-export const ProductIdentifiersUpdateWithWhereUniqueWithoutProductInputSchema: z.ZodType<Prisma.ProductIdentifiersUpdateWithWhereUniqueWithoutProductInput> = z.object({
-  where: z.lazy(() => ProductIdentifiersWhereUniqueInputSchema),
-  data: z.union([ z.lazy(() => ProductIdentifiersUpdateWithoutProductInputSchema),z.lazy(() => ProductIdentifiersUncheckedUpdateWithoutProductInputSchema) ]),
-}).strict();
+export const ProductIdentifiersUpdateWithWhereUniqueWithoutProductInputSchema: z.ZodType<Prisma.ProductIdentifiersUpdateWithWhereUniqueWithoutProductInput> =
+  z
+    .object({
+      where: z.lazy(() => ProductIdentifiersWhereUniqueInputSchema),
+      data: z.union([
+        z.lazy(() => ProductIdentifiersUpdateWithoutProductInputSchema),
+        z.lazy(() => ProductIdentifiersUncheckedUpdateWithoutProductInputSchema),
+      ]),
+    })
+    .strict();
 
 export default ProductIdentifiersUpdateWithWhereUniqueWithoutProductInputSchema;

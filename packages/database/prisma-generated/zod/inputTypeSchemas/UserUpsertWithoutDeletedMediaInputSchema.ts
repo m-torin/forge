@@ -7,10 +7,19 @@ import { UserCreateWithoutDeletedMediaInputSchema } from './UserCreateWithoutDel
 import { UserUncheckedCreateWithoutDeletedMediaInputSchema } from './UserUncheckedCreateWithoutDeletedMediaInputSchema';
 import { UserWhereInputSchema } from './UserWhereInputSchema';
 
-export const UserUpsertWithoutDeletedMediaInputSchema: z.ZodType<Prisma.UserUpsertWithoutDeletedMediaInput> = z.object({
-  update: z.union([ z.lazy(() => UserUpdateWithoutDeletedMediaInputSchema),z.lazy(() => UserUncheckedUpdateWithoutDeletedMediaInputSchema) ]),
-  create: z.union([ z.lazy(() => UserCreateWithoutDeletedMediaInputSchema),z.lazy(() => UserUncheckedCreateWithoutDeletedMediaInputSchema) ]),
-  where: z.lazy(() => UserWhereInputSchema).optional()
-}).strict();
+export const UserUpsertWithoutDeletedMediaInputSchema: z.ZodType<Prisma.UserUpsertWithoutDeletedMediaInput> =
+  z
+    .object({
+      update: z.union([
+        z.lazy(() => UserUpdateWithoutDeletedMediaInputSchema),
+        z.lazy(() => UserUncheckedUpdateWithoutDeletedMediaInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => UserCreateWithoutDeletedMediaInputSchema),
+        z.lazy(() => UserUncheckedCreateWithoutDeletedMediaInputSchema),
+      ]),
+      where: z.lazy(() => UserWhereInputSchema).optional(),
+    })
+    .strict();
 
 export default UserUpsertWithoutDeletedMediaInputSchema;

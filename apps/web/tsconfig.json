@@ -1,7 +1,7 @@
 {
   "extends": "@repo/config/typescript/nextjs.json",
   "compilerOptions": {
-    "types": ["vitest/globals", "@playwright/test"],
+    "types": ["vitest/globals"],
     "paths": {
       "@/*": ["./src/*"],
       "@/env": ["./env.ts"],
@@ -15,8 +15,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "src/**/*.ts",
-    "src/**/*.tsx",
-    "e2e/**/*.ts"
+    "src/**/*.tsx"
   ],
   "exclude": ["node_modules", ".next", "**/.next", "dist", "build"]
 }

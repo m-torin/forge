@@ -90,7 +90,7 @@ export async function getArticlesAction(...args: Parameters<typeof findManyArtic
 
 export async function getArticleBySlugAction(
   slug: string,
-  ..._args: Parameters<typeof findFirstArticleAction>
+  ...args: Parameters<typeof findFirstArticleAction>
 ) {
   return findFirstArticleAction({ where: { slug } });
 }

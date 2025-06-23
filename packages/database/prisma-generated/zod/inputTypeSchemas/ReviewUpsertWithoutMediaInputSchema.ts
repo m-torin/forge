@@ -7,10 +7,19 @@ import { ReviewCreateWithoutMediaInputSchema } from './ReviewCreateWithoutMediaI
 import { ReviewUncheckedCreateWithoutMediaInputSchema } from './ReviewUncheckedCreateWithoutMediaInputSchema';
 import { ReviewWhereInputSchema } from './ReviewWhereInputSchema';
 
-export const ReviewUpsertWithoutMediaInputSchema: z.ZodType<Prisma.ReviewUpsertWithoutMediaInput> = z.object({
-  update: z.union([ z.lazy(() => ReviewUpdateWithoutMediaInputSchema),z.lazy(() => ReviewUncheckedUpdateWithoutMediaInputSchema) ]),
-  create: z.union([ z.lazy(() => ReviewCreateWithoutMediaInputSchema),z.lazy(() => ReviewUncheckedCreateWithoutMediaInputSchema) ]),
-  where: z.lazy(() => ReviewWhereInputSchema).optional()
-}).strict();
+export const ReviewUpsertWithoutMediaInputSchema: z.ZodType<Prisma.ReviewUpsertWithoutMediaInput> =
+  z
+    .object({
+      update: z.union([
+        z.lazy(() => ReviewUpdateWithoutMediaInputSchema),
+        z.lazy(() => ReviewUncheckedUpdateWithoutMediaInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => ReviewCreateWithoutMediaInputSchema),
+        z.lazy(() => ReviewUncheckedCreateWithoutMediaInputSchema),
+      ]),
+      where: z.lazy(() => ReviewWhereInputSchema).optional(),
+    })
+    .strict();
 
 export default ReviewUpsertWithoutMediaInputSchema;

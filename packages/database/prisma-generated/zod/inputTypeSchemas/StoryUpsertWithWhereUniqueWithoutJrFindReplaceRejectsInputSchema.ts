@@ -7,10 +7,19 @@ import { StoryUncheckedUpdateWithoutJrFindReplaceRejectsInputSchema } from './St
 import { StoryCreateWithoutJrFindReplaceRejectsInputSchema } from './StoryCreateWithoutJrFindReplaceRejectsInputSchema';
 import { StoryUncheckedCreateWithoutJrFindReplaceRejectsInputSchema } from './StoryUncheckedCreateWithoutJrFindReplaceRejectsInputSchema';
 
-export const StoryUpsertWithWhereUniqueWithoutJrFindReplaceRejectsInputSchema: z.ZodType<Prisma.StoryUpsertWithWhereUniqueWithoutJrFindReplaceRejectsInput> = z.object({
-  where: z.lazy(() => StoryWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => StoryUpdateWithoutJrFindReplaceRejectsInputSchema),z.lazy(() => StoryUncheckedUpdateWithoutJrFindReplaceRejectsInputSchema) ]),
-  create: z.union([ z.lazy(() => StoryCreateWithoutJrFindReplaceRejectsInputSchema),z.lazy(() => StoryUncheckedCreateWithoutJrFindReplaceRejectsInputSchema) ]),
-}).strict();
+export const StoryUpsertWithWhereUniqueWithoutJrFindReplaceRejectsInputSchema: z.ZodType<Prisma.StoryUpsertWithWhereUniqueWithoutJrFindReplaceRejectsInput> =
+  z
+    .object({
+      where: z.lazy(() => StoryWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => StoryUpdateWithoutJrFindReplaceRejectsInputSchema),
+        z.lazy(() => StoryUncheckedUpdateWithoutJrFindReplaceRejectsInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => StoryCreateWithoutJrFindReplaceRejectsInputSchema),
+        z.lazy(() => StoryUncheckedCreateWithoutJrFindReplaceRejectsInputSchema),
+      ]),
+    })
+    .strict();
 
 export default StoryUpsertWithWhereUniqueWithoutJrFindReplaceRejectsInputSchema;

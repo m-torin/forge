@@ -1,36 +1,37 @@
-import baseConfig from '@repo/eslint-config/next';
+import nextConfig from "@repo/eslint-config/next";
 
-// Add explicit ignores to improve performance and prevent parent directory scanning
 const config = [
+  ...nextConfig,
   {
-    // Only process files in specific directories to avoid scanning parent directories
-    files: ['app/**/*.{js,jsx,ts,tsx}', 'src/**/*.{js,jsx,ts,tsx}', '*.{js,jsx,ts,tsx}'],
     ignores: [
-      '**/node_modules/**',
-      '**/.next/**',
-      '**/out/**',
-      '**/dist/**',
-      '**/coverage/**',
-      '**/playwright-report/**',
-      '**/test-results/**',
-      '**/*.min.js',
-      '**/generated/**',
-      'tsconfig.tsbuildinfo',
-      '.turbo/**',
-      // Add more specific ignores to prevent scanning too many files
-      'docs/**',
-      'e2e/**',
-      'eslint-results.json',
-      '**/*.json',
-      '**/*.md',
-      '**/*.mdx',
-      '**/*.css',
-      '**/*.scss',
-      // Exclude specific problem directories
-      'src/components/ui/ListingImageGallery/**',
+      // Ignore markdown files to prevent TypeScript project issues
+      "**/*.md",
+      "**/*.mdx",
+      // Ignore Vercel files that may not be in TypeScript project
+      "app/.well-known/**/*",
     ],
   },
-  ...baseConfig,
+  {
+    // Disable TypeScript project checking for markdown code blocks
+    files: [
+      "**/*.md/*.{js,jsx,ts,tsx,mjs,cjs}",
+      "**/*.mdx/*.{js,jsx,ts,tsx,mjs,cjs}",
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: false, // Disable project-wide type checking for markdown code blocks
+      },
+    },
+  },
+  {
+    // Disable TypeScript project checking for e2e files
+    files: ["e2e/**/*.{js,jsx,ts,tsx}"],
+    languageOptions: {
+      parserOptions: {
+        project: false, // Disable project-wide type checking for e2e files
+      },
+    },
+  },
 ];
 
 export default config;

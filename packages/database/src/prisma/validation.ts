@@ -103,7 +103,7 @@ export function pickSchemaFields<T extends z.ZodObject<any>>(
       pickedShape[field] = schema.shape[field];
     }
   });
-  return z.object(pickedShape);
+  return z.object(pickedShape) as z.ZodObject<Pick<T['shape'], (typeof fields)[number]>>;
 }
 
 /**
@@ -121,7 +121,9 @@ export function makeSchemaOptional<T extends z.ZodObject<any>>(
   Object.keys(schema.shape).forEach((key) => {
     optionalShape[key] = schema.shape[key].optional();
   });
-  return z.object(optionalShape);
+  return z.object(optionalShape) as z.ZodObject<{
+    [K in keyof T['shape']]: z.ZodOptional<T['shape'][K]>;
+  }>;
 }
 
 /**

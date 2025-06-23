@@ -3,17 +3,7 @@
  */
 
 import { NextRequest } from 'next/server';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-
-import {
-  extractApiKeyFromHeaders,
-  hasPermissionForRequest,
-  requireAuth,
-  validateApiKey,
-  validateApiKeyWithRateLimit,
-} from '../../../server/api-keys/validation';
-
-import type { PermissionCheck } from '../../../shared/api-keys/types';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock server-only module
 vi.mock('server-only', () => ({}));
@@ -45,14 +35,26 @@ vi.mock('next/headers', () => ({
 }));
 
 // Mock auth module
-vi.mock('../../../server/auth', () => ({
+vi.mock('../../../src/shared/auth.config', () => ({
   auth: mockAuth,
 }));
-vi.mock('../../../shared/api-keys/permissions', () => ({
+
+// Mock shared api-keys module
+vi.mock('../../../src/shared/api-keys', () => ({
   checkApiKeyPermissions: mockCheckApiKeyPermissions,
   hasPermission: vi.fn(),
   permissionsArrayToStructure: mockPermissionsArrayToStructure,
 }));
+
+// Import after mocking
+import {
+  validateApiKey,
+  requireAuth,
+  hasPermissionForRequest,
+  validateApiKeyWithRateLimit,
+  extractApiKeyFromHeaders,
+} from '../../../src/server/api-keys/validation';
+import type { PermissionCheck } from '../../../src/shared/api-keys';
 
 describe('API Key Validation', () => {
   const originalConsole = console;

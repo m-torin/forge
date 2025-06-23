@@ -5,6 +5,7 @@ import { beforeEach, vi } from 'vitest';
 // Import setupBrowserMocks and setupNextMocks
 import { setupBrowserMocks } from '../mocks/browser';
 import { setupNextMocks } from '../mocks/next';
+import { setupNodeModuleMocks } from '../mocks/node-modules';
 
 import { suppressConsoleErrors } from './common';
 
@@ -14,6 +15,7 @@ suppressConsoleErrors();
 // Setup browser and Next.js mocks
 setupBrowserMocks();
 setupNextMocks();
+setupNodeModuleMocks();
 
 // Clear all mocks between tests
 beforeEach(() => {
@@ -30,5 +32,6 @@ process.env = {
 export default {
   setupBrowserMocks,
   setupNextMocks,
+  setupNodeModuleMocks,
   suppressConsoleErrors,
 };

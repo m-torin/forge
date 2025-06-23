@@ -10,22 +10,34 @@ import { PdpJoinUncheckedCreateNestedManyWithoutLocationsInputSchema } from './P
 import { TaxonomyUncheckedCreateNestedManyWithoutLocationsInputSchema } from './TaxonomyUncheckedCreateNestedManyWithoutLocationsInputSchema';
 import { JrFindReplaceRejectUncheckedCreateNestedManyWithoutLocationsInputSchema } from './JrFindReplaceRejectUncheckedCreateNestedManyWithoutLocationsInputSchema';
 
-export const LocationUncheckedCreateWithoutProductsInputSchema: z.ZodType<Prisma.LocationUncheckedCreateWithoutProductsInput> = z.object({
-  id: z.string().cuid().optional(),
-  name: z.string(),
-  slug: z.string(),
-  locationType: z.lazy(() => LocationTypeSchema).optional(),
-  lodgingType: z.lazy(() => LodgingTypeSchema).optional().nullable(),
-  isFictional: z.boolean().optional(),
-  copy: z.union([ z.lazy(() => JsonNullValueInputSchema),InputJsonValueSchema ]),
-  createdAt: z.coerce.date().optional(),
-  updatedAt: z.coerce.date().optional(),
-  deletedAt: z.coerce.date().optional().nullable(),
-  deletedById: z.string().optional().nullable(),
-  fandoms: z.lazy(() => FandomUncheckedCreateNestedManyWithoutLocationsInputSchema).optional(),
-  pdpJoins: z.lazy(() => PdpJoinUncheckedCreateNestedManyWithoutLocationsInputSchema).optional(),
-  taxonomies: z.lazy(() => TaxonomyUncheckedCreateNestedManyWithoutLocationsInputSchema).optional(),
-  jrFindReplaceRejects: z.lazy(() => JrFindReplaceRejectUncheckedCreateNestedManyWithoutLocationsInputSchema).optional()
-}).strict();
+export const LocationUncheckedCreateWithoutProductsInputSchema: z.ZodType<Prisma.LocationUncheckedCreateWithoutProductsInput> =
+  z
+    .object({
+      id: z.string().cuid().optional(),
+      name: z.string(),
+      slug: z.string(),
+      locationType: z.lazy(() => LocationTypeSchema).optional(),
+      lodgingType: z
+        .lazy(() => LodgingTypeSchema)
+        .optional()
+        .nullable(),
+      isFictional: z.boolean().optional(),
+      copy: z.union([z.lazy(() => JsonNullValueInputSchema), InputJsonValueSchema]),
+      createdAt: z.coerce.date().optional(),
+      updatedAt: z.coerce.date().optional(),
+      deletedAt: z.coerce.date().optional().nullable(),
+      deletedById: z.string().optional().nullable(),
+      fandoms: z.lazy(() => FandomUncheckedCreateNestedManyWithoutLocationsInputSchema).optional(),
+      pdpJoins: z
+        .lazy(() => PdpJoinUncheckedCreateNestedManyWithoutLocationsInputSchema)
+        .optional(),
+      taxonomies: z
+        .lazy(() => TaxonomyUncheckedCreateNestedManyWithoutLocationsInputSchema)
+        .optional(),
+      jrFindReplaceRejects: z
+        .lazy(() => JrFindReplaceRejectUncheckedCreateNestedManyWithoutLocationsInputSchema)
+        .optional(),
+    })
+    .strict();
 
 export default LocationUncheckedCreateWithoutProductsInputSchema;

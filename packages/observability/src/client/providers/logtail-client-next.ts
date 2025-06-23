@@ -99,13 +99,20 @@ export class LogtailClientNextProvider implements ObservabilityProvider {
     }
 
     this.isInitialized = true;
-    
+
     // Process any queued logs
     if (this.logQueue.length > 0 && typeof window !== 'undefined') {
       // In a real implementation, we would use the useLogger hook or Logger instance
       // For now, just log to console
       this.logQueue.forEach(({ level, message, metadata }) => {
-        const consoleMethod = level === 'error' ? 'error' : level === 'warning' ? 'warn' : level === 'debug' ? 'debug' : 'info';
+        const consoleMethod =
+          level === 'error'
+            ? 'error'
+            : level === 'warning'
+              ? 'warn'
+              : level === 'debug'
+                ? 'debug'
+                : 'info';
         console[consoleMethod](`[Logtail] ${message}`, metadata);
       });
       this.logQueue = [];
@@ -116,7 +123,14 @@ export class LogtailClientNextProvider implements ObservabilityProvider {
     if (!this.isInitialized) return;
 
     if (this.isDevelopment || !this.config.sourceToken) {
-      const consoleMethod = level === 'error' ? 'error' : level === 'warning' || level === 'warn' ? 'warn' : level === 'debug' || level === 'trace' ? 'debug' : 'info';
+      const consoleMethod =
+        level === 'error'
+          ? 'error'
+          : level === 'warning' || level === 'warn'
+            ? 'warn'
+            : level === 'debug' || level === 'trace'
+              ? 'debug'
+              : 'info';
       console[consoleMethod](`[${level.toUpperCase()}]`, message, metadata);
       return;
     }

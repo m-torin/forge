@@ -5,9 +5,15 @@ import { InvitationWhereUniqueInputSchema } from './InvitationWhereUniqueInputSc
 import { InvitationCreateWithoutTeamInputSchema } from './InvitationCreateWithoutTeamInputSchema';
 import { InvitationUncheckedCreateWithoutTeamInputSchema } from './InvitationUncheckedCreateWithoutTeamInputSchema';
 
-export const InvitationCreateOrConnectWithoutTeamInputSchema: z.ZodType<Prisma.InvitationCreateOrConnectWithoutTeamInput> = z.object({
-  where: z.lazy(() => InvitationWhereUniqueInputSchema),
-  create: z.union([ z.lazy(() => InvitationCreateWithoutTeamInputSchema),z.lazy(() => InvitationUncheckedCreateWithoutTeamInputSchema) ]),
-}).strict();
+export const InvitationCreateOrConnectWithoutTeamInputSchema: z.ZodType<Prisma.InvitationCreateOrConnectWithoutTeamInput> =
+  z
+    .object({
+      where: z.lazy(() => InvitationWhereUniqueInputSchema),
+      create: z.union([
+        z.lazy(() => InvitationCreateWithoutTeamInputSchema),
+        z.lazy(() => InvitationUncheckedCreateWithoutTeamInputSchema),
+      ]),
+    })
+    .strict();
 
 export default InvitationCreateOrConnectWithoutTeamInputSchema;

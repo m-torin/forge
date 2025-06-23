@@ -7,11 +7,33 @@ import { RegistryPurchaseJoinCreateOrConnectWithoutRegistryItemInputSchema } fro
 import { RegistryPurchaseJoinCreateManyRegistryItemInputEnvelopeSchema } from './RegistryPurchaseJoinCreateManyRegistryItemInputEnvelopeSchema';
 import { RegistryPurchaseJoinWhereUniqueInputSchema } from './RegistryPurchaseJoinWhereUniqueInputSchema';
 
-export const RegistryPurchaseJoinUncheckedCreateNestedManyWithoutRegistryItemInputSchema: z.ZodType<Prisma.RegistryPurchaseJoinUncheckedCreateNestedManyWithoutRegistryItemInput> = z.object({
-  create: z.union([ z.lazy(() => RegistryPurchaseJoinCreateWithoutRegistryItemInputSchema),z.lazy(() => RegistryPurchaseJoinCreateWithoutRegistryItemInputSchema).array(),z.lazy(() => RegistryPurchaseJoinUncheckedCreateWithoutRegistryItemInputSchema),z.lazy(() => RegistryPurchaseJoinUncheckedCreateWithoutRegistryItemInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => RegistryPurchaseJoinCreateOrConnectWithoutRegistryItemInputSchema),z.lazy(() => RegistryPurchaseJoinCreateOrConnectWithoutRegistryItemInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => RegistryPurchaseJoinCreateManyRegistryItemInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => RegistryPurchaseJoinWhereUniqueInputSchema),z.lazy(() => RegistryPurchaseJoinWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const RegistryPurchaseJoinUncheckedCreateNestedManyWithoutRegistryItemInputSchema: z.ZodType<Prisma.RegistryPurchaseJoinUncheckedCreateNestedManyWithoutRegistryItemInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => RegistryPurchaseJoinCreateWithoutRegistryItemInputSchema),
+          z.lazy(() => RegistryPurchaseJoinCreateWithoutRegistryItemInputSchema).array(),
+          z.lazy(() => RegistryPurchaseJoinUncheckedCreateWithoutRegistryItemInputSchema),
+          z.lazy(() => RegistryPurchaseJoinUncheckedCreateWithoutRegistryItemInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => RegistryPurchaseJoinCreateOrConnectWithoutRegistryItemInputSchema),
+          z.lazy(() => RegistryPurchaseJoinCreateOrConnectWithoutRegistryItemInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z
+        .lazy(() => RegistryPurchaseJoinCreateManyRegistryItemInputEnvelopeSchema)
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => RegistryPurchaseJoinWhereUniqueInputSchema),
+          z.lazy(() => RegistryPurchaseJoinWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default RegistryPurchaseJoinUncheckedCreateNestedManyWithoutRegistryItemInputSchema;

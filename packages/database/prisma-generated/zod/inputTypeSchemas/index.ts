@@ -844,8 +844,10 @@ export { StoryMinOrderByAggregateInputSchema } from './StoryMinOrderByAggregateI
 export { StorySumOrderByAggregateInputSchema } from './StorySumOrderByAggregateInputSchema';
 export { EnumTaxonomyTypeFilterSchema } from './EnumTaxonomyTypeFilterSchema';
 export { TaxonomyCountOrderByAggregateInputSchema } from './TaxonomyCountOrderByAggregateInputSchema';
+export { TaxonomyAvgOrderByAggregateInputSchema } from './TaxonomyAvgOrderByAggregateInputSchema';
 export { TaxonomyMaxOrderByAggregateInputSchema } from './TaxonomyMaxOrderByAggregateInputSchema';
 export { TaxonomyMinOrderByAggregateInputSchema } from './TaxonomyMinOrderByAggregateInputSchema';
+export { TaxonomySumOrderByAggregateInputSchema } from './TaxonomySumOrderByAggregateInputSchema';
 export { EnumTaxonomyTypeWithAggregatesFilterSchema } from './EnumTaxonomyTypeWithAggregatesFilterSchema';
 export { EnumJrChartMethodFilterSchema } from './EnumJrChartMethodFilterSchema';
 export { JrExtractionRuleListRelationFilterSchema } from './JrExtractionRuleListRelationFilterSchema';
@@ -1562,6 +1564,8 @@ export { JrFindReplaceRejectUpdateManyWithoutStoriesNestedInputSchema } from './
 export { UserUpdateOneWithoutDeletedStoriesNestedInputSchema } from './UserUpdateOneWithoutDeletedStoriesNestedInputSchema';
 export { ProductUncheckedUpdateManyWithoutStoriesNestedInputSchema } from './ProductUncheckedUpdateManyWithoutStoriesNestedInputSchema';
 export { JrFindReplaceRejectUncheckedUpdateManyWithoutStoriesNestedInputSchema } from './JrFindReplaceRejectUncheckedUpdateManyWithoutStoriesNestedInputSchema';
+export { TaxonomyCreateNestedOneWithoutChildrenInputSchema } from './TaxonomyCreateNestedOneWithoutChildrenInputSchema';
+export { TaxonomyCreateNestedManyWithoutParentInputSchema } from './TaxonomyCreateNestedManyWithoutParentInputSchema';
 export { ProductCreateNestedManyWithoutTaxonomiesInputSchema } from './ProductCreateNestedManyWithoutTaxonomiesInputSchema';
 export { CollectionCreateNestedManyWithoutTaxonomiesInputSchema } from './CollectionCreateNestedManyWithoutTaxonomiesInputSchema';
 export { PdpJoinCreateNestedManyWithoutTaxonomiesInputSchema } from './PdpJoinCreateNestedManyWithoutTaxonomiesInputSchema';
@@ -1569,6 +1573,7 @@ export { LocationCreateNestedManyWithoutTaxonomiesInputSchema } from './Location
 export { MediaCreateNestedManyWithoutTaxonomyInputSchema } from './MediaCreateNestedManyWithoutTaxonomyInputSchema';
 export { JrFindReplaceRejectCreateNestedManyWithoutTaxonomiesInputSchema } from './JrFindReplaceRejectCreateNestedManyWithoutTaxonomiesInputSchema';
 export { UserCreateNestedOneWithoutDeletedTaxonomiesInputSchema } from './UserCreateNestedOneWithoutDeletedTaxonomiesInputSchema';
+export { TaxonomyUncheckedCreateNestedManyWithoutParentInputSchema } from './TaxonomyUncheckedCreateNestedManyWithoutParentInputSchema';
 export { ProductUncheckedCreateNestedManyWithoutTaxonomiesInputSchema } from './ProductUncheckedCreateNestedManyWithoutTaxonomiesInputSchema';
 export { CollectionUncheckedCreateNestedManyWithoutTaxonomiesInputSchema } from './CollectionUncheckedCreateNestedManyWithoutTaxonomiesInputSchema';
 export { PdpJoinUncheckedCreateNestedManyWithoutTaxonomiesInputSchema } from './PdpJoinUncheckedCreateNestedManyWithoutTaxonomiesInputSchema';
@@ -1576,6 +1581,8 @@ export { LocationUncheckedCreateNestedManyWithoutTaxonomiesInputSchema } from '.
 export { MediaUncheckedCreateNestedManyWithoutTaxonomyInputSchema } from './MediaUncheckedCreateNestedManyWithoutTaxonomyInputSchema';
 export { JrFindReplaceRejectUncheckedCreateNestedManyWithoutTaxonomiesInputSchema } from './JrFindReplaceRejectUncheckedCreateNestedManyWithoutTaxonomiesInputSchema';
 export { EnumTaxonomyTypeFieldUpdateOperationsInputSchema } from './EnumTaxonomyTypeFieldUpdateOperationsInputSchema';
+export { TaxonomyUpdateOneWithoutChildrenNestedInputSchema } from './TaxonomyUpdateOneWithoutChildrenNestedInputSchema';
+export { TaxonomyUpdateManyWithoutParentNestedInputSchema } from './TaxonomyUpdateManyWithoutParentNestedInputSchema';
 export { ProductUpdateManyWithoutTaxonomiesNestedInputSchema } from './ProductUpdateManyWithoutTaxonomiesNestedInputSchema';
 export { CollectionUpdateManyWithoutTaxonomiesNestedInputSchema } from './CollectionUpdateManyWithoutTaxonomiesNestedInputSchema';
 export { PdpJoinUpdateManyWithoutTaxonomiesNestedInputSchema } from './PdpJoinUpdateManyWithoutTaxonomiesNestedInputSchema';
@@ -1583,6 +1590,7 @@ export { LocationUpdateManyWithoutTaxonomiesNestedInputSchema } from './Location
 export { MediaUpdateManyWithoutTaxonomyNestedInputSchema } from './MediaUpdateManyWithoutTaxonomyNestedInputSchema';
 export { JrFindReplaceRejectUpdateManyWithoutTaxonomiesNestedInputSchema } from './JrFindReplaceRejectUpdateManyWithoutTaxonomiesNestedInputSchema';
 export { UserUpdateOneWithoutDeletedTaxonomiesNestedInputSchema } from './UserUpdateOneWithoutDeletedTaxonomiesNestedInputSchema';
+export { TaxonomyUncheckedUpdateManyWithoutParentNestedInputSchema } from './TaxonomyUncheckedUpdateManyWithoutParentNestedInputSchema';
 export { ProductUncheckedUpdateManyWithoutTaxonomiesNestedInputSchema } from './ProductUncheckedUpdateManyWithoutTaxonomiesNestedInputSchema';
 export { CollectionUncheckedUpdateManyWithoutTaxonomiesNestedInputSchema } from './CollectionUncheckedUpdateManyWithoutTaxonomiesNestedInputSchema';
 export { PdpJoinUncheckedUpdateManyWithoutTaxonomiesNestedInputSchema } from './PdpJoinUncheckedUpdateManyWithoutTaxonomiesNestedInputSchema';
@@ -2978,6 +2986,13 @@ export { UserUpsertWithoutDeletedStoriesInputSchema } from './UserUpsertWithoutD
 export { UserUpdateToOneWithWhereWithoutDeletedStoriesInputSchema } from './UserUpdateToOneWithWhereWithoutDeletedStoriesInputSchema';
 export { UserUpdateWithoutDeletedStoriesInputSchema } from './UserUpdateWithoutDeletedStoriesInputSchema';
 export { UserUncheckedUpdateWithoutDeletedStoriesInputSchema } from './UserUncheckedUpdateWithoutDeletedStoriesInputSchema';
+export { TaxonomyCreateWithoutChildrenInputSchema } from './TaxonomyCreateWithoutChildrenInputSchema';
+export { TaxonomyUncheckedCreateWithoutChildrenInputSchema } from './TaxonomyUncheckedCreateWithoutChildrenInputSchema';
+export { TaxonomyCreateOrConnectWithoutChildrenInputSchema } from './TaxonomyCreateOrConnectWithoutChildrenInputSchema';
+export { TaxonomyCreateWithoutParentInputSchema } from './TaxonomyCreateWithoutParentInputSchema';
+export { TaxonomyUncheckedCreateWithoutParentInputSchema } from './TaxonomyUncheckedCreateWithoutParentInputSchema';
+export { TaxonomyCreateOrConnectWithoutParentInputSchema } from './TaxonomyCreateOrConnectWithoutParentInputSchema';
+export { TaxonomyCreateManyParentInputEnvelopeSchema } from './TaxonomyCreateManyParentInputEnvelopeSchema';
 export { ProductCreateWithoutTaxonomiesInputSchema } from './ProductCreateWithoutTaxonomiesInputSchema';
 export { ProductUncheckedCreateWithoutTaxonomiesInputSchema } from './ProductUncheckedCreateWithoutTaxonomiesInputSchema';
 export { ProductCreateOrConnectWithoutTaxonomiesInputSchema } from './ProductCreateOrConnectWithoutTaxonomiesInputSchema';
@@ -3000,6 +3015,13 @@ export { JrFindReplaceRejectCreateOrConnectWithoutTaxonomiesInputSchema } from '
 export { UserCreateWithoutDeletedTaxonomiesInputSchema } from './UserCreateWithoutDeletedTaxonomiesInputSchema';
 export { UserUncheckedCreateWithoutDeletedTaxonomiesInputSchema } from './UserUncheckedCreateWithoutDeletedTaxonomiesInputSchema';
 export { UserCreateOrConnectWithoutDeletedTaxonomiesInputSchema } from './UserCreateOrConnectWithoutDeletedTaxonomiesInputSchema';
+export { TaxonomyUpsertWithoutChildrenInputSchema } from './TaxonomyUpsertWithoutChildrenInputSchema';
+export { TaxonomyUpdateToOneWithWhereWithoutChildrenInputSchema } from './TaxonomyUpdateToOneWithWhereWithoutChildrenInputSchema';
+export { TaxonomyUpdateWithoutChildrenInputSchema } from './TaxonomyUpdateWithoutChildrenInputSchema';
+export { TaxonomyUncheckedUpdateWithoutChildrenInputSchema } from './TaxonomyUncheckedUpdateWithoutChildrenInputSchema';
+export { TaxonomyUpsertWithWhereUniqueWithoutParentInputSchema } from './TaxonomyUpsertWithWhereUniqueWithoutParentInputSchema';
+export { TaxonomyUpdateWithWhereUniqueWithoutParentInputSchema } from './TaxonomyUpdateWithWhereUniqueWithoutParentInputSchema';
+export { TaxonomyUpdateManyWithWhereWithoutParentInputSchema } from './TaxonomyUpdateManyWithWhereWithoutParentInputSchema';
 export { ProductUpsertWithWhereUniqueWithoutTaxonomiesInputSchema } from './ProductUpsertWithWhereUniqueWithoutTaxonomiesInputSchema';
 export { ProductUpdateWithWhereUniqueWithoutTaxonomiesInputSchema } from './ProductUpdateWithWhereUniqueWithoutTaxonomiesInputSchema';
 export { ProductUpdateManyWithWhereWithoutTaxonomiesInputSchema } from './ProductUpdateManyWithWhereWithoutTaxonomiesInputSchema';
@@ -3857,7 +3879,11 @@ export { ProductUncheckedUpdateManyWithoutStoriesInputSchema } from './ProductUn
 export { JrFindReplaceRejectUpdateWithoutStoriesInputSchema } from './JrFindReplaceRejectUpdateWithoutStoriesInputSchema';
 export { JrFindReplaceRejectUncheckedUpdateWithoutStoriesInputSchema } from './JrFindReplaceRejectUncheckedUpdateWithoutStoriesInputSchema';
 export { JrFindReplaceRejectUncheckedUpdateManyWithoutStoriesInputSchema } from './JrFindReplaceRejectUncheckedUpdateManyWithoutStoriesInputSchema';
+export { TaxonomyCreateManyParentInputSchema } from './TaxonomyCreateManyParentInputSchema';
 export { MediaCreateManyTaxonomyInputSchema } from './MediaCreateManyTaxonomyInputSchema';
+export { TaxonomyUpdateWithoutParentInputSchema } from './TaxonomyUpdateWithoutParentInputSchema';
+export { TaxonomyUncheckedUpdateWithoutParentInputSchema } from './TaxonomyUncheckedUpdateWithoutParentInputSchema';
+export { TaxonomyUncheckedUpdateManyWithoutParentInputSchema } from './TaxonomyUncheckedUpdateManyWithoutParentInputSchema';
 export { ProductUpdateWithoutTaxonomiesInputSchema } from './ProductUpdateWithoutTaxonomiesInputSchema';
 export { ProductUncheckedUpdateWithoutTaxonomiesInputSchema } from './ProductUncheckedUpdateWithoutTaxonomiesInputSchema';
 export { ProductUncheckedUpdateManyWithoutTaxonomiesInputSchema } from './ProductUncheckedUpdateManyWithoutTaxonomiesInputSchema';

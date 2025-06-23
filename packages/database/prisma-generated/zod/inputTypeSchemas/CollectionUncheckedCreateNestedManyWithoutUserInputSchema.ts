@@ -7,11 +7,31 @@ import { CollectionCreateOrConnectWithoutUserInputSchema } from './CollectionCre
 import { CollectionCreateManyUserInputEnvelopeSchema } from './CollectionCreateManyUserInputEnvelopeSchema';
 import { CollectionWhereUniqueInputSchema } from './CollectionWhereUniqueInputSchema';
 
-export const CollectionUncheckedCreateNestedManyWithoutUserInputSchema: z.ZodType<Prisma.CollectionUncheckedCreateNestedManyWithoutUserInput> = z.object({
-  create: z.union([ z.lazy(() => CollectionCreateWithoutUserInputSchema),z.lazy(() => CollectionCreateWithoutUserInputSchema).array(),z.lazy(() => CollectionUncheckedCreateWithoutUserInputSchema),z.lazy(() => CollectionUncheckedCreateWithoutUserInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => CollectionCreateOrConnectWithoutUserInputSchema),z.lazy(() => CollectionCreateOrConnectWithoutUserInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => CollectionCreateManyUserInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => CollectionWhereUniqueInputSchema),z.lazy(() => CollectionWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const CollectionUncheckedCreateNestedManyWithoutUserInputSchema: z.ZodType<Prisma.CollectionUncheckedCreateNestedManyWithoutUserInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => CollectionCreateWithoutUserInputSchema),
+          z.lazy(() => CollectionCreateWithoutUserInputSchema).array(),
+          z.lazy(() => CollectionUncheckedCreateWithoutUserInputSchema),
+          z.lazy(() => CollectionUncheckedCreateWithoutUserInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => CollectionCreateOrConnectWithoutUserInputSchema),
+          z.lazy(() => CollectionCreateOrConnectWithoutUserInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => CollectionCreateManyUserInputEnvelopeSchema).optional(),
+      connect: z
+        .union([
+          z.lazy(() => CollectionWhereUniqueInputSchema),
+          z.lazy(() => CollectionWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default CollectionUncheckedCreateNestedManyWithoutUserInputSchema;

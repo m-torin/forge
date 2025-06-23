@@ -7,10 +7,18 @@ import { UserCreateWithoutOrdersInputSchema } from './UserCreateWithoutOrdersInp
 import { UserUncheckedCreateWithoutOrdersInputSchema } from './UserUncheckedCreateWithoutOrdersInputSchema';
 import { UserWhereInputSchema } from './UserWhereInputSchema';
 
-export const UserUpsertWithoutOrdersInputSchema: z.ZodType<Prisma.UserUpsertWithoutOrdersInput> = z.object({
-  update: z.union([ z.lazy(() => UserUpdateWithoutOrdersInputSchema),z.lazy(() => UserUncheckedUpdateWithoutOrdersInputSchema) ]),
-  create: z.union([ z.lazy(() => UserCreateWithoutOrdersInputSchema),z.lazy(() => UserUncheckedCreateWithoutOrdersInputSchema) ]),
-  where: z.lazy(() => UserWhereInputSchema).optional()
-}).strict();
+export const UserUpsertWithoutOrdersInputSchema: z.ZodType<Prisma.UserUpsertWithoutOrdersInput> = z
+  .object({
+    update: z.union([
+      z.lazy(() => UserUpdateWithoutOrdersInputSchema),
+      z.lazy(() => UserUncheckedUpdateWithoutOrdersInputSchema),
+    ]),
+    create: z.union([
+      z.lazy(() => UserCreateWithoutOrdersInputSchema),
+      z.lazy(() => UserUncheckedCreateWithoutOrdersInputSchema),
+    ]),
+    where: z.lazy(() => UserWhereInputSchema).optional(),
+  })
+  .strict();
 
 export default UserUpsertWithoutOrdersInputSchema;

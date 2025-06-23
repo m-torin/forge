@@ -11,18 +11,73 @@ import { OrderItemUpdateWithWhereUniqueWithoutVariantInputSchema } from './Order
 import { OrderItemUpdateManyWithWhereWithoutVariantInputSchema } from './OrderItemUpdateManyWithWhereWithoutVariantInputSchema';
 import { OrderItemScalarWhereInputSchema } from './OrderItemScalarWhereInputSchema';
 
-export const OrderItemUncheckedUpdateManyWithoutVariantNestedInputSchema: z.ZodType<Prisma.OrderItemUncheckedUpdateManyWithoutVariantNestedInput> = z.object({
-  create: z.union([ z.lazy(() => OrderItemCreateWithoutVariantInputSchema),z.lazy(() => OrderItemCreateWithoutVariantInputSchema).array(),z.lazy(() => OrderItemUncheckedCreateWithoutVariantInputSchema),z.lazy(() => OrderItemUncheckedCreateWithoutVariantInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => OrderItemCreateOrConnectWithoutVariantInputSchema),z.lazy(() => OrderItemCreateOrConnectWithoutVariantInputSchema).array() ]).optional(),
-  upsert: z.union([ z.lazy(() => OrderItemUpsertWithWhereUniqueWithoutVariantInputSchema),z.lazy(() => OrderItemUpsertWithWhereUniqueWithoutVariantInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => OrderItemCreateManyVariantInputEnvelopeSchema).optional(),
-  set: z.union([ z.lazy(() => OrderItemWhereUniqueInputSchema),z.lazy(() => OrderItemWhereUniqueInputSchema).array() ]).optional(),
-  disconnect: z.union([ z.lazy(() => OrderItemWhereUniqueInputSchema),z.lazy(() => OrderItemWhereUniqueInputSchema).array() ]).optional(),
-  delete: z.union([ z.lazy(() => OrderItemWhereUniqueInputSchema),z.lazy(() => OrderItemWhereUniqueInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => OrderItemWhereUniqueInputSchema),z.lazy(() => OrderItemWhereUniqueInputSchema).array() ]).optional(),
-  update: z.union([ z.lazy(() => OrderItemUpdateWithWhereUniqueWithoutVariantInputSchema),z.lazy(() => OrderItemUpdateWithWhereUniqueWithoutVariantInputSchema).array() ]).optional(),
-  updateMany: z.union([ z.lazy(() => OrderItemUpdateManyWithWhereWithoutVariantInputSchema),z.lazy(() => OrderItemUpdateManyWithWhereWithoutVariantInputSchema).array() ]).optional(),
-  deleteMany: z.union([ z.lazy(() => OrderItemScalarWhereInputSchema),z.lazy(() => OrderItemScalarWhereInputSchema).array() ]).optional(),
-}).strict();
+export const OrderItemUncheckedUpdateManyWithoutVariantNestedInputSchema: z.ZodType<Prisma.OrderItemUncheckedUpdateManyWithoutVariantNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => OrderItemCreateWithoutVariantInputSchema),
+          z.lazy(() => OrderItemCreateWithoutVariantInputSchema).array(),
+          z.lazy(() => OrderItemUncheckedCreateWithoutVariantInputSchema),
+          z.lazy(() => OrderItemUncheckedCreateWithoutVariantInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => OrderItemCreateOrConnectWithoutVariantInputSchema),
+          z.lazy(() => OrderItemCreateOrConnectWithoutVariantInputSchema).array(),
+        ])
+        .optional(),
+      upsert: z
+        .union([
+          z.lazy(() => OrderItemUpsertWithWhereUniqueWithoutVariantInputSchema),
+          z.lazy(() => OrderItemUpsertWithWhereUniqueWithoutVariantInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => OrderItemCreateManyVariantInputEnvelopeSchema).optional(),
+      set: z
+        .union([
+          z.lazy(() => OrderItemWhereUniqueInputSchema),
+          z.lazy(() => OrderItemWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      disconnect: z
+        .union([
+          z.lazy(() => OrderItemWhereUniqueInputSchema),
+          z.lazy(() => OrderItemWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      delete: z
+        .union([
+          z.lazy(() => OrderItemWhereUniqueInputSchema),
+          z.lazy(() => OrderItemWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => OrderItemWhereUniqueInputSchema),
+          z.lazy(() => OrderItemWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      update: z
+        .union([
+          z.lazy(() => OrderItemUpdateWithWhereUniqueWithoutVariantInputSchema),
+          z.lazy(() => OrderItemUpdateWithWhereUniqueWithoutVariantInputSchema).array(),
+        ])
+        .optional(),
+      updateMany: z
+        .union([
+          z.lazy(() => OrderItemUpdateManyWithWhereWithoutVariantInputSchema),
+          z.lazy(() => OrderItemUpdateManyWithWhereWithoutVariantInputSchema).array(),
+        ])
+        .optional(),
+      deleteMany: z
+        .union([
+          z.lazy(() => OrderItemScalarWhereInputSchema),
+          z.lazy(() => OrderItemScalarWhereInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default OrderItemUncheckedUpdateManyWithoutVariantNestedInputSchema;

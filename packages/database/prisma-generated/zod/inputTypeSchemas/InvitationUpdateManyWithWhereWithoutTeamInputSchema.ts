@@ -5,9 +5,15 @@ import { InvitationScalarWhereInputSchema } from './InvitationScalarWhereInputSc
 import { InvitationUpdateManyMutationInputSchema } from './InvitationUpdateManyMutationInputSchema';
 import { InvitationUncheckedUpdateManyWithoutTeamInputSchema } from './InvitationUncheckedUpdateManyWithoutTeamInputSchema';
 
-export const InvitationUpdateManyWithWhereWithoutTeamInputSchema: z.ZodType<Prisma.InvitationUpdateManyWithWhereWithoutTeamInput> = z.object({
-  where: z.lazy(() => InvitationScalarWhereInputSchema),
-  data: z.union([ z.lazy(() => InvitationUpdateManyMutationInputSchema),z.lazy(() => InvitationUncheckedUpdateManyWithoutTeamInputSchema) ]),
-}).strict();
+export const InvitationUpdateManyWithWhereWithoutTeamInputSchema: z.ZodType<Prisma.InvitationUpdateManyWithWhereWithoutTeamInput> =
+  z
+    .object({
+      where: z.lazy(() => InvitationScalarWhereInputSchema),
+      data: z.union([
+        z.lazy(() => InvitationUpdateManyMutationInputSchema),
+        z.lazy(() => InvitationUncheckedUpdateManyWithoutTeamInputSchema),
+      ]),
+    })
+    .strict();
 
 export default InvitationUpdateManyWithWhereWithoutTeamInputSchema;

@@ -6,13 +6,31 @@ import { DateTimeFieldUpdateOperationsInputSchema } from './DateTimeFieldUpdateO
 import { RegistryUserRoleSchema } from './RegistryUserRoleSchema';
 import { EnumRegistryUserRoleFieldUpdateOperationsInputSchema } from './EnumRegistryUserRoleFieldUpdateOperationsInputSchema';
 
-export const RegistryUserJoinUncheckedUpdateManyInputSchema: z.ZodType<Prisma.RegistryUserJoinUncheckedUpdateManyInput> = z.object({
-  id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  role: z.union([ z.lazy(() => RegistryUserRoleSchema),z.lazy(() => EnumRegistryUserRoleFieldUpdateOperationsInputSchema) ]).optional(),
-  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  registryId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
+export const RegistryUserJoinUncheckedUpdateManyInputSchema: z.ZodType<Prisma.RegistryUserJoinUncheckedUpdateManyInput> =
+  z
+    .object({
+      id: z
+        .union([z.string().cuid(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+        .optional(),
+      createdAt: z
+        .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+        .optional(),
+      updatedAt: z
+        .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+        .optional(),
+      role: z
+        .union([
+          z.lazy(() => RegistryUserRoleSchema),
+          z.lazy(() => EnumRegistryUserRoleFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      userId: z
+        .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+        .optional(),
+      registryId: z
+        .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+        .optional(),
+    })
+    .strict();
 
 export default RegistryUserJoinUncheckedUpdateManyInputSchema;

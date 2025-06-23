@@ -11,18 +11,73 @@ import { WorkflowScheduleUpdateWithWhereUniqueWithoutConfigInputSchema } from '.
 import { WorkflowScheduleUpdateManyWithWhereWithoutConfigInputSchema } from './WorkflowScheduleUpdateManyWithWhereWithoutConfigInputSchema';
 import { WorkflowScheduleScalarWhereInputSchema } from './WorkflowScheduleScalarWhereInputSchema';
 
-export const WorkflowScheduleUpdateManyWithoutConfigNestedInputSchema: z.ZodType<Prisma.WorkflowScheduleUpdateManyWithoutConfigNestedInput> = z.object({
-  create: z.union([ z.lazy(() => WorkflowScheduleCreateWithoutConfigInputSchema),z.lazy(() => WorkflowScheduleCreateWithoutConfigInputSchema).array(),z.lazy(() => WorkflowScheduleUncheckedCreateWithoutConfigInputSchema),z.lazy(() => WorkflowScheduleUncheckedCreateWithoutConfigInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => WorkflowScheduleCreateOrConnectWithoutConfigInputSchema),z.lazy(() => WorkflowScheduleCreateOrConnectWithoutConfigInputSchema).array() ]).optional(),
-  upsert: z.union([ z.lazy(() => WorkflowScheduleUpsertWithWhereUniqueWithoutConfigInputSchema),z.lazy(() => WorkflowScheduleUpsertWithWhereUniqueWithoutConfigInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => WorkflowScheduleCreateManyConfigInputEnvelopeSchema).optional(),
-  set: z.union([ z.lazy(() => WorkflowScheduleWhereUniqueInputSchema),z.lazy(() => WorkflowScheduleWhereUniqueInputSchema).array() ]).optional(),
-  disconnect: z.union([ z.lazy(() => WorkflowScheduleWhereUniqueInputSchema),z.lazy(() => WorkflowScheduleWhereUniqueInputSchema).array() ]).optional(),
-  delete: z.union([ z.lazy(() => WorkflowScheduleWhereUniqueInputSchema),z.lazy(() => WorkflowScheduleWhereUniqueInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => WorkflowScheduleWhereUniqueInputSchema),z.lazy(() => WorkflowScheduleWhereUniqueInputSchema).array() ]).optional(),
-  update: z.union([ z.lazy(() => WorkflowScheduleUpdateWithWhereUniqueWithoutConfigInputSchema),z.lazy(() => WorkflowScheduleUpdateWithWhereUniqueWithoutConfigInputSchema).array() ]).optional(),
-  updateMany: z.union([ z.lazy(() => WorkflowScheduleUpdateManyWithWhereWithoutConfigInputSchema),z.lazy(() => WorkflowScheduleUpdateManyWithWhereWithoutConfigInputSchema).array() ]).optional(),
-  deleteMany: z.union([ z.lazy(() => WorkflowScheduleScalarWhereInputSchema),z.lazy(() => WorkflowScheduleScalarWhereInputSchema).array() ]).optional(),
-}).strict();
+export const WorkflowScheduleUpdateManyWithoutConfigNestedInputSchema: z.ZodType<Prisma.WorkflowScheduleUpdateManyWithoutConfigNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => WorkflowScheduleCreateWithoutConfigInputSchema),
+          z.lazy(() => WorkflowScheduleCreateWithoutConfigInputSchema).array(),
+          z.lazy(() => WorkflowScheduleUncheckedCreateWithoutConfigInputSchema),
+          z.lazy(() => WorkflowScheduleUncheckedCreateWithoutConfigInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => WorkflowScheduleCreateOrConnectWithoutConfigInputSchema),
+          z.lazy(() => WorkflowScheduleCreateOrConnectWithoutConfigInputSchema).array(),
+        ])
+        .optional(),
+      upsert: z
+        .union([
+          z.lazy(() => WorkflowScheduleUpsertWithWhereUniqueWithoutConfigInputSchema),
+          z.lazy(() => WorkflowScheduleUpsertWithWhereUniqueWithoutConfigInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => WorkflowScheduleCreateManyConfigInputEnvelopeSchema).optional(),
+      set: z
+        .union([
+          z.lazy(() => WorkflowScheduleWhereUniqueInputSchema),
+          z.lazy(() => WorkflowScheduleWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      disconnect: z
+        .union([
+          z.lazy(() => WorkflowScheduleWhereUniqueInputSchema),
+          z.lazy(() => WorkflowScheduleWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      delete: z
+        .union([
+          z.lazy(() => WorkflowScheduleWhereUniqueInputSchema),
+          z.lazy(() => WorkflowScheduleWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => WorkflowScheduleWhereUniqueInputSchema),
+          z.lazy(() => WorkflowScheduleWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      update: z
+        .union([
+          z.lazy(() => WorkflowScheduleUpdateWithWhereUniqueWithoutConfigInputSchema),
+          z.lazy(() => WorkflowScheduleUpdateWithWhereUniqueWithoutConfigInputSchema).array(),
+        ])
+        .optional(),
+      updateMany: z
+        .union([
+          z.lazy(() => WorkflowScheduleUpdateManyWithWhereWithoutConfigInputSchema),
+          z.lazy(() => WorkflowScheduleUpdateManyWithWhereWithoutConfigInputSchema).array(),
+        ])
+        .optional(),
+      deleteMany: z
+        .union([
+          z.lazy(() => WorkflowScheduleScalarWhereInputSchema),
+          z.lazy(() => WorkflowScheduleScalarWhereInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default WorkflowScheduleUpdateManyWithoutConfigNestedInputSchema;

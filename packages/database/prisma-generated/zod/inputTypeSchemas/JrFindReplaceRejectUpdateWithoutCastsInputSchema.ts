@@ -15,20 +15,48 @@ import { FandomUpdateManyWithoutJrFindReplaceRejectsNestedInputSchema } from './
 import { SeriesUpdateManyWithoutJrFindReplaceRejectsNestedInputSchema } from './SeriesUpdateManyWithoutJrFindReplaceRejectsNestedInputSchema';
 import { JrExtractionRuleUpdateManyWithoutFindReplaceRulesNestedInputSchema } from './JrExtractionRuleUpdateManyWithoutFindReplaceRulesNestedInputSchema';
 
-export const JrFindReplaceRejectUpdateWithoutCastsInputSchema: z.ZodType<Prisma.JrFindReplaceRejectUpdateWithoutCastsInput> = z.object({
-  lookFor: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  replaceWith: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  ruleAction: z.union([ z.lazy(() => JrRuleActionSchema),z.lazy(() => EnumJrRuleActionFieldUpdateOperationsInputSchema) ]).optional(),
-  isRegex: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
-  regexFlags: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  priority: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  brands: z.lazy(() => BrandUpdateManyWithoutJrFindReplaceRejectsNestedInputSchema).optional(),
-  locations: z.lazy(() => LocationUpdateManyWithoutJrFindReplaceRejectsNestedInputSchema).optional(),
-  taxonomies: z.lazy(() => TaxonomyUpdateManyWithoutJrFindReplaceRejectsNestedInputSchema).optional(),
-  stories: z.lazy(() => StoryUpdateManyWithoutJrFindReplaceRejectsNestedInputSchema).optional(),
-  fandoms: z.lazy(() => FandomUpdateManyWithoutJrFindReplaceRejectsNestedInputSchema).optional(),
-  series: z.lazy(() => SeriesUpdateManyWithoutJrFindReplaceRejectsNestedInputSchema).optional(),
-  extractionRules: z.lazy(() => JrExtractionRuleUpdateManyWithoutFindReplaceRulesNestedInputSchema).optional()
-}).strict();
+export const JrFindReplaceRejectUpdateWithoutCastsInputSchema: z.ZodType<Prisma.JrFindReplaceRejectUpdateWithoutCastsInput> =
+  z
+    .object({
+      lookFor: z
+        .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+        .optional(),
+      replaceWith: z
+        .union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      ruleAction: z
+        .union([
+          z.lazy(() => JrRuleActionSchema),
+          z.lazy(() => EnumJrRuleActionFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      isRegex: z
+        .union([z.boolean(), z.lazy(() => BoolFieldUpdateOperationsInputSchema)])
+        .optional(),
+      regexFlags: z
+        .union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      priority: z
+        .union([z.number().int(), z.lazy(() => IntFieldUpdateOperationsInputSchema)])
+        .optional(),
+      brands: z.lazy(() => BrandUpdateManyWithoutJrFindReplaceRejectsNestedInputSchema).optional(),
+      locations: z
+        .lazy(() => LocationUpdateManyWithoutJrFindReplaceRejectsNestedInputSchema)
+        .optional(),
+      taxonomies: z
+        .lazy(() => TaxonomyUpdateManyWithoutJrFindReplaceRejectsNestedInputSchema)
+        .optional(),
+      stories: z.lazy(() => StoryUpdateManyWithoutJrFindReplaceRejectsNestedInputSchema).optional(),
+      fandoms: z
+        .lazy(() => FandomUpdateManyWithoutJrFindReplaceRejectsNestedInputSchema)
+        .optional(),
+      series: z.lazy(() => SeriesUpdateManyWithoutJrFindReplaceRejectsNestedInputSchema).optional(),
+      extractionRules: z
+        .lazy(() => JrExtractionRuleUpdateManyWithoutFindReplaceRulesNestedInputSchema)
+        .optional(),
+    })
+    .strict();
 
 export default JrFindReplaceRejectUpdateWithoutCastsInputSchema;

@@ -7,10 +7,19 @@ import { ArticleCreateWithoutMediaInputSchema } from './ArticleCreateWithoutMedi
 import { ArticleUncheckedCreateWithoutMediaInputSchema } from './ArticleUncheckedCreateWithoutMediaInputSchema';
 import { ArticleWhereInputSchema } from './ArticleWhereInputSchema';
 
-export const ArticleUpsertWithoutMediaInputSchema: z.ZodType<Prisma.ArticleUpsertWithoutMediaInput> = z.object({
-  update: z.union([ z.lazy(() => ArticleUpdateWithoutMediaInputSchema),z.lazy(() => ArticleUncheckedUpdateWithoutMediaInputSchema) ]),
-  create: z.union([ z.lazy(() => ArticleCreateWithoutMediaInputSchema),z.lazy(() => ArticleUncheckedCreateWithoutMediaInputSchema) ]),
-  where: z.lazy(() => ArticleWhereInputSchema).optional()
-}).strict();
+export const ArticleUpsertWithoutMediaInputSchema: z.ZodType<Prisma.ArticleUpsertWithoutMediaInput> =
+  z
+    .object({
+      update: z.union([
+        z.lazy(() => ArticleUpdateWithoutMediaInputSchema),
+        z.lazy(() => ArticleUncheckedUpdateWithoutMediaInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => ArticleCreateWithoutMediaInputSchema),
+        z.lazy(() => ArticleUncheckedCreateWithoutMediaInputSchema),
+      ]),
+      where: z.lazy(() => ArticleWhereInputSchema).optional(),
+    })
+    .strict();
 
 export default ArticleUpsertWithoutMediaInputSchema;

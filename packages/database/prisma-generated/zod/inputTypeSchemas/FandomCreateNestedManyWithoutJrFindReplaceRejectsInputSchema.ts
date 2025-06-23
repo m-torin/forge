@@ -6,10 +6,30 @@ import { FandomUncheckedCreateWithoutJrFindReplaceRejectsInputSchema } from './F
 import { FandomCreateOrConnectWithoutJrFindReplaceRejectsInputSchema } from './FandomCreateOrConnectWithoutJrFindReplaceRejectsInputSchema';
 import { FandomWhereUniqueInputSchema } from './FandomWhereUniqueInputSchema';
 
-export const FandomCreateNestedManyWithoutJrFindReplaceRejectsInputSchema: z.ZodType<Prisma.FandomCreateNestedManyWithoutJrFindReplaceRejectsInput> = z.object({
-  create: z.union([ z.lazy(() => FandomCreateWithoutJrFindReplaceRejectsInputSchema),z.lazy(() => FandomCreateWithoutJrFindReplaceRejectsInputSchema).array(),z.lazy(() => FandomUncheckedCreateWithoutJrFindReplaceRejectsInputSchema),z.lazy(() => FandomUncheckedCreateWithoutJrFindReplaceRejectsInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => FandomCreateOrConnectWithoutJrFindReplaceRejectsInputSchema),z.lazy(() => FandomCreateOrConnectWithoutJrFindReplaceRejectsInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => FandomWhereUniqueInputSchema),z.lazy(() => FandomWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const FandomCreateNestedManyWithoutJrFindReplaceRejectsInputSchema: z.ZodType<Prisma.FandomCreateNestedManyWithoutJrFindReplaceRejectsInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => FandomCreateWithoutJrFindReplaceRejectsInputSchema),
+          z.lazy(() => FandomCreateWithoutJrFindReplaceRejectsInputSchema).array(),
+          z.lazy(() => FandomUncheckedCreateWithoutJrFindReplaceRejectsInputSchema),
+          z.lazy(() => FandomUncheckedCreateWithoutJrFindReplaceRejectsInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => FandomCreateOrConnectWithoutJrFindReplaceRejectsInputSchema),
+          z.lazy(() => FandomCreateOrConnectWithoutJrFindReplaceRejectsInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => FandomWhereUniqueInputSchema),
+          z.lazy(() => FandomWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default FandomCreateNestedManyWithoutJrFindReplaceRejectsInputSchema;

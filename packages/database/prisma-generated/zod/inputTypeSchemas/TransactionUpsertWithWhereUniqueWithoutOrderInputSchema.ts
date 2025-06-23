@@ -7,10 +7,19 @@ import { TransactionUncheckedUpdateWithoutOrderInputSchema } from './Transaction
 import { TransactionCreateWithoutOrderInputSchema } from './TransactionCreateWithoutOrderInputSchema';
 import { TransactionUncheckedCreateWithoutOrderInputSchema } from './TransactionUncheckedCreateWithoutOrderInputSchema';
 
-export const TransactionUpsertWithWhereUniqueWithoutOrderInputSchema: z.ZodType<Prisma.TransactionUpsertWithWhereUniqueWithoutOrderInput> = z.object({
-  where: z.lazy(() => TransactionWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => TransactionUpdateWithoutOrderInputSchema),z.lazy(() => TransactionUncheckedUpdateWithoutOrderInputSchema) ]),
-  create: z.union([ z.lazy(() => TransactionCreateWithoutOrderInputSchema),z.lazy(() => TransactionUncheckedCreateWithoutOrderInputSchema) ]),
-}).strict();
+export const TransactionUpsertWithWhereUniqueWithoutOrderInputSchema: z.ZodType<Prisma.TransactionUpsertWithWhereUniqueWithoutOrderInput> =
+  z
+    .object({
+      where: z.lazy(() => TransactionWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => TransactionUpdateWithoutOrderInputSchema),
+        z.lazy(() => TransactionUncheckedUpdateWithoutOrderInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => TransactionCreateWithoutOrderInputSchema),
+        z.lazy(() => TransactionUncheckedCreateWithoutOrderInputSchema),
+      ]),
+    })
+    .strict();
 
 export default TransactionUpsertWithWhereUniqueWithoutOrderInputSchema;

@@ -7,10 +7,19 @@ import { TeamMemberUncheckedUpdateWithoutUserInputSchema } from './TeamMemberUnc
 import { TeamMemberCreateWithoutUserInputSchema } from './TeamMemberCreateWithoutUserInputSchema';
 import { TeamMemberUncheckedCreateWithoutUserInputSchema } from './TeamMemberUncheckedCreateWithoutUserInputSchema';
 
-export const TeamMemberUpsertWithWhereUniqueWithoutUserInputSchema: z.ZodType<Prisma.TeamMemberUpsertWithWhereUniqueWithoutUserInput> = z.object({
-  where: z.lazy(() => TeamMemberWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => TeamMemberUpdateWithoutUserInputSchema),z.lazy(() => TeamMemberUncheckedUpdateWithoutUserInputSchema) ]),
-  create: z.union([ z.lazy(() => TeamMemberCreateWithoutUserInputSchema),z.lazy(() => TeamMemberUncheckedCreateWithoutUserInputSchema) ]),
-}).strict();
+export const TeamMemberUpsertWithWhereUniqueWithoutUserInputSchema: z.ZodType<Prisma.TeamMemberUpsertWithWhereUniqueWithoutUserInput> =
+  z
+    .object({
+      where: z.lazy(() => TeamMemberWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => TeamMemberUpdateWithoutUserInputSchema),
+        z.lazy(() => TeamMemberUncheckedUpdateWithoutUserInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => TeamMemberCreateWithoutUserInputSchema),
+        z.lazy(() => TeamMemberUncheckedCreateWithoutUserInputSchema),
+      ]),
+    })
+    .strict();
 
 export default TeamMemberUpsertWithWhereUniqueWithoutUserInputSchema;

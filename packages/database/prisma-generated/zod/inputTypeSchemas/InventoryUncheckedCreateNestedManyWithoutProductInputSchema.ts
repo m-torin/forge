@@ -7,11 +7,31 @@ import { InventoryCreateOrConnectWithoutProductInputSchema } from './InventoryCr
 import { InventoryCreateManyProductInputEnvelopeSchema } from './InventoryCreateManyProductInputEnvelopeSchema';
 import { InventoryWhereUniqueInputSchema } from './InventoryWhereUniqueInputSchema';
 
-export const InventoryUncheckedCreateNestedManyWithoutProductInputSchema: z.ZodType<Prisma.InventoryUncheckedCreateNestedManyWithoutProductInput> = z.object({
-  create: z.union([ z.lazy(() => InventoryCreateWithoutProductInputSchema),z.lazy(() => InventoryCreateWithoutProductInputSchema).array(),z.lazy(() => InventoryUncheckedCreateWithoutProductInputSchema),z.lazy(() => InventoryUncheckedCreateWithoutProductInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => InventoryCreateOrConnectWithoutProductInputSchema),z.lazy(() => InventoryCreateOrConnectWithoutProductInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => InventoryCreateManyProductInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => InventoryWhereUniqueInputSchema),z.lazy(() => InventoryWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const InventoryUncheckedCreateNestedManyWithoutProductInputSchema: z.ZodType<Prisma.InventoryUncheckedCreateNestedManyWithoutProductInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => InventoryCreateWithoutProductInputSchema),
+          z.lazy(() => InventoryCreateWithoutProductInputSchema).array(),
+          z.lazy(() => InventoryUncheckedCreateWithoutProductInputSchema),
+          z.lazy(() => InventoryUncheckedCreateWithoutProductInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => InventoryCreateOrConnectWithoutProductInputSchema),
+          z.lazy(() => InventoryCreateOrConnectWithoutProductInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => InventoryCreateManyProductInputEnvelopeSchema).optional(),
+      connect: z
+        .union([
+          z.lazy(() => InventoryWhereUniqueInputSchema),
+          z.lazy(() => InventoryWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default InventoryUncheckedCreateNestedManyWithoutProductInputSchema;

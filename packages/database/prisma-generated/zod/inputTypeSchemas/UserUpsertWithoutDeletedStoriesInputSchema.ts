@@ -7,10 +7,19 @@ import { UserCreateWithoutDeletedStoriesInputSchema } from './UserCreateWithoutD
 import { UserUncheckedCreateWithoutDeletedStoriesInputSchema } from './UserUncheckedCreateWithoutDeletedStoriesInputSchema';
 import { UserWhereInputSchema } from './UserWhereInputSchema';
 
-export const UserUpsertWithoutDeletedStoriesInputSchema: z.ZodType<Prisma.UserUpsertWithoutDeletedStoriesInput> = z.object({
-  update: z.union([ z.lazy(() => UserUpdateWithoutDeletedStoriesInputSchema),z.lazy(() => UserUncheckedUpdateWithoutDeletedStoriesInputSchema) ]),
-  create: z.union([ z.lazy(() => UserCreateWithoutDeletedStoriesInputSchema),z.lazy(() => UserUncheckedCreateWithoutDeletedStoriesInputSchema) ]),
-  where: z.lazy(() => UserWhereInputSchema).optional()
-}).strict();
+export const UserUpsertWithoutDeletedStoriesInputSchema: z.ZodType<Prisma.UserUpsertWithoutDeletedStoriesInput> =
+  z
+    .object({
+      update: z.union([
+        z.lazy(() => UserUpdateWithoutDeletedStoriesInputSchema),
+        z.lazy(() => UserUncheckedUpdateWithoutDeletedStoriesInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => UserCreateWithoutDeletedStoriesInputSchema),
+        z.lazy(() => UserUncheckedCreateWithoutDeletedStoriesInputSchema),
+      ]),
+      where: z.lazy(() => UserWhereInputSchema).optional(),
+    })
+    .strict();
 
 export default UserUpsertWithoutDeletedStoriesInputSchema;

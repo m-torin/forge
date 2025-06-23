@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema'
-import { ContentStatusSchema } from '../inputTypeSchemas/ContentStatusSchema'
+import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema';
+import { ContentStatusSchema } from '../inputTypeSchemas/ContentStatusSchema';
 
 /////////////////////////////////////////
 // PRODUCT CATEGORY SCHEMA
@@ -18,8 +18,8 @@ export const ProductCategorySchema = z.object({
   updatedAt: z.coerce.date(),
   deletedAt: z.coerce.date().nullable(),
   deletedById: z.string().nullable(),
-})
+});
 
-export type ProductCategory = z.infer<typeof ProductCategorySchema>
+export type ProductCategory = z.infer<typeof ProductCategorySchema>;
 
 export default ProductCategorySchema;

@@ -9,9 +9,9 @@ export const JsonValueSchema: z.ZodType<Prisma.JsonValue> = z.lazy(() =>
     z.literal(null),
     z.record(z.lazy(() => JsonValueSchema.optional())),
     z.array(z.lazy(() => JsonValueSchema)),
-  ])
+  ]),
 );
 
 export type JsonValueType = z.infer<typeof JsonValueSchema>;
 
-export default JsonValueSchema
+export default JsonValueSchema;

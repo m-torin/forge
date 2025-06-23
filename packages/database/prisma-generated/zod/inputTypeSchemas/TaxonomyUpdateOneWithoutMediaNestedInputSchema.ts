@@ -11,14 +11,28 @@ import { TaxonomyUpdateToOneWithWhereWithoutMediaInputSchema } from './TaxonomyU
 import { TaxonomyUpdateWithoutMediaInputSchema } from './TaxonomyUpdateWithoutMediaInputSchema';
 import { TaxonomyUncheckedUpdateWithoutMediaInputSchema } from './TaxonomyUncheckedUpdateWithoutMediaInputSchema';
 
-export const TaxonomyUpdateOneWithoutMediaNestedInputSchema: z.ZodType<Prisma.TaxonomyUpdateOneWithoutMediaNestedInput> = z.object({
-  create: z.union([ z.lazy(() => TaxonomyCreateWithoutMediaInputSchema),z.lazy(() => TaxonomyUncheckedCreateWithoutMediaInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => TaxonomyCreateOrConnectWithoutMediaInputSchema).optional(),
-  upsert: z.lazy(() => TaxonomyUpsertWithoutMediaInputSchema).optional(),
-  disconnect: z.union([ z.boolean(),z.lazy(() => TaxonomyWhereInputSchema) ]).optional(),
-  delete: z.union([ z.boolean(),z.lazy(() => TaxonomyWhereInputSchema) ]).optional(),
-  connect: z.lazy(() => TaxonomyWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => TaxonomyUpdateToOneWithWhereWithoutMediaInputSchema),z.lazy(() => TaxonomyUpdateWithoutMediaInputSchema),z.lazy(() => TaxonomyUncheckedUpdateWithoutMediaInputSchema) ]).optional(),
-}).strict();
+export const TaxonomyUpdateOneWithoutMediaNestedInputSchema: z.ZodType<Prisma.TaxonomyUpdateOneWithoutMediaNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => TaxonomyCreateWithoutMediaInputSchema),
+          z.lazy(() => TaxonomyUncheckedCreateWithoutMediaInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z.lazy(() => TaxonomyCreateOrConnectWithoutMediaInputSchema).optional(),
+      upsert: z.lazy(() => TaxonomyUpsertWithoutMediaInputSchema).optional(),
+      disconnect: z.union([z.boolean(), z.lazy(() => TaxonomyWhereInputSchema)]).optional(),
+      delete: z.union([z.boolean(), z.lazy(() => TaxonomyWhereInputSchema)]).optional(),
+      connect: z.lazy(() => TaxonomyWhereUniqueInputSchema).optional(),
+      update: z
+        .union([
+          z.lazy(() => TaxonomyUpdateToOneWithWhereWithoutMediaInputSchema),
+          z.lazy(() => TaxonomyUpdateWithoutMediaInputSchema),
+          z.lazy(() => TaxonomyUncheckedUpdateWithoutMediaInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default TaxonomyUpdateOneWithoutMediaNestedInputSchema;

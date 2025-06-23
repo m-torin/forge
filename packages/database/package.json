@@ -8,7 +8,7 @@
     "analyze:local": "pnpm prisma:generate:local -- --no-hints",
     "build": "pnpm analyze",
     "build:local": "pnpm analyze:local",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "typecheck": "NODE_OPTIONS='--max-old-space-size=8192' tsc --noEmit --emitDeclarationOnly false",
     "lint": "eslint . --fix",
     "test": "vitest run",
     "test:watch": "vitest",

@@ -4,7 +4,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { ac, admin, member, owner, roles } from '../../shared/permissions';
+import { ac, admin, member, owner, roles } from '../../src/shared/permissions';
 
 describe('Access Control and Permissions', () => {
   describe('Access Controller', () => {

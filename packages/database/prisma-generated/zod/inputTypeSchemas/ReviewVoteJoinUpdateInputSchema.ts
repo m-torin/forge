@@ -8,13 +8,26 @@ import { EnumVoteTypeFieldUpdateOperationsInputSchema } from './EnumVoteTypeFiel
 import { UserUpdateOneRequiredWithoutReviewVotesNestedInputSchema } from './UserUpdateOneRequiredWithoutReviewVotesNestedInputSchema';
 import { ReviewUpdateOneRequiredWithoutVotesNestedInputSchema } from './ReviewUpdateOneRequiredWithoutVotesNestedInputSchema';
 
-export const ReviewVoteJoinUpdateInputSchema: z.ZodType<Prisma.ReviewVoteJoinUpdateInput> = z.object({
-  id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  voteType: z.union([ z.lazy(() => VoteTypeSchema),z.lazy(() => EnumVoteTypeFieldUpdateOperationsInputSchema) ]).optional(),
-  user: z.lazy(() => UserUpdateOneRequiredWithoutReviewVotesNestedInputSchema).optional(),
-  review: z.lazy(() => ReviewUpdateOneRequiredWithoutVotesNestedInputSchema).optional()
-}).strict();
+export const ReviewVoteJoinUpdateInputSchema: z.ZodType<Prisma.ReviewVoteJoinUpdateInput> = z
+  .object({
+    id: z
+      .union([z.string().cuid(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    createdAt: z
+      .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+      .optional(),
+    updatedAt: z
+      .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+      .optional(),
+    voteType: z
+      .union([
+        z.lazy(() => VoteTypeSchema),
+        z.lazy(() => EnumVoteTypeFieldUpdateOperationsInputSchema),
+      ])
+      .optional(),
+    user: z.lazy(() => UserUpdateOneRequiredWithoutReviewVotesNestedInputSchema).optional(),
+    review: z.lazy(() => ReviewUpdateOneRequiredWithoutVotesNestedInputSchema).optional(),
+  })
+  .strict();
 
 export default ReviewVoteJoinUpdateInputSchema;

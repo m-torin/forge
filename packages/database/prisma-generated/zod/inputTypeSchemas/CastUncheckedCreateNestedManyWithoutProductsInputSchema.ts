@@ -6,10 +6,30 @@ import { CastUncheckedCreateWithoutProductsInputSchema } from './CastUncheckedCr
 import { CastCreateOrConnectWithoutProductsInputSchema } from './CastCreateOrConnectWithoutProductsInputSchema';
 import { CastWhereUniqueInputSchema } from './CastWhereUniqueInputSchema';
 
-export const CastUncheckedCreateNestedManyWithoutProductsInputSchema: z.ZodType<Prisma.CastUncheckedCreateNestedManyWithoutProductsInput> = z.object({
-  create: z.union([ z.lazy(() => CastCreateWithoutProductsInputSchema),z.lazy(() => CastCreateWithoutProductsInputSchema).array(),z.lazy(() => CastUncheckedCreateWithoutProductsInputSchema),z.lazy(() => CastUncheckedCreateWithoutProductsInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => CastCreateOrConnectWithoutProductsInputSchema),z.lazy(() => CastCreateOrConnectWithoutProductsInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => CastWhereUniqueInputSchema),z.lazy(() => CastWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const CastUncheckedCreateNestedManyWithoutProductsInputSchema: z.ZodType<Prisma.CastUncheckedCreateNestedManyWithoutProductsInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => CastCreateWithoutProductsInputSchema),
+          z.lazy(() => CastCreateWithoutProductsInputSchema).array(),
+          z.lazy(() => CastUncheckedCreateWithoutProductsInputSchema),
+          z.lazy(() => CastUncheckedCreateWithoutProductsInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => CastCreateOrConnectWithoutProductsInputSchema),
+          z.lazy(() => CastCreateOrConnectWithoutProductsInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => CastWhereUniqueInputSchema),
+          z.lazy(() => CastWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default CastUncheckedCreateNestedManyWithoutProductsInputSchema;

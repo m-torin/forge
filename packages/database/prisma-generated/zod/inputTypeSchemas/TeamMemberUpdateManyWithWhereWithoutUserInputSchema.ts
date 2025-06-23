@@ -5,9 +5,15 @@ import { TeamMemberScalarWhereInputSchema } from './TeamMemberScalarWhereInputSc
 import { TeamMemberUpdateManyMutationInputSchema } from './TeamMemberUpdateManyMutationInputSchema';
 import { TeamMemberUncheckedUpdateManyWithoutUserInputSchema } from './TeamMemberUncheckedUpdateManyWithoutUserInputSchema';
 
-export const TeamMemberUpdateManyWithWhereWithoutUserInputSchema: z.ZodType<Prisma.TeamMemberUpdateManyWithWhereWithoutUserInput> = z.object({
-  where: z.lazy(() => TeamMemberScalarWhereInputSchema),
-  data: z.union([ z.lazy(() => TeamMemberUpdateManyMutationInputSchema),z.lazy(() => TeamMemberUncheckedUpdateManyWithoutUserInputSchema) ]),
-}).strict();
+export const TeamMemberUpdateManyWithWhereWithoutUserInputSchema: z.ZodType<Prisma.TeamMemberUpdateManyWithWhereWithoutUserInput> =
+  z
+    .object({
+      where: z.lazy(() => TeamMemberScalarWhereInputSchema),
+      data: z.union([
+        z.lazy(() => TeamMemberUpdateManyMutationInputSchema),
+        z.lazy(() => TeamMemberUncheckedUpdateManyWithoutUserInputSchema),
+      ]),
+    })
+    .strict();
 
 export default TeamMemberUpdateManyWithWhereWithoutUserInputSchema;

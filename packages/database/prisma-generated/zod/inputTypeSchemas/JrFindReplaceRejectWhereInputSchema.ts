@@ -16,25 +16,49 @@ import { SeriesListRelationFilterSchema } from './SeriesListRelationFilterSchema
 import { CastListRelationFilterSchema } from './CastListRelationFilterSchema';
 import { JrExtractionRuleListRelationFilterSchema } from './JrExtractionRuleListRelationFilterSchema';
 
-export const JrFindReplaceRejectWhereInputSchema: z.ZodType<Prisma.JrFindReplaceRejectWhereInput> = z.object({
-  AND: z.union([ z.lazy(() => JrFindReplaceRejectWhereInputSchema),z.lazy(() => JrFindReplaceRejectWhereInputSchema).array() ]).optional(),
-  OR: z.lazy(() => JrFindReplaceRejectWhereInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => JrFindReplaceRejectWhereInputSchema),z.lazy(() => JrFindReplaceRejectWhereInputSchema).array() ]).optional(),
-  id: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
-  lookFor: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  replaceWith: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
-  ruleAction: z.union([ z.lazy(() => EnumJrRuleActionFilterSchema),z.lazy(() => JrRuleActionSchema) ]).optional(),
-  isRegex: z.union([ z.lazy(() => BoolFilterSchema),z.boolean() ]).optional(),
-  regexFlags: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
-  priority: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
-  brands: z.lazy(() => BrandListRelationFilterSchema).optional(),
-  locations: z.lazy(() => LocationListRelationFilterSchema).optional(),
-  taxonomies: z.lazy(() => TaxonomyListRelationFilterSchema).optional(),
-  stories: z.lazy(() => StoryListRelationFilterSchema).optional(),
-  fandoms: z.lazy(() => FandomListRelationFilterSchema).optional(),
-  series: z.lazy(() => SeriesListRelationFilterSchema).optional(),
-  casts: z.lazy(() => CastListRelationFilterSchema).optional(),
-  extractionRules: z.lazy(() => JrExtractionRuleListRelationFilterSchema).optional()
-}).strict();
+export const JrFindReplaceRejectWhereInputSchema: z.ZodType<Prisma.JrFindReplaceRejectWhereInput> =
+  z
+    .object({
+      AND: z
+        .union([
+          z.lazy(() => JrFindReplaceRejectWhereInputSchema),
+          z.lazy(() => JrFindReplaceRejectWhereInputSchema).array(),
+        ])
+        .optional(),
+      OR: z
+        .lazy(() => JrFindReplaceRejectWhereInputSchema)
+        .array()
+        .optional(),
+      NOT: z
+        .union([
+          z.lazy(() => JrFindReplaceRejectWhereInputSchema),
+          z.lazy(() => JrFindReplaceRejectWhereInputSchema).array(),
+        ])
+        .optional(),
+      id: z.union([z.lazy(() => IntFilterSchema), z.number()]).optional(),
+      lookFor: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
+      replaceWith: z
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
+      ruleAction: z
+        .union([z.lazy(() => EnumJrRuleActionFilterSchema), z.lazy(() => JrRuleActionSchema)])
+        .optional(),
+      isRegex: z.union([z.lazy(() => BoolFilterSchema), z.boolean()]).optional(),
+      regexFlags: z
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
+      priority: z.union([z.lazy(() => IntFilterSchema), z.number()]).optional(),
+      brands: z.lazy(() => BrandListRelationFilterSchema).optional(),
+      locations: z.lazy(() => LocationListRelationFilterSchema).optional(),
+      taxonomies: z.lazy(() => TaxonomyListRelationFilterSchema).optional(),
+      stories: z.lazy(() => StoryListRelationFilterSchema).optional(),
+      fandoms: z.lazy(() => FandomListRelationFilterSchema).optional(),
+      series: z.lazy(() => SeriesListRelationFilterSchema).optional(),
+      casts: z.lazy(() => CastListRelationFilterSchema).optional(),
+      extractionRules: z.lazy(() => JrExtractionRuleListRelationFilterSchema).optional(),
+    })
+    .strict();
 
 export default JrFindReplaceRejectWhereInputSchema;

@@ -17,8 +17,8 @@ export const PasskeySchema = z.object({
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
   lastUsedAt: z.coerce.date().nullable(),
-})
+});
 
-export type Passkey = z.infer<typeof PasskeySchema>
+export type Passkey = z.infer<typeof PasskeySchema>;
 
 export default PasskeySchema;

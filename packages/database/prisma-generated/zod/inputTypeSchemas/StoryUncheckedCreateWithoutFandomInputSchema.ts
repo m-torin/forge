@@ -6,20 +6,25 @@ import { InputJsonValueSchema } from './InputJsonValueSchema';
 import { ProductUncheckedCreateNestedManyWithoutStoriesInputSchema } from './ProductUncheckedCreateNestedManyWithoutStoriesInputSchema';
 import { JrFindReplaceRejectUncheckedCreateNestedManyWithoutStoriesInputSchema } from './JrFindReplaceRejectUncheckedCreateNestedManyWithoutStoriesInputSchema';
 
-export const StoryUncheckedCreateWithoutFandomInputSchema: z.ZodType<Prisma.StoryUncheckedCreateWithoutFandomInput> = z.object({
-  id: z.string().cuid().optional(),
-  name: z.string(),
-  slug: z.string(),
-  seriesId: z.string().optional().nullable(),
-  displayOrder: z.number().int().optional(),
-  isFictional: z.boolean().optional(),
-  copy: z.union([ z.lazy(() => JsonNullValueInputSchema),InputJsonValueSchema ]),
-  createdAt: z.coerce.date().optional(),
-  updatedAt: z.coerce.date().optional(),
-  deletedAt: z.coerce.date().optional().nullable(),
-  deletedById: z.string().optional().nullable(),
-  products: z.lazy(() => ProductUncheckedCreateNestedManyWithoutStoriesInputSchema).optional(),
-  jrFindReplaceRejects: z.lazy(() => JrFindReplaceRejectUncheckedCreateNestedManyWithoutStoriesInputSchema).optional()
-}).strict();
+export const StoryUncheckedCreateWithoutFandomInputSchema: z.ZodType<Prisma.StoryUncheckedCreateWithoutFandomInput> =
+  z
+    .object({
+      id: z.string().cuid().optional(),
+      name: z.string(),
+      slug: z.string(),
+      seriesId: z.string().optional().nullable(),
+      displayOrder: z.number().int().optional(),
+      isFictional: z.boolean().optional(),
+      copy: z.union([z.lazy(() => JsonNullValueInputSchema), InputJsonValueSchema]),
+      createdAt: z.coerce.date().optional(),
+      updatedAt: z.coerce.date().optional(),
+      deletedAt: z.coerce.date().optional().nullable(),
+      deletedById: z.string().optional().nullable(),
+      products: z.lazy(() => ProductUncheckedCreateNestedManyWithoutStoriesInputSchema).optional(),
+      jrFindReplaceRejects: z
+        .lazy(() => JrFindReplaceRejectUncheckedCreateNestedManyWithoutStoriesInputSchema)
+        .optional(),
+    })
+    .strict();
 
 export default StoryUncheckedCreateWithoutFandomInputSchema;

@@ -7,10 +7,19 @@ import { CastUncheckedUpdateWithoutDeletedByInputSchema } from './CastUncheckedU
 import { CastCreateWithoutDeletedByInputSchema } from './CastCreateWithoutDeletedByInputSchema';
 import { CastUncheckedCreateWithoutDeletedByInputSchema } from './CastUncheckedCreateWithoutDeletedByInputSchema';
 
-export const CastUpsertWithWhereUniqueWithoutDeletedByInputSchema: z.ZodType<Prisma.CastUpsertWithWhereUniqueWithoutDeletedByInput> = z.object({
-  where: z.lazy(() => CastWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => CastUpdateWithoutDeletedByInputSchema),z.lazy(() => CastUncheckedUpdateWithoutDeletedByInputSchema) ]),
-  create: z.union([ z.lazy(() => CastCreateWithoutDeletedByInputSchema),z.lazy(() => CastUncheckedCreateWithoutDeletedByInputSchema) ]),
-}).strict();
+export const CastUpsertWithWhereUniqueWithoutDeletedByInputSchema: z.ZodType<Prisma.CastUpsertWithWhereUniqueWithoutDeletedByInput> =
+  z
+    .object({
+      where: z.lazy(() => CastWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => CastUpdateWithoutDeletedByInputSchema),
+        z.lazy(() => CastUncheckedUpdateWithoutDeletedByInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => CastCreateWithoutDeletedByInputSchema),
+        z.lazy(() => CastUncheckedCreateWithoutDeletedByInputSchema),
+      ]),
+    })
+    .strict();
 
 export default CastUpsertWithWhereUniqueWithoutDeletedByInputSchema;

@@ -10,24 +10,45 @@ import { OrderCreateNestedOneWithoutItemsInputSchema } from './OrderCreateNested
 import { ProductCreateNestedOneWithoutOrderItemsInputSchema } from './ProductCreateNestedOneWithoutOrderItemsInputSchema';
 import { ProductCreateNestedOneWithoutOrderItemVariantsInputSchema } from './ProductCreateNestedOneWithoutOrderItemVariantsInputSchema';
 
-export const OrderItemCreateWithoutRegistryInputSchema: z.ZodType<Prisma.OrderItemCreateWithoutRegistryInput> = z.object({
-  id: z.string().cuid().optional(),
-  productName: z.string(),
-  variantName: z.string().optional().nullable(),
-  sku: z.string().optional().nullable(),
-  quantity: z.number().int(),
-  price: z.union([z.number(),z.string(),z.instanceof(Decimal),z.instanceof(Prisma.Decimal),DecimalJsLikeSchema,]).refine((v) => isValidDecimalInput(v), { message: 'Must be a Decimal' }),
-  total: z.union([z.number(),z.string(),z.instanceof(Decimal),z.instanceof(Prisma.Decimal),DecimalJsLikeSchema,]).refine((v) => isValidDecimalInput(v), { message: 'Must be a Decimal' }),
-  isGift: z.boolean().optional(),
-  giftMessage: z.string().optional().nullable(),
-  status: z.lazy(() => OrderItemStatusSchema).optional(),
-  fulfilledAt: z.coerce.date().optional().nullable(),
-  metadata: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
-  createdAt: z.coerce.date().optional(),
-  updatedAt: z.coerce.date().optional(),
-  order: z.lazy(() => OrderCreateNestedOneWithoutItemsInputSchema),
-  product: z.lazy(() => ProductCreateNestedOneWithoutOrderItemsInputSchema).optional(),
-  variant: z.lazy(() => ProductCreateNestedOneWithoutOrderItemVariantsInputSchema).optional()
-}).strict();
+export const OrderItemCreateWithoutRegistryInputSchema: z.ZodType<Prisma.OrderItemCreateWithoutRegistryInput> =
+  z
+    .object({
+      id: z.string().cuid().optional(),
+      productName: z.string(),
+      variantName: z.string().optional().nullable(),
+      sku: z.string().optional().nullable(),
+      quantity: z.number().int(),
+      price: z
+        .union([
+          z.number(),
+          z.string(),
+          z.instanceof(Decimal),
+          z.instanceof(Prisma.Decimal),
+          DecimalJsLikeSchema,
+        ])
+        .refine((v) => isValidDecimalInput(v), { message: 'Must be a Decimal' }),
+      total: z
+        .union([
+          z.number(),
+          z.string(),
+          z.instanceof(Decimal),
+          z.instanceof(Prisma.Decimal),
+          DecimalJsLikeSchema,
+        ])
+        .refine((v) => isValidDecimalInput(v), { message: 'Must be a Decimal' }),
+      isGift: z.boolean().optional(),
+      giftMessage: z.string().optional().nullable(),
+      status: z.lazy(() => OrderItemStatusSchema).optional(),
+      fulfilledAt: z.coerce.date().optional().nullable(),
+      metadata: z
+        .union([z.lazy(() => NullableJsonNullValueInputSchema), InputJsonValueSchema])
+        .optional(),
+      createdAt: z.coerce.date().optional(),
+      updatedAt: z.coerce.date().optional(),
+      order: z.lazy(() => OrderCreateNestedOneWithoutItemsInputSchema),
+      product: z.lazy(() => ProductCreateNestedOneWithoutOrderItemsInputSchema).optional(),
+      variant: z.lazy(() => ProductCreateNestedOneWithoutOrderItemVariantsInputSchema).optional(),
+    })
+    .strict();
 
 export default OrderItemCreateWithoutRegistryInputSchema;

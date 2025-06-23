@@ -1,94 +1,116 @@
 {
-  "app": {
-    "welcome": "Welcome to Web Template",
-    "description": "A modern Next.js template with Mantine UI and internationalization support",
-    "brand": "Web Template",
-    "appDescription": "A modern web application template with internationalization",
-    "selectLanguage": "Select language",
-    "l": {
-      "en": "English",
-      "fr": "Français",
-      "es": "Español",
-      "de": "Deutsch",
-      "pt": "Português"
-    }
-  },
-  "search": {
-    "title": "Search",
-    "placeholder": "Search for anything...",
-    "button": "Search",
-    "results": "Search Results",
-    "noResults": "No results found",
-    "tryAgain": "Try searching for something else"
+  "metadata": {
+    "title": "Next App Mantine Tailwind Template",
+    "description": "A modern Next.js template with Mantine UI and TailwindCSS"
   },
   "navigation": {
     "home": "Home",
-    "search": "Search",
-    "account": "My Account",
-    "orders": "My Orders",
-    "wishlist": "Wishlist",
-    "help": "Help",
-    "logout": "Log out",
-    "login": "Login"
+    "about": "About",
+    "contact": "Contact",
+    "languageSelector": "Language"
   },
-  "taxonomy": {
-    "noItems": "No items found",
-    "noItemsDescription": "We couldn't find any items in this category at the moment. Try exploring other categories or check back later.",
-    "exploreOther": "Explore other categories:",
-    "items": "items",
-    "backTo": "Back to",
-    "save": "Save",
-    "share": "Share",
-    "relatedItems": "Related Items",
-    "exploreMore": "Explore more items in this",
-    "viewAll": "View All",
-    "details": "Details",
-    "type": "Type",
-    "totalItems": "Total Items",
-    "parent": "Parent",
-    "browseItems": "Browse Items",
-    "brands": {
-      "title": "Brands",
-      "description": "Discover products from our featured brands and partners"
-    },
-    "categories": {
-      "title": "Categories",
-      "description": "Browse products by category to find exactly what you need"
-    },
-    "collections": {
-      "title": "Collections",
-      "description": "Curated collections of products for special occasions and themes"
-    },
-    "tags": {
-      "title": "Tags",
-      "description": "Find products by tags and labels"
-    },
-    "attributes": {
-      "title": "Attributes",
-      "description": "Filter products by specific attributes and properties"
+  "home": {
+    "welcome": "Welcome to",
+    "subtitle": "This starter Next.js project includes a minimal setup for Mantine with TailwindCSS. To get started edit page.tsx file.",
+    "getStarted": "Get Started",
+    "documentation": "Documentation",
+    "features": {
+      "title": "Features",
+      "mantine": "Mantine UI Components",
+      "mantineDesc": "Beautiful and accessible React components with dark theme support",
+      "tailwind": "TailwindCSS Styling",
+      "tailwindDesc": "Utility-first CSS framework for rapid UI development",
+      "typescript": "TypeScript Support",
+      "typescriptDesc": "Full TypeScript support with strict type checking",
+      "i18n": "Internationalization",
+      "i18nDesc": "Multi-language support with optimized translation loading"
     }
   },
-  "account": {
-    "accountPage": "Account Settings",
-    "accountDescription": "Manage your account settings and preferences",
-    "personalInfo": "Personal Information",
-    "myFavorites": "My Favorites",
-    "orderHistory": "Order History",
-    "changePassword": "Change Password",
-    "billing": "Billing & Payment"
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "auto": "Auto",
+    "switchTheme": "Switch color scheme"
   },
-  "errors": {
-    "notFound": {
-      "title": "Page Not Found",
-      "description": "The requested taxonomy type or page was not found. Please check the URL or browse our available categories.",
-      "goBack": "Go Back",
-      "browseCatalog": "Browse our catalog:"
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "errorDescription": "We encountered an unexpected error. Please try refreshing the page.",
+    "errorDetails": "Error Details",
+    "unknownError": "An unknown error occurred",
+    "errorId": "Error ID",
+    "retry": "Try again",
+    "close": "Close",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "pageNotFound": "Page Not Found",
+    "pageNotFoundDescription": "The page you're looking for doesn't exist or has been moved.",
+    "goHome": "Go Home",
+    "goBack": "Go Back",
+    "selectLanguage": "Select Language",
+    "login": "Login",
+    "signup": "Sign up",
+    "logout": "Logout",
+    "myAccount": "My Account"
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to your account",
+      "email": "Email",
+      "password": "Password",
+      "loginButton": "Sign In",
+      "forgotPassword": "Forgot your password?",
+      "noAccount": "Don't have an account?",
+      "signupLink": "Sign up",
+      "or": "or",
+      "magicLink": "Send magic link",
+      "magicLinkSent": "Magic link sent!",
+      "magicLinkSentDescription": "Check your email for a link to sign in",
+      "backToLogin": "Back to login"
     },
-    "serverError": {
-      "title": "Something went wrong!",
-      "description": "An unexpected error occurred. Our team has been notified and is working to fix this issue.",
+    "signup": {
+      "title": "Create account",
+      "subtitle": "Get started with your new account",
+      "name": "Name",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "signupButton": "Create Account",
+      "haveAccount": "Already have an account?",
+      "loginLink": "Sign in",
+      "or": "or",
+      "magicLink": "Sign up with magic link",
+      "magicLinkSent": "Magic link sent!",
+      "magicLinkSentDescription": "Check your email for a link to complete signup",
+      "backToSignup": "Back to signup"
+    },
+    "magicLink": {
+      "verifying": "Verifying magic link...",
+      "success": "Successfully signed in!",
+      "error": "Invalid or expired magic link",
+      "expired": "This magic link has expired. Please request a new one."
+    },
+    "unified": {
+      "welcome": "Welcome",
+      "welcomeBack": "Welcome back!",
+      "letsGetStarted": "Let's get started",
+      "continueWith": "Continue with your email or social account",
+      "signInToContinue": "Sign in to continue",
+      "createAccount": "Create your account in seconds",
+      "or": "or",
+      "emailLabel": "Email address",
+      "nameLabel": "Your name (optional)",
+      "continueButton": "Continue with email",
+      "createAccountButton": "Create account & continue",
+      "magicLinkSent": "Check your email!",
+      "magicLinkInstructions": "We've sent you a magic link to sign in",
+      "checkEmail": "Check your email to continue",
       "tryAgain": "Try again",
-      "goHome": "Go to homepage"
+      "privacyNotice": "By continuing, you agree to our Terms of Service and Privacy Policy"
     }
   }
 }

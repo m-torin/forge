@@ -7,11 +7,31 @@ import { InvitationCreateOrConnectWithoutTeamInputSchema } from './InvitationCre
 import { InvitationCreateManyTeamInputEnvelopeSchema } from './InvitationCreateManyTeamInputEnvelopeSchema';
 import { InvitationWhereUniqueInputSchema } from './InvitationWhereUniqueInputSchema';
 
-export const InvitationCreateNestedManyWithoutTeamInputSchema: z.ZodType<Prisma.InvitationCreateNestedManyWithoutTeamInput> = z.object({
-  create: z.union([ z.lazy(() => InvitationCreateWithoutTeamInputSchema),z.lazy(() => InvitationCreateWithoutTeamInputSchema).array(),z.lazy(() => InvitationUncheckedCreateWithoutTeamInputSchema),z.lazy(() => InvitationUncheckedCreateWithoutTeamInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => InvitationCreateOrConnectWithoutTeamInputSchema),z.lazy(() => InvitationCreateOrConnectWithoutTeamInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => InvitationCreateManyTeamInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => InvitationWhereUniqueInputSchema),z.lazy(() => InvitationWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const InvitationCreateNestedManyWithoutTeamInputSchema: z.ZodType<Prisma.InvitationCreateNestedManyWithoutTeamInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => InvitationCreateWithoutTeamInputSchema),
+          z.lazy(() => InvitationCreateWithoutTeamInputSchema).array(),
+          z.lazy(() => InvitationUncheckedCreateWithoutTeamInputSchema),
+          z.lazy(() => InvitationUncheckedCreateWithoutTeamInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => InvitationCreateOrConnectWithoutTeamInputSchema),
+          z.lazy(() => InvitationCreateOrConnectWithoutTeamInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => InvitationCreateManyTeamInputEnvelopeSchema).optional(),
+      connect: z
+        .union([
+          z.lazy(() => InvitationWhereUniqueInputSchema),
+          z.lazy(() => InvitationWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default InvitationCreateNestedManyWithoutTeamInputSchema;

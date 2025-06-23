@@ -10,12 +10,28 @@ import { UserUpdateToOneWithWhereWithoutInvitationsSentInputSchema } from './Use
 import { UserUpdateWithoutInvitationsSentInputSchema } from './UserUpdateWithoutInvitationsSentInputSchema';
 import { UserUncheckedUpdateWithoutInvitationsSentInputSchema } from './UserUncheckedUpdateWithoutInvitationsSentInputSchema';
 
-export const UserUpdateOneRequiredWithoutInvitationsSentNestedInputSchema: z.ZodType<Prisma.UserUpdateOneRequiredWithoutInvitationsSentNestedInput> = z.object({
-  create: z.union([ z.lazy(() => UserCreateWithoutInvitationsSentInputSchema),z.lazy(() => UserUncheckedCreateWithoutInvitationsSentInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => UserCreateOrConnectWithoutInvitationsSentInputSchema).optional(),
-  upsert: z.lazy(() => UserUpsertWithoutInvitationsSentInputSchema).optional(),
-  connect: z.lazy(() => UserWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => UserUpdateToOneWithWhereWithoutInvitationsSentInputSchema),z.lazy(() => UserUpdateWithoutInvitationsSentInputSchema),z.lazy(() => UserUncheckedUpdateWithoutInvitationsSentInputSchema) ]).optional(),
-}).strict();
+export const UserUpdateOneRequiredWithoutInvitationsSentNestedInputSchema: z.ZodType<Prisma.UserUpdateOneRequiredWithoutInvitationsSentNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => UserCreateWithoutInvitationsSentInputSchema),
+          z.lazy(() => UserUncheckedCreateWithoutInvitationsSentInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .lazy(() => UserCreateOrConnectWithoutInvitationsSentInputSchema)
+        .optional(),
+      upsert: z.lazy(() => UserUpsertWithoutInvitationsSentInputSchema).optional(),
+      connect: z.lazy(() => UserWhereUniqueInputSchema).optional(),
+      update: z
+        .union([
+          z.lazy(() => UserUpdateToOneWithWhereWithoutInvitationsSentInputSchema),
+          z.lazy(() => UserUpdateWithoutInvitationsSentInputSchema),
+          z.lazy(() => UserUncheckedUpdateWithoutInvitationsSentInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default UserUpdateOneRequiredWithoutInvitationsSentNestedInputSchema;

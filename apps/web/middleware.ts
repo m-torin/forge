@@ -1,51 +1,26 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { internationalizationMiddleware } from "@repo/internationalization/server/next";
+import type { NextRequest, NextResponse } from "next/server";
 
-export function middleware(request: NextRequest) {
-  const pathname = request.nextUrl.pathname;
-
-  // Extract locale from pathname (e.g., /en/account -> 'en')
-  const pathnameHasLocale = pathname.match(/^\/([a-z]{2})(\/|$)/);
-  const locale = pathnameHasLocale ? pathnameHasLocale[1] : 'en';
-
-  // Define protected routes that require authentication
-  const protectedRoutes = [
-    `/${locale}/account`,
-    `/${locale}/account-password`,
-    `/${locale}/account-billing`,
-    `/${locale}/account-wishlists`,
-    `/${locale}/orders`,
-  ];
-
-  // Check if current path is a protected route
-  const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
-
-  if (isProtectedRoute) {
-    // Check for Better Auth session token
-    const sessionToken = request.cookies.get('better-auth.session_token');
-
-    if (!sessionToken) {
-      // Redirect to login with return URL
-      const url = new URL(`/${locale}/login`, request.url);
-      url.searchParams.set('returnUrl', pathname);
-      return NextResponse.redirect(url);
-    }
+/**
+ * Next.js middleware for internationalization
+ *
+ * This middleware handles:
+ * - Automatic locale detection from Accept-Language headers
+ * - URL rewriting for localized routes
+ * - Default locale handling (English doesn't get prefix)
+ */
+export function middleware(request: NextRequest): Response | NextResponse {
+  try {
+    // Type assertion is needed due to Next.js version compatibility
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return internationalizationMiddleware(request as any);
+  } catch (error) {
+    console.error("Middleware error:", error);
+    // Return a basic response if middleware fails to prevent white screen
+    return new Response("Internal Server Error", { status: 500 });
   }
-
-  // Allow the request to continue
-  return NextResponse.next();
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     */
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\..*|_next).*)',
-  ],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };

@@ -2,7 +2,6 @@ import { createEnv } from '@t3-oss/env-nextjs';
 import { z } from 'zod';
 
 const isProduction = process.env.NODE_ENV === 'production';
-const _isDevelopment = process.env.NODE_ENV === 'development';
 // In local dev or build:local, these env vars might not be set if using .env.local
 const hasArcjetVars = Boolean(process.env.ARCJET_KEY);
 const hasUpstashVars = Boolean(

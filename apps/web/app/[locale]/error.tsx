@@ -1,59 +1,83 @@
-'use client';
+"use client";
 
-import { logger } from '@/lib/logger';
-import { Button } from '@mantine/core';
-import { useEffect } from 'react';
+import { useEffect } from "react";
+import {
+  Container,
+  Title,
+  Text,
+  Button,
+  Stack,
+  Alert,
+  Center,
+} from "@mantine/core";
+import { IconAlertTriangle, IconRefresh } from "@tabler/icons-react";
 
-export default function Error({
-  error,
-  reset,
-}: {
+interface ErrorPageProps {
   error: Error & { digest?: string };
   reset: () => void;
-}) {
+}
+
+/**
+ * Error boundary for locale-specific routes
+ *
+ * This provides a user-friendly error page with recovery options
+ * when something goes wrong during rendering.
+ *
+ * Note: Error boundaries must be client components and cannot use async data.
+ * We use hardcoded fallback text that works for all locales.
+ */
+export default function ErrorPage({
+  error,
+  reset,
+}: ErrorPageProps): React.JSX.Element {
   useEffect(() => {
-    // Log the error to an error reporting service
-    logger.error('Route error', error);
+    // Log the error to monitoring service
+    console.error("Error in locale page:", error);
   }, [error]);
 
   return (
-    <div className="flex min-h-[400px] flex-col items-center justify-center px-4 py-16">
-      <div className="mx-auto max-w-md text-center">
-        <div className="mb-8">
-          <svg
-            className="mx-auto h-20 w-20 text-orange-500"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+    <Container size="sm" py="xl">
+      <Center>
+        <Stack align="center" gap="lg" maw={500}>
+          <IconAlertTriangle size={64} color="var(--mantine-color-red-6)" />
+
+          <Stack align="center" gap="sm">
+            <Title order={1} ta="center" c="red">
+              Something went wrong
+            </Title>
+            <Text ta="center" c="dimmed">
+              We encountered an unexpected error. Please try refreshing the
+              page.
+            </Text>
+          </Stack>
+
+          <Alert
+            icon={<IconAlertTriangle size={16} />}
+            title="Error Details"
+            color="red"
+            variant="light"
+            w="100%"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.5}
-              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        </div>
+            <Text size="sm" ff="monospace">
+              {error.message || "An unknown error occurred"}
+            </Text>
+            {error.digest && (
+              <Text size="xs" c="dimmed" mt="xs">
+                Error ID: {error.digest}
+              </Text>
+            )}
+          </Alert>
 
-        <h2 className="mb-4 text-2xl font-bold text-gray-900 dark:text-gray-100">
-          Oops! Something went wrong
-        </h2>
-
-        <p className="mb-8 text-gray-600 dark:text-gray-400">
-          We encountered an error while loading this page. Don&apos;t worry, you can try again or go
-          back to the homepage.
-        </p>
-
-        <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
-          <Button onClick={reset} size="md" variant="filled">
+          <Button
+            leftSection={<IconRefresh size={16} />}
+            onClick={reset}
+            variant="filled"
+            size="md"
+          >
             Try again
           </Button>
-
-          <Button component="a" href="/" size="md" variant="light">
-            Go home
-          </Button>
-        </div>
-      </div>
-    </div>
+        </Stack>
+      </Center>
+    </Container>
   );
 }

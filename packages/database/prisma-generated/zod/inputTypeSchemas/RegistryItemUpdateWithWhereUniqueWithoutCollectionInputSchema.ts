@@ -5,9 +5,15 @@ import { RegistryItemWhereUniqueInputSchema } from './RegistryItemWhereUniqueInp
 import { RegistryItemUpdateWithoutCollectionInputSchema } from './RegistryItemUpdateWithoutCollectionInputSchema';
 import { RegistryItemUncheckedUpdateWithoutCollectionInputSchema } from './RegistryItemUncheckedUpdateWithoutCollectionInputSchema';
 
-export const RegistryItemUpdateWithWhereUniqueWithoutCollectionInputSchema: z.ZodType<Prisma.RegistryItemUpdateWithWhereUniqueWithoutCollectionInput> = z.object({
-  where: z.lazy(() => RegistryItemWhereUniqueInputSchema),
-  data: z.union([ z.lazy(() => RegistryItemUpdateWithoutCollectionInputSchema),z.lazy(() => RegistryItemUncheckedUpdateWithoutCollectionInputSchema) ]),
-}).strict();
+export const RegistryItemUpdateWithWhereUniqueWithoutCollectionInputSchema: z.ZodType<Prisma.RegistryItemUpdateWithWhereUniqueWithoutCollectionInput> =
+  z
+    .object({
+      where: z.lazy(() => RegistryItemWhereUniqueInputSchema),
+      data: z.union([
+        z.lazy(() => RegistryItemUpdateWithoutCollectionInputSchema),
+        z.lazy(() => RegistryItemUncheckedUpdateWithoutCollectionInputSchema),
+      ]),
+    })
+    .strict();
 
 export default RegistryItemUpdateWithWhereUniqueWithoutCollectionInputSchema;

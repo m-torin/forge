@@ -7,11 +7,31 @@ import { OrderItemCreateOrConnectWithoutProductInputSchema } from './OrderItemCr
 import { OrderItemCreateManyProductInputEnvelopeSchema } from './OrderItemCreateManyProductInputEnvelopeSchema';
 import { OrderItemWhereUniqueInputSchema } from './OrderItemWhereUniqueInputSchema';
 
-export const OrderItemCreateNestedManyWithoutProductInputSchema: z.ZodType<Prisma.OrderItemCreateNestedManyWithoutProductInput> = z.object({
-  create: z.union([ z.lazy(() => OrderItemCreateWithoutProductInputSchema),z.lazy(() => OrderItemCreateWithoutProductInputSchema).array(),z.lazy(() => OrderItemUncheckedCreateWithoutProductInputSchema),z.lazy(() => OrderItemUncheckedCreateWithoutProductInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => OrderItemCreateOrConnectWithoutProductInputSchema),z.lazy(() => OrderItemCreateOrConnectWithoutProductInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => OrderItemCreateManyProductInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => OrderItemWhereUniqueInputSchema),z.lazy(() => OrderItemWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const OrderItemCreateNestedManyWithoutProductInputSchema: z.ZodType<Prisma.OrderItemCreateNestedManyWithoutProductInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => OrderItemCreateWithoutProductInputSchema),
+          z.lazy(() => OrderItemCreateWithoutProductInputSchema).array(),
+          z.lazy(() => OrderItemUncheckedCreateWithoutProductInputSchema),
+          z.lazy(() => OrderItemUncheckedCreateWithoutProductInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => OrderItemCreateOrConnectWithoutProductInputSchema),
+          z.lazy(() => OrderItemCreateOrConnectWithoutProductInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => OrderItemCreateManyProductInputEnvelopeSchema).optional(),
+      connect: z
+        .union([
+          z.lazy(() => OrderItemWhereUniqueInputSchema),
+          z.lazy(() => OrderItemWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default OrderItemCreateNestedManyWithoutProductInputSchema;

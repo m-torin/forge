@@ -6,10 +6,18 @@ import { OrderUncheckedCreateWithoutItemsInputSchema } from './OrderUncheckedCre
 import { OrderCreateOrConnectWithoutItemsInputSchema } from './OrderCreateOrConnectWithoutItemsInputSchema';
 import { OrderWhereUniqueInputSchema } from './OrderWhereUniqueInputSchema';
 
-export const OrderCreateNestedOneWithoutItemsInputSchema: z.ZodType<Prisma.OrderCreateNestedOneWithoutItemsInput> = z.object({
-  create: z.union([ z.lazy(() => OrderCreateWithoutItemsInputSchema),z.lazy(() => OrderUncheckedCreateWithoutItemsInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => OrderCreateOrConnectWithoutItemsInputSchema).optional(),
-  connect: z.lazy(() => OrderWhereUniqueInputSchema).optional()
-}).strict();
+export const OrderCreateNestedOneWithoutItemsInputSchema: z.ZodType<Prisma.OrderCreateNestedOneWithoutItemsInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => OrderCreateWithoutItemsInputSchema),
+          z.lazy(() => OrderUncheckedCreateWithoutItemsInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z.lazy(() => OrderCreateOrConnectWithoutItemsInputSchema).optional(),
+      connect: z.lazy(() => OrderWhereUniqueInputSchema).optional(),
+    })
+    .strict();
 
 export default OrderCreateNestedOneWithoutItemsInputSchema;

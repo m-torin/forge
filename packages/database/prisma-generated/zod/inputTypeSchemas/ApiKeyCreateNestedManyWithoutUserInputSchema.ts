@@ -7,11 +7,31 @@ import { ApiKeyCreateOrConnectWithoutUserInputSchema } from './ApiKeyCreateOrCon
 import { ApiKeyCreateManyUserInputEnvelopeSchema } from './ApiKeyCreateManyUserInputEnvelopeSchema';
 import { ApiKeyWhereUniqueInputSchema } from './ApiKeyWhereUniqueInputSchema';
 
-export const ApiKeyCreateNestedManyWithoutUserInputSchema: z.ZodType<Prisma.ApiKeyCreateNestedManyWithoutUserInput> = z.object({
-  create: z.union([ z.lazy(() => ApiKeyCreateWithoutUserInputSchema),z.lazy(() => ApiKeyCreateWithoutUserInputSchema).array(),z.lazy(() => ApiKeyUncheckedCreateWithoutUserInputSchema),z.lazy(() => ApiKeyUncheckedCreateWithoutUserInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => ApiKeyCreateOrConnectWithoutUserInputSchema),z.lazy(() => ApiKeyCreateOrConnectWithoutUserInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => ApiKeyCreateManyUserInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => ApiKeyWhereUniqueInputSchema),z.lazy(() => ApiKeyWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const ApiKeyCreateNestedManyWithoutUserInputSchema: z.ZodType<Prisma.ApiKeyCreateNestedManyWithoutUserInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => ApiKeyCreateWithoutUserInputSchema),
+          z.lazy(() => ApiKeyCreateWithoutUserInputSchema).array(),
+          z.lazy(() => ApiKeyUncheckedCreateWithoutUserInputSchema),
+          z.lazy(() => ApiKeyUncheckedCreateWithoutUserInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => ApiKeyCreateOrConnectWithoutUserInputSchema),
+          z.lazy(() => ApiKeyCreateOrConnectWithoutUserInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => ApiKeyCreateManyUserInputEnvelopeSchema).optional(),
+      connect: z
+        .union([
+          z.lazy(() => ApiKeyWhereUniqueInputSchema),
+          z.lazy(() => ApiKeyWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default ApiKeyCreateNestedManyWithoutUserInputSchema;

@@ -10,12 +10,28 @@ import { UserUpdateToOneWithWhereWithoutTeamMembershipsInputSchema } from './Use
 import { UserUpdateWithoutTeamMembershipsInputSchema } from './UserUpdateWithoutTeamMembershipsInputSchema';
 import { UserUncheckedUpdateWithoutTeamMembershipsInputSchema } from './UserUncheckedUpdateWithoutTeamMembershipsInputSchema';
 
-export const UserUpdateOneRequiredWithoutTeamMembershipsNestedInputSchema: z.ZodType<Prisma.UserUpdateOneRequiredWithoutTeamMembershipsNestedInput> = z.object({
-  create: z.union([ z.lazy(() => UserCreateWithoutTeamMembershipsInputSchema),z.lazy(() => UserUncheckedCreateWithoutTeamMembershipsInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => UserCreateOrConnectWithoutTeamMembershipsInputSchema).optional(),
-  upsert: z.lazy(() => UserUpsertWithoutTeamMembershipsInputSchema).optional(),
-  connect: z.lazy(() => UserWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => UserUpdateToOneWithWhereWithoutTeamMembershipsInputSchema),z.lazy(() => UserUpdateWithoutTeamMembershipsInputSchema),z.lazy(() => UserUncheckedUpdateWithoutTeamMembershipsInputSchema) ]).optional(),
-}).strict();
+export const UserUpdateOneRequiredWithoutTeamMembershipsNestedInputSchema: z.ZodType<Prisma.UserUpdateOneRequiredWithoutTeamMembershipsNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => UserCreateWithoutTeamMembershipsInputSchema),
+          z.lazy(() => UserUncheckedCreateWithoutTeamMembershipsInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .lazy(() => UserCreateOrConnectWithoutTeamMembershipsInputSchema)
+        .optional(),
+      upsert: z.lazy(() => UserUpsertWithoutTeamMembershipsInputSchema).optional(),
+      connect: z.lazy(() => UserWhereUniqueInputSchema).optional(),
+      update: z
+        .union([
+          z.lazy(() => UserUpdateToOneWithWhereWithoutTeamMembershipsInputSchema),
+          z.lazy(() => UserUpdateWithoutTeamMembershipsInputSchema),
+          z.lazy(() => UserUncheckedUpdateWithoutTeamMembershipsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default UserUpdateOneRequiredWithoutTeamMembershipsNestedInputSchema;

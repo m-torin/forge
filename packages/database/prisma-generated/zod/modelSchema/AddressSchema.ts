@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { AddressTypeSchema } from '../inputTypeSchemas/AddressTypeSchema'
+import { AddressTypeSchema } from '../inputTypeSchemas/AddressTypeSchema';
 
 /////////////////////////////////////////
 // ADDRESS SCHEMA
@@ -25,8 +25,8 @@ export const AddressSchema = z.object({
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
   deletedAt: z.coerce.date().nullable(),
-})
+});
 
-export type Address = z.infer<typeof AddressSchema>
+export type Address = z.infer<typeof AddressSchema>;
 
 export default AddressSchema;

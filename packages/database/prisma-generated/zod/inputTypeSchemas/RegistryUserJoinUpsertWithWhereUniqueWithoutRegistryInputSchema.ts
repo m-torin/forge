@@ -7,10 +7,19 @@ import { RegistryUserJoinUncheckedUpdateWithoutRegistryInputSchema } from './Reg
 import { RegistryUserJoinCreateWithoutRegistryInputSchema } from './RegistryUserJoinCreateWithoutRegistryInputSchema';
 import { RegistryUserJoinUncheckedCreateWithoutRegistryInputSchema } from './RegistryUserJoinUncheckedCreateWithoutRegistryInputSchema';
 
-export const RegistryUserJoinUpsertWithWhereUniqueWithoutRegistryInputSchema: z.ZodType<Prisma.RegistryUserJoinUpsertWithWhereUniqueWithoutRegistryInput> = z.object({
-  where: z.lazy(() => RegistryUserJoinWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => RegistryUserJoinUpdateWithoutRegistryInputSchema),z.lazy(() => RegistryUserJoinUncheckedUpdateWithoutRegistryInputSchema) ]),
-  create: z.union([ z.lazy(() => RegistryUserJoinCreateWithoutRegistryInputSchema),z.lazy(() => RegistryUserJoinUncheckedCreateWithoutRegistryInputSchema) ]),
-}).strict();
+export const RegistryUserJoinUpsertWithWhereUniqueWithoutRegistryInputSchema: z.ZodType<Prisma.RegistryUserJoinUpsertWithWhereUniqueWithoutRegistryInput> =
+  z
+    .object({
+      where: z.lazy(() => RegistryUserJoinWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => RegistryUserJoinUpdateWithoutRegistryInputSchema),
+        z.lazy(() => RegistryUserJoinUncheckedUpdateWithoutRegistryInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => RegistryUserJoinCreateWithoutRegistryInputSchema),
+        z.lazy(() => RegistryUserJoinUncheckedCreateWithoutRegistryInputSchema),
+      ]),
+    })
+    .strict();
 
 export default RegistryUserJoinUpsertWithWhereUniqueWithoutRegistryInputSchema;

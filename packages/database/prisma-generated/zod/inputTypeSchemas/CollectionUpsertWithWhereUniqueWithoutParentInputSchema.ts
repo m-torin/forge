@@ -7,10 +7,19 @@ import { CollectionUncheckedUpdateWithoutParentInputSchema } from './CollectionU
 import { CollectionCreateWithoutParentInputSchema } from './CollectionCreateWithoutParentInputSchema';
 import { CollectionUncheckedCreateWithoutParentInputSchema } from './CollectionUncheckedCreateWithoutParentInputSchema';
 
-export const CollectionUpsertWithWhereUniqueWithoutParentInputSchema: z.ZodType<Prisma.CollectionUpsertWithWhereUniqueWithoutParentInput> = z.object({
-  where: z.lazy(() => CollectionWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => CollectionUpdateWithoutParentInputSchema),z.lazy(() => CollectionUncheckedUpdateWithoutParentInputSchema) ]),
-  create: z.union([ z.lazy(() => CollectionCreateWithoutParentInputSchema),z.lazy(() => CollectionUncheckedCreateWithoutParentInputSchema) ]),
-}).strict();
+export const CollectionUpsertWithWhereUniqueWithoutParentInputSchema: z.ZodType<Prisma.CollectionUpsertWithWhereUniqueWithoutParentInput> =
+  z
+    .object({
+      where: z.lazy(() => CollectionWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => CollectionUpdateWithoutParentInputSchema),
+        z.lazy(() => CollectionUncheckedUpdateWithoutParentInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => CollectionCreateWithoutParentInputSchema),
+        z.lazy(() => CollectionUncheckedCreateWithoutParentInputSchema),
+      ]),
+    })
+    .strict();
 
 export default CollectionUpsertWithWhereUniqueWithoutParentInputSchema;

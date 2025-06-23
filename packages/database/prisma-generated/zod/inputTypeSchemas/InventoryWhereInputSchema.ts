@@ -12,26 +12,71 @@ import { ProductNullableScalarRelationFilterSchema } from './ProductNullableScal
 import { ProductWhereInputSchema } from './ProductWhereInputSchema';
 import { InventoryTransactionListRelationFilterSchema } from './InventoryTransactionListRelationFilterSchema';
 
-export const InventoryWhereInputSchema: z.ZodType<Prisma.InventoryWhereInput> = z.object({
-  AND: z.union([ z.lazy(() => InventoryWhereInputSchema),z.lazy(() => InventoryWhereInputSchema).array() ]).optional(),
-  OR: z.lazy(() => InventoryWhereInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => InventoryWhereInputSchema),z.lazy(() => InventoryWhereInputSchema).array() ]).optional(),
-  id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  productId: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
-  variantId: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
-  quantity: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
-  reserved: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
-  available: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
-  lowStockThreshold: z.union([ z.lazy(() => IntNullableFilterSchema),z.number() ]).optional().nullable(),
-  locationId: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
-  locationName: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
-  lastRestockedAt: z.union([ z.lazy(() => DateTimeNullableFilterSchema),z.coerce.date() ]).optional().nullable(),
-  metadata: z.lazy(() => JsonNullableFilterSchema).optional(),
-  createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  updatedAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  product: z.union([ z.lazy(() => ProductNullableScalarRelationFilterSchema),z.lazy(() => ProductWhereInputSchema) ]).optional().nullable(),
-  variant: z.union([ z.lazy(() => ProductNullableScalarRelationFilterSchema),z.lazy(() => ProductWhereInputSchema) ]).optional().nullable(),
-  transactions: z.lazy(() => InventoryTransactionListRelationFilterSchema).optional()
-}).strict();
+export const InventoryWhereInputSchema: z.ZodType<Prisma.InventoryWhereInput> = z
+  .object({
+    AND: z
+      .union([
+        z.lazy(() => InventoryWhereInputSchema),
+        z.lazy(() => InventoryWhereInputSchema).array(),
+      ])
+      .optional(),
+    OR: z
+      .lazy(() => InventoryWhereInputSchema)
+      .array()
+      .optional(),
+    NOT: z
+      .union([
+        z.lazy(() => InventoryWhereInputSchema),
+        z.lazy(() => InventoryWhereInputSchema).array(),
+      ])
+      .optional(),
+    id: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
+    productId: z
+      .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+      .optional()
+      .nullable(),
+    variantId: z
+      .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+      .optional()
+      .nullable(),
+    quantity: z.union([z.lazy(() => IntFilterSchema), z.number()]).optional(),
+    reserved: z.union([z.lazy(() => IntFilterSchema), z.number()]).optional(),
+    available: z.union([z.lazy(() => IntFilterSchema), z.number()]).optional(),
+    lowStockThreshold: z
+      .union([z.lazy(() => IntNullableFilterSchema), z.number()])
+      .optional()
+      .nullable(),
+    locationId: z
+      .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+      .optional()
+      .nullable(),
+    locationName: z
+      .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+      .optional()
+      .nullable(),
+    lastRestockedAt: z
+      .union([z.lazy(() => DateTimeNullableFilterSchema), z.coerce.date()])
+      .optional()
+      .nullable(),
+    metadata: z.lazy(() => JsonNullableFilterSchema).optional(),
+    createdAt: z.union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()]).optional(),
+    updatedAt: z.union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()]).optional(),
+    product: z
+      .union([
+        z.lazy(() => ProductNullableScalarRelationFilterSchema),
+        z.lazy(() => ProductWhereInputSchema),
+      ])
+      .optional()
+      .nullable(),
+    variant: z
+      .union([
+        z.lazy(() => ProductNullableScalarRelationFilterSchema),
+        z.lazy(() => ProductWhereInputSchema),
+      ])
+      .optional()
+      .nullable(),
+    transactions: z.lazy(() => InventoryTransactionListRelationFilterSchema).optional(),
+  })
+  .strict();
 
 export default InventoryWhereInputSchema;

@@ -9,9 +9,9 @@ import {
   createAdvancedMiddleware,
   createCombinedMiddleware,
   createSmartMiddleware,
-} from '../../middleware/factory';
+} from '../../src/server/middleware/factory';
 
-import type { AuthConfig } from '../../shared/types';
+import type { AuthConfig } from '../../src/shared/types';
 
 // Mock the middleware modules using vi.hoisted
 const { mockCreateApiMiddleware, mockCreateNodeMiddleware, mockCreateWebMiddleware } = vi.hoisted(
@@ -28,15 +28,15 @@ const { mockCreateApiMiddleware, mockCreateNodeMiddleware, mockCreateWebMiddlewa
   },
 );
 
-vi.mock('../../middleware/api', () => ({
+vi.mock('../../src/server/middleware/api', () => ({
   createApiMiddleware: mockCreateApiMiddleware,
 }));
 
-vi.mock('../../middleware/web', () => ({
+vi.mock('../../src/server/middleware/web', () => ({
   createWebMiddleware: mockCreateWebMiddleware,
 }));
 
-vi.mock('../../middleware/node', () => ({
+vi.mock('../../src/server/middleware/node', () => ({
   createNodeMiddleware: mockCreateNodeMiddleware,
 }));
 

@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema'
-import { CartStatusSchema } from '../inputTypeSchemas/CartStatusSchema'
+import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema';
+import { CartStatusSchema } from '../inputTypeSchemas/CartStatusSchema';
 
 /////////////////////////////////////////
 // CART SCHEMA
@@ -20,8 +20,8 @@ export const CartSchema = z.object({
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
   deletedAt: z.coerce.date().nullable(),
-})
+});
 
-export type Cart = z.infer<typeof CartSchema>
+export type Cart = z.infer<typeof CartSchema>;
 
 export default CartSchema;

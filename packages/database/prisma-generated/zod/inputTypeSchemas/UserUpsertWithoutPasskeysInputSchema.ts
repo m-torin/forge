@@ -7,10 +7,19 @@ import { UserCreateWithoutPasskeysInputSchema } from './UserCreateWithoutPasskey
 import { UserUncheckedCreateWithoutPasskeysInputSchema } from './UserUncheckedCreateWithoutPasskeysInputSchema';
 import { UserWhereInputSchema } from './UserWhereInputSchema';
 
-export const UserUpsertWithoutPasskeysInputSchema: z.ZodType<Prisma.UserUpsertWithoutPasskeysInput> = z.object({
-  update: z.union([ z.lazy(() => UserUpdateWithoutPasskeysInputSchema),z.lazy(() => UserUncheckedUpdateWithoutPasskeysInputSchema) ]),
-  create: z.union([ z.lazy(() => UserCreateWithoutPasskeysInputSchema),z.lazy(() => UserUncheckedCreateWithoutPasskeysInputSchema) ]),
-  where: z.lazy(() => UserWhereInputSchema).optional()
-}).strict();
+export const UserUpsertWithoutPasskeysInputSchema: z.ZodType<Prisma.UserUpsertWithoutPasskeysInput> =
+  z
+    .object({
+      update: z.union([
+        z.lazy(() => UserUpdateWithoutPasskeysInputSchema),
+        z.lazy(() => UserUncheckedUpdateWithoutPasskeysInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => UserCreateWithoutPasskeysInputSchema),
+        z.lazy(() => UserUncheckedCreateWithoutPasskeysInputSchema),
+      ]),
+      where: z.lazy(() => UserWhereInputSchema).optional(),
+    })
+    .strict();
 
 export default UserUpsertWithoutPasskeysInputSchema;

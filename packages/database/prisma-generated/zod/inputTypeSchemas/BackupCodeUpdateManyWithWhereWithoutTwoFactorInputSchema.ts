@@ -5,9 +5,15 @@ import { BackupCodeScalarWhereInputSchema } from './BackupCodeScalarWhereInputSc
 import { BackupCodeUpdateManyMutationInputSchema } from './BackupCodeUpdateManyMutationInputSchema';
 import { BackupCodeUncheckedUpdateManyWithoutTwoFactorInputSchema } from './BackupCodeUncheckedUpdateManyWithoutTwoFactorInputSchema';
 
-export const BackupCodeUpdateManyWithWhereWithoutTwoFactorInputSchema: z.ZodType<Prisma.BackupCodeUpdateManyWithWhereWithoutTwoFactorInput> = z.object({
-  where: z.lazy(() => BackupCodeScalarWhereInputSchema),
-  data: z.union([ z.lazy(() => BackupCodeUpdateManyMutationInputSchema),z.lazy(() => BackupCodeUncheckedUpdateManyWithoutTwoFactorInputSchema) ]),
-}).strict();
+export const BackupCodeUpdateManyWithWhereWithoutTwoFactorInputSchema: z.ZodType<Prisma.BackupCodeUpdateManyWithWhereWithoutTwoFactorInput> =
+  z
+    .object({
+      where: z.lazy(() => BackupCodeScalarWhereInputSchema),
+      data: z.union([
+        z.lazy(() => BackupCodeUpdateManyMutationInputSchema),
+        z.lazy(() => BackupCodeUncheckedUpdateManyWithoutTwoFactorInputSchema),
+      ]),
+    })
+    .strict();
 
 export default BackupCodeUpdateManyWithWhereWithoutTwoFactorInputSchema;

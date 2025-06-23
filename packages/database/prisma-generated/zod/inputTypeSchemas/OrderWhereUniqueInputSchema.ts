@@ -21,53 +21,191 @@ import { AddressWhereInputSchema } from './AddressWhereInputSchema';
 import { OrderItemListRelationFilterSchema } from './OrderItemListRelationFilterSchema';
 import { TransactionListRelationFilterSchema } from './TransactionListRelationFilterSchema';
 
-export const OrderWhereUniqueInputSchema: z.ZodType<Prisma.OrderWhereUniqueInput> = z.union([
-  z.object({
-    id: z.string().cuid(),
-    orderNumber: z.string()
-  }),
-  z.object({
-    id: z.string().cuid(),
-  }),
-  z.object({
-    orderNumber: z.string(),
-  }),
-])
-.and(z.object({
-  id: z.string().cuid().optional(),
-  orderNumber: z.string().optional(),
-  AND: z.union([ z.lazy(() => OrderWhereInputSchema),z.lazy(() => OrderWhereInputSchema).array() ]).optional(),
-  OR: z.lazy(() => OrderWhereInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => OrderWhereInputSchema),z.lazy(() => OrderWhereInputSchema).array() ]).optional(),
-  userId: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
-  guestEmail: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
-  guestName: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
-  status: z.union([ z.lazy(() => EnumOrderStatusFilterSchema),z.lazy(() => OrderStatusSchema) ]).optional(),
-  shippingAddressId: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
-  billingAddressId: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
-  currency: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  subtotal: z.union([ z.lazy(() => DecimalFilterSchema),z.union([z.number(),z.string(),z.instanceof(Decimal),z.instanceof(Prisma.Decimal),DecimalJsLikeSchema,]).refine((v) => isValidDecimalInput(v), { message: 'Must be a Decimal' }) ]).optional(),
-  taxAmount: z.union([ z.lazy(() => DecimalFilterSchema),z.union([z.number(),z.string(),z.instanceof(Decimal),z.instanceof(Prisma.Decimal),DecimalJsLikeSchema,]).refine((v) => isValidDecimalInput(v), { message: 'Must be a Decimal' }) ]).optional(),
-  shippingAmount: z.union([ z.lazy(() => DecimalFilterSchema),z.union([z.number(),z.string(),z.instanceof(Decimal),z.instanceof(Prisma.Decimal),DecimalJsLikeSchema,]).refine((v) => isValidDecimalInput(v), { message: 'Must be a Decimal' }) ]).optional(),
-  discountAmount: z.union([ z.lazy(() => DecimalFilterSchema),z.union([z.number(),z.string(),z.instanceof(Decimal),z.instanceof(Prisma.Decimal),DecimalJsLikeSchema,]).refine((v) => isValidDecimalInput(v), { message: 'Must be a Decimal' }) ]).optional(),
-  total: z.union([ z.lazy(() => DecimalFilterSchema),z.union([z.number(),z.string(),z.instanceof(Decimal),z.instanceof(Prisma.Decimal),DecimalJsLikeSchema,]).refine((v) => isValidDecimalInput(v), { message: 'Must be a Decimal' }) ]).optional(),
-  shippingMethod: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
-  trackingNumber: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
-  shippedAt: z.union([ z.lazy(() => DateTimeNullableFilterSchema),z.coerce.date() ]).optional().nullable(),
-  deliveredAt: z.union([ z.lazy(() => DateTimeNullableFilterSchema),z.coerce.date() ]).optional().nullable(),
-  paymentStatus: z.union([ z.lazy(() => EnumPaymentStatusFilterSchema),z.lazy(() => PaymentStatusSchema) ]).optional(),
-  paymentMethod: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
-  customerNotes: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
-  internalNotes: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
-  metadata: z.lazy(() => JsonNullableFilterSchema).optional(),
-  createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  updatedAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  deletedAt: z.union([ z.lazy(() => DateTimeNullableFilterSchema),z.coerce.date() ]).optional().nullable(),
-  user: z.union([ z.lazy(() => UserNullableScalarRelationFilterSchema),z.lazy(() => UserWhereInputSchema) ]).optional().nullable(),
-  shippingAddress: z.union([ z.lazy(() => AddressNullableScalarRelationFilterSchema),z.lazy(() => AddressWhereInputSchema) ]).optional().nullable(),
-  billingAddress: z.union([ z.lazy(() => AddressNullableScalarRelationFilterSchema),z.lazy(() => AddressWhereInputSchema) ]).optional().nullable(),
-  items: z.lazy(() => OrderItemListRelationFilterSchema).optional(),
-  transactions: z.lazy(() => TransactionListRelationFilterSchema).optional()
-}).strict());
+export const OrderWhereUniqueInputSchema: z.ZodType<Prisma.OrderWhereUniqueInput> = z
+  .union([
+    z.object({
+      id: z.string().cuid(),
+      orderNumber: z.string(),
+    }),
+    z.object({
+      id: z.string().cuid(),
+    }),
+    z.object({
+      orderNumber: z.string(),
+    }),
+  ])
+  .and(
+    z
+      .object({
+        id: z.string().cuid().optional(),
+        orderNumber: z.string().optional(),
+        AND: z
+          .union([z.lazy(() => OrderWhereInputSchema), z.lazy(() => OrderWhereInputSchema).array()])
+          .optional(),
+        OR: z
+          .lazy(() => OrderWhereInputSchema)
+          .array()
+          .optional(),
+        NOT: z
+          .union([z.lazy(() => OrderWhereInputSchema), z.lazy(() => OrderWhereInputSchema).array()])
+          .optional(),
+        userId: z
+          .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+          .optional()
+          .nullable(),
+        guestEmail: z
+          .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+          .optional()
+          .nullable(),
+        guestName: z
+          .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+          .optional()
+          .nullable(),
+        status: z
+          .union([z.lazy(() => EnumOrderStatusFilterSchema), z.lazy(() => OrderStatusSchema)])
+          .optional(),
+        shippingAddressId: z
+          .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+          .optional()
+          .nullable(),
+        billingAddressId: z
+          .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+          .optional()
+          .nullable(),
+        currency: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
+        subtotal: z
+          .union([
+            z.lazy(() => DecimalFilterSchema),
+            z
+              .union([
+                z.number(),
+                z.string(),
+                z.instanceof(Decimal),
+                z.instanceof(Prisma.Decimal),
+                DecimalJsLikeSchema,
+              ])
+              .refine((v) => isValidDecimalInput(v), { message: 'Must be a Decimal' }),
+          ])
+          .optional(),
+        taxAmount: z
+          .union([
+            z.lazy(() => DecimalFilterSchema),
+            z
+              .union([
+                z.number(),
+                z.string(),
+                z.instanceof(Decimal),
+                z.instanceof(Prisma.Decimal),
+                DecimalJsLikeSchema,
+              ])
+              .refine((v) => isValidDecimalInput(v), { message: 'Must be a Decimal' }),
+          ])
+          .optional(),
+        shippingAmount: z
+          .union([
+            z.lazy(() => DecimalFilterSchema),
+            z
+              .union([
+                z.number(),
+                z.string(),
+                z.instanceof(Decimal),
+                z.instanceof(Prisma.Decimal),
+                DecimalJsLikeSchema,
+              ])
+              .refine((v) => isValidDecimalInput(v), { message: 'Must be a Decimal' }),
+          ])
+          .optional(),
+        discountAmount: z
+          .union([
+            z.lazy(() => DecimalFilterSchema),
+            z
+              .union([
+                z.number(),
+                z.string(),
+                z.instanceof(Decimal),
+                z.instanceof(Prisma.Decimal),
+                DecimalJsLikeSchema,
+              ])
+              .refine((v) => isValidDecimalInput(v), { message: 'Must be a Decimal' }),
+          ])
+          .optional(),
+        total: z
+          .union([
+            z.lazy(() => DecimalFilterSchema),
+            z
+              .union([
+                z.number(),
+                z.string(),
+                z.instanceof(Decimal),
+                z.instanceof(Prisma.Decimal),
+                DecimalJsLikeSchema,
+              ])
+              .refine((v) => isValidDecimalInput(v), { message: 'Must be a Decimal' }),
+          ])
+          .optional(),
+        shippingMethod: z
+          .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+          .optional()
+          .nullable(),
+        trackingNumber: z
+          .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+          .optional()
+          .nullable(),
+        shippedAt: z
+          .union([z.lazy(() => DateTimeNullableFilterSchema), z.coerce.date()])
+          .optional()
+          .nullable(),
+        deliveredAt: z
+          .union([z.lazy(() => DateTimeNullableFilterSchema), z.coerce.date()])
+          .optional()
+          .nullable(),
+        paymentStatus: z
+          .union([z.lazy(() => EnumPaymentStatusFilterSchema), z.lazy(() => PaymentStatusSchema)])
+          .optional(),
+        paymentMethod: z
+          .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+          .optional()
+          .nullable(),
+        customerNotes: z
+          .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+          .optional()
+          .nullable(),
+        internalNotes: z
+          .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+          .optional()
+          .nullable(),
+        metadata: z.lazy(() => JsonNullableFilterSchema).optional(),
+        createdAt: z.union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()]).optional(),
+        updatedAt: z.union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()]).optional(),
+        deletedAt: z
+          .union([z.lazy(() => DateTimeNullableFilterSchema), z.coerce.date()])
+          .optional()
+          .nullable(),
+        user: z
+          .union([
+            z.lazy(() => UserNullableScalarRelationFilterSchema),
+            z.lazy(() => UserWhereInputSchema),
+          ])
+          .optional()
+          .nullable(),
+        shippingAddress: z
+          .union([
+            z.lazy(() => AddressNullableScalarRelationFilterSchema),
+            z.lazy(() => AddressWhereInputSchema),
+          ])
+          .optional()
+          .nullable(),
+        billingAddress: z
+          .union([
+            z.lazy(() => AddressNullableScalarRelationFilterSchema),
+            z.lazy(() => AddressWhereInputSchema),
+          ])
+          .optional()
+          .nullable(),
+        items: z.lazy(() => OrderItemListRelationFilterSchema).optional(),
+        transactions: z.lazy(() => TransactionListRelationFilterSchema).optional(),
+      })
+      .strict(),
+  );
 
 export default OrderWhereUniqueInputSchema;

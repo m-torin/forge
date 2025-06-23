@@ -8,20 +8,25 @@ import { StoryUncheckedCreateNestedManyWithoutFandomInputSchema } from './StoryU
 import { ProductUncheckedCreateNestedManyWithoutFandomsInputSchema } from './ProductUncheckedCreateNestedManyWithoutFandomsInputSchema';
 import { LocationUncheckedCreateNestedManyWithoutFandomsInputSchema } from './LocationUncheckedCreateNestedManyWithoutFandomsInputSchema';
 
-export const FandomUncheckedCreateWithoutJrFindReplaceRejectsInputSchema: z.ZodType<Prisma.FandomUncheckedCreateWithoutJrFindReplaceRejectsInput> = z.object({
-  id: z.string().cuid().optional(),
-  name: z.string(),
-  slug: z.string(),
-  isFictional: z.boolean().optional(),
-  copy: z.union([ z.lazy(() => JsonNullValueInputSchema),InputJsonValueSchema ]),
-  createdAt: z.coerce.date().optional(),
-  updatedAt: z.coerce.date().optional(),
-  deletedAt: z.coerce.date().optional().nullable(),
-  deletedById: z.string().optional().nullable(),
-  series: z.lazy(() => SeriesUncheckedCreateNestedManyWithoutFandomInputSchema).optional(),
-  stories: z.lazy(() => StoryUncheckedCreateNestedManyWithoutFandomInputSchema).optional(),
-  products: z.lazy(() => ProductUncheckedCreateNestedManyWithoutFandomsInputSchema).optional(),
-  locations: z.lazy(() => LocationUncheckedCreateNestedManyWithoutFandomsInputSchema).optional()
-}).strict();
+export const FandomUncheckedCreateWithoutJrFindReplaceRejectsInputSchema: z.ZodType<Prisma.FandomUncheckedCreateWithoutJrFindReplaceRejectsInput> =
+  z
+    .object({
+      id: z.string().cuid().optional(),
+      name: z.string(),
+      slug: z.string(),
+      isFictional: z.boolean().optional(),
+      copy: z.union([z.lazy(() => JsonNullValueInputSchema), InputJsonValueSchema]),
+      createdAt: z.coerce.date().optional(),
+      updatedAt: z.coerce.date().optional(),
+      deletedAt: z.coerce.date().optional().nullable(),
+      deletedById: z.string().optional().nullable(),
+      series: z.lazy(() => SeriesUncheckedCreateNestedManyWithoutFandomInputSchema).optional(),
+      stories: z.lazy(() => StoryUncheckedCreateNestedManyWithoutFandomInputSchema).optional(),
+      products: z.lazy(() => ProductUncheckedCreateNestedManyWithoutFandomsInputSchema).optional(),
+      locations: z
+        .lazy(() => LocationUncheckedCreateNestedManyWithoutFandomsInputSchema)
+        .optional(),
+    })
+    .strict();
 
 export default FandomUncheckedCreateWithoutJrFindReplaceRejectsInputSchema;

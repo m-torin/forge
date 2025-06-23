@@ -5,9 +5,15 @@ import { TransactionWhereUniqueInputSchema } from './TransactionWhereUniqueInput
 import { TransactionCreateWithoutParentTransactionInputSchema } from './TransactionCreateWithoutParentTransactionInputSchema';
 import { TransactionUncheckedCreateWithoutParentTransactionInputSchema } from './TransactionUncheckedCreateWithoutParentTransactionInputSchema';
 
-export const TransactionCreateOrConnectWithoutParentTransactionInputSchema: z.ZodType<Prisma.TransactionCreateOrConnectWithoutParentTransactionInput> = z.object({
-  where: z.lazy(() => TransactionWhereUniqueInputSchema),
-  create: z.union([ z.lazy(() => TransactionCreateWithoutParentTransactionInputSchema),z.lazy(() => TransactionUncheckedCreateWithoutParentTransactionInputSchema) ]),
-}).strict();
+export const TransactionCreateOrConnectWithoutParentTransactionInputSchema: z.ZodType<Prisma.TransactionCreateOrConnectWithoutParentTransactionInput> =
+  z
+    .object({
+      where: z.lazy(() => TransactionWhereUniqueInputSchema),
+      create: z.union([
+        z.lazy(() => TransactionCreateWithoutParentTransactionInputSchema),
+        z.lazy(() => TransactionUncheckedCreateWithoutParentTransactionInputSchema),
+      ]),
+    })
+    .strict();
 
 export default TransactionCreateOrConnectWithoutParentTransactionInputSchema;

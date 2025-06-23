@@ -6,10 +6,30 @@ import { SeriesUncheckedCreateWithoutProductsInputSchema } from './SeriesUncheck
 import { SeriesCreateOrConnectWithoutProductsInputSchema } from './SeriesCreateOrConnectWithoutProductsInputSchema';
 import { SeriesWhereUniqueInputSchema } from './SeriesWhereUniqueInputSchema';
 
-export const SeriesUncheckedCreateNestedManyWithoutProductsInputSchema: z.ZodType<Prisma.SeriesUncheckedCreateNestedManyWithoutProductsInput> = z.object({
-  create: z.union([ z.lazy(() => SeriesCreateWithoutProductsInputSchema),z.lazy(() => SeriesCreateWithoutProductsInputSchema).array(),z.lazy(() => SeriesUncheckedCreateWithoutProductsInputSchema),z.lazy(() => SeriesUncheckedCreateWithoutProductsInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => SeriesCreateOrConnectWithoutProductsInputSchema),z.lazy(() => SeriesCreateOrConnectWithoutProductsInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => SeriesWhereUniqueInputSchema),z.lazy(() => SeriesWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const SeriesUncheckedCreateNestedManyWithoutProductsInputSchema: z.ZodType<Prisma.SeriesUncheckedCreateNestedManyWithoutProductsInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => SeriesCreateWithoutProductsInputSchema),
+          z.lazy(() => SeriesCreateWithoutProductsInputSchema).array(),
+          z.lazy(() => SeriesUncheckedCreateWithoutProductsInputSchema),
+          z.lazy(() => SeriesUncheckedCreateWithoutProductsInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => SeriesCreateOrConnectWithoutProductsInputSchema),
+          z.lazy(() => SeriesCreateOrConnectWithoutProductsInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => SeriesWhereUniqueInputSchema),
+          z.lazy(() => SeriesWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default SeriesUncheckedCreateNestedManyWithoutProductsInputSchema;

@@ -7,10 +7,19 @@ import { LocationUncheckedUpdateWithoutTaxonomiesInputSchema } from './LocationU
 import { LocationCreateWithoutTaxonomiesInputSchema } from './LocationCreateWithoutTaxonomiesInputSchema';
 import { LocationUncheckedCreateWithoutTaxonomiesInputSchema } from './LocationUncheckedCreateWithoutTaxonomiesInputSchema';
 
-export const LocationUpsertWithWhereUniqueWithoutTaxonomiesInputSchema: z.ZodType<Prisma.LocationUpsertWithWhereUniqueWithoutTaxonomiesInput> = z.object({
-  where: z.lazy(() => LocationWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => LocationUpdateWithoutTaxonomiesInputSchema),z.lazy(() => LocationUncheckedUpdateWithoutTaxonomiesInputSchema) ]),
-  create: z.union([ z.lazy(() => LocationCreateWithoutTaxonomiesInputSchema),z.lazy(() => LocationUncheckedCreateWithoutTaxonomiesInputSchema) ]),
-}).strict();
+export const LocationUpsertWithWhereUniqueWithoutTaxonomiesInputSchema: z.ZodType<Prisma.LocationUpsertWithWhereUniqueWithoutTaxonomiesInput> =
+  z
+    .object({
+      where: z.lazy(() => LocationWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => LocationUpdateWithoutTaxonomiesInputSchema),
+        z.lazy(() => LocationUncheckedUpdateWithoutTaxonomiesInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => LocationCreateWithoutTaxonomiesInputSchema),
+        z.lazy(() => LocationUncheckedCreateWithoutTaxonomiesInputSchema),
+      ]),
+    })
+    .strict();
 
 export default LocationUpsertWithWhereUniqueWithoutTaxonomiesInputSchema;

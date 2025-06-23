@@ -13,8 +13,8 @@ export const TwoFactorSchema = z.object({
   verified: z.boolean(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
-})
+});
 
-export type TwoFactor = z.infer<typeof TwoFactorSchema>
+export type TwoFactor = z.infer<typeof TwoFactorSchema>;
 
 export default TwoFactorSchema;

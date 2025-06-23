@@ -14,23 +14,57 @@ import { BrandUncheckedUpdateManyWithoutManufacturedProductsNestedInputSchema } 
 import { ProductIdentifiersUncheckedUpdateManyWithoutPdpJoinNestedInputSchema } from './ProductIdentifiersUncheckedUpdateManyWithoutPdpJoinNestedInputSchema';
 import { PdpUrlUncheckedUpdateManyWithoutPdpJoinNestedInputSchema } from './PdpUrlUncheckedUpdateManyWithoutPdpJoinNestedInputSchema';
 
-export const PdpJoinUncheckedUpdateWithoutMediaInputSchema: z.ZodType<Prisma.PdpJoinUncheckedUpdateWithoutMediaInput> = z.object({
-  id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  productId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  brandId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  canonicalUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  iframeUrl: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  tempMediaUrls: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  lastScanned: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  copy: z.union([ z.lazy(() => JsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
-  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  taxonomies: z.lazy(() => TaxonomyUncheckedUpdateManyWithoutPdpJoinsNestedInputSchema).optional(),
-  locations: z.lazy(() => LocationUncheckedUpdateManyWithoutPdpJoinsNestedInputSchema).optional(),
-  collections: z.lazy(() => CollectionUncheckedUpdateManyWithoutPdpJoinsNestedInputSchema).optional(),
-  manufacturerBrands: z.lazy(() => BrandUncheckedUpdateManyWithoutManufacturedProductsNestedInputSchema).optional(),
-  identifiers: z.lazy(() => ProductIdentifiersUncheckedUpdateManyWithoutPdpJoinNestedInputSchema).optional(),
-  urls: z.lazy(() => PdpUrlUncheckedUpdateManyWithoutPdpJoinNestedInputSchema).optional()
-}).strict();
+export const PdpJoinUncheckedUpdateWithoutMediaInputSchema: z.ZodType<Prisma.PdpJoinUncheckedUpdateWithoutMediaInput> =
+  z
+    .object({
+      id: z
+        .union([z.string().cuid(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+        .optional(),
+      productId: z
+        .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+        .optional(),
+      brandId: z
+        .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+        .optional(),
+      canonicalUrl: z
+        .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+        .optional(),
+      iframeUrl: z
+        .union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      tempMediaUrls: z
+        .union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      lastScanned: z
+        .union([z.coerce.date(), z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      copy: z.union([z.lazy(() => JsonNullValueInputSchema), InputJsonValueSchema]).optional(),
+      createdAt: z
+        .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+        .optional(),
+      updatedAt: z
+        .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+        .optional(),
+      taxonomies: z
+        .lazy(() => TaxonomyUncheckedUpdateManyWithoutPdpJoinsNestedInputSchema)
+        .optional(),
+      locations: z
+        .lazy(() => LocationUncheckedUpdateManyWithoutPdpJoinsNestedInputSchema)
+        .optional(),
+      collections: z
+        .lazy(() => CollectionUncheckedUpdateManyWithoutPdpJoinsNestedInputSchema)
+        .optional(),
+      manufacturerBrands: z
+        .lazy(() => BrandUncheckedUpdateManyWithoutManufacturedProductsNestedInputSchema)
+        .optional(),
+      identifiers: z
+        .lazy(() => ProductIdentifiersUncheckedUpdateManyWithoutPdpJoinNestedInputSchema)
+        .optional(),
+      urls: z.lazy(() => PdpUrlUncheckedUpdateManyWithoutPdpJoinNestedInputSchema).optional(),
+    })
+    .strict();
 
 export default PdpJoinUncheckedUpdateWithoutMediaInputSchema;

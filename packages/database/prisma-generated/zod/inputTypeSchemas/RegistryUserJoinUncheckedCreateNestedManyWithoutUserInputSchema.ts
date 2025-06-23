@@ -7,11 +7,31 @@ import { RegistryUserJoinCreateOrConnectWithoutUserInputSchema } from './Registr
 import { RegistryUserJoinCreateManyUserInputEnvelopeSchema } from './RegistryUserJoinCreateManyUserInputEnvelopeSchema';
 import { RegistryUserJoinWhereUniqueInputSchema } from './RegistryUserJoinWhereUniqueInputSchema';
 
-export const RegistryUserJoinUncheckedCreateNestedManyWithoutUserInputSchema: z.ZodType<Prisma.RegistryUserJoinUncheckedCreateNestedManyWithoutUserInput> = z.object({
-  create: z.union([ z.lazy(() => RegistryUserJoinCreateWithoutUserInputSchema),z.lazy(() => RegistryUserJoinCreateWithoutUserInputSchema).array(),z.lazy(() => RegistryUserJoinUncheckedCreateWithoutUserInputSchema),z.lazy(() => RegistryUserJoinUncheckedCreateWithoutUserInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => RegistryUserJoinCreateOrConnectWithoutUserInputSchema),z.lazy(() => RegistryUserJoinCreateOrConnectWithoutUserInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => RegistryUserJoinCreateManyUserInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => RegistryUserJoinWhereUniqueInputSchema),z.lazy(() => RegistryUserJoinWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const RegistryUserJoinUncheckedCreateNestedManyWithoutUserInputSchema: z.ZodType<Prisma.RegistryUserJoinUncheckedCreateNestedManyWithoutUserInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => RegistryUserJoinCreateWithoutUserInputSchema),
+          z.lazy(() => RegistryUserJoinCreateWithoutUserInputSchema).array(),
+          z.lazy(() => RegistryUserJoinUncheckedCreateWithoutUserInputSchema),
+          z.lazy(() => RegistryUserJoinUncheckedCreateWithoutUserInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => RegistryUserJoinCreateOrConnectWithoutUserInputSchema),
+          z.lazy(() => RegistryUserJoinCreateOrConnectWithoutUserInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => RegistryUserJoinCreateManyUserInputEnvelopeSchema).optional(),
+      connect: z
+        .union([
+          z.lazy(() => RegistryUserJoinWhereUniqueInputSchema),
+          z.lazy(() => RegistryUserJoinWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default RegistryUserJoinUncheckedCreateNestedManyWithoutUserInputSchema;

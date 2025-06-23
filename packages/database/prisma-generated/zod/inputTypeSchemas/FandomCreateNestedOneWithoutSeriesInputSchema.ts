@@ -6,10 +6,18 @@ import { FandomUncheckedCreateWithoutSeriesInputSchema } from './FandomUnchecked
 import { FandomCreateOrConnectWithoutSeriesInputSchema } from './FandomCreateOrConnectWithoutSeriesInputSchema';
 import { FandomWhereUniqueInputSchema } from './FandomWhereUniqueInputSchema';
 
-export const FandomCreateNestedOneWithoutSeriesInputSchema: z.ZodType<Prisma.FandomCreateNestedOneWithoutSeriesInput> = z.object({
-  create: z.union([ z.lazy(() => FandomCreateWithoutSeriesInputSchema),z.lazy(() => FandomUncheckedCreateWithoutSeriesInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => FandomCreateOrConnectWithoutSeriesInputSchema).optional(),
-  connect: z.lazy(() => FandomWhereUniqueInputSchema).optional()
-}).strict();
+export const FandomCreateNestedOneWithoutSeriesInputSchema: z.ZodType<Prisma.FandomCreateNestedOneWithoutSeriesInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => FandomCreateWithoutSeriesInputSchema),
+          z.lazy(() => FandomUncheckedCreateWithoutSeriesInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z.lazy(() => FandomCreateOrConnectWithoutSeriesInputSchema).optional(),
+      connect: z.lazy(() => FandomWhereUniqueInputSchema).optional(),
+    })
+    .strict();
 
 export default FandomCreateNestedOneWithoutSeriesInputSchema;

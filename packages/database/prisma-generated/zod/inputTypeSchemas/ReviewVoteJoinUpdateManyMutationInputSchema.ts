@@ -6,11 +6,25 @@ import { DateTimeFieldUpdateOperationsInputSchema } from './DateTimeFieldUpdateO
 import { VoteTypeSchema } from './VoteTypeSchema';
 import { EnumVoteTypeFieldUpdateOperationsInputSchema } from './EnumVoteTypeFieldUpdateOperationsInputSchema';
 
-export const ReviewVoteJoinUpdateManyMutationInputSchema: z.ZodType<Prisma.ReviewVoteJoinUpdateManyMutationInput> = z.object({
-  id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  voteType: z.union([ z.lazy(() => VoteTypeSchema),z.lazy(() => EnumVoteTypeFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
+export const ReviewVoteJoinUpdateManyMutationInputSchema: z.ZodType<Prisma.ReviewVoteJoinUpdateManyMutationInput> =
+  z
+    .object({
+      id: z
+        .union([z.string().cuid(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+        .optional(),
+      createdAt: z
+        .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+        .optional(),
+      updatedAt: z
+        .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+        .optional(),
+      voteType: z
+        .union([
+          z.lazy(() => VoteTypeSchema),
+          z.lazy(() => EnumVoteTypeFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default ReviewVoteJoinUpdateManyMutationInputSchema;

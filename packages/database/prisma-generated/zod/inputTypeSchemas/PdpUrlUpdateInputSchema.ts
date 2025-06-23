@@ -10,15 +10,26 @@ import { InputJsonValueSchema } from './InputJsonValueSchema';
 import { DateTimeFieldUpdateOperationsInputSchema } from './DateTimeFieldUpdateOperationsInputSchema';
 import { PdpJoinUpdateOneRequiredWithoutUrlsNestedInputSchema } from './PdpJoinUpdateOneRequiredWithoutUrlsNestedInputSchema';
 
-export const PdpUrlUpdateInputSchema: z.ZodType<Prisma.PdpUrlUpdateInput> = z.object({
-  id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  url: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  urlType: z.union([ z.lazy(() => PdpUrlTypeSchema),z.lazy(() => EnumPdpUrlTypeFieldUpdateOperationsInputSchema) ]).optional(),
-  isActive: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
-  copy: z.union([ z.lazy(() => JsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
-  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  pdpJoin: z.lazy(() => PdpJoinUpdateOneRequiredWithoutUrlsNestedInputSchema).optional()
-}).strict();
+export const PdpUrlUpdateInputSchema: z.ZodType<Prisma.PdpUrlUpdateInput> = z
+  .object({
+    id: z
+      .union([z.string().cuid(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    name: z.union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)]).optional(),
+    url: z.union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)]).optional(),
+    urlType: z
+      .union([
+        z.lazy(() => PdpUrlTypeSchema),
+        z.lazy(() => EnumPdpUrlTypeFieldUpdateOperationsInputSchema),
+      ])
+      .optional(),
+    isActive: z.union([z.boolean(), z.lazy(() => BoolFieldUpdateOperationsInputSchema)]).optional(),
+    copy: z.union([z.lazy(() => JsonNullValueInputSchema), InputJsonValueSchema]).optional(),
+    createdAt: z
+      .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+      .optional(),
+    pdpJoin: z.lazy(() => PdpJoinUpdateOneRequiredWithoutUrlsNestedInputSchema).optional(),
+  })
+  .strict();
 
 export default PdpUrlUpdateInputSchema;

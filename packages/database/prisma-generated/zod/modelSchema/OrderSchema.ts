@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema'
-import { Prisma } from '../../client'
-import { OrderStatusSchema } from '../inputTypeSchemas/OrderStatusSchema'
-import { PaymentStatusSchema } from '../inputTypeSchemas/PaymentStatusSchema'
+import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema';
+import { Prisma } from '../../client';
+import { OrderStatusSchema } from '../inputTypeSchemas/OrderStatusSchema';
+import { PaymentStatusSchema } from '../inputTypeSchemas/PaymentStatusSchema';
 
 /////////////////////////////////////////
 // ORDER SCHEMA
@@ -19,11 +19,21 @@ export const OrderSchema = z.object({
   shippingAddressId: z.string().nullable(),
   billingAddressId: z.string().nullable(),
   currency: z.string(),
-  subtotal: z.instanceof(Prisma.Decimal, { message: "Field 'subtotal' must be a Decimal. Location: ['Models', 'Order']"}),
-  taxAmount: z.instanceof(Prisma.Decimal, { message: "Field 'taxAmount' must be a Decimal. Location: ['Models', 'Order']"}),
-  shippingAmount: z.instanceof(Prisma.Decimal, { message: "Field 'shippingAmount' must be a Decimal. Location: ['Models', 'Order']"}),
-  discountAmount: z.instanceof(Prisma.Decimal, { message: "Field 'discountAmount' must be a Decimal. Location: ['Models', 'Order']"}),
-  total: z.instanceof(Prisma.Decimal, { message: "Field 'total' must be a Decimal. Location: ['Models', 'Order']"}),
+  subtotal: z.instanceof(Prisma.Decimal, {
+    message: "Field 'subtotal' must be a Decimal. Location: ['Models', 'Order']",
+  }),
+  taxAmount: z.instanceof(Prisma.Decimal, {
+    message: "Field 'taxAmount' must be a Decimal. Location: ['Models', 'Order']",
+  }),
+  shippingAmount: z.instanceof(Prisma.Decimal, {
+    message: "Field 'shippingAmount' must be a Decimal. Location: ['Models', 'Order']",
+  }),
+  discountAmount: z.instanceof(Prisma.Decimal, {
+    message: "Field 'discountAmount' must be a Decimal. Location: ['Models', 'Order']",
+  }),
+  total: z.instanceof(Prisma.Decimal, {
+    message: "Field 'total' must be a Decimal. Location: ['Models', 'Order']",
+  }),
   shippingMethod: z.string().nullable(),
   trackingNumber: z.string().nullable(),
   shippedAt: z.coerce.date().nullable(),
@@ -35,8 +45,8 @@ export const OrderSchema = z.object({
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
   deletedAt: z.coerce.date().nullable(),
-})
+});
 
-export type Order = z.infer<typeof OrderSchema>
+export type Order = z.infer<typeof OrderSchema>;
 
 export default OrderSchema;

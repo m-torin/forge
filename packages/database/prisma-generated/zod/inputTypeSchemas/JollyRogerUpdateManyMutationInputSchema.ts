@@ -8,12 +8,30 @@ import { NullableStringFieldUpdateOperationsInputSchema } from './NullableString
 import { NullableJsonNullValueInputSchema } from './NullableJsonNullValueInputSchema';
 import { InputJsonValueSchema } from './InputJsonValueSchema';
 
-export const JollyRogerUpdateManyMutationInputSchema: z.ZodType<Prisma.JollyRogerUpdateManyMutationInput> = z.object({
-  canChart: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
-  chartingMethod: z.union([ z.lazy(() => JrChartMethodSchema),z.lazy(() => EnumJrChartMethodFieldUpdateOperationsInputSchema) ]).optional(),
-  sitemaps: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  gridUrls: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  pdpUrlPatterns: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
-}).strict();
+export const JollyRogerUpdateManyMutationInputSchema: z.ZodType<Prisma.JollyRogerUpdateManyMutationInput> =
+  z
+    .object({
+      canChart: z
+        .union([z.boolean(), z.lazy(() => BoolFieldUpdateOperationsInputSchema)])
+        .optional(),
+      chartingMethod: z
+        .union([
+          z.lazy(() => JrChartMethodSchema),
+          z.lazy(() => EnumJrChartMethodFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      sitemaps: z
+        .union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      gridUrls: z
+        .union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      pdpUrlPatterns: z
+        .union([z.lazy(() => NullableJsonNullValueInputSchema), InputJsonValueSchema])
+        .optional(),
+    })
+    .strict();
 
 export default JollyRogerUpdateManyMutationInputSchema;

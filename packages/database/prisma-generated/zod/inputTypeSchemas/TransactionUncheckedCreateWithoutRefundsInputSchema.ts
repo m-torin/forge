@@ -8,25 +8,40 @@ import { DecimalJsLikeSchema } from './DecimalJsLikeSchema';
 import { NullableJsonNullValueInputSchema } from './NullableJsonNullValueInputSchema';
 import { InputJsonValueSchema } from './InputJsonValueSchema';
 
-export const TransactionUncheckedCreateWithoutRefundsInputSchema: z.ZodType<Prisma.TransactionUncheckedCreateWithoutRefundsInput> = z.object({
-  id: z.string().cuid().optional(),
-  orderId: z.string(),
-  type: z.lazy(() => TransactionTypeSchema),
-  status: z.lazy(() => TransactionStatusSchema).optional(),
-  amount: z.union([z.number(),z.string(),z.instanceof(Decimal),z.instanceof(Prisma.Decimal),DecimalJsLikeSchema,]).refine((v) => isValidDecimalInput(v), { message: 'Must be a Decimal' }),
-  currency: z.string().optional(),
-  gateway: z.string(),
-  gatewayId: z.string().optional().nullable(),
-  gatewayResponse: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
-  paymentMethod: z.string().optional().nullable(),
-  last4: z.string().optional().nullable(),
-  parentTransactionId: z.string().optional().nullable(),
-  metadata: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
-  processedAt: z.coerce.date().optional().nullable(),
-  failedAt: z.coerce.date().optional().nullable(),
-  failureReason: z.string().optional().nullable(),
-  createdAt: z.coerce.date().optional(),
-  updatedAt: z.coerce.date().optional()
-}).strict();
+export const TransactionUncheckedCreateWithoutRefundsInputSchema: z.ZodType<Prisma.TransactionUncheckedCreateWithoutRefundsInput> =
+  z
+    .object({
+      id: z.string().cuid().optional(),
+      orderId: z.string(),
+      type: z.lazy(() => TransactionTypeSchema),
+      status: z.lazy(() => TransactionStatusSchema).optional(),
+      amount: z
+        .union([
+          z.number(),
+          z.string(),
+          z.instanceof(Decimal),
+          z.instanceof(Prisma.Decimal),
+          DecimalJsLikeSchema,
+        ])
+        .refine((v) => isValidDecimalInput(v), { message: 'Must be a Decimal' }),
+      currency: z.string().optional(),
+      gateway: z.string(),
+      gatewayId: z.string().optional().nullable(),
+      gatewayResponse: z
+        .union([z.lazy(() => NullableJsonNullValueInputSchema), InputJsonValueSchema])
+        .optional(),
+      paymentMethod: z.string().optional().nullable(),
+      last4: z.string().optional().nullable(),
+      parentTransactionId: z.string().optional().nullable(),
+      metadata: z
+        .union([z.lazy(() => NullableJsonNullValueInputSchema), InputJsonValueSchema])
+        .optional(),
+      processedAt: z.coerce.date().optional().nullable(),
+      failedAt: z.coerce.date().optional().nullable(),
+      failureReason: z.string().optional().nullable(),
+      createdAt: z.coerce.date().optional(),
+      updatedAt: z.coerce.date().optional(),
+    })
+    .strict();
 
 export default TransactionUncheckedCreateWithoutRefundsInputSchema;

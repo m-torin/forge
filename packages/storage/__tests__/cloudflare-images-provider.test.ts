@@ -3,7 +3,7 @@ import { CloudflareImagesProvider } from '../providers/cloudflare-images';
 
 // Mock fetch globally
 // vi.spyOn(global, 'fetch').mockImplementation();
-global.fetch = vi.fn();
+vi.spyOn(global, 'fetch').mockImplementation();
 
 describe('cloudflareImagesProvider', () => {
   let provider: CloudflareImagesProvider;

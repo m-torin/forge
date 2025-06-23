@@ -11,22 +11,30 @@ import { PdpJoinCreateNestedManyWithoutLocationsInputSchema } from './PdpJoinCre
 import { TaxonomyCreateNestedManyWithoutLocationsInputSchema } from './TaxonomyCreateNestedManyWithoutLocationsInputSchema';
 import { JrFindReplaceRejectCreateNestedManyWithoutLocationsInputSchema } from './JrFindReplaceRejectCreateNestedManyWithoutLocationsInputSchema';
 
-export const LocationCreateWithoutDeletedByInputSchema: z.ZodType<Prisma.LocationCreateWithoutDeletedByInput> = z.object({
-  id: z.string().cuid().optional(),
-  name: z.string(),
-  slug: z.string(),
-  locationType: z.lazy(() => LocationTypeSchema).optional(),
-  lodgingType: z.lazy(() => LodgingTypeSchema).optional().nullable(),
-  isFictional: z.boolean().optional(),
-  copy: z.union([ z.lazy(() => JsonNullValueInputSchema),InputJsonValueSchema ]),
-  createdAt: z.coerce.date().optional(),
-  updatedAt: z.coerce.date().optional(),
-  deletedAt: z.coerce.date().optional().nullable(),
-  products: z.lazy(() => ProductCreateNestedManyWithoutLocationsInputSchema).optional(),
-  fandoms: z.lazy(() => FandomCreateNestedManyWithoutLocationsInputSchema).optional(),
-  pdpJoins: z.lazy(() => PdpJoinCreateNestedManyWithoutLocationsInputSchema).optional(),
-  taxonomies: z.lazy(() => TaxonomyCreateNestedManyWithoutLocationsInputSchema).optional(),
-  jrFindReplaceRejects: z.lazy(() => JrFindReplaceRejectCreateNestedManyWithoutLocationsInputSchema).optional()
-}).strict();
+export const LocationCreateWithoutDeletedByInputSchema: z.ZodType<Prisma.LocationCreateWithoutDeletedByInput> =
+  z
+    .object({
+      id: z.string().cuid().optional(),
+      name: z.string(),
+      slug: z.string(),
+      locationType: z.lazy(() => LocationTypeSchema).optional(),
+      lodgingType: z
+        .lazy(() => LodgingTypeSchema)
+        .optional()
+        .nullable(),
+      isFictional: z.boolean().optional(),
+      copy: z.union([z.lazy(() => JsonNullValueInputSchema), InputJsonValueSchema]),
+      createdAt: z.coerce.date().optional(),
+      updatedAt: z.coerce.date().optional(),
+      deletedAt: z.coerce.date().optional().nullable(),
+      products: z.lazy(() => ProductCreateNestedManyWithoutLocationsInputSchema).optional(),
+      fandoms: z.lazy(() => FandomCreateNestedManyWithoutLocationsInputSchema).optional(),
+      pdpJoins: z.lazy(() => PdpJoinCreateNestedManyWithoutLocationsInputSchema).optional(),
+      taxonomies: z.lazy(() => TaxonomyCreateNestedManyWithoutLocationsInputSchema).optional(),
+      jrFindReplaceRejects: z
+        .lazy(() => JrFindReplaceRejectCreateNestedManyWithoutLocationsInputSchema)
+        .optional(),
+    })
+    .strict();
 
 export default LocationCreateWithoutDeletedByInputSchema;

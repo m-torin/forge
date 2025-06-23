@@ -7,11 +7,31 @@ import { PdpJoinCreateOrConnectWithoutProductInputSchema } from './PdpJoinCreate
 import { PdpJoinCreateManyProductInputEnvelopeSchema } from './PdpJoinCreateManyProductInputEnvelopeSchema';
 import { PdpJoinWhereUniqueInputSchema } from './PdpJoinWhereUniqueInputSchema';
 
-export const PdpJoinUncheckedCreateNestedManyWithoutProductInputSchema: z.ZodType<Prisma.PdpJoinUncheckedCreateNestedManyWithoutProductInput> = z.object({
-  create: z.union([ z.lazy(() => PdpJoinCreateWithoutProductInputSchema),z.lazy(() => PdpJoinCreateWithoutProductInputSchema).array(),z.lazy(() => PdpJoinUncheckedCreateWithoutProductInputSchema),z.lazy(() => PdpJoinUncheckedCreateWithoutProductInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => PdpJoinCreateOrConnectWithoutProductInputSchema),z.lazy(() => PdpJoinCreateOrConnectWithoutProductInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => PdpJoinCreateManyProductInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => PdpJoinWhereUniqueInputSchema),z.lazy(() => PdpJoinWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const PdpJoinUncheckedCreateNestedManyWithoutProductInputSchema: z.ZodType<Prisma.PdpJoinUncheckedCreateNestedManyWithoutProductInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => PdpJoinCreateWithoutProductInputSchema),
+          z.lazy(() => PdpJoinCreateWithoutProductInputSchema).array(),
+          z.lazy(() => PdpJoinUncheckedCreateWithoutProductInputSchema),
+          z.lazy(() => PdpJoinUncheckedCreateWithoutProductInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => PdpJoinCreateOrConnectWithoutProductInputSchema),
+          z.lazy(() => PdpJoinCreateOrConnectWithoutProductInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => PdpJoinCreateManyProductInputEnvelopeSchema).optional(),
+      connect: z
+        .union([
+          z.lazy(() => PdpJoinWhereUniqueInputSchema),
+          z.lazy(() => PdpJoinWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default PdpJoinUncheckedCreateNestedManyWithoutProductInputSchema;

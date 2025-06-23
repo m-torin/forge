@@ -6,10 +6,30 @@ import { LocationUncheckedCreateWithoutPdpJoinsInputSchema } from './LocationUnc
 import { LocationCreateOrConnectWithoutPdpJoinsInputSchema } from './LocationCreateOrConnectWithoutPdpJoinsInputSchema';
 import { LocationWhereUniqueInputSchema } from './LocationWhereUniqueInputSchema';
 
-export const LocationUncheckedCreateNestedManyWithoutPdpJoinsInputSchema: z.ZodType<Prisma.LocationUncheckedCreateNestedManyWithoutPdpJoinsInput> = z.object({
-  create: z.union([ z.lazy(() => LocationCreateWithoutPdpJoinsInputSchema),z.lazy(() => LocationCreateWithoutPdpJoinsInputSchema).array(),z.lazy(() => LocationUncheckedCreateWithoutPdpJoinsInputSchema),z.lazy(() => LocationUncheckedCreateWithoutPdpJoinsInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => LocationCreateOrConnectWithoutPdpJoinsInputSchema),z.lazy(() => LocationCreateOrConnectWithoutPdpJoinsInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => LocationWhereUniqueInputSchema),z.lazy(() => LocationWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const LocationUncheckedCreateNestedManyWithoutPdpJoinsInputSchema: z.ZodType<Prisma.LocationUncheckedCreateNestedManyWithoutPdpJoinsInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => LocationCreateWithoutPdpJoinsInputSchema),
+          z.lazy(() => LocationCreateWithoutPdpJoinsInputSchema).array(),
+          z.lazy(() => LocationUncheckedCreateWithoutPdpJoinsInputSchema),
+          z.lazy(() => LocationUncheckedCreateWithoutPdpJoinsInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => LocationCreateOrConnectWithoutPdpJoinsInputSchema),
+          z.lazy(() => LocationCreateOrConnectWithoutPdpJoinsInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => LocationWhereUniqueInputSchema),
+          z.lazy(() => LocationWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default LocationUncheckedCreateNestedManyWithoutPdpJoinsInputSchema;

@@ -11,14 +11,30 @@ import { UserUpdateToOneWithWhereWithoutDeletedRegistriesInputSchema } from './U
 import { UserUpdateWithoutDeletedRegistriesInputSchema } from './UserUpdateWithoutDeletedRegistriesInputSchema';
 import { UserUncheckedUpdateWithoutDeletedRegistriesInputSchema } from './UserUncheckedUpdateWithoutDeletedRegistriesInputSchema';
 
-export const UserUpdateOneWithoutDeletedRegistriesNestedInputSchema: z.ZodType<Prisma.UserUpdateOneWithoutDeletedRegistriesNestedInput> = z.object({
-  create: z.union([ z.lazy(() => UserCreateWithoutDeletedRegistriesInputSchema),z.lazy(() => UserUncheckedCreateWithoutDeletedRegistriesInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => UserCreateOrConnectWithoutDeletedRegistriesInputSchema).optional(),
-  upsert: z.lazy(() => UserUpsertWithoutDeletedRegistriesInputSchema).optional(),
-  disconnect: z.union([ z.boolean(),z.lazy(() => UserWhereInputSchema) ]).optional(),
-  delete: z.union([ z.boolean(),z.lazy(() => UserWhereInputSchema) ]).optional(),
-  connect: z.lazy(() => UserWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => UserUpdateToOneWithWhereWithoutDeletedRegistriesInputSchema),z.lazy(() => UserUpdateWithoutDeletedRegistriesInputSchema),z.lazy(() => UserUncheckedUpdateWithoutDeletedRegistriesInputSchema) ]).optional(),
-}).strict();
+export const UserUpdateOneWithoutDeletedRegistriesNestedInputSchema: z.ZodType<Prisma.UserUpdateOneWithoutDeletedRegistriesNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => UserCreateWithoutDeletedRegistriesInputSchema),
+          z.lazy(() => UserUncheckedCreateWithoutDeletedRegistriesInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .lazy(() => UserCreateOrConnectWithoutDeletedRegistriesInputSchema)
+        .optional(),
+      upsert: z.lazy(() => UserUpsertWithoutDeletedRegistriesInputSchema).optional(),
+      disconnect: z.union([z.boolean(), z.lazy(() => UserWhereInputSchema)]).optional(),
+      delete: z.union([z.boolean(), z.lazy(() => UserWhereInputSchema)]).optional(),
+      connect: z.lazy(() => UserWhereUniqueInputSchema).optional(),
+      update: z
+        .union([
+          z.lazy(() => UserUpdateToOneWithWhereWithoutDeletedRegistriesInputSchema),
+          z.lazy(() => UserUpdateWithoutDeletedRegistriesInputSchema),
+          z.lazy(() => UserUncheckedUpdateWithoutDeletedRegistriesInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default UserUpdateOneWithoutDeletedRegistriesNestedInputSchema;

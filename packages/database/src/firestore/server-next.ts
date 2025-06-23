@@ -334,7 +334,7 @@ export async function addSearchableDocument(
  */
 export async function bulkOperationWithProgress<T>(
   operation: () => Promise<T[]>,
-  _batchSize = 100,
+  batchSize = 100,
   onProgress?: (completed: number, total: number) => void,
 ): Promise<T[]> {
   // This is a wrapper for bulk operations that can report progress

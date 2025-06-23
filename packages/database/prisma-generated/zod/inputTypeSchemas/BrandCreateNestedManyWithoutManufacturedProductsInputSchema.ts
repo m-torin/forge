@@ -6,10 +6,30 @@ import { BrandUncheckedCreateWithoutManufacturedProductsInputSchema } from './Br
 import { BrandCreateOrConnectWithoutManufacturedProductsInputSchema } from './BrandCreateOrConnectWithoutManufacturedProductsInputSchema';
 import { BrandWhereUniqueInputSchema } from './BrandWhereUniqueInputSchema';
 
-export const BrandCreateNestedManyWithoutManufacturedProductsInputSchema: z.ZodType<Prisma.BrandCreateNestedManyWithoutManufacturedProductsInput> = z.object({
-  create: z.union([ z.lazy(() => BrandCreateWithoutManufacturedProductsInputSchema),z.lazy(() => BrandCreateWithoutManufacturedProductsInputSchema).array(),z.lazy(() => BrandUncheckedCreateWithoutManufacturedProductsInputSchema),z.lazy(() => BrandUncheckedCreateWithoutManufacturedProductsInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => BrandCreateOrConnectWithoutManufacturedProductsInputSchema),z.lazy(() => BrandCreateOrConnectWithoutManufacturedProductsInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => BrandWhereUniqueInputSchema),z.lazy(() => BrandWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const BrandCreateNestedManyWithoutManufacturedProductsInputSchema: z.ZodType<Prisma.BrandCreateNestedManyWithoutManufacturedProductsInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => BrandCreateWithoutManufacturedProductsInputSchema),
+          z.lazy(() => BrandCreateWithoutManufacturedProductsInputSchema).array(),
+          z.lazy(() => BrandUncheckedCreateWithoutManufacturedProductsInputSchema),
+          z.lazy(() => BrandUncheckedCreateWithoutManufacturedProductsInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => BrandCreateOrConnectWithoutManufacturedProductsInputSchema),
+          z.lazy(() => BrandCreateOrConnectWithoutManufacturedProductsInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => BrandWhereUniqueInputSchema),
+          z.lazy(() => BrandWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default BrandCreateNestedManyWithoutManufacturedProductsInputSchema;

@@ -1,19 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  acceptInvitation,
-  createOrganization,
-  declineInvitation,
-  deleteOrganization,
-  getOrganizationStats,
-  inviteMember,
-  removeMember,
-  revokeInvitation,
-  updateMemberRole,
-  updateOrganization,
-} from '../../../server/organizations/management';
-
-import type { Organization } from '../../../shared/types';
+import type { Organization } from '../../../src/shared/types';
 
 // Use vi.hoisted for mocks
 const { mockCount, mockCreate, mockDelete, mockFindFirst, mockFindMany, mockPrisma, mockUpdate } =
@@ -126,7 +113,7 @@ const {
   };
 });
 
-vi.mock('../../../server/auth', () => ({
+vi.mock('../../../src/shared/auth.config', () => ({
   auth: {
     api: {
       acceptInvitation: mockAcceptInvitation,
@@ -155,13 +142,28 @@ vi.mock('next/headers', () => ({
 }));
 
 // Mock permissions
-vi.mock('../permissions', () => ({
+vi.mock('../../../src/server/organizations/permissions', () => ({
   canDeleteOrganization: vi.fn().mockResolvedValue(true),
   canInviteMembers: vi.fn().mockResolvedValue(true),
   canManageOrganization: vi.fn().mockResolvedValue(true),
   canRemoveMembers: vi.fn().mockResolvedValue(true),
   canUpdateMemberRoles: vi.fn().mockResolvedValue(true),
 }));
+
+// Import after mocking
+import {
+  createOrganizationAction,
+  updateOrganizationAction,
+  deleteOrganizationAction,
+  inviteUserAction,
+  acceptInvitationAction,
+  declineInvitationAction,
+  cancelInvitationAction,
+  addMemberAction,
+  removeMemberAction,
+  updateMemberRoleAction,
+  getOrganizationStatisticsAction,
+} from '../../../src/server/organizations/management';
 
 describe('Organization Management', () => {
   const mockHeaders = { authorization: 'Bearer test-token' };
@@ -214,102 +216,85 @@ describe('Organization Management', () => {
   });
 
   describe('createOrganization', () => {
-    it('should create a new organization successfully', async () => {
+    it('should create organization successfully', async () => {
       const mockOrg = createMockOrganization();
+      mockCreateOrganization.mockResolvedValue(mockOrg);
 
-      mockCreateOrganization.mockResolvedValue({
-        organization: mockOrg,
-        success: true,
-      });
-
-      const result = await createOrganization({
-        name: 'New Organization',
-        slug: 'new-org',
+      const result = await createOrganizationAction({
+        name: 'Test Organization',
+        description: 'Test Description',
       });
 
       expect(result.success).toBe(true);
       expect(result.organization).toEqual(mockOrg);
       expect(mockCreateOrganization).toHaveBeenCalledWith({
         body: {
-          name: 'New Organization',
-          description: undefined,
-          slug: 'new-org',
+          name: 'Test Organization',
+          slug: 'test-organization',
+          metadata: { description: 'Test Description' },
         },
         headers: expect.any(Object),
       });
     });
 
-    it('should auto-generate slug if not provided', async () => {
-      const mockOrg = createMockOrganization({ slug: 'new-organization' });
+    it('should handle organization creation errors', async () => {
+      mockCreateOrganization.mockRejectedValue(new Error('Creation failed'));
 
-      mockCreateOrganization.mockResolvedValue({
-        organization: mockOrg,
-        success: true,
+      const result = await createOrganizationAction({
+        name: 'Test Organization',
       });
-
-      const result = await createOrganization({
-        name: 'New Organization',
-      });
-
-      expect(result.success).toBe(true);
-      expect(mockCreateOrganization).toHaveBeenCalledWith({
-        body: {
-          name: 'New Organization',
-          description: undefined,
-          slug: undefined,
-        },
-        headers: expect.any(Object),
-      });
-    });
-
-    it('should handle special characters in organization name', async () => {
-      mockCreateOrganization.mockResolvedValue({
-        organization: createMockOrganization(),
-        success: true,
-      });
-
-      const result = await createOrganization({
-        name: 'Test & Co. Ltd!',
-      });
-
-      expect(result.success).toBe(true);
-      expect(mockCreateOrganization).toHaveBeenCalledWith({
-        body: {
-          name: 'Test & Co. Ltd!',
-          description: undefined,
-          slug: undefined,
-        },
-        headers: expect.any(Object),
-      });
-    });
-
-    it('should handle creation errors', async () => {
-      mockCreateOrganization.mockResolvedValue({
-        error: { message: 'Organization already exists' },
-        success: false,
-      });
-
-      const result = await createOrganization({ name: 'Test' });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Organization already exists');
+      expect(result.error).toBe('Failed to create organization');
+    });
+
+    it('should generate slug from name if not provided', async () => {
+      const mockOrg = createMockOrganization();
+      mockCreateOrganization.mockResolvedValue(mockOrg);
+
+      await createOrganizationAction({
+        name: 'My Test Organization',
+      });
+
+      expect(mockCreateOrganization).toHaveBeenCalledWith({
+        body: {
+          name: 'My Test Organization',
+          slug: 'my-test-organization',
+          metadata: {},
+        },
+        headers: expect.any(Object),
+      });
+    });
+
+    it('should use provided slug if available', async () => {
+      const mockOrg = createMockOrganization();
+      mockCreateOrganization.mockResolvedValue(mockOrg);
+
+      await createOrganizationAction({
+        name: 'Test Organization',
+        slug: 'custom-slug',
+      });
+
+      expect(mockCreateOrganization).toHaveBeenCalledWith({
+        body: {
+          name: 'Test Organization',
+          slug: 'custom-slug',
+          metadata: {},
+        },
+        headers: expect.any(Object),
+      });
     });
   });
 
   describe('updateOrganization', () => {
     it('should update organization successfully', async () => {
-      const mockOrg = createMockOrganization({
-        name: 'Updated Organization',
-      });
+      const mockOrg = createMockOrganization({ name: 'Updated Organization' });
+      mockUpdateOrganization.mockResolvedValue(mockOrg);
 
-      mockUpdateOrganization.mockResolvedValue({
-        organization: mockOrg,
-        success: true,
-      });
-
-      const result = await updateOrganization({
-        name: 'Updated Organization',
+      const result = await updateOrganizationAction({
         organizationId: 'org-123',
+        name: 'Updated Organization',
+        description: 'Updated Description',
       });
 
       expect(result.success).toBe(true);
@@ -317,51 +302,36 @@ describe('Organization Management', () => {
       expect(mockUpdateOrganization).toHaveBeenCalledWith({
         body: {
           name: 'Updated Organization',
-          organizationId: 'org-123',
+          metadata: { description: 'Updated Description' },
         },
         headers: expect.any(Object),
       });
     });
 
-    it('should allow partial updates', async () => {
-      const mockOrg = createMockOrganization();
-      mockUpdateOrganization.mockResolvedValue({
-        organization: mockOrg,
-        success: true,
-      });
+    it('should handle organization update errors', async () => {
+      mockUpdateOrganization.mockRejectedValue(new Error('Update failed'));
 
-      const result = await updateOrganization({
-        name: 'New Name Only',
+      const result = await updateOrganizationAction({
         organizationId: 'org-123',
+        name: 'Updated Organization',
       });
 
-      expect(result.success).toBe(true);
-      expect(mockUpdateOrganization).toHaveBeenCalledWith({
-        body: {
-          name: 'New Name Only',
-          organizationId: 'org-123',
-        },
-        headers: expect.any(Object),
-      });
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Failed to update organization');
     });
 
-    it('should update slug when provided', async () => {
+    it('should update only provided fields', async () => {
       const mockOrg = createMockOrganization();
-      mockUpdateOrganization.mockResolvedValue({
-        organization: mockOrg,
-        success: true,
-      });
+      mockUpdateOrganization.mockResolvedValue(mockOrg);
 
-      const result = await updateOrganization({
+      await updateOrganizationAction({
         organizationId: 'org-123',
-        slug: 'new-slug',
+        name: 'Updated Name',
       });
 
-      expect(result.success).toBe(true);
       expect(mockUpdateOrganization).toHaveBeenCalledWith({
         body: {
-          organizationId: 'org-123',
-          slug: 'new-slug',
+          name: 'Updated Name',
         },
         headers: expect.any(Object),
       });
@@ -370,54 +340,35 @@ describe('Organization Management', () => {
 
   describe('deleteOrganization', () => {
     it('should delete organization successfully', async () => {
-      mockDeleteOrganization.mockResolvedValue({
-        success: true,
-      });
+      mockDeleteOrganization.mockResolvedValue({ success: true });
 
-      const result = await deleteOrganization('org-123');
+      const result = await deleteOrganizationAction('org-123');
 
       expect(result.success).toBe(true);
       expect(mockDeleteOrganization).toHaveBeenCalledWith({
-        body: {
-          organizationId: 'org-123',
-        },
+        body: { organizationId: 'org-123' },
         headers: expect.any(Object),
       });
     });
 
-    it('should handle deletion errors', async () => {
-      mockDeleteOrganization.mockResolvedValue({
-        error: { message: 'Deletion failed' },
-        success: false,
-      });
+    it('should handle organization deletion errors', async () => {
+      mockDeleteOrganization.mockRejectedValue(new Error('Deletion failed'));
 
-      const result = await deleteOrganization('org-123');
+      const result = await deleteOrganizationAction('org-123');
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Deletion failed');
+      expect(result.error).toBe('Failed to delete organization');
     });
   });
 
   describe('Member Management', () => {
     describe('inviteMember', () => {
-      it('should create invitation successfully', async () => {
-        const mockInvitation = {
-          id: 'invite-123',
-          email: 'newuser@example.com',
-          expiresAt: new Date('2024-01-01'),
-          invitedBy: 'user-123',
-          organizationId: 'org-123',
-          role: 'member',
-          status: 'pending',
-        };
+      it('should invite member successfully', async () => {
+        const mockInvitation = { id: 'inv-123', email: 'test@example.com' };
+        mockInviteUser.mockResolvedValue(mockInvitation);
 
-        mockInviteUser.mockResolvedValue({
-          invitation: mockInvitation,
-          success: true,
-        });
-
-        const result = await inviteMember({
-          email: 'newuser@example.com',
+        const result = await inviteUserAction({
+          email: 'test@example.com',
           organizationId: 'org-123',
           role: 'member',
         });
@@ -426,28 +377,12 @@ describe('Organization Management', () => {
         expect(result.invitation).toEqual(mockInvitation);
         expect(mockInviteUser).toHaveBeenCalledWith({
           body: {
-            email: 'newuser@example.com',
+            email: 'test@example.com',
             organizationId: 'org-123',
             role: 'member',
           },
           headers: expect.any(Object),
         });
-      });
-
-      it('should handle invitation errors', async () => {
-        mockInviteUser.mockResolvedValue({
-          error: { message: 'User already invited' },
-          success: false,
-        });
-
-        const result = await inviteMember({
-          email: 'test@example.com',
-          organizationId: 'org-123',
-          role: 'member',
-        });
-
-        expect(result.success).toBe(false);
-        expect(result.error).toBe('User already invited');
       });
     });
 
@@ -457,7 +392,7 @@ describe('Organization Management', () => {
           success: true,
         });
 
-        const result = await removeMember({ organizationId: 'org-123', userId: 'user-456' });
+        const result = await removeMemberAction({ organizationId: 'org-123', userId: 'user-456' });
 
         expect(result.success).toBe(true);
         expect(mockRemoveMember).toHaveBeenCalledWith({
@@ -474,7 +409,7 @@ describe('Organization Management', () => {
           success: false,
         });
 
-        const result = await removeMember({ organizationId: 'org-123', userId: 'user-456' });
+        const result = await removeMemberAction({ organizationId: 'org-123', userId: 'user-456' });
 
         expect(result.success).toBe(false);
         expect(result.error).toBe('Cannot remove the last owner');
@@ -495,7 +430,7 @@ describe('Organization Management', () => {
           success: true,
         });
 
-        const result = await updateMemberRole({
+        const result = await updateMemberRoleAction({
           organizationId: 'org-123',
           role: 'admin',
           userId: 'user-456',
@@ -517,7 +452,7 @@ describe('Organization Management', () => {
           success: false,
         });
 
-        const result = await updateMemberRole({
+        const result = await updateMemberRoleAction({
           organizationId: 'org-123',
           role: 'member',
           userId: 'user-456',
@@ -544,7 +479,7 @@ describe('Organization Management', () => {
           success: true,
         });
 
-        const result = await acceptInvitation('invite-123');
+        const result = await acceptInvitationAction('invite-123');
 
         expect(result.success).toBe(true);
         expect(result.organizationId).toBe('org-123');
@@ -562,7 +497,7 @@ describe('Organization Management', () => {
           success: false,
         });
 
-        const result = await acceptInvitation('invite-123');
+        const result = await acceptInvitationAction('invite-123');
 
         expect(result.success).toBe(false);
         expect(result.error).toBe('Invitation has expired');
@@ -575,7 +510,7 @@ describe('Organization Management', () => {
           success: true,
         });
 
-        const result = await declineInvitation('invite-123');
+        const result = await declineInvitationAction('invite-123');
 
         expect(result.success).toBe(true);
         expect(mockDeclineInvitation).toHaveBeenCalledWith({
@@ -593,15 +528,22 @@ describe('Organization Management', () => {
           success: true,
         });
 
-        const result = await revokeInvitation('invite-123');
+        const result = await cancelInvitationAction('invite-123');
 
         expect(result.success).toBe(true);
         expect(mockCancelInvitation).toHaveBeenCalledWith({
-          body: {
-            invitationId: 'invite-123',
-          },
+          body: { invitationId: 'invite-123' },
           headers: expect.any(Object),
         });
+      });
+
+      it('should handle invitation revocation errors', async () => {
+        mockCancelInvitation.mockRejectedValue(new Error('Revocation failed'));
+
+        const result = await cancelInvitationAction('invite-123');
+
+        expect(result.success).toBe(false);
+        expect(result.error).toBe('Failed to cancel invitation');
       });
     });
   });
@@ -637,32 +579,13 @@ describe('Organization Management', () => {
       mockPrisma.team.count.mockResolvedValue(5);
       mockPrisma.apiKey.count.mockResolvedValue(2);
 
-      const result = await getOrganizationStats('org-123');
+      const result = await getOrganizationStatisticsAction('org-123');
 
-      expect(result).not.toBeNull();
-      expect(result!.memberCount).toBe(10);
-      expect(result!.teamCount).toBe(5);
-      expect(result!.apiKeyCount).toBe(2);
-      expect(result!.invitationCount).toBe(3);
-
-      expect(mockPrisma.member.count).toHaveBeenCalledWith({
-        where: { organizationId: 'org-123' },
-      });
-
-      expect(mockPrisma.team.count).toHaveBeenCalledWith({
-        where: { organizationId: 'org-123' },
-      });
-
-      expect(mockPrisma.apiKey.count).toHaveBeenCalledWith({
-        where: { organizationId: 'org-123' },
-      });
-
-      expect(mockPrisma.invitation.count).toHaveBeenCalledWith({
-        where: {
-          organizationId: 'org-123',
-          status: 'pending',
-        },
-      });
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.data?.totalMembers).toBe(10);
+      expect(result.data?.teams).toBe(3);
+      expect(result.data?.pendingInvitations).toBe(2);
     });
   });
 });

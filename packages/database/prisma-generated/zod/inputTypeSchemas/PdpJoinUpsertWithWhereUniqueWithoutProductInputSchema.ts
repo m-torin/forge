@@ -7,10 +7,19 @@ import { PdpJoinUncheckedUpdateWithoutProductInputSchema } from './PdpJoinUnchec
 import { PdpJoinCreateWithoutProductInputSchema } from './PdpJoinCreateWithoutProductInputSchema';
 import { PdpJoinUncheckedCreateWithoutProductInputSchema } from './PdpJoinUncheckedCreateWithoutProductInputSchema';
 
-export const PdpJoinUpsertWithWhereUniqueWithoutProductInputSchema: z.ZodType<Prisma.PdpJoinUpsertWithWhereUniqueWithoutProductInput> = z.object({
-  where: z.lazy(() => PdpJoinWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => PdpJoinUpdateWithoutProductInputSchema),z.lazy(() => PdpJoinUncheckedUpdateWithoutProductInputSchema) ]),
-  create: z.union([ z.lazy(() => PdpJoinCreateWithoutProductInputSchema),z.lazy(() => PdpJoinUncheckedCreateWithoutProductInputSchema) ]),
-}).strict();
+export const PdpJoinUpsertWithWhereUniqueWithoutProductInputSchema: z.ZodType<Prisma.PdpJoinUpsertWithWhereUniqueWithoutProductInput> =
+  z
+    .object({
+      where: z.lazy(() => PdpJoinWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => PdpJoinUpdateWithoutProductInputSchema),
+        z.lazy(() => PdpJoinUncheckedUpdateWithoutProductInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => PdpJoinCreateWithoutProductInputSchema),
+        z.lazy(() => PdpJoinUncheckedCreateWithoutProductInputSchema),
+      ]),
+    })
+    .strict();
 
 export default PdpJoinUpsertWithWhereUniqueWithoutProductInputSchema;

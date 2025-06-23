@@ -13,19 +13,50 @@ import { NullableFloatFieldUpdateOperationsInputSchema } from './NullableFloatFi
 import { NullableDateTimeFieldUpdateOperationsInputSchema } from './NullableDateTimeFieldUpdateOperationsInputSchema';
 import { JrFindReplaceRejectUncheckedUpdateManyWithoutExtractionRulesNestedInputSchema } from './JrFindReplaceRejectUncheckedUpdateManyWithoutExtractionRulesNestedInputSchema';
 
-export const JrExtractionRuleUncheckedUpdateInputSchema: z.ZodType<Prisma.JrExtractionRuleUncheckedUpdateInput> = z.object({
-  id: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  jollyRogerId: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  fieldName: z.union([ z.lazy(() => JrChartRuleForSchema),z.lazy(() => EnumJrChartRuleForFieldUpdateOperationsInputSchema) ]).optional(),
-  isActive: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
-  selectors: z.union([ z.lazy(() => JsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
-  mustContain: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  cannotContain: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  lastSuccessfulSelector: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
-  successRate: z.union([ z.number(),z.lazy(() => NullableFloatFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  lastTestedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  notes: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  findReplaceRules: z.lazy(() => JrFindReplaceRejectUncheckedUpdateManyWithoutExtractionRulesNestedInputSchema).optional()
-}).strict();
+export const JrExtractionRuleUncheckedUpdateInputSchema: z.ZodType<Prisma.JrExtractionRuleUncheckedUpdateInput> =
+  z
+    .object({
+      id: z.union([z.number().int(), z.lazy(() => IntFieldUpdateOperationsInputSchema)]).optional(),
+      jollyRogerId: z
+        .union([z.number().int(), z.lazy(() => IntFieldUpdateOperationsInputSchema)])
+        .optional(),
+      fieldName: z
+        .union([
+          z.lazy(() => JrChartRuleForSchema),
+          z.lazy(() => EnumJrChartRuleForFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      isActive: z
+        .union([z.boolean(), z.lazy(() => BoolFieldUpdateOperationsInputSchema)])
+        .optional(),
+      selectors: z.union([z.lazy(() => JsonNullValueInputSchema), InputJsonValueSchema]).optional(),
+      mustContain: z
+        .union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      cannotContain: z
+        .union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      lastSuccessfulSelector: z
+        .union([z.lazy(() => NullableJsonNullValueInputSchema), InputJsonValueSchema])
+        .optional(),
+      successRate: z
+        .union([z.number(), z.lazy(() => NullableFloatFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      lastTestedAt: z
+        .union([z.coerce.date(), z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      notes: z
+        .union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      findReplaceRules: z
+        .lazy(() => JrFindReplaceRejectUncheckedUpdateManyWithoutExtractionRulesNestedInputSchema)
+        .optional(),
+    })
+    .strict();
 
 export default JrExtractionRuleUncheckedUpdateInputSchema;

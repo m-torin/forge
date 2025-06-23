@@ -7,10 +7,19 @@ import { UserCreateWithoutPurchasesInputSchema } from './UserCreateWithoutPurcha
 import { UserUncheckedCreateWithoutPurchasesInputSchema } from './UserUncheckedCreateWithoutPurchasesInputSchema';
 import { UserWhereInputSchema } from './UserWhereInputSchema';
 
-export const UserUpsertWithoutPurchasesInputSchema: z.ZodType<Prisma.UserUpsertWithoutPurchasesInput> = z.object({
-  update: z.union([ z.lazy(() => UserUpdateWithoutPurchasesInputSchema),z.lazy(() => UserUncheckedUpdateWithoutPurchasesInputSchema) ]),
-  create: z.union([ z.lazy(() => UserCreateWithoutPurchasesInputSchema),z.lazy(() => UserUncheckedCreateWithoutPurchasesInputSchema) ]),
-  where: z.lazy(() => UserWhereInputSchema).optional()
-}).strict();
+export const UserUpsertWithoutPurchasesInputSchema: z.ZodType<Prisma.UserUpsertWithoutPurchasesInput> =
+  z
+    .object({
+      update: z.union([
+        z.lazy(() => UserUpdateWithoutPurchasesInputSchema),
+        z.lazy(() => UserUncheckedUpdateWithoutPurchasesInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => UserCreateWithoutPurchasesInputSchema),
+        z.lazy(() => UserUncheckedCreateWithoutPurchasesInputSchema),
+      ]),
+      where: z.lazy(() => UserWhereInputSchema).optional(),
+    })
+    .strict();
 
 export default UserUpsertWithoutPurchasesInputSchema;

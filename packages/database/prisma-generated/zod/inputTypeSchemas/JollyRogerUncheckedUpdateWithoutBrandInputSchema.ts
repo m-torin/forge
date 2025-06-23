@@ -10,14 +10,34 @@ import { NullableJsonNullValueInputSchema } from './NullableJsonNullValueInputSc
 import { InputJsonValueSchema } from './InputJsonValueSchema';
 import { JrExtractionRuleUncheckedUpdateManyWithoutJollyRogerNestedInputSchema } from './JrExtractionRuleUncheckedUpdateManyWithoutJollyRogerNestedInputSchema';
 
-export const JollyRogerUncheckedUpdateWithoutBrandInputSchema: z.ZodType<Prisma.JollyRogerUncheckedUpdateWithoutBrandInput> = z.object({
-  id: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  canChart: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
-  chartingMethod: z.union([ z.lazy(() => JrChartMethodSchema),z.lazy(() => EnumJrChartMethodFieldUpdateOperationsInputSchema) ]).optional(),
-  sitemaps: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  gridUrls: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  pdpUrlPatterns: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
-  extractionRules: z.lazy(() => JrExtractionRuleUncheckedUpdateManyWithoutJollyRogerNestedInputSchema).optional()
-}).strict();
+export const JollyRogerUncheckedUpdateWithoutBrandInputSchema: z.ZodType<Prisma.JollyRogerUncheckedUpdateWithoutBrandInput> =
+  z
+    .object({
+      id: z.union([z.number().int(), z.lazy(() => IntFieldUpdateOperationsInputSchema)]).optional(),
+      canChart: z
+        .union([z.boolean(), z.lazy(() => BoolFieldUpdateOperationsInputSchema)])
+        .optional(),
+      chartingMethod: z
+        .union([
+          z.lazy(() => JrChartMethodSchema),
+          z.lazy(() => EnumJrChartMethodFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      sitemaps: z
+        .union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      gridUrls: z
+        .union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      pdpUrlPatterns: z
+        .union([z.lazy(() => NullableJsonNullValueInputSchema), InputJsonValueSchema])
+        .optional(),
+      extractionRules: z
+        .lazy(() => JrExtractionRuleUncheckedUpdateManyWithoutJollyRogerNestedInputSchema)
+        .optional(),
+    })
+    .strict();
 
 export default JollyRogerUncheckedUpdateWithoutBrandInputSchema;

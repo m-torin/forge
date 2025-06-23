@@ -5,9 +5,15 @@ import { FavoriteJoinWhereUniqueInputSchema } from './FavoriteJoinWhereUniqueInp
 import { FavoriteJoinUpdateWithoutCollectionInputSchema } from './FavoriteJoinUpdateWithoutCollectionInputSchema';
 import { FavoriteJoinUncheckedUpdateWithoutCollectionInputSchema } from './FavoriteJoinUncheckedUpdateWithoutCollectionInputSchema';
 
-export const FavoriteJoinUpdateWithWhereUniqueWithoutCollectionInputSchema: z.ZodType<Prisma.FavoriteJoinUpdateWithWhereUniqueWithoutCollectionInput> = z.object({
-  where: z.lazy(() => FavoriteJoinWhereUniqueInputSchema),
-  data: z.union([ z.lazy(() => FavoriteJoinUpdateWithoutCollectionInputSchema),z.lazy(() => FavoriteJoinUncheckedUpdateWithoutCollectionInputSchema) ]),
-}).strict();
+export const FavoriteJoinUpdateWithWhereUniqueWithoutCollectionInputSchema: z.ZodType<Prisma.FavoriteJoinUpdateWithWhereUniqueWithoutCollectionInput> =
+  z
+    .object({
+      where: z.lazy(() => FavoriteJoinWhereUniqueInputSchema),
+      data: z.union([
+        z.lazy(() => FavoriteJoinUpdateWithoutCollectionInputSchema),
+        z.lazy(() => FavoriteJoinUncheckedUpdateWithoutCollectionInputSchema),
+      ]),
+    })
+    .strict();
 
 export default FavoriteJoinUpdateWithWhereUniqueWithoutCollectionInputSchema;

@@ -91,12 +91,15 @@ export const config: NextConfig = {
 
   // Enhanced webpack config for Prisma plugin and client-side exclusions
   webpack(config: any, { isServer }: { isServer: boolean }) {
-    if (isServer) {
-      // Server-side: Add Prisma plugin for monorepo support
+    // Detect edge runtime context
+    const isEdgeRuntime = config.target === 'webworker' || config.name === 'edge-runtime';
+
+    if (isServer && !isEdgeRuntime) {
+      // Server-side (Node.js): Add Prisma plugin for monorepo support
       config.plugins = config.plugins || [];
       config.plugins.push(new PrismaPlugin());
-    } else {
-      // Client-side: Prevent Prisma and database packages from being bundled
+    } else if (!isServer || isEdgeRuntime) {
+      // Client-side or Edge runtime: Prevent Node.js modules from being bundled
       config.resolve = config.resolve || {};
       config.resolve.fallback = {
         ...config.resolve.fallback,
@@ -118,11 +121,11 @@ export const config: NextConfig = {
         '@prisma/engines': false,
       };
 
-      // External packages that should not be bundled on client
+      // External packages that should not be bundled on client or edge runtime
       config.externals = [
         ...(config.externals || []),
         ({ request }: any, callback: any) => {
-          // Exclude Prisma client and related packages from client bundle
+          // Exclude Prisma client and related packages
           if (
             request.includes('@prisma/client') ||
             request.includes('@prisma/engines') ||
@@ -131,12 +134,12 @@ export const config: NextConfig = {
             return callback(null, 'commonjs ' + request);
           }
 
-          // Exclude database workspace package from client bundle
+          // Exclude database workspace package
           if (request.startsWith('@repo/database')) {
             return callback(null, 'commonjs ' + request);
           }
 
-          // Exclude node: imports from client bundle
+          // Exclude node: imports
           if (request.startsWith('node:')) {
             return callback(null, 'commonjs ' + request);
           }
@@ -169,44 +172,6 @@ export const config: NextConfig = {
       config.cache.compression = 'gzip';
       config.cache.maxMemoryGenerations = 1;
     }
-
-    // Suppress critical dependency warnings from OpenTelemetry/Sentry
-    config.module = config.module || {};
-    config.module.exprContextCritical = false;
-
-    // Ignore specific warnings from observability packages and Prisma
-    config.ignoreWarnings = [
-      ...(config.ignoreWarnings || []),
-      // Ignore warnings from require-in-the-middle used by OpenTelemetry
-      {
-        module: /require-in-the-middle/,
-      },
-      // Ignore warnings from OpenTelemetry instrumentation
-      {
-        module: /@opentelemetry\/instrumentation/,
-      },
-      // Ignore Prisma-related warnings
-      {
-        module: /@prisma/,
-      },
-      {
-        module: /prisma/,
-      },
-      // Ignore specific warning messages
-      {
-        message: /Critical dependency: the request of a dependency is an expression/,
-      },
-      {
-        message:
-          /Critical dependency: require function is used in a way in which dependencies cannot be statically extracted/,
-      },
-      {
-        message: /Can't resolve 'pg-native'/,
-      },
-      {
-        message: /Can't resolve '@prisma\/engines'/,
-      },
-    ];
 
     return config;
   },

@@ -94,7 +94,7 @@ export async function getVectorWithHeaders(): Promise<{
 /**
  * Semantic search utilities for Next.js
  */
-export async function semanticSearch<_T>(
+export async function semanticSearch<T>(
   query: string,
   options?: {
     topK?: number;
@@ -387,7 +387,7 @@ export async function clusterVectors(
   // This is a simplified clustering implementation
   // In production, you'd want to use more sophisticated clustering algorithms
 
-  const _sampleSize = options?.sampleSize || 1000;
+  const sampleSize = options?.sampleSize || 1000;
   const numClusters = options?.numClusters || 10;
 
   // Get sample vectors

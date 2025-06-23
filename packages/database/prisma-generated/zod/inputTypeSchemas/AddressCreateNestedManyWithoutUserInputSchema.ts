@@ -7,11 +7,31 @@ import { AddressCreateOrConnectWithoutUserInputSchema } from './AddressCreateOrC
 import { AddressCreateManyUserInputEnvelopeSchema } from './AddressCreateManyUserInputEnvelopeSchema';
 import { AddressWhereUniqueInputSchema } from './AddressWhereUniqueInputSchema';
 
-export const AddressCreateNestedManyWithoutUserInputSchema: z.ZodType<Prisma.AddressCreateNestedManyWithoutUserInput> = z.object({
-  create: z.union([ z.lazy(() => AddressCreateWithoutUserInputSchema),z.lazy(() => AddressCreateWithoutUserInputSchema).array(),z.lazy(() => AddressUncheckedCreateWithoutUserInputSchema),z.lazy(() => AddressUncheckedCreateWithoutUserInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => AddressCreateOrConnectWithoutUserInputSchema),z.lazy(() => AddressCreateOrConnectWithoutUserInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => AddressCreateManyUserInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => AddressWhereUniqueInputSchema),z.lazy(() => AddressWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const AddressCreateNestedManyWithoutUserInputSchema: z.ZodType<Prisma.AddressCreateNestedManyWithoutUserInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => AddressCreateWithoutUserInputSchema),
+          z.lazy(() => AddressCreateWithoutUserInputSchema).array(),
+          z.lazy(() => AddressUncheckedCreateWithoutUserInputSchema),
+          z.lazy(() => AddressUncheckedCreateWithoutUserInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => AddressCreateOrConnectWithoutUserInputSchema),
+          z.lazy(() => AddressCreateOrConnectWithoutUserInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => AddressCreateManyUserInputEnvelopeSchema).optional(),
+      connect: z
+        .union([
+          z.lazy(() => AddressWhereUniqueInputSchema),
+          z.lazy(() => AddressWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default AddressCreateNestedManyWithoutUserInputSchema;

@@ -11,18 +11,73 @@ import { TeamUpdateWithWhereUniqueWithoutOrganizationInputSchema } from './TeamU
 import { TeamUpdateManyWithWhereWithoutOrganizationInputSchema } from './TeamUpdateManyWithWhereWithoutOrganizationInputSchema';
 import { TeamScalarWhereInputSchema } from './TeamScalarWhereInputSchema';
 
-export const TeamUpdateManyWithoutOrganizationNestedInputSchema: z.ZodType<Prisma.TeamUpdateManyWithoutOrganizationNestedInput> = z.object({
-  create: z.union([ z.lazy(() => TeamCreateWithoutOrganizationInputSchema),z.lazy(() => TeamCreateWithoutOrganizationInputSchema).array(),z.lazy(() => TeamUncheckedCreateWithoutOrganizationInputSchema),z.lazy(() => TeamUncheckedCreateWithoutOrganizationInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => TeamCreateOrConnectWithoutOrganizationInputSchema),z.lazy(() => TeamCreateOrConnectWithoutOrganizationInputSchema).array() ]).optional(),
-  upsert: z.union([ z.lazy(() => TeamUpsertWithWhereUniqueWithoutOrganizationInputSchema),z.lazy(() => TeamUpsertWithWhereUniqueWithoutOrganizationInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => TeamCreateManyOrganizationInputEnvelopeSchema).optional(),
-  set: z.union([ z.lazy(() => TeamWhereUniqueInputSchema),z.lazy(() => TeamWhereUniqueInputSchema).array() ]).optional(),
-  disconnect: z.union([ z.lazy(() => TeamWhereUniqueInputSchema),z.lazy(() => TeamWhereUniqueInputSchema).array() ]).optional(),
-  delete: z.union([ z.lazy(() => TeamWhereUniqueInputSchema),z.lazy(() => TeamWhereUniqueInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => TeamWhereUniqueInputSchema),z.lazy(() => TeamWhereUniqueInputSchema).array() ]).optional(),
-  update: z.union([ z.lazy(() => TeamUpdateWithWhereUniqueWithoutOrganizationInputSchema),z.lazy(() => TeamUpdateWithWhereUniqueWithoutOrganizationInputSchema).array() ]).optional(),
-  updateMany: z.union([ z.lazy(() => TeamUpdateManyWithWhereWithoutOrganizationInputSchema),z.lazy(() => TeamUpdateManyWithWhereWithoutOrganizationInputSchema).array() ]).optional(),
-  deleteMany: z.union([ z.lazy(() => TeamScalarWhereInputSchema),z.lazy(() => TeamScalarWhereInputSchema).array() ]).optional(),
-}).strict();
+export const TeamUpdateManyWithoutOrganizationNestedInputSchema: z.ZodType<Prisma.TeamUpdateManyWithoutOrganizationNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => TeamCreateWithoutOrganizationInputSchema),
+          z.lazy(() => TeamCreateWithoutOrganizationInputSchema).array(),
+          z.lazy(() => TeamUncheckedCreateWithoutOrganizationInputSchema),
+          z.lazy(() => TeamUncheckedCreateWithoutOrganizationInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => TeamCreateOrConnectWithoutOrganizationInputSchema),
+          z.lazy(() => TeamCreateOrConnectWithoutOrganizationInputSchema).array(),
+        ])
+        .optional(),
+      upsert: z
+        .union([
+          z.lazy(() => TeamUpsertWithWhereUniqueWithoutOrganizationInputSchema),
+          z.lazy(() => TeamUpsertWithWhereUniqueWithoutOrganizationInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => TeamCreateManyOrganizationInputEnvelopeSchema).optional(),
+      set: z
+        .union([
+          z.lazy(() => TeamWhereUniqueInputSchema),
+          z.lazy(() => TeamWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      disconnect: z
+        .union([
+          z.lazy(() => TeamWhereUniqueInputSchema),
+          z.lazy(() => TeamWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      delete: z
+        .union([
+          z.lazy(() => TeamWhereUniqueInputSchema),
+          z.lazy(() => TeamWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => TeamWhereUniqueInputSchema),
+          z.lazy(() => TeamWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      update: z
+        .union([
+          z.lazy(() => TeamUpdateWithWhereUniqueWithoutOrganizationInputSchema),
+          z.lazy(() => TeamUpdateWithWhereUniqueWithoutOrganizationInputSchema).array(),
+        ])
+        .optional(),
+      updateMany: z
+        .union([
+          z.lazy(() => TeamUpdateManyWithWhereWithoutOrganizationInputSchema),
+          z.lazy(() => TeamUpdateManyWithWhereWithoutOrganizationInputSchema).array(),
+        ])
+        .optional(),
+      deleteMany: z
+        .union([
+          z.lazy(() => TeamScalarWhereInputSchema),
+          z.lazy(() => TeamScalarWhereInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default TeamUpdateManyWithoutOrganizationNestedInputSchema;

@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema'
-import { BrandTypeSchema } from '../inputTypeSchemas/BrandTypeSchema'
-import { ContentStatusSchema } from '../inputTypeSchemas/ContentStatusSchema'
+import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema';
+import { BrandTypeSchema } from '../inputTypeSchemas/BrandTypeSchema';
+import { ContentStatusSchema } from '../inputTypeSchemas/ContentStatusSchema';
 
 /////////////////////////////////////////
 // BRAND SCHEMA
@@ -21,8 +21,8 @@ export const BrandSchema = z.object({
   updatedAt: z.coerce.date(),
   deletedAt: z.coerce.date().nullable(),
   deletedById: z.string().nullable(),
-})
+});
 
-export type Brand = z.infer<typeof BrandSchema>
+export type Brand = z.infer<typeof BrandSchema>;
 
 export default BrandSchema;

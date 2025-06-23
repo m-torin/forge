@@ -7,10 +7,19 @@ import { RegistryCreateWithoutUsersInputSchema } from './RegistryCreateWithoutUs
 import { RegistryUncheckedCreateWithoutUsersInputSchema } from './RegistryUncheckedCreateWithoutUsersInputSchema';
 import { RegistryWhereInputSchema } from './RegistryWhereInputSchema';
 
-export const RegistryUpsertWithoutUsersInputSchema: z.ZodType<Prisma.RegistryUpsertWithoutUsersInput> = z.object({
-  update: z.union([ z.lazy(() => RegistryUpdateWithoutUsersInputSchema),z.lazy(() => RegistryUncheckedUpdateWithoutUsersInputSchema) ]),
-  create: z.union([ z.lazy(() => RegistryCreateWithoutUsersInputSchema),z.lazy(() => RegistryUncheckedCreateWithoutUsersInputSchema) ]),
-  where: z.lazy(() => RegistryWhereInputSchema).optional()
-}).strict();
+export const RegistryUpsertWithoutUsersInputSchema: z.ZodType<Prisma.RegistryUpsertWithoutUsersInput> =
+  z
+    .object({
+      update: z.union([
+        z.lazy(() => RegistryUpdateWithoutUsersInputSchema),
+        z.lazy(() => RegistryUncheckedUpdateWithoutUsersInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => RegistryCreateWithoutUsersInputSchema),
+        z.lazy(() => RegistryUncheckedCreateWithoutUsersInputSchema),
+      ]),
+      where: z.lazy(() => RegistryWhereInputSchema).optional(),
+    })
+    .strict();
 
 export default RegistryUpsertWithoutUsersInputSchema;

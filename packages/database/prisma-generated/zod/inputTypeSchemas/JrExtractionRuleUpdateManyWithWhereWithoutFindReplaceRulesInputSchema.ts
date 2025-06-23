@@ -5,9 +5,15 @@ import { JrExtractionRuleScalarWhereInputSchema } from './JrExtractionRuleScalar
 import { JrExtractionRuleUpdateManyMutationInputSchema } from './JrExtractionRuleUpdateManyMutationInputSchema';
 import { JrExtractionRuleUncheckedUpdateManyWithoutFindReplaceRulesInputSchema } from './JrExtractionRuleUncheckedUpdateManyWithoutFindReplaceRulesInputSchema';
 
-export const JrExtractionRuleUpdateManyWithWhereWithoutFindReplaceRulesInputSchema: z.ZodType<Prisma.JrExtractionRuleUpdateManyWithWhereWithoutFindReplaceRulesInput> = z.object({
-  where: z.lazy(() => JrExtractionRuleScalarWhereInputSchema),
-  data: z.union([ z.lazy(() => JrExtractionRuleUpdateManyMutationInputSchema),z.lazy(() => JrExtractionRuleUncheckedUpdateManyWithoutFindReplaceRulesInputSchema) ]),
-}).strict();
+export const JrExtractionRuleUpdateManyWithWhereWithoutFindReplaceRulesInputSchema: z.ZodType<Prisma.JrExtractionRuleUpdateManyWithWhereWithoutFindReplaceRulesInput> =
+  z
+    .object({
+      where: z.lazy(() => JrExtractionRuleScalarWhereInputSchema),
+      data: z.union([
+        z.lazy(() => JrExtractionRuleUpdateManyMutationInputSchema),
+        z.lazy(() => JrExtractionRuleUncheckedUpdateManyWithoutFindReplaceRulesInputSchema),
+      ]),
+    })
+    .strict();
 
 export default JrExtractionRuleUpdateManyWithWhereWithoutFindReplaceRulesInputSchema;

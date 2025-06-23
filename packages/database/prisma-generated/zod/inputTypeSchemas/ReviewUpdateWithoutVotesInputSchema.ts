@@ -16,25 +16,66 @@ import { UserUpdateOneRequiredWithoutReviewsNestedInputSchema } from './UserUpda
 import { ProductUpdateOneWithoutReviewsNestedInputSchema } from './ProductUpdateOneWithoutReviewsNestedInputSchema';
 import { MediaUpdateManyWithoutReviewNestedInputSchema } from './MediaUpdateManyWithoutReviewNestedInputSchema';
 
-export const ReviewUpdateWithoutVotesInputSchema: z.ZodType<Prisma.ReviewUpdateWithoutVotesInput> = z.object({
-  id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  deletedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  title: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  content: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  rating: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  status: z.union([ z.lazy(() => ContentStatusSchema),z.lazy(() => EnumContentStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  verified: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
-  type: z.union([ z.lazy(() => ReviewTypeSchema),z.lazy(() => EnumReviewTypeFieldUpdateOperationsInputSchema) ]).optional(),
-  sourceId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  source: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  helpfulCount: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  totalVotes: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  deletedBy: z.lazy(() => UserUpdateOneWithoutDeletedReviewsNestedInputSchema).optional(),
-  user: z.lazy(() => UserUpdateOneRequiredWithoutReviewsNestedInputSchema).optional(),
-  product: z.lazy(() => ProductUpdateOneWithoutReviewsNestedInputSchema).optional(),
-  media: z.lazy(() => MediaUpdateManyWithoutReviewNestedInputSchema).optional()
-}).strict();
+export const ReviewUpdateWithoutVotesInputSchema: z.ZodType<Prisma.ReviewUpdateWithoutVotesInput> =
+  z
+    .object({
+      id: z
+        .union([z.string().cuid(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+        .optional(),
+      createdAt: z
+        .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+        .optional(),
+      updatedAt: z
+        .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+        .optional(),
+      deletedAt: z
+        .union([z.coerce.date(), z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      title: z
+        .union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      content: z
+        .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+        .optional(),
+      rating: z
+        .union([z.number().int(), z.lazy(() => IntFieldUpdateOperationsInputSchema)])
+        .optional(),
+      status: z
+        .union([
+          z.lazy(() => ContentStatusSchema),
+          z.lazy(() => EnumContentStatusFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      verified: z
+        .union([z.boolean(), z.lazy(() => BoolFieldUpdateOperationsInputSchema)])
+        .optional(),
+      type: z
+        .union([
+          z.lazy(() => ReviewTypeSchema),
+          z.lazy(() => EnumReviewTypeFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      sourceId: z
+        .union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      source: z
+        .union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      helpfulCount: z
+        .union([z.number().int(), z.lazy(() => IntFieldUpdateOperationsInputSchema)])
+        .optional(),
+      totalVotes: z
+        .union([z.number().int(), z.lazy(() => IntFieldUpdateOperationsInputSchema)])
+        .optional(),
+      deletedBy: z.lazy(() => UserUpdateOneWithoutDeletedReviewsNestedInputSchema).optional(),
+      user: z.lazy(() => UserUpdateOneRequiredWithoutReviewsNestedInputSchema).optional(),
+      product: z.lazy(() => ProductUpdateOneWithoutReviewsNestedInputSchema).optional(),
+      media: z.lazy(() => MediaUpdateManyWithoutReviewNestedInputSchema).optional(),
+    })
+    .strict();
 
 export default ReviewUpdateWithoutVotesInputSchema;

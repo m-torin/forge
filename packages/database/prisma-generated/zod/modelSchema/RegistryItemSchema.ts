@@ -17,8 +17,8 @@ export const RegistryItemSchema = z.object({
   registryId: z.string(),
   productId: z.string().nullable(),
   collectionId: z.string().nullable(),
-})
+});
 
-export type RegistryItem = z.infer<typeof RegistryItemSchema>
+export type RegistryItem = z.infer<typeof RegistryItemSchema>;
 
 export default RegistryItemSchema;

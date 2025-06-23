@@ -7,11 +7,31 @@ import { ProductIdentifiersCreateOrConnectWithoutProductInputSchema } from './Pr
 import { ProductIdentifiersCreateManyProductInputEnvelopeSchema } from './ProductIdentifiersCreateManyProductInputEnvelopeSchema';
 import { ProductIdentifiersWhereUniqueInputSchema } from './ProductIdentifiersWhereUniqueInputSchema';
 
-export const ProductIdentifiersUncheckedCreateNestedManyWithoutProductInputSchema: z.ZodType<Prisma.ProductIdentifiersUncheckedCreateNestedManyWithoutProductInput> = z.object({
-  create: z.union([ z.lazy(() => ProductIdentifiersCreateWithoutProductInputSchema),z.lazy(() => ProductIdentifiersCreateWithoutProductInputSchema).array(),z.lazy(() => ProductIdentifiersUncheckedCreateWithoutProductInputSchema),z.lazy(() => ProductIdentifiersUncheckedCreateWithoutProductInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => ProductIdentifiersCreateOrConnectWithoutProductInputSchema),z.lazy(() => ProductIdentifiersCreateOrConnectWithoutProductInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => ProductIdentifiersCreateManyProductInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => ProductIdentifiersWhereUniqueInputSchema),z.lazy(() => ProductIdentifiersWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const ProductIdentifiersUncheckedCreateNestedManyWithoutProductInputSchema: z.ZodType<Prisma.ProductIdentifiersUncheckedCreateNestedManyWithoutProductInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => ProductIdentifiersCreateWithoutProductInputSchema),
+          z.lazy(() => ProductIdentifiersCreateWithoutProductInputSchema).array(),
+          z.lazy(() => ProductIdentifiersUncheckedCreateWithoutProductInputSchema),
+          z.lazy(() => ProductIdentifiersUncheckedCreateWithoutProductInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => ProductIdentifiersCreateOrConnectWithoutProductInputSchema),
+          z.lazy(() => ProductIdentifiersCreateOrConnectWithoutProductInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => ProductIdentifiersCreateManyProductInputEnvelopeSchema).optional(),
+      connect: z
+        .union([
+          z.lazy(() => ProductIdentifiersWhereUniqueInputSchema),
+          z.lazy(() => ProductIdentifiersWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default ProductIdentifiersUncheckedCreateNestedManyWithoutProductInputSchema;

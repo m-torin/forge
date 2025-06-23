@@ -7,10 +7,19 @@ import { LocationUncheckedUpdateWithoutJrFindReplaceRejectsInputSchema } from '.
 import { LocationCreateWithoutJrFindReplaceRejectsInputSchema } from './LocationCreateWithoutJrFindReplaceRejectsInputSchema';
 import { LocationUncheckedCreateWithoutJrFindReplaceRejectsInputSchema } from './LocationUncheckedCreateWithoutJrFindReplaceRejectsInputSchema';
 
-export const LocationUpsertWithWhereUniqueWithoutJrFindReplaceRejectsInputSchema: z.ZodType<Prisma.LocationUpsertWithWhereUniqueWithoutJrFindReplaceRejectsInput> = z.object({
-  where: z.lazy(() => LocationWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => LocationUpdateWithoutJrFindReplaceRejectsInputSchema),z.lazy(() => LocationUncheckedUpdateWithoutJrFindReplaceRejectsInputSchema) ]),
-  create: z.union([ z.lazy(() => LocationCreateWithoutJrFindReplaceRejectsInputSchema),z.lazy(() => LocationUncheckedCreateWithoutJrFindReplaceRejectsInputSchema) ]),
-}).strict();
+export const LocationUpsertWithWhereUniqueWithoutJrFindReplaceRejectsInputSchema: z.ZodType<Prisma.LocationUpsertWithWhereUniqueWithoutJrFindReplaceRejectsInput> =
+  z
+    .object({
+      where: z.lazy(() => LocationWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => LocationUpdateWithoutJrFindReplaceRejectsInputSchema),
+        z.lazy(() => LocationUncheckedUpdateWithoutJrFindReplaceRejectsInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => LocationCreateWithoutJrFindReplaceRejectsInputSchema),
+        z.lazy(() => LocationUncheckedCreateWithoutJrFindReplaceRejectsInputSchema),
+      ]),
+    })
+    .strict();
 
 export default LocationUpsertWithWhereUniqueWithoutJrFindReplaceRejectsInputSchema;

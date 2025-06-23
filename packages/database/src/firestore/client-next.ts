@@ -127,7 +127,7 @@ export function useFirestoreDocument<T>(
 /**
  * Client-side Firestore query builder hook
  */
-export function useFirestoreQuery<_T>() {
+export function useFirestoreQuery<T>() {
   const [query, setQuery] = useState<{
     collection: string;
     where?: Array<{

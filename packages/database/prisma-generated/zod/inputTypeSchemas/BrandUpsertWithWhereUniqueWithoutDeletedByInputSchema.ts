@@ -7,10 +7,19 @@ import { BrandUncheckedUpdateWithoutDeletedByInputSchema } from './BrandUnchecke
 import { BrandCreateWithoutDeletedByInputSchema } from './BrandCreateWithoutDeletedByInputSchema';
 import { BrandUncheckedCreateWithoutDeletedByInputSchema } from './BrandUncheckedCreateWithoutDeletedByInputSchema';
 
-export const BrandUpsertWithWhereUniqueWithoutDeletedByInputSchema: z.ZodType<Prisma.BrandUpsertWithWhereUniqueWithoutDeletedByInput> = z.object({
-  where: z.lazy(() => BrandWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => BrandUpdateWithoutDeletedByInputSchema),z.lazy(() => BrandUncheckedUpdateWithoutDeletedByInputSchema) ]),
-  create: z.union([ z.lazy(() => BrandCreateWithoutDeletedByInputSchema),z.lazy(() => BrandUncheckedCreateWithoutDeletedByInputSchema) ]),
-}).strict();
+export const BrandUpsertWithWhereUniqueWithoutDeletedByInputSchema: z.ZodType<Prisma.BrandUpsertWithWhereUniqueWithoutDeletedByInput> =
+  z
+    .object({
+      where: z.lazy(() => BrandWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => BrandUpdateWithoutDeletedByInputSchema),
+        z.lazy(() => BrandUncheckedUpdateWithoutDeletedByInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => BrandCreateWithoutDeletedByInputSchema),
+        z.lazy(() => BrandUncheckedCreateWithoutDeletedByInputSchema),
+      ]),
+    })
+    .strict();
 
 export default BrandUpsertWithWhereUniqueWithoutDeletedByInputSchema;

@@ -21,6 +21,12 @@
  * const userById = await findUniqueUserOrm({
  *   where: { id: 'user123' }
  * });
+ *
+ * // Using transaction utilities
+ * import { executeTransaction } from '@repo/database/prisma';
+ * const result = await executeTransaction(async (tx) => {
+ *   // transaction logic
+ * });
  * ```
  */
 
@@ -55,6 +61,28 @@ export * from './src/server-actions';
 
 // Export ORM functions
 export * from './src/orm';
+
+// ============================================================================
+// TRANSACTION UTILITIES
+// ============================================================================
+
+// Export transaction utilities
+export * from './src/utils/transaction';
+
+// ============================================================================
+// SPECIALIZED UTILITIES
+// ============================================================================
+
+// Export review-specific utilities
+export * from './src/utils/reviewUtils';
+
+// Export registry-specific utilities
+export {
+  getMonthlyRegistryActivity,
+  getTopRegistryProducts,
+  getRegistryUserEngagement,
+  getRegistryPurchaseActivity,
+} from './src/utils/registryUtils';
 
 // ============================================================================
 // VALIDATION UTILITIES

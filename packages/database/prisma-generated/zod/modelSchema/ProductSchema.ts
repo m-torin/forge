@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema'
-import { Prisma } from '../../client'
-import { ProductStatusSchema } from '../inputTypeSchemas/ProductStatusSchema'
-import { ProductTypeSchema } from '../inputTypeSchemas/ProductTypeSchema'
+import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema';
+import { Prisma } from '../../client';
+import { ProductStatusSchema } from '../inputTypeSchemas/ProductStatusSchema';
+import { ProductTypeSchema } from '../inputTypeSchemas/ProductTypeSchema';
 
 /////////////////////////////////////////
 // PRODUCT SCHEMA
@@ -19,8 +19,16 @@ export const ProductSchema = z.object({
   brand: z.string().nullable(),
   price: z.number().nullable(),
   currency: z.string().nullable(),
-  variantPrice: z.instanceof(Prisma.Decimal, { message: "Field 'variantPrice' must be a Decimal. Location: ['Models', 'Product']"}).nullable(),
-  compareAtPrice: z.instanceof(Prisma.Decimal, { message: "Field 'compareAtPrice' must be a Decimal. Location: ['Models', 'Product']"}).nullable(),
+  variantPrice: z
+    .instanceof(Prisma.Decimal, {
+      message: "Field 'variantPrice' must be a Decimal. Location: ['Models', 'Product']",
+    })
+    .nullable(),
+  compareAtPrice: z
+    .instanceof(Prisma.Decimal, {
+      message: "Field 'compareAtPrice' must be a Decimal. Location: ['Models', 'Product']",
+    })
+    .nullable(),
   physicalProperties: JsonValueSchema.nullable(),
   displayOrder: z.number().int(),
   isDefault: z.boolean(),
@@ -35,8 +43,8 @@ export const ProductSchema = z.object({
   aiGenerated: z.boolean(),
   aiConfidence: z.number().nullable(),
   aiSources: z.string().array(),
-})
+});
 
-export type Product = z.infer<typeof ProductSchema>
+export type Product = z.infer<typeof ProductSchema>;
 
 export default ProductSchema;

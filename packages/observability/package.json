@@ -3,10 +3,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "vitest --run",
-    "test:watch": "vitest",
-    "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage --run",
+    "test": "NODE_OPTIONS='--max-old-space-size=8192' vitest --run",
+    "test:watch": "NODE_OPTIONS='--max-old-space-size=8192' vitest",
+    "test:ui": "NODE_OPTIONS='--max-old-space-size=8192' vitest --ui",
+    "test:coverage": "NODE_OPTIONS='--max-old-space-size=8192' vitest --coverage --run",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
     "lint": "eslint . --fix"
   },
@@ -85,6 +85,9 @@
     }
   },
   "devDependencies": {
+    "@babel/parser": "^7.26.4",
+    "@babel/traverse": "^7.26.4",
+    "@babel/types": "^7.26.4",
     "@logtail/js": "^0.5.5",
     "@logtail/next": "^0.2.0",
     "@logtail/node": "^0.5.5",
@@ -114,6 +117,7 @@
     "jsdom": "^26.1.0",
     "pino": "^9.7.0",
     "typescript": "5.8.3",
+    "vite": "^6.3.5",
     "vitest": "^3.2.4",
     "winston": "^3.17.0"
   },
@@ -122,6 +126,7 @@
     "./server": "./src/server.ts",
     "./client/next": "./src/client-next.ts",
     "./server/next": "./src/server-next.ts",
+    "./server/next/edge": "./src/server-next-edge.ts",
     "./shared-env": "./src/shared-env.ts",
     "./keys": {
       "types": "./keys.ts",

@@ -91,7 +91,7 @@ export class LogtailClientProvider implements ObservabilityProvider {
     this.log('info', 'Session ended', {
       timestamp: Date.now(),
     });
-    
+
     // Flush logs
     if (this.client) {
       this.client.flush();

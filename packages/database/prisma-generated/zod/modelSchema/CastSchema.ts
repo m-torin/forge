@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema'
+import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema';
 
 /////////////////////////////////////////
 // CAST SCHEMA
@@ -15,8 +15,8 @@ export const CastSchema = z.object({
   updatedAt: z.coerce.date(),
   deletedAt: z.coerce.date().nullable(),
   deletedById: z.string().nullable(),
-})
+});
 
-export type Cast = z.infer<typeof CastSchema>
+export type Cast = z.infer<typeof CastSchema>;
 
 export default CastSchema;

@@ -15,27 +15,71 @@ import { RegistryUserJoinListRelationFilterSchema } from './RegistryUserJoinList
 import { CartItemListRelationFilterSchema } from './CartItemListRelationFilterSchema';
 import { OrderItemListRelationFilterSchema } from './OrderItemListRelationFilterSchema';
 
-export const RegistryWhereInputSchema: z.ZodType<Prisma.RegistryWhereInput> = z.object({
-  AND: z.union([ z.lazy(() => RegistryWhereInputSchema),z.lazy(() => RegistryWhereInputSchema).array() ]).optional(),
-  OR: z.lazy(() => RegistryWhereInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => RegistryWhereInputSchema),z.lazy(() => RegistryWhereInputSchema).array() ]).optional(),
-  id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  updatedAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  deletedAt: z.union([ z.lazy(() => DateTimeNullableFilterSchema),z.coerce.date() ]).optional().nullable(),
-  deletedById: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
-  title: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  description: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
-  type: z.union([ z.lazy(() => EnumRegistryTypeFilterSchema),z.lazy(() => RegistryTypeSchema) ]).optional(),
-  isPublic: z.union([ z.lazy(() => BoolFilterSchema),z.boolean() ]).optional(),
-  eventDate: z.union([ z.lazy(() => DateTimeNullableFilterSchema),z.coerce.date() ]).optional().nullable(),
-  createdByUserId: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
-  deletedBy: z.union([ z.lazy(() => UserNullableScalarRelationFilterSchema),z.lazy(() => UserWhereInputSchema) ]).optional().nullable(),
-  createdByUser: z.union([ z.lazy(() => UserNullableScalarRelationFilterSchema),z.lazy(() => UserWhereInputSchema) ]).optional().nullable(),
-  items: z.lazy(() => RegistryItemListRelationFilterSchema).optional(),
-  users: z.lazy(() => RegistryUserJoinListRelationFilterSchema).optional(),
-  cartItems: z.lazy(() => CartItemListRelationFilterSchema).optional(),
-  orderItems: z.lazy(() => OrderItemListRelationFilterSchema).optional()
-}).strict();
+export const RegistryWhereInputSchema: z.ZodType<Prisma.RegistryWhereInput> = z
+  .object({
+    AND: z
+      .union([
+        z.lazy(() => RegistryWhereInputSchema),
+        z.lazy(() => RegistryWhereInputSchema).array(),
+      ])
+      .optional(),
+    OR: z
+      .lazy(() => RegistryWhereInputSchema)
+      .array()
+      .optional(),
+    NOT: z
+      .union([
+        z.lazy(() => RegistryWhereInputSchema),
+        z.lazy(() => RegistryWhereInputSchema).array(),
+      ])
+      .optional(),
+    id: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
+    createdAt: z.union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()]).optional(),
+    updatedAt: z.union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()]).optional(),
+    deletedAt: z
+      .union([z.lazy(() => DateTimeNullableFilterSchema), z.coerce.date()])
+      .optional()
+      .nullable(),
+    deletedById: z
+      .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+      .optional()
+      .nullable(),
+    title: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
+    description: z
+      .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+      .optional()
+      .nullable(),
+    type: z
+      .union([z.lazy(() => EnumRegistryTypeFilterSchema), z.lazy(() => RegistryTypeSchema)])
+      .optional(),
+    isPublic: z.union([z.lazy(() => BoolFilterSchema), z.boolean()]).optional(),
+    eventDate: z
+      .union([z.lazy(() => DateTimeNullableFilterSchema), z.coerce.date()])
+      .optional()
+      .nullable(),
+    createdByUserId: z
+      .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+      .optional()
+      .nullable(),
+    deletedBy: z
+      .union([
+        z.lazy(() => UserNullableScalarRelationFilterSchema),
+        z.lazy(() => UserWhereInputSchema),
+      ])
+      .optional()
+      .nullable(),
+    createdByUser: z
+      .union([
+        z.lazy(() => UserNullableScalarRelationFilterSchema),
+        z.lazy(() => UserWhereInputSchema),
+      ])
+      .optional()
+      .nullable(),
+    items: z.lazy(() => RegistryItemListRelationFilterSchema).optional(),
+    users: z.lazy(() => RegistryUserJoinListRelationFilterSchema).optional(),
+    cartItems: z.lazy(() => CartItemListRelationFilterSchema).optional(),
+    orderItems: z.lazy(() => OrderItemListRelationFilterSchema).optional(),
+  })
+  .strict();
 
 export default RegistryWhereInputSchema;

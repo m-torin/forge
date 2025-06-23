@@ -1,10 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+// Import after mocking
 import {
   createServiceAuth,
   parseServiceToken,
   verifyServiceAuth,
-} from '../../../server/api-keys/service-auth';
+} from '../../../src/server/api-keys/service-auth';
 
 // Mock auth using vi.hoisted
 const { mockCreateApiKey, mockListApiKeys, mockRevokeApiKey, mockVerifyApiKey } = vi.hoisted(() => {
@@ -15,7 +16,7 @@ const { mockCreateApiKey, mockListApiKeys, mockRevokeApiKey, mockVerifyApiKey } 
   return { mockCreateApiKey, mockListApiKeys, mockRevokeApiKey, mockVerifyApiKey };
 });
 
-vi.mock('../../../server/auth', () => ({
+vi.mock('../../../src/shared/auth.config', () => ({
   auth: {
     api: {
       createApiKey: mockCreateApiKey,

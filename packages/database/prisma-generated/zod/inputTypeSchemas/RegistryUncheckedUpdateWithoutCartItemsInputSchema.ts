@@ -12,21 +12,58 @@ import { RegistryItemUncheckedUpdateManyWithoutRegistryNestedInputSchema } from 
 import { RegistryUserJoinUncheckedUpdateManyWithoutRegistryNestedInputSchema } from './RegistryUserJoinUncheckedUpdateManyWithoutRegistryNestedInputSchema';
 import { OrderItemUncheckedUpdateManyWithoutRegistryNestedInputSchema } from './OrderItemUncheckedUpdateManyWithoutRegistryNestedInputSchema';
 
-export const RegistryUncheckedUpdateWithoutCartItemsInputSchema: z.ZodType<Prisma.RegistryUncheckedUpdateWithoutCartItemsInput> = z.object({
-  id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  deletedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  deletedById: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  type: z.union([ z.lazy(() => RegistryTypeSchema),z.lazy(() => EnumRegistryTypeFieldUpdateOperationsInputSchema) ]).optional(),
-  isPublic: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
-  eventDate: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  createdByUserId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  items: z.lazy(() => RegistryItemUncheckedUpdateManyWithoutRegistryNestedInputSchema).optional(),
-  users: z.lazy(() => RegistryUserJoinUncheckedUpdateManyWithoutRegistryNestedInputSchema).optional(),
-  orderItems: z.lazy(() => OrderItemUncheckedUpdateManyWithoutRegistryNestedInputSchema).optional()
-}).strict();
+export const RegistryUncheckedUpdateWithoutCartItemsInputSchema: z.ZodType<Prisma.RegistryUncheckedUpdateWithoutCartItemsInput> =
+  z
+    .object({
+      id: z
+        .union([z.string().cuid(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+        .optional(),
+      createdAt: z
+        .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+        .optional(),
+      updatedAt: z
+        .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+        .optional(),
+      deletedAt: z
+        .union([z.coerce.date(), z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      deletedById: z
+        .union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      title: z.union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)]).optional(),
+      description: z
+        .union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      type: z
+        .union([
+          z.lazy(() => RegistryTypeSchema),
+          z.lazy(() => EnumRegistryTypeFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      isPublic: z
+        .union([z.boolean(), z.lazy(() => BoolFieldUpdateOperationsInputSchema)])
+        .optional(),
+      eventDate: z
+        .union([z.coerce.date(), z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      createdByUserId: z
+        .union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      items: z
+        .lazy(() => RegistryItemUncheckedUpdateManyWithoutRegistryNestedInputSchema)
+        .optional(),
+      users: z
+        .lazy(() => RegistryUserJoinUncheckedUpdateManyWithoutRegistryNestedInputSchema)
+        .optional(),
+      orderItems: z
+        .lazy(() => OrderItemUncheckedUpdateManyWithoutRegistryNestedInputSchema)
+        .optional(),
+    })
+    .strict();
 
 export default RegistryUncheckedUpdateWithoutCartItemsInputSchema;

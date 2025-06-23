@@ -54,7 +54,7 @@ describe('product Emitters', () => {
       const properties = { query: 'laptops' };
       const options = {
         context: { traits: { userId: 'user123' } },
-        timestamp: new Date()
+        timestamp: new Date(),
       };
       const result = productSearched(properties, options);
 

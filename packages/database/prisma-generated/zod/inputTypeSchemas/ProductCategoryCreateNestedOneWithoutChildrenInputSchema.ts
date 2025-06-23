@@ -6,10 +6,20 @@ import { ProductCategoryUncheckedCreateWithoutChildrenInputSchema } from './Prod
 import { ProductCategoryCreateOrConnectWithoutChildrenInputSchema } from './ProductCategoryCreateOrConnectWithoutChildrenInputSchema';
 import { ProductCategoryWhereUniqueInputSchema } from './ProductCategoryWhereUniqueInputSchema';
 
-export const ProductCategoryCreateNestedOneWithoutChildrenInputSchema: z.ZodType<Prisma.ProductCategoryCreateNestedOneWithoutChildrenInput> = z.object({
-  create: z.union([ z.lazy(() => ProductCategoryCreateWithoutChildrenInputSchema),z.lazy(() => ProductCategoryUncheckedCreateWithoutChildrenInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => ProductCategoryCreateOrConnectWithoutChildrenInputSchema).optional(),
-  connect: z.lazy(() => ProductCategoryWhereUniqueInputSchema).optional()
-}).strict();
+export const ProductCategoryCreateNestedOneWithoutChildrenInputSchema: z.ZodType<Prisma.ProductCategoryCreateNestedOneWithoutChildrenInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => ProductCategoryCreateWithoutChildrenInputSchema),
+          z.lazy(() => ProductCategoryUncheckedCreateWithoutChildrenInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .lazy(() => ProductCategoryCreateOrConnectWithoutChildrenInputSchema)
+        .optional(),
+      connect: z.lazy(() => ProductCategoryWhereUniqueInputSchema).optional(),
+    })
+    .strict();
 
 export default ProductCategoryCreateNestedOneWithoutChildrenInputSchema;

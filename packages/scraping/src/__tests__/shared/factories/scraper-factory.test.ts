@@ -3,21 +3,22 @@ import { beforeEach, describe, expect, vi } from 'vitest';
 // Import after mocks are set up
 import { createScraper, createServerScraper } from '../../../shared/factories/scraper-factory';
 
-// Mock the provider modules
-vi.mock('../../../server/providers/playwright-provider', () => ({
-  PlaywrightProvider: vi.fn().mockImplementation(() => ({
-    initialize: vi.fn().mockResolvedValue(undefined),
-    scrape: vi.fn().mockResolvedValue({
-      url: 'https://example.com',
-      html: '<html><body>Mock content</body></html>',
-      metadata: {
-        title: 'Mock Title',
-        statusCode: 200,
-      },
-      provider: 'playwright',
-    }),
-  })),
-}));
+beforeAll(() => {
+  vi.doMock('../../../server/providers/playwright-provider', async () => ({
+    PlaywrightProvider: vi.fn().mockImplementation(() => ({
+      initialize: vi.fn().mockResolvedValue(undefined),
+      scrape: vi.fn().mockResolvedValue({
+        url: 'https://example.com',
+        html: '<html><body>Mock content</body></html>',
+        metadata: {
+          title: 'Mock Title',
+          statusCode: 200,
+        },
+        provider: 'playwright',
+      }),
+    })),
+  }));
+});
 
 vi.mock('../../../server/providers/cheerio-provider', () => ({
   CheerioProvider: vi.fn().mockImplementation(() => ({

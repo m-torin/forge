@@ -23,28 +23,54 @@ import { RegistryItemUpdateManyWithoutCollectionNestedInputSchema } from './Regi
 import { ProductIdentifiersUpdateManyWithoutCollectionNestedInputSchema } from './ProductIdentifiersUpdateManyWithoutCollectionNestedInputSchema';
 import { UserUpdateOneWithoutDeletedCollectionsNestedInputSchema } from './UserUpdateOneWithoutDeletedCollectionsNestedInputSchema';
 
-export const CollectionUpdateWithoutParentInputSchema: z.ZodType<Prisma.CollectionUpdateWithoutParentInput> = z.object({
-  id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  type: z.union([ z.lazy(() => CollectionTypeSchema),z.lazy(() => EnumCollectionTypeFieldUpdateOperationsInputSchema) ]).optional(),
-  status: z.union([ z.lazy(() => ContentStatusSchema),z.lazy(() => EnumContentStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  copy: z.union([ z.lazy(() => JsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
-  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  deletedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  children: z.lazy(() => CollectionUpdateManyWithoutParentNestedInputSchema).optional(),
-  user: z.lazy(() => UserUpdateOneWithoutCollectionsNestedInputSchema).optional(),
-  products: z.lazy(() => ProductUpdateManyWithoutCollectionsNestedInputSchema).optional(),
-  brands: z.lazy(() => BrandUpdateManyWithoutCollectionsNestedInputSchema).optional(),
-  taxonomies: z.lazy(() => TaxonomyUpdateManyWithoutCollectionsNestedInputSchema).optional(),
-  categories: z.lazy(() => ProductCategoryUpdateManyWithoutCollectionsNestedInputSchema).optional(),
-  pdpJoins: z.lazy(() => PdpJoinUpdateManyWithoutCollectionsNestedInputSchema).optional(),
-  media: z.lazy(() => MediaUpdateManyWithoutCollectionNestedInputSchema).optional(),
-  favorites: z.lazy(() => FavoriteJoinUpdateManyWithoutCollectionNestedInputSchema).optional(),
-  registries: z.lazy(() => RegistryItemUpdateManyWithoutCollectionNestedInputSchema).optional(),
-  identifiers: z.lazy(() => ProductIdentifiersUpdateManyWithoutCollectionNestedInputSchema).optional(),
-  deletedBy: z.lazy(() => UserUpdateOneWithoutDeletedCollectionsNestedInputSchema).optional()
-}).strict();
+export const CollectionUpdateWithoutParentInputSchema: z.ZodType<Prisma.CollectionUpdateWithoutParentInput> =
+  z
+    .object({
+      id: z
+        .union([z.string().cuid(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+        .optional(),
+      name: z.union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)]).optional(),
+      slug: z.union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)]).optional(),
+      type: z
+        .union([
+          z.lazy(() => CollectionTypeSchema),
+          z.lazy(() => EnumCollectionTypeFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      status: z
+        .union([
+          z.lazy(() => ContentStatusSchema),
+          z.lazy(() => EnumContentStatusFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      copy: z.union([z.lazy(() => JsonNullValueInputSchema), InputJsonValueSchema]).optional(),
+      createdAt: z
+        .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+        .optional(),
+      updatedAt: z
+        .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+        .optional(),
+      deletedAt: z
+        .union([z.coerce.date(), z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      children: z.lazy(() => CollectionUpdateManyWithoutParentNestedInputSchema).optional(),
+      user: z.lazy(() => UserUpdateOneWithoutCollectionsNestedInputSchema).optional(),
+      products: z.lazy(() => ProductUpdateManyWithoutCollectionsNestedInputSchema).optional(),
+      brands: z.lazy(() => BrandUpdateManyWithoutCollectionsNestedInputSchema).optional(),
+      taxonomies: z.lazy(() => TaxonomyUpdateManyWithoutCollectionsNestedInputSchema).optional(),
+      categories: z
+        .lazy(() => ProductCategoryUpdateManyWithoutCollectionsNestedInputSchema)
+        .optional(),
+      pdpJoins: z.lazy(() => PdpJoinUpdateManyWithoutCollectionsNestedInputSchema).optional(),
+      media: z.lazy(() => MediaUpdateManyWithoutCollectionNestedInputSchema).optional(),
+      favorites: z.lazy(() => FavoriteJoinUpdateManyWithoutCollectionNestedInputSchema).optional(),
+      registries: z.lazy(() => RegistryItemUpdateManyWithoutCollectionNestedInputSchema).optional(),
+      identifiers: z
+        .lazy(() => ProductIdentifiersUpdateManyWithoutCollectionNestedInputSchema)
+        .optional(),
+      deletedBy: z.lazy(() => UserUpdateOneWithoutDeletedCollectionsNestedInputSchema).optional(),
+    })
+    .strict();
 
 export default CollectionUpdateWithoutParentInputSchema;

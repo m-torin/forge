@@ -145,6 +145,8 @@ export * from './data/types';
 
 // Hooks exports
 export * from './hooks/useLocale';
+export * from './hooks/useThemeMode';
+export * from './hooks/useWindowResize';
 export { default as appleSvg } from './images/socials/apple.svg';
 
 // Image exports

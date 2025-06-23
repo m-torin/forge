@@ -5,17 +5,20 @@ import { JsonNullValueInputSchema } from './JsonNullValueInputSchema';
 import { InputJsonValueSchema } from './InputJsonValueSchema';
 import { ProductUncheckedCreateNestedManyWithoutCastsInputSchema } from './ProductUncheckedCreateNestedManyWithoutCastsInputSchema';
 
-export const CastUncheckedCreateWithoutJrFindReplaceRejectsInputSchema: z.ZodType<Prisma.CastUncheckedCreateWithoutJrFindReplaceRejectsInput> = z.object({
-  id: z.string().cuid().optional(),
-  name: z.string(),
-  slug: z.string(),
-  isFictional: z.boolean().optional(),
-  copy: z.union([ z.lazy(() => JsonNullValueInputSchema),InputJsonValueSchema ]),
-  createdAt: z.coerce.date().optional(),
-  updatedAt: z.coerce.date().optional(),
-  deletedAt: z.coerce.date().optional().nullable(),
-  deletedById: z.string().optional().nullable(),
-  products: z.lazy(() => ProductUncheckedCreateNestedManyWithoutCastsInputSchema).optional()
-}).strict();
+export const CastUncheckedCreateWithoutJrFindReplaceRejectsInputSchema: z.ZodType<Prisma.CastUncheckedCreateWithoutJrFindReplaceRejectsInput> =
+  z
+    .object({
+      id: z.string().cuid().optional(),
+      name: z.string(),
+      slug: z.string(),
+      isFictional: z.boolean().optional(),
+      copy: z.union([z.lazy(() => JsonNullValueInputSchema), InputJsonValueSchema]),
+      createdAt: z.coerce.date().optional(),
+      updatedAt: z.coerce.date().optional(),
+      deletedAt: z.coerce.date().optional().nullable(),
+      deletedById: z.string().optional().nullable(),
+      products: z.lazy(() => ProductUncheckedCreateNestedManyWithoutCastsInputSchema).optional(),
+    })
+    .strict();
 
 export default CastUncheckedCreateWithoutJrFindReplaceRejectsInputSchema;

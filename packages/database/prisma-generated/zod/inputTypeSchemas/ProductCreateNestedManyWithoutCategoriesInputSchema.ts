@@ -6,10 +6,30 @@ import { ProductUncheckedCreateWithoutCategoriesInputSchema } from './ProductUnc
 import { ProductCreateOrConnectWithoutCategoriesInputSchema } from './ProductCreateOrConnectWithoutCategoriesInputSchema';
 import { ProductWhereUniqueInputSchema } from './ProductWhereUniqueInputSchema';
 
-export const ProductCreateNestedManyWithoutCategoriesInputSchema: z.ZodType<Prisma.ProductCreateNestedManyWithoutCategoriesInput> = z.object({
-  create: z.union([ z.lazy(() => ProductCreateWithoutCategoriesInputSchema),z.lazy(() => ProductCreateWithoutCategoriesInputSchema).array(),z.lazy(() => ProductUncheckedCreateWithoutCategoriesInputSchema),z.lazy(() => ProductUncheckedCreateWithoutCategoriesInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => ProductCreateOrConnectWithoutCategoriesInputSchema),z.lazy(() => ProductCreateOrConnectWithoutCategoriesInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => ProductWhereUniqueInputSchema),z.lazy(() => ProductWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const ProductCreateNestedManyWithoutCategoriesInputSchema: z.ZodType<Prisma.ProductCreateNestedManyWithoutCategoriesInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => ProductCreateWithoutCategoriesInputSchema),
+          z.lazy(() => ProductCreateWithoutCategoriesInputSchema).array(),
+          z.lazy(() => ProductUncheckedCreateWithoutCategoriesInputSchema),
+          z.lazy(() => ProductUncheckedCreateWithoutCategoriesInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => ProductCreateOrConnectWithoutCategoriesInputSchema),
+          z.lazy(() => ProductCreateOrConnectWithoutCategoriesInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => ProductWhereUniqueInputSchema),
+          z.lazy(() => ProductWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default ProductCreateNestedManyWithoutCategoriesInputSchema;

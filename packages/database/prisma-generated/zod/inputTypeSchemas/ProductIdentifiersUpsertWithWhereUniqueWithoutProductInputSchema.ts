@@ -7,10 +7,19 @@ import { ProductIdentifiersUncheckedUpdateWithoutProductInputSchema } from './Pr
 import { ProductIdentifiersCreateWithoutProductInputSchema } from './ProductIdentifiersCreateWithoutProductInputSchema';
 import { ProductIdentifiersUncheckedCreateWithoutProductInputSchema } from './ProductIdentifiersUncheckedCreateWithoutProductInputSchema';
 
-export const ProductIdentifiersUpsertWithWhereUniqueWithoutProductInputSchema: z.ZodType<Prisma.ProductIdentifiersUpsertWithWhereUniqueWithoutProductInput> = z.object({
-  where: z.lazy(() => ProductIdentifiersWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => ProductIdentifiersUpdateWithoutProductInputSchema),z.lazy(() => ProductIdentifiersUncheckedUpdateWithoutProductInputSchema) ]),
-  create: z.union([ z.lazy(() => ProductIdentifiersCreateWithoutProductInputSchema),z.lazy(() => ProductIdentifiersUncheckedCreateWithoutProductInputSchema) ]),
-}).strict();
+export const ProductIdentifiersUpsertWithWhereUniqueWithoutProductInputSchema: z.ZodType<Prisma.ProductIdentifiersUpsertWithWhereUniqueWithoutProductInput> =
+  z
+    .object({
+      where: z.lazy(() => ProductIdentifiersWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => ProductIdentifiersUpdateWithoutProductInputSchema),
+        z.lazy(() => ProductIdentifiersUncheckedUpdateWithoutProductInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => ProductIdentifiersCreateWithoutProductInputSchema),
+        z.lazy(() => ProductIdentifiersUncheckedCreateWithoutProductInputSchema),
+      ]),
+    })
+    .strict();
 
 export default ProductIdentifiersUpsertWithWhereUniqueWithoutProductInputSchema;

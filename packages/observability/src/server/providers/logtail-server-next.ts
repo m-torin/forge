@@ -50,7 +50,7 @@ export class LogtailServerNextProvider implements ObservabilityProvider {
     };
 
     this.logger.error('Exception captured', errorData);
-    
+
     // Flush immediately for server components
     if (typeof window === 'undefined') {
       await this.logger.flush();
@@ -212,7 +212,7 @@ export class LogtailServerNextProvider implements ObservabilityProvider {
     return {
       finish: async () => {
         if (!this.logger) return;
-        
+
         const duration = Date.now() - startTime;
         this.logger.info(`Transaction completed: ${name}`, {
           duration,
@@ -220,7 +220,7 @@ export class LogtailServerNextProvider implements ObservabilityProvider {
           transactionId,
           transactionName: name,
         });
-        
+
         // Flush after transaction
         await this.logger.flush();
       },

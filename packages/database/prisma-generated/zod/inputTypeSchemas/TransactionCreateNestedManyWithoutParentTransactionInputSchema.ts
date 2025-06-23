@@ -7,11 +7,33 @@ import { TransactionCreateOrConnectWithoutParentTransactionInputSchema } from '.
 import { TransactionCreateManyParentTransactionInputEnvelopeSchema } from './TransactionCreateManyParentTransactionInputEnvelopeSchema';
 import { TransactionWhereUniqueInputSchema } from './TransactionWhereUniqueInputSchema';
 
-export const TransactionCreateNestedManyWithoutParentTransactionInputSchema: z.ZodType<Prisma.TransactionCreateNestedManyWithoutParentTransactionInput> = z.object({
-  create: z.union([ z.lazy(() => TransactionCreateWithoutParentTransactionInputSchema),z.lazy(() => TransactionCreateWithoutParentTransactionInputSchema).array(),z.lazy(() => TransactionUncheckedCreateWithoutParentTransactionInputSchema),z.lazy(() => TransactionUncheckedCreateWithoutParentTransactionInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => TransactionCreateOrConnectWithoutParentTransactionInputSchema),z.lazy(() => TransactionCreateOrConnectWithoutParentTransactionInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => TransactionCreateManyParentTransactionInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => TransactionWhereUniqueInputSchema),z.lazy(() => TransactionWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const TransactionCreateNestedManyWithoutParentTransactionInputSchema: z.ZodType<Prisma.TransactionCreateNestedManyWithoutParentTransactionInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => TransactionCreateWithoutParentTransactionInputSchema),
+          z.lazy(() => TransactionCreateWithoutParentTransactionInputSchema).array(),
+          z.lazy(() => TransactionUncheckedCreateWithoutParentTransactionInputSchema),
+          z.lazy(() => TransactionUncheckedCreateWithoutParentTransactionInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => TransactionCreateOrConnectWithoutParentTransactionInputSchema),
+          z.lazy(() => TransactionCreateOrConnectWithoutParentTransactionInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z
+        .lazy(() => TransactionCreateManyParentTransactionInputEnvelopeSchema)
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => TransactionWhereUniqueInputSchema),
+          z.lazy(() => TransactionWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default TransactionCreateNestedManyWithoutParentTransactionInputSchema;

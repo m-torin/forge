@@ -11,14 +11,28 @@ import { ReviewUpdateToOneWithWhereWithoutMediaInputSchema } from './ReviewUpdat
 import { ReviewUpdateWithoutMediaInputSchema } from './ReviewUpdateWithoutMediaInputSchema';
 import { ReviewUncheckedUpdateWithoutMediaInputSchema } from './ReviewUncheckedUpdateWithoutMediaInputSchema';
 
-export const ReviewUpdateOneWithoutMediaNestedInputSchema: z.ZodType<Prisma.ReviewUpdateOneWithoutMediaNestedInput> = z.object({
-  create: z.union([ z.lazy(() => ReviewCreateWithoutMediaInputSchema),z.lazy(() => ReviewUncheckedCreateWithoutMediaInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => ReviewCreateOrConnectWithoutMediaInputSchema).optional(),
-  upsert: z.lazy(() => ReviewUpsertWithoutMediaInputSchema).optional(),
-  disconnect: z.union([ z.boolean(),z.lazy(() => ReviewWhereInputSchema) ]).optional(),
-  delete: z.union([ z.boolean(),z.lazy(() => ReviewWhereInputSchema) ]).optional(),
-  connect: z.lazy(() => ReviewWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => ReviewUpdateToOneWithWhereWithoutMediaInputSchema),z.lazy(() => ReviewUpdateWithoutMediaInputSchema),z.lazy(() => ReviewUncheckedUpdateWithoutMediaInputSchema) ]).optional(),
-}).strict();
+export const ReviewUpdateOneWithoutMediaNestedInputSchema: z.ZodType<Prisma.ReviewUpdateOneWithoutMediaNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => ReviewCreateWithoutMediaInputSchema),
+          z.lazy(() => ReviewUncheckedCreateWithoutMediaInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z.lazy(() => ReviewCreateOrConnectWithoutMediaInputSchema).optional(),
+      upsert: z.lazy(() => ReviewUpsertWithoutMediaInputSchema).optional(),
+      disconnect: z.union([z.boolean(), z.lazy(() => ReviewWhereInputSchema)]).optional(),
+      delete: z.union([z.boolean(), z.lazy(() => ReviewWhereInputSchema)]).optional(),
+      connect: z.lazy(() => ReviewWhereUniqueInputSchema).optional(),
+      update: z
+        .union([
+          z.lazy(() => ReviewUpdateToOneWithWhereWithoutMediaInputSchema),
+          z.lazy(() => ReviewUpdateWithoutMediaInputSchema),
+          z.lazy(() => ReviewUncheckedUpdateWithoutMediaInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default ReviewUpdateOneWithoutMediaNestedInputSchema;

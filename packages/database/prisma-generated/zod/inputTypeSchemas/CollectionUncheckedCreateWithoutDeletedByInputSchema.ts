@@ -16,28 +16,47 @@ import { FavoriteJoinUncheckedCreateNestedManyWithoutCollectionInputSchema } fro
 import { RegistryItemUncheckedCreateNestedManyWithoutCollectionInputSchema } from './RegistryItemUncheckedCreateNestedManyWithoutCollectionInputSchema';
 import { ProductIdentifiersUncheckedCreateNestedManyWithoutCollectionInputSchema } from './ProductIdentifiersUncheckedCreateNestedManyWithoutCollectionInputSchema';
 
-export const CollectionUncheckedCreateWithoutDeletedByInputSchema: z.ZodType<Prisma.CollectionUncheckedCreateWithoutDeletedByInput> = z.object({
-  id: z.string().cuid().optional(),
-  name: z.string(),
-  slug: z.string(),
-  type: z.lazy(() => CollectionTypeSchema).optional(),
-  status: z.lazy(() => ContentStatusSchema).optional(),
-  userId: z.string().optional().nullable(),
-  copy: z.union([ z.lazy(() => JsonNullValueInputSchema),InputJsonValueSchema ]),
-  parentId: z.string().optional().nullable(),
-  createdAt: z.coerce.date().optional(),
-  updatedAt: z.coerce.date().optional(),
-  deletedAt: z.coerce.date().optional().nullable(),
-  children: z.lazy(() => CollectionUncheckedCreateNestedManyWithoutParentInputSchema).optional(),
-  products: z.lazy(() => ProductUncheckedCreateNestedManyWithoutCollectionsInputSchema).optional(),
-  brands: z.lazy(() => BrandUncheckedCreateNestedManyWithoutCollectionsInputSchema).optional(),
-  taxonomies: z.lazy(() => TaxonomyUncheckedCreateNestedManyWithoutCollectionsInputSchema).optional(),
-  categories: z.lazy(() => ProductCategoryUncheckedCreateNestedManyWithoutCollectionsInputSchema).optional(),
-  pdpJoins: z.lazy(() => PdpJoinUncheckedCreateNestedManyWithoutCollectionsInputSchema).optional(),
-  media: z.lazy(() => MediaUncheckedCreateNestedManyWithoutCollectionInputSchema).optional(),
-  favorites: z.lazy(() => FavoriteJoinUncheckedCreateNestedManyWithoutCollectionInputSchema).optional(),
-  registries: z.lazy(() => RegistryItemUncheckedCreateNestedManyWithoutCollectionInputSchema).optional(),
-  identifiers: z.lazy(() => ProductIdentifiersUncheckedCreateNestedManyWithoutCollectionInputSchema).optional()
-}).strict();
+export const CollectionUncheckedCreateWithoutDeletedByInputSchema: z.ZodType<Prisma.CollectionUncheckedCreateWithoutDeletedByInput> =
+  z
+    .object({
+      id: z.string().cuid().optional(),
+      name: z.string(),
+      slug: z.string(),
+      type: z.lazy(() => CollectionTypeSchema).optional(),
+      status: z.lazy(() => ContentStatusSchema).optional(),
+      userId: z.string().optional().nullable(),
+      copy: z.union([z.lazy(() => JsonNullValueInputSchema), InputJsonValueSchema]),
+      parentId: z.string().optional().nullable(),
+      createdAt: z.coerce.date().optional(),
+      updatedAt: z.coerce.date().optional(),
+      deletedAt: z.coerce.date().optional().nullable(),
+      children: z
+        .lazy(() => CollectionUncheckedCreateNestedManyWithoutParentInputSchema)
+        .optional(),
+      products: z
+        .lazy(() => ProductUncheckedCreateNestedManyWithoutCollectionsInputSchema)
+        .optional(),
+      brands: z.lazy(() => BrandUncheckedCreateNestedManyWithoutCollectionsInputSchema).optional(),
+      taxonomies: z
+        .lazy(() => TaxonomyUncheckedCreateNestedManyWithoutCollectionsInputSchema)
+        .optional(),
+      categories: z
+        .lazy(() => ProductCategoryUncheckedCreateNestedManyWithoutCollectionsInputSchema)
+        .optional(),
+      pdpJoins: z
+        .lazy(() => PdpJoinUncheckedCreateNestedManyWithoutCollectionsInputSchema)
+        .optional(),
+      media: z.lazy(() => MediaUncheckedCreateNestedManyWithoutCollectionInputSchema).optional(),
+      favorites: z
+        .lazy(() => FavoriteJoinUncheckedCreateNestedManyWithoutCollectionInputSchema)
+        .optional(),
+      registries: z
+        .lazy(() => RegistryItemUncheckedCreateNestedManyWithoutCollectionInputSchema)
+        .optional(),
+      identifiers: z
+        .lazy(() => ProductIdentifiersUncheckedCreateNestedManyWithoutCollectionInputSchema)
+        .optional(),
+    })
+    .strict();
 
 export default CollectionUncheckedCreateWithoutDeletedByInputSchema;

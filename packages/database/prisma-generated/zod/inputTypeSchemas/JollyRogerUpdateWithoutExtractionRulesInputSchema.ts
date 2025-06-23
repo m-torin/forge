@@ -9,13 +9,31 @@ import { NullableJsonNullValueInputSchema } from './NullableJsonNullValueInputSc
 import { InputJsonValueSchema } from './InputJsonValueSchema';
 import { BrandUpdateOneWithoutJollyRogerNestedInputSchema } from './BrandUpdateOneWithoutJollyRogerNestedInputSchema';
 
-export const JollyRogerUpdateWithoutExtractionRulesInputSchema: z.ZodType<Prisma.JollyRogerUpdateWithoutExtractionRulesInput> = z.object({
-  canChart: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
-  chartingMethod: z.union([ z.lazy(() => JrChartMethodSchema),z.lazy(() => EnumJrChartMethodFieldUpdateOperationsInputSchema) ]).optional(),
-  sitemaps: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  gridUrls: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  pdpUrlPatterns: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
-  brand: z.lazy(() => BrandUpdateOneWithoutJollyRogerNestedInputSchema).optional()
-}).strict();
+export const JollyRogerUpdateWithoutExtractionRulesInputSchema: z.ZodType<Prisma.JollyRogerUpdateWithoutExtractionRulesInput> =
+  z
+    .object({
+      canChart: z
+        .union([z.boolean(), z.lazy(() => BoolFieldUpdateOperationsInputSchema)])
+        .optional(),
+      chartingMethod: z
+        .union([
+          z.lazy(() => JrChartMethodSchema),
+          z.lazy(() => EnumJrChartMethodFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      sitemaps: z
+        .union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      gridUrls: z
+        .union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      pdpUrlPatterns: z
+        .union([z.lazy(() => NullableJsonNullValueInputSchema), InputJsonValueSchema])
+        .optional(),
+      brand: z.lazy(() => BrandUpdateOneWithoutJollyRogerNestedInputSchema).optional(),
+    })
+    .strict();
 
 export default JollyRogerUpdateWithoutExtractionRulesInputSchema;

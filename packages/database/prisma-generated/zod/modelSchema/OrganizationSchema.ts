@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema'
+import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema';
 
 /////////////////////////////////////////
 // ORGANIZATION SCHEMA
@@ -14,8 +14,8 @@ export const OrganizationSchema = z.object({
   metadata: JsonValueSchema.nullable(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date().nullable(),
-})
+});
 
-export type Organization = z.infer<typeof OrganizationSchema>
+export type Organization = z.infer<typeof OrganizationSchema>;
 
 export default OrganizationSchema;

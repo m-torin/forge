@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema'
-import { TaxonomyTypeSchema } from '../inputTypeSchemas/TaxonomyTypeSchema'
-import { ContentStatusSchema } from '../inputTypeSchemas/ContentStatusSchema'
+import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema';
+import { TaxonomyTypeSchema } from '../inputTypeSchemas/TaxonomyTypeSchema';
+import { ContentStatusSchema } from '../inputTypeSchemas/ContentStatusSchema';
 
 /////////////////////////////////////////
 // TAXONOMY SCHEMA
@@ -14,12 +14,16 @@ export const TaxonomySchema = z.object({
   name: z.string(),
   slug: z.string(),
   copy: JsonValueSchema,
+  parentId: z.string().nullable(),
+  displayOrder: z.number().int(),
+  level: z.number().int(),
+  path: z.string().nullable(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
   deletedAt: z.coerce.date().nullable(),
   deletedById: z.string().nullable(),
-})
+});
 
-export type Taxonomy = z.infer<typeof TaxonomySchema>
+export type Taxonomy = z.infer<typeof TaxonomySchema>;
 
 export default TaxonomySchema;

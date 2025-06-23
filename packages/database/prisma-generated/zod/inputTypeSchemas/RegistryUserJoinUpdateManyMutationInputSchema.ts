@@ -6,11 +6,25 @@ import { DateTimeFieldUpdateOperationsInputSchema } from './DateTimeFieldUpdateO
 import { RegistryUserRoleSchema } from './RegistryUserRoleSchema';
 import { EnumRegistryUserRoleFieldUpdateOperationsInputSchema } from './EnumRegistryUserRoleFieldUpdateOperationsInputSchema';
 
-export const RegistryUserJoinUpdateManyMutationInputSchema: z.ZodType<Prisma.RegistryUserJoinUpdateManyMutationInput> = z.object({
-  id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  role: z.union([ z.lazy(() => RegistryUserRoleSchema),z.lazy(() => EnumRegistryUserRoleFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
+export const RegistryUserJoinUpdateManyMutationInputSchema: z.ZodType<Prisma.RegistryUserJoinUpdateManyMutationInput> =
+  z
+    .object({
+      id: z
+        .union([z.string().cuid(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+        .optional(),
+      createdAt: z
+        .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+        .optional(),
+      updatedAt: z
+        .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+        .optional(),
+      role: z
+        .union([
+          z.lazy(() => RegistryUserRoleSchema),
+          z.lazy(() => EnumRegistryUserRoleFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default RegistryUserJoinUpdateManyMutationInputSchema;

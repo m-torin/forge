@@ -1,28 +1,32 @@
 import { z } from 'zod';
 import type { Prisma } from '../../client';
-import { BackupCodeIncludeSchema } from '../inputTypeSchemas/BackupCodeIncludeSchema'
-import { BackupCodeCreateInputSchema } from '../inputTypeSchemas/BackupCodeCreateInputSchema'
-import { BackupCodeUncheckedCreateInputSchema } from '../inputTypeSchemas/BackupCodeUncheckedCreateInputSchema'
-import { TwoFactorArgsSchema } from "../outputTypeSchemas/TwoFactorArgsSchema"
+import { BackupCodeIncludeSchema } from '../inputTypeSchemas/BackupCodeIncludeSchema';
+import { BackupCodeCreateInputSchema } from '../inputTypeSchemas/BackupCodeCreateInputSchema';
+import { BackupCodeUncheckedCreateInputSchema } from '../inputTypeSchemas/BackupCodeUncheckedCreateInputSchema';
+import { TwoFactorArgsSchema } from '../outputTypeSchemas/TwoFactorArgsSchema';
 // Select schema needs to be in file to prevent circular imports
 //------------------------------------------------------
 
-export const BackupCodeSelectSchema: z.ZodType<Prisma.BackupCodeSelect> = z.object({
-  id: z.boolean().optional(),
-  code: z.boolean().optional(),
-  codeHash: z.boolean().optional(),
-  userId: z.boolean().optional(),
-  twoFactorId: z.boolean().optional(),
-  used: z.boolean().optional(),
-  usedAt: z.boolean().optional(),
-  createdAt: z.boolean().optional(),
-  twoFactor: z.union([z.boolean(),z.lazy(() => TwoFactorArgsSchema)]).optional(),
-}).strict()
+export const BackupCodeSelectSchema: z.ZodType<Prisma.BackupCodeSelect> = z
+  .object({
+    id: z.boolean().optional(),
+    code: z.boolean().optional(),
+    codeHash: z.boolean().optional(),
+    userId: z.boolean().optional(),
+    twoFactorId: z.boolean().optional(),
+    used: z.boolean().optional(),
+    usedAt: z.boolean().optional(),
+    createdAt: z.boolean().optional(),
+    twoFactor: z.union([z.boolean(), z.lazy(() => TwoFactorArgsSchema)]).optional(),
+  })
+  .strict();
 
-export const BackupCodeCreateArgsSchema: z.ZodType<Prisma.BackupCodeCreateArgs> = z.object({
-  select: BackupCodeSelectSchema.optional(),
-  include: z.lazy(() => BackupCodeIncludeSchema).optional(),
-  data: z.union([ BackupCodeCreateInputSchema,BackupCodeUncheckedCreateInputSchema ]),
-}).strict() ;
+export const BackupCodeCreateArgsSchema: z.ZodType<Prisma.BackupCodeCreateArgs> = z
+  .object({
+    select: BackupCodeSelectSchema.optional(),
+    include: z.lazy(() => BackupCodeIncludeSchema).optional(),
+    data: z.union([BackupCodeCreateInputSchema, BackupCodeUncheckedCreateInputSchema]),
+  })
+  .strict();
 
 export default BackupCodeCreateArgsSchema;

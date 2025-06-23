@@ -84,42 +84,50 @@ export const createMockRedisClient = () => {
     }),
     ttl: vi.fn().mockResolvedValue(3600),
     // Sorted set methods
-    zadd: vi.fn().mockImplementation(async (key: string, { score, member }: { score: number; member: string }) => {
-      let set = sortedSets.get(key);
-      if (!set) {
-        set = [];
+    zadd: vi
+      .fn()
+      .mockImplementation(
+        async (key: string, { score, member }: { score: number; member: string }) => {
+          let set = sortedSets.get(key);
+          if (!set) {
+            set = [];
+            sortedSets.set(key, set);
+          }
+          // Remove if already exists
+          set = set.filter((item) => item.member !== member);
+          set.push({ score, member });
+          // Sort by score ascending
+          set.sort((a, b) => a.score - b.score);
+          sortedSets.set(key, set);
+          return 1;
+        },
+      ),
+    zrange: vi
+      .fn()
+      .mockImplementation(async (key: string, start: number, stop: number, opts?: any) => {
+        let set = sortedSets.get(key) || [];
+        // If opts.rev, reverse the set
+        if (opts && opts.rev) {
+          set = [...set].reverse();
+        }
+        // Redis zrange is inclusive for start and stop
+        if (stop < 0) {
+          stop = set.length + stop;
+        }
+        return set.slice(start, stop + 1).map((item) => item.member);
+      }),
+    zremrangebyrank: vi
+      .fn()
+      .mockImplementation(async (key: string, start: number, stop: number) => {
+        let set = sortedSets.get(key) || [];
+        if (stop < 0) {
+          stop = set.length + stop;
+        }
+        const removed = set.slice(start, stop + 1);
+        set = set.slice(0, start).concat(set.slice(stop + 1));
         sortedSets.set(key, set);
-      }
-      // Remove if already exists
-      set = set.filter((item) => item.member !== member);
-      set.push({ score, member });
-      // Sort by score ascending
-      set.sort((a, b) => a.score - b.score);
-      sortedSets.set(key, set);
-      return 1;
-    }),
-    zrange: vi.fn().mockImplementation(async (key: string, start: number, stop: number, opts?: any) => {
-      let set = sortedSets.get(key) || [];
-      // If opts.rev, reverse the set
-      if (opts && opts.rev) {
-        set = [...set].reverse();
-      }
-      // Redis zrange is inclusive for start and stop
-      if (stop < 0) {
-        stop = set.length + stop;
-      }
-      return set.slice(start, stop + 1).map((item) => item.member);
-    }),
-    zremrangebyrank: vi.fn().mockImplementation(async (key: string, start: number, stop: number) => {
-      let set = sortedSets.get(key) || [];
-      if (stop < 0) {
-        stop = set.length + stop;
-      }
-      const removed = set.slice(start, stop + 1);
-      set = set.slice(0, start).concat(set.slice(stop + 1));
-      sortedSets.set(key, set);
-      return removed.length;
-    }),
+        return removed.length;
+      }),
     pipeline: vi.fn().mockImplementation(() => {
       const commands: Array<{ type: string; key: string }> = [];
       const pipelineObj = {
@@ -136,12 +144,16 @@ export const createMockRedisClient = () => {
       };
       return pipelineObj;
     }),
-    scan: vi.fn().mockImplementation(async (cursor: string, { match, count }: { match: string; count: number }) => {
-      const regex = new RegExp(match.replace('*', '.*'));
-      const keys = Array.from(storage.keys()).filter((key) => regex.test(key));
-      // For simplicity, return all at once
-      return ['0', keys];
-    }),
+    scan: vi
+      .fn()
+      .mockImplementation(
+        async (cursor: string, { match, count }: { match: string; count: number }) => {
+          const regex = new RegExp(match.replace('*', '.*'));
+          const keys = Array.from(storage.keys()).filter((key) => regex.test(key));
+          // For simplicity, return all at once
+          return ['0', keys];
+        },
+      ),
     _clear: () => {
       storage.clear();
       sortedSets.clear();

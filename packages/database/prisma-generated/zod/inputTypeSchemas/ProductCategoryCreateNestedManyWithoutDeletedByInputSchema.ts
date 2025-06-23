@@ -7,11 +7,31 @@ import { ProductCategoryCreateOrConnectWithoutDeletedByInputSchema } from './Pro
 import { ProductCategoryCreateManyDeletedByInputEnvelopeSchema } from './ProductCategoryCreateManyDeletedByInputEnvelopeSchema';
 import { ProductCategoryWhereUniqueInputSchema } from './ProductCategoryWhereUniqueInputSchema';
 
-export const ProductCategoryCreateNestedManyWithoutDeletedByInputSchema: z.ZodType<Prisma.ProductCategoryCreateNestedManyWithoutDeletedByInput> = z.object({
-  create: z.union([ z.lazy(() => ProductCategoryCreateWithoutDeletedByInputSchema),z.lazy(() => ProductCategoryCreateWithoutDeletedByInputSchema).array(),z.lazy(() => ProductCategoryUncheckedCreateWithoutDeletedByInputSchema),z.lazy(() => ProductCategoryUncheckedCreateWithoutDeletedByInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => ProductCategoryCreateOrConnectWithoutDeletedByInputSchema),z.lazy(() => ProductCategoryCreateOrConnectWithoutDeletedByInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => ProductCategoryCreateManyDeletedByInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => ProductCategoryWhereUniqueInputSchema),z.lazy(() => ProductCategoryWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const ProductCategoryCreateNestedManyWithoutDeletedByInputSchema: z.ZodType<Prisma.ProductCategoryCreateNestedManyWithoutDeletedByInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => ProductCategoryCreateWithoutDeletedByInputSchema),
+          z.lazy(() => ProductCategoryCreateWithoutDeletedByInputSchema).array(),
+          z.lazy(() => ProductCategoryUncheckedCreateWithoutDeletedByInputSchema),
+          z.lazy(() => ProductCategoryUncheckedCreateWithoutDeletedByInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => ProductCategoryCreateOrConnectWithoutDeletedByInputSchema),
+          z.lazy(() => ProductCategoryCreateOrConnectWithoutDeletedByInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => ProductCategoryCreateManyDeletedByInputEnvelopeSchema).optional(),
+      connect: z
+        .union([
+          z.lazy(() => ProductCategoryWhereUniqueInputSchema),
+          z.lazy(() => ProductCategoryWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default ProductCategoryCreateNestedManyWithoutDeletedByInputSchema;

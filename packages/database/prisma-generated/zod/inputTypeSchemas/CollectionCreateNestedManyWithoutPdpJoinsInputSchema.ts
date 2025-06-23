@@ -6,10 +6,30 @@ import { CollectionUncheckedCreateWithoutPdpJoinsInputSchema } from './Collectio
 import { CollectionCreateOrConnectWithoutPdpJoinsInputSchema } from './CollectionCreateOrConnectWithoutPdpJoinsInputSchema';
 import { CollectionWhereUniqueInputSchema } from './CollectionWhereUniqueInputSchema';
 
-export const CollectionCreateNestedManyWithoutPdpJoinsInputSchema: z.ZodType<Prisma.CollectionCreateNestedManyWithoutPdpJoinsInput> = z.object({
-  create: z.union([ z.lazy(() => CollectionCreateWithoutPdpJoinsInputSchema),z.lazy(() => CollectionCreateWithoutPdpJoinsInputSchema).array(),z.lazy(() => CollectionUncheckedCreateWithoutPdpJoinsInputSchema),z.lazy(() => CollectionUncheckedCreateWithoutPdpJoinsInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => CollectionCreateOrConnectWithoutPdpJoinsInputSchema),z.lazy(() => CollectionCreateOrConnectWithoutPdpJoinsInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => CollectionWhereUniqueInputSchema),z.lazy(() => CollectionWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const CollectionCreateNestedManyWithoutPdpJoinsInputSchema: z.ZodType<Prisma.CollectionCreateNestedManyWithoutPdpJoinsInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => CollectionCreateWithoutPdpJoinsInputSchema),
+          z.lazy(() => CollectionCreateWithoutPdpJoinsInputSchema).array(),
+          z.lazy(() => CollectionUncheckedCreateWithoutPdpJoinsInputSchema),
+          z.lazy(() => CollectionUncheckedCreateWithoutPdpJoinsInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => CollectionCreateOrConnectWithoutPdpJoinsInputSchema),
+          z.lazy(() => CollectionCreateOrConnectWithoutPdpJoinsInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => CollectionWhereUniqueInputSchema),
+          z.lazy(() => CollectionWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default CollectionCreateNestedManyWithoutPdpJoinsInputSchema;

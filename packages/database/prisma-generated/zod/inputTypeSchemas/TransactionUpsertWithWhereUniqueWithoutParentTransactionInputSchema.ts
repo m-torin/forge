@@ -7,10 +7,19 @@ import { TransactionUncheckedUpdateWithoutParentTransactionInputSchema } from '.
 import { TransactionCreateWithoutParentTransactionInputSchema } from './TransactionCreateWithoutParentTransactionInputSchema';
 import { TransactionUncheckedCreateWithoutParentTransactionInputSchema } from './TransactionUncheckedCreateWithoutParentTransactionInputSchema';
 
-export const TransactionUpsertWithWhereUniqueWithoutParentTransactionInputSchema: z.ZodType<Prisma.TransactionUpsertWithWhereUniqueWithoutParentTransactionInput> = z.object({
-  where: z.lazy(() => TransactionWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => TransactionUpdateWithoutParentTransactionInputSchema),z.lazy(() => TransactionUncheckedUpdateWithoutParentTransactionInputSchema) ]),
-  create: z.union([ z.lazy(() => TransactionCreateWithoutParentTransactionInputSchema),z.lazy(() => TransactionUncheckedCreateWithoutParentTransactionInputSchema) ]),
-}).strict();
+export const TransactionUpsertWithWhereUniqueWithoutParentTransactionInputSchema: z.ZodType<Prisma.TransactionUpsertWithWhereUniqueWithoutParentTransactionInput> =
+  z
+    .object({
+      where: z.lazy(() => TransactionWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => TransactionUpdateWithoutParentTransactionInputSchema),
+        z.lazy(() => TransactionUncheckedUpdateWithoutParentTransactionInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => TransactionCreateWithoutParentTransactionInputSchema),
+        z.lazy(() => TransactionUncheckedCreateWithoutParentTransactionInputSchema),
+      ]),
+    })
+    .strict();
 
 export default TransactionUpsertWithWhereUniqueWithoutParentTransactionInputSchema;

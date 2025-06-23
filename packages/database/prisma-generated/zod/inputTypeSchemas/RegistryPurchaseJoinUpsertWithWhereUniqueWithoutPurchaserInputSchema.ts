@@ -7,10 +7,19 @@ import { RegistryPurchaseJoinUncheckedUpdateWithoutPurchaserInputSchema } from '
 import { RegistryPurchaseJoinCreateWithoutPurchaserInputSchema } from './RegistryPurchaseJoinCreateWithoutPurchaserInputSchema';
 import { RegistryPurchaseJoinUncheckedCreateWithoutPurchaserInputSchema } from './RegistryPurchaseJoinUncheckedCreateWithoutPurchaserInputSchema';
 
-export const RegistryPurchaseJoinUpsertWithWhereUniqueWithoutPurchaserInputSchema: z.ZodType<Prisma.RegistryPurchaseJoinUpsertWithWhereUniqueWithoutPurchaserInput> = z.object({
-  where: z.lazy(() => RegistryPurchaseJoinWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => RegistryPurchaseJoinUpdateWithoutPurchaserInputSchema),z.lazy(() => RegistryPurchaseJoinUncheckedUpdateWithoutPurchaserInputSchema) ]),
-  create: z.union([ z.lazy(() => RegistryPurchaseJoinCreateWithoutPurchaserInputSchema),z.lazy(() => RegistryPurchaseJoinUncheckedCreateWithoutPurchaserInputSchema) ]),
-}).strict();
+export const RegistryPurchaseJoinUpsertWithWhereUniqueWithoutPurchaserInputSchema: z.ZodType<Prisma.RegistryPurchaseJoinUpsertWithWhereUniqueWithoutPurchaserInput> =
+  z
+    .object({
+      where: z.lazy(() => RegistryPurchaseJoinWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => RegistryPurchaseJoinUpdateWithoutPurchaserInputSchema),
+        z.lazy(() => RegistryPurchaseJoinUncheckedUpdateWithoutPurchaserInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => RegistryPurchaseJoinCreateWithoutPurchaserInputSchema),
+        z.lazy(() => RegistryPurchaseJoinUncheckedCreateWithoutPurchaserInputSchema),
+      ]),
+    })
+    .strict();
 
 export default RegistryPurchaseJoinUpsertWithWhereUniqueWithoutPurchaserInputSchema;

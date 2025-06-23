@@ -7,11 +7,31 @@ import { MemberCreateOrConnectWithoutOrganizationInputSchema } from './MemberCre
 import { MemberCreateManyOrganizationInputEnvelopeSchema } from './MemberCreateManyOrganizationInputEnvelopeSchema';
 import { MemberWhereUniqueInputSchema } from './MemberWhereUniqueInputSchema';
 
-export const MemberUncheckedCreateNestedManyWithoutOrganizationInputSchema: z.ZodType<Prisma.MemberUncheckedCreateNestedManyWithoutOrganizationInput> = z.object({
-  create: z.union([ z.lazy(() => MemberCreateWithoutOrganizationInputSchema),z.lazy(() => MemberCreateWithoutOrganizationInputSchema).array(),z.lazy(() => MemberUncheckedCreateWithoutOrganizationInputSchema),z.lazy(() => MemberUncheckedCreateWithoutOrganizationInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => MemberCreateOrConnectWithoutOrganizationInputSchema),z.lazy(() => MemberCreateOrConnectWithoutOrganizationInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => MemberCreateManyOrganizationInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => MemberWhereUniqueInputSchema),z.lazy(() => MemberWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const MemberUncheckedCreateNestedManyWithoutOrganizationInputSchema: z.ZodType<Prisma.MemberUncheckedCreateNestedManyWithoutOrganizationInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => MemberCreateWithoutOrganizationInputSchema),
+          z.lazy(() => MemberCreateWithoutOrganizationInputSchema).array(),
+          z.lazy(() => MemberUncheckedCreateWithoutOrganizationInputSchema),
+          z.lazy(() => MemberUncheckedCreateWithoutOrganizationInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => MemberCreateOrConnectWithoutOrganizationInputSchema),
+          z.lazy(() => MemberCreateOrConnectWithoutOrganizationInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => MemberCreateManyOrganizationInputEnvelopeSchema).optional(),
+      connect: z
+        .union([
+          z.lazy(() => MemberWhereUniqueInputSchema),
+          z.lazy(() => MemberWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default MemberUncheckedCreateNestedManyWithoutOrganizationInputSchema;

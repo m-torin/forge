@@ -5,9 +5,15 @@ import { TeamMemberWhereUniqueInputSchema } from './TeamMemberWhereUniqueInputSc
 import { TeamMemberUpdateWithoutTeamInputSchema } from './TeamMemberUpdateWithoutTeamInputSchema';
 import { TeamMemberUncheckedUpdateWithoutTeamInputSchema } from './TeamMemberUncheckedUpdateWithoutTeamInputSchema';
 
-export const TeamMemberUpdateWithWhereUniqueWithoutTeamInputSchema: z.ZodType<Prisma.TeamMemberUpdateWithWhereUniqueWithoutTeamInput> = z.object({
-  where: z.lazy(() => TeamMemberWhereUniqueInputSchema),
-  data: z.union([ z.lazy(() => TeamMemberUpdateWithoutTeamInputSchema),z.lazy(() => TeamMemberUncheckedUpdateWithoutTeamInputSchema) ]),
-}).strict();
+export const TeamMemberUpdateWithWhereUniqueWithoutTeamInputSchema: z.ZodType<Prisma.TeamMemberUpdateWithWhereUniqueWithoutTeamInput> =
+  z
+    .object({
+      where: z.lazy(() => TeamMemberWhereUniqueInputSchema),
+      data: z.union([
+        z.lazy(() => TeamMemberUpdateWithoutTeamInputSchema),
+        z.lazy(() => TeamMemberUncheckedUpdateWithoutTeamInputSchema),
+      ]),
+    })
+    .strict();
 
 export default TeamMemberUpdateWithWhereUniqueWithoutTeamInputSchema;

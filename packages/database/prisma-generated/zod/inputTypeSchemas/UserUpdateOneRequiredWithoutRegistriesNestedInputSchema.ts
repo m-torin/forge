@@ -10,12 +10,26 @@ import { UserUpdateToOneWithWhereWithoutRegistriesInputSchema } from './UserUpda
 import { UserUpdateWithoutRegistriesInputSchema } from './UserUpdateWithoutRegistriesInputSchema';
 import { UserUncheckedUpdateWithoutRegistriesInputSchema } from './UserUncheckedUpdateWithoutRegistriesInputSchema';
 
-export const UserUpdateOneRequiredWithoutRegistriesNestedInputSchema: z.ZodType<Prisma.UserUpdateOneRequiredWithoutRegistriesNestedInput> = z.object({
-  create: z.union([ z.lazy(() => UserCreateWithoutRegistriesInputSchema),z.lazy(() => UserUncheckedCreateWithoutRegistriesInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => UserCreateOrConnectWithoutRegistriesInputSchema).optional(),
-  upsert: z.lazy(() => UserUpsertWithoutRegistriesInputSchema).optional(),
-  connect: z.lazy(() => UserWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => UserUpdateToOneWithWhereWithoutRegistriesInputSchema),z.lazy(() => UserUpdateWithoutRegistriesInputSchema),z.lazy(() => UserUncheckedUpdateWithoutRegistriesInputSchema) ]).optional(),
-}).strict();
+export const UserUpdateOneRequiredWithoutRegistriesNestedInputSchema: z.ZodType<Prisma.UserUpdateOneRequiredWithoutRegistriesNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => UserCreateWithoutRegistriesInputSchema),
+          z.lazy(() => UserUncheckedCreateWithoutRegistriesInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z.lazy(() => UserCreateOrConnectWithoutRegistriesInputSchema).optional(),
+      upsert: z.lazy(() => UserUpsertWithoutRegistriesInputSchema).optional(),
+      connect: z.lazy(() => UserWhereUniqueInputSchema).optional(),
+      update: z
+        .union([
+          z.lazy(() => UserUpdateToOneWithWhereWithoutRegistriesInputSchema),
+          z.lazy(() => UserUpdateWithoutRegistriesInputSchema),
+          z.lazy(() => UserUncheckedUpdateWithoutRegistriesInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default UserUpdateOneRequiredWithoutRegistriesNestedInputSchema;

@@ -4,17 +4,6 @@ import { describe, expect, vi } from 'vitest';
 // Import after mocks
 import { noseconeMiddleware, noseconeOptions } from '../middleware';
 
-// Mock dependencies before imports
-const _mockDefaults = {
-  contentSecurityPolicy: {
-    directives: {
-      'default-src': ["'self'"],
-    },
-  },
-};
-
-const _mockCreateMiddleware = vi.fn();
-
 vi.mock('@nosecone/next', (_: any) => ({
   createMiddleware: vi.fn(),
   defaults: {

@@ -18,28 +18,35 @@ import { RegistryItemCreateNestedManyWithoutCollectionInputSchema } from './Regi
 import { ProductIdentifiersCreateNestedManyWithoutCollectionInputSchema } from './ProductIdentifiersCreateNestedManyWithoutCollectionInputSchema';
 import { UserCreateNestedOneWithoutDeletedCollectionsInputSchema } from './UserCreateNestedOneWithoutDeletedCollectionsInputSchema';
 
-export const CollectionCreateWithoutMediaInputSchema: z.ZodType<Prisma.CollectionCreateWithoutMediaInput> = z.object({
-  id: z.string().cuid().optional(),
-  name: z.string(),
-  slug: z.string(),
-  type: z.lazy(() => CollectionTypeSchema).optional(),
-  status: z.lazy(() => ContentStatusSchema).optional(),
-  copy: z.union([ z.lazy(() => JsonNullValueInputSchema),InputJsonValueSchema ]),
-  createdAt: z.coerce.date().optional(),
-  updatedAt: z.coerce.date().optional(),
-  deletedAt: z.coerce.date().optional().nullable(),
-  parent: z.lazy(() => CollectionCreateNestedOneWithoutChildrenInputSchema).optional(),
-  children: z.lazy(() => CollectionCreateNestedManyWithoutParentInputSchema).optional(),
-  user: z.lazy(() => UserCreateNestedOneWithoutCollectionsInputSchema).optional(),
-  products: z.lazy(() => ProductCreateNestedManyWithoutCollectionsInputSchema).optional(),
-  brands: z.lazy(() => BrandCreateNestedManyWithoutCollectionsInputSchema).optional(),
-  taxonomies: z.lazy(() => TaxonomyCreateNestedManyWithoutCollectionsInputSchema).optional(),
-  categories: z.lazy(() => ProductCategoryCreateNestedManyWithoutCollectionsInputSchema).optional(),
-  pdpJoins: z.lazy(() => PdpJoinCreateNestedManyWithoutCollectionsInputSchema).optional(),
-  favorites: z.lazy(() => FavoriteJoinCreateNestedManyWithoutCollectionInputSchema).optional(),
-  registries: z.lazy(() => RegistryItemCreateNestedManyWithoutCollectionInputSchema).optional(),
-  identifiers: z.lazy(() => ProductIdentifiersCreateNestedManyWithoutCollectionInputSchema).optional(),
-  deletedBy: z.lazy(() => UserCreateNestedOneWithoutDeletedCollectionsInputSchema).optional()
-}).strict();
+export const CollectionCreateWithoutMediaInputSchema: z.ZodType<Prisma.CollectionCreateWithoutMediaInput> =
+  z
+    .object({
+      id: z.string().cuid().optional(),
+      name: z.string(),
+      slug: z.string(),
+      type: z.lazy(() => CollectionTypeSchema).optional(),
+      status: z.lazy(() => ContentStatusSchema).optional(),
+      copy: z.union([z.lazy(() => JsonNullValueInputSchema), InputJsonValueSchema]),
+      createdAt: z.coerce.date().optional(),
+      updatedAt: z.coerce.date().optional(),
+      deletedAt: z.coerce.date().optional().nullable(),
+      parent: z.lazy(() => CollectionCreateNestedOneWithoutChildrenInputSchema).optional(),
+      children: z.lazy(() => CollectionCreateNestedManyWithoutParentInputSchema).optional(),
+      user: z.lazy(() => UserCreateNestedOneWithoutCollectionsInputSchema).optional(),
+      products: z.lazy(() => ProductCreateNestedManyWithoutCollectionsInputSchema).optional(),
+      brands: z.lazy(() => BrandCreateNestedManyWithoutCollectionsInputSchema).optional(),
+      taxonomies: z.lazy(() => TaxonomyCreateNestedManyWithoutCollectionsInputSchema).optional(),
+      categories: z
+        .lazy(() => ProductCategoryCreateNestedManyWithoutCollectionsInputSchema)
+        .optional(),
+      pdpJoins: z.lazy(() => PdpJoinCreateNestedManyWithoutCollectionsInputSchema).optional(),
+      favorites: z.lazy(() => FavoriteJoinCreateNestedManyWithoutCollectionInputSchema).optional(),
+      registries: z.lazy(() => RegistryItemCreateNestedManyWithoutCollectionInputSchema).optional(),
+      identifiers: z
+        .lazy(() => ProductIdentifiersCreateNestedManyWithoutCollectionInputSchema)
+        .optional(),
+      deletedBy: z.lazy(() => UserCreateNestedOneWithoutDeletedCollectionsInputSchema).optional(),
+    })
+    .strict();
 
 export default CollectionCreateWithoutMediaInputSchema;

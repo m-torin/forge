@@ -7,10 +7,19 @@ import { UserCreateWithoutDeletedRegistryItemsInputSchema } from './UserCreateWi
 import { UserUncheckedCreateWithoutDeletedRegistryItemsInputSchema } from './UserUncheckedCreateWithoutDeletedRegistryItemsInputSchema';
 import { UserWhereInputSchema } from './UserWhereInputSchema';
 
-export const UserUpsertWithoutDeletedRegistryItemsInputSchema: z.ZodType<Prisma.UserUpsertWithoutDeletedRegistryItemsInput> = z.object({
-  update: z.union([ z.lazy(() => UserUpdateWithoutDeletedRegistryItemsInputSchema),z.lazy(() => UserUncheckedUpdateWithoutDeletedRegistryItemsInputSchema) ]),
-  create: z.union([ z.lazy(() => UserCreateWithoutDeletedRegistryItemsInputSchema),z.lazy(() => UserUncheckedCreateWithoutDeletedRegistryItemsInputSchema) ]),
-  where: z.lazy(() => UserWhereInputSchema).optional()
-}).strict();
+export const UserUpsertWithoutDeletedRegistryItemsInputSchema: z.ZodType<Prisma.UserUpsertWithoutDeletedRegistryItemsInput> =
+  z
+    .object({
+      update: z.union([
+        z.lazy(() => UserUpdateWithoutDeletedRegistryItemsInputSchema),
+        z.lazy(() => UserUncheckedUpdateWithoutDeletedRegistryItemsInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => UserCreateWithoutDeletedRegistryItemsInputSchema),
+        z.lazy(() => UserUncheckedCreateWithoutDeletedRegistryItemsInputSchema),
+      ]),
+      where: z.lazy(() => UserWhereInputSchema).optional(),
+    })
+    .strict();
 
 export default UserUpsertWithoutDeletedRegistryItemsInputSchema;

@@ -5,9 +5,15 @@ import { JrFindReplaceRejectWhereUniqueInputSchema } from './JrFindReplaceReject
 import { JrFindReplaceRejectUpdateWithoutLocationsInputSchema } from './JrFindReplaceRejectUpdateWithoutLocationsInputSchema';
 import { JrFindReplaceRejectUncheckedUpdateWithoutLocationsInputSchema } from './JrFindReplaceRejectUncheckedUpdateWithoutLocationsInputSchema';
 
-export const JrFindReplaceRejectUpdateWithWhereUniqueWithoutLocationsInputSchema: z.ZodType<Prisma.JrFindReplaceRejectUpdateWithWhereUniqueWithoutLocationsInput> = z.object({
-  where: z.lazy(() => JrFindReplaceRejectWhereUniqueInputSchema),
-  data: z.union([ z.lazy(() => JrFindReplaceRejectUpdateWithoutLocationsInputSchema),z.lazy(() => JrFindReplaceRejectUncheckedUpdateWithoutLocationsInputSchema) ]),
-}).strict();
+export const JrFindReplaceRejectUpdateWithWhereUniqueWithoutLocationsInputSchema: z.ZodType<Prisma.JrFindReplaceRejectUpdateWithWhereUniqueWithoutLocationsInput> =
+  z
+    .object({
+      where: z.lazy(() => JrFindReplaceRejectWhereUniqueInputSchema),
+      data: z.union([
+        z.lazy(() => JrFindReplaceRejectUpdateWithoutLocationsInputSchema),
+        z.lazy(() => JrFindReplaceRejectUncheckedUpdateWithoutLocationsInputSchema),
+      ]),
+    })
+    .strict();
 
 export default JrFindReplaceRejectUpdateWithWhereUniqueWithoutLocationsInputSchema;

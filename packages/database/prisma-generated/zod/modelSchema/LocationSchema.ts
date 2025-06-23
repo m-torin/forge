@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema'
-import { LocationTypeSchema } from '../inputTypeSchemas/LocationTypeSchema'
-import { LodgingTypeSchema } from '../inputTypeSchemas/LodgingTypeSchema'
+import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema';
+import { LocationTypeSchema } from '../inputTypeSchemas/LocationTypeSchema';
+import { LodgingTypeSchema } from '../inputTypeSchemas/LodgingTypeSchema';
 
 /////////////////////////////////////////
 // LOCATION SCHEMA
@@ -19,8 +19,8 @@ export const LocationSchema = z.object({
   updatedAt: z.coerce.date(),
   deletedAt: z.coerce.date().nullable(),
   deletedById: z.string().nullable(),
-})
+});
 
-export type Location = z.infer<typeof LocationSchema>
+export type Location = z.infer<typeof LocationSchema>;
 
 export default LocationSchema;

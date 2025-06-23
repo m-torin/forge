@@ -10,12 +10,26 @@ import { BrandUpdateToOneWithWhereWithoutProductsInputSchema } from './BrandUpda
 import { BrandUpdateWithoutProductsInputSchema } from './BrandUpdateWithoutProductsInputSchema';
 import { BrandUncheckedUpdateWithoutProductsInputSchema } from './BrandUncheckedUpdateWithoutProductsInputSchema';
 
-export const BrandUpdateOneRequiredWithoutProductsNestedInputSchema: z.ZodType<Prisma.BrandUpdateOneRequiredWithoutProductsNestedInput> = z.object({
-  create: z.union([ z.lazy(() => BrandCreateWithoutProductsInputSchema),z.lazy(() => BrandUncheckedCreateWithoutProductsInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => BrandCreateOrConnectWithoutProductsInputSchema).optional(),
-  upsert: z.lazy(() => BrandUpsertWithoutProductsInputSchema).optional(),
-  connect: z.lazy(() => BrandWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => BrandUpdateToOneWithWhereWithoutProductsInputSchema),z.lazy(() => BrandUpdateWithoutProductsInputSchema),z.lazy(() => BrandUncheckedUpdateWithoutProductsInputSchema) ]).optional(),
-}).strict();
+export const BrandUpdateOneRequiredWithoutProductsNestedInputSchema: z.ZodType<Prisma.BrandUpdateOneRequiredWithoutProductsNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => BrandCreateWithoutProductsInputSchema),
+          z.lazy(() => BrandUncheckedCreateWithoutProductsInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z.lazy(() => BrandCreateOrConnectWithoutProductsInputSchema).optional(),
+      upsert: z.lazy(() => BrandUpsertWithoutProductsInputSchema).optional(),
+      connect: z.lazy(() => BrandWhereUniqueInputSchema).optional(),
+      update: z
+        .union([
+          z.lazy(() => BrandUpdateToOneWithWhereWithoutProductsInputSchema),
+          z.lazy(() => BrandUpdateWithoutProductsInputSchema),
+          z.lazy(() => BrandUncheckedUpdateWithoutProductsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default BrandUpdateOneRequiredWithoutProductsNestedInputSchema;

@@ -7,10 +7,19 @@ import { SessionUncheckedUpdateWithoutUserInputSchema } from './SessionUnchecked
 import { SessionCreateWithoutUserInputSchema } from './SessionCreateWithoutUserInputSchema';
 import { SessionUncheckedCreateWithoutUserInputSchema } from './SessionUncheckedCreateWithoutUserInputSchema';
 
-export const SessionUpsertWithWhereUniqueWithoutUserInputSchema: z.ZodType<Prisma.SessionUpsertWithWhereUniqueWithoutUserInput> = z.object({
-  where: z.lazy(() => SessionWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => SessionUpdateWithoutUserInputSchema),z.lazy(() => SessionUncheckedUpdateWithoutUserInputSchema) ]),
-  create: z.union([ z.lazy(() => SessionCreateWithoutUserInputSchema),z.lazy(() => SessionUncheckedCreateWithoutUserInputSchema) ]),
-}).strict();
+export const SessionUpsertWithWhereUniqueWithoutUserInputSchema: z.ZodType<Prisma.SessionUpsertWithWhereUniqueWithoutUserInput> =
+  z
+    .object({
+      where: z.lazy(() => SessionWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => SessionUpdateWithoutUserInputSchema),
+        z.lazy(() => SessionUncheckedUpdateWithoutUserInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => SessionCreateWithoutUserInputSchema),
+        z.lazy(() => SessionUncheckedCreateWithoutUserInputSchema),
+      ]),
+    })
+    .strict();
 
 export default SessionUpsertWithWhereUniqueWithoutUserInputSchema;

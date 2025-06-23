@@ -10,20 +10,29 @@ import { FandomCreateNestedManyWithoutJrFindReplaceRejectsInputSchema } from './
 import { SeriesCreateNestedManyWithoutJrFindReplaceRejectsInputSchema } from './SeriesCreateNestedManyWithoutJrFindReplaceRejectsInputSchema';
 import { CastCreateNestedManyWithoutJrFindReplaceRejectsInputSchema } from './CastCreateNestedManyWithoutJrFindReplaceRejectsInputSchema';
 
-export const JrFindReplaceRejectCreateWithoutExtractionRulesInputSchema: z.ZodType<Prisma.JrFindReplaceRejectCreateWithoutExtractionRulesInput> = z.object({
-  lookFor: z.string(),
-  replaceWith: z.string().optional().nullable(),
-  ruleAction: z.lazy(() => JrRuleActionSchema).optional(),
-  isRegex: z.boolean().optional(),
-  regexFlags: z.string().optional().nullable(),
-  priority: z.number().int().optional(),
-  brands: z.lazy(() => BrandCreateNestedManyWithoutJrFindReplaceRejectsInputSchema).optional(),
-  locations: z.lazy(() => LocationCreateNestedManyWithoutJrFindReplaceRejectsInputSchema).optional(),
-  taxonomies: z.lazy(() => TaxonomyCreateNestedManyWithoutJrFindReplaceRejectsInputSchema).optional(),
-  stories: z.lazy(() => StoryCreateNestedManyWithoutJrFindReplaceRejectsInputSchema).optional(),
-  fandoms: z.lazy(() => FandomCreateNestedManyWithoutJrFindReplaceRejectsInputSchema).optional(),
-  series: z.lazy(() => SeriesCreateNestedManyWithoutJrFindReplaceRejectsInputSchema).optional(),
-  casts: z.lazy(() => CastCreateNestedManyWithoutJrFindReplaceRejectsInputSchema).optional()
-}).strict();
+export const JrFindReplaceRejectCreateWithoutExtractionRulesInputSchema: z.ZodType<Prisma.JrFindReplaceRejectCreateWithoutExtractionRulesInput> =
+  z
+    .object({
+      lookFor: z.string(),
+      replaceWith: z.string().optional().nullable(),
+      ruleAction: z.lazy(() => JrRuleActionSchema).optional(),
+      isRegex: z.boolean().optional(),
+      regexFlags: z.string().optional().nullable(),
+      priority: z.number().int().optional(),
+      brands: z.lazy(() => BrandCreateNestedManyWithoutJrFindReplaceRejectsInputSchema).optional(),
+      locations: z
+        .lazy(() => LocationCreateNestedManyWithoutJrFindReplaceRejectsInputSchema)
+        .optional(),
+      taxonomies: z
+        .lazy(() => TaxonomyCreateNestedManyWithoutJrFindReplaceRejectsInputSchema)
+        .optional(),
+      stories: z.lazy(() => StoryCreateNestedManyWithoutJrFindReplaceRejectsInputSchema).optional(),
+      fandoms: z
+        .lazy(() => FandomCreateNestedManyWithoutJrFindReplaceRejectsInputSchema)
+        .optional(),
+      series: z.lazy(() => SeriesCreateNestedManyWithoutJrFindReplaceRejectsInputSchema).optional(),
+      casts: z.lazy(() => CastCreateNestedManyWithoutJrFindReplaceRejectsInputSchema).optional(),
+    })
+    .strict();
 
 export default JrFindReplaceRejectCreateWithoutExtractionRulesInputSchema;

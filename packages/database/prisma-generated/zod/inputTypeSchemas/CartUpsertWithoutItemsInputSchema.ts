@@ -7,10 +7,18 @@ import { CartCreateWithoutItemsInputSchema } from './CartCreateWithoutItemsInput
 import { CartUncheckedCreateWithoutItemsInputSchema } from './CartUncheckedCreateWithoutItemsInputSchema';
 import { CartWhereInputSchema } from './CartWhereInputSchema';
 
-export const CartUpsertWithoutItemsInputSchema: z.ZodType<Prisma.CartUpsertWithoutItemsInput> = z.object({
-  update: z.union([ z.lazy(() => CartUpdateWithoutItemsInputSchema),z.lazy(() => CartUncheckedUpdateWithoutItemsInputSchema) ]),
-  create: z.union([ z.lazy(() => CartCreateWithoutItemsInputSchema),z.lazy(() => CartUncheckedCreateWithoutItemsInputSchema) ]),
-  where: z.lazy(() => CartWhereInputSchema).optional()
-}).strict();
+export const CartUpsertWithoutItemsInputSchema: z.ZodType<Prisma.CartUpsertWithoutItemsInput> = z
+  .object({
+    update: z.union([
+      z.lazy(() => CartUpdateWithoutItemsInputSchema),
+      z.lazy(() => CartUncheckedUpdateWithoutItemsInputSchema),
+    ]),
+    create: z.union([
+      z.lazy(() => CartCreateWithoutItemsInputSchema),
+      z.lazy(() => CartUncheckedCreateWithoutItemsInputSchema),
+    ]),
+    where: z.lazy(() => CartWhereInputSchema).optional(),
+  })
+  .strict();
 
 export default CartUpsertWithoutItemsInputSchema;

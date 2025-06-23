@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema'
+import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema';
 
 /////////////////////////////////////////
 // STORY SCHEMA
@@ -18,8 +18,8 @@ export const StorySchema = z.object({
   updatedAt: z.coerce.date(),
   deletedAt: z.coerce.date().nullable(),
   deletedById: z.string().nullable(),
-})
+});
 
-export type Story = z.infer<typeof StorySchema>
+export type Story = z.infer<typeof StorySchema>;
 
 export default StorySchema;

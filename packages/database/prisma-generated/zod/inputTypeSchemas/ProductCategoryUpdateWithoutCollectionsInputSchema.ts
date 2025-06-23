@@ -15,21 +15,42 @@ import { ProductUpdateManyWithoutCategoriesNestedInputSchema } from './ProductUp
 import { MediaUpdateManyWithoutCategoryNestedInputSchema } from './MediaUpdateManyWithoutCategoryNestedInputSchema';
 import { UserUpdateOneWithoutDeletedProductCategoriesNestedInputSchema } from './UserUpdateOneWithoutDeletedProductCategoriesNestedInputSchema';
 
-export const ProductCategoryUpdateWithoutCollectionsInputSchema: z.ZodType<Prisma.ProductCategoryUpdateWithoutCollectionsInput> = z.object({
-  id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  status: z.union([ z.lazy(() => ContentStatusSchema),z.lazy(() => EnumContentStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  copy: z.union([ z.lazy(() => JsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
-  displayOrder: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  deletedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  parent: z.lazy(() => ProductCategoryUpdateOneWithoutChildrenNestedInputSchema).optional(),
-  children: z.lazy(() => ProductCategoryUpdateManyWithoutParentNestedInputSchema).optional(),
-  products: z.lazy(() => ProductUpdateManyWithoutCategoriesNestedInputSchema).optional(),
-  media: z.lazy(() => MediaUpdateManyWithoutCategoryNestedInputSchema).optional(),
-  deletedBy: z.lazy(() => UserUpdateOneWithoutDeletedProductCategoriesNestedInputSchema).optional()
-}).strict();
+export const ProductCategoryUpdateWithoutCollectionsInputSchema: z.ZodType<Prisma.ProductCategoryUpdateWithoutCollectionsInput> =
+  z
+    .object({
+      id: z
+        .union([z.string().cuid(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+        .optional(),
+      name: z.union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)]).optional(),
+      slug: z.union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)]).optional(),
+      status: z
+        .union([
+          z.lazy(() => ContentStatusSchema),
+          z.lazy(() => EnumContentStatusFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      copy: z.union([z.lazy(() => JsonNullValueInputSchema), InputJsonValueSchema]).optional(),
+      displayOrder: z
+        .union([z.number().int(), z.lazy(() => IntFieldUpdateOperationsInputSchema)])
+        .optional(),
+      createdAt: z
+        .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+        .optional(),
+      updatedAt: z
+        .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+        .optional(),
+      deletedAt: z
+        .union([z.coerce.date(), z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      parent: z.lazy(() => ProductCategoryUpdateOneWithoutChildrenNestedInputSchema).optional(),
+      children: z.lazy(() => ProductCategoryUpdateManyWithoutParentNestedInputSchema).optional(),
+      products: z.lazy(() => ProductUpdateManyWithoutCategoriesNestedInputSchema).optional(),
+      media: z.lazy(() => MediaUpdateManyWithoutCategoryNestedInputSchema).optional(),
+      deletedBy: z
+        .lazy(() => UserUpdateOneWithoutDeletedProductCategoriesNestedInputSchema)
+        .optional(),
+    })
+    .strict();
 
 export default ProductCategoryUpdateWithoutCollectionsInputSchema;

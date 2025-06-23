@@ -63,7 +63,7 @@ export const nodePreset = {
   },
 };
 
-// Next.js testing preset - Complete UserConfig
+// Next.js testing preset - Complete UserConfig with Node.js module handling
 /** @type {import('vitest/config').UserConfig} */
 export const nextPreset = {
   plugins: [react()],
@@ -76,6 +76,25 @@ export const nextPreset = {
     alias: {
       '@': resolve(process.cwd(), './'),
     },
+  },
+  define: {
+    // Handle Node.js built-in modules in browser environment
+    'process.env.NODE_ENV': '"test"',
+    'process.env.NEXT_RUNTIME': '"nodejs"',
+    global: 'globalThis',
+  },
+  optimizeDeps: {
+    include: [
+      // Include polyfills for Node.js modules
+      'buffer',
+      'crypto-browserify',
+      'events',
+      'path-browserify',
+      'process',
+      'stream-browserify',
+      'string_decoder',
+      'util',
+    ],
   },
 };
 

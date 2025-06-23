@@ -11,14 +11,28 @@ import { ProductUpdateToOneWithWhereWithoutChildrenInputSchema } from './Product
 import { ProductUpdateWithoutChildrenInputSchema } from './ProductUpdateWithoutChildrenInputSchema';
 import { ProductUncheckedUpdateWithoutChildrenInputSchema } from './ProductUncheckedUpdateWithoutChildrenInputSchema';
 
-export const ProductUpdateOneWithoutChildrenNestedInputSchema: z.ZodType<Prisma.ProductUpdateOneWithoutChildrenNestedInput> = z.object({
-  create: z.union([ z.lazy(() => ProductCreateWithoutChildrenInputSchema),z.lazy(() => ProductUncheckedCreateWithoutChildrenInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => ProductCreateOrConnectWithoutChildrenInputSchema).optional(),
-  upsert: z.lazy(() => ProductUpsertWithoutChildrenInputSchema).optional(),
-  disconnect: z.union([ z.boolean(),z.lazy(() => ProductWhereInputSchema) ]).optional(),
-  delete: z.union([ z.boolean(),z.lazy(() => ProductWhereInputSchema) ]).optional(),
-  connect: z.lazy(() => ProductWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => ProductUpdateToOneWithWhereWithoutChildrenInputSchema),z.lazy(() => ProductUpdateWithoutChildrenInputSchema),z.lazy(() => ProductUncheckedUpdateWithoutChildrenInputSchema) ]).optional(),
-}).strict();
+export const ProductUpdateOneWithoutChildrenNestedInputSchema: z.ZodType<Prisma.ProductUpdateOneWithoutChildrenNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => ProductCreateWithoutChildrenInputSchema),
+          z.lazy(() => ProductUncheckedCreateWithoutChildrenInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z.lazy(() => ProductCreateOrConnectWithoutChildrenInputSchema).optional(),
+      upsert: z.lazy(() => ProductUpsertWithoutChildrenInputSchema).optional(),
+      disconnect: z.union([z.boolean(), z.lazy(() => ProductWhereInputSchema)]).optional(),
+      delete: z.union([z.boolean(), z.lazy(() => ProductWhereInputSchema)]).optional(),
+      connect: z.lazy(() => ProductWhereUniqueInputSchema).optional(),
+      update: z
+        .union([
+          z.lazy(() => ProductUpdateToOneWithWhereWithoutChildrenInputSchema),
+          z.lazy(() => ProductUpdateWithoutChildrenInputSchema),
+          z.lazy(() => ProductUncheckedUpdateWithoutChildrenInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default ProductUpdateOneWithoutChildrenNestedInputSchema;

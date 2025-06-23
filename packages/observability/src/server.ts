@@ -36,11 +36,11 @@ const SERVER_PROVIDERS: ProviderRegistry = {
     return new ConsoleProvider();
   },
   opentelemetry: async () => {
-    const { VercelOTelProvider } = await import('./server/providers/vercel-otel-provider');
+    const { VercelOTelProvider } = await import('./server/providers/nodejs/vercel-otel-provider');
     return new VercelOTelProvider();
   },
   otel: async () => {
-    const { VercelOTelProvider } = await import('./server/providers/vercel-otel-provider');
+    const { VercelOTelProvider } = await import('./server/providers/nodejs/vercel-otel-provider');
     return new VercelOTelProvider();
   },
   sentry: async () => {
@@ -49,7 +49,7 @@ const SERVER_PROVIDERS: ProviderRegistry = {
   },
   // Lazy-load OpenTelemetry provider to avoid bundling when not used
   'vercel-otel': async () => {
-    const { VercelOTelProvider } = await import('./server/providers/vercel-otel-provider');
+    const { VercelOTelProvider } = await import('./server/providers/nodejs/vercel-otel-provider');
     return new VercelOTelProvider();
   },
   grafanaMonitoring: async () => {

@@ -1,11 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+// Import after mocking
 import {
-  createDefaultOrganization,
+  getCurrentOrganization,
+  getOrganizationById,
+  getUserOrganizations,
   ensureActiveOrganization,
   getOrganizationDetails,
-  getUserOrganizations,
-} from '../../../server/organizations/helpers';
+  createDefaultOrganization,
+} from '../../../src/server/organizations/helpers';
 
 // Use vi.hoisted to ensure mocks are available during module loading
 const {
@@ -58,7 +61,7 @@ const {
 });
 
 // Mock the auth module
-vi.mock('../../../server/auth', () => ({
+vi.mock('../../../src/shared/auth.config', () => ({
   auth: mockAuth,
 }));
 

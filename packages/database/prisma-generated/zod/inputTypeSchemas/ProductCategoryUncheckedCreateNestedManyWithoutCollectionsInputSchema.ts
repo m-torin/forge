@@ -6,10 +6,30 @@ import { ProductCategoryUncheckedCreateWithoutCollectionsInputSchema } from './P
 import { ProductCategoryCreateOrConnectWithoutCollectionsInputSchema } from './ProductCategoryCreateOrConnectWithoutCollectionsInputSchema';
 import { ProductCategoryWhereUniqueInputSchema } from './ProductCategoryWhereUniqueInputSchema';
 
-export const ProductCategoryUncheckedCreateNestedManyWithoutCollectionsInputSchema: z.ZodType<Prisma.ProductCategoryUncheckedCreateNestedManyWithoutCollectionsInput> = z.object({
-  create: z.union([ z.lazy(() => ProductCategoryCreateWithoutCollectionsInputSchema),z.lazy(() => ProductCategoryCreateWithoutCollectionsInputSchema).array(),z.lazy(() => ProductCategoryUncheckedCreateWithoutCollectionsInputSchema),z.lazy(() => ProductCategoryUncheckedCreateWithoutCollectionsInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => ProductCategoryCreateOrConnectWithoutCollectionsInputSchema),z.lazy(() => ProductCategoryCreateOrConnectWithoutCollectionsInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => ProductCategoryWhereUniqueInputSchema),z.lazy(() => ProductCategoryWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const ProductCategoryUncheckedCreateNestedManyWithoutCollectionsInputSchema: z.ZodType<Prisma.ProductCategoryUncheckedCreateNestedManyWithoutCollectionsInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => ProductCategoryCreateWithoutCollectionsInputSchema),
+          z.lazy(() => ProductCategoryCreateWithoutCollectionsInputSchema).array(),
+          z.lazy(() => ProductCategoryUncheckedCreateWithoutCollectionsInputSchema),
+          z.lazy(() => ProductCategoryUncheckedCreateWithoutCollectionsInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => ProductCategoryCreateOrConnectWithoutCollectionsInputSchema),
+          z.lazy(() => ProductCategoryCreateOrConnectWithoutCollectionsInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => ProductCategoryWhereUniqueInputSchema),
+          z.lazy(() => ProductCategoryWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default ProductCategoryUncheckedCreateNestedManyWithoutCollectionsInputSchema;

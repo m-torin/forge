@@ -7,10 +7,19 @@ import { CollectionUncheckedUpdateWithoutPdpJoinsInputSchema } from './Collectio
 import { CollectionCreateWithoutPdpJoinsInputSchema } from './CollectionCreateWithoutPdpJoinsInputSchema';
 import { CollectionUncheckedCreateWithoutPdpJoinsInputSchema } from './CollectionUncheckedCreateWithoutPdpJoinsInputSchema';
 
-export const CollectionUpsertWithWhereUniqueWithoutPdpJoinsInputSchema: z.ZodType<Prisma.CollectionUpsertWithWhereUniqueWithoutPdpJoinsInput> = z.object({
-  where: z.lazy(() => CollectionWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => CollectionUpdateWithoutPdpJoinsInputSchema),z.lazy(() => CollectionUncheckedUpdateWithoutPdpJoinsInputSchema) ]),
-  create: z.union([ z.lazy(() => CollectionCreateWithoutPdpJoinsInputSchema),z.lazy(() => CollectionUncheckedCreateWithoutPdpJoinsInputSchema) ]),
-}).strict();
+export const CollectionUpsertWithWhereUniqueWithoutPdpJoinsInputSchema: z.ZodType<Prisma.CollectionUpsertWithWhereUniqueWithoutPdpJoinsInput> =
+  z
+    .object({
+      where: z.lazy(() => CollectionWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => CollectionUpdateWithoutPdpJoinsInputSchema),
+        z.lazy(() => CollectionUncheckedUpdateWithoutPdpJoinsInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => CollectionCreateWithoutPdpJoinsInputSchema),
+        z.lazy(() => CollectionUncheckedCreateWithoutPdpJoinsInputSchema),
+      ]),
+    })
+    .strict();
 
 export default CollectionUpsertWithWhereUniqueWithoutPdpJoinsInputSchema;

@@ -7,10 +7,19 @@ import { CastUncheckedUpdateWithoutProductsInputSchema } from './CastUncheckedUp
 import { CastCreateWithoutProductsInputSchema } from './CastCreateWithoutProductsInputSchema';
 import { CastUncheckedCreateWithoutProductsInputSchema } from './CastUncheckedCreateWithoutProductsInputSchema';
 
-export const CastUpsertWithWhereUniqueWithoutProductsInputSchema: z.ZodType<Prisma.CastUpsertWithWhereUniqueWithoutProductsInput> = z.object({
-  where: z.lazy(() => CastWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => CastUpdateWithoutProductsInputSchema),z.lazy(() => CastUncheckedUpdateWithoutProductsInputSchema) ]),
-  create: z.union([ z.lazy(() => CastCreateWithoutProductsInputSchema),z.lazy(() => CastUncheckedCreateWithoutProductsInputSchema) ]),
-}).strict();
+export const CastUpsertWithWhereUniqueWithoutProductsInputSchema: z.ZodType<Prisma.CastUpsertWithWhereUniqueWithoutProductsInput> =
+  z
+    .object({
+      where: z.lazy(() => CastWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => CastUpdateWithoutProductsInputSchema),
+        z.lazy(() => CastUncheckedUpdateWithoutProductsInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => CastCreateWithoutProductsInputSchema),
+        z.lazy(() => CastUncheckedCreateWithoutProductsInputSchema),
+      ]),
+    })
+    .strict();
 
 export default CastUpsertWithWhereUniqueWithoutProductsInputSchema;

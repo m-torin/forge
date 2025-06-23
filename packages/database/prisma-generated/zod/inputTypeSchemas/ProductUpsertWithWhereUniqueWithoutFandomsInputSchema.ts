@@ -7,10 +7,19 @@ import { ProductUncheckedUpdateWithoutFandomsInputSchema } from './ProductUnchec
 import { ProductCreateWithoutFandomsInputSchema } from './ProductCreateWithoutFandomsInputSchema';
 import { ProductUncheckedCreateWithoutFandomsInputSchema } from './ProductUncheckedCreateWithoutFandomsInputSchema';
 
-export const ProductUpsertWithWhereUniqueWithoutFandomsInputSchema: z.ZodType<Prisma.ProductUpsertWithWhereUniqueWithoutFandomsInput> = z.object({
-  where: z.lazy(() => ProductWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => ProductUpdateWithoutFandomsInputSchema),z.lazy(() => ProductUncheckedUpdateWithoutFandomsInputSchema) ]),
-  create: z.union([ z.lazy(() => ProductCreateWithoutFandomsInputSchema),z.lazy(() => ProductUncheckedCreateWithoutFandomsInputSchema) ]),
-}).strict();
+export const ProductUpsertWithWhereUniqueWithoutFandomsInputSchema: z.ZodType<Prisma.ProductUpsertWithWhereUniqueWithoutFandomsInput> =
+  z
+    .object({
+      where: z.lazy(() => ProductWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => ProductUpdateWithoutFandomsInputSchema),
+        z.lazy(() => ProductUncheckedUpdateWithoutFandomsInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => ProductCreateWithoutFandomsInputSchema),
+        z.lazy(() => ProductUncheckedCreateWithoutFandomsInputSchema),
+      ]),
+    })
+    .strict();
 
 export default ProductUpsertWithWhereUniqueWithoutFandomsInputSchema;

@@ -11,18 +11,75 @@ import { TransactionUpdateWithWhereUniqueWithoutParentTransactionInputSchema } f
 import { TransactionUpdateManyWithWhereWithoutParentTransactionInputSchema } from './TransactionUpdateManyWithWhereWithoutParentTransactionInputSchema';
 import { TransactionScalarWhereInputSchema } from './TransactionScalarWhereInputSchema';
 
-export const TransactionUncheckedUpdateManyWithoutParentTransactionNestedInputSchema: z.ZodType<Prisma.TransactionUncheckedUpdateManyWithoutParentTransactionNestedInput> = z.object({
-  create: z.union([ z.lazy(() => TransactionCreateWithoutParentTransactionInputSchema),z.lazy(() => TransactionCreateWithoutParentTransactionInputSchema).array(),z.lazy(() => TransactionUncheckedCreateWithoutParentTransactionInputSchema),z.lazy(() => TransactionUncheckedCreateWithoutParentTransactionInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => TransactionCreateOrConnectWithoutParentTransactionInputSchema),z.lazy(() => TransactionCreateOrConnectWithoutParentTransactionInputSchema).array() ]).optional(),
-  upsert: z.union([ z.lazy(() => TransactionUpsertWithWhereUniqueWithoutParentTransactionInputSchema),z.lazy(() => TransactionUpsertWithWhereUniqueWithoutParentTransactionInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => TransactionCreateManyParentTransactionInputEnvelopeSchema).optional(),
-  set: z.union([ z.lazy(() => TransactionWhereUniqueInputSchema),z.lazy(() => TransactionWhereUniqueInputSchema).array() ]).optional(),
-  disconnect: z.union([ z.lazy(() => TransactionWhereUniqueInputSchema),z.lazy(() => TransactionWhereUniqueInputSchema).array() ]).optional(),
-  delete: z.union([ z.lazy(() => TransactionWhereUniqueInputSchema),z.lazy(() => TransactionWhereUniqueInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => TransactionWhereUniqueInputSchema),z.lazy(() => TransactionWhereUniqueInputSchema).array() ]).optional(),
-  update: z.union([ z.lazy(() => TransactionUpdateWithWhereUniqueWithoutParentTransactionInputSchema),z.lazy(() => TransactionUpdateWithWhereUniqueWithoutParentTransactionInputSchema).array() ]).optional(),
-  updateMany: z.union([ z.lazy(() => TransactionUpdateManyWithWhereWithoutParentTransactionInputSchema),z.lazy(() => TransactionUpdateManyWithWhereWithoutParentTransactionInputSchema).array() ]).optional(),
-  deleteMany: z.union([ z.lazy(() => TransactionScalarWhereInputSchema),z.lazy(() => TransactionScalarWhereInputSchema).array() ]).optional(),
-}).strict();
+export const TransactionUncheckedUpdateManyWithoutParentTransactionNestedInputSchema: z.ZodType<Prisma.TransactionUncheckedUpdateManyWithoutParentTransactionNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => TransactionCreateWithoutParentTransactionInputSchema),
+          z.lazy(() => TransactionCreateWithoutParentTransactionInputSchema).array(),
+          z.lazy(() => TransactionUncheckedCreateWithoutParentTransactionInputSchema),
+          z.lazy(() => TransactionUncheckedCreateWithoutParentTransactionInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => TransactionCreateOrConnectWithoutParentTransactionInputSchema),
+          z.lazy(() => TransactionCreateOrConnectWithoutParentTransactionInputSchema).array(),
+        ])
+        .optional(),
+      upsert: z
+        .union([
+          z.lazy(() => TransactionUpsertWithWhereUniqueWithoutParentTransactionInputSchema),
+          z.lazy(() => TransactionUpsertWithWhereUniqueWithoutParentTransactionInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z
+        .lazy(() => TransactionCreateManyParentTransactionInputEnvelopeSchema)
+        .optional(),
+      set: z
+        .union([
+          z.lazy(() => TransactionWhereUniqueInputSchema),
+          z.lazy(() => TransactionWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      disconnect: z
+        .union([
+          z.lazy(() => TransactionWhereUniqueInputSchema),
+          z.lazy(() => TransactionWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      delete: z
+        .union([
+          z.lazy(() => TransactionWhereUniqueInputSchema),
+          z.lazy(() => TransactionWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => TransactionWhereUniqueInputSchema),
+          z.lazy(() => TransactionWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      update: z
+        .union([
+          z.lazy(() => TransactionUpdateWithWhereUniqueWithoutParentTransactionInputSchema),
+          z.lazy(() => TransactionUpdateWithWhereUniqueWithoutParentTransactionInputSchema).array(),
+        ])
+        .optional(),
+      updateMany: z
+        .union([
+          z.lazy(() => TransactionUpdateManyWithWhereWithoutParentTransactionInputSchema),
+          z.lazy(() => TransactionUpdateManyWithWhereWithoutParentTransactionInputSchema).array(),
+        ])
+        .optional(),
+      deleteMany: z
+        .union([
+          z.lazy(() => TransactionScalarWhereInputSchema),
+          z.lazy(() => TransactionScalarWhereInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default TransactionUncheckedUpdateManyWithoutParentTransactionNestedInputSchema;

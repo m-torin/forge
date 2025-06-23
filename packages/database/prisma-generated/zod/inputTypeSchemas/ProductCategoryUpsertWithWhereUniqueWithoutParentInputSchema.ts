@@ -7,10 +7,19 @@ import { ProductCategoryUncheckedUpdateWithoutParentInputSchema } from './Produc
 import { ProductCategoryCreateWithoutParentInputSchema } from './ProductCategoryCreateWithoutParentInputSchema';
 import { ProductCategoryUncheckedCreateWithoutParentInputSchema } from './ProductCategoryUncheckedCreateWithoutParentInputSchema';
 
-export const ProductCategoryUpsertWithWhereUniqueWithoutParentInputSchema: z.ZodType<Prisma.ProductCategoryUpsertWithWhereUniqueWithoutParentInput> = z.object({
-  where: z.lazy(() => ProductCategoryWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => ProductCategoryUpdateWithoutParentInputSchema),z.lazy(() => ProductCategoryUncheckedUpdateWithoutParentInputSchema) ]),
-  create: z.union([ z.lazy(() => ProductCategoryCreateWithoutParentInputSchema),z.lazy(() => ProductCategoryUncheckedCreateWithoutParentInputSchema) ]),
-}).strict();
+export const ProductCategoryUpsertWithWhereUniqueWithoutParentInputSchema: z.ZodType<Prisma.ProductCategoryUpsertWithWhereUniqueWithoutParentInput> =
+  z
+    .object({
+      where: z.lazy(() => ProductCategoryWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => ProductCategoryUpdateWithoutParentInputSchema),
+        z.lazy(() => ProductCategoryUncheckedUpdateWithoutParentInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => ProductCategoryCreateWithoutParentInputSchema),
+        z.lazy(() => ProductCategoryUncheckedCreateWithoutParentInputSchema),
+      ]),
+    })
+    .strict();
 
 export default ProductCategoryUpsertWithWhereUniqueWithoutParentInputSchema;

@@ -11,8 +11,8 @@ export const MemberSchema = z.object({
   role: z.string(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date().nullable(),
-})
+});
 
-export type Member = z.infer<typeof MemberSchema>
+export type Member = z.infer<typeof MemberSchema>;
 
 export default MemberSchema;

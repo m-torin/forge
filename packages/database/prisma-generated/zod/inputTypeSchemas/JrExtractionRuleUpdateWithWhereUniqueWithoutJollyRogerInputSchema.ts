@@ -5,9 +5,15 @@ import { JrExtractionRuleWhereUniqueInputSchema } from './JrExtractionRuleWhereU
 import { JrExtractionRuleUpdateWithoutJollyRogerInputSchema } from './JrExtractionRuleUpdateWithoutJollyRogerInputSchema';
 import { JrExtractionRuleUncheckedUpdateWithoutJollyRogerInputSchema } from './JrExtractionRuleUncheckedUpdateWithoutJollyRogerInputSchema';
 
-export const JrExtractionRuleUpdateWithWhereUniqueWithoutJollyRogerInputSchema: z.ZodType<Prisma.JrExtractionRuleUpdateWithWhereUniqueWithoutJollyRogerInput> = z.object({
-  where: z.lazy(() => JrExtractionRuleWhereUniqueInputSchema),
-  data: z.union([ z.lazy(() => JrExtractionRuleUpdateWithoutJollyRogerInputSchema),z.lazy(() => JrExtractionRuleUncheckedUpdateWithoutJollyRogerInputSchema) ]),
-}).strict();
+export const JrExtractionRuleUpdateWithWhereUniqueWithoutJollyRogerInputSchema: z.ZodType<Prisma.JrExtractionRuleUpdateWithWhereUniqueWithoutJollyRogerInput> =
+  z
+    .object({
+      where: z.lazy(() => JrExtractionRuleWhereUniqueInputSchema),
+      data: z.union([
+        z.lazy(() => JrExtractionRuleUpdateWithoutJollyRogerInputSchema),
+        z.lazy(() => JrExtractionRuleUncheckedUpdateWithoutJollyRogerInputSchema),
+      ]),
+    })
+    .strict();
 
 export default JrExtractionRuleUpdateWithWhereUniqueWithoutJollyRogerInputSchema;

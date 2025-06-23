@@ -1,0 +1,94 @@
+{
+  "app": {
+    "welcome": "Welcome to Web Template",
+    "description": "A modern Next.js template with Mantine UI and internationalization support",
+    "brand": "Web Template",
+    "appDescription": "A modern web application template with internationalization",
+    "selectLanguage": "Select language",
+    "l": {
+      "en": "English",
+      "fr": "Français",
+      "es": "Español",
+      "de": "Deutsch",
+      "pt": "Português"
+    }
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Search for anything...",
+    "button": "Search",
+    "results": "Search Results",
+    "noResults": "No results found",
+    "tryAgain": "Try searching for something else"
+  },
+  "navigation": {
+    "home": "Home",
+    "search": "Search",
+    "account": "My Account",
+    "orders": "My Orders",
+    "wishlist": "Wishlist",
+    "help": "Help",
+    "logout": "Log out",
+    "login": "Login"
+  },
+  "taxonomy": {
+    "noItems": "No items found",
+    "noItemsDescription": "We couldn't find any items in this category at the moment. Try exploring other categories or check back later.",
+    "exploreOther": "Explore other categories:",
+    "items": "items",
+    "backTo": "Back to",
+    "save": "Save",
+    "share": "Share",
+    "relatedItems": "Related Items",
+    "exploreMore": "Explore more items in this",
+    "viewAll": "View All",
+    "details": "Details",
+    "type": "Type",
+    "totalItems": "Total Items",
+    "parent": "Parent",
+    "browseItems": "Browse Items",
+    "brands": {
+      "title": "Brands",
+      "description": "Discover products from our featured brands and partners"
+    },
+    "categories": {
+      "title": "Categories",
+      "description": "Browse products by category to find exactly what you need"
+    },
+    "collections": {
+      "title": "Collections",
+      "description": "Curated collections of products for special occasions and themes"
+    },
+    "tags": {
+      "title": "Tags",
+      "description": "Find products by tags and labels"
+    },
+    "attributes": {
+      "title": "Attributes",
+      "description": "Filter products by specific attributes and properties"
+    }
+  },
+  "account": {
+    "accountPage": "Account Settings",
+    "accountDescription": "Manage your account settings and preferences",
+    "personalInfo": "Personal Information",
+    "myFavorites": "My Favorites",
+    "orderHistory": "Order History",
+    "changePassword": "Change Password",
+    "billing": "Billing & Payment"
+  },
+  "errors": {
+    "notFound": {
+      "title": "Page Not Found",
+      "description": "The requested taxonomy type or page was not found. Please check the URL or browse our available categories.",
+      "goBack": "Go Back",
+      "browseCatalog": "Browse our catalog:"
+    },
+    "serverError": {
+      "title": "Something went wrong!",
+      "description": "An unexpected error occurred. Our team has been notified and is working to fix this issue.",
+      "tryAgain": "Try again",
+      "goHome": "Go to homepage"
+    }
+  }
+}

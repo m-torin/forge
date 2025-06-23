@@ -11,14 +11,28 @@ import { UserUpdateToOneWithWhereWithoutDeletedFandomsInputSchema } from './User
 import { UserUpdateWithoutDeletedFandomsInputSchema } from './UserUpdateWithoutDeletedFandomsInputSchema';
 import { UserUncheckedUpdateWithoutDeletedFandomsInputSchema } from './UserUncheckedUpdateWithoutDeletedFandomsInputSchema';
 
-export const UserUpdateOneWithoutDeletedFandomsNestedInputSchema: z.ZodType<Prisma.UserUpdateOneWithoutDeletedFandomsNestedInput> = z.object({
-  create: z.union([ z.lazy(() => UserCreateWithoutDeletedFandomsInputSchema),z.lazy(() => UserUncheckedCreateWithoutDeletedFandomsInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => UserCreateOrConnectWithoutDeletedFandomsInputSchema).optional(),
-  upsert: z.lazy(() => UserUpsertWithoutDeletedFandomsInputSchema).optional(),
-  disconnect: z.union([ z.boolean(),z.lazy(() => UserWhereInputSchema) ]).optional(),
-  delete: z.union([ z.boolean(),z.lazy(() => UserWhereInputSchema) ]).optional(),
-  connect: z.lazy(() => UserWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => UserUpdateToOneWithWhereWithoutDeletedFandomsInputSchema),z.lazy(() => UserUpdateWithoutDeletedFandomsInputSchema),z.lazy(() => UserUncheckedUpdateWithoutDeletedFandomsInputSchema) ]).optional(),
-}).strict();
+export const UserUpdateOneWithoutDeletedFandomsNestedInputSchema: z.ZodType<Prisma.UserUpdateOneWithoutDeletedFandomsNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => UserCreateWithoutDeletedFandomsInputSchema),
+          z.lazy(() => UserUncheckedCreateWithoutDeletedFandomsInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z.lazy(() => UserCreateOrConnectWithoutDeletedFandomsInputSchema).optional(),
+      upsert: z.lazy(() => UserUpsertWithoutDeletedFandomsInputSchema).optional(),
+      disconnect: z.union([z.boolean(), z.lazy(() => UserWhereInputSchema)]).optional(),
+      delete: z.union([z.boolean(), z.lazy(() => UserWhereInputSchema)]).optional(),
+      connect: z.lazy(() => UserWhereUniqueInputSchema).optional(),
+      update: z
+        .union([
+          z.lazy(() => UserUpdateToOneWithWhereWithoutDeletedFandomsInputSchema),
+          z.lazy(() => UserUpdateWithoutDeletedFandomsInputSchema),
+          z.lazy(() => UserUncheckedUpdateWithoutDeletedFandomsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default UserUpdateOneWithoutDeletedFandomsNestedInputSchema;

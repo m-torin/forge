@@ -7,11 +7,31 @@ import { MediaCreateOrConnectWithoutCollectionInputSchema } from './MediaCreateO
 import { MediaCreateManyCollectionInputEnvelopeSchema } from './MediaCreateManyCollectionInputEnvelopeSchema';
 import { MediaWhereUniqueInputSchema } from './MediaWhereUniqueInputSchema';
 
-export const MediaCreateNestedManyWithoutCollectionInputSchema: z.ZodType<Prisma.MediaCreateNestedManyWithoutCollectionInput> = z.object({
-  create: z.union([ z.lazy(() => MediaCreateWithoutCollectionInputSchema),z.lazy(() => MediaCreateWithoutCollectionInputSchema).array(),z.lazy(() => MediaUncheckedCreateWithoutCollectionInputSchema),z.lazy(() => MediaUncheckedCreateWithoutCollectionInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => MediaCreateOrConnectWithoutCollectionInputSchema),z.lazy(() => MediaCreateOrConnectWithoutCollectionInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => MediaCreateManyCollectionInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => MediaWhereUniqueInputSchema),z.lazy(() => MediaWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const MediaCreateNestedManyWithoutCollectionInputSchema: z.ZodType<Prisma.MediaCreateNestedManyWithoutCollectionInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => MediaCreateWithoutCollectionInputSchema),
+          z.lazy(() => MediaCreateWithoutCollectionInputSchema).array(),
+          z.lazy(() => MediaUncheckedCreateWithoutCollectionInputSchema),
+          z.lazy(() => MediaUncheckedCreateWithoutCollectionInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => MediaCreateOrConnectWithoutCollectionInputSchema),
+          z.lazy(() => MediaCreateOrConnectWithoutCollectionInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => MediaCreateManyCollectionInputEnvelopeSchema).optional(),
+      connect: z
+        .union([
+          z.lazy(() => MediaWhereUniqueInputSchema),
+          z.lazy(() => MediaWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default MediaCreateNestedManyWithoutCollectionInputSchema;

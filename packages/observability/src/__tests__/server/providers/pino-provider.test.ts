@@ -285,7 +285,7 @@ describe('pinoProvider', () => {
     test('should flush pino logger', async () => {
       await provider.flush();
 
-      expect(mockPino.flush).toHaveBeenCalledWith();
+      expect(mockPino.flush).toHaveBeenCalledWith(expect.any(Function));
     });
 
     test('should handle flush timeout', async () => {

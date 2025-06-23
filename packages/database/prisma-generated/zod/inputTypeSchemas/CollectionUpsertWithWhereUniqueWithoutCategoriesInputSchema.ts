@@ -7,10 +7,19 @@ import { CollectionUncheckedUpdateWithoutCategoriesInputSchema } from './Collect
 import { CollectionCreateWithoutCategoriesInputSchema } from './CollectionCreateWithoutCategoriesInputSchema';
 import { CollectionUncheckedCreateWithoutCategoriesInputSchema } from './CollectionUncheckedCreateWithoutCategoriesInputSchema';
 
-export const CollectionUpsertWithWhereUniqueWithoutCategoriesInputSchema: z.ZodType<Prisma.CollectionUpsertWithWhereUniqueWithoutCategoriesInput> = z.object({
-  where: z.lazy(() => CollectionWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => CollectionUpdateWithoutCategoriesInputSchema),z.lazy(() => CollectionUncheckedUpdateWithoutCategoriesInputSchema) ]),
-  create: z.union([ z.lazy(() => CollectionCreateWithoutCategoriesInputSchema),z.lazy(() => CollectionUncheckedCreateWithoutCategoriesInputSchema) ]),
-}).strict();
+export const CollectionUpsertWithWhereUniqueWithoutCategoriesInputSchema: z.ZodType<Prisma.CollectionUpsertWithWhereUniqueWithoutCategoriesInput> =
+  z
+    .object({
+      where: z.lazy(() => CollectionWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => CollectionUpdateWithoutCategoriesInputSchema),
+        z.lazy(() => CollectionUncheckedUpdateWithoutCategoriesInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => CollectionCreateWithoutCategoriesInputSchema),
+        z.lazy(() => CollectionUncheckedCreateWithoutCategoriesInputSchema),
+      ]),
+    })
+    .strict();
 
 export default CollectionUpsertWithWhereUniqueWithoutCategoriesInputSchema;

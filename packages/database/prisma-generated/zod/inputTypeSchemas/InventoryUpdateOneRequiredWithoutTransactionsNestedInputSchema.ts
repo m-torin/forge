@@ -10,12 +10,28 @@ import { InventoryUpdateToOneWithWhereWithoutTransactionsInputSchema } from './I
 import { InventoryUpdateWithoutTransactionsInputSchema } from './InventoryUpdateWithoutTransactionsInputSchema';
 import { InventoryUncheckedUpdateWithoutTransactionsInputSchema } from './InventoryUncheckedUpdateWithoutTransactionsInputSchema';
 
-export const InventoryUpdateOneRequiredWithoutTransactionsNestedInputSchema: z.ZodType<Prisma.InventoryUpdateOneRequiredWithoutTransactionsNestedInput> = z.object({
-  create: z.union([ z.lazy(() => InventoryCreateWithoutTransactionsInputSchema),z.lazy(() => InventoryUncheckedCreateWithoutTransactionsInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => InventoryCreateOrConnectWithoutTransactionsInputSchema).optional(),
-  upsert: z.lazy(() => InventoryUpsertWithoutTransactionsInputSchema).optional(),
-  connect: z.lazy(() => InventoryWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => InventoryUpdateToOneWithWhereWithoutTransactionsInputSchema),z.lazy(() => InventoryUpdateWithoutTransactionsInputSchema),z.lazy(() => InventoryUncheckedUpdateWithoutTransactionsInputSchema) ]).optional(),
-}).strict();
+export const InventoryUpdateOneRequiredWithoutTransactionsNestedInputSchema: z.ZodType<Prisma.InventoryUpdateOneRequiredWithoutTransactionsNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => InventoryCreateWithoutTransactionsInputSchema),
+          z.lazy(() => InventoryUncheckedCreateWithoutTransactionsInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .lazy(() => InventoryCreateOrConnectWithoutTransactionsInputSchema)
+        .optional(),
+      upsert: z.lazy(() => InventoryUpsertWithoutTransactionsInputSchema).optional(),
+      connect: z.lazy(() => InventoryWhereUniqueInputSchema).optional(),
+      update: z
+        .union([
+          z.lazy(() => InventoryUpdateToOneWithWhereWithoutTransactionsInputSchema),
+          z.lazy(() => InventoryUpdateWithoutTransactionsInputSchema),
+          z.lazy(() => InventoryUncheckedUpdateWithoutTransactionsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default InventoryUpdateOneRequiredWithoutTransactionsNestedInputSchema;

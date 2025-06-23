@@ -5,9 +5,15 @@ import { CollectionWhereUniqueInputSchema } from './CollectionWhereUniqueInputSc
 import { CollectionCreateWithoutParentInputSchema } from './CollectionCreateWithoutParentInputSchema';
 import { CollectionUncheckedCreateWithoutParentInputSchema } from './CollectionUncheckedCreateWithoutParentInputSchema';
 
-export const CollectionCreateOrConnectWithoutParentInputSchema: z.ZodType<Prisma.CollectionCreateOrConnectWithoutParentInput> = z.object({
-  where: z.lazy(() => CollectionWhereUniqueInputSchema),
-  create: z.union([ z.lazy(() => CollectionCreateWithoutParentInputSchema),z.lazy(() => CollectionUncheckedCreateWithoutParentInputSchema) ]),
-}).strict();
+export const CollectionCreateOrConnectWithoutParentInputSchema: z.ZodType<Prisma.CollectionCreateOrConnectWithoutParentInput> =
+  z
+    .object({
+      where: z.lazy(() => CollectionWhereUniqueInputSchema),
+      create: z.union([
+        z.lazy(() => CollectionCreateWithoutParentInputSchema),
+        z.lazy(() => CollectionUncheckedCreateWithoutParentInputSchema),
+      ]),
+    })
+    .strict();
 
 export default CollectionCreateOrConnectWithoutParentInputSchema;

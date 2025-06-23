@@ -7,10 +7,19 @@ import { BrandUncheckedUpdateWithoutManufacturedProductsInputSchema } from './Br
 import { BrandCreateWithoutManufacturedProductsInputSchema } from './BrandCreateWithoutManufacturedProductsInputSchema';
 import { BrandUncheckedCreateWithoutManufacturedProductsInputSchema } from './BrandUncheckedCreateWithoutManufacturedProductsInputSchema';
 
-export const BrandUpsertWithWhereUniqueWithoutManufacturedProductsInputSchema: z.ZodType<Prisma.BrandUpsertWithWhereUniqueWithoutManufacturedProductsInput> = z.object({
-  where: z.lazy(() => BrandWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => BrandUpdateWithoutManufacturedProductsInputSchema),z.lazy(() => BrandUncheckedUpdateWithoutManufacturedProductsInputSchema) ]),
-  create: z.union([ z.lazy(() => BrandCreateWithoutManufacturedProductsInputSchema),z.lazy(() => BrandUncheckedCreateWithoutManufacturedProductsInputSchema) ]),
-}).strict();
+export const BrandUpsertWithWhereUniqueWithoutManufacturedProductsInputSchema: z.ZodType<Prisma.BrandUpsertWithWhereUniqueWithoutManufacturedProductsInput> =
+  z
+    .object({
+      where: z.lazy(() => BrandWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => BrandUpdateWithoutManufacturedProductsInputSchema),
+        z.lazy(() => BrandUncheckedUpdateWithoutManufacturedProductsInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => BrandCreateWithoutManufacturedProductsInputSchema),
+        z.lazy(() => BrandUncheckedCreateWithoutManufacturedProductsInputSchema),
+      ]),
+    })
+    .strict();
 
 export default BrandUpsertWithWhereUniqueWithoutManufacturedProductsInputSchema;

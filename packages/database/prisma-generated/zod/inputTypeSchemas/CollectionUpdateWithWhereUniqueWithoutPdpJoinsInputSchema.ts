@@ -5,9 +5,15 @@ import { CollectionWhereUniqueInputSchema } from './CollectionWhereUniqueInputSc
 import { CollectionUpdateWithoutPdpJoinsInputSchema } from './CollectionUpdateWithoutPdpJoinsInputSchema';
 import { CollectionUncheckedUpdateWithoutPdpJoinsInputSchema } from './CollectionUncheckedUpdateWithoutPdpJoinsInputSchema';
 
-export const CollectionUpdateWithWhereUniqueWithoutPdpJoinsInputSchema: z.ZodType<Prisma.CollectionUpdateWithWhereUniqueWithoutPdpJoinsInput> = z.object({
-  where: z.lazy(() => CollectionWhereUniqueInputSchema),
-  data: z.union([ z.lazy(() => CollectionUpdateWithoutPdpJoinsInputSchema),z.lazy(() => CollectionUncheckedUpdateWithoutPdpJoinsInputSchema) ]),
-}).strict();
+export const CollectionUpdateWithWhereUniqueWithoutPdpJoinsInputSchema: z.ZodType<Prisma.CollectionUpdateWithWhereUniqueWithoutPdpJoinsInput> =
+  z
+    .object({
+      where: z.lazy(() => CollectionWhereUniqueInputSchema),
+      data: z.union([
+        z.lazy(() => CollectionUpdateWithoutPdpJoinsInputSchema),
+        z.lazy(() => CollectionUncheckedUpdateWithoutPdpJoinsInputSchema),
+      ]),
+    })
+    .strict();
 
 export default CollectionUpdateWithWhereUniqueWithoutPdpJoinsInputSchema;

@@ -7,10 +7,19 @@ import { CartItemUncheckedUpdateWithoutVariantInputSchema } from './CartItemUnch
 import { CartItemCreateWithoutVariantInputSchema } from './CartItemCreateWithoutVariantInputSchema';
 import { CartItemUncheckedCreateWithoutVariantInputSchema } from './CartItemUncheckedCreateWithoutVariantInputSchema';
 
-export const CartItemUpsertWithWhereUniqueWithoutVariantInputSchema: z.ZodType<Prisma.CartItemUpsertWithWhereUniqueWithoutVariantInput> = z.object({
-  where: z.lazy(() => CartItemWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => CartItemUpdateWithoutVariantInputSchema),z.lazy(() => CartItemUncheckedUpdateWithoutVariantInputSchema) ]),
-  create: z.union([ z.lazy(() => CartItemCreateWithoutVariantInputSchema),z.lazy(() => CartItemUncheckedCreateWithoutVariantInputSchema) ]),
-}).strict();
+export const CartItemUpsertWithWhereUniqueWithoutVariantInputSchema: z.ZodType<Prisma.CartItemUpsertWithWhereUniqueWithoutVariantInput> =
+  z
+    .object({
+      where: z.lazy(() => CartItemWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => CartItemUpdateWithoutVariantInputSchema),
+        z.lazy(() => CartItemUncheckedUpdateWithoutVariantInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => CartItemCreateWithoutVariantInputSchema),
+        z.lazy(() => CartItemUncheckedCreateWithoutVariantInputSchema),
+      ]),
+    })
+    .strict();
 
 export default CartItemUpsertWithWhereUniqueWithoutVariantInputSchema;

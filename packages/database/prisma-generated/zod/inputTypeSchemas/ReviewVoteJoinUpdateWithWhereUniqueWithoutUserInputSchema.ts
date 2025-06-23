@@ -5,9 +5,15 @@ import { ReviewVoteJoinWhereUniqueInputSchema } from './ReviewVoteJoinWhereUniqu
 import { ReviewVoteJoinUpdateWithoutUserInputSchema } from './ReviewVoteJoinUpdateWithoutUserInputSchema';
 import { ReviewVoteJoinUncheckedUpdateWithoutUserInputSchema } from './ReviewVoteJoinUncheckedUpdateWithoutUserInputSchema';
 
-export const ReviewVoteJoinUpdateWithWhereUniqueWithoutUserInputSchema: z.ZodType<Prisma.ReviewVoteJoinUpdateWithWhereUniqueWithoutUserInput> = z.object({
-  where: z.lazy(() => ReviewVoteJoinWhereUniqueInputSchema),
-  data: z.union([ z.lazy(() => ReviewVoteJoinUpdateWithoutUserInputSchema),z.lazy(() => ReviewVoteJoinUncheckedUpdateWithoutUserInputSchema) ]),
-}).strict();
+export const ReviewVoteJoinUpdateWithWhereUniqueWithoutUserInputSchema: z.ZodType<Prisma.ReviewVoteJoinUpdateWithWhereUniqueWithoutUserInput> =
+  z
+    .object({
+      where: z.lazy(() => ReviewVoteJoinWhereUniqueInputSchema),
+      data: z.union([
+        z.lazy(() => ReviewVoteJoinUpdateWithoutUserInputSchema),
+        z.lazy(() => ReviewVoteJoinUncheckedUpdateWithoutUserInputSchema),
+      ]),
+    })
+    .strict();
 
 export default ReviewVoteJoinUpdateWithWhereUniqueWithoutUserInputSchema;

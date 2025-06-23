@@ -15,8 +15,8 @@ export const InvitationSchema = z.object({
   expiresAt: z.coerce.date(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date().nullable(),
-})
+});
 
-export type Invitation = z.infer<typeof InvitationSchema>
+export type Invitation = z.infer<typeof InvitationSchema>;
 
 export default InvitationSchema;

@@ -13,8 +13,8 @@ export const BackupCodeSchema = z.object({
   used: z.boolean(),
   usedAt: z.coerce.date().nullable(),
   createdAt: z.coerce.date(),
-})
+});
 
-export type BackupCode = z.infer<typeof BackupCodeSchema>
+export type BackupCode = z.infer<typeof BackupCodeSchema>;
 
 export default BackupCodeSchema;

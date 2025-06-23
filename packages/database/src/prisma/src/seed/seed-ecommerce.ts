@@ -33,7 +33,7 @@ const SEED_COUNT = {
 };
 
 // Helper function to maybe return a value (with 50% probability)
-function _maybe<T>(value: T): null | T {
+function maybe<T>(value: T): null | T {
   return Math.random() > 0.5 ? value : null;
 }
 
@@ -653,7 +653,7 @@ async function seedEcommerce() {
     );
 
     const allProducts = await prisma.product.findMany();
-    const _products = [...existingProducts, ...parentProducts, ...childProducts];
+    const products = [...existingProducts, ...parentProducts, ...childProducts];
 
     // 7. Create PdpJoin (Product-Brand relationships)
     // eslint-disable-next-line no-console
@@ -745,7 +745,7 @@ async function seedEcommerce() {
               voteType: randomEnum(VoteType),
             },
           });
-        } catch (_error: any) {
+        } catch (error) {
           // Skip duplicate votes
         }
       }
@@ -829,7 +829,7 @@ async function seedEcommerce() {
             },
           });
           registryItems.push(registryItem);
-        } catch (_error: any) {
+        } catch (error) {
           // Skip if we have a unique constraint violation (same product/collection in registry)
         }
       }
@@ -895,7 +895,7 @@ async function seedEcommerce() {
               userId: user.id,
             },
           });
-        } catch (_error: any) {
+        } catch (error) {
           // Skip if we have a unique constraint violation (same product/collection favorited)
         }
       }

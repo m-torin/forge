@@ -6,10 +6,18 @@ import { UserUncheckedCreateWithoutDeletedReviewsInputSchema } from './UserUnche
 import { UserCreateOrConnectWithoutDeletedReviewsInputSchema } from './UserCreateOrConnectWithoutDeletedReviewsInputSchema';
 import { UserWhereUniqueInputSchema } from './UserWhereUniqueInputSchema';
 
-export const UserCreateNestedOneWithoutDeletedReviewsInputSchema: z.ZodType<Prisma.UserCreateNestedOneWithoutDeletedReviewsInput> = z.object({
-  create: z.union([ z.lazy(() => UserCreateWithoutDeletedReviewsInputSchema),z.lazy(() => UserUncheckedCreateWithoutDeletedReviewsInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => UserCreateOrConnectWithoutDeletedReviewsInputSchema).optional(),
-  connect: z.lazy(() => UserWhereUniqueInputSchema).optional()
-}).strict();
+export const UserCreateNestedOneWithoutDeletedReviewsInputSchema: z.ZodType<Prisma.UserCreateNestedOneWithoutDeletedReviewsInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => UserCreateWithoutDeletedReviewsInputSchema),
+          z.lazy(() => UserUncheckedCreateWithoutDeletedReviewsInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z.lazy(() => UserCreateOrConnectWithoutDeletedReviewsInputSchema).optional(),
+      connect: z.lazy(() => UserWhereUniqueInputSchema).optional(),
+    })
+    .strict();
 
 export default UserCreateNestedOneWithoutDeletedReviewsInputSchema;

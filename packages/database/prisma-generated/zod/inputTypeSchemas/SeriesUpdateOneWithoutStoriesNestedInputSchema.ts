@@ -11,14 +11,28 @@ import { SeriesUpdateToOneWithWhereWithoutStoriesInputSchema } from './SeriesUpd
 import { SeriesUpdateWithoutStoriesInputSchema } from './SeriesUpdateWithoutStoriesInputSchema';
 import { SeriesUncheckedUpdateWithoutStoriesInputSchema } from './SeriesUncheckedUpdateWithoutStoriesInputSchema';
 
-export const SeriesUpdateOneWithoutStoriesNestedInputSchema: z.ZodType<Prisma.SeriesUpdateOneWithoutStoriesNestedInput> = z.object({
-  create: z.union([ z.lazy(() => SeriesCreateWithoutStoriesInputSchema),z.lazy(() => SeriesUncheckedCreateWithoutStoriesInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => SeriesCreateOrConnectWithoutStoriesInputSchema).optional(),
-  upsert: z.lazy(() => SeriesUpsertWithoutStoriesInputSchema).optional(),
-  disconnect: z.union([ z.boolean(),z.lazy(() => SeriesWhereInputSchema) ]).optional(),
-  delete: z.union([ z.boolean(),z.lazy(() => SeriesWhereInputSchema) ]).optional(),
-  connect: z.lazy(() => SeriesWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => SeriesUpdateToOneWithWhereWithoutStoriesInputSchema),z.lazy(() => SeriesUpdateWithoutStoriesInputSchema),z.lazy(() => SeriesUncheckedUpdateWithoutStoriesInputSchema) ]).optional(),
-}).strict();
+export const SeriesUpdateOneWithoutStoriesNestedInputSchema: z.ZodType<Prisma.SeriesUpdateOneWithoutStoriesNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => SeriesCreateWithoutStoriesInputSchema),
+          z.lazy(() => SeriesUncheckedCreateWithoutStoriesInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z.lazy(() => SeriesCreateOrConnectWithoutStoriesInputSchema).optional(),
+      upsert: z.lazy(() => SeriesUpsertWithoutStoriesInputSchema).optional(),
+      disconnect: z.union([z.boolean(), z.lazy(() => SeriesWhereInputSchema)]).optional(),
+      delete: z.union([z.boolean(), z.lazy(() => SeriesWhereInputSchema)]).optional(),
+      connect: z.lazy(() => SeriesWhereUniqueInputSchema).optional(),
+      update: z
+        .union([
+          z.lazy(() => SeriesUpdateToOneWithWhereWithoutStoriesInputSchema),
+          z.lazy(() => SeriesUpdateWithoutStoriesInputSchema),
+          z.lazy(() => SeriesUncheckedUpdateWithoutStoriesInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default SeriesUpdateOneWithoutStoriesNestedInputSchema;

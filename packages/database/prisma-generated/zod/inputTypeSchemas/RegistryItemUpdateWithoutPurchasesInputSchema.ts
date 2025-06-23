@@ -12,19 +12,40 @@ import { RegistryUpdateOneRequiredWithoutItemsNestedInputSchema } from './Regist
 import { ProductUpdateOneWithoutRegistriesNestedInputSchema } from './ProductUpdateOneWithoutRegistriesNestedInputSchema';
 import { CollectionUpdateOneWithoutRegistriesNestedInputSchema } from './CollectionUpdateOneWithoutRegistriesNestedInputSchema';
 
-export const RegistryItemUpdateWithoutPurchasesInputSchema: z.ZodType<Prisma.RegistryItemUpdateWithoutPurchasesInput> = z.object({
-  id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  deletedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  quantity: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  priority: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  notes: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  purchased: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
-  deletedBy: z.lazy(() => UserUpdateOneWithoutDeletedRegistryItemsNestedInputSchema).optional(),
-  registry: z.lazy(() => RegistryUpdateOneRequiredWithoutItemsNestedInputSchema).optional(),
-  product: z.lazy(() => ProductUpdateOneWithoutRegistriesNestedInputSchema).optional(),
-  collection: z.lazy(() => CollectionUpdateOneWithoutRegistriesNestedInputSchema).optional()
-}).strict();
+export const RegistryItemUpdateWithoutPurchasesInputSchema: z.ZodType<Prisma.RegistryItemUpdateWithoutPurchasesInput> =
+  z
+    .object({
+      id: z
+        .union([z.string().cuid(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+        .optional(),
+      createdAt: z
+        .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+        .optional(),
+      updatedAt: z
+        .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+        .optional(),
+      deletedAt: z
+        .union([z.coerce.date(), z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      quantity: z
+        .union([z.number().int(), z.lazy(() => IntFieldUpdateOperationsInputSchema)])
+        .optional(),
+      priority: z
+        .union([z.number().int(), z.lazy(() => IntFieldUpdateOperationsInputSchema)])
+        .optional(),
+      notes: z
+        .union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      purchased: z
+        .union([z.boolean(), z.lazy(() => BoolFieldUpdateOperationsInputSchema)])
+        .optional(),
+      deletedBy: z.lazy(() => UserUpdateOneWithoutDeletedRegistryItemsNestedInputSchema).optional(),
+      registry: z.lazy(() => RegistryUpdateOneRequiredWithoutItemsNestedInputSchema).optional(),
+      product: z.lazy(() => ProductUpdateOneWithoutRegistriesNestedInputSchema).optional(),
+      collection: z.lazy(() => CollectionUpdateOneWithoutRegistriesNestedInputSchema).optional(),
+    })
+    .strict();
 
 export default RegistryItemUpdateWithoutPurchasesInputSchema;

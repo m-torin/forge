@@ -123,6 +123,9 @@ pnpm bump-deps                     # Update dependencies
 - **NO BULK FILE FIX SCRIPTS**: NEVER create or use bash scripts, shell scripts, or scripts in any
   language (Python, Node.js, etc.) to bulk fix multiple files. Always fix files one by one using the
   Edit or MultiEdit tools. This ensures precise control and prevents unintended changes.
+- **VARIABLE NAMING**: Variables and parameters should NOT have leading underscores. Use standard
+  camelCase naming (e.g., `count` not `_count`). Exception: Prisma's aggregation fields like
+  `_count` which are part of the schema.
 
 ## Technology Stack
 
@@ -287,21 +290,27 @@ lower layers:
 
 ## Import Patterns
 
-### Four-File Export Pattern
+### Five-File Export Pattern
 
-**Critical Rule**: In Next.js apps, ALWAYS use `/next` variants. In other environments, use base
-exports.
+**Critical Rule**: In Next.js apps, ALWAYS use `/next` variants. For edge runtime, use `/edge`
+variants. In other environments, use base exports.
 
 ```typescript
-// ✅ CORRECT - Next.js app
+// ✅ CORRECT - Next.js app (server components, API routes)
 import { useAuth } from '@repo/auth/client/next';
 import { auth } from '@repo/auth/server/next';
+
+// ✅ CORRECT - Next.js edge runtime (middleware, edge functions)
+import { createObservability } from '@repo/observability/server/edge';
 
 // ✅ CORRECT - Node.js worker
 import { createAuth } from '@repo/auth/server';
 
 // ❌ WRONG - Using non-Next.js import in Next.js
 import { createAuth } from '@repo/auth/client'; // NO!
+
+// ❌ WRONG - Using server/next in edge runtime
+import { createObservability } from '@repo/observability/server/next'; // NO! In middleware.ts
 ```
 
 ### Environment-Agnostic Exception
@@ -342,9 +351,10 @@ Always use `"catalog:"` versions in package.json when available:
 }
 ```
 
-## Four-File Export Pattern
+## Five-File Export Pattern
 
-Packages provide environment-specific exports. **In Next.js, ALWAYS use `/next` variants:**
+Packages provide environment-specific exports. **In Next.js, ALWAYS use `/next` variants. For edge
+runtime, use `/edge` variants:**
 
 ```json
 {
@@ -352,23 +362,38 @@ Packages provide environment-specific exports. **In Next.js, ALWAYS use `/next` 
     "./client": "./src/client.ts", // Browser (non-Next.js)
     "./server": "./src/server.ts", // Node.js (non-Next.js)
     "./client/next": "./src/client-next.ts", // Next.js client (REQUIRED)
-    "./server/next": "./src/server-next.ts" // Next.js server (REQUIRED)
+    "./server/next": "./src/server-next.ts", // Next.js server (REQUIRED)
+    "./server/edge": "./src/server-edge.ts" // Next.js edge runtime (REQUIRED for middleware/edge functions)
   }
 }
 ```
 
 ```typescript
-// ✅ Next.js app
+// ✅ Next.js app (server components, API routes)
 import { useAuth } from '@repo/auth/client/next';
+import { createAuth } from '@repo/auth/server/next';
+
+// ✅ Next.js edge runtime (middleware, edge functions)
+import { createAuth } from '@repo/auth/server/edge';
 
 // ✅ Node.js worker
 import { createAuth } from '@repo/auth/server';
 
 // ❌ Wrong: non-Next import in Next.js
 import { createAuth } from '@repo/auth/client';
+
+// ❌ Wrong: server/next in edge runtime (Node.js APIs not available)
+import { createAuth } from '@repo/auth/server/next'; // In middleware.ts
 ```
 
-**Packages using this**: `@repo/analytics`, `@repo/auth`, `@repo/notifications`
+**Edge Runtime Limitations**:
+
+- Cannot use Node.js APIs (fs, crypto, etc.)
+- Cannot use native modules (OpenTelemetry, etc.)
+- Lightweight implementations only (HTTP-based Sentry, fetch-based analytics)
+
+**Packages using this**: `@repo/analytics`, `@repo/auth`, `@repo/notifications`,
+`@repo/observability`
 
 ### Standard Import Patterns
 
@@ -499,6 +524,14 @@ via toolbar. See `/apps/backstage/app/lib/feature-flags.ts` for implementation e
 - ❌ `import from '@repo/package/src/file'` → ✅ `import from '@repo/package'`
 - ❌ `import from './file.js'` → ✅ `import from './file'`
 - ❌ Using `/client` in Next.js → ✅ Always use `/client/next` in Next.js apps
+- ❌ Using `/server/next` in edge runtime → ✅ Always use `/server/edge` in middleware/edge
+  functions
+
+**Edge Runtime Errors**
+
+- ❌ `@opentelemetry/api` in middleware → ✅ Use `/server/edge` exports (HTTP-based observability)
+- ❌ Node.js APIs in edge runtime → ✅ Use Web APIs (fetch, crypto.randomUUID, etc.)
+- ❌ Native modules in edge runtime → ✅ Use edge-compatible implementations
 
 **Configuration Mistakes**
 

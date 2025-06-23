@@ -6,10 +6,30 @@ import { JrFindReplaceRejectUncheckedCreateWithoutCastsInputSchema } from './JrF
 import { JrFindReplaceRejectCreateOrConnectWithoutCastsInputSchema } from './JrFindReplaceRejectCreateOrConnectWithoutCastsInputSchema';
 import { JrFindReplaceRejectWhereUniqueInputSchema } from './JrFindReplaceRejectWhereUniqueInputSchema';
 
-export const JrFindReplaceRejectUncheckedCreateNestedManyWithoutCastsInputSchema: z.ZodType<Prisma.JrFindReplaceRejectUncheckedCreateNestedManyWithoutCastsInput> = z.object({
-  create: z.union([ z.lazy(() => JrFindReplaceRejectCreateWithoutCastsInputSchema),z.lazy(() => JrFindReplaceRejectCreateWithoutCastsInputSchema).array(),z.lazy(() => JrFindReplaceRejectUncheckedCreateWithoutCastsInputSchema),z.lazy(() => JrFindReplaceRejectUncheckedCreateWithoutCastsInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => JrFindReplaceRejectCreateOrConnectWithoutCastsInputSchema),z.lazy(() => JrFindReplaceRejectCreateOrConnectWithoutCastsInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => JrFindReplaceRejectWhereUniqueInputSchema),z.lazy(() => JrFindReplaceRejectWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const JrFindReplaceRejectUncheckedCreateNestedManyWithoutCastsInputSchema: z.ZodType<Prisma.JrFindReplaceRejectUncheckedCreateNestedManyWithoutCastsInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => JrFindReplaceRejectCreateWithoutCastsInputSchema),
+          z.lazy(() => JrFindReplaceRejectCreateWithoutCastsInputSchema).array(),
+          z.lazy(() => JrFindReplaceRejectUncheckedCreateWithoutCastsInputSchema),
+          z.lazy(() => JrFindReplaceRejectUncheckedCreateWithoutCastsInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => JrFindReplaceRejectCreateOrConnectWithoutCastsInputSchema),
+          z.lazy(() => JrFindReplaceRejectCreateOrConnectWithoutCastsInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => JrFindReplaceRejectWhereUniqueInputSchema),
+          z.lazy(() => JrFindReplaceRejectWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default JrFindReplaceRejectUncheckedCreateNestedManyWithoutCastsInputSchema;

@@ -5,9 +5,15 @@ import { InventoryWhereUniqueInputSchema } from './InventoryWhereUniqueInputSche
 import { InventoryUpdateWithoutVariantInputSchema } from './InventoryUpdateWithoutVariantInputSchema';
 import { InventoryUncheckedUpdateWithoutVariantInputSchema } from './InventoryUncheckedUpdateWithoutVariantInputSchema';
 
-export const InventoryUpdateWithWhereUniqueWithoutVariantInputSchema: z.ZodType<Prisma.InventoryUpdateWithWhereUniqueWithoutVariantInput> = z.object({
-  where: z.lazy(() => InventoryWhereUniqueInputSchema),
-  data: z.union([ z.lazy(() => InventoryUpdateWithoutVariantInputSchema),z.lazy(() => InventoryUncheckedUpdateWithoutVariantInputSchema) ]),
-}).strict();
+export const InventoryUpdateWithWhereUniqueWithoutVariantInputSchema: z.ZodType<Prisma.InventoryUpdateWithWhereUniqueWithoutVariantInput> =
+  z
+    .object({
+      where: z.lazy(() => InventoryWhereUniqueInputSchema),
+      data: z.union([
+        z.lazy(() => InventoryUpdateWithoutVariantInputSchema),
+        z.lazy(() => InventoryUncheckedUpdateWithoutVariantInputSchema),
+      ]),
+    })
+    .strict();
 
 export default InventoryUpdateWithWhereUniqueWithoutVariantInputSchema;

@@ -6,10 +6,30 @@ import { ProductUncheckedCreateWithoutSeriesInputSchema } from './ProductUncheck
 import { ProductCreateOrConnectWithoutSeriesInputSchema } from './ProductCreateOrConnectWithoutSeriesInputSchema';
 import { ProductWhereUniqueInputSchema } from './ProductWhereUniqueInputSchema';
 
-export const ProductUncheckedCreateNestedManyWithoutSeriesInputSchema: z.ZodType<Prisma.ProductUncheckedCreateNestedManyWithoutSeriesInput> = z.object({
-  create: z.union([ z.lazy(() => ProductCreateWithoutSeriesInputSchema),z.lazy(() => ProductCreateWithoutSeriesInputSchema).array(),z.lazy(() => ProductUncheckedCreateWithoutSeriesInputSchema),z.lazy(() => ProductUncheckedCreateWithoutSeriesInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => ProductCreateOrConnectWithoutSeriesInputSchema),z.lazy(() => ProductCreateOrConnectWithoutSeriesInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => ProductWhereUniqueInputSchema),z.lazy(() => ProductWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const ProductUncheckedCreateNestedManyWithoutSeriesInputSchema: z.ZodType<Prisma.ProductUncheckedCreateNestedManyWithoutSeriesInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => ProductCreateWithoutSeriesInputSchema),
+          z.lazy(() => ProductCreateWithoutSeriesInputSchema).array(),
+          z.lazy(() => ProductUncheckedCreateWithoutSeriesInputSchema),
+          z.lazy(() => ProductUncheckedCreateWithoutSeriesInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => ProductCreateOrConnectWithoutSeriesInputSchema),
+          z.lazy(() => ProductCreateOrConnectWithoutSeriesInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => ProductWhereUniqueInputSchema),
+          z.lazy(() => ProductWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default ProductUncheckedCreateNestedManyWithoutSeriesInputSchema;

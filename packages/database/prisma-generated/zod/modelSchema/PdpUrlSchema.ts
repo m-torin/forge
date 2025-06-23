@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema'
-import { PdpUrlTypeSchema } from '../inputTypeSchemas/PdpUrlTypeSchema'
+import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema';
+import { PdpUrlTypeSchema } from '../inputTypeSchemas/PdpUrlTypeSchema';
 
 /////////////////////////////////////////
 // PDP URL SCHEMA
@@ -15,8 +15,8 @@ export const PdpUrlSchema = z.object({
   isActive: z.boolean(),
   copy: JsonValueSchema,
   createdAt: z.coerce.date(),
-})
+});
 
-export type PdpUrl = z.infer<typeof PdpUrlSchema>
+export type PdpUrl = z.infer<typeof PdpUrlSchema>;
 
 export default PdpUrlSchema;

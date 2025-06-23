@@ -1,85 +1,88 @@
-import { Button, Container, Group, Stack, Text, Title } from '@mantine/core';
-import { IconHome } from '@tabler/icons-react';
-import Link from 'next/link';
+"use client";
 
-import { GoBackButton } from '@/components/GoBackButton';
-import { getDictionary } from '@/i18n';
+import { Container, Title, Text, Button, Stack, Center } from "@mantine/core";
+import { IconArrowLeft, IconHome } from "@tabler/icons-react";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { getDictionary } from "@/i18n";
+import type { ExtendedDictionary } from "@/i18n";
 
-export default async function LocaleNotFound({ params }: { params?: Promise<{ locale: string }> }) {
-  // Handle case where params might be undefined in not-found context
-  const resolvedParams = await params;
-  const locale = resolvedParams?.locale || 'en';
-  const dict = await getDictionary(locale);
+/**
+ * Custom 404 page for locale-specific routes
+ *
+ * This provides a user-friendly 404 page with navigation options
+ * when users visit a page that doesn't exist.
+ *
+ * Note: Must be client component for useParams, but loads dictionary async
+ */
+export default function NotFound(): React.JSX.Element {
+  const params = useParams();
+  const router = useRouter();
+  const locale = (params.locale as string) || "en";
+  const [dictionary, setDictionary] = useState<ExtendedDictionary | null>(null);
+
+  useEffect(() => {
+    getDictionary(locale).then(setDictionary);
+  }, [locale]);
+
+  // Show loading state while dictionary loads
+  if (!dictionary) {
+    return (
+      <Container size="sm" py="xl">
+        <Center>
+          <Stack align="center" gap="lg" maw={500}>
+            <div style={{ fontSize: "120px", lineHeight: 1 }}>🔍</div>
+            <Title order={1} ta="center" size="h2">
+              Page Not Found
+            </Title>
+            <Text ta="center" c="dimmed" size="lg">
+              Loading...
+            </Text>
+          </Stack>
+        </Center>
+      </Container>
+    );
+  }
 
   return (
-    <Container
-      size="md"
-      style={{
-        alignItems: 'center',
-        display: 'flex',
-        justifyContent: 'center',
-        minHeight: '100vh',
-      }}
-    >
-      <Stack ta="center" gap="xl">
-        <div style={{ textAlign: 'center' }}>
-          <Title
-            c="dimmed"
-            order={1}
-            size="6rem"
-            style={{
-              fontWeight: 900,
-              lineHeight: 1,
-              marginBottom: '1rem',
-            }}
-          >
-            404
-          </Title>
+    <Container size="sm" py="xl">
+      <Center>
+        <Stack align="center" gap="lg" maw={500}>
+          <div style={{ fontSize: "120px", lineHeight: 1 }}>🔍</div>
 
-          <Title mb="md" order={2} size="2rem">
-            {dict.errors?.notFound?.title || 'Page Not Found'}
-          </Title>
+          <Stack align="center" gap="sm">
+            <Title order={1} ta="center" size="h2">
+              {dictionary.common.pageNotFound}
+            </Title>
+            <Text ta="center" c="dimmed" size="lg">
+              {dictionary.common.pageNotFoundDescription}
+            </Text>
+          </Stack>
 
-          <Text c="dimmed" maw={400} size="lg" ta="center">
-            {dict.errors?.notFound?.description ||
-              'The requested taxonomy type or page was not found. Please check the URL or browse our available categories.'}
-          </Text>
-        </div>
-
-        <Group gap="md">
-          <Button
-            component={Link}
-            href={`/${locale}`}
-            leftSection={<IconHome size={16} />}
-            size="lg"
-            variant="light"
-          >
-            {dict.navigation?.home || 'Go Home'}
-          </Button>
-
-          <GoBackButton>{dict.errors?.notFound?.goBack || 'Go Back'}</GoBackButton>
-        </Group>
-
-        <Stack ta="center" gap="xs">
-          <Text c="dimmed" fw={500} size="md">
-            {dict.errors?.notFound?.browseCatalog || 'Browse our catalog:'}
-          </Text>
-          <Group gap="xs">
-            <Button component={Link} href={`/${locale}/brands`} size="md" variant="subtle">
-              {dict.taxonomy?.brands?.title || 'Brands'}
+          <Stack gap="sm" w="100%" maw={300}>
+            <Button
+              component={Link}
+              href={`/${locale === "en" ? "" : locale}`}
+              leftSection={<IconHome size={16} />}
+              variant="filled"
+              size="md"
+              fullWidth
+            >
+              {dictionary.common.goHome}
             </Button>
-            <Button component={Link} href={`/${locale}/categories`} size="md" variant="subtle">
-              {dict.taxonomy?.categories?.title || 'Categories'}
+            <Button
+              onClick={() => router.back()}
+              leftSection={<IconArrowLeft size={16} />}
+              variant="light"
+              size="md"
+              fullWidth
+            >
+              {dictionary.common.goBack}
             </Button>
-            <Button component={Link} href={`/${locale}/collections`} size="md" variant="subtle">
-              {dict.taxonomy?.collections?.title || 'Collections'}
-            </Button>
-            <Button component={Link} href={`/${locale}/tags`} size="md" variant="subtle">
-              {dict.taxonomy?.tags?.title || 'Tags'}
-            </Button>
-          </Group>
+          </Stack>
         </Stack>
-      </Stack>
+      </Center>
     </Container>
   );
 }

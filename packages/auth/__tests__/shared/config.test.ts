@@ -4,7 +4,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { createAuthConfig } from '../../shared/config';
+import { createAuthConfig } from '../../src/shared/config';
 
 describe('Auth Configuration', () => {
   const originalEnv = process.env;

@@ -6,10 +6,18 @@ import { ReviewUncheckedCreateWithoutVotesInputSchema } from './ReviewUncheckedC
 import { ReviewCreateOrConnectWithoutVotesInputSchema } from './ReviewCreateOrConnectWithoutVotesInputSchema';
 import { ReviewWhereUniqueInputSchema } from './ReviewWhereUniqueInputSchema';
 
-export const ReviewCreateNestedOneWithoutVotesInputSchema: z.ZodType<Prisma.ReviewCreateNestedOneWithoutVotesInput> = z.object({
-  create: z.union([ z.lazy(() => ReviewCreateWithoutVotesInputSchema),z.lazy(() => ReviewUncheckedCreateWithoutVotesInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => ReviewCreateOrConnectWithoutVotesInputSchema).optional(),
-  connect: z.lazy(() => ReviewWhereUniqueInputSchema).optional()
-}).strict();
+export const ReviewCreateNestedOneWithoutVotesInputSchema: z.ZodType<Prisma.ReviewCreateNestedOneWithoutVotesInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => ReviewCreateWithoutVotesInputSchema),
+          z.lazy(() => ReviewUncheckedCreateWithoutVotesInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z.lazy(() => ReviewCreateOrConnectWithoutVotesInputSchema).optional(),
+      connect: z.lazy(() => ReviewWhereUniqueInputSchema).optional(),
+    })
+    .strict();
 
 export default ReviewCreateNestedOneWithoutVotesInputSchema;

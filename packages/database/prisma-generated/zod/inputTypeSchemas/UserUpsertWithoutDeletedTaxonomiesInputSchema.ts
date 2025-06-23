@@ -7,10 +7,19 @@ import { UserCreateWithoutDeletedTaxonomiesInputSchema } from './UserCreateWitho
 import { UserUncheckedCreateWithoutDeletedTaxonomiesInputSchema } from './UserUncheckedCreateWithoutDeletedTaxonomiesInputSchema';
 import { UserWhereInputSchema } from './UserWhereInputSchema';
 
-export const UserUpsertWithoutDeletedTaxonomiesInputSchema: z.ZodType<Prisma.UserUpsertWithoutDeletedTaxonomiesInput> = z.object({
-  update: z.union([ z.lazy(() => UserUpdateWithoutDeletedTaxonomiesInputSchema),z.lazy(() => UserUncheckedUpdateWithoutDeletedTaxonomiesInputSchema) ]),
-  create: z.union([ z.lazy(() => UserCreateWithoutDeletedTaxonomiesInputSchema),z.lazy(() => UserUncheckedCreateWithoutDeletedTaxonomiesInputSchema) ]),
-  where: z.lazy(() => UserWhereInputSchema).optional()
-}).strict();
+export const UserUpsertWithoutDeletedTaxonomiesInputSchema: z.ZodType<Prisma.UserUpsertWithoutDeletedTaxonomiesInput> =
+  z
+    .object({
+      update: z.union([
+        z.lazy(() => UserUpdateWithoutDeletedTaxonomiesInputSchema),
+        z.lazy(() => UserUncheckedUpdateWithoutDeletedTaxonomiesInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => UserCreateWithoutDeletedTaxonomiesInputSchema),
+        z.lazy(() => UserUncheckedCreateWithoutDeletedTaxonomiesInputSchema),
+      ]),
+      where: z.lazy(() => UserWhereInputSchema).optional(),
+    })
+    .strict();
 
 export default UserUpsertWithoutDeletedTaxonomiesInputSchema;

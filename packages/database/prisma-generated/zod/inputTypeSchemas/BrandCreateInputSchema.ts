@@ -16,28 +16,34 @@ import { ProductIdentifiersCreateNestedManyWithoutBrandInputSchema } from './Pro
 import { PdpJoinCreateNestedManyWithoutManufacturerBrandsInputSchema } from './PdpJoinCreateNestedManyWithoutManufacturerBrandsInputSchema';
 import { UserCreateNestedOneWithoutDeletedBrandsInputSchema } from './UserCreateNestedOneWithoutDeletedBrandsInputSchema';
 
-export const BrandCreateInputSchema: z.ZodType<Prisma.BrandCreateInput> = z.object({
-  id: z.string().cuid().optional(),
-  name: z.string(),
-  slug: z.string(),
-  type: z.lazy(() => BrandTypeSchema).optional(),
-  status: z.lazy(() => ContentStatusSchema).optional(),
-  baseUrl: z.string().optional().nullable(),
-  copy: z.union([ z.lazy(() => JsonNullValueInputSchema),InputJsonValueSchema ]),
-  displayOrder: z.number().int().optional(),
-  createdAt: z.coerce.date().optional(),
-  updatedAt: z.coerce.date().optional(),
-  deletedAt: z.coerce.date().optional().nullable(),
-  parent: z.lazy(() => BrandCreateNestedOneWithoutChildrenInputSchema).optional(),
-  children: z.lazy(() => BrandCreateNestedManyWithoutParentInputSchema).optional(),
-  products: z.lazy(() => PdpJoinCreateNestedManyWithoutBrandInputSchema).optional(),
-  collections: z.lazy(() => CollectionCreateNestedManyWithoutBrandsInputSchema).optional(),
-  media: z.lazy(() => MediaCreateNestedManyWithoutBrandInputSchema).optional(),
-  jrFindReplaceRejects: z.lazy(() => JrFindReplaceRejectCreateNestedManyWithoutBrandsInputSchema).optional(),
-  jollyRoger: z.lazy(() => JollyRogerCreateNestedOneWithoutBrandInputSchema).optional(),
-  identifiers: z.lazy(() => ProductIdentifiersCreateNestedManyWithoutBrandInputSchema).optional(),
-  manufacturedProducts: z.lazy(() => PdpJoinCreateNestedManyWithoutManufacturerBrandsInputSchema).optional(),
-  deletedBy: z.lazy(() => UserCreateNestedOneWithoutDeletedBrandsInputSchema).optional()
-}).strict();
+export const BrandCreateInputSchema: z.ZodType<Prisma.BrandCreateInput> = z
+  .object({
+    id: z.string().cuid().optional(),
+    name: z.string(),
+    slug: z.string(),
+    type: z.lazy(() => BrandTypeSchema).optional(),
+    status: z.lazy(() => ContentStatusSchema).optional(),
+    baseUrl: z.string().optional().nullable(),
+    copy: z.union([z.lazy(() => JsonNullValueInputSchema), InputJsonValueSchema]),
+    displayOrder: z.number().int().optional(),
+    createdAt: z.coerce.date().optional(),
+    updatedAt: z.coerce.date().optional(),
+    deletedAt: z.coerce.date().optional().nullable(),
+    parent: z.lazy(() => BrandCreateNestedOneWithoutChildrenInputSchema).optional(),
+    children: z.lazy(() => BrandCreateNestedManyWithoutParentInputSchema).optional(),
+    products: z.lazy(() => PdpJoinCreateNestedManyWithoutBrandInputSchema).optional(),
+    collections: z.lazy(() => CollectionCreateNestedManyWithoutBrandsInputSchema).optional(),
+    media: z.lazy(() => MediaCreateNestedManyWithoutBrandInputSchema).optional(),
+    jrFindReplaceRejects: z
+      .lazy(() => JrFindReplaceRejectCreateNestedManyWithoutBrandsInputSchema)
+      .optional(),
+    jollyRoger: z.lazy(() => JollyRogerCreateNestedOneWithoutBrandInputSchema).optional(),
+    identifiers: z.lazy(() => ProductIdentifiersCreateNestedManyWithoutBrandInputSchema).optional(),
+    manufacturedProducts: z
+      .lazy(() => PdpJoinCreateNestedManyWithoutManufacturerBrandsInputSchema)
+      .optional(),
+    deletedBy: z.lazy(() => UserCreateNestedOneWithoutDeletedBrandsInputSchema).optional(),
+  })
+  .strict();
 
 export default BrandCreateInputSchema;

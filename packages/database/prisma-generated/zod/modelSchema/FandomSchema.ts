@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema'
+import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema';
 
 /////////////////////////////////////////
 // FANDOM SCHEMA
@@ -15,8 +15,8 @@ export const FandomSchema = z.object({
   updatedAt: z.coerce.date(),
   deletedAt: z.coerce.date().nullable(),
   deletedById: z.string().nullable(),
-})
+});
 
-export type Fandom = z.infer<typeof FandomSchema>
+export type Fandom = z.infer<typeof FandomSchema>;
 
 export default FandomSchema;

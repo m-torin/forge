@@ -7,11 +7,31 @@ import { BackupCodeCreateOrConnectWithoutTwoFactorInputSchema } from './BackupCo
 import { BackupCodeCreateManyTwoFactorInputEnvelopeSchema } from './BackupCodeCreateManyTwoFactorInputEnvelopeSchema';
 import { BackupCodeWhereUniqueInputSchema } from './BackupCodeWhereUniqueInputSchema';
 
-export const BackupCodeUncheckedCreateNestedManyWithoutTwoFactorInputSchema: z.ZodType<Prisma.BackupCodeUncheckedCreateNestedManyWithoutTwoFactorInput> = z.object({
-  create: z.union([ z.lazy(() => BackupCodeCreateWithoutTwoFactorInputSchema),z.lazy(() => BackupCodeCreateWithoutTwoFactorInputSchema).array(),z.lazy(() => BackupCodeUncheckedCreateWithoutTwoFactorInputSchema),z.lazy(() => BackupCodeUncheckedCreateWithoutTwoFactorInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => BackupCodeCreateOrConnectWithoutTwoFactorInputSchema),z.lazy(() => BackupCodeCreateOrConnectWithoutTwoFactorInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => BackupCodeCreateManyTwoFactorInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => BackupCodeWhereUniqueInputSchema),z.lazy(() => BackupCodeWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const BackupCodeUncheckedCreateNestedManyWithoutTwoFactorInputSchema: z.ZodType<Prisma.BackupCodeUncheckedCreateNestedManyWithoutTwoFactorInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => BackupCodeCreateWithoutTwoFactorInputSchema),
+          z.lazy(() => BackupCodeCreateWithoutTwoFactorInputSchema).array(),
+          z.lazy(() => BackupCodeUncheckedCreateWithoutTwoFactorInputSchema),
+          z.lazy(() => BackupCodeUncheckedCreateWithoutTwoFactorInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => BackupCodeCreateOrConnectWithoutTwoFactorInputSchema),
+          z.lazy(() => BackupCodeCreateOrConnectWithoutTwoFactorInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => BackupCodeCreateManyTwoFactorInputEnvelopeSchema).optional(),
+      connect: z
+        .union([
+          z.lazy(() => BackupCodeWhereUniqueInputSchema),
+          z.lazy(() => BackupCodeWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default BackupCodeUncheckedCreateNestedManyWithoutTwoFactorInputSchema;

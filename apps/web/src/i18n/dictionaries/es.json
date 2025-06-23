@@ -1,69 +1,116 @@
 {
-  "app": {
-    "welcome": "Bienvenido a Web Template",
-    "description": "Una plantilla Next.js moderna con Mantine UI y soporte de internacionalización",
-    "brand": "Web Template",
-    "appDescription": "Una plantilla de aplicación web moderna con internacionalización",
-    "selectLanguage": "Seleccionar idioma",
-    "l": {
-      "en": "English",
-      "fr": "Français",
-      "es": "Español",
-      "de": "Deutsch",
-      "pt": "Português"
-    }
-  },
-  "search": {
-    "title": "Buscar",
-    "placeholder": "Buscar cualquier cosa...",
-    "button": "Buscar",
-    "results": "Resultados de búsqueda",
-    "noResults": "No se encontraron resultados",
-    "tryAgain": "Intenta buscar otra cosa"
+  "metadata": {
+    "title": "Plantilla Next App Mantine Tailwind",
+    "description": "Una plantilla moderna de Next.js con Mantine UI y TailwindCSS"
   },
   "navigation": {
     "home": "Inicio",
-    "search": "Buscar",
-    "account": "Mi cuenta",
-    "orders": "Mis pedidos",
-    "wishlist": "Lista de deseos",
-    "help": "Ayuda",
-    "logout": "Cerrar sesión",
-    "login": "Iniciar sesión"
+    "about": "Acerca de",
+    "contact": "Contacto",
+    "languageSelector": "Idioma"
   },
-  "taxonomy": {
-    "noItems": "No se encontraron elementos.",
-    "items": "elementos",
-    "backTo": "Volver a",
+  "home": {
+    "welcome": "Bienvenido a",
+    "subtitle": "Este proyecto inicial de Next.js incluye una configuración mínima para Mantine con TailwindCSS. Para comenzar, edita el archivo page.tsx.",
+    "getStarted": "Comenzar",
+    "documentation": "Documentación",
+    "features": {
+      "title": "Características",
+      "mantine": "Componentes Mantine UI",
+      "mantineDesc": "Componentes React hermosos y accesibles con soporte para tema oscuro",
+      "tailwind": "Estilos TailwindCSS",
+      "tailwindDesc": "Framework CSS utility-first para desarrollo rápido de UI",
+      "typescript": "Soporte TypeScript",
+      "typescriptDesc": "Soporte completo de TypeScript con verificación de tipos estricta",
+      "i18n": "Internacionalización",
+      "i18nDesc": "Soporte multiidioma con carga optimizada de traducciones"
+    }
+  },
+  "theme": {
+    "light": "Claro",
+    "dark": "Oscuro",
+    "auto": "Automático",
+    "switchTheme": "Cambiar esquema de color"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "error": "Algo salió mal",
+    "errorDescription": "Encontramos un error inesperado. Por favor, intenta actualizar la página.",
+    "errorDetails": "Detalles del error",
+    "unknownError": "Ocurrió un error desconocido",
+    "errorId": "ID del error",
+    "retry": "Intentar nuevamente",
+    "close": "Cerrar",
     "save": "Guardar",
-    "share": "Compartir",
-    "relatedItems": "Elementos relacionados",
-    "exploreMore": "Explora más elementos en esta",
-    "viewAll": "Ver todo",
-    "details": "Detalles",
-    "type": "Tipo",
-    "totalItems": "Total de elementos",
-    "parent": "Padre",
-    "browseItems": "Navegar elementos",
-    "brands": {
-      "title": "Marcas",
-      "description": "Descubre productos de nuestras marcas y socios destacados"
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "confirm": "Confirmar",
+    "pageNotFound": "Página no encontrada",
+    "pageNotFoundDescription": "La página que buscas no existe o ha sido movida.",
+    "goHome": "Ir al inicio",
+    "goBack": "Volver",
+    "selectLanguage": "Seleccionar idioma",
+    "login": "Iniciar sesión",
+    "signup": "Registrarse",
+    "logout": "Cerrar sesión",
+    "myAccount": "Mi Cuenta"
+  },
+  "auth": {
+    "login": {
+      "title": "Bienvenido de vuelta",
+      "subtitle": "Inicia sesión en tu cuenta",
+      "email": "Email",
+      "password": "Contraseña",
+      "loginButton": "Iniciar Sesión",
+      "forgotPassword": "¿Olvidaste tu contraseña?",
+      "noAccount": "¿No tienes una cuenta?",
+      "signupLink": "Registrarse",
+      "or": "o",
+      "magicLink": "Enviar enlace mágico",
+      "magicLinkSent": "¡Enlace mágico enviado!",
+      "magicLinkSentDescription": "Revisa tu email para un enlace de inicio de sesión",
+      "backToLogin": "Volver al inicio de sesión"
     },
-    "categories": {
-      "title": "Categorías",
-      "description": "Navega productos por categoría para encontrar exactamente lo que necesitas"
+    "signup": {
+      "title": "Crear cuenta",
+      "subtitle": "Comienza con tu nueva cuenta",
+      "name": "Nombre",
+      "email": "Email",
+      "password": "Contraseña",
+      "confirmPassword": "Confirmar Contraseña",
+      "signupButton": "Crear Cuenta",
+      "haveAccount": "¿Ya tienes una cuenta?",
+      "loginLink": "Iniciar sesión",
+      "or": "o",
+      "magicLink": "Registrarse con enlace mágico",
+      "magicLinkSent": "¡Enlace mágico enviado!",
+      "magicLinkSentDescription": "Revisa tu email para completar el registro",
+      "backToSignup": "Volver al registro"
     },
-    "collections": {
-      "title": "Colecciones",
-      "description": "Colecciones curadas de productos para ocasiones especiales y temas"
+    "magicLink": {
+      "verifying": "Verificando enlace mágico...",
+      "success": "¡Inicio de sesión exitoso!",
+      "error": "Enlace mágico inválido o expirado",
+      "expired": "Este enlace mágico ha expirado. Por favor solicita uno nuevo."
     },
-    "tags": {
-      "title": "Etiquetas",
-      "description": "Encuentra productos por etiquetas y labels"
-    },
-    "attributes": {
-      "title": "Atributos",
-      "description": "Filtra productos por atributos y propiedades específicas"
+    "unified": {
+      "welcome": "Bienvenido",
+      "welcomeBack": "¡Bienvenido de vuelta!",
+      "letsGetStarted": "Comencemos",
+      "continueWith": "Continúa con tu correo o cuenta social",
+      "signInToContinue": "Inicia sesión para continuar",
+      "createAccount": "Crea tu cuenta en segundos",
+      "or": "o",
+      "emailLabel": "Correo electrónico",
+      "nameLabel": "Tu nombre (opcional)",
+      "continueButton": "Continuar con correo",
+      "createAccountButton": "Crear cuenta y continuar",
+      "magicLinkSent": "¡Revisa tu correo!",
+      "magicLinkInstructions": "Te hemos enviado un enlace mágico para iniciar sesión",
+      "checkEmail": "Revisa tu correo para continuar",
+      "tryAgain": "Intentar de nuevo",
+      "privacyNotice": "Al continuar, aceptas nuestros Términos de Servicio y Política de Privacidad"
     }
   }
 }

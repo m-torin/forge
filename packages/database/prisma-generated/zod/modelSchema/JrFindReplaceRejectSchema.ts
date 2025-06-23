@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { JrRuleActionSchema } from '../inputTypeSchemas/JrRuleActionSchema'
+import { JrRuleActionSchema } from '../inputTypeSchemas/JrRuleActionSchema';
 
 /////////////////////////////////////////
 // JR FIND REPLACE REJECT SCHEMA
@@ -13,8 +13,8 @@ export const JrFindReplaceRejectSchema = z.object({
   isRegex: z.boolean(),
   regexFlags: z.string().nullable(),
   priority: z.number().int(),
-})
+});
 
-export type JrFindReplaceReject = z.infer<typeof JrFindReplaceRejectSchema>
+export type JrFindReplaceReject = z.infer<typeof JrFindReplaceRejectSchema>;
 
 export default JrFindReplaceRejectSchema;

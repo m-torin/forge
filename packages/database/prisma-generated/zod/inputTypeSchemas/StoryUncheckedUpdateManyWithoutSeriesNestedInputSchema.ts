@@ -11,18 +11,73 @@ import { StoryUpdateWithWhereUniqueWithoutSeriesInputSchema } from './StoryUpdat
 import { StoryUpdateManyWithWhereWithoutSeriesInputSchema } from './StoryUpdateManyWithWhereWithoutSeriesInputSchema';
 import { StoryScalarWhereInputSchema } from './StoryScalarWhereInputSchema';
 
-export const StoryUncheckedUpdateManyWithoutSeriesNestedInputSchema: z.ZodType<Prisma.StoryUncheckedUpdateManyWithoutSeriesNestedInput> = z.object({
-  create: z.union([ z.lazy(() => StoryCreateWithoutSeriesInputSchema),z.lazy(() => StoryCreateWithoutSeriesInputSchema).array(),z.lazy(() => StoryUncheckedCreateWithoutSeriesInputSchema),z.lazy(() => StoryUncheckedCreateWithoutSeriesInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => StoryCreateOrConnectWithoutSeriesInputSchema),z.lazy(() => StoryCreateOrConnectWithoutSeriesInputSchema).array() ]).optional(),
-  upsert: z.union([ z.lazy(() => StoryUpsertWithWhereUniqueWithoutSeriesInputSchema),z.lazy(() => StoryUpsertWithWhereUniqueWithoutSeriesInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => StoryCreateManySeriesInputEnvelopeSchema).optional(),
-  set: z.union([ z.lazy(() => StoryWhereUniqueInputSchema),z.lazy(() => StoryWhereUniqueInputSchema).array() ]).optional(),
-  disconnect: z.union([ z.lazy(() => StoryWhereUniqueInputSchema),z.lazy(() => StoryWhereUniqueInputSchema).array() ]).optional(),
-  delete: z.union([ z.lazy(() => StoryWhereUniqueInputSchema),z.lazy(() => StoryWhereUniqueInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => StoryWhereUniqueInputSchema),z.lazy(() => StoryWhereUniqueInputSchema).array() ]).optional(),
-  update: z.union([ z.lazy(() => StoryUpdateWithWhereUniqueWithoutSeriesInputSchema),z.lazy(() => StoryUpdateWithWhereUniqueWithoutSeriesInputSchema).array() ]).optional(),
-  updateMany: z.union([ z.lazy(() => StoryUpdateManyWithWhereWithoutSeriesInputSchema),z.lazy(() => StoryUpdateManyWithWhereWithoutSeriesInputSchema).array() ]).optional(),
-  deleteMany: z.union([ z.lazy(() => StoryScalarWhereInputSchema),z.lazy(() => StoryScalarWhereInputSchema).array() ]).optional(),
-}).strict();
+export const StoryUncheckedUpdateManyWithoutSeriesNestedInputSchema: z.ZodType<Prisma.StoryUncheckedUpdateManyWithoutSeriesNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => StoryCreateWithoutSeriesInputSchema),
+          z.lazy(() => StoryCreateWithoutSeriesInputSchema).array(),
+          z.lazy(() => StoryUncheckedCreateWithoutSeriesInputSchema),
+          z.lazy(() => StoryUncheckedCreateWithoutSeriesInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => StoryCreateOrConnectWithoutSeriesInputSchema),
+          z.lazy(() => StoryCreateOrConnectWithoutSeriesInputSchema).array(),
+        ])
+        .optional(),
+      upsert: z
+        .union([
+          z.lazy(() => StoryUpsertWithWhereUniqueWithoutSeriesInputSchema),
+          z.lazy(() => StoryUpsertWithWhereUniqueWithoutSeriesInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => StoryCreateManySeriesInputEnvelopeSchema).optional(),
+      set: z
+        .union([
+          z.lazy(() => StoryWhereUniqueInputSchema),
+          z.lazy(() => StoryWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      disconnect: z
+        .union([
+          z.lazy(() => StoryWhereUniqueInputSchema),
+          z.lazy(() => StoryWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      delete: z
+        .union([
+          z.lazy(() => StoryWhereUniqueInputSchema),
+          z.lazy(() => StoryWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => StoryWhereUniqueInputSchema),
+          z.lazy(() => StoryWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      update: z
+        .union([
+          z.lazy(() => StoryUpdateWithWhereUniqueWithoutSeriesInputSchema),
+          z.lazy(() => StoryUpdateWithWhereUniqueWithoutSeriesInputSchema).array(),
+        ])
+        .optional(),
+      updateMany: z
+        .union([
+          z.lazy(() => StoryUpdateManyWithWhereWithoutSeriesInputSchema),
+          z.lazy(() => StoryUpdateManyWithWhereWithoutSeriesInputSchema).array(),
+        ])
+        .optional(),
+      deleteMany: z
+        .union([
+          z.lazy(() => StoryScalarWhereInputSchema),
+          z.lazy(() => StoryScalarWhereInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default StoryUncheckedUpdateManyWithoutSeriesNestedInputSchema;

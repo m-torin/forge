@@ -10,12 +10,26 @@ import { RegistryUpdateToOneWithWhereWithoutUsersInputSchema } from './RegistryU
 import { RegistryUpdateWithoutUsersInputSchema } from './RegistryUpdateWithoutUsersInputSchema';
 import { RegistryUncheckedUpdateWithoutUsersInputSchema } from './RegistryUncheckedUpdateWithoutUsersInputSchema';
 
-export const RegistryUpdateOneRequiredWithoutUsersNestedInputSchema: z.ZodType<Prisma.RegistryUpdateOneRequiredWithoutUsersNestedInput> = z.object({
-  create: z.union([ z.lazy(() => RegistryCreateWithoutUsersInputSchema),z.lazy(() => RegistryUncheckedCreateWithoutUsersInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => RegistryCreateOrConnectWithoutUsersInputSchema).optional(),
-  upsert: z.lazy(() => RegistryUpsertWithoutUsersInputSchema).optional(),
-  connect: z.lazy(() => RegistryWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => RegistryUpdateToOneWithWhereWithoutUsersInputSchema),z.lazy(() => RegistryUpdateWithoutUsersInputSchema),z.lazy(() => RegistryUncheckedUpdateWithoutUsersInputSchema) ]).optional(),
-}).strict();
+export const RegistryUpdateOneRequiredWithoutUsersNestedInputSchema: z.ZodType<Prisma.RegistryUpdateOneRequiredWithoutUsersNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => RegistryCreateWithoutUsersInputSchema),
+          z.lazy(() => RegistryUncheckedCreateWithoutUsersInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z.lazy(() => RegistryCreateOrConnectWithoutUsersInputSchema).optional(),
+      upsert: z.lazy(() => RegistryUpsertWithoutUsersInputSchema).optional(),
+      connect: z.lazy(() => RegistryWhereUniqueInputSchema).optional(),
+      update: z
+        .union([
+          z.lazy(() => RegistryUpdateToOneWithWhereWithoutUsersInputSchema),
+          z.lazy(() => RegistryUpdateWithoutUsersInputSchema),
+          z.lazy(() => RegistryUncheckedUpdateWithoutUsersInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default RegistryUpdateOneRequiredWithoutUsersNestedInputSchema;

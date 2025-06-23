@@ -8,8 +8,8 @@ export default defineConfig({
     ...nodePreset.resolve,
     alias: {
       ...nodePreset.resolve?.alias,
-      '@': path.resolve(__dirname, './'),
-      '@repo': path.resolve(__dirname, '../../packages'),
+      '@': path.resolve(dirname, './'),
+      '@repo': path.resolve(dirname, '../../packages'),
     },
   },
   test: {

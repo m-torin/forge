@@ -11,14 +11,28 @@ import { BrandUpdateToOneWithWhereWithoutIdentifiersInputSchema } from './BrandU
 import { BrandUpdateWithoutIdentifiersInputSchema } from './BrandUpdateWithoutIdentifiersInputSchema';
 import { BrandUncheckedUpdateWithoutIdentifiersInputSchema } from './BrandUncheckedUpdateWithoutIdentifiersInputSchema';
 
-export const BrandUpdateOneWithoutIdentifiersNestedInputSchema: z.ZodType<Prisma.BrandUpdateOneWithoutIdentifiersNestedInput> = z.object({
-  create: z.union([ z.lazy(() => BrandCreateWithoutIdentifiersInputSchema),z.lazy(() => BrandUncheckedCreateWithoutIdentifiersInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => BrandCreateOrConnectWithoutIdentifiersInputSchema).optional(),
-  upsert: z.lazy(() => BrandUpsertWithoutIdentifiersInputSchema).optional(),
-  disconnect: z.union([ z.boolean(),z.lazy(() => BrandWhereInputSchema) ]).optional(),
-  delete: z.union([ z.boolean(),z.lazy(() => BrandWhereInputSchema) ]).optional(),
-  connect: z.lazy(() => BrandWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => BrandUpdateToOneWithWhereWithoutIdentifiersInputSchema),z.lazy(() => BrandUpdateWithoutIdentifiersInputSchema),z.lazy(() => BrandUncheckedUpdateWithoutIdentifiersInputSchema) ]).optional(),
-}).strict();
+export const BrandUpdateOneWithoutIdentifiersNestedInputSchema: z.ZodType<Prisma.BrandUpdateOneWithoutIdentifiersNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => BrandCreateWithoutIdentifiersInputSchema),
+          z.lazy(() => BrandUncheckedCreateWithoutIdentifiersInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z.lazy(() => BrandCreateOrConnectWithoutIdentifiersInputSchema).optional(),
+      upsert: z.lazy(() => BrandUpsertWithoutIdentifiersInputSchema).optional(),
+      disconnect: z.union([z.boolean(), z.lazy(() => BrandWhereInputSchema)]).optional(),
+      delete: z.union([z.boolean(), z.lazy(() => BrandWhereInputSchema)]).optional(),
+      connect: z.lazy(() => BrandWhereUniqueInputSchema).optional(),
+      update: z
+        .union([
+          z.lazy(() => BrandUpdateToOneWithWhereWithoutIdentifiersInputSchema),
+          z.lazy(() => BrandUpdateWithoutIdentifiersInputSchema),
+          z.lazy(() => BrandUncheckedUpdateWithoutIdentifiersInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default BrandUpdateOneWithoutIdentifiersNestedInputSchema;

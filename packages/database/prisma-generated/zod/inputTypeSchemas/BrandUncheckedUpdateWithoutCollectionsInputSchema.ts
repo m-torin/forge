@@ -20,27 +20,68 @@ import { JollyRogerUncheckedUpdateOneWithoutBrandNestedInputSchema } from './Jol
 import { ProductIdentifiersUncheckedUpdateManyWithoutBrandNestedInputSchema } from './ProductIdentifiersUncheckedUpdateManyWithoutBrandNestedInputSchema';
 import { PdpJoinUncheckedUpdateManyWithoutManufacturerBrandsNestedInputSchema } from './PdpJoinUncheckedUpdateManyWithoutManufacturerBrandsNestedInputSchema';
 
-export const BrandUncheckedUpdateWithoutCollectionsInputSchema: z.ZodType<Prisma.BrandUncheckedUpdateWithoutCollectionsInput> = z.object({
-  id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  type: z.union([ z.lazy(() => BrandTypeSchema),z.lazy(() => EnumBrandTypeFieldUpdateOperationsInputSchema) ]).optional(),
-  status: z.union([ z.lazy(() => ContentStatusSchema),z.lazy(() => EnumContentStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  baseUrl: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  copy: z.union([ z.lazy(() => JsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
-  parentId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  displayOrder: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  deletedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  deletedById: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  children: z.lazy(() => BrandUncheckedUpdateManyWithoutParentNestedInputSchema).optional(),
-  products: z.lazy(() => PdpJoinUncheckedUpdateManyWithoutBrandNestedInputSchema).optional(),
-  media: z.lazy(() => MediaUncheckedUpdateManyWithoutBrandNestedInputSchema).optional(),
-  jrFindReplaceRejects: z.lazy(() => JrFindReplaceRejectUncheckedUpdateManyWithoutBrandsNestedInputSchema).optional(),
-  jollyRoger: z.lazy(() => JollyRogerUncheckedUpdateOneWithoutBrandNestedInputSchema).optional(),
-  identifiers: z.lazy(() => ProductIdentifiersUncheckedUpdateManyWithoutBrandNestedInputSchema).optional(),
-  manufacturedProducts: z.lazy(() => PdpJoinUncheckedUpdateManyWithoutManufacturerBrandsNestedInputSchema).optional()
-}).strict();
+export const BrandUncheckedUpdateWithoutCollectionsInputSchema: z.ZodType<Prisma.BrandUncheckedUpdateWithoutCollectionsInput> =
+  z
+    .object({
+      id: z
+        .union([z.string().cuid(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+        .optional(),
+      name: z.union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)]).optional(),
+      slug: z.union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)]).optional(),
+      type: z
+        .union([
+          z.lazy(() => BrandTypeSchema),
+          z.lazy(() => EnumBrandTypeFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      status: z
+        .union([
+          z.lazy(() => ContentStatusSchema),
+          z.lazy(() => EnumContentStatusFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      baseUrl: z
+        .union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      copy: z.union([z.lazy(() => JsonNullValueInputSchema), InputJsonValueSchema]).optional(),
+      parentId: z
+        .union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      displayOrder: z
+        .union([z.number().int(), z.lazy(() => IntFieldUpdateOperationsInputSchema)])
+        .optional(),
+      createdAt: z
+        .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+        .optional(),
+      updatedAt: z
+        .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+        .optional(),
+      deletedAt: z
+        .union([z.coerce.date(), z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      deletedById: z
+        .union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      children: z.lazy(() => BrandUncheckedUpdateManyWithoutParentNestedInputSchema).optional(),
+      products: z.lazy(() => PdpJoinUncheckedUpdateManyWithoutBrandNestedInputSchema).optional(),
+      media: z.lazy(() => MediaUncheckedUpdateManyWithoutBrandNestedInputSchema).optional(),
+      jrFindReplaceRejects: z
+        .lazy(() => JrFindReplaceRejectUncheckedUpdateManyWithoutBrandsNestedInputSchema)
+        .optional(),
+      jollyRoger: z
+        .lazy(() => JollyRogerUncheckedUpdateOneWithoutBrandNestedInputSchema)
+        .optional(),
+      identifiers: z
+        .lazy(() => ProductIdentifiersUncheckedUpdateManyWithoutBrandNestedInputSchema)
+        .optional(),
+      manufacturedProducts: z
+        .lazy(() => PdpJoinUncheckedUpdateManyWithoutManufacturerBrandsNestedInputSchema)
+        .optional(),
+    })
+    .strict();
 
 export default BrandUncheckedUpdateWithoutCollectionsInputSchema;

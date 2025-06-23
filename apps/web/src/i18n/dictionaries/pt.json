@@ -1,69 +1,116 @@
 {
-  "app": {
-    "welcome": "Bem-vindo ao Web Template",
-    "description": "Um modelo Next.js moderno com Mantine UI e suporte à internacionalização",
-    "brand": "Web Template",
-    "appDescription": "Um modelo de aplicação web moderno com internacionalização",
-    "selectLanguage": "Selecionar idioma",
-    "l": {
-      "en": "English",
-      "fr": "Français",
-      "es": "Español",
-      "de": "Deutsch",
-      "pt": "Português"
-    }
-  },
-  "search": {
-    "title": "Pesquisar",
-    "placeholder": "Pesquisar qualquer coisa...",
-    "button": "Pesquisar",
-    "results": "Resultados da pesquisa",
-    "noResults": "Nenhum resultado encontrado",
-    "tryAgain": "Tente pesquisar outra coisa"
+  "metadata": {
+    "title": "Template Next App Mantine Tailwind",
+    "description": "Um template moderno Next.js com Mantine UI e TailwindCSS"
   },
   "navigation": {
     "home": "Início",
-    "search": "Pesquisar",
-    "account": "Conta",
-    "orders": "Pedidos",
-    "wishlist": "Lista de desejos",
-    "help": "Ajuda",
-    "logout": "Sair",
-    "login": "Entrar"
+    "about": "Sobre",
+    "contact": "Contato",
+    "languageSelector": "Idioma"
   },
-  "taxonomy": {
-    "noItems": "Nenhum elemento encontrado.",
-    "items": "itens",
-    "backTo": "Voltar para",
+  "home": {
+    "welcome": "Bem-vindo ao",
+    "subtitle": "Este projeto inicial Next.js inclui uma configuração mínima para Mantine com TailwindCSS. Para começar, edite o arquivo page.tsx.",
+    "getStarted": "Começar",
+    "documentation": "Documentação",
+    "features": {
+      "title": "Recursos",
+      "mantine": "Componentes Mantine UI",
+      "mantineDesc": "Componentes React bonitos e acessíveis com suporte a tema escuro",
+      "tailwind": "Estilos TailwindCSS",
+      "tailwindDesc": "Framework CSS utility-first para desenvolvimento rápido de UI",
+      "typescript": "Suporte TypeScript",
+      "typescriptDesc": "Suporte completo ao TypeScript com verificação de tipos rigorosa",
+      "i18n": "Internacionalização",
+      "i18nDesc": "Suporte multilíngue com carregamento otimizado de traduções"
+    }
+  },
+  "theme": {
+    "light": "Claro",
+    "dark": "Escuro",
+    "auto": "Automático",
+    "switchTheme": "Mudar esquema de cores"
+  },
+  "common": {
+    "loading": "Carregando...",
+    "error": "Algo deu errado",
+    "errorDescription": "Encontramos um erro inesperado. Por favor, atualize a página.",
+    "errorDetails": "Detalhes do erro",
+    "unknownError": "Ocorreu um erro desconhecido",
+    "errorId": "ID do erro",
+    "retry": "Tentar novamente",
+    "close": "Fechar",
     "save": "Salvar",
-    "share": "Compartilhar",
-    "relatedItems": "Itens relacionados",
-    "exploreMore": "Explore mais itens nesta",
-    "viewAll": "Ver tudo",
-    "details": "Detalhes",
-    "type": "Tipo",
-    "totalItems": "Total de itens",
-    "parent": "Pai",
-    "browseItems": "Navegar itens",
-    "brands": {
-      "title": "Marcas",
-      "description": "Descubra produtos de nossas marcas e parceiros em destaque"
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "confirm": "Confirmar",
+    "pageNotFound": "Página não encontrada",
+    "pageNotFoundDescription": "A página que você procura não existe ou foi movida.",
+    "goHome": "Ir para início",
+    "goBack": "Voltar",
+    "selectLanguage": "Selecionar idioma",
+    "login": "Entrar",
+    "signup": "Cadastrar",
+    "logout": "Sair",
+    "myAccount": "Minha Conta"
+  },
+  "auth": {
+    "login": {
+      "title": "Bem-vindo de volta",
+      "subtitle": "Entre na sua conta",
+      "email": "Email",
+      "password": "Senha",
+      "loginButton": "Entrar",
+      "forgotPassword": "Esqueceu sua senha?",
+      "noAccount": "Não tem uma conta?",
+      "signupLink": "Cadastrar",
+      "or": "ou",
+      "magicLink": "Enviar link mágico",
+      "magicLinkSent": "Link mágico enviado!",
+      "magicLinkSentDescription": "Verifique seu email para um link de entrada",
+      "backToLogin": "Voltar ao login"
     },
-    "categories": {
-      "title": "Categorias",
-      "description": "Navegue produtos por categoria para encontrar exatamente o que você precisa"
+    "signup": {
+      "title": "Criar conta",
+      "subtitle": "Comece com sua nova conta",
+      "name": "Nome",
+      "email": "Email",
+      "password": "Senha",
+      "confirmPassword": "Confirmar Senha",
+      "signupButton": "Criar Conta",
+      "haveAccount": "Já tem uma conta?",
+      "loginLink": "Entrar",
+      "or": "ou",
+      "magicLink": "Cadastrar com link mágico",
+      "magicLinkSent": "Link mágico enviado!",
+      "magicLinkSentDescription": "Verifique seu email para completar o cadastro",
+      "backToSignup": "Voltar ao cadastro"
     },
-    "collections": {
-      "title": "Coleções",
-      "description": "Coleções curadas de produtos para ocasiões especiais e temas"
+    "magicLink": {
+      "verifying": "Verificando link mágico...",
+      "success": "Login realizado com sucesso!",
+      "error": "Link mágico inválido ou expirado",
+      "expired": "Este link mágico expirou. Por favor solicite um novo."
     },
-    "tags": {
-      "title": "Tags",
-      "description": "Encontre produtos por tags e rótulos"
-    },
-    "attributes": {
-      "title": "Atributos",
-      "description": "Filtre produtos por atributos e propriedades específicas"
+    "unified": {
+      "welcome": "Bem-vindo",
+      "welcomeBack": "Bem-vindo de volta!",
+      "letsGetStarted": "Vamos começar",
+      "continueWith": "Continue com seu email ou conta social",
+      "signInToContinue": "Faça login para continuar",
+      "createAccount": "Crie sua conta em segundos",
+      "or": "ou",
+      "emailLabel": "Endereço de e-mail",
+      "nameLabel": "Seu nome (opcional)",
+      "continueButton": "Continuar com e-mail",
+      "createAccountButton": "Criar conta e continuar",
+      "magicLinkSent": "Verifique seu e-mail!",
+      "magicLinkInstructions": "Enviamos um link mágico para você fazer login",
+      "checkEmail": "Verifique seu e-mail para continuar",
+      "tryAgain": "Tentar novamente",
+      "privacyNotice": "Ao continuar, você concorda com nossos Termos de Serviço e Política de Privacidade"
     }
   }
 }

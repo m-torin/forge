@@ -121,11 +121,7 @@ describe('multiStorageManager', () => {
       const defaultProvider = manager.getProvider('documents');
       await manager.upload('data.xyz', new Blob(['data']));
 
-      expect(defaultProvider?.upload).toHaveBeenCalledWith(
-        'data.xyz',
-        expect.any(Blob),
-        undefined
-      );
+      expect(defaultProvider?.upload).toHaveBeenCalledWith('data.xyz', expect.any(Blob), undefined);
     });
 
     test('should allow explicit provider override', async () => {
@@ -141,7 +137,7 @@ describe('multiStorageManager', () => {
         expect.objectContaining({
           provider: 'cache',
           contentType: 'image/jpeg',
-        })
+        }),
       );
     });
   });
@@ -173,7 +169,7 @@ describe('multiStorageManager', () => {
       await manager.list({ provider: 'images' });
 
       expect(imagesProvider?.list).toHaveBeenCalledWith(
-        expect.objectContaining({ provider: 'images' })
+        expect.objectContaining({ provider: 'images' }),
       );
     });
 
@@ -209,11 +205,7 @@ describe('multiStorageManager', () => {
       test(`should route ${file} to ${expectedProvider} provider`, async () => {
         const provider = manager.getProvider(expectedProvider);
         await manager.upload(file, new Blob(['test']));
-        expect(provider?.upload).toHaveBeenCalledWith(
-          file,
-          expect.any(Blob),
-          undefined
-        );
+        expect(provider?.upload).toHaveBeenCalledWith(file, expect.any(Blob), undefined);
       });
     });
   });
@@ -324,7 +316,7 @@ describe('multiStorageManager', () => {
           accountId: 'account-1',
           accessKeyId: 'key-1',
           secretAccessKey: 'secret-1',
-        })
+        }),
       );
     });
   });

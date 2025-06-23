@@ -1,15 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  createServiceAccount,
-  getServiceAccount,
-  listServiceAccounts,
-  regenerateServiceAccountToken,
-  revokeServiceAccount,
-  updateServiceAccount,
-} from '../../../server/organizations/service-accounts';
-
-import type { ServiceAuthResult } from '../../../shared/api-keys/types';
+import type { ServiceAuthResult } from '../../../src/shared/api-keys';
 
 // Mock all functions using vi.hoisted
 const {
@@ -64,7 +55,7 @@ vi.mock('next/headers', () => ({
 }));
 
 // Mock auth
-vi.mock('../../../server/auth', () => ({
+vi.mock('../../../src/shared/auth.config', () => ({
   auth: {
     api: {
       createApiKey: mockAuthCreateApiKey,
@@ -74,14 +65,24 @@ vi.mock('../../../server/auth', () => ({
 }));
 
 // Mock permissions
-vi.mock('../../../server/organizations/permissions', () => ({
+vi.mock('../../../src/server/organizations/permissions', () => ({
   checkPermission: mockCheckPermission,
 }));
 
 // Mock service auth
-vi.mock('../../../server/api-keys/service-auth', () => ({
+vi.mock('../../../src/server/api-keys/service-auth', () => ({
   createServiceAuth: mockCreateServiceAuth,
 }));
+
+// Import after mocking
+import {
+  createServiceAccountAction,
+  listServiceAccountsAction,
+  revokeServiceAccountAction,
+  updateServiceAccountAction,
+  getServiceAccountAction,
+  regenerateServiceAccountTokenAction,
+} from '../../../src/server/organizations/service-accounts';
 
 describe('Service Accounts', () => {
   const createMockSession = (overrides = {}) => ({
@@ -136,7 +137,7 @@ describe('Service Accounts', () => {
       mockCreateServiceAuth.mockResolvedValue(mockAuthResult);
       mockApiKeyCreate.mockResolvedValue(mockApiKey);
 
-      const result = await createServiceAccount({
+      const result = await createServiceAccountAction({
         name: 'Test Service Account',
         description: 'Test description',
         expiresIn: '30d',
@@ -180,7 +181,7 @@ describe('Service Accounts', () => {
     it('should require authentication', async () => {
       mockGetSession.mockResolvedValue(null);
 
-      const result = await createServiceAccount({
+      const result = await createServiceAccountAction({
         name: 'Test',
         organizationId: 'org-123',
         permissions: [],
@@ -198,7 +199,7 @@ describe('Service Accounts', () => {
       mockGetSession.mockResolvedValue(mockSession);
       mockCheckPermission.mockResolvedValue(false);
 
-      const result = await createServiceAccount({
+      const result = await createServiceAccountAction({
         name: 'Test',
         organizationId: 'org-123',
         permissions: [],
@@ -219,7 +220,7 @@ describe('Service Accounts', () => {
         success: false,
       });
 
-      const result = await createServiceAccount({
+      const result = await createServiceAccountAction({
         name: 'Test',
         organizationId: 'org-123',
         permissions: [],
@@ -260,7 +261,7 @@ describe('Service Accounts', () => {
 
       mockApiKeyFindMany.mockResolvedValue(mockApiKeys);
 
-      const result = await listServiceAccounts('org-123');
+      const result = await listServiceAccountsAction('org-123');
 
       expect(result).toEqual({
         serviceAccounts: [
@@ -303,7 +304,7 @@ describe('Service Accounts', () => {
     it('should check permissions', async () => {
       mockCheckPermission.mockResolvedValue(false);
 
-      const result = await listServiceAccounts('org-123');
+      const result = await listServiceAccountsAction('org-123');
 
       expect(result).toEqual({
         error: 'Insufficient permissions to list service accounts',
@@ -325,7 +326,7 @@ describe('Service Accounts', () => {
 
       mockApiKeyFindMany.mockResolvedValue(mockApiKeys);
 
-      const result = await listServiceAccounts('org-123');
+      const result = await listServiceAccountsAction('org-123');
 
       expect(result.serviceAccounts?.[0].isActive).toBe(false);
     });
@@ -335,7 +336,7 @@ describe('Service Accounts', () => {
     it('should update service account successfully', async () => {
       mockApiKeyUpdate.mockResolvedValue({});
 
-      const result = await updateServiceAccount({
+      const result = await updateServiceAccountAction({
         name: 'Updated Name',
         description: 'Updated description',
         organizationId: 'org-123',
@@ -364,7 +365,7 @@ describe('Service Accounts', () => {
     it('should allow partial updates', async () => {
       mockApiKeyUpdate.mockResolvedValue({});
 
-      await updateServiceAccount({
+      await updateServiceAccountAction({
         name: 'New Name Only',
         organizationId: 'org-123',
         serviceAccountId: 'apikey_123',
@@ -384,7 +385,7 @@ describe('Service Accounts', () => {
     it('should check permissions', async () => {
       mockCheckPermission.mockResolvedValue(false);
 
-      const result = await updateServiceAccount({
+      const result = await updateServiceAccountAction({
         organizationId: 'org-123',
         serviceAccountId: 'apikey_123',
       });
@@ -400,7 +401,7 @@ describe('Service Accounts', () => {
     it('should revoke service account successfully', async () => {
       mockApiKeyDelete.mockResolvedValue({});
 
-      const result = await revokeServiceAccount({
+      const result = await revokeServiceAccountAction({
         organizationId: 'org-123',
         serviceAccountId: 'apikey_123',
       });
@@ -418,7 +419,7 @@ describe('Service Accounts', () => {
     it('should check permissions', async () => {
       mockCheckPermission.mockResolvedValue(false);
 
-      const result = await revokeServiceAccount({
+      const result = await revokeServiceAccountAction({
         organizationId: 'org-123',
         serviceAccountId: 'apikey_123',
       });
@@ -447,7 +448,7 @@ describe('Service Accounts', () => {
 
       mockApiKeyFindFirst.mockResolvedValue(mockApiKey);
 
-      const result = await getServiceAccount({
+      const result = await getServiceAccountAction({
         organizationId: 'org-123',
         serviceAccountId: 'apikey_123',
       });
@@ -470,7 +471,7 @@ describe('Service Accounts', () => {
     it('should return error when not found', async () => {
       mockApiKeyFindFirst.mockResolvedValue(null);
 
-      const result = await getServiceAccount({
+      const result = await getServiceAccountAction({
         organizationId: 'org-123',
         serviceAccountId: 'apikey_123',
       });
@@ -499,7 +500,7 @@ describe('Service Accounts', () => {
       mockCreateServiceAuth.mockResolvedValue(mockAuthResult);
       mockApiKeyUpdate.mockResolvedValue({});
 
-      const result = await regenerateServiceAccountToken({
+      const result = await regenerateServiceAccountTokenAction({
         expiresIn: '60d',
         organizationId: 'org-123',
         serviceAccountId: 'apikey_123',
@@ -524,7 +525,7 @@ describe('Service Accounts', () => {
     it('should return error when not found', async () => {
       mockApiKeyFindFirst.mockResolvedValue(null);
 
-      const result = await regenerateServiceAccountToken({
+      const result = await regenerateServiceAccountTokenAction({
         organizationId: 'org-123',
         serviceAccountId: 'apikey_123',
       });

@@ -6,10 +6,18 @@ import { UserUncheckedCreateWithoutFavoritesInputSchema } from './UserUncheckedC
 import { UserCreateOrConnectWithoutFavoritesInputSchema } from './UserCreateOrConnectWithoutFavoritesInputSchema';
 import { UserWhereUniqueInputSchema } from './UserWhereUniqueInputSchema';
 
-export const UserCreateNestedOneWithoutFavoritesInputSchema: z.ZodType<Prisma.UserCreateNestedOneWithoutFavoritesInput> = z.object({
-  create: z.union([ z.lazy(() => UserCreateWithoutFavoritesInputSchema),z.lazy(() => UserUncheckedCreateWithoutFavoritesInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => UserCreateOrConnectWithoutFavoritesInputSchema).optional(),
-  connect: z.lazy(() => UserWhereUniqueInputSchema).optional()
-}).strict();
+export const UserCreateNestedOneWithoutFavoritesInputSchema: z.ZodType<Prisma.UserCreateNestedOneWithoutFavoritesInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => UserCreateWithoutFavoritesInputSchema),
+          z.lazy(() => UserUncheckedCreateWithoutFavoritesInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z.lazy(() => UserCreateOrConnectWithoutFavoritesInputSchema).optional(),
+      connect: z.lazy(() => UserWhereUniqueInputSchema).optional(),
+    })
+    .strict();
 
 export default UserCreateNestedOneWithoutFavoritesInputSchema;

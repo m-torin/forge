@@ -7,10 +7,19 @@ import { MediaUncheckedUpdateWithoutDeletedByInputSchema } from './MediaUnchecke
 import { MediaCreateWithoutDeletedByInputSchema } from './MediaCreateWithoutDeletedByInputSchema';
 import { MediaUncheckedCreateWithoutDeletedByInputSchema } from './MediaUncheckedCreateWithoutDeletedByInputSchema';
 
-export const MediaUpsertWithWhereUniqueWithoutDeletedByInputSchema: z.ZodType<Prisma.MediaUpsertWithWhereUniqueWithoutDeletedByInput> = z.object({
-  where: z.lazy(() => MediaWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => MediaUpdateWithoutDeletedByInputSchema),z.lazy(() => MediaUncheckedUpdateWithoutDeletedByInputSchema) ]),
-  create: z.union([ z.lazy(() => MediaCreateWithoutDeletedByInputSchema),z.lazy(() => MediaUncheckedCreateWithoutDeletedByInputSchema) ]),
-}).strict();
+export const MediaUpsertWithWhereUniqueWithoutDeletedByInputSchema: z.ZodType<Prisma.MediaUpsertWithWhereUniqueWithoutDeletedByInput> =
+  z
+    .object({
+      where: z.lazy(() => MediaWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => MediaUpdateWithoutDeletedByInputSchema),
+        z.lazy(() => MediaUncheckedUpdateWithoutDeletedByInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => MediaCreateWithoutDeletedByInputSchema),
+        z.lazy(() => MediaUncheckedCreateWithoutDeletedByInputSchema),
+      ]),
+    })
+    .strict();
 
 export default MediaUpsertWithWhereUniqueWithoutDeletedByInputSchema;

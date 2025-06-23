@@ -32,53 +32,90 @@ import { InventoryCreateNestedManyWithoutVariantInputSchema } from './InventoryC
 import { ProductIdentifiersCreateNestedManyWithoutProductInputSchema } from './ProductIdentifiersCreateNestedManyWithoutProductInputSchema';
 import { UserCreateNestedOneWithoutDeletedProductsInputSchema } from './UserCreateNestedOneWithoutDeletedProductsInputSchema';
 
-export const ProductCreateWithoutReviewsInputSchema: z.ZodType<Prisma.ProductCreateWithoutReviewsInput> = z.object({
-  id: z.string().cuid().optional(),
-  name: z.string(),
-  slug: z.string(),
-  sku: z.string(),
-  category: z.string(),
-  status: z.lazy(() => ProductStatusSchema).optional(),
-  brand: z.string().optional().nullable(),
-  price: z.number().optional().nullable(),
-  currency: z.string().optional().nullable(),
-  type: z.lazy(() => ProductTypeSchema).optional(),
-  variantPrice: z.union([z.number(),z.string(),z.instanceof(Decimal),z.instanceof(Prisma.Decimal),DecimalJsLikeSchema,]).refine((v) => isValidDecimalInput(v), { message: 'Must be a Decimal' }).optional().nullable(),
-  compareAtPrice: z.union([z.number(),z.string(),z.instanceof(Decimal),z.instanceof(Prisma.Decimal),DecimalJsLikeSchema,]).refine((v) => isValidDecimalInput(v), { message: 'Must be a Decimal' }).optional().nullable(),
-  physicalProperties: z.union([ z.lazy(() => NullableJsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
-  displayOrder: z.number().int().optional(),
-  isDefault: z.boolean().optional(),
-  copy: z.union([ z.lazy(() => JsonNullValueInputSchema),InputJsonValueSchema ]),
-  attributes: z.union([ z.lazy(() => JsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
-  createdAt: z.coerce.date().optional(),
-  updatedAt: z.coerce.date().optional(),
-  createdBy: z.string().optional().nullable(),
-  deletedAt: z.coerce.date().optional().nullable(),
-  aiGenerated: z.boolean().optional(),
-  aiConfidence: z.number().optional().nullable(),
-  aiSources: z.union([ z.lazy(() => ProductCreateaiSourcesInputSchema),z.string().array() ]).optional(),
-  parent: z.lazy(() => ProductCreateNestedOneWithoutChildrenInputSchema).optional(),
-  children: z.lazy(() => ProductCreateNestedManyWithoutParentInputSchema).optional(),
-  soldBy: z.lazy(() => PdpJoinCreateNestedManyWithoutProductInputSchema).optional(),
-  collections: z.lazy(() => CollectionCreateNestedManyWithoutProductsInputSchema).optional(),
-  taxonomies: z.lazy(() => TaxonomyCreateNestedManyWithoutProductsInputSchema).optional(),
-  categories: z.lazy(() => ProductCategoryCreateNestedManyWithoutProductsInputSchema).optional(),
-  media: z.lazy(() => MediaCreateNestedManyWithoutProductInputSchema).optional(),
-  favorites: z.lazy(() => FavoriteJoinCreateNestedManyWithoutProductInputSchema).optional(),
-  registries: z.lazy(() => RegistryItemCreateNestedManyWithoutProductInputSchema).optional(),
-  fandoms: z.lazy(() => FandomCreateNestedManyWithoutProductsInputSchema).optional(),
-  series: z.lazy(() => SeriesCreateNestedManyWithoutProductsInputSchema).optional(),
-  stories: z.lazy(() => StoryCreateNestedManyWithoutProductsInputSchema).optional(),
-  locations: z.lazy(() => LocationCreateNestedManyWithoutProductsInputSchema).optional(),
-  casts: z.lazy(() => CastCreateNestedManyWithoutProductsInputSchema).optional(),
-  cartItems: z.lazy(() => CartItemCreateNestedManyWithoutProductInputSchema).optional(),
-  cartItemVariants: z.lazy(() => CartItemCreateNestedManyWithoutVariantInputSchema).optional(),
-  orderItems: z.lazy(() => OrderItemCreateNestedManyWithoutProductInputSchema).optional(),
-  orderItemVariants: z.lazy(() => OrderItemCreateNestedManyWithoutVariantInputSchema).optional(),
-  inventory: z.lazy(() => InventoryCreateNestedManyWithoutProductInputSchema).optional(),
-  inventoryVariants: z.lazy(() => InventoryCreateNestedManyWithoutVariantInputSchema).optional(),
-  identifiers: z.lazy(() => ProductIdentifiersCreateNestedManyWithoutProductInputSchema).optional(),
-  deletedBy: z.lazy(() => UserCreateNestedOneWithoutDeletedProductsInputSchema).optional()
-}).strict();
+export const ProductCreateWithoutReviewsInputSchema: z.ZodType<Prisma.ProductCreateWithoutReviewsInput> =
+  z
+    .object({
+      id: z.string().cuid().optional(),
+      name: z.string(),
+      slug: z.string(),
+      sku: z.string(),
+      category: z.string(),
+      status: z.lazy(() => ProductStatusSchema).optional(),
+      brand: z.string().optional().nullable(),
+      price: z.number().optional().nullable(),
+      currency: z.string().optional().nullable(),
+      type: z.lazy(() => ProductTypeSchema).optional(),
+      variantPrice: z
+        .union([
+          z.number(),
+          z.string(),
+          z.instanceof(Decimal),
+          z.instanceof(Prisma.Decimal),
+          DecimalJsLikeSchema,
+        ])
+        .refine((v) => isValidDecimalInput(v), { message: 'Must be a Decimal' })
+        .optional()
+        .nullable(),
+      compareAtPrice: z
+        .union([
+          z.number(),
+          z.string(),
+          z.instanceof(Decimal),
+          z.instanceof(Prisma.Decimal),
+          DecimalJsLikeSchema,
+        ])
+        .refine((v) => isValidDecimalInput(v), { message: 'Must be a Decimal' })
+        .optional()
+        .nullable(),
+      physicalProperties: z
+        .union([z.lazy(() => NullableJsonNullValueInputSchema), InputJsonValueSchema])
+        .optional(),
+      displayOrder: z.number().int().optional(),
+      isDefault: z.boolean().optional(),
+      copy: z.union([z.lazy(() => JsonNullValueInputSchema), InputJsonValueSchema]),
+      attributes: z
+        .union([z.lazy(() => JsonNullValueInputSchema), InputJsonValueSchema])
+        .optional(),
+      createdAt: z.coerce.date().optional(),
+      updatedAt: z.coerce.date().optional(),
+      createdBy: z.string().optional().nullable(),
+      deletedAt: z.coerce.date().optional().nullable(),
+      aiGenerated: z.boolean().optional(),
+      aiConfidence: z.number().optional().nullable(),
+      aiSources: z
+        .union([z.lazy(() => ProductCreateaiSourcesInputSchema), z.string().array()])
+        .optional(),
+      parent: z.lazy(() => ProductCreateNestedOneWithoutChildrenInputSchema).optional(),
+      children: z.lazy(() => ProductCreateNestedManyWithoutParentInputSchema).optional(),
+      soldBy: z.lazy(() => PdpJoinCreateNestedManyWithoutProductInputSchema).optional(),
+      collections: z.lazy(() => CollectionCreateNestedManyWithoutProductsInputSchema).optional(),
+      taxonomies: z.lazy(() => TaxonomyCreateNestedManyWithoutProductsInputSchema).optional(),
+      categories: z
+        .lazy(() => ProductCategoryCreateNestedManyWithoutProductsInputSchema)
+        .optional(),
+      media: z.lazy(() => MediaCreateNestedManyWithoutProductInputSchema).optional(),
+      favorites: z.lazy(() => FavoriteJoinCreateNestedManyWithoutProductInputSchema).optional(),
+      registries: z.lazy(() => RegistryItemCreateNestedManyWithoutProductInputSchema).optional(),
+      fandoms: z.lazy(() => FandomCreateNestedManyWithoutProductsInputSchema).optional(),
+      series: z.lazy(() => SeriesCreateNestedManyWithoutProductsInputSchema).optional(),
+      stories: z.lazy(() => StoryCreateNestedManyWithoutProductsInputSchema).optional(),
+      locations: z.lazy(() => LocationCreateNestedManyWithoutProductsInputSchema).optional(),
+      casts: z.lazy(() => CastCreateNestedManyWithoutProductsInputSchema).optional(),
+      cartItems: z.lazy(() => CartItemCreateNestedManyWithoutProductInputSchema).optional(),
+      cartItemVariants: z.lazy(() => CartItemCreateNestedManyWithoutVariantInputSchema).optional(),
+      orderItems: z.lazy(() => OrderItemCreateNestedManyWithoutProductInputSchema).optional(),
+      orderItemVariants: z
+        .lazy(() => OrderItemCreateNestedManyWithoutVariantInputSchema)
+        .optional(),
+      inventory: z.lazy(() => InventoryCreateNestedManyWithoutProductInputSchema).optional(),
+      inventoryVariants: z
+        .lazy(() => InventoryCreateNestedManyWithoutVariantInputSchema)
+        .optional(),
+      identifiers: z
+        .lazy(() => ProductIdentifiersCreateNestedManyWithoutProductInputSchema)
+        .optional(),
+      deletedBy: z.lazy(() => UserCreateNestedOneWithoutDeletedProductsInputSchema).optional(),
+    })
+    .strict();
 
 export default ProductCreateWithoutReviewsInputSchema;

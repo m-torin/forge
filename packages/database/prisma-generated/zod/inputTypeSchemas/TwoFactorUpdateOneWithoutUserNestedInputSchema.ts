@@ -11,14 +11,28 @@ import { TwoFactorUpdateToOneWithWhereWithoutUserInputSchema } from './TwoFactor
 import { TwoFactorUpdateWithoutUserInputSchema } from './TwoFactorUpdateWithoutUserInputSchema';
 import { TwoFactorUncheckedUpdateWithoutUserInputSchema } from './TwoFactorUncheckedUpdateWithoutUserInputSchema';
 
-export const TwoFactorUpdateOneWithoutUserNestedInputSchema: z.ZodType<Prisma.TwoFactorUpdateOneWithoutUserNestedInput> = z.object({
-  create: z.union([ z.lazy(() => TwoFactorCreateWithoutUserInputSchema),z.lazy(() => TwoFactorUncheckedCreateWithoutUserInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => TwoFactorCreateOrConnectWithoutUserInputSchema).optional(),
-  upsert: z.lazy(() => TwoFactorUpsertWithoutUserInputSchema).optional(),
-  disconnect: z.union([ z.boolean(),z.lazy(() => TwoFactorWhereInputSchema) ]).optional(),
-  delete: z.union([ z.boolean(),z.lazy(() => TwoFactorWhereInputSchema) ]).optional(),
-  connect: z.lazy(() => TwoFactorWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => TwoFactorUpdateToOneWithWhereWithoutUserInputSchema),z.lazy(() => TwoFactorUpdateWithoutUserInputSchema),z.lazy(() => TwoFactorUncheckedUpdateWithoutUserInputSchema) ]).optional(),
-}).strict();
+export const TwoFactorUpdateOneWithoutUserNestedInputSchema: z.ZodType<Prisma.TwoFactorUpdateOneWithoutUserNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => TwoFactorCreateWithoutUserInputSchema),
+          z.lazy(() => TwoFactorUncheckedCreateWithoutUserInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z.lazy(() => TwoFactorCreateOrConnectWithoutUserInputSchema).optional(),
+      upsert: z.lazy(() => TwoFactorUpsertWithoutUserInputSchema).optional(),
+      disconnect: z.union([z.boolean(), z.lazy(() => TwoFactorWhereInputSchema)]).optional(),
+      delete: z.union([z.boolean(), z.lazy(() => TwoFactorWhereInputSchema)]).optional(),
+      connect: z.lazy(() => TwoFactorWhereUniqueInputSchema).optional(),
+      update: z
+        .union([
+          z.lazy(() => TwoFactorUpdateToOneWithWhereWithoutUserInputSchema),
+          z.lazy(() => TwoFactorUpdateWithoutUserInputSchema),
+          z.lazy(() => TwoFactorUncheckedUpdateWithoutUserInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default TwoFactorUpdateOneWithoutUserNestedInputSchema;

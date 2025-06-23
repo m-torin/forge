@@ -6,14 +6,28 @@ import { NestedEnumPdpUrlTypeWithAggregatesFilterSchema } from './NestedEnumPdpU
 import { NestedIntFilterSchema } from './NestedIntFilterSchema';
 import { NestedEnumPdpUrlTypeFilterSchema } from './NestedEnumPdpUrlTypeFilterSchema';
 
-export const EnumPdpUrlTypeWithAggregatesFilterSchema: z.ZodType<Prisma.EnumPdpUrlTypeWithAggregatesFilter> = z.object({
-  equals: z.lazy(() => PdpUrlTypeSchema).optional(),
-  in: z.lazy(() => PdpUrlTypeSchema).array().optional(),
-  notIn: z.lazy(() => PdpUrlTypeSchema).array().optional(),
-  not: z.union([ z.lazy(() => PdpUrlTypeSchema),z.lazy(() => NestedEnumPdpUrlTypeWithAggregatesFilterSchema) ]).optional(),
-  _count: z.lazy(() => NestedIntFilterSchema).optional(),
-  _min: z.lazy(() => NestedEnumPdpUrlTypeFilterSchema).optional(),
-  _max: z.lazy(() => NestedEnumPdpUrlTypeFilterSchema).optional()
-}).strict();
+export const EnumPdpUrlTypeWithAggregatesFilterSchema: z.ZodType<Prisma.EnumPdpUrlTypeWithAggregatesFilter> =
+  z
+    .object({
+      equals: z.lazy(() => PdpUrlTypeSchema).optional(),
+      in: z
+        .lazy(() => PdpUrlTypeSchema)
+        .array()
+        .optional(),
+      notIn: z
+        .lazy(() => PdpUrlTypeSchema)
+        .array()
+        .optional(),
+      not: z
+        .union([
+          z.lazy(() => PdpUrlTypeSchema),
+          z.lazy(() => NestedEnumPdpUrlTypeWithAggregatesFilterSchema),
+        ])
+        .optional(),
+      _count: z.lazy(() => NestedIntFilterSchema).optional(),
+      _min: z.lazy(() => NestedEnumPdpUrlTypeFilterSchema).optional(),
+      _max: z.lazy(() => NestedEnumPdpUrlTypeFilterSchema).optional(),
+    })
+    .strict();
 
 export default EnumPdpUrlTypeWithAggregatesFilterSchema;

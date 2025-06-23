@@ -4,9 +4,6 @@
 
 'use client';
 
-// Re-export everything from client
-export * from './client';
-
 // Export Next.js specific features
 export { AuthProvider, useAuthContext } from './client/auth-provider';
 export { useAuth, useUser, useIsAuthenticated, useRequireAuth, useAuthGuard } from './client/hooks';
@@ -14,9 +11,19 @@ export { useAuth, useUser, useIsAuthenticated, useRequireAuth, useAuthGuard } fr
 // Export navigation helpers
 export { useAuthRedirect } from './client/navigation';
 
-// Re-export specific client methods that might not be included in the wildcard export
+// Export safe client methods only - these don't import server actions
 export {
+  signIn,
+  signOut,
+  signUp,
+  forgotPassword,
+  resetPassword,
+  verifyEmail,
+  changePassword,
+  setPassword,
   sendMagicLink,
+  verifyMagicLink,
+  getSession,
   enableTwoFactor,
   disableTwoFactor,
   verifyTwoFactor,
@@ -29,8 +36,7 @@ export {
   deletePasskey,
   signInWithPasskey,
   signUpWithPasskey,
-  changePassword,
-  setPassword,
-  verifyMagicLink,
   revokeUserSession,
+  signInWithGoogle,
+  signInWithGitHub,
 } from './client/methods';

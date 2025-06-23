@@ -5,58 +5,6 @@
 
 import { nanoid } from 'nanoid';
 
-// Conditional Redis import to avoid server-only issues in tests
-let redis: any = null;
-let RedisOperations: any = null;
-
-try {
-  // In test environments, try to use mocked Redis from @upstash/redis
-  if (process.env.NODE_ENV === 'test') {
-    const { Redis } = require('@upstash/redis');
-    redis = new Redis();
-  } else {
-    // Only import Redis in non-test environments
-    try {
-      const redisModule = require('@repo/database/redis/server');
-      redis = redisModule.redis;
-      RedisOperations = redisModule.RedisOperations;
-    } catch (serverError) {
-      // Fallback to @upstash/redis if server module is not available
-      const { Redis } = require('@upstash/redis');
-      redis = new Redis();
-    }
-  }
-} catch (error) {
-  // Fallback for test environments or when Redis is not available
-  console.warn('Redis not available, using mock implementation');
-  // Create a mock Redis client for tests
-  redis = {
-    ping: () => Promise.resolve('PONG'),
-    set: () => Promise.resolve('OK'),
-    get: () => Promise.resolve(null),
-    del: () => Promise.resolve(1),
-    keys: () => Promise.resolve([]),
-    zadd: () => Promise.resolve(1),
-    zrange: () => Promise.resolve([]),
-    zremrangebyrank: () => Promise.resolve(0),
-    pipeline: () => ({
-      get: () => ({ exec: () => Promise.resolve([]) }),
-    }),
-    scan: () => Promise.resolve(['0', []]),
-    exists: () => Promise.resolve(0),
-    hget: () => Promise.resolve(null),
-    hgetall: () => Promise.resolve({}),
-    hset: () => Promise.resolve(1),
-    incr: () => Promise.resolve(1),
-    decr: () => Promise.resolve(0),
-    llen: () => Promise.resolve(0),
-    lpush: () => Promise.resolve(1),
-    rpop: () => Promise.resolve(null),
-    ttl: () => Promise.resolve(3600),
-    expire: () => Promise.resolve(1),
-  };
-}
-
 import { createServerObservability } from '@repo/observability/shared-env';
 
 import {
@@ -113,19 +61,21 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
       // Fallback for test environments
       console.warn('QStash client not available, using mock implementation');
       this.qstash = {
-        publishJSON: () => Promise.resolve({ messageId: 'mock_msg_' + Math.random().toString(36).substring(7) }),
+        publishJSON: () =>
+          Promise.resolve({ messageId: 'mock_msg_' + Math.random().toString(36).substring(7) }),
         schedules: {
-          create: () => Promise.resolve({ scheduleId: 'mock_schedule_' + Math.random().toString(36).substring(7) }),
+          create: () =>
+            Promise.resolve({
+              scheduleId: 'mock_schedule_' + Math.random().toString(36).substring(7),
+            }),
           delete: () => Promise.resolve(true),
         },
       };
     }
 
-    // Only set redisClient and useRedis if not already set (so setClients can override)
-    if (process.env.NODE_ENV !== 'test' && typeof this.redisClient === 'undefined') {
-      this.useRedis = options.enableRedis !== false && redis !== null;
-      this.redisClient = redis;
-    }
+    // Always require Redis client to be passed in or set via setClients
+    this.useRedis = options.enableRedis !== false;
+    this.redisClient = undefined; // Must be set via setClients in tests or via DI in prod
   }
 
   /**
@@ -148,7 +98,7 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
   setClients(qstashClient: any, redisClient: any) {
     this.qstash = qstashClient;
     this.redisClient = redisClient;
-    this.useRedis = redisClient !== null;
+    this.useRedis = redisClient !== null && redisClient !== undefined;
   }
 
   /**
@@ -242,9 +192,31 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
       return {
         GET: async () => Response.json({ status: 'ok' }, { status: 200 }),
         POST: async (request: any) => {
-          const body = await request.json();
-          // Mock workflow execution
-          return Response.json({ success: true }, { status: 200 });
+          try {
+            const body = await request.json();
+            const { definition, executionId, workflowId } = body;
+
+            // Mock workflow execution
+            if (this.useRedis) {
+              // Update execution status to running
+              await this.updateExecutionStatus(executionId, 'running');
+
+              // Simulate step execution
+              for (const step of definition.steps) {
+                await this.updateExecutionStatus(executionId, 'running', step.id);
+                await this.updateExecutionStatus(executionId, 'completed', step.id, {
+                  result: 'mock-success',
+                });
+              }
+
+              // Mark execution as completed
+              await this.updateExecutionStatus(executionId, 'completed');
+            }
+
+            return Response.json({ success: true, executionId }, { status: 200 });
+          } catch (error) {
+            return Response.json({ error: 'Workflow execution failed' }, { status: 500 });
+          }
         },
       };
     }
@@ -448,9 +420,14 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
 
       // Use a sorted set to track executions by workflow ID for better performance
       // This avoids using KEYS command which can block Redis
-      const executionIds = await this.redisClient.zrange(`workflow:${workflowId}:executions`, 0, -1, {
-        rev: true,
-      });
+      const executionIds = await this.redisClient.zrange(
+        `workflow:${workflowId}:executions`,
+        0,
+        -1,
+        {
+          rev: true,
+        },
+      );
 
       const executions: WorkflowExecution[] = [];
 

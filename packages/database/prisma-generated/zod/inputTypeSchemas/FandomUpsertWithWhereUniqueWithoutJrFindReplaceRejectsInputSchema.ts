@@ -7,10 +7,19 @@ import { FandomUncheckedUpdateWithoutJrFindReplaceRejectsInputSchema } from './F
 import { FandomCreateWithoutJrFindReplaceRejectsInputSchema } from './FandomCreateWithoutJrFindReplaceRejectsInputSchema';
 import { FandomUncheckedCreateWithoutJrFindReplaceRejectsInputSchema } from './FandomUncheckedCreateWithoutJrFindReplaceRejectsInputSchema';
 
-export const FandomUpsertWithWhereUniqueWithoutJrFindReplaceRejectsInputSchema: z.ZodType<Prisma.FandomUpsertWithWhereUniqueWithoutJrFindReplaceRejectsInput> = z.object({
-  where: z.lazy(() => FandomWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => FandomUpdateWithoutJrFindReplaceRejectsInputSchema),z.lazy(() => FandomUncheckedUpdateWithoutJrFindReplaceRejectsInputSchema) ]),
-  create: z.union([ z.lazy(() => FandomCreateWithoutJrFindReplaceRejectsInputSchema),z.lazy(() => FandomUncheckedCreateWithoutJrFindReplaceRejectsInputSchema) ]),
-}).strict();
+export const FandomUpsertWithWhereUniqueWithoutJrFindReplaceRejectsInputSchema: z.ZodType<Prisma.FandomUpsertWithWhereUniqueWithoutJrFindReplaceRejectsInput> =
+  z
+    .object({
+      where: z.lazy(() => FandomWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => FandomUpdateWithoutJrFindReplaceRejectsInputSchema),
+        z.lazy(() => FandomUncheckedUpdateWithoutJrFindReplaceRejectsInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => FandomCreateWithoutJrFindReplaceRejectsInputSchema),
+        z.lazy(() => FandomUncheckedCreateWithoutJrFindReplaceRejectsInputSchema),
+      ]),
+    })
+    .strict();
 
 export default FandomUpsertWithWhereUniqueWithoutJrFindReplaceRejectsInputSchema;

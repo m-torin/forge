@@ -13,9 +13,7 @@ import {
   hasTeamRole,
   isTeamAdmin,
   isTeamOwner,
-} from '../../../server/teams/permissions';
-
-import type { TeamMember } from '../../../shared/types';
+} from '../../../src/server/teams/permissions';
 
 // Mock the auth module using vi.hoisted
 const { mockGetSession, mockGetTeamMember } = vi.hoisted(() => {
@@ -65,7 +63,7 @@ describe('Team Permissions', () => {
     },
   });
 
-  const createMockTeamMember = (role: string, overrides = {}): TeamMember => ({
+  const createMockTeamMember = (role: string, overrides = {}) => ({
     id: 'member-123',
     createdAt: new Date(),
     role,

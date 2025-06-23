@@ -10,12 +10,26 @@ import { UserUpdateToOneWithWhereWithoutFavoritesInputSchema } from './UserUpdat
 import { UserUpdateWithoutFavoritesInputSchema } from './UserUpdateWithoutFavoritesInputSchema';
 import { UserUncheckedUpdateWithoutFavoritesInputSchema } from './UserUncheckedUpdateWithoutFavoritesInputSchema';
 
-export const UserUpdateOneRequiredWithoutFavoritesNestedInputSchema: z.ZodType<Prisma.UserUpdateOneRequiredWithoutFavoritesNestedInput> = z.object({
-  create: z.union([ z.lazy(() => UserCreateWithoutFavoritesInputSchema),z.lazy(() => UserUncheckedCreateWithoutFavoritesInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => UserCreateOrConnectWithoutFavoritesInputSchema).optional(),
-  upsert: z.lazy(() => UserUpsertWithoutFavoritesInputSchema).optional(),
-  connect: z.lazy(() => UserWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => UserUpdateToOneWithWhereWithoutFavoritesInputSchema),z.lazy(() => UserUpdateWithoutFavoritesInputSchema),z.lazy(() => UserUncheckedUpdateWithoutFavoritesInputSchema) ]).optional(),
-}).strict();
+export const UserUpdateOneRequiredWithoutFavoritesNestedInputSchema: z.ZodType<Prisma.UserUpdateOneRequiredWithoutFavoritesNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => UserCreateWithoutFavoritesInputSchema),
+          z.lazy(() => UserUncheckedCreateWithoutFavoritesInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z.lazy(() => UserCreateOrConnectWithoutFavoritesInputSchema).optional(),
+      upsert: z.lazy(() => UserUpsertWithoutFavoritesInputSchema).optional(),
+      connect: z.lazy(() => UserWhereUniqueInputSchema).optional(),
+      update: z
+        .union([
+          z.lazy(() => UserUpdateToOneWithWhereWithoutFavoritesInputSchema),
+          z.lazy(() => UserUpdateWithoutFavoritesInputSchema),
+          z.lazy(() => UserUncheckedUpdateWithoutFavoritesInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default UserUpdateOneRequiredWithoutFavoritesNestedInputSchema;

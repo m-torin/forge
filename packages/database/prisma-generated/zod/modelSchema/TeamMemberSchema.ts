@@ -11,8 +11,8 @@ export const TeamMemberSchema = z.object({
   role: z.string(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
-})
+});
 
-export type TeamMember = z.infer<typeof TeamMemberSchema>
+export type TeamMember = z.infer<typeof TeamMemberSchema>;
 
 export default TeamMemberSchema;

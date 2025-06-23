@@ -11,14 +11,30 @@ import { ProductCategoryUpdateToOneWithWhereWithoutMediaInputSchema } from './Pr
 import { ProductCategoryUpdateWithoutMediaInputSchema } from './ProductCategoryUpdateWithoutMediaInputSchema';
 import { ProductCategoryUncheckedUpdateWithoutMediaInputSchema } from './ProductCategoryUncheckedUpdateWithoutMediaInputSchema';
 
-export const ProductCategoryUpdateOneWithoutMediaNestedInputSchema: z.ZodType<Prisma.ProductCategoryUpdateOneWithoutMediaNestedInput> = z.object({
-  create: z.union([ z.lazy(() => ProductCategoryCreateWithoutMediaInputSchema),z.lazy(() => ProductCategoryUncheckedCreateWithoutMediaInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => ProductCategoryCreateOrConnectWithoutMediaInputSchema).optional(),
-  upsert: z.lazy(() => ProductCategoryUpsertWithoutMediaInputSchema).optional(),
-  disconnect: z.union([ z.boolean(),z.lazy(() => ProductCategoryWhereInputSchema) ]).optional(),
-  delete: z.union([ z.boolean(),z.lazy(() => ProductCategoryWhereInputSchema) ]).optional(),
-  connect: z.lazy(() => ProductCategoryWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => ProductCategoryUpdateToOneWithWhereWithoutMediaInputSchema),z.lazy(() => ProductCategoryUpdateWithoutMediaInputSchema),z.lazy(() => ProductCategoryUncheckedUpdateWithoutMediaInputSchema) ]).optional(),
-}).strict();
+export const ProductCategoryUpdateOneWithoutMediaNestedInputSchema: z.ZodType<Prisma.ProductCategoryUpdateOneWithoutMediaNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => ProductCategoryCreateWithoutMediaInputSchema),
+          z.lazy(() => ProductCategoryUncheckedCreateWithoutMediaInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .lazy(() => ProductCategoryCreateOrConnectWithoutMediaInputSchema)
+        .optional(),
+      upsert: z.lazy(() => ProductCategoryUpsertWithoutMediaInputSchema).optional(),
+      disconnect: z.union([z.boolean(), z.lazy(() => ProductCategoryWhereInputSchema)]).optional(),
+      delete: z.union([z.boolean(), z.lazy(() => ProductCategoryWhereInputSchema)]).optional(),
+      connect: z.lazy(() => ProductCategoryWhereUniqueInputSchema).optional(),
+      update: z
+        .union([
+          z.lazy(() => ProductCategoryUpdateToOneWithWhereWithoutMediaInputSchema),
+          z.lazy(() => ProductCategoryUpdateWithoutMediaInputSchema),
+          z.lazy(() => ProductCategoryUncheckedUpdateWithoutMediaInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default ProductCategoryUpdateOneWithoutMediaNestedInputSchema;

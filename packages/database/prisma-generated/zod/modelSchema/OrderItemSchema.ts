@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema'
-import { Prisma } from '../../client'
-import { OrderItemStatusSchema } from '../inputTypeSchemas/OrderItemStatusSchema'
+import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema';
+import { Prisma } from '../../client';
+import { OrderItemStatusSchema } from '../inputTypeSchemas/OrderItemStatusSchema';
 
 /////////////////////////////////////////
 // ORDER ITEM SCHEMA
@@ -17,8 +17,12 @@ export const OrderItemSchema = z.object({
   variantName: z.string().nullable(),
   sku: z.string().nullable(),
   quantity: z.number().int(),
-  price: z.instanceof(Prisma.Decimal, { message: "Field 'price' must be a Decimal. Location: ['Models', 'OrderItem']"}),
-  total: z.instanceof(Prisma.Decimal, { message: "Field 'total' must be a Decimal. Location: ['Models', 'OrderItem']"}),
+  price: z.instanceof(Prisma.Decimal, {
+    message: "Field 'price' must be a Decimal. Location: ['Models', 'OrderItem']",
+  }),
+  total: z.instanceof(Prisma.Decimal, {
+    message: "Field 'total' must be a Decimal. Location: ['Models', 'OrderItem']",
+  }),
   isGift: z.boolean(),
   giftMessage: z.string().nullable(),
   registryId: z.string().nullable(),
@@ -26,8 +30,8 @@ export const OrderItemSchema = z.object({
   metadata: JsonValueSchema.nullable(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
-})
+});
 
-export type OrderItem = z.infer<typeof OrderItemSchema>
+export type OrderItem = z.infer<typeof OrderItemSchema>;
 
 export default OrderItemSchema;

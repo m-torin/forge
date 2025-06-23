@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema'
-import { MediaTypeSchema } from '../inputTypeSchemas/MediaTypeSchema'
+import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema';
+import { MediaTypeSchema } from '../inputTypeSchemas/MediaTypeSchema';
 
 /////////////////////////////////////////
 // MEDIA SCHEMA
@@ -30,8 +30,8 @@ export const MediaSchema = z.object({
   deletedAt: z.coerce.date().nullable(),
   deletedById: z.string().nullable(),
   reviewId: z.string().nullable(),
-})
+});
 
-export type Media = z.infer<typeof MediaSchema>
+export type Media = z.infer<typeof MediaSchema>;
 
 export default MediaSchema;

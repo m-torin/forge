@@ -6,10 +6,20 @@ import { AddressUncheckedCreateWithoutOrderBillingAddressesInputSchema } from '.
 import { AddressCreateOrConnectWithoutOrderBillingAddressesInputSchema } from './AddressCreateOrConnectWithoutOrderBillingAddressesInputSchema';
 import { AddressWhereUniqueInputSchema } from './AddressWhereUniqueInputSchema';
 
-export const AddressCreateNestedOneWithoutOrderBillingAddressesInputSchema: z.ZodType<Prisma.AddressCreateNestedOneWithoutOrderBillingAddressesInput> = z.object({
-  create: z.union([ z.lazy(() => AddressCreateWithoutOrderBillingAddressesInputSchema),z.lazy(() => AddressUncheckedCreateWithoutOrderBillingAddressesInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => AddressCreateOrConnectWithoutOrderBillingAddressesInputSchema).optional(),
-  connect: z.lazy(() => AddressWhereUniqueInputSchema).optional()
-}).strict();
+export const AddressCreateNestedOneWithoutOrderBillingAddressesInputSchema: z.ZodType<Prisma.AddressCreateNestedOneWithoutOrderBillingAddressesInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => AddressCreateWithoutOrderBillingAddressesInputSchema),
+          z.lazy(() => AddressUncheckedCreateWithoutOrderBillingAddressesInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .lazy(() => AddressCreateOrConnectWithoutOrderBillingAddressesInputSchema)
+        .optional(),
+      connect: z.lazy(() => AddressWhereUniqueInputSchema).optional(),
+    })
+    .strict();
 
 export default AddressCreateNestedOneWithoutOrderBillingAddressesInputSchema;

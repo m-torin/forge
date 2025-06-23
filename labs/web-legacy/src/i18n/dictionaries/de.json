@@ -1,0 +1,69 @@
+{
+  "app": {
+    "welcome": "Willkommen bei Web Template",
+    "description": "Eine moderne Next.js-Vorlage mit Mantine UI und Internationalisierungsunterstützung",
+    "brand": "Web Template",
+    "appDescription": "Eine moderne Webanwendungsvorlage mit Internationalisierung",
+    "selectLanguage": "Sprache auswählen",
+    "l": {
+      "en": "English",
+      "fr": "Français",
+      "es": "Español",
+      "de": "Deutsch",
+      "pt": "Português"
+    }
+  },
+  "search": {
+    "title": "Suchen",
+    "placeholder": "Nach etwas suchen...",
+    "button": "Suchen",
+    "results": "Suchergebnisse",
+    "noResults": "Keine Ergebnisse gefunden",
+    "tryAgain": "Versuchen Sie, nach etwas anderem zu suchen"
+  },
+  "navigation": {
+    "home": "Startseite",
+    "search": "Suchen",
+    "account": "Konto",
+    "orders": "Bestellungen",
+    "wishlist": "Wunschliste",
+    "help": "Hilfe",
+    "logout": "Abmelden",
+    "login": "Anmelden"
+  },
+  "taxonomy": {
+    "noItems": "Keine Elemente gefunden.",
+    "items": "Elemente",
+    "backTo": "Zurück zu",
+    "save": "Speichern",
+    "share": "Teilen",
+    "relatedItems": "Verwandte Elemente",
+    "exploreMore": "Entdecken Sie mehr Elemente in dieser",
+    "viewAll": "Alle anzeigen",
+    "details": "Details",
+    "type": "Typ",
+    "totalItems": "Gesamte Elemente",
+    "parent": "Übergeordnet",
+    "browseItems": "Elemente durchsuchen",
+    "brands": {
+      "title": "Marken",
+      "description": "Entdecken Sie Produkte unserer vorgestellten Marken und Partner"
+    },
+    "categories": {
+      "title": "Kategorien",
+      "description": "Durchsuchen Sie Produkte nach Kategorie, um genau das zu finden, was Sie brauchen"
+    },
+    "collections": {
+      "title": "Kollektionen",
+      "description": "Kuratierte Produktkollektionen für besondere Anlässe und Themen"
+    },
+    "tags": {
+      "title": "Tags",
+      "description": "Finden Sie Produkte nach Tags und Labels"
+    },
+    "attributes": {
+      "title": "Attribute",
+      "description": "Filtern Sie Produkte nach spezifischen Attributen und Eigenschaften"
+    }
+  }
+}

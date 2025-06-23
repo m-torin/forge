@@ -7,11 +7,31 @@ import { JrExtractionRuleCreateOrConnectWithoutJollyRogerInputSchema } from './J
 import { JrExtractionRuleCreateManyJollyRogerInputEnvelopeSchema } from './JrExtractionRuleCreateManyJollyRogerInputEnvelopeSchema';
 import { JrExtractionRuleWhereUniqueInputSchema } from './JrExtractionRuleWhereUniqueInputSchema';
 
-export const JrExtractionRuleCreateNestedManyWithoutJollyRogerInputSchema: z.ZodType<Prisma.JrExtractionRuleCreateNestedManyWithoutJollyRogerInput> = z.object({
-  create: z.union([ z.lazy(() => JrExtractionRuleCreateWithoutJollyRogerInputSchema),z.lazy(() => JrExtractionRuleCreateWithoutJollyRogerInputSchema).array(),z.lazy(() => JrExtractionRuleUncheckedCreateWithoutJollyRogerInputSchema),z.lazy(() => JrExtractionRuleUncheckedCreateWithoutJollyRogerInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => JrExtractionRuleCreateOrConnectWithoutJollyRogerInputSchema),z.lazy(() => JrExtractionRuleCreateOrConnectWithoutJollyRogerInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => JrExtractionRuleCreateManyJollyRogerInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => JrExtractionRuleWhereUniqueInputSchema),z.lazy(() => JrExtractionRuleWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const JrExtractionRuleCreateNestedManyWithoutJollyRogerInputSchema: z.ZodType<Prisma.JrExtractionRuleCreateNestedManyWithoutJollyRogerInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => JrExtractionRuleCreateWithoutJollyRogerInputSchema),
+          z.lazy(() => JrExtractionRuleCreateWithoutJollyRogerInputSchema).array(),
+          z.lazy(() => JrExtractionRuleUncheckedCreateWithoutJollyRogerInputSchema),
+          z.lazy(() => JrExtractionRuleUncheckedCreateWithoutJollyRogerInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => JrExtractionRuleCreateOrConnectWithoutJollyRogerInputSchema),
+          z.lazy(() => JrExtractionRuleCreateOrConnectWithoutJollyRogerInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => JrExtractionRuleCreateManyJollyRogerInputEnvelopeSchema).optional(),
+      connect: z
+        .union([
+          z.lazy(() => JrExtractionRuleWhereUniqueInputSchema),
+          z.lazy(() => JrExtractionRuleWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default JrExtractionRuleCreateNestedManyWithoutJollyRogerInputSchema;

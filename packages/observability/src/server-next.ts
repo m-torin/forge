@@ -45,7 +45,7 @@ const NEXTJS_SERVER_PROVIDERS: ProviderRegistry = {
     if (process.env.NEXT_RUNTIME === 'edge') {
       throw new Error('OpenTelemetry not supported in Edge runtime');
     }
-    const { VercelOTelProvider } = await import('./server/providers/vercel-otel-provider');
+    const { VercelOTelProvider } = await import('./server/providers/nodejs/vercel-otel-provider');
     return new VercelOTelProvider();
   },
   otel: async () => {
@@ -53,7 +53,7 @@ const NEXTJS_SERVER_PROVIDERS: ProviderRegistry = {
     if (process.env.NEXT_RUNTIME === 'edge') {
       throw new Error('OpenTelemetry not supported in Edge runtime');
     }
-    const { VercelOTelProvider } = await import('./server/providers/vercel-otel-provider');
+    const { VercelOTelProvider } = await import('./server/providers/nodejs/vercel-otel-provider');
     return new VercelOTelProvider();
   },
   sentry: async () => {
@@ -71,7 +71,7 @@ const NEXTJS_SERVER_PROVIDERS: ProviderRegistry = {
     if (process.env.NEXT_RUNTIME === 'edge') {
       throw new Error('Vercel OpenTelemetry not supported in Edge runtime');
     }
-    const { VercelOTelProvider } = await import('./server/providers/vercel-otel-provider');
+    const { VercelOTelProvider } = await import('./server/providers/nodejs/vercel-otel-provider');
     return new VercelOTelProvider();
   },
   // Logtail provider (Next.js server-side)
@@ -130,8 +130,7 @@ export {
 // Export instrumentation functions separately to avoid circular dependency
 export { onRequestError } from './next/instrumentation';
 export { register } from './next/instrumentation';
-// OpenTelemetry instrumentation helpers (Node.js runtime only)
-export { getDefaultOTelConfig, registerOTel, simpleOTelSetup } from './next/otel-instrumentation';
+// OpenTelemetry instrumentation helpers (Node.js runtime only) - removed to prevent edge runtime bundling
 
 // Logtail types for backward compatibility
 export type { LogtailConfig, LogtailOptions } from './shared/types/logtail-types';
@@ -144,12 +143,7 @@ export {
   parseError,
 } from './server/utils/error';
 
-// OpenTelemetry types (only for Node.js runtime)
-export type {
-  OpenTelemetryConfig,
-  OpenTelemetryOptions,
-  VercelOTelConfig,
-} from './shared/types/opentelemetry-types';
+// OpenTelemetry types (only for Node.js runtime) - removed to prevent edge runtime bundling
 
 // ============================================================================
 // NEXT.JS SERVER INSTRUMENTATION

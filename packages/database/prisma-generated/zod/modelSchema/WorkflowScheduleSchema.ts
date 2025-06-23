@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema'
+import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema';
 
 /////////////////////////////////////////
 // WORKFLOW SCHEDULE SCHEMA
@@ -25,8 +25,8 @@ export const WorkflowScheduleSchema = z.object({
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
   createdBy: z.string().nullable(),
-})
+});
 
-export type WorkflowSchedule = z.infer<typeof WorkflowScheduleSchema>
+export type WorkflowSchedule = z.infer<typeof WorkflowScheduleSchema>;
 
 export default WorkflowScheduleSchema;

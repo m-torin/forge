@@ -5,9 +5,15 @@ import { ProductCategoryWhereInputSchema } from './ProductCategoryWhereInputSche
 import { ProductCategoryUpdateWithoutMediaInputSchema } from './ProductCategoryUpdateWithoutMediaInputSchema';
 import { ProductCategoryUncheckedUpdateWithoutMediaInputSchema } from './ProductCategoryUncheckedUpdateWithoutMediaInputSchema';
 
-export const ProductCategoryUpdateToOneWithWhereWithoutMediaInputSchema: z.ZodType<Prisma.ProductCategoryUpdateToOneWithWhereWithoutMediaInput> = z.object({
-  where: z.lazy(() => ProductCategoryWhereInputSchema).optional(),
-  data: z.union([ z.lazy(() => ProductCategoryUpdateWithoutMediaInputSchema),z.lazy(() => ProductCategoryUncheckedUpdateWithoutMediaInputSchema) ]),
-}).strict();
+export const ProductCategoryUpdateToOneWithWhereWithoutMediaInputSchema: z.ZodType<Prisma.ProductCategoryUpdateToOneWithWhereWithoutMediaInput> =
+  z
+    .object({
+      where: z.lazy(() => ProductCategoryWhereInputSchema).optional(),
+      data: z.union([
+        z.lazy(() => ProductCategoryUpdateWithoutMediaInputSchema),
+        z.lazy(() => ProductCategoryUncheckedUpdateWithoutMediaInputSchema),
+      ]),
+    })
+    .strict();
 
 export default ProductCategoryUpdateToOneWithWhereWithoutMediaInputSchema;

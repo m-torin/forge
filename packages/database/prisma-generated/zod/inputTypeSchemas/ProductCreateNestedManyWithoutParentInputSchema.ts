@@ -7,11 +7,31 @@ import { ProductCreateOrConnectWithoutParentInputSchema } from './ProductCreateO
 import { ProductCreateManyParentInputEnvelopeSchema } from './ProductCreateManyParentInputEnvelopeSchema';
 import { ProductWhereUniqueInputSchema } from './ProductWhereUniqueInputSchema';
 
-export const ProductCreateNestedManyWithoutParentInputSchema: z.ZodType<Prisma.ProductCreateNestedManyWithoutParentInput> = z.object({
-  create: z.union([ z.lazy(() => ProductCreateWithoutParentInputSchema),z.lazy(() => ProductCreateWithoutParentInputSchema).array(),z.lazy(() => ProductUncheckedCreateWithoutParentInputSchema),z.lazy(() => ProductUncheckedCreateWithoutParentInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => ProductCreateOrConnectWithoutParentInputSchema),z.lazy(() => ProductCreateOrConnectWithoutParentInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => ProductCreateManyParentInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => ProductWhereUniqueInputSchema),z.lazy(() => ProductWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const ProductCreateNestedManyWithoutParentInputSchema: z.ZodType<Prisma.ProductCreateNestedManyWithoutParentInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => ProductCreateWithoutParentInputSchema),
+          z.lazy(() => ProductCreateWithoutParentInputSchema).array(),
+          z.lazy(() => ProductUncheckedCreateWithoutParentInputSchema),
+          z.lazy(() => ProductUncheckedCreateWithoutParentInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => ProductCreateOrConnectWithoutParentInputSchema),
+          z.lazy(() => ProductCreateOrConnectWithoutParentInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => ProductCreateManyParentInputEnvelopeSchema).optional(),
+      connect: z
+        .union([
+          z.lazy(() => ProductWhereUniqueInputSchema),
+          z.lazy(() => ProductWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default ProductCreateNestedManyWithoutParentInputSchema;

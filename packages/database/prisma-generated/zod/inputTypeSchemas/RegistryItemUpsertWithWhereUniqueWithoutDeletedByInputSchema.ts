@@ -7,10 +7,19 @@ import { RegistryItemUncheckedUpdateWithoutDeletedByInputSchema } from './Regist
 import { RegistryItemCreateWithoutDeletedByInputSchema } from './RegistryItemCreateWithoutDeletedByInputSchema';
 import { RegistryItemUncheckedCreateWithoutDeletedByInputSchema } from './RegistryItemUncheckedCreateWithoutDeletedByInputSchema';
 
-export const RegistryItemUpsertWithWhereUniqueWithoutDeletedByInputSchema: z.ZodType<Prisma.RegistryItemUpsertWithWhereUniqueWithoutDeletedByInput> = z.object({
-  where: z.lazy(() => RegistryItemWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => RegistryItemUpdateWithoutDeletedByInputSchema),z.lazy(() => RegistryItemUncheckedUpdateWithoutDeletedByInputSchema) ]),
-  create: z.union([ z.lazy(() => RegistryItemCreateWithoutDeletedByInputSchema),z.lazy(() => RegistryItemUncheckedCreateWithoutDeletedByInputSchema) ]),
-}).strict();
+export const RegistryItemUpsertWithWhereUniqueWithoutDeletedByInputSchema: z.ZodType<Prisma.RegistryItemUpsertWithWhereUniqueWithoutDeletedByInput> =
+  z
+    .object({
+      where: z.lazy(() => RegistryItemWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => RegistryItemUpdateWithoutDeletedByInputSchema),
+        z.lazy(() => RegistryItemUncheckedUpdateWithoutDeletedByInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => RegistryItemCreateWithoutDeletedByInputSchema),
+        z.lazy(() => RegistryItemUncheckedCreateWithoutDeletedByInputSchema),
+      ]),
+    })
+    .strict();
 
 export default RegistryItemUpsertWithWhereUniqueWithoutDeletedByInputSchema;

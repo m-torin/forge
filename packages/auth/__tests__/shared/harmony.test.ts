@@ -3,8 +3,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-
-import { harmonyUtils, harmonyConfig } from '../../shared/harmony';
+import { harmonyUtils, harmonyConfig } from '../../src/shared/harmony';
 
 describe('better-auth-harmony integration', (_: any) => {
   describe('harmonyUtils', (_: any) => {

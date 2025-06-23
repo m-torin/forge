@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema'
+import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema';
 
 /////////////////////////////////////////
 // USER SCHEMA
@@ -26,8 +26,8 @@ export const UserSchema = z.object({
   preferences: JsonValueSchema.nullable(),
   isSuspended: z.boolean(),
   suspensionDetails: JsonValueSchema.nullable(),
-})
+});
 
-export type User = z.infer<typeof UserSchema>
+export type User = z.infer<typeof UserSchema>;
 
 export default UserSchema;

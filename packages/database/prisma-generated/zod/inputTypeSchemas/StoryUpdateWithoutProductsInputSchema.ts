@@ -13,20 +13,38 @@ import { FandomUpdateOneRequiredWithoutStoriesNestedInputSchema } from './Fandom
 import { JrFindReplaceRejectUpdateManyWithoutStoriesNestedInputSchema } from './JrFindReplaceRejectUpdateManyWithoutStoriesNestedInputSchema';
 import { UserUpdateOneWithoutDeletedStoriesNestedInputSchema } from './UserUpdateOneWithoutDeletedStoriesNestedInputSchema';
 
-export const StoryUpdateWithoutProductsInputSchema: z.ZodType<Prisma.StoryUpdateWithoutProductsInput> = z.object({
-  id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  displayOrder: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  isFictional: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
-  copy: z.union([ z.lazy(() => JsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
-  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  deletedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  series: z.lazy(() => SeriesUpdateOneWithoutStoriesNestedInputSchema).optional(),
-  fandom: z.lazy(() => FandomUpdateOneRequiredWithoutStoriesNestedInputSchema).optional(),
-  jrFindReplaceRejects: z.lazy(() => JrFindReplaceRejectUpdateManyWithoutStoriesNestedInputSchema).optional(),
-  deletedBy: z.lazy(() => UserUpdateOneWithoutDeletedStoriesNestedInputSchema).optional()
-}).strict();
+export const StoryUpdateWithoutProductsInputSchema: z.ZodType<Prisma.StoryUpdateWithoutProductsInput> =
+  z
+    .object({
+      id: z
+        .union([z.string().cuid(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+        .optional(),
+      name: z.union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)]).optional(),
+      slug: z.union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)]).optional(),
+      displayOrder: z
+        .union([z.number().int(), z.lazy(() => IntFieldUpdateOperationsInputSchema)])
+        .optional(),
+      isFictional: z
+        .union([z.boolean(), z.lazy(() => BoolFieldUpdateOperationsInputSchema)])
+        .optional(),
+      copy: z.union([z.lazy(() => JsonNullValueInputSchema), InputJsonValueSchema]).optional(),
+      createdAt: z
+        .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+        .optional(),
+      updatedAt: z
+        .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+        .optional(),
+      deletedAt: z
+        .union([z.coerce.date(), z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      series: z.lazy(() => SeriesUpdateOneWithoutStoriesNestedInputSchema).optional(),
+      fandom: z.lazy(() => FandomUpdateOneRequiredWithoutStoriesNestedInputSchema).optional(),
+      jrFindReplaceRejects: z
+        .lazy(() => JrFindReplaceRejectUpdateManyWithoutStoriesNestedInputSchema)
+        .optional(),
+      deletedBy: z.lazy(() => UserUpdateOneWithoutDeletedStoriesNestedInputSchema).optional(),
+    })
+    .strict();
 
 export default StoryUpdateWithoutProductsInputSchema;

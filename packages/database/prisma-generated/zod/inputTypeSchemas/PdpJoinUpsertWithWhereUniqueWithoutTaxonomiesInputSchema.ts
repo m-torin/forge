@@ -7,10 +7,19 @@ import { PdpJoinUncheckedUpdateWithoutTaxonomiesInputSchema } from './PdpJoinUnc
 import { PdpJoinCreateWithoutTaxonomiesInputSchema } from './PdpJoinCreateWithoutTaxonomiesInputSchema';
 import { PdpJoinUncheckedCreateWithoutTaxonomiesInputSchema } from './PdpJoinUncheckedCreateWithoutTaxonomiesInputSchema';
 
-export const PdpJoinUpsertWithWhereUniqueWithoutTaxonomiesInputSchema: z.ZodType<Prisma.PdpJoinUpsertWithWhereUniqueWithoutTaxonomiesInput> = z.object({
-  where: z.lazy(() => PdpJoinWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => PdpJoinUpdateWithoutTaxonomiesInputSchema),z.lazy(() => PdpJoinUncheckedUpdateWithoutTaxonomiesInputSchema) ]),
-  create: z.union([ z.lazy(() => PdpJoinCreateWithoutTaxonomiesInputSchema),z.lazy(() => PdpJoinUncheckedCreateWithoutTaxonomiesInputSchema) ]),
-}).strict();
+export const PdpJoinUpsertWithWhereUniqueWithoutTaxonomiesInputSchema: z.ZodType<Prisma.PdpJoinUpsertWithWhereUniqueWithoutTaxonomiesInput> =
+  z
+    .object({
+      where: z.lazy(() => PdpJoinWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => PdpJoinUpdateWithoutTaxonomiesInputSchema),
+        z.lazy(() => PdpJoinUncheckedUpdateWithoutTaxonomiesInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => PdpJoinCreateWithoutTaxonomiesInputSchema),
+        z.lazy(() => PdpJoinUncheckedCreateWithoutTaxonomiesInputSchema),
+      ]),
+    })
+    .strict();
 
 export default PdpJoinUpsertWithWhereUniqueWithoutTaxonomiesInputSchema;

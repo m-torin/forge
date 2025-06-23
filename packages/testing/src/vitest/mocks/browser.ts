@@ -32,20 +32,32 @@ export function setupBrowserMocks(): void {
 
   // Mock pointer events
   if (!Element.prototype.hasPointerCapture) {
-    vi.spyOn(Element.prototype, 'hasPointerCapture').mockImplementation(() => false);
+    Object.defineProperty(Element.prototype, 'hasPointerCapture', {
+      value: vi.fn(() => false),
+      writable: true,
+    });
   }
 
   if (!Element.prototype.setPointerCapture) {
-    vi.spyOn(Element.prototype, 'setPointerCapture').mockImplementation(() => {});
+    Object.defineProperty(Element.prototype, 'setPointerCapture', {
+      value: vi.fn(),
+      writable: true,
+    });
   }
 
   if (!Element.prototype.releasePointerCapture) {
-    vi.spyOn(Element.prototype, 'releasePointerCapture').mockImplementation(() => {});
+    Object.defineProperty(Element.prototype, 'releasePointerCapture', {
+      value: vi.fn(),
+      writable: true,
+    });
   }
 
   // Mock scrollIntoView
   if (!Element.prototype.scrollIntoView) {
-    vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(() => {});
+    Object.defineProperty(Element.prototype, 'scrollIntoView', {
+      value: vi.fn(),
+      writable: true,
+    });
   }
 }
 

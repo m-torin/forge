@@ -6,14 +6,28 @@ import { NestedEnumTaxonomyTypeWithAggregatesFilterSchema } from './NestedEnumTa
 import { NestedIntFilterSchema } from './NestedIntFilterSchema';
 import { NestedEnumTaxonomyTypeFilterSchema } from './NestedEnumTaxonomyTypeFilterSchema';
 
-export const EnumTaxonomyTypeWithAggregatesFilterSchema: z.ZodType<Prisma.EnumTaxonomyTypeWithAggregatesFilter> = z.object({
-  equals: z.lazy(() => TaxonomyTypeSchema).optional(),
-  in: z.lazy(() => TaxonomyTypeSchema).array().optional(),
-  notIn: z.lazy(() => TaxonomyTypeSchema).array().optional(),
-  not: z.union([ z.lazy(() => TaxonomyTypeSchema),z.lazy(() => NestedEnumTaxonomyTypeWithAggregatesFilterSchema) ]).optional(),
-  _count: z.lazy(() => NestedIntFilterSchema).optional(),
-  _min: z.lazy(() => NestedEnumTaxonomyTypeFilterSchema).optional(),
-  _max: z.lazy(() => NestedEnumTaxonomyTypeFilterSchema).optional()
-}).strict();
+export const EnumTaxonomyTypeWithAggregatesFilterSchema: z.ZodType<Prisma.EnumTaxonomyTypeWithAggregatesFilter> =
+  z
+    .object({
+      equals: z.lazy(() => TaxonomyTypeSchema).optional(),
+      in: z
+        .lazy(() => TaxonomyTypeSchema)
+        .array()
+        .optional(),
+      notIn: z
+        .lazy(() => TaxonomyTypeSchema)
+        .array()
+        .optional(),
+      not: z
+        .union([
+          z.lazy(() => TaxonomyTypeSchema),
+          z.lazy(() => NestedEnumTaxonomyTypeWithAggregatesFilterSchema),
+        ])
+        .optional(),
+      _count: z.lazy(() => NestedIntFilterSchema).optional(),
+      _min: z.lazy(() => NestedEnumTaxonomyTypeFilterSchema).optional(),
+      _max: z.lazy(() => NestedEnumTaxonomyTypeFilterSchema).optional(),
+    })
+    .strict();
 
 export default EnumTaxonomyTypeWithAggregatesFilterSchema;

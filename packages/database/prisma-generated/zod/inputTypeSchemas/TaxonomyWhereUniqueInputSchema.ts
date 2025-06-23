@@ -8,9 +8,12 @@ import { TaxonomyTypeSchema } from './TaxonomyTypeSchema';
 import { EnumContentStatusFilterSchema } from './EnumContentStatusFilterSchema';
 import { ContentStatusSchema } from './ContentStatusSchema';
 import { JsonFilterSchema } from './JsonFilterSchema';
+import { StringNullableFilterSchema } from './StringNullableFilterSchema';
+import { IntFilterSchema } from './IntFilterSchema';
 import { DateTimeFilterSchema } from './DateTimeFilterSchema';
 import { DateTimeNullableFilterSchema } from './DateTimeNullableFilterSchema';
-import { StringNullableFilterSchema } from './StringNullableFilterSchema';
+import { TaxonomyNullableScalarRelationFilterSchema } from './TaxonomyNullableScalarRelationFilterSchema';
+import { TaxonomyListRelationFilterSchema } from './TaxonomyListRelationFilterSchema';
 import { ProductListRelationFilterSchema } from './ProductListRelationFilterSchema';
 import { CollectionListRelationFilterSchema } from './CollectionListRelationFilterSchema';
 import { PdpJoinListRelationFilterSchema } from './PdpJoinListRelationFilterSchema';
@@ -20,39 +23,91 @@ import { JrFindReplaceRejectListRelationFilterSchema } from './JrFindReplaceReje
 import { UserNullableScalarRelationFilterSchema } from './UserNullableScalarRelationFilterSchema';
 import { UserWhereInputSchema } from './UserWhereInputSchema';
 
-export const TaxonomyWhereUniqueInputSchema: z.ZodType<Prisma.TaxonomyWhereUniqueInput> = z.union([
-  z.object({
-    id: z.string().cuid(),
-    slug: z.string()
-  }),
-  z.object({
-    id: z.string().cuid(),
-  }),
-  z.object({
-    slug: z.string(),
-  }),
-])
-.and(z.object({
-  id: z.string().cuid().optional(),
-  slug: z.string().optional(),
-  AND: z.union([ z.lazy(() => TaxonomyWhereInputSchema),z.lazy(() => TaxonomyWhereInputSchema).array() ]).optional(),
-  OR: z.lazy(() => TaxonomyWhereInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => TaxonomyWhereInputSchema),z.lazy(() => TaxonomyWhereInputSchema).array() ]).optional(),
-  name: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  type: z.union([ z.lazy(() => EnumTaxonomyTypeFilterSchema),z.lazy(() => TaxonomyTypeSchema) ]).optional(),
-  status: z.union([ z.lazy(() => EnumContentStatusFilterSchema),z.lazy(() => ContentStatusSchema) ]).optional(),
-  copy: z.lazy(() => JsonFilterSchema).optional(),
-  createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  updatedAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  deletedAt: z.union([ z.lazy(() => DateTimeNullableFilterSchema),z.coerce.date() ]).optional().nullable(),
-  deletedById: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
-  products: z.lazy(() => ProductListRelationFilterSchema).optional(),
-  collections: z.lazy(() => CollectionListRelationFilterSchema).optional(),
-  pdpJoins: z.lazy(() => PdpJoinListRelationFilterSchema).optional(),
-  locations: z.lazy(() => LocationListRelationFilterSchema).optional(),
-  media: z.lazy(() => MediaListRelationFilterSchema).optional(),
-  jrFindReplaceRejects: z.lazy(() => JrFindReplaceRejectListRelationFilterSchema).optional(),
-  deletedBy: z.union([ z.lazy(() => UserNullableScalarRelationFilterSchema),z.lazy(() => UserWhereInputSchema) ]).optional().nullable(),
-}).strict());
+export const TaxonomyWhereUniqueInputSchema: z.ZodType<Prisma.TaxonomyWhereUniqueInput> = z
+  .union([
+    z.object({
+      id: z.string().cuid(),
+      slug: z.string(),
+    }),
+    z.object({
+      id: z.string().cuid(),
+    }),
+    z.object({
+      slug: z.string(),
+    }),
+  ])
+  .and(
+    z
+      .object({
+        id: z.string().cuid().optional(),
+        slug: z.string().optional(),
+        AND: z
+          .union([
+            z.lazy(() => TaxonomyWhereInputSchema),
+            z.lazy(() => TaxonomyWhereInputSchema).array(),
+          ])
+          .optional(),
+        OR: z
+          .lazy(() => TaxonomyWhereInputSchema)
+          .array()
+          .optional(),
+        NOT: z
+          .union([
+            z.lazy(() => TaxonomyWhereInputSchema),
+            z.lazy(() => TaxonomyWhereInputSchema).array(),
+          ])
+          .optional(),
+        name: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
+        type: z
+          .union([z.lazy(() => EnumTaxonomyTypeFilterSchema), z.lazy(() => TaxonomyTypeSchema)])
+          .optional(),
+        status: z
+          .union([z.lazy(() => EnumContentStatusFilterSchema), z.lazy(() => ContentStatusSchema)])
+          .optional(),
+        copy: z.lazy(() => JsonFilterSchema).optional(),
+        parentId: z
+          .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+          .optional()
+          .nullable(),
+        displayOrder: z.union([z.lazy(() => IntFilterSchema), z.number().int()]).optional(),
+        level: z.union([z.lazy(() => IntFilterSchema), z.number().int()]).optional(),
+        path: z
+          .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+          .optional()
+          .nullable(),
+        createdAt: z.union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()]).optional(),
+        updatedAt: z.union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()]).optional(),
+        deletedAt: z
+          .union([z.lazy(() => DateTimeNullableFilterSchema), z.coerce.date()])
+          .optional()
+          .nullable(),
+        deletedById: z
+          .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+          .optional()
+          .nullable(),
+        parent: z
+          .union([
+            z.lazy(() => TaxonomyNullableScalarRelationFilterSchema),
+            z.lazy(() => TaxonomyWhereInputSchema),
+          ])
+          .optional()
+          .nullable(),
+        children: z.lazy(() => TaxonomyListRelationFilterSchema).optional(),
+        products: z.lazy(() => ProductListRelationFilterSchema).optional(),
+        collections: z.lazy(() => CollectionListRelationFilterSchema).optional(),
+        pdpJoins: z.lazy(() => PdpJoinListRelationFilterSchema).optional(),
+        locations: z.lazy(() => LocationListRelationFilterSchema).optional(),
+        media: z.lazy(() => MediaListRelationFilterSchema).optional(),
+        jrFindReplaceRejects: z.lazy(() => JrFindReplaceRejectListRelationFilterSchema).optional(),
+        deletedBy: z
+          .union([
+            z.lazy(() => UserNullableScalarRelationFilterSchema),
+            z.lazy(() => UserWhereInputSchema),
+          ])
+          .optional()
+          .nullable(),
+      })
+      .strict(),
+  );
 
 export default TaxonomyWhereUniqueInputSchema;

@@ -7,10 +7,19 @@ import { MediaUncheckedUpdateWithoutCategoryInputSchema } from './MediaUnchecked
 import { MediaCreateWithoutCategoryInputSchema } from './MediaCreateWithoutCategoryInputSchema';
 import { MediaUncheckedCreateWithoutCategoryInputSchema } from './MediaUncheckedCreateWithoutCategoryInputSchema';
 
-export const MediaUpsertWithWhereUniqueWithoutCategoryInputSchema: z.ZodType<Prisma.MediaUpsertWithWhereUniqueWithoutCategoryInput> = z.object({
-  where: z.lazy(() => MediaWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => MediaUpdateWithoutCategoryInputSchema),z.lazy(() => MediaUncheckedUpdateWithoutCategoryInputSchema) ]),
-  create: z.union([ z.lazy(() => MediaCreateWithoutCategoryInputSchema),z.lazy(() => MediaUncheckedCreateWithoutCategoryInputSchema) ]),
-}).strict();
+export const MediaUpsertWithWhereUniqueWithoutCategoryInputSchema: z.ZodType<Prisma.MediaUpsertWithWhereUniqueWithoutCategoryInput> =
+  z
+    .object({
+      where: z.lazy(() => MediaWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => MediaUpdateWithoutCategoryInputSchema),
+        z.lazy(() => MediaUncheckedUpdateWithoutCategoryInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => MediaCreateWithoutCategoryInputSchema),
+        z.lazy(() => MediaUncheckedCreateWithoutCategoryInputSchema),
+      ]),
+    })
+    .strict();
 
 export default MediaUpsertWithWhereUniqueWithoutCategoryInputSchema;

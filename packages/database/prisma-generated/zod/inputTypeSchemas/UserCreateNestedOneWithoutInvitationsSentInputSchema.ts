@@ -6,10 +6,20 @@ import { UserUncheckedCreateWithoutInvitationsSentInputSchema } from './UserUnch
 import { UserCreateOrConnectWithoutInvitationsSentInputSchema } from './UserCreateOrConnectWithoutInvitationsSentInputSchema';
 import { UserWhereUniqueInputSchema } from './UserWhereUniqueInputSchema';
 
-export const UserCreateNestedOneWithoutInvitationsSentInputSchema: z.ZodType<Prisma.UserCreateNestedOneWithoutInvitationsSentInput> = z.object({
-  create: z.union([ z.lazy(() => UserCreateWithoutInvitationsSentInputSchema),z.lazy(() => UserUncheckedCreateWithoutInvitationsSentInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => UserCreateOrConnectWithoutInvitationsSentInputSchema).optional(),
-  connect: z.lazy(() => UserWhereUniqueInputSchema).optional()
-}).strict();
+export const UserCreateNestedOneWithoutInvitationsSentInputSchema: z.ZodType<Prisma.UserCreateNestedOneWithoutInvitationsSentInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => UserCreateWithoutInvitationsSentInputSchema),
+          z.lazy(() => UserUncheckedCreateWithoutInvitationsSentInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .lazy(() => UserCreateOrConnectWithoutInvitationsSentInputSchema)
+        .optional(),
+      connect: z.lazy(() => UserWhereUniqueInputSchema).optional(),
+    })
+    .strict();
 
 export default UserCreateNestedOneWithoutInvitationsSentInputSchema;

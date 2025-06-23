@@ -7,11 +7,31 @@ import { RegistryItemCreateOrConnectWithoutProductInputSchema } from './Registry
 import { RegistryItemCreateManyProductInputEnvelopeSchema } from './RegistryItemCreateManyProductInputEnvelopeSchema';
 import { RegistryItemWhereUniqueInputSchema } from './RegistryItemWhereUniqueInputSchema';
 
-export const RegistryItemUncheckedCreateNestedManyWithoutProductInputSchema: z.ZodType<Prisma.RegistryItemUncheckedCreateNestedManyWithoutProductInput> = z.object({
-  create: z.union([ z.lazy(() => RegistryItemCreateWithoutProductInputSchema),z.lazy(() => RegistryItemCreateWithoutProductInputSchema).array(),z.lazy(() => RegistryItemUncheckedCreateWithoutProductInputSchema),z.lazy(() => RegistryItemUncheckedCreateWithoutProductInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => RegistryItemCreateOrConnectWithoutProductInputSchema),z.lazy(() => RegistryItemCreateOrConnectWithoutProductInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => RegistryItemCreateManyProductInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => RegistryItemWhereUniqueInputSchema),z.lazy(() => RegistryItemWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const RegistryItemUncheckedCreateNestedManyWithoutProductInputSchema: z.ZodType<Prisma.RegistryItemUncheckedCreateNestedManyWithoutProductInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => RegistryItemCreateWithoutProductInputSchema),
+          z.lazy(() => RegistryItemCreateWithoutProductInputSchema).array(),
+          z.lazy(() => RegistryItemUncheckedCreateWithoutProductInputSchema),
+          z.lazy(() => RegistryItemUncheckedCreateWithoutProductInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => RegistryItemCreateOrConnectWithoutProductInputSchema),
+          z.lazy(() => RegistryItemCreateOrConnectWithoutProductInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => RegistryItemCreateManyProductInputEnvelopeSchema).optional(),
+      connect: z
+        .union([
+          z.lazy(() => RegistryItemWhereUniqueInputSchema),
+          z.lazy(() => RegistryItemWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default RegistryItemUncheckedCreateNestedManyWithoutProductInputSchema;

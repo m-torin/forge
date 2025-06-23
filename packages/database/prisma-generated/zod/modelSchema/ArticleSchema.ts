@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema'
-import { ContentStatusSchema } from '../inputTypeSchemas/ContentStatusSchema'
+import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema';
+import { ContentStatusSchema } from '../inputTypeSchemas/ContentStatusSchema';
 
 /////////////////////////////////////////
 // ARTICLE SCHEMA
@@ -17,8 +17,8 @@ export const ArticleSchema = z.object({
   slug: z.string(),
   content: JsonValueSchema,
   userId: z.string().nullable(),
-})
+});
 
-export type Article = z.infer<typeof ArticleSchema>
+export type Article = z.infer<typeof ArticleSchema>;
 
 export default ArticleSchema;

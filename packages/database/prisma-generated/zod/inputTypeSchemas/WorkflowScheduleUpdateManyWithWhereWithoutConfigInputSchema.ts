@@ -5,9 +5,15 @@ import { WorkflowScheduleScalarWhereInputSchema } from './WorkflowScheduleScalar
 import { WorkflowScheduleUpdateManyMutationInputSchema } from './WorkflowScheduleUpdateManyMutationInputSchema';
 import { WorkflowScheduleUncheckedUpdateManyWithoutConfigInputSchema } from './WorkflowScheduleUncheckedUpdateManyWithoutConfigInputSchema';
 
-export const WorkflowScheduleUpdateManyWithWhereWithoutConfigInputSchema: z.ZodType<Prisma.WorkflowScheduleUpdateManyWithWhereWithoutConfigInput> = z.object({
-  where: z.lazy(() => WorkflowScheduleScalarWhereInputSchema),
-  data: z.union([ z.lazy(() => WorkflowScheduleUpdateManyMutationInputSchema),z.lazy(() => WorkflowScheduleUncheckedUpdateManyWithoutConfigInputSchema) ]),
-}).strict();
+export const WorkflowScheduleUpdateManyWithWhereWithoutConfigInputSchema: z.ZodType<Prisma.WorkflowScheduleUpdateManyWithWhereWithoutConfigInput> =
+  z
+    .object({
+      where: z.lazy(() => WorkflowScheduleScalarWhereInputSchema),
+      data: z.union([
+        z.lazy(() => WorkflowScheduleUpdateManyMutationInputSchema),
+        z.lazy(() => WorkflowScheduleUncheckedUpdateManyWithoutConfigInputSchema),
+      ]),
+    })
+    .strict();
 
 export default WorkflowScheduleUpdateManyWithWhereWithoutConfigInputSchema;

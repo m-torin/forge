@@ -15,30 +15,32 @@ import { PdpJoinCreateNestedOneWithoutMediaInputSchema } from './PdpJoinCreateNe
 import { UserCreateNestedOneWithoutDeletedMediaInputSchema } from './UserCreateNestedOneWithoutDeletedMediaInputSchema';
 import { ReviewCreateNestedOneWithoutMediaInputSchema } from './ReviewCreateNestedOneWithoutMediaInputSchema';
 
-export const MediaCreateInputSchema: z.ZodType<Prisma.MediaCreateInput> = z.object({
-  id: z.string().cuid().optional(),
-  url: z.string(),
-  altText: z.string().optional().nullable(),
-  type: z.lazy(() => MediaTypeSchema).optional(),
-  width: z.number().int().optional().nullable(),
-  height: z.number().int().optional().nullable(),
-  size: z.number().int().optional().nullable(),
-  mimeType: z.string().optional().nullable(),
-  sortOrder: z.number().int().optional(),
-  copy: z.union([ z.lazy(() => JsonNullValueInputSchema),InputJsonValueSchema ]),
-  createdAt: z.coerce.date().optional(),
-  updatedAt: z.coerce.date().optional(),
-  deletedAt: z.coerce.date().optional().nullable(),
-  user: z.lazy(() => UserCreateNestedOneWithoutMediaInputSchema).optional(),
-  article: z.lazy(() => ArticleCreateNestedOneWithoutMediaInputSchema).optional(),
-  brand: z.lazy(() => BrandCreateNestedOneWithoutMediaInputSchema).optional(),
-  collection: z.lazy(() => CollectionCreateNestedOneWithoutMediaInputSchema).optional(),
-  product: z.lazy(() => ProductCreateNestedOneWithoutMediaInputSchema).optional(),
-  taxonomy: z.lazy(() => TaxonomyCreateNestedOneWithoutMediaInputSchema).optional(),
-  category: z.lazy(() => ProductCategoryCreateNestedOneWithoutMediaInputSchema).optional(),
-  pdpJoin: z.lazy(() => PdpJoinCreateNestedOneWithoutMediaInputSchema).optional(),
-  deletedBy: z.lazy(() => UserCreateNestedOneWithoutDeletedMediaInputSchema).optional(),
-  review: z.lazy(() => ReviewCreateNestedOneWithoutMediaInputSchema).optional()
-}).strict();
+export const MediaCreateInputSchema: z.ZodType<Prisma.MediaCreateInput> = z
+  .object({
+    id: z.string().cuid().optional(),
+    url: z.string(),
+    altText: z.string().optional().nullable(),
+    type: z.lazy(() => MediaTypeSchema).optional(),
+    width: z.number().int().optional().nullable(),
+    height: z.number().int().optional().nullable(),
+    size: z.number().int().optional().nullable(),
+    mimeType: z.string().optional().nullable(),
+    sortOrder: z.number().int().optional(),
+    copy: z.union([z.lazy(() => JsonNullValueInputSchema), InputJsonValueSchema]),
+    createdAt: z.coerce.date().optional(),
+    updatedAt: z.coerce.date().optional(),
+    deletedAt: z.coerce.date().optional().nullable(),
+    user: z.lazy(() => UserCreateNestedOneWithoutMediaInputSchema).optional(),
+    article: z.lazy(() => ArticleCreateNestedOneWithoutMediaInputSchema).optional(),
+    brand: z.lazy(() => BrandCreateNestedOneWithoutMediaInputSchema).optional(),
+    collection: z.lazy(() => CollectionCreateNestedOneWithoutMediaInputSchema).optional(),
+    product: z.lazy(() => ProductCreateNestedOneWithoutMediaInputSchema).optional(),
+    taxonomy: z.lazy(() => TaxonomyCreateNestedOneWithoutMediaInputSchema).optional(),
+    category: z.lazy(() => ProductCategoryCreateNestedOneWithoutMediaInputSchema).optional(),
+    pdpJoin: z.lazy(() => PdpJoinCreateNestedOneWithoutMediaInputSchema).optional(),
+    deletedBy: z.lazy(() => UserCreateNestedOneWithoutDeletedMediaInputSchema).optional(),
+    review: z.lazy(() => ReviewCreateNestedOneWithoutMediaInputSchema).optional(),
+  })
+  .strict();
 
 export default MediaCreateInputSchema;

@@ -15,21 +15,55 @@ import { FandomUncheckedUpdateManyWithoutJrFindReplaceRejectsNestedInputSchema }
 import { CastUncheckedUpdateManyWithoutJrFindReplaceRejectsNestedInputSchema } from './CastUncheckedUpdateManyWithoutJrFindReplaceRejectsNestedInputSchema';
 import { JrExtractionRuleUncheckedUpdateManyWithoutFindReplaceRulesNestedInputSchema } from './JrExtractionRuleUncheckedUpdateManyWithoutFindReplaceRulesNestedInputSchema';
 
-export const JrFindReplaceRejectUncheckedUpdateWithoutSeriesInputSchema: z.ZodType<Prisma.JrFindReplaceRejectUncheckedUpdateWithoutSeriesInput> = z.object({
-  id: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  lookFor: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  replaceWith: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  ruleAction: z.union([ z.lazy(() => JrRuleActionSchema),z.lazy(() => EnumJrRuleActionFieldUpdateOperationsInputSchema) ]).optional(),
-  isRegex: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
-  regexFlags: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  priority: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  brands: z.lazy(() => BrandUncheckedUpdateManyWithoutJrFindReplaceRejectsNestedInputSchema).optional(),
-  locations: z.lazy(() => LocationUncheckedUpdateManyWithoutJrFindReplaceRejectsNestedInputSchema).optional(),
-  taxonomies: z.lazy(() => TaxonomyUncheckedUpdateManyWithoutJrFindReplaceRejectsNestedInputSchema).optional(),
-  stories: z.lazy(() => StoryUncheckedUpdateManyWithoutJrFindReplaceRejectsNestedInputSchema).optional(),
-  fandoms: z.lazy(() => FandomUncheckedUpdateManyWithoutJrFindReplaceRejectsNestedInputSchema).optional(),
-  casts: z.lazy(() => CastUncheckedUpdateManyWithoutJrFindReplaceRejectsNestedInputSchema).optional(),
-  extractionRules: z.lazy(() => JrExtractionRuleUncheckedUpdateManyWithoutFindReplaceRulesNestedInputSchema).optional()
-}).strict();
+export const JrFindReplaceRejectUncheckedUpdateWithoutSeriesInputSchema: z.ZodType<Prisma.JrFindReplaceRejectUncheckedUpdateWithoutSeriesInput> =
+  z
+    .object({
+      id: z.union([z.number().int(), z.lazy(() => IntFieldUpdateOperationsInputSchema)]).optional(),
+      lookFor: z
+        .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+        .optional(),
+      replaceWith: z
+        .union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      ruleAction: z
+        .union([
+          z.lazy(() => JrRuleActionSchema),
+          z.lazy(() => EnumJrRuleActionFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      isRegex: z
+        .union([z.boolean(), z.lazy(() => BoolFieldUpdateOperationsInputSchema)])
+        .optional(),
+      regexFlags: z
+        .union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      priority: z
+        .union([z.number().int(), z.lazy(() => IntFieldUpdateOperationsInputSchema)])
+        .optional(),
+      brands: z
+        .lazy(() => BrandUncheckedUpdateManyWithoutJrFindReplaceRejectsNestedInputSchema)
+        .optional(),
+      locations: z
+        .lazy(() => LocationUncheckedUpdateManyWithoutJrFindReplaceRejectsNestedInputSchema)
+        .optional(),
+      taxonomies: z
+        .lazy(() => TaxonomyUncheckedUpdateManyWithoutJrFindReplaceRejectsNestedInputSchema)
+        .optional(),
+      stories: z
+        .lazy(() => StoryUncheckedUpdateManyWithoutJrFindReplaceRejectsNestedInputSchema)
+        .optional(),
+      fandoms: z
+        .lazy(() => FandomUncheckedUpdateManyWithoutJrFindReplaceRejectsNestedInputSchema)
+        .optional(),
+      casts: z
+        .lazy(() => CastUncheckedUpdateManyWithoutJrFindReplaceRejectsNestedInputSchema)
+        .optional(),
+      extractionRules: z
+        .lazy(() => JrExtractionRuleUncheckedUpdateManyWithoutFindReplaceRulesNestedInputSchema)
+        .optional(),
+    })
+    .strict();
 
 export default JrFindReplaceRejectUncheckedUpdateWithoutSeriesInputSchema;

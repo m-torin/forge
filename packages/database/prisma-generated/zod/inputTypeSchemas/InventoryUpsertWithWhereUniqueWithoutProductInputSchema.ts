@@ -7,10 +7,19 @@ import { InventoryUncheckedUpdateWithoutProductInputSchema } from './InventoryUn
 import { InventoryCreateWithoutProductInputSchema } from './InventoryCreateWithoutProductInputSchema';
 import { InventoryUncheckedCreateWithoutProductInputSchema } from './InventoryUncheckedCreateWithoutProductInputSchema';
 
-export const InventoryUpsertWithWhereUniqueWithoutProductInputSchema: z.ZodType<Prisma.InventoryUpsertWithWhereUniqueWithoutProductInput> = z.object({
-  where: z.lazy(() => InventoryWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => InventoryUpdateWithoutProductInputSchema),z.lazy(() => InventoryUncheckedUpdateWithoutProductInputSchema) ]),
-  create: z.union([ z.lazy(() => InventoryCreateWithoutProductInputSchema),z.lazy(() => InventoryUncheckedCreateWithoutProductInputSchema) ]),
-}).strict();
+export const InventoryUpsertWithWhereUniqueWithoutProductInputSchema: z.ZodType<Prisma.InventoryUpsertWithWhereUniqueWithoutProductInput> =
+  z
+    .object({
+      where: z.lazy(() => InventoryWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => InventoryUpdateWithoutProductInputSchema),
+        z.lazy(() => InventoryUncheckedUpdateWithoutProductInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => InventoryCreateWithoutProductInputSchema),
+        z.lazy(() => InventoryUncheckedCreateWithoutProductInputSchema),
+      ]),
+    })
+    .strict();
 
 export default InventoryUpsertWithWhereUniqueWithoutProductInputSchema;

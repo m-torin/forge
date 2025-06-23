@@ -14,21 +14,48 @@ import { RegistryItemUpdateManyWithoutRegistryNestedInputSchema } from './Regist
 import { RegistryUserJoinUpdateManyWithoutRegistryNestedInputSchema } from './RegistryUserJoinUpdateManyWithoutRegistryNestedInputSchema';
 import { CartItemUpdateManyWithoutRegistryNestedInputSchema } from './CartItemUpdateManyWithoutRegistryNestedInputSchema';
 
-export const RegistryUpdateWithoutOrderItemsInputSchema: z.ZodType<Prisma.RegistryUpdateWithoutOrderItemsInput> = z.object({
-  id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  deletedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  type: z.union([ z.lazy(() => RegistryTypeSchema),z.lazy(() => EnumRegistryTypeFieldUpdateOperationsInputSchema) ]).optional(),
-  isPublic: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
-  eventDate: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  deletedBy: z.lazy(() => UserUpdateOneWithoutDeletedRegistriesNestedInputSchema).optional(),
-  createdByUser: z.lazy(() => UserUpdateOneWithoutCreatedRegistriesNestedInputSchema).optional(),
-  items: z.lazy(() => RegistryItemUpdateManyWithoutRegistryNestedInputSchema).optional(),
-  users: z.lazy(() => RegistryUserJoinUpdateManyWithoutRegistryNestedInputSchema).optional(),
-  cartItems: z.lazy(() => CartItemUpdateManyWithoutRegistryNestedInputSchema).optional()
-}).strict();
+export const RegistryUpdateWithoutOrderItemsInputSchema: z.ZodType<Prisma.RegistryUpdateWithoutOrderItemsInput> =
+  z
+    .object({
+      id: z
+        .union([z.string().cuid(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+        .optional(),
+      createdAt: z
+        .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+        .optional(),
+      updatedAt: z
+        .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+        .optional(),
+      deletedAt: z
+        .union([z.coerce.date(), z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      title: z.union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)]).optional(),
+      description: z
+        .union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      type: z
+        .union([
+          z.lazy(() => RegistryTypeSchema),
+          z.lazy(() => EnumRegistryTypeFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      isPublic: z
+        .union([z.boolean(), z.lazy(() => BoolFieldUpdateOperationsInputSchema)])
+        .optional(),
+      eventDate: z
+        .union([z.coerce.date(), z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      deletedBy: z.lazy(() => UserUpdateOneWithoutDeletedRegistriesNestedInputSchema).optional(),
+      createdByUser: z
+        .lazy(() => UserUpdateOneWithoutCreatedRegistriesNestedInputSchema)
+        .optional(),
+      items: z.lazy(() => RegistryItemUpdateManyWithoutRegistryNestedInputSchema).optional(),
+      users: z.lazy(() => RegistryUserJoinUpdateManyWithoutRegistryNestedInputSchema).optional(),
+      cartItems: z.lazy(() => CartItemUpdateManyWithoutRegistryNestedInputSchema).optional(),
+    })
+    .strict();
 
 export default RegistryUpdateWithoutOrderItemsInputSchema;

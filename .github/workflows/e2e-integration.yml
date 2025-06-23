@@ -5,7 +5,7 @@ on:
     branches: [main, master, develop]
     paths:
       - "apps/backstage/**"
-      - "apps/web/**"
+      - "apps/web-legacy/**"
       - "apps/workers/**"
       - "packages/testing/**"
       - "packages/auth/**"
@@ -15,7 +15,7 @@ on:
     branches: [main, master, develop]
     paths:
       - "apps/backstage/**"
-      - "apps/web/**"
+      - "apps/web-legacy/**"
       - "apps/workers/**"
       - "packages/testing/**"
       - "packages/auth/**"
@@ -213,7 +213,7 @@ jobs:
 
       - name: Install Playwright browsers
         run: |
-          cd apps/web
+          cd apps/web-legacy
           pnpm exec playwright install --with-deps chromium firefox
 
       - name: Build dependencies
@@ -221,7 +221,7 @@ jobs:
 
       - name: Setup database for Better Auth
         run: |
-          cd apps/web
+          cd apps/web-legacy
           # Run database migrations to ensure Better Auth schema exists
           pnpm --filter=@repo/database migrate || echo "Migration might not be needed for tests"
         env:
@@ -229,7 +229,7 @@ jobs:
 
       - name: Run Web E2E tests
         run: |
-          cd apps/web
+          cd apps/web-legacy
           pnpm test:e2e
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
@@ -256,7 +256,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: web-playwright-report
-          path: apps/web/playwright-report/
+          path: apps/web-legacy/playwright-report/
           retention-days: 30
 
       - name: Upload web test videos
@@ -264,7 +264,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: web-playwright-videos
-          path: apps/web/test-results/
+          path: apps/web-legacy/test-results/
           retention-days: 7
 
   e2e-workers:

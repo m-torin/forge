@@ -7,11 +7,33 @@ import { InventoryTransactionCreateOrConnectWithoutInventoryInputSchema } from '
 import { InventoryTransactionCreateManyInventoryInputEnvelopeSchema } from './InventoryTransactionCreateManyInventoryInputEnvelopeSchema';
 import { InventoryTransactionWhereUniqueInputSchema } from './InventoryTransactionWhereUniqueInputSchema';
 
-export const InventoryTransactionUncheckedCreateNestedManyWithoutInventoryInputSchema: z.ZodType<Prisma.InventoryTransactionUncheckedCreateNestedManyWithoutInventoryInput> = z.object({
-  create: z.union([ z.lazy(() => InventoryTransactionCreateWithoutInventoryInputSchema),z.lazy(() => InventoryTransactionCreateWithoutInventoryInputSchema).array(),z.lazy(() => InventoryTransactionUncheckedCreateWithoutInventoryInputSchema),z.lazy(() => InventoryTransactionUncheckedCreateWithoutInventoryInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => InventoryTransactionCreateOrConnectWithoutInventoryInputSchema),z.lazy(() => InventoryTransactionCreateOrConnectWithoutInventoryInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => InventoryTransactionCreateManyInventoryInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => InventoryTransactionWhereUniqueInputSchema),z.lazy(() => InventoryTransactionWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const InventoryTransactionUncheckedCreateNestedManyWithoutInventoryInputSchema: z.ZodType<Prisma.InventoryTransactionUncheckedCreateNestedManyWithoutInventoryInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => InventoryTransactionCreateWithoutInventoryInputSchema),
+          z.lazy(() => InventoryTransactionCreateWithoutInventoryInputSchema).array(),
+          z.lazy(() => InventoryTransactionUncheckedCreateWithoutInventoryInputSchema),
+          z.lazy(() => InventoryTransactionUncheckedCreateWithoutInventoryInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => InventoryTransactionCreateOrConnectWithoutInventoryInputSchema),
+          z.lazy(() => InventoryTransactionCreateOrConnectWithoutInventoryInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z
+        .lazy(() => InventoryTransactionCreateManyInventoryInputEnvelopeSchema)
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => InventoryTransactionWhereUniqueInputSchema),
+          z.lazy(() => InventoryTransactionWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default InventoryTransactionUncheckedCreateNestedManyWithoutInventoryInputSchema;

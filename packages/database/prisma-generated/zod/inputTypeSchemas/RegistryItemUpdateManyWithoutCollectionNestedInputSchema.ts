@@ -11,18 +11,73 @@ import { RegistryItemUpdateWithWhereUniqueWithoutCollectionInputSchema } from '.
 import { RegistryItemUpdateManyWithWhereWithoutCollectionInputSchema } from './RegistryItemUpdateManyWithWhereWithoutCollectionInputSchema';
 import { RegistryItemScalarWhereInputSchema } from './RegistryItemScalarWhereInputSchema';
 
-export const RegistryItemUpdateManyWithoutCollectionNestedInputSchema: z.ZodType<Prisma.RegistryItemUpdateManyWithoutCollectionNestedInput> = z.object({
-  create: z.union([ z.lazy(() => RegistryItemCreateWithoutCollectionInputSchema),z.lazy(() => RegistryItemCreateWithoutCollectionInputSchema).array(),z.lazy(() => RegistryItemUncheckedCreateWithoutCollectionInputSchema),z.lazy(() => RegistryItemUncheckedCreateWithoutCollectionInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => RegistryItemCreateOrConnectWithoutCollectionInputSchema),z.lazy(() => RegistryItemCreateOrConnectWithoutCollectionInputSchema).array() ]).optional(),
-  upsert: z.union([ z.lazy(() => RegistryItemUpsertWithWhereUniqueWithoutCollectionInputSchema),z.lazy(() => RegistryItemUpsertWithWhereUniqueWithoutCollectionInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => RegistryItemCreateManyCollectionInputEnvelopeSchema).optional(),
-  set: z.union([ z.lazy(() => RegistryItemWhereUniqueInputSchema),z.lazy(() => RegistryItemWhereUniqueInputSchema).array() ]).optional(),
-  disconnect: z.union([ z.lazy(() => RegistryItemWhereUniqueInputSchema),z.lazy(() => RegistryItemWhereUniqueInputSchema).array() ]).optional(),
-  delete: z.union([ z.lazy(() => RegistryItemWhereUniqueInputSchema),z.lazy(() => RegistryItemWhereUniqueInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => RegistryItemWhereUniqueInputSchema),z.lazy(() => RegistryItemWhereUniqueInputSchema).array() ]).optional(),
-  update: z.union([ z.lazy(() => RegistryItemUpdateWithWhereUniqueWithoutCollectionInputSchema),z.lazy(() => RegistryItemUpdateWithWhereUniqueWithoutCollectionInputSchema).array() ]).optional(),
-  updateMany: z.union([ z.lazy(() => RegistryItemUpdateManyWithWhereWithoutCollectionInputSchema),z.lazy(() => RegistryItemUpdateManyWithWhereWithoutCollectionInputSchema).array() ]).optional(),
-  deleteMany: z.union([ z.lazy(() => RegistryItemScalarWhereInputSchema),z.lazy(() => RegistryItemScalarWhereInputSchema).array() ]).optional(),
-}).strict();
+export const RegistryItemUpdateManyWithoutCollectionNestedInputSchema: z.ZodType<Prisma.RegistryItemUpdateManyWithoutCollectionNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => RegistryItemCreateWithoutCollectionInputSchema),
+          z.lazy(() => RegistryItemCreateWithoutCollectionInputSchema).array(),
+          z.lazy(() => RegistryItemUncheckedCreateWithoutCollectionInputSchema),
+          z.lazy(() => RegistryItemUncheckedCreateWithoutCollectionInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => RegistryItemCreateOrConnectWithoutCollectionInputSchema),
+          z.lazy(() => RegistryItemCreateOrConnectWithoutCollectionInputSchema).array(),
+        ])
+        .optional(),
+      upsert: z
+        .union([
+          z.lazy(() => RegistryItemUpsertWithWhereUniqueWithoutCollectionInputSchema),
+          z.lazy(() => RegistryItemUpsertWithWhereUniqueWithoutCollectionInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => RegistryItemCreateManyCollectionInputEnvelopeSchema).optional(),
+      set: z
+        .union([
+          z.lazy(() => RegistryItemWhereUniqueInputSchema),
+          z.lazy(() => RegistryItemWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      disconnect: z
+        .union([
+          z.lazy(() => RegistryItemWhereUniqueInputSchema),
+          z.lazy(() => RegistryItemWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      delete: z
+        .union([
+          z.lazy(() => RegistryItemWhereUniqueInputSchema),
+          z.lazy(() => RegistryItemWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => RegistryItemWhereUniqueInputSchema),
+          z.lazy(() => RegistryItemWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      update: z
+        .union([
+          z.lazy(() => RegistryItemUpdateWithWhereUniqueWithoutCollectionInputSchema),
+          z.lazy(() => RegistryItemUpdateWithWhereUniqueWithoutCollectionInputSchema).array(),
+        ])
+        .optional(),
+      updateMany: z
+        .union([
+          z.lazy(() => RegistryItemUpdateManyWithWhereWithoutCollectionInputSchema),
+          z.lazy(() => RegistryItemUpdateManyWithWhereWithoutCollectionInputSchema).array(),
+        ])
+        .optional(),
+      deleteMany: z
+        .union([
+          z.lazy(() => RegistryItemScalarWhereInputSchema),
+          z.lazy(() => RegistryItemScalarWhereInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default RegistryItemUpdateManyWithoutCollectionNestedInputSchema;

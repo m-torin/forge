@@ -11,14 +11,30 @@ import { CollectionUpdateToOneWithWhereWithoutRegistriesInputSchema } from './Co
 import { CollectionUpdateWithoutRegistriesInputSchema } from './CollectionUpdateWithoutRegistriesInputSchema';
 import { CollectionUncheckedUpdateWithoutRegistriesInputSchema } from './CollectionUncheckedUpdateWithoutRegistriesInputSchema';
 
-export const CollectionUpdateOneWithoutRegistriesNestedInputSchema: z.ZodType<Prisma.CollectionUpdateOneWithoutRegistriesNestedInput> = z.object({
-  create: z.union([ z.lazy(() => CollectionCreateWithoutRegistriesInputSchema),z.lazy(() => CollectionUncheckedCreateWithoutRegistriesInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => CollectionCreateOrConnectWithoutRegistriesInputSchema).optional(),
-  upsert: z.lazy(() => CollectionUpsertWithoutRegistriesInputSchema).optional(),
-  disconnect: z.union([ z.boolean(),z.lazy(() => CollectionWhereInputSchema) ]).optional(),
-  delete: z.union([ z.boolean(),z.lazy(() => CollectionWhereInputSchema) ]).optional(),
-  connect: z.lazy(() => CollectionWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => CollectionUpdateToOneWithWhereWithoutRegistriesInputSchema),z.lazy(() => CollectionUpdateWithoutRegistriesInputSchema),z.lazy(() => CollectionUncheckedUpdateWithoutRegistriesInputSchema) ]).optional(),
-}).strict();
+export const CollectionUpdateOneWithoutRegistriesNestedInputSchema: z.ZodType<Prisma.CollectionUpdateOneWithoutRegistriesNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => CollectionCreateWithoutRegistriesInputSchema),
+          z.lazy(() => CollectionUncheckedCreateWithoutRegistriesInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .lazy(() => CollectionCreateOrConnectWithoutRegistriesInputSchema)
+        .optional(),
+      upsert: z.lazy(() => CollectionUpsertWithoutRegistriesInputSchema).optional(),
+      disconnect: z.union([z.boolean(), z.lazy(() => CollectionWhereInputSchema)]).optional(),
+      delete: z.union([z.boolean(), z.lazy(() => CollectionWhereInputSchema)]).optional(),
+      connect: z.lazy(() => CollectionWhereUniqueInputSchema).optional(),
+      update: z
+        .union([
+          z.lazy(() => CollectionUpdateToOneWithWhereWithoutRegistriesInputSchema),
+          z.lazy(() => CollectionUpdateWithoutRegistriesInputSchema),
+          z.lazy(() => CollectionUncheckedUpdateWithoutRegistriesInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default CollectionUpdateOneWithoutRegistriesNestedInputSchema;

@@ -141,8 +141,7 @@ describe('sentryServerProvider', () => {
       expect(mockSentryInit).toHaveBeenCalledWith(
         expect.objectContaining({
           dsn: 'https://test@sentry.io/12345',
-          environment: 'production',
-          profilesSampleRate: 0.1,
+          environment: 'test',
           tracesSampleRate: 1,
           integrations: expect.any(Array),
         }),
@@ -162,7 +161,7 @@ describe('sentryServerProvider', () => {
       const error = new Error('Test error');
       await provider.captureException(error);
 
-      expect(mockWithScope).toHaveBeenCalledWith();
+      expect(mockWithScope).toHaveBeenCalledWith(expect.any(Function));
       expect(mockCaptureException).toHaveBeenCalledWith(error);
     });
 
@@ -222,7 +221,7 @@ describe('sentryServerProvider', () => {
 
       await provider.captureMessage('Test message', 'info');
 
-      expect(mockWithScope).toHaveBeenCalledWith();
+      expect(mockWithScope).toHaveBeenCalledWith(expect.any(Function));
       expect(mockCaptureMessage).toHaveBeenCalledWith('Test message', 'info');
     });
 

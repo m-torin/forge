@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema'
+import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema';
 
 /////////////////////////////////////////
 // INVENTORY SCHEMA
@@ -19,8 +19,8 @@ export const InventorySchema = z.object({
   metadata: JsonValueSchema.nullable(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
-})
+});
 
-export type Inventory = z.infer<typeof InventorySchema>
+export type Inventory = z.infer<typeof InventorySchema>;
 
 export default InventorySchema;

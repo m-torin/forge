@@ -7,10 +7,19 @@ import { RegistryCreateWithoutCartItemsInputSchema } from './RegistryCreateWitho
 import { RegistryUncheckedCreateWithoutCartItemsInputSchema } from './RegistryUncheckedCreateWithoutCartItemsInputSchema';
 import { RegistryWhereInputSchema } from './RegistryWhereInputSchema';
 
-export const RegistryUpsertWithoutCartItemsInputSchema: z.ZodType<Prisma.RegistryUpsertWithoutCartItemsInput> = z.object({
-  update: z.union([ z.lazy(() => RegistryUpdateWithoutCartItemsInputSchema),z.lazy(() => RegistryUncheckedUpdateWithoutCartItemsInputSchema) ]),
-  create: z.union([ z.lazy(() => RegistryCreateWithoutCartItemsInputSchema),z.lazy(() => RegistryUncheckedCreateWithoutCartItemsInputSchema) ]),
-  where: z.lazy(() => RegistryWhereInputSchema).optional()
-}).strict();
+export const RegistryUpsertWithoutCartItemsInputSchema: z.ZodType<Prisma.RegistryUpsertWithoutCartItemsInput> =
+  z
+    .object({
+      update: z.union([
+        z.lazy(() => RegistryUpdateWithoutCartItemsInputSchema),
+        z.lazy(() => RegistryUncheckedUpdateWithoutCartItemsInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => RegistryCreateWithoutCartItemsInputSchema),
+        z.lazy(() => RegistryUncheckedCreateWithoutCartItemsInputSchema),
+      ]),
+      where: z.lazy(() => RegistryWhereInputSchema).optional(),
+    })
+    .strict();
 
 export default RegistryUpsertWithoutCartItemsInputSchema;

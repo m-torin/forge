@@ -15,7 +15,7 @@ vi.mock('./languine.json', () => ({
   default: {
     locale: {
       source: 'en',
-      targets: ['es', 'fr', 'de', 'pt', 'zh'],
+      targets: ['es', 'fr', 'de', 'pt'],
     },
   },
 }));

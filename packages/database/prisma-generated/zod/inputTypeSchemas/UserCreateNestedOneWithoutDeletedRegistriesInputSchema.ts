@@ -6,10 +6,20 @@ import { UserUncheckedCreateWithoutDeletedRegistriesInputSchema } from './UserUn
 import { UserCreateOrConnectWithoutDeletedRegistriesInputSchema } from './UserCreateOrConnectWithoutDeletedRegistriesInputSchema';
 import { UserWhereUniqueInputSchema } from './UserWhereUniqueInputSchema';
 
-export const UserCreateNestedOneWithoutDeletedRegistriesInputSchema: z.ZodType<Prisma.UserCreateNestedOneWithoutDeletedRegistriesInput> = z.object({
-  create: z.union([ z.lazy(() => UserCreateWithoutDeletedRegistriesInputSchema),z.lazy(() => UserUncheckedCreateWithoutDeletedRegistriesInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => UserCreateOrConnectWithoutDeletedRegistriesInputSchema).optional(),
-  connect: z.lazy(() => UserWhereUniqueInputSchema).optional()
-}).strict();
+export const UserCreateNestedOneWithoutDeletedRegistriesInputSchema: z.ZodType<Prisma.UserCreateNestedOneWithoutDeletedRegistriesInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => UserCreateWithoutDeletedRegistriesInputSchema),
+          z.lazy(() => UserUncheckedCreateWithoutDeletedRegistriesInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .lazy(() => UserCreateOrConnectWithoutDeletedRegistriesInputSchema)
+        .optional(),
+      connect: z.lazy(() => UserWhereUniqueInputSchema).optional(),
+    })
+    .strict();
 
 export default UserCreateNestedOneWithoutDeletedRegistriesInputSchema;

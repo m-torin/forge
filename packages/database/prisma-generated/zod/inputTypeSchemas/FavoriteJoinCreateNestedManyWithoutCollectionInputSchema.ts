@@ -7,11 +7,31 @@ import { FavoriteJoinCreateOrConnectWithoutCollectionInputSchema } from './Favor
 import { FavoriteJoinCreateManyCollectionInputEnvelopeSchema } from './FavoriteJoinCreateManyCollectionInputEnvelopeSchema';
 import { FavoriteJoinWhereUniqueInputSchema } from './FavoriteJoinWhereUniqueInputSchema';
 
-export const FavoriteJoinCreateNestedManyWithoutCollectionInputSchema: z.ZodType<Prisma.FavoriteJoinCreateNestedManyWithoutCollectionInput> = z.object({
-  create: z.union([ z.lazy(() => FavoriteJoinCreateWithoutCollectionInputSchema),z.lazy(() => FavoriteJoinCreateWithoutCollectionInputSchema).array(),z.lazy(() => FavoriteJoinUncheckedCreateWithoutCollectionInputSchema),z.lazy(() => FavoriteJoinUncheckedCreateWithoutCollectionInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => FavoriteJoinCreateOrConnectWithoutCollectionInputSchema),z.lazy(() => FavoriteJoinCreateOrConnectWithoutCollectionInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => FavoriteJoinCreateManyCollectionInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => FavoriteJoinWhereUniqueInputSchema),z.lazy(() => FavoriteJoinWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const FavoriteJoinCreateNestedManyWithoutCollectionInputSchema: z.ZodType<Prisma.FavoriteJoinCreateNestedManyWithoutCollectionInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => FavoriteJoinCreateWithoutCollectionInputSchema),
+          z.lazy(() => FavoriteJoinCreateWithoutCollectionInputSchema).array(),
+          z.lazy(() => FavoriteJoinUncheckedCreateWithoutCollectionInputSchema),
+          z.lazy(() => FavoriteJoinUncheckedCreateWithoutCollectionInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => FavoriteJoinCreateOrConnectWithoutCollectionInputSchema),
+          z.lazy(() => FavoriteJoinCreateOrConnectWithoutCollectionInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => FavoriteJoinCreateManyCollectionInputEnvelopeSchema).optional(),
+      connect: z
+        .union([
+          z.lazy(() => FavoriteJoinWhereUniqueInputSchema),
+          z.lazy(() => FavoriteJoinWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default FavoriteJoinCreateNestedManyWithoutCollectionInputSchema;

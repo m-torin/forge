@@ -7,11 +7,31 @@ import { LocationCreateOrConnectWithoutDeletedByInputSchema } from './LocationCr
 import { LocationCreateManyDeletedByInputEnvelopeSchema } from './LocationCreateManyDeletedByInputEnvelopeSchema';
 import { LocationWhereUniqueInputSchema } from './LocationWhereUniqueInputSchema';
 
-export const LocationCreateNestedManyWithoutDeletedByInputSchema: z.ZodType<Prisma.LocationCreateNestedManyWithoutDeletedByInput> = z.object({
-  create: z.union([ z.lazy(() => LocationCreateWithoutDeletedByInputSchema),z.lazy(() => LocationCreateWithoutDeletedByInputSchema).array(),z.lazy(() => LocationUncheckedCreateWithoutDeletedByInputSchema),z.lazy(() => LocationUncheckedCreateWithoutDeletedByInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => LocationCreateOrConnectWithoutDeletedByInputSchema),z.lazy(() => LocationCreateOrConnectWithoutDeletedByInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => LocationCreateManyDeletedByInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => LocationWhereUniqueInputSchema),z.lazy(() => LocationWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const LocationCreateNestedManyWithoutDeletedByInputSchema: z.ZodType<Prisma.LocationCreateNestedManyWithoutDeletedByInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => LocationCreateWithoutDeletedByInputSchema),
+          z.lazy(() => LocationCreateWithoutDeletedByInputSchema).array(),
+          z.lazy(() => LocationUncheckedCreateWithoutDeletedByInputSchema),
+          z.lazy(() => LocationUncheckedCreateWithoutDeletedByInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => LocationCreateOrConnectWithoutDeletedByInputSchema),
+          z.lazy(() => LocationCreateOrConnectWithoutDeletedByInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => LocationCreateManyDeletedByInputEnvelopeSchema).optional(),
+      connect: z
+        .union([
+          z.lazy(() => LocationWhereUniqueInputSchema),
+          z.lazy(() => LocationWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default LocationCreateNestedManyWithoutDeletedByInputSchema;

@@ -1037,6 +1037,14 @@ model Taxonomy {
   // Content and metadata
   copy Json @db.JsonB
 
+  // Hierarchical relationship
+  parentId     String?
+  parent       Taxonomy?  @relation("TaxonomyHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children     Taxonomy[] @relation("TaxonomyHierarchy")
+  displayOrder Int        @default(0)
+  level        Int        @default(0)
+  path         String? // Computed hierarchy path like "category/subcategory/item"
+
   // Relationships
   products             Product[]             @relation("ProductTaxonomy")
   collections          Collection[]          @relation("CollectionToTaxonomy")
@@ -1057,6 +1065,9 @@ model Taxonomy {
   @@index([status])
   @@index([deletedAt])
   @@index([deletedById])
+  @@index([parentId])
+  @@index([displayOrder])
+  @@index([level])
 }
 
 //==============================================================================

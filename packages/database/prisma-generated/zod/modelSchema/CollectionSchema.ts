@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema'
-import { CollectionTypeSchema } from '../inputTypeSchemas/CollectionTypeSchema'
-import { ContentStatusSchema } from '../inputTypeSchemas/ContentStatusSchema'
+import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema';
+import { CollectionTypeSchema } from '../inputTypeSchemas/CollectionTypeSchema';
+import { ContentStatusSchema } from '../inputTypeSchemas/ContentStatusSchema';
 
 /////////////////////////////////////////
 // COLLECTION SCHEMA
@@ -20,8 +20,8 @@ export const CollectionSchema = z.object({
   updatedAt: z.coerce.date(),
   deletedAt: z.coerce.date().nullable(),
   deletedById: z.string().nullable(),
-})
+});
 
-export type Collection = z.infer<typeof CollectionSchema>
+export type Collection = z.infer<typeof CollectionSchema>;
 
 export default CollectionSchema;

@@ -5,9 +5,15 @@ import { RegistryUserJoinWhereUniqueInputSchema } from './RegistryUserJoinWhereU
 import { RegistryUserJoinCreateWithoutUserInputSchema } from './RegistryUserJoinCreateWithoutUserInputSchema';
 import { RegistryUserJoinUncheckedCreateWithoutUserInputSchema } from './RegistryUserJoinUncheckedCreateWithoutUserInputSchema';
 
-export const RegistryUserJoinCreateOrConnectWithoutUserInputSchema: z.ZodType<Prisma.RegistryUserJoinCreateOrConnectWithoutUserInput> = z.object({
-  where: z.lazy(() => RegistryUserJoinWhereUniqueInputSchema),
-  create: z.union([ z.lazy(() => RegistryUserJoinCreateWithoutUserInputSchema),z.lazy(() => RegistryUserJoinUncheckedCreateWithoutUserInputSchema) ]),
-}).strict();
+export const RegistryUserJoinCreateOrConnectWithoutUserInputSchema: z.ZodType<Prisma.RegistryUserJoinCreateOrConnectWithoutUserInput> =
+  z
+    .object({
+      where: z.lazy(() => RegistryUserJoinWhereUniqueInputSchema),
+      create: z.union([
+        z.lazy(() => RegistryUserJoinCreateWithoutUserInputSchema),
+        z.lazy(() => RegistryUserJoinUncheckedCreateWithoutUserInputSchema),
+      ]),
+    })
+    .strict();
 
 export default RegistryUserJoinCreateOrConnectWithoutUserInputSchema;

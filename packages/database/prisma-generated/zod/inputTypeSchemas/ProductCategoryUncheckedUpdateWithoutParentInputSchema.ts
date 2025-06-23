@@ -15,21 +15,49 @@ import { ProductUncheckedUpdateManyWithoutCategoriesNestedInputSchema } from './
 import { CollectionUncheckedUpdateManyWithoutCategoriesNestedInputSchema } from './CollectionUncheckedUpdateManyWithoutCategoriesNestedInputSchema';
 import { MediaUncheckedUpdateManyWithoutCategoryNestedInputSchema } from './MediaUncheckedUpdateManyWithoutCategoryNestedInputSchema';
 
-export const ProductCategoryUncheckedUpdateWithoutParentInputSchema: z.ZodType<Prisma.ProductCategoryUncheckedUpdateWithoutParentInput> = z.object({
-  id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  status: z.union([ z.lazy(() => ContentStatusSchema),z.lazy(() => EnumContentStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  copy: z.union([ z.lazy(() => JsonNullValueInputSchema),InputJsonValueSchema ]).optional(),
-  displayOrder: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  deletedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  deletedById: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  children: z.lazy(() => ProductCategoryUncheckedUpdateManyWithoutParentNestedInputSchema).optional(),
-  products: z.lazy(() => ProductUncheckedUpdateManyWithoutCategoriesNestedInputSchema).optional(),
-  collections: z.lazy(() => CollectionUncheckedUpdateManyWithoutCategoriesNestedInputSchema).optional(),
-  media: z.lazy(() => MediaUncheckedUpdateManyWithoutCategoryNestedInputSchema).optional()
-}).strict();
+export const ProductCategoryUncheckedUpdateWithoutParentInputSchema: z.ZodType<Prisma.ProductCategoryUncheckedUpdateWithoutParentInput> =
+  z
+    .object({
+      id: z
+        .union([z.string().cuid(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+        .optional(),
+      name: z.union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)]).optional(),
+      slug: z.union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)]).optional(),
+      status: z
+        .union([
+          z.lazy(() => ContentStatusSchema),
+          z.lazy(() => EnumContentStatusFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      copy: z.union([z.lazy(() => JsonNullValueInputSchema), InputJsonValueSchema]).optional(),
+      displayOrder: z
+        .union([z.number().int(), z.lazy(() => IntFieldUpdateOperationsInputSchema)])
+        .optional(),
+      createdAt: z
+        .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+        .optional(),
+      updatedAt: z
+        .union([z.coerce.date(), z.lazy(() => DateTimeFieldUpdateOperationsInputSchema)])
+        .optional(),
+      deletedAt: z
+        .union([z.coerce.date(), z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      deletedById: z
+        .union([z.string(), z.lazy(() => NullableStringFieldUpdateOperationsInputSchema)])
+        .optional()
+        .nullable(),
+      children: z
+        .lazy(() => ProductCategoryUncheckedUpdateManyWithoutParentNestedInputSchema)
+        .optional(),
+      products: z
+        .lazy(() => ProductUncheckedUpdateManyWithoutCategoriesNestedInputSchema)
+        .optional(),
+      collections: z
+        .lazy(() => CollectionUncheckedUpdateManyWithoutCategoriesNestedInputSchema)
+        .optional(),
+      media: z.lazy(() => MediaUncheckedUpdateManyWithoutCategoryNestedInputSchema).optional(),
+    })
+    .strict();
 
 export default ProductCategoryUncheckedUpdateWithoutParentInputSchema;

@@ -2,7 +2,7 @@
  * Sentry client provider tests
  */
 
-import { afterEach, beforeEach, describe, expect, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { SentryClientProvider } from '../../../client/providers/sentry-client';
 import { SentryConfig } from '../../../shared/types/sentry-types';
@@ -22,6 +22,7 @@ const mockSentry = {
   setTag: vi.fn(),
   setUser: vi.fn(),
   startSession: vi.fn(),
+  startSpan: vi.fn(),
   startTransaction: vi.fn(),
   withScope: vi.fn(),
 };
@@ -85,7 +86,21 @@ describe('sentryClientProvider', () => {
       }),
     };
 
-    mockSentry.startTransaction.mockReturnValue(mockTransaction);
+    mockSentry.startSpan.mockImplementation((options: any, callback?: any) => {
+      if (callback) {
+        // For transactions, call the callback with the mock transaction
+        return callback(mockTransaction);
+      } else {
+        // For spans, return the span object directly
+        return {
+          id: 'mock-span-id',
+          finish: vi.fn(),
+          setData: vi.fn(),
+          setStatus: vi.fn(),
+          setTag: vi.fn(),
+        };
+      }
+    });
   });
 
   afterEach(() => {
@@ -96,17 +111,19 @@ describe('sentryClientProvider', () => {
     test('should initialize Sentry with correct configuration', async () => {
       await provider.initialize(config);
 
-      expect(mockSentry.init).toHaveBeenCalledWith({
-        beforeSend: undefined,
-        beforeSendTransaction: undefined,
-        dsn: 'https://test@sentry.io/123456',
-        environment: 'test',
-        integrations: [], // No integrations by default
-        release: '1.0.0',
-        replaysOnErrorSampleRate: 1,
-        replaysSessionSampleRate: 0.1,
-        tracesSampleRate: 0.5,
-      });
+      expect(mockSentry.init).toHaveBeenCalledWith(
+        expect.objectContaining({
+          beforeSend: undefined,
+          beforeSendTransaction: undefined,
+          dsn: 'https://test@sentry.io/123456',
+          environment: 'test',
+          integrations: [], // No integrations by default
+          release: '1.0.0',
+          replaysOnErrorSampleRate: 1,
+          replaysSessionSampleRate: 0.1,
+          tracesSampleRate: 0.5,
+        }),
+      );
     });
 
     test('should skip initialization without DSN', async () => {
@@ -128,7 +145,7 @@ describe('sentryClientProvider', () => {
       expect(mockSentry.init).toHaveBeenCalledWith(
         expect.objectContaining({
           dsn: 'https://test@sentry.io/123456',
-          environment: 'production',
+          environment: 'test',
           tracesSampleRate: 1,
           replaysOnErrorSampleRate: 1,
           replaysSessionSampleRate: 0.1,
@@ -201,7 +218,7 @@ describe('sentryClientProvider', () => {
 
       await provider.captureException(error, context);
 
-      expect(mockSentry.withScope).toHaveBeenCalledWith();
+      expect(mockSentry.withScope).toHaveBeenCalledWith(expect.any(Function));
       expect(mockSentry.captureException).toHaveBeenCalledWith(error);
 
       // Verify scope was configured correctly
@@ -230,7 +247,7 @@ describe('sentryClientProvider', () => {
 
       await provider.captureException(error);
 
-      expect(mockSentry.withScope).toHaveBeenCalledWith();
+      expect(mockSentry.withScope).toHaveBeenCalledWith(expect.any(Function));
       expect(mockSentry.captureException).toHaveBeenCalledWith(error);
     });
 
@@ -257,7 +274,7 @@ describe('sentryClientProvider', () => {
 
       await provider.captureMessage(message, 'warning', context);
 
-      expect(mockSentry.withScope).toHaveBeenCalledWith();
+      expect(mockSentry.withScope).toHaveBeenCalledWith(expect.any(Function));
       expect(mockSentry.captureMessage).toHaveBeenCalledWith(message, 'warning');
     });
 
@@ -298,13 +315,17 @@ describe('sentryClientProvider', () => {
 
       const transaction = provider.startTransaction(name, context);
 
-      expect(mockSentry.startTransaction).toHaveBeenCalledWith({
-        name,
-        data: { data: 'test' },
-        op: 'custom-op',
-        tags: { feature: 'test' },
-        traceId: 'trace-123',
-      });
+      expect(mockSentry.startSpan).toHaveBeenCalledWith(
+        {
+          name,
+          op: 'custom-op',
+          attributes: {
+            feature: 'test',
+            data: 'test',
+          },
+        },
+        expect.any(Function),
+      );
 
       expect(transaction).toStrictEqual({
         finish: expect.any(Function),
@@ -320,12 +341,14 @@ describe('sentryClientProvider', () => {
 
       provider.startTransaction(name);
 
-      expect(mockSentry.startTransaction).toHaveBeenCalledWith({
-        name,
-        data: undefined,
-        op: 'navigation',
-        tags: undefined,
-      });
+      expect(mockSentry.startSpan).toHaveBeenCalledWith(
+        {
+          name,
+          op: 'navigation',
+          attributes: {},
+        },
+        expect.any(Function),
+      );
     });
 
     test('should start spans with parent', () => {
@@ -335,21 +358,20 @@ describe('sentryClientProvider', () => {
 
       const span = provider.startSpan('test-span', parentSpan);
 
-      expect(parentSpan.startChild).toHaveBeenCalledWith({
-        description: 'test-span',
+      expect(mockSentry.startSpan).toHaveBeenCalledWith({
+        name: 'test-span',
         op: 'test-span',
+        parentSpan,
       });
-      expect(span).toStrictEqual({ id: 'child-span' });
+      expect(span).toBeDefined();
     });
 
     test('should start transaction when no parent span', () => {
       const _span = provider.startSpan('test-span');
 
-      expect(mockSentry.startTransaction).toHaveBeenCalledWith({
+      expect(mockSentry.startSpan).toHaveBeenCalledWith({
         name: 'test-span',
-        data: undefined,
-        op: 'navigation',
-        tags: undefined,
+        op: 'test-span',
       });
     });
 

@@ -6,10 +6,18 @@ import { ArticleUncheckedCreateWithoutMediaInputSchema } from './ArticleUnchecke
 import { ArticleCreateOrConnectWithoutMediaInputSchema } from './ArticleCreateOrConnectWithoutMediaInputSchema';
 import { ArticleWhereUniqueInputSchema } from './ArticleWhereUniqueInputSchema';
 
-export const ArticleCreateNestedOneWithoutMediaInputSchema: z.ZodType<Prisma.ArticleCreateNestedOneWithoutMediaInput> = z.object({
-  create: z.union([ z.lazy(() => ArticleCreateWithoutMediaInputSchema),z.lazy(() => ArticleUncheckedCreateWithoutMediaInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => ArticleCreateOrConnectWithoutMediaInputSchema).optional(),
-  connect: z.lazy(() => ArticleWhereUniqueInputSchema).optional()
-}).strict();
+export const ArticleCreateNestedOneWithoutMediaInputSchema: z.ZodType<Prisma.ArticleCreateNestedOneWithoutMediaInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => ArticleCreateWithoutMediaInputSchema),
+          z.lazy(() => ArticleUncheckedCreateWithoutMediaInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z.lazy(() => ArticleCreateOrConnectWithoutMediaInputSchema).optional(),
+      connect: z.lazy(() => ArticleWhereUniqueInputSchema).optional(),
+    })
+    .strict();
 
 export default ArticleCreateNestedOneWithoutMediaInputSchema;

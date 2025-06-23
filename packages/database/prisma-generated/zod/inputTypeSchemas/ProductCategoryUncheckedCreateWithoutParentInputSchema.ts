@@ -9,21 +9,30 @@ import { ProductUncheckedCreateNestedManyWithoutCategoriesInputSchema } from './
 import { CollectionUncheckedCreateNestedManyWithoutCategoriesInputSchema } from './CollectionUncheckedCreateNestedManyWithoutCategoriesInputSchema';
 import { MediaUncheckedCreateNestedManyWithoutCategoryInputSchema } from './MediaUncheckedCreateNestedManyWithoutCategoryInputSchema';
 
-export const ProductCategoryUncheckedCreateWithoutParentInputSchema: z.ZodType<Prisma.ProductCategoryUncheckedCreateWithoutParentInput> = z.object({
-  id: z.string().cuid().optional(),
-  name: z.string(),
-  slug: z.string(),
-  status: z.lazy(() => ContentStatusSchema).optional(),
-  copy: z.union([ z.lazy(() => JsonNullValueInputSchema),InputJsonValueSchema ]),
-  displayOrder: z.number().int().optional(),
-  createdAt: z.coerce.date().optional(),
-  updatedAt: z.coerce.date().optional(),
-  deletedAt: z.coerce.date().optional().nullable(),
-  deletedById: z.string().optional().nullable(),
-  children: z.lazy(() => ProductCategoryUncheckedCreateNestedManyWithoutParentInputSchema).optional(),
-  products: z.lazy(() => ProductUncheckedCreateNestedManyWithoutCategoriesInputSchema).optional(),
-  collections: z.lazy(() => CollectionUncheckedCreateNestedManyWithoutCategoriesInputSchema).optional(),
-  media: z.lazy(() => MediaUncheckedCreateNestedManyWithoutCategoryInputSchema).optional()
-}).strict();
+export const ProductCategoryUncheckedCreateWithoutParentInputSchema: z.ZodType<Prisma.ProductCategoryUncheckedCreateWithoutParentInput> =
+  z
+    .object({
+      id: z.string().cuid().optional(),
+      name: z.string(),
+      slug: z.string(),
+      status: z.lazy(() => ContentStatusSchema).optional(),
+      copy: z.union([z.lazy(() => JsonNullValueInputSchema), InputJsonValueSchema]),
+      displayOrder: z.number().int().optional(),
+      createdAt: z.coerce.date().optional(),
+      updatedAt: z.coerce.date().optional(),
+      deletedAt: z.coerce.date().optional().nullable(),
+      deletedById: z.string().optional().nullable(),
+      children: z
+        .lazy(() => ProductCategoryUncheckedCreateNestedManyWithoutParentInputSchema)
+        .optional(),
+      products: z
+        .lazy(() => ProductUncheckedCreateNestedManyWithoutCategoriesInputSchema)
+        .optional(),
+      collections: z
+        .lazy(() => CollectionUncheckedCreateNestedManyWithoutCategoriesInputSchema)
+        .optional(),
+      media: z.lazy(() => MediaUncheckedCreateNestedManyWithoutCategoryInputSchema).optional(),
+    })
+    .strict();
 
 export default ProductCategoryUncheckedCreateWithoutParentInputSchema;

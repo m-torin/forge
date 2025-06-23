@@ -11,18 +11,73 @@ import { ProductUpdateWithWhereUniqueWithoutParentInputSchema } from './ProductU
 import { ProductUpdateManyWithWhereWithoutParentInputSchema } from './ProductUpdateManyWithWhereWithoutParentInputSchema';
 import { ProductScalarWhereInputSchema } from './ProductScalarWhereInputSchema';
 
-export const ProductUpdateManyWithoutParentNestedInputSchema: z.ZodType<Prisma.ProductUpdateManyWithoutParentNestedInput> = z.object({
-  create: z.union([ z.lazy(() => ProductCreateWithoutParentInputSchema),z.lazy(() => ProductCreateWithoutParentInputSchema).array(),z.lazy(() => ProductUncheckedCreateWithoutParentInputSchema),z.lazy(() => ProductUncheckedCreateWithoutParentInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => ProductCreateOrConnectWithoutParentInputSchema),z.lazy(() => ProductCreateOrConnectWithoutParentInputSchema).array() ]).optional(),
-  upsert: z.union([ z.lazy(() => ProductUpsertWithWhereUniqueWithoutParentInputSchema),z.lazy(() => ProductUpsertWithWhereUniqueWithoutParentInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => ProductCreateManyParentInputEnvelopeSchema).optional(),
-  set: z.union([ z.lazy(() => ProductWhereUniqueInputSchema),z.lazy(() => ProductWhereUniqueInputSchema).array() ]).optional(),
-  disconnect: z.union([ z.lazy(() => ProductWhereUniqueInputSchema),z.lazy(() => ProductWhereUniqueInputSchema).array() ]).optional(),
-  delete: z.union([ z.lazy(() => ProductWhereUniqueInputSchema),z.lazy(() => ProductWhereUniqueInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => ProductWhereUniqueInputSchema),z.lazy(() => ProductWhereUniqueInputSchema).array() ]).optional(),
-  update: z.union([ z.lazy(() => ProductUpdateWithWhereUniqueWithoutParentInputSchema),z.lazy(() => ProductUpdateWithWhereUniqueWithoutParentInputSchema).array() ]).optional(),
-  updateMany: z.union([ z.lazy(() => ProductUpdateManyWithWhereWithoutParentInputSchema),z.lazy(() => ProductUpdateManyWithWhereWithoutParentInputSchema).array() ]).optional(),
-  deleteMany: z.union([ z.lazy(() => ProductScalarWhereInputSchema),z.lazy(() => ProductScalarWhereInputSchema).array() ]).optional(),
-}).strict();
+export const ProductUpdateManyWithoutParentNestedInputSchema: z.ZodType<Prisma.ProductUpdateManyWithoutParentNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => ProductCreateWithoutParentInputSchema),
+          z.lazy(() => ProductCreateWithoutParentInputSchema).array(),
+          z.lazy(() => ProductUncheckedCreateWithoutParentInputSchema),
+          z.lazy(() => ProductUncheckedCreateWithoutParentInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => ProductCreateOrConnectWithoutParentInputSchema),
+          z.lazy(() => ProductCreateOrConnectWithoutParentInputSchema).array(),
+        ])
+        .optional(),
+      upsert: z
+        .union([
+          z.lazy(() => ProductUpsertWithWhereUniqueWithoutParentInputSchema),
+          z.lazy(() => ProductUpsertWithWhereUniqueWithoutParentInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => ProductCreateManyParentInputEnvelopeSchema).optional(),
+      set: z
+        .union([
+          z.lazy(() => ProductWhereUniqueInputSchema),
+          z.lazy(() => ProductWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      disconnect: z
+        .union([
+          z.lazy(() => ProductWhereUniqueInputSchema),
+          z.lazy(() => ProductWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      delete: z
+        .union([
+          z.lazy(() => ProductWhereUniqueInputSchema),
+          z.lazy(() => ProductWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => ProductWhereUniqueInputSchema),
+          z.lazy(() => ProductWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      update: z
+        .union([
+          z.lazy(() => ProductUpdateWithWhereUniqueWithoutParentInputSchema),
+          z.lazy(() => ProductUpdateWithWhereUniqueWithoutParentInputSchema).array(),
+        ])
+        .optional(),
+      updateMany: z
+        .union([
+          z.lazy(() => ProductUpdateManyWithWhereWithoutParentInputSchema),
+          z.lazy(() => ProductUpdateManyWithWhereWithoutParentInputSchema).array(),
+        ])
+        .optional(),
+      deleteMany: z
+        .union([
+          z.lazy(() => ProductScalarWhereInputSchema),
+          z.lazy(() => ProductScalarWhereInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default ProductUpdateManyWithoutParentNestedInputSchema;

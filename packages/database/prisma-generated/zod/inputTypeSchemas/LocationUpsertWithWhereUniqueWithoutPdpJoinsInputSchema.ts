@@ -7,10 +7,19 @@ import { LocationUncheckedUpdateWithoutPdpJoinsInputSchema } from './LocationUnc
 import { LocationCreateWithoutPdpJoinsInputSchema } from './LocationCreateWithoutPdpJoinsInputSchema';
 import { LocationUncheckedCreateWithoutPdpJoinsInputSchema } from './LocationUncheckedCreateWithoutPdpJoinsInputSchema';
 
-export const LocationUpsertWithWhereUniqueWithoutPdpJoinsInputSchema: z.ZodType<Prisma.LocationUpsertWithWhereUniqueWithoutPdpJoinsInput> = z.object({
-  where: z.lazy(() => LocationWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => LocationUpdateWithoutPdpJoinsInputSchema),z.lazy(() => LocationUncheckedUpdateWithoutPdpJoinsInputSchema) ]),
-  create: z.union([ z.lazy(() => LocationCreateWithoutPdpJoinsInputSchema),z.lazy(() => LocationUncheckedCreateWithoutPdpJoinsInputSchema) ]),
-}).strict();
+export const LocationUpsertWithWhereUniqueWithoutPdpJoinsInputSchema: z.ZodType<Prisma.LocationUpsertWithWhereUniqueWithoutPdpJoinsInput> =
+  z
+    .object({
+      where: z.lazy(() => LocationWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => LocationUpdateWithoutPdpJoinsInputSchema),
+        z.lazy(() => LocationUncheckedUpdateWithoutPdpJoinsInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => LocationCreateWithoutPdpJoinsInputSchema),
+        z.lazy(() => LocationUncheckedCreateWithoutPdpJoinsInputSchema),
+      ]),
+    })
+    .strict();
 
 export default LocationUpsertWithWhereUniqueWithoutPdpJoinsInputSchema;

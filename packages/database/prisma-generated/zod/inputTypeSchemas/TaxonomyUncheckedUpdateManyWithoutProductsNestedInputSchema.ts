@@ -10,17 +10,72 @@ import { TaxonomyUpdateWithWhereUniqueWithoutProductsInputSchema } from './Taxon
 import { TaxonomyUpdateManyWithWhereWithoutProductsInputSchema } from './TaxonomyUpdateManyWithWhereWithoutProductsInputSchema';
 import { TaxonomyScalarWhereInputSchema } from './TaxonomyScalarWhereInputSchema';
 
-export const TaxonomyUncheckedUpdateManyWithoutProductsNestedInputSchema: z.ZodType<Prisma.TaxonomyUncheckedUpdateManyWithoutProductsNestedInput> = z.object({
-  create: z.union([ z.lazy(() => TaxonomyCreateWithoutProductsInputSchema),z.lazy(() => TaxonomyCreateWithoutProductsInputSchema).array(),z.lazy(() => TaxonomyUncheckedCreateWithoutProductsInputSchema),z.lazy(() => TaxonomyUncheckedCreateWithoutProductsInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => TaxonomyCreateOrConnectWithoutProductsInputSchema),z.lazy(() => TaxonomyCreateOrConnectWithoutProductsInputSchema).array() ]).optional(),
-  upsert: z.union([ z.lazy(() => TaxonomyUpsertWithWhereUniqueWithoutProductsInputSchema),z.lazy(() => TaxonomyUpsertWithWhereUniqueWithoutProductsInputSchema).array() ]).optional(),
-  set: z.union([ z.lazy(() => TaxonomyWhereUniqueInputSchema),z.lazy(() => TaxonomyWhereUniqueInputSchema).array() ]).optional(),
-  disconnect: z.union([ z.lazy(() => TaxonomyWhereUniqueInputSchema),z.lazy(() => TaxonomyWhereUniqueInputSchema).array() ]).optional(),
-  delete: z.union([ z.lazy(() => TaxonomyWhereUniqueInputSchema),z.lazy(() => TaxonomyWhereUniqueInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => TaxonomyWhereUniqueInputSchema),z.lazy(() => TaxonomyWhereUniqueInputSchema).array() ]).optional(),
-  update: z.union([ z.lazy(() => TaxonomyUpdateWithWhereUniqueWithoutProductsInputSchema),z.lazy(() => TaxonomyUpdateWithWhereUniqueWithoutProductsInputSchema).array() ]).optional(),
-  updateMany: z.union([ z.lazy(() => TaxonomyUpdateManyWithWhereWithoutProductsInputSchema),z.lazy(() => TaxonomyUpdateManyWithWhereWithoutProductsInputSchema).array() ]).optional(),
-  deleteMany: z.union([ z.lazy(() => TaxonomyScalarWhereInputSchema),z.lazy(() => TaxonomyScalarWhereInputSchema).array() ]).optional(),
-}).strict();
+export const TaxonomyUncheckedUpdateManyWithoutProductsNestedInputSchema: z.ZodType<Prisma.TaxonomyUncheckedUpdateManyWithoutProductsNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => TaxonomyCreateWithoutProductsInputSchema),
+          z.lazy(() => TaxonomyCreateWithoutProductsInputSchema).array(),
+          z.lazy(() => TaxonomyUncheckedCreateWithoutProductsInputSchema),
+          z.lazy(() => TaxonomyUncheckedCreateWithoutProductsInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => TaxonomyCreateOrConnectWithoutProductsInputSchema),
+          z.lazy(() => TaxonomyCreateOrConnectWithoutProductsInputSchema).array(),
+        ])
+        .optional(),
+      upsert: z
+        .union([
+          z.lazy(() => TaxonomyUpsertWithWhereUniqueWithoutProductsInputSchema),
+          z.lazy(() => TaxonomyUpsertWithWhereUniqueWithoutProductsInputSchema).array(),
+        ])
+        .optional(),
+      set: z
+        .union([
+          z.lazy(() => TaxonomyWhereUniqueInputSchema),
+          z.lazy(() => TaxonomyWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      disconnect: z
+        .union([
+          z.lazy(() => TaxonomyWhereUniqueInputSchema),
+          z.lazy(() => TaxonomyWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      delete: z
+        .union([
+          z.lazy(() => TaxonomyWhereUniqueInputSchema),
+          z.lazy(() => TaxonomyWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => TaxonomyWhereUniqueInputSchema),
+          z.lazy(() => TaxonomyWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      update: z
+        .union([
+          z.lazy(() => TaxonomyUpdateWithWhereUniqueWithoutProductsInputSchema),
+          z.lazy(() => TaxonomyUpdateWithWhereUniqueWithoutProductsInputSchema).array(),
+        ])
+        .optional(),
+      updateMany: z
+        .union([
+          z.lazy(() => TaxonomyUpdateManyWithWhereWithoutProductsInputSchema),
+          z.lazy(() => TaxonomyUpdateManyWithWhereWithoutProductsInputSchema).array(),
+        ])
+        .optional(),
+      deleteMany: z
+        .union([
+          z.lazy(() => TaxonomyScalarWhereInputSchema),
+          z.lazy(() => TaxonomyScalarWhereInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default TaxonomyUncheckedUpdateManyWithoutProductsNestedInputSchema;

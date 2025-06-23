@@ -5,9 +5,15 @@ import { ProductCategoryWhereUniqueInputSchema } from './ProductCategoryWhereUni
 import { ProductCategoryCreateWithoutParentInputSchema } from './ProductCategoryCreateWithoutParentInputSchema';
 import { ProductCategoryUncheckedCreateWithoutParentInputSchema } from './ProductCategoryUncheckedCreateWithoutParentInputSchema';
 
-export const ProductCategoryCreateOrConnectWithoutParentInputSchema: z.ZodType<Prisma.ProductCategoryCreateOrConnectWithoutParentInput> = z.object({
-  where: z.lazy(() => ProductCategoryWhereUniqueInputSchema),
-  create: z.union([ z.lazy(() => ProductCategoryCreateWithoutParentInputSchema),z.lazy(() => ProductCategoryUncheckedCreateWithoutParentInputSchema) ]),
-}).strict();
+export const ProductCategoryCreateOrConnectWithoutParentInputSchema: z.ZodType<Prisma.ProductCategoryCreateOrConnectWithoutParentInput> =
+  z
+    .object({
+      where: z.lazy(() => ProductCategoryWhereUniqueInputSchema),
+      create: z.union([
+        z.lazy(() => ProductCategoryCreateWithoutParentInputSchema),
+        z.lazy(() => ProductCategoryUncheckedCreateWithoutParentInputSchema),
+      ]),
+    })
+    .strict();
 
 export default ProductCategoryCreateOrConnectWithoutParentInputSchema;

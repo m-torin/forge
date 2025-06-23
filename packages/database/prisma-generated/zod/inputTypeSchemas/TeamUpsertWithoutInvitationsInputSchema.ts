@@ -7,10 +7,19 @@ import { TeamCreateWithoutInvitationsInputSchema } from './TeamCreateWithoutInvi
 import { TeamUncheckedCreateWithoutInvitationsInputSchema } from './TeamUncheckedCreateWithoutInvitationsInputSchema';
 import { TeamWhereInputSchema } from './TeamWhereInputSchema';
 
-export const TeamUpsertWithoutInvitationsInputSchema: z.ZodType<Prisma.TeamUpsertWithoutInvitationsInput> = z.object({
-  update: z.union([ z.lazy(() => TeamUpdateWithoutInvitationsInputSchema),z.lazy(() => TeamUncheckedUpdateWithoutInvitationsInputSchema) ]),
-  create: z.union([ z.lazy(() => TeamCreateWithoutInvitationsInputSchema),z.lazy(() => TeamUncheckedCreateWithoutInvitationsInputSchema) ]),
-  where: z.lazy(() => TeamWhereInputSchema).optional()
-}).strict();
+export const TeamUpsertWithoutInvitationsInputSchema: z.ZodType<Prisma.TeamUpsertWithoutInvitationsInput> =
+  z
+    .object({
+      update: z.union([
+        z.lazy(() => TeamUpdateWithoutInvitationsInputSchema),
+        z.lazy(() => TeamUncheckedUpdateWithoutInvitationsInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => TeamCreateWithoutInvitationsInputSchema),
+        z.lazy(() => TeamUncheckedCreateWithoutInvitationsInputSchema),
+      ]),
+      where: z.lazy(() => TeamWhereInputSchema).optional(),
+    })
+    .strict();
 
 export default TeamUpsertWithoutInvitationsInputSchema;

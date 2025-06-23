@@ -10,12 +10,28 @@ import { TwoFactorUpdateToOneWithWhereWithoutBackupCodesInputSchema } from './Tw
 import { TwoFactorUpdateWithoutBackupCodesInputSchema } from './TwoFactorUpdateWithoutBackupCodesInputSchema';
 import { TwoFactorUncheckedUpdateWithoutBackupCodesInputSchema } from './TwoFactorUncheckedUpdateWithoutBackupCodesInputSchema';
 
-export const TwoFactorUpdateOneRequiredWithoutBackupCodesNestedInputSchema: z.ZodType<Prisma.TwoFactorUpdateOneRequiredWithoutBackupCodesNestedInput> = z.object({
-  create: z.union([ z.lazy(() => TwoFactorCreateWithoutBackupCodesInputSchema),z.lazy(() => TwoFactorUncheckedCreateWithoutBackupCodesInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => TwoFactorCreateOrConnectWithoutBackupCodesInputSchema).optional(),
-  upsert: z.lazy(() => TwoFactorUpsertWithoutBackupCodesInputSchema).optional(),
-  connect: z.lazy(() => TwoFactorWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => TwoFactorUpdateToOneWithWhereWithoutBackupCodesInputSchema),z.lazy(() => TwoFactorUpdateWithoutBackupCodesInputSchema),z.lazy(() => TwoFactorUncheckedUpdateWithoutBackupCodesInputSchema) ]).optional(),
-}).strict();
+export const TwoFactorUpdateOneRequiredWithoutBackupCodesNestedInputSchema: z.ZodType<Prisma.TwoFactorUpdateOneRequiredWithoutBackupCodesNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => TwoFactorCreateWithoutBackupCodesInputSchema),
+          z.lazy(() => TwoFactorUncheckedCreateWithoutBackupCodesInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .lazy(() => TwoFactorCreateOrConnectWithoutBackupCodesInputSchema)
+        .optional(),
+      upsert: z.lazy(() => TwoFactorUpsertWithoutBackupCodesInputSchema).optional(),
+      connect: z.lazy(() => TwoFactorWhereUniqueInputSchema).optional(),
+      update: z
+        .union([
+          z.lazy(() => TwoFactorUpdateToOneWithWhereWithoutBackupCodesInputSchema),
+          z.lazy(() => TwoFactorUpdateWithoutBackupCodesInputSchema),
+          z.lazy(() => TwoFactorUncheckedUpdateWithoutBackupCodesInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default TwoFactorUpdateOneRequiredWithoutBackupCodesNestedInputSchema;

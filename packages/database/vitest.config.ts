@@ -8,7 +8,7 @@ export default defineConfig({
     name: 'database',
     globals: true,
     hookTimeout: 30000,
-    root: __dirname,
+    root: dirname,
     testTimeout: 30000,
 
     env: {
@@ -43,7 +43,7 @@ export default defineConfig({
     ],
 
     // Setup files
-    setupFiles: [resolve(__dirname, '__tests__/setup.ts')],
+    setupFiles: [resolve(dirname, '__tests__/setup.ts')],
 
     // Reporters
     reporters: ['verbose'],
@@ -104,8 +104,8 @@ export default defineConfig({
   // Resolve configuration
   resolve: {
     alias: {
-      '@': resolve(__dirname, '.'),
-      '@repo/testing': resolve(__dirname, '../testing'),
+      '@': resolve(dirname, '.'),
+      '@repo/testing': resolve(dirname, '../testing'),
     },
   },
 

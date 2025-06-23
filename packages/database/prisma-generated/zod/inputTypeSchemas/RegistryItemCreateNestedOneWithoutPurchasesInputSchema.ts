@@ -6,10 +6,20 @@ import { RegistryItemUncheckedCreateWithoutPurchasesInputSchema } from './Regist
 import { RegistryItemCreateOrConnectWithoutPurchasesInputSchema } from './RegistryItemCreateOrConnectWithoutPurchasesInputSchema';
 import { RegistryItemWhereUniqueInputSchema } from './RegistryItemWhereUniqueInputSchema';
 
-export const RegistryItemCreateNestedOneWithoutPurchasesInputSchema: z.ZodType<Prisma.RegistryItemCreateNestedOneWithoutPurchasesInput> = z.object({
-  create: z.union([ z.lazy(() => RegistryItemCreateWithoutPurchasesInputSchema),z.lazy(() => RegistryItemUncheckedCreateWithoutPurchasesInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => RegistryItemCreateOrConnectWithoutPurchasesInputSchema).optional(),
-  connect: z.lazy(() => RegistryItemWhereUniqueInputSchema).optional()
-}).strict();
+export const RegistryItemCreateNestedOneWithoutPurchasesInputSchema: z.ZodType<Prisma.RegistryItemCreateNestedOneWithoutPurchasesInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => RegistryItemCreateWithoutPurchasesInputSchema),
+          z.lazy(() => RegistryItemUncheckedCreateWithoutPurchasesInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .lazy(() => RegistryItemCreateOrConnectWithoutPurchasesInputSchema)
+        .optional(),
+      connect: z.lazy(() => RegistryItemWhereUniqueInputSchema).optional(),
+    })
+    .strict();
 
 export default RegistryItemCreateNestedOneWithoutPurchasesInputSchema;

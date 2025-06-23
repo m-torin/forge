@@ -6,11 +6,13 @@ icon: 'shield-check'
 
 # Zod Schema Validation
 
-The database package provides Prisma-generated Zod schemas that ensure type-safe validation matching your database constraints exactly.
+The database package provides Prisma-generated Zod schemas that ensure type-safe validation matching
+your database constraints exactly.
 
 ## Overview
 
-When you run `pnpm prisma:generate`, Prisma automatically generates Zod schemas for all your models. These schemas provide:
+When you run `pnpm prisma:generate`, Prisma automatically generates Zod schemas for all your models.
+These schemas provide:
 
 - **Type Safety**: Full TypeScript support with proper inference
 - **Database Alignment**: Validation rules that match your database constraints
@@ -23,17 +25,17 @@ The Zod schemas are automatically generated and exported from the database packa
 
 ```typescript
 // Import schemas
-import { 
+import {
   ProductCreateInputSchema,
   ProductUpdateInputSchema,
-  BrandCreateInputSchema 
+  BrandCreateInputSchema,
 } from '@repo/database/zod';
 
 // Import validation utilities
-import { 
+import {
   validateFormData,
   transformFormToDatabase,
-  createMantineValidator 
+  createMantineValidator,
 } from '@repo/database/prisma';
 ```
 
@@ -80,16 +82,19 @@ For forms that don't need all fields, pick only what you need:
 import { pickSchemaFields } from '@repo/database/prisma';
 
 const formSchema = pickSchemaFields(ProductCreateInputSchema, [
-  'name', 'slug', 'sku', 'price'
+  'name',
+  'slug',
+  'sku',
+  'price',
 ]).extend({
   // Add custom validation
   slug: z.string().regex(/^[a-z0-9-]+$/, 'Must be lowercase with hyphens'),
   // Make fields optional
-  price: z.number().min(0).optional()
+  price: z.number().min(0).optional(),
 });
 
 const form = useForm({
-  validate: zodResolver(formSchema)
+  validate: zodResolver(formSchema),
 });
 ```
 
@@ -100,13 +105,11 @@ Handle both create and update modes with appropriate schemas:
 ```typescript
 const isEditing = !!productId;
 
-const schema = isEditing 
-  ? ProductUpdateInputSchema 
-  : ProductCreateInputSchema;
+const schema = isEditing ? ProductUpdateInputSchema : ProductCreateInputSchema;
 
 const form = useForm({
   validate: zodResolver(schema),
-  initialValues: isEditing ? existingData : defaultValues
+  initialValues: isEditing ? existingData : defaultValues,
 });
 ```
 
@@ -125,19 +128,19 @@ import { validateFormData } from '@repo/database/prisma';
 export async function createProductAction(data: unknown) {
   // Validate input
   const validation = validateFormData(ProductCreateInputSchema, data);
-  
+
   if (!validation.success) {
     return {
       success: false,
-      errors: validation.formattedErrors // Field-specific errors
+      errors: validation.formattedErrors, // Field-specific errors
     };
   }
 
   // Create with validated data
   const product = await prisma.product.create({
-    data: validation.data // Type-safe!
+    data: validation.data, // Type-safe!
   });
-  
+
   return { success: true, data: product };
 }
 ```
@@ -152,21 +155,21 @@ export async function createProductAction(formData: unknown) {
   const transformed = transformFormToDatabase(formData as any, {
     emptyStringsToNull: true,
     trimStrings: true,
-    removeUndefined: true
+    removeUndefined: true,
   });
 
   // Validate transformed data
   const validation = validateFormData(ProductCreateInputSchema, transformed);
-  
+
   if (!validation.success) {
     return { success: false, errors: validation.formattedErrors };
   }
 
   // Proceed with database operation
   const product = await prisma.product.create({
-    data: validation.data
+    data: validation.data,
   });
-  
+
   return { success: true, data: product };
 }
 ```
@@ -180,27 +183,27 @@ export async function bulkCreateProducts(products: unknown[]) {
   // Validate each product
   const validations = products.map((product, index) => ({
     index,
-    validation: validateFormData(ProductCreateInputSchema, product)
+    validation: validateFormData(ProductCreateInputSchema, product),
   }));
 
   // Check for errors
-  const errors = validations.filter(v => !v.validation.success);
+  const errors = validations.filter((v) => !v.validation.success);
   if (errors.length > 0) {
     return {
       success: false,
-      errors: errors.map(e => ({
+      errors: errors.map((e) => ({
         index: e.index,
-        errors: e.validation.formattedErrors
-      }))
+        errors: e.validation.formattedErrors,
+      })),
     };
   }
 
   // Extract validated data
-  const validatedData = validations.map(v => v.validation.data!);
+  const validatedData = validations.map((v) => v.validation.data!);
 
   // Bulk create
   const created = await prisma.$transaction(
-    validatedData.map(data => prisma.product.create({ data }))
+    validatedData.map((data) => prisma.product.create({ data }))
   );
 
   return { success: true, data: created };
@@ -230,9 +233,9 @@ Prepares form data for database operations:
 
 ```typescript
 const dbData = transformFormToDatabase(formData, {
-  emptyStringsToNull: true,  // "" becomes null
-  trimStrings: true,          // "  text  " becomes "text"
-  removeUndefined: true       // Remove undefined fields
+  emptyStringsToNull: true, // "" becomes null
+  trimStrings: true, // "  text  " becomes "text"
+  removeUndefined: true, // Remove undefined fields
 });
 ```
 
@@ -242,7 +245,7 @@ Creates a validator function for Mantine forms:
 
 ```typescript
 const form = useForm({
-  validate: createMantineValidator(ProductCreateInputSchema)
+  validate: createMantineValidator(ProductCreateInputSchema),
 });
 ```
 
@@ -251,9 +254,7 @@ const form = useForm({
 Select specific fields from a schema:
 
 ```typescript
-const partialSchema = pickSchemaFields(ProductCreateInputSchema, [
-  'name', 'slug', 'description'
-]);
+const partialSchema = pickSchemaFields(ProductCreateInputSchema, ['name', 'slug', 'description']);
 ```
 
 ### makeSchemaOptional
@@ -272,12 +273,14 @@ Handle complex forms with nested data:
 
 ```typescript
 const productWithVariantsSchema = ProductCreateInputSchema.extend({
-  variants: z.array(z.object({
-    sku: z.string(),
-    price: z.number().positive(),
-    quantity: z.number().int().min(0)
-  })),
-  categoryIds: z.array(z.string().cuid())
+  variants: z.array(
+    z.object({
+      sku: z.string(),
+      price: z.number().positive(),
+      quantity: z.number().int().min(0),
+    })
+  ),
+  categoryIds: z.array(z.string().cuid()),
 });
 ```
 
@@ -293,14 +296,14 @@ const schema = z.discriminatedUnion('type', [
     dimensions: z.object({
       length: z.number(),
       width: z.number(),
-      height: z.number()
-    })
+      height: z.number(),
+    }),
   }),
   z.object({
     type: z.literal('DIGITAL'),
     downloadUrl: z.string().url(),
-    fileSize: z.number()
-  })
+    fileSize: z.number(),
+  }),
 ]);
 ```
 
@@ -311,7 +314,7 @@ Override default error messages:
 ```typescript
 const schema = ProductCreateInputSchema.extend({
   name: z.string().min(1, 'Product name is required'),
-  price: z.number().min(0, 'Price cannot be negative')
+  price: z.number().min(0, 'Price cannot be negative'),
 });
 ```
 
@@ -352,6 +355,7 @@ const schema = ProductCreateInputSchema.extend({
 **Problem**: Schema expects `name` but form has `productName`
 
 **Solution**: Map fields or update form to match schema:
+
 ```typescript
 const data = {
   name: formData.productName,
@@ -364,6 +368,7 @@ const data = {
 **Problem**: Form sends string but schema expects number
 
 **Solution**: Use proper input components:
+
 ```typescript
 <NumberInput {...form.getInputProps('price')} />
 ```
@@ -373,6 +378,7 @@ const data = {
 **Problem**: Schema requires fields not in form
 
 **Solution**: Use `pick()` to select only needed fields:
+
 ```typescript
 const formSchema = pickSchemaFields(schema, ['name', 'slug']);
 ```
@@ -382,8 +388,13 @@ const formSchema = pickSchemaFields(schema, ['name', 'slug']);
 **Problem**: Trying to set relations directly
 
 **Solution**: Use Prisma's connect/disconnect syntax:
+
 ```typescript
 {
-  brand: { connect: { id: brandId } }
+  brand: {
+    connect: {
+      id: brandId;
+    }
+  }
 }
 ```

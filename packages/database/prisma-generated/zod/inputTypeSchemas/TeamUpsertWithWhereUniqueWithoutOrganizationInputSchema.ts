@@ -7,10 +7,19 @@ import { TeamUncheckedUpdateWithoutOrganizationInputSchema } from './TeamUncheck
 import { TeamCreateWithoutOrganizationInputSchema } from './TeamCreateWithoutOrganizationInputSchema';
 import { TeamUncheckedCreateWithoutOrganizationInputSchema } from './TeamUncheckedCreateWithoutOrganizationInputSchema';
 
-export const TeamUpsertWithWhereUniqueWithoutOrganizationInputSchema: z.ZodType<Prisma.TeamUpsertWithWhereUniqueWithoutOrganizationInput> = z.object({
-  where: z.lazy(() => TeamWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => TeamUpdateWithoutOrganizationInputSchema),z.lazy(() => TeamUncheckedUpdateWithoutOrganizationInputSchema) ]),
-  create: z.union([ z.lazy(() => TeamCreateWithoutOrganizationInputSchema),z.lazy(() => TeamUncheckedCreateWithoutOrganizationInputSchema) ]),
-}).strict();
+export const TeamUpsertWithWhereUniqueWithoutOrganizationInputSchema: z.ZodType<Prisma.TeamUpsertWithWhereUniqueWithoutOrganizationInput> =
+  z
+    .object({
+      where: z.lazy(() => TeamWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => TeamUpdateWithoutOrganizationInputSchema),
+        z.lazy(() => TeamUncheckedUpdateWithoutOrganizationInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => TeamCreateWithoutOrganizationInputSchema),
+        z.lazy(() => TeamUncheckedCreateWithoutOrganizationInputSchema),
+      ]),
+    })
+    .strict();
 
 export default TeamUpsertWithWhereUniqueWithoutOrganizationInputSchema;

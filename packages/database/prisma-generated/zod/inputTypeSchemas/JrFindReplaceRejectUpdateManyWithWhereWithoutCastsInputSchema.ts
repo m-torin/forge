@@ -5,9 +5,15 @@ import { JrFindReplaceRejectScalarWhereInputSchema } from './JrFindReplaceReject
 import { JrFindReplaceRejectUpdateManyMutationInputSchema } from './JrFindReplaceRejectUpdateManyMutationInputSchema';
 import { JrFindReplaceRejectUncheckedUpdateManyWithoutCastsInputSchema } from './JrFindReplaceRejectUncheckedUpdateManyWithoutCastsInputSchema';
 
-export const JrFindReplaceRejectUpdateManyWithWhereWithoutCastsInputSchema: z.ZodType<Prisma.JrFindReplaceRejectUpdateManyWithWhereWithoutCastsInput> = z.object({
-  where: z.lazy(() => JrFindReplaceRejectScalarWhereInputSchema),
-  data: z.union([ z.lazy(() => JrFindReplaceRejectUpdateManyMutationInputSchema),z.lazy(() => JrFindReplaceRejectUncheckedUpdateManyWithoutCastsInputSchema) ]),
-}).strict();
+export const JrFindReplaceRejectUpdateManyWithWhereWithoutCastsInputSchema: z.ZodType<Prisma.JrFindReplaceRejectUpdateManyWithWhereWithoutCastsInput> =
+  z
+    .object({
+      where: z.lazy(() => JrFindReplaceRejectScalarWhereInputSchema),
+      data: z.union([
+        z.lazy(() => JrFindReplaceRejectUpdateManyMutationInputSchema),
+        z.lazy(() => JrFindReplaceRejectUncheckedUpdateManyWithoutCastsInputSchema),
+      ]),
+    })
+    .strict();
 
 export default JrFindReplaceRejectUpdateManyWithWhereWithoutCastsInputSchema;

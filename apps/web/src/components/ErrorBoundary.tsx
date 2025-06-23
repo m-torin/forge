@@ -1,63 +1,115 @@
-'use client';
+"use client";
 
-import { logger } from '@/lib/logger';
-import { ErrorInfo, ReactNode, Component } from 'react';
-import { Alert, Button, Text } from '@mantine/core';
-import { IconAlertTriangle, IconRefresh } from '@tabler/icons-react';
+import React from "react";
+import {
+  Container,
+  Title,
+  Text,
+  Button,
+  Stack,
+  Alert,
+  Center,
+} from "@mantine/core";
+import { IconAlertTriangle, IconRefresh } from "@tabler/icons-react";
+
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+  fallback?: React.ComponentType<{ error: Error; reset: () => void }>;
+}
 
 interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
 }
 
-interface ErrorBoundaryProps {
-  children: ReactNode;
-  fallback?: ReactNode;
-}
-
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+/**
+ * Error boundary component that catches errors in child components
+ *
+ * This provides a user-friendly error page with recovery options.
+ */
+export class ErrorBoundary extends React.Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, error: null };
   }
 
-  static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    logger.error('ErrorBoundary caught an error', error, { errorInfo });
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    // Log to console in development
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error caught by boundary:", error, errorInfo);
+    }
   }
 
-  handleRetry = () => {
+  reset = () => {
     this.setState({ hasError: false, error: null });
   };
 
   render() {
-    if (this.state.hasError) {
+    if (this.state.hasError && this.state.error) {
+      // Use custom fallback if provided
       if (this.props.fallback) {
-        return this.props.fallback;
+        const Fallback = this.props.fallback;
+        return <Fallback error={this.state.error} reset={this.reset} />;
       }
 
+      // Default error UI
       return (
-        <Alert
-          icon={<IconAlertTriangle size={16} />}
-          title="Something went wrong"
-          color="red"
-          variant="light"
-        >
-          <Text size="sm" mb="sm">
-            Unable to load this component
-          </Text>
-          <Button
-            leftSection={<IconRefresh size={14} />}
-            onClick={this.handleRetry}
-            variant="light"
-            size="xs"
-          >
-            Try Again
-          </Button>
-        </Alert>
+        <Container size="sm" py="xl">
+          <Center>
+            <Stack align="center" gap="lg" maw={500}>
+              <IconAlertTriangle size={64} color="var(--mantine-color-red-6)" />
+
+              <Stack align="center" gap="sm">
+                <Title order={1} ta="center" c="red">
+                  Something went wrong
+                </Title>
+                <Text ta="center" c="dimmed">
+                  We encountered an unexpected error. Please try refreshing the
+                  page.
+                </Text>
+              </Stack>
+
+              <Alert
+                icon={<IconAlertTriangle size={16} />}
+                title="Error Details"
+                color="red"
+                variant="light"
+                w="100%"
+              >
+                <Text size="sm" ff="monospace">
+                  {this.state.error.message || "An unknown error occurred"}
+                </Text>
+                {this.state.error.stack &&
+                  process.env.NODE_ENV === "development" && (
+                    <details className="mt-2">
+                      <summary className="cursor-pointer text-sm">
+                        Stack trace
+                      </summary>
+                      <pre className="text-xs mt-2 overflow-auto">
+                        {this.state.error.stack}
+                      </pre>
+                    </details>
+                  )}
+              </Alert>
+
+              <Button
+                leftSection={<IconRefresh size={16} />}
+                onClick={this.reset}
+                variant="filled"
+                size="md"
+              >
+                Try again
+              </Button>
+            </Stack>
+          </Center>
+        </Container>
       );
     }
 

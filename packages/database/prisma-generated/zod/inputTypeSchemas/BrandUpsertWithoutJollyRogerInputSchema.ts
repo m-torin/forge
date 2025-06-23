@@ -7,10 +7,19 @@ import { BrandCreateWithoutJollyRogerInputSchema } from './BrandCreateWithoutJol
 import { BrandUncheckedCreateWithoutJollyRogerInputSchema } from './BrandUncheckedCreateWithoutJollyRogerInputSchema';
 import { BrandWhereInputSchema } from './BrandWhereInputSchema';
 
-export const BrandUpsertWithoutJollyRogerInputSchema: z.ZodType<Prisma.BrandUpsertWithoutJollyRogerInput> = z.object({
-  update: z.union([ z.lazy(() => BrandUpdateWithoutJollyRogerInputSchema),z.lazy(() => BrandUncheckedUpdateWithoutJollyRogerInputSchema) ]),
-  create: z.union([ z.lazy(() => BrandCreateWithoutJollyRogerInputSchema),z.lazy(() => BrandUncheckedCreateWithoutJollyRogerInputSchema) ]),
-  where: z.lazy(() => BrandWhereInputSchema).optional()
-}).strict();
+export const BrandUpsertWithoutJollyRogerInputSchema: z.ZodType<Prisma.BrandUpsertWithoutJollyRogerInput> =
+  z
+    .object({
+      update: z.union([
+        z.lazy(() => BrandUpdateWithoutJollyRogerInputSchema),
+        z.lazy(() => BrandUncheckedUpdateWithoutJollyRogerInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => BrandCreateWithoutJollyRogerInputSchema),
+        z.lazy(() => BrandUncheckedCreateWithoutJollyRogerInputSchema),
+      ]),
+      where: z.lazy(() => BrandWhereInputSchema).optional(),
+    })
+    .strict();
 
 export default BrandUpsertWithoutJollyRogerInputSchema;

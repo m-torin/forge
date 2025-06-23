@@ -5,7 +5,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Import after mocking
-import { getCurrentUser, getSession } from '../server/auth';
+import { getCurrentUser, getSession } from '../src/server/session';
 
 // Use vi.hoisted for mocks
 const { mockGetSession } = vi.hoisted(() => {
@@ -14,14 +14,18 @@ const { mockGetSession } = vi.hoisted(() => {
 });
 
 // Mock the auth module
-vi.mock('../server/auth', () => ({
+vi.mock('../src/server/session', () => ({
+  getCurrentUser: vi.fn(),
+  getSession: vi.fn(),
+}));
+
+// Mock the auth config
+vi.mock('../src/shared/auth.config', () => ({
   auth: {
     api: {
       getSession: mockGetSession,
     },
   },
-  getCurrentUser: vi.fn(),
-  getSession: vi.fn(),
 }));
 
 describe('Server Authentication', () => {

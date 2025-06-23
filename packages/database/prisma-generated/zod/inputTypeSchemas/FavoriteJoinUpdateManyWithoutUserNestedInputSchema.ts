@@ -11,18 +11,73 @@ import { FavoriteJoinUpdateWithWhereUniqueWithoutUserInputSchema } from './Favor
 import { FavoriteJoinUpdateManyWithWhereWithoutUserInputSchema } from './FavoriteJoinUpdateManyWithWhereWithoutUserInputSchema';
 import { FavoriteJoinScalarWhereInputSchema } from './FavoriteJoinScalarWhereInputSchema';
 
-export const FavoriteJoinUpdateManyWithoutUserNestedInputSchema: z.ZodType<Prisma.FavoriteJoinUpdateManyWithoutUserNestedInput> = z.object({
-  create: z.union([ z.lazy(() => FavoriteJoinCreateWithoutUserInputSchema),z.lazy(() => FavoriteJoinCreateWithoutUserInputSchema).array(),z.lazy(() => FavoriteJoinUncheckedCreateWithoutUserInputSchema),z.lazy(() => FavoriteJoinUncheckedCreateWithoutUserInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => FavoriteJoinCreateOrConnectWithoutUserInputSchema),z.lazy(() => FavoriteJoinCreateOrConnectWithoutUserInputSchema).array() ]).optional(),
-  upsert: z.union([ z.lazy(() => FavoriteJoinUpsertWithWhereUniqueWithoutUserInputSchema),z.lazy(() => FavoriteJoinUpsertWithWhereUniqueWithoutUserInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => FavoriteJoinCreateManyUserInputEnvelopeSchema).optional(),
-  set: z.union([ z.lazy(() => FavoriteJoinWhereUniqueInputSchema),z.lazy(() => FavoriteJoinWhereUniqueInputSchema).array() ]).optional(),
-  disconnect: z.union([ z.lazy(() => FavoriteJoinWhereUniqueInputSchema),z.lazy(() => FavoriteJoinWhereUniqueInputSchema).array() ]).optional(),
-  delete: z.union([ z.lazy(() => FavoriteJoinWhereUniqueInputSchema),z.lazy(() => FavoriteJoinWhereUniqueInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => FavoriteJoinWhereUniqueInputSchema),z.lazy(() => FavoriteJoinWhereUniqueInputSchema).array() ]).optional(),
-  update: z.union([ z.lazy(() => FavoriteJoinUpdateWithWhereUniqueWithoutUserInputSchema),z.lazy(() => FavoriteJoinUpdateWithWhereUniqueWithoutUserInputSchema).array() ]).optional(),
-  updateMany: z.union([ z.lazy(() => FavoriteJoinUpdateManyWithWhereWithoutUserInputSchema),z.lazy(() => FavoriteJoinUpdateManyWithWhereWithoutUserInputSchema).array() ]).optional(),
-  deleteMany: z.union([ z.lazy(() => FavoriteJoinScalarWhereInputSchema),z.lazy(() => FavoriteJoinScalarWhereInputSchema).array() ]).optional(),
-}).strict();
+export const FavoriteJoinUpdateManyWithoutUserNestedInputSchema: z.ZodType<Prisma.FavoriteJoinUpdateManyWithoutUserNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => FavoriteJoinCreateWithoutUserInputSchema),
+          z.lazy(() => FavoriteJoinCreateWithoutUserInputSchema).array(),
+          z.lazy(() => FavoriteJoinUncheckedCreateWithoutUserInputSchema),
+          z.lazy(() => FavoriteJoinUncheckedCreateWithoutUserInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => FavoriteJoinCreateOrConnectWithoutUserInputSchema),
+          z.lazy(() => FavoriteJoinCreateOrConnectWithoutUserInputSchema).array(),
+        ])
+        .optional(),
+      upsert: z
+        .union([
+          z.lazy(() => FavoriteJoinUpsertWithWhereUniqueWithoutUserInputSchema),
+          z.lazy(() => FavoriteJoinUpsertWithWhereUniqueWithoutUserInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => FavoriteJoinCreateManyUserInputEnvelopeSchema).optional(),
+      set: z
+        .union([
+          z.lazy(() => FavoriteJoinWhereUniqueInputSchema),
+          z.lazy(() => FavoriteJoinWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      disconnect: z
+        .union([
+          z.lazy(() => FavoriteJoinWhereUniqueInputSchema),
+          z.lazy(() => FavoriteJoinWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      delete: z
+        .union([
+          z.lazy(() => FavoriteJoinWhereUniqueInputSchema),
+          z.lazy(() => FavoriteJoinWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => FavoriteJoinWhereUniqueInputSchema),
+          z.lazy(() => FavoriteJoinWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      update: z
+        .union([
+          z.lazy(() => FavoriteJoinUpdateWithWhereUniqueWithoutUserInputSchema),
+          z.lazy(() => FavoriteJoinUpdateWithWhereUniqueWithoutUserInputSchema).array(),
+        ])
+        .optional(),
+      updateMany: z
+        .union([
+          z.lazy(() => FavoriteJoinUpdateManyWithWhereWithoutUserInputSchema),
+          z.lazy(() => FavoriteJoinUpdateManyWithWhereWithoutUserInputSchema).array(),
+        ])
+        .optional(),
+      deleteMany: z
+        .union([
+          z.lazy(() => FavoriteJoinScalarWhereInputSchema),
+          z.lazy(() => FavoriteJoinScalarWhereInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default FavoriteJoinUpdateManyWithoutUserNestedInputSchema;

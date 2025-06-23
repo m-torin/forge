@@ -7,10 +7,19 @@ import { ProductCreateWithoutOrderItemVariantsInputSchema } from './ProductCreat
 import { ProductUncheckedCreateWithoutOrderItemVariantsInputSchema } from './ProductUncheckedCreateWithoutOrderItemVariantsInputSchema';
 import { ProductWhereInputSchema } from './ProductWhereInputSchema';
 
-export const ProductUpsertWithoutOrderItemVariantsInputSchema: z.ZodType<Prisma.ProductUpsertWithoutOrderItemVariantsInput> = z.object({
-  update: z.union([ z.lazy(() => ProductUpdateWithoutOrderItemVariantsInputSchema),z.lazy(() => ProductUncheckedUpdateWithoutOrderItemVariantsInputSchema) ]),
-  create: z.union([ z.lazy(() => ProductCreateWithoutOrderItemVariantsInputSchema),z.lazy(() => ProductUncheckedCreateWithoutOrderItemVariantsInputSchema) ]),
-  where: z.lazy(() => ProductWhereInputSchema).optional()
-}).strict();
+export const ProductUpsertWithoutOrderItemVariantsInputSchema: z.ZodType<Prisma.ProductUpsertWithoutOrderItemVariantsInput> =
+  z
+    .object({
+      update: z.union([
+        z.lazy(() => ProductUpdateWithoutOrderItemVariantsInputSchema),
+        z.lazy(() => ProductUncheckedUpdateWithoutOrderItemVariantsInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => ProductCreateWithoutOrderItemVariantsInputSchema),
+        z.lazy(() => ProductUncheckedCreateWithoutOrderItemVariantsInputSchema),
+      ]),
+      where: z.lazy(() => ProductWhereInputSchema).optional(),
+    })
+    .strict();
 
 export default ProductUpsertWithoutOrderItemVariantsInputSchema;

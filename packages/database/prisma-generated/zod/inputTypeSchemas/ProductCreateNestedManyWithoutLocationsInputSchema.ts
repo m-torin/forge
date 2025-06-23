@@ -6,10 +6,30 @@ import { ProductUncheckedCreateWithoutLocationsInputSchema } from './ProductUnch
 import { ProductCreateOrConnectWithoutLocationsInputSchema } from './ProductCreateOrConnectWithoutLocationsInputSchema';
 import { ProductWhereUniqueInputSchema } from './ProductWhereUniqueInputSchema';
 
-export const ProductCreateNestedManyWithoutLocationsInputSchema: z.ZodType<Prisma.ProductCreateNestedManyWithoutLocationsInput> = z.object({
-  create: z.union([ z.lazy(() => ProductCreateWithoutLocationsInputSchema),z.lazy(() => ProductCreateWithoutLocationsInputSchema).array(),z.lazy(() => ProductUncheckedCreateWithoutLocationsInputSchema),z.lazy(() => ProductUncheckedCreateWithoutLocationsInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => ProductCreateOrConnectWithoutLocationsInputSchema),z.lazy(() => ProductCreateOrConnectWithoutLocationsInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => ProductWhereUniqueInputSchema),z.lazy(() => ProductWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const ProductCreateNestedManyWithoutLocationsInputSchema: z.ZodType<Prisma.ProductCreateNestedManyWithoutLocationsInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => ProductCreateWithoutLocationsInputSchema),
+          z.lazy(() => ProductCreateWithoutLocationsInputSchema).array(),
+          z.lazy(() => ProductUncheckedCreateWithoutLocationsInputSchema),
+          z.lazy(() => ProductUncheckedCreateWithoutLocationsInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => ProductCreateOrConnectWithoutLocationsInputSchema),
+          z.lazy(() => ProductCreateOrConnectWithoutLocationsInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => ProductWhereUniqueInputSchema),
+          z.lazy(() => ProductWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default ProductCreateNestedManyWithoutLocationsInputSchema;

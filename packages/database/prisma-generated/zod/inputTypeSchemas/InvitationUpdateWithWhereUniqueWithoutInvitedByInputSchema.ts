@@ -5,9 +5,15 @@ import { InvitationWhereUniqueInputSchema } from './InvitationWhereUniqueInputSc
 import { InvitationUpdateWithoutInvitedByInputSchema } from './InvitationUpdateWithoutInvitedByInputSchema';
 import { InvitationUncheckedUpdateWithoutInvitedByInputSchema } from './InvitationUncheckedUpdateWithoutInvitedByInputSchema';
 
-export const InvitationUpdateWithWhereUniqueWithoutInvitedByInputSchema: z.ZodType<Prisma.InvitationUpdateWithWhereUniqueWithoutInvitedByInput> = z.object({
-  where: z.lazy(() => InvitationWhereUniqueInputSchema),
-  data: z.union([ z.lazy(() => InvitationUpdateWithoutInvitedByInputSchema),z.lazy(() => InvitationUncheckedUpdateWithoutInvitedByInputSchema) ]),
-}).strict();
+export const InvitationUpdateWithWhereUniqueWithoutInvitedByInputSchema: z.ZodType<Prisma.InvitationUpdateWithWhereUniqueWithoutInvitedByInput> =
+  z
+    .object({
+      where: z.lazy(() => InvitationWhereUniqueInputSchema),
+      data: z.union([
+        z.lazy(() => InvitationUpdateWithoutInvitedByInputSchema),
+        z.lazy(() => InvitationUncheckedUpdateWithoutInvitedByInputSchema),
+      ]),
+    })
+    .strict();
 
 export default InvitationUpdateWithWhereUniqueWithoutInvitedByInputSchema;

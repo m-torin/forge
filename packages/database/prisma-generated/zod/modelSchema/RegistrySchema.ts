@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { RegistryTypeSchema } from '../inputTypeSchemas/RegistryTypeSchema'
+import { RegistryTypeSchema } from '../inputTypeSchemas/RegistryTypeSchema';
 
 /////////////////////////////////////////
 // REGISTRY SCHEMA
@@ -17,8 +17,8 @@ export const RegistrySchema = z.object({
   isPublic: z.boolean(),
   eventDate: z.coerce.date().nullable(),
   createdByUserId: z.string().nullable(),
-})
+});
 
-export type Registry = z.infer<typeof RegistrySchema>
+export type Registry = z.infer<typeof RegistrySchema>;
 
 export default RegistrySchema;

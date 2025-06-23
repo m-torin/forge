@@ -11,8 +11,8 @@ export const FavoriteJoinSchema = z.object({
   userId: z.string(),
   productId: z.string().nullable(),
   collectionId: z.string().nullable(),
-})
+});
 
-export type FavoriteJoin = z.infer<typeof FavoriteJoinSchema>
+export type FavoriteJoin = z.infer<typeof FavoriteJoinSchema>;
 
 export default FavoriteJoinSchema;

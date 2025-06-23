@@ -7,11 +7,31 @@ import { MemberCreateOrConnectWithoutUserInputSchema } from './MemberCreateOrCon
 import { MemberCreateManyUserInputEnvelopeSchema } from './MemberCreateManyUserInputEnvelopeSchema';
 import { MemberWhereUniqueInputSchema } from './MemberWhereUniqueInputSchema';
 
-export const MemberUncheckedCreateNestedManyWithoutUserInputSchema: z.ZodType<Prisma.MemberUncheckedCreateNestedManyWithoutUserInput> = z.object({
-  create: z.union([ z.lazy(() => MemberCreateWithoutUserInputSchema),z.lazy(() => MemberCreateWithoutUserInputSchema).array(),z.lazy(() => MemberUncheckedCreateWithoutUserInputSchema),z.lazy(() => MemberUncheckedCreateWithoutUserInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => MemberCreateOrConnectWithoutUserInputSchema),z.lazy(() => MemberCreateOrConnectWithoutUserInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => MemberCreateManyUserInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => MemberWhereUniqueInputSchema),z.lazy(() => MemberWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const MemberUncheckedCreateNestedManyWithoutUserInputSchema: z.ZodType<Prisma.MemberUncheckedCreateNestedManyWithoutUserInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => MemberCreateWithoutUserInputSchema),
+          z.lazy(() => MemberCreateWithoutUserInputSchema).array(),
+          z.lazy(() => MemberUncheckedCreateWithoutUserInputSchema),
+          z.lazy(() => MemberUncheckedCreateWithoutUserInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => MemberCreateOrConnectWithoutUserInputSchema),
+          z.lazy(() => MemberCreateOrConnectWithoutUserInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => MemberCreateManyUserInputEnvelopeSchema).optional(),
+      connect: z
+        .union([
+          z.lazy(() => MemberWhereUniqueInputSchema),
+          z.lazy(() => MemberWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default MemberUncheckedCreateNestedManyWithoutUserInputSchema;

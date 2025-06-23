@@ -10,17 +10,72 @@ import { LocationUpdateWithWhereUniqueWithoutPdpJoinsInputSchema } from './Locat
 import { LocationUpdateManyWithWhereWithoutPdpJoinsInputSchema } from './LocationUpdateManyWithWhereWithoutPdpJoinsInputSchema';
 import { LocationScalarWhereInputSchema } from './LocationScalarWhereInputSchema';
 
-export const LocationUncheckedUpdateManyWithoutPdpJoinsNestedInputSchema: z.ZodType<Prisma.LocationUncheckedUpdateManyWithoutPdpJoinsNestedInput> = z.object({
-  create: z.union([ z.lazy(() => LocationCreateWithoutPdpJoinsInputSchema),z.lazy(() => LocationCreateWithoutPdpJoinsInputSchema).array(),z.lazy(() => LocationUncheckedCreateWithoutPdpJoinsInputSchema),z.lazy(() => LocationUncheckedCreateWithoutPdpJoinsInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => LocationCreateOrConnectWithoutPdpJoinsInputSchema),z.lazy(() => LocationCreateOrConnectWithoutPdpJoinsInputSchema).array() ]).optional(),
-  upsert: z.union([ z.lazy(() => LocationUpsertWithWhereUniqueWithoutPdpJoinsInputSchema),z.lazy(() => LocationUpsertWithWhereUniqueWithoutPdpJoinsInputSchema).array() ]).optional(),
-  set: z.union([ z.lazy(() => LocationWhereUniqueInputSchema),z.lazy(() => LocationWhereUniqueInputSchema).array() ]).optional(),
-  disconnect: z.union([ z.lazy(() => LocationWhereUniqueInputSchema),z.lazy(() => LocationWhereUniqueInputSchema).array() ]).optional(),
-  delete: z.union([ z.lazy(() => LocationWhereUniqueInputSchema),z.lazy(() => LocationWhereUniqueInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => LocationWhereUniqueInputSchema),z.lazy(() => LocationWhereUniqueInputSchema).array() ]).optional(),
-  update: z.union([ z.lazy(() => LocationUpdateWithWhereUniqueWithoutPdpJoinsInputSchema),z.lazy(() => LocationUpdateWithWhereUniqueWithoutPdpJoinsInputSchema).array() ]).optional(),
-  updateMany: z.union([ z.lazy(() => LocationUpdateManyWithWhereWithoutPdpJoinsInputSchema),z.lazy(() => LocationUpdateManyWithWhereWithoutPdpJoinsInputSchema).array() ]).optional(),
-  deleteMany: z.union([ z.lazy(() => LocationScalarWhereInputSchema),z.lazy(() => LocationScalarWhereInputSchema).array() ]).optional(),
-}).strict();
+export const LocationUncheckedUpdateManyWithoutPdpJoinsNestedInputSchema: z.ZodType<Prisma.LocationUncheckedUpdateManyWithoutPdpJoinsNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => LocationCreateWithoutPdpJoinsInputSchema),
+          z.lazy(() => LocationCreateWithoutPdpJoinsInputSchema).array(),
+          z.lazy(() => LocationUncheckedCreateWithoutPdpJoinsInputSchema),
+          z.lazy(() => LocationUncheckedCreateWithoutPdpJoinsInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => LocationCreateOrConnectWithoutPdpJoinsInputSchema),
+          z.lazy(() => LocationCreateOrConnectWithoutPdpJoinsInputSchema).array(),
+        ])
+        .optional(),
+      upsert: z
+        .union([
+          z.lazy(() => LocationUpsertWithWhereUniqueWithoutPdpJoinsInputSchema),
+          z.lazy(() => LocationUpsertWithWhereUniqueWithoutPdpJoinsInputSchema).array(),
+        ])
+        .optional(),
+      set: z
+        .union([
+          z.lazy(() => LocationWhereUniqueInputSchema),
+          z.lazy(() => LocationWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      disconnect: z
+        .union([
+          z.lazy(() => LocationWhereUniqueInputSchema),
+          z.lazy(() => LocationWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      delete: z
+        .union([
+          z.lazy(() => LocationWhereUniqueInputSchema),
+          z.lazy(() => LocationWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => LocationWhereUniqueInputSchema),
+          z.lazy(() => LocationWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      update: z
+        .union([
+          z.lazy(() => LocationUpdateWithWhereUniqueWithoutPdpJoinsInputSchema),
+          z.lazy(() => LocationUpdateWithWhereUniqueWithoutPdpJoinsInputSchema).array(),
+        ])
+        .optional(),
+      updateMany: z
+        .union([
+          z.lazy(() => LocationUpdateManyWithWhereWithoutPdpJoinsInputSchema),
+          z.lazy(() => LocationUpdateManyWithWhereWithoutPdpJoinsInputSchema).array(),
+        ])
+        .optional(),
+      deleteMany: z
+        .union([
+          z.lazy(() => LocationScalarWhereInputSchema),
+          z.lazy(() => LocationScalarWhereInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default LocationUncheckedUpdateManyWithoutPdpJoinsNestedInputSchema;

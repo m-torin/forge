@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema'
+import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema';
 
 /////////////////////////////////////////
 // SERIES SCHEMA
@@ -17,8 +17,8 @@ export const SeriesSchema = z.object({
   updatedAt: z.coerce.date(),
   deletedAt: z.coerce.date().nullable(),
   deletedById: z.string().nullable(),
-})
+});
 
-export type Series = z.infer<typeof SeriesSchema>
+export type Series = z.infer<typeof SeriesSchema>;
 
 export default SeriesSchema;

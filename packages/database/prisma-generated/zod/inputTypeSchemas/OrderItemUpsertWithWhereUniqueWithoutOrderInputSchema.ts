@@ -7,10 +7,19 @@ import { OrderItemUncheckedUpdateWithoutOrderInputSchema } from './OrderItemUnch
 import { OrderItemCreateWithoutOrderInputSchema } from './OrderItemCreateWithoutOrderInputSchema';
 import { OrderItemUncheckedCreateWithoutOrderInputSchema } from './OrderItemUncheckedCreateWithoutOrderInputSchema';
 
-export const OrderItemUpsertWithWhereUniqueWithoutOrderInputSchema: z.ZodType<Prisma.OrderItemUpsertWithWhereUniqueWithoutOrderInput> = z.object({
-  where: z.lazy(() => OrderItemWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => OrderItemUpdateWithoutOrderInputSchema),z.lazy(() => OrderItemUncheckedUpdateWithoutOrderInputSchema) ]),
-  create: z.union([ z.lazy(() => OrderItemCreateWithoutOrderInputSchema),z.lazy(() => OrderItemUncheckedCreateWithoutOrderInputSchema) ]),
-}).strict();
+export const OrderItemUpsertWithWhereUniqueWithoutOrderInputSchema: z.ZodType<Prisma.OrderItemUpsertWithWhereUniqueWithoutOrderInput> =
+  z
+    .object({
+      where: z.lazy(() => OrderItemWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => OrderItemUpdateWithoutOrderInputSchema),
+        z.lazy(() => OrderItemUncheckedUpdateWithoutOrderInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => OrderItemCreateWithoutOrderInputSchema),
+        z.lazy(() => OrderItemUncheckedCreateWithoutOrderInputSchema),
+      ]),
+    })
+    .strict();
 
 export default OrderItemUpsertWithWhereUniqueWithoutOrderInputSchema;

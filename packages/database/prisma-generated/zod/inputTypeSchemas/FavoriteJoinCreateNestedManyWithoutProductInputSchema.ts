@@ -7,11 +7,31 @@ import { FavoriteJoinCreateOrConnectWithoutProductInputSchema } from './Favorite
 import { FavoriteJoinCreateManyProductInputEnvelopeSchema } from './FavoriteJoinCreateManyProductInputEnvelopeSchema';
 import { FavoriteJoinWhereUniqueInputSchema } from './FavoriteJoinWhereUniqueInputSchema';
 
-export const FavoriteJoinCreateNestedManyWithoutProductInputSchema: z.ZodType<Prisma.FavoriteJoinCreateNestedManyWithoutProductInput> = z.object({
-  create: z.union([ z.lazy(() => FavoriteJoinCreateWithoutProductInputSchema),z.lazy(() => FavoriteJoinCreateWithoutProductInputSchema).array(),z.lazy(() => FavoriteJoinUncheckedCreateWithoutProductInputSchema),z.lazy(() => FavoriteJoinUncheckedCreateWithoutProductInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => FavoriteJoinCreateOrConnectWithoutProductInputSchema),z.lazy(() => FavoriteJoinCreateOrConnectWithoutProductInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => FavoriteJoinCreateManyProductInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => FavoriteJoinWhereUniqueInputSchema),z.lazy(() => FavoriteJoinWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const FavoriteJoinCreateNestedManyWithoutProductInputSchema: z.ZodType<Prisma.FavoriteJoinCreateNestedManyWithoutProductInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => FavoriteJoinCreateWithoutProductInputSchema),
+          z.lazy(() => FavoriteJoinCreateWithoutProductInputSchema).array(),
+          z.lazy(() => FavoriteJoinUncheckedCreateWithoutProductInputSchema),
+          z.lazy(() => FavoriteJoinUncheckedCreateWithoutProductInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => FavoriteJoinCreateOrConnectWithoutProductInputSchema),
+          z.lazy(() => FavoriteJoinCreateOrConnectWithoutProductInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => FavoriteJoinCreateManyProductInputEnvelopeSchema).optional(),
+      connect: z
+        .union([
+          z.lazy(() => FavoriteJoinWhereUniqueInputSchema),
+          z.lazy(() => FavoriteJoinWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default FavoriteJoinCreateNestedManyWithoutProductInputSchema;

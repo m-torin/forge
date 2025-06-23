@@ -7,11 +7,31 @@ import { StoryCreateOrConnectWithoutDeletedByInputSchema } from './StoryCreateOr
 import { StoryCreateManyDeletedByInputEnvelopeSchema } from './StoryCreateManyDeletedByInputEnvelopeSchema';
 import { StoryWhereUniqueInputSchema } from './StoryWhereUniqueInputSchema';
 
-export const StoryCreateNestedManyWithoutDeletedByInputSchema: z.ZodType<Prisma.StoryCreateNestedManyWithoutDeletedByInput> = z.object({
-  create: z.union([ z.lazy(() => StoryCreateWithoutDeletedByInputSchema),z.lazy(() => StoryCreateWithoutDeletedByInputSchema).array(),z.lazy(() => StoryUncheckedCreateWithoutDeletedByInputSchema),z.lazy(() => StoryUncheckedCreateWithoutDeletedByInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => StoryCreateOrConnectWithoutDeletedByInputSchema),z.lazy(() => StoryCreateOrConnectWithoutDeletedByInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => StoryCreateManyDeletedByInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => StoryWhereUniqueInputSchema),z.lazy(() => StoryWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const StoryCreateNestedManyWithoutDeletedByInputSchema: z.ZodType<Prisma.StoryCreateNestedManyWithoutDeletedByInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => StoryCreateWithoutDeletedByInputSchema),
+          z.lazy(() => StoryCreateWithoutDeletedByInputSchema).array(),
+          z.lazy(() => StoryUncheckedCreateWithoutDeletedByInputSchema),
+          z.lazy(() => StoryUncheckedCreateWithoutDeletedByInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => StoryCreateOrConnectWithoutDeletedByInputSchema),
+          z.lazy(() => StoryCreateOrConnectWithoutDeletedByInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => StoryCreateManyDeletedByInputEnvelopeSchema).optional(),
+      connect: z
+        .union([
+          z.lazy(() => StoryWhereUniqueInputSchema),
+          z.lazy(() => StoryWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default StoryCreateNestedManyWithoutDeletedByInputSchema;

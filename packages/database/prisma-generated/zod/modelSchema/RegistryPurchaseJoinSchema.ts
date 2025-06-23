@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { PurchaseStatusSchema } from '../inputTypeSchemas/PurchaseStatusSchema'
+import { PurchaseStatusSchema } from '../inputTypeSchemas/PurchaseStatusSchema';
 
 /////////////////////////////////////////
 // REGISTRY PURCHASE JOIN SCHEMA
@@ -31,8 +31,8 @@ export const RegistryPurchaseJoinSchema = z.object({
   registryItemId: z.string(),
   notifiedOwner: z.boolean(),
   notifiedDate: z.coerce.date().nullable(),
-})
+});
 
-export type RegistryPurchaseJoin = z.infer<typeof RegistryPurchaseJoinSchema>
+export type RegistryPurchaseJoin = z.infer<typeof RegistryPurchaseJoinSchema>;
 
 export default RegistryPurchaseJoinSchema;

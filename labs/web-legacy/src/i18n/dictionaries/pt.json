@@ -1,0 +1,69 @@
+{
+  "app": {
+    "welcome": "Bem-vindo ao Web Template",
+    "description": "Um modelo Next.js moderno com Mantine UI e suporte à internacionalização",
+    "brand": "Web Template",
+    "appDescription": "Um modelo de aplicação web moderno com internacionalização",
+    "selectLanguage": "Selecionar idioma",
+    "l": {
+      "en": "English",
+      "fr": "Français",
+      "es": "Español",
+      "de": "Deutsch",
+      "pt": "Português"
+    }
+  },
+  "search": {
+    "title": "Pesquisar",
+    "placeholder": "Pesquisar qualquer coisa...",
+    "button": "Pesquisar",
+    "results": "Resultados da pesquisa",
+    "noResults": "Nenhum resultado encontrado",
+    "tryAgain": "Tente pesquisar outra coisa"
+  },
+  "navigation": {
+    "home": "Início",
+    "search": "Pesquisar",
+    "account": "Conta",
+    "orders": "Pedidos",
+    "wishlist": "Lista de desejos",
+    "help": "Ajuda",
+    "logout": "Sair",
+    "login": "Entrar"
+  },
+  "taxonomy": {
+    "noItems": "Nenhum elemento encontrado.",
+    "items": "itens",
+    "backTo": "Voltar para",
+    "save": "Salvar",
+    "share": "Compartilhar",
+    "relatedItems": "Itens relacionados",
+    "exploreMore": "Explore mais itens nesta",
+    "viewAll": "Ver tudo",
+    "details": "Detalhes",
+    "type": "Tipo",
+    "totalItems": "Total de itens",
+    "parent": "Pai",
+    "browseItems": "Navegar itens",
+    "brands": {
+      "title": "Marcas",
+      "description": "Descubra produtos de nossas marcas e parceiros em destaque"
+    },
+    "categories": {
+      "title": "Categorias",
+      "description": "Navegue produtos por categoria para encontrar exatamente o que você precisa"
+    },
+    "collections": {
+      "title": "Coleções",
+      "description": "Coleções curadas de produtos para ocasiões especiais e temas"
+    },
+    "tags": {
+      "title": "Tags",
+      "description": "Encontre produtos por tags e rótulos"
+    },
+    "attributes": {
+      "title": "Atributos",
+      "description": "Filtre produtos por atributos e propriedades específicas"
+    }
+  }
+}

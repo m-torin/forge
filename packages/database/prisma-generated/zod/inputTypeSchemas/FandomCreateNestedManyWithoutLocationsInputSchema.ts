@@ -6,10 +6,30 @@ import { FandomUncheckedCreateWithoutLocationsInputSchema } from './FandomUnchec
 import { FandomCreateOrConnectWithoutLocationsInputSchema } from './FandomCreateOrConnectWithoutLocationsInputSchema';
 import { FandomWhereUniqueInputSchema } from './FandomWhereUniqueInputSchema';
 
-export const FandomCreateNestedManyWithoutLocationsInputSchema: z.ZodType<Prisma.FandomCreateNestedManyWithoutLocationsInput> = z.object({
-  create: z.union([ z.lazy(() => FandomCreateWithoutLocationsInputSchema),z.lazy(() => FandomCreateWithoutLocationsInputSchema).array(),z.lazy(() => FandomUncheckedCreateWithoutLocationsInputSchema),z.lazy(() => FandomUncheckedCreateWithoutLocationsInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => FandomCreateOrConnectWithoutLocationsInputSchema),z.lazy(() => FandomCreateOrConnectWithoutLocationsInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => FandomWhereUniqueInputSchema),z.lazy(() => FandomWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const FandomCreateNestedManyWithoutLocationsInputSchema: z.ZodType<Prisma.FandomCreateNestedManyWithoutLocationsInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => FandomCreateWithoutLocationsInputSchema),
+          z.lazy(() => FandomCreateWithoutLocationsInputSchema).array(),
+          z.lazy(() => FandomUncheckedCreateWithoutLocationsInputSchema),
+          z.lazy(() => FandomUncheckedCreateWithoutLocationsInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => FandomCreateOrConnectWithoutLocationsInputSchema),
+          z.lazy(() => FandomCreateOrConnectWithoutLocationsInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => FandomWhereUniqueInputSchema),
+          z.lazy(() => FandomWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default FandomCreateNestedManyWithoutLocationsInputSchema;

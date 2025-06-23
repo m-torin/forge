@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema'
+import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema';
 
 /////////////////////////////////////////
 // AUDIT LOG SCHEMA
@@ -17,8 +17,8 @@ export const AuditLogSchema = z.object({
   success: z.boolean(),
   errorMessage: z.string().nullable(),
   timestamp: z.coerce.date(),
-})
+});
 
-export type AuditLog = z.infer<typeof AuditLogSchema>
+export type AuditLog = z.infer<typeof AuditLogSchema>;
 
 export default AuditLogSchema;

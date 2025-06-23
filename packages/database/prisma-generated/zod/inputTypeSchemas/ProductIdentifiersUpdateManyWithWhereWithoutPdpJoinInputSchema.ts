@@ -5,9 +5,15 @@ import { ProductIdentifiersScalarWhereInputSchema } from './ProductIdentifiersSc
 import { ProductIdentifiersUpdateManyMutationInputSchema } from './ProductIdentifiersUpdateManyMutationInputSchema';
 import { ProductIdentifiersUncheckedUpdateManyWithoutPdpJoinInputSchema } from './ProductIdentifiersUncheckedUpdateManyWithoutPdpJoinInputSchema';
 
-export const ProductIdentifiersUpdateManyWithWhereWithoutPdpJoinInputSchema: z.ZodType<Prisma.ProductIdentifiersUpdateManyWithWhereWithoutPdpJoinInput> = z.object({
-  where: z.lazy(() => ProductIdentifiersScalarWhereInputSchema),
-  data: z.union([ z.lazy(() => ProductIdentifiersUpdateManyMutationInputSchema),z.lazy(() => ProductIdentifiersUncheckedUpdateManyWithoutPdpJoinInputSchema) ]),
-}).strict();
+export const ProductIdentifiersUpdateManyWithWhereWithoutPdpJoinInputSchema: z.ZodType<Prisma.ProductIdentifiersUpdateManyWithWhereWithoutPdpJoinInput> =
+  z
+    .object({
+      where: z.lazy(() => ProductIdentifiersScalarWhereInputSchema),
+      data: z.union([
+        z.lazy(() => ProductIdentifiersUpdateManyMutationInputSchema),
+        z.lazy(() => ProductIdentifiersUncheckedUpdateManyWithoutPdpJoinInputSchema),
+      ]),
+    })
+    .strict();
 
 export default ProductIdentifiersUpdateManyWithWhereWithoutPdpJoinInputSchema;

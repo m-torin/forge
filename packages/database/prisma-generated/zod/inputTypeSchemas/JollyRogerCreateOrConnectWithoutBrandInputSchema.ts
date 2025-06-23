@@ -5,9 +5,15 @@ import { JollyRogerWhereUniqueInputSchema } from './JollyRogerWhereUniqueInputSc
 import { JollyRogerCreateWithoutBrandInputSchema } from './JollyRogerCreateWithoutBrandInputSchema';
 import { JollyRogerUncheckedCreateWithoutBrandInputSchema } from './JollyRogerUncheckedCreateWithoutBrandInputSchema';
 
-export const JollyRogerCreateOrConnectWithoutBrandInputSchema: z.ZodType<Prisma.JollyRogerCreateOrConnectWithoutBrandInput> = z.object({
-  where: z.lazy(() => JollyRogerWhereUniqueInputSchema),
-  create: z.union([ z.lazy(() => JollyRogerCreateWithoutBrandInputSchema),z.lazy(() => JollyRogerUncheckedCreateWithoutBrandInputSchema) ]),
-}).strict();
+export const JollyRogerCreateOrConnectWithoutBrandInputSchema: z.ZodType<Prisma.JollyRogerCreateOrConnectWithoutBrandInput> =
+  z
+    .object({
+      where: z.lazy(() => JollyRogerWhereUniqueInputSchema),
+      create: z.union([
+        z.lazy(() => JollyRogerCreateWithoutBrandInputSchema),
+        z.lazy(() => JollyRogerUncheckedCreateWithoutBrandInputSchema),
+      ]),
+    })
+    .strict();
 
 export default JollyRogerCreateOrConnectWithoutBrandInputSchema;

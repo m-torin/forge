@@ -6,10 +6,20 @@ import { CollectionUncheckedCreateWithoutIdentifiersInputSchema } from './Collec
 import { CollectionCreateOrConnectWithoutIdentifiersInputSchema } from './CollectionCreateOrConnectWithoutIdentifiersInputSchema';
 import { CollectionWhereUniqueInputSchema } from './CollectionWhereUniqueInputSchema';
 
-export const CollectionCreateNestedOneWithoutIdentifiersInputSchema: z.ZodType<Prisma.CollectionCreateNestedOneWithoutIdentifiersInput> = z.object({
-  create: z.union([ z.lazy(() => CollectionCreateWithoutIdentifiersInputSchema),z.lazy(() => CollectionUncheckedCreateWithoutIdentifiersInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => CollectionCreateOrConnectWithoutIdentifiersInputSchema).optional(),
-  connect: z.lazy(() => CollectionWhereUniqueInputSchema).optional()
-}).strict();
+export const CollectionCreateNestedOneWithoutIdentifiersInputSchema: z.ZodType<Prisma.CollectionCreateNestedOneWithoutIdentifiersInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => CollectionCreateWithoutIdentifiersInputSchema),
+          z.lazy(() => CollectionUncheckedCreateWithoutIdentifiersInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .lazy(() => CollectionCreateOrConnectWithoutIdentifiersInputSchema)
+        .optional(),
+      connect: z.lazy(() => CollectionWhereUniqueInputSchema).optional(),
+    })
+    .strict();
 
 export default CollectionCreateNestedOneWithoutIdentifiersInputSchema;

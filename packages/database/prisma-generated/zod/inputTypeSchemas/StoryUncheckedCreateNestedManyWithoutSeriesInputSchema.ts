@@ -7,11 +7,31 @@ import { StoryCreateOrConnectWithoutSeriesInputSchema } from './StoryCreateOrCon
 import { StoryCreateManySeriesInputEnvelopeSchema } from './StoryCreateManySeriesInputEnvelopeSchema';
 import { StoryWhereUniqueInputSchema } from './StoryWhereUniqueInputSchema';
 
-export const StoryUncheckedCreateNestedManyWithoutSeriesInputSchema: z.ZodType<Prisma.StoryUncheckedCreateNestedManyWithoutSeriesInput> = z.object({
-  create: z.union([ z.lazy(() => StoryCreateWithoutSeriesInputSchema),z.lazy(() => StoryCreateWithoutSeriesInputSchema).array(),z.lazy(() => StoryUncheckedCreateWithoutSeriesInputSchema),z.lazy(() => StoryUncheckedCreateWithoutSeriesInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => StoryCreateOrConnectWithoutSeriesInputSchema),z.lazy(() => StoryCreateOrConnectWithoutSeriesInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => StoryCreateManySeriesInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => StoryWhereUniqueInputSchema),z.lazy(() => StoryWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const StoryUncheckedCreateNestedManyWithoutSeriesInputSchema: z.ZodType<Prisma.StoryUncheckedCreateNestedManyWithoutSeriesInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => StoryCreateWithoutSeriesInputSchema),
+          z.lazy(() => StoryCreateWithoutSeriesInputSchema).array(),
+          z.lazy(() => StoryUncheckedCreateWithoutSeriesInputSchema),
+          z.lazy(() => StoryUncheckedCreateWithoutSeriesInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => StoryCreateOrConnectWithoutSeriesInputSchema),
+          z.lazy(() => StoryCreateOrConnectWithoutSeriesInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => StoryCreateManySeriesInputEnvelopeSchema).optional(),
+      connect: z
+        .union([
+          z.lazy(() => StoryWhereUniqueInputSchema),
+          z.lazy(() => StoryWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default StoryUncheckedCreateNestedManyWithoutSeriesInputSchema;

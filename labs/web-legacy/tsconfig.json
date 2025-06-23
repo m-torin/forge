@@ -1,0 +1,22 @@
+{
+  "extends": "@repo/config/typescript/nextjs.json",
+  "compilerOptions": {
+    "types": ["vitest/globals", "@playwright/test"],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/env": ["./env.ts"],
+      "@root/*": ["./*"],
+      "@repo/*": ["../../packages/*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "e2e/**/*.ts"
+  ],
+  "exclude": ["node_modules", ".next", "**/.next", "dist", "build"]
+}

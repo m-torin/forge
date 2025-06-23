@@ -11,14 +11,28 @@ import { ProductUpdateToOneWithWhereWithoutReviewsInputSchema } from './ProductU
 import { ProductUpdateWithoutReviewsInputSchema } from './ProductUpdateWithoutReviewsInputSchema';
 import { ProductUncheckedUpdateWithoutReviewsInputSchema } from './ProductUncheckedUpdateWithoutReviewsInputSchema';
 
-export const ProductUpdateOneWithoutReviewsNestedInputSchema: z.ZodType<Prisma.ProductUpdateOneWithoutReviewsNestedInput> = z.object({
-  create: z.union([ z.lazy(() => ProductCreateWithoutReviewsInputSchema),z.lazy(() => ProductUncheckedCreateWithoutReviewsInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => ProductCreateOrConnectWithoutReviewsInputSchema).optional(),
-  upsert: z.lazy(() => ProductUpsertWithoutReviewsInputSchema).optional(),
-  disconnect: z.union([ z.boolean(),z.lazy(() => ProductWhereInputSchema) ]).optional(),
-  delete: z.union([ z.boolean(),z.lazy(() => ProductWhereInputSchema) ]).optional(),
-  connect: z.lazy(() => ProductWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => ProductUpdateToOneWithWhereWithoutReviewsInputSchema),z.lazy(() => ProductUpdateWithoutReviewsInputSchema),z.lazy(() => ProductUncheckedUpdateWithoutReviewsInputSchema) ]).optional(),
-}).strict();
+export const ProductUpdateOneWithoutReviewsNestedInputSchema: z.ZodType<Prisma.ProductUpdateOneWithoutReviewsNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => ProductCreateWithoutReviewsInputSchema),
+          z.lazy(() => ProductUncheckedCreateWithoutReviewsInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z.lazy(() => ProductCreateOrConnectWithoutReviewsInputSchema).optional(),
+      upsert: z.lazy(() => ProductUpsertWithoutReviewsInputSchema).optional(),
+      disconnect: z.union([z.boolean(), z.lazy(() => ProductWhereInputSchema)]).optional(),
+      delete: z.union([z.boolean(), z.lazy(() => ProductWhereInputSchema)]).optional(),
+      connect: z.lazy(() => ProductWhereUniqueInputSchema).optional(),
+      update: z
+        .union([
+          z.lazy(() => ProductUpdateToOneWithWhereWithoutReviewsInputSchema),
+          z.lazy(() => ProductUpdateWithoutReviewsInputSchema),
+          z.lazy(() => ProductUncheckedUpdateWithoutReviewsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default ProductUpdateOneWithoutReviewsNestedInputSchema;

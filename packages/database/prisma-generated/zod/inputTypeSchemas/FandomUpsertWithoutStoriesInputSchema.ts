@@ -7,10 +7,19 @@ import { FandomCreateWithoutStoriesInputSchema } from './FandomCreateWithoutStor
 import { FandomUncheckedCreateWithoutStoriesInputSchema } from './FandomUncheckedCreateWithoutStoriesInputSchema';
 import { FandomWhereInputSchema } from './FandomWhereInputSchema';
 
-export const FandomUpsertWithoutStoriesInputSchema: z.ZodType<Prisma.FandomUpsertWithoutStoriesInput> = z.object({
-  update: z.union([ z.lazy(() => FandomUpdateWithoutStoriesInputSchema),z.lazy(() => FandomUncheckedUpdateWithoutStoriesInputSchema) ]),
-  create: z.union([ z.lazy(() => FandomCreateWithoutStoriesInputSchema),z.lazy(() => FandomUncheckedCreateWithoutStoriesInputSchema) ]),
-  where: z.lazy(() => FandomWhereInputSchema).optional()
-}).strict();
+export const FandomUpsertWithoutStoriesInputSchema: z.ZodType<Prisma.FandomUpsertWithoutStoriesInput> =
+  z
+    .object({
+      update: z.union([
+        z.lazy(() => FandomUpdateWithoutStoriesInputSchema),
+        z.lazy(() => FandomUncheckedUpdateWithoutStoriesInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => FandomCreateWithoutStoriesInputSchema),
+        z.lazy(() => FandomUncheckedCreateWithoutStoriesInputSchema),
+      ]),
+      where: z.lazy(() => FandomWhereInputSchema).optional(),
+    })
+    .strict();
 
 export default FandomUpsertWithoutStoriesInputSchema;

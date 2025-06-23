@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema'
+import { JsonValueSchema } from '../inputTypeSchemas/JsonValueSchema';
 
 /////////////////////////////////////////
 // PRODUCT IDENTIFIERS SCHEMA
@@ -34,8 +34,8 @@ export const ProductIdentifiersSchema = z.object({
   notes: z.string().nullable(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
-})
+});
 
-export type ProductIdentifiers = z.infer<typeof ProductIdentifiersSchema>
+export type ProductIdentifiers = z.infer<typeof ProductIdentifiersSchema>;
 
 export default ProductIdentifiersSchema;

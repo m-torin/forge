@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { InventoryTransactionTypeSchema } from '../inputTypeSchemas/InventoryTransactionTypeSchema'
+import { InventoryTransactionTypeSchema } from '../inputTypeSchemas/InventoryTransactionTypeSchema';
 
 /////////////////////////////////////////
 // INVENTORY TRANSACTION SCHEMA
@@ -15,8 +15,8 @@ export const InventoryTransactionSchema = z.object({
   notes: z.string().nullable(),
   createdAt: z.coerce.date(),
   createdBy: z.string().nullable(),
-})
+});
 
-export type InventoryTransaction = z.infer<typeof InventoryTransactionSchema>
+export type InventoryTransaction = z.infer<typeof InventoryTransactionSchema>;
 
 export default InventoryTransactionSchema;

@@ -5,9 +5,15 @@ import { OrganizationWhereUniqueInputSchema } from './OrganizationWhereUniqueInp
 import { OrganizationCreateWithoutInvitationsInputSchema } from './OrganizationCreateWithoutInvitationsInputSchema';
 import { OrganizationUncheckedCreateWithoutInvitationsInputSchema } from './OrganizationUncheckedCreateWithoutInvitationsInputSchema';
 
-export const OrganizationCreateOrConnectWithoutInvitationsInputSchema: z.ZodType<Prisma.OrganizationCreateOrConnectWithoutInvitationsInput> = z.object({
-  where: z.lazy(() => OrganizationWhereUniqueInputSchema),
-  create: z.union([ z.lazy(() => OrganizationCreateWithoutInvitationsInputSchema),z.lazy(() => OrganizationUncheckedCreateWithoutInvitationsInputSchema) ]),
-}).strict();
+export const OrganizationCreateOrConnectWithoutInvitationsInputSchema: z.ZodType<Prisma.OrganizationCreateOrConnectWithoutInvitationsInput> =
+  z
+    .object({
+      where: z.lazy(() => OrganizationWhereUniqueInputSchema),
+      create: z.union([
+        z.lazy(() => OrganizationCreateWithoutInvitationsInputSchema),
+        z.lazy(() => OrganizationUncheckedCreateWithoutInvitationsInputSchema),
+      ]),
+    })
+    .strict();
 
 export default OrganizationCreateOrConnectWithoutInvitationsInputSchema;

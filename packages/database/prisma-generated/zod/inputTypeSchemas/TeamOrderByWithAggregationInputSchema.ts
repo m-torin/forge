@@ -7,16 +7,23 @@ import { TeamCountOrderByAggregateInputSchema } from './TeamCountOrderByAggregat
 import { TeamMaxOrderByAggregateInputSchema } from './TeamMaxOrderByAggregateInputSchema';
 import { TeamMinOrderByAggregateInputSchema } from './TeamMinOrderByAggregateInputSchema';
 
-export const TeamOrderByWithAggregationInputSchema: z.ZodType<Prisma.TeamOrderByWithAggregationInput> = z.object({
-  id: z.lazy(() => SortOrderSchema).optional(),
-  name: z.lazy(() => SortOrderSchema).optional(),
-  description: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
-  organizationId: z.lazy(() => SortOrderSchema).optional(),
-  createdAt: z.lazy(() => SortOrderSchema).optional(),
-  updatedAt: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
-  _count: z.lazy(() => TeamCountOrderByAggregateInputSchema).optional(),
-  _max: z.lazy(() => TeamMaxOrderByAggregateInputSchema).optional(),
-  _min: z.lazy(() => TeamMinOrderByAggregateInputSchema).optional()
-}).strict();
+export const TeamOrderByWithAggregationInputSchema: z.ZodType<Prisma.TeamOrderByWithAggregationInput> =
+  z
+    .object({
+      id: z.lazy(() => SortOrderSchema).optional(),
+      name: z.lazy(() => SortOrderSchema).optional(),
+      description: z
+        .union([z.lazy(() => SortOrderSchema), z.lazy(() => SortOrderInputSchema)])
+        .optional(),
+      organizationId: z.lazy(() => SortOrderSchema).optional(),
+      createdAt: z.lazy(() => SortOrderSchema).optional(),
+      updatedAt: z
+        .union([z.lazy(() => SortOrderSchema), z.lazy(() => SortOrderInputSchema)])
+        .optional(),
+      _count: z.lazy(() => TeamCountOrderByAggregateInputSchema).optional(),
+      _max: z.lazy(() => TeamMaxOrderByAggregateInputSchema).optional(),
+      _min: z.lazy(() => TeamMinOrderByAggregateInputSchema).optional(),
+    })
+    .strict();
 
 export default TeamOrderByWithAggregationInputSchema;

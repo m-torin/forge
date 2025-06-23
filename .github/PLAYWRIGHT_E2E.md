@@ -186,7 +186,7 @@ SKIP_INTEGRATION_TESTS=true
 # Full E2E Integration
 paths:
   - "apps/backstage/**"
-  - "apps/web/**"
+  - "apps/web-legacy/**"
   - "apps/workers/**"
   - "packages/testing/**"
   - "packages/auth/**"
@@ -282,7 +282,7 @@ cd apps/backstage
 pnpm test:e2e:ui
 
 # Test with headed browser
-cd apps/web
+cd apps/web-legacy
 pnpm test:e2e:headed
 
 # Test with debug mode

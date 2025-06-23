@@ -7,11 +7,31 @@ import { OrderItemCreateOrConnectWithoutVariantInputSchema } from './OrderItemCr
 import { OrderItemCreateManyVariantInputEnvelopeSchema } from './OrderItemCreateManyVariantInputEnvelopeSchema';
 import { OrderItemWhereUniqueInputSchema } from './OrderItemWhereUniqueInputSchema';
 
-export const OrderItemUncheckedCreateNestedManyWithoutVariantInputSchema: z.ZodType<Prisma.OrderItemUncheckedCreateNestedManyWithoutVariantInput> = z.object({
-  create: z.union([ z.lazy(() => OrderItemCreateWithoutVariantInputSchema),z.lazy(() => OrderItemCreateWithoutVariantInputSchema).array(),z.lazy(() => OrderItemUncheckedCreateWithoutVariantInputSchema),z.lazy(() => OrderItemUncheckedCreateWithoutVariantInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => OrderItemCreateOrConnectWithoutVariantInputSchema),z.lazy(() => OrderItemCreateOrConnectWithoutVariantInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => OrderItemCreateManyVariantInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => OrderItemWhereUniqueInputSchema),z.lazy(() => OrderItemWhereUniqueInputSchema).array() ]).optional(),
-}).strict();
+export const OrderItemUncheckedCreateNestedManyWithoutVariantInputSchema: z.ZodType<Prisma.OrderItemUncheckedCreateNestedManyWithoutVariantInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => OrderItemCreateWithoutVariantInputSchema),
+          z.lazy(() => OrderItemCreateWithoutVariantInputSchema).array(),
+          z.lazy(() => OrderItemUncheckedCreateWithoutVariantInputSchema),
+          z.lazy(() => OrderItemUncheckedCreateWithoutVariantInputSchema).array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => OrderItemCreateOrConnectWithoutVariantInputSchema),
+          z.lazy(() => OrderItemCreateOrConnectWithoutVariantInputSchema).array(),
+        ])
+        .optional(),
+      createMany: z.lazy(() => OrderItemCreateManyVariantInputEnvelopeSchema).optional(),
+      connect: z
+        .union([
+          z.lazy(() => OrderItemWhereUniqueInputSchema),
+          z.lazy(() => OrderItemWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
 
 export default OrderItemUncheckedCreateNestedManyWithoutVariantInputSchema;

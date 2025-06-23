@@ -5,9 +5,15 @@ import { RegistryPurchaseJoinWhereUniqueInputSchema } from './RegistryPurchaseJo
 import { RegistryPurchaseJoinCreateWithoutPurchaserInputSchema } from './RegistryPurchaseJoinCreateWithoutPurchaserInputSchema';
 import { RegistryPurchaseJoinUncheckedCreateWithoutPurchaserInputSchema } from './RegistryPurchaseJoinUncheckedCreateWithoutPurchaserInputSchema';
 
-export const RegistryPurchaseJoinCreateOrConnectWithoutPurchaserInputSchema: z.ZodType<Prisma.RegistryPurchaseJoinCreateOrConnectWithoutPurchaserInput> = z.object({
-  where: z.lazy(() => RegistryPurchaseJoinWhereUniqueInputSchema),
-  create: z.union([ z.lazy(() => RegistryPurchaseJoinCreateWithoutPurchaserInputSchema),z.lazy(() => RegistryPurchaseJoinUncheckedCreateWithoutPurchaserInputSchema) ]),
-}).strict();
+export const RegistryPurchaseJoinCreateOrConnectWithoutPurchaserInputSchema: z.ZodType<Prisma.RegistryPurchaseJoinCreateOrConnectWithoutPurchaserInput> =
+  z
+    .object({
+      where: z.lazy(() => RegistryPurchaseJoinWhereUniqueInputSchema),
+      create: z.union([
+        z.lazy(() => RegistryPurchaseJoinCreateWithoutPurchaserInputSchema),
+        z.lazy(() => RegistryPurchaseJoinUncheckedCreateWithoutPurchaserInputSchema),
+      ]),
+    })
+    .strict();
 
 export default RegistryPurchaseJoinCreateOrConnectWithoutPurchaserInputSchema;

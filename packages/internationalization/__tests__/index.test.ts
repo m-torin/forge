@@ -23,10 +23,6 @@ vi.mock('../src/dictionaries/pt.json', () => ({
   default: { hello: 'Olá', welcome: 'Bem-vindo' },
 }));
 
-vi.mock('../src/dictionaries/zh.json', () => ({
-  default: { hello: '你好', welcome: '欢迎' },
-}));
-
 // Mock languine.json is already mocked in test-setup.ts
 
 describe('internationalization Index', () => {
@@ -37,7 +33,7 @@ describe('internationalization Index', () => {
 
   describe('locales', () => {
     test('exports all available locales', () => {
-      expect(locales).toStrictEqual(['en', 'es', 'fr', 'de', 'pt', 'zh']);
+      expect(locales).toStrictEqual(['en', 'es', 'fr', 'de', 'pt']);
     });
 
     test('includes source locale and all target locales', () => {
@@ -46,7 +42,6 @@ describe('internationalization Index', () => {
       expect(locales).toContain('fr');
       expect(locales).toContain('de');
       expect(locales).toContain('pt');
-      expect(locales).toContain('zh');
     });
   });
 
@@ -84,7 +79,6 @@ describe('internationalization Index', () => {
         es: { hello: 'Hola', welcome: 'Bienvenido' },
         fr: { hello: 'Bonjour', welcome: 'Bienvenue' },
         pt: { hello: 'Olá', welcome: 'Bem-vindo' },
-        zh: { hello: '你好', welcome: '欢迎' },
       };
 
       for (const [locale, expected] of Object.entries(expectedDictionaries)) {

@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { ContentStatusSchema } from '../inputTypeSchemas/ContentStatusSchema'
-import { ReviewTypeSchema } from '../inputTypeSchemas/ReviewTypeSchema'
+import { ContentStatusSchema } from '../inputTypeSchemas/ContentStatusSchema';
+import { ReviewTypeSchema } from '../inputTypeSchemas/ReviewTypeSchema';
 
 /////////////////////////////////////////
 // REVIEW SCHEMA
@@ -24,8 +24,8 @@ export const ReviewSchema = z.object({
   totalVotes: z.number().int(),
   userId: z.string(),
   productId: z.string().nullable(),
-})
+});
 
-export type Review = z.infer<typeof ReviewSchema>
+export type Review = z.infer<typeof ReviewSchema>;
 
 export default ReviewSchema;

@@ -11,8 +11,8 @@ export const TeamSchema = z.object({
   organizationId: z.string(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date().nullable(),
-})
+});
 
-export type Team = z.infer<typeof TeamSchema>
+export type Team = z.infer<typeof TeamSchema>;
 
 export default TeamSchema;

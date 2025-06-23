@@ -55,7 +55,9 @@
     "tsup": "^8.5.0",
     "turbo": "^2.5.4",
     "typescript": "5.8.3",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "@mantine/core": "^8.1.1",
+    "@mantine/hooks": "^8.1.1"
   },
   "engines": {
     "node": ">=22",

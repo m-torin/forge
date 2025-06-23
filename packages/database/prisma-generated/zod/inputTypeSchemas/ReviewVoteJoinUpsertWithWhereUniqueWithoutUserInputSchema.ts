@@ -7,10 +7,19 @@ import { ReviewVoteJoinUncheckedUpdateWithoutUserInputSchema } from './ReviewVot
 import { ReviewVoteJoinCreateWithoutUserInputSchema } from './ReviewVoteJoinCreateWithoutUserInputSchema';
 import { ReviewVoteJoinUncheckedCreateWithoutUserInputSchema } from './ReviewVoteJoinUncheckedCreateWithoutUserInputSchema';
 
-export const ReviewVoteJoinUpsertWithWhereUniqueWithoutUserInputSchema: z.ZodType<Prisma.ReviewVoteJoinUpsertWithWhereUniqueWithoutUserInput> = z.object({
-  where: z.lazy(() => ReviewVoteJoinWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => ReviewVoteJoinUpdateWithoutUserInputSchema),z.lazy(() => ReviewVoteJoinUncheckedUpdateWithoutUserInputSchema) ]),
-  create: z.union([ z.lazy(() => ReviewVoteJoinCreateWithoutUserInputSchema),z.lazy(() => ReviewVoteJoinUncheckedCreateWithoutUserInputSchema) ]),
-}).strict();
+export const ReviewVoteJoinUpsertWithWhereUniqueWithoutUserInputSchema: z.ZodType<Prisma.ReviewVoteJoinUpsertWithWhereUniqueWithoutUserInput> =
+  z
+    .object({
+      where: z.lazy(() => ReviewVoteJoinWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => ReviewVoteJoinUpdateWithoutUserInputSchema),
+        z.lazy(() => ReviewVoteJoinUncheckedUpdateWithoutUserInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => ReviewVoteJoinCreateWithoutUserInputSchema),
+        z.lazy(() => ReviewVoteJoinUncheckedCreateWithoutUserInputSchema),
+      ]),
+    })
+    .strict();
 
 export default ReviewVoteJoinUpsertWithWhereUniqueWithoutUserInputSchema;

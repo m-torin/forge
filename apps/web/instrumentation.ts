@@ -1,30 +1,21 @@
 /**
  * Next.js instrumentation for Web app
- * Uses the observability package for Sentry integration
+ * Initializes Sentry for both edge and server runtimes
  */
 
-// Export register and onRequestError from the observability package
-// This maintains the four-file export pattern - server-only code
-export { register, onRequestError } from '@repo/observability/server/next';
+export async function register() {
+  // Initialize Sentry for both edge and server runtimes
+  const Sentry = await import('@sentry/nextjs');
+  
+  Sentry.init({
+    dsn: "https://7dd841435baf049c0ef0841feaf57a14@o1116743.ingest.us.sentry.io/4509465421086720",
+    tracesSampleRate: 1,
+    debug: false,
+  });
+}
 
-// Optional: If you need custom configuration, you can wrap the register function
-// export async function register() {
-//   const { register: observabilityRegister } = await import('@repo/observability/server/next');
-//
-//   // Pass custom config if needed
-//   await observabilityRegister({
-//     providers: {
-//       sentry: {
-//         dsn: process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN,
-//         environment: process.env.NODE_ENV,
-//         // Add web-specific tags
-//         options: {
-//           beforeSend: (event) => {
-//             event.tags = { ...event.tags, app: 'web' };
-//             return event;
-//           }
-//         }
-//       }
-//     }
-//   });
-// }
+export async function onRequestError(error: Error) {
+  // Sentry will automatically capture unhandled errors
+  // Additional error handling can be added here if needed
+  console.error('Unhandled error:', error);
+}

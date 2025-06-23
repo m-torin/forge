@@ -1,67 +1,51 @@
-import { generateSitemapObject, type DynamicSitemapRoute } from '@repo/seo/server/next';
-import { getProducts } from '@/actions/products';
-import { getArticles } from '@/actions/articles';
-import { MetadataRoute } from 'next';
+import { MetadataRoute } from "next";
+import { locales } from "@repo/internationalization/server/next";
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com';
-  const locales = ['en', 'es', 'fr', 'de', 'pt'];
+/**
+ * Generate sitemap for all locales
+ *
+ * This creates a sitemap that includes all pages for all supported locales,
+ * helping search engines discover and index the multilingual content.
+ */
+export default function sitemap(): MetadataRoute.Sitemap {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3200";
 
-  // Fetch dynamic content
-  const products = await getProducts();
-  const blogPosts = await getArticles();
+  // Define all routes that should be included in the sitemap
+  const routes = [
+    "", // Home page
+    // Add more routes here as you create them
+    // '/about',
+    // '/contact',
+  ];
 
-  const routes: DynamicSitemapRoute[] = [];
+  const sitemap: MetadataRoute.Sitemap = [];
 
-  // Add static pages for each locale
-  locales.forEach((locale: any) => {
-    // Homepage
-    routes.push({
-      url: `${baseUrl}/${locale}`,
-      lastModified: new Date(),
-      changeFrequency: 'daily' as const,
-      priority: 1,
-    });
+  // Generate sitemap entries for each locale and route
+  for (const locale of locales) {
+    for (const route of routes) {
+      const isDefaultLocale = locale === "en";
+      const localizedPath = isDefaultLocale
+        ? route || "/"
+        : `/${locale}${route || ""}`;
 
-    // Static pages
-    const staticPages = [
-      { path: 'about', changeFrequency: 'monthly' as const, priority: 0.8 },
-      { path: 'contact', changeFrequency: 'monthly' as const, priority: 0.7 },
-      { path: 'brands', changeFrequency: 'weekly' as const, priority: 0.8 },
-      { path: 'collections', changeFrequency: 'weekly' as const, priority: 0.8 },
-      { path: 'blog', changeFrequency: 'daily' as const, priority: 0.9 },
-      { path: 'search', changeFrequency: 'weekly' as const, priority: 0.7 },
-    ];
-
-    staticPages.forEach((page: any) => {
-      routes.push({
-        url: `${baseUrl}/${locale}/${page.path}`,
+      sitemap.push({
+        url: `${baseUrl}${localizedPath}`,
         lastModified: new Date(),
-        changeFrequency: page.changeFrequency,
-        priority: page.priority,
+        changeFrequency: "monthly",
+        priority: route === "" ? 1.0 : 0.8,
+        // Add alternate language links
+        alternates: {
+          languages: Object.fromEntries(
+            locales.map((loc) => {
+              const altPath =
+                loc === "en" ? route || "/" : `/${loc}${route || ""}`;
+              return [loc, `${baseUrl}${altPath}`];
+            }),
+          ),
+        },
       });
-    });
+    }
+  }
 
-    // Dynamic product pages
-    products.data.forEach((product: any) => {
-      routes.push({
-        url: `${baseUrl}/${locale}/products/${product.slug}`,
-        lastModified: new Date(product.updatedAt || new Date()),
-        changeFrequency: 'weekly' as const,
-        priority: 0.8,
-      });
-    });
-
-    // Dynamic blog pages
-    blogPosts.data.forEach((post: any) => {
-      routes.push({
-        url: `${baseUrl}/${locale}/blog/${post.slug}`,
-        lastModified: new Date(post.updatedAt || post.createdAt || new Date()),
-        changeFrequency: 'monthly' as const,
-        priority: 0.6,
-      });
-    });
-  });
-
-  return generateSitemapObject(routes);
+  return sitemap;
 }

@@ -141,13 +141,13 @@ export function initializeStorage(): StorageProvider {
   // Return mock provider if no provider is configured
   if (!provider) {
     if (!hasLoggedWarning) {
-      console.warn(
-        '[Storage] Storage service is disabled: Missing STORAGE_PROVIDER configuration',
-        {
-          operation: 'initializeStorage',
-          provider: 'mock',
-        },
-      );
+      // console.warn(
+      //   '[Storage] Storage service is disabled: Missing STORAGE_PROVIDER configuration',
+      //   {
+      //     operation: 'initializeStorage',
+      //     provider: 'mock',
+      //   },
+      // );
       hasLoggedWarning = true;
     }
     storageInstance = new MockStorageProvider();
@@ -276,13 +276,13 @@ export function initializeMultiStorage(): MultiStorageManager {
     multiStorageInstance = new MultiStorageManager(config);
 
     if (!hasLoggedWarning) {
-      console.warn(
-        '[Storage] Multi-storage service using mock provider: No storage providers configured',
-        {
-          operation: 'initializeMultiStorage',
-          provider: 'mock',
-        },
-      );
+      // console.warn(
+      //   '[Storage] Multi-storage service using mock provider: No storage providers configured',
+      //   {
+      //     operation: 'initializeMultiStorage',
+      //     provider: 'mock',
+      //   },
+      // );
       hasLoggedWarning = true;
     }
     return multiStorageInstance;

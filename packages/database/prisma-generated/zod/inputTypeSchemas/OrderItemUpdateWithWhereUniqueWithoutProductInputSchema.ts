@@ -5,9 +5,15 @@ import { OrderItemWhereUniqueInputSchema } from './OrderItemWhereUniqueInputSche
 import { OrderItemUpdateWithoutProductInputSchema } from './OrderItemUpdateWithoutProductInputSchema';
 import { OrderItemUncheckedUpdateWithoutProductInputSchema } from './OrderItemUncheckedUpdateWithoutProductInputSchema';
 
-export const OrderItemUpdateWithWhereUniqueWithoutProductInputSchema: z.ZodType<Prisma.OrderItemUpdateWithWhereUniqueWithoutProductInput> = z.object({
-  where: z.lazy(() => OrderItemWhereUniqueInputSchema),
-  data: z.union([ z.lazy(() => OrderItemUpdateWithoutProductInputSchema),z.lazy(() => OrderItemUncheckedUpdateWithoutProductInputSchema) ]),
-}).strict();
+export const OrderItemUpdateWithWhereUniqueWithoutProductInputSchema: z.ZodType<Prisma.OrderItemUpdateWithWhereUniqueWithoutProductInput> =
+  z
+    .object({
+      where: z.lazy(() => OrderItemWhereUniqueInputSchema),
+      data: z.union([
+        z.lazy(() => OrderItemUpdateWithoutProductInputSchema),
+        z.lazy(() => OrderItemUncheckedUpdateWithoutProductInputSchema),
+      ]),
+    })
+    .strict();
 
 export default OrderItemUpdateWithWhereUniqueWithoutProductInputSchema;
