@@ -1,9 +1,15 @@
-export default function CMSPage() {
+'use client';
+
+import { Container, Title, Text, Stack } from '@mantine/core';
+
+export default function AuthMgmtPage() {
   return (
-    <div>
-      <h2>Content Management System</h2>
-      <p>Welcome to the Backstage CMS application.</p>
-      <p>Running on port 3001</p>
-    </div>
-  )
+    <Container size="md">
+      <Stack gap="md">
+        <Title order={2}>Authentication Management</Title>
+        <Text>Welcome to the Backstage Auth Management application.</Text>
+        <Text c="dimmed">Running on port 3302</Text>
+      </Stack>
+    </Container>
+  );
 }

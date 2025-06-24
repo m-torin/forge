@@ -1,16 +1,28 @@
-export const metadata = {
-  title: "Next.js - Home Zone",
-  description: "Next.js example for Multi Zones",
-};
+'use client';
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+import '@mantine/core/styles.css';
+import '@mantine/notifications/styles.css';
+import '@mantine/dates/styles.css';
+import '@mantine/code-highlight/styles.css';
+
+import { ColorSchemeScript, MantineProvider } from '@mantine/core';
+import { Notifications } from '@mantine/notifications';
+import { AppLayout } from '@repo/design-system/backstage';
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <head>
+        <ColorSchemeScript />
+      </head>
+      <body>
+        <MantineProvider defaultColorScheme="auto">
+          <Notifications />
+          <AppLayout title="Backstage Admin" description="Multi-zone admin dashboard">
+            {children}
+          </AppLayout>
+        </MantineProvider>
+      </body>
     </html>
   );
 }
