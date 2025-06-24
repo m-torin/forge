@@ -18,8 +18,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <MantineProvider defaultColorScheme="auto">
           <Notifications />
-          <AppLayout 
-            title="Backstage" 
+          <AppLayout
+            title="Backstage"
             description="Authentication Management System"
             appName="authmgmt"
           >

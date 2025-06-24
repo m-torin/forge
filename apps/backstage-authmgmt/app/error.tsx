@@ -9,5 +9,12 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  return <ErrorBoundary error={error} reset={reset} homeUrl="/authmgmt" homeLabel="Back to Auth Management" />;
+  return (
+    <ErrorBoundary
+      error={error}
+      reset={reset}
+      homeUrl="/authmgmt"
+      homeLabel="Back to Auth Management"
+    />
+  );
 }

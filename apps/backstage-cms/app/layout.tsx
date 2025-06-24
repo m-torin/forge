@@ -18,11 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <MantineProvider defaultColorScheme="auto">
           <Notifications />
-          <AppLayout 
-            title="Backstage" 
-            description="Content Management System"
-            appName="cms"
-          >
+          <AppLayout title="Backstage" description="Content Management System" appName="cms">
             {children}
           </AppLayout>
         </MantineProvider>

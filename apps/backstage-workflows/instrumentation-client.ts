@@ -24,4 +24,10 @@ Sentry.init({
   debug: process.env.NODE_ENV === 'development',
 });
 
+// Make Sentry available globally for the observability package
+// @ts-ignore
+globalThis.Sentry = Sentry;
+// @ts-ignore
+if (typeof window !== 'undefined') window.Sentry = Sentry;
+
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;

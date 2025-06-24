@@ -12,4 +12,8 @@ Sentry.init({
   // integrations: [new Sentry.Integrations.Prisma({ client: prisma })],
 });
 
+// Make Sentry available globally for the observability package
+// @ts-ignore
+globalThis.Sentry = Sentry;
+
 export const onRequestError = Sentry.captureRequestError;

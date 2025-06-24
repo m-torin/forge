@@ -10,10 +10,15 @@ export default function Home() {
       <Header />
       <Stack gap="lg" mt="xl">
         <Title order={2}>Admin Dashboard</Title>
-        <Text>Welcome to the backstage admin dashboard. This is the main hub for all administrative functions.</Text>
-        
+        <Text>
+          Welcome to the backstage admin dashboard. This is the main hub for all administrative
+          functions.
+        </Text>
+
         <Card shadow="sm" padding="lg" radius="md" withBorder>
-          <Title order={3} mb="md">Available Modules</Title>
+          <Title order={3} mb="md">
+            Available Modules
+          </Title>
           <Group>
             <Button component="a" href="/cms" variant="light">
               Content Management

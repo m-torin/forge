@@ -9,6 +9,6 @@ export default defineConfig({
   ...vitestConfig,
   test: {
     ...vitestConfig.test,
-    root: path.resolve(__dirname),
+    root: path.resolve(path.dirname(new URL(import.meta.url).pathname)),
   },
 });

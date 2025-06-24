@@ -18,11 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <MantineProvider defaultColorScheme="auto">
           <Notifications />
-          <AppLayout 
-            title="Backstage" 
-            description="Workflow Management System"
-            appName="workflows"
-          >
+          <AppLayout title="Backstage" description="Workflow Management System" appName="workflows">
             {children}
           </AppLayout>
         </MantineProvider>
