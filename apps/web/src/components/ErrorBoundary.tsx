@@ -9,12 +9,15 @@ import {
   Stack,
   Alert,
   Center,
+  Code,
+  Group,
 } from "@mantine/core";
-import { IconAlertTriangle, IconRefresh } from "@tabler/icons-react";
+import { IconAlertTriangle, IconRefresh, IconHome } from "@tabler/icons-react";
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
   fallback?: React.ComponentType<{ error: Error; reset: () => void }>;
+  showDetails?: boolean;
 }
 
 interface ErrorBoundaryState {
@@ -24,13 +27,15 @@ interface ErrorBoundaryState {
 
 /**
  * Error boundary component that catches errors in child components
- *
- * This provides a user-friendly error page with recovery options.
+ * and provides a user-friendly error page with recovery options.
  */
 export class ErrorBoundary extends React.Component<
   ErrorBoundaryProps,
   ErrorBoundaryState
 > {
+  // Add refs property for compatibility
+  refs: { [key: string]: React.ReactInstance } = {};
+
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -42,7 +47,7 @@ export class ErrorBoundary extends React.Component<
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // Log to console in development
-    if (process.env.NODE_ENV === "development") {
+    if (process.env.NEXT_PUBLIC_NODE_ENV === "development") {
       console.error("Error caught by boundary:", error, errorInfo);
     }
   }
@@ -63,16 +68,16 @@ export class ErrorBoundary extends React.Component<
       return (
         <Container size="sm" py="xl">
           <Center>
-            <Stack align="center" gap="lg" maw={500}>
+            <Stack align="center" gap="lg" maw={600}>
               <IconAlertTriangle size={64} color="var(--mantine-color-red-6)" />
 
               <Stack align="center" gap="sm">
                 <Title order={1} ta="center" c="red">
                   Something went wrong
                 </Title>
-                <Text ta="center" c="dimmed">
-                  We encountered an unexpected error. Please try refreshing the
-                  page.
+                <Text ta="center" c="dimmed" size="lg">
+                  We encountered an unexpected error. The application is still
+                  running, but this component couldn&apos;t load properly.
                 </Text>
               </Stack>
 
@@ -83,30 +88,46 @@ export class ErrorBoundary extends React.Component<
                 variant="light"
                 w="100%"
               >
-                <Text size="sm" ff="monospace">
+                <Text size="sm" fw={500} mb="xs">
                   {this.state.error.message || "An unknown error occurred"}
                 </Text>
-                {this.state.error.stack &&
-                  process.env.NODE_ENV === "development" && (
-                    <details className="mt-2">
-                      <summary className="cursor-pointer text-sm">
-                        Stack trace
-                      </summary>
-                      <pre className="text-xs mt-2 overflow-auto">
-                        {this.state.error.stack}
-                      </pre>
-                    </details>
-                  )}
+
+                {this.props.showDetails && this.state.error.stack && (
+                  <details className="mt-2">
+                    <summary className="cursor-pointer text-sm mb-2 font-medium">
+                      Technical Details (for developers)
+                    </summary>
+                    <Code block className="text-xs overflow-auto max-h-40">
+                      {this.state.error.stack}
+                    </Code>
+                  </details>
+                )}
               </Alert>
 
-              <Button
-                leftSection={<IconRefresh size={16} />}
-                onClick={this.reset}
-                variant="filled"
-                size="md"
-              >
-                Try again
-              </Button>
+              <Group gap="md">
+                <Button
+                  leftSection={<IconRefresh size={16} />}
+                  onClick={this.reset}
+                  variant="filled"
+                  size="md"
+                >
+                  Try again
+                </Button>
+
+                <Button
+                  leftSection={<IconHome size={16} />}
+                  onClick={() => (window.location.href = "/")}
+                  variant="outline"
+                  size="md"
+                >
+                  Go home
+                </Button>
+              </Group>
+
+              <Text size="xs" c="dimmed" ta="center">
+                If this problem persists, please refresh the page or contact
+                support.
+              </Text>
             </Stack>
           </Center>
         </Container>

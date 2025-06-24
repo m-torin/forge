@@ -1157,19 +1157,16 @@ export default createReactConfig({
 ### Recommended Patterns
 
 1. **Test Organization**
-
    - Group related tests in describe blocks
    - Use consistent naming conventions
    - Keep test files close to source files
 
 2. **Mocking Strategy**
-
    - Mock at the boundary level (API calls, database operations)
    - Avoid mocking internal implementation details
    - Use factories for test data generation
 
 3. **Performance**
-
    - Use appropriate test environments (jsdom vs node)
    - Clean up resources in afterEach/afterAll
    - Avoid unnecessary re-renders in tests

@@ -711,20 +711,17 @@ if (ai.hasFeature('anthropic', 'moderate')) {
 ### Recommended Patterns
 
 1. **Provider Selection Strategy**
-
    - Start with AI SDK providers for development
    - Identify specific features that require direct providers
    - Use custom providers only for specialized needs
 
 2. **Performance Optimization**
-
    - Cache responses where appropriate
    - Use streaming for long-form generation
    - Monitor token usage and costs
    - Implement request batching for efficiency
 
 3. **Error Resilience**
-
    - Configure automatic failover between providers
    - Implement exponential backoff for retries
    - Handle rate limits gracefully

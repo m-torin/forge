@@ -770,19 +770,16 @@ The security package works seamlessly with the authentication system to support 
 ### Recommended Practices
 
 1. **Content Security Policy**
-
    - Configure CSP based on your app's specific needs
    - Start with restrictive policies and gradually allow necessary sources
    - Use `'nonce-'` or `'sha256-'` instead of `'unsafe-inline'` when possible
 
 2. **Rate Limiting Strategy**
-
    - Use different rate limits for different endpoints
    - Implement stricter limits for authentication endpoints
    - Consider user-based limits in addition to IP-based limits
 
 3. **Bot Management**
-
    - Regularly review Arcjet logs to understand bot traffic
    - Adjust allow lists based on legitimate bot requirements
    - Use DRY_RUN mode to test new bot detection rules

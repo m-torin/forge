@@ -1,30 +1,32 @@
-// This file configures the initialization of Sentry on the client.
-// The added config here will be used whenever a users loads a page in their browser.
+// This file configures the initialization of Sentry on the client (browser).
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from "@sentry/nextjs";
 
 Sentry.init({
-  dsn: "https://7dd841435baf049c0ef0841feaf57a14@o1116743.ingest.us.sentry.io/4509465421086720",
-
-  // Add optional integrations for additional features
+  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN,
+  sendDefaultPii: false,
   integrations: [
-    Sentry.replayIntegration(),
+    Sentry.browserTracingIntegration(),
+    Sentry.replayIntegration({
+      maskAllText: true,
+      blockAllMedia: true,
+    }),
+    Sentry.feedbackIntegration({
+      colorScheme: "system",
+    }),
   ],
-
-  // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
-  tracesSampleRate: 1,
-
-  // Define how likely Replay events are sampled.
-  // This sets the sample rate to be 10%. You may want this to be 100% while
-  // in development and sample at a lower rate in production
+  tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0,
   replaysSessionSampleRate: 0.1,
-
-  // Define how likely Replay events are sampled when an error occurs.
   replaysOnErrorSampleRate: 1.0,
-
-  // Setting this option to true will print useful information to the console while you're setting up Sentry.
-  debug: false,
+  debug: process.env.NODE_ENV === "development",
 });
 
+// Make Sentry available globally for the observability package
+// @ts-ignore
+globalThis.Sentry = Sentry;
+// @ts-ignore
+if (typeof window !== "undefined") window.Sentry = Sentry;
+
+// Required export for navigation instrumentation
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;

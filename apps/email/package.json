@@ -19,17 +19,17 @@
   "dependencies": {
     "@react-email/components": "0.1.0",
     "@repo/email": "workspace:*",
-    "react": "^19.1.0",
+    "react": "catalog:",
     "react-email": "4.0.16"
   },
   "devDependencies": {
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@types/eslint": "^9.6.1",
-    "@types/node": "^24.0.3",
-    "@types/react": "^19.1.8",
-    "eslint": "^9.29.0",
-    "next": "^15.3.4",
-    "typescript": "5.8.3"
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "eslint": "catalog:",
+    "next": "catalog:",
+    "typescript": "catalog:"
   }
 }

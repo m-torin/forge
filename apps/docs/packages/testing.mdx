@@ -864,19 +864,16 @@ export default defineConfig({
 ### Implementation Guidelines
 
 1. **Test Structure**
-
    - **Descriptive test names**: Test names should explain the behavior being tested
    - **Follow AAA pattern**: Arrange, Act, Assert for clear test structure
    - **One assertion per test**: Focus on testing one behavior at a time
 
 2. **Mock Strategy**
-
    - **Mock external dependencies**: Always mock external APIs, databases, and services
    - **Use realistic mock data**: Ensure mock data resembles real data structures
    - **Reset mocks between tests**: Prevent test interference with proper cleanup
 
 3. **Performance**
-
    - **Minimize test setup**: Only setup what's needed for each test
    - **Use beforeEach/afterEach wisely**: Balance between test isolation and performance
    - **Parallel test execution**: Structure tests to run in parallel when possible

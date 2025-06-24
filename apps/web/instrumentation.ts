@@ -1,21 +1,18 @@
-/**
- * Next.js instrumentation for Web app
- * Initializes Sentry for both edge and server runtimes
- */
+// This file configures the initialization of Sentry for the server.
+// https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
-export async function register() {
-  // Initialize Sentry for both edge and server runtimes
-  const Sentry = await import('@sentry/nextjs');
-  
-  Sentry.init({
-    dsn: "https://7dd841435baf049c0ef0841feaf57a14@o1116743.ingest.us.sentry.io/4509465421086720",
-    tracesSampleRate: 1,
-    debug: false,
-  });
-}
+import * as Sentry from "@sentry/nextjs";
 
-export async function onRequestError(error: Error) {
-  // Sentry will automatically capture unhandled errors
-  // Additional error handling can be added here if needed
-  console.error('Unhandled error:', error);
-}
+Sentry.init({
+  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN,
+  sendDefaultPii: false,
+  tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0,
+  debug: process.env.NODE_ENV === "development",
+});
+
+// Make Sentry available globally for the observability package
+// @ts-ignore
+globalThis.Sentry = Sentry;
+
+// Export the onRequestError hook for Next.js error handling
+export const onRequestError = Sentry.captureRequestError;

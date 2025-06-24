@@ -749,21 +749,18 @@ const distributedProcessor = createDistributedProcessor({
 ### Implementation Best Practices
 
 1. **Workflow Design**
-
    - Keep steps atomic and independently retryable
    - Use descriptive step names: `fetch-user-profile` vs `step1`
    - Implement idempotency for safe multiple executions
    - Design for graceful degradation with partial failures
 
 2. **Error Handling**
-
    - Use typed errors with the 14 classification types
    - Set appropriate retry strategies for operation types
    - Implement circuit breakers for unreliable external services
    - Monitor error rates with alerting thresholds
 
 3. **Performance Optimization**
-
    - Batch similar operations using batch processors
    - Implement realistic timeouts for each step
    - Use parallel processing when steps are independent

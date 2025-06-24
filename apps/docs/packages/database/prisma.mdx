@@ -639,19 +639,16 @@ main()
 ### Recommended Patterns
 
 1. **Transaction Usage**
-
    - Use `$transaction` for related operations that must succeed or fail together
    - Keep transactions short to avoid blocking other operations
    - Handle transaction failures gracefully
 
 2. **Query Optimization**
-
    - Use `select` to fetch only needed fields
    - Implement proper indexing for frequently queried fields
    - Use `include` judiciously to avoid N+1 query problems
 
 3. **Error Handling**
-
    - Implement proper error handling for database constraints
    - Use proper logging for database operations
    - Validate data before database operations

@@ -7,9 +7,9 @@
     "knip": "knip"
   },
   "devDependencies": {
-    "typescript": "^5.8.3"
+    "typescript": "catalog:"
   },
   "dependencies": {
-    "mintlify": "^4.0.591"
+    "mintlify": "^4.0.592"
   }
 }

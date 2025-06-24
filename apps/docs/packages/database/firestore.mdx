@@ -127,13 +127,11 @@ await firestore.batch([
 ### Recommended Patterns
 
 1. **Document Structure**
-
    - Keep documents under 1MB
    - Use subcollections for large datasets
    - Denormalize frequently queried data
 
 2. **Query Optimization**
-
    - Create composite indexes for complex queries
    - Use pagination for large result sets
    - Minimize the number of reads

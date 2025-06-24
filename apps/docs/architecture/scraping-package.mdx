@@ -959,21 +959,18 @@ const scraper = createServerScraping({
 ### Recommended Patterns
 
 1. **Provider Selection Strategy**
-
    - Start with HTML parsing for static content
    - Use browser automation only when JavaScript is required
    - Switch to managed services for protected or high-volume scraping
    - Implement automatic fallback chains
 
 2. **Performance Optimization**
-
    - Use appropriate concurrency limits for each provider
    - Implement caching at multiple levels
    - Block unnecessary resources in browser automation
    - Monitor and optimize resource usage
 
 3. **Reliability and Monitoring**
-
    - Implement comprehensive error handling and retry logic
    - Monitor provider health and performance
    - Set up alerting for failures and performance issues

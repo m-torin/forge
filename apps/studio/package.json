@@ -16,8 +16,8 @@
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@types/eslint": "^9.6.1",
-    "eslint": "^9.29.0",
+    "eslint": "catalog:",
     "prisma": "^6.10.1",
-    "typescript": "5.8.3"
+    "typescript": "catalog:"
   }
 }

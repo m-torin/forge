@@ -1190,19 +1190,16 @@ async function optimizedVectorSearch(
 ### Recommended Patterns
 
 1. **Embedding Strategy**
-
    - Use consistent embedding models across your application
    - Preprocess and normalize text before embedding generation
    - Cache frequently used embeddings to reduce API calls
 
 2. **Search Optimization**
-
    - Use metadata filters to narrow search space
    - Implement hybrid search combining vector similarity with traditional filters
    - Set appropriate similarity thresholds based on use case
 
 3. **Data Management**
-
    - Implement batch operations for large-scale updates
    - Regular cleanup of outdated vectors
    - Version control for embedding models and data

@@ -913,19 +913,16 @@ async function batchGetCache(keys: string[]) {
 ### Recommended Patterns
 
 1. **Key Naming Conventions**
-
    - Use hierarchical naming: `app:feature:identifier`
    - Include version numbers for breaking changes
    - Use consistent separators (`:` recommended)
 
 2. **Memory Management**
-
    - Set appropriate TTL for all keys
    - Use Redis's built-in data expiration
    - Monitor memory usage and implement cleanup
 
 3. **Performance**
-
    - Use pipelines for multiple operations
    - Implement connection pooling
    - Choose appropriate data structures
