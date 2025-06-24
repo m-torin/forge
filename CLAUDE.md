@@ -38,7 +38,7 @@ repository.
 ### Package Architecture
 
 - [Package Layers](#package-layers)
-- [Four-File Export Pattern](#four-file-export-pattern)
+- [Environment-Specific Export Pattern](#environment-specific-export-pattern)
 
 ### Guidelines
 
@@ -94,38 +94,41 @@ pnpm bump-deps                     # Update dependencies
 
 ## Port Assignments
 
-| Application       | Port | Description       |
-| ----------------- | ---- | ----------------- |
-| `/apps/web`       | 3200 | Marketing website |
-| `/apps/backstage` | 3300 | Admin panel       |
-| `/apps/workers`   | 3400 | Background jobs   |
-| `/apps/email`     | 3500 | Email preview     |
-| `/apps/studio`    | 3600 | Prisma Studio     |
-| `/apps/storybook` | 3700 | Component docs    |
-| `/apps/docs`      | 3800 | Mintlify docs     |
+| Application                 | Port | Description                   |
+| --------------------------- | ---- | ----------------------------- |
+| `/apps/web`                 | 3200 | Marketing website             |
+| `/apps/backstage`           | 3300 | Admin panel (main)            |
+| `/apps/backstage-cms`       | 3301 | CMS microfrontend             |
+| `/apps/backstage-authmgmt`  | 3302 | Auth management microfrontend |
+| `/apps/backstage-workflows` | 3303 | Workflows microfrontend       |
+| `/apps/workers`             | 3400 | Background jobs               |
+| `/apps/email`               | 3500 | Email preview                 |
+| `/apps/studio`              | 3600 | Prisma Studio                 |
+| `/apps/storybook`           | 3700 | Component docs                |
+| `/apps/docs`                | 3800 | Mintlify docs                 |
+
+> **Note**: Backstage uses microfrontend architecture. See
+> `/apps/docs/architecture/backstage-microfrontends.mdx` for details.
 
 ## Important Restrictions
 
 - **NEVER run `pnpm dev` or `npm dev` commands** - These should only be run by the user
+- **PREFER Grep tool over grep command** - When searching for patterns in files, use the Grep tool
+  instead of bash `grep`. The Grep tool doesn't require permission for each search
 - **Use the Grep tool for searching** - Don't use `rg` command directly (use Claude Code's Grep tool
   which uses rg internally)
-- **PREFER Grep tool over grep command** - When searching for patterns in files, use the Grep tool
-  instead of the bash `grep` command. The Grep tool doesn't require permission for each search,
-  making it more efficient for multiple searches.
 - **NEVER use localStorage/sessionStorage in artifacts** - Use React state or JavaScript variables
 - **NO file extensions in imports** - ESLint handles resolution automatically
-- **COMMAND PERMISSIONS**: Only use commands that don't require special permissions. Avoid commands
-  like `find` that may need elevated access on macOS. The environment is macOS with zsh - use
-  standard, permission-free commands unless absolutely necessary.
-- **COMMAND FORMATTING**: Run commands directly, not through shell processes. For example, use
-  `pnpm install` directly, NOT `bash -c "pnpm install"` or similar subprocess wrappers, as these may
-  require additional permissions.
-- **NO BULK FILE FIX SCRIPTS**: NEVER create or use bash scripts, shell scripts, or scripts in any
-  language (Python, Node.js, etc.) to bulk fix multiple files. Always fix files one by one using the
-  Edit or MultiEdit tools. This ensures precise control and prevents unintended changes.
-- **VARIABLE NAMING**: Variables and parameters should NOT have leading underscores. Use standard
+- **NO BULK FILE FIX SCRIPTS** - NEVER create or use bash scripts, shell scripts, or scripts in any
+  language to bulk fix multiple files. Always fix files one by one using the Edit or MultiEdit tools
+- **VARIABLE NAMING** - Variables and parameters should NOT have leading underscores. Use standard
   camelCase naming (e.g., `count` not `_count`). Exception: Prisma's aggregation fields like
-  `_count` which are part of the schema.
+  `_count` which are part of the schema
+- **COMMAND PERMISSIONS** - Only use commands that don't require special permissions. Avoid commands
+  like `find` that may need elevated access on macOS. The environment is macOS with zsh - use
+  standard, permission-free commands
+- **COMMAND FORMATTING** - Run commands directly, not through shell processes. Use `pnpm install`
+  directly, NOT `bash -c "pnpm install"` or similar subprocess wrappers
 
 ## Technology Stack
 
@@ -152,9 +155,14 @@ pnpm bump-deps                     # Update dependencies
 This monorepo follows a layered architecture with clear separation of concerns:
 
 1. **Apps Layer** (`/apps/*`) - User-facing applications
+   - Marketing site (`/apps/web`)
+   - Backstage admin with microfrontend architecture
+   - Background workers and utilities
 2. **Packages Layer** (`/packages/*`) - Shared functionality in 7 layers
 3. **Infrastructure** (`/infra/*`) - Infrastructure as code
 4. **Scripts** (`/scripts/*`) - Build and utility scripts
+
+> See `/apps/docs/` for detailed architecture documentation.
 
 ## Module System
 
@@ -288,44 +296,76 @@ lower layers:
 
 - End-user applications
 
-## Import Patterns
+## Environment-Specific Export Pattern
 
-### Five-File Export Pattern
+Packages provide runtime-specific exports. **In Next.js, ALWAYS use `/next` variants. For edge
+runtime, use `/edge` variants when available:**
 
-**Critical Rule**: In Next.js apps, ALWAYS use `/next` variants. For edge runtime, use `/edge`
-variants. In other environments, use base exports.
+```json
+{
+  "exports": {
+    "./client": "./src/client.ts", // Browser (non-Next.js)
+    "./server": "./src/server.ts", // Node.js (non-Next.js)
+    "./client/next": "./src/client-next.ts", // Next.js client
+    "./server/next": "./src/server-next.ts", // Next.js server
+    "./server/edge": "./src/server-edge.ts" // Next.js edge runtime (optional)
+  }
+}
+```
+
+### Import Rules by Environment
+
+1. **Next.js App Router (Server Components, API Routes)**
+
+   ```typescript
+   import { useAuth } from '@repo/auth/client/next';
+   import { createAuth } from '@repo/auth/server/next';
+   ```
+
+2. **Next.js Edge Runtime (Middleware, Edge Functions)**
+
+   ```typescript
+   import { createAuth } from '@repo/auth/server/edge';
+   ```
+
+   **Note**: Edge exports are optional. Not all packages support edge runtime. **Limitations**: No
+   Node.js APIs (fs, crypto, etc.), no native modules, HTTP-based implementations only
+
+3. **Node.js Workers**
+
+   ```typescript
+   import { createAuth } from '@repo/auth/server';
+   ```
+
+4. **Environment-Agnostic Packages** For packages that run in both environments (database, storage,
+   analytics), use `shared-env`:
+   ```typescript
+   import { createServerObservability } from '@repo/observability/shared-env';
+   import { createAnalytics } from '@repo/analytics/shared-env';
+   ```
+   **Important**: The `shared-env` export uses runtime detection to load ONLY the appropriate
+   implementation.
+
+### Common Import Mistakes
 
 ```typescript
-// ✅ CORRECT - Next.js app (server components, API routes)
-import { useAuth } from '@repo/auth/client/next';
-import { auth } from '@repo/auth/server/next';
-
-// ✅ CORRECT - Next.js edge runtime (middleware, edge functions)
-import { createObservability } from '@repo/observability/server/edge';
-
-// ✅ CORRECT - Node.js worker
-import { createAuth } from '@repo/auth/server';
-
 // ❌ WRONG - Using non-Next.js import in Next.js
-import { createAuth } from '@repo/auth/client'; // NO!
+import { createAuth } from '@repo/auth/client';
 
 // ❌ WRONG - Using server/next in edge runtime
-import { createObservability } from '@repo/observability/server/next'; // NO! In middleware.ts
+import { createObservability } from '@repo/observability/server/next'; // In middleware.ts
+
+// ✅ CORRECT - Next.js server components
+import { auth } from '@repo/auth/server/next';
+
+// ✅ CORRECT - Edge runtime (middleware)
+import { auth } from '@repo/auth/server/edge';
 ```
 
-### Environment-Agnostic Exception
+**Packages currently supporting edge runtime**: `@repo/analytics`, `@repo/auth`,
+`@repo/notifications`, `@repo/observability`
 
-For packages that run in both environments (database, storage, analytics), use `shared-env`:
-
-```typescript
-// ✅ Environment-agnostic packages only
-import { createServerObservability } from '@repo/observability/shared-env';
-import { createAnalytics } from '@repo/analytics/shared-env';
-```
-
-Auto-detects environment and imports appropriate `/server` or `/server/next` export.
-
-### Standard Imports
+### Standard Import Patterns
 
 ```typescript
 // Workspace packages
@@ -349,63 +389,6 @@ Always use `"catalog:"` versions in package.json when available:
     "custom-package": "^1.2.3" // Use specific version if not in catalog
   }
 }
-```
-
-## Five-File Export Pattern
-
-Packages provide environment-specific exports. **In Next.js, ALWAYS use `/next` variants. For edge
-runtime, use `/edge` variants:**
-
-```json
-{
-  "exports": {
-    "./client": "./src/client.ts", // Browser (non-Next.js)
-    "./server": "./src/server.ts", // Node.js (non-Next.js)
-    "./client/next": "./src/client-next.ts", // Next.js client (REQUIRED)
-    "./server/next": "./src/server-next.ts", // Next.js server (REQUIRED)
-    "./server/edge": "./src/server-edge.ts" // Next.js edge runtime (REQUIRED for middleware/edge functions)
-  }
-}
-```
-
-```typescript
-// ✅ Next.js app (server components, API routes)
-import { useAuth } from '@repo/auth/client/next';
-import { createAuth } from '@repo/auth/server/next';
-
-// ✅ Next.js edge runtime (middleware, edge functions)
-import { createAuth } from '@repo/auth/server/edge';
-
-// ✅ Node.js worker
-import { createAuth } from '@repo/auth/server';
-
-// ❌ Wrong: non-Next import in Next.js
-import { createAuth } from '@repo/auth/client';
-
-// ❌ Wrong: server/next in edge runtime (Node.js APIs not available)
-import { createAuth } from '@repo/auth/server/next'; // In middleware.ts
-```
-
-**Edge Runtime Limitations**:
-
-- Cannot use Node.js APIs (fs, crypto, etc.)
-- Cannot use native modules (OpenTelemetry, etc.)
-- Lightweight implementations only (HTTP-based Sentry, fetch-based analytics)
-
-**Packages using this**: `@repo/analytics`, `@repo/auth`, `@repo/notifications`,
-`@repo/observability`
-
-### Standard Import Patterns
-
-```typescript
-// Workspace packages
-import { ... } from '@repo/package-name';
-
-// App-specific
-import { ... } from '@/components/...';
-
-// External
-import { ... } from 'external-package';
 ```
 
 ## Code Style
@@ -517,7 +500,7 @@ via toolbar. See `/apps/backstage/app/lib/feature-flags.ts` for implementation e
 
 ## Troubleshooting
 
-### Common AI Agent Mistakes
+### Common AI Agent Mistakes (Expanded Anti-Pattern Catalog)
 
 **Import & Export Errors**
 
@@ -526,18 +509,24 @@ via toolbar. See `/apps/backstage/app/lib/feature-flags.ts` for implementation e
 - ❌ Using `/client` in Next.js → ✅ Always use `/client/next` in Next.js apps
 - ❌ Using `/server/next` in edge runtime → ✅ Always use `/server/edge` in middleware/edge
   functions
+- ❌ `import { Button } from '@repo/design-system'` → ✅ `import { Button } from '@mantine/core'`
+- ❌ Deep imports like `@repo/auth/src/lib/utils` → ✅ Export from package root
 
 **Edge Runtime Errors**
 
 - ❌ `@opentelemetry/api` in middleware → ✅ Use `/server/edge` exports (HTTP-based observability)
 - ❌ Node.js APIs in edge runtime → ✅ Use Web APIs (fetch, crypto.randomUUID, etc.)
 - ❌ Native modules in edge runtime → ✅ Use edge-compatible implementations
+- ❌ `fs`, `path`, `crypto` in middleware → ✅ Use edge-compatible alternatives
+- ❌ Heavy libraries in edge → ✅ Lightweight, fetch-based implementations
 
 **Configuration Mistakes**
 
 - ❌ `src/env.ts` → ✅ `env.ts` in package root
 - ❌ Building packages → ✅ Packages are ESM source, never built
 - ❌ Guessing versions → ✅ Use `"catalog:"` when available
+- ❌ Missing `"type": "module"` in packages → ✅ Always add for packages
+- ❌ Adding `"type": "module"` to apps → ✅ Next.js apps don't need it
 
 **Development Patterns**
 
@@ -545,6 +534,64 @@ via toolbar. See `/apps/backstage/app/lib/feature-flags.ts` for implementation e
 - ❌ `/app/api/*/route.ts` → ✅ `/app/actions/*.ts` server actions
 - ❌ `useEffect` + `fetch` → ✅ Server components or actions
 - ❌ `localStorage` in artifacts → ✅ React state or variables
+- ❌ Manual form validation → ✅ Zod schemas with Mantine forms
+- ❌ `useState` for forms → ✅ `useForm` from Mantine
+
+**File Organization**
+
+- ❌ Creating `/lib` or `/utils` → ✅ Use existing packages or create new package
+- ❌ Business logic in components → ✅ Server actions for data operations
+- ❌ Shared code in app folders → ✅ Extract to packages
+- ❌ `/pages` directory → ✅ `/app` directory (App Router)
+- ❌ `getServerSideProps` → ✅ Server components or server actions
+
+**Database & Schema**
+
+- ❌ Raw SQL queries → ✅ Prisma ORM methods
+- ❌ Manual type definitions → ✅ Generated Prisma types
+- ❌ Forgetting to regenerate → ✅ Always run generate after schema changes
+- ❌ Direct database calls in components → ✅ Server actions only
+- ❌ Client-side database imports → ✅ Database only in server code
+
+**Testing Patterns**
+
+- ❌ `data-cy` or custom attributes → ✅ Always use `data-testid`
+- ❌ Testing implementation details → ✅ Test user interactions
+- ❌ Separate test files → ✅ Co-locate in `__tests__` directories
+- ❌ `jest` imports → ✅ Use `vitest` imports
+- ❌ Manual mocking → ✅ Use Vitest's auto-mocking features
+
+**State Management**
+
+- ❌ Redux for everything → ✅ Server state + Mantine hooks first
+- ❌ Global state by default → ✅ Component state, then server state
+- ❌ Complex state machines → ✅ Server actions + optimistic updates
+- ❌ Client-side caching → ✅ Next.js caching + server components
+- ❌ Manual loading states → ✅ Suspense boundaries
+
+**Authentication Patterns**
+
+- ❌ Custom auth implementation → ✅ Use `@repo/auth` (Better Auth)
+- ❌ JWT in localStorage → ✅ Secure httpOnly cookies via Better Auth
+- ❌ Client-side auth checks → ✅ Server-side via `auth()` function
+- ❌ Manual session handling → ✅ Better Auth handles it
+- ❌ Forgetting auth checks → ✅ Always check in server actions
+
+**UI/UX Patterns**
+
+- ❌ Custom CSS files → ✅ Mantine style props first
+- ❌ Tailwind for everything → ✅ Mantine components + minimal Tailwind
+- ❌ Custom form components → ✅ Mantine form components
+- ❌ Manual dark mode → ✅ `useMantineColorScheme`
+- ❌ Custom notification system → ✅ `@repo/notifications`
+
+**Performance Anti-Patterns**
+
+- ❌ Client components by default → ✅ Server components by default
+- ❌ Fetching in useEffect → ✅ Fetch in server components
+- ❌ Large client bundles → ✅ Dynamic imports + server components
+- ❌ Unoptimized images → ✅ Next.js Image component
+- ❌ Runtime config → ✅ Build-time environment validation
 
 ### Common Issues & Solutions
 
@@ -553,6 +600,29 @@ via toolbar. See `/apps/backstage/app/lib/feature-flags.ts` for implementation e
 3. **Auth issues**: Verify environment variables
 4. **Build failures**: Check circular dependencies with `pnpm madge --circular`
 5. **Forms**: Always use Mantine's `useForm` hook with Zod
+
+## AI-Optimized Guidance
+
+For detailed guidance on common development tasks, see the AI-specific documentation in
+`/apps/docs/ai-hints/`:
+
+- **[Task Templates](/apps/docs/ai-hints/task-templates.mdx)** - Ready-to-use code templates
+- **[Decision Trees](/apps/docs/ai-hints/decision-trees.mdx)** - Flowcharts for technical decisions
+- **[Command Sequences](/apps/docs/ai-hints/command-sequences.mdx)** - Step-by-step workflows
+- **[Success Markers](/apps/docs/ai-hints/success-markers.mdx)** - Task completion checklists
+- **[Package Hints](/apps/docs/ai-hints/packages/)** - Package-specific guidance
+
+### Quick Package Reference
+
+| Package               | Purpose               | Edge Support | Key Import                 |
+| --------------------- | --------------------- | ------------ | -------------------------- |
+| `@repo/auth`          | Better Auth           | ✅           | `auth` from `/server/next` |
+| `@repo/database`      | Prisma ORM            | ❌           | `import { db }`            |
+| `@repo/analytics`     | PostHog/GA            | ✅           | Feature flags included     |
+| `@repo/observability` | Sentry                | ✅           | Different for edge/server  |
+| `@repo/notifications` | Mantine notifications | ✅           | `/mantine-notifications`   |
+
+> **Rule**: Always use `/next` variants in Next.js apps, `/edge` in middleware
 
 ## Documentation
 

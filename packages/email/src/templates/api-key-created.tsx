@@ -23,7 +23,7 @@ export const ApiKeyCreatedTemplate = ({
   apiKeyId,
   apiKeyName,
   dashboardUrl = 'https://example.com/api-keys',
-  email: _email,
+  email: email,
   name,
 }: ApiKeyCreatedTemplateProps) => (
   <Tailwind>

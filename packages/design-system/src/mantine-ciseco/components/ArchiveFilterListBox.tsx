@@ -44,7 +44,7 @@ const ArchiveFilterListBox: FC<ArchiveFilterListBoxProps> = ({
   disabled = false,
   groupedOptions,
   hierarchical = false,
-  loading: _loading = false,
+  loading: loading = false,
   multiple = false,
   onChange,
   options,

@@ -9,17 +9,11 @@ import type { ReactElement, ReactNode } from 'react';
 interface TestProviderProps {
   children: ReactNode;
   colorScheme?: 'light' | 'dark' | 'auto';
-  locale?: string;
   theme?: any;
 }
 
 // Base providers wrapper
-export function TestProviders({
-  children,
-  colorScheme = 'light',
-  locale: locale = 'en',
-  theme = {},
-}: TestProviderProps) {
+export function TestProviders({ children, colorScheme = 'light', theme = {} }: TestProviderProps) {
   return (
     <MantineProvider defaultColorScheme={colorScheme} theme={theme}>
       <Notifications position="top-right" />
@@ -41,7 +35,7 @@ export function render(
   ui: ReactElement,
   options?: CustomRenderOptions,
 ): ReturnType<typeof rtlRender> {
-  const { colorScheme, locale, theme, wrapper, ...renderOptions } = options || {};
+  const { colorScheme, theme, wrapper, ...renderOptions } = options || {};
 
   // If custom wrapper provided, use it
   if (wrapper) {
@@ -50,7 +44,7 @@ export function render(
 
   // Otherwise use default test providers
   const Wrapper = ({ children }: { children: ReactNode }) => (
-    <TestProviders colorScheme={colorScheme} locale={locale} theme={theme}>
+    <TestProviders colorScheme={colorScheme} theme={theme}>
       {children}
     </TestProviders>
   );
@@ -73,8 +67,8 @@ export function renderDark(
 // Helper to render with specific locale
 export function renderWithLocale(
   ui: ReactElement,
-  _locale: string,
+  locale: string,
   options?: Omit<CustomRenderOptions, 'locale'>,
 ): ReturnType<typeof rtlRender> {
-  return render(ui, { ...options, locale: locale });
+  return render(ui, { ...options, locale });
 }

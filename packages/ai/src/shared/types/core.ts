@@ -25,18 +25,32 @@ export interface ClassificationResult {
   reasoning: string;
 }
 
+export interface ChatMessage {
+  content: string;
+  role: 'assistant' | 'system' | 'user';
+}
+
 export interface CompletionOptions {
   maxTokens?: number;
+  messages?: ChatMessage[];
   model?: string;
-  prompt: string;
+  prompt?: string;
   systemPrompt?: string;
   temperature?: number;
+  filter?: Record<string, any>;
+}
+
+export interface SearchSource {
+  title?: string;
+  url: string;
+  description?: string;
 }
 
 export interface CompletionResponse {
   finishReason?: 'content_filter' | 'length' | 'stop' | 'tool_calls';
   id?: string;
   model?: string;
+  sources?: SearchSource[];
   text: string;
   usage?: TokenUsage;
 }
@@ -67,9 +81,11 @@ export interface ModerationResult {
   violations: string[];
 }
 
-export interface ObjectOptions<_T = unknown> {
+// eslint-disable-next-line unused-imports/no-unused-vars
+export interface ObjectOptions<T = unknown> {
   maxTokens?: number;
   model?: string;
+  output?: 'array' | 'object';
   prompt: string;
   schema: object | Record<string, unknown>;
   temperature?: number;

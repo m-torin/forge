@@ -4,7 +4,7 @@
  */
 
 import { syncLogger as logger } from '../../shared/utils/logger';
-import { prisma } from '@repo/database/prisma';
+import { prisma } from '@repo/database/prisma/server/next';
 
 export interface AuditLoggerOptions {
   enabled?: boolean;

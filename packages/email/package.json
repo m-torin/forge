@@ -3,7 +3,10 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
+    "./client": "./src/client.ts",
+    "./server": "./src/server.ts",
+    "./client/next": "./src/client-next.ts",
+    "./server/next": "./src/server-next.ts",
     "./keys": {
       "types": "./keys.ts",
       "import": "./keys.ts"
@@ -33,25 +36,25 @@
   "dependencies": {
     "@react-email/components": "^0.1.0",
     "@react-email/render": "^1.1.2",
-    "@t3-oss/env-nextjs": "^0.13.8",
+    "@t3-oss/env-nextjs": "catalog:",
     "chalk": "^5.4.1",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
+    "react": "catalog:",
+    "react-dom": "catalog:",
     "resend": "^4.6.0",
-    "zod": "^3.25.67"
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/testing": "workspace:*",
     "@types/eslint": "^9.6.1",
-    "@types/node": "^24.0.3",
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
     "@vitest/coverage-v8": "^3.2.4",
-    "eslint": "^9.29.0",
+    "eslint": "catalog:",
     "jsdom": "^26.1.0",
-    "typescript": "5.8.3",
-    "vitest": "^3.2.4"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

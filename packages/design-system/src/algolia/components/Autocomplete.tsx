@@ -26,7 +26,7 @@ export default function Autocomplete(props: AutocompleteProps) {
 function AutocompleteImpl({
   className = '',
   config,
-  detachedMediaQuery: _detachedMediaQuery = '(max-width: 680px)',
+  detachedMediaQuery: detachedMediaQuery = '(max-width: 680px)',
   maxSuggestions = 5,
   onSelect,
   placeholder = 'Search...',
@@ -37,7 +37,7 @@ function AutocompleteImpl({
   return (
     <AutocompleteInner
       className={className}
-      detachedMediaQuery={_detachedMediaQuery}
+      detachedMediaQuery={detachedMediaQuery}
       indexName={indexName}
       maxSuggestions={maxSuggestions}
       placeholder={placeholder}
@@ -50,7 +50,7 @@ function AutocompleteImpl({
 // Inner component that handles the actual autocomplete logic
 function AutocompleteInner({
   className = '',
-  detachedMediaQuery: _detachedMediaQuery = '(max-width: 680px)',
+  detachedMediaQuery: detachedMediaQuery = '(max-width: 680px)',
   indexName,
   maxSuggestions = 5,
   onSelect,

@@ -44,14 +44,27 @@ export class DirectOpenAIProvider extends BaseProvider {
     try {
       this.validateOptions(options);
 
-      const response = await this.client.chat.completions.create({
-        max_tokens: options.maxTokens ?? this.config.maxTokens ?? 1000,
-        messages: [
+      // Build messages array from either single prompt or messages array
+      let messages: Array<{ content: string; role: 'system' | 'user' | 'assistant' }>;
+
+      if (options.messages && options.messages.length > 0) {
+        // Use provided messages array
+        messages = options.messages;
+      } else if (options.prompt) {
+        // Convert single prompt to messages format
+        messages = [
           ...(options.systemPrompt
             ? [{ content: options.systemPrompt, role: 'system' as const }]
             : []),
           { content: options.prompt, role: 'user' as const },
-        ],
+        ];
+      } else {
+        throw new Error('Either prompt or messages must be provided');
+      }
+
+      const response = await this.client.chat.completions.create({
+        max_tokens: options.maxTokens ?? this.config.maxTokens ?? 1000,
+        messages,
         model: options.model ?? this.config.model ?? 'gpt-4-turbo',
         temperature: options.temperature ?? this.config.temperature ?? 0.1,
       });
@@ -80,6 +93,7 @@ export class DirectOpenAIProvider extends BaseProvider {
     try {
       const input = Array.isArray(options.input) ? options.input : [options.input];
 
+      // OpenAI supports batch embedding natively
       const response = await this.client.embeddings.create({
         input,
         model: options.model ?? 'text-embedding-3-small',
@@ -98,6 +112,22 @@ export class DirectOpenAIProvider extends BaseProvider {
       };
     } catch (error: any) {
       throw this.formatError(error, 'embedding');
+    }
+  }
+
+  /**
+   * Enhanced batch embedding method using OpenAI's native batch support
+   */
+  async embedBatch(texts: string[], model?: string): Promise<number[][]> {
+    try {
+      const response = await this.client.embeddings.create({
+        input: texts,
+        model: model ?? 'text-embedding-3-small',
+      });
+
+      return response.data.map((item: any) => item.embedding);
+    } catch (error: any) {
+      throw this.formatError(error, 'batch embedding');
     }
   }
 
@@ -144,14 +174,27 @@ export class DirectOpenAIProvider extends BaseProvider {
     try {
       this.validateOptions(options);
 
-      const stream = await this.client.chat.completions.create({
-        max_tokens: options.maxTokens ?? this.config.maxTokens ?? 1000,
-        messages: [
+      // Build messages array from either single prompt or messages array
+      let messages: Array<{ content: string; role: 'system' | 'user' | 'assistant' }>;
+
+      if (options.messages && options.messages.length > 0) {
+        // Use provided messages array
+        messages = options.messages;
+      } else if (options.prompt) {
+        // Convert single prompt to messages format
+        messages = [
           ...(options.systemPrompt
             ? [{ content: options.systemPrompt, role: 'system' as const }]
             : []),
           { content: options.prompt, role: 'user' as const },
-        ],
+        ];
+      } else {
+        throw new Error('Either prompt or messages must be provided');
+      }
+
+      const stream = await this.client.chat.completions.create({
+        max_tokens: options.maxTokens ?? this.config.maxTokens ?? 1000,
+        messages,
         model: options.model ?? this.config.model ?? 'gpt-4-turbo',
         stream: true,
         temperature: options.temperature ?? this.config.temperature ?? 0.1,

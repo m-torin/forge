@@ -8,9 +8,9 @@ export default defineConfig({
     ...reactPreset.resolve,
     alias: {
       ...reactPreset.resolve?.alias,
-      '@': path.resolve(__dirname, './'),
-      '@repo': path.resolve(__dirname, '../../packages'),
-      'server-only': path.resolve(__dirname, './test-mocks/server-only.js'),
+      '@': path.resolve(dirname, './'),
+      '@repo': path.resolve(dirname, '../../packages'),
+      'server-only': path.resolve(dirname, './test-mocks/server-only.js'),
     },
   },
   test: {

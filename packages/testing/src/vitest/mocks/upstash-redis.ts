@@ -6,11 +6,6 @@ interface MockRedisValue {
   value: string;
 }
 
-interface MockScanResult {
-  cursor: number;
-  keys: string[];
-}
-
 interface MockPipelineCommand {
   args: any[];
   command: string;

@@ -17,7 +17,7 @@ interface JsonLdProps extends Record<string, any> {
 }
 
 // JsonLd component for rendering structured data in Next.js
-export function JsonLd({ data, id, strategy: _strategy = 'afterInteractive' }: JsonLdProps) {
+export function JsonLd({ data, id, strategy: strategy = 'afterInteractive' }: JsonLdProps) {
   const jsonLd = Array.isArray(data) ? data : [data];
 
   return (

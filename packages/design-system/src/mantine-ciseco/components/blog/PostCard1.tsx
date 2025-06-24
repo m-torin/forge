@@ -30,7 +30,7 @@ const PostCard1: FC<Props> = ({
     excerpt: description,
     featuredImage: image,
     handle,
-    timeToRead: _timeToRead,
+    timeToRead: timeToRead,
     title,
   } = post;
 

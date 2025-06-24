@@ -1,0 +1,116 @@
+{
+  "metadata": {
+    "title": "Template Next App Mantine Tailwind",
+    "description": "Um template moderno Next.js com Mantine UI e TailwindCSS"
+  },
+  "navigation": {
+    "home": "Início",
+    "about": "Sobre",
+    "contact": "Contato",
+    "languageSelector": "Idioma"
+  },
+  "home": {
+    "welcome": "Bem-vindo ao",
+    "subtitle": "Este projeto inicial Next.js inclui uma configuração mínima para Mantine com TailwindCSS. Para começar, edite o arquivo page.tsx.",
+    "getStarted": "Começar",
+    "documentation": "Documentação",
+    "features": {
+      "title": "Recursos",
+      "mantine": "Componentes Mantine UI",
+      "mantineDesc": "Componentes React bonitos e acessíveis com suporte a tema escuro",
+      "tailwind": "Estilos TailwindCSS",
+      "tailwindDesc": "Framework CSS utility-first para desenvolvimento rápido de UI",
+      "typescript": "Suporte TypeScript",
+      "typescriptDesc": "Suporte completo ao TypeScript com verificação de tipos rigorosa",
+      "i18n": "Internacionalização",
+      "i18nDesc": "Suporte multilíngue com carregamento otimizado de traduções"
+    }
+  },
+  "theme": {
+    "light": "Claro",
+    "dark": "Escuro",
+    "auto": "Automático",
+    "switchTheme": "Mudar esquema de cores"
+  },
+  "common": {
+    "loading": "Carregando...",
+    "error": "Algo deu errado",
+    "errorDescription": "Encontramos um erro inesperado. Por favor, atualize a página.",
+    "errorDetails": "Detalhes do erro",
+    "unknownError": "Ocorreu um erro desconhecido",
+    "errorId": "ID do erro",
+    "retry": "Tentar novamente",
+    "close": "Fechar",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "confirm": "Confirmar",
+    "pageNotFound": "Página não encontrada",
+    "pageNotFoundDescription": "A página que você procura não existe ou foi movida.",
+    "goHome": "Ir para início",
+    "goBack": "Voltar",
+    "selectLanguage": "Selecionar idioma",
+    "login": "Entrar",
+    "signup": "Cadastrar",
+    "logout": "Sair",
+    "myAccount": "Minha Conta"
+  },
+  "auth": {
+    "login": {
+      "title": "Bem-vindo de volta",
+      "subtitle": "Entre na sua conta",
+      "email": "Email",
+      "password": "Senha",
+      "loginButton": "Entrar",
+      "forgotPassword": "Esqueceu sua senha?",
+      "noAccount": "Não tem uma conta?",
+      "signupLink": "Cadastrar",
+      "or": "ou",
+      "magicLink": "Enviar link mágico",
+      "magicLinkSent": "Link mágico enviado!",
+      "magicLinkSentDescription": "Verifique seu email para um link de entrada",
+      "backToLogin": "Voltar ao login"
+    },
+    "signup": {
+      "title": "Criar conta",
+      "subtitle": "Comece com sua nova conta",
+      "name": "Nome",
+      "email": "Email",
+      "password": "Senha",
+      "confirmPassword": "Confirmar Senha",
+      "signupButton": "Criar Conta",
+      "haveAccount": "Já tem uma conta?",
+      "loginLink": "Entrar",
+      "or": "ou",
+      "magicLink": "Cadastrar com link mágico",
+      "magicLinkSent": "Link mágico enviado!",
+      "magicLinkSentDescription": "Verifique seu email para completar o cadastro",
+      "backToSignup": "Voltar ao cadastro"
+    },
+    "magicLink": {
+      "verifying": "Verificando link mágico...",
+      "success": "Login realizado com sucesso!",
+      "error": "Link mágico inválido ou expirado",
+      "expired": "Este link mágico expirou. Por favor solicite um novo."
+    },
+    "unified": {
+      "welcome": "Bem-vindo",
+      "welcomeBack": "Bem-vindo de volta!",
+      "letsGetStarted": "Vamos começar",
+      "continueWith": "Continue com seu email ou conta social",
+      "signInToContinue": "Faça login para continuar",
+      "createAccount": "Crie sua conta em segundos",
+      "or": "ou",
+      "emailLabel": "Endereço de e-mail",
+      "nameLabel": "Seu nome (opcional)",
+      "continueButton": "Continuar com e-mail",
+      "createAccountButton": "Criar conta e continuar",
+      "magicLinkSent": "Verifique seu e-mail!",
+      "magicLinkInstructions": "Enviamos um link mágico para você fazer login",
+      "checkEmail": "Verifique seu e-mail para continuar",
+      "tryAgain": "Tentar novamente",
+      "privacyNotice": "Ao continuar, você concorda com nossos Termos de Serviço e Política de Privacidade"
+    }
+  }
+}

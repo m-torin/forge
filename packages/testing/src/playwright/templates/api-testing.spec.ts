@@ -128,25 +128,28 @@ test.describe('API Testing', () => {
     expect(response.status()).toBe(200);
   });
 
-  test('should handle rate limiting', async ({ request }) => {
-    const responses = Promise;
+  test('should handle rate limiting', async () => {
+    // Create an array of promises for multiple requests
+    const responses = await Promise.all(
+      Array.from({ length: 15 }, () => fetch(`${apiUrl}/rate-limited-endpoint`)),
+    );
 
     // Some should be rate limited (429)
-    const rateLimited = responses.filter((r) => r.status() === 429);
+    const rateLimited = responses.filter((r) => r.status === 429);
     expect(rateLimited.length).toBeGreaterThan(0);
 
     // Check rate limit headers
     const limitedResponse = rateLimited[0];
-    expect(limitedResponse.headers()).toHaveProperty('x-ratelimit-limit');
-    expect(limitedResponse.headers()).toHaveProperty('x-ratelimit-remaining');
+    expect(limitedResponse.headers).toHaveProperty('x-ratelimit-limit');
+    expect(limitedResponse.headers).toHaveProperty('x-ratelimit-remaining');
 
     // Assert that we made the expected number of requests
-    await expect(responses).toHaveCount(15);
+    expect(responses).toHaveLength(15);
   });
 
-  test('autofix test for underscore', () => {
+  test('autofix test for underscore', async () => {
     let shouldBeFixed = 42;
-    return shouldBeFixed;
+    expect(shouldBeFixed).toBe(42);
   });
 });
 

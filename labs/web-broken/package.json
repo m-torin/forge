@@ -1,0 +1,50 @@
+{
+  "name": "@labs/web-broken",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3200",
+    "dev:debug": "NODE_OPTIONS='--inspect' next dev -p 3200",
+    "build": "next build",
+    "build:local": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext .ts,.tsx",
+    "analyze": "ANALYZE=true next build"
+  },
+  "dependencies": {
+    "@mantine/core": "^8.1.1",
+    "@mantine/form": "^8.1.1",
+    "@mantine/hooks": "^8.1.1",
+    "@mantine/notifications": "^8.1.1",
+    "@repo/auth": "workspace:*",
+    "@repo/config": "workspace:*",
+    "@repo/database": "workspace:*",
+    "@repo/internationalization": "workspace:*",
+    "@sentry/nextjs": "^9.31.0",
+    "@t3-oss/env-nextjs": "^0.13.8",
+    "@tabler/icons-react": "^3.34.0",
+    "better-auth": "^1.2.10",
+    "next": "catalog:",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "server-only": "^0.0.1",
+    "tailwind-preset-mantine": "^2.1.0",
+    "zod": "^3.25.67"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@tailwindcss/postcss": "^4.1.10",
+    "@types/node": "^24.0.3",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "babel-plugin-react-compiler": "19.1.0-rc.2",
+    "eslint": "^9.29.0",
+    "eslint-config-next": "canary",
+    "eslint-config-prettier": "^10.1.5",
+    "postcss": "^8.5.6",
+    "prettier": "^3.6.0",
+    "tailwindcss": "^4.1.10",
+    "typescript": "^5.8.3"
+  }
+}

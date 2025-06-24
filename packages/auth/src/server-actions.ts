@@ -415,5 +415,73 @@ export async function bulkInviteUsersAction(data: {
   return results;
 }
 
+// Admin User Management Actions
+export async function adminDeleteUserAction(userId: string) {
+  'use server';
+  return auth.api.removeUser({
+    body: { userId },
+    headers: await headers(),
+  });
+}
+
+export async function createUserAction(data: {
+  email: string;
+  name?: string;
+  password?: string;
+  role?: string;
+}) {
+  'use server';
+  return auth.api.createUser({
+    body: {
+      email: data.email,
+      name: data.name ?? data.email.split('@')[0],
+      password: data.password || crypto.randomUUID().substring(0, 12),
+      role: data.role as any,
+    },
+    headers: await headers(),
+  });
+}
+
+export async function setUserRoleAction(userId: string, role: string) {
+  'use server';
+  return auth.api.setRole({
+    body: { userId, role },
+    headers: await headers(),
+  });
+}
+
+export async function revokeUserSessionsAction(userId: string) {
+  'use server';
+  return auth.api.revokeUserSessions({
+    body: { userId },
+    headers: await headers(),
+  });
+}
+
+// Admin Organization Management Actions
+export async function listOrganizationsAction(options?: {
+  limit?: number;
+  offset?: number;
+  search?: string;
+}) {
+  'use server';
+  return auth.api.listOrganizations({
+    headers: await headers(),
+    body: {
+      limit: options?.limit || 100,
+      offset: options?.offset || 0,
+      ...(options?.search && { search: options.search }),
+    },
+  });
+}
+
+export async function getOrganizationAction(organizationId: string) {
+  'use server';
+  return auth.api.getFullOrganization({
+    headers: await headers(),
+    query: { organizationId },
+  });
+}
+
 // Team Management actions are available in the teams export path
 // Service Account Management actions are available in the api-keys export path

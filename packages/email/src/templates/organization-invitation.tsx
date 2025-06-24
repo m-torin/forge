@@ -21,7 +21,7 @@ interface OrganizationInvitationTemplateProps extends Record<string, any> {
 }
 
 export const OrganizationInvitationTemplate = ({
-  email: _email,
+  email: email,
   expiresIn = '48 hours',
   inviteLink,
   inviterEmail,

@@ -20,7 +20,7 @@ interface WelcomeTemplateProps extends Record<string, any> {
 
 export const WelcomeTemplate = ({
   dashboardUrl = 'https://example.com/dashboard',
-  email: _email,
+  email: email,
   name,
   organizationName,
 }: WelcomeTemplateProps) => (

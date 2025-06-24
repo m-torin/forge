@@ -50,7 +50,7 @@ export default function SearchResults({
   className = '',
   emptyComponent: EmptyComponent = DefaultEmptyComponent,
   hitComponent: HitComponent = DefaultHitComponent,
-  loadingComponent: _LoadingComponent = DefaultLoadingComponent,
+  loadingComponent: LoadingComponent = DefaultLoadingComponent,
 }: SearchResultsProps) {
   const { hits, sendEvent } = useHits<SearchHit>();
 

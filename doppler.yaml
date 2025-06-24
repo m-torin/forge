@@ -6,6 +6,15 @@ setup:
   - path: apps/backstage
     project: next-apps
     config: backstage
+  - path: apps/backstage-cms
+    project: next-apps
+    config: backstage
+  - path: apps/backstage-authmgmt
+    project: next-apps
+    config: backstage
+  - path: apps/backstage-workflows
+    project: next-apps
+    config: backstage
   - path: apps/email
     project: next-apps
     config: phold

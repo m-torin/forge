@@ -24,10 +24,10 @@ interface RegistryPurchaseTemplateProps extends Record<string, any> {
 }
 
 export const RegistryPurchaseTemplate = ({
-  email: _email,
+  email: email,
   ownerName,
   purchaserName,
-  purchaserEmail: _purchaserEmail,
+  purchaserEmail: purchaserEmail,
   registryTitle,
   itemName,
   quantity,

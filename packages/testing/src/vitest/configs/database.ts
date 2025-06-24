@@ -55,13 +55,13 @@ export const createDatabaseTestConfig = (
       ],
 
       // Setup files
-      setupFiles: [resolve(dirname, '../setup/database.ts')],
+      setupFiles: [resolve(__dirname, '../setup/database.ts')],
 
       // Global setup/teardown
       globalSetup:
         provider !== 'all'
-          ? [resolve(dirname, `../setup/global-${provider}.ts`)]
-          : [resolve(dirname, '../setup/global-database.ts')],
+          ? [resolve(__dirname, `../setup/global-${provider}.ts`)]
+          : [resolve(__dirname, '../setup/global-database.ts')],
 
       // Reporters
       reporters: ['verbose'],
@@ -116,7 +116,7 @@ export const createDatabaseTestConfig = (
       alias: {
         '@': resolve(process.cwd(), 'src'),
         '@repo/database': resolve(process.cwd(), '../database'),
-        '@repo/testing': resolve(dirname, '..'),
+        '@repo/testing': resolve(__dirname, '..'),
       },
     },
 

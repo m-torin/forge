@@ -27,7 +27,7 @@ const Avatar: FC<AvatarProps> = ({
 }) => {
   const url = imgUrl || '';
   const name = userName ?? 'John Doe';
-  const _setBgColor = (name: string) => {
+  const setBgColor = (name: string) => {
     const colors = ['#FF5733', '#33FF57', '#3357FF', '#FF33A1', '#FF8C33'];
     const index = name.charCodeAt(0) % colors.length;
     return colors[index];
@@ -37,7 +37,7 @@ const Avatar: FC<AvatarProps> = ({
     <div
       className={`wil-avatar relative inline-flex shrink-0 items-center justify-center font-semibold text-neutral-100 uppercase shadow-inner ${radius} ${sizeClass} ${containerClassName}`}
       data-testid={testId}
-      style={{ backgroundColor: url ? undefined : _setBgColor(name) }}
+      style={{ backgroundColor: url ? undefined : setBgColor(name) }}
     >
       {url && (
         <Image

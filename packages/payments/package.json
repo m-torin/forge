@@ -23,23 +23,23 @@
   "dependencies": {
     "@repo/observability": "workspace:*",
     "@stripe/agent-toolkit": "^0.7.9",
-    "@t3-oss/env-nextjs": "^0.13.8",
+    "@t3-oss/env-nextjs": "catalog:",
     "chalk": "^5.4.1",
-    "next": "^15.3.4",
-    "react": "^19.1.0",
+    "next": "catalog:",
+    "react": "catalog:",
     "server-only": "^0.0.1",
     "stripe": "^18.2.1",
-    "zod": "^3.25.67"
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/testing": "workspace:*",
     "@types/eslint": "^9.6.1",
-    "@types/node": "^24.0.3",
-    "@types/react": "^19.1.8",
-    "eslint": "^9.29.0",
-    "typescript": "5.8.3",
-    "vitest": "^3.2.4"
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

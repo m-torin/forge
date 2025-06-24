@@ -61,7 +61,7 @@ const ProductCard: FC<ProductCardProps> = memo(
       featuredImage,
       handle,
       id,
-      images: _images,
+      images: images,
       options,
       price,
       rating,

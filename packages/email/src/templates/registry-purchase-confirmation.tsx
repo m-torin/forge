@@ -25,7 +25,7 @@ interface RegistryPurchaseConfirmationTemplateProps extends Record<string, any> 
 }
 
 export const RegistryPurchaseConfirmationTemplate = ({
-  email: _email,
+  email: email,
   purchaserName,
   registryOwnerName,
   registryTitle,

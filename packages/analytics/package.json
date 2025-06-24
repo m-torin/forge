@@ -12,10 +12,10 @@
   },
   "dependencies": {
     "@repo/observability": "workspace:*",
-    "@t3-oss/env-nextjs": "^0.13.8",
-    "next": "^15.3.4",
-    "react": "^19.1.0",
-    "zod": "^3.25.67"
+    "@t3-oss/env-nextjs": "catalog:",
+    "next": "catalog:",
+    "react": "catalog:",
+    "zod": "catalog:"
   },
   "peerDependencies": {
     "@segment/analytics-core": "^1.8.1",
@@ -46,22 +46,24 @@
     "@repo/eslint-config": "workspace:*",
     "@repo/testing": "workspace:*",
     "@segment/analytics-next": "^1.81.0",
-    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/jest-dom": "catalog:",
     "@types/eslint": "^9.6.1",
-    "@types/node": "^24.0.3",
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
     "@vercel/analytics": "^1.5.0",
-    "eslint": "^9.29.0",
-    "posthog-js": "^1.255.0",
+    "eslint": "catalog:",
+    "posthog-js": "^1.255.1",
     "posthog-node": "^5.1.1",
-    "typescript": "5.8.3"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "exports": {
     "./client": "./src/client.ts",
     "./server": "./src/server.ts",
     "./client/next": "./src/client-next.ts",
     "./server/next": "./src/server-next.ts",
+    "./server/edge": "./src/server-edge.ts",
     "./shared-env": "./src/shared-env.ts",
     "./types": "./src/types/index.ts",
     "./keys": {

@@ -67,7 +67,6 @@ pnpm seed:local
 **Created API Keys:**
 
 1. **Admin API Key**
-
    - Name: `Test Admin Key`
    - Prefix: `forge_adm_`
    - Permissions: `admin:*`, `api:*`, `users:*`, `organizations:*`
@@ -75,7 +74,6 @@ pnpm seed:local
    - User: `admin@example.com`
 
 2. **User API Key**
-
    - Name: `Test User Key`
    - Prefix: `forge_usr_`
    - Permissions: `read:*`, `user:profile`

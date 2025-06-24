@@ -24,7 +24,7 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({ data }: any) => {
     // we'll just handle navigation
   };
 
-  const _renderMenuChild = (
+  const renderMenuChild = (
     item: TNavigationItem,
     itemClass = 'pl-3 text-neutral-900 dark:text-neutral-200 font-medium',
     level = 0,
@@ -65,7 +65,7 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({ data }: any) => {
                 <span className="py-2.5">{childMenu.name}</span>
               </Accordion.Control>
               <Accordion.Panel>
-                {_renderMenuChild(
+                {renderMenuChild(
                   childMenu,
                   'pl-3 text-neutral-600 dark:text-neutral-400',
                   level + 1,
@@ -78,7 +78,7 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({ data }: any) => {
     );
   };
 
-  const _renderItem = (menu: TNavigationItem, index: number) => {
+  const renderItem = (menu: TNavigationItem, index: number) => {
     const hasChildren = menu.children && menu.children.length > 0;
 
     if (!hasChildren) {
@@ -100,7 +100,7 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({ data }: any) => {
         <Accordion.Control className="flex w-full cursor-pointer rounded-lg px-3 text-start text-sm font-medium tracking-wide uppercase hover:bg-neutral-100 dark:hover:bg-neutral-800">
           {menu.name}
         </Accordion.Control>
-        <Accordion.Panel>{_renderMenuChild(menu)}</Accordion.Panel>
+        <Accordion.Panel>{renderMenuChild(menu)}</Accordion.Panel>
       </Accordion.Item>
     );
   };
@@ -152,7 +152,7 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({ data }: any) => {
         }}
         variant="light"
       >
-        {data.map(_renderItem)}
+        {data.map(renderItem)}
       </Accordion>
       <Divider className="mb-6" />
 

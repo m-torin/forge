@@ -42,27 +42,31 @@
     "mac-setup": "./scripts/mac-setup.sh",
     "knip": "knip --config @repo/config/knip/monorepo.json --fix --reporter json",
     "circular": "madge --circular --extensions ts,tsx,js,jsx .",
-    "translate": "turbo translate"
+    "translate": "turbo translate",
+    "dev:microfrontends": "turbo run dev --filter=backstage --filter=backstage-cms --filter=backstage-authmgmt --filter=backstage-workflows --parallel",
+    "build:microfrontends": "turbo run build --filter=backstage --filter=backstage-cms --filter=backstage-authmgmt --filter=backstage-workflows --parallel",
+    "build:microfrontends-only": "turbo build --filter=backstage --filter=backstage-cms --filter=backstage-authmgmt --filter=backstage-workflows --parallel",
+    "test:microfrontends": "turbo run test --filter=backstage --filter=backstage-cms --filter=backstage-authmgmt --filter=backstage-workflows --parallel"
   },
   "devDependencies": {
+    "@mantine/core": "^8.1.1",
+    "@mantine/hooks": "^8.1.1",
     "@turbo/gen": "^2.5.4",
     "@types/node": "^24.0.3",
     "knip": "^5.61.2",
     "madge": "^8.0.0",
-    "prettier": "^3.5.3",
+    "prettier": "^3.6.0",
     "prettier-plugin-organize-imports": "^4.1.0",
     "prettier-plugin-tailwindcss": "^0.6.13",
     "tsup": "^8.5.0",
     "turbo": "^2.5.4",
-    "typescript": "5.8.3",
-    "vitest": "^3.2.4",
-    "@mantine/core": "^8.1.1",
-    "@mantine/hooks": "^8.1.1"
+    "typescript": "catalog:",
+    "vitest": "^3.2.4"
   },
   "engines": {
     "node": ">=22",
     "pnpm": ">=10.0.0"
   },
-  "packageManager": "pnpm@10.12.1",
+  "packageManager": "pnpm@10.12.3",
   "type": "module"
 }

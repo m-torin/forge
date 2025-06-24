@@ -228,14 +228,13 @@ export const testDatabaseOperations = async <T extends DatabaseAdapter>(
   // Test create
   const created = await helper.getAdapter().create(collection, testData);
   const { id: createdId, ...createdWithoutId } = created as any;
-  const { id: testId, ...testDataWithoutId } = testData;
+  const { ...testDataWithoutId } = testData;
 
   // Use the created ID for subsequent operations
-  const createdId = (created as any).id;
 
   // Test findUnique
   const found = await helper.getAdapter().findUnique(collection, { id: createdId });
-  const { id: foundId, ...foundWithoutId } = found as any;
+  const { ...foundWithoutId } = found as any;
 
   // Test update
   const updateData = { name: 'Updated Name' };
@@ -243,14 +242,14 @@ export const testDatabaseOperations = async <T extends DatabaseAdapter>(
 
   // Test findMany
   const many = await helper.getAdapter().findMany(collection);
-  const { id: manyId, ...manyWithoutId } = many[0] as any;
+  const { ...manyWithoutId } = many[0] as any;
 
   // Test count
   const count = await helper.getCount(collection);
 
   // Test delete
   const deleted = await helper.getAdapter().delete(collection, createdId);
-  const { id: deletedId, ...deletedWithoutId } = deleted as any;
+  const { ...deletedWithoutId } = deleted as any;
 
   // Verify deletion
   const notFound = await helper.findItem(collection, createdId);

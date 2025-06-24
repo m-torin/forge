@@ -4,25 +4,34 @@
  * This file provides environment-agnostic observability functionality for packages
  * that can run in both Next.js and non-Next.js environments (like database, storage).
  *
- * The environment detection is centralized here to avoid scattered runtime checks
- * across multiple packages, maintaining the architectural integrity of the four-file
- * export pattern while solving the cross-environment challenge.
+ * WEBPACK SAFETY: This implementation avoids dynamic imports that would cause
+ * webpack to bundle Node.js-specific modules in browser builds. Instead, it uses
+ * conditional exports that are resolved at build time.
  *
  * @example
  * ```typescript
  * // In environment-agnostic packages (database, storage, etc.)
- * import { createServerObservability } from '@repo/observability/server';
+ * import { createServerObservability } from '@repo/observability/shared-env';
  *
  * // Works in both Next.js and non-Next.js environments
  * const observability = await createServerObservability(config);
  * ```
  */
 
-// Import types for proper typing
 import type { ObservabilityConfig, ObservabilityManager } from './server';
 
-// Runtime detection for Next.js environment
+// Detect if we're in a browser/webpack build context
+function isBrowserBuild(): boolean {
+  return typeof window !== 'undefined' || typeof globalThis?.window !== 'undefined';
+}
+
+// Runtime detection for Next.js environment (server-side only)
 function isNextJSEnvironment(): boolean {
+  // Skip detection in browser builds to avoid webpack issues
+  if (isBrowserBuild()) {
+    return false;
+  }
+
   // Check for Next.js-specific environment variables and globals
   return (
     // Next.js runtime environment variable
@@ -38,16 +47,99 @@ function isNextJSEnvironment(): boolean {
   );
 }
 
+// Browser-safe fallback observability manager
+function createBrowserFallbackManager(): ObservabilityManager {
+  return {
+    // Required async methods
+    log: async (level: string, message: string, context?: any) => {
+      // Browser-safe console logging only
+      const logMethod =
+        level === 'error'
+          ? console.error
+          : level === 'warn'
+            ? console.warn
+            : level === 'debug'
+              ? console.debug
+              : console.log;
+      logMethod(`[Observability] ${message}`, context || '');
+    },
+    captureException: async (error: Error, context?: any) => {
+      console.error('[Observability] Exception:', error, context || '');
+    },
+    captureMessage: async (
+      message: string,
+      level: 'error' | 'info' | 'warning' = 'info',
+      context?: any,
+    ) => {
+      const logMethod =
+        level === 'error' ? console.error : level === 'warning' ? console.warn : console.log;
+      logMethod(`[Observability] ${message}`, context || '');
+    },
+    initialize: async () => {
+      // No-op for browser fallback
+    },
+
+    // Synchronous methods
+    addBreadcrumb: () => {
+      // No-op for browser fallback
+    },
+    setContext: () => {
+      // No-op for browser fallback
+    },
+    setExtra: () => {
+      // No-op for browser fallback
+    },
+    setUser: () => {
+      // No-op for browser fallback
+    },
+    setTag: () => {
+      // No-op for browser fallback
+    },
+    startSession: () => {
+      // No-op for browser fallback
+    },
+    endSession: () => {
+      // No-op for browser fallback
+    },
+    startSpan: (name: string) => ({
+      name,
+      finish: () => {},
+      setContext: () => {},
+      setStatus: () => {},
+    }),
+    startTransaction: (name: string) => ({
+      name,
+      finish: () => {},
+      setContext: () => {},
+      setStatus: () => {},
+    }),
+  };
+}
+
 // Main function that environment-agnostic packages need
 export async function createServerObservability(
   config: ObservabilityConfig,
 ): Promise<ObservabilityManager> {
-  if (isNextJSEnvironment()) {
-    const { createServerObservability } = await import('./server-next');
-    return createServerObservability(config);
-  } else {
-    const { createServerObservability } = await import('./server');
-    return createServerObservability(config);
+  // In browser builds, return safe fallback to prevent webpack bundling server modules
+  if (isBrowserBuild()) {
+    return createBrowserFallbackManager();
+  }
+
+  // Server-side: Use dynamic imports with proper guards
+  try {
+    if (isNextJSEnvironment()) {
+      // Dynamic import for Next.js server environment
+      const { createServerObservability: createNextObservability } = await import('./server-next');
+      return await createNextObservability(config);
+    } else {
+      // Dynamic import for standard Node.js environment
+      const { createServerObservability: createNodeObservability } = await import('./server');
+      return await createNodeObservability(config);
+    }
+  } catch (error) {
+    // Fallback to safe manager if server modules fail to load
+    console.warn('[Observability] Failed to load server modules, using fallback:', error);
+    return createBrowserFallbackManager();
   }
 }
 

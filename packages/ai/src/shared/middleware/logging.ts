@@ -37,12 +37,17 @@ export class AILogger {
   logNextRequest(provider: string, operation: string, options: CompletionOptions): void {
     if (!this.config.enabled || !this.config.logRequests) return;
 
+    // Handle both prompt and messages patterns
+    const promptInfo = options.prompt
+      ? { promptLength: options.prompt.length }
+      : { messagesCount: options.messages?.length || 0 };
+
     // eslint-disable-next-line no-console
     console.log(`[AI] ${provider} ${operation} request:`, {
       maxTokens: options.maxTokens,
       model: options.model,
       operation,
-      promptLength: options.prompt.length,
+      ...promptInfo,
       provider,
       temperature: options.temperature,
       timestamp: new Date().toISOString(),

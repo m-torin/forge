@@ -37,13 +37,13 @@ export interface ProductQuickViewProps extends Record<string, any> {
 const ProductQuickView: FC<ProductQuickViewProps> = ({
   className,
   'data-testid': testId = 'quick-view-modal',
-  isOpen: _isOpen,
-  loading: _loading,
-  onAddToCart: _onAddToCart,
-  onClose: _onClose,
-  onLike: _onLike,
-  onShare: _onShare,
-  onViewDetails: _onViewDetails,
+  isOpen: isOpen,
+  loading: loading,
+  onAddToCart: onAddToCart,
+  onClose: onClose,
+  onLike: onLike,
+  onShare: onShare,
+  onViewDetails: onViewDetails,
   product,
 }) => {
   const localizeHref = useLocalizeHref();

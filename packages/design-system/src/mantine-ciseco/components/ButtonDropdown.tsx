@@ -5,7 +5,7 @@ import Button, { type ButtonProps } from './shared/Button/Button';
 
 export type ButtonDropdownProps = ButtonProps;
 
-const ButtonDropdown: FC<ButtonDropdownProps> = ({ children, translate: _translate, ...args }) => {
+const ButtonDropdown: FC<ButtonDropdownProps> = ({ children, translate: translate, ...args }) => {
   return (
     <Button
       className="text-neutral-700 border border-neutral-200 dark:text-neutral-200 dark:border-neutral-700"

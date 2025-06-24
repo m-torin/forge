@@ -21,7 +21,7 @@ interface RegistryCreatedTemplateProps extends Record<string, any> {
 }
 
 export const RegistryCreatedTemplate = ({
-  email: _email,
+  email: email,
   name,
   registryTitle,
   registryType,

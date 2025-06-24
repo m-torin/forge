@@ -117,152 +117,22 @@ export class SentryClientProvider implements ObservabilityProvider {
     }
 
     try {
-      // Dynamically import Sentry to avoid bundling if not used
-      const Sentry = await import('@sentry/nextjs');
+      // Check if Sentry is available globally (initialized via instrumentation-client.ts)
+      // @ts-ignore - Global Sentry might not be typed
+      const Sentry = globalThis.Sentry || window.Sentry;
 
-      // Build integrations array
-      const integrations = [];
-
-      // Browser tracing integration
-      if (sentryConfig.browserTracingEnabled) {
-        integrations.push(
-          Sentry.browserTracingIntegration({
-            // Automatically start page loads and navigation transactions
-          }),
-        );
+      if (!Sentry) {
+        if (Environment.isDevelopment()) {
+          console.warn(
+            '[Sentry] Global Sentry instance not found. Please initialize Sentry via instrumentation-client.ts',
+          );
+        }
+        return;
       }
 
-      // Replay integration
-      if (sentryConfig.replaysSessionSampleRate || sentryConfig.replaysOnErrorSampleRate) {
-        integrations.push(
-          Sentry.replayIntegration({
-            blockAllMedia: sentryConfig.replayBlockAllMedia ?? true,
-            maskAllText: sentryConfig.replayMaskAllText ?? true,
-          }),
-        );
-      }
-
-      // Feedback integration
-      if (sentryConfig.feedbackEnabled) {
-        integrations.push(
-          Sentry.feedbackIntegration({
-            colorScheme: 'system',
-          }),
-        );
-      }
-
-      // Logging integration (for _experiments.enableLogs)
-      if (sentryConfig.loggingEnabled || sentryConfig._experiments?.enableLogs) {
-        integrations.push(
-          Sentry.consoleLoggingIntegration({
-            levels: ['log', 'info', 'warn', 'error', 'debug'],
-          }),
-        );
-      }
-
-      // Add any custom integrations
-      if (Array.isArray(sentryConfig.integrations)) {
-        integrations.push(...sentryConfig.integrations.filter((i: any) => typeof i !== 'string'));
-      }
-
-      // Default ignored errors for client-side
-      const defaultIgnoreErrors = [
-        'ResizeObserver loop limit exceeded',
-        'ResizeObserver loop completed with undelivered notifications',
-        'Non-Error promise rejection captured',
-        /^Non-Error/,
-        'Network request failed',
-        'NetworkError',
-        'Failed to fetch',
-        'Load failed',
-        'The operation was aborted',
-        'cancelled',
-        'AbortError',
-      ];
-
-      // Default ignored transactions
-      const defaultIgnoreTransactions = [
-        '/health',
-        '/ping',
-        '/_next',
-        '/api/health',
-        '/api/ping',
-        '/favicon.ico',
-      ];
-
-      // Merge configuration with sensible defaults
-      const finalConfig = {
-        // Core configuration
-        dsn: sentryConfig.dsn,
-        environment: sentryConfig.environment || process.env.NODE_ENV || 'production',
-        release: sentryConfig.release,
-        debug: sentryConfig.debug ?? false,
-        enabled: sentryConfig.enabled ?? true,
-
-        // User privacy
-        sendDefaultPii: sentryConfig.sendDefaultPii ?? false,
-
-        // Core options with defaults
-        maxBreadcrumbs: sentryConfig.maxBreadcrumbs ?? 100,
-        attachStacktrace: sentryConfig.attachStacktrace ?? true,
-        maxValueLength: sentryConfig.maxValueLength ?? 250,
-        normalizeDepth: sentryConfig.normalizeDepth ?? 3,
-        normalizeMaxBreadth: sentryConfig.normalizeMaxBreadth ?? 1000,
-        sendClientReports: sentryConfig.sendClientReports ?? true,
-
-        // Error monitoring with defaults
-        sampleRate: sentryConfig.sampleRate ?? 1.0, // Capture all errors by default
-        ignoreErrors: [...defaultIgnoreErrors, ...(sentryConfig.ignoreErrors || [])],
-        denyUrls: sentryConfig.denyUrls || [],
-        allowUrls: sentryConfig.allowUrls || [],
-
-        // Tracing with defaults
-        tracesSampleRate:
-          sentryConfig.tracesSampleRate ?? (process.env.NODE_ENV === 'production' ? 0.1 : 1.0),
-        tracesSampler: sentryConfig.tracesSampler,
-        tracePropagationTargets: sentryConfig.tracePropagationTargets || [
-          'localhost',
-          /^\//, // Same origin
-        ],
-        ignoreTransactions: [
-          ...defaultIgnoreTransactions,
-          ...(sentryConfig.ignoreTransactions || []),
-        ],
-
-        // Session replay
-        replaysSessionSampleRate: sentryConfig.replaysSessionSampleRate ?? 0.1,
-        replaysOnErrorSampleRate: sentryConfig.replaysOnErrorSampleRate ?? 1.0,
-
-        // Profiling
-        profilesSampleRate: sentryConfig.profilesSampleRate,
-
-        // Callbacks
-        beforeSend: sentryConfig.beforeSend,
-        beforeSendTransaction: sentryConfig.beforeSendTransaction,
-        beforeSendSpan: sentryConfig.beforeSendSpan,
-        beforeBreadcrumb: sentryConfig.beforeBreadcrumb,
-
-        // Transport options
-        tunnel: sentryConfig.tunnel,
-        transport: sentryConfig.transport,
-        transportOptions: sentryConfig.transportOptions,
-
-        // Integrations (already built above)
-        integrations,
-        defaultIntegrations: sentryConfig.defaultIntegrations,
-
-        // Initial scope
-        initialScope: sentryConfig.initialScope,
-
-        // Experimental features
-        _experiments: sentryConfig._experiments,
-
-        // Additional options from config
-        ...(sentryConfig.options || {}),
-      };
-
-      // Initialize with merged configuration
-      Sentry.init(finalConfig);
+      // Sentry should already be initialized via instrumentation-client.ts
+      // We just need to store the global instance for our provider methods
+      // No need to call Sentry.init() again as it would overwrite the existing config
 
       this.client = Sentry;
       this.isInitialized = true;

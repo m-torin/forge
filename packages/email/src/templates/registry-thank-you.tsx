@@ -20,7 +20,7 @@ interface RegistryThankYouTemplateProps extends Record<string, any> {
 }
 
 export const RegistryThankYouTemplate = ({
-  email: _email,
+  email: email,
   recipientName,
   senderName,
   registryTitle,

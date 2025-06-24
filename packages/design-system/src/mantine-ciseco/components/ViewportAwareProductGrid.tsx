@@ -111,7 +111,7 @@ export function ViewportAwareProductGrid({
       <div className="absolute inset-x-0 top-0 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {products.slice(visibleRange.start, visibleRange.end).map((product, index: any) => {
           const actualIndex = visibleRange.start + index;
-          const _hasBeenSeen = seenItems.has(actualIndex);
+          const hasBeenSeen = seenItems.has(actualIndex);
 
           return (
             <div

@@ -102,7 +102,7 @@ describe('email Functions', () => {
       const { sendMagicLinkEmail, resend } = await import('../src/index');
 
       // Access emails to trigger proxy initialization
-      const _emails = resend.emails;
+      const emails = resend.emails;
 
       const data = {
         name: 'John Doe',

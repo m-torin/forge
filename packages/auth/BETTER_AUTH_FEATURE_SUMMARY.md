@@ -21,32 +21,27 @@ This document provides a comprehensive overview of all Better Auth features impl
 ### Implemented Server Actions (in `server/user-actions.ts`)
 
 1. **updateUser** ✅
-
    - Updates user information (name, image, bio, locale, timezone)
    - Server action: `updateUserAction`
    - Client method: `updateUser`
 
 2. **changeEmail** ✅
-
    - Changes user email with verification
    - Server action: `changeEmailAction`
    - Sends verification email (TODO: implement email sending)
 
 3. **changePassword** ✅
-
    - Changes user password with current password verification
    - Server action: `changePasswordAction`
    - Client method: `changePassword`
    - Option to revoke other sessions
 
 4. **setPassword** ✅
-
    - Sets password for users without one (e.g., social login users)
    - Server action: `setPasswordAction`
    - Client method: `setPassword`
 
 5. **deleteUser** ✅
-
    - Deletes user account
    - Server action: `deleteUserAction`
    - Supports password verification or token
@@ -62,13 +57,11 @@ This document provides a comprehensive overview of all Better Auth features impl
 ### Implemented Features
 
 1. **listAccounts** ✅
-
    - Lists all linked accounts for a user
    - Server action: `listUserAccountsAction` / `listAccountsAction`
    - Returns account provider details, tokens, and timestamps
 
 2. **linkSocial** ✅
-
    - Links social accounts to existing user
    - Server action: `linkSocialAction`
    - Supports callback URL configuration
@@ -303,30 +296,25 @@ rateLimit: {
 ### Next.js Specific Features ✅
 
 1. **nextCookies Plugin**
-
    - Automatic cookie handling for Next.js
    - App Router compatibility
    - Server Component support
 
 2. **Server Components Support**
-
    - `getSession()` - Works in Server Components
    - `getCurrentUser()` - Works in Server Components
    - `requireAuth()` - Throws if not authenticated
 
 3. **Middleware Helpers**
-
    - `withAuth()` - Protect API routes
    - `withOrgAuth()` - Require organization context
 
 4. **Server Actions**
-
    - All user management functions exposed as server actions
    - Direct usage in forms with `action` prop
    - Proper error handling and response format
 
 5. **Four-File Export Pattern**
-
    - `/client/next` - Next.js client exports
    - `/server/next` - Next.js server exports
    - Proper module separation

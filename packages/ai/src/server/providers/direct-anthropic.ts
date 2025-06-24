@@ -82,12 +82,33 @@ Text: ${text}`,
     try {
       this.validateOptions(options);
 
+      // Build messages array from either single prompt or messages array
+      let messages: Array<{ content: string; role: 'user' | 'assistant' }>;
+      let systemPrompt: string | undefined = options.systemPrompt;
+
+      if (options.messages && options.messages.length > 0) {
+        // Use provided messages array, extract system messages
+        messages = [];
+        for (const msg of options.messages) {
+          if (msg.role === 'system') {
+            systemPrompt = msg.content; // Use last system message
+          } else {
+            messages.push({ content: msg.content, role: msg.role as 'user' | 'assistant' });
+          }
+        }
+      } else if (options.prompt) {
+        // Convert single prompt to messages format
+        messages = [{ content: options.prompt, role: 'user' }];
+      } else {
+        throw new Error('Either prompt or messages must be provided');
+      }
+
       const response = await this.client.messages.create({
         max_tokens: options.maxTokens ?? this.config.maxTokens ?? 1000,
-        messages: [{ content: options.prompt, role: 'user' }],
+        messages,
         model: options.model ?? this.config.model ?? 'claude-3-5-sonnet-20241022',
         temperature: options.temperature ?? this.config.temperature ?? 0.1,
-        ...(options.systemPrompt && { system: options.systemPrompt }),
+        ...(systemPrompt && { system: systemPrompt }),
       });
 
       const finishReason = this.mapFinishReason(response.stop_reason ?? undefined);
@@ -197,22 +218,43 @@ Content to analyze: ${content}`,
     try {
       this.validateOptions(options);
 
+      // Build messages array from either single prompt or messages array
+      let messages: Array<{ content: string; role: 'user' | 'assistant' }>;
+      let systemPrompt: string | undefined = options.systemPrompt;
+
+      if (options.messages && options.messages.length > 0) {
+        // Use provided messages array, extract system messages
+        messages = [];
+        for (const msg of options.messages) {
+          if (msg.role === 'system') {
+            systemPrompt = msg.content; // Use last system message
+          } else {
+            messages.push({ content: msg.content, role: msg.role as 'user' | 'assistant' });
+          }
+        }
+      } else if (options.prompt) {
+        // Convert single prompt to messages format
+        messages = [{ content: options.prompt, role: 'user' }];
+      } else {
+        throw new Error('Either prompt or messages must be provided');
+      }
+
       const stream = await this.client.messages.create({
         max_tokens: options.maxTokens ?? this.config.maxTokens ?? 1000,
-        messages: [{ content: options.prompt, role: 'user' }],
+        messages,
         model: options.model ?? this.config.model ?? 'claude-3-5-sonnet-20241022',
         stream: true,
         temperature: options.temperature ?? this.config.temperature ?? 0.1,
-        ...(options.systemPrompt && { system: options.systemPrompt }),
+        ...(systemPrompt && { system: systemPrompt }),
       });
 
       let isFirst = true;
-      let _totalText = '';
+      let totalText = '';
 
       for await (const chunk of stream) {
         if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text_delta') {
           const text = chunk.delta.text;
-          _totalText += text;
+          totalText += text;
 
           const streamChunk: StreamChunk = {
             isFirst,

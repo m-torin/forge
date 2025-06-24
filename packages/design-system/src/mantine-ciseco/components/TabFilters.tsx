@@ -334,7 +334,7 @@ const FieldPopover = ({
   fieldState: any[] | string | undefined;
   onClickClear: () => void;
 }) => {
-  const [opened, { close, open: _open, toggle }] = useDisclosure(false);
+  const [opened, { close, open: open, toggle }] = useDisclosure(false);
 
   return (
     <Popover

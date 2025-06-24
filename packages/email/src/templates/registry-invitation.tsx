@@ -24,9 +24,9 @@ interface RegistryInvitationTemplateProps extends Record<string, any> {
 }
 
 export const RegistryInvitationTemplate = ({
-  email: _email,
+  email: email,
   inviterName,
-  inviterEmail: _inviterEmail,
+  inviterEmail: inviterEmail,
   registryTitle,
   registryType,
   registryUrl,

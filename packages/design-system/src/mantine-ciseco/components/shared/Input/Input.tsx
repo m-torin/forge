@@ -10,7 +10,7 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   (
     {
-      children: _children,
+      children: children,
       className = '',
       'data-testid': testId = 'input-field',
       fontClass = 'text-sm font-normal',

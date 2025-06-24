@@ -58,8 +58,31 @@ export abstract class BaseProvider implements AIProvider {
   }
 
   protected validateOptions(options: CompletionOptions): void {
-    if (!options.prompt || typeof options.prompt !== 'string') {
-      throw new Error('Prompt is required and must be a string');
+    // Either prompt or messages must be provided
+    if (!options.prompt && (!options.messages || options.messages.length === 0)) {
+      throw new Error('Either prompt or messages must be provided');
+    }
+
+    if (options.prompt && typeof options.prompt !== 'string') {
+      throw new Error('Prompt must be a string');
+    }
+
+    if (options.messages) {
+      if (!Array.isArray(options.messages)) {
+        throw new Error('Messages must be an array');
+      }
+
+      for (const message of options.messages) {
+        if (!message.role || !message.content) {
+          throw new Error('Each message must have role and content');
+        }
+        if (!['system', 'user', 'assistant'].includes(message.role)) {
+          throw new Error('Message role must be system, user, or assistant');
+        }
+        if (typeof message.content !== 'string') {
+          throw new Error('Message content must be a string');
+        }
+      }
     }
   }
 }

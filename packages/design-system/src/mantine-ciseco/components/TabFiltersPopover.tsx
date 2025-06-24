@@ -301,8 +301,8 @@ const TabFiltersPopover = ({ className }: { className?: string }) => {
 
 const FilterItem = ({
   data,
-  handleChange: _handleChange,
-  name: _name,
+  handleChange: handleChange,
+  name: name,
 }: {
   data: {
     defaultChecked?: boolean;

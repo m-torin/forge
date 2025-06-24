@@ -10,3 +10,6 @@
 export * from './client';
 export * from './components';
 export * from './hooks';
+
+// Re-export shared types explicitly to avoid conflicts
+export type { ChatMessage } from './shared/types';

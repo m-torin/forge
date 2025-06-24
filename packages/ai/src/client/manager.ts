@@ -150,7 +150,7 @@ export class ClientAIManager extends AIManager {
                 options.onChunk(chunk);
               }
               yield chunk;
-            } catch (_error: any) {
+            } catch (error) {
               // eslint-disable-next-line no-console
               console.warn('Failed to parse chunk: ', data);
             }

@@ -29,10 +29,10 @@
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.29.0",
     "@next/eslint-plugin-next": "^15.3.4",
-    "@typescript-eslint/parser": "^8.34.1",
+    "@typescript-eslint/parser": "^8.35.0",
     "@vitest/eslint-plugin": "^1.2.7",
     "eslint-config-prettier": "^10.1.5",
-    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-jest-dom": "^5.5.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-perfectionist": "^4.15.0",
@@ -51,9 +51,9 @@
   },
   "devDependencies": {
     "@repo/config": "workspace:*",
-    "@types/node": "^24.0.3",
+    "@types/node": "catalog:",
     "eslint-import-resolver-typescript": "^4.4.3",
-    "typescript": "5.8.3"
+    "typescript": "catalog:"
   },
   "peerDependencies": {
     "eslint": "^9.29.0",

@@ -10,7 +10,7 @@ import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { nextCookies } from 'better-auth/next-js';
 import { admin, apiKey, organization, magicLink, twoFactor } from 'better-auth/plugins';
 
-import { prisma } from '@repo/database/prisma';
+import { prisma } from '@repo/database/prisma/server/next';
 
 /**
  * Environment configuration

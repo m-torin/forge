@@ -24,17 +24,6 @@ interface MockDeleteResult {
   deleted: number;
 }
 
-interface MockQueryResult {
-  matches: MockVectorScore[];
-  usage?: {
-    readUnits: number;
-  };
-}
-
-interface MockFetchResult {
-  vectors: MockVector[];
-}
-
 interface MockInfoResult {
   dimension: number;
   indexSize: number;
