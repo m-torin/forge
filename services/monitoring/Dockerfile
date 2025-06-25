@@ -1,5 +1,5 @@
 # Monitoring Stack - Grafana, Prometheus, Loki, etc.
-FROM alpine:3.20
+FROM alpine:3.22
 
 # Install system dependencies
 RUN apk add --no-cache \
