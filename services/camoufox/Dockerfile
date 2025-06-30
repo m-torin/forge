@@ -1,5 +1,5 @@
 # Camoufox Service - Stealth Browser Automation
-FROM mcr.microsoft.com/playwright:v1.53.0-jammy
+FROM mcr.microsoft.com/playwright:v1.53.2-jammy
 
 # Install Node.js 22
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
