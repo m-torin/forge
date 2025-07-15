@@ -197,7 +197,11 @@ describe('createFeatureFlagMiddleware', () => {
     const result = await middleware(request as any);
 
     expect(precompute).toHaveBeenCalledWith(mockFlags);
-    expect(getOrGenerateVisitorId).toHaveBeenCalledWith();
+    expect(getOrGenerateVisitorId).toHaveBeenCalledWith(
+      request.cookies,
+      request.headers,
+      'visitor-id'
+    );
     const { NextResponse } = vi.mocked(await import('next/server'));
     expect(NextResponse.rewrite).toHaveBeenCalledWith();
     expect(result).toBeDefined();

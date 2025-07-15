@@ -161,7 +161,28 @@ describe('links Package - Final 80% Coverage', () => {
       expect(link).toHaveProperty('id', 'test-link-id');
       expect(link).toHaveProperty('url', 'https://example.com');
       expect(link).toHaveProperty('shortLink', 'https://test.sh/test-key');
-      expect(mockDubClient.links.create).toHaveBeenCalledWith();
+      expect(mockDubClient.links.create).toHaveBeenCalledWith(expect.objectContaining({
+        url: 'https://example.com',
+        domain: 'dub.sh',
+        key: undefined,
+        prefix: undefined,
+        trackConversion: undefined,
+        publicStats: undefined,
+        tagIds: undefined,
+        comments: undefined,
+        expiresAt: undefined,
+        expiredUrl: undefined,
+        password: undefined,
+        proxy: undefined,
+        title: undefined,
+        description: undefined,
+        image: undefined,
+        video: undefined,
+        ios: undefined,
+        android: undefined,
+        geo: undefined,
+        utm: undefined,
+      }));
     });
 
     test('should create link with full options', async () => {
@@ -372,7 +393,10 @@ describe('links Package - Final 80% Coverage', () => {
 
       expect(result.created).toHaveLength(2);
       expect(result.errors).toHaveLength(0);
-      expect(mockDubClient.links.createMany).toHaveBeenCalledWith();
+      expect(mockDubClient.links.createMany).toHaveBeenCalledWith([
+        { url: 'https://example1.com', domain: 'dub.sh' },
+        { url: 'https://example2.com', domain: 'dub.sh' },
+      ]);
     });
 
     test('should handle bulk create errors', async () => {
