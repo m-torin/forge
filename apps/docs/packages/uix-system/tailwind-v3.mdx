@@ -1,0 +1,298 @@
+---
+title: "UIX System - Tailwind v3 Components"
+description:
+  "Professional UI enhancement components designed for monorepo-wide reusability
+  with Tailwind CSS v3"
+---
+
+# UIX System - Tailwind v3 Components
+
+Professional UI enhancement components designed for monorepo-wide reusability
+with Tailwind CSS v3.
+
+## 🎯 Purpose
+
+This package provides high-quality, reusable UI components that can be used
+across all applications in the monorepo. Components are designed to be:
+
+- **Framework agnostic** - Work with any React-based application
+- **Highly customizable** - UI components can be swapped via props/context
+- **Performance optimized** - Tree-shakeable exports, minimal bundle impact
+- **Accessible** - WCAG compliant with keyboard navigation support
+- **Mobile-first** - Responsive design with touch gesture support
+
+## 📦 What's Included
+
+### 🎬 Animations (`/animations`)
+
+Advanced animation components with smooth 60fps performance:
+
+- **TypingAnimation** - Typewriter effect with customizable cursor
+- **StaggeredContainer/Item** - Sequential reveal animations
+- **ScrollReveal** - Scroll-triggered entrance animations
+- **Advanced micro-interactions** - Magnetic buttons, hover effects
+
+### 📱 Mobile (`/mobile`)
+
+Mobile-optimized components and utilities:
+
+- **useMobileDetection** - Device and screen size detection
+- **MobileOptimizations** - Touch gestures, safe areas, haptic feedback
+- **Responsive behaviors** - Auto-collapse, swipe navigation
+
+### 🎨 Theme (`/theme`)
+
+Theme management and visual controls:
+
+- **EnhancedThemeToggle** - Animated theme switching with system detection
+- **Theme persistence** - localStorage integration
+- **Smooth transitions** - Animated icon changes and gradients
+
+### 🔧 Utilities (`/utils`, `/hooks`)
+
+Supporting utilities and custom hooks:
+
+- **Animation utilities** - Preset configurations and timing functions
+- **Mobile hooks** - Device detection and responsive utilities
+- **Theme hooks** - Theme state management
+- **Type definitions** - TypeScript interfaces for all components
+
+## 🚀 Usage
+
+### Installation
+
+Components are automatically available when importing from the package:
+
+```typescript
+import {
+  TypingAnimation,
+  useMobileDetection,
+  EnhancedThemeToggle
+} from "@repo/uix-system/tailwind/v3";
+```
+
+### UI Component Abstraction
+
+Components use a flexible UI abstraction system that allows you to provide your
+own UI components:
+
+```typescript
+import { UIComponentsProvider } from '@repo/uix-system/tailwind/v3';
+import { Button, Card, Badge } from '#/components/ui';
+
+// Wrap your app with custom UI components
+<UIComponentsProvider components={{ Button, Card, Badge }}>
+  <YourApp />
+</UIComponentsProvider>
+```
+
+### Basic Examples
+
+#### Typing Animation
+
+```typescript
+import { TypingAnimation } from '@repo/uix-system/tailwind/v3';
+
+<TypingAnimation
+  text="Hello, World!"
+  speed={50}
+  className="text-lg font-mono"
+/>
+```
+
+#### Mobile Detection
+
+```typescript
+import { useMobileDetection } from '@repo/uix-system/tailwind/v3';
+
+function MyComponent() {
+  const { isMobile, screenSize } = useMobileDetection();
+
+  return (
+    <div className={isMobile ? "p-2" : "p-4"}>
+      Content for {screenSize} screens
+    </div>
+  );
+}
+```
+
+#### Enhanced Theme Toggle
+
+```typescript
+import { EnhancedThemeToggle } from '@repo/uix-system/tailwind/v3';
+
+<EnhancedThemeToggle className="ml-auto" />
+```
+
+## 🏗️ Architecture
+
+### Component Organization
+
+```
+src/tailwind/v3/
+├── animations/           # Animation components
+│   ├── advanced-animations.tsx
+│   ├── typing-animation.tsx
+│   └── index.ts
+├── mobile/              # Mobile optimization components
+│   ├── mobile-optimizations.tsx
+│   └── index.ts
+├── theme/               # Theme management components
+│   ├── enhanced-theme-toggle.tsx
+│   └── index.ts
+├── hooks/               # Custom React hooks
+│   ├── use-mobile-detection.ts
+│   └── index.ts
+├── utils/               # Utility functions
+│   ├── animation-utils.ts
+│   └── index.ts
+├── components/          # Component aggregation
+│   └── index.ts
+├── ui-components.ts     # UI abstraction layer
+├── constants.ts         # Configuration constants
+├── types.ts            # TypeScript definitions
+└── index.ts            # Main exports
+```
+
+### Export Strategy
+
+- **Main export**: `@repo/uix-system/tailwind/v3` - All components and utilities
+- **Category exports**: `@repo/uix-system/tailwind/v3/animations` - Specific
+  component groups
+- **Tree-shakeable**: Only import what you use for optimal bundle size
+
+## 🎨 Theming & Customization
+
+### Tailwind Integration
+
+Components are built to work seamlessly with Tailwind CSS v3:
+
+- Uses Tailwind utility classes for styling
+- Supports dark mode via CSS variables
+- Responsive design with mobile-first approach
+- Custom CSS properties for advanced theming
+
+### UI Component Flexibility
+
+The UI abstraction layer allows you to:
+
+- Provide your own Button, Card, Badge components
+- Maintain consistent design across your application
+- Swap UI libraries without changing component logic
+- Use default fallback components when none provided
+
+## 📱 Mobile Support
+
+### Touch Gestures
+
+- Swipe navigation and interactions
+- Pull-to-refresh patterns
+- Haptic feedback integration
+- Safe area support for notched devices
+
+### Responsive Design
+
+- Mobile-first breakpoint system
+- Touch target optimization (44px minimum)
+- Adaptive layouts for different screen sizes
+- Progressive enhancement patterns
+
+## ♿ Accessibility
+
+### Keyboard Navigation
+
+- Full keyboard support for all interactive components
+- Focus management and tab order
+- Screen reader compatibility
+- ARIA labels and descriptions
+
+### Motion Preferences
+
+- Respects `prefers-reduced-motion` setting
+- Graceful fallbacks for users with motion sensitivity
+- Optional animation controls
+
+## 🔧 Dependencies
+
+### Required
+
+- `react` ^19.1.0
+- `framer-motion` ^12.3.0 - Advanced animations
+- `next-themes` ^0.4.6 - Theme management
+- `clsx` - Utility class management
+
+### Peer Dependencies
+
+- `tailwindcss` - For styling system
+- `next` (optional) - For Next.js specific features
+
+## 📊 Performance
+
+### Bundle Size
+
+- Tree-shakeable exports minimize bundle impact
+- Individual component imports available
+- No unnecessary dependencies included
+- Optimized for production builds
+
+### Runtime Performance
+
+- 60fps animations with GPU acceleration
+- Minimal re-renders with React optimization
+- Efficient event handling and cleanup
+- Memory leak prevention
+
+## 🧪 Testing
+
+Components are designed to be testable:
+
+- Mocked animations for test environments
+- Clear component interfaces
+- Predictable state management
+- Integration with common testing frameworks
+
+## 🔄 Migration from Chatbot-Specific
+
+This package was refactored from chatbot-specific components to provide
+monorepo-wide reusability:
+
+### What Moved Back to ai-chatbot
+
+- Chat-specific layouts and panels
+- Keyboard shortcuts specific to chat interface
+- Feature tours and documentation components
+- Layout controls tied to chat functionality
+
+### What Stayed for Reuse
+
+- General animation utilities and components
+- Mobile detection and optimization utilities
+- Enhanced theme toggle with system detection
+- Reusable hooks and utility functions
+
+## 🚀 Future Enhancements
+
+### Planned Features
+
+- Additional animation presets and transitions
+- Enhanced mobile gesture library
+- Extended theme customization options
+- Performance monitoring utilities
+- Storybook documentation and examples
+
+### Contributing
+
+When adding new components:
+
+1. Ensure monorepo-wide applicability
+2. Use UI abstraction layer for flexibility
+3. Include comprehensive TypeScript types
+4. Follow accessibility best practices
+5. Maintain performance optimization
+6. Update documentation and examples
+
+---
+
+This design system provides a solid foundation for building consistent,
+high-quality user interfaces across the entire monorepo while maintaining
+flexibility and performance.

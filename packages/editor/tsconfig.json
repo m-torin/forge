@@ -1,0 +1,15 @@
+{
+  "extends": "@repo/config/typescript/react-library.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "#/*": ["./src/*"]
+    },
+    "types": ["vitest/globals", "@testing-library/jest-dom"],
+    "jsx": "react-jsx",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true
+  },
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules", "__tests__/build/**/*", "dist/**/*"]
+}

@@ -1,0 +1,724 @@
+---
+title: "Playwright E2E Testing"
+description:
+  "Complete guide to end-to-end testing with Playwright helpers and templates"
+icon: "play"
+---
+
+# Playwright E2E Testing
+
+Comprehensive E2E testing framework built on Playwright with authentication, API
+testing, visual regression, and accessibility testing capabilities.
+
+## Overview
+
+The `@repo/qa` package provides a complete Playwright testing infrastructure
+with:
+
+- **Authentication flows** - Login/logout, user session management
+- **API testing** - REST endpoint testing and validation
+- **Visual regression** - Screenshot comparison and visual diff testing
+- **Accessibility testing** - Automated a11y testing with axe-core
+- **Page object models** - Reusable page classes and patterns
+- **Test templates** - Ready-to-use test patterns
+
+## Quick Start
+
+### 1. Install Dependencies
+
+```bash
+pnpm add -D @repo/qa @playwright/test
+```
+
+### 2. Configure Playwright
+
+```typescript
+// playwright.config.ts
+import { createAppConfig } from "@repo/qa/playwright/configs";
+
+export default createAppConfig({
+  // Your app-specific configuration
+  baseURL: "http://localhost:3000",
+  testDir: "__tests__/e2e"
+});
+```
+
+### 3. Create Your First Test
+
+```typescript
+// __tests__/e2e/homepage.spec.ts
+import { test, expect } from "@playwright/test";
+import { HomePage } from "@repo/qa/playwright/helpers/page-objects";
+
+test("homepage loads correctly", async ({ page }) => {
+  const homePage = new HomePage(page);
+
+  await homePage.navigate();
+  await expect(homePage.title).toBeVisible();
+  await expect(page).toHaveTitle(/Your App/);
+});
+```
+
+## Authentication Testing
+
+### Basic Authentication Flow
+
+```typescript
+// __tests__/e2e/auth.spec.ts
+import { test, expect } from "@playwright/test";
+import {
+  loginAs,
+  logoutUser,
+  createTestUser,
+  getAuthState
+} from "@repo/qa/playwright/helpers/auth";
+
+test.describe("Authentication", () => {
+  test("user can login and logout", async ({ page }) => {
+    // Create test user
+    const user = await createTestUser({
+      email: "test@example.com",
+      password: "testpass123"
+    });
+
+    // Login
+    await loginAs(page, user);
+    await expect(page.locator('[data-testid="user-menu"]')).toBeVisible();
+
+    // Verify auth state
+    const authState = await getAuthState(page);
+    expect(authState.isAuthenticated).toBe(true);
+    expect(authState.user.email).toBe(user.email);
+
+    // Logout
+    await logoutUser(page);
+    await expect(page.locator('[data-testid="login-button"]')).toBeVisible();
+  });
+
+  test("handles invalid credentials", async ({ page }) => {
+    await loginAs(page, {
+      email: "invalid@example.com",
+      password: "wrongpassword"
+    });
+
+    await expect(page.locator('[data-testid="error-message"]')).toContainText(
+      "Invalid credentials"
+    );
+  });
+});
+```
+
+### Session Management
+
+```typescript
+// __tests__/e2e/session.spec.ts
+import { test, expect } from "@playwright/test";
+import {
+  createUserSession,
+  validateSession,
+  expireSession
+} from "@repo/qa/playwright/helpers/auth";
+
+test("session persistence", async ({ page, context }) => {
+  // Create authenticated session
+  const session = await createUserSession(context, {
+    email: "user@example.com",
+    role: "admin"
+  });
+
+  await page.goto("/dashboard");
+
+  // Validate session is active
+  const isValid = await validateSession(page);
+  expect(isValid).toBe(true);
+
+  // Test session expiration
+  await expireSession(context);
+  await page.reload();
+
+  await expect(page).toHaveURL(/\/login/);
+});
+```
+
+## API Testing
+
+### REST Endpoint Testing
+
+```typescript
+// __tests__/e2e/api.spec.ts
+import { test, expect } from "@playwright/test";
+import {
+  createAPIContext,
+  apiRequest,
+  validateResponse,
+  createAuthHeaders
+} from "@repo/qa/playwright/helpers/api-testing";
+
+test.describe("API Endpoints", () => {
+  let apiContext: any;
+
+  test.beforeAll(async ({ playwright }) => {
+    apiContext = await createAPIContext(playwright, {
+      baseURL: "http://localhost:3000/api"
+    });
+  });
+
+  test("GET /users returns user list", async () => {
+    const response = await apiRequest(apiContext, {
+      method: "GET",
+      endpoint: "/users",
+      headers: await createAuthHeaders("admin-token")
+    });
+
+    await validateResponse(response, {
+      status: 200,
+      schema: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            email: { type: "string" },
+            name: { type: "string" }
+          }
+        }
+      }
+    });
+
+    const users = await response.json();
+    expect(users.length).toBeGreaterThan(0);
+  });
+
+  test("POST /users creates new user", async () => {
+    const newUser = {
+      name: "Test User",
+      email: "newuser@example.com"
+    };
+
+    const response = await apiRequest(apiContext, {
+      method: "POST",
+      endpoint: "/users",
+      body: newUser,
+      headers: await createAuthHeaders("admin-token")
+    });
+
+    await validateResponse(response, {
+      status: 201,
+      schema: {
+        type: "object",
+        properties: {
+          id: { type: "string" },
+          name: { type: "string" },
+          email: { type: "string" },
+          createdAt: { type: "string" }
+        }
+      }
+    });
+
+    const createdUser = await response.json();
+    expect(createdUser.email).toBe(newUser.email);
+    expect(createdUser.id).toBeTruthy();
+  });
+});
+```
+
+### GraphQL Testing
+
+```typescript
+// __tests__/e2e/graphql.spec.ts
+import { test, expect } from "@playwright/test";
+import {
+  graphqlRequest,
+  validateGraphQLResponse
+} from "@repo/qa/playwright/helpers/api-testing";
+
+test("GraphQL query execution", async ({ request }) => {
+  const query = `
+    query GetUser($id: ID!) {
+      user(id: $id) {
+        id
+        name
+        email
+        posts {
+          title
+          content
+        }
+      }
+    }
+  `;
+
+  const response = await graphqlRequest(request, {
+    query,
+    variables: { id: "user-123" },
+    headers: { Authorization: "Bearer admin-token" }
+  });
+
+  await validateGraphQLResponse(response, {
+    hasErrors: false,
+    dataSchema: {
+      user: {
+        id: "string",
+        name: "string",
+        email: "string",
+        posts: "array"
+      }
+    }
+  });
+});
+```
+
+## Visual Regression Testing
+
+### Screenshot Comparison
+
+```typescript
+// __tests__/e2e/visual.spec.ts
+import { test, expect } from "@playwright/test";
+import {
+  captureScreenshot,
+  compareScreenshots,
+  setupVisualTesting,
+  maskElements
+} from "@repo/qa/playwright/helpers/visual-testing";
+
+test.describe("Visual Regression", () => {
+  test.beforeEach(async ({ page }) => {
+    await setupVisualTesting(page, {
+      threshold: 0.2,
+      animations: "disabled"
+    });
+  });
+
+  test("homepage visual consistency", async ({ page }) => {
+    await page.goto("/");
+
+    // Mask dynamic elements
+    await maskElements(page, [
+      '[data-testid="timestamp"]',
+      '[data-testid="user-avatar"]'
+    ]);
+
+    // Capture and compare
+    const screenshot = await captureScreenshot(page, "homepage");
+    await compareScreenshots(screenshot, "homepage-baseline.png", {
+      threshold: 0.1
+    });
+  });
+
+  test("responsive design testing", async ({ page }) => {
+    const viewports = [
+      { width: 320, height: 568 }, // Mobile
+      { width: 768, height: 1024 }, // Tablet
+      { width: 1920, height: 1080 } // Desktop
+    ];
+
+    for (const viewport of viewports) {
+      await page.setViewportSize(viewport);
+      await page.goto("/products");
+
+      const screenshot = await captureScreenshot(
+        page,
+        `products-${viewport.width}x${viewport.height}`
+      );
+
+      await compareScreenshots(
+        screenshot,
+        `products-${viewport.width}x${viewport.height}-baseline.png`
+      );
+    }
+  });
+});
+```
+
+### Component Visual Testing
+
+```typescript
+// __tests__/e2e/components-visual.spec.ts
+import { test, expect } from "@playwright/test";
+import {
+  isolateComponent,
+  captureComponentScreenshot
+} from "@repo/qa/playwright/helpers/visual-testing";
+
+test("button component variations", async ({ page }) => {
+  await page.goto("/storybook");
+
+  const variations = [
+    "primary-button",
+    "secondary-button",
+    "danger-button",
+    "disabled-button"
+  ];
+
+  for (const variation of variations) {
+    // Isolate component in Storybook
+    await isolateComponent(page, `Button--${variation}`);
+
+    // Capture component screenshot
+    await captureComponentScreenshot(page, `button-${variation}`, {
+      clip: { x: 0, y: 0, width: 200, height: 50 }
+    });
+  }
+});
+```
+
+## Accessibility Testing
+
+### Automated A11y Testing
+
+```typescript
+// __tests__/e2e/accessibility.spec.ts
+import { test, expect } from "@playwright/test";
+import {
+  testAccessibility,
+  checkColorContrast,
+  validateKeyboardNavigation,
+  checkScreenReaderContent
+} from "@repo/qa/playwright/helpers/accessibility";
+
+test.describe("Accessibility", () => {
+  test("homepage accessibility compliance", async ({ page }) => {
+    await page.goto("/");
+
+    // Run comprehensive a11y tests
+    const results = await testAccessibility(page, {
+      standard: "WCAG21AA",
+      exclude: [".third-party-widget"]
+    });
+
+    expect(results.violations).toHaveLength(0);
+    expect(results.passes.length).toBeGreaterThan(10);
+  });
+
+  test("color contrast compliance", async ({ page }) => {
+    await page.goto("/");
+
+    const contrastResults = await checkColorContrast(page, {
+      minimumRatio: 4.5, // WCAG AA standard
+      checkLargeText: true
+    });
+
+    expect(contrastResults.failures).toHaveLength(0);
+  });
+
+  test("keyboard navigation", async ({ page }) => {
+    await page.goto("/");
+
+    const navResults = await validateKeyboardNavigation(page, {
+      startElement: '[data-testid="main-nav"]',
+      expectedFocusableElements: [
+        "Home",
+        "Products",
+        "About",
+        "Contact",
+        "Login"
+      ]
+    });
+
+    expect(navResults.allElementsReachable).toBe(true);
+    expect(navResults.focusTrapWorking).toBe(true);
+  });
+
+  test("screen reader content", async ({ page }) => {
+    await page.goto("/products");
+
+    const srResults = await checkScreenReaderContent(page, {
+      checkAriaLabels: true,
+      checkHeadingStructure: true,
+      checkLandmarkRoles: true
+    });
+
+    expect(srResults.missingAriaLabels).toHaveLength(0);
+    expect(srResults.headingStructureValid).toBe(true);
+    expect(srResults.landmarksPresent).toBe(true);
+  });
+});
+```
+
+## Page Object Models
+
+### Base Page Class
+
+```typescript
+// Custom page objects extending base functionality
+import { BasePage } from "@repo/qa/playwright/helpers/page-objects";
+import type { Page, Locator } from "@playwright/test";
+
+export class ProductPage extends BasePage {
+  readonly productTitle: Locator;
+  readonly addToCartButton: Locator;
+  readonly priceDisplay: Locator;
+
+  constructor(page: Page) {
+    super(page);
+    this.productTitle = page.locator('[data-testid="product-title"]');
+    this.addToCartButton = page.locator('[data-testid="add-to-cart"]');
+    this.priceDisplay = page.locator('[data-testid="price"]');
+  }
+
+  async addToCart(quantity: number = 1) {
+    await this.setQuantity(quantity);
+    await this.addToCartButton.click();
+    await this.waitForCartUpdate();
+  }
+
+  async setQuantity(quantity: number) {
+    const quantityInput = this.page.locator('[data-testid="quantity-input"]');
+    await quantityInput.fill(quantity.toString());
+  }
+
+  async waitForCartUpdate() {
+    await this.page.waitForResponse(
+      (resp) => resp.url().includes("/api/cart") && resp.status() === 200
+    );
+  }
+
+  async getProductInfo() {
+    return {
+      title: await this.productTitle.textContent(),
+      price: await this.priceDisplay.textContent(),
+      available: await this.addToCartButton.isEnabled()
+    };
+  }
+}
+```
+
+### Form Page Objects
+
+```typescript
+import { FormPage } from "@repo/qa/playwright/helpers/page-objects";
+
+export class CheckoutPage extends FormPage {
+  constructor(page: Page) {
+    super(page, '[data-testid="checkout-form"]');
+  }
+
+  async fillShippingInfo(info: ShippingInfo) {
+    await this.fillField("firstName", info.firstName);
+    await this.fillField("lastName", info.lastName);
+    await this.fillField("address", info.address);
+    await this.fillField("city", info.city);
+    await this.selectOption("state", info.state);
+    await this.fillField("zipCode", info.zipCode);
+  }
+
+  async selectPaymentMethod(method: "card" | "paypal") {
+    await this.selectRadio("paymentMethod", method);
+  }
+
+  async submitOrder() {
+    await this.submit();
+    await this.page.waitForURL("**/order-confirmation/**");
+  }
+}
+```
+
+## Test Data Management
+
+### Data Helpers
+
+```typescript
+// __tests__/e2e/data-management.spec.ts
+import { test, expect } from "@playwright/test";
+import {
+  createTestData,
+  cleanupTestData,
+  seedDatabase,
+  resetDatabase
+} from "@repo/qa/playwright/helpers/data-helpers";
+
+test.describe("Product Management", () => {
+  let testData: any;
+
+  test.beforeEach(async () => {
+    // Reset database to clean state
+    await resetDatabase();
+
+    // Create test data
+    testData = await createTestData({
+      users: 5,
+      products: 10,
+      orders: 3
+    });
+  });
+
+  test.afterEach(async () => {
+    // Cleanup test data
+    await cleanupTestData(testData.ids);
+  });
+
+  test("product creation workflow", async ({ page }) => {
+    // Test uses the seeded data
+    const product = testData.products[0];
+
+    await page.goto(`/admin/products/${product.id}`);
+    await expect(page.locator('[data-testid="product-name"]')).toContainText(
+      product.name
+    );
+  });
+});
+```
+
+## Test Templates
+
+### Basic Application Test Template
+
+```typescript
+// Use this template for basic app functionality testing
+import { test, expect } from "@playwright/test";
+import {
+  setupTestEnvironment,
+  createTestUser,
+  loginAs
+} from "@repo/qa/playwright/templates/basic-app";
+
+test.describe("App Functionality", () => {
+  test.beforeEach(async ({ page }) => {
+    await setupTestEnvironment(page);
+  });
+
+  test("user journey: signup to purchase", async ({ page }) => {
+    // Create and login user
+    const user = await createTestUser();
+    await loginAs(page, user);
+
+    // Navigate through app
+    await page.goto("/products");
+    await page.click('[data-testid="product-1"]');
+    await page.click('[data-testid="add-to-cart"]');
+    await page.goto("/cart");
+    await page.click('[data-testid="checkout"]');
+
+    // Verify successful checkout
+    await expect(page).toHaveURL(/\/order-confirmation/);
+  });
+});
+```
+
+## Configuration Options
+
+### Advanced Playwright Config
+
+```typescript
+// playwright.config.ts
+import { createAppConfig } from "@repo/qa/playwright/configs";
+
+export default createAppConfig({
+  // Test directory
+  testDir: "__tests__/e2e",
+
+  // Parallel execution
+  workers: process.env.CI ? 2 : 4,
+
+  // Browser configuration
+  projects: [
+    {
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] }
+    },
+    {
+      name: "firefox",
+      use: { ...devices["Desktop Firefox"] }
+    },
+    {
+      name: "webkit",
+      use: { ...devices["Desktop Safari"] }
+    },
+    {
+      name: "mobile",
+      use: { ...devices["iPhone 12"] }
+    }
+  ],
+
+  // Global setup and teardown
+  globalSetup: require.resolve("./global-setup"),
+  globalTeardown: require.resolve("./global-teardown"),
+
+  // Video and screenshot settings
+  use: {
+    video: "retain-on-failure",
+    screenshot: "only-on-failure",
+    trace: "retain-on-failure"
+  },
+
+  // Reporter configuration
+  reporter: [
+    ["html", { outputFolder: "test-results/html" }],
+    ["junit", { outputFile: "test-results/junit.xml" }],
+    ["json", { outputFile: "test-results/results.json" }]
+  ]
+});
+```
+
+## Best Practices
+
+### Test Organization
+
+```typescript
+// Group related tests
+test.describe("User Authentication", () => {
+  test.describe("Login Flow", () => {
+    // Login-specific tests
+  });
+
+  test.describe("Registration Flow", () => {
+    // Registration-specific tests
+  });
+});
+
+// Use descriptive test names
+test("should display error message when login fails with invalid credentials", async ({
+  page
+}) => {
+  // Test implementation
+});
+
+// Use data-testid for reliable element selection
+await page.click('[data-testid="submit-button"]');
+```
+
+### Error Handling
+
+```typescript
+test("handles network failures gracefully", async ({ page }) => {
+  // Simulate network failure
+  await page.route("**/api/products", (route) => route.abort());
+
+  await page.goto("/products");
+
+  // Verify error handling
+  await expect(page.locator('[data-testid="error-message"]')).toContainText(
+    "Failed to load products"
+  );
+
+  await expect(page.locator('[data-testid="retry-button"]')).toBeVisible();
+});
+```
+
+### Performance Testing
+
+```typescript
+import {
+  measurePageLoad,
+  checkWebVitals,
+  monitorNetworkActivity
+} from "@repo/qa/playwright/helpers/patterns";
+
+test("page performance metrics", async ({ page }) => {
+  const loadTime = await measurePageLoad(page, "/");
+  expect(loadTime).toBeLessThan(2000); // 2 seconds
+
+  const vitals = await checkWebVitals(page);
+  expect(vitals.LCP).toBeLessThan(2500); // Largest Contentful Paint
+  expect(vitals.FID).toBeLessThan(100); // First Input Delay
+  expect(vitals.CLS).toBeLessThan(0.1); // Cumulative Layout Shift
+
+  const networkActivity = await monitorNetworkActivity(page, "/products");
+  expect(networkActivity.totalRequests).toBeLessThan(50);
+  expect(networkActivity.totalDataTransferred).toBeLessThan(1024 * 1024); // 1MB
+});
+```
+
+This comprehensive Playwright testing framework provides everything needed for
+robust E2E testing including authentication flows, API testing, visual
+regression, accessibility compliance, and performance monitoring.

@@ -1,0 +1,809 @@
+---
+title: "Vitest Utilities"
+description: "Complete guide to Vitest testing utilities, helpers, and patterns"
+icon: "flask"
+---
+
+# Vitest Utilities
+
+Comprehensive collection of testing utilities, helpers, and patterns for Vitest
+testing framework.
+
+## Overview
+
+The `@repo/qa` package provides a rich set of Vitest utilities for:
+
+- **Render utilities** - Enhanced React component testing with Mantine
+- **Console utilities** - Console mocking and output suppression
+- **Database utilities** - Database testing helpers and patterns
+- **Environment utilities** - Environment management and configuration
+- **Test patterns** - Common testing patterns and helpers
+- **Performance utilities** - Performance measurement and optimization
+
+## Render Utilities
+
+### Enhanced React Testing
+
+```typescript
+// Import enhanced render utilities
+import {
+  render,
+  renderDark,
+  renderWithLocale,
+  renderWithProviders,
+  renderWithAuth,
+  screen,
+  userEvent
+} from "@repo/qa/vitest/utils/render";
+
+// Basic rendering with Mantine providers
+test("renders button component", () => {
+  render(<Button>Click me</Button>);
+
+  expect(screen.getByRole("button")).toBeInTheDocument();
+  expect(screen.getByText("Click me")).toBeVisible();
+});
+
+// Dark mode testing
+test("button appears correctly in dark mode", () => {
+  renderDark(<Button variant="filled">Dark Button</Button>);
+
+  const button = screen.getByRole("button");
+  expect(button).toHaveClass("mantine-Button-filled");
+});
+
+// Localization testing
+test("button shows localized text", () => {
+  renderWithLocale(
+    <Button>Submit</Button>,
+    { locale: "fr", messages: { Submit: "Soumettre" } }
+  );
+
+  expect(screen.getByText("Soumettre")).toBeInTheDocument();
+});
+```
+
+### Provider Testing
+
+```typescript
+// Testing with authentication context
+test("shows user-specific content when authenticated", () => {
+  const mockUser = { id: "1", name: "John Doe", email: "john@example.com" };
+
+  renderWithAuth(
+    <UserProfile />,
+    { user: mockUser, isAuthenticated: true }
+  );
+
+  expect(screen.getByText("Welcome, John Doe")).toBeInTheDocument();
+  expect(screen.getByText("john@example.com")).toBeInTheDocument();
+});
+
+// Testing with multiple providers
+test("component works with full provider stack", () => {
+  renderWithProviders(
+    <ComplexComponent />,
+    {
+      auth: { user: mockUser, isAuthenticated: true },
+      theme: { colorScheme: "dark" },
+      locale: { locale: "es", messages: spanishMessages },
+      router: { initialEntries: ["/dashboard"] }
+    }
+  );
+
+  expect(screen.getByTestId("complex-component")).toBeInTheDocument();
+});
+```
+
+### Custom Render Options
+
+```typescript
+import { createCustomRender } from "@repo/qa/vitest/utils/render";
+
+// Create app-specific render function
+const customRender = createCustomRender({
+  providers: [AuthProvider, ThemeProvider, NotificationProvider],
+  defaultProps: {
+    auth: { isAuthenticated: false },
+    theme: { colorScheme: "light" },
+    notifications: { position: "top-right" }
+  }
+});
+
+test("uses custom render configuration", () => {
+  customRender(<MyComponent />);
+  // Component rendered with all custom providers
+});
+```
+
+### User Interaction Testing
+
+```typescript
+import { userEvent } from "@repo/qa/vitest/utils/render";
+
+test("handles user interactions", async () => {
+  const handleClick = vi.fn();
+  render(<Button onClick={handleClick}>Click me</Button>);
+
+  // User interactions
+  await userEvent.click(screen.getByRole("button"));
+  await userEvent.keyboard("Enter");
+  await userEvent.type(screen.getByRole("textbox"), "Hello World");
+
+  expect(handleClick).toHaveBeenCalledTimes(1);
+});
+
+test("handles complex form interactions", async () => {
+  render(<ContactForm />);
+
+  // Fill out form
+  await userEvent.type(screen.getByLabelText("Name"), "John Doe");
+  await userEvent.type(screen.getByLabelText("Email"), "john@example.com");
+  await userEvent.selectOptions(screen.getByLabelText("Country"), "US");
+  await userEvent.click(screen.getByRole("checkbox", { name: "Subscribe" }));
+
+  // Submit form
+  await userEvent.click(screen.getByRole("button", { name: "Submit" }));
+
+  expect(screen.getByText("Form submitted successfully")).toBeInTheDocument();
+});
+```
+
+## Console Utilities
+
+### Console Suppression
+
+```typescript
+import {
+  setupConsoleSuppression,
+  suppressConsoleWarnings,
+  suppressConsoleErrors,
+  restoreConsole,
+  captureConsoleOutput
+} from "@repo/qa/vitest/utils/console";
+
+// Suppress all console output during tests
+test("runs without console noise", () => {
+  setupConsoleSuppression();
+
+  // Your test code that would normally log to console
+  console.log("This won't appear in test output");
+  console.warn("Neither will this warning");
+
+  restoreConsole(); // Restore after test
+});
+
+// Suppress only warnings
+test("allows errors but suppresses warnings", () => {
+  suppressConsoleWarnings();
+
+  console.error("This error will still appear");
+  console.warn("This warning will be suppressed");
+});
+
+// Capture and assert console output
+test("validates console output", () => {
+  const consoleSpy = captureConsoleOutput();
+
+  myFunction(); // Function that logs to console
+
+  expect(consoleSpy.log).toHaveBeenCalledWith("Expected log message");
+  expect(consoleSpy.warn).toHaveBeenCalledTimes(1);
+  expect(consoleSpy.error).not.toHaveBeenCalled();
+});
+```
+
+### Console Mocking Patterns
+
+```typescript
+// Mock console methods for testing
+test("handles logging appropriately", () => {
+  const originalConsole = console.error;
+  const mockConsoleError = vi.fn();
+  console.error = mockConsoleError;
+
+  // Code that should log errors
+  handleErrorCondition();
+
+  expect(mockConsoleError).toHaveBeenCalledWith("Expected error message");
+
+  // Restore original console
+  console.error = originalConsole;
+});
+
+// Using vitest spies for console methods
+test("tracks console usage", () => {
+  const consoleSpy = vi.spyOn(console, "log");
+
+  debugFunction();
+
+  expect(consoleSpy).toHaveBeenCalledWith("Debug output");
+
+  consoleSpy.mockRestore();
+});
+```
+
+## Database Utilities
+
+### Database Test Helpers
+
+```typescript
+import {
+  DatabaseTestHelper,
+  createTestDatabase,
+  cleanupDatabase,
+  seedTestData,
+  resetDatabase
+} from "@repo/qa/vitest/utils/database";
+
+describe("User Management", () => {
+  let dbHelper: DatabaseTestHelper;
+
+  beforeEach(async () => {
+    // Create isolated test database
+    dbHelper = await createTestDatabase();
+
+    // Seed with test data
+    await seedTestData(dbHelper, {
+      users: [
+        { name: "John Doe", email: "john@example.com" },
+        { name: "Jane Smith", email: "jane@example.com" }
+      ]
+    });
+  });
+
+  afterEach(async () => {
+    // Cleanup after each test
+    await cleanupDatabase(dbHelper);
+  });
+
+  test("creates new user successfully", async () => {
+    const userData = {
+      name: "New User",
+      email: "newuser@example.com"
+    };
+
+    const user = await dbHelper.create("user", userData);
+
+    expect(user).toMatchObject(userData);
+    expect(user.id).toBeTruthy();
+    expect(user.createdAt).toBeInstanceOf(Date);
+  });
+
+  test("finds users by criteria", async () => {
+    const users = await dbHelper.findMany("user", {
+      where: { email: { contains: "@example.com" } }
+    });
+
+    expect(users).toHaveLength(2);
+    expect(users[0].email).toContain("@example.com");
+  });
+});
+```
+
+### Transaction Testing
+
+```typescript
+import {
+  withTransaction,
+  rollbackTransaction,
+  commitTransaction
+} from "@repo/qa/vitest/utils/database";
+
+test("handles database transactions", async () => {
+  await withTransaction(async (tx) => {
+    // Create user within transaction
+    const user = await tx.user.create({
+      data: { name: "Test User", email: "test@example.com" }
+    });
+
+    // Create related records
+    await tx.profile.create({
+      data: { userId: user.id, bio: "Test bio" }
+    });
+
+    // Verify within transaction
+    const userWithProfile = await tx.user.findUnique({
+      where: { id: user.id },
+      include: { profile: true }
+    });
+
+    expect(userWithProfile?.profile?.bio).toBe("Test bio");
+  });
+
+  // Transaction is automatically committed if no errors
+});
+
+test("handles transaction rollback on error", async () => {
+  await expect(
+    withTransaction(async (tx) => {
+      await tx.user.create({
+        data: { name: "Test User", email: "test@example.com" }
+      });
+
+      // Simulate error
+      throw new Error("Simulated error");
+    })
+  ).rejects.toThrow("Simulated error");
+
+  // Verify rollback - user should not exist
+  const user = await db.user.findFirst({
+    where: { email: "test@example.com" }
+  });
+
+  expect(user).toBeNull();
+});
+```
+
+### Database Seeding Utilities
+
+```typescript
+import {
+  createSeeder,
+  seedUsers,
+  seedProducts,
+  seedOrders,
+  clearAllData
+} from "@repo/qa/vitest/utils/database";
+
+// Create custom seeder
+const customSeeder = createSeeder({
+  users: 10,
+  products: 50,
+  categories: 5,
+  orders: 25
+});
+
+test("works with seeded data", async () => {
+  await customSeeder.seed();
+
+  const users = await db.user.findMany();
+  const products = await db.product.findMany();
+
+  expect(users).toHaveLength(10);
+  expect(products).toHaveLength(50);
+
+  await customSeeder.cleanup();
+});
+
+// Specific data seeding
+test("seeds specific test data", async () => {
+  const testUsers = await seedUsers([
+    { name: "Admin User", email: "admin@example.com", role: "ADMIN" },
+    { name: "Regular User", email: "user@example.com", role: "USER" }
+  ]);
+
+  const testProducts = await seedProducts([
+    { name: "Test Product 1", price: 29.99, categoryId: testUsers[0].id },
+    { name: "Test Product 2", price: 49.99, categoryId: testUsers[0].id }
+  ]);
+
+  expect(testUsers).toHaveLength(2);
+  expect(testProducts).toHaveLength(2);
+});
+```
+
+## Environment Utilities
+
+### Environment Management
+
+```typescript
+import {
+  setTestEnvironment,
+  getTestEnvironment,
+  withEnvironment,
+  mockEnvironmentVariable,
+  restoreEnvironment
+} from "@repo/qa/vitest/utils/environment";
+
+// Set test environment
+test("runs in test environment", () => {
+  setTestEnvironment({
+    NODE_ENV: "test",
+    DATABASE_URL: "postgresql://test:test@localhost:5432/test_db",
+    REDIS_URL: "redis://localhost:6379/1"
+  });
+
+  const env = getTestEnvironment();
+  expect(env.NODE_ENV).toBe("test");
+});
+
+// Temporary environment changes
+test("handles temporary environment changes", async () => {
+  await withEnvironment(
+    { FEATURE_FLAG_X: "true", API_RATE_LIMIT: "1000" },
+    async () => {
+      // Test code that depends on these environment variables
+      const featureEnabled = process.env.FEATURE_FLAG_X === "true";
+      expect(featureEnabled).toBe(true);
+    }
+  );
+
+  // Environment is restored after test
+  expect(process.env.FEATURE_FLAG_X).toBeUndefined();
+});
+
+// Mock individual environment variables
+test("mocks individual environment variables", () => {
+  const restore = mockEnvironmentVariable("API_KEY", "test-api-key");
+
+  // Test code that uses API_KEY
+  expect(process.env.API_KEY).toBe("test-api-key");
+
+  restore(); // Restore original value
+});
+```
+
+### Configuration Testing
+
+```typescript
+import {
+  validateConfig,
+  createTestConfig,
+  configFactory
+} from "@repo/qa/vitest/utils/environment";
+
+test("validates configuration", () => {
+  const config = {
+    database: { url: "postgresql://localhost:5432/mydb" },
+    redis: { url: "redis://localhost:6379" },
+    auth: { secret: "test-secret" }
+  };
+
+  const validation = validateConfig(config);
+
+  expect(validation.isValid).toBe(true);
+  expect(validation.errors).toHaveLength(0);
+});
+
+test("creates test-specific configuration", () => {
+  const testConfig = createTestConfig({
+    overrides: {
+      database: { url: "sqlite::memory:" },
+      email: { provider: "mock" }
+    }
+  });
+
+  expect(testConfig.database.url).toBe("sqlite::memory:");
+  expect(testConfig.email.provider).toBe("mock");
+});
+
+// Configuration factory for different test scenarios
+test("uses configuration factory", () => {
+  const devConfig = configFactory.development();
+  const testConfig = configFactory.test();
+  const prodConfig = configFactory.production();
+
+  expect(devConfig.debug).toBe(true);
+  expect(testConfig.database.url).toContain("test");
+  expect(prodConfig.debug).toBe(false);
+});
+```
+
+## Test Pattern Utilities
+
+### Common Testing Patterns
+
+```typescript
+import {
+  testComponent,
+  testHook,
+  testAsyncFunction,
+  testErrorHandling,
+  testPerformance
+} from "@repo/qa/vitest/utils/patterns";
+
+// Component testing pattern
+test("tests component with standard pattern", () => {
+  testComponent(MyComponent, {
+    props: { title: "Test Title", visible: true },
+    expectations: [
+      { selector: '[data-testid="title"]', text: "Test Title" },
+      { selector: '[data-testid="container"]', visible: true }
+    ],
+    interactions: [
+      { type: "click", selector: '[data-testid="button"]' },
+      { type: "type", selector: '[data-testid="input"]', value: "test" }
+    ]
+  });
+});
+
+// Hook testing pattern
+test("tests custom hook", () => {
+  testHook(useCounter, {
+    initialProps: { initialValue: 5 },
+    expectations: [
+      { property: "count", value: 5 },
+      { property: "increment", type: "function" }
+    ],
+    actions: [
+      { method: "increment", times: 3 },
+      { expectation: { property: "count", value: 8 } }
+    ]
+  });
+});
+
+// Async function testing pattern
+test("tests async function", async () => {
+  await testAsyncFunction(fetchUserData, {
+    args: ["user123"],
+    mockResponses: [{ data: { id: "user123", name: "John Doe" } }],
+    expectations: [
+      { property: "id", value: "user123" },
+      { property: "name", value: "John Doe" }
+    ]
+  });
+});
+```
+
+### Error Handling Patterns
+
+```typescript
+import {
+  expectError,
+  expectErrorMessage,
+  expectErrorType,
+  testErrorBoundary
+} from "@repo/qa/vitest/utils/patterns";
+
+test("handles various error scenarios", async () => {
+  // Test function throws specific error
+  await expectError(() => validateUser(null), "User data is required");
+
+  // Test async function error handling
+  await expectErrorType(() => fetchUser("invalid-id"), "ValidationError");
+
+  // Test error boundary
+  testErrorBoundary(ProblematicComponent, {
+    errorMessage: "Something went wrong",
+    fallbackComponent: ErrorFallback
+  });
+});
+
+// Custom error assertions
+test("validates error scenarios", () => {
+  expect(() => {
+    processPayment({ amount: -100 });
+  }).toThrow(/Invalid amount/);
+
+  expect(async () => {
+    await authenticateUser("invalid-token");
+  }).rejects.toMatchObject({
+    code: "INVALID_TOKEN",
+    statusCode: 401
+  });
+});
+```
+
+## Performance Testing Utilities
+
+### Performance Measurement
+
+```typescript
+import {
+  measureRenderTime,
+  measureAsyncFunction,
+  benchmarkFunction,
+  profileComponent
+} from "@repo/qa/vitest/utils/test-helpers";
+
+test("measures component render performance", () => {
+  const renderTime = measureRenderTime(<ComplexComponent data={largeDataSet} />);
+
+  expect(renderTime).toBeLessThan(100); // 100ms threshold
+});
+
+test("benchmarks function performance", async () => {
+  const results = await benchmarkFunction(
+    () => processLargeArray(testData),
+    { iterations: 100, warmup: 10 }
+  );
+
+  expect(results.averageTime).toBeLessThan(50); // 50ms average
+  expect(results.maxTime).toBeLessThan(200); // 200ms max
+});
+
+test("profiles component with large datasets", () => {
+  const profile = profileComponent(DataTable, {
+    props: { data: generateLargeDataset(1000) },
+    metrics: ["renderTime", "memoryUsage", "reRenderCount"]
+  });
+
+  expect(profile.renderTime).toBeLessThan(500);
+  expect(profile.reRenderCount).toBeLessThan(5);
+});
+```
+
+### Memory Testing
+
+```typescript
+import {
+  measureMemoryUsage,
+  detectMemoryLeaks,
+  trackComponentMemory
+} from "@repo/qa/vitest/utils/test-helpers";
+
+test("detects memory leaks", async () => {
+  const initialMemory = measureMemoryUsage();
+
+  // Create and destroy many components
+  for (let i = 0; i < 100; i++) {
+    const { unmount } = render(<TestComponent key={i} />);
+    unmount();
+  }
+
+  await new Promise(resolve => setTimeout(resolve, 100)); // Wait for cleanup
+
+  const memoryLeak = detectMemoryLeaks(initialMemory);
+  expect(memoryLeak.leaked).toBe(false);
+});
+
+test("tracks component memory usage", () => {
+  const memoryTracker = trackComponentMemory(LargeComponent);
+
+  const { unmount } = render(<LargeComponent data={largeDataSet} />);
+
+  expect(memoryTracker.peakUsage).toBeLessThan(50 * 1024 * 1024); // 50MB
+
+  unmount();
+
+  expect(memoryTracker.currentUsage).toBeLessThan(memoryTracker.peakUsage);
+});
+```
+
+## Test Helper Functions
+
+### General Testing Helpers
+
+```typescript
+import {
+  waitFor,
+  waitForElement,
+  waitForCondition,
+  retryAssertion,
+  eventually
+} from "@repo/qa/vitest/utils/test-helpers";
+
+test("waits for asynchronous operations", async () => {
+  render(<AsyncComponent />);
+
+  // Wait for element to appear
+  await waitForElement('[data-testid="loaded-content"]');
+
+  // Wait for condition to be true
+  await waitForCondition(() =>
+    screen.queryByTestId("loading-spinner") === null
+  );
+
+  // Retry assertion with timeout
+  await retryAssertion(
+    () => expect(screen.getByText("Success")).toBeInTheDocument(),
+    { timeout: 5000, interval: 100 }
+  );
+});
+
+test("handles eventual consistency", async () => {
+  triggerAsyncOperation();
+
+  // Eventually assertion
+  await eventually(() => {
+    expect(getOperationStatus()).toBe("completed");
+  }, 10000); // 10 second timeout
+});
+```
+
+### Data Generation Helpers
+
+```typescript
+import {
+  generateTestData,
+  randomString,
+  randomEmail,
+  randomDate,
+  randomNumber
+} from "@repo/qa/vitest/utils/test-helpers";
+
+test("generates random test data", () => {
+  const testUser = generateTestData("user", {
+    name: randomString(10),
+    email: randomEmail(),
+    age: randomNumber(18, 65),
+    createdAt: randomDate()
+  });
+
+  expect(testUser.name).toHaveLength(10);
+  expect(testUser.email).toMatch(/#/);
+  expect(testUser.age).toBeGreaterThanOrEqual(18);
+  expect(testUser.age).toBeLessThanOrEqual(65);
+});
+
+// Consistent test data with seeds
+test("generates consistent test data", () => {
+  const userData1 = generateTestData("user", { seed: 12345 });
+  const userData2 = generateTestData("user", { seed: 12345 });
+
+  expect(userData1).toEqual(userData2); // Same seed = same data
+});
+```
+
+## Best Practices
+
+### Utility Usage Patterns
+
+```typescript
+// Combine utilities for comprehensive testing
+test("comprehensive component test", async () => {
+  // Setup environment
+  setTestEnvironment({ FEATURE_FLAG: "true" });
+
+  // Suppress console noise
+  setupConsoleSuppression();
+
+  // Render with providers
+  renderWithProviders(<MyComponent />);
+
+  // Measure performance
+  const renderTime = measureRenderTime();
+  expect(renderTime).toBeLessThan(100);
+
+  // Test interactions
+  await userEvent.click(screen.getByRole("button"));
+
+  // Wait for async operations
+  await waitForElement('[data-testid="result"]');
+
+  // Verify results
+  expect(screen.getByTestId("result")).toHaveTextContent("Success");
+
+  // Cleanup
+  restoreConsole();
+  restoreEnvironment();
+});
+```
+
+### Error Handling
+
+```typescript
+// Always handle cleanup in tests
+test("handles cleanup properly", async () => {
+  let dbHelper: DatabaseTestHelper | null = null;
+  let consoleSuppression: any = null;
+
+  try {
+    dbHelper = await createTestDatabase();
+    consoleSuppression = setupConsoleSuppression();
+
+    // Test implementation
+    await testMyFunction();
+  } finally {
+    // Ensure cleanup happens even if test fails
+    if (dbHelper) await cleanupDatabase(dbHelper);
+    if (consoleSuppression) restoreConsole();
+  }
+});
+```
+
+### Performance Considerations
+
+```typescript
+// Use utilities efficiently
+test("optimizes utility usage", () => {
+  // Reuse render utilities
+  const customRender = createCustomRender({
+    providers: [AuthProvider, ThemeProvider]
+  });
+
+  // Measure only when needed
+  const shouldMeasurePerformance = process.env.MEASURE_PERFORMANCE === "true";
+
+  if (shouldMeasurePerformance) {
+    const renderTime = measureRenderTime();
+    console.log(`Render time: ${renderTime}ms`);
+  }
+
+  customRender(<MyComponent />);
+});
+```
+
+These Vitest utilities provide a comprehensive testing infrastructure that makes
+testing more efficient, reliable, and maintainable across the entire monorepo.

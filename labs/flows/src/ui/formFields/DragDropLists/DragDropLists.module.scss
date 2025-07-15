@@ -1,0 +1,83 @@
+.item {
+  display: flex;
+  align-items: center;
+  border-radius: var(--mantine-radius-md);
+  border: rem(1px) solid
+    light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-5));
+  padding: var(--mantine-spacing-sm) var(--mantine-spacing-xl);
+  padding-left: calc(var(--mantine-spacing-xl) - var(--mantine-spacing-md));
+  background-color: light-dark(
+    var(--mantine-color-white),
+    var(--mantine-color-dark-5)
+  );
+  margin-bottom: var(--mantine-spacing-sm);
+  transition: box-shadow 0.2s;
+}
+
+.itemDragging {
+  box-shadow: var(--mantine-shadow-sm);
+}
+
+.symbol {
+  font-size: rem(30px);
+  font-weight: 700;
+  width: rem(50px);
+  margin-right: rem(10px);
+}
+
+.dragHandle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: light-dark(var(--mantine-color-gray-6), var(--mantine-color-dark-1));
+  padding-left: var(--mantine-spacing-md);
+  padding-right: var(--mantine-spacing-md);
+}
+
+.list {
+  padding: var(--mantine-spacing-lg);
+  border-radius: var(--mantine-radius-md);
+  border: rem(1px) solid
+    light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-5));
+  background-color: light-dark(
+    var(--mantine-color-gray-0),
+    var(--mantine-color-dark-5)
+  );
+  margin-bottom: var(--mantine-spacing-lg);
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
+}
+
+.listHighlight {
+  border-color: var(--mantine-color-blue-5) !important;
+  background-color: light-dark(
+    var(--mantine-color-blue-0),
+    var(--mantine-color-dark-3)
+  );
+}
+
+.invalidDrop {
+  border-color: var(--mantine-color-red-5) !important;
+  background-color: light-dark(
+    var(--mantine-color-red-0),
+    var(--mantine-color-dark-3)
+  );
+}
+
+.validDrop {
+  border-color: var(--mantine-color-green-5) !important;
+  background-color: light-dark(
+    var(--mantine-color-green-0),
+    var(--mantine-color-dark-3)
+  );
+}
+
+.itemDraggingActive {
+  box-shadow: var(--mantine-shadow-lg);
+}
+
+.focused {
+  outline: rem(2px) solid var(--mantine-color-blue-6);
+}

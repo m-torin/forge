@@ -1,0 +1,266 @@
+---
+title: "@repo/database"
+description: AI hints for Prisma database package
+---
+
+# @repo/database
+
+## Quick Facts
+
+- **Purpose**: Prisma ORM + generated types
+- **Layer**: 3 (Data)
+- **Edge Support**: ❌ No (requires Node.js)
+- **Key Pattern**: Always regenerate after schema changes
+
+## Common Operations
+
+### Basic CRUD Operations
+
+```typescript
+import { db } from "@repo/database";
+
+// Find unique record
+const user = await db.user.findUnique({
+  where: { id: userId },
+  include: { posts: true }
+});
+
+// Create record
+const post = await db.post.create({
+  data: {
+    title: "New Post",
+    content: "Post content",
+    userId: userId
+  }
+});
+
+// Update record
+const updated = await db.user.update({
+  where: { id: userId },
+  data: { name: "New Name" }
+});
+
+// Delete record
+await db.post.delete({
+  where: { id: postId }
+});
+```
+
+### Complex Queries
+
+```typescript
+// Query with relations and filtering
+const users = await db.user.findMany({
+  where: {
+    posts: {
+      some: {
+        published: true
+      }
+    }
+  },
+  include: {
+    posts: {
+      where: { published: true },
+      orderBy: { createdAt: "desc" }
+    }
+  }
+});
+
+// Aggregation
+const stats = await db.post.aggregate({
+  _count: { id: true },
+  _avg: { views: true },
+  where: { published: true }
+});
+```
+
+## Schema Change Workflow
+
+### 1. Edit Schema
+
+```prisma
+// In /packages/database/prisma/schema.prisma
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+
+  posts Post[]
+
+  @@index([email])
+}
+```
+
+### 2. Generate Migration
+
+```bash
+pnpm migrate
+```
+
+### 3. Regenerate Client
+
+```bash
+pnpm --filter @repo/database generate
+```
+
+### 4. Verify Types
+
+```bash
+pnpm typecheck
+```
+
+## Gotchas
+
+### ❌ Don't import database in client components
+
+```typescript
+// ❌ Wrong - database in client component
+"use client";
+import { db } from "@repo/database";
+
+export function Component() {
+  const users = await db.user.findMany(); // Error: Server code in client
+}
+```
+
+### ❌ Don't forget to regenerate after schema changes
+
+```bash
+# ❌ Wrong - schema changed but didn't regenerate
+# Edit schema.prisma
+pnpm migrate # Types are now out of sync!
+
+# ✅ Correct - always regenerate
+pnpm migrate
+pnpm --filter @repo/database generate
+```
+
+### ❌ Don't use database directly in edge runtime
+
+```typescript
+// ❌ Wrong - in middleware.ts
+import { db } from "@repo/database";
+
+// ✅ Correct - database operations in server actions only
+```
+
+## Migration Best Practices
+
+### Safe Migrations
+
+```prisma
+// ✅ Good - add optional field
+model User {
+  id    String  @id
+  email String  @unique
+  bio   String? // Optional - safe to add
+}
+
+// ❌ Risky - required field without default
+model User {
+  id       String @id
+  email    String @unique
+  required String // Will fail if existing records
+}
+
+// ✅ Better - required field with default
+model User {
+  id       String @id
+  email    String @unique
+  required String @default("default-value")
+}
+```
+
+### Index Strategy
+
+```prisma
+model Post {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  published Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  // Index foreign keys
+  @@index([userId])
+
+  // Index commonly queried fields
+  @@index([published, createdAt])
+
+  // Compound index for complex queries
+  @@index([userId, published])
+}
+```
+
+## Error Handling
+
+### Handle Common Errors
+
+```typescript
+import { Prisma } from "@repo/database";
+
+try {
+  const user = await db.user.create({
+    data: { email: "test@example.com" }
+  });
+} catch (error) {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error.code === "P2002") {
+      // Unique constraint violation
+      throw new Error("Email already exists");
+    }
+  }
+  throw error;
+}
+```
+
+## Performance Tips
+
+### Use Select/Include Wisely
+
+```typescript
+// ❌ Over-fetching - gets all fields
+const user = await db.user.findUnique({
+  where: { id }
+});
+
+// ✅ Select only needed fields
+const user = await db.user.findUnique({
+  where: { id },
+  select: {
+    id: true,
+    name: true,
+    email: true
+  }
+});
+```
+
+### Batch Operations
+
+```typescript
+// ❌ Multiple individual queries
+for (const post of posts) {
+  await db.post.update({
+    where: { id: post.id },
+    data: { published: true }
+  });
+}
+
+// ✅ Single batch operation
+await db.post.updateMany({
+  where: {
+    id: { in: posts.map((p) => p.id) }
+  },
+  data: { published: true }
+});
+```
+
+## See Also
+
+- Task templates:
+  [Database setup template](/ai-hints/task-templates#implementing-database-operations)
+- Command sequences:
+  [Migration recovery](/ai-hints/command-sequences#database-migration-recovery)

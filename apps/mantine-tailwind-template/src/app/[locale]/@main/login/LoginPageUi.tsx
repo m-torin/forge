@@ -1,0 +1,211 @@
+/**
+ * Login Page UI Component
+ *
+ * Client component with pure Tailwind styling and Mantine form logic
+ */
+
+'use client';
+
+import { signInAction } from '#/app/actions/auth';
+import type { Locale } from '#/lib/i18n';
+import { Alert, Button, Card, Checkbox, PasswordInput, Stack, TextInput } from '@mantine/core';
+import { useForm } from '@mantine/form';
+import { IconArrowLeft, IconBrandNextjs } from '@tabler/icons-react';
+import Link from 'next/link';
+import type { Route } from 'next';
+import { useActionState } from 'react';
+
+interface LoginPageUiProps {
+  locale: Locale;
+  dict: {
+    header: { title: string };
+    home: { welcome: string };
+  };
+  redirectTo: string;
+  error: string | null;
+}
+
+// Form values interface
+interface LoginFormValues {
+  email: string;
+  password: string;
+  rememberMe: boolean;
+}
+
+export default function LoginPageUi({ locale, dict, redirectTo, error }: LoginPageUiProps) {
+  // Use useActionState for server action integration
+  const [state, formAction] = useActionState(signInAction, {
+    success: false,
+    error: error,
+    fields: { email: '', password: '' },
+  });
+
+  // Mantine form for client-side validation
+  const form = useForm<LoginFormValues>({
+    initialValues: {
+      email: state?.fields?.email || '',
+      password: '',
+      rememberMe: true,
+    },
+    validate: {
+      email: value => {
+        if (!value) return 'Email is required';
+        if (!/^\S+@\S+$/.test(value)) return 'Invalid email format';
+        return null;
+      },
+      password: value => {
+        if (!value) return 'Password is required';
+        if (value.length < 3) return 'Password must be at least 3 characters';
+        return null;
+      },
+    },
+  });
+
+  const handleSubmit = (values: LoginFormValues) => {
+    // Create FormData for server action
+    const formData = new FormData();
+    formData.append('email', values.email);
+    formData.append('password', values.password);
+    formData.append('rememberMe', values.rememberMe ? 'on' : 'off');
+    formData.append('redirectTo', redirectTo);
+
+    // Call server action
+    formAction(formData);
+  };
+
+  return (
+    <div className="flex min-h-screen flex-col justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        {/* Header */}
+        <div className="mb-8 text-center">
+          <Link
+            href={`/${locale}` as Route}
+            className="mb-4 inline-flex items-center text-blue-600 hover:text-blue-800"
+          >
+            <IconArrowLeft size={20} className="mr-2" />
+            Back to {dict.header.title}
+          </Link>
+
+          <div className="mb-4 flex justify-center">
+            <div className="flex items-center">
+              <IconBrandNextjs size={32} className="mr-2 text-black" />
+              <span className="text-2xl font-bold text-gray-900">{dict.header.title}</span>
+            </div>
+          </div>
+
+          <h2 className="text-3xl font-bold text-gray-900">Sign in to your account</h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Or <span className="font-medium text-blue-600">use one of the demo accounts below</span>
+          </p>
+        </div>
+
+        {/* Demo Account Info */}
+        <div className="mb-6">
+          <Card withBorder padding="sm" className="harmony-bg-info harmony-border">
+            <h3 className="harmony-text-primary mb-2 text-sm font-medium">Demo Accounts:</h3>
+            <div className="harmony-text-secondary space-y-1 text-xs">
+              <div>
+                <strong>User:</strong> demo@example.com / demo123
+              </div>
+              <div>
+                <strong>Admin:</strong> admin@example.com / admin123
+              </div>
+              <div>
+                <strong>User 2:</strong> jane@example.com / jane123
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Login Form */}
+        <Card withBorder shadow="lg" padding="lg" className="harmony-bg-surface">
+          <form onSubmit={form.onSubmit(handleSubmit)}>
+            <Stack gap="md">
+              {/* Error Alert */}
+              {state?.error && (
+                <Alert color="red" variant="light" className="harmony-transition">
+                  {state.error}
+                </Alert>
+              )}
+
+              {/* Email Input */}
+              <TextInput
+                label="Email address"
+                type="email"
+                required
+                placeholder="Enter your email"
+                {...form.getInputProps('email')}
+              />
+
+              {/* Password Input */}
+              <PasswordInput
+                label="Password"
+                required
+                placeholder="Enter your password"
+                {...form.getInputProps('password')}
+              />
+
+              {/* Remember Me */}
+              <div className="flex items-center justify-between">
+                <Checkbox
+                  label="Remember me"
+                  {...form.getInputProps('rememberMe', { type: 'checkbox' })}
+                />
+
+                <div className="text-sm">
+                  <Link
+                    href={`/${locale}/forgot-password` as Route}
+                    className="harmony-text-primary hover:harmony-text-secondary harmony-transition font-medium"
+                  >
+                    Forgot your password?
+                  </Link>
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                variant="filled"
+                size="lg"
+                fullWidth
+                loading={false}
+                className="harmony-transition"
+              >
+                Sign in
+              </Button>
+
+              {/* Divider */}
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="harmony-border-top w-full" />
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="harmony-bg-surface harmony-text-muted px-2">
+                    New to our platform?
+                  </span>
+                </div>
+              </div>
+
+              {/* Sign Up Link */}
+              <div className="text-center">
+                <Link
+                  href={`/${locale}/signup` as Route}
+                  className="harmony-text-primary hover:harmony-text-secondary harmony-transition font-medium"
+                >
+                  Create an account
+                </Link>
+              </div>
+            </Stack>
+          </form>
+        </Card>
+
+        {/* Footer */}
+        <div className="mt-8 text-center">
+          <p className="text-xs text-gray-500">
+            This is a demo authentication system. No real data is stored.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,378 @@
+---
+title: "Core Concepts"
+description:
+  "Essential patterns and conventions used throughout the Forge monorepo"
+icon: "brain"
+---
+
+# Core Concepts
+
+Core concepts and patterns used throughout the Forge monorepo for consistent,
+maintainable code.
+
+## Overview
+
+This section explains the common patterns, conventions, and file structures
+you'll encounter across the monorepo. Understanding these concepts will help you
+navigate and contribute to the codebase effectively.
+
+## Key Files and Patterns
+
+### Environment Management (env.ts)
+
+Every package and app that requires environment variables has an `env.ts` file
+in the root directory:
+
+<AccordionGroup>
+  <Accordion title="Structure and Validation" icon="key">
+    ```typescript
+    import { createEnv } from '@t3-oss/env-nextjs';
+    import { z } from 'zod/v4';
+
+    export const safeEnv = () =>
+      createEnv({
+        server: {
+          API_KEY: z.string().min(1),
+          OPTIONAL_KEY: z.string().optional(),
+        },
+        client: {
+          NEXT_PUBLIC_APP_URL: z.string().url(),
+        },
+        runtimeEnv: {
+          API_KEY: process.env.API_KEY,
+          OPTIONAL_KEY: process.env.OPTIONAL_KEY,
+          NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+        },
+      });
+    ```
+
+    **Key Principles:**
+    - **Lazy Evaluation**: Exported as functions for graceful initialization
+    - **Type Safety**: Zod schemas ensure runtime validation
+    - **Environment Awareness**: Different rules for development vs production
+    - **No ReturnType**: Functions avoid explicit ReturnType annotations
+
+  </Accordion>
+
+  <Accordion title="Application Configuration (env.ts)" icon="cog">
+    Located in the root of each app (never in `src/`):
+
+    ```typescript
+    import { safeEnv as analyticsEnv } from '@repo/analytics/env';
+    import { safeEnv as authEnv } from '@repo/auth/env';
+    import { createEnv } from '@t3-oss/env-nextjs';
+    import { z } from 'zod/v4';
+
+    export const env = createEnv({
+      extends: [analyticsEnv(), authEnv()],
+      server: {
+        APP_SPECIFIC_KEY: z.string(),
+      },
+      client: {
+        NEXT_PUBLIC_FEATURE_FLAG: z.boolean(),
+      },
+      runtimeEnv: {
+        APP_SPECIFIC_KEY: process.env.APP_SPECIFIC_KEY,
+        NEXT_PUBLIC_FEATURE_FLAG: process.env.NEXT_PUBLIC_FEATURE_FLAG === 'true',
+      },
+    });
+    ```
+
+    Centralizes configuration by re-exporting package environments and adding app-specific variables.
+
+  </Accordion>
+</AccordionGroup>
+
+### Lazy Initialization Pattern
+
+Critical for avoiding errors when environment variables aren't configured:
+
+```typescript
+let instance: ServiceClient | null = null;
+
+export function getService(): ServiceClient {
+  if (!instance) {
+    const env = safeEnv();
+    if (!env.SERVICE_API_KEY) {
+      // Return mock in development
+      return new MockServiceClient();
+    }
+    instance = new ServiceClient(env.SERVICE_API_KEY);
+  }
+  return instance;
+}
+```
+
+<Note>
+  This pattern enables packages to work in development without configuration
+  while ensuring proper initialization in production.
+</Note>
+
+## Architecture Patterns
+
+### Provider Pattern
+
+Services requiring configuration use the provider pattern for flexibility:
+
+<AccordionGroup>
+  <Accordion title="Define Provider Interface" icon="interface">
+    ```typescript
+    interface StorageProvider {
+      upload(key: string, data: Buffer): Promise<void>;
+      download(key: string): Promise<Buffer>;
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Implement Multiple Providers" icon="puzzle">
+    ```typescript
+    class S3Provider implements StorageProvider {
+      async upload(key: string, data: Buffer) {
+        // S3 implementation
+      }
+      async download(key: string): Promise<Buffer> {
+        // S3 implementation
+      }
+    }
+
+    class LocalProvider implements StorageProvider {
+      async upload(key: string, data: Buffer) {
+        // Local filesystem implementation
+      }
+      async download(key: string): Promise<Buffer> {
+        // Local filesystem implementation
+      }
+    }
+    ```
+
+  </Accordion>
+
+  <Accordion title="Factory Function" icon="factory">
+    ```typescript
+    export function createStorageProvider(config: Config): StorageProvider {
+      switch (config.type) {
+        case 's3':
+          return new S3Provider(config);
+        case 'local':
+          return new LocalProvider(config);
+        default:
+          throw new Error(`Unknown provider: ${config.type}`);
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Mock Patterns for Development
+
+Packages provide mock implementations when not configured:
+
+```typescript
+import { logInfo } from "@repo/observability/server/next";
+
+class MockEmailService {
+  async send(email: EmailOptions) {
+    logInfo("Mock email sent", {
+      email,
+      timestamp: new Date().toISOString()
+    });
+    return { id: "mock-id", status: "sent" };
+  }
+}
+
+export const email = process.env.RESEND_API_KEY
+  ? new ResendEmailService()
+  : new MockEmailService();
+```
+
+### Middleware Composition
+
+Packages providing middleware use composition for flexibility:
+
+```typescript
+export function createMiddleware(options?: Options) {
+  return async function middleware(
+    request: Request,
+    context: Context,
+    next: NextFunction
+  ) {
+    // Pre-processing
+    const result = await processRequest(request, options);
+
+    // Call next middleware
+    const response = await next(request, context);
+
+    // Post-processing
+    return processResponse(response, result);
+  };
+}
+```
+
+## File Organization
+
+### Server/Client Separation
+
+Packages clearly separate server and client code:
+
+```
+package/
+├── index.ts        # Client-side exports
+├── server.ts       # Server-side exports
+├── client.ts       # Client-only code
+├── env.ts          # Environment variables
+└── types.ts        # Shared types
+```
+
+### Standard Package Structure
+
+```
+@repo/package-name/
+├── __tests__/          # Test files
+├── src/                # Source code (if used)
+├── index.ts            # Main exports
+├── server.ts           # Server-side exports
+├── client.ts           # Client-side exports
+├── env.ts              # Environment variables
+├── types.ts            # TypeScript types
+├── package.json        # Package manifest
+├── tsconfig.json       # TypeScript config
+├── vitest.config.ts    # Test configuration
+└── README.md           # Documentation
+```
+
+## Code Conventions
+
+### Naming Conventions
+
+- **Files**: `kebab-case.ts` for files, except React components
+- **Components**: `PascalCase.tsx` for React components
+- **Exports**: Named exports preferred over default exports
+- **Types**: `PascalCase` for types and interfaces
+- **Constants**: `SCREAMING_SNAKE_CASE` for constants
+
+### Import Organization
+
+Standard import order across all files:
+
+```typescript
+// 1. React/Next.js imports
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+// 2. External packages
+import { z } from "zod";
+import { format } from "date-fns";
+
+// 3. Internal packages (@repo/*)
+import { auth } from "@repo/auth";
+import { prisma } from "@repo/database/prisma/server/next";
+import { logInfo } from "@repo/observability/server/next";
+
+// 4. Local imports
+import { Button } from "./components/button";
+import type { User } from "./types";
+```
+
+### Type-Safe Error Handling
+
+Consistent error handling across packages:
+
+```typescript
+export class PackageError extends Error {
+  constructor(
+    message: string,
+    public code: string,
+    public statusCode?: number
+  ) {
+    super(message);
+    this.name = "PackageError";
+  }
+}
+
+// Usage
+throw new PackageError("Invalid API key", "INVALID_API_KEY", 401);
+```
+
+## Testing Patterns
+
+### Test Structure
+
+```typescript
+// Test file naming
+component.test.tsx; // Unit tests
+component.e2e.test.tsx; // E2E tests
+
+// Test structure
+describe("ComponentName", () => {
+  beforeEach(() => {
+    // Setup
+  });
+
+  it("should handle normal case", () => {
+    // Test implementation
+  });
+
+  it("should handle error case", () => {
+    // Test error handling
+  });
+});
+
+// Mock location
+__mocks__ / module - name.ts;
+```
+
+## Best Practices
+
+### Environment Variables
+
+<CardGroup cols={2}>
+  <Card title="Validation" icon="shield-check">
+    Always validate with Zod schemas and provide helpful error messages for
+    missing variables
+  </Card>
+  <Card title="Optional Variables" icon="toggle-off">
+    Use `.optional()` for non-critical variables and group related variables
+    together
+  </Card>
+  <Card title="Type Safety" icon="code">
+    Export types from `types.ts` and use discriminated unions for variants
+  </Card>
+  <Card title="Error Handling" icon="triangle-exclamation">
+    Create specific error classes with codes for programmatic handling
+  </Card>
+</CardGroup>
+
+### Performance & Security
+
+<Warning>
+  **Security Reminders:** - Never log sensitive data - Validate all inputs - Use
+  environment variables for secrets - Implement rate limiting where appropriate
+</Warning>
+
+- **Use lazy initialization** for expensive operations
+- **Implement caching** where appropriate
+- **Avoid synchronous I/O** in hot paths
+- **Monitor with observability** tools from `@repo/observability`
+
+## Configuration Inheritance
+
+Shared configurations use extension patterns:
+
+```typescript
+// Base configuration
+export const baseConfig = {
+  timeout: 5000,
+  retries: 3
+};
+
+// Extended configuration
+export const productionConfig = {
+  ...baseConfig,
+  timeout: 30000,
+  retries: 5
+};
+```
+
+Understanding these concepts and patterns will help you navigate the codebase
+efficiently, contribute consistent high-quality code, and maintain the
+monorepo's architectural integrity.

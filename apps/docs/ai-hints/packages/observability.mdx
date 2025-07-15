@@ -1,0 +1,204 @@
+---
+title: "@repo/observability"
+description: AI hints for observability package
+---
+
+# @repo/observability
+
+## Quick Facts
+
+- **Purpose**: Sentry error tracking and observability
+- **Layer**: 2 (Core Services)
+- **Edge Support**: ✅ Yes (with limitations)
+- **Key Pattern**: Different exports for edge vs server runtime
+
+## Common Operations
+
+### Server-Side Error Tracking
+
+```typescript
+// In Next.js server components/actions
+import { createObservability } from "@repo/observability/server/next";
+
+const observability = createObservability();
+
+// Track errors
+try {
+  // Your code
+} catch (error) {
+  observability.captureException(error);
+  throw error;
+}
+
+// Track custom events
+observability.captureMessage("User completed checkout", "info");
+```
+
+### Edge Runtime Error Tracking
+
+```typescript
+// In middleware.ts or edge functions
+import { createObservability } from "@repo/observability/server/edge";
+
+const observability = createObservability();
+
+export async function middleware(request: NextRequest) {
+  try {
+    // Your middleware logic
+  } catch (error) {
+    observability.captureException(error);
+    return NextResponse.redirect(new URL("/error", request.url));
+  }
+}
+```
+
+### Client-Side Error Tracking
+
+```typescript
+// In client components
+import { createObservability } from "@repo/observability/client/next";
+
+const observability = createObservability();
+
+export function ClientComponent() {
+  const handleError = (error: Error) => {
+    observability.captureException(error);
+  };
+
+  return <button onClick={() => handleError(new Error("Test"))}>Test Error</button>;
+}
+```
+
+## Gotchas
+
+### ❌ Don't use server/next in edge runtime
+
+```typescript
+// ❌ Wrong - in middleware.ts
+import { createObservability } from "@repo/observability/server/next";
+
+// ✅ Correct - use edge variant
+import { createObservability } from "@repo/observability/server/edge";
+```
+
+### ❌ Don't use edge exports in server components
+
+```typescript
+// ❌ Wrong - in server component
+import { createObservability } from "@repo/observability/server/edge";
+
+// ✅ Correct - use server/next variant
+import { createObservability } from "@repo/observability/server/next";
+```
+
+### ❌ Don't forget to handle errors gracefully
+
+```typescript
+// ❌ Wrong - observability failure crashes app
+const observability = createObservability();
+observability.captureException(error); // Could fail
+
+// ✅ Correct - wrap in try-catch
+try {
+  observability.captureException(error);
+} catch (obsError) {
+  console.error("Observability failed:", obsError);
+  // Continue with app logic
+}
+```
+
+## Configuration
+
+### Environment Variables
+
+```typescript
+// Required for Sentry
+SENTRY_DSN=your-sentry-dsn
+SENTRY_ORG=your-org
+SENTRY_PROJECT=your-project
+
+// Optional
+SENTRY_ENVIRONMENT=production
+SENTRY_RELEASE=1.0.0
+```
+
+### Custom Configuration
+
+```typescript
+import { createObservability } from "@repo/observability/server/next";
+
+const observability = createObservability({
+  dsn: process.env.SENTRY_DSN,
+  environment: process.env.NODE_ENV,
+  release: process.env.VERCEL_GIT_COMMIT_SHA,
+  tracesSampleRate: 0.1,
+  integrations: [
+    // Custom integrations
+  ]
+});
+```
+
+## Performance Monitoring
+
+### Track Performance
+
+```typescript
+import { createObservability } from "@repo/observability/server/next";
+
+const observability = createObservability();
+
+// Start a transaction
+const transaction = observability.startTransaction({
+  name: "Database Query",
+  op: "db.query"
+});
+
+try {
+  // Your database operation
+  const result = await db.user.findMany();
+
+  // Set transaction as successful
+  transaction.setStatus("ok");
+  return result;
+} catch (error) {
+  // Set transaction as failed
+  transaction.setStatus("internal_error");
+  observability.captureException(error);
+  throw error;
+} finally {
+  // Finish the transaction
+  transaction.finish();
+}
+```
+
+## User Context
+
+### Set User Information
+
+```typescript
+import { createObservability } from "@repo/observability/server/next";
+import { auth } from "@repo/auth/server/next";
+
+const observability = createObservability();
+
+export async function protectedAction() {
+  const session = await auth();
+
+  if (session?.user) {
+    observability.setUser({
+      id: session.user.id,
+      email: session.user.email,
+      username: session.user.name
+    });
+  }
+
+  // Your action logic
+}
+```
+
+## See Also
+
+- Task templates:
+  [Observability setup template](/ai-hints/task-templates#implementing-error-tracking)
+- Command sequences:
+  [Debugging build failures](/ai-hints/command-sequences#debugging-build-failures)

@@ -1,8 +1,16 @@
 {
-  "extends": "@repo/typescript-config/nextjs.json",
+  "extends": "@repo/config/typescript/react-library.json",
   "compilerOptions": {
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "#/*": ["./src/*"]
+    }
   },
-  "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules"]
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": [
+    "prisma-generated/zod/**/*",
+    "prisma-generated/client/runtime/**/*",
+    "prisma-generated/zod/inputTypeSchemas/**/*",
+    "prisma-generated/**/*.ts"
+  ]
 }

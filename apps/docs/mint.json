@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/schema.json",
-  "name": "Starter Kit",
+  "name": "Forge Documentation",
   "logo": {
     "dark": "/logo/dark.svg",
     "light": "/logo/light.svg"
@@ -17,69 +17,264 @@
   },
   "topbarLinks": [
     {
-      "name": "Support",
-      "url": "mailto:support@mintlify.com"
+      "name": "GitHub",
+      "url": "https://github.com/your-org/forge"
     }
   ],
   "topbarCtaButton": {
-    "name": "Dashboard",
-    "url": "https://dashboard.mintlify.com"
+    "name": "Get Started",
+    "url": "/repo/quickstart"
   },
-  "tabs": [
-    {
-      "name": "API Reference",
-      "url": "api-reference"
-    }
-  ],
-  "anchors": [
-    {
-      "name": "Documentation",
-      "icon": "book-open-cover",
-      "url": "https://mintlify.com/docs"
-    },
-    {
-      "name": "Community",
-      "icon": "slack",
-      "url": "https://mintlify.com/community"
-    },
-    {
-      "name": "Blog",
-      "icon": "newspaper",
-      "url": "https://mintlify.com/blog"
-    }
-  ],
   "navigation": [
     {
       "group": "Get Started",
-      "pages": ["introduction", "quickstart", "development"]
+      "pages": ["introduction", "repo/quickstart", "repo/concepts"]
     },
     {
-      "group": "Essentials",
+      "group": "AI Development Guide",
       "pages": [
-        "essentials/markdown",
-        "essentials/code",
-        "essentials/images",
-        "essentials/settings",
-        "essentials/navigation",
-        "essentials/reusable-snippets"
+        "ai-hints/overview",
+        "ai-hints/ai-prompting",
+        "ai-hints/decision-trees",
+        "ai-hints/command-sequences",
+        "ai-hints/success-markers",
+        "ai-hints/task-templates",
+        "ai-hints/quick-reference",
+        "ai-hints/environment-configuration"
       ]
     },
     {
-      "group": "API Documentation",
-      "pages": ["api-reference/introduction"]
+      "group": "Architecture",
+      "pages": [
+        "repo/architecture/overview",
+        "repo/architecture/ai-package",
+        "repo/architecture/scraping-package",
+        "repo/architecture/environment-configuration"
+      ]
     },
     {
-      "group": "Endpoint Examples",
+      "group": "Core Packages",
       "pages": [
-        "api-reference/endpoint/get",
-        "api-reference/endpoint/create",
-        "api-reference/endpoint/delete"
+        {
+          "group": "Database",
+          "icon": "database",
+          "pages": [
+            "packages/database/overview",
+            "packages/database/prisma",
+            "packages/database/prisma-patterns",
+            "packages/database/validation",
+            "packages/database/redis",
+            "packages/database/firestore",
+            "packages/database/vector"
+          ]
+        },
+        {
+          "group": "Storage",
+          "icon": "hard-drive",
+          "pages": [
+            "packages/storage/overview",
+            "packages/storage/cloudflare-r2",
+            "packages/storage/cloudflare-images",
+            "packages/storage/configuration",
+            "packages/storage/client-usage",
+            "packages/storage/signed-urls",
+            "packages/storage/database-integration",
+            "packages/storage/server-actions",
+            "packages/storage/bulk-import"
+          ]
+        },
+        {
+          "group": "Authentication & Security",
+          "icon": "shield",
+          "pages": [
+            "packages/auth/overview",
+            "packages/auth/better-auth",
+            "packages/auth/feature-summary",
+            "packages/security"
+          ]
+        },
+        {
+          "group": "AI & Automation",
+          "icon": "robot",
+          "pages": [
+            "packages/ai/index",
+            "packages/ai/overview",
+            "packages/ai/upstash-vector",
+            "packages/ai/product-classification",
+            "packages/ai/mcp-development",
+            "packages/ai/mcp-rag-integration",
+            "packages/ai/migration-v5",
+            "packages/ai/sdk-v5-review-findings",
+            "packages/ai/test-coverage-audit",
+            "packages/ai/testing-implementation-plan",
+            "packages/scraping"
+          ]
+        },
+        {
+          "group": "Observability & Analytics",
+          "icon": "chart-line",
+          "pages": [
+            "packages/observability/overview",
+            "packages/observability/sentry",
+            "packages/observability/sentry-microfrontend",
+            "packages/observability/logtape-plugin",
+            "packages/analytics",
+            "packages/feature-flags",
+            "packages/feature-flags/offline-examples",
+            "packages/feature-flags/testing-guide",
+            "packages/feature-flags/unified-examples"
+          ]
+        }
       ]
+    },
+    {
+      "group": "Business Features",
+      "pages": [
+        {
+          "group": "Commerce & Payments",
+          "icon": "credit-card",
+          "pages": ["packages/payments", "packages/links"]
+        },
+        {
+          "group": "Communication",
+          "icon": "envelope",
+          "pages": ["packages/email", "packages/notifications"]
+        },
+        {
+          "group": "Workflow & Orchestration",
+          "icon": "workflow",
+          "pages": ["packages/orchestration/overview", "packages/orchestration/workflows"]
+        },
+        {
+          "group": "User Experience",
+          "icon": "users",
+          "pages": ["packages/internationalization", "packages/seo"]
+        }
+      ]
+    },
+    {
+      "group": "Applications",
+      "pages": [
+        {
+          "group": "Developer Tools",
+          "icon": "code",
+          "pages": [
+            "apps/storybook",
+            "apps/email",
+            "apps/studio",
+            "apps/ai-chatbot",
+            "apps/backstage-multizone"
+          ]
+        },
+        {
+          "group": "E-commerce & Templates",
+          "icon": "store",
+          "pages": ["apps/webapp", "apps/next-app-mantine-tailwind-template"]
+        }
+      ]
+    },
+    {
+      "group": "Development",
+      "pages": [
+        {
+          "group": "Setup & Configuration",
+          "icon": "wrench",
+          "pages": [
+            "repo/development/overview",
+            "repo/development/qstash-local-mode",
+            {
+              "group": "Configuration",
+              "icon": "gear",
+              "pages": [
+                "packages/config/index",
+                "packages/config/eslint",
+                "packages/config/typescript"
+              ]
+            }
+          ]
+        },
+        {
+          "group": "Testing & QA",
+          "icon": "flask",
+          "pages": [
+            "repo/development/testing",
+            "packages/testing",
+            {
+              "group": "QA Package",
+              "pages": [
+                "packages/qa/index",
+                "packages/qa/overview",
+                "packages/qa/vitest-utilities",
+                "packages/qa/playwright-testing",
+                "packages/qa/test-factories",
+                "packages/qa/setup-utilities",
+                "packages/qa/advanced-configuration",
+                "packages/qa/performance-testing",
+                "packages/qa/typescript-patterns",
+                "packages/qa/troubleshooting",
+                "packages/qa/third-party-mocks",
+                "packages/qa/srh-pattern",
+                "packages/qa/srh-integration",
+                "packages/qa/upstash-redis",
+                "packages/qa/redis-testing-overview"
+              ]
+            }
+          ]
+        },
+        {
+          "group": "Editor & UI",
+          "icon": "edit",
+          "pages": [
+            "packages/editor/browser-only-demo",
+            "packages/editor/embeddable-editor-guide",
+            "packages/editor/tiptap-v3-migration",
+            "packages/uix-system/tailwind-v3"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Guides",
+      "pages": [
+        {
+          "group": "Setup & Migration",
+          "icon": "route",
+          "pages": [
+            "repo/guides/vitest-migration",
+            "repo/guides/vite-migration",
+            "repo/guides/test-fixes"
+          ]
+        },
+        {
+          "group": "Development",
+          "icon": "code-branch",
+          "pages": ["repo/guides/mantine-tailwind-extensions"]
+        }
+      ]
+    },
+    {
+      "group": "Labs",
+      "pages": [
+        {
+          "group": "AI Chatbot",
+          "icon": "robot",
+          "pages": [
+            "labs/ai-chatbot/gemini-setup",
+            "labs/ai-chatbot/gemini-features",
+            "labs/ai-chatbot/mcp-setup",
+            "labs/ai-chatbot/citations",
+            "labs/ai-chatbot/loading-improvements",
+            "labs/ai-chatbot/security"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Deployment",
+      "pages": ["repo/deployment"]
     }
   ],
   "footerSocials": {
-    "x": "https://x.com/mintlify",
-    "github": "https://github.com/mintlify",
-    "linkedin": "https://www.linkedin.com/company/mintlify"
+    "github": "https://github.com/your-org/forge"
   }
 }

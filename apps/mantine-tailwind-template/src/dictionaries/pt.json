@@ -1,0 +1,35 @@
+{
+  "meta": {
+    "title": "Modelo Mantine + Tailwind",
+    "description": "Um modelo Next.js moderno com Mantine UI e Tailwind CSS"
+  },
+  "header": {
+    "title": "Mantine + Tailwind"
+  },
+  "home": {
+    "welcome": "Bem-vindo ao",
+    "description": "Um modelo Next.js moderno combinando o poder dos componentes Mantine UI com utilitários Tailwind CSS. Comece editando esta página.",
+    "features": {
+      "nextjs": {
+        "title": "Next.js 15",
+        "description": "Framework React"
+      },
+      "mantine": {
+        "title": "Mantine v8",
+        "description": "Componentes React"
+      },
+      "tailwind": {
+        "title": "Tailwind CSS",
+        "description": "Classes utilitárias"
+      }
+    }
+  },
+  "ui": {
+    "colorScheme": {
+      "light": "Claro",
+      "dark": "Escuro",
+      "auto": "Auto"
+    },
+    "language": "Idioma"
+  }
+}

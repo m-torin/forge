@@ -1,0 +1,330 @@
+---
+title: Success Markers
+description: Checklists to verify task completion
+---
+
+# Success Markers
+
+Use these checklists to verify that tasks are completed correctly and meet Forge
+standards.
+
+## Feature Development Checklist
+
+### ✅ Planning Phase
+
+- [ ] **Context7 MCP Used**: Verified latest library documentation
+- [ ] **Pattern Identified**: Found similar functionality in codebase
+- [ ] **Architecture Decision**: Chose correct layer and package
+- [ ] **Dependencies Mapped**: Identified all required packages
+- [ ] **Testing Strategy**: Planned unit, integration, and E2E tests
+
+### ✅ Data Layer (if needed)
+
+- [ ] **Schema Updated**: Added/updated Prisma models
+- [ ] **Migration Generated**: `pnpm migrate` completed successfully
+- [ ] **Client Regenerated**: `pnpm --filter @repo/database generate` completed
+- [ ] **Types Validated**: `pnpm typecheck` passes
+- [ ] **Indexes Added**: Proper database indexes for performance
+
+### ✅ Server Layer
+
+- [ ] **Server Action Created**: `/app/actions/feature.ts` implemented
+- [ ] **Zod Validation**: Input validation with proper error messages
+- [ ] **Auth Checks**: Session validation where required
+- [ ] **Error Handling**: Proper try-catch with user-friendly errors
+- [ ] **Database Operations**: Efficient queries with proper relations
+
+### ✅ UI Layer
+
+- [ ] **Mantine Components**: Used Mantine UI components consistently
+- [ ] **Form Implementation**: Mantine form with Zod validation
+- [ ] **Data Test IDs**: All interactive elements have `data-testid`
+- [ ] **Loading States**: Proper loading indicators
+- [ ] **Error States**: User-friendly error messages
+- [ ] **Responsive Design**: Works on mobile and desktop
+
+### ✅ Testing
+
+- [ ] **Unit Tests**: Core logic tested with Vitest
+- [ ] **Component Tests**: UI components tested with React Testing Library
+- [ ] **Integration Tests**: Server actions tested with test database
+- [ ] **E2E Tests**: Critical user flows tested with Playwright
+- [ ] **Test Coverage**: Reasonable coverage achieved
+
+### ✅ Code Quality
+
+- [ ] **TypeScript**: No type errors, proper types defined
+- [ ] **ESLint**: No linting errors, code follows standards
+- [ ] **Prettier**: Code properly formatted
+- [ ] **Imports**: Using correct `@repo/*` imports
+- [ ] **Environment**: Proper environment variable handling
+
+### ✅ Documentation
+
+- [ ] **Code Comments**: Complex logic documented
+- [ ] **API Documentation**: Public APIs documented
+- [ ] **Usage Examples**: Examples provided for consumers
+- [ ] **Migration Notes**: Breaking changes documented
+
+## Package Development Checklist
+
+### ✅ Package Structure
+
+- [ ] **Package.json**: Proper configuration with `"type": "module"`
+- [ ] **Exports**: Correct export paths defined
+- [ ] **Dependencies**: Minimal dependencies, correct versions
+- [ ] **TypeScript Config**: Extends appropriate base config
+- [ ] **ESLint Config**: Extends appropriate base config
+
+### ✅ Implementation
+
+- [ ] **Server/Client Separation**: Proper runtime-specific exports
+- [ ] **Environment Validation**: SafeEnv pattern implemented
+- [ ] **Error Handling**: Graceful error handling with fallbacks
+- [ ] **Type Safety**: Comprehensive TypeScript types
+- [ ] **Performance**: Efficient implementation
+
+### ✅ Testing
+
+- [ ] **Unit Tests**: Core functionality tested
+- [ ] **Integration Tests**: Works with other packages
+- [ ] **Edge Cases**: Error conditions tested
+- [ ] **Type Tests**: TypeScript types validated
+
+### ✅ Documentation
+
+- [ ] **README**: Clear usage instructions
+- [ ] **API Reference**: Complete API documentation
+- [ ] **Examples**: Working code examples
+- [ ] **Migration Guide**: Breaking changes documented
+
+## Authentication Implementation Checklist
+
+### ✅ Setup
+
+- [ ] **Better Auth Configured**: Proper configuration in app
+- [ ] **Environment Variables**: AUTH_SECRET and AUTH_URL set
+- [ ] **Database Migration**: Auth tables created
+- [ ] **Session Validation**: Server-side session checks
+
+### ✅ Protected Routes
+
+- [ ] **Middleware**: Auth middleware for protected routes
+- [ ] **Server Components**: Session validation in components
+- [ ] **Server Actions**: Auth checks in all actions
+- [ ] **Redirect Logic**: Proper login/logout redirects
+
+### ✅ User Experience
+
+- [ ] **Login Flow**: Smooth authentication process
+- [ ] **Error Handling**: Clear auth error messages
+- [ ] **Loading States**: Auth state loading indicators
+- [ ] **Session Persistence**: Sessions persist correctly
+
+## Database Implementation Checklist
+
+### ✅ Schema Design
+
+- [ ] **Relations**: Proper foreign key relationships
+- [ ] **Indexes**: Performance indexes on query fields
+- [ ] **Constraints**: Data integrity constraints
+- [ ] **Naming**: Consistent naming conventions
+
+### ✅ Migration
+
+- [ ] **Migration Generated**: `pnpm migrate` successful
+- [ ] **Client Regenerated**: Types updated
+- [ ] **Data Migration**: Existing data handled
+- [ ] **Rollback Plan**: Migration can be rolled back
+
+### ✅ Queries
+
+- [ ] **Efficiency**: Queries optimized for performance
+- [ ] **Relations**: Proper include/select usage
+- [ ] **Error Handling**: Database errors handled gracefully
+- [ ] **Transactions**: Multi-step operations in transactions
+
+## Form Implementation Checklist
+
+### ✅ Validation
+
+- [ ] **Zod Schema**: Comprehensive input validation
+- [ ] **Client Validation**: Real-time validation feedback
+- [ ] **Server Validation**: Server-side validation
+- [ ] **Error Messages**: Clear, user-friendly errors
+
+### ✅ User Experience
+
+- [ ] **Mantine Form**: Using Mantine form components
+- [ ] **Loading States**: Form submission loading
+- [ ] **Success Feedback**: Clear success messages
+- [ ] **Accessibility**: Proper ARIA labels and keyboard navigation
+
+### ✅ Error Handling
+
+- [ ] **Network Errors**: Handle connection issues
+- [ ] **Validation Errors**: Display field-specific errors
+- [ ] **Server Errors**: Graceful error recovery
+- [ ] **Retry Logic**: Allow users to retry failed submissions
+
+## Testing Implementation Checklist
+
+### ✅ Test Structure
+
+- [ ] **Test Location**: Tests in `__tests__/` directory
+- [ ] **Test Naming**: Descriptive test names
+- [ ] **Test Organization**: Logical test grouping
+- [ ] **Test Data**: Proper test data setup
+
+### ✅ Test Coverage
+
+- [ ] **Happy Path**: Success scenarios tested
+- [ ] **Error Paths**: Error conditions tested
+- [ ] **Edge Cases**: Boundary conditions tested
+- [ ] **Integration**: Cross-component integration tested
+
+### ✅ Test Quality
+
+- [ ] **Isolation**: Tests don't depend on each other
+- [ ] **Cleanup**: Test data properly cleaned up
+- [ ] **Performance**: Tests run quickly
+- [ ] **Reliability**: Tests are flake-free
+
+## Environment Configuration Checklist
+
+### ✅ Environment Variables
+
+- [ ] **SafeEnv Pattern**: Using SafeEnv in packages
+- [ ] **Direct Access**: Using direct env access in Next.js apps
+- [ ] **Validation**: Environment variables validated
+- [ ] **Fallbacks**: Graceful fallbacks for missing vars
+
+### ✅ Security
+
+- [ ] **Secrets Protected**: No secrets in client code
+- [ ] **Environment Separation**: Dev/staging/prod separation
+- [ ] **Doppler Integration**: Production secrets in Doppler
+- [ ] **Access Control**: Limited access to sensitive vars
+
+## Performance Optimization Checklist
+
+### ✅ Server Components
+
+- [ ] **Data Fetching**: Efficient data fetching patterns
+- [ ] **Caching**: Proper React cache usage
+- [ ] **Streaming**: Streaming where appropriate
+- [ ] **Bundle Size**: Minimal client bundle
+
+### ✅ Database
+
+- [ ] **Query Optimization**: Efficient database queries
+- [ ] **Indexing**: Proper database indexes
+- [ ] **Connection Pooling**: Efficient connection usage
+- [ ] **Caching**: Database query caching
+
+### ✅ Client
+
+- [ ] **Code Splitting**: Dynamic imports for large components
+- [ ] **Image Optimization**: Next.js Image component usage
+- [ ] **Bundle Analysis**: Bundle size monitored
+- [ ] **Lazy Loading**: Components loaded on demand
+
+## Deployment Checklist
+
+### ✅ Build Process
+
+- [ ] **Type Checking**: `pnpm typecheck` passes
+- [ ] **Linting**: `pnpm lint` passes
+- [ ] **Testing**: `pnpm test` passes
+- [ ] **Build**: `pnpm build` successful
+
+### ✅ Environment
+
+- [ ] **Environment Variables**: All required vars set
+- [ ] **Database Migration**: Production database migrated
+- [ ] **Secrets**: Production secrets configured
+- [ ] **Monitoring**: Observability configured
+
+### ✅ Verification
+
+- [ ] **Smoke Tests**: Basic functionality works
+- [ ] **Performance**: Page load times acceptable
+- [ ] **Error Monitoring**: Errors being tracked
+- [ ] **User Feedback**: No critical user issues
+
+## Common Failure Points
+
+### ❌ Environment Issues
+
+- Missing environment variables
+- Incorrect environment variable names
+- Environment variables not validated
+- Secrets exposed to client
+
+### ❌ Import Issues
+
+- Using wrong import paths
+- Missing file extensions in imports
+- Circular dependencies
+- Incorrect package exports
+
+### ❌ Type Issues
+
+- Missing TypeScript types
+- Incorrect type definitions
+- Type mismatches between packages
+- Missing type generation
+
+### ❌ Testing Issues
+
+- Tests not isolated
+- Missing test data setup
+- Flaky tests
+- Incomplete test coverage
+
+### ❌ Performance Issues
+
+- Inefficient database queries
+- Large bundle sizes
+- Missing caching
+- Poor loading states
+
+## Success Verification Commands
+
+Run these commands to verify success:
+
+```bash
+# Code quality
+pnpm typecheck
+pnpm lint
+pnpm format:check
+
+# Testing
+pnpm test
+pnpm test:coverage
+
+# Build verification
+pnpm build
+pnpm build --filter=your-app
+
+# Dependencies
+pnpm madge --circular
+
+# Database
+pnpm migrate
+pnpm --filter @repo/database generate
+```
+
+## Post-Implementation Review
+
+After completing a feature:
+
+1. **Self-Review**: Go through the checklist above
+2. **Code Review**: Have another developer review the code
+3. **Testing**: Verify all tests pass in CI
+4. **Documentation**: Update relevant documentation
+5. **Deployment**: Deploy to staging and verify
+6. **Monitoring**: Monitor for errors and performance issues
+
+Remember: These checklists are living documents. Update them based on lessons
+learned and new patterns discovered.

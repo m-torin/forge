@@ -1,0 +1,554 @@
+---
+title: "SRH Integration"
+description:
+  "Serverless Redis HTTP testing with real Redis functionality in CI/CD
+  pipelines"
+icon: "server"
+---
+
+# SRH (Serverless Redis HTTP) Integration
+
+The `@repo/qa` package includes comprehensive support for SRH (Serverless Redis
+HTTP), enabling real Redis functionality in testing environments where
+traditional Redis connections are not available.
+
+## What is SRH?
+
+SRH (Serverless Redis HTTP) is a community project that provides a Redis proxy
+using HTTP instead of the Redis binary protocol. It's designed to be compatible
+with Upstash Redis and enables Redis functionality in environments like:
+
+- **CI/CD Pipelines** - GitHub Actions, GitLab CI, etc.
+- **Kubernetes Environments** - Where Redis ports may be restricted
+- **Local Development** - Simplified Redis setup without installation
+- **Offline Testing** - Cached Redis responses for consistent testing
+
+<CardGroup cols={2}>
+  <Card title="HTTP-Based Protocol" icon="globe">
+    Uses HTTP requests instead of Redis binary protocol for broader
+    compatibility
+  </Card>
+  <Card title="Upstash Compatible" icon="database">
+    Drop-in replacement for Upstash Redis with identical API
+  </Card>
+  <Card title="Docker Ready" icon="docker">
+    Easy deployment with official Docker image
+  </Card>
+  <Card title="CI/CD Optimized" icon="rocket">
+    Perfect for automated testing environments
+  </Card>
+</CardGroup>
+
+## Quick Start
+
+### Basic SRH Setup
+
+```typescript
+import {
+  setupSRHEnvironment,
+  cleanupSRHEnvironment
+} from "@repo/qa/vitest/setup/srh";
+import { createRedisClient } from "@repo/qa/vitest/mocks/upstash-redis";
+
+describe("Redis Integration Tests", () => {
+  beforeAll(async () => {
+    await setupSRHEnvironment();
+  });
+
+  afterAll(async () => {
+    await cleanupSRHEnvironment();
+  });
+
+  it("should perform Redis operations", async () => {
+    const redis = createRedisClient();
+
+    await redis.set("test:key", "test-value");
+    const result = await redis.get("test:key");
+
+    expect(result).toBe("test-value");
+  });
+});
+```
+
+### Environment Detection
+
+The testing framework automatically detects SRH availability:
+
+```typescript
+import { createRedisClient } from "@repo/qa/vitest/mocks/upstash-redis";
+
+// Automatically uses SRH if available, falls back to mocks
+const redis = createRedisClient();
+
+// Check which implementation is being used
+if (process.env.SRH_MODE === "proxy") {
+  logInfo("Using SRH for real Redis operations");
+} else {
+  logInfo("Using in-memory mocks");
+}
+```
+
+## Configuration
+
+### Environment Variables
+
+Configure SRH with these environment variables:
+
+```bash
+# Enable SRH mode
+SRH_MODE=proxy
+
+# SRH connection details
+SRH_TOKEN=your-srh-token
+SRH_CONNECTION_STRING=http://localhost:8080
+
+# Optional: Upstash Redis credentials (for SRH backend)
+UPSTASH_REDIS_REST_URL=https://your-redis.upstash.io
+UPSTASH_REDIS_REST_TOKEN=your-upstash-token
+```
+
+### Docker Setup
+
+Run SRH with Docker:
+
+```bash
+# Basic SRH container
+docker run -p 8080:80 hiett/serverless-redis-http:latest
+
+# With custom configuration
+docker run -p 8080:80 \
+  -e SRH_MODE=env \
+  -e SRH_CONNECTION_STRING=redis://redis:6379 \
+  hiett/serverless-redis-http:latest
+```
+
+### Docker Compose
+
+```yaml
+# docker-compose.test.yml
+version: "3.8"
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+
+  srh:
+    image: hiett/serverless-redis-http:latest
+    ports:
+      - "8080:80"
+    environment:
+      - SRH_MODE=env
+      - SRH_CONNECTION_STRING=redis://redis:6379
+    depends_on:
+      - redis
+
+  tests:
+    build: .
+    environment:
+      - SRH_MODE=proxy
+      - SRH_CONNECTION_STRING=http://srh:80
+    depends_on:
+      - srh
+```
+
+## Testing Patterns
+
+### Automatic SRH Management
+
+Use the `withSRH` helper for automatic setup and cleanup:
+
+```typescript
+import { withSRH } from "@repo/qa/vitest/setup/srh";
+import { createRedisClient } from "@repo/qa/vitest/mocks/upstash-redis";
+
+describe("Product Cache Tests", () => {
+  it("should cache product data", async () => {
+    await withSRH(async () => {
+      const redis = createRedisClient();
+
+      // Test product caching
+      const product = { id: "1", name: "Test Product", price: 99.99 };
+      await redis.hset("product:1", product);
+
+      const cached = await redis.hgetall("product:1");
+      expect(cached).toStrictEqual(product);
+
+      // Test expiration
+      await redis.expire("product:1", 1);
+      await new Promise((resolve) => setTimeout(resolve, 1100));
+
+      const expired = await redis.get("product:1");
+      expect(expired).toBeNull();
+    });
+  });
+});
+```
+
+### Environment-Specific Testing
+
+```typescript
+import { withSRHEnvironment } from "@repo/qa/vitest/setup/srh";
+
+describe("Environment Tests", () => {
+  it("should work in CI environment", async () => {
+    await withSRHEnvironment(
+      {
+        SRH_MODE: "proxy",
+        SRH_CONNECTION_STRING: "http://localhost:8080"
+      },
+      async () => {
+        const redis = createRedisClient();
+
+        // Test operations that require real Redis behavior
+        await redis.sadd("test:set", "item1", "item2", "item3");
+        const members = await redis.smembers("test:set");
+
+        expect(members).toHaveLength(3);
+        expect(members).toContain("item1");
+      }
+    );
+  });
+});
+```
+
+### Fallback Testing
+
+Test both SRH and mock implementations:
+
+```typescript
+describe("Redis Adapter Tests", () => {
+  const testScenarios = [
+    { name: "SRH Implementation", useSRH: true },
+    { name: "Mock Implementation", useSRH: false }
+  ];
+
+  testScenarios.forEach(({ name, useSRH }) => {
+    describe(name, () => {
+      beforeEach(() => {
+        if (useSRH) {
+          process.env.SRH_MODE = "proxy";
+        } else {
+          delete process.env.SRH_MODE;
+        }
+      });
+
+      it("should handle basic operations", async () => {
+        const redis = createRedisClient();
+
+        await redis.set("test", "value");
+        const result = await redis.get("test");
+
+        expect(result).toBe("value");
+      });
+    });
+  });
+});
+```
+
+## Advanced Usage
+
+### Collection-Based Operations
+
+Test complex Redis operations with collections:
+
+```typescript
+import { createRedisAdapter } from "@repo/qa/vitest/mocks/upstash-redis";
+
+describe("Collection Operations", () => {
+  it("should handle user sessions", async () => {
+    await withSRH(async () => {
+      const adapter = createRedisAdapter();
+
+      // Store user session data
+      const sessionData = {
+        userId: "user123",
+        email: "user@example.com",
+        loginTime: Date.now(),
+        permissions: ["read", "write"]
+      };
+
+      await adapter.setWithExpiry(
+        "session:abc123",
+        sessionData,
+        3600 // 1 hour
+      );
+
+      // Retrieve and validate session
+      const session = await adapter.get("session:abc123");
+      expect(session).toStrictEqual(sessionData);
+
+      // Test session cleanup
+      await adapter.deletePattern("session:*");
+      const remainingSessions = await adapter.keys("session:*");
+      expect(remainingSessions).toHaveLength(0);
+    });
+  });
+});
+```
+
+### Performance Testing
+
+Test Redis performance with bulk operations:
+
+```typescript
+describe("Performance Tests", () => {
+  it("should handle bulk operations efficiently", async () => {
+    await withSRH(async () => {
+      const redis = createRedisClient();
+      const startTime = Date.now();
+
+      // Bulk insert test data
+      const pipeline = redis.pipeline();
+      for (let i = 0; i < 1000; i++) {
+        pipeline.set(`bulk:${i}`, `value-${i}`);
+      }
+      await pipeline.exec();
+
+      const insertTime = Date.now() - startTime;
+      logInfo(`Bulk insert completed`, { duration: insertTime });
+
+      // Bulk retrieve test
+      const retrieveStart = Date.now();
+      const keys = Array.from({ length: 1000 }, (_, i) => `bulk:${i}`);
+      const values = await redis.mget(...keys);
+
+      const retrieveTime = Date.now() - retrieveStart;
+      logInfo(`Bulk retrieve completed`, { duration: retrieveTime });
+
+      expect(values).toHaveLength(1000);
+      expect(insertTime).toBeLessThan(5000); // Should complete in 5s
+      expect(retrieveTime).toBeLessThan(2000); // Should complete in 2s
+    });
+  });
+});
+```
+
+## CI/CD Integration
+
+### GitHub Actions
+
+```yaml
+name: Redis Integration Tests
+
+on: [push, pull_request]
+
+jobs:
+  test-with-srh:
+    runs-on: ubuntu-latest
+
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 10s --health-timeout
+          5s --health-retries 5
+
+      srh:
+        image: hiett/serverless-redis-http:latest
+        ports:
+          - 8080:80
+        env:
+          SRH_MODE: env
+          SRH_CONNECTION_STRING: redis://redis:6379
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run Redis tests with SRH
+        run: pnpm test:redis
+        env:
+          SRH_MODE: proxy
+          SRH_CONNECTION_STRING: http://localhost:8080
+
+      - name: Run fallback tests (mocks)
+        run: pnpm test:redis
+        env:
+          SRH_MODE: "" # Disable SRH to test mocks
+```
+
+### GitLab CI
+
+```yaml
+stages:
+  - test
+
+variables:
+  REDIS_VERSION: "7-alpine"
+  SRH_VERSION: "latest"
+
+services:
+  - name: redis:$REDIS_VERSION
+    alias: redis
+  - name: hiett/serverless-redis-http:$SRH_VERSION
+    alias: srh
+    variables:
+      SRH_MODE: env
+      SRH_CONNECTION_STRING: redis://redis:6379
+
+test-redis-integration:
+  stage: test
+  image: node:20-alpine
+  variables:
+    SRH_MODE: proxy
+    SRH_CONNECTION_STRING: http://srh:80
+  script:
+    - npm install -g pnpm
+    - pnpm install
+    - pnpm test:redis
+```
+
+## Best Practices
+
+### Environment Setup
+
+<CardGroup cols={2}>
+  <Card title="Local Development" icon="laptop">
+    Use Docker Compose for consistent local Redis testing environment
+  </Card>
+  <Card title="CI/CD Pipelines" icon="rocket">
+    Use SRH services for reliable Redis testing in automated environments
+  </Card>
+  <Card title="Offline Testing" icon="wifi-off">
+    Fall back to mocks when SRH is unavailable for consistent test execution
+  </Card>
+  <Card title="Performance Testing" icon="gauge">
+    Use SRH for realistic performance testing with actual Redis behavior
+  </Card>
+</CardGroup>
+
+### Testing Strategies
+
+1. **Dual Testing**: Test both SRH and mock implementations to ensure
+   compatibility
+2. **Environment Detection**: Automatically choose the best available Redis
+   implementation
+3. **Graceful Fallback**: Always provide mock fallbacks for environments without
+   Redis
+4. **Performance Validation**: Use SRH for performance-critical Redis operation
+   testing
+
+### Error Handling
+
+```typescript
+import { withSRH } from "@repo/qa/vitest/setup/srh";
+
+describe("Error Handling", () => {
+  it("should handle SRH connection failures gracefully", async () => {
+    // Test with invalid SRH configuration
+    process.env.SRH_CONNECTION_STRING = "http://invalid-host:8080";
+
+    try {
+      await withSRH(async () => {
+        const redis = createRedisClient();
+        await redis.ping();
+      });
+    } catch (error) {
+      // Should fall back to mocks automatically
+      expect(error).toBeUndefined();
+    }
+  });
+
+  it("should provide meaningful error messages", async () => {
+    const redis = createRedisClient();
+
+    try {
+      // Test invalid Redis operation
+      await redis.get(""); // Empty key
+    } catch (error) {
+      expect(error.message).toContain("Invalid key");
+    }
+  });
+});
+```
+
+## Troubleshooting
+
+### Common Issues
+
+<AccordionGroup>
+  <Accordion title="SRH Connection Failed" icon="exclamation-triangle">
+    **Problem**: Tests fail with SRH connection errors
+
+    **Solutions**:
+    - Verify SRH container is running: `docker ps`
+    - Check SRH_CONNECTION_STRING format
+    - Ensure port 8080 is accessible
+    - Verify network connectivity in CI environment
+
+    ```bash
+    # Test SRH connectivity
+    curl http://localhost:8080/ping
+    ```
+
+  </Accordion>
+
+  <Accordion title="Mock Fallback Not Working" icon="arrow-down">
+    **Problem**: Tests fail when SRH is unavailable instead of using mocks
+
+    **Solutions**:
+    - Ensure `createRedisClient()` is used instead of direct Upstash imports
+    - Check environment variable configuration
+    - Verify mock setup in test files
+
+    ```typescript
+    // Correct usage
+    const redis = createRedisClient(); // Auto-detects environment
+
+    // Incorrect usage
+    const redis = new Redis({}); // Direct Upstash usage
+    ```
+
+  </Accordion>
+
+  <Accordion title="Performance Issues" icon="gauge">
+    **Problem**: SRH tests are slower than expected
+
+    **Solutions**:
+    - Use connection pooling for multiple operations
+    - Batch operations with pipelines
+    - Consider using local Redis instead of remote SRH
+    - Optimize test data size
+
+    ```typescript
+    // Optimize with pipeline
+    const pipeline = redis.pipeline();
+    operations.forEach(op => pipeline.set(op.key, op.value));
+    await pipeline.exec();
+    ```
+
+  </Accordion>
+</AccordionGroup>
+
+### Debug Mode
+
+Enable debug logging for SRH operations:
+
+```typescript
+// Enable debug mode
+process.env.DEBUG = "srh:*";
+
+// Or in test files
+import { setDebugMode } from "@repo/qa/vitest/setup/srh";
+
+beforeAll(() => {
+  setDebugMode(true);
+});
+```
+
+The SRH integration provides a powerful testing solution that bridges the gap
+between mock testing and real Redis functionality, enabling comprehensive Redis
+testing in any environment while maintaining the flexibility to fall back to
+mocks when needed.

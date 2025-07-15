@@ -1,0 +1,166 @@
+.reactFlowWrapper {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+
+  :global {
+    .react-flow__node {
+      border-radius: 3px;
+      padding: 10px;
+      font-size: 12px;
+      color: #222;
+      text-align: center;
+      border-width: 1px;
+      border-style: solid;
+
+      &-input {
+        background: #ff6060;
+        border-color: #ff0000;
+      }
+
+      &-output {
+        background: #60a5fa;
+        border-color: #3b82f6;
+      }
+
+      &-default {
+        background: #fff;
+        border-color: #1a192b;
+      }
+    }
+
+    .react-flow__handle {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .react-flow__edge {
+      &-path {
+        stroke: #b1b1b7;
+        stroke-width: 1;
+        fill: none;
+      }
+
+      &.animated {
+        .react-flow__edge-path {
+          stroke: #ff0000;
+          stroke-width: 2;
+          stroke-dasharray: 5, 5;
+          animation: dashdraw 0.5s linear infinite;
+        }
+      }
+    }
+
+    .react-flow__connection-path {
+      stroke: #b1b1b7;
+      stroke-width: 1;
+      fill: none;
+    }
+
+    .react-flow__controls {
+      box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0.08);
+    }
+
+    .react-flow__minimap {
+      border-radius: 5px;
+    }
+
+    .react-flow__attribution {
+      background: rgba(255, 255, 255, 0.5);
+    }
+  }
+}
+
+@keyframes dashdraw {
+  from {
+    stroke-dashoffset: 10;
+  }
+}
+
+// Variables
+$border-radius: 10px;
+$font-size: 12px;
+$box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.12);
+$label-color: white;
+$label-font-weight: bold;
+$handle-position-top: 15px;
+
+// Mixins
+@mixin base-flex(
+  $display: flex,
+  $direction: column,
+  $align: flex-start,
+  $justify: flex-start
+) {
+  display: $display;
+  flex-direction: $direction;
+  align-items: $align;
+  justify-content: $justify;
+}
+
+.react-flow__node {
+  box-shadow: $box-shadow;
+  border-radius: $border-radius;
+  font-size: $font-size;
+}
+
+.number-input {
+  padding: 10px;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: $border-radius;
+}
+
+.node {
+  height: 150px;
+  width: 150px;
+  @include base-flex(flex, column, flex-start, space-around);
+  border-radius: $border-radius;
+}
+
+.handle {
+  position: relative;
+  top: $handle-position-top;
+}
+
+.label {
+  margin-left: 10px;
+  mix-blend-mode: difference;
+  color: $label-color;
+  font-weight: $label-font-weight;
+}
+
+.lightness-node {
+  width: 100px;
+  height: 100px;
+  @include base-flex(flex, column, end, center);
+  text-align: center;
+  border-radius: $border-radius;
+}
+
+.log-node {
+  width: 80px;
+  height: 80px;
+  word-wrap: break-word;
+  padding: 5px;
+  font-weight: $label-font-weight;
+  @include base-flex(flex, row, center, center);
+  border-radius: $border-radius;
+}
+
+.react-flow__edge-path {
+  stroke: #333;
+  stroke-width: 2;
+}
+
+.temp .react-flow__edge-path {
+  stroke: #bbb;
+  stroke-dasharray: 5 5;
+}
+
+@keyframes dash {
+  to {
+    stroke-dashoffset: 1000;
+  }
+}

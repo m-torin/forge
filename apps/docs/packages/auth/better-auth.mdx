@@ -1,0 +1,318 @@
+---
+title: "Better Auth Integration"
+description: "Better Auth configuration and usage patterns in @repo/auth"
+---
+
+# Better Auth Integration
+
+Complete Better Auth v1.2.12 integration with enterprise features including
+organizations, API keys, admin management, and comprehensive security.
+
+## Configuration Overview
+
+The Better Auth instance is configured in `/packages/auth/src/shared/auth.ts`
+with the following key features:
+
+### Core Configuration
+
+```typescript
+export const auth = betterAuth({
+  appName: "Forge",
+  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+  basePath: "/api/auth",
+  secret: process.env.BETTER_AUTH_SECRET,
+
+  // PostgreSQL + Prisma
+  database: prismaAdapter(prisma, {
+    provider: "postgresql"
+  }),
+
+  // Email & password with configurable requirements
+  emailAndPassword: {
+    enabled: true,
+    autoSignIn: true,
+    requireEmailVerification: false,
+    minPasswordLength: 8,
+    maxPasswordLength: 128
+  },
+
+  // Session management
+  session: {
+    expiresIn: 60 * 60 * 24 * 30, // 30 days
+    updateAge: 60 * 60 * 24, // 1 day
+    cookieCache: {
+      enabled: true,
+      maxAge: 60 * 5 // 5 minutes
+    }
+  }
+});
+```
+
+## Enabled Plugins
+
+### Organization Management
+
+```typescript
+organization({
+  allowUserToCreateOrganization: true,
+  organizationLimit: 5,
+  creatorRole: "owner",
+  memberRole: "member",
+  invitationExpiresIn: 60 * 60 * 24 * 7 // 7 days
+});
+```
+
+Features:
+
+- Create up to 5 organizations per user
+- Role-based access control (owner, admin, member, guest)
+- Member invitations with email notifications
+- Organization switching and active context
+
+### API Key Management
+
+```typescript
+apiKey();
+```
+
+Features:
+
+- Create scoped API keys with permissions
+- Rate limiting and usage tracking
+- Expiration dates and metadata
+- Bearer token authentication
+
+### Admin Features
+
+```typescript
+admin({
+  impersonationSessionDuration: 60 * 60 * 24 // 24 hours
+});
+```
+
+Features:
+
+- User impersonation for support
+- System-wide user management
+- Ban/unban functionality
+- Session management across all users
+
+### Two-Factor Authentication
+
+```typescript
+twoFactor({
+  issuer: "Forge",
+  otpOptions: {
+    async sendOTP({ user, otp }) {
+      await sendOTPEmail({
+        email: user.email,
+        name: user.name,
+        otp,
+        purpose: "two-factor authentication"
+      });
+    }
+  }
+});
+```
+
+Features:
+
+- TOTP-based 2FA with QR codes
+- Backup codes for account recovery
+- Email-based OTP as alternative
+- Configurable issuer name
+
+### Magic Links
+
+```typescript
+magicLink({
+  expiresIn: 300, // 5 minutes
+  disableSignUp: false,
+  sendMagicLink: async ({ email, url }) => {
+    await sendMagicLinkEmail({
+      email,
+      magicLink: url,
+      name: email.split("@")[0],
+      expiresIn: "5 minutes"
+    });
+  }
+});
+```
+
+Features:
+
+- Passwordless authentication
+- 5-minute expiration for security
+- Automatic account creation
+- Email delivery integration
+
+### Passkey Support
+
+```typescript
+passkey();
+```
+
+Features:
+
+- WebAuthn/FIDO2 authentication
+- Device-based biometric auth
+- Multiple passkeys per user
+- Cross-platform compatibility
+
+### Social Authentication
+
+Supports multiple OAuth providers when configured:
+
+```typescript
+socialProviders: {
+  github: {
+    clientId: process.env.GITHUB_CLIENT_ID,
+    clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    enabled: true,
+  },
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    enabled: true,
+  },
+  // Additional providers: facebook, discord, microsoft
+}
+```
+
+### Security Features
+
+#### Rate Limiting
+
+```typescript
+rateLimit: {
+  enabled: process.env.NODE_ENV === 'production',
+  window: 10, // seconds
+  max: 100, // requests per window
+  storage: 'memory',
+}
+```
+
+#### CSRF Protection
+
+```typescript
+advanced: {
+  disableCSRFCheck: false,
+  useSecureCookies: process.env.NODE_ENV === 'production',
+  cookiePrefix: 'forge-auth',
+  defaultCookieAttributes: {
+    httpOnly: true,
+    secure: production,
+    sameSite: 'lax',
+  },
+}
+```
+
+## Email Integration
+
+All email functionality integrates with `@repo/email` package:
+
+- **Password Reset**: Custom email templates with branded styling
+- **Email Verification**: Account activation and email change confirmation
+- **Magic Links**: Passwordless login with secure token delivery
+- **Organization Invites**: Team invitation emails with join links
+- **OTP Delivery**: Two-factor authentication codes via email
+
+## Next.js Integration
+
+### Server Components
+
+```typescript
+import { auth } from '@repo/auth/server/next';
+
+export default async function Page() {
+  const session = await auth.api.getSession();
+  if (!session) redirect('/sign-in');
+
+  return <Dashboard user={session.user} />;
+}
+```
+
+### API Routes
+
+```typescript
+// app/api/auth/[...all]/route.ts
+import { auth } from "@repo/auth/server/next";
+import { toNextJsHandler } from "better-auth/next-js";
+
+export const { GET, POST } = toNextJsHandler(auth);
+```
+
+### Middleware
+
+```typescript
+// middleware.ts
+import { authMiddleware } from "@repo/auth/middleware";
+
+export default authMiddleware;
+
+export const config = {
+  matcher: ["/((?!api/auth|_next/static|_next/image|favicon.ico).*)"]
+};
+```
+
+## Database Schema Integration
+
+Better Auth integrates seamlessly with the existing Prisma schema:
+
+- **User Model**: Extended with custom fields (bio, role, preferences)
+- **Session Model**: Cookie-based with optional database storage
+- **Account Model**: Social provider linking and token management
+- **Organization Model**: Multi-tenant organization structure
+- **API Key Model**: Scoped authentication for programmatic access
+
+## Development vs Production
+
+### Development Features
+
+- Enhanced logging for auth requests
+- Less strict cookie security
+- Memory-based rate limiting
+- Debug information in errors
+
+### Production Security
+
+- Secure cookie attributes
+- CSRF protection enabled
+- Database session storage option
+- Comprehensive audit logging
+- Rate limiting with persistent storage
+
+## Environment Variables
+
+Required for full functionality:
+
+```bash
+# Core Auth
+BETTER_AUTH_SECRET=your-secret-key
+BETTER_AUTH_URL=https://yourdomain.com
+
+# Social OAuth (optional)
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-secret
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-secret
+
+# Database (via @repo/database)
+DATABASE_URL=postgresql://user:pass@host:port/db
+
+# Email (via @repo/email)
+RESEND_API_KEY=your-resend-key
+EMAIL_FROM=noreply@yourdomain.com
+```
+
+## Performance Optimizations
+
+- **Cookie Caching**: 5-minute client-side session cache
+- **Database Efficiency**: Prisma adapter with connection pooling
+- **Session Updates**: Daily session refresh to minimize writes
+- **Rate Limiting**: Memory-based for development, Redis for production
+- **Lazy Loading**: Plugins only initialize when needed
+
+The Better Auth integration provides enterprise-grade authentication with
+comprehensive security features, seamless Next.js integration, and
+production-ready performance optimizations.

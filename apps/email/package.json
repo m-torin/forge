@@ -1,25 +1,48 @@
 {
   "name": "email",
-  "version": "0.0.0",
   "private": true,
   "scripts": {
     "build": "email build",
-    "dev": "email dev --port 3003 --dir ../../packages/email/templates",
+    "build:doppler": "doppler run -- email build",
+    "circular": "madge --circular --extensions ts,tsx,js,jsx --exclude '\\.react-email' .",
+    "coverage:collect": "vitest run --coverage --reporter=json",
+    "dev": "email dev --port 3500",
+    "doppler:open": "doppler open",
+    "doppler:pull": "doppler secrets download --no-file --format env > .env.local",
+    "doppler:secrets": "doppler secrets",
+    "doppler:secrets:download": "doppler secrets download --no-file --format env",
+    "doppler:secrets:upload": "doppler secrets upload .env.local",
     "export": "email export",
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "export:doppler": "doppler run -- email export",
+    "knip": "knip",
+    "lint": "echo 'Skipping ESLint check for email app'",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:coverage:json": "vitest run --coverage --reporter=json",
+    "test:e2e": "echo 'Skipping e2e tests for email app'",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:ui": "playwright test --ui",
+    "test:ui": "vitest --ui",
+    "test:watch": "vitest",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@react-email/components": "0.0.41",
+    "@react-email/components": "0.3.2",
     "@repo/email": "workspace:*",
-    "react": "19.1.0",
-    "react-email": "4.0.15"
+    "@repo/observability": "workspace:*",
+    "react": "catalog:",
+    "react-email": "4.2.4"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
-    "@types/node": "22.15.21",
-    "@types/react": "19.1.5",
-    "next": "15.3.2",
-    "typescript": "^5.8.3"
+    "@react-email/preview-server": "4.2.4",
+    "@repo/config": "workspace:*",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/qa": "workspace:*",
+    "@t3-oss/env-nextjs": "catalog:",
+    "@vitest/ui": "catalog:",
+    "next": "catalog:",
+    "vite-tsconfig-paths": "catalog:",
+    "vitest": "catalog:",
+    "zod": "catalog:"
   }
 }

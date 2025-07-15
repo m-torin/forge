@@ -1,0 +1,33 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "src/**",
+        "package.json",
+        "tsconfig.json",
+        ".storybook/**",
+        "stories/**",
+        "!**/*.test.*",
+        "!**/*.spec.*"
+      ],
+      "outputs": ["storybook-static/**"],
+      "cache": true
+    },
+    "build:doppler": {
+      "dependsOn": ["^build:doppler"],
+      "inputs": [
+        "src/**",
+        "package.json",
+        "tsconfig.json",
+        ".storybook/**",
+        "stories/**",
+        "!**/*.test.*",
+        "!**/*.spec.*"
+      ],
+      "outputs": ["storybook-static/**"],
+      "cache": true
+    }
+  }
+}

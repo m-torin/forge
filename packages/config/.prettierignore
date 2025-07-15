@@ -1,0 +1,51 @@
+# Build artifacts
+.next/
+dist/
+storybook-static/
+coverage/
+.vitest-ui/coverage/
+html/coverage/
+coverage-browser/
+generated/
+prisma-generated/
+
+# Coverage files (including root-level)
+**/.coverage-summary.json
+**/coverage-final.json
+**/coverage-summary.json
+
+# Package files
+node_modules/
+.turbo/
+.cache/
+
+# Project files
+pnpm-lock.yaml
+.env*
+.vscode/
+
+# iOS dependencies
+**/ios/Pods/
+**/Pods/
+
+# Non-existent files that prettier tries to format
+apps/swr-site/app/[lang]/graphql-eslint/
+apps/swr-site/app/[lang]/remote/
+apps/swr-site/nextra-remote-filepaths/
+
+# Ignored directories
+labs/
+services/
+infra/
+
+# Generated files that cause parsing errors
+apps/email/.react-email/**
+**/.react-email/**
+**/*.test.todo.ts
+**/test-results/**
+**/test-results.json
+**/playwright-report/**
+
+# Shell scripts with complex syntax that break prettier-plugin-sh
+packages/design-system/__tests__/mantine-ciseco/generate-remaining-tests.sh
+**/generate-remaining-tests.sh

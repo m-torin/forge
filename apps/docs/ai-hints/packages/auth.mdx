@@ -1,0 +1,168 @@
+---
+title: "@repo/auth"
+description: AI hints for Better Auth package
+---
+
+# @repo/auth
+
+## Quick Facts
+
+- **Purpose**: Better Auth with organizations
+- **Layer**: 5 (Business Logic)
+- **Edge Support**: ✅ Yes
+- **Key Pattern**: Server-side auth checks only
+
+## Common Operations
+
+### Server Action Authentication
+
+```typescript
+import { auth } from "@repo/auth/server/next";
+import { redirect } from "next/navigation";
+
+export async function protectedAction() {
+  const session = await auth();
+
+  if (!session) {
+    redirect("/login");
+  }
+
+  // Use session.user.id for user operations
+  return { userId: session.user.id };
+}
+```
+
+### Middleware Authentication
+
+```typescript
+// In middleware.ts
+import { auth } from "@repo/auth/server/edge";
+
+export async function middleware(request: NextRequest) {
+  const session = await auth();
+
+  if (!session && request.nextUrl.pathname.startsWith("/protected")) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+}
+```
+
+### Client-Side Auth Check
+
+```typescript
+import { useAuth } from '@repo/auth/client/next';
+
+export function ProfileButton() {
+  const { user, signOut } = useAuth();
+
+  if (!user) {
+    return <LoginButton />;
+  }
+
+  return <UserMenu user={user} onSignOut={signOut} />;
+}
+```
+
+## Gotchas
+
+### ❌ Don't do authentication in client components
+
+```typescript
+// ❌ Wrong - client-side auth check
+"use client";
+import { auth } from "@repo/auth/server/next";
+
+export function Component() {
+  const session = await auth(); // Error: Can't use server function in client
+}
+```
+
+### ❌ Don't use non-Next.js imports in Next.js
+
+```typescript
+// ❌ Wrong - using base import in Next.js
+import { auth } from "@repo/auth/server";
+
+// ✅ Correct - use Next.js specific import
+import { auth } from "@repo/auth/server/next";
+```
+
+### ❌ Don't use server/next in edge runtime
+
+```typescript
+// ❌ Wrong - in middleware.ts
+import { auth } from "@repo/auth/server/next";
+
+// ✅ Correct - use edge variant
+import { auth } from "@repo/auth/server/edge";
+```
+
+## Session Object Structure
+
+```typescript
+type Session = {
+  user: {
+    id: string;
+    email: string;
+    name?: string;
+    image?: string;
+  };
+  organization?: {
+    id: string;
+    name: string;
+    role: string;
+  };
+};
+```
+
+## Organization Handling
+
+```typescript
+// Check if user is in organization
+const session = await auth();
+if (!session?.organization) {
+  redirect("/select-organization");
+}
+
+// Check organization role
+if (session.organization.role !== "admin") {
+  throw new Error("Insufficient permissions");
+}
+```
+
+## Common Patterns
+
+### Protected Server Component
+
+```typescript
+import { auth } from '@repo/auth/server/next';
+import { redirect } from 'next/navigation';
+
+export default async function ProtectedPage() {
+  const session = await auth();
+  if (!session) redirect('/login');
+
+  return <div>Welcome {session.user.name}</div>;
+}
+```
+
+### Protected API Route
+
+```typescript
+import { auth } from "@repo/auth/server/next";
+import { NextResponse } from "next/server";
+
+export async function GET() {
+  const session = await auth();
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Handle authenticated request
+}
+```
+
+## See Also
+
+- Task templates:
+  [Auth setup template](/ai-hints/task-templates#implementing-authentication-check)

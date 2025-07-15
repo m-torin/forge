@@ -1,0 +1,10 @@
+.rowSelected {
+  background-color: var(--mantine-color-blue-light);
+}
+
+.progressSection {
+  &:not(:first-of-type) {
+    border-left: 3px solid
+      light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
+  }
+}

@@ -1,0 +1,17 @@
+import { z } from 'zod';
+import { SortOrderSchema } from '../enums/SortOrder.schema';
+
+import type { Prisma } from '@prisma/client';
+
+const Schema: z.ZodType<any> = z
+  .object({
+    id: SortOrderSchema.optional(),
+    flowId: SortOrderSchema.optional(),
+    totalRuns: SortOrderSchema.optional(),
+    successfulRuns: SortOrderSchema.optional(),
+    failedRuns: SortOrderSchema.optional(),
+    lastUpdated: SortOrderSchema.optional(),
+  })
+  .strict();
+
+export const FlowStatisticsCountOrderByAggregateInputObjectSchema = Schema;

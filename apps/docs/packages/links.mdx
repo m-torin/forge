@@ -1,0 +1,703 @@
+---
+title: "Links Package"
+description:
+  "Enterprise URL shortening and link management with Dub.co integration,
+  comprehensive analytics, and Next.js optimization"
+icon: "link"
+---
+
+# Links Package
+
+Enterprise URL shortening and link management package with Dub.co integration,
+comprehensive analytics, and Next.js optimization.
+
+## Overview
+
+The `@repo/links` package provides a sophisticated solution for creating,
+managing, and tracking short links. Built around a LinkManager class pattern
+with provider abstraction, it currently supports Dub.co integration with
+extensible architecture for additional providers.
+
+<CardGroup cols={2}>
+  <Card title="LinkManager Pattern" icon="link" href="#quick-start">
+    Factory-based LinkManager with provider abstraction and analytics
+  </Card>
+  <Card title="React Integration" icon="chart-line" href="#react-hooks">
+    Provider pattern with specialized hooks for link management
+  </Card>
+  <Card
+    title="Four-File Export Pattern"
+    icon="code-branch"
+    href="#export-pattern"
+  >
+    Optimized exports for Next.js server/client and edge environments
+  </Card>
+  <Card title="Analytics & Tracking" icon="layer-group" href="#analytics">
+    Built-in click tracking with geographic and device data
+  </Card>
+</CardGroup>
+
+## Key Features
+
+- 🔗 **Dub.co Integration** - Enterprise-grade URL shortening with custom
+  domains
+- 📊 **Analytics & Tracking** - Comprehensive click analytics with geographic
+  and device data
+- 🔄 **LinkManager Pattern** - Provider-based architecture with graceful
+  degradation
+- 🎯 **React Hooks** - Specialized hooks for link creation, analytics, and click
+  handling
+- 🌍 **Bulk Operations** - Efficient batch link creation with chunking and error
+  handling
+- ⏰ **Link Expiration** - TTL support with custom expired URL redirects
+- 🔒 **Password Protection** - Optional password-protected links
+- 🛡️ **Graceful Degradation** - Continues working even with provider failures
+
+## Installation
+
+```bash
+pnpm add @repo/links
+```
+
+## Quick Start
+
+<Steps>
+  <Step title="Configure Environment Variables">
+    ```bash
+    # Dub.co configuration
+    DUB_ENABLED=true
+    DUB_API_KEY=your_dub_api_key
+    DUB_WORKSPACE=your_workspace_id
+    DUB_DEFAULT_DOMAIN=yourdomain.com
+    DUB_BASE_URL=https://api.dub.co
+    
+    # Analytics configuration (optional)
+    LINKS_ANALYTICS_ENABLED=true
+    LINKS_ANALYTICS_SAMPLING=1.0
+    ```
+  </Step>
+
+  <Step title="Server-side Usage (Next.js)">
+    ```typescript
+    import { createServerLinkManager } from '@repo/links/server/next';
+
+    const linkManager = await createServerLinkManager({
+      providers: {
+        dub: {
+          enabled: true,
+          apiKey: process.env.DUB_API_KEY,
+          workspace: process.env.DUB_WORKSPACE,
+          defaultDomain: 'yourdomain.com'
+        }
+      },
+      analytics: {
+        enabled: true,
+        events: ['link_created', 'link_clicked'],
+        sampling: 1.0
+      }
+    });
+
+    // Create a short link
+    const link = await linkManager.createLink({
+      url: 'https://example.com/very/long/url',
+      title: 'My Page',
+      tags: ['marketing', 'campaign']
+    });
+
+    console.log('Created link:', link.shortLink);
+    ```
+
+  </Step>
+
+  <Step title="Client-side Usage (Next.js)">
+    ```typescript
+    'use client';
+    import { LinkProvider, useCreateLink } from '@repo/links/client/next';
+
+    function LinkCreatorComponent() {
+      const { createLink, isLoading, error } = useCreateLink();
+
+      const handleCreate = async () => {
+        const link = await createLink({
+          url: 'https://example.com/page',
+          title: 'Example Page'
+        });
+
+        if (link) {
+          console.log('Created:', link.shortLink);
+        }
+      };
+
+      return (
+        <button onClick={handleCreate} disabled={isLoading}>
+          {isLoading ? 'Creating...' : 'Create Short Link'}
+        </button>
+      );
+    }
+
+    export default function App({ children }) {
+      return (
+        <LinkProvider config={{
+          providers: {
+            dub: {
+              enabled: true,
+              apiKey: process.env.NEXT_PUBLIC_DUB_API_KEY,
+              defaultDomain: 'yourdomain.com'
+            }
+          }
+        }}>
+          {children}
+        </LinkProvider>
+      );
+    }
+    ```
+
+  </Step>
+</Steps>
+
+## Export Pattern
+
+The links package follows the four-file export pattern for optimal environment
+support:
+
+```typescript
+// Server-side (Next.js)
+import { createServerLinkManager } from "@repo/links/server/next";
+
+// Client-side (Next.js)
+import { LinkProvider, useCreateLink } from "@repo/links/client/next";
+
+// Server-side (Node.js)
+import { createServerLinkManager } from "@repo/links/server";
+
+// Client-side (Browser)
+import { createClientLinkManager } from "@repo/links/client";
+```
+
+## Configuration
+
+<Tabs>
+  <Tab title="Basic Configuration">
+    ```typescript
+    import { createServerLinkManager } from '@repo/links/server/next';
+
+    const linkManager = await createServerLinkManager({
+      providers: {
+        dub: {
+          enabled: true,
+          apiKey: process.env.DUB_API_KEY,
+          workspace: process.env.DUB_WORKSPACE,
+          defaultDomain: 'yourdomain.com',
+          baseUrl: 'https://api.dub.co'
+        }
+      }
+    });
+    ```
+
+  </Tab>
+
+  <Tab title="With Analytics">
+    ```typescript
+    import { createServerLinkManagerWithAnalytics } from '@repo/links/server/next';
+
+    const linkManager = await createServerLinkManagerWithAnalytics({
+      providers: {
+        dub: {
+          enabled: true,
+          apiKey: process.env.DUB_API_KEY,
+          workspace: process.env.DUB_WORKSPACE,
+          defaultDomain: 'yourdomain.com'
+        }
+      },
+      analytics: {
+        enabled: true,
+        events: ['link_created', 'link_clicked', 'link_deleted', 'bulk_created'],
+        sampling: 1.0,
+        debugMode: process.env.NODE_ENV === 'development'
+      }
+    }, analyticsConfig);
+    ```
+
+  </Tab>
+
+  <Tab title="Environment-based">
+    ```typescript
+    import { createNextLinkManager } from '@repo/links/server/next';
+
+    // Automatically uses environment variables
+    const linkManager = await createNextLinkManager({
+      // Override defaults
+      providers: {
+        dub: {
+          defaultDomain: 'custom.domain.com'
+        }
+      }
+    });
+    ```
+
+  </Tab>
+</Tabs>
+
+## API Reference
+
+### LinkManager Class
+
+The core LinkManager provides comprehensive link management capabilities:
+
+<Tabs>
+  <Tab title="createLink()">
+    ```typescript
+    const link = await linkManager.createLink({
+      url: 'https://example.com/page',
+      title: 'Page Title',
+      description: 'Page description',
+      tags: ['tag1', 'tag2'],
+      domain: 'yourdomain.com',
+      key: 'custom-key', // Optional custom short key
+      expiresAt: new Date('2025-12-31'),
+      expiredUrl: 'https://example.com/expired',
+      password: 'optional-password',
+      utm: {
+        source: 'newsletter',
+        medium: 'email',
+        campaign: 'launch'
+      }
+    });
+
+    // Returns Link interface
+    interface Link {
+      id: string;
+      domain: string;
+      key: string;
+      url: string;
+      shortLink: string;
+      qrCode: string;
+      clicks: number;
+      createdAt: Date;
+      // ... additional properties
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="getLink() / getLinkByKey()">
+    ```typescript
+    // Get by ID
+    const link = await linkManager.getLink('link-id');
+
+    // Get by domain and key
+    const link = await linkManager.getLinkByKey('abc123', 'yourdomain.com');
+
+    if (link) {
+      console.log('Original URL:', link.url);
+      console.log('Click count:', link.clicks);
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="getAnalytics()">
+    ```typescript
+    const analytics = await linkManager.getAnalytics('link-id', '7d');
+
+    interface LinkAnalytics {
+      clicks: number;
+      uniqueClicks: number;
+      topCountries: Array<{
+        country: string;
+        clicks: number;
+      }>;
+      topCities: Array<{
+        city: string;
+        country: string;
+        clicks: number;
+      }>;
+      topReferrers: Array<{
+        referrer: string;
+        clicks: number;
+      }>;
+      // ... additional analytics data
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="bulkCreate()">
+    ```typescript
+    const result = await linkManager.bulkCreate({
+      links: [
+        { url: 'https://example.com/1', title: 'Page 1' },
+        { url: 'https://example.com/2', title: 'Page 2' },
+        { url: 'https://example.com/3', title: 'Page 3' }
+      ]
+    });
+
+    interface BulkCreateResponse {
+      created: Link[];
+      errors: Array<{
+        url: string;
+        error: string;
+      }>;
+    }
+    ```
+
+  </Tab>
+</Tabs>
+
+### Server Utilities
+
+<Tabs>
+  <Tab title="Next.js API Handlers">
+    ```typescript
+    import { createLinkAPIHandler } from '@repo/links/server/next';
+
+    const linkManager = await createServerLinkManager(config);
+    const handlers = createLinkAPIHandler(linkManager);
+
+    // In your API routes
+    export async function POST(request: NextRequest) {
+      return handlers.createLink(request);
+    }
+
+    export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+      return handlers.getLink(params.id);
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Middleware Integration">
+    ```typescript
+    import { createLinkMiddleware } from '@repo/links/server/next';
+
+    const linkManager = await createServerLinkManager(config);
+    const linkMiddleware = createLinkMiddleware(linkManager);
+
+    export async function middleware(request: NextRequest) {
+      // Handle short link redirects
+      const response = await linkMiddleware(request);
+      if (response) return response;
+
+      // Continue to other middleware
+      return NextResponse.next();
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Bulk Operations">
+    ```typescript
+    import { bulkCreateShortLinks } from '@repo/links/server/next';
+
+    const results = await bulkCreateShortLinks(
+      linkManager,
+      linkRequests,
+      {
+        validateUrls: true,
+        chunkSize: 100,
+        concurrency: 5
+      }
+    );
+    ```
+
+  </Tab>
+</Tabs>
+
+## React Hooks
+
+### Client-side Hooks (Next.js)
+
+<Tabs>
+  <Tab title="useCreateLink()">
+    ```typescript
+    'use client';
+    import { useCreateLink } from '@repo/links/client/next';
+
+    function LinkCreator() {
+      const { createLink, isLoading, error } = useCreateLink();
+
+      const handleCreate = async () => {
+        const link = await createLink({
+          url: 'https://example.com',
+          title: 'Example Page'
+        });
+
+        if (link) {
+          console.log('Created:', link.shortLink);
+        }
+      };
+
+      return (
+        <div>
+          <button onClick={handleCreate} disabled={isLoading}>
+            Create Link
+          </button>
+          {error && <p>Error: {error}</p>}
+        </div>
+      );
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="useLinkAnalytics()">
+    ```typescript
+    'use client';
+    import { useLinkAnalytics } from '@repo/links/client/next';
+
+    function AnalyticsView({ linkId }: { linkId: string }) {
+      const {
+        analytics,
+        isLoading,
+        error,
+        refresh
+      } = useLinkAnalytics(
+        linkId,
+        '7d', // interval
+        60000 // refresh every minute
+      );
+
+      if (isLoading) return <div>Loading...</div>;
+      if (error) return <div>Error: {error}</div>;
+
+      return (
+        <div>
+          <h3>Analytics</h3>
+          <p>Total Clicks: {analytics?.clicks}</p>
+          <p>Unique Clicks: {analytics?.uniqueClicks}</p>
+          <button onClick={refresh}>Refresh</button>
+        </div>
+      );
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="useLinkClick()">
+    ```typescript
+    'use client';
+    import { useLinkClick } from '@repo/links/client/next';
+
+    function LinkButton({ linkId }: { linkId: string }) {
+      const { handleLinkClick } = useLinkClick();
+
+      const onClick = () => {
+        handleLinkClick(linkId, {
+          openInNewTab: true,
+          additionalData: {
+            referrer: 'custom-component'
+          }
+        });
+      };
+
+      return <button onClick={onClick}>Visit Link</button>;
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="useLink()">
+    ```typescript
+    'use client';
+    import { useLink } from '@repo/links/client/next';
+
+    function LinkInfo({ linkId }: { linkId: string }) {
+      const { link, isLoading, error } = useLink(linkId);
+
+      if (isLoading) return <div>Loading link...</div>;
+      if (error) return <div>Error: {error}</div>;
+      if (!link) return <div>Link not found</div>;
+
+      return (
+        <div>
+          <h3>{link.title}</h3>
+          <p>Short: {link.shortLink}</p>
+          <p>Original: {link.url}</p>
+          <p>Clicks: {link.clicks}</p>
+        </div>
+      );
+    }
+    ```
+
+  </Tab>
+</Tabs>
+
+## Analytics
+
+The package includes comprehensive analytics tracking:
+
+### Event Types
+
+- **link_created** - When a new link is created
+- **link_clicked** - When a link is accessed
+- **link_updated** - When link metadata is modified
+- **link_deleted** - When a link is removed
+- **bulk_created** - When bulk operations complete
+
+### Analytics Data
+
+```typescript
+interface LinkAnalytics {
+  clicks: number;
+  uniqueClicks: number;
+  topCountries: Array<{ country: string; clicks: number }>;
+  topCities: Array<{ city: string; country: string; clicks: number }>;
+  topReferrers: Array<{ referrer: string; clicks: number }>;
+  topBrowsers: Array<{ browser: string; clicks: number }>;
+  topOs: Array<{ os: string; clicks: number }>;
+  topDevices: Array<{ device: string; clicks: number }>;
+}
+```
+
+### Click Tracking
+
+```typescript
+interface ClickEvent {
+  timestamp: Date;
+  country?: string;
+  city?: string;
+  region?: string;
+  latitude?: number;
+  longitude?: number;
+  os?: string;
+  device?: string;
+  browser?: string;
+  referrer?: string;
+  referrerUrl?: string;
+  ip?: string;
+  ua?: string;
+}
+```
+
+## Bulk Operations
+
+Efficient handling of multiple links with automatic chunking:
+
+```typescript
+import { bulkCreateShortLinks } from "@repo/links/server/next";
+
+const requests = [
+  { url: "https://example.com/1", title: "Page 1" },
+  { url: "https://example.com/2", title: "Page 2" }
+  // ... up to thousands of links
+];
+
+const results = await bulkCreateShortLinks(linkManager, requests, {
+  validateUrls: true, // Validate URLs before processing
+  chunkSize: 100, // Process in batches
+  concurrency: 5 // Parallel processing limit
+});
+
+// Results include both successes and failures
+console.log(`Created: ${results.created.length}`);
+console.log(`Failed: ${results.errors.length}`);
+```
+
+## Provider Architecture
+
+The package supports multiple providers through a plugin architecture:
+
+### Current Providers
+
+- **Dub Provider** - Full-featured Dub.co integration with analytics, custom
+  domains, and advanced features
+
+### Adding Custom Providers
+
+```typescript
+interface LinkProvider {
+  name: string;
+  createLink(request: CreateLinkRequest): Promise<Link>;
+  getLink(id: string): Promise<Link | null>;
+  updateLink(id: string, request: UpdateLinkRequest): Promise<Link>;
+  deleteLink(id: string): Promise<void>;
+  getAnalytics(id: string, interval?: string): Promise<LinkAnalytics>;
+  getClicks(
+    id: string,
+    page?: number,
+    pageSize?: number
+  ): Promise<ClickEvent[]>;
+  bulkCreate?(request: BulkCreateRequest): Promise<BulkCreateResponse>;
+}
+```
+
+## Error Handling
+
+The package includes comprehensive error handling with graceful degradation:
+
+```typescript
+// Analytics failures don't impact link functionality
+const linkManager = await createServerLinkManager({
+  providers: { dub: dubConfig },
+  analytics: { enabled: true } // Will degrade gracefully if analytics fails
+});
+
+// Provider initialization failures are handled
+try {
+  const link = await linkManager.createLink(request);
+} catch (error) {
+  // Specific error handling for different failure modes
+  console.error("Link creation failed:", error.message);
+}
+```
+
+## Best Practices
+
+1. **Environment Configuration**: Use environment variables for API keys and
+   configuration
+2. **Error Handling**: Always handle potential failures in link operations
+3. **Analytics**: Enable analytics for production deployments to track link
+   performance
+4. **Bulk Operations**: Use bulk operations for creating multiple links
+   efficiently
+5. **Caching**: Leverage built-in caching for analytics data in high-traffic
+   scenarios
+6. **Security**: Never expose API keys in client-side code
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Provider Not Configured**: Ensure Dub.co API keys are properly set
+2. **Analytics Failures**: Analytics failures don't impact core functionality
+3. **Rate Limiting**: Bulk operations automatically handle rate limits with
+   chunking
+4. **Domain Configuration**: Verify custom domains are properly configured in
+   Dub.co
+
+### Environment Variables
+
+Required for Dub.co integration:
+
+- `DUB_API_KEY` - Your Dub.co API key
+- `DUB_WORKSPACE` - Your Dub.co workspace ID
+- `DUB_DEFAULT_DOMAIN` - Default domain for short links
+
+## Type Reference
+
+```typescript
+export type {
+  // Core interfaces
+  Link,
+  LinkConfig,
+  LinkManager,
+  LinkProvider,
+
+  // Request/Response types
+  CreateLinkRequest,
+  UpdateLinkRequest,
+  BulkCreateRequest,
+  BulkCreateResponse,
+
+  // Analytics types
+  LinkAnalytics,
+  ClickEvent,
+  LinkMetrics,
+
+  // Provider types
+  DubProviderConfig,
+
+  // Tag system
+  LinkTag
+};
+```

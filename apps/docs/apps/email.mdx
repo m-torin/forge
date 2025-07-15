@@ -1,0 +1,804 @@
+---
+title: "Email App"
+description:
+  "Email template development and preview application with React Email and live
+  testing capabilities"
+icon: "envelope"
+---
+
+# Email App
+
+Email template development and preview application built with React Email,
+providing a comprehensive environment for creating, testing, and managing email
+templates for the Forge platform.
+
+## Overview
+
+The email app serves as a development and testing environment for email
+templates, offering live preview, template management, and integration testing
+capabilities for all platform email communications.
+
+<CardGroup cols={2}>
+  <Card title="React Email Framework" icon="react">
+    Modern email template development with React components and TypeScript
+  </Card>
+  <Card title="Live Preview" icon="eye">
+    Real-time email rendering with desktop and mobile previews
+  </Card>
+  <Card title="Template Library" icon="template">
+    Comprehensive template collection for all platform email types
+  </Card>
+  <Card title="Testing Tools" icon="flask">
+    Email delivery testing with multiple providers and inbox testing
+  </Card>
+</CardGroup>
+
+## Features
+
+- **React Email Integration**: Modern email development with React components
+- **Live Preview**: Real-time rendering with responsive design testing
+- **Template Management**: Organized template library with version control
+- **Multi-Provider Support**: Testing with multiple email service providers
+- **Internationalization**: Multi-language email template support
+- **Analytics Integration**: Email open rates and engagement tracking
+- **Accessibility Testing**: Email accessibility validation and testing
+- **Performance Optimization**: Email loading time and compatibility testing
+
+## Technology Stack
+
+- **Framework**: Next.js 15 with React Email
+- **Styling**: Tailwind CSS with email-safe CSS generation
+- **Templates**: React components with TypeScript
+- **Preview**: Multi-device and client preview capability
+- **Testing**: Email delivery and rendering validation
+- **Analytics**: Email engagement tracking and reporting
+
+## Development Environment
+
+<Steps>
+  <Step title="Start Development Server">
+    ```bash
+    # Start email development server
+    cd apps/email
+    pnpm dev
+
+    # Access at http://localhost:3500
+    ```
+
+  </Step>
+
+<Step title="Create Email Template">
+  ```bash # Generate new email template pnpm generate-template welcome-email #
+  Start from existing template cp emails/base.tsx emails/new-template.tsx ```
+</Step>
+
+  <Step title="Preview and Test">
+    ```bash
+    # Send test email
+    pnpm send-test --template=welcome --to=test@example.com
+
+    # Generate static preview
+    pnpm export-html --template=welcome
+    ```
+
+  </Step>
+</Steps>
+
+## Email Templates
+
+### Template Categories
+
+<Tabs>
+  <Tab title="Authentication">
+    - **Welcome Email**: New user onboarding and account setup - **Email Verification**: Email
+    address confirmation - **Password Reset**: Secure password reset instructions - **Login
+    Notification**: Security alerts for new logins - **Account Deactivation**: Account suspension
+    notifications
+  </Tab>
+
+<Tab title="Product Management">
+  - **Product Notifications**: New product alerts and updates - **Workflow
+  Completion**: Workflow execution status updates - **Data Export**: Export
+  completion and download links - **Error Notifications**: System errors and
+  issue reports - **Maintenance Updates**: Scheduled maintenance announcements
+</Tab>
+
+<Tab title="Marketing">
+  - **Newsletter**: Regular product updates and news - **Feature
+  Announcements**: New feature launches - **Event Invitations**: Webinars and
+  community events - **Surveys**: User feedback and satisfaction surveys -
+  **Promotional**: Special offers and discounts
+</Tab>
+
+  <Tab title="Transactional">
+    - **Order Confirmation**: Purchase confirmations and receipts - **Shipping Updates**: Order
+    tracking and delivery notifications - **Invoice**: Billing and payment notifications - **Support
+    Tickets**: Customer support communications - **API Notifications**: API usage alerts and limits
+  </Tab>
+</Tabs>
+
+### Template Development
+
+<CodeGroup>
+```tsx Welcome Email Template
+// emails/welcome.tsx
+import {
+  Html,
+  Head,
+  Body,
+  Container,
+  Section,
+  Text,
+  Button,
+  Img,
+  Link,
+} from '@react-email/components';
+
+interface WelcomeEmailProps { userFirstName: string; userEmail: string;
+loginUrl: string; supportUrl: string; }
+
+export default function WelcomeEmail({
+  userFirstName = 'User',
+  userEmail,
+  loginUrl,
+  supportUrl,
+}: WelcomeEmailProps) {
+  return (
+    <Html>
+      <Head />
+      <Body style={main}>
+        <Container style={container}>
+          <Section style={box}>
+            <Img
+              src="https://forge.example.com/logo.png"
+              width="49"
+              height="21"
+              alt="Forge Platform"
+            />
+
+            <Text style={paragraph}>Hi {userFirstName},</Text>
+
+            <Text style={paragraph}>
+              Welcome to Forge Platform! We're excited to have you on board.
+              Your account has been successfully created with the email address{' '}
+              <strong>{userEmail}</strong>.
+            </Text>
+
+            <Text style={paragraph}>
+              To get started, click the button below to log in to your account:
+            </Text>
+
+            <Button pX={20} pY={12} style={button} href={loginUrl}>
+              Get Started
+            </Button>
+
+            <Text style={paragraph}>
+              If you have any questions, feel free to{' '}
+              <Link style={anchor} href={supportUrl}>
+                contact our support team
+              </Link>
+              . We're here to help!
+            </Text>
+
+            <Text style={paragraph}>
+              Best regards,<br />
+              The Forge Platform Team
+            </Text>
+          </Section>
+        </Container>
+      </Body>
+    </Html>
+
+); }
+
+const main = { backgroundColor: '#f6f9fc', fontFamily:
+'-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica
+Neue",Ubuntu,sans-serif', };
+
+const container = { backgroundColor: '#ffffff', margin: '0 auto', padding: '20px
+0 48px', marginBottom: '64px', };
+
+const box = { padding: '0 48px', };
+
+const paragraph = { color: '#525f7f', fontSize: '16px', lineHeight: '24px',
+textAlign: 'left' as const, };
+
+const button = { backgroundColor: '#656ee8', borderRadius: '5px', color: '#fff',
+fontSize: '16px', fontWeight: 'bold', textDecoration: 'none', textAlign:
+'center' as const, display: 'block', width: '100%', };
+
+const anchor = { color: '#656ee8', textDecoration: 'underline', };
+
+````
+
+```tsx Password Reset Template
+// emails/password-reset.tsx
+import {
+  Html,
+  Head,
+  Body,
+  Container,
+  Section,
+  Text,
+  Button,
+  Img,
+} from '@react-email/components';
+
+interface PasswordResetEmailProps {
+  userFirstName: string;
+  resetUrl: string;
+  ipAddress: string;
+  userAgent: string;
+}
+
+export default function PasswordResetEmail({
+  userFirstName = 'User',
+  resetUrl,
+  ipAddress,
+  userAgent,
+}: PasswordResetEmailProps) {
+  return (
+    <Html>
+      <Head />
+      <Body style={main}>
+        <Container style={container}>
+          <Section style={box}>
+            <Img
+              src="https://forge.example.com/logo.png"
+              width="49"
+              height="21"
+              alt="Forge Platform"
+            />
+
+            <Text style={heading}>Reset your password</Text>
+
+            <Text style={paragraph}>Hi {userFirstName},</Text>
+
+            <Text style={paragraph}>
+              Someone recently requested a password change for your Forge Platform account.
+              If this was you, you can set a new password by clicking the button below:
+            </Text>
+
+            <Button pX={20} pY={12} style={button} href={resetUrl}>
+              Reset Password
+            </Button>
+
+            <Text style={paragraph}>
+              This link will expire in 24 hours for your security.
+            </Text>
+
+            <Text style={securityInfo}>
+              <strong>Security Information:</strong><br />
+              IP Address: {ipAddress}<br />
+              Browser: {userAgent}
+            </Text>
+
+            <Text style={paragraph}>
+              If you don't want to change your password or didn't request this,
+              you can ignore and delete this message.
+            </Text>
+
+            <Text style={paragraph}>
+              To keep your account secure, please don't forward this email to anyone.
+            </Text>
+          </Section>
+        </Container>
+      </Body>
+    </Html>
+  );
+}
+
+// Styles omitted for brevity...
+````
+
+</CodeGroup>
+
+## Preview and Testing
+
+### Multi-Client Preview
+
+<AccordionGroup>
+  <Accordion title="Email Client Testing" icon="devices">
+    ```typescript
+    // Preview in multiple email clients
+    export const previewClients = [
+      'gmail-web',
+      'outlook-web',
+      'apple-mail',
+      'yahoo-mail',
+      'gmail-mobile',
+      'outlook-mobile',
+    ];
+
+    export function PreviewGrid({ template, props }) {
+      return (
+        <div className="preview-grid">
+          {previewClients.map(client => (
+            <div key={client} className="preview-client">
+              <h3>{client}</h3>
+              <iframe
+                src={`/preview/${template}?client=${client}`}
+                width="100%"
+                height="600"
+                frameBorder="0"
+              />
+            </div>
+          ))}
+        </div>
+      );
+    }
+    ```
+
+  </Accordion>
+
+  <Accordion title="Responsive Testing" icon="mobile">
+    ```typescript
+    // Test responsive design across devices
+    export const deviceSizes = [
+      { name: 'Mobile', width: 320, height: 568 },
+      { name: 'Tablet', width: 768, height: 1024 },
+      { name: 'Desktop', width: 1200, height: 800 },
+    ];
+
+    export function ResponsivePreview({ template, props }) {
+      const [selectedDevice, setSelectedDevice] = useState(deviceSizes[0]);
+
+      return (
+        <div className="responsive-preview">
+          <div className="device-selector">
+            {deviceSizes.map(device => (
+              <button
+                key={device.name}
+                onClick={() => setSelectedDevice(device)}
+                className={selectedDevice.name === device.name ? 'active' : ''}
+              >
+                {device.name}
+              </button>
+            ))}
+          </div>
+
+          <div className="preview-frame">
+            <iframe
+              src={`/preview/${template}`}
+              width={selectedDevice.width}
+              height={selectedDevice.height}
+              style={{ border: '1px solid #ccc' }}
+            />
+          </div>
+        </div>
+      );
+    }
+    ```
+
+  </Accordion>
+</AccordionGroup>
+
+### Live Testing
+
+<Tabs>
+  <Tab title="Test Email Sending">
+    ```typescript
+    // Send test emails to real addresses
+    import { sendTestEmail } from '@repo/email';
+
+    export async function sendTemplateTest({
+      template,
+      recipient,
+      props,
+      provider = 'resend'
+    }) {
+      try {
+        const result = await sendTestEmail({
+          template,
+          to: recipient,
+          props,
+          provider,
+          subject: `[TEST] ${template} template`,
+        });
+
+        return {
+          success: true,
+          messageId: result.messageId,
+          previewUrl: result.previewUrl,
+        };
+      } catch (error) {
+        return {
+          success: false,
+          error: error.message,
+        };
+      }
+    }
+
+    // Test with multiple providers
+    export async function multiProviderTest(template, props) {
+      const providers = ['resend', 'sendgrid', 'postmark'];
+
+      const results = await Promise.allSettled(
+        providers.map(provider =>
+          sendTemplateTest({
+            template,
+            recipient: 'test@example.com',
+            props,
+            provider,
+          })
+        )
+      );
+
+      return providers.map((provider, index) => ({
+        provider,
+        result: results[index],
+      }));
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Inbox Testing">
+    ```typescript
+    // Test email delivery and rendering
+    export async function inboxTest({
+      template,
+      props,
+      testAccounts = []
+    }) {
+      const defaultAccounts = [
+        'test.gmail@example.com',
+        'test.outlook@example.com',
+        'test.yahoo@example.com',
+        'test.apple@example.com',
+      ];
+
+      const accounts = testAccounts.length > 0 ? testAccounts : defaultAccounts;
+
+      const results = await Promise.all(
+        accounts.map(async (email) => {
+          const result = await sendTestEmail({
+            template,
+            to: email,
+            props,
+            subject: `[INBOX TEST] ${template}`,
+          });
+
+          // Wait and check delivery status
+          await new Promise(resolve => setTimeout(resolve, 10000));
+
+          const deliveryStatus = await checkDeliveryStatus(result.messageId);
+
+          return {
+            email,
+            messageId: result.messageId,
+            deliveryStatus,
+            previewUrl: result.previewUrl,
+          };
+        })
+      );
+
+      return results;
+    }
+    ```
+
+  </Tab>
+</Tabs>
+
+## Template Management
+
+### Version Control
+
+<CodeGroup>
+```typescript Template Versioning
+// Track template versions and changes
+export interface TemplateVersion {
+  id: string;
+  templateName: string;
+  version: string;
+  content: string;
+  props: Record<string, any>;
+  createdAt: Date;
+  createdBy: string;
+  changelog: string;
+  status: 'draft' | 'review' | 'approved' | 'deprecated';
+}
+
+export class TemplateManager {
+  async saveVersion(template: TemplateVersion) {
+    return await prisma.templateVersion.create({
+      data: template,
+    });
+  }
+
+async getLatestVersion(templateName: string) { return await
+prisma.templateVersion.findFirst({ where: { templateName, status: 'approved', },
+orderBy: { createdAt: 'desc', }, }); }
+
+async compareVersions(templateName: string, version1: string, version2: string)
+{ const [v1, v2] = await Promise.all([ this.getVersion(templateName, version1),
+this.getVersion(templateName, version2), ]);
+
+    return {
+      template: templateName,
+      versions: { v1: version1, v2: version2 },
+      diff: generateDiff(v1.content, v2.content),
+      propsChanges: compareProps(v1.props, v2.props),
+    };
+
+} }
+
+````
+
+```typescript Template Registry
+// Central template registry
+export const emailTemplates = {
+  "auth/welcome": {
+    component: () => import("../emails/auth/welcome"),
+    props: {
+      userFirstName: "string",
+      userEmail: "string",
+      loginUrl: "string",
+      supportUrl: "string"
+    },
+    subject: "Welcome to Forge Platform",
+    category: "authentication",
+    languages: ["en", "fr", "es", "pt", "de"]
+  },
+
+  "auth/password-reset": {
+    component: () => import("../emails/auth/password-reset"),
+    props: {
+      userFirstName: "string",
+      resetUrl: "string",
+      ipAddress: "string",
+      userAgent: "string"
+    },
+    subject: "Reset your password",
+    category: "authentication",
+    languages: ["en", "fr", "es", "pt", "de"]
+  },
+
+  "product/workflow-complete": {
+    component: () => import("../emails/product/workflow-complete"),
+    props: {
+      workflowName: "string",
+      completedAt: "Date",
+      results: "object",
+      viewUrl: "string"
+    },
+    subject: "Workflow completed: {{workflowName}}",
+    category: "product",
+    languages: ["en", "fr", "es", "pt", "de"]
+  }
+} as const;
+
+export type TemplateId = keyof typeof emailTemplates;
+````
+
+</CodeGroup>
+
+## Internationalization
+
+### Multi-Language Support
+
+<AccordionGroup>
+  <Accordion title="Localized Templates" icon="globe">
+    ```typescript
+    // Create localized email templates
+    interface LocalizedEmailProps {
+      locale: string;
+      translations: Record<string, string>;
+      formatters: {
+        date: (date: Date) => string;
+        currency: (amount: number, currency: string) => string;
+        number: (value: number) => string;
+      };
+    }
+
+    export function WelcomeEmailLocalized({
+      userFirstName,
+      userEmail,
+      loginUrl,
+      locale,
+      translations: t,
+      formatters,
+    }: WelcomeEmailProps & LocalizedEmailProps) {
+      return (
+        <Html>
+          <Head />
+          <Body style={main}>
+            <Container style={container}>
+              <Section style={box}>
+                <Text style={paragraph}>
+                  {t.greeting.replace('{{name}}', userFirstName)}
+                </Text>
+
+                <Text style={paragraph}>
+                  {t.welcomeMessage.replace('{{email}}', userEmail)}
+                </Text>
+
+                <Button pX={20} pY={12} style={button} href={loginUrl}>
+                  {t.getStartedButton}
+                </Button>
+
+                <Text style={paragraph}>
+                  {t.supportMessage}
+                </Text>
+
+                <Text style={paragraph}>
+                  {t.signature}
+                </Text>
+              </Section>
+            </Container>
+          </Body>
+        </Html>
+      );
+    }
+    ```
+
+  </Accordion>
+
+  <Accordion title="Translation Management" icon="translate">
+    ```typescript
+    // Email translation system
+    export const emailTranslations = {
+      'auth/welcome': {
+        en: {
+          greeting: 'Hi {{name}},',
+          welcomeMessage: 'Welcome to Forge Platform! Your account has been created with {{email}}.',
+          getStartedButton: 'Get Started',
+          supportMessage: 'If you have questions, contact our support team.',
+          signature: 'Best regards,
+The Forge Platform Team',
+        },
+        fr: {
+          greeting: 'Salut {{name}},',
+          welcomeMessage: 'Bienvenue sur Forge Platform ! Votre compte a été créé avec {{email}}.',
+          getStartedButton: 'Commencer',
+          supportMessage: 'Si vous avez des questions, contactez notre équipe de support.',
+          signature: 'Meilleures salutations,
+L\'équipe Forge Platform',
+        },
+        es: {
+          greeting: 'Hola {{name}},',
+          welcomeMessage: '¡Bienvenido a Forge Platform! Tu cuenta ha sido creada con {{email}}.',
+          getStartedButton: 'Empezar',
+          supportMessage: 'Si tienes preguntas, contacta a nuestro equipo de soporte.',
+          signature: 'Saludos cordiales,
+El equipo de Forge Platform',
+        },
+      },
+    };
+
+    export function getEmailTranslations(templateId: string, locale: string) {
+      return emailTranslations[templateId]?.[locale] || emailTranslations[templateId]?.en;
+    }
+    ```
+
+  </Accordion>
+</AccordionGroup>
+
+## Analytics and Monitoring
+
+### Email Performance Tracking
+
+<Tabs>
+  <Tab title="Engagement Metrics">
+    ```typescript
+    // Track email engagement
+    export interface EmailMetrics {
+      templateId: string;
+      messageId: string;
+      recipient: string;
+      sentAt: Date;
+      openedAt?: Date;
+      clickedAt?: Date;
+      unsubscribedAt?: Date;
+      bouncedAt?: Date;
+      spamReported?: boolean;
+    }
+
+    export async function trackEmailOpen(messageId: string) {
+      await prisma.emailMetrics.update({
+        where: { messageId },
+        data: {
+          openedAt: new Date(),
+        },
+      });
+
+      // Return transparent 1x1 pixel
+      return new Response(
+        Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64'),
+        {
+          headers: {
+            'Content-Type': 'image/png',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+          },
+        }
+      );
+    }
+
+    export async function trackEmailClick(messageId: string, url: string) {
+      await prisma.emailMetrics.update({
+        where: { messageId },
+        data: {
+          clickedAt: new Date(),
+        },
+      });
+
+      // Redirect to original URL
+      return Response.redirect(url, 302);
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Performance Dashboard">
+    ```typescript
+    // Email performance analytics
+    export async function getEmailAnalytics(templateId?: string, timeRange = '30d') {
+      const whereClause = {
+        ...(templateId && { templateId }),
+        sentAt: {
+          gte: new Date(Date.now() - parseTimeRange(timeRange)),
+        },
+      };
+
+      const [totalSent, totalOpened, totalClicked, totalBounced] = await Promise.all([
+        prisma.emailMetrics.count({ where: whereClause }),
+        prisma.emailMetrics.count({ where: { ...whereClause, openedAt: { not: null } } }),
+        prisma.emailMetrics.count({ where: { ...whereClause, clickedAt: { not: null } } }),
+        prisma.emailMetrics.count({ where: { ...whereClause, bouncedAt: { not: null } } }),
+      ]);
+
+      return {
+        sent: totalSent,
+        opened: totalOpened,
+        clicked: totalClicked,
+        bounced: totalBounced,
+        openRate: totalSent > 0 ? (totalOpened / totalSent) * 100 : 0,
+        clickRate: totalSent > 0 ? (totalClicked / totalSent) * 100 : 0,
+        bounceRate: totalSent > 0 ? (totalBounced / totalSent) * 100 : 0,
+      };
+    }
+    ```
+
+  </Tab>
+</Tabs>
+
+## Best Practices
+
+<Warning>
+  **Email Development Guidelines:** - Test templates across multiple email
+  clients and devices - Keep template file sizes under 100KB for optimal
+  performance - Use email-safe CSS and avoid modern CSS features - Always
+  include alt text for images and proper fallbacks - Test accessibility with
+  screen readers and high contrast modes - Validate HTML for email client
+  compatibility
+</Warning>
+
+### Recommended Patterns
+
+1. **Template Design**
+   - Use table-based layouts for maximum compatibility
+   - Implement progressive enhancement for modern clients
+   - Keep line length under 600px for readability
+   - Use web-safe fonts with appropriate fallbacks
+
+2. **Performance Optimization**
+   - Optimize images for email delivery
+   - Minimize CSS and inline critical styles
+   - Use efficient HTML structure
+   - Test loading times across different connections
+
+3. **Accessibility**
+   - Include semantic HTML structure
+   - Provide meaningful alt text for images
+   - Ensure sufficient color contrast
+   - Test with screen readers
+
+4. **Deliverability**
+   - Follow email authentication best practices
+   - Maintain clean sender reputation
+   - Monitor bounce and spam rates
+   - Provide easy unsubscribe options
+
+The email app provides a comprehensive environment for developing, testing, and
+managing email templates that deliver consistent experiences across all email
+clients and devices while maintaining high deliverability and engagement rates.

@@ -1,0 +1,834 @@
+---
+title: "Setup Utilities"
+description:
+  "Complete guide to test environment setup utilities for different testing
+  scenarios"
+icon: "wrench"
+---
+
+# Setup Utilities
+
+Comprehensive test environment setup utilities for configuring different testing
+scenarios including QStash, dynamic environments, and package-specific setups.
+
+## Overview
+
+The `@repo/qa` setup utilities provide:
+
+- **Environment-specific setup** - Different configurations for apps, packages,
+  and services
+- **Service integration setup** - QStash, Redis, database, and external service
+  configuration
+- **Dynamic environment management** - Runtime environment configuration and
+  switching
+- **Package environment setup** - Package-specific environment configuration
+- **Integration testing setup** - End-to-end and integration test environments
+
+## Base Setup Utilities
+
+### Core Test Environment Setup
+
+```typescript
+// Import base setup utilities
+import {
+  setupTestEnvironment,
+  configureBaseServices,
+  initializeTestDatabase,
+  setupMockServices
+} from "@repo/qa/vitest/setup/base";
+
+// Basic test setup
+beforeEach(async () => {
+  await setupTestEnvironment({
+    environment: "test",
+    services: ["database", "redis", "email"],
+    mocks: ["analytics", "payments", "storage"]
+  });
+});
+
+afterEach(async () => {
+  await cleanupTestEnvironment();
+});
+```
+
+### Common Setup Patterns
+
+```typescript
+import {
+  setupCommonMocks,
+  configureBrowserEnvironment,
+  setupDevelopmentDefaults
+} from "@repo/qa/vitest/setup/common";
+
+describe("Component Tests", () => {
+  beforeAll(() => {
+    // Setup common mocks for all tests
+    setupCommonMocks(["localStorage", "sessionStorage", "fetch", "navigator"]);
+  });
+
+  beforeEach(() => {
+    // Configure browser environment for each test
+    configureBrowserEnvironment({
+      userAgent: "test-browser",
+      viewport: { width: 1024, height: 768 },
+      cookiesEnabled: true
+    });
+  });
+});
+```
+
+## QStash Setup
+
+### Basic QStash Configuration
+
+```typescript
+// Import QStash setup utilities
+import {
+  setupQStash,
+  createQStashClient,
+  mockQStashEndpoints,
+  simulateQStashDelivery
+} from "@repo/qa/vitest/setup/qstash";
+
+describe("QStash Workflows", () => {
+  beforeEach(async () => {
+    // Setup QStash testing environment
+    await setupQStash({
+      mode: "test",
+      endpoint: "http://localhost:3000/api/qstash",
+      token: "test-token",
+      mockDelivery: true
+    });
+  });
+
+  test("processes QStash message", async () => {
+    const client = createQStashClient();
+
+    // Send test message
+    await client.publishJSON({
+      url: "http://localhost:3000/api/webhook",
+      body: { type: "user.created", userId: "123" }
+    });
+
+    // Simulate delivery
+    await simulateQStashDelivery({
+      url: "http://localhost:3000/api/webhook",
+      body: { type: "user.created", userId: "123" },
+      headers: {
+        "upstash-signature": "test-signature",
+        "upstash-message-id": "test-message-id"
+      }
+    });
+
+    // Verify processing
+    expect(mockWebhookHandler).toHaveBeenCalledWith({
+      type: "user.created",
+      userId: "123"
+    });
+  });
+});
+```
+
+### QStash Workflow Testing
+
+```typescript
+import {
+  createWorkflowTest,
+  setupWorkflowEnvironment,
+  trackWorkflowExecution
+} from "@repo/qa/vitest/setup/qstash";
+
+describe("Workflow Execution", () => {
+  let workflowTracker: any;
+
+  beforeEach(async () => {
+    await setupWorkflowEnvironment({
+      workflows: ["user-onboarding", "email-campaign", "data-processing"],
+      storage: "memory", // Use in-memory storage for tests
+      concurrency: 1 // Sequential execution for predictable tests
+    });
+
+    workflowTracker = trackWorkflowExecution();
+  });
+
+  test("user onboarding workflow", async () => {
+    const workflow = createWorkflowTest("user-onboarding");
+
+    // Start workflow
+    const execution = await workflow.start({
+      userId: "test-user-123",
+      email: "test@example.com"
+    });
+
+    // Wait for completion
+    await workflow.waitForCompletion(execution.id, { timeout: 30000 });
+
+    // Verify workflow steps
+    const steps = workflowTracker.getSteps(execution.id);
+    expect(steps).toEqual([
+      { step: "create-profile", status: "completed" },
+      { step: "send-welcome-email", status: "completed" },
+      { step: "setup-preferences", status: "completed" }
+    ]);
+  });
+
+  test("handles workflow errors", async () => {
+    const workflow = createWorkflowTest("email-campaign");
+
+    // Mock email service to fail
+    mockEmailService.mockRejectedValue(new Error("Email service unavailable"));
+
+    const execution = await workflow.start({
+      campaignId: "test-campaign",
+      recipients: ["test@example.com"]
+    });
+
+    await workflow.waitForCompletion(execution.id);
+
+    // Verify error handling
+    const finalState = workflowTracker.getFinalState(execution.id);
+    expect(finalState.status).toBe("failed");
+    expect(finalState.error).toContain("Email service unavailable");
+    expect(finalState.retryCount).toBeGreaterThan(0);
+  });
+});
+```
+
+### QStash Local Development
+
+```typescript
+import {
+  startQStashLocalServer,
+  configureLocalDevelopment,
+  setupQStashTunnel
+} from "@repo/qa/vitest/setup/qstash";
+
+// Setup for local development testing
+beforeAll(async () => {
+  // Start local QStash server
+  await startQStashLocalServer({
+    port: 8080,
+    persistence: false, // Don't persist messages in tests
+    logging: process.env.DEBUG_QSTASH === "true"
+  });
+
+  // Configure tunnel for webhook delivery
+  await setupQStashTunnel({
+    localPort: 3000,
+    subdomain: "test-app"
+  });
+});
+
+afterAll(async () => {
+  await stopQStashLocalServer();
+  await closeQStashTunnel();
+});
+```
+
+## Dynamic Environment Setup
+
+### Runtime Environment Configuration
+
+```typescript
+import {
+  setupDynamicEnvironment,
+  switchEnvironment,
+  createEnvironmentProfile,
+  validateEnvironmentConfig
+} from "@repo/qa/vitest/setup/dynamic-examples";
+
+describe("Multi-Environment Testing", () => {
+  test("switches between environments", async () => {
+    // Start in development environment
+    await setupDynamicEnvironment("development");
+    expect(process.env.NODE_ENV).toBe("development");
+    expect(process.env.DATABASE_URL).toContain("localhost");
+
+    // Switch to production-like environment
+    await switchEnvironment("production");
+    expect(process.env.NODE_ENV).toBe("production");
+    expect(process.env.DATABASE_URL).toContain("prod-database");
+
+    // Switch to test environment
+    await switchEnvironment("test");
+    expect(process.env.NODE_ENV).toBe("test");
+    expect(process.env.DATABASE_URL).toContain("test-database");
+  });
+
+  test("creates custom environment profiles", async () => {
+    const customProfile = createEnvironmentProfile({
+      name: "staging",
+      variables: {
+        NODE_ENV: "staging",
+        API_URL: "https://staging-api.example.com",
+        FEATURE_FLAGS: "experimental:true,beta:true",
+        LOG_LEVEL: "debug"
+      },
+      services: {
+        database: "staging-database",
+        redis: "staging-redis",
+        storage: "staging-s3"
+      }
+    });
+
+    await switchEnvironment(customProfile);
+
+    expect(process.env.API_URL).toBe("https://staging-api.example.com");
+    expect(process.env.FEATURE_FLAGS).toContain("experimental:true");
+  });
+});
+```
+
+### Environment Validation
+
+```typescript
+import {
+  validateEnvironment,
+  checkRequiredServices,
+  verifyEnvironmentIntegrity
+} from "@repo/qa/vitest/setup/dynamic-examples";
+
+test("validates environment configuration", async () => {
+  const validation = await validateEnvironment("test");
+
+  expect(validation.isValid).toBe(true);
+  expect(validation.missingVariables).toHaveLength(0);
+  expect(validation.invalidUrls).toHaveLength(0);
+});
+
+test("checks service availability", async () => {
+  const serviceCheck = await checkRequiredServices([
+    "database",
+    "redis",
+    "email",
+    "storage"
+  ]);
+
+  expect(serviceCheck.database.available).toBe(true);
+  expect(serviceCheck.redis.available).toBe(true);
+  expect(serviceCheck.email.mocked).toBe(true); // Email is mocked in tests
+});
+
+test("verifies environment integrity", async () => {
+  const integrity = await verifyEnvironmentIntegrity();
+
+  expect(integrity.environmentConsistent).toBe(true);
+  expect(integrity.servicesCompatible).toBe(true);
+  expect(integrity.configurationValid).toBe(true);
+});
+```
+
+### Feature Flag Testing
+
+```typescript
+import {
+  setupFeatureFlags,
+  toggleFeatureFlag,
+  createFeatureFlagProfile
+} from "@repo/qa/vitest/setup/dynamic-examples";
+
+describe("Feature Flag Testing", () => {
+  beforeEach(() => {
+    setupFeatureFlags({
+      source: "test",
+      defaultFlags: {
+        newDashboard: false,
+        enhancedSearch: true,
+        betaFeatures: false
+      }
+    });
+  });
+
+  test("enables feature for specific test", async () => {
+    await toggleFeatureFlag("newDashboard", true);
+
+    render(<Dashboard />);
+
+    expect(screen.getByTestId("new-dashboard")).toBeInTheDocument();
+    expect(screen.queryByTestId("old-dashboard")).not.toBeInTheDocument();
+  });
+
+  test("uses feature flag profiles", async () => {
+    const betaProfile = createFeatureFlagProfile({
+      name: "beta-user",
+      flags: {
+        newDashboard: true,
+        enhancedSearch: true,
+        betaFeatures: true,
+        experimentalFeatures: true
+      }
+    });
+
+    await switchFeatureFlagProfile(betaProfile);
+
+    render(<UserInterface />);
+
+    expect(screen.getByTestId("beta-features")).toBeInTheDocument();
+  });
+});
+```
+
+## Package Environment Setup
+
+### Package-Specific Configuration
+
+```typescript
+import {
+  setupPackageEnvironment,
+  configurePackageDependencies,
+  isolatePackageEnvironment
+} from "@repo/qa/vitest/setup/package-environments";
+
+describe("@repo/auth Package", () => {
+  beforeEach(async () => {
+    await setupPackageEnvironment("@repo/auth", {
+      dependencies: {
+        "@repo/database": "mock",
+        "@repo/email": "mock",
+        "@repo/analytics": "mock"
+      },
+      environment: {
+        AUTH_SECRET: "test-secret",
+        JWT_EXPIRY: "1h",
+        BCRYPT_ROUNDS: 1 // Faster for tests
+      },
+      features: {
+        socialLogin: true,
+        twoFactor: false,
+        passwordReset: true
+      }
+    });
+  });
+
+  test("auth package works in isolation", async () => {
+    const auth = await import("@repo/auth/server/next");
+
+    const user = await auth.createUser({
+      email: "test@example.com",
+      password: "testpass123"
+    });
+
+    expect(user.id).toBeTruthy();
+    expect(user.email).toBe("test@example.com");
+  });
+});
+```
+
+### Cross-Package Integration
+
+```typescript
+import {
+  setupMultiPackageEnvironment,
+  configureCrossPackageIntegration,
+  validatePackageInteractions
+} from "@repo/qa/vitest/setup/package-environments";
+
+describe("Multi-Package Integration", () => {
+  beforeEach(async () => {
+    await setupMultiPackageEnvironment({
+      packages: [
+        {
+          name: "@repo/auth",
+          config: { mode: "full" } // Full implementation
+        },
+        {
+          name: "@repo/email",
+          config: { mode: "mock" } // Mocked implementation
+        },
+        {
+          name: "@repo/analytics",
+          config: { mode: "spy" } // Spy on calls
+        }
+      ],
+      interactions: {
+        "auth->email": { enabled: true, async: true },
+        "auth->analytics": { enabled: true, async: false }
+      }
+    });
+  });
+
+  test("packages interact correctly", async () => {
+    const auth = await import("@repo/auth/server/next");
+    const analytics = await import("@repo/analytics/server/next");
+
+    // Create user (should trigger email and analytics)
+    const user = await auth.createUser({
+      email: "test@example.com",
+      password: "testpass123"
+    });
+
+    // Verify cross-package interactions
+    expect(mockEmailService.sendWelcomeEmail).toHaveBeenCalledWith({
+      to: "test@example.com",
+      userId: user.id
+    });
+
+    expect(analytics.track).toHaveBeenCalledWith("user.created", {
+      userId: user.id,
+      email: "test@example.com"
+    });
+  });
+
+  test("validates package interaction contracts", async () => {
+    const validation = await validatePackageInteractions();
+
+    expect(validation.contractsValid).toBe(true);
+    expect(validation.typeCompatibility).toBe(true);
+    expect(validation.versionCompatibility).toBe(true);
+  });
+});
+```
+
+## Database Setup
+
+### Database Test Configuration
+
+```typescript
+import {
+  setupTestDatabase,
+  createDatabaseSnapshot,
+  restoreDatabaseSnapshot,
+  seedTestDatabase
+} from "@repo/qa/vitest/setup/database";
+
+describe("Database Operations", () => {
+  let dbSnapshot: string;
+
+  beforeAll(async () => {
+    await setupTestDatabase({
+      schema: "latest",
+      seed: "minimal",
+      isolation: "transaction" // Each test runs in a transaction
+    });
+
+    // Create snapshot of clean state
+    dbSnapshot = await createDatabaseSnapshot();
+  });
+
+  beforeEach(async () => {
+    // Restore to clean state before each test
+    await restoreDatabaseSnapshot(dbSnapshot);
+  });
+
+  test("database operations work correctly", async () => {
+    await seedTestDatabase({
+      users: 3,
+      products: 5,
+      orders: 2
+    });
+
+    const users = await db.user.findMany();
+    expect(users).toHaveLength(3);
+
+    const products = await db.product.findMany();
+    expect(products).toHaveLength(5);
+  });
+});
+```
+
+### Database Migration Testing
+
+```typescript
+import {
+  testMigration,
+  rollbackMigration,
+  validateMigrationSafety
+} from "@repo/qa/vitest/setup/database";
+
+describe("Database Migrations", () => {
+  test("migration applies correctly", async () => {
+    const migrationResult = await testMigration(
+      "20240101_add_user_preferences"
+    );
+
+    expect(migrationResult.success).toBe(true);
+    expect(migrationResult.warnings).toHaveLength(0);
+
+    // Verify schema changes
+    const tableInfo = await db.$queryRaw`
+      SELECT column_name FROM information_schema.columns 
+      WHERE table_name = 'users' AND column_name = 'preferences'
+    `;
+    expect(tableInfo).toHaveLength(1);
+  });
+
+  test("migration rollback works", async () => {
+    await testMigration("20240101_add_user_preferences");
+    await rollbackMigration("20240101_add_user_preferences");
+
+    // Verify rollback
+    const tableInfo = await db.$queryRaw`
+      SELECT column_name FROM information_schema.columns 
+      WHERE table_name = 'users' AND column_name = 'preferences'
+    `;
+    expect(tableInfo).toHaveLength(0);
+  });
+
+  test("validates migration safety", async () => {
+    const safety = await validateMigrationSafety(
+      "20240101_add_user_preferences"
+    );
+
+    expect(safety.hasBreakingChanges).toBe(false);
+    expect(safety.requiresDowntime).toBe(false);
+    expect(safety.affectedTables).toEqual(["users"]);
+  });
+});
+```
+
+## Integration Testing Setup
+
+### End-to-End Test Environment
+
+```typescript
+import {
+  setupE2EEnvironment,
+  startTestServices,
+  configureTestData,
+  cleanupE2EEnvironment
+} from "@repo/qa/vitest/setup/integration";
+
+describe("E2E Test Suite", () => {
+  beforeAll(async () => {
+    await setupE2EEnvironment({
+      services: {
+        database: { type: "postgresql", isolated: true },
+        redis: { type: "redis", port: 6380 },
+        email: { type: "mock", captureEmails: true },
+        storage: { type: "local", path: "/tmp/test-storage" }
+      },
+      applications: {
+        api: { port: 3001, env: "test" },
+        webapp: { port: 3002, env: "test" },
+        admin: { port: 3003, env: "test" }
+      }
+    });
+
+    await startTestServices();
+    await configureTestData();
+  });
+
+  afterAll(async () => {
+    await cleanupE2EEnvironment();
+  });
+
+  test("full user journey", async () => {
+    // Test spans multiple services and applications
+    const response = await fetch("http://localhost:3001/api/users", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: "test@example.com",
+        password: "testpass123"
+      })
+    });
+
+    const user = await response.json();
+    expect(user.id).toBeTruthy();
+
+    // Verify email was sent
+    const emails = await getTestEmails();
+    expect(emails).toHaveLength(1);
+    expect(emails[0].to).toBe("test@example.com");
+  });
+});
+```
+
+### Microservice Integration
+
+```typescript
+import {
+  setupMicroserviceEnvironment,
+  configureMicroserviceCommunication,
+  mockExternalServices
+} from "@repo/qa/vitest/setup/integration";
+
+describe("Microservice Integration", () => {
+  beforeEach(async () => {
+    await setupMicroserviceEnvironment({
+      services: [
+        { name: "user-service", port: 4001 },
+        { name: "product-service", port: 4002 },
+        { name: "order-service", port: 4003 }
+      ],
+      communication: {
+        protocol: "http",
+        serviceDiscovery: "static",
+        timeout: 5000
+      }
+    });
+
+    await mockExternalServices([
+      "payment-gateway",
+      "email-service",
+      "analytics-service"
+    ]);
+  });
+
+  test("services communicate correctly", async () => {
+    // Create user via user-service
+    const userResponse = await fetch("http://localhost:4001/users", {
+      method: "POST",
+      body: JSON.stringify({ email: "test@example.com" })
+    });
+    const user = await userResponse.json();
+
+    // Create order via order-service
+    const orderResponse = await fetch("http://localhost:4003/orders", {
+      method: "POST",
+      body: JSON.stringify({
+        userId: user.id,
+        products: [{ id: "prod1", quantity: 2 }]
+      })
+    });
+    const order = await orderResponse.json();
+
+    expect(order.userId).toBe(user.id);
+    expect(order.status).toBe("pending");
+  });
+});
+```
+
+## Performance Testing Setup
+
+### Load Testing Environment
+
+```typescript
+import {
+  setupLoadTestEnvironment,
+  configureLoadTestScenarios,
+  monitorPerformanceMetrics
+} from "@repo/qa/vitest/setup/integration";
+
+describe("Performance Tests", () => {
+  beforeAll(async () => {
+    await setupLoadTestEnvironment({
+      concurrency: 50,
+      duration: "30s",
+      rampUp: "10s",
+      monitoring: {
+        metrics: ["response_time", "throughput", "error_rate"],
+        interval: "1s"
+      }
+    });
+  });
+
+  test("API handles load correctly", async () => {
+    const scenario = configureLoadTestScenarios({
+      name: "user-registration",
+      weight: 70,
+      requests: [
+        { method: "POST", url: "/api/users", body: () => generateUserData() }
+      ]
+    });
+
+    const results = await runLoadTest(scenario);
+
+    expect(results.averageResponseTime).toBeLessThan(500); // 500ms
+    expect(results.errorRate).toBeLessThan(0.01); // < 1% errors
+    expect(results.throughput).toBeGreaterThan(100); // > 100 req/s
+  });
+
+  test("monitors system resources", async () => {
+    const monitor = monitorPerformanceMetrics();
+
+    await runLoadTest(scenario);
+
+    const metrics = monitor.getMetrics();
+    expect(metrics.cpu.peak).toBeLessThan(80); // < 80% CPU
+    expect(metrics.memory.peak).toBeLessThan(1024); // < 1GB memory
+    expect(metrics.database.connections).toBeLessThan(100); // < 100 DB connections
+  });
+});
+```
+
+## Best Practices
+
+### Setup Organization
+
+```typescript
+// Create reusable setup configurations
+const commonSetups = {
+  unitTests: {
+    environment: "test",
+    mocks: ["analytics", "email", "storage"],
+    database: "memory"
+  },
+
+  integrationTests: {
+    environment: "test",
+    services: ["database", "redis"],
+    mocks: ["external-apis"]
+  },
+
+  e2eTests: {
+    environment: "test",
+    services: "all",
+    mocks: ["payment-gateway"]
+  }
+};
+
+// Use in different test suites
+describe("Unit Tests", () => {
+  beforeEach(() => setupTestEnvironment(commonSetups.unitTests));
+});
+
+describe("Integration Tests", () => {
+  beforeEach(() => setupTestEnvironment(commonSetups.integrationTests));
+});
+```
+
+### Cleanup Strategies
+
+```typescript
+// Ensure proper cleanup
+let cleanupFunctions: Array<() => Promise<void>> = [];
+
+beforeEach(async () => {
+  const dbCleanup = await setupTestDatabase();
+  const serviceCleanup = await startTestServices();
+  const envCleanup = await setupTestEnvironment();
+
+  cleanupFunctions.push(dbCleanup, serviceCleanup, envCleanup);
+});
+
+afterEach(async () => {
+  // Run cleanup functions in reverse order
+  for (const cleanup of cleanupFunctions.reverse()) {
+    await cleanup();
+  }
+  cleanupFunctions = [];
+});
+```
+
+### Error Handling
+
+```typescript
+// Handle setup failures gracefully
+async function safeSetup(
+  setupFunction: () => Promise<void>,
+  fallback?: () => Promise<void>
+) {
+  try {
+    await setupFunction();
+  } catch (error) {
+    console.warn(`Setup failed: ${error.message}`);
+    if (fallback) {
+      await fallback();
+    } else {
+      throw new Error(`Critical setup failure: ${error.message}`);
+    }
+  }
+}
+
+beforeEach(async () => {
+  await safeSetup(
+    () => setupTestDatabase(),
+    () => setupMockDatabase() // Fallback to mock
+  );
+});
+```
+
+These setup utilities provide comprehensive test environment configuration for
+all testing scenarios, from simple unit tests to complex end-to-end integration
+tests.

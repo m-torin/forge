@@ -1,0 +1,133 @@
+/* Note: _mantine.scss is automatically prepended via next.config.mjs */
+
+/* Tailwind directives */
+/* @import "tailwind-preset-mantine"; */
+
+/* Mantine layers */
+// @layer mantine, mantine-datatable;
+
+/* Component styles using Mantine mixins */
+.mantine-datatable-row-expansion-cell {
+  background: light-dark(
+    var(--mantine-color-gray-0),
+    var(--mantine-color-dark-6)
+  );
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.mantine-datatable-row-expansion-cell-content {
+  border-bottom-width: 0;
+}
+
+.overview-example__add {
+  display: none;
+
+  @include larger-than($mantine-breakpoint-md) {
+    display: block;
+  }
+}
+
+/* Theme configuration */
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --radius: #{rem(8)};
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Color scheme styles using Mantine mixins */
+body {
+  @include light {
+    background-color: var(--mantine-color-gray-0);
+  }
+
+  @include dark {
+    background-color: #282827;
+  }
+}
+
+$border-radius: rem(2px);
+
+// Define a mixin for both node borders and edge colors
+@mixin node-and-edge-highlight($type, $color-base, $node-shade, $edge-shade) {
+  [class*='react-flow__node-'][class*='#{$type}'] {
+    border: 2px solid var(--mantine-color-#{$color-base}-#{$node-shade}) !important;
+    border-radius: $border-radius !important;
+
+    .mantine-Accordion-item {
+      border-radius: $border-radius;
+      border: 0;
+    }
+
+    .mantine-Accordion-chevron {
+      margin: rem(8px) !important;
+    }
+
+    .mantine-Accordion-label {
+      font-size: rem(14px) !important;
+    }
+
+    .react-flow__handle {
+      width: 10px;
+      height: 10px;
+      background-color: var(--mantine-color-#{$color-base}-#{$node-shade});
+      border: 2px solid white;
+
+      @each $direction in top, bottom, right, left {
+        &.react-flow__handle-#{$direction} {
+          #{$direction}: rem(-8px) !important;
+        }
+      }
+    }
+  }
+
+  .react-flow__edge.type-#{$type} .react-flow__edge-path {
+    stroke: var(--mantine-color-#{$color-base}-#{$edge-shade}) !important;
+  }
+}
+
+// Combined CSS
+.react-flow-wrapper {
+  // Node and edge styles with the mixin
+  @include node-and-edge-highlight(default, gray, 4, 2);
+  @include node-and-edge-highlight(input, teal, 4, 2);
+  @include node-and-edge-highlight(output, orange, 4, 3);
+
+  @include node-and-edge-highlight(Logic, indigo, 4, 2);
+  @include node-and-edge-highlight(Source, teal, 4, 2);
+  @include node-and-edge-highlight(Destination, orange, 4, 3);
+
+  .react-flow__node.selected {
+    box-shadow: var(--mantine-shadow-sm) !important;
+  }
+
+  .react-flow__edge-path {
+    stroke-width: rem(2) !important;
+  }
+}

@@ -1,0 +1,705 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EmbeddableNotionEditor - Complete HTML Integration</title>
+    <!-- Content Security Policy for enhanced security -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https:;"
+    />
+    <style>
+      /* Page styling */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background-color: #f5f7fa;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+        overflow: hidden;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+      }
+
+      .header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        font-weight: 700;
+      }
+
+      .header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+      }
+
+      .demo-section {
+        padding: 2rem;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      .demo-section:last-child {
+        border-bottom: none;
+      }
+
+      .demo-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #374151;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .demo-controls {
+        margin-bottom: 1.5rem;
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        padding: 0.5rem 1rem;
+        border: 1px solid #d1d5db;
+        background: white;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.2s;
+        color: #374151;
+      }
+
+      .btn:hover {
+        background: #f9fafb;
+        border-color: #9ca3af;
+      }
+
+      .btn-primary {
+        background: #3b82f6;
+        color: white;
+        border-color: #3b82f6;
+      }
+
+      .btn-primary:hover {
+        background: #2563eb;
+        border-color: #2563eb;
+      }
+
+      .btn-success {
+        background: #10b981;
+        color: white;
+        border-color: #10b981;
+      }
+
+      .btn-danger {
+        background: #ef4444;
+        color: white;
+        border-color: #ef4444;
+      }
+
+      .editor-container {
+        margin: 1.5rem 0;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #e5e7eb;
+      }
+
+      .output-panel {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        font-family: 'Monaco', 'Menlo', monospace;
+        font-size: 0.875rem;
+        max-height: 300px;
+        overflow-y: auto;
+        display: none;
+      }
+
+      .stats {
+        margin-top: 1rem;
+        padding: 0.75rem;
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        color: #0369a1;
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .theme-selector {
+        margin-bottom: 1rem;
+      }
+
+      .theme-selector select {
+        padding: 0.5rem;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        background: white;
+        font-size: 0.875rem;
+      }
+
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+      }
+
+      .feature-card {
+        padding: 1.5rem;
+        background: #f9fafb;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+      }
+
+      .feature-card h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #374151;
+      }
+
+      .feature-card p {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-bottom: 1rem;
+      }
+
+      .loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem;
+        color: #6b7280;
+      }
+
+      .loading:before {
+        content: '';
+        width: 20px;
+        height: 20px;
+        border: 2px solid #e5e7eb;
+        border-top: 2px solid #3b82f6;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-right: 0.5rem;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Mobile responsive */
+      @media (max-width: 768px) {
+        .container {
+          margin: 10px;
+          border-radius: 8px;
+        }
+
+        .header {
+          padding: 1.5rem;
+        }
+
+        .header h1 {
+          font-size: 2rem;
+        }
+
+        .demo-section {
+          padding: 1.5rem;
+        }
+
+        .demo-controls {
+          gap: 0.5rem;
+        }
+
+        .btn {
+          padding: 0.375rem 0.75rem;
+          font-size: 0.8125rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🚀 EmbeddableNotionEditor</h1>
+        <p>A complete rich text editor that works anywhere - HTML, React, Next.js</p>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loading" class="loading">Loading editor bundle...</div>
+
+      <!-- Main Demo -->
+      <div id="main-content" style="display: none">
+        <div class="demo-section">
+          <h2 class="demo-title">✨ Interactive Demo</h2>
+
+          <div class="theme-selector">
+            <label for="theme-select">Theme:</label>
+            <select id="theme-select">
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+              <option value="high-contrast">High Contrast</option>
+            </select>
+          </div>
+
+          <div class="demo-controls">
+            <button class="btn btn-primary" onclick="loadSampleContent()">Load Sample</button>
+            <button class="btn" onclick="getHTMLContent()">Get HTML</button>
+            <button class="btn" onclick="getJSONContent()">Get JSON</button>
+            <button class="btn" onclick="clearEditor()">Clear</button>
+            <button class="btn" onclick="focusEditor()">Focus</button>
+            <button class="btn btn-success" onclick="saveContent()">Save</button>
+            <button class="btn btn-danger" onclick="exportContent()">Export</button>
+          </div>
+
+          <div class="editor-container">
+            <div id="main-editor"></div>
+          </div>
+
+          <div class="stats" id="editor-stats">
+            <span>Words: <strong id="word-count">0</strong></span>
+            <span>Characters: <strong id="char-count">0</strong></span>
+            <span>Paragraphs: <strong id="para-count">0</strong></span>
+          </div>
+
+          <div class="output-panel" id="output-panel"></div>
+        </div>
+
+        <!-- Feature Showcase -->
+        <div class="demo-section">
+          <h2 class="demo-title">🎯 Features & Examples</h2>
+
+          <div class="feature-grid">
+            <div class="feature-card">
+              <h3>📝 Minimal Comment Box</h3>
+              <p>Perfect for comments, notes, and quick text input</p>
+              <div id="comment-editor"></div>
+              <div style="margin-top: 1rem">
+                <button class="btn btn-primary" onclick="submitComment()">Post Comment</button>
+                <button class="btn" onclick="clearComment()">Clear</button>
+              </div>
+            </div>
+
+            <div class="feature-card">
+              <h3>🌙 Dark Theme</h3>
+              <p>Built-in dark mode with CSS custom properties</p>
+              <div id="dark-editor" data-theme="dark"></div>
+            </div>
+
+            <div class="feature-card">
+              <h3>⚡ Real-time Preview</h3>
+              <p>Live preview of formatted content</p>
+              <div id="preview-editor"></div>
+              <div
+                id="preview-output"
+                style="
+                  margin-top: 1rem;
+                  padding: 1rem;
+                  background: #f8fafc;
+                  border-radius: 6px;
+                  min-height: 100px;
+                "
+              ></div>
+            </div>
+
+            <div class="feature-card">
+              <h3>📱 Mobile Optimized</h3>
+              <p>Responsive design that works on all devices</p>
+              <div id="mobile-editor" style="font-size: 16px"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Integration Examples -->
+        <div class="demo-section">
+          <h2 class="demo-title">🔧 Integration Examples</h2>
+
+          <div style="display: grid; gap: 2rem; margin-top: 1.5rem">
+            <div>
+              <h3>HTML Integration</h3>
+              <pre
+                style="
+                  background: #f8fafc;
+                  padding: 1rem;
+                  border-radius: 6px;
+                  font-size: 0.875rem;
+                  overflow-x: auto;
+                "
+              ><code>&lt;!-- Include the standalone bundle --&gt;
+&lt;script src="./embeddable-standalone.js"&gt;&lt;/script&gt;
+
+&lt;!-- Create container --&gt;
+&lt;div id="my-editor"&gt;&lt;/div&gt;
+
+&lt;script&gt;
+  // Initialize editor
+  const editor = new NotionEditor.EmbeddableNotionEditor({
+    container: document.getElementById('my-editor'),
+    placeholder: 'Start writing...',
+    content: '&lt;p&gt;Hello world!&lt;/p&gt;',
+    onChange: (html) =&gt; console.log('Content:', html),
+    theme: {
+      backgroundColor: '#ffffff',
+      textColor: '#1f2937',
+      borderColor: '#e5e7eb',
+      focusColor: '#3b82f6'
+    }
+  });
+&lt;/script&gt;</code></pre>
+            </div>
+
+            <div>
+              <h3>React Integration</h3>
+              <pre
+                style="
+                  background: #f8fafc;
+                  padding: 1rem;
+                  border-radius: 6px;
+                  font-size: 0.875rem;
+                  overflow-x: auto;
+                "
+              ><code>import { EmbeddableNotionEditor } from '@repo/editor/react';
+
+function MyComponent() {
+  return (
+    &lt;EmbeddableNotionEditor
+      placeholder="Start writing..."
+      onChange={(html) =&gt; console.log(html)}
+      features={{
+        formatting: true,
+        lists: true,
+        links: true
+      }}
+      theme={{
+        backgroundColor: '#ffffff',
+        focusColor: '#3b82f6'
+      }}
+    /&gt;
+  );
+}</code></pre>
+            </div>
+
+            <div>
+              <h3>Next.js Integration</h3>
+              <pre
+                style="
+                  background: #f8fafc;
+                  padding: 1rem;
+                  border-radius: 6px;
+                  font-size: 0.875rem;
+                  overflow-x: auto;
+                "
+              ><code>import dynamic from 'next/dynamic';
+
+const NotionEditor = dynamic(
+  () =&gt; import('@repo/editor/nextjs').then(mod =&gt; mod.EmbeddableNotionEditor),
+  { ssr: false }
+);
+
+export default function Page() {
+  return (
+    &lt;NotionEditor
+      placeholder="Start writing..."
+      onChange={(html) =&gt; console.log(html)}
+    /&gt;
+  );
+}</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Load the actual editor bundle -->
+    <script>
+      // In production, this would be: &lt;script src="./dist/standalone/embeddable-standalone.js"&gt;&lt;/script&gt;
+      // For now, we'll simulate the loading
+
+      // Global editor instances
+      let mainEditor, commentEditor, darkEditor, previewEditor, mobileEditor;
+
+      // Simulate loading the bundle
+      setTimeout(() => {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('main-content').style.display = 'block';
+
+        // Initialize all editors once "loaded"
+        initializeEditors();
+      }, 1500);
+
+      function initializeEditors() {
+        // This is a mock implementation
+        // In reality, these would be actual EmbeddableNotionEditor instances
+
+        // Main editor
+        setupMockEditor('main-editor', (content) => {
+          updateStats(content);
+        });
+
+        // Comment editor
+        setupMockEditor('comment-editor', null, {
+          placeholder: 'Write a comment...',
+          showToolbar: false,
+          minHeight: '80px',
+        });
+
+        // Dark theme editor
+        setupMockEditor('dark-editor', null, {
+          placeholder: 'Dark theme editor...',
+          theme: 'dark',
+        });
+
+        // Preview editor
+        setupMockEditor(
+          'preview-editor',
+          (content) => {
+            document.getElementById('preview-output').innerHTML =
+              content || '<em>Start typing to see preview...</em>';
+          },
+          {
+            placeholder: 'Type here for live preview...',
+          },
+        );
+
+        // Mobile editor
+        setupMockEditor('mobile-editor', null, {
+          placeholder: 'Mobile-optimized editor...',
+        });
+      }
+
+      function setupMockEditor(containerId, onChange, options = {}) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        const {
+          placeholder = 'Start writing...',
+          showToolbar = true,
+          minHeight = '200px',
+          theme = 'light',
+        } = options;
+
+        container.innerHTML = `
+                <div class="embeddable-editor" data-theme="${theme}" style="min-height: ${minHeight};">
+                    ${
+                      showToolbar
+                        ? `
+                    <div class="embeddable-editor-toolbar">
+                        <button onclick="formatText(this, 'bold')"><strong>B</strong></button>
+                        <button onclick="formatText(this, 'italic')"><em>I</em></button>
+                        <button onclick="formatText(this, 'underline')"><u>U</u></button>
+                        <button onclick="formatText(this, 'bulletList')">•</button>
+                        <button onclick="formatText(this, 'orderedList')">1.</button>
+                    </div>`
+                        : ''
+                    }
+                    <div
+                        contenteditable="true"
+                        style="padding: 16px; min-height: ${minHeight}; outline: none; line-height: 1.6;"
+                        data-placeholder="${placeholder}"
+                        oninput="handleEditorInput(this, ${onChange ? 'true' : 'false'})"
+                        onfocus="this.style.borderColor = 'var(--editor-focus-color, #3b82f6)'"
+                        onblur="this.style.borderColor = 'var(--editor-border-color, #e5e7eb)'"
+                    ></div>
+                </div>
+            `;
+
+        // Set initial placeholder
+        const editor = container.querySelector('[contenteditable]');
+        if (editor && !editor.innerHTML.trim()) {
+          editor.innerHTML = `<p style="color: var(--editor-placeholder-color, #9ca3af);">${placeholder}</p>`;
+        }
+      }
+
+      function handleEditorInput(editor, hasOnChange) {
+        const content = editor.innerHTML;
+
+        // Remove placeholder when typing
+        if (content.includes('color: var(--editor-placeholder-color')) {
+          editor.innerHTML = '';
+        }
+
+        if (hasOnChange && typeof updateStats === 'function') {
+          updateStats(content);
+        }
+
+        // Update preview if it's the preview editor
+        if (editor.closest('#preview-editor')) {
+          document.getElementById('preview-output').innerHTML =
+            content || '<em>Start typing to see preview...</em>';
+        }
+      }
+
+      function formatText(button, command) {
+        // Note: document.execCommand is deprecated - this is just for demo
+        // In production, use the actual Tiptap editor commands
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0) {
+          try {
+            document.execCommand(command);
+            button.classList.toggle('active');
+          } catch (e) {
+            console.warn('execCommand failed:', e);
+          }
+        }
+      }
+
+      function updateStats(content) {
+        const text = content.replace(/<[^>]*>/g, '').trim();
+        const words = text ? text.split(/\s+/).length : 0;
+        const chars = text.length;
+        const paras = content.split('<p>').length - 1 || 1;
+
+        document.getElementById('word-count').textContent = words;
+        document.getElementById('char-count').textContent = chars;
+        document.getElementById('para-count').textContent = paras;
+      }
+
+      // Demo functions
+      function loadSampleContent() {
+        const editor = document.querySelector('#main-editor [contenteditable]');
+        const sampleContent = `
+                <h1>📚 Sample Document</h1>
+                <p>This is a <strong>sample document</strong> demonstrating the <em>EmbeddableNotionEditor</em> capabilities.</p>
+                <h2>Features</h2>
+                <ul>
+                    <li><strong>Rich text formatting</strong> - Bold, italic, underline</li>
+                    <li><em>Lists and organization</em> - Bullets and numbers</li>
+                    <li><u>Links and media</u> - Hyperlinks and images</li>
+                </ul>
+                <blockquote>
+                    <p>"The best editors are invisible until you need them." - Anonymous</p>
+                </blockquote>
+                <p>Perfect for any web application! 🚀</p>
+            `;
+        editor.innerHTML = sampleContent;
+        updateStats(sampleContent);
+      }
+
+      function getHTMLContent() {
+        const editor = document.querySelector('#main-editor [contenteditable]');
+        const content = editor.innerHTML;
+        showOutput('HTML Content', content);
+      }
+
+      function getJSONContent() {
+        // Mock JSON structure
+        const mockJSON = {
+          type: 'doc',
+          content: [
+            {
+              type: 'paragraph',
+              content: [{ type: 'text', text: 'This would be the actual Tiptap JSON structure' }],
+            },
+          ],
+        };
+        showOutput('JSON Content', JSON.stringify(mockJSON, null, 2));
+      }
+
+      function clearEditor() {
+        const editor = document.querySelector('#main-editor [contenteditable]');
+        editor.innerHTML =
+          '<p style="color: var(--editor-placeholder-color, #9ca3af);">Start writing...</p>';
+        updateStats('');
+      }
+
+      function focusEditor() {
+        const editor = document.querySelector('#main-editor [contenteditable]');
+        editor.focus();
+      }
+
+      function saveContent() {
+        const editor = document.querySelector('#main-editor [contenteditable]');
+        const content = editor.innerHTML;
+        localStorage.setItem('editorContent', content);
+        alert('Content saved to localStorage!');
+      }
+
+      function exportContent() {
+        const editor = document.querySelector('#main-editor [contenteditable]');
+        const content = editor.innerHTML;
+        const blob = new Blob([content], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'editor-content.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      function submitComment() {
+        const editor = document.querySelector('#comment-editor [contenteditable]');
+        const content = editor.innerHTML.replace(/<[^>]*>/g, '').trim();
+        if (content && !content.includes('Write a comment')) {
+          alert(`Comment submitted:\
+\
+${content}`);
+        } else {
+          alert('Please write a comment first!');
+        }
+      }
+
+      function clearComment() {
+        const editor = document.querySelector('#comment-editor [contenteditable]');
+        editor.innerHTML =
+          '<p style="color: var(--editor-placeholder-color, #9ca3af);">Write a comment...</p>';
+      }
+
+      function showOutput(title, content) {
+        const panel = document.getElementById('output-panel');
+        panel.innerHTML = `<strong>${title}:</strong><br><br><pre>${escapeHtml(content)}</pre>`;
+        panel.style.display = 'block';
+      }
+
+      function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      // Theme switching
+      document.addEventListener('DOMContentLoaded', () => {
+        const themeSelect = document.getElementById('theme-select');
+        if (themeSelect) {
+          themeSelect.addEventListener('change', (e) => {
+            const mainEditor = document.querySelector('#main-editor .embeddable-editor');
+            if (mainEditor) {
+              mainEditor.setAttribute('data-theme', e.target.value);
+            }
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,22 @@
+.fieldContainer {
+  margin-bottom: 1rem;
+}
+
+.invalid {
+  background-color: var(--mantine-color-red-light);
+}
+
+.icon {
+  color: light-dark(var(--mantine-color-red-6), var(--mantine-color-red-7));
+}
+
+.errorText {
+  color: red;
+  font-size: 0.875rem;
+}
+
+.helpText {
+  color: #6b7280;
+  /* Gray color for helper text */
+  font-size: 0.875rem;
+}

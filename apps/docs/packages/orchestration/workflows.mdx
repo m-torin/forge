@@ -1,0 +1,347 @@
+---
+title: "Workflow System"
+description: "Workflow definitions and execution patterns"
+---
+
+# Workflow System
+
+The orchestration package provides a step-based workflow system with composable
+patterns for building reliable background processes.
+
+## Workflow Definition
+
+Workflows are defined using a combination of steps, which are atomic units of
+work that can be composed together:
+
+```typescript
+import { WorkflowDefinition, WorkflowStep } from "@repo/orchestration";
+
+interface WorkflowDefinition {
+  id: string;
+  steps: WorkflowStep[];
+  metadata?: Record<string, any>;
+}
+
+interface WorkflowStep {
+  id: string;
+  name: string;
+  type: string;
+  config?: Record<string, any>;
+}
+```
+
+## Step Creation
+
+### Basic Steps
+
+Create simple workflow steps using the step factory:
+
+```typescript
+import { createStep } from "@repo/orchestration";
+
+const fetchUserStep = createStep("fetch-user", async (userId: string) => {
+  const response = await fetch(`/api/users/${userId}`);
+  return response.json();
+});
+
+const validateUserStep = createStep("validate-user", async (user: any) => {
+  if (!user.email || !user.name) {
+    throw new Error("Invalid user data");
+  }
+  return user;
+});
+```
+
+### Step Composition
+
+Combine steps into workflows using composition utilities:
+
+```typescript
+import { compose, createStep } from "@repo/orchestration";
+
+// Chain steps together
+const userProcessingPipeline = compose(
+  fetchUserStep,
+  validateUserStep,
+  transformUserStep
+);
+
+// Execute the composed workflow
+const result = await userProcessingPipeline("user-123");
+```
+
+## Step Enhancers
+
+### Retry Logic
+
+Add retry behavior to steps:
+
+```typescript
+import { withStepRetry, RETRY_STRATEGIES } from "@repo/orchestration";
+
+const robustApiCall = withStepRetry(
+  createStep("api-call", async (data) => {
+    return await externalApi.process(data);
+  }),
+  {
+    maxAttempts: 3,
+    backoffMs: 1000,
+    strategy: "exponential"
+  }
+);
+
+// Or use predefined strategies
+const robustStep = withStepRetry(myStep, RETRY_STRATEGIES.api);
+```
+
+### Timeout Protection
+
+Add timeout protection to steps:
+
+```typescript
+import { withStepTimeout } from "@repo/orchestration";
+
+const timeoutProtectedStep = withStepTimeout(
+  slowOperationStep,
+  { timeoutMs: 30000 } // 30 second timeout
+);
+```
+
+### Circuit Breaker
+
+Protect against cascading failures:
+
+```typescript
+import {
+  withStepCircuitBreaker,
+  CircuitBreakerConfigs
+} from "@repo/orchestration/server/next";
+
+const protectedStep = withStepCircuitBreaker(unreliableServiceStep, {
+  failureThreshold: 5,
+  timeoutMs: 10000,
+  resetTimeoutMs: 60000
+});
+
+// Use predefined circuit breaker config
+const robustStep = withStepCircuitBreaker(myStep, CircuitBreakerConfigs.api);
+```
+
+### Monitoring
+
+Add monitoring to steps:
+
+```typescript
+import { withStepMonitoring } from "@repo/orchestration";
+
+const monitoredStep = withStepMonitoring(criticalStep, {
+  name: "critical-operation",
+  trackDuration: true,
+  trackErrors: true
+});
+```
+
+## Workflow Execution
+
+### Basic Execution
+
+Execute workflows using the workflow engine:
+
+```typescript
+import { createWorkflowEngine } from "@repo/orchestration/server/next";
+
+const engine = createWorkflowEngine();
+await engine.initialize();
+
+// Execute a workflow
+const result = await engine.executeWorkflow(
+  {
+    id: "user-processing",
+    steps: [userProcessingPipeline]
+  },
+  { userId: "user-123" }
+);
+
+console.log("Workflow result:", result);
+```
+
+### Scheduled Execution
+
+Schedule workflows for future execution:
+
+```typescript
+// Schedule a workflow
+const scheduledExecution = await engine.scheduleWorkflow({
+  id: "daily-report",
+  steps: [generateReportStep]
+});
+
+console.log("Scheduled execution ID:", scheduledExecution.id);
+```
+
+### Execution Monitoring
+
+Monitor workflow execution status:
+
+```typescript
+// Get execution status
+const execution = await engine.getExecution(executionId);
+console.log("Status:", execution.status);
+console.log("Started at:", execution.startedAt);
+
+if (execution.completedAt) {
+  console.log("Completed at:", execution.completedAt);
+}
+
+if (execution.error) {
+  console.log("Error:", execution.error);
+}
+```
+
+## Error Handling
+
+### Error Classification
+
+The system provides basic error classification:
+
+```typescript
+import {
+  createOrchestrationError,
+  OrchestrationErrorCodes
+} from "@repo/orchestration";
+
+// Create classified errors
+throw createOrchestrationError(
+  "VALIDATION_FAILED",
+  "User data validation failed",
+  { field: "email", value: "invalid-email" }
+);
+
+// Available error codes
+// - VALIDATION_FAILED
+// - PROVIDER_ERROR
+// - WORKFLOW_EXECUTION_ERROR
+// - API_UNAVAILABLE
+```
+
+### Error Recovery
+
+Handle errors in workflow steps:
+
+```typescript
+const resilientStep = createStep("resilient-operation", async (data) => {
+  try {
+    return await riskyOperation(data);
+  } catch (error) {
+    // Log error and provide fallback
+    console.error("Operation failed:", error);
+    return { status: "failed", fallback: true };
+  }
+});
+```
+
+## Patterns
+
+### Batch Processing
+
+Process items in batches:
+
+```typescript
+import { withBatch, BatchManager } from "@repo/orchestration/server/next";
+
+const batchProcessor = withBatch(
+  createStep("process-item", async (item) => {
+    return await processItem(item);
+  }),
+  { batchSize: 50 }
+);
+
+// Or use BatchManager directly
+const batchManager = new BatchManager({
+  batchSize: 100,
+  maxWaitMs: 5000
+});
+```
+
+### Rate Limiting
+
+Apply rate limiting to workflow steps:
+
+```typescript
+import { withRateLimit, createRateLimiter } from "@repo/orchestration";
+
+const rateLimiter = createRateLimiter({
+  windowMs: 60000, // 1 minute
+  maxRequests: 100
+});
+
+const rateLimitedStep = withRateLimit(apiCallStep, rateLimiter);
+```
+
+## Validation
+
+### Workflow Validation
+
+Validate workflow definitions before execution:
+
+```typescript
+import { validateWorkflowDefinition } from "@repo/orchestration";
+
+const workflow = {
+  id: "test-workflow",
+  steps: [
+    /* your steps */
+  ]
+};
+
+const isValid = validateWorkflowDefinition(workflow);
+if (!isValid) {
+  throw new Error("Invalid workflow definition");
+}
+```
+
+### Step Validation
+
+Validate individual steps:
+
+```typescript
+import { validateWorkflowStep } from "@repo/orchestration";
+
+const step = createStep("test-step", async () => "test");
+const isValidStep = validateWorkflowStep(step);
+```
+
+## Best Practices
+
+### Step Design
+
+1. **Keep steps atomic** - Each step should do one thing well
+2. **Make steps idempotent** - Steps should be safe to retry
+3. **Use descriptive names** - `fetch-user-profile` vs `step1`
+4. **Handle errors gracefully** - Provide meaningful error messages
+
+### Workflow Composition
+
+1. **Chain related operations** - Group logically related steps
+2. **Use step enhancers** - Add retry, timeout, and monitoring
+3. **Validate inputs** - Check data at workflow boundaries
+4. **Plan for failures** - Design workflows to handle partial failures
+
+### Performance
+
+1. **Use appropriate batch sizes** - Balance throughput and resource usage
+2. **Apply rate limiting** - Respect external service limits
+3. **Monitor execution times** - Track performance metrics
+4. **Optimize step order** - Place faster steps first when possible
+
+## Limitations
+
+<Warning>
+  **Current Implementation**: The workflow system provides core functionality
+  but lacks some advanced features like: - Visual workflow designer -
+  Conditional branching - Parallel execution coordination - Advanced scheduling
+  (cron expressions) - Workflow versioning
+</Warning>
+
+These features are planned for future releases and will build upon the current
+foundation.

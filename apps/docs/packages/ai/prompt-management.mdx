@@ -1,0 +1,838 @@
+---
+title: Prompt Management
+description:
+  Enterprise-grade prompt management with templates, intelligent caching,
+  versioning, composition, and optimization strategies for scalable AI
+  applications
+icon: file-text
+---
+
+# Prompt Management
+
+Build scalable AI applications with enterprise-grade prompt management featuring
+template systems, intelligent caching, version control, dynamic composition, and
+performance optimization strategies.
+
+## Overview
+
+The prompt management system provides comprehensive tools for creating,
+managing, and optimizing prompts at scale. It includes reusable templates,
+intelligent caching with LRU/LFU eviction, version control with migration
+support, dynamic composition, and automated optimization strategies.
+
+## Prompt Templates
+
+### Template Registry
+
+Create and manage reusable prompt templates:
+
+```typescript
+import {
+  PromptTemplateRegistry,
+  createPromptTemplate
+} from "@repo/ai/server/prompts";
+
+const registry = new PromptTemplateRegistry();
+
+// Register a basic template
+registry.register("product-analysis", {
+  template:
+    "Analyze the {{product}} focusing on {{aspects}}. Provide {{format}} output.",
+  variables: ["product", "aspects", "format"],
+  metadata: {
+    category: "analysis",
+    version: "1.0",
+    author: "AI Team",
+    description: "General product analysis template"
+  }
+});
+
+// Register an advanced template with validation
+registry.register("code-review", {
+  template: `
+Review the following {{language}} code for:
+{{#each criteria}}
+- {{this}}
+{{/each}}
+
+Code:
+\`\`\`{{language}}
+{{code}}
+\`\`\`
+
+Provide detailed feedback in {{output_format}} format.
+  `,
+  variables: ["language", "criteria", "code", "output_format"],
+  validation: {
+    language: (value) => ["javascript", "typescript", "python"].includes(value),
+    criteria: (value) => Array.isArray(value) && value.length > 0,
+    code: (value) => value.trim().length > 0
+  },
+  metadata: {
+    category: "code-review",
+    version: "2.1",
+    complexity: "advanced"
+  }
+});
+```
+
+### Template Usage
+
+Use templates with variable substitution:
+
+```typescript
+import { createPrompt } from "@repo/ai/server/prompts";
+
+// Basic template usage
+const analysisPrompt = createPrompt("product-analysis", {
+  product: "iPhone 15 Pro",
+  aspects: "performance, battery life, camera quality",
+  format: "structured JSON"
+});
+
+console.log(analysisPrompt.render());
+// Output: "Analyze the iPhone 15 Pro focusing on performance, battery life, camera quality. Provide structured JSON output."
+
+// Advanced template with complex data
+const reviewPrompt = createPrompt("code-review", {
+  language: "typescript",
+  criteria: ["type safety", "performance", "readability", "security"],
+  code: `
+    function processUser(user: any) {
+      return user.name.toUpperCase();
+    }
+  `,
+  output_format: "markdown"
+});
+
+const renderedPrompt = reviewPrompt.render();
+```
+
+### Common Templates
+
+Pre-built templates for frequent use cases:
+
+```typescript
+import { commonTemplates } from "@repo/ai/server/prompts";
+
+// Available common templates
+const availableTemplates = commonTemplates.list();
+console.log(availableTemplates);
+// ["analysis", "summarization", "code-generation", "translation", "extraction"]
+
+// Use common templates
+const summaryPrompt = commonTemplates.create("summarization", {
+  content: "Long article content...",
+  length: "3 paragraphs",
+  style: "executive summary"
+});
+
+const codePrompt = commonTemplates.create("code-generation", {
+  task: "Create a REST API endpoint",
+  language: "typescript",
+  framework: "express",
+  requirements: ["input validation", "error handling", "async/await"]
+});
+```
+
+## Prompt Caching
+
+### Intelligent Caching
+
+Reduce costs and improve performance with smart caching:
+
+```typescript
+import { PromptCache, withPromptCache } from "@repo/ai/server/prompts";
+
+const cache = new PromptCache({
+  maxSize: 1000,
+  ttl: 3600000, // 1 hour
+  evictionStrategy: "lru", // "lru", "lfu", "ttl"
+  persistToDisk: true,
+  diskCachePath: "/tmp/prompt-cache"
+});
+
+// Cache a prompt result
+const cacheKey = "analysis-iphone15pro-performance";
+const cachedResult = await cache.get(cacheKey);
+
+if (!cachedResult) {
+  const result = await generateText({
+    model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+    prompt: analysisPrompt.render()
+  });
+
+  await cache.set(cacheKey, result, {
+    metadata: {
+      model: "claude-3-5-sonnet-20241022",
+      tokens: result.usage.totalTokens,
+      cost: result.usage.totalTokens * 0.003
+    }
+  });
+
+  return result;
+}
+
+return cachedResult;
+```
+
+### Cache Patterns
+
+Advanced caching strategies:
+
+```typescript
+import { promptCachePatterns } from "@repo/ai/server/prompts";
+
+// Semantic similarity caching
+const semanticCache = promptCachePatterns.createSemanticCache({
+  similarity: 0.85,
+  embeddingModel: "text-embedding-3-small",
+  maxSize: 500
+});
+
+// User-specific caching
+const userCache = promptCachePatterns.createUserCache({
+  maxSizePerUser: 100,
+  globalMaxSize: 10000,
+  userTierLimits: {
+    free: 10,
+    pro: 100,
+    enterprise: 1000
+  }
+});
+
+// Time-based invalidation
+const timeBasedCache = promptCachePatterns.createTimeBasedCache({
+  shortTerm: { ttl: 300000, maxSize: 100 }, // 5 minutes
+  mediumTerm: { ttl: 3600000, maxSize: 500 }, // 1 hour
+  longTerm: { ttl: 86400000, maxSize: 1000 } // 24 hours
+});
+```
+
+### Cache Warmup
+
+Precompute frequently used prompts:
+
+```typescript
+const cache = new PromptCache({
+  warmupStrategies: [
+    {
+      name: "popular-templates",
+      schedule: "0 0 * * *", // Daily at midnight
+      execute: async () => {
+        const popularTemplates = await getPopularTemplates();
+
+        for (const template of popularTemplates) {
+          const commonVariations = await getCommonVariations(template.id);
+
+          for (const variation of commonVariations) {
+            const prompt = createPrompt(template.id, variation.variables);
+            const cacheKey = generateCacheKey(template.id, variation.variables);
+
+            // Pre-generate and cache
+            const result = await generateText({
+              model: getBestModelForTask("analysis"),
+              prompt: prompt.render()
+            });
+
+            await cache.set(cacheKey, result);
+          }
+        }
+      }
+    }
+  ]
+});
+```
+
+## Prompt Composition
+
+### Dynamic Composition
+
+Build complex prompts from reusable components:
+
+```typescript
+import { PromptComposer, prompt } from "@repo/ai/server/prompts";
+
+const composer = new PromptComposer();
+
+// Define reusable components
+composer.defineComponent(
+  "context",
+  (data) => `
+Context: ${data.context}
+Current Date: ${new Date().toISOString().split("T")[0]}
+User Role: ${data.userRole}
+`
+);
+
+composer.defineComponent(
+  "task",
+  (data) => `
+Task: ${data.task}
+Requirements:
+${data.requirements.map((req) => `- ${req}`).join("
+")}
+`
+);
+
+composer.defineComponent(
+  "output",
+  (data) => `
+Output Format: ${data.format}
+${data.examples ? `Examples:
+${data.examples}` : ""}
+`
+);
+
+// Compose a complex prompt
+const complexPrompt = composer.compose([
+  {
+    component: "context",
+    data: {
+      context: "Software development project",
+      userRole: "senior developer"
+    }
+  },
+  {
+    component: "task",
+    data: {
+      task: "Code review",
+      requirements: [
+        "Check type safety",
+        "Verify performance",
+        "Ensure security"
+      ]
+    }
+  },
+  {
+    component: "output",
+    data: {
+      format: "structured markdown",
+      examples: "## Issues Found
+### Critical
+- Issue description"
+    }
+  }
+]);
+```
+
+### Template Composition
+
+Combine multiple templates:
+
+```typescript
+import { templateComposition } from "@repo/ai/server/prompts";
+
+const composedTemplate = templateComposition.combine([
+  {
+    template: "system-context",
+    weight: 0.2,
+    data: { role: "expert analyst", domain: "technology" }
+  },
+  {
+    template: "analysis-task",
+    weight: 0.6,
+    data: { subject: "market trends", depth: "comprehensive" }
+  },
+  {
+    template: "output-format",
+    weight: 0.2,
+    data: { format: "executive summary", length: "2-3 pages" }
+  }
+]);
+
+// Advanced composition with conditional logic
+const conditionalPrompt = templateComposition.conditional({
+  if: ({ userTier }) => userTier === "enterprise",
+  then: "detailed-analysis-template",
+  else: "basic-analysis-template",
+  data: { userTier: getUserTier() }
+});
+```
+
+### Dynamic Prompt Generation
+
+Generate prompts based on context:
+
+```typescript
+import { DynamicPromptGenerator } from "@repo/ai/server/prompts";
+
+const generator = new DynamicPromptGenerator({
+  contextAware: true,
+  adaptToModel: true,
+  optimizeForTask: true
+});
+
+const dynamicPrompt = await generator.generate({
+  task: "data-analysis",
+  context: {
+    dataType: "financial",
+    timeframe: "quarterly",
+    stakeholders: ["executives", "analysts"]
+  },
+  model: "claude-4-opus-20250514",
+  constraints: {
+    maxTokens: 4000,
+    focusAreas: ["trends", "risks", "opportunities"]
+  }
+});
+```
+
+## Version Control
+
+### Prompt Versioning
+
+Track and manage prompt evolution:
+
+```typescript
+import { PromptVersionManager } from "@repo/ai/server/prompts";
+
+const versionManager = new PromptVersionManager({
+  storage: "database", // "database", "file", "memory"
+  autoBackup: true,
+  migrationSupport: true
+});
+
+// Create a new version
+await versionManager.createVersion("product-analysis", {
+  version: "2.0",
+  template: "Enhanced analysis of {{product}} with focus on {{aspects}}...",
+  changes: [
+    "Added market comparison section",
+    "Improved output structure",
+    "Added confidence scoring"
+  ],
+  migration: {
+    from: "1.0",
+    transform: (oldVariables) => ({
+      ...oldVariables,
+      includeComparison: true,
+      confidenceThreshold: 0.8
+    })
+  }
+});
+
+// Get version history
+const history = await versionManager.getHistory("product-analysis");
+console.log(
+  history.map((v) => ({
+    version: v.version,
+    date: v.createdAt,
+    changes: v.changes
+  }))
+);
+
+// Use specific version
+const v1Prompt = await versionManager.getVersion("product-analysis", "1.0");
+const latestPrompt = await versionManager.getLatest("product-analysis");
+```
+
+### Migration Support
+
+Handle breaking changes gracefully:
+
+```typescript
+import { versioningPatterns } from "@repo/ai/server/prompts";
+
+// Automatic migration
+const migrationResult = await versioningPatterns.migratePrompt({
+  promptId: "code-review",
+  fromVersion: "1.5",
+  toVersion: "2.0",
+  data: {
+    language: "javascript",
+    file: "app.js",
+    checkTypes: true
+  }
+});
+
+// Batch migration
+await versioningPatterns.batchMigrate(
+  [
+    { promptId: "analysis", fromVersion: "1.0", toVersion: "2.0" },
+    { promptId: "summary", fromVersion: "1.2", toVersion: "1.3" }
+  ],
+  {
+    dryRun: false,
+    backupBeforeMigration: true,
+    rollbackOnError: true
+  }
+);
+
+// Version compatibility check
+const compatibility = await versioningPatterns.checkCompatibility(
+  "analysis",
+  "2.0",
+  {
+    currentVariables: ["product", "aspects"],
+    targetVariables: ["product", "aspects", "context", "depth"]
+  }
+);
+```
+
+## Prompt Optimization
+
+### Automatic Optimization
+
+Improve prompt performance automatically:
+
+```typescript
+import {
+  PromptOptimizer,
+  optimizationStrategies
+} from "@repo/ai/server/prompts";
+
+const optimizer = new PromptOptimizer({
+  strategies: [
+    "tokenReduction",
+    "clarityImprovement",
+    "contextOptimization",
+    "outputStructuring"
+  ],
+  targetModel: "claude-3-5-sonnet-20241022",
+  maxIterations: 5
+});
+
+const originalPrompt = `
+Please analyze the product data I'm giving you and tell me what you think about it.
+Look at all the different aspects and give me a good analysis that covers everything important.
+Make sure to be thorough and detailed in your response.
+`;
+
+const optimized = await optimizer.optimize(originalPrompt, {
+  context: {
+    task: "product-analysis",
+    expectedOutputLength: "medium",
+    domain: "technology"
+  },
+  metrics: {
+    targetTokens: 150,
+    clarityScore: 0.8,
+    specificityScore: 0.9
+  }
+});
+
+console.log("Original tokens:", originalPrompt.split(" ").length);
+console.log("Optimized tokens:", optimized.prompt.split(" ").length);
+console.log("Improvement score:", optimized.improvementScore);
+```
+
+### Performance Analytics
+
+Track prompt performance:
+
+```typescript
+const analytics = await optimizer.analyze("product-analysis", {
+  timeframe: "30d",
+  metrics: [
+    "averageTokens",
+    "responseQuality",
+    "costEfficiency",
+    "userSatisfaction"
+  ]
+});
+
+console.log("Performance Report:", {
+  averageTokens: analytics.averageTokens,
+  costPerRequest: analytics.costPerRequest,
+  qualityScore: analytics.qualityScore,
+  recommendations: analytics.recommendations
+});
+
+// A/B test prompts
+const abTest = await optimizer.runABTest({
+  promptA: "original-version",
+  promptB: "optimized-version",
+  sampleSize: 100,
+  metrics: ["response-quality", "user-satisfaction", "token-efficiency"]
+});
+```
+
+### Optimization Strategies
+
+Built-in optimization techniques:
+
+```typescript
+const strategies = optimizationStrategies;
+
+// Token reduction
+const tokenOptimized = await strategies.tokenReduction(prompt, {
+  targetReduction: 0.3, // 30% reduction
+  preserveClarity: true
+});
+
+// Clarity improvement
+const clarityOptimized = await strategies.clarityImprovement(prompt, {
+  removeAmbiguity: true,
+  addExamples: true,
+  structureOutput: true
+});
+
+// Context optimization
+const contextOptimized = await strategies.contextOptimization(prompt, {
+  userRole: "data-analyst",
+  domain: "finance",
+  expertise: "expert"
+});
+
+// Custom optimization
+const customOptimized = await strategies.custom(prompt, {
+  rules: [
+    "Replace vague terms with specific instructions",
+    "Add output format specifications",
+    "Include success criteria"
+  ],
+  validation: (optimized) =>
+    optimized.includes("format:") && optimized.length < originalLength * 1.2
+});
+```
+
+## Advanced Features
+
+### Multi-Model Optimization
+
+Optimize prompts for different models:
+
+```typescript
+const multiModelOptimizer = new PromptOptimizer({
+  modelProfiles: {
+    "claude-3-5-sonnet-20241022": {
+      strengths: ["reasoning", "analysis", "structured-output"],
+      tokenLimit: 200000,
+      costPer1KTokens: 0.003
+    },
+    "gpt-4o": {
+      strengths: ["creativity", "code-generation", "multimodal"],
+      tokenLimit: 128000,
+      costPer1KTokens: 0.005
+    },
+    "claude-4-opus-20250514": {
+      strengths: ["complex-reasoning", "research", "accuracy"],
+      tokenLimit: 200000,
+      costPer1KTokens: 0.015
+    }
+  }
+});
+
+const optimizedForModels = await multiModelOptimizer.optimizeForModels(
+  originalPrompt,
+  ["claude-3-5-sonnet-20241022", "gpt-4o", "claude-4-opus-20250514"]
+);
+```
+
+### Prompt Chaining
+
+Link prompts for complex workflows:
+
+```typescript
+import { promptCompositionPatterns } from "@repo/ai/server/prompts";
+
+const chainedWorkflow = promptCompositionPatterns.createChain([
+  {
+    id: "research",
+    template: "research-template",
+    data: { topic: "{{topic}}", depth: "comprehensive" },
+    outputKey: "researchData"
+  },
+  {
+    id: "analysis",
+    template: "analysis-template",
+    data: {
+      data: "{{researchData}}",
+      focus: "{{analysisType}}"
+    },
+    outputKey: "analysisResult"
+  },
+  {
+    id: "summary",
+    template: "summary-template",
+    data: {
+      content: "{{analysisResult}}",
+      audience: "{{targetAudience}}"
+    },
+    outputKey: "finalSummary"
+  }
+]);
+
+const result = await chainedWorkflow.execute({
+  topic: "renewable energy trends",
+  analysisType: "market-opportunity",
+  targetAudience: "investors"
+});
+```
+
+### Context-Aware Templates
+
+Templates that adapt to context:
+
+```typescript
+const contextAwareTemplate = templateComposition.contextAware({
+  template: "analysis-template",
+  contextRules: [
+    {
+      condition: ({ userTier }) => userTier === "free",
+      modifications: {
+        removeSection: ["detailed-metrics", "competitive-analysis"],
+        addDisclaimer: "Upgrade for detailed analysis"
+      }
+    },
+    {
+      condition: ({ dataSize }) => dataSize > 10000,
+      modifications: {
+        addSection: "data-sampling-methodology",
+        setParameter: { sampleSize: 1000 }
+      }
+    }
+  ]
+});
+```
+
+## Integration Patterns
+
+### With Multi-Step Agents
+
+Use prompt management in agent workflows:
+
+```typescript
+import { executeMultiStepAgent } from "@repo/ai/server/agents";
+
+const agentWithPrompts = await executeMultiStepAgent({
+  model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+  messages: [{ role: "user", content: "Analyze market data" }],
+  maxSteps: 5,
+  promptManager: {
+    templates: registry,
+    cache: cache,
+    optimization: true
+  },
+  onStepStart: ({ stepNumber, context }) => {
+    // Use different templates per step
+    const templateId =
+      stepNumber === 1 ? "initial-analysis" : "follow-up-analysis";
+    const prompt = createPrompt(templateId, context);
+    return { prompt: prompt.render() };
+  }
+});
+```
+
+### With Streaming
+
+Optimize prompts for streaming:
+
+```typescript
+import { streamText } from "ai";
+
+const streamingPrompt = await optimizer.optimizeForStreaming(basePrompt, {
+  chunkSize: "medium",
+  progressIndicators: true,
+  partialResults: true
+});
+
+const stream = await streamText({
+  model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+  prompt: streamingPrompt,
+  onChunk: ({ chunk, metadata }) => {
+    // Track streaming performance
+    promptAnalytics.recordChunk(chunk, metadata);
+  }
+});
+```
+
+## Best Practices
+
+### 1. Template Design
+
+- Use clear, descriptive variable names
+- Include validation for critical variables
+- Add comprehensive metadata
+- Version templates semantically
+- Test with edge cases
+
+### 2. Caching Strategy
+
+- Set appropriate TTL based on data freshness
+- Use semantic similarity for related prompts
+- Implement cache warming for popular prompts
+- Monitor cache hit rates and adjust strategies
+- Consider user-specific cache limits
+
+### 3. Version Management
+
+- Use semantic versioning (major.minor.patch)
+- Document all changes in version metadata
+- Provide migration paths for breaking changes
+- Test migrations before deployment
+- Keep rollback capabilities
+
+### 4. Performance Optimization
+
+- Regularly analyze prompt performance
+- A/B test optimization strategies
+- Monitor token usage and costs
+- Optimize for specific models
+- Balance clarity with conciseness
+
+### 5. Security
+
+- Validate all template variables
+- Sanitize user inputs
+- Implement access controls for sensitive templates
+- Audit template usage and modifications
+- Encrypt cached sensitive data
+
+## Monitoring and Analytics
+
+### Performance Tracking
+
+```typescript
+import { PromptAnalytics } from "@repo/ai/server/prompts";
+
+const analytics = new PromptAnalytics({
+  trackUsage: true,
+  trackPerformance: true,
+  trackCosts: true
+});
+
+// Track prompt usage
+analytics.recordUsage({
+  templateId: "product-analysis",
+  version: "2.0",
+  userId: "user123",
+  model: "claude-3-5-sonnet-20241022",
+  tokens: 1500,
+  cost: 0.045,
+  responseTime: 2300,
+  quality: 0.92
+});
+
+// Get analytics report
+const report = await analytics.generateReport({
+  timeframe: "7d",
+  groupBy: ["template", "version"],
+  metrics: ["usage", "cost", "performance", "quality"]
+});
+```
+
+### Dashboard Integration
+
+```typescript
+const dashboardData = await analytics.getDashboardData({
+  widgets: [
+    "most-used-templates",
+    "cost-breakdown",
+    "performance-trends",
+    "cache-efficiency",
+    "optimization-opportunities"
+  ]
+});
+
+// Export for external monitoring
+await analytics.exportMetrics({
+  format: "prometheus",
+  endpoint: "http://monitoring.company.com/metrics"
+});
+```
+
+The prompt management system provides enterprise-grade capabilities for scaling
+AI applications with efficient, optimized, and maintainable prompts. Regular
+monitoring and optimization ensure continued performance and cost effectiveness.

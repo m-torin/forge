@@ -1,0 +1,26 @@
+{
+  "name": "nextjs-image-optimizer",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker for Next.js image optimization",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "dev": "node ./miniflare.dev.js",
+    "dev:vite": "vite dev",
+    "preview": "vite preview",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "itty-router": "^5.0.18"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "catalog:",
+    "@cloudflare/workers-types": "catalog:",
+    "@repo/config": "workspace:*",
+    "miniflare": "^4.20250428.1",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "wrangler": "^4.14.2"
+  }
+}

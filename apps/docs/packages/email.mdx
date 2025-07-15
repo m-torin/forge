@@ -1,0 +1,474 @@
+---
+title: "Email Package"
+description:
+  "Enterprise email system with React Email templates and Resend delivery"
+icon: "envelope"
+---
+
+# Email Package
+
+Enterprise email system with **React Email** templates, **Resend** delivery
+service, and comprehensive transactional email workflows.
+
+## Overview
+
+The email package provides a complete, production-ready email solution for
+authentication, organization management, and user communication:
+
+- **8 Professional Templates**: Complete authentication and organization
+  workflow coverage
+- **React Email Framework**: Modern, responsive templates built with React
+  components
+- **Resend Integration**: Enterprise email delivery with high deliverability
+  rates
+- **Security-First Design**: Built-in security warnings, expiration notices, and
+  best practices
+- **Graceful Degradation**: Mock email service for development environments
+- **Type-Safe Implementation**: Full TypeScript support with comprehensive
+  interfaces
+- **Accessibility Focused**: Preview text, fallback links, and proper content
+  hierarchy
+
+## Installation
+
+```bash
+pnpm add @repo/email
+```
+
+## Configuration
+
+### Environment Variables
+
+```bash
+# Production (required)
+RESEND_FROM=noreply@yourdomain.com
+RESEND_TOKEN=re_your_resend_api_token
+
+# Development (optional - uses mock service if missing)
+RESEND_FROM=noreply@yourdomain.com
+RESEND_TOKEN=re_your_resend_api_token
+```
+
+### T3 Env Validation
+
+The package uses T3 Env with dynamic validation and helper functions:
+
+```typescript
+import {
+  safeEnv,
+  hasEmailConfig,
+  isDevelopment,
+  isProduction
+} from "@repo/email/env";
+
+// Safe environment access with fallbacks
+const { RESEND_FROM, RESEND_TOKEN } = safeEnv();
+
+// Helper functions for environment detection
+if (isProduction()) {
+  // Production: Required and validated
+  if (!hasEmailConfig()) {
+    throw new Error("Email configuration required in production");
+  }
+} else if (isDevelopment()) {
+  // Development: Optional with graceful degradation
+  if (!hasEmailConfig()) {
+    console.log("Using mock email service - no RESEND_TOKEN found");
+  }
+}
+```
+
+## Email Templates
+
+### Authentication Templates
+
+<AccordionGroup>
+  <Accordion title="Magic Link Email" icon="link">
+    ```typescript
+    import { sendMagicLinkEmail } from '@repo/email';
+
+    await sendMagicLinkEmail({
+      email: 'user@example.com',
+      magicLink: 'https://app.com/auth/verify?token=xyz',
+      name: 'John Doe',
+      expiresIn: '20 minutes',
+    });
+    ```
+
+    **Features:**
+    - 20-minute expiration notice
+    - Security warnings about not sharing
+    - Fallback manual verification option
+    - Mobile-responsive design
+
+  </Accordion>
+
+  <Accordion title="Email Verification" icon="check">
+    ```typescript
+    import { sendVerificationEmail } from '@repo/email';
+
+    await sendVerificationEmail({
+      email: 'user@example.com',
+      verificationLink: 'https://app.com/verify?token=abc',
+      name: 'John Doe',
+    });
+    ```
+
+    **Features:**
+    - Clear call-to-action button
+    - Account activation instructions
+    - Support contact information
+    - Professional branding
+
+  </Accordion>
+
+  <Accordion title="Password Reset" icon="key">
+    ```typescript
+    import { sendPasswordResetEmail } from '@repo/email';
+
+    await sendPasswordResetEmail({
+      email: 'user@example.com',
+      resetLink: 'https://app.com/reset?token=def',
+      name: 'John Doe',
+    });
+    ```
+
+    **Features:**
+    - 1-hour expiration timer
+    - Security best practices
+    - Alternative recovery options
+    - Clear instructions
+
+  </Accordion>
+</AccordionGroup>
+
+### Organization Templates
+
+<AccordionGroup>
+  <Accordion title="Organization Invitation" icon="users">
+    ```typescript
+    import { sendOrganizationInvitationEmail } from '@repo/email';
+
+    await sendOrganizationInvitationEmail({
+      email: 'member@example.com',
+      organizationName: 'Acme Corp',
+      inviterName: 'John Doe',
+      inviterEmail: 'john@example.com',
+      inviteLink: 'https://app.com/invite?token=ghi',
+      expiresIn: '48 hours',
+    });
+    ```
+
+    **Features:**
+    - Organization branding
+    - Role information
+    - 7-day expiration
+    - Accept/decline options
+
+  </Accordion>
+
+  <Accordion title="Welcome Email" icon="hand-wave">
+    ```typescript
+    import { sendWelcomeEmail } from '@repo/email';
+
+    await sendWelcomeEmail({
+      email: 'user@example.com',
+      name: 'John Doe',
+      organizationName: 'Acme Corp',
+      dashboardUrl: 'https://app.com/dashboard',
+    });
+    ```
+
+    **Features:**
+    - Onboarding guidance
+    - Quick start resources
+    - Support information
+    - Next steps
+
+  </Accordion>
+</AccordionGroup>
+
+### Utility Templates
+
+<AccordionGroup>
+  <Accordion title="API Key Created" icon="key">
+    ```typescript
+    import { sendApiKeyCreatedEmail } from '@repo/email';
+
+    await sendApiKeyCreatedEmail({
+      email: 'developer@example.com',
+      name: 'John Doe',
+      apiKeyName: 'Production API',
+      apiKeyId: 'ak_123456789',
+      dashboardUrl: 'https://app.com/dashboard/api-keys',
+    });
+    ```
+
+    **Security features:**
+    - Key creation notification
+    - Permission summary
+    - Security reminders
+    - Management links
+
+  </Accordion>
+
+  <Accordion title="Contact Form" icon="message">
+    ```typescript
+    import { sendContactEmail } from '@repo/email';
+
+    await sendContactEmail({
+      email: 'john@example.com',
+      name: 'John Doe',
+      message: 'I have a question about my subscription...',
+      to: 'support@yourcompany.com',
+    });
+    ```
+
+    **Support features:**
+    - Formatted message content
+    - User context information
+    - Auto-reply capability
+    - Ticket tracking ready
+
+  </Accordion>
+
+  <Accordion title="OTP/Verification Code" icon="key">
+    ```typescript
+    import { sendOTPEmail } from '@repo/email';
+
+    await sendOTPEmail({
+      email: 'user@example.com',
+      name: 'John Doe',
+      otp: '123456',
+      purpose: 'two-factor authentication',
+    });
+    ```
+
+    **Security features:**
+    - 5-minute expiration notice
+    - Clear code display with monospace font
+    - Security warnings about not sharing
+    - Purpose-specific messaging
+    - Inline HTML template for reliability
+
+  </Accordion>
+</AccordionGroup>
+
+## Email Service
+
+### Production Service (Resend)
+
+```typescript
+import { resend } from "@repo/email";
+import { logInfo, logError } from "@repo/observability/server/next";
+
+// Automatically configured based on environment
+const result = await resend.emails.send({
+  to: "user@example.com",
+  from: "noreply@example.com",
+  subject: "Welcome to our platform",
+  html: "<h1>Welcome!</h1>",
+  text: "Welcome!"
+});
+
+if (result.data) {
+  logInfo("Email sent:", {
+    id: result.data.id,
+    to: "user@example.com",
+    subject: "Welcome to our platform"
+  });
+} else {
+  logError("Email failed:", {
+    error: result.error,
+    to: "user@example.com",
+    subject: "Welcome to our platform"
+  });
+}
+```
+
+### Development Mock Service
+
+```typescript
+// In development without RESEND_TOKEN
+// Emails are logged to console instead of sent
+
+await sendMagicLinkEmail({
+  email: "user@example.com",
+  magicLink: "https://localhost:3000/auth/verify?token=xyz",
+  name: "John Doe",
+  expiresIn: "20 minutes"
+});
+
+// Console output:
+// 📧 [MOCK EMAIL] Magic Link to user@example.com
+// Subject: Your magic link for [App Name]
+// Preview: Click the link below to sign in (expires in 20 minutes)
+```
+
+## Advanced Features
+
+### Template Customization
+
+```typescript
+import { MagicLinkTemplate } from "@repo/email";
+import { render } from "@react-email/render";
+
+// Manual template rendering for custom workflows
+const html = render(
+  MagicLinkTemplate({
+    name: "John Doe",
+    email: "user@example.com",
+    magicLink: "https://app.com/verify?token=xyz",
+    expiresIn: "20 minutes"
+  })
+);
+
+// Use the rendered HTML with custom email service or processing
+console.log("Template rendered successfully");
+```
+
+### Batch Email Operations
+
+```typescript
+import { sendWelcomeEmail } from "@repo/email";
+import { logInfo, logError } from "@repo/observability/server/next";
+
+// Send multiple emails efficiently
+const results = await Promise.allSettled([
+  sendWelcomeEmail({
+    email: "user1@example.com",
+    name: "User 1",
+    organizationName: "Acme Corp"
+  }),
+  sendWelcomeEmail({
+    email: "user2@example.com",
+    name: "User 2",
+    organizationName: "Acme Corp"
+  }),
+  sendWelcomeEmail({
+    email: "user3@example.com",
+    name: "User 3",
+    organizationName: "Acme Corp"
+  })
+]);
+
+// Handle results
+results.forEach((result, index) => {
+  if (result.status === "fulfilled" && result.value.data) {
+    logInfo(`Email ${index + 1} sent successfully`, {
+      index: index + 1,
+      total: results.length,
+      id: result.value.data.id
+    });
+  } else {
+    logError(`Email ${index + 1} failed`, {
+      index: index + 1,
+      total: results.length,
+      error: result.reason
+    });
+  }
+});
+```
+
+### Email Logging
+
+```typescript
+import { sendMagicLinkEmail } from "@repo/email";
+
+// Built-in logging for email operations
+const result = await sendMagicLinkEmail({
+  email: "user@example.com",
+  name: "John Doe",
+  magicLink: "https://app.com/verify?token=xyz",
+  expiresIn: "20 minutes"
+});
+
+// Email package includes automatic logging:
+// - WARN: When RESEND_TOKEN is missing (development mode)
+// - ERROR: When email sending fails
+// - Structured logging to stderr for observability
+
+if (result.data) {
+  // Email sent successfully, logged automatically
+  console.log("Email sent with ID:", result.data.id);
+} else {
+  // Error logged automatically by package
+  console.error("Email failed:", result.error);
+}
+```
+
+## Error Handling
+
+```typescript
+import { sendMagicLinkEmail } from "@repo/email";
+import { logInfo, logError } from "@repo/observability/server/next";
+
+try {
+  const result = await sendMagicLinkEmail({
+    email: "user@example.com",
+    magicLink: "https://app.com/verify?token=xyz",
+    name: "John Doe",
+    expiresIn: "20 minutes"
+  });
+
+  if (result.error) {
+    // Handle email service errors
+    logError("Email service error:", {
+      error: result.error,
+      template: "MagicLinkEmail"
+    });
+    // Fallback: Show user alternative verification method
+  }
+} catch (error) {
+  // Handle network or configuration errors
+  logError("Email system error:", { error: error.message });
+  // Fallback: Store email for retry or use alternative method
+}
+```
+
+## Testing
+
+### Development Preview
+
+```bash
+# Start email preview server (this is configured in apps/email)
+pnpm --filter email dev
+
+# Open preview at http://localhost:3500
+open http://localhost:3500
+```
+
+### Email Template Testing
+
+```typescript
+import { render } from "@react-email/render";
+import { MagicLinkTemplate } from "@repo/email";
+import { logInfo, logError } from "@repo/observability/server/next";
+
+// Test template rendering
+const html = render(
+  MagicLinkTemplate({
+    name: "John Doe",
+    email: "test@example.com",
+    magicLink: "https://example.com/verify",
+    expiresIn: "20 minutes"
+  })
+);
+
+logInfo("Email template rendered", {
+  template: "MagicLinkTemplate",
+  variables: Object.keys({
+    name: "John Doe",
+    email: "test@example.com",
+    magicLink: "https://example.com/verify",
+    expiresIn: "20 minutes"
+  })
+});
+
+expect(html).toContain("verify");
+expect(html).toContain("20 minutes");
+```
+
+The email package provides a complete, professional email solution with modern
+React templates, reliable delivery, and comprehensive developer tools for
+building transactional email workflows.

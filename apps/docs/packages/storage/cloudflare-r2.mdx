@@ -1,0 +1,569 @@
+---
+title: "Cloudflare R2 Storage"
+description:
+  "S3-compatible object storage with multipart uploads, streaming, and presigned
+  URLs"
+icon: "cloud"
+---
+
+# Cloudflare R2 Storage
+
+Cloudflare R2 provides S3-compatible object storage with advanced features for
+handling large files, streaming uploads, and secure client-side operations.
+
+## Features
+
+<CardGroup cols={2}>
+  <Card title="Multipart Uploads" icon="layer-group">
+    Upload files up to 5TB with automatic chunking and parallel uploads
+  </Card>
+  <Card title="Streaming Support" icon="stream">
+    Process large files without memory constraints using Node.js streams
+  </Card>
+  <Card title="Presigned URLs" icon="link">
+    Generate secure URLs for client-side uploads and downloads
+  </Card>
+  <Card title="Progress Tracking" icon="chart-line">
+    Real-time upload progress with callbacks for UI updates
+  </Card>
+</CardGroup>
+
+## Configuration
+
+### Single Bucket Setup
+
+```bash
+# Basic R2 configuration
+R2_ACCOUNT_ID=your-account-id
+R2_ACCESS_KEY_ID=your-access-key
+R2_SECRET_ACCESS_KEY=your-secret-key
+R2_BUCKET=your-bucket-name
+```
+
+### Multi-Bucket Setup
+
+```bash
+# Multiple R2 buckets as JSON array
+R2_CREDENTIALS='[
+  {
+    "name": "primary",
+    "bucket": "primary-bucket",
+    "accountId": "account-1",
+    "accessKeyId": "key-1",
+    "secretAccessKey": "secret-1"
+  },
+  {
+    "name": "backup",
+    "bucket": "backup-bucket",
+    "accountId": "account-2",
+    "accessKeyId": "key-2",
+    "secretAccessKey": "secret-2"
+  }
+]'
+```
+
+### Advanced Configuration
+
+```typescript
+import { CloudflareR2Provider } from "@repo/storage/server/next";
+import { logInfo, logError } from "@repo/observability/server/next";
+
+const provider = new CloudflareR2Provider({
+  bucket: "my-bucket",
+  accountId: "account-id",
+  accessKeyId: "access-key",
+  secretAccessKey: "secret-key",
+
+  // Optional advanced settings
+  customDomain: "cdn.example.com",
+  defaultPartSize: 10 * 1024 * 1024, // 10MB parts
+  defaultQueueSize: 6 // 6 concurrent uploads
+});
+```
+
+## Multipart Uploads
+
+### Automatic Multipart for Large Files
+
+Files over 100MB automatically use multipart upload:
+
+```typescript
+import { createReadStream } from "fs";
+import { logInfo, logError } from "@repo/observability/server/next";
+
+// Large file upload with progress
+const largeFile = createReadStream("large-video.mp4");
+
+await provider.upload("videos/large-video.mp4", largeFile, {
+  contentType: "video/mp4",
+  partSize: 50 * 1024 * 1024, // 50MB parts
+  queueSize: 4, // 4 concurrent parts
+  onProgress: (progress) => {
+    logInfo(
+      `Part ${progress.part}: ${progress.loaded}/${progress.total} bytes`
+    );
+    logInfo(
+      `Overall: ${((progress.loaded / progress.total) * 100).toFixed(2)}%`
+    );
+  }
+});
+```
+
+### Manual Multipart Control
+
+For fine-grained control over multipart uploads:
+
+```typescript
+// Create multipart upload
+const uploadId = await provider.createMultipartUpload("large-file.zip", {
+  contentType: "application/zip",
+  metadata: { source: "backup" }
+});
+
+// Upload parts
+const parts = [];
+for (let i = 0; i < chunks.length; i++) {
+  const result = await provider.uploadPart(
+    "large-file.zip",
+    uploadId,
+    i + 1, // Part numbers start at 1
+    chunks[i]
+  );
+  parts.push({ PartNumber: i + 1, ETag: result.ETag });
+}
+
+// Complete upload
+await provider.completeMultipartUpload("large-file.zip", uploadId, parts);
+```
+
+### Error Recovery
+
+```typescript
+import { logInfo, logError } from "@repo/observability/server/next";
+
+try {
+  await provider.upload("large-file.bin", data, {
+    partSize: 100 * 1024 * 1024,
+    leavePartsOnError: true // Keep parts for manual recovery
+  });
+} catch (error) {
+  // Parts are retained on R2 for manual recovery
+  // You can resume or abort the upload
+  await provider.abortMultipartUpload("large-file.bin", uploadId);
+  logError("Upload failed with error", {
+    key: "large-file.bin",
+    error: error.message,
+    code: error.code,
+    retryable: error.retryable
+  });
+}
+```
+
+## Streaming Uploads
+
+### Stream Large Files
+
+Upload files without loading them into memory:
+
+```typescript
+import { createReadStream } from "fs";
+import { logInfo, logError } from "@repo/observability/server/next";
+
+// Stream from file system
+const fileStream = createReadStream("large-dataset.csv");
+await provider.upload("data/dataset.csv", fileStream, {
+  contentType: "text/csv"
+});
+
+// Stream from HTTP response
+const response = await fetch("https://example.com/large-file.zip");
+if (response.body) {
+  await provider.upload("downloads/file.zip", response.body, {
+    contentType: "application/zip"
+  });
+}
+```
+
+### Transform Streams
+
+Process data while uploading:
+
+```typescript
+import { Transform } from "stream";
+import { createGzip } from "zlib";
+import { logInfo, logError } from "@repo/observability/server/next";
+
+// Compress while uploading
+const fileStream = createReadStream("large-log.txt");
+const gzipStream = createGzip();
+
+fileStream.pipe(gzipStream);
+
+await provider.upload("logs/compressed.log.gz", gzipStream, {
+  contentType: "application/gzip"
+});
+```
+
+## Presigned URLs
+
+### Upload URLs
+
+Generate secure URLs for client-side uploads:
+
+```typescript
+// Simple presigned PUT URL
+const { url, headers } = await provider.getPresignedUploadUrl("document.pdf", {
+  expiresIn: 3600, // 1 hour
+  contentType: "application/pdf",
+  contentLength: 1024000 // Expected file size
+});
+
+// Client-side upload
+const response = await fetch(url, {
+  method: "PUT",
+  headers,
+  body: file
+});
+```
+
+### Download URLs
+
+Generate URLs for secure downloads:
+
+```typescript
+// Presigned download URL with custom headers
+const downloadUrl = await provider.getPresignedDownloadUrl("report.pdf", {
+  expiresIn: 7200, // 2 hours
+  responseContentDisposition: 'attachment; filename="monthly-report.pdf"',
+  responseContentType: "application/pdf"
+});
+
+// Force download with custom filename
+window.open(downloadUrl, "_blank");
+```
+
+### POST Policy URLs
+
+For form-based uploads with conditions:
+
+```typescript
+// Generate POST policy
+const policy = await provider.getPresignedPostPolicy('uploads/profile.jpg', {
+  expiresIn: 3600,
+  contentType: 'image/jpeg',
+  contentLengthRange: {
+    min: 1024, // 1KB minimum
+    max: 5 * 1024 * 1024, // 5MB maximum
+  },
+});
+
+// Use in HTML form
+<form action={policy.url} method="POST" encType="multipart/form-data">
+  {Object.entries(policy.fields).map(([key, value]) => (
+    <input key={key} type="hidden" name={key} value={value} />
+  ))}
+  <input type="file" name="file" accept="image/jpeg" />
+  <button type="submit">Upload</button>
+</form>
+```
+
+### Multipart Part URLs
+
+For client-coordinated multipart uploads:
+
+```typescript
+// Get presigned URL for specific part
+const partUrl = await provider.getPresignedPartUploadUrl(
+  "large-file.bin",
+  uploadId,
+  partNumber,
+  {
+    expiresIn: 3600
+  }
+);
+
+// Client uploads part directly
+await fetch(partUrl, {
+  method: "PUT",
+  body: partData
+});
+```
+
+## Public URLs
+
+For buckets with public access:
+
+```typescript
+// Get public URL (no signature required)
+const publicUrl = provider.getPublicUrl("public-assets/logo.png");
+// Returns: https://pub-bucket-name.r2.dev/public-assets/logo.png
+
+// With custom domain
+const customProvider = new CloudflareR2Provider({
+  ...config,
+  customDomain: "cdn.example.com"
+});
+
+const cdnUrl = customProvider.getPublicUrl("assets/style.css");
+// Returns: https://cdn.example.com/assets/style.css
+```
+
+## Advanced Features
+
+### Upload from URL
+
+Download and upload in one operation:
+
+```typescript
+// Upload from external URL
+await provider.uploadFromUrl(
+  "backup/external-file.zip",
+  "https://example.com/large-file.zip",
+  {
+    metadata: { source: "external-backup" }
+  }
+);
+```
+
+### Bucket Operations
+
+```typescript
+// List objects with pagination
+const objects = await provider.list({
+  prefix: "documents/",
+  limit: 100,
+  cursor: nextToken
+});
+
+// Check if object exists
+const exists = await provider.exists("document.pdf");
+
+// Get object metadata without downloading
+const metadata = await provider.getMetadata("document.pdf");
+logInfo("File metadata retrieved", {
+  key: "document.pdf",
+  size: metadata.size,
+  lastModified: metadata.lastModified,
+  contentType: metadata.contentType,
+  etag: metadata.etag
+});
+
+// Delete object
+await provider.delete("old-file.txt");
+
+// Download as blob
+const blob = await provider.download("image.jpg");
+
+// Download as stream
+const stream = await provider.downloadStream("large-file.zip");
+```
+
+## Client-Side Integration
+
+### React Upload Component
+
+```typescript
+'use client';
+
+import { useState } from 'react';
+import { uploadDirectToUrl } from '@repo/storage/client/next';
+import { logInfo, logError } from '@repo/observability/server/next';
+
+export function R2Uploader() {
+  const [progress, setProgress] = useState(0);
+  const [uploading, setUploading] = useState(false);
+
+  const handleUpload = async (file: File) => {
+    setUploading(true);
+
+    // Get presigned URL from your API
+    const response = await fetch('/api/r2/upload-url', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        filename: file.name,
+        contentType: file.type,
+        size: file.size,
+      }),
+    });
+
+    const { url, headers } = await response.json();
+
+    // Upload directly to R2
+    await uploadDirectToUrl(url, file, {
+      headers,
+      onProgress: (p) => setProgress(p.percent),
+    });
+
+    setUploading(false);
+    setProgress(0);
+  };
+
+  return (
+    <div>
+      <input
+        type="file"
+        onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])}
+        disabled={uploading}
+      />
+      {uploading && (
+        <div>
+          <progress value={progress} max={100} />
+          <span>{progress.toFixed(0)}%</span>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+### Client Multipart Upload
+
+```typescript
+import {
+  ClientMultipartUpload,
+  splitFileIntoChunks
+} from "@repo/storage/client/next";
+import { logInfo, logError } from "@repo/observability/server/next";
+
+export async function uploadLargeFile(file: File) {
+  // Initialize multipart upload via API
+  const { uploadId, key } = await initializeMultipartUpload(file);
+
+  const upload = new ClientMultipartUpload(uploadId, key);
+  const chunkSize = 10 * 1024 * 1024; // 10MB chunks
+
+  // Upload each chunk
+  for await (const { chunk, partNumber } of splitFileIntoChunks(
+    file,
+    chunkSize
+  )) {
+    // Get presigned URL for this part
+    const { url } = await getPartUploadUrl(uploadId, partNumber);
+
+    // Upload part
+    await upload.uploadPart(partNumber, url, chunk);
+  }
+
+  // Complete upload via API
+  await completeMultipartUpload(uploadId, upload.getParts());
+}
+```
+
+## Performance Optimization
+
+### Concurrent Uploads
+
+```typescript
+// Optimize for high throughput
+const provider = new CloudflareR2Provider({
+  ...config,
+  defaultPartSize: 50 * 1024 * 1024, // 50MB parts
+  defaultQueueSize: 10 // 10 concurrent parts
+});
+
+// Upload multiple files concurrently
+const uploads = files.map((file) =>
+  provider.upload(file.name, file.data, {
+    partSize: 25 * 1024 * 1024, // Smaller parts for better concurrency
+    queueSize: 5
+  })
+);
+
+await Promise.all(uploads);
+```
+
+### Network Optimization
+
+```typescript
+// Adjust for slow networks
+await provider.upload("large-file.bin", data, {
+  partSize: 5 * 1024 * 1024, // Smaller 5MB parts
+  queueSize: 2, // Reduce concurrent uploads
+  onProgress: (progress) => {
+    // Implement retry logic based on progress
+    if (progress.loaded === lastLoaded) {
+      // No progress, might be stalled
+    }
+  }
+});
+```
+
+## Error Handling
+
+### Retry Logic
+
+```typescript
+import { logInfo, logError } from "@repo/observability/server/next";
+
+async function uploadWithRetry(
+  provider: CloudflareR2Provider,
+  key: string,
+  data: any,
+  maxRetries = 3
+) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await provider.upload(key, data, {
+        partSize: attempt === 1 ? 50_000_000 : 25_000_000, // Reduce part size on retry
+        queueSize: attempt === 1 ? 4 : 2 // Reduce concurrency on retry
+      });
+    } catch (error) {
+      if (attempt === maxRetries) throw error;
+
+      logError("Upload failed, retry", {
+        key,
+        attempt,
+        maxRetries,
+        error: error.message,
+        code: error.code,
+        retryable: error.retryable
+      });
+      await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
+    }
+  }
+}
+```
+
+### CORS Configuration
+
+For client-side uploads, configure CORS on your R2 bucket:
+
+```json
+{
+  "CORSRules": [
+    {
+      "AllowedOrigins": ["https://your-domain.com"],
+      "AllowedMethods": ["GET", "PUT", "POST", "DELETE"],
+      "AllowedHeaders": ["*"],
+      "ExposeHeaders": ["ETag"],
+      "MaxAgeSeconds": 3600
+    }
+  ]
+}
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="File Organization" icon="folder">
+    - Use consistent key prefixes for organization - Include timestamps in keys for versioning - Use
+    meaningful directory structures - Implement key naming conventions
+  </Accordion>
+
+<Accordion title="Performance" icon="gauge">
+  - Use multipart for files > 100MB - Adjust part size based on network
+  conditions - Implement progress tracking for user feedback - Use streaming for
+  large files
+</Accordion>
+
+<Accordion title="Security" icon="shield">
+  - Always use presigned URLs for client uploads - Set appropriate expiration
+  times - Validate file types and sizes - Implement access controls on buckets
+</Accordion>
+
+  <Accordion title="Cost Optimization" icon="dollar-sign">
+    - Use lifecycle rules for old objects - Compress files before uploading - Delete temporary files
+    promptly - Monitor storage usage regularly
+  </Accordion>
+</AccordionGroup>

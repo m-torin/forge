@@ -1,4 +1,12 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "ignoreCommand": "node scripts/skip-ci.js"
+  "buildCommand": "turbo build",
+  "outputDirectory": "storybook-static",
+  "installCommand": "pnpm install",
+  "framework": null,
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
 }

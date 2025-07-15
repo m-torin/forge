@@ -1,0 +1,723 @@
+---
+title: "Development Overview"
+description:
+  "Development workflow, tools, and best practices for the Forge platform"
+icon: "hammer"
+---
+
+# Development Guide
+
+Comprehensive development guide for building, testing, and maintaining
+applications and packages in the Forge monorepo.
+
+## Overview
+
+The Forge platform uses modern development tools and practices to ensure high
+code quality, developer productivity, and maintainable architecture across all
+applications and packages.
+
+<CardGroup cols={2}>
+  <Card title="Monorepo Architecture" icon="cubes">
+    Turborepo with pnpm workspaces for efficient multi-package development
+  </Card>
+  <Card title="Testing Framework" icon="flask">
+    Vitest with React Testing Library for comprehensive test coverage
+  </Card>
+  <Card title="Type Safety" icon="shield-check">
+    TypeScript strict mode with comprehensive type checking
+  </Card>
+  <Card title="Code Quality" icon="sparkles">
+    ESLint, Prettier, and automated quality checks
+  </Card>
+</CardGroup>
+
+## Quick Start
+
+<Steps>
+  <Step title="Clone and Setup">
+    ```bash
+    git clone <repository-url>
+    cd forge
+    pnpm install
+    ```
+  </Step>
+
+  <Step title="Environment Configuration">
+    ```bash
+    # Download secrets for local development
+    pnpm doppler:pull:all
+
+    # Or use local environment files
+    cp .env.example .env.local
+    ```
+
+  </Step>
+
+  <Step title="Database Setup">
+    ```bash
+    # Run database migrations
+    pnpm migrate
+
+    # Generate Prisma client
+    pnpm --filter @repo/database generate
+    ```
+
+  </Step>
+
+  <Step title="Start Development">
+    ```bash
+    # Start all applications
+    pnpm dev
+
+    # Or start specific application
+    pnpm dev --filter=docs
+    ```
+
+  </Step>
+</Steps>
+
+## Development Workflow
+
+### Daily Development Commands
+
+<Tabs>
+  <Tab title="Development">
+    ```bash
+    # Start development servers
+    pnpm dev                           # All apps
+    pnpm dev --filter=docs             # Specific app
+
+    # Build applications
+    pnpm build                         # Local build with .env.local
+    pnpm build:doppler                 # Production build with Doppler
+    pnpm build --filter=docs           # Specific app
+    ```
+
+  </Tab>
+
+<Tab title="Testing">
+  ```bash # Run tests pnpm test # All tests pnpm test --filter=app # Specific
+  app tests pnpm test -- --watch # Watch mode pnpm test -- --coverage # With
+  coverage # Type checking pnpm typecheck # All packages pnpm typecheck
+  --filter=app # Specific app ```
+</Tab>
+
+  <Tab title="Code Quality">
+    ```bash
+    # Linting and formatting
+    pnpm lint                          # ESLint + Prettier
+    pnpm lint --filter=app             # Specific app
+
+    # Dependency analysis
+    pnpm madge --circular              # Check circular dependencies
+
+    # Package management
+    pnpm bump-deps                     # Update dependencies
+    pnpm clean                         # Clean build artifacts
+    ```
+
+  </Tab>
+</Tabs>
+
+### Project Structure
+
+```
+forge/
+├── apps/                    # User-facing applications
+│   ├── docs/               # Documentation (port 3800)
+│   ├── email/              # Email preview (port 3500)
+│   ├── storybook/          # Component docs (port 3700)
+│   └── studio/             # Prisma Studio (port 3600)
+├── packages/               # Shared packages (7 layers)
+│   ├── typescript-config/  # Layer 1: Foundation
+│   ├── database/           # Layer 3: Data
+│   ├── auth/              # Layer 5: Business Logic
+│   └── uix-system/        # Layer 6: UI
+└── scripts/               # Build and utility scripts
+```
+
+## Architecture Layers
+
+The monorepo follows strict layering to prevent circular dependencies:
+
+<Tabs>
+  <Tab title="Layer 1: Foundation">
+    **Core configurations and tooling** - `@repo/typescript-config` - Shared TypeScript
+    configurations - `@repo/eslint-config` - ESLint rules and presets - `@repo/next-config` -
+    Next.js configuration ```typescript // Example usage import {config} from '@repo/next-config';
+    export default config; ```
+  </Tab>
+
+<Tab title="Layer 2: Core Services">
+  **Essential utilities and infrastructure** - `@repo/qa` - Test configurations
+  and utilities - `@repo/security` - Security headers and rate limiting -
+  `@repo/observability` - Sentry tracking and monitoring ```typescript //
+  Testing setup import {createReactConfig} from '@repo/qa/config/react'; export
+  default createReactConfig(); ```
+</Tab>
+
+<Tab title="Layer 3: Data">
+  **Database and data management** - `@repo/database` - Prisma ORM with
+  multi-database support ```typescript // Database usage import{" "}
+  {createDatabaseClient} from '@repo/database/client/next'; const db =
+  createDatabaseClient(); ```
+</Tab>
+
+<Tab title="Layer 4: Business Services">
+  **Core business functionality** - `@repo/analytics` - PostHog, Segment, GA
+  integration - `@repo/email` - React Email templates - `@repo/notifications` -
+  Knock + Mantine notifications ```typescript // Analytics usage import{" "}
+  {createAnalyticsClient} from '@repo/analytics/client/next'; const analytics =
+  createAnalyticsClient(); ```
+</Tab>
+
+<Tab title="Layer 5: Business Logic">
+  **Domain-specific functionality** - `@repo/auth` - Better Auth with
+  organizations - `@repo/payments` - Stripe integration - `@repo/orchestration`
+  - Workflow engine - `@repo/seo` - SEO utilities - `@repo/internationalization`
+  - i18n support ```typescript // Auth usage import {auth} from
+  '@repo/auth/server/next'; const session = await auth(); ```
+</Tab>
+
+  <Tab title="Layer 6: UI">
+    **User interface components** - `@repo/uix-system` - Mantine components and themes
+    ```typescript // UI system usage import {SearchBox} from '@repo/uix-system/algolia';
+    <SearchBox placeholder="Search products..." />
+    ```
+  </Tab>
+</Tabs>
+
+## Testing
+
+### Testing Framework
+
+The project uses **Vitest** with React Testing Library for comprehensive
+testing:
+
+<CardGroup cols={2}>
+  <Card title="Unit Tests" icon="test-tube">
+    Component and function testing with isolated mocks
+  </Card>
+  <Card title="Integration Tests" icon="link">
+    API routes, database operations, and service integration
+  </Card>
+  <Card title="E2E Tests" icon="computer">
+    Full user workflows with Playwright
+  </Card>
+  <Card title="Visual Tests" icon="eye">
+    Component visual regression testing
+  </Card>
+</CardGroup>
+
+### Test Configuration
+
+<Tabs>
+  <Tab title="React Components">
+    ```typescript
+    // vitest.config.ts
+    import { createReactConfig } from '@repo/qa/config/react';
+
+    export default createReactConfig({
+      setupFiles: ['./test-setup.ts'],
+      coverage: {
+        reporter: ['text', 'json', 'html'],
+        include: ['src/**/*.{ts,tsx}'],
+        exclude: ['src/**/*.d.ts'],
+      },
+    });
+    ```
+
+  </Tab>
+
+  <Tab title="Next.js Applications">
+    ```typescript
+    // vitest.config.ts
+    import { createNextConfig } from '@repo/qa/config/next';
+
+    export default createNextConfig({
+      setupFiles: ['./test-setup.ts'],
+      includeAppDir: true,
+      // Next.js specific test configuration
+    });
+    ```
+
+  </Tab>
+
+  <Tab title="Node.js Packages">
+    ```typescript
+    // vitest.config.ts
+    import { createNodeConfig } from '@repo/qa/config/node';
+
+    export default createNodeConfig({
+      setupFiles: ['./test-setup.ts'],
+      environment: 'node',
+    });
+    ```
+
+  </Tab>
+</Tabs>
+
+### Writing Tests
+
+<CodeGroup>
+```typescript Component Testing
+import { render, screen } from '@repo/qa/utils/render';
+import { ProductCard } from './ProductCard';
+
+describe('ProductCard', () => { const mockProduct = { id: '1', name: 'Test
+Product', price: 29.99, };
+
+it('displays product information correctly', () => {
+render(<ProductCard product={mockProduct} />);
+
+    expect(screen.getByText('Test Product')).toBeInTheDocument();
+    expect(screen.getByText('$29.99')).toBeInTheDocument();
+
+});
+
+it('handles add to cart action', async () => { const onAddToCart = vi.fn();
+
+    render(
+      <ProductCard
+        product={mockProduct}
+        onAddToCart={onAddToCart}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: /add to cart/i }));
+    expect(onAddToCart).toHaveBeenCalledWith(mockProduct.id);
+
+}); });
+
+````
+
+```typescript Database Testing
+import { DatabaseTestHelper, testDatabaseOperations } from '@repo/qa';
+import { createDatabaseClient } from '@repo/database/client/next';
+
+describe('Database Operations', () => {
+  let helper: DatabaseTestHelper;
+
+  beforeEach(async () => {
+    const db = createDatabaseClient();
+    helper = new DatabaseTestHelper(db);
+    await helper.setup();
+  });
+
+  afterEach(async () => {
+    await helper.cleanup();
+  });
+
+  it('performs CRUD operations', async () => {
+    const results = await testDatabaseOperations(helper, 'users');
+
+    expect(results.created).toHaveProperty('id');
+    expect(results.found).toBeTruthy();
+    expect(results.count).toBe(1);
+    expect(results.finalCount).toBe(0);
+  });
+
+  it('handles transactions correctly', async () => {
+    await helper.runInTransaction(async (tx) => {
+      await tx.user.create({ data: { email: 'test@example.com' } });
+      await tx.product.create({ data: { name: 'Test Product' } });
+    });
+
+    const users = await helper.db.user.findMany();
+    expect(users).toHaveLength(1);
+  });
+});
+````
+
+</CodeGroup>
+
+### Test Data and Mocking
+
+<AccordionGroup>
+  <Accordion title="Setup Mocks" icon="gear">
+    ```typescript
+    // test-setup.ts
+    import '@repo/qa/setup/nextjs';
+    import { setupNextMocks, setupBrowserMocks } from '@repo/qa/mocks';
+
+    // Setup global mocks
+    setupNextMocks();
+    setupBrowserMocks();
+
+    // Mock environment variables
+    process.env.TEST_API_KEY = 'test_key';
+    process.env.NODE_ENV = 'test';
+    ```
+
+  </Accordion>
+
+  <Accordion title="Database Mocks" icon="database">
+    ```typescript
+    import {
+      createUpstashRedisAdapter,
+      createFirestoreAdapter,
+      createVectorAdapter
+    } from '@repo/qa';
+
+    // Redis mocking
+    const redisAdapter = createUpstashRedisAdapter();
+
+    // Firestore mocking
+    const firestoreAdapter = createFirestoreAdapter();
+
+    // Vector database mocking
+    const vectorAdapter = createVectorAdapter();
+    ```
+
+  </Accordion>
+
+  <Accordion title="API Mocking" icon="cloud">
+    ```typescript
+    import { http, HttpResponse } from 'msw';
+    import { setupServer } from 'msw/node';
+
+    const server = setupServer(
+      http.get('/api/products', () => {
+        return HttpResponse.json([
+          { id: '1', name: 'Product 1', price: 29.99 },
+          { id: '2', name: 'Product 2', price: 39.99 },
+        ]);
+      })
+    );
+
+    beforeAll(() => server.listen());
+    afterEach(() => server.resetHandlers());
+    afterAll(() => server.close());
+    ```
+
+  </Accordion>
+</AccordionGroup>
+
+## Type Safety
+
+### TypeScript Configuration
+
+The monorepo uses strict TypeScript configurations for different environments:
+
+<Tabs>
+  <Tab title="Next.js Apps">
+    ```json
+    // tsconfig.json
+    {
+      "extends": "@repo/typescript-config/nextjs.json",
+      "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+          "#/*": ["./src/*"],
+          "#/components/*": ["./src/components/*"],
+          "#/lib/*": ["./src/lib/*"]
+        }
+      },
+      "include": [
+        "next-env.d.ts",
+        "**/*.ts",
+        "**/*.tsx",
+        ".next/types/**/*.ts"
+      ]
+    }
+    ```
+  </Tab>
+
+  <Tab title="React Libraries">
+    ```json
+    // tsconfig.json
+    {
+      "extends": "@repo/typescript-config/react-library.json",
+      "compilerOptions": {
+        "baseUrl": ".",
+        "outDir": "./dist",
+        "rootDir": "./src"
+      },
+      "include": ["src/**/*"],
+      "exclude": ["dist", "node_modules", "**/*.test.*"]
+    }
+    ```
+  </Tab>
+
+  <Tab title="Node.js Packages">
+    ```json
+    // tsconfig.json
+    {
+      "extends": "@repo/typescript-config/base.json",
+      "compilerOptions": {
+        "baseUrl": ".",
+        "outDir": "./dist",
+        "module": "ESNext",
+        "target": "ES2022"
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Type Safety Best Practices
+
+<CodeGroup>
+```typescript Zod Schema Validation
+import { z } from 'zod/v4';
+
+// Define schema for runtime validation const UserSchema = z.object({ id:
+z.string(), email: z.string().email(), name: z.string().min(2), role:
+z.enum(['admin', 'user']), });
+
+// Infer TypeScript type from schema type User = z.infer<typeof UserSchema>;
+
+// Use in API routes export async function POST(request: Request) { const body =
+await request.json();
+
+// Runtime validation with type safety const user = UserSchema.parse(body);
+
+return Response.json({ user }); }
+
+````
+
+```typescript Four-File Export Pattern
+// src/client.ts - Browser environment
+export function createClient() {
+  return {
+    // Browser-specific implementation
+  };
+}
+
+// src/server.ts - Node.js environment
+export function createServerClient() {
+  return {
+    // Server-specific implementation
+  };
+}
+
+// src/client-next.ts - Next.js client
+export function createNextClient() {
+  return {
+    // Next.js client-specific implementation
+  };
+}
+
+// src/server-next.ts - Next.js server
+export function createNextServerClient() {
+  return {
+    // Next.js server-specific implementation
+  };
+}
+````
+
+</CodeGroup>
+
+## Code Quality
+
+### ESLint Configuration
+
+<Tabs>
+  <Tab title="Next.js Apps">
+    ```javascript
+    // eslint.config.ts
+    import { nextConfig } from '@repo/eslint-config/next';
+
+    export default [
+      ...nextConfig,
+      {
+        // App-specific overrides
+        rules: {
+          '@typescript-eslint/no-unused-vars': ['error', {
+            argsIgnorePattern: '^_',
+            varsIgnorePattern: '^_'
+          }]
+        }
+      }
+    ];
+    ```
+
+  </Tab>
+
+  <Tab title="React Libraries">
+    ```javascript
+    // eslint.config.ts
+    import { reactLibraryConfig } from '@repo/eslint-config/react-library';
+
+    export default [
+      ...reactLibraryConfig,
+      {
+        // Library-specific rules
+        rules: {
+          'import/no-default-export': 'error',
+          'react/display-name': 'error'
+        }
+      }
+    ];
+    ```
+
+  </Tab>
+
+  <Tab title="Node.js Packages">
+    ```javascript
+    // eslint.config.ts
+    import { baseConfig } from '@repo/eslint-config/base';
+
+    export default [
+      ...baseConfig,
+      {
+        // Node.js specific rules
+        rules: {
+          'node/prefer-global/process': 'error',
+          'node/no-process-env': 'off'
+        }
+      }
+    ];
+    ```
+
+  </Tab>
+</Tabs>
+
+### Code Formatting
+
+Prettier is configured for consistent code formatting:
+
+```json
+// .prettierrc
+{
+  "semi": true,
+  "trailingComma": "es5",
+  "singleQuote": true,
+  "printWidth": 100,
+  "tabWidth": 2,
+  "useTabs": false
+}
+```
+
+## Performance Monitoring
+
+### Bundle Analysis
+
+<CodeGroup>
+```bash Bundle Size Analysis
+# Analyze bundle size for specific app
+ANALYZE=true pnpm build --filter=docs
+
+# Check circular dependencies
+
+pnpm madge --circular
+
+# Dependency analysis
+
+pnpm dlx bundle-phobia <package-name>
+
+````
+
+```typescript Performance Monitoring
+// Performance monitoring setup
+import { createPerformanceMonitor } from '@repo/observability';
+
+const monitor = createPerformanceMonitor({
+  enableMetrics: true,
+  sampleRate: 0.1, // 10% sampling
+});
+
+// Monitor component performance
+export function ExpensiveComponent() {
+  const startTime = performance.now();
+
+  useEffect(() => {
+    const endTime = performance.now();
+    monitor.recordMetric('component_render_time', endTime - startTime);
+  }, []);
+
+  return <div>Expensive component</div>;
+}
+````
+
+</CodeGroup>
+
+## Debugging
+
+### Development Tools
+
+<AccordionGroup>
+  <Accordion title="Database Debugging" icon="database">
+    ```bash
+    # Open Prisma Studio
+    pnpm studio
+
+    # View database schema
+    pnpm --filter @repo/database db:introspect
+
+    # Reset database
+    pnpm --filter @repo/database db:reset
+    ```
+
+  </Accordion>
+
+  <Accordion title="API Debugging" icon="bug">
+    ```typescript
+    // Enable debug logging
+    process.env.DEBUG = 'api:*';
+
+    // Use debug middleware
+    import { createDebugMiddleware } from '@repo/observability';
+
+    app.use(createDebugMiddleware({
+      logRequests: true,
+      logResponses: true,
+      includeStackTrace: true,
+    }));
+    ```
+
+  </Accordion>
+
+  <Accordion title="Build Debugging" icon="wrench">
+    ```bash
+    # Verbose build output
+    pnpm build --verbose
+
+    # Debug TypeScript compilation
+    pnpm typecheck --listFiles
+
+    # Analyze build dependencies
+    pnpm list --depth=0
+    ```
+
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<Warning>
+  **Development Guidelines:** - Always use TypeScript with strict mode enabled -
+  Write tests for all new features and bug fixes - Follow the established
+  package layer architecture - Use Zod for runtime validation and type safety -
+  Keep dependencies up to date with `pnpm bump-deps` - Run `pnpm lint` and `pnpm
+  typecheck` before committing
+</Warning>
+
+### Recommended Workflow
+
+1. **Start Development**
+   - Pull latest changes and install dependencies
+   - Set up environment variables and database
+   - Run tests to ensure everything works
+
+2. **Feature Development**
+   - Create feature branch from `main`
+   - Write tests first (TDD approach)
+   - Implement feature with proper TypeScript types
+   - Ensure all tests pass and code is properly formatted
+
+3. **Quality Assurance**
+   - Run full test suite with coverage
+   - Check for circular dependencies
+   - Verify bundle size impacts
+   - Test in different environments
+
+4. **Code Review**
+   - Create pull request with clear description
+   - Ensure CI/CD checks pass
+   - Address review feedback
+   - Merge when approved
+
+The development environment provides powerful tools and practices to build
+high-quality, maintainable applications efficiently across the entire Forge
+platform ecosystem.

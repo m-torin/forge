@@ -1,0 +1,355 @@
+---
+title: "Signed URLs & Security"
+description: "Secure file access with signed URLs and automatic expiration"
+icon: "shield-halved"
+---
+
+# Signed URLs & Security
+
+Protect your valuable content with time-limited signed URLs that automatically
+expire and refresh.
+
+## Overview
+
+The storage package provides automatic signed URL generation for sensitive
+content, particularly product photos and protected documents. This ensures that:
+
+- **Product photos** cannot be scraped or hotlinked
+- **Private documents** remain secure with time-limited access
+- **URLs automatically refresh** before expiration in client components
+- **Different expiration times** for different contexts (admin vs customer)
+
+## Automatic Signing for Products
+
+Product photos are automatically signed when accessed through storage actions:
+
+```typescript
+// Product photos always get signed URLs
+const url = await getMediaUrlAction("products/123/hero.jpg", {
+  context: "product", // Automatic signing
+  expiresIn: 3600 // 1 hour for customers
+});
+
+// Admin operations get longer expiration
+const adminUrl = await getMediaUrlAction("products/123/hero.jpg", {
+  context: "admin",
+  expiresIn: 7200 // 2 hours for admin
+});
+```
+
+## Context-Based Expiration
+
+Different contexts have different default expiration times:
+
+| Context   | Default Expiration | Use Case                       |
+| --------- | ------------------ | ------------------------------ |
+| `product` | 1 hour (3600s)     | Customer-facing product images |
+| `admin`   | 2 hours (7200s)    | Admin panel operations         |
+| `user`    | 30 minutes (1800s) | User-uploaded content          |
+| `public`  | No signing         | Public assets (logos, etc.)    |
+
+## Client Components with Auto-Refresh
+
+### SignedProductImage Component
+
+Automatically handles signed URLs with refresh before expiration:
+
+```typescript
+import { SignedProductImage } from '#/components/guest/SignedProductImage';
+import { logError } from '@repo/observability/server/next';
+
+export function ProductPage({ product }) {
+  return (
+    <SignedProductImage
+      mediaId={product.mediaId}
+      storageKey={product.storageKey}
+      fallbackSrc={product.imageUrl}
+      alt={product.name}
+      width={800}
+      height={800}
+      refreshInterval={3300000} // 55 minutes (before 1-hour expiration)
+    />
+  );
+}
+```
+
+### useSignedMediaUrl Hook
+
+For custom implementations:
+
+```typescript
+import { useSignedMediaUrl } from '#/hooks/useSignedMediaUrl';
+
+export function MediaViewer({ storageKey }) {
+  const { url, loading, error, refresh } = useSignedMediaUrl(storageKey, {
+    context: 'product',
+    expiresIn: 3600,
+    enabled: true
+  });
+
+  if (loading) return <Skeleton />;
+  if (error) return <ErrorMessage />;
+
+  return (
+    <div>
+      <img src={url} alt="Media" />
+      <button onClick={refresh}>Refresh URL</button>
+    </div>
+  );
+}
+```
+
+## Server Actions with Signing
+
+### Upload with Automatic Signing
+
+```typescript
+// Upload and get signed URL in one operation
+const result = await uploadAndCreateMediaAction({
+  file: imageFile,
+  type: "IMAGE",
+  altText: "Product image",
+  productId: "123", // Associates with product
+  userId: session.user.id
+});
+
+// result.data contains:
+// - media: Database record
+// - url: Signed URL with appropriate expiration
+```
+
+### Bulk URL Refresh
+
+Refresh multiple URLs before they expire:
+
+```typescript
+// Refresh URLs for multiple media records
+const urls = await bulkRefreshMediaUrlsAction(
+  ["media-id-1", "media-id-2", "media-id-3"],
+  {
+    expiresIn: 3600
+  }
+);
+
+// URLs are also updated in the database
+```
+
+## Security Best Practices
+
+### 1. Always Use Signed URLs for Products
+
+```typescript
+// ❌ Bad: Direct URL access
+const url = media.url;
+
+// ✅ Good: Signed URL with expiration
+const url = await getMediaSignedUrlAction(media.id);
+```
+
+### 2. Set Appropriate Expiration Times
+
+```typescript
+// Short expiration for sensitive content
+const sensitiveUrl = await getMediaUrlAction(key, {
+  forceSign: true,
+  expiresIn: 900 // 15 minutes
+});
+
+// Longer expiration for less sensitive content
+const generalUrl = await getMediaUrlAction(key, {
+  context: "admin",
+  expiresIn: 7200 // 2 hours
+});
+```
+
+### 3. Handle URL Expiration Gracefully
+
+```typescript
+// Component with automatic refresh
+<SignedProductImage
+  mediaId={mediaId}
+  fallbackSrc="/placeholder.jpg"  // Fallback if signing fails
+  onError={(error) => {
+    logError('Image loading failed', {
+      error: error.message,
+      url: error.url,
+      timestamp: new Date().toISOString()
+    });
+    // Show user-friendly error
+  }}
+/>
+```
+
+### 4. Validate Access in Server Actions
+
+```typescript
+export async function getProtectedMediaUrl(mediaId: string) {
+  "use server";
+
+  const session = await auth();
+  if (!session) {
+    throw new Error("Unauthorized");
+  }
+
+  // Check if user has access to this media
+  const media = await prisma.media.findUnique({
+    where: { id: mediaId }
+  });
+
+  if (!canUserAccessMedia(session.user, media)) {
+    throw new Error("Access denied");
+  }
+
+  return getMediaSignedUrlAction(mediaId);
+}
+```
+
+## Implementation Examples
+
+### E-commerce Product Gallery
+
+```typescript
+import { SignedListingImageGallery } from '#/components/ui/ListingImageGallery/SignedListingImageGallery';
+
+export function ProductGallery({ product }) {
+  // Transform product images for signed gallery
+  const signedImages = product.images.map((img, index) => ({
+    id: index,
+    mediaId: img.mediaId,
+    storageKey: img.storageKey,
+    fallbackUrl: img.url
+  }));
+
+  return (
+    <SignedListingImageGallery
+      images={signedImages}
+      refreshInterval={3300000} // 55 minutes
+    />
+  );
+}
+```
+
+### Admin Media Manager
+
+```typescript
+import { useSignedMediaUrls } from '#/hooks/useSignedMediaUrl';
+
+export function MediaManager({ mediaItems }) {
+  // Batch load signed URLs
+  const { urls, loading, refresh } = useSignedMediaUrls(
+    mediaItems.map(item => ({
+      key: item.storageKey,
+      context: 'admin'  // 2-hour expiration for admin
+    }))
+  );
+
+  return (
+    <div>
+      {mediaItems.map(item => (
+        <MediaCard
+          key={item.id}
+          media={item}
+          url={urls[item.storageKey]}
+        />
+      ))}
+      <button onClick={refresh}>Refresh All URLs</button>
+    </div>
+  );
+}
+```
+
+## Performance Considerations
+
+### 1. Batch URL Generation
+
+```typescript
+// ❌ Bad: Individual requests
+for (const media of mediaItems) {
+  const url = await getMediaSignedUrlAction(media.id);
+  // Process url...
+}
+
+// ✅ Good: Batch request
+const urls = await bulkRefreshMediaUrlsAction(mediaItems.map((m) => m.id));
+```
+
+### 2. Cache Signed URLs
+
+The storage package includes a 15-minute cache for signed URLs:
+
+```typescript
+// First call generates and caches
+const url1 = await getMediaUrlAction(key);
+
+// Subsequent calls return from cache
+const url2 = await getMediaUrlAction(key); // From cache
+```
+
+### 3. Preload URLs
+
+```typescript
+// Preload URLs during server-side rendering
+export async function ProductPage({ params }) {
+  const product = await getProduct(params.id);
+
+  // Preload all image URLs
+  const imageUrls = await Promise.all(
+    product.images.map(img =>
+      getMediaSignedUrlAction(img.mediaId)
+    )
+  );
+
+  return <ProductGallery images={imageUrls} />;
+}
+```
+
+## Troubleshooting
+
+### Common Issues
+
+<AccordionGroup>
+  <Accordion title="403 Forbidden errors">
+    **Cause**: URL has expired or signature is invalid
+
+    **Solution**:
+    - Check expiration time is appropriate
+    - Ensure refresh interval is less than expiration
+    - Verify storage key is correct
+
+  </Accordion>
+
+<Accordion title="URLs not refreshing">
+  **Cause**: Component not properly configured **Solution**: - Check
+  `refreshInterval` is set - Ensure `enabled` is true - Verify component is
+  mounted
+</Accordion>
+
+  <Accordion title="Performance issues">
+    **Cause**: Too many individual URL requests
+
+    **Solution**:
+    - Use `bulkRefreshMediaUrlsAction` for multiple URLs
+    - Implement proper caching strategy
+    - Consider longer expiration times
+
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Server Actions"
+    href="/packages/storage/server-actions"
+    icon="server"
+  >
+    Learn about all available server actions
+  </Card>
+  <Card
+    title="Database Integration"
+    href="/packages/storage/database-integration"
+    icon="database"
+  >
+    Integrate storage with Prisma Media model
+  </Card>
+</CardGroup>

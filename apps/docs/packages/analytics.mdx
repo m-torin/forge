@@ -1,0 +1,839 @@
+---
+title: "Analytics Package"
+description:
+  "Universal analytics system with multi-provider support and emitter-based
+  tracking"
+icon: "chart-line"
+---
+
+# Analytics Package
+
+Universal analytics system with multi-provider support, emitter-based tracking
+patterns, and comprehensive Next.js integration.
+
+## Overview
+
+The analytics package provides a comprehensive multi-provider analytics solution
+with emitter-based tracking patterns and Next.js integration. It includes
+development tools, typed emitters, and universal analytics for enterprise-grade
+observability.
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Multi-Provider Analytics" icon="chart-line">
+    PostHog, Vercel Analytics, Segment, Console logging
+  </Card>
+  <Card title="Emitter-Based Architecture" icon="broadcast-tower">
+    Type-safe event tracking following Segment.io specification
+  </Card>
+  <Card title="Universal Analytics System" icon="globe">
+    Consistent tracking across client/server/edge environments
+  </Card>
+  <Card title="E-commerce Tracking" icon="shopping-cart">
+    50+ standardized e-commerce events
+  </Card>
+  <Card title="Next.js 15 Integration" icon="react">
+    App Router, Server Components, and React hooks
+  </Card>
+  <Card title="Type-Safe Event Tracking" icon="code">
+    Full TypeScript support with proper type inference
+  </Card>
+</CardGroup>
+
+## Installation
+
+```bash
+pnpm add @repo/analytics
+```
+
+## Environment Variables
+
+```bash
+# PostHog (Primary)
+NEXT_PUBLIC_POSTHOG_KEY=phc_...
+NEXT_PUBLIC_POSTHOG_HOST=https://app.posthog.com
+
+# Vercel Analytics
+VERCEL_ANALYTICS_ID=...
+
+# Segment (Optional)
+NEXT_PUBLIC_SEGMENT_WRITE_KEY=...
+
+# Console Logging (Development)
+NEXT_PUBLIC_CONSOLE_ANALYTICS=true
+```
+
+## Analytics Provider Setup
+
+```tsx
+import { AnalyticsProvider } from "@repo/analytics";
+
+function App({ children }) {
+  return <AnalyticsProvider>{children}</AnalyticsProvider>;
+}
+```
+
+This automatically configures:
+
+- PostHog client and server analytics
+- Vercel Analytics for web vitals
+- Segment analytics (if configured)
+- Console logging for development
+
+## Emitters System
+
+The analytics package uses an **emitter-based architecture** following the
+Segment.io specification. Emitters provide type-safe, consistent event tracking
+that works across all providers.
+
+### Core Emitters
+
+```typescript
+import {
+  track,
+  identify,
+  page,
+  group,
+  alias
+} from "@repo/analytics/client/next";
+
+// Track user events
+track("Button Clicked", {
+  button_name: "signup",
+  location: "header",
+  user_id: "user_123"
+});
+
+// Identify users
+identify("user_123", {
+  email: "user@example.com",
+  name: "John Doe",
+  plan: "pro"
+});
+
+// Track page views
+page("Product Page", {
+  product_id: "prod_123",
+  category: "electronics"
+});
+
+// Group users by organization
+group("organization", "org_123", {
+  name: "Acme Corp",
+  plan: "enterprise",
+  employees: 100
+});
+
+// Alias user identities
+alias("user_123", "anonymous_id_456");
+```
+
+### Emitter Builders
+
+```typescript
+import {
+  PayloadBuilder,
+  ContextBuilder,
+  withUTM,
+  withMetadata
+} from "@repo/analytics/client/next";
+
+// Build complex tracking payloads
+const payload = PayloadBuilder.track("Purchase Completed")
+  .properties({
+    order_id: "ord_123",
+    total: 99.99,
+    currency: "USD"
+  })
+  .context(
+    ContextBuilder.create().campaign("summer_sale").source("email").build()
+  )
+  .build();
+
+// Add UTM parameters automatically
+const eventWithUTM = withUTM(
+  track("Link Clicked", {
+    link_url: "https://example.com"
+  })
+);
+
+// Add metadata to events
+const eventWithMeta = withMetadata(
+  track("Error Occurred", {
+    error_code: "404"
+  }),
+  {
+    timestamp: new Date(),
+    session_id: "sess_123"
+  }
+);
+```
+
+## Event Batching
+
+The analytics package includes sophisticated event batching for optimal
+performance:
+
+```typescript
+import { EventBatch } from "@repo/analytics/client/next";
+
+// Create a batch of events
+const batch = EventBatch.create()
+  .add(track("Page Viewed", { page: "/dashboard" }))
+  .add(track("Button Clicked", { button: "cta" }))
+  .add(identify("user_123", { email: "user@example.com" }));
+
+// Send batch to all providers
+batch.flush();
+
+// Auto-batching with time windows
+const autoBatch = EventBatch.createAutoFlushing({
+  maxSize: 10, // Flush after 10 events
+  maxWaitMs: 5000, // Flush after 5 seconds
+  maxRetries: 3 // Retry failed batches
+});
+
+autoBatch.add(track("User Action", { action: "click" }));
+```
+
+### Session Management
+
+```typescript
+import {
+  createUserSession,
+  createAnonymousSession
+} from "@repo/analytics/client/next";
+
+// Create user session with context
+const userSession = createUserSession({
+  userId: "user_123",
+  traits: {
+    email: "user@example.com",
+    plan: "pro"
+  },
+  context: {
+    campaign: {
+      name: "summer_sale",
+      source: "email"
+    }
+  }
+});
+
+// Create anonymous session
+const anonSession = createAnonymousSession({
+  anonymousId: "anon_456",
+  context: {
+    page: {
+      url: window.location.href,
+      referrer: document.referrer
+    }
+  }
+});
+```
+
+## Multi-Provider Architecture
+
+The analytics package sends events to multiple providers simultaneously through
+a unified interface:
+
+<AccordionGroup>
+  <Accordion title="PostHog" icon="chart-bar">
+    - **Primary analytics provider** with comprehensive event tracking
+    - Session recordings and heatmaps for user behavior analysis
+    - Real-time dashboards and custom analytics
+    - Bootstrap data support for faster client-side initialization
+    - Server-side and client-side event processing
+  </Accordion>
+
+<Accordion title="Vercel Analytics" icon="triangle">
+  - Web vitals tracking (Core Web Vitals, custom metrics) - Performance
+  monitoring with Real User Monitoring (RUM) - Audience insights and traffic
+  analysis - Automated page view tracking for Next.js applications
+</Accordion>
+
+<Accordion title="Segment" icon="share-nodes">
+  - Data warehouse integration with 300+ destinations - Event streaming to
+  downstream tools - Customer data platform (CDP) capabilities - Cross-platform
+  event unification - GDPR and privacy compliance tools
+</Accordion>
+
+  <Accordion title="Console Provider" icon="terminal">
+    - Development-friendly logging for debugging
+    - Structured event output for testing
+    - Color-coded event types and metadata
+    - Zero external dependencies for local development
+  </Accordion>
+</AccordionGroup>
+
+## Provider Configuration
+
+### PostHog Configuration
+
+```typescript
+import { AnalyticsProvider } from "@repo/analytics/client/next";
+
+const config = {
+  providers: {
+    posthog: {
+      apiKey: process.env.NEXT_PUBLIC_POSTHOG_KEY!,
+      host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+      options: {
+        capture_pageview: false, // Handled by usePageTracking
+        session_recording: {
+          maskAllInputs: true,
+          maskAllText: false
+        },
+        autocapture: {
+          dom_event_allowlist: ["click", "change", "submit"]
+        }
+      }
+    }
+  }
+};
+```
+
+### Segment Configuration
+
+```typescript
+const config = {
+  providers: {
+    segment: {
+      writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY!,
+      options: {
+        retryQueue: true,
+        debug: process.env.NODE_ENV === "development",
+        integrations: {
+          All: false,
+          "Segment.io": true,
+          "Google Analytics": true
+        }
+      }
+    }
+  }
+};
+```
+
+## Environment-Specific Exports
+
+The package provides optimized exports for different runtime environments:
+
+```typescript
+// Client-side (browser)
+import { track, identify } from "@repo/analytics/client";
+
+// Next.js client-side with hooks
+import { useAnalytics, usePageTracking } from "@repo/analytics/client/next";
+
+// Server-side (Node.js)
+import { track, identify } from "@repo/analytics/server";
+
+// Next.js server-side
+import { track, identify } from "@repo/analytics/server/next";
+
+// Edge runtime (middleware, edge functions)
+import { track, identify } from "@repo/analytics/server/edge";
+
+// Shared environment (auto-detection)
+import { track, identify } from "@repo/analytics/shared";
+
+// Types only
+import type { AnalyticsConfig } from "@repo/analytics/types";
+```
+
+### Import Guidelines
+
+<Warning>
+  **Import Rules by Environment:** - **Next.js Apps**: Always use `/client/next`
+  and `/server/next` imports - **Edge Runtime**: Use `/server/edge` for
+  middleware and edge functions - **Node.js Services**: Use `/server` for
+  standalone Node.js applications - **Shared Libraries**: Use `/shared` for
+  packages that run in multiple environments
+</Warning>
+
+## Performance Features
+
+- **Lazy Loading**: Analytics providers loaded asynchronously
+- **Event Batching**: Events batched and sent efficiently via EventBatch
+- **SSR Support**: Full server-side rendering compatibility
+- **Bundle Optimization**: Minimal client-side footprint (~15KB gzipped)
+- **Type Safety**: Zero runtime overhead with TypeScript emitters
+- **Provider Abstraction**: Unified interface across multiple analytics services
+
+## Next.js Integration
+
+The analytics package provides comprehensive Next.js 15 support with App Router,
+React Server Components, and middleware integration.
+
+### Client Components
+
+```tsx
+// app/layout.tsx
+"use client";
+
+import { AnalyticsProvider } from "@repo/analytics/client/next";
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        <AnalyticsProvider
+          config={{
+            providers: {
+              posthog: {
+                apiKey: process.env.NEXT_PUBLIC_POSTHOG_KEY!,
+                host: process.env.NEXT_PUBLIC_POSTHOG_HOST
+              },
+              vercel: {
+                enabled: !!process.env.VERCEL_ANALYTICS_ID
+              },
+              segment: {
+                writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY
+              }
+            }
+          }}
+          autoPageTracking
+          pageTrackingOptions={{
+            trackSearch: true,
+            trackParams: true
+          }}
+        >
+          {children}
+        </AnalyticsProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+### Server Components (RSC)
+
+```tsx
+// app/page.tsx
+import { track, page } from "@repo/analytics/server/next";
+
+export default async function HomePage({
+  searchParams
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
+  // Track page view from server
+  await page("/home", {
+    experiment: "homepage_v2",
+    search_params: searchParams,
+    timestamp: new Date()
+  });
+
+  // Track server-side events
+  await track("Server Page Rendered", {
+    page: "/home",
+    render_time: Date.now(),
+    user_agent: headers().get("user-agent")
+  });
+
+  return (
+    <div>
+      <h1>Welcome</h1>
+      <ServerAnalyticsExample />
+    </div>
+  );
+}
+```
+
+### React Hooks
+
+<Tabs>
+  <Tab title="Page Tracking">
+    ```tsx
+    'use client';
+    
+    import { usePageTracking } from '@repo/analytics/client/next';
+    
+    export default function Layout({ children }) {
+      usePageTracking({
+        trackSearch: true, // Track search params
+        trackParams: true, // Track route params
+        properties: {
+          version: 'v2',
+          layout: 'main'
+        },
+        skip: false // Set to true to disable tracking
+      });
+    
+      return children;
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Event Tracking">
+    ```tsx
+    'use client';
+    
+    import { useTrackEvent } from '@repo/analytics/client/next';
+    
+    export function ProductCard({ product }) {
+      const track = useTrackEvent();
+    
+      const handleAddToCart = () => {
+        track('Product Added to Cart', {
+          product_id: product.id,
+          product_name: product.name,
+          price: product.price,
+          category: product.category,
+          currency: 'USD'
+        }, {
+          context: {
+            page: {
+              path: window.location.pathname,
+              url: window.location.href
+            }
+          }
+        });
+      };
+    
+      return <button onClick={handleAddToCart}>Add to Cart</button>;
+    }
+    ```
+  </Tab>
+  
+  <Tab title="User Identification">
+    ```tsx
+    'use client';
+    
+    import { useIdentifyUser } from '@repo/analytics/client/next';
+    
+    export function UserProfile({ user }) {
+      const identify = useIdentifyUser();
+    
+      useEffect(() => {
+        if (user) {
+          identify(user.id, {
+            email: user.email,
+            name: user.name,
+            plan: user.subscription?.plan,
+            created_at: user.createdAt,
+            organization_id: user.organizationId
+          }, {
+            integrations: {
+              'All': true,
+              'Mixpanel': false // Disable specific providers
+            }
+          });
+        }
+      }, [user, identify]);
+    
+      return <div>User Profile Content</div>;
+    }
+    ```
+  </Tab>
+</Tabs>
+
+````
+
+### Server Actions Integration
+
+```tsx
+// app/actions/analytics.ts
+'use server';
+
+import { track, identify, ecommerce } from '@repo/analytics/server/next';
+
+export async function trackPurchaseAction(orderData: {
+  orderId: string;
+  userId: string;
+  total: number;
+  products: any[];
+}) {
+  // Track order completion
+  await ecommerce.orderCompleted({
+    order_id: orderData.orderId,
+    total: orderData.total,
+    currency: 'USD',
+    products: orderData.products,
+    user_id: orderData.userId
+  });
+
+  // Update user profile
+  await identify(orderData.userId, {
+    last_purchase_at: new Date(),
+    total_spent: orderData.total,
+    order_count: 1 // You'd increment this
+  });
+}
+
+// In your client component
+export function CheckoutForm() {
+  const handleSubmit = async (formData: FormData) => {
+    const orderData = {
+      orderId: formData.get('orderId') as string,
+      userId: formData.get('userId') as string,
+      total: Number(formData.get('total')),
+      products: JSON.parse(formData.get('products') as string)
+    };
+
+    await trackPurchaseAction(orderData);
+  };
+
+  return <form action={handleSubmit}>/* form content */</form>;
+}
+````
+
+## E-commerce Events
+
+Comprehensive e-commerce tracking with standardized events:
+
+<AccordionGroup>
+  <Accordion title="Product Events" icon="box">
+    - `productSearched` - Product search queries - `searchResultsViewed` - Search results displayed
+    - `productViewed` - Product detail page views - `productListViewed` - Category/collection views
+  </Accordion>
+
+<Accordion title="Cart Events" icon="shopping-cart">
+  - `cartUpdated` - Cart modifications (add/remove/update) - `cartViewed` -
+  Shopping cart page views - `cartAbandoned` - User leaves with items in cart
+</Accordion>
+
+  <Accordion title="Checkout Events" icon="credit-card">
+    - `checkoutProgressed` - Checkout flow progression - `paymentInfoEntered` - Payment method
+    selection - `orderCompleted` - Purchase completion - `orderStatusUpdated` - Order fulfillment
+    updates
+  </Accordion>
+</AccordionGroup>
+
+### E-commerce Usage Examples
+
+```typescript
+import { ecommerce } from "@repo/analytics/client/next";
+
+// Product interactions
+const productViewEvent = ecommerce.productViewed({
+  product_id: "iphone-15-pro-256gb",
+  name: "iPhone 15 Pro",
+  brand: "Apple",
+  category: "Electronics/Smartphones",
+  price: 999.99,
+  currency: "USD",
+  availability: "in_stock",
+  url: "/products/iphone-15-pro",
+  image_url: "/images/iphone-15-pro.jpg"
+});
+
+// Cart operations with detailed tracking
+const addToCartEvent = ecommerce.productAddedToCart({
+  product_id: "iphone-15-pro-256gb",
+  name: "iPhone 15 Pro",
+  price: 999.99,
+  quantity: 1,
+  cart_id: "cart_abc123",
+  cart_total: 999.99,
+  cart_size: 1
+});
+
+// Complete checkout flow
+const checkoutEvent = ecommerce.orderCompleted({
+  order_id: "ORD-2024-001",
+  total: 1049.99,
+  tax: 50.0,
+  shipping: 0.0,
+  currency: "USD",
+  payment_method: "credit_card",
+  products: [
+    {
+      product_id: "iphone-15-pro-256gb",
+      name: "iPhone 15 Pro",
+      brand: "Apple",
+      category: "Electronics",
+      price: 999.99,
+      quantity: 1
+    }
+  ]
+});
+
+// Search and discovery
+const searchEvent = ecommerce.productSearched({
+  query: "iPhone 15",
+  results_count: 12,
+  filters: {
+    category: "Electronics",
+    price_min: 500,
+    price_max: 1500
+  }
+});
+```
+
+### Advanced E-commerce Patterns
+
+```typescript
+import { ecommerce, EventBatch, withUTM } from "@repo/analytics/client/next";
+
+// Batch multiple e-commerce events
+const ecommerceBatch = EventBatch.create()
+  .add(
+    ecommerce.productViewed({
+      product_id: "prod_1",
+      name: "Product 1",
+      price: 99.99
+    })
+  )
+  .add(
+    ecommerce.productViewed({
+      product_id: "prod_2",
+      name: "Product 2",
+      price: 149.99
+    })
+  )
+  .add(
+    ecommerce.productListViewed({
+      list_id: "category_electronics",
+      list_name: "Electronics",
+      products: [
+        /* product array */
+      ]
+    })
+  );
+
+// Flush batch to all providers
+ecommerceBatch.flush();
+
+// UTM tracking with e-commerce
+const eventWithUTM = withUTM(
+  ecommerce.orderCompleted({
+    order_id: "ORD-123",
+    total: 299.99
+    // ... other properties
+  })
+);
+
+// Marketplace tracking
+const marketplaceEvent = ecommerce.marketplaceOrderPlaced({
+  order_id: "MKT-ORD-456",
+  marketplace_name: "Amazon",
+  merchant_id: "seller_123",
+  commission_rate: 0.15,
+  commission_amount: 44.99,
+  products: [
+    /* products with merchant info */
+  ]
+});
+```
+
+## Advanced Configuration
+
+### Advanced Provider Configuration
+
+Customize provider behavior with advanced options:
+
+```tsx
+// app/layout.tsx
+import { AnalyticsProvider } from "@repo/analytics/client/next";
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        <AnalyticsProvider
+          config={{
+            providers: {
+              posthog: {
+                apiKey: process.env.NEXT_PUBLIC_POSTHOG_KEY!,
+                options: {
+                  capture_pageview: false,
+                  session_recording: { maskAllInputs: true }
+                }
+              },
+              segment: {
+                writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY,
+                options: { retryQueue: true }
+              }
+            }
+          }}
+        >
+          {children}
+        </AnalyticsProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+### Environment-Specific Configuration
+
+Configure providers based on environment:
+
+```tsx
+"use client";
+
+import { AnalyticsProvider } from "@repo/analytics/client/next";
+
+export function AppAnalytics({ children }) {
+  const config = {
+    providers: {
+      posthog: {
+        apiKey: process.env.NEXT_PUBLIC_POSTHOG_KEY!,
+        options: {
+          debug: process.env.NODE_ENV === "development",
+          capture_pageview: false // Handle manually
+        }
+      },
+      console: {
+        enabled: process.env.NODE_ENV === "development"
+      }
+    }
+  };
+
+  return <AnalyticsProvider config={config}>{children}</AnalyticsProvider>;
+}
+```
+
+### TypeScript Support
+
+```tsx
+import type {
+  AnalyticsConfig,
+  PageViewEvent,
+  ProductViewEvent,
+  TrackEventPayload,
+  IdentifyEventPayload
+} from "@repo/analytics/types";
+
+// Type-safe event tracking
+const productEvent: ProductViewEvent = {
+  product_id: "prod_123",
+  name: "iPhone 15 Pro",
+  price: 999.99,
+  category: "Electronics"
+};
+
+// Type-safe analytics configuration
+const config: AnalyticsConfig = {
+  providers: {
+    posthog: {
+      apiKey: process.env.NEXT_PUBLIC_POSTHOG_KEY!,
+      options: { debug: false }
+    }
+  }
+};
+```
+
+## Best Practices
+
+<Warning>
+  **Analytics Guidelines:** 1. **Initialize Early** - Set up AnalyticsProvider
+  in your root layout 2. **Use Environment-Specific Imports** - Always use
+  `/client/next` and `/server/next` in Next.js 3. **Prefer Emitters** - Use the
+  emitter system for type-safe event tracking 4. **Batch Events** - Use
+  EventBatch for performance optimization 5. **Error Handling** - Analytics
+  should never break your application 6. **TypeScript First** - Leverage full
+  type safety for reliable tracking 7. **E-commerce Standards** - Use
+  standardized e-commerce events for consistency
+</Warning>
+
+### Package Size & Performance
+
+- **Client Bundle**: ~15KB gzipped (PostHog, Vercel, Console providers)
+- **Server Impact**: Minimal overhead with efficient batching
+- **Emitter System**: Type-safe with zero runtime overhead
+- **10,000+ Lines**: Comprehensive implementation across 74 TypeScript files
+
+The analytics package provides enterprise-grade multi-provider analytics with a
+focus on type safety, performance, and developer experience.

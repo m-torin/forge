@@ -1,0 +1,240 @@
+---
+title: "Database Package Overview"
+description:
+  "Multi-provider database package with four-file export pattern for all
+  database types"
+icon: "database"
+---
+
+# Database Package Overview
+
+Comprehensive database package providing Prisma ORM, Redis, Firestore, and
+Vector database support with a consistent four-file export pattern for optimal
+developer experience across client and server environments.
+
+## Overview
+
+The database package provides a comprehensive database infrastructure with
+multiple provider support, each optimized for specific use cases:
+
+<CardGroup cols={2}>
+  <Card
+    title="Prisma ORM (PostgreSQL)"
+    icon="database"
+    href="/packages/database/prisma"
+  >
+    Primary database with comprehensive schema for auth, PIM, and workflows
+  </Card>
+  <Card title="Redis Cache" icon="memory" href="/packages/database/redis">
+    Upstash Redis for caching, rate limiting, and real-time data
+  </Card>
+  <Card
+    title="Vector Database"
+    icon="vector-square"
+    href="/packages/database/vector"
+  >
+    Upstash Vector for AI/ML similarity search and embeddings
+  </Card>
+  <Card title="Firestore" icon="fire" href="/packages/database/firestore">
+    Google Firestore for document-based data and real-time updates
+  </Card>
+</CardGroup>
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Better Auth Integration" icon="user-check">
+    Complete user management, organizations, API keys, and sessions
+  </Card>
+  <Card title="Product Information Management" icon="package">
+    Barcode scanning, product catalogs, and asset management
+  </Card>
+  <Card title="Workflow Orchestration" icon="workflow">
+    Workflow configuration, execution tracking, and scheduling
+  </Card>
+  <Card title="Type Safety" icon="code">
+    Full TypeScript integration across all providers
+  </Card>
+  <Card title="Zod Schema Validation" icon="shield-check">
+    Auto-generated validation schemas from Prisma models
+  </Card>
+  <Card title="Environment Management" icon="gear">
+    Doppler integration with local development fallbacks
+  </Card>
+</CardGroup>
+
+## Four-File Export Pattern
+
+The database package implements a consistent four-file export pattern for
+optimal Next.js integration:
+
+<CodeGroup>
+```typescript Client (Browser)
+// Types and client-safe utilities only
+import type { User, Product } from '@repo/database/prisma/client';
+import type { RedisKey } from '@repo/database/redis/client';
+```
+
+```typescript Server (Node.js)
+// Full server operations and client instances
+import { prisma } from "@repo/database/prisma/server";
+import { RedisOperations } from "@repo/database/redis/server";
+import { FirestoreOperations } from "@repo/database/firestore/server";
+```
+
+```typescript Client/Next (Next.js Client)
+// Next.js optimized client hooks
+import { useRedisState } from "@repo/database/redis/client/next";
+import { useFirestoreDoc } from "@repo/database/firestore/client/next";
+```
+
+```typescript Server/Next (Next.js Server)
+// Next.js optimized server operations
+import { redis } from "@repo/database/redis/server/next";
+import { firestore } from "@repo/database/firestore/server/next";
+```
+
+</CodeGroup>
+
+## Installation
+
+```bash
+pnpm add @repo/database
+```
+
+## Environment Variables
+
+<Tabs>
+  <Tab title="Production (Doppler)">
+    ```bash
+    # Primary Database (Prisma + PostgreSQL)
+    DATABASE_URL=postgresql://username:password@host:port/database
+
+    # Upstash Redis
+    UPSTASH_REDIS_REST_URL=https://...
+    UPSTASH_REDIS_REST_TOKEN=...
+
+    # Upstash Vector Database
+    UPSTASH_VECTOR_REST_URL=https://...
+    UPSTASH_VECTOR_REST_TOKEN=...
+
+    # Google Firestore (optional)
+    FIREBASE_PROJECT_ID=your-project-id
+    FIREBASE_CLIENT_EMAIL=service-account@project.iam.gserviceaccount.com
+    FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----
+
+... -----END PRIVATE KEY----- " ```
+
+  </Tab>
+
+  <Tab title="Local Development">
+    ```bash
+    # .env.local
+    DATABASE_URL=postgresql://localhost:5432/forge_dev
+
+    # Optional: Add Upstash for full testing
+    # UPSTASH_REDIS_REST_URL=...
+    # UPSTASH_REDIS_REST_TOKEN=...
+    ```
+
+  </Tab>
+</Tabs>
+
+## Database Management
+
+### Prisma Operations
+
+<CodeGroup>
+```bash Migration Commands
+# Run migrations (with Doppler)
+pnpm migrate
+
+# Run migrations (local development)
+
+pnpm migrate:local
+
+# Generate Prisma client
+
+pnpm --filter @repo/database generate
+
+# Open Prisma Studio
+
+pnpm studio
+
+````
+
+```bash Seeding Commands
+# Seed with sample data
+pnpm --filter @repo/database seed
+
+# Create admin users
+pnpm --filter @repo/database create-users
+````
+
+</CodeGroup>
+
+## Type Safety
+
+All database operations are fully type-safe with comprehensive TypeScript
+integration:
+
+```typescript
+// Generated Prisma types
+import type { User, Organization, Product } from "@prisma/client";
+
+// Type-safe queries with IntelliSense
+const userWithOrgs: User & {
+  organizations: Organization[];
+} = await prisma.user.findFirst({
+  include: {
+    organizations: true
+  }
+});
+```
+
+## Performance Optimization
+
+<CardGroup cols={2}>
+  <Card title="Connection Pooling" icon="link">
+    Prisma connection pool optimization for concurrent requests
+  </Card>
+  <Card title="Query Optimization" icon="magnifying-glass">
+    Proper indexing and relation loading strategies
+  </Card>
+  <Card title="Caching Strategy" icon="clock">
+    Redis for frequently accessed data with intelligent TTL
+  </Card>
+  <Card title="Vector Search" icon="search">
+    Optimized similarity queries with metadata filtering
+  </Card>
+</CardGroup>
+
+## Quick Start
+
+<Steps>
+  <Step title="Install Package">```bash pnpm add @repo/database ```</Step>
+
+<Step title="Configure Environment">
+  Set up your database URLs in environment variables or Doppler
+</Step>
+
+<Step title="Run Migrations">```bash pnpm migrate ```</Step>
+
+<Step title="Generate Client">
+  ```bash pnpm --filter @repo/database generate ```
+</Step>
+
+  <Step title="Start Using">
+    ```typescript
+    // Next.js server component or server action
+    import { prisma } from '@repo/database/prisma/server/next';
+
+    const users = await prisma.user.findMany();
+    ```
+
+  </Step>
+</Steps>
+
+The database package provides a robust, multi-provider foundation for all data
+storage needs in the Forge platform, with specialized support for
+authentication, product management, AI/ML workloads, and real-time applications.

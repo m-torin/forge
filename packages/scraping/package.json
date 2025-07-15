@@ -1,0 +1,69 @@
+{
+  "name": "@repo/scraping",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./client": "./src/client.ts",
+    "./server": "./src/server.ts",
+    "./client/next": "./src/client-next.ts",
+    "./server/next": "./src/server-next.ts"
+  },
+  "scripts": {
+    "circular": "madge --circular --extensions ts,tsx,js,jsx .",
+    "coverage:collect": "vitest run --coverage --reporter=json",
+    "knip": "knip --fix --reporter json",
+    "lint": "eslint . --fix",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:coverage:json": "vitest run --coverage --reporter=json",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
+  "dependencies": {
+    "@repo/observability": "workspace:*",
+    "@t3-oss/env-nextjs": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@anthropic-ai/sdk": "^0.57.0",
+    "@repo/config": "workspace:*",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/qa": "workspace:*",
+    "next": "catalog:",
+    "openai": "^5.10.2",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "peerDependencies": {
+    "@anthropic-ai/sdk": "*",
+    "@ulixee/hero-playground": "*",
+    "cheerio": "*",
+    "jsdom": "catalog:",
+    "openai": "*",
+    "playwright": "*",
+    "puppeteer": "*"
+  },
+  "peerDependenciesMeta": {
+    "@anthropic-ai/sdk": {
+      "optional": true
+    },
+    "@ulixee/hero-playground": {
+      "optional": true
+    },
+    "cheerio": {
+      "optional": true
+    },
+    "jsdom": {
+      "optional": true
+    },
+    "openai": {
+      "optional": true
+    },
+    "playwright": {
+      "optional": true
+    },
+    "puppeteer": {
+      "optional": true
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "src/index.{ts,tsx}",
+    "index.{ts,tsx}",
+    "keys.ts",
+    "types.ts",
+    "mocks.ts",
+    "*.{ts,tsx}",
+    "src/**/*.{ts,tsx}",
+    "examples/**/*.{ts,tsx}",
+    "**/*.config.{js,ts,mjs}",
+    "**/*.test.{ts,tsx}",
+    "**/*.spec.{ts,tsx}",
+    "__tests__/**/*.{ts,tsx}",
+    "**/*.stories.{ts,tsx}"
+  ],
+  "ignoreDependencies": ["@types/*"],
+  "project": [
+    "src/**/*.{ts,tsx}",
+    "lib/**/*.{ts,tsx}",
+    "components/**/*.{ts,tsx}",
+    "utils/**/*.{ts,tsx}",
+    "hooks/**/*.{ts,tsx}",
+    "types/**/*.{ts,tsx}",
+    "providers/**/*.{ts,tsx}",
+    "prisma/**/*.{ts,tsx}",
+    "firestore/**/*.{ts,tsx}",
+    "redis/**/*.{ts,tsx}",
+    "upstash/**/*.{ts,tsx}",
+    "templates/**/*.{ts,tsx}",
+    "examples/**/*.{ts,tsx}",
+    "**/*.config.{js,ts,mjs}",
+    "**/*.test.{ts,tsx}",
+    "**/*.spec.{ts,tsx}",
+    "__tests__/**/*.{ts,tsx}",
+    "**/*.stories.{ts,tsx}"
+  ]
+}

@@ -1,0 +1,161 @@
+---
+title: MCP (Model Context Protocol) Setup
+description:
+  Configure MCP servers for dynamic tool loading from external services
+---
+
+# MCP (Model Context Protocol) Setup Examples
+
+This document shows how to configure MCP servers for ai-chatbot to enable
+dynamic tool loading from external services.
+
+## Environment Configuration
+
+Add these environment variables to your `.env.local` file:
+
+```bash
+# Enable Filesystem MCP Server
+MCP_FILESYSTEM_ENABLED=true
+MCP_FILESYSTEM_ROOT_PATH=/path/to/your/project
+
+# Enable Git MCP Server
+MCP_GIT_ENABLED=true
+MCP_GIT_REPO_PATH=/path/to/your/git/repo
+
+# Enable SQLite MCP Server
+MCP_SQLITE_ENABLED=true
+MCP_SQLITE_DB_PATH=/path/to/your/database.sqlite
+
+# Enable Custom SSE MCP Server
+MCP_CUSTOM_SSE_ENABLED=true
+MCP_CUSTOM_SSE_URL=http://localhost:3000/mcp-sse
+MCP_CUSTOM_SSE_API_KEY=your-api-key
+```
+
+## Installing MCP Servers
+
+First, install the official MCP server packages:
+
+```bash
+# Install MCP servers globally
+npm install -g @modelcontextprotocol/server-filesystem
+npm install -g @modelcontextprotocol/server-git
+npm install -g @modelcontextprotocol/server-sqlite
+```
+
+## Available Tools by Server
+
+### Filesystem Server
+
+- `filesystem_read_file` - Read file contents
+- `filesystem_write_file` - Write file contents
+- `filesystem_list_directory` - List directory contents
+- `filesystem_create_directory` - Create directories
+- `filesystem_delete_file` - Delete files
+
+### Git Server
+
+- `git_log` - View commit history
+- `git_diff` - Show file differences
+- `git_status` - Check repository status
+- `git_show` - Show commit details
+- `git_branch` - List/manage branches
+
+### SQLite Server
+
+- `sqlite_query` - Execute SQL queries
+- `sqlite_describe_table` - Get table schema
+- `sqlite_list_tables` - List all tables
+
+## Usage in Chat
+
+Once configured, these tools become available automatically in the chat
+interface:
+
+### Example: File Operations
+
+```
+User: "Can you read the README file and summarize it?"
+Assistant: [Uses filesystem_read_file tool to read README.md]
+
+User: "Create a new component file for user profiles"
+Assistant: [Uses filesystem_write_file tool to create the file]
+```
+
+### Example: Git Operations
+
+```
+User: "What changes were made in the last 5 commits?"
+Assistant: [Uses git_log tool to show recent commits]
+
+User: "Show me the differences in the latest commit"
+Assistant: [Uses git_diff tool to show changes]
+```
+
+### Example: Database Operations
+
+```
+User: "Show me all users in the database"
+Assistant: [Uses sqlite_query tool to run SELECT * FROM users]
+
+User: "What tables are available in the database?"
+Assistant: [Uses sqlite_list_tables tool to list tables]
+```
+
+## Monitoring
+
+The Knowledge Panel in the UI shows:
+
+- MCP server connection status
+- Number of connected servers
+- Available tool count
+- List of connected servers and their tools
+
+## Security Notes
+
+1. **Filesystem Access**: Only grant access to directories you trust
+2. **Database Access**: Use read-only database files when possible
+3. **Git Access**: Ensure the repository doesn't contain sensitive information
+4. **API Keys**: Keep MCP API keys secure and rotate them regularly
+
+## Troubleshooting
+
+### Server Not Starting
+
+- Check that MCP packages are installed globally
+- Verify file/directory paths exist
+- Check permissions for file access
+
+### Tools Not Appearing
+
+- Verify environment variables are set correctly
+- Check the MCP status in the Knowledge Panel
+- Look at server logs for connection errors
+
+### Permission Errors
+
+- Ensure the application has read/write access to specified paths
+- Check that database files are readable
+- Verify git repository permissions
+
+## Advanced Configuration
+
+For custom MCP servers, implement the MCP protocol with SSE transport:
+
+```typescript
+// Custom MCP server example
+import { createEdgeMCPTools } from "@repo/ai/server/edge";
+
+const mcpTools = await createEdgeMCPTools([
+  {
+    name: "custom-api",
+    transport: {
+      type: "sse",
+      url: "https://your-mcp-server.com/sse",
+      headers: {
+        Authorization: "Bearer your-token"
+      }
+    }
+  }
+]);
+```

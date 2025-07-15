@@ -1,20 +1,47 @@
 {
   "name": "@repo/payments",
-  "version": "0.0.0",
   "private": true,
+  "type": "module",
+  "exports": {
+    "./client": "./src/client.ts",
+    "./server": "./src/server.ts",
+    "./client/next": "./src/client-next.ts",
+    "./server/next": "./src/server-next.ts",
+    "./ai": "./src/ai.ts",
+    "./keys": {
+      "types": "./keys.ts",
+      "import": "./keys.ts"
+    }
+  },
   "scripts": {
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "circular": "madge --circular --extensions ts,tsx,js,jsx .",
+    "coverage:collect": "vitest run --coverage --reporter=json",
+    "knip": "knip --fix --reporter json",
+    "lint": "eslint . --fix",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:coverage:json": "vitest run --coverage --reporter=json",
+    "test:ui": "vitest --ui",
+    "test:watch": "vitest",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@stripe/agent-toolkit": "^0.7.8",
-    "@t3-oss/env-nextjs": "^0.13.4",
+    "@repo/observability": "workspace:*",
+    "@stripe/agent-toolkit": "^0.7.10",
+    "@t3-oss/env-nextjs": "catalog:",
+    "chalk": "^5.4.1",
+    "next": "catalog:",
+    "react": "catalog:",
     "server-only": "^0.0.1",
-    "stripe": "^18.1.1",
-    "zod": "^3.25.28"
+    "stripe": "^18.3.0",
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
-    "typescript": "^5.8.3"
+    "@repo/config": "workspace:*",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/qa": "workspace:*",
+    "@vitest/ui": "catalog:",
+    "vite-tsconfig-paths": "catalog:",
+    "vitest": "catalog:"
   }
 }

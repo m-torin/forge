@@ -1,0 +1,957 @@
+---
+title: "Environment Configuration"
+description:
+  "Framework-level environment variable management with SafeEnv pattern"
+---
+
+# Environment Configuration Architecture
+
+This document outlines the standardized environment configuration pattern used
+across all apps and packages in the monorepo. The SafeEnv pattern prevents
+runtime crashes and provides graceful fallbacks for missing environment
+variables.
+
+## Overview
+
+All applications and packages use a consistent `env.ts` file with the **SafeEnv
+pattern** that:
+
+- Validates environment variables at startup using Zod schemas
+- Provides graceful fallbacks to prevent white screen crashes
+- Offers type-safe environment variable access
+- **Strictly separates server and client variables for security**
+- Prevents accidental exposure of server secrets to the browser
+- Supports development and production configurations
+
+<Info>
+  **For AI Agents**: Quick decision trees, security warnings, and common
+  mistakes are covered in the [AI Environment Configuration
+  Guide](/ai-hints/environment-configuration).
+</Info>
+
+## Choosing the Right Pattern
+
+Before implementing environment configuration, choose the appropriate pattern
+based on your package's needs:
+
+- **[Server-Only Pattern](#server-only-pattern)**: Packages with only
+  server-side environment variables
+- **[Full Pattern](#full-pattern)**: Apps and packages with both server and
+  client environment variables
+
+## SafeEnv Patterns
+
+### Server-Only Pattern
+
+For packages with only server-side environment variables:
+
+```typescript
+import { createEnv } from "@t3-oss/env-nextjs";
+import { z } from "zod";
+import { logWarn } from "@repo/observability/server/next";
+
+// Environment validation logic
+const isProduction = process.env.NODE_ENV === "production";
+const hasRequiredEnvVars = Boolean(
+  process.env.REQUIRED_VAR_1 && process.env.REQUIRED_VAR_2
+);
+const requireInProduction = isProduction && hasRequiredEnvVars;
+
+// Safe environment variable validation that prevents white screens
+let env: any = null;
+let envError: string | null = null;
+
+try {
+  env = createEnv({
+    server: {
+      REQUIRED_VAR_1: requireInProduction
+        ? z.string().min(1)
+        : z.string().optional(),
+      REQUIRED_VAR_2: requireInProduction
+        ? z.string().min(1)
+        : z.string().optional()
+    },
+    client: {},
+    runtimeEnv: {
+      REQUIRED_VAR_1: process.env.REQUIRED_VAR_1,
+      REQUIRED_VAR_2: process.env.REQUIRED_VAR_2
+    },
+    onValidationError: (error) => {
+      const errorMessage = Array.isArray(error)
+        ? error.map((e) => e.message).join(", ")
+        : String(error);
+      envError = `Environment validation failed: ${errorMessage}`;
+      throw new Error("Environment validation failed");
+    }
+  });
+} catch (error) {
+  envError =
+    error instanceof Error ? error.message : "Unknown environment error";
+}
+
+export { env, envError };
+
+// Helper function to safely get server environment values
+export function safeEnv() {
+  if (env) return env;
+
+  // Return safe fallback values for server variables only
+  return {
+    REQUIRED_VAR_1: process.env.REQUIRED_VAR_1,
+    REQUIRED_VAR_2: process.env.REQUIRED_VAR_2
+    // Server variables only - no NEXT_PUBLIC_* vars here
+  };
+}
+
+// Default export for convenience
+export default env;
+```
+
+### Full Pattern
+
+For apps and packages with both server and client environment variables:
+
+```typescript
+import { createEnv } from "@t3-oss/env-nextjs";
+import { z } from "zod/v4";
+
+// Safe environment variable validation that prevents white screens
+let env: any = null;
+let envError: string | null = null;
+
+try {
+  env = createEnv({
+    server: {
+      NODE_ENV: z
+        .enum(["development", "production", "test"])
+        .default("development"),
+      API_SECRET: z.string().min(1),
+      DATABASE_URL: z.string().url(),
+      FEATURE_FLAG_X: z
+        .string()
+        .optional()
+        .default("false")
+        .transform((val) => val === "true")
+    },
+    client: {
+      NEXT_PUBLIC_NODE_ENV: z
+        .enum(["development", "production", "test"])
+        .default("development"),
+      NEXT_PUBLIC_API_URL: z.string().url(),
+      NEXT_PUBLIC_FEATURE_ENABLED: z
+        .string()
+        .optional()
+        .default("false")
+        .transform((val) => val === "true")
+    },
+    runtimeEnv: {
+      NODE_ENV: process.env.NODE_ENV,
+      API_SECRET: process.env.API_SECRET,
+      DATABASE_URL: process.env.DATABASE_URL,
+      FEATURE_FLAG_X: process.env.FEATURE_FLAG_X,
+      NEXT_PUBLIC_NODE_ENV:
+        process.env.NEXT_PUBLIC_NODE_ENV || process.env.NODE_ENV,
+      NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+      NEXT_PUBLIC_FEATURE_ENABLED: process.env.NEXT_PUBLIC_FEATURE_ENABLED
+    },
+    skipValidation: !!process.env.SKIP_ENV_VALIDATION,
+    onValidationError: (error): never => {
+      const message = Array.isArray(error)
+        ? error.map((e) => e.message).join(", ")
+        : String(error);
+      envError = `Package environment validation failed: ${message}`;
+
+      // In test environment, don't throw - just log
+      if (process.env.NODE_ENV === "test") {
+        console.warn("[Package]", envError);
+        process.exit(1);
+      }
+      throw new Error(envError);
+    },
+    onInvalidAccess: (variable) => {
+      console.error(
+        `❌ Attempted to access server-side environment variable '${variable}' on the client`
+      );
+      throw new Error(
+        `Cannot access server-side environment variable '${variable}' on the client`
+      );
+    }
+  });
+} catch (error) {
+  envError =
+    error instanceof Error ? error.message : "Unknown environment error";
+}
+
+export { env, envError };
+
+// Type definitions for better IDE support
+type ServerEnvironmentVariables = {
+  NODE_ENV: "development" | "production" | "test";
+  API_SECRET: string;
+  DATABASE_URL: string;
+  FEATURE_FLAG_X: boolean;
+};
+
+type ClientEnvironmentVariables = {
+  NEXT_PUBLIC_NODE_ENV: "development" | "production" | "test";
+  NEXT_PUBLIC_API_URL: string;
+  NEXT_PUBLIC_FEATURE_ENABLED: boolean;
+};
+
+export type EnvironmentVariables = ServerEnvironmentVariables &
+  ClientEnvironmentVariables;
+
+/**
+ * Safe server environment access
+ * Returns ONLY server-side environment variables with fallback values
+ */
+export function safeEnv(): ServerEnvironmentVariables {
+  if (env) {
+    const result = {} as any;
+
+    // Extract only server variables (non-NEXT_PUBLIC)
+    Object.keys(env).forEach((key) => {
+      if (!key.startsWith("NEXT_PUBLIC_")) {
+        result[key] = env[key];
+      }
+    });
+
+    // Handle boolean transforms when skipValidation is true
+    if (typeof result.FEATURE_FLAG_X === "string") {
+      result.FEATURE_FLAG_X = result.FEATURE_FLAG_X === "true";
+    }
+
+    return result as ServerEnvironmentVariables;
+  }
+
+  // Return safe fallback values to prevent crashes
+  return {
+    NODE_ENV: (process.env.NODE_ENV as any) || "development",
+    API_SECRET: process.env.API_SECRET || "",
+    DATABASE_URL: process.env.DATABASE_URL || "postgresql://localhost:5432/db",
+    FEATURE_FLAG_X: process.env.FEATURE_FLAG_X === "true"
+  };
+}
+
+/**
+ * Safe client environment access
+ * Returns ONLY client-side environment variables (NEXT_PUBLIC_*)
+ */
+export function safeClientEnv(): ClientEnvironmentVariables {
+  if (env) {
+    const result = {} as any;
+
+    // Extract only client variables (NEXT_PUBLIC_*)
+    Object.keys(env).forEach((key) => {
+      if (key.startsWith("NEXT_PUBLIC_")) {
+        result[key] = env[key];
+      }
+    });
+
+    // Handle boolean transforms when skipValidation is true
+    if (typeof result.NEXT_PUBLIC_FEATURE_ENABLED === "string") {
+      result.NEXT_PUBLIC_FEATURE_ENABLED =
+        result.NEXT_PUBLIC_FEATURE_ENABLED === "true";
+    }
+
+    return result as ClientEnvironmentVariables;
+  }
+
+  // Return safe fallback values to prevent crashes
+  return {
+    NEXT_PUBLIC_NODE_ENV:
+      (process.env.NEXT_PUBLIC_NODE_ENV as any) ||
+      (process.env.NODE_ENV as any) ||
+      "development",
+    NEXT_PUBLIC_API_URL:
+      process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000",
+    NEXT_PUBLIC_FEATURE_ENABLED:
+      process.env.NEXT_PUBLIC_FEATURE_ENABLED === "true"
+  };
+}
+
+// Helper functions for common patterns
+export function isProduction(): boolean {
+  const env = safeEnv();
+  return env.NODE_ENV === "production";
+}
+
+export function isDevelopment(): boolean {
+  const env = safeEnv();
+  return env.NODE_ENV === "development";
+}
+
+export function isTest(): boolean {
+  const env = safeEnv();
+  return env.NODE_ENV === "test";
+}
+
+// Feature flag helpers
+export function isFeatureXEnabled(): boolean {
+  const env = safeEnv();
+  return env.FEATURE_FLAG_X;
+}
+
+// Configuration presence helpers
+export function hasValidDatabaseConfig(): boolean {
+  const env = safeEnv();
+  return Boolean(
+    env.DATABASE_URL && env.DATABASE_URL !== "postgresql://localhost:5432/db"
+  );
+}
+
+// Default export for convenience
+export default env;
+```
+
+## Dual Export Pattern for Universal Packages
+
+Packages that are used in multiple contexts (Next.js apps, Node.js workers,
+tests) should export both the `env` object directly and a `safeEnv()` helper
+function. This maintains harmony with Next.js's webpack inline replacement while
+supporting non-webpack environments.
+
+### Why Dual Export?
+
+Next.js uses webpack's DefinePlugin to replace `process.env.VARIABLE` with
+actual values at build time. This only works with direct property access - not
+with function calls or object destructuring. The dual export pattern solves
+this:
+
+- **Direct `env` export**: For Next.js apps where `env.VARIABLE` gets inlined by
+  webpack
+- **`safeEnv()` function**: For Node.js contexts where webpack isn't available
+
+### Package Implementation
+
+```typescript
+// packages/*/env.ts
+import { createEnv } from "@t3-oss/env-nextjs";
+import { z } from "zod/v4";
+
+// Direct export for Next.js webpack inlining
+export const env = createEnv({
+  server: {
+    API_KEY: z.string().min(1),
+    SERVICE_URL: z.string().url().optional()
+  },
+  client: {
+    // Most packages don't have client vars
+    // If they do, they must start with NEXT_PUBLIC_
+  },
+  runtimeEnv: {
+    API_KEY: process.env.API_KEY,
+    SERVICE_URL: process.env.SERVICE_URL
+  },
+  onValidationError: (error) => {
+    console.warn("Package environment validation failed:", error);
+    // Don't throw in packages - use fallbacks for resilience
+  }
+});
+
+// Helper for non-Next.js contexts (Node.js, workers, tests)
+export function safeEnv() {
+  if (env) return env;
+
+  // Fallback values for resilience
+  return {
+    API_KEY: process.env.API_KEY || "",
+    SERVICE_URL: process.env.SERVICE_URL || "http://localhost:3000"
+  };
+}
+
+// Export type for better DX
+export type Env = typeof env;
+```
+
+### Usage Guidelines
+
+**In Next.js Apps:**
+
+```typescript
+// ✅ Direct access for webpack inlining
+import { env } from "@repo/package/env";
+const apiKey = env.API_KEY; // Gets inlined at build time
+```
+
+**In Node.js Workers/Scripts:**
+
+```typescript
+// ✅ Use safeEnv() where webpack isn't available
+import { safeEnv } from "@repo/package/env";
+const env = safeEnv();
+const apiKey = env.API_KEY;
+```
+
+**In Tests:**
+
+```typescript
+// ✅ Mock the entire module if needed
+vi.mock("@repo/package/env", () => ({
+  env: { API_KEY: "test-key" },
+  safeEnv: () => ({ API_KEY: "test-key" })
+}));
+```
+
+### Next.js App Pattern
+
+Next.js apps should only export `env` directly, without helper functions:
+
+```typescript
+// apps/*/env.ts
+import { createEnv } from "@t3-oss/env-nextjs";
+
+// Direct export only - no safeEnv() needed
+export const env = createEnv({
+  server: { DATABASE_URL: z.string().url() },
+  client: { NEXT_PUBLIC_API_URL: z.string().url() },
+  runtimeEnv: {
+    DATABASE_URL: process.env.DATABASE_URL,
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL
+  }
+});
+```
+
+## Key Benefits
+
+### 1. **White Screen Prevention**
+
+The SafeEnv pattern prevents application crashes when environment variables are
+missing:
+
+```typescript
+// ❌ WRONG - Can cause white screen crashes
+const apiUrl = process.env.NEXT_PUBLIC_API_URL; // undefined crashes app
+
+// ✅ CORRECT - Direct access with type safety (Next.js)
+import { env } from "#/root/env";
+const apiUrl = env.NEXT_PUBLIC_API_URL; // Type-safe and webpack-inlined
+
+// ✅ CORRECT - SafeEnv pattern (packages/non-Next.js)
+import { safeEnv } from "@repo/package/env";
+const envVars = safeEnv();
+const apiUrl = envVars.API_URL; // Has fallback value
+```
+
+### 2. **Type Safety**
+
+All environment variables are typed and validated:
+
+```typescript
+const env = safeEnv();
+// env.REQUIRED_VAR_1 is typed as string | undefined
+// TypeScript will warn about potential undefined values
+```
+
+### 3. **Development vs Production**
+
+Smart handling of required vs optional variables:
+
+```typescript
+// Required in production, optional in development
+const requireInProduction = isProduction && hasRequiredEnvVars;
+
+STRIPE_SECRET_KEY: requireInProduction
+  ? z.string().startsWith("sk_")
+  : z.string().startsWith("sk_").optional();
+```
+
+## Usage Patterns
+
+### In Next.js Client Components
+
+```typescript
+'use client';
+import { env } from '#/root/env';
+
+export function MyComponent() {
+  // Direct access - webpack inlines NEXT_PUBLIC_* vars
+  const apiUrl = env.NEXT_PUBLIC_API_URL;
+
+  // @t3-oss/env-nextjs prevents access to server vars
+  // const secret = env.API_SECRET; // ❌ Runtime error!
+
+  return <div>API: {apiUrl}</div>;
+}
+```
+
+### In Next.js Server Actions
+
+```typescript
+"use server";
+import { env } from "#/root/env";
+
+export async function myAction() {
+  // Direct access to server variables
+  const secretKey = env.SECRET_KEY;
+
+  if (!secretKey) {
+    throw new Error("SECRET_KEY not configured");
+  }
+
+  // Use secretKey safely
+}
+```
+
+### In Package Libraries (Dual Pattern)
+
+```typescript
+// When used in Next.js app - direct import
+import { env } from "@repo/analytics/env";
+export const analyticsKey = env.POSTHOG_KEY; // Gets inlined
+
+// When used in Node.js worker - safeEnv import
+import { safeEnv } from "@repo/analytics/env";
+export function initWorker() {
+  const env = safeEnv();
+  return new AnalyticsClient(env.POSTHOG_KEY);
+}
+```
+
+### Package Implementation Example
+
+```typescript
+// packages/analytics/env.ts
+import { createEnv } from "@t3-oss/env-nextjs";
+
+// Direct export for Next.js
+export const env = createEnv({
+  server: {
+    POSTHOG_KEY: z.string().optional(),
+    SEGMENT_KEY: z.string().optional()
+  },
+  client: {
+    NEXT_PUBLIC_POSTHOG_KEY: z.string().optional()
+  },
+  runtimeEnv: {
+    POSTHOG_KEY: process.env.POSTHOG_KEY,
+    SEGMENT_KEY: process.env.SEGMENT_KEY,
+    NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY
+  }
+});
+
+// Helper for non-Next.js contexts
+export function safeEnv() {
+  if (env) return env;
+
+  return {
+    POSTHOG_KEY: process.env.POSTHOG_KEY || "",
+    SEGMENT_KEY: process.env.SEGMENT_KEY || "",
+    NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY || ""
+  };
+}
+```
+
+## File Locations
+
+### Apps
+
+- `apps/docs/env.ts`
+- `apps/email/env.ts`
+- `apps/storybook/env.ts`
+- `apps/studio/env.ts`
+
+### Packages
+
+Every package that needs environment variables has an `env.ts` file:
+
+- `packages/auth/env.ts`
+- `packages/payments/env.ts`
+- `packages/analytics/env.ts`
+- `packages/notifications/env.ts`
+- And 12+ more packages
+
+## Migration from Legacy Patterns
+
+### From keys.ts Pattern
+
+If you encounter legacy `keys.ts` imports, update them:
+
+```typescript
+// ❌ LEGACY - keys.ts pattern (deprecated)
+import { keys } from "@repo/package/keys";
+const config = keys();
+
+// ✅ CURRENT - env.ts SafeEnv pattern
+import { safeEnv } from "@repo/package/env";
+const config = safeEnv();
+```
+
+### From Direct process.env
+
+```typescript
+// ❌ WRONG - Direct process.env in client components
+"use client";
+const isDev = process.env.NEXT_PUBLIC_NODE_ENV === "development";
+
+// ✅ CORRECT - SafeEnv pattern
+("use client");
+import { safeEnv } from "#/env";
+const env = safeEnv();
+const isDev = env.NEXT_PUBLIC_NODE_ENV === "development";
+```
+
+## Environment Variable Types
+
+### Server Variables
+
+- `STRIPE_SECRET_KEY` - Payment processing
+- `DATABASE_URL` - Database connection
+- `AUTH_SECRET` - Authentication secret
+- `KNOCK_SECRET_API_KEY` - Notifications
+
+### Client Variables (NEXT*PUBLIC*\*)
+
+- `NEXT_PUBLIC_API_URL` - API endpoint
+- `NEXT_PUBLIC_SENTRY_DSN` - Error tracking
+- `NEXT_PUBLIC_POSTHOG_API_KEY` - Analytics
+
+### Development Variables
+
+- `NODE_ENV` - Environment mode
+- `VERCEL` - Deployment platform detection
+- `ANALYZE` - Bundle analysis
+
+## Best Practices
+
+### 1. **Always Use SafeEnv**
+
+Never import `process.env` directly in application code:
+
+```typescript
+// ❌ WRONG
+const apiKey = process.env.API_KEY;
+
+// ✅ CORRECT
+import { safeEnv } from "#/env";
+const env = safeEnv();
+const apiKey = env.API_KEY;
+```
+
+### 2. **Provide Fallbacks**
+
+Always include fallback values in the `safeEnv()` function:
+
+```typescript
+export function safeEnv() {
+  if (env) return env;
+
+  return {
+    API_URL: process.env.API_URL || "http://localhost:3000",
+    DEBUG: process.env.DEBUG === "true"
+    // Never leave values as undefined without fallbacks
+  };
+}
+```
+
+### 3. **Validate Early**
+
+Use Zod schemas to validate environment variables at startup:
+
+```typescript
+server: {
+  EMAIL: z.string().email(),
+  PORT: z.string().transform(val => parseInt(val)).default('3000'),
+  API_KEY: z.string().min(10),
+}
+```
+
+### 4. **Environment-Specific Requirements**
+
+Make variables required in production but optional in development:
+
+```typescript
+const requireInProduction = isProduction && hasRequiredEnvVars;
+
+STRIPE_SECRET_KEY: requireInProduction
+  ? z.string().startsWith("sk_")
+  : z.string().optional();
+```
+
+## Testing Environment Variables
+
+### Basic Test Setup
+
+When testing packages with environment variables, use mocking to isolate tests:
+
+```typescript
+// __tests__/setup.ts
+import { vi } from "vitest";
+
+// Set test environment variables
+process.env.NODE_ENV = "test";
+process.env.SKIP_ENV_VALIDATION = "true";
+
+// Mock the env module
+vi.mock("../env", () => {
+  const mockEnv = {
+    NODE_ENV: "test",
+    API_SECRET: "test-secret",
+    DATABASE_URL: "postgresql://test:test@localhost:5432/test",
+    NEXT_PUBLIC_API_URL: "http://localhost:3000"
+  };
+
+  return {
+    env: mockEnv,
+    envError: null,
+    safeEnv: () => ({
+      NODE_ENV: mockEnv.NODE_ENV,
+      API_SECRET: mockEnv.API_SECRET,
+      DATABASE_URL: mockEnv.DATABASE_URL
+      // Server vars only
+    }),
+    safeClientEnv: () => ({
+      NEXT_PUBLIC_API_URL: mockEnv.NEXT_PUBLIC_API_URL
+      // Client vars only
+    })
+  };
+});
+```
+
+### Using QA Package Utilities
+
+The `@repo/qa` package provides centralized environment mocking utilities:
+
+```typescript
+// __tests__/setup.ts
+import {
+  createEnvMock,
+  mockEnvModule
+} from "@repo/qa/vitest/mocks/environment";
+
+// Create environment mock with overrides
+const envMock = createEnvMock({
+  API_SECRET: "my-test-secret",
+  DATABASE_URL: "postgresql://custom:test@localhost:5432/test"
+});
+
+// Mock the env module
+mockEnvModule("../env", envMock);
+```
+
+### Dynamic Environment Changes
+
+For tests that need to change environment variables:
+
+```typescript
+// __tests__/feature.test.ts
+import { describe, test, vi } from "vitest";
+
+describe("Feature Tests", () => {
+  let setMockEnv: (newEnv: any) => void;
+
+  beforeEach(() => {
+    vi.doMock("../env", () => {
+      let mockEnv = { FEATURE_FLAG: "false" };
+
+      return {
+        env: mockEnv,
+        safeEnv: () => mockEnv,
+        setMockEnv: (newEnv: any) => {
+          mockEnv = { ...mockEnv, ...newEnv };
+        }
+      };
+    });
+
+    // Get the setter function
+    const envModule = await import("../env");
+    setMockEnv = envModule.setMockEnv;
+  });
+
+  test("feature flag enabled", async () => {
+    // Change environment mid-test
+    setMockEnv({ FEATURE_FLAG: "true" });
+
+    const { isFeatureEnabled } = await import("../feature");
+    expect(isFeatureEnabled()).toBe(true);
+  });
+});
+```
+
+### Testing Edge Cases
+
+```typescript
+// Test environment validation failure
+test("handles missing required variables", () => {
+  delete process.env.REQUIRED_VAR;
+
+  const { safeEnv } = require("../env");
+  const env = safeEnv();
+
+  // Should return fallback value
+  expect(env.REQUIRED_VAR).toBe("fallback-value");
+});
+
+// Test skipValidation
+test("skips validation when SKIP_ENV_VALIDATION is set", () => {
+  process.env.SKIP_ENV_VALIDATION = "true";
+  process.env.INVALID_URL = "not-a-url";
+
+  // Should not throw even with invalid URL
+  expect(() => require("../env")).not.toThrow();
+});
+```
+
+## Migration from Legacy Patterns
+
+### From keys.ts Pattern
+
+If you encounter legacy `keys.ts` imports, update them:
+
+```typescript
+// ❌ LEGACY - keys.ts pattern (deprecated)
+import { keys } from "@repo/package/keys";
+const config = keys();
+
+// ✅ CURRENT - env.ts SafeEnv pattern
+import { safeEnv } from "@repo/package/env";
+const config = safeEnv();
+```
+
+### From Direct process.env
+
+```typescript
+// ❌ WRONG - Direct process.env in client components
+"use client";
+const isDev = process.env.NEXT_PUBLIC_NODE_ENV === "development";
+
+// ✅ CORRECT - SafeEnv pattern
+("use client");
+import { safeEnv } from "#/env";
+const env = safeEnv();
+const isDev = env.NEXT_PUBLIC_NODE_ENV === "development";
+```
+
+### Removing Legacy Exports
+
+Update package.json to remove legacy `/keys` exports:
+
+```json
+{
+  "exports": {
+    // ❌ Remove this
+    "./keys": "./keys.ts",
+
+    // ✅ Keep only env exports
+    "./env": "./env.ts"
+  }
+}
+```
+
+### Handling export default env
+
+Many packages still have `export default env`. While not harmful, consider
+removing for consistency:
+
+```typescript
+// Remove this line from env.ts files
+export default env;
+```
+
+### Standardizing Zod Imports
+
+Use consistent Zod imports across all packages:
+
+```typescript
+// ✅ Preferred - explicit version
+import { z } from "zod/v4";
+
+// ❌ Avoid - may cause version conflicts
+import { z } from "zod";
+```
+
+## Common Pitfalls
+
+### 1. Missing Separation Between Server and Client
+
+Packages with client variables must provide both functions:
+
+```typescript
+// ❌ Incomplete - mixing server and client vars
+export function safeEnv() {
+  return { API_KEY: "...", NEXT_PUBLIC_URL: "..." };
+}
+
+// ✅ Complete - proper separation
+export function safeEnv() {
+  return { API_KEY: "..." }; // Server only
+}
+export function safeClientEnv() {
+  return { NEXT_PUBLIC_URL: "..." }; // Client only
+}
+```
+
+### 2. Inconsistent Error Handling
+
+Avoid mixing error handling strategies:
+
+```typescript
+// ❌ Inconsistent - exit in test, throw in production
+if (process.env.NODE_ENV === "test") {
+  process.exit(1);
+}
+throw new Error(envError);
+
+// ✅ Consistent - always throw, let test runner handle
+throw new Error(envError);
+```
+
+### 3. Missing Type Exports
+
+Always export environment types for better IDE support:
+
+```typescript
+// ❌ No type exports
+let env: any = null;
+
+// ✅ With type exports
+export type EnvironmentVariables = ServerEnv & ClientEnv;
+```
+
+### 4. Boolean Transform Edge Cases
+
+Handle boolean transforms when `skipValidation` is true:
+
+```typescript
+// ❌ Broken when skipValidation=true
+const isEnabled = env.FEATURE_FLAG; // May be string "true"
+
+// ✅ Safe boolean handling
+if (typeof result.FEATURE_FLAG === "string") {
+  result.FEATURE_FLAG = result.FEATURE_FLAG === "true";
+}
+```
+
+### 5. Missing onInvalidAccess Handler
+
+Always include `onInvalidAccess` to catch client/server misuse:
+
+```typescript
+onInvalidAccess: (variable) => {
+  console.error(
+    `❌ Attempted to access server-side environment variable '${variable}' on the client`
+  );
+  throw new Error(
+    `Cannot access server-side environment variable '${variable}' on the client`
+  );
+};
+```
+
+## Troubleshooting
+
+### White Screen on Missing Env Vars
+
+If you see a white screen, check for:
+
+1. Missing `safeEnv()` function
+2. No fallback values in `safeEnv()`
+3. Direct `process.env` usage in client components
+
+### TypeScript Errors
+
+```typescript
+// Error: Property 'API_KEY' does not exist
+const key = env.API_KEY;
+
+// Fix: Add to env.ts schema and safeEnv() fallbacks
+```

@@ -1,0 +1,23 @@
+# Doppler configuration for forge monorepo
+# This file maps workspace packages to their respective Doppler projects
+
+setup:
+  # Monorepo project
+  - path: packages/database
+    project: monorepo
+    config: dev
+  - path: apps/docs
+    project: monorepo
+    config: dev
+  - path: apps/email
+    project: monorepo
+    config: dev
+  - path: apps/storybook
+    project: monorepo
+    config: dev
+  - path: apps/studio
+    project: monorepo
+    config: dev
+  - path: apps/ai-chatbot
+    project: monorepo
+    config: dev

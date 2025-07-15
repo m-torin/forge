@@ -1,0 +1,793 @@
+---
+title: "Cloudflare Images"
+description:
+  "Optimized image storage with automatic transformations, variants, and global
+  CDN delivery"
+icon: "image"
+---
+
+# Cloudflare Images
+
+Cloudflare Images provides a complete image optimization and delivery solution
+with automatic format conversion, on-the-fly transformations, and global CDN
+distribution.
+
+## Features
+
+<CardGroup cols={2}>
+  <Card title="Image Optimization" icon="wand-magic-sparkles">
+    Automatic format conversion to WebP/AVIF with quality optimization
+  </Card>
+  <Card title="On-the-fly Transformations" icon="crop">
+    Dynamic resizing, cropping, and effects without storing multiple versions
+  </Card>
+  <Card title="Variants System" icon="clone">
+    Predefined image sizes for consistent delivery across your application
+  </Card>
+  <Card title="Batch Operations" icon="layer-group">
+    High-throughput operations with batch tokens for bulk processing
+  </Card>
+</CardGroup>
+
+## Configuration
+
+### Basic Setup
+
+```bash
+# Cloudflare Images configuration
+CLOUDFLARE_IMAGES_ACCOUNT_ID=your-account-id
+CLOUDFLARE_IMAGES_API_TOKEN=your-api-token
+CLOUDFLARE_IMAGES_DELIVERY_URL=https://imagedelivery.net/your-account-id
+
+# Optional: For signed URLs
+CLOUDFLARE_IMAGES_SIGNING_KEY=your-signing-key
+```
+
+### Provider Initialization
+
+```typescript
+import { CloudflareImagesProvider } from "@repo/storage/server/next";
+import { logInfo, logWarn, logError } from "@repo/observability/server/next";
+
+const imagesProvider = new CloudflareImagesProvider({
+  accountId: process.env.CLOUDFLARE_IMAGES_ACCOUNT_ID,
+  apiToken: process.env.CLOUDFLARE_IMAGES_API_TOKEN,
+  deliveryUrl: process.env.CLOUDFLARE_IMAGES_DELIVERY_URL,
+  signingKey: process.env.CLOUDFLARE_IMAGES_SIGNING_KEY // Optional
+});
+
+// Upload result
+const result = await imagesProvider.upload(file);
+logInfo("Image uploaded successfully", { url: result.url }); // CDN URL for the image
+
+// List variants
+const variants = await imagesProvider.listVariants();
+logInfo("Variant information", { variants });
+
+// List keys
+const keys = await imagesProvider.listSigningKeys();
+logInfo("Available keys", { keys });
+
+// Generate new key
+const newKey = await imagesProvider.createSigningKey();
+logInfo("New key generated", { key: newKey });
+
+// List images
+const { images, total, hasMore } = await imagesProvider.list({ limit: 100 });
+logInfo("Image pagination results", {
+  shown: images.length,
+  total,
+  hasMore
+});
+
+// Usage stats
+const stats = await imagesProvider.getStats();
+logInfo("Storage usage statistics", {
+  imagesUsed: stats.count.current,
+  imagesAllowed: stats.count.allowed,
+  usagePercentage: (stats.count.current / stats.count.allowed) * 100
+});
+
+// Storage limit warning
+if (stats.count.current > stats.count.allowed * 0.8) {
+  logWarn("Storage limit warning", {
+    current: stats.count.current,
+    limit: stats.count.allowed,
+    percentageUsed: (stats.count.current / stats.count.allowed) * 100
+  });
+}
+
+// Error handling
+try {
+  await imagesProvider.upload(file);
+} catch (error) {
+  logError("Image upload failed", { error });
+}
+```
+
+## Image Upload
+
+### Basic Upload
+
+```typescript
+// Upload an image with metadata
+const result = await imagesProvider.upload("product-photo.jpg", imageBuffer, {
+  metadata: {
+    productId: "12345",
+    category: "electronics",
+    uploadedBy: "user-123"
+  },
+  requireSignedURLs: false // Public access
+});
+
+console.log(result.url); // CDN URL for the image
+```
+
+### Upload with Custom ID
+
+```typescript
+// Use a custom ID for easier management
+const result = await imagesProvider.upload("custom-id-12345", imageFile, {
+  fileName: "product-hero.jpg",
+  metadata: {
+    sku: "PROD-123"
+  }
+});
+```
+
+### Upload from URL
+
+```typescript
+// Import an image from an external URL
+const result = await imagesProvider.uploadFromUrl(
+  "https://example.com/product.jpg",
+  {
+    key: "imported-product-123", // Optional custom ID
+    metadata: {
+      source: "vendor-catalog",
+      importDate: new Date().toISOString()
+    }
+  }
+);
+```
+
+### Batch Upload from URLs
+
+```typescript
+// Create a batch token for high-volume operations
+const { token } = await imagesProvider.createBatchToken();
+
+// Upload multiple images in batch (up to 200 req/sec)
+const results = await imagesProvider.batchUploadFromUrls(
+  [
+    {
+      url: "https://vendor.com/product1.jpg",
+      id: "product-1",
+      metadata: { sku: "SKU-001" }
+    },
+    {
+      url: "https://vendor.com/product2.jpg",
+      id: "product-2",
+      metadata: { sku: "SKU-002" }
+    },
+    {
+      url: "https://vendor.com/product3.jpg",
+      id: "product-3",
+      metadata: { sku: "SKU-003" }
+    }
+  ],
+  token
+);
+```
+
+## Direct Client Upload
+
+### Generate Direct Upload URL
+
+```typescript
+// Server-side: Generate a direct upload URL
+const uploadData = await imagesProvider.getDirectUploadUrl("30m"); // 30 minute expiry
+
+// Return to client
+return {
+  uploadURL: uploadData.uploadURL,
+  imageId: uploadData.id
+};
+```
+
+### Client-Side Upload
+
+```typescript
+// Client-side: Upload directly to Cloudflare
+const formData = new FormData();
+formData.append("file", file);
+
+// Add optional metadata
+formData.append(
+  "metadata",
+  JSON.stringify({
+    uploadedBy: userId,
+    timestamp: Date.now()
+  })
+);
+
+const response = await fetch(uploadData.uploadURL, {
+  method: "POST",
+  body: formData
+});
+
+if (response.ok) {
+  // Image uploaded successfully
+  const imageUrl = `${deliveryUrl}/${uploadData.imageId}/public`;
+}
+```
+
+## Image Variants
+
+Variants allow you to define preset image transformations for consistent
+delivery.
+
+### Create Variants
+
+```typescript
+// Create a thumbnail variant
+await imagesProvider.createVariant({
+  id: "thumbnail",
+  options: {
+    width: 150,
+    height: 150,
+    fit: "cover",
+    quality: 85,
+    format: "auto" // Automatic WebP/AVIF
+  },
+  neverRequireSignedURLs: true // Always public
+});
+
+// Create a hero image variant with effects
+await imagesProvider.createVariant({
+  id: "hero",
+  options: {
+    width: 1920,
+    height: 1080,
+    fit: "cover",
+    quality: 90,
+    blur: 0, // No blur
+    sharpen: 1.5, // Slight sharpening
+    compression: "balanced"
+  }
+});
+
+// Create a mobile-optimized variant
+await imagesProvider.createVariant({
+  id: "mobile",
+  options: {
+    width: 768,
+    fit: "scale-down",
+    quality: 80,
+    format: "webp",
+    dpr: 2 // For retina displays
+  }
+});
+```
+
+### List and Manage Variants
+
+```typescript
+// List all variants
+const variants = await imagesProvider.listVariants();
+console.log(variants);
+// [
+//   { id: 'thumbnail', neverRequireSignedURLs: true, options: {...} },
+//   { id: 'hero', neverRequireSignedURLs: false, options: {...} },
+//   { id: 'mobile', neverRequireSignedURLs: false, options: {...} }
+// ]
+
+// Get specific variant details
+const variant = await imagesProvider.getVariant("thumbnail");
+
+// Update a variant
+await imagesProvider.updateVariant("thumbnail", {
+  options: {
+    width: 200, // Increase size
+    height: 200,
+    quality: 90 // Better quality
+  }
+});
+
+// Delete a variant
+await imagesProvider.deleteVariant("old-variant");
+```
+
+## Image Transformations
+
+Get transformed URLs with on-the-fly processing:
+
+### Basic Transformations
+
+```typescript
+// Get a resized image URL
+const url = imagesProvider.getTransformedUrl("image-id", {
+  width: 800,
+  height: 600,
+  fit: "contain",
+  quality: 90
+});
+
+// Apply multiple transformations
+const transformedUrl = imagesProvider.getTransformedUrl("image-id", {
+  width: 1200,
+  height: 800,
+  fit: "cover",
+  format: "webp",
+  quality: 85,
+  sharpen: 2,
+  blur: 0,
+  gamma: 1.2
+});
+```
+
+### Advanced Transformations
+
+```typescript
+// Gravity-based cropping
+const croppedUrl = imagesProvider.getTransformedUrl("image-id", {
+  width: 400,
+  height: 400,
+  fit: "crop",
+  gravity: { x: 0.5, y: 0.3 } // Focus on upper center
+});
+
+// Auto gravity for smart cropping
+const smartCropUrl = imagesProvider.getTransformedUrl("image-id", {
+  width: 300,
+  height: 300,
+  fit: "crop",
+  gravity: "auto" // AI-based focal point detection
+});
+
+// Apply borders
+const borderedUrl = imagesProvider.getTransformedUrl("image-id", {
+  width: 500,
+  height: 500,
+  border: {
+    color: "#FF0000",
+    width: 10
+  }
+});
+
+// Trim whitespace
+const trimmedUrl = imagesProvider.getTransformedUrl("image-id", {
+  trim: {
+    top: 20,
+    right: 20,
+    bottom: 20,
+    left: 20
+  }
+});
+
+// Rotate images
+const rotatedUrl = imagesProvider.getTransformedUrl("image-id", {
+  rotate: 90 // 90, 180, 270, or 360 degrees
+});
+
+// Background color for transparent images
+const bgUrl = imagesProvider.getTransformedUrl("image-id", {
+  width: 600,
+  height: 400,
+  fit: "pad",
+  background: "#FFFFFF" // White background
+});
+```
+
+### Format and Quality Options
+
+```typescript
+// Automatic format selection based on browser
+const autoFormatUrl = imagesProvider.getTransformedUrl("image-id", {
+  format: "auto", // Serves WebP/AVIF to supported browsers
+  quality: 85
+});
+
+// Force specific format
+const jpegUrl = imagesProvider.getTransformedUrl("image-id", {
+  format: "jpeg",
+  quality: 90,
+  compression: "best" // best, balanced, or fast
+});
+
+// Get image metadata as JSON
+const metadataUrl = imagesProvider.getTransformedUrl("image-id", {
+  format: "json" // Returns image metadata instead of image
+});
+
+// DPR (Device Pixel Ratio) for retina displays
+const retinaUrl = imagesProvider.getTransformedUrl("image-id", {
+  width: 400,
+  dpr: 2 // 2x resolution for retina
+});
+```
+
+### Animation Control
+
+```typescript
+// Disable animation for GIFs
+const staticUrl = imagesProvider.getTransformedUrl("animated-gif-id", {
+  anim: false // Convert to static image
+});
+
+// Error handling
+const safeUrl = imagesProvider.getTransformedUrl("image-id", {
+  width: 800,
+  onerror: "redirect" // Redirect to original on transformation error
+});
+```
+
+## Signing Keys
+
+Manage signing keys for secure URL generation:
+
+```typescript
+// List all signing keys
+const keys = await imagesProvider.listSigningKeys();
+console.log(keys);
+// [
+//   { name: 'key-1', value: 'secret-value-1' },
+//   { name: 'key-2', value: 'secret-value-2' }
+// ]
+
+// Create a new signing key
+const newKey = await imagesProvider.createSigningKey();
+console.log(newKey);
+// { name: 'generated-key-name', value: 'generated-secret' }
+
+// Delete a signing key
+await imagesProvider.deleteSigningKey("old-key-name");
+
+// Use signed URLs
+const signedUrl = imagesProvider.getUrl("private-image-id", {
+  signed: true,
+  expiresIn: 3600 // 1 hour
+});
+```
+
+## Image Management
+
+### Update Image Properties
+
+```typescript
+// Update image metadata and settings
+await imagesProvider.updateImage("image-id", {
+  metadata: {
+    status: "approved",
+    reviewedBy: "admin-123",
+    tags: "product,electronics,featured"
+  },
+  requireSignedURLs: true // Make image private
+});
+```
+
+### List Images
+
+```typescript
+// Basic listing
+const images = await imagesProvider.list({ limit: 100 });
+
+// Advanced listing with pagination
+const { images, total, hasMore } = await imagesProvider.listAdvanced({
+  perPage: 50,
+  page: 2,
+  sortOrder: "desc" // Sort by upload date
+});
+
+console.log(`Showing ${images.length} of ${total} images`);
+console.log(`Has more pages: ${hasMore}`);
+
+// Iterate through all pages
+let page = 1;
+let hasMorePages = true;
+
+while (hasMorePages) {
+  const result = await imagesProvider.listAdvanced({
+    perPage: 100,
+    page: page++
+  });
+
+  // Process images
+  processImages(result.images);
+
+  hasMorePages = result.hasMore;
+}
+```
+
+### Get Statistics
+
+```typescript
+// Check usage statistics
+const stats = await imagesProvider.getStats();
+console.log(`Images used: ${stats.count.current}`);
+console.log(`Images allowed: ${stats.count.allowed}`);
+console.log(
+  `Usage: ${((stats.count.current / stats.count.allowed) * 100).toFixed(2)}%`
+);
+
+// Alert if approaching limit
+if (stats.count.current > stats.count.allowed * 0.9) {
+  console.warn("Approaching image storage limit!");
+}
+```
+
+### Delete Images
+
+```typescript
+// Delete a single image
+await imagesProvider.delete("image-id");
+
+// Bulk delete (implement with caution)
+const imagesToDelete = ["img-1", "img-2", "img-3"];
+await Promise.all(imagesToDelete.map((id) => imagesProvider.delete(id)));
+```
+
+## Client Integration
+
+### React Upload Component
+
+```typescript
+'use client';
+
+import { useState } from 'react';
+
+export function ImageUploader() {
+  const [uploading, setUploading] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+
+  const handleUpload = async (file: File) => {
+    setUploading(true);
+
+    try {
+      // Get direct upload URL from your API
+      const response = await fetch('/api/images/upload-url', {
+        method: 'POST',
+      });
+      const { uploadURL, imageId } = await response.json();
+
+      // Upload directly to Cloudflare
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const uploadResponse = await fetch(uploadURL, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (uploadResponse.ok) {
+        // Construct the image URL
+        const url = `${process.env.NEXT_PUBLIC_CLOUDFLARE_IMAGES_URL}/${imageId}/public`;
+        setImageUrl(url);
+      }
+    } catch (error) {
+      console.error('Upload failed:', error);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div>
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])}
+        disabled={uploading}
+      />
+      {uploading && <p>Uploading...</p>}
+      {imageUrl && (
+        <img src={imageUrl} alt="Uploaded" style={{ maxWidth: '300px' }} />
+      )}
+    </div>
+  );
+}
+```
+
+### Responsive Image Component
+
+```typescript
+'use client';
+
+interface ResponsiveImageProps {
+  imageId: string;
+  alt: string;
+  className?: string;
+}
+
+export function ResponsiveImage({ imageId, alt, className }: ResponsiveImageProps) {
+  const baseUrl = process.env.NEXT_PUBLIC_CLOUDFLARE_IMAGES_URL;
+
+  return (
+    <picture>
+      {/* Mobile */}
+      <source
+        media="(max-width: 768px)"
+        srcSet={`
+          ${baseUrl}/${imageId}/mobile 1x,
+          ${baseUrl}/${imageId}/mobile-2x 2x
+        `}
+      />
+
+      {/* Tablet */}
+      <source
+        media="(max-width: 1024px)"
+        srcSet={`
+          ${baseUrl}/${imageId}/tablet 1x,
+          ${baseUrl}/${imageId}/tablet-2x 2x
+        `}
+      />
+
+      {/* Desktop */}
+      <img
+        src={`${baseUrl}/${imageId}/desktop`}
+        srcSet={`${baseUrl}/${imageId}/desktop-2x 2x`}
+        alt={alt}
+        className={className}
+        loading="lazy"
+      />
+    </picture>
+  );
+}
+```
+
+## Performance Optimization
+
+### Image Loading Strategies
+
+```typescript
+// Lazy load images below the fold
+const lazyImageUrl = imagesProvider.getTransformedUrl("image-id", {
+  width: 800,
+  quality: 85,
+  format: "auto"
+});
+
+// Lower quality for initial load
+const placeholderUrl = imagesProvider.getTransformedUrl("image-id", {
+  width: 50,
+  quality: 30,
+  blur: 20
+});
+
+// Progressive JPEG for better perceived performance
+const progressiveUrl = imagesProvider.getTransformedUrl("image-id", {
+  format: "jpeg",
+  quality: 85,
+  compression: "fast"
+});
+```
+
+### Batch Processing
+
+```typescript
+// Process multiple images efficiently
+async function processProductCatalog(products: Product[]) {
+  // Create batch token
+  const { token } = await imagesProvider.createBatchToken();
+
+  // Prepare batch upload
+  const uploadTasks = products.map((product) => ({
+    url: product.imageUrl,
+    id: `product-${product.id}`,
+    metadata: {
+      sku: product.sku,
+      category: product.category
+    }
+  }));
+
+  // Upload in chunks to respect rate limits
+  const chunkSize = 100;
+  for (let i = 0; i < uploadTasks.length; i += chunkSize) {
+    const chunk = uploadTasks.slice(i, i + chunkSize);
+    await imagesProvider.batchUploadFromUrls(chunk, token);
+
+    // Optional: Add delay between chunks
+    if (i + chunkSize < uploadTasks.length) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+  }
+}
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Image Optimization" icon="gauge">
+    - Use `format: 'auto'` for automatic WebP/AVIF delivery - Create variants for common sizes
+    instead of on-the-fly transforms - Use appropriate quality settings (80-85 for web, 90+ for hero
+    images) - Enable `compression: 'balanced'` for optimal size/quality ratio
+  </Accordion>
+
+<Accordion title="Performance" icon="rocket">
+  - Implement lazy loading for images below the fold - Use low-quality
+  placeholders with blur for better perceived performance - Leverage CDN caching
+  with appropriate cache headers - Batch operations when processing multiple
+  images
+</Accordion>
+
+<Accordion title="Security" icon="shield">
+  - Use signed URLs for sensitive images - Implement proper access controls in
+  your API - Validate file types and sizes before upload - Store sensitive
+  metadata encrypted
+</Accordion>
+
+  <Accordion title="Cost Management" icon="dollar-sign">
+    - Monitor usage with `getStats()` regularly - Delete unused images promptly - Use variants
+    instead of storing multiple versions - Compress images before upload when possible
+  </Accordion>
+</AccordionGroup>
+
+## Limitations
+
+- Maximum file size: 10MB per image
+- Supported formats: JPEG, PNG, GIF, WebP, SVG
+- Maximum dimensions: 10,000 x 10,000 pixels
+- Rate limits: 200 requests/second with batch token
+- Storage limits based on your plan
+
+## Error Handling
+
+```typescript
+try {
+  await imagesProvider.upload("image.jpg", buffer);
+} catch (error) {
+  if (error.message.includes("File too large")) {
+    // Use R2 for files over 10MB
+    await r2Provider.upload("image.jpg", buffer);
+  } else if (error.message.includes("Unsupported format")) {
+    // Convert image format first
+    const convertedBuffer = await convertImage(buffer, "jpeg");
+    await imagesProvider.upload("image.jpg", convertedBuffer);
+  } else if (error.message.includes("Quota exceeded")) {
+    // Handle storage limit
+    await cleanupOldImages();
+  }
+}
+```
+
+## Migration Guide
+
+### From S3 to Cloudflare Images
+
+```typescript
+async function migrateFromS3(s3Objects: S3Object[]) {
+  const { token } = await imagesProvider.createBatchToken();
+
+  for (const batch of chunk(s3Objects, 100)) {
+    const uploadTasks = batch.map((obj) => ({
+      url: obj.publicUrl,
+      id: obj.key.replace(/[^a-zA-Z0-9-]/g, "-"),
+      metadata: {
+        originalKey: obj.key,
+        migratedFrom: "s3",
+        migratedAt: new Date().toISOString()
+      }
+    }));
+
+    await imagesProvider.batchUploadFromUrls(uploadTasks, token);
+  }
+}
+```
+
+### From Local Storage
+
+```typescript
+async function uploadLocalImages(imagePaths: string[]) {
+  for (const path of imagePaths) {
+    const buffer = await fs.promises.readFile(path);
+    const filename = path.basename(path);
+
+    await imagesProvider.upload(filename, buffer, {
+      metadata: {
+        originalPath: path,
+        uploadedAt: new Date().toISOString()
+      }
+    });
+  }
+}
+```

@@ -1,0 +1,135 @@
+{
+  "name": "@repo/uix-system",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./mantine": "./src/mantine/index.ts",
+    "./mantine/*": "./src/mantine/*",
+    "./algolia": "./src/algolia/index.ts",
+    "./tailwind": "./src/tailwind/index.ts",
+    "./tailwind/*": "./src/tailwind/*",
+    "./tailwind/v3": "./src/tailwind/v3/index.ts",
+    "./tailwind/v3/*": "./src/tailwind/v3/*",
+    "./tailwind/v3/components": "./src/tailwind/v3/components/index.ts",
+    "./tailwind/v3/collaboration": "./src/tailwind/v3/collaboration/index.ts",
+    "./shared/i18n": "./src/shared/i18n/index.ts"
+  },
+  "scripts": {
+    "circular": "madge --circular --extensions ts,tsx,js,jsx .",
+    "coverage:collect": "vitest run --coverage --reporter=json",
+    "knip": "knip --fix --reporter json",
+    "lint": "eslint . --fix",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:coverage:json": "vitest run --coverage --reporter=json",
+    "test:ui": "vitest --ui",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
+  "dependencies": {
+    "@algolia/autocomplete-core": "^1.19.2",
+    "@algolia/autocomplete-js": "^1.19.2",
+    "@algolia/autocomplete-preset-algolia": "^1.19.2",
+    "@floating-ui/dom": "^1.6.0",
+    "@headlessui/react": "catalog:",
+    "@heroicons/react": "catalog:",
+    "@mantine/modals": "catalog:",
+    "@repo/auth": "workspace:*",
+    "@tabler/icons-react": "catalog:",
+    "@tailwindcss/postcss": "catalog:",
+    "@tiptap/extension-collaboration": "^3.0.0",
+    "@tiptap/extension-collaboration-caret": "^3.0.0",
+    "@tiptap/extension-color": "^3.0.0",
+    "@tiptap/extension-highlight": "^3.0.0",
+    "@tiptap/extension-link": "^3.0.0",
+    "@tiptap/extension-placeholder": "^3.0.0",
+    "@tiptap/extension-text-align": "^3.0.0",
+    "@tiptap/extension-text-style": "^3.0.0",
+    "@tiptap/extension-underline": "^3.0.0",
+    "@tiptap/starter-kit": "^3.0.0",
+    "algoliasearch": "^5.34.1",
+    "clsx": "catalog:",
+    "date-fns": "catalog:",
+    "framer-motion": "^12.3.0",
+    "geist": "^1.4.2",
+    "mantine-react-table": "2.0.0-beta.9",
+    "nanoid": "catalog:",
+    "next-themes": "^0.4.6",
+    "postcss": "catalog:",
+    "postcss-preset-mantine": "catalog:",
+    "react-instantsearch": "^7.16.2",
+    "react-instantsearch-nextjs": "^1.0.1",
+    "react-instantsearch-router-nextjs": "^7.16.2",
+    "tailwindcss": "catalog:",
+    "y-indexeddb": "^9.0.12",
+    "y-websocket": "^2.0.4",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@repo/config": "workspace:*",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/qa": "workspace:*",
+    "@storybook/nextjs": "^9.0.18",
+    "@storybook/react": "^9.0.18",
+    "@vitest/ui": "catalog:",
+    "jsdom": "catalog:",
+    "postcss": "catalog:",
+    "tailwindcss": "catalog:",
+    "vite": "catalog:",
+    "vite-tsconfig-paths": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "@mantine/core": "catalog:",
+    "@mantine/form": "catalog:",
+    "@mantine/hooks": "catalog:",
+    "@mantine/modals": "catalog:",
+    "@mantine/notifications": "catalog:",
+    "@tiptap/core": "^3.0.0",
+    "@tiptap/react": "^3.0.0",
+    "mantine-form-zod-resolver": "catalog:",
+    "next": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "yjs": "^13.6.18"
+  },
+  "peerDependenciesMeta": {
+    "@mantine/core": {
+      "optional": false
+    },
+    "@mantine/form": {
+      "optional": false
+    },
+    "@mantine/hooks": {
+      "optional": false
+    },
+    "@mantine/modals": {
+      "optional": true
+    },
+    "@mantine/notifications": {
+      "optional": true
+    },
+    "@tiptap/core": {
+      "optional": true
+    },
+    "@tiptap/react": {
+      "optional": true
+    },
+    "mantine-form-zod-resolver": {
+      "optional": false
+    },
+    "next": {
+      "optional": true
+    },
+    "react": {
+      "optional": false
+    },
+    "react-dom": {
+      "optional": false
+    },
+    "yjs": {
+      "optional": true
+    }
+  }
+}

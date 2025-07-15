@@ -1,0 +1,732 @@
+---
+title: "Upstash Redis Testing"
+description:
+  "Comprehensive Upstash Redis testing with mocks, adapters, and production-like
+  scenarios"
+icon: "database"
+---
+
+# Upstash Redis Testing
+
+The `@repo/qa` package provides comprehensive testing utilities for Upstash
+Redis, including in-memory mocks, production-like adapters, and seamless
+integration with real Redis instances via SRH.
+
+## Overview
+
+Upstash Redis testing in the Forge platform supports multiple testing scenarios:
+
+- **In-Memory Mocks** - Fast, isolated testing without external dependencies
+- **SRH Integration** - Real Redis behavior via HTTP proxy
+- **Production Adapters** - Test with actual Upstash Redis instances
+- **Hybrid Testing** - Combine mocks and real Redis for comprehensive coverage
+
+<CardGroup cols={2}>
+  <Card title="Mock Implementation" icon="memory">
+    Fast in-memory Redis simulation for unit testing
+  </Card>
+  <Card title="Production Testing" icon="cloud">
+    Test against real Upstash Redis instances
+  </Card>
+  <Card title="Automatic Fallback" icon="arrows-alt">
+    Seamlessly switch between mocks and real Redis
+  </Card>
+  <Card title="Full API Coverage" icon="check-circle">
+    Complete Upstash Redis API implementation
+  </Card>
+</CardGroup>
+
+## Quick Start
+
+### Basic Redis Testing
+
+```typescript
+import { createRedisClient } from "@repo/qa/vitest/mocks/upstash-redis";
+import { logInfo } from "@repo/observability/server/next";
+
+describe("Redis Operations", () => {
+  let redis: ReturnType<typeof createRedisClient>;
+
+  beforeEach(() => {
+    redis = createRedisClient();
+  });
+
+  it("should handle string operations", async () => {
+    await redis.set("user:123", "John Doe");
+    const result = await redis.get("user:123");
+    expect(result).toBe("John Doe");
+  });
+
+  it("should handle expiration", async () => {
+    await redis.setex("temp:key", 1, "temporary");
+
+    // Verify key exists
+    const exists = await redis.exists("temp:key");
+    expect(exists).toBe(1);
+
+    // Wait for expiration
+    await new Promise((resolve) => setTimeout(resolve, 1100));
+
+    const expired = await redis.get("temp:key");
+    expect(expired).toBeNull();
+  });
+});
+```
+
+### Collection Adapter Testing
+
+```typescript
+import { createRedisAdapter } from "@repo/qa/vitest/mocks/upstash-redis";
+
+describe("Collection Operations", () => {
+  let adapter: ReturnType<typeof createRedisAdapter>;
+
+  beforeEach(() => {
+    adapter = createRedisAdapter();
+  });
+
+  it("should handle complex data structures", async () => {
+    const userData = {
+      id: "user123",
+      name: "John Doe",
+      email: "john@example.com",
+      preferences: {
+        theme: "dark",
+        notifications: true
+      }
+    };
+
+    // Store with expiration
+    await adapter.setWithExpiry("user:123", userData, 3600);
+
+    // Retrieve and validate
+    const stored = await adapter.get("user:123");
+    expect(stored).toStrictEqual(userData);
+
+    // Check TTL
+    const ttl = await adapter.getTTL("user:123");
+    expect(ttl).toBeGreaterThan(3500);
+    expect(ttl).toBeLessThanOrEqual(3600);
+  });
+});
+```
+
+## Mock Implementation Features
+
+### Supported Redis Operations
+
+The mock implementation supports all major Redis operations:
+
+<Tabs>
+  <Tab title="String Operations">
+    ```typescript
+    describe('String Operations', () => {
+      it('should handle all string commands', async () => {
+        const redis = createRedisClient();
+
+        // Basic operations
+        await redis.set('key', 'value');
+        expect(await redis.get('key')).toBe('value');
+
+        // Conditional operations
+        await redis.setnx('new-key', 'new-value');
+        expect(await redis.get('new-key')).toBe('new-value');
+
+        // Atomic operations
+        await redis.set('counter', '10');
+        const incremented = await redis.incr('counter');
+        expect(incremented).toBe(11);
+
+        // Multiple operations
+        await redis.mset({ key1: 'value1', key2: 'value2' });
+        const values = await redis.mget('key1', 'key2');
+        expect(values).toStrictEqual(['value1', 'value2']);
+      });
+    });
+    ```
+
+  </Tab>
+
+  <Tab title="Hash Operations">
+    ```typescript
+    describe('Hash Operations', () => {
+      it('should handle hash commands', async () => {
+        const redis = createRedisClient();
+
+        // Set hash fields
+        await redis.hset('user:123', {
+          name: 'John Doe',
+          email: 'john@example.com',
+          age: '30',
+        });
+
+        // Get specific field
+        const name = await redis.hget('user:123', 'name');
+        expect(name).toBe('John Doe');
+
+        // Get all fields
+        const user = await redis.hgetall('user:123');
+        expect(user).toStrictEqual({
+          name: 'John Doe',
+          email: 'john@example.com',
+          age: '30',
+        });
+
+        // Increment numeric field
+        await redis.hincrby('user:123', 'age', 1);
+        const newAge = await redis.hget('user:123', 'age');
+        expect(newAge).toBe('31');
+      });
+    });
+    ```
+
+  </Tab>
+
+  <Tab title="List Operations">
+    ```typescript
+    describe('List Operations', () => {
+      it('should handle list commands', async () => {
+        const redis = createRedisClient();
+
+        // Push elements
+        await redis.lpush('tasks', 'task1', 'task2', 'task3');
+
+        // Get list length
+        const length = await redis.llen('tasks');
+        expect(length).toBe(3);
+
+        // Get range
+        const tasks = await redis.lrange('tasks', 0, -1);
+        expect(tasks).toStrictEqual(['task3', 'task2', 'task1']);
+
+        // Pop elements
+        const task = await redis.rpop('tasks');
+        expect(task).toBe('task1');
+
+        // Remaining tasks
+        const remaining = await redis.lrange('tasks', 0, -1);
+        expect(remaining).toStrictEqual(['task3', 'task2']);
+      });
+    });
+    ```
+
+  </Tab>
+
+  <Tab title="Set Operations">
+    ```typescript
+    describe('Set Operations', () => {
+      it('should handle set commands', async () => {
+        const redis = createRedisClient();
+
+        // Add members
+        await redis.sadd('tags', 'javascript', 'typescript', 'react');
+
+        // Check membership
+        const isMember = await redis.sismember('tags', 'javascript');
+        expect(isMember).toBe(1);
+
+        // Get all members
+        const members = await redis.smembers('tags');
+        expect(members).toContain('javascript');
+        expect(members).toContain('typescript');
+        expect(members).toContain('react');
+
+        // Set operations
+        await redis.sadd('frontend', 'react', 'vue', 'angular');
+        const intersection = await redis.sinter('tags', 'frontend');
+        expect(intersection).toContain('react');
+      });
+    });
+    ```
+
+  </Tab>
+
+  <Tab title="Sorted Set Operations">
+    ```typescript
+    describe('Sorted Set Operations', () => {
+      it('should handle sorted set commands', async () => {
+        const redis = createRedisClient();
+
+        // Add scored members
+        await redis.zadd('leaderboard', {
+          score: 100, member: 'player1'
+        });
+        await redis.zadd('leaderboard', {
+          score: 200, member: 'player2'
+        });
+        await redis.zadd('leaderboard', {
+          score: 150, member: 'player3'
+        });
+
+        // Get range by rank
+        const topPlayers = await redis.zrevrange('leaderboard', 0, 1);
+        expect(topPlayers).toStrictEqual(['player2', 'player3']);
+
+        // Get score
+        const score = await redis.zscore('leaderboard', 'player2');
+        expect(score).toBe(200);
+
+        // Count by score range
+        const count = await redis.zcount('leaderboard', 100, 200);
+        expect(count).toBe(3);
+      });
+    });
+    ```
+
+  </Tab>
+</Tabs>
+
+### Advanced Mock Features
+
+#### Pipeline Support
+
+```typescript
+describe("Pipeline Operations", () => {
+  it("should support pipeline operations", async () => {
+    const redis = createRedisClient();
+
+    // Create pipeline
+    const pipeline = redis.pipeline();
+
+    // Queue operations
+    pipeline.set("key1", "value1");
+    pipeline.set("key2", "value2");
+    pipeline.get("key1");
+    pipeline.get("key2");
+
+    // Execute pipeline
+    const results = await pipeline.exec();
+
+    expect(results).toHaveLength(4);
+    expect(results[2]).toBe("value1");
+    expect(results[3]).toBe("value2");
+  });
+});
+```
+
+#### Expiration and TTL
+
+```typescript
+describe("Expiration Features", () => {
+  it("should handle TTL operations", async () => {
+    const redis = createRedisClient();
+
+    // Set with expiration
+    await redis.setex("temp", 10, "temporary");
+
+    // Check TTL
+    const ttl = await redis.ttl("temp");
+    expect(ttl).toBeGreaterThan(0);
+    expect(ttl).toBeLessThanOrEqual(10);
+
+    // Set expiration on existing key
+    await redis.set("persistent", "value");
+    await redis.expire("persistent", 5);
+
+    const persistentTTL = await redis.ttl("persistent");
+    expect(persistentTTL).toBeGreaterThan(0);
+  });
+
+  it("should auto-expire keys", async () => {
+    const redis = createRedisClient();
+
+    // Set key with 1 second expiration
+    await redis.setex("fast-expire", 1, "expires-soon");
+
+    // Verify key exists
+    expect(await redis.exists("fast-expire")).toBe(1);
+
+    // Wait for expiration
+    await new Promise((resolve) => setTimeout(resolve, 1100));
+
+    // Verify key is gone
+    expect(await redis.exists("fast-expire")).toBe(0);
+    expect(await redis.get("fast-expire")).toBeNull();
+  });
+});
+```
+
+## Collection Adapter
+
+The collection adapter provides higher-level operations for complex data
+structures:
+
+### Basic Adapter Usage
+
+```typescript
+import { createRedisAdapter } from "@repo/qa/vitest/mocks/upstash-redis";
+
+describe("Redis Adapter", () => {
+  let adapter: ReturnType<typeof createRedisAdapter>;
+
+  beforeEach(() => {
+    adapter = createRedisAdapter();
+  });
+
+  it("should handle JSON serialization", async () => {
+    const complexObject = {
+      id: "obj123",
+      metadata: {
+        created: new Date("2024-01-01"),
+        tags: ["important", "urgent"],
+        config: {
+          enabled: true,
+          threshold: 0.95
+        }
+      }
+    };
+
+    await adapter.set("complex:obj", complexObject);
+    const retrieved = await adapter.get("complex:obj");
+
+    expect(retrieved).toStrictEqual(complexObject);
+  });
+});
+```
+
+### Advanced Adapter Operations
+
+```typescript
+describe("Advanced Adapter Operations", () => {
+  it("should handle bulk operations", async () => {
+    const adapter = createRedisAdapter();
+
+    // Bulk set with different TTLs
+    const operations = [
+      { key: "session:1", value: { userId: "1" }, ttl: 3600 },
+      { key: "session:2", value: { userId: "2" }, ttl: 7200 },
+      { key: "session:3", value: { userId: "3" }, ttl: 1800 }
+    ];
+
+    await Promise.all(
+      operations.map((op) => adapter.setWithExpiry(op.key, op.value, op.ttl))
+    );
+
+    // Verify all sessions exist
+    const keys = await adapter.keys("session:*");
+    expect(keys).toHaveLength(3);
+
+    // Verify TTLs are different
+    const ttls = await Promise.all(keys.map((key) => adapter.getTTL(key)));
+
+    expect(ttls[0]).toBeCloseTo(3600, -1);
+    expect(ttls[1]).toBeCloseTo(7200, -1);
+    expect(ttls[2]).toBeCloseTo(1800, -1);
+  });
+
+  it("should handle pattern-based operations", async () => {
+    const adapter = createRedisAdapter();
+
+    // Create test data
+    await adapter.set("user:1:profile", { name: "User 1" });
+    await adapter.set("user:1:settings", { theme: "dark" });
+    await adapter.set("user:2:profile", { name: "User 2" });
+    await adapter.set("user:2:settings", { theme: "light" });
+    await adapter.set("product:1", { name: "Product 1" });
+
+    // Get user-specific keys
+    const userKeys = await adapter.keys("user:1:*");
+    expect(userKeys).toHaveLength(2);
+    expect(userKeys).toContain("user:1:profile");
+    expect(userKeys).toContain("user:1:settings");
+
+    // Delete pattern
+    await adapter.deletePattern("user:2:*");
+
+    const remainingUserKeys = await adapter.keys("user:*");
+    expect(remainingUserKeys).toHaveLength(2);
+    expect(remainingUserKeys).not.toContain("user:2:profile");
+    expect(remainingUserKeys).not.toContain("user:2:settings");
+  });
+});
+```
+
+## Production Integration
+
+### Real Upstash Redis Testing
+
+```typescript
+describe("Production Redis Tests", () => {
+  beforeAll(() => {
+    // Set environment variables for production testing
+    process.env.UPSTASH_REDIS_REST_URL = "https://your-redis.upstash.io";
+    process.env.UPSTASH_REDIS_REST_TOKEN = "your-token";
+  });
+
+  it("should work with real Upstash Redis", async () => {
+    // This will use real Upstash Redis if credentials are available
+    const redis = createRedisClient();
+
+    const testKey = `test:${Date.now()}`;
+
+    try {
+      await redis.set(testKey, "production-test");
+      const result = await redis.get(testKey);
+      expect(result).toBe("production-test");
+    } finally {
+      // Clean up
+      await redis.del(testKey);
+    }
+  });
+});
+```
+
+### Environment-Based Testing
+
+```typescript
+describe("Environment Detection", () => {
+  it("should use appropriate implementation based on environment", () => {
+    // Mock environment
+    delete process.env.UPSTASH_REDIS_REST_URL;
+    delete process.env.SRH_MODE;
+
+    const mockRedis = createRedisClient();
+    expect(mockRedis.constructor.name).toBe("MockRedisClient");
+
+    // SRH environment
+    process.env.SRH_MODE = "proxy";
+    process.env.SRH_CONNECTION_STRING = "http://localhost:8080";
+
+    const srhRedis = createRedisClient();
+    // Will use SRH adapter when available
+
+    // Production environment
+    process.env.UPSTASH_REDIS_REST_URL = "https://redis.upstash.io";
+    process.env.UPSTASH_REDIS_REST_TOKEN = "token";
+
+    const prodRedis = createRedisClient();
+    // Will use real Upstash Redis
+  });
+});
+```
+
+## Testing Patterns
+
+### Cache Testing
+
+```typescript
+describe("Cache Implementation", () => {
+  it("should implement cache-aside pattern", async () => {
+    const redis = createRedisClient();
+
+    // Simulate cache-aside pattern
+    const getCachedUser = async (userId: string) => {
+      const cacheKey = `user:${userId}`;
+
+      // Try cache first
+      let user = await redis.get(cacheKey);
+      if (user) {
+        return JSON.parse(user);
+      }
+
+      // Simulate database fetch
+      user = { id: userId, name: `User ${userId}` };
+
+      // Cache for 1 hour
+      await redis.setex(cacheKey, 3600, JSON.stringify(user));
+
+      return user;
+    };
+
+    // First call - cache miss
+    const user1 = await getCachedUser("123");
+    expect(user1).toStrictEqual({ id: "123", name: "User 123" });
+
+    // Second call - cache hit
+    const user2 = await getCachedUser("123");
+    expect(user2).toStrictEqual({ id: "123", name: "User 123" });
+
+    // Verify cache was used
+    const cached = await redis.get("user:123");
+    expect(JSON.parse(cached!)).toStrictEqual(user1);
+  });
+});
+```
+
+### Session Management
+
+```typescript
+describe("Session Management", () => {
+  it("should handle user sessions", async () => {
+    const adapter = createRedisAdapter();
+
+    const sessionId = "sess_123456789";
+    const sessionData = {
+      userId: "user_123",
+      email: "user@example.com",
+      loginTime: Date.now(),
+      permissions: ["read", "write"]
+    };
+
+    // Create session with 30-minute expiration
+    await adapter.setWithExpiry(
+      `session:${sessionId}`,
+      sessionData,
+      30 * 60 // 30 minutes
+    );
+
+    // Verify session exists
+    const session = await adapter.get(`session:${sessionId}`);
+    expect(session).toStrictEqual(sessionData);
+
+    // Update session activity
+    const updatedSession = {
+      ...sessionData,
+      lastActivity: Date.now()
+    };
+
+    await adapter.setWithExpiry(
+      `session:${sessionId}`,
+      updatedSession,
+      30 * 60
+    );
+
+    // Verify update
+    const refreshedSession = await adapter.get(`session:${sessionId}`);
+    expect(refreshedSession.lastActivity).toBeDefined();
+  });
+});
+```
+
+### Rate Limiting
+
+```typescript
+describe("Rate Limiting", () => {
+  it("should implement sliding window rate limiting", async () => {
+    const redis = createRedisClient();
+
+    const checkRateLimit = async (userId: string, limit = 10, window = 60) => {
+      const key = `rate_limit:${userId}`;
+      const now = Date.now();
+      const windowStart = now - window * 1000;
+
+      // Remove old entries
+      await redis.zremrangebyscore(key, 0, windowStart);
+
+      // Count current requests
+      const currentCount = await redis.zcard(key);
+
+      if (currentCount >= limit) {
+        return { allowed: false, remaining: 0 };
+      }
+
+      // Add current request
+      await redis.zadd(key, { score: now, member: `${now}-${Math.random()}` });
+
+      // Set expiration
+      await redis.expire(key, window);
+
+      return { allowed: true, remaining: limit - currentCount - 1 };
+    };
+
+    // Test rate limiting
+    const userId = "user123";
+
+    // Make 10 requests (should all succeed)
+    for (let i = 0; i < 10; i++) {
+      const result = await checkRateLimit(userId);
+      expect(result.allowed).toBe(true);
+    }
+
+    // 11th request should be rate limited
+    const rateLimited = await checkRateLimit(userId);
+    expect(rateLimited.allowed).toBe(false);
+    expect(rateLimited.remaining).toBe(0);
+  });
+});
+```
+
+## Best Practices
+
+### Test Organization
+
+<CardGroup cols={2}>
+  <Card title="Unit Tests" icon="flask">
+    Use mocks for fast, isolated unit tests
+  </Card>
+  <Card title="Integration Tests" icon="link">
+    Use SRH or real Redis for integration testing
+  </Card>
+  <Card title="Performance Tests" icon="gauge">
+    Use real Redis for performance and load testing
+  </Card>
+  <Card title="E2E Tests" icon="globe">
+    Use production Redis for end-to-end scenarios
+  </Card>
+</CardGroup>
+
+### Error Handling
+
+```typescript
+describe("Error Handling", () => {
+  it("should handle Redis connection errors", async () => {
+    // Mock connection failure
+    const redis = createRedisClient();
+
+    // Simulate network error
+    vi.spyOn(redis, "get").mockRejectedValue(new Error("Connection failed"));
+
+    try {
+      await redis.get("test-key");
+      fail("Should have thrown an error");
+    } catch (error) {
+      expect(error.message).toBe("Connection failed");
+    }
+  });
+
+  it("should handle invalid operations gracefully", async () => {
+    const redis = createRedisClient();
+
+    // Try to perform list operation on string
+    await redis.set("string-key", "string-value");
+
+    try {
+      await redis.lpush("string-key", "list-item");
+      fail("Should have thrown an error");
+    } catch (error) {
+      expect(error.message).toContain("wrong kind of value");
+    }
+  });
+});
+```
+
+### Performance Testing
+
+```typescript
+describe("Performance Tests", () => {
+  it("should handle high-throughput operations", async () => {
+    const redis = createRedisClient();
+    const operations = 1000;
+
+    const startTime = Date.now();
+
+    // Bulk operations using pipeline
+    const pipeline = redis.pipeline();
+    for (let i = 0; i < operations; i++) {
+      pipeline.set(`perf:${i}`, `value-${i}`);
+    }
+
+    await pipeline.exec();
+
+    const insertTime = Date.now() - startTime;
+    logInfo("Redis performance test completed", {
+      operations,
+      insertTime,
+      operationsPerSecond: Math.round(operations / (insertTime / 1000)),
+      timestamp: new Date().toISOString()
+    });
+
+    // Performance assertions
+    expect(insertTime).toBeLessThan(5000); // Should complete in 5 seconds
+
+    // Verify data integrity
+    const sampleValue = await redis.get("perf:500");
+    expect(sampleValue).toBe("value-500");
+  });
+});
+```
+
+The Upstash Redis testing framework provides comprehensive testing capabilities
+that scale from fast unit tests with mocks to full integration testing with real
+Redis instances, ensuring your Redis-dependent code works correctly in all
+environments.

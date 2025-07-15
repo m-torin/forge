@@ -1,0 +1,586 @@
+---
+title: "Notifications Package"
+description:
+  "Multi-channel notification system with Mantine UI integration and Knock.io
+  backend"
+icon: "bell"
+---
+
+# Notifications Package
+
+Multi-channel notification system combining **Mantine UI notifications** for
+instant feedback with **Knock.io** for comprehensive notification delivery
+(email, SMS, push, in-app).
+
+## Overview
+
+The notifications package provides a complete notification solution featuring:
+
+- **Instant UI Feedback**: Mantine-based toast notifications with styled presets
+- **Multi-Channel Delivery**: Knock.io integration for email, SMS, push
+  notifications
+- **Real-Time Feeds**: In-app notification feeds with React components
+- **Graceful Degradation**: Works without configuration for development
+- **Environment-Aware**: Smart defaults that adapt to dev/prod environments
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Mantine Integration" icon="sparkles">
+    Pre-styled toast notifications with success, error, warning, and info
+    variants
+  </Card>
+  <Card title="Knock.io Backend" icon="server">
+    Server-side notification delivery across email, SMS, push, and in-app
+    channels
+  </Card>
+  <Card title="React Components" icon="react">
+    Drop-in notification provider and trigger components for in-app feeds
+  </Card>
+  <Card title="Type-Safe Config" icon="shield-check">
+    Environment validation with T3 Env and graceful fallbacks
+  </Card>
+</CardGroup>
+
+## Installation
+
+```bash
+pnpm add @repo/notifications
+```
+
+## Environment Variables
+
+<Tabs>
+  <Tab title="Development (Optional)">
+```bash
+# Knock.io Configuration (Optional in development)
+KNOCK_SECRET_API_KEY=sk_test_your_secret_key
+NEXT_PUBLIC_KNOCK_API_KEY=pk_test_your_public_key
+NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID=your_feed_id
+```
+
+Without these variables, the package gracefully degrades:
+
+- Server notifications become no-ops
+- UI notifications work normally
+- React components return null
+
+</Tab>
+
+  <Tab title="Production (Required)">
+```bash
+# Knock.io Configuration (Required for full functionality)
+KNOCK_SECRET_API_KEY=sk_live_your_secret_key
+NEXT_PUBLIC_KNOCK_API_KEY=pk_live_your_public_key  
+NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID=your_feed_id
+```
+
+  </Tab>
+</Tabs>
+
+## Mantine UI Notifications
+
+### Quick Start
+
+Pre-configured notification presets with consistent styling:
+
+```typescript
+import { notify } from "@repo/notifications/mantine-notifications";
+
+// Success notification
+notify.success("Operation completed successfully!");
+
+// Error notification
+notify.error("Something went wrong");
+
+// Warning notification
+notify.warning("Please check your input");
+
+// Info notification
+notify.info("New update available");
+
+// Custom notification
+notify.custom("Custom message", {
+  color: "purple",
+  autoClose: 10000,
+  title: "Custom Title"
+});
+```
+
+### Provider Setup
+
+Add the Mantine notifications provider to your app:
+
+```typescript
+// app/layout.tsx
+import { NotificationsProvider } from '@repo/notifications/mantine-notifications';
+import { MantineProvider } from '@mantine/core';
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        <MantineProvider>
+          <NotificationsProvider>
+            {children}
+          </NotificationsProvider>
+        </MantineProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+### Notification Methods
+
+<AccordionGroup>
+  <Accordion title="Success Notifications" icon="check">
+    ```typescript
+    import { notify } from '@repo/notifications/mantine-notifications';
+
+    // Simple success
+    notify.success('Data saved successfully');
+
+    // Success with custom options
+    notify.success('Profile updated', {
+      title: 'Success',
+      autoClose: 3000,
+    });
+
+    // Success with action
+    notify.success('File uploaded', {
+      title: 'Upload Complete',
+      message: 'Click to view file',
+      onClick: () => window.open('/files/document.pdf')
+    });
+    ```
+
+  </Accordion>
+
+  <Accordion title="Error Notifications" icon="x">
+    ```typescript
+    // Simple error
+    notify.error('Failed to save data');
+
+    // Error with details
+    notify.error('Validation failed', {
+      title: 'Form Error',
+      message: 'Please check the required fields'
+    });
+
+    // Persistent error (no auto-close)
+    notify.error('Critical system error', {
+      autoClose: false,
+      withCloseButton: true
+    });
+    ```
+
+  </Accordion>
+
+  <Accordion title="Advanced Usage" icon="settings">
+    ```typescript
+    // Update existing notification
+    const id = notify.info('Processing...', { autoClose: false });
+    
+    // Later update it
+    notify.update({
+      id,
+      color: 'green',
+      message: 'Processing complete!',
+      icon: <IconCheck size={16} />,
+      autoClose: 2000
+    });
+
+    // Clean all notifications
+    notify.clean();
+
+    // Clean notifications queue
+    notify.cleanQueue();
+
+    // Hide specific notification
+    notify.hide(id);
+    ```
+
+  </Accordion>
+</AccordionGroup>
+
+## Knock.io Integration
+
+### Server-Side Notifications
+
+Send notifications across multiple channels from server actions or API routes:
+
+```typescript
+import { notifications } from "@repo/notifications/server/next";
+
+// Server action
+export async function sendWelcomeNotification(userId: string, email: string) {
+  try {
+    await notifications.notify("welcome-email", {
+      recipients: [userId],
+      data: {
+        email,
+        name: "John Doe",
+        company: "Acme Corp"
+      }
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to send notification:", error);
+    return { success: false, error: "Notification failed" };
+  }
+}
+
+// API route
+export async function POST(request: Request) {
+  const { userId, type, data } = await request.json();
+
+  await notifications.trigger("user-action", {
+    recipients: [userId],
+    data: {
+      action: type,
+      timestamp: new Date().toISOString(),
+      ...data
+    }
+  });
+
+  return Response.json({ success: true });
+}
+```
+
+### Notification Workflows
+
+Define complex notification workflows in Knock:
+
+```typescript
+// Multi-step notification workflow
+await notifications.trigger("order-confirmation", {
+  recipients: [userId],
+  data: {
+    orderId: "order_123",
+    amount: "$99.99",
+    items: ["Product A", "Product B"]
+  }
+});
+
+// This can trigger:
+// 1. Immediate in-app notification
+// 2. Email confirmation
+// 3. SMS if order > $100
+// 4. Push notification on mobile
+```
+
+### Conditional Notifications
+
+```typescript
+// Send different notifications based on user preferences
+await notifications.notify("payment-received", {
+  recipients: [userId],
+  data: {
+    amount: 150.0,
+    method: "credit_card"
+  },
+  // Knock workflow handles channel preferences
+  properties: {
+    email_enabled: user.preferences.email,
+    sms_enabled: user.preferences.sms && amount > 100,
+    push_enabled: user.preferences.push
+  }
+});
+```
+
+## React Components
+
+### In-App Notification Feed
+
+Complete notification feed with real-time updates:
+
+```typescript
+// app/layout.tsx
+import { NotificationsProvider } from '@repo/notifications/client/next';
+
+export default function RootLayout({ children }) {
+  return (
+    <NotificationsProvider userId={user.id}>
+      {children}
+    </NotificationsProvider>
+  );
+}
+```
+
+```typescript
+// components/Header.tsx
+import { NotificationsTrigger } from '@repo/notifications/client/next';
+
+export function Header() {
+  return (
+    <header className="flex items-center justify-between">
+      <h1>My App</h1>
+
+      <div className="flex items-center gap-4">
+        <NotificationsTrigger />
+        <UserMenu />
+      </div>
+    </header>
+  );
+}
+```
+
+### Custom Feed Implementation
+
+For more control over the notification feed:
+
+```typescript
+import {
+  NotificationIconButton,
+  NotificationFeedPopover,
+  useNotifications
+} from '@knocklabs/react';
+import { useState, useRef } from 'react';
+
+export function CustomNotificationFeed() {
+  const [isVisible, setIsVisible] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const { feed } = useNotifications();
+
+  return (
+    <>
+      <NotificationIconButton
+        ref={buttonRef}
+        onClick={() => setIsVisible(!isVisible)}
+        badgeCount={feed.meta.unread_count}
+      />
+
+      {buttonRef.current && (
+        <NotificationFeedPopover
+          buttonRef={buttonRef}
+          isVisible={isVisible}
+          onClose={() => setIsVisible(false)}
+          renderItem={({ item, ...props }) => (
+            <CustomNotificationItem
+              notification={item}
+              {...props}
+            />
+          )}
+        />
+      )}
+    </>
+  );
+}
+```
+
+## Environment-Specific Behavior
+
+<CardGroup cols={2}>
+  <Card title="Development Mode" icon="laptop-code">
+    - Knock API keys optional - Server notifications become no-ops - Mantine
+    notifications work normally - Console warnings for missing config
+  </Card>
+  <Card title="Production Mode" icon="server">
+    - Knock API keys required for full functionality - All notification channels
+    active - Error tracking for failed deliveries - Performance optimized
+  </Card>
+</CardGroup>
+
+### Graceful Degradation
+
+The package handles missing configuration gracefully:
+
+```typescript
+// This works even without Knock configuration
+import { notify } from '@repo/notifications/mantine-notifications';
+notify.success('Action completed'); // ✅ Always works
+
+// This gracefully degrades without Knock API keys
+import { notifications } from '@repo/notifications/server/next';
+await notifications.trigger('event'); // ✅ No-op if unconfigured
+
+// Provider returns children without Knock config
+<NotificationsProvider userId={userId}>
+  {children} {/* ✅ Always renders */}
+</NotificationsProvider>
+```
+
+## Common Patterns
+
+### Form Submission Feedback
+
+```typescript
+'use client';
+import { notify } from '@repo/notifications/mantine-notifications';
+
+export function ContactForm() {
+  const handleSubmit = async (formData: FormData) => {
+    try {
+      notify.info('Sending message...', { id: 'contact-form' });
+
+      const result = await submitContactForm(formData);
+
+      if (result.success) {
+        notify.update({
+          id: 'contact-form',
+          color: 'green',
+          message: 'Message sent successfully!',
+          autoClose: 3000
+        });
+      } else {
+        notify.update({
+          id: 'contact-form',
+          color: 'red',
+          message: 'Failed to send message',
+          autoClose: 5000
+        });
+      }
+    } catch (error) {
+      notify.error('Network error occurred');
+    }
+  };
+
+  return (
+    <form action={handleSubmit}>
+      {/* form fields */}
+      <button type="submit">Send Message</button>
+    </form>
+  );
+}
+```
+
+### Server Action Integration
+
+```typescript
+// actions/user.ts
+"use server";
+import { notifications } from "@repo/notifications/server/next";
+import { notify } from "@repo/notifications/mantine-notifications";
+
+export async function updateUserProfile(formData: FormData) {
+  try {
+    const user = await updateUser(formData);
+
+    // Send multi-channel notification
+    await notifications.trigger("profile-updated", {
+      recipients: [user.id],
+      data: {
+        name: user.name,
+        changes: ["email", "preferences"]
+      }
+    });
+
+    return { success: true, user };
+  } catch (error) {
+    return { success: false, error: "Update failed" };
+  }
+}
+```
+
+### Real-Time Status Updates
+
+```typescript
+// components/UploadProgress.tsx
+import { notify } from "@repo/notifications/mantine-notifications";
+import { notifications } from "@repo/notifications/server/next";
+
+export function FileUpload() {
+  const handleUpload = async (file: File) => {
+    const uploadId = `upload-${Date.now()}`;
+
+    // Show progress notification
+    notify.info("Uploading file...", {
+      id: uploadId,
+      autoClose: false,
+      loading: true
+    });
+
+    try {
+      await uploadFile(file);
+
+      // Update to success
+      notify.update({
+        id: uploadId,
+        color: "green",
+        message: "File uploaded successfully",
+        loading: false,
+        autoClose: 3000
+      });
+
+      // Send server notification
+      await notifications.trigger("file-uploaded", {
+        recipients: [userId],
+        data: { fileName: file.name }
+      });
+    } catch (error) {
+      notify.update({
+        id: uploadId,
+        color: "red",
+        message: "Upload failed",
+        loading: false,
+        autoClose: 5000
+      });
+    }
+  };
+}
+```
+
+## Testing
+
+### Mock Notifications
+
+```typescript
+import { vi } from 'vitest';
+
+// Mock Mantine notifications
+vi.mock('@repo/notifications/mantine-notifications', () => ({
+  notify: {
+    success: vi.fn(),
+    error: vi.fn(),
+    warning: vi.fn(),
+    info: vi.fn(),
+    custom: vi.fn()
+  }
+}));
+
+// Mock server notifications
+vi.mock('@repo/notifications/server/next', () => ({
+  notifications: {
+    trigger: vi.fn(),
+    notify: vi.fn()
+  }
+}));
+
+// Test usage
+test('shows success notification on form submit', async () => {
+  const { notify } = await import('@repo/notifications/mantine-notifications');
+
+  render(<ContactForm />);
+  fireEvent.click(screen.getByText('Submit'));
+
+  await waitFor(() => {
+    expect(notify.success).toHaveBeenCalledWith('Message sent successfully!');
+  });
+});
+```
+
+## Best Practices
+
+<Warning>
+  **Implementation Guidelines:** - Always provide user feedback for actions via
+  Mantine notifications - Use server notifications for important events (orders,
+  security) - Implement graceful degradation for missing Knock configuration -
+  Test notification flows in development mode - Monitor delivery rates in
+  production via Knock dashboard
+</Warning>
+
+### Recommended Patterns
+
+1. **Immediate Feedback**: Use Mantine notifications for instant user feedback
+2. **Important Events**: Use Knock for critical notifications (payments,
+   security)
+3. **Progressive Enhancement**: App works without Knock, enhanced with it
+4. **User Preferences**: Respect notification preferences via Knock workflows
+5. **Error Handling**: Always handle notification failures gracefully
+6. **Testing**: Mock notifications in tests to avoid external dependencies
+
+The notifications package provides a complete solution for both immediate user
+feedback and comprehensive multi-channel notification delivery, with smart
+defaults that work in any environment.

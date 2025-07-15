@@ -1,0 +1,29 @@
+{
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"]
+    },
+    "git": {
+      "command": "npx",
+      "args": ["-y", "@cyanheads/git-mcp-server"]
+    },
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"]
+    },
+    "prisma-local": {
+      "command": "npx",
+      "args": ["-y", "prisma", "mcp"]
+    },
+    "claude-utils": {
+      "command": "node",
+      "args": ["./packages/mcp-utils/bin/mcp-server.mjs"],
+      "env": {
+        "NODE_ENV": "production",
+        "LOG_LEVEL": "info",
+        "PROJECT_ROOT": "${PROJECT_ROOT}"
+      }
+    }
+  }
+}

@@ -1,0 +1,823 @@
+---
+title: "ESLint Configuration"
+description:
+  "Comprehensive ESLint configurations using ESLint 9 flat config system for
+  TypeScript, React, Next.js, and Node.js projects"
+icon: "shield-check"
+---
+
+# ESLint Config Package
+
+Collection of internal ESLint configurations for the Forge monorepo, using
+ESLint 9's flat config system with comprehensive code organization, security
+scanning, and modern framework support.
+
+## Overview
+
+The ESLint config package provides opinionated, production-ready configurations
+that enforce code quality, security, accessibility, and consistent style across
+all projects in the monorepo.
+
+<CardGroup cols={2}>
+  <Card title="Next.js 15 Support" icon="react" href="#nextjs-configuration">
+    Complete Next.js 15 and React 19 configuration with App Router support
+  </Card>
+  <Card title="Code Organization" icon="sort" href="#code-organization">
+    Automatic import sorting, object property ordering, and JSX organization
+  </Card>
+  <Card title="Security Scanning" icon="shield" href="#security-features">
+    Built-in security rules and vulnerability detection
+  </Card>
+  <Card
+    title="Accessibility"
+    icon="universal-access"
+    href="#accessibility-rules"
+  >
+    WCAG compliance and a11y best practices enforcement
+  </Card>
+</CardGroup>
+
+## Key Features
+
+- **ESLint 9 Flat Config** - Modern configuration system with improved
+  performance
+- **TypeScript-First** - Complete TypeScript support with type-aware linting
+- **Automatic Code Organization** - Import sorting, property ordering, and JSX
+  organization
+- **Security Scanning** - Comprehensive security vulnerability detection
+- **Framework Specific** - Optimized configurations for React, Next.js, Remix,
+  and Node.js
+- **Testing Integration** - Rules for Vitest, Testing Library, Jest DOM, and
+  Cypress
+- **Accessibility** - WCAG compliance and a11y best practices
+- **Performance** - Optimized for large monorepos with incremental linting
+
+## Available Configurations
+
+<Tabs>
+  <Tab title="Base Configuration">
+    Foundation configuration for all TypeScript projects:
+    ```typescript
+    // eslint.config.ts
+    import baseConfig from '@repo/config-eslint';
+    export default baseConfig;
+    ```
+    **Features:**
+    - TypeScript parsing and type-checking
+    - Import organization and unused import removal
+    - Security scanning and vulnerability detection
+    - Prettier integration
+    - Promise error handling
+    - Markdown linting
+  </Tab>
+
+<Tab title="React Package">
+  For React component libraries and packages: ```typescript // eslint.config.ts
+  import reactConfig from '@repo/config-eslint/react-package'; export default
+  reactConfig; ``` **Extends base with:** - JSX support and React-specific rules
+  - React Hooks validation - Component patterns and best practices -
+  Accessibility (a11y) compliance - Testing Library rules for test files - Jest
+  DOM assertions
+</Tab>
+
+<Tab title="Next.js Applications">
+  For Next.js applications with full App Router support: ```typescript //
+  eslint.config.ts import nextConfig from '@repo/config-eslint/next'; export
+  default nextConfig; ``` **Extends React with:** - Next.js 15 and React 19
+  optimization - App Router patterns and Server Components - Server Action
+  validation - Performance rules (Image, Font, Script optimization) -
+  Client/Server boundary enforcement
+</Tab>
+
+<Tab title="Server Packages">
+  For Node.js applications and server-side packages: ```typescript //
+  eslint.config.ts import serverConfig from '@repo/config-eslint/server'; export
+  default serverConfig; ``` **Extends base with:** - Node.js environment and
+  best practices - Advanced server-side security checks - Stricter TypeScript
+  rules - Promise error handling - Test file configurations
+</Tab>
+
+  <Tab title="Remix Applications">
+    For fullstack Remix applications:
+    ```typescript
+    // eslint.config.ts
+    import remixConfig from '@repo/config-eslint/remix';
+    export default remixConfig;
+    ```
+    **Combines React and Server:**
+    - Remix file conventions and patterns
+    - Mixed client/server environment
+    - Route patterns with default exports
+    - Fullstack TypeScript rules
+  </Tab>
+</Tabs>
+
+## Code Organization
+
+### Automatic Import Sorting
+
+The configuration includes comprehensive import organization with
+`eslint-plugin-perfectionist`:
+
+<CodeGroup>
+```typescript Before
+import { Button } from '@mantine/core';
+import React from 'react';
+import { useEffect, useState } from 'react';
+import './styles.css';
+import { api } from '#/lib/api';
+import { UserProfile } from '@repo/types';
+```
+
+```typescript After
+import React, { useEffect, useState } from "react";
+
+import { Button } from "@mantine/core";
+
+import { api } from "#/lib/api";
+import { UserProfile } from "@repo/types";
+
+import "./styles.css";
+```
+
+</CodeGroup>
+
+### Import Groups Configuration
+
+```typescript
+// Import order configuration
+const importGroups = [
+  "builtin", // Node.js built-ins
+  "external", // npm packages
+  "internal", // @repo/* packages
+  "parent", // ../
+  "sibling", // ./
+  "index", // ./index
+  "side-effect" // CSS/side effects
+];
+```
+
+### Object Property Sorting
+
+<CodeGroup>
+```typescript Before
+const config = {
+  plugins: ['react'],
+  name: 'my-config',
+  files: ['**/*.tsx'],
+  rules: {
+    'react/jsx-uses-react': 'off',
+  },
+};
+```
+
+```typescript After
+const config = {
+  name: "my-config",
+  files: ["**/*.tsx"],
+  plugins: ["react"],
+  rules: {
+    "react/jsx-uses-react": "off"
+  }
+};
+```
+
+</CodeGroup>
+
+### JSX Props Ordering
+
+<CodeGroup>
+```jsx Before
+<Button
+  className="primary"
+  onClick={handleClick}
+  type="submit"
+  ref={buttonRef}
+  key="submit-btn"
+  disabled={loading}
+  id="submit-button"
+>
+  Submit
+</Button>
+```
+
+```jsx After
+<Button
+  key="submit-btn"
+  id="submit-button"
+  ref={buttonRef}
+  type="submit"
+  disabled={loading}
+  className="primary"
+  onClick={handleClick}
+>
+  Submit
+</Button>
+```
+
+</CodeGroup>
+
+## Next.js 15 Configuration
+
+### Configuration Architecture
+
+The Next.js configuration uses a modular approach for maintainability:
+
+```typescript
+// File pattern constants
+const APP_ROUTER_FILES = ["app/**/*.{js,jsx,ts,tsx}"];
+const SERVER_COMPONENT_FILES = [
+  "app/**/page.{js,jsx,ts,tsx}",
+  "app/**/layout.{js,jsx,ts,tsx}",
+  "app/**/loading.{js,jsx,ts,tsx}",
+  "app/**/error.{js,jsx,ts,tsx}",
+  "app/**/not-found.{js,jsx,ts,tsx}",
+  "app/**/global-error.{js,jsx,ts,tsx}"
+];
+
+// Rule sets grouped by purpose
+const performanceRules = {
+  files: APP_ROUTER_FILES,
+  rules: {
+    "@next/next/no-img-element": "error",
+    "@next/next/no-page-custom-font": "warn",
+    "@next/next/no-sync-scripts": "error"
+  }
+};
+
+const serverComponentRules = {
+  files: SERVER_COMPONENT_FILES,
+  rules: {
+    "@next/next/no-client-only-import-in-server-component": "error",
+    "react-hooks/rules-of-hooks": "off" // Server components don't use hooks
+  }
+};
+```
+
+### App Router Support
+
+<Tabs>
+  <Tab title="Server Components">
+    **Files:** `app/**/page.tsx`, `app/**/layout.tsx`, etc.
+
+    **Rules:**
+    - Prevent client-only imports
+    - Disable React hooks rules
+    - Enforce server-side patterns
+    - Allow async components
+
+    ```typescript
+    // ✅ Valid server component
+    export default async function Page() {
+      const data = await fetch('/api/data');
+      return <div>{data.title}</div>;
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Client Components">
+    **Files:** Components with `'use client'` directive
+
+    **Rules:**
+    - Enforce 'use client' directive
+    - Enable full React hooks validation
+    - Prevent server-only imports
+    - Support React 19 features
+
+    ```typescript
+    'use client';
+
+    import { useState } from 'react';
+
+    export default function ClientComponent() {
+      const [count, setCount] = useState(0);
+      return <button onClick={() => setCount(count + 1)}>{count}</button>;
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Server Actions">
+    **Files:** `app/**/actions.ts`
+
+    **Rules:**
+    - Enforce 'use server' directive
+    - Prevent client-only imports
+    - Validate server action exports
+    - Type-safe action patterns
+
+    ```typescript
+    'use server';
+
+    export async function createUser(formData: FormData) {
+      // Server-side logic only
+      const name = formData.get('name');
+      return { success: true };
+    }
+    ```
+
+  </Tab>
+</Tabs>
+
+### React 19 Integration
+
+<AccordionGroup>
+  <Accordion title="New Hooks Support" icon="react">
+    **Supported Hooks:**
+    - `useActionState` - Form state management with server actions
+    - `useOptimistic` - Optimistic UI updates
+    - `useFormStatus` - Form submission status
+    - `useTransition` - Enhanced with async support
+
+    **Configuration:**
+    ```typescript
+    'react-hooks/exhaustive-deps': ['warn', {
+      additionalHooks: '(useActionState|useOptimistic|useFormStatus)'
+    }]
+    ```
+
+  </Accordion>
+
+  <Accordion title="Server Action Rules" icon="server">
+    **Rules:**
+    - `@next/next/no-server-action-in-use-effect` - Prevents server actions in useEffect
+    - `@next/next/use-server-directive` - Ensures proper server action declarations
+    - `@next/next/export-server-actions-only` - Validates server action exports
+  </Accordion>
+</AccordionGroup>
+
+### Performance Optimization
+
+The Next.js configuration includes rules to enforce performance best practices:
+
+<CodeGroup>
+```jsx Image Optimization
+// ❌ Forbidden - unoptimized images
+<img src="/hero.jpg" alt="Hero" />
+
+// ✅ Required - Next.js Image component import Image from 'next/image';
+
+<Image src="/hero.jpg" alt="Hero" width={800} height={600} />
+```
+
+```jsx Font Loading
+// ❌ Forbidden - custom font in pages
+<style jsx>{`
+  @import url("https://fonts.googleapis.com/css?family=Inter");
+`}</style>;
+
+// ✅ Required - Next.js font optimization
+import { Inter } from "next/font/google";
+const inter = Inter({ subsets: ["latin"] });
+```
+
+```jsx Script Loading
+// ❌ Forbidden - synchronous scripts
+<script src="/analytics.js"></script>;
+
+// ✅ Required - Next.js Script component
+import Script from "next/script";
+<Script src="/analytics.js" strategy="afterInteractive" />;
+```
+
+</CodeGroup>
+
+## Security Features
+
+### Built-in Security Scanning
+
+<Tabs>
+  <Tab title="Code Injection Prevention">
+```typescript
+// Rules that prevent code injection
+'security/detect-eval-with-expression': 'error',
+'security/detect-non-literal-require': 'error',
+'security/detect-unsafe-regex': 'error',
+```
+**Prevents:**
+- Dynamic code evaluation (`eval`, `Function`)
+- Dynamic module loading
+- RegEx DoS vulnerabilities
+
+</Tab>
+
+  <Tab title="Buffer Safety">
+```typescript
+// Buffer security rules
+'security/detect-buffer-noassert': 'error',
+'security/detect-child-process': 'warn',
+```
+**Prevents:**
+- Unsafe buffer operations
+- Potentially dangerous child processes
+
+</Tab>
+
+  <Tab title="Node.js Security">
+```typescript
+// Node.js specific security
+'node/no-process-exit': 'error',
+'node/no-process-env': 'off', // Allowed with validation
+```
+**Prevents:**
+- Direct process manipulation
+- Unsafe environment variable access
+
+</Tab>
+</Tabs>
+
+### Security Best Practices
+
+<Warning>
+  **Security Guidelines:** - All user inputs must be validated - Use
+  parameterized queries for database operations - Sanitize data before rendering
+  - Implement proper CORS policies - Use HTTPS in production - Validate
+  environment variables
+</Warning>
+
+## Accessibility Rules
+
+### WCAG Compliance
+
+The React and Next.js configurations include comprehensive accessibility rules:
+
+<CodeGroup>
+```jsx ARIA Support
+// ✅ Proper ARIA usage
+<button
+  aria-label="Close dialog"
+  aria-expanded={isOpen}
+  onClick={handleClose}
+>
+  <CloseIcon />
+</button>
+
+<div role="dialog" aria-labelledby="dialog-title">
+  <h2 id="dialog-title">Settings</h2>
+  {/* Dialog content */}
+</div>
+```
+
+```jsx Keyboard Navigation
+// ✅ Keyboard accessible
+<div
+  role="button"
+  tabIndex={0}
+  onKeyDown={(e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      handleAction();
+    }
+  }}
+  onClick={handleAction}
+>
+  Custom Button
+</div>
+```
+
+```jsx Semantic HTML
+// ❌ Non-semantic
+<div onClick={handleSubmit}>Submit</div>
+
+// ✅ Semantic HTML
+<button type="submit" onClick={handleSubmit}>
+  Submit
+</button>
+```
+
+</CodeGroup>
+
+### Accessibility Rules Reference
+
+| Rule                                    | Purpose                         | Level |
+| --------------------------------------- | ------------------------------- | ----- |
+| `jsx-a11y/alt-text`                     | Requires alt text for images    | Error |
+| `jsx-a11y/aria-props`                   | Validates ARIA properties       | Error |
+| `jsx-a11y/aria-role`                    | Validates ARIA roles            | Error |
+| `jsx-a11y/click-events-have-key-events` | Keyboard support for clickables | Error |
+| `jsx-a11y/heading-has-content`          | Non-empty headings              | Error |
+| `jsx-a11y/label-has-associated-control` | Form label association          | Error |
+
+## Testing Integration
+
+### Testing Library Rules
+
+<Tabs>
+  <Tab title="Query Best Practices">
+    ```typescript
+    // ✅ Preferred queries
+    screen.getByRole('button', { name: /submit/i });
+    screen.getByLabelText(/email address/i);
+    screen.getByTestId('user-profile');
+
+    // ❌ Discouraged patterns
+    container.querySelector('.button');
+    wrapper.find('button').first();
+    ```
+
+    **Rules:**
+    - `testing-library/prefer-screen-queries`
+    - `testing-library/no-container`
+    - `testing-library/no-node-access`
+
+  </Tab>
+
+  <Tab title="Async Testing">
+    ```typescript
+    // ✅ Proper async testing
+    await screen.findByText('Loading complete');
+    await waitFor(() => {
+      expect(screen.getByText('Data loaded')).toBeInTheDocument();
+    });
+
+    // ❌ Synchronous queries for async content
+    expect(screen.getByText('Data loaded')).toBeInTheDocument();
+    ```
+
+    **Rules:**
+    - `testing-library/await-async-queries`
+    - `testing-library/await-async-utils`
+    - `testing-library/no-wait-for-multiple-assertions`
+
+  </Tab>
+
+  <Tab title="Jest DOM Assertions">
+    ```typescript
+    // ✅ Semantic matchers
+    expect(checkbox).toBeChecked();
+    expect(element).toHaveClass('active');
+    expect(input).toHaveValue('test@example.com');
+    expect(element).toBeInTheDocument();
+
+    // ❌ Generic matchers
+    expect(checkbox.checked).toBe(true);
+    expect(element.className).toContain('active');
+    ```
+
+    **Rules:**
+    - `jest-dom/prefer-checked`
+    - `jest-dom/prefer-to-have-class`
+    - `jest-dom/prefer-to-have-value`
+    - `jest-dom/prefer-in-document`
+
+  </Tab>
+</Tabs>
+
+### Cypress E2E Testing
+
+<CodeGroup>
+```typescript Good Practices
+// ✅ Use data attributes for selectors
+cy.get('[data-testid="submit-button"]').click();
+
+// ✅ Proper command chaining cy.get('[data-testid="form"]')
+.should('be.visible') .within(() => {
+cy.get('input[name="email"]').type('test@example.com'); });
+
+// ✅ Avoid arbitrary waits
+cy.get('[data-testid="loader"]').should('not.exist');
+
+````
+
+```typescript Avoid Anti-patterns
+// ❌ Arbitrary waits
+cy.wait(5000);
+
+// ❌ Assigning return values
+const element = cy.get('[data-testid="button"]');
+
+// ❌ Async/await in Cypress
+async function testFunction() {
+  await cy.get('[data-testid="button"]').click();
+}
+````
+
+</CodeGroup>
+
+## Custom Configuration Examples
+
+### Project-Specific Overrides
+
+<CodeGroup>
+```typescript Next.js with Custom Rules
+import nextConfig from '@repo/config-eslint/next';
+
+export default [
+  ...nextConfig,
+  {
+    files: ['app/**/*.tsx'],
+    rules: {
+      // Downgrade specific rules if needed
+      '@next/next/no-img-element': 'warn',
+      // Add project-specific rules
+      'prefer-const': 'error',
+    },
+  },
+  {
+    files: ['**/*.test.{ts,tsx}'],
+    rules: {
+      // Relax rules for test files
+      '@typescript-eslint/no-explicit-any': 'off',
+    },
+  },
+];
+```
+
+```typescript React Library with Storybook
+import reactConfig from "@repo/config-eslint/react-package";
+
+export default [
+  ...reactConfig,
+  {
+    files: ["**/*.stories.{ts,tsx}"],
+    rules: {
+      // Allow any for Storybook stories
+      "@typescript-eslint/no-explicit-any": "off",
+      // Allow default exports for stories
+      "import/no-default-export": "off"
+    }
+  }
+];
+```
+
+```typescript Monorepo Package Configuration
+import baseConfig from "@repo/config-eslint";
+
+export default [
+  ...baseConfig,
+  {
+    files: ["src/**/*.ts"],
+    rules: {
+      // Stricter rules for library code
+      "@typescript-eslint/explicit-function-return-type": "error",
+      "@typescript-eslint/no-explicit-any": "error"
+    }
+  },
+  {
+    ignores: ["dist/**/*", "**/*.d.ts", "coverage/**/*"]
+  }
+];
+```
+
+</CodeGroup>
+
+### Configuration Debugging
+
+<Tabs>
+  <Tab title="Config Inspection">
+```bash
+# Check which config is applied to a file
+npx eslint --print-config src/components/Button.tsx
+# Debug configuration loading
+npx eslint --debug src/**/*.tsx
+# List all rules being applied
+npx eslint --print-config . | grep -A 5 "rules"
+```
+
+</Tab>
+
+  <Tab title="Performance Analysis">
+```bash
+# Analyze linting performance
+TIMING=1 npx eslint src/
+# Profile rule performance
+npx eslint --debug --timing src/
+# Check cache effectiveness
+npx eslint --cache-location .eslintcache src/
+```
+
+</Tab>
+</Tabs>
+
+## Migration Guide
+
+### From ESLint 8 to 9
+
+<Steps>
+  <Step title="Update Configuration Format">
+    **Old (.eslintrc.js):**
+    ```javascript
+    module.exports = {
+      extends: ['@repo/config-eslint'],
+      parserOptions: {
+        project: './tsconfig.json',
+      },
+    };
+    ```
+
+    **New (eslint.config.ts):**
+    ```typescript
+    import config from '@repo/config-eslint';
+    export default config;
+    ```
+
+  </Step>
+
+  <Step title="Remove Legacy Dependencies">
+    ```bash
+    # Remove old ESLint config dependencies
+    pnpm remove @eslint/eslintrc eslint-config-prettier
+
+    # The new config includes everything needed
+    ```
+
+  </Step>
+
+  <Step title="Update Scripts">
+    ```json
+    {
+      "scripts": {
+        "lint": "eslint .",
+        "lint:fix": "eslint . --fix"
+      }
+    }
+    ```
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Common Issues" icon="exclamation-triangle">
+    **Module Resolution Errors** - Ensure TypeScript config includes all source files - Check that
+    `baseUrl` and `paths` are configured correctly - Verify ESLint can find your tsconfig.json
+    **Performance Issues** - Enable ESLint caching: `--cache` - Exclude unnecessary directories in
+    configuration - Use incremental TypeScript checking **Rule Conflicts** - Check for duplicate
+    rules across configurations - Use `npx eslint --print-config` to debug - Ensure Prettier config
+    is compatible
+  </Accordion>
+
+  <Accordion title="Next.js Specific Issues" icon="react">
+    **Server Component Errors** - Ensure server components don't import client-only code - Check
+    that async components are properly typed - Verify 'use server'/'use client' directives are
+    correct **Import Errors** - Use `/next` imports for @repo packages in Next.js - Check that
+    middleware imports are server-compatible - Verify API route patterns match ESLint configuration
+  </Accordion>
+</AccordionGroup>
+
+## Plugin Reference
+
+### Core Plugins
+
+| Plugin                         | Purpose            | Configs |
+| ------------------------------ | ------------------ | ------- |
+| `@typescript-eslint/*`         | TypeScript support | All     |
+| `eslint-plugin-perfectionist`  | Code organization  | All     |
+| `eslint-plugin-import`         | Import validation  | All     |
+| `eslint-plugin-unused-imports` | Clean imports      | All     |
+| `eslint-plugin-security`       | Security scanning  | All     |
+| `eslint-plugin-promise`        | Promise patterns   | All     |
+
+### Framework Plugins
+
+| Plugin                      | Purpose              | Configs               |
+| --------------------------- | -------------------- | --------------------- |
+| `eslint-plugin-react`       | React rules          | React, Next.js, Remix |
+| `eslint-plugin-react-hooks` | Hooks validation     | React, Next.js, Remix |
+| `eslint-plugin-jsx-a11y`    | Accessibility        | React, Next.js, Remix |
+| `@next/eslint-plugin-next`  | Next.js optimization | Next.js               |
+| `eslint-plugin-node`        | Node.js patterns     | Server, Remix         |
+
+### Testing Plugins
+
+| Plugin                          | Purpose           | Configs          |
+| ------------------------------- | ----------------- | ---------------- |
+| `eslint-plugin-testing-library` | Testing Library   | React, Next.js   |
+| `eslint-plugin-jest-dom`        | Jest DOM matchers | React, Next.js   |
+| `eslint-plugin-cypress`         | Cypress E2E       | React, Next.js   |
+| `eslint-plugin-vitest`          | Vitest patterns   | All (test files) |
+
+## Best Practices
+
+<Tabs>
+  <Tab title="Configuration">
+    1. **Use Appropriate Base Config** - Choose the most specific config for your project type -
+    Don't override rules unless absolutely necessary - Prefer configuration over rule exceptions 2.
+    **File Organization** - Keep configuration files in project root - Use TypeScript for
+    configuration when possible - Document any custom rule overrides 3. **Performance** - Enable
+    caching for large projects - Use ignore patterns for build artifacts - Consider incremental
+    TypeScript checking
+  </Tab>
+
+<Tab title="Code Quality">
+  1. **Type Safety** - Enable strict TypeScript rules - Use explicit return
+  types for public APIs - Avoid `any` type except in edge cases 2. **Import
+  Organization** - Let perfectionist handle import sorting - Group related
+  imports together - Remove unused imports automatically 3. **Security** -
+  Follow security plugin recommendations - Validate all external inputs - Use
+  environment variables for secrets
+</Tab>
+
+  <Tab title="Team Workflow">
+    1. **Consistency** - Use the same config across all team members - Automate linting in CI/CD
+    pipelines - Fix linting errors before code review 2. **Integration** - Set up editor integration
+    for real-time feedback - Use pre-commit hooks for automatic fixing - Include linting in build
+    processes 3. **Maintenance** - Keep configurations up to date - Review and adjust rules
+    periodically - Document any project-specific decisions
+  </Tab>
+</Tabs>
+
+The ESLint config package provides comprehensive, production-ready linting
+configurations that ensure code quality, security, and consistency across the
+entire Forge platform while supporting modern development practices and
+frameworks.

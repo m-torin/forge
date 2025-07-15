@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "Cloudflare Workers",
+  "extends": "./base.json",
+  "compilerOptions": {
+    "lib": ["es2022", "webworker"],
+    "types": ["@cloudflare/workers-types"],
+    "moduleResolution": "bundler",
+    "target": "ES2022",
+    "declaration": false,
+    "declarationMap": false
+  }
+}

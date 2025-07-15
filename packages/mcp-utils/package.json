@@ -1,0 +1,63 @@
+{
+  "name": "@repo/mcp-utils",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Centralized utilities for Claude Code agents via MCP server",
+  "keywords": [
+    "mcp",
+    "claude",
+    "utilities",
+    "agents",
+    "server"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
+    },
+    "./tools": {
+      "types": "./dist/tools/index.d.ts",
+      "import": "./dist/tools/index.mjs",
+      "default": "./dist/tools/index.mjs"
+    },
+    "./utils": {
+      "types": "./dist/utils/index.d.ts",
+      "import": "./dist/utils/index.mjs",
+      "default": "./dist/utils/index.mjs"
+    }
+  },
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "mcp-utils": "./bin/mcp-server.mjs"
+  },
+  "files": [
+    "dist",
+    "bin"
+  ],
+  "scripts": {
+    "prebuild": "rm -rf dist",
+    "build": "tsc -p tsconfig.build.json",
+    "postbuild": "node ./scripts/add-extensions.mjs",
+    "build:watch": "tsc -p tsconfig.build.json --watch",
+    "dev": "node --watch src/index.mjs",
+    "lint": "eslint . --fix",
+    "start": "node bin/mcp-server.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.6.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/qa": "workspace:*",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

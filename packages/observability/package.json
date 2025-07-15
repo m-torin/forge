@@ -2,23 +2,124 @@
   "name": "@repo/observability",
   "version": "0.0.0",
   "private": true,
+  "description": "Clean observability package with provider subpackages",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/shared.ts",
+      "import": "./src/shared.ts",
+      "default": "./src/shared.ts"
+    },
+    "./client": {
+      "types": "./src/client.ts",
+      "import": "./src/client.ts"
+    },
+    "./server": {
+      "types": "./src/server.ts",
+      "import": "./src/server.ts"
+    },
+    "./client/next": {
+      "types": "./src/client-next.ts",
+      "import": "./src/client-next.ts"
+    },
+    "./server/next": {
+      "types": "./src/server-next.ts",
+      "import": "./src/server-next.ts"
+    },
+    "./server/edge": {
+      "types": "./src/server-edge.ts",
+      "import": "./src/server-edge.ts"
+    },
+    "./env": {
+      "types": "./env.ts",
+      "import": "./env.ts"
+    },
+    "./plugins/console": {
+      "types": "./src/plugins/console/index.ts",
+      "import": "./src/plugins/console/index.ts"
+    },
+    "./plugins/sentry": {
+      "types": "./src/plugins/sentry/index.ts",
+      "import": "./src/plugins/sentry/index.ts"
+    },
+    "./plugins/sentry/env": {
+      "types": "./src/plugins/sentry/env.ts",
+      "import": "./src/plugins/sentry/env.ts"
+    },
+    "./plugins/betterstack": {
+      "types": "./src/plugins/betterstack/index.ts",
+      "import": "./src/plugins/betterstack/index.ts"
+    },
+    "./plugins/betterstack/env": {
+      "types": "./src/plugins/betterstack/env.ts",
+      "import": "./src/plugins/betterstack/env.ts"
+    },
+    "./plugins/logtape": {
+      "types": "./src/plugins/logtape/index.ts",
+      "import": "./src/plugins/logtape/index.ts"
+    },
+    "./plugins/logtape/env": {
+      "types": "./src/plugins/logtape/env.ts",
+      "import": "./src/plugins/logtape/env.ts"
+    },
+    "./plugins/sentry-microfrontend": {
+      "types": "./src/plugins/sentry-microfrontend/index.ts",
+      "import": "./src/plugins/sentry-microfrontend/index.ts"
+    },
+    "./plugins/sentry-microfrontend/env": {
+      "types": "./src/plugins/sentry-microfrontend/env.ts",
+      "import": "./src/plugins/sentry-microfrontend/env.ts"
+    }
+  },
+  "files": [
+    "src",
+    "env.ts"
+  ],
   "scripts": {
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "clean": "rm -rf .turbo node_modules",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@logtail/next": "^0.2.0",
-    "@sentry/nextjs": "^9.22.0",
-    "@t3-oss/env-nextjs": "^0.13.4",
-    "react": "^19.1.0",
-    "server-only": "^0.0.1",
-    "zod": "^3.25.28"
+    "@sentry/nextjs": "catalog:",
+    "@sentry/node": "latest",
+    "@sentry/react": "latest",
+    "@t3-oss/env-nextjs": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
-    "@types/node": "22.15.21",
-    "@types/react": "19.1.5",
-    "@types/react-dom": "^19.1.5",
-    "typescript": "^5.8.3"
+    "@repo/config": "workspace:*",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/qa": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "eslint": "catalog:",
+    "react": "catalog:",
+    "typescript": "catalog:",
+    "vite-tsconfig-paths": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "next": "catalog:",
+    "react": "catalog:"
+  },
+  "peerDependenciesMeta": {
+    "next": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
+  },
+  "optionalDependencies": {
+    "@logtail/js": "^0.5.5",
+    "@logtail/next": "^0.2.1",
+    "@logtape/cloudwatch-logs": "^1.0.4",
+    "@logtape/file": "^1.0.4",
+    "@logtape/logtape": "^1.0.4",
+    "@logtape/sentry": "^1.0.4"
   }
 }

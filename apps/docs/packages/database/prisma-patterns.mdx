@@ -1,0 +1,522 @@
+---
+title: Prisma ORM Pattern Guide
+description:
+  Comprehensive guide for creating consistent ORM files that follow established
+  patterns
+---
+
+# Prisma ORM Pattern Guide
+
+This guide provides a comprehensive template for creating ORM files that are
+true to their Prisma schema and follow established patterns for complete schema
+coverage and consistent implementation.
+
+## 🎯 Primary Goals
+
+1. **Complete Schema Reflection** - Every field and relationship must have
+   appropriate operations
+2. **Pattern Consistency** - Follow the established 7-section structure
+3. **Type Safety** - Comprehensive TypeScript types for all operations
+4. **Performance Optimization** - Leverage all schema indexes
+5. **Error Handling** - Consistent error patterns across all operations
+
+## 📋 Pre-Implementation Checklist
+
+### 1. Schema Analysis
+
+Before writing any code, analyze the target Prisma model:
+
+```bash
+# Extract the complete model definition
+grep -A 50 "model YourModel {" packages/database/src/prisma/schemas/*.prisma
+
+# Identify all fields and their types
+# Identify all relationships and their cardinality
+# Identify all indexes and unique constraints
+# Note any enum fields requiring special handling
+```
+
+### 2. Schema Inventory Template
+
+Create a comprehensive inventory of the schema:
+
+```markdown
+## [ModelName] Schema Inventory
+
+### Fields:
+
+- [ ] id: String @id @default(cuid())
+- [ ] [field1]: [Type] [@constraints]
+- [ ] [field2]: [Type]? [@optional/@unique/@default]
+- [ ] [enum_field]: [EnumType] @default([VALUE])
+- [ ] [json_field]: Json @db.JsonB
+- [ ] createdAt: DateTime @default(now())
+- [ ] updatedAt: DateTime @updatedAt
+- [ ] deletedAt: DateTime?
+- [ ] deletedById: String?
+
+### Relationships:
+
+- [ ] [relation1]: [RelatedModel]?
+- [ ] [relation2]: [RelatedModel][]
+- [ ] [selfRelation]: [SameModel]? (hierarchical)
+- [ ] deletedBy: User?
+
+### Indexes:
+
+- [ ] @@index([field1])
+- [ ] @@index([field2, field3])
+- [ ] @@unique([field1])
+
+### Unique Constraints:
+
+- [ ] field @unique
+- [ ] @@unique([field1, field2])
+```
+
+## 🏗️ Implementation Structure
+
+### File Template
+
+```typescript
+'use server';
+
+import type { Prisma, [ModelName], [EnumType1], [EnumType2] } from '../../../../prisma-generated/client';
+import { prisma } from '../../clients/standard';
+import { handlePrismaError, isNotFoundError } from './validation';
+
+//==============================================================================
+// 1. BASIC CRUD OPERATIONS
+//==============================================================================
+
+// CREATE
+export async function create[ModelName]Orm(args: Prisma.[ModelName]CreateArgs) {
+  try {
+    return await prisma.[modelName].create(args);
+  } catch (error) {
+    handlePrismaError(error);
+  }
+}
+
+// READ
+export async function findFirst[ModelName]Orm(args?: Prisma.[ModelName]FindFirstArgs) {
+  return await prisma.[modelName].findFirst(args);
+}
+
+export async function findUnique[ModelName]Orm(args: Prisma.[ModelName]FindUniqueArgs) {
+  return await prisma.[modelName].findUnique(args);
+}
+
+export async function findUnique[ModelName]OrmOrThrow(args: Prisma.[ModelName]FindUniqueOrThrowArgs) {
+  try {
+    return await prisma.[modelName].findUniqueOrThrow(args);
+  } catch (error) {
+    if (isNotFoundError(error)) {
+      throw new Error(`[ModelName] not found with criteria: ${JSON.stringify(args.where)}`);
+    }
+    handlePrismaError(error);
+  }
+}
+
+export async function findMany[ModelName]sOrm(args?: Prisma.[ModelName]FindManyArgs) {
+  return await prisma.[modelName].findMany(args);
+}
+
+// UPDATE
+export async function update[ModelName]Orm(args: Prisma.[ModelName]UpdateArgs) {
+  try {
+    return await prisma.[modelName].update(args);
+  } catch (error) {
+    if (isNotFoundError(error)) {
+      throw new Error(`[ModelName] not found for update: ${JSON.stringify(args.where)}`);
+    }
+    handlePrismaError(error);
+  }
+}
+
+export async function updateMany[ModelName]sOrm(args: Prisma.[ModelName]UpdateManyArgs) {
+  return await prisma.[modelName].updateMany(args);
+}
+
+// UPSERT
+export async function upsert[ModelName]Orm(args: Prisma.[ModelName]UpsertArgs) {
+  try {
+    return await prisma.[modelName].upsert(args);
+  } catch (error) {
+    handlePrismaError(error);
+  }
+}
+
+// DELETE
+export async function delete[ModelName]Orm(args: Prisma.[ModelName]DeleteArgs) {
+  try {
+    return await prisma.[modelName].delete(args);
+  } catch (error) {
+    if (isNotFoundError(error)) {
+      throw new Error(`[ModelName] not found for deletion: ${JSON.stringify(args.where)}`);
+    }
+    handlePrismaError(error);
+  }
+}
+
+export async function deleteMany[ModelName]sOrm(args?: Prisma.[ModelName]DeleteManyArgs) {
+  return await prisma.[modelName].deleteMany(args);
+}
+
+// AGGREGATE
+export async function aggregate[ModelName]sOrm(args?: Prisma.[ModelName]AggregateArgs) {
+  return await prisma.[modelName].aggregate(args ?? {});
+}
+
+export async function count[ModelName]sOrm(args?: Prisma.[ModelName]CountArgs) {
+  return await prisma.[modelName].count(args);
+}
+
+export async function groupBy[ModelName]sOrm(args: Prisma.[ModelName]GroupByArgs) {
+  return await prisma.[modelName].groupBy(args);
+}
+
+//==============================================================================
+// 2. FIELD-BASED QUERIES
+//==============================================================================
+
+// FOR EACH ENUM FIELD - Add operations like:
+/**
+ * Find [modelName]s by [enumField] using [EnumType] enum
+ * Uses explicit type annotation to avoid stack depth issues
+ */
+export async function find[ModelName]sByTypeOrm(
+  [enumField]: [EnumType],
+  additionalArgs?: Prisma.[ModelName]FindManyArgs
+) {
+  const args: Prisma.[ModelName]FindManyArgs = {
+    ...additionalArgs,
+    where: {
+      ...additionalArgs?.where,
+      [enumField]: [enumField],
+    },
+  };
+  return await prisma.[modelName].findMany(args);
+}
+
+// FOR EACH OPTIONAL STRING FIELD - Add operations like:
+/**
+ * Find [modelName]s by specific [field] value
+ */
+export async function find[ModelName]sBy[Field]Orm(
+  [field]: string,
+  additionalArgs?: Prisma.[ModelName]FindManyArgs
+) {
+  const args: Prisma.[ModelName]FindManyArgs = {
+    ...additionalArgs,
+    where: {
+      ...additionalArgs?.where,
+      [field]: [field],
+    },
+  };
+  return await prisma.[modelName].findMany(args);
+}
+
+/**
+ * Find [modelName]s that have [field] set (not null)
+ */
+export async function find[ModelName]sWith[Field]Orm(
+  additionalArgs?: Prisma.[ModelName]FindManyArgs
+) {
+  const args: Prisma.[ModelName]FindManyArgs = {
+    ...additionalArgs,
+    where: {
+      ...additionalArgs?.where,
+      [field]: {
+        not: null,
+      },
+    },
+  };
+  return await prisma.[modelName].findMany(args);
+}
+
+/**
+ * Find [modelName]s that don't have [field] (null)
+ */
+export async function find[ModelName]sWithout[Field]Orm(
+  additionalArgs?: Prisma.[ModelName]FindManyArgs
+) {
+  const args: Prisma.[ModelName]FindManyArgs = {
+    ...additionalArgs,
+    where: {
+      ...additionalArgs?.where,
+      [field]: null,
+    },
+  };
+  return await prisma.[modelName].findMany(args);
+}
+
+//==============================================================================
+// 3. HIERARCHICAL OPERATIONS (if model has self-relationships)
+//==============================================================================
+
+// ONLY ADD THIS SECTION IF MODEL HAS PARENT/CHILD RELATIONSHIPS
+
+/**
+ * Find child [modelName]s of a specific parent
+ */
+export async function find[ModelName]sByParentOrm(
+  parentId: string,
+  additionalArgs?: Prisma.[ModelName]FindManyArgs
+) {
+  const args: Prisma.[ModelName]FindManyArgs = {
+    ...additionalArgs,
+    where: {
+      ...additionalArgs?.where,
+      parentId: parentId,
+    },
+    orderBy: {
+      // Use displayOrder if exists, otherwise name or createdAt
+      [displayOrder || name || createdAt]: 'asc',
+    },
+  };
+  return await prisma.[modelName].findMany(args);
+}
+
+/**
+ * Find root [modelName]s (no parent)
+ */
+export async function findRoot[ModelName]sOrm(
+  additionalArgs?: Prisma.[ModelName]FindManyArgs
+) {
+  const args: Prisma.[ModelName]FindManyArgs = {
+    ...additionalArgs,
+    where: {
+      ...additionalArgs?.where,
+      parentId: null,
+    },
+    orderBy: {
+      [displayOrder || name || createdAt]: 'asc',
+    },
+  };
+  return await prisma.[modelName].findMany(args);
+}
+
+//==============================================================================
+// 4. RELATIONSHIP QUERIES
+//==============================================================================
+
+// FOR EACH RELATIONSHIP - Add operations like:
+
+/**
+ * Find [modelName]s that have associated [relationName]
+ */
+export async function find[ModelName]sWith[RelationName]Orm(
+  additionalArgs?: Prisma.[ModelName]FindManyArgs
+) {
+  const args: Prisma.[ModelName]FindManyArgs = {
+    ...additionalArgs,
+    where: {
+      ...additionalArgs?.where,
+      [relationName]: {
+        some: {},
+      },
+    },
+  };
+  return await prisma.[modelName].findMany(args);
+}
+
+/**
+ * Find [modelName] with all relations included
+ */
+export async function find[ModelName]WithAllRelationsOrm(id: string) {
+  return await prisma.[modelName].findUnique({
+    where: { id },
+    include: {
+      // Include ALL relationships from schema
+      [relation1]: true,
+      [relation2]: true,
+      [selfRelation]: true,
+      children: { orderBy: { [orderField]: 'asc' } },
+      deletedBy: true,
+    },
+  });
+}
+
+//==============================================================================
+// 5. LIFECYCLE OPERATIONS (if model supports soft delete)
+//==============================================================================
+
+// ONLY ADD THIS SECTION IF MODEL HAS deletedAt/deletedById FIELDS
+
+/**
+ * Find active (non-deleted) [modelName]s
+ */
+export async function findActive[ModelName]sOrm(
+  additionalArgs?: Prisma.[ModelName]FindManyArgs
+) {
+  const args: Prisma.[ModelName]FindManyArgs = {
+    ...additionalArgs,
+    where: {
+      ...additionalArgs?.where,
+      deletedAt: null,
+    },
+  };
+  return await prisma.[modelName].findMany(args);
+}
+
+/**
+ * Soft delete a [modelName] (set deletedAt and deletedById)
+ */
+export async function softDelete[ModelName]Orm(
+  id: string,
+  deletedById: string
+) {
+  try {
+    return await prisma.[modelName].update({
+      where: { id },
+      data: {
+        deletedAt: new Date(),
+        deletedById: deletedById,
+      },
+    });
+  } catch (error) {
+    if (isNotFoundError(error)) {
+      throw new Error(`[ModelName] not found for soft deletion: ${id}`);
+    }
+    handlePrismaError(error);
+  }
+}
+
+//==============================================================================
+// 6. SEARCH & OPTIMIZATION
+//==============================================================================
+
+/**
+ * Find [modelName] by slug (leverages unique index)
+ */
+export async function find[ModelName]BySlugOrm(slug: string) {
+  return await prisma.[modelName].findUnique({
+    where: { slug },
+  });
+}
+
+/**
+ * Search [modelName]s by name (case-insensitive contains)
+ */
+export async function search[ModelName]sByNameOrm(
+  searchTerm: string,
+  additionalArgs?: Prisma.[ModelName]FindManyArgs
+) {
+  const args: Prisma.[ModelName]FindManyArgs = {
+    ...additionalArgs,
+    where: {
+      ...additionalArgs?.where,
+      name: {
+        contains: searchTerm,
+        mode: 'insensitive',
+      },
+    },
+  };
+  return await prisma.[modelName].findMany(args);
+}
+
+//==============================================================================
+// 7. TYPE EXPORTS
+//==============================================================================
+
+/**
+ * [ModelName] with all relations for complete data access
+ */
+export type [ModelName]WithAllRelations = Prisma.[ModelName]GetPayload<{
+  include: {
+    [relation1]: true;
+    [relation2]: true;
+    [selfRelation]: true;
+    children: true;
+    deletedBy: true;
+  };
+}>;
+```
+
+## ✅ Implementation Checklist
+
+### Phase 1: Setup & Analysis
+
+- [ ] Extract complete Prisma model definition
+- [ ] Create schema inventory (fields, relationships, indexes)
+- [ ] Identify enum types needing imports
+- [ ] Note any special field types (Json, DateTime, etc.)
+
+### Phase 2: Basic Structure
+
+- [ ] Set up file with proper imports
+- [ ] Implement all 7 sections with correct headers
+- [ ] Add all basic CRUD operations
+- [ ] Test basic operations work
+
+### Phase 3: Field-Specific Operations
+
+- [ ] Add operations for each enum field
+- [ ] Add operations for each optional field
+- [ ] Add operations for each indexed field
+- [ ] Add combined field operations where logical
+
+### Phase 4: Relationship Operations
+
+- [ ] Add operation for each relationship (some/isNot patterns)
+- [ ] Add findWithAllRelations operation
+- [ ] Handle hierarchical relationships if present
+- [ ] Test all relationship operations
+
+### Phase 5: Lifecycle & Search
+
+- [ ] Add soft delete operations (if supported)
+- [ ] Add date-based operations
+- [ ] Add search operations leveraging indexes
+- [ ] Add any model-specific optimizations
+
+### Phase 6: Type Exports
+
+- [ ] Export type for each relationship
+- [ ] Export combined types (WithAllRelations)
+- [ ] Export specialized types (Deleted, Search, etc.)
+- [ ] Export hierarchical types if applicable
+
+### Phase 7: Validation & Testing
+
+- [ ] Run `pnpm typecheck` - fix any TypeScript errors
+- [ ] Verify every schema field has appropriate operations
+- [ ] Verify every relationship is covered
+- [ ] Verify all indexes are leveraged
+- [ ] Test a few operations manually
+
+## 🚨 Common Pitfalls to Avoid
+
+1. **Don't assume fields exist** - Always check the actual schema
+2. **Don't copy operations from other models** - Each schema is unique
+3. **Don't miss optional fields** - They need null/not null operations
+4. **Don't forget enum imports** - Required for type safety
+5. **Don't create operations for non-existent fields** - Causes TypeScript
+   errors
+6. **Don't miss relationship cardinality** - Use `some:{}` vs `isNot:null`
+   correctly
+7. **Don't forget hierarchical operations** - Self-relationships need special
+   handling
+8. **Don't miss index optimization** - Use unique/indexed fields for performance
+
+## 📏 Quality Standards
+
+- **100% Schema Coverage** - Every field and relationship must have operations
+- **Type Safety** - All operations must be properly typed
+- **Error Handling** - Consistent error patterns using validation helpers
+- **Performance** - Leverage all schema indexes
+- **Documentation** - Clear JSDoc comments for all public functions
+- **Pattern Consistency** - Follow the established 7-section structure exactly
+
+## 🎯 Success Criteria
+
+A completed ORM file should:
+
+- ✅ Cover 100% of schema fields with appropriate operations
+- ✅ Cover 100% of schema relationships
+- ✅ Leverage all schema indexes for performance
+- ✅ Pass TypeScript compilation without errors
+- ✅ Follow the exact 7-section structure
+- ✅ Have comprehensive type exports
+- ✅ Handle all edge cases (null fields, soft delete, hierarchies)

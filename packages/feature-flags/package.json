@@ -1,29 +1,55 @@
 {
   "name": "@repo/feature-flags",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
+  "description": "Feature flags implementation using Vercel Flags SDK",
+  "type": "module",
+  "exports": {
+    ".": "./src/shared/index.ts",
+    "./client": "./src/client.ts",
+    "./server": "./src/server.ts",
+    "./client/next": "./src/client-next.ts",
+    "./server/next": "./src/server-next.ts",
+    "./server/edge": "./src/server-edge.ts",
+    "./types": "./src/shared/types.ts",
+    "./middleware": "./src/middleware/index.ts"
+  },
+  "main": "./src/server.ts",
   "scripts": {
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "circular": "madge --circular --extensions ts,tsx,js,jsx .",
+    "coverage:collect": "vitest run --coverage --reporter=json",
+    "knip": "knip --fix --reporter json",
+    "lint": "eslint . --fix",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:coverage:json": "vitest run --coverage --reporter=json",
+    "test:ui": "vitest --ui",
+    "test:watch": "vitest",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
+    "@flags-sdk/edge-config": "^0.1.0",
+    "@flags-sdk/posthog": "^0.1.0",
     "@repo/analytics": "workspace:*",
-    "@repo/auth": "workspace:*",
-    "@repo/design-system": "workspace:*",
-    "@t3-oss/env-nextjs": "^0.13.4",
-    "@vercel/toolbar": "^0.1.37",
+    "@repo/observability": "workspace:*",
+    "@t3-oss/env-nextjs": "catalog:",
+    "@vercel/edge-config": "^1.0.0",
     "flags": "^4.0.1",
-    "react": "^19.1.0",
-    "zod": "^3.25.28"
-  },
-  "peerDependencies": {
-    "next": "15.1.7"
+    "nanoid": "catalog:",
+    "next": "catalog:",
+    "posthog-js": "^1.258.2",
+    "posthog-node": "^5.6.0",
+    "react": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
-    "@types/node": "22.15.21",
-    "@types/react": "19.1.5",
-    "@types/react-dom": "^19.1.5",
-    "typescript": "^5.8.3"
+    "@repo/config": "workspace:*",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/qa": "workspace:*",
+    "@vitest/ui": "catalog:",
+    "vite-tsconfig-paths": "catalog:",
+    "vitest": "catalog:"
+  },
+  "engines": {
+    "node": ">=22.0.0"
   }
 }

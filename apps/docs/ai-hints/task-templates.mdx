@@ -1,0 +1,958 @@
+---
+title: Task Templates
+description: Ready-to-use code templates for common tasks
+---
+
+# Task Templates
+
+Ready-to-use code templates for common development tasks in the Forge monorepo.
+
+## Package Creation Template
+
+### Basic Package Structure
+
+```typescript
+// packages/package-name/package.json
+{
+  "name": "@repo/package-name",
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./server": "./src/server/index.ts",
+    "./server/next": "./src/server/next.ts",
+    "./server/edge": "./src/server/edge.ts",
+    "./client": "./src/client/index.ts",
+    "./client/next": "./src/client/next.ts"
+  },
+  "dependencies": {
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@repo/eslint-config": "workspace:*"
+  }
+}
+```
+
+### Environment Configuration
+
+```typescript
+// packages/package-name/env.ts
+import { createEnv } from "@t3-oss/env-nextjs";
+import { z } from "zod";
+
+export const env = createEnv({
+  server: {
+    PACKAGE_SECRET: z.string().min(1)
+  },
+  client: {
+    NEXT_PUBLIC_PACKAGE_KEY: z.string().optional()
+  },
+  runtimeEnv: {
+    PACKAGE_SECRET: process.env.PACKAGE_SECRET,
+    NEXT_PUBLIC_PACKAGE_KEY: process.env.NEXT_PUBLIC_PACKAGE_KEY
+  },
+  onValidationError: (error) => {
+    console.warn("Package environment validation failed:", error);
+  }
+});
+
+// Helper for non-Next.js contexts
+export function safeEnv() {
+  if (env) return env;
+  return {
+    PACKAGE_SECRET: process.env.PACKAGE_SECRET || "",
+    NEXT_PUBLIC_PACKAGE_KEY: process.env.NEXT_PUBLIC_PACKAGE_KEY || ""
+  };
+}
+```
+
+### Main Export
+
+```typescript
+// packages/package-name/src/index.ts
+export * from "./server/index.js";
+export * from "./client/index.js";
+export * from "../env.js";
+```
+
+### Server Implementation
+
+```typescript
+// packages/package-name/src/server/index.ts
+import { env } from "../../env.js";
+
+export function createPackageService() {
+  return {
+    async doSomething() {
+      // Implementation
+      return { success: true };
+    }
+  };
+}
+```
+
+### Next.js Server Export
+
+```typescript
+// packages/package-name/src/server/next.ts
+export { createPackageService } from "./index.js";
+```
+
+### Client Implementation
+
+```typescript
+// packages/package-name/src/client/index.ts
+export function usePackageHook() {
+  return {
+    data: null,
+    loading: false,
+    error: null
+  };
+}
+```
+
+### Next.js Client Export
+
+```typescript
+// packages/package-name/src/client/next.ts
+export { usePackageHook } from "./index.js";
+```
+
+## Server Action Template
+
+### Basic Server Action
+
+```typescript
+// app/actions/feature.ts
+"use server";
+
+import { z } from "zod";
+import { auth } from "@repo/auth/server/next";
+import { db } from "@repo/database";
+import { revalidatePath } from "next/cache";
+
+const schema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email")
+});
+
+export async function createFeature(formData: FormData) {
+  try {
+    // Validate session
+    const session = await auth();
+    if (!session) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    // Validate input
+    const validated = schema.parse(Object.fromEntries(formData));
+
+    // Database operation
+    const result = await db.feature.create({
+      data: {
+        ...validated,
+        userId: session.user.id
+      }
+    });
+
+    // Revalidate cache
+    revalidatePath("/features");
+
+    return { success: true, data: result };
+  } catch (error) {
+    console.error("Feature creation failed:", error);
+    return { success: false, error: "Failed to create feature" };
+  }
+}
+```
+
+### Protected Server Action
+
+```typescript
+// app/actions/protected-feature.ts
+"use server";
+
+import { auth } from "@repo/auth/server/next";
+import { redirect } from "next/navigation";
+
+export async function protectedAction() {
+  const session = await auth();
+
+  if (!session) {
+    redirect("/login");
+  }
+
+  // Your protected logic here
+  return { userId: session.user.id };
+}
+```
+
+### Form Action with Validation
+
+```typescript
+// app/actions/form-action.ts
+"use server";
+
+import { z } from "zod";
+import { auth } from "@repo/auth/server/next";
+
+const formSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  content: z.string().min(10, "Content must be at least 10 characters"),
+  category: z.enum(["tech", "design", "business"])
+});
+
+export async function handleForm(formData: FormData) {
+  const session = await auth();
+  if (!session) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  try {
+    const validated = formSchema.parse(Object.fromEntries(formData));
+
+    // Process the form data
+    const result = await processFormData(validated, session.user.id);
+
+    return { success: true, data: result };
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { success: false, errors: error.errors };
+    }
+
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+```
+
+## Component Templates
+
+### Server Component
+
+```typescript
+// components/ServerComponent.tsx
+import { auth } from "@repo/auth/server/next";
+import { db } from "@repo/database";
+
+interface ServerComponentProps {
+  "data-testid"?: string;
+}
+
+export default async function ServerComponent({
+  "data-testid": testId = "server-component"
+}: ServerComponentProps) {
+  const session = await auth();
+  const data = await db.someModel.findMany();
+
+  return (
+    <div data-testid={testId}>
+      <h1>Server Component</h1>
+      {session && <p>Welcome, {session.user.name}</p>}
+      <ul>
+        {data.map((item) => (
+          <li key={item.id}>{item.name}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+### Client Component
+
+```typescript
+// components/ClientComponent.tsx
+"use client";
+
+import { useState } from "react";
+import { Button, TextInput } from "@mantine/core";
+import { useForm } from "@mantine/form";
+import { zodResolver } from "mantine-form-zod-resolver";
+import { z } from "zod";
+
+const schema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email"),
+});
+
+interface ClientComponentProps {
+  "data-testid"?: string;
+  onSubmit?: (data: z.infer<typeof schema>) => void;
+}
+
+export function ClientComponent({
+  "data-testid": testId = "client-component",
+  onSubmit
+}: ClientComponentProps) {
+  const [loading, setLoading] = useState(false);
+
+  const form = useForm({
+    validate: zodResolver(schema),
+    initialValues: {
+      name: "",
+      email: "",
+    },
+  });
+
+  const handleSubmit = async (values: z.infer<typeof schema>) => {
+    setLoading(true);
+    try {
+      await onSubmit?.(values);
+      form.reset();
+    } catch (error) {
+      console.error("Form submission failed:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={form.onSubmit(handleSubmit)} data-testid={testId}>
+      <TextInput
+        label="Name"
+        placeholder="Enter your name"
+        {...form.getInputProps("name")}
+        data-testid="name-input"
+      />
+      <TextInput
+        label="Email"
+        placeholder="Enter your email"
+        {...form.getInputProps("email")}
+        data-testid="email-input"
+      />
+      <Button
+        type="submit"
+        loading={loading}
+        data-testid="submit-button"
+      >
+        Submit
+      </Button>
+    </form>
+  );
+}
+```
+
+### Form Component
+
+```typescript
+// components/FormComponent.tsx
+"use client";
+
+import { useForm } from "@mantine/form";
+import { zodResolver } from "mantine-form-zod-resolver";
+import { z } from "zod";
+import { Button, TextInput, Textarea, Select } from "@mantine/core";
+import { notifications } from "@repo/notifications/mantine-notifications";
+
+const schema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().min(10, "Description must be at least 10 characters"),
+  category: z.enum(["tech", "design", "business"]),
+});
+
+type FormData = z.infer<typeof schema>;
+
+interface FormComponentProps {
+  "data-testid"?: string;
+  onSubmit: (data: FormData) => Promise<{ success: boolean; error?: string }>;
+  initialValues?: Partial<FormData>;
+}
+
+export function FormComponent({
+  "data-testid": testId = "form-component",
+  onSubmit,
+  initialValues,
+}: FormComponentProps) {
+  const form = useForm({
+    validate: zodResolver(schema),
+    initialValues: {
+      title: "",
+      description: "",
+      category: "tech" as const,
+      ...initialValues,
+    },
+  });
+
+  const handleSubmit = async (values: FormData) => {
+    try {
+      const result = await onSubmit(values);
+
+      if (result.success) {
+        notifications.show({
+          title: "Success",
+          message: "Form submitted successfully",
+          color: "green",
+        });
+        form.reset();
+      } else {
+        notifications.show({
+          title: "Error",
+          message: result.error || "Form submission failed",
+          color: "red",
+        });
+      }
+    } catch (error) {
+      notifications.show({
+        title: "Error",
+        message: "An unexpected error occurred",
+        color: "red",
+      });
+    }
+  };
+
+  return (
+    <form onSubmit={form.onSubmit(handleSubmit)} data-testid={testId}>
+      <TextInput
+        label="Title"
+        placeholder="Enter title"
+        {...form.getInputProps("title")}
+        data-testid="title-input"
+        required
+      />
+
+      <Textarea
+        label="Description"
+        placeholder="Enter description"
+        {...form.getInputProps("description")}
+        data-testid="description-input"
+        required
+        minRows={3}
+      />
+
+      <Select
+        label="Category"
+        placeholder="Select category"
+        data={[
+          { value: "tech", label: "Technology" },
+          { value: "design", label: "Design" },
+          { value: "business", label: "Business" },
+        ]}
+        {...form.getInputProps("category")}
+        data-testid="category-select"
+        required
+      />
+
+      <Button type="submit" data-testid="submit-button">
+        Submit
+      </Button>
+    </form>
+  );
+}
+```
+
+## Database Model Template
+
+### Prisma Model
+
+```prisma
+// packages/database/prisma/schema.prisma
+model Feature {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  category    String
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@index([userId])
+  @@index([category])
+  @@index([published, createdAt])
+}
+```
+
+### Database Operations
+
+```typescript
+// lib/database/features.ts
+import { db } from "@repo/database";
+
+export async function createFeature(data: {
+  title: string;
+  description?: string;
+  category: string;
+  userId: string;
+}) {
+  return db.feature.create({
+    data,
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true
+        }
+      }
+    }
+  });
+}
+
+export async function getFeatures(userId: string) {
+  return db.feature.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true
+        }
+      }
+    }
+  });
+}
+
+export async function updateFeature(
+  id: string,
+  userId: string,
+  data: Partial<{
+    title: string;
+    description: string;
+    category: string;
+    published: boolean;
+  }>
+) {
+  return db.feature.update({
+    where: { id, userId },
+    data
+  });
+}
+
+export async function deleteFeature(id: string, userId: string) {
+  return db.feature.delete({
+    where: { id, userId }
+  });
+}
+```
+
+## Test Templates
+
+### Component Test
+
+```typescript
+// __tests__/components/Component.test.tsx
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { Component } from "#/components/Component";
+
+describe("Component", () => {
+  it("renders correctly", () => {
+    render(<Component data-testid="test-component" />);
+    expect(screen.getByTestId("test-component")).toBeInTheDocument();
+  });
+
+  it("handles user interactions", async () => {
+    const mockOnSubmit = vi.fn();
+    render(
+      <Component
+        data-testid="test-component"
+        onSubmit={mockOnSubmit}
+      />
+    );
+
+    const input = screen.getByTestId("name-input");
+    const submitButton = screen.getByTestId("submit-button");
+
+    fireEvent.change(input, { target: { value: "Test Name" } });
+    fireEvent.click(submitButton);
+
+    await waitFor(() => {
+      expect(mockOnSubmit).toHaveBeenCalledWith({ name: "Test Name" });
+    });
+  });
+
+  it("displays validation errors", async () => {
+    render(<Component data-testid="test-component" />);
+
+    const submitButton = screen.getByTestId("submit-button");
+    fireEvent.click(submitButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("Name is required")).toBeInTheDocument();
+    });
+  });
+});
+```
+
+### Server Action Test
+
+```typescript
+// __tests__/actions/feature.test.ts
+import { testAction } from "@repo/qa/server-actions";
+import { createFeature } from "#/app/actions/feature";
+
+describe("createFeature", () => {
+  it("creates a feature successfully", async () => {
+    const formData = new FormData();
+    formData.append("title", "Test Feature");
+    formData.append("description", "Test Description");
+    formData.append("category", "tech");
+
+    const result = await testAction(createFeature, formData);
+
+    expect(result.success).toBe(true);
+    expect(result.data).toHaveProperty("id");
+    expect(result.data.title).toBe("Test Feature");
+  });
+
+  it("validates required fields", async () => {
+    const formData = new FormData();
+    // Missing required fields
+
+    const result = await testAction(createFeature, formData);
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("validation");
+  });
+
+  it("requires authentication", async () => {
+    const formData = new FormData();
+    formData.append("title", "Test Feature");
+
+    // Test without authentication
+    const result = await testAction(createFeature, formData, {
+      authenticated: false
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe("Unauthorized");
+  });
+});
+```
+
+### E2E Test
+
+```typescript
+// __tests__/e2e/feature-flow.spec.ts
+import { test, expect } from "@playwright/test";
+
+test.describe("Feature Flow", () => {
+  test("user can create a feature", async ({ page }) => {
+    // Navigate to the page
+    await page.goto("/features/new");
+
+    // Fill out the form
+    await page.fill('[data-testid="title-input"]', "Test Feature");
+    await page.fill('[data-testid="description-input"]', "Test Description");
+    await page.selectOption('[data-testid="category-select"]', "tech");
+
+    // Submit the form
+    await page.click('[data-testid="submit-button"]');
+
+    // Verify success
+    await expect(page.locator('[data-testid="success-message"]')).toBeVisible();
+    await expect(page).toHaveURL("/features");
+  });
+
+  test("form validation works", async ({ page }) => {
+    await page.goto("/features/new");
+
+    // Try to submit without filling required fields
+    await page.click('[data-testid="submit-button"]');
+
+    // Verify validation errors
+    await expect(page.locator('[data-testid="title-error"]')).toBeVisible();
+    await expect(
+      page.locator('[data-testid="description-error"]')
+    ).toBeVisible();
+  });
+});
+```
+
+## Environment Configuration Template
+
+### Next.js App Environment
+
+```typescript
+// apps/app-name/env.ts
+import { createEnv } from "@t3-oss/env-nextjs";
+import { z } from "zod";
+
+export const env = createEnv({
+  server: {
+    DATABASE_URL: z.string().url(),
+    AUTH_SECRET: z.string().min(1),
+    API_SECRET: z.string().min(1)
+  },
+  client: {
+    NEXT_PUBLIC_API_URL: z.string().url(),
+    NEXT_PUBLIC_APP_NAME: z.string().min(1)
+  },
+  runtimeEnv: {
+    DATABASE_URL: process.env.DATABASE_URL,
+    AUTH_SECRET: process.env.AUTH_SECRET,
+    API_SECRET: process.env.API_SECRET,
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+    NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME
+  },
+  onValidationError: (error) => {
+    console.error("Environment validation failed:", error);
+    throw new Error("Environment validation failed");
+  }
+});
+```
+
+### Package Environment
+
+```typescript
+// packages/package-name/env.ts
+import { createEnv } from "@t3-oss/env-nextjs";
+import { z } from "zod";
+
+export const env = createEnv({
+  server: {
+    PACKAGE_SECRET: z.string().min(1)
+  },
+  client: {
+    NEXT_PUBLIC_PACKAGE_KEY: z.string().optional()
+  },
+  runtimeEnv: {
+    PACKAGE_SECRET: process.env.PACKAGE_SECRET,
+    NEXT_PUBLIC_PACKAGE_KEY: process.env.NEXT_PUBLIC_PACKAGE_KEY
+  },
+  onValidationError: (error) => {
+    console.warn("Package environment validation failed:", error);
+  }
+});
+
+// Helper for non-Next.js contexts
+export function safeEnv() {
+  if (env) return env;
+  return {
+    PACKAGE_SECRET: process.env.PACKAGE_SECRET || "",
+    NEXT_PUBLIC_PACKAGE_KEY: process.env.NEXT_PUBLIC_PACKAGE_KEY || ""
+  };
+}
+```
+
+## Middleware Template
+
+```typescript
+// middleware.ts
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { auth } from "@repo/auth/server/edge";
+
+export async function middleware(request: NextRequest) {
+  // Auth check for protected routes
+  if (request.nextUrl.pathname.startsWith("/protected")) {
+    const session = await auth();
+
+    if (!session) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+  }
+
+  // Add security headers
+  const response = NextResponse.next();
+
+  response.headers.set("X-Frame-Options", "DENY");
+  response.headers.set("X-Content-Type-Options", "nosniff");
+  response.headers.set("Referrer-Policy", "origin-when-cross-origin");
+
+  return response;
+}
+
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    "/((?!api|_next/static|_next/image|favicon.ico).*)"
+  ]
+};
+```
+
+## API Route Template
+
+```typescript
+// app/api/feature/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@repo/auth/server/next";
+import { z } from "zod";
+
+const schema = z.object({
+  title: z.string().min(1),
+  description: z.string().optional(),
+  category: z.enum(["tech", "design", "business"])
+});
+
+export async function POST(request: NextRequest) {
+  try {
+    // Check authentication
+    const session = await auth();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Parse and validate request body
+    const body = await request.json();
+    const validated = schema.parse(body);
+
+    // Process the request
+    const result = await processFeature(validated, session.user.id);
+
+    return NextResponse.json({ success: true, data: result });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Validation failed", details: error.errors },
+        { status: 400 }
+      );
+    }
+
+    console.error("API error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const features = await getFeatures(session.user.id);
+    return NextResponse.json({ success: true, data: features });
+  } catch (error) {
+    console.error("API error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+```
+
+## Page Template
+
+```typescript
+// app/features/page.tsx
+import { auth } from "@repo/auth/server/next";
+import { redirect } from "next/navigation";
+import { db } from "@repo/database";
+import { FeatureList } from "#/components/FeatureList";
+import { CreateFeatureButton } from "#/components/CreateFeatureButton";
+
+export default async function FeaturesPage() {
+  const session = await auth();
+
+  if (!session) {
+    redirect("/login");
+  }
+
+  const features = await db.feature.findMany({
+    where: { userId: session.user.id },
+    orderBy: { createdAt: "desc" },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  });
+
+  return (
+    <div className="container mx-auto py-8">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Features</h1>
+        <CreateFeatureButton />
+      </div>
+
+      <FeatureList features={features} />
+    </div>
+  );
+}
+```
+
+## Layout Template
+
+```typescript
+// app/layout.tsx
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import { MantineProvider } from "@mantine/core";
+import { Notifications } from "@repo/notifications/mantine-notifications";
+import { Header } from "#/components/Header";
+import { Footer } from "#/components/Footer";
+
+const inter = Inter({ subsets: ["latin"] });
+
+export const metadata: Metadata = {
+  title: "Your App",
+  description: "Your app description",
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body className={inter.className}>
+        <MantineProvider>
+          <Header />
+          <main className="min-h-screen">
+            {children}
+          </main>
+          <Footer />
+          <Notifications />
+        </MantineProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+## Usage Instructions
+
+1. **Copy the template** that matches your needs
+2. **Customize the code** for your specific use case
+3. **Update imports** to use the correct package paths
+4. **Add proper types** and validation
+5. **Include data-testid attributes** for testing
+6. **Test the implementation** thoroughly
+
+## Template Customization
+
+### For Different Layers
+
+- **Layer 1-2**: Focus on configuration and utilities
+- **Layer 3**: Database operations and data access
+- **Layer 4**: Business services and external integrations
+- **Layer 5**: Business logic and domain operations
+- **Layer 6**: UI components and design system
+
+### For Different Runtimes
+
+- **Server**: Use `/server/next` imports
+- **Edge**: Use `/server/edge` imports
+- **Client**: Use `/client/next` imports
+- **Node.js**: Use `/server` imports
+
+### For Different Use Cases
+
+- **CRUD Operations**: Use database templates
+- **Forms**: Use form component templates
+- **Authentication**: Use auth templates
+- **Testing**: Use appropriate test templates
+
+Remember to always follow the Forge patterns and conventions when customizing
+these templates.

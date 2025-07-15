@@ -1,0 +1,22 @@
+// schema.prisma - Main configuration file for multi-file schema setup
+// This file contains the generator and datasource configuration
+// Model definitions are in separate files in this directory
+
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../../../prisma-generated/client"
+  binaryTargets   = ["native", "darwin-arm64"]
+  previewFeatures = ["driverAdapters"]
+}
+
+generator zod {
+  provider          = "prisma-zod-generator"
+  output            = "../../../prisma-generated/zod"
+  isGenerateSelect  = true
+  isGenerateInclude = true
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}

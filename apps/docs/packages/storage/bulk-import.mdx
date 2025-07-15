@@ -1,0 +1,337 @@
+---
+title: "Bulk Import"
+description: "Import media from external URLs into your storage system"
+icon: "cloud-arrow-down"
+---
+
+## Overview
+
+The storage package provides powerful server actions for importing media from
+external URLs (CDNs, vendor sites, etc.) into your storage system. This is
+particularly useful for:
+
+- Product catalog imports
+- Migration from other platforms
+- Synchronizing vendor product images
+- Bulk content ingestion
+
+## Features
+
+- **Streaming Support**: Handles large files efficiently
+- **Automatic Routing**: Images go to Cloudflare Images, documents to R2
+- **Batch Processing**: Process multiple URLs concurrently
+- **Database Integration**: Automatically creates Media records
+- **Duplicate Detection**: Skip already imported URLs
+- **Progress Tracking**: Monitor import progress
+- **Error Handling**: Detailed error reporting for failed imports
+
+## Basic Usage
+
+### Import Single URL
+
+```typescript
+import { importFromUrlAction } from "@repo/storage/server/next";
+import {
+  logInfo,
+  logError,
+  logProgress
+} from "@repo/observability/server/next";
+
+const result = await importFromUrlAction(
+  "https://cdn.example.com/product-image.jpg",
+  "products/123/main-image.jpg", // optional destination key
+  {
+    metadata: {
+      productId: "123",
+      type: "IMAGE"
+    }
+  }
+);
+
+if (result.success) {
+  logInfo("Imported to:", {
+    key: result.data.key,
+    url: result.data.url
+  });
+}
+```
+
+### Bulk Import URLs
+
+```typescript
+import { bulkImportFromUrlsAction } from "@repo/storage/server/next";
+import {
+  logInfo,
+  logError,
+  logProgress
+} from "@repo/observability/server/next";
+
+const imports = [
+  {
+    sourceUrl: "https://cdn.vendor.com/product1.jpg",
+    destinationKey: "products/123/image-1.jpg",
+    metadata: { productId: "123" }
+  },
+  {
+    sourceUrl: "https://cdn.vendor.com/product2.jpg",
+    metadata: { productId: "123" }
+  }
+];
+
+const result = await bulkImportFromUrlsAction(imports, {
+  batchSize: 5, // Process 5 URLs at a time
+  timeout: 30000 // 30 second timeout per URL
+});
+
+logInfo("Bulk import completed", {
+  succeeded: result.data.succeeded.length,
+  failed: result.data.failed.length,
+  totalProcessed: result.data.succeeded.length + result.data.failed.length
+});
+
+// Import item details
+result.data.succeeded.forEach((item) => {
+  logInfo("Item imported successfully", {
+    url: item.url,
+    mediaId: item.mediaId,
+    storageKey: item.storageKey,
+    size: item.size
+  });
+});
+
+// Import statistics
+logInfo("Import statistics", {
+  stats: result.data.stats,
+  duration: result.data.duration,
+  throughput: result.data.stats.processed / (result.data.duration / 1000)
+});
+
+// Error handling
+if (!result.success) {
+  logError("Import operation failed", {
+    error: result.error,
+    code: result.errorCode,
+    retryable: result.canRetry
+  });
+}
+
+// Failed items
+result.data.failed.forEach((failure) => {
+  logError("Item import failed", {
+    sourceUrl: failure.sourceUrl,
+    error: failure.error,
+    code: failure.errorCode,
+    attempts: failure.attempts
+  });
+});
+```
+
+## Database Integration
+
+### Import Product Photos
+
+Specialized action for importing product images with automatic Media record
+creation:
+
+```typescript
+import { importProductPhotosAction } from "@repo/storage/server/next";
+import {
+  logInfo,
+  logError,
+  logProgress
+} from "@repo/observability/server/next";
+
+const productId = "product-123";
+const photoUrls = [
+  "https://vendor.com/products/123/main.jpg",
+  "https://vendor.com/products/123/angle-1.jpg",
+  "https://vendor.com/products/123/angle-2.jpg"
+];
+
+const result = await importProductPhotosAction(productId, photoUrls, userId, {
+  sortOrderStart: 0,
+  skipDuplicates: true
+});
+
+// Result includes media IDs and storage keys
+result.data.imported.forEach((item) => {
+  logInfo(`URL: ${item.url}`, {
+    mediaId: item.mediaId,
+    storageKey: item.storageKey
+  });
+});
+```
+
+### Bulk Import with Database
+
+Import various media types with automatic entity associations:
+
+```typescript
+import { bulkImportMediaWithDbAction } from "@repo/storage/server/next";
+import {
+  logInfo,
+  logError,
+  logProgress
+} from "@repo/observability/server/next";
+
+const imports = [
+  {
+    url: "https://cdn.example.com/product-hero.jpg",
+    type: "IMAGE" as const,
+    entityType: "product" as const,
+    entityId: "product-123",
+    altText: "Product hero image"
+  },
+  {
+    url: "https://cdn.example.com/brand-logo.png",
+    type: "IMAGE" as const,
+    entityType: "brand" as const,
+    entityId: "brand-456"
+  },
+  {
+    url: "https://cdn.example.com/manual.pdf",
+    type: "DOCUMENT" as const,
+    entityType: "product" as const,
+    entityId: "product-123"
+  }
+];
+
+const result = await bulkImportMediaWithDbAction(imports, userId, {
+  batchSize: 5,
+  skipExisting: true,
+  autoGenerateAltText: true
+});
+
+logInfo("Import Stats:", {
+  stats: result.data.stats,
+  duration: result.data.duration,
+  throughput: result.data.stats.processed / (result.data.duration / 1000)
+});
+// { total: 3, succeeded: 2, failed: 0, skipped: 1 }
+```
+
+## Handling CDNs Without File Extensions
+
+Many CDNs don't include file extensions or proper content types. The import
+actions handle this automatically:
+
+```typescript
+// These URLs work even without extensions
+const cdnUrls = [
+  "https://images.vendor.com/abc123", // No extension
+  "https://cdn.example.com/image?id=456", // Query parameters
+  "https://media.store.com/p/789/main" // Path-based
+];
+
+// The import action will:
+// 1. Fetch the content
+// 2. Detect content type from response headers
+// 3. Fall back to 'application/octet-stream' if needed
+// 4. Generate appropriate storage keys
+
+const result = await bulkImportFromUrlsAction(
+  cdnUrls.map((url) => ({ sourceUrl: url }))
+);
+```
+
+## Progress Tracking
+
+For single imports with progress tracking:
+
+```typescript
+const result = await importFromUrlAction(
+  "https://cdn.example.com/large-video.mp4",
+  "videos/product-demo.mp4",
+  {
+    onProgress: (progress) => {
+      logProgress("Import progress", {
+        percent: Math.round(progress * 100),
+        processed: progress.processed,
+        total: progress.total,
+        speed: progress.speed
+      });
+    }
+  }
+);
+```
+
+## Error Handling
+
+The import actions provide detailed error information:
+
+```typescript
+const result = await bulkImportFromUrlsAction(imports);
+
+if (!result.success) {
+  logError("Import failed:", {
+    error: result.error,
+    code: result.errorCode,
+    retryable: result.canRetry
+  });
+}
+
+// Even on partial success, check individual failures
+result.data.failed.forEach((failure) => {
+  logError(`Failed to import ${failure.sourceUrl}: ${failure.error}`, {
+    error: failure.error,
+    code: failure.errorCode,
+    attempts: failure.attempts
+  });
+});
+```
+
+## Best Practices
+
+1. **Batch Size**: Use appropriate batch sizes (3-10) to avoid overwhelming the
+   system
+2. **Timeouts**: Set reasonable timeouts based on expected file sizes
+3. **Duplicate Detection**: Enable `skipDuplicates` to avoid re-importing
+4. **Alt Text**: Use `autoGenerateAltText` for accessibility
+5. **Error Recovery**: Implement retry logic for failed imports
+6. **Storage Keys**: Let the system generate keys automatically for consistency
+
+## Example: Product Catalog Import
+
+```typescript
+// Import products from vendor feed
+async function importProductCatalog(products: VendorProduct[]) {
+  for (const product of products) {
+    // Create product in database
+    const dbProduct = await createProduct(product);
+
+    // Import product images
+    const imageUrls = [product.mainImage, ...product.additionalImages].filter(
+      Boolean
+    );
+
+    const importResult = await importProductPhotosAction(
+      dbProduct.id,
+      imageUrls,
+      systemUserId,
+      {
+        skipDuplicates: true
+      }
+    );
+
+    logInfo("Product images imported", {
+      product: {
+        sku: product.sku,
+        name: product.name
+      },
+      stats: {
+        imported: importResult.data.imported.length,
+        failed: importResult.data.failed.length,
+        skipped: importResult.data.skipped.length,
+        total: importResult.data.total
+      }
+    });
+  }
+}
+```
+
+## Limitations
+
+- Maximum file size depends on your storage provider limits
+- Network timeouts may occur for very slow sources
+- Some CDNs may rate limit bulk requests
+- Progress tracking only works with servers that provide Content-Length headers

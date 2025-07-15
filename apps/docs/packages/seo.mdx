@@ -1,0 +1,809 @@
+---
+title: "SEO Package"
+description:
+  "Essential SEO utilities with metadata generation, structured data, and
+  sitemap creation"
+icon: "magnifying-glass"
+---
+
+# SEO Package
+
+Essential search engine optimization utilities providing metadata management,
+structured data generation, and sitemap creation for Next.js applications.
+
+## Overview
+
+The SEO package provides essential SEO utilities for Next.js applications,
+including metadata generation, structured data markup, and sitemap creation.
+
+<CardGroup cols={2}>
+  <Card title="Next.js Metadata API" icon="next-js">
+    Full integration with Next.js App Router metadata system
+  </Card>
+  <Card title="Structured Data" icon="code">
+    JSON-LD generation for enhanced search results
+  </Card>
+  <Card title="Sitemap Generation" icon="sitemap">
+    Automated XML sitemaps with Next.js App Router
+  </Card>
+  <Card title="Internationalization" icon="globe">
+    Multi-language SEO with hreflang support
+  </Card>
+</CardGroup>
+
+## Key Features
+
+- **Next.js 15 Metadata API**: Full integration with the latest metadata system
+- **Structured Data**: JSON-LD generation for products, organizations, and
+  content
+- **Open Graph & Twitter Cards**: Rich social media previews
+- **Sitemap Generation**: Automated XML sitemaps with priority and frequency
+  settings
+- **Schema.org Markup**: Structured data for enhanced search results
+- **Internationalization**: Multi-language SEO with proper hreflang
+  implementation
+
+## Installation
+
+```bash
+pnpm add @repo/seo
+```
+
+## Quick Start
+
+<Steps>
+  <Step title="Configure Root Layout">
+    ```typescript
+    // app/layout.tsx
+    import { createMetadata } from '@repo/seo/server/next';
+    
+    export const metadata = createMetadata({
+      title: 'Forge Platform',
+      description: 'Modern product management and workflow platform',
+    });
+    
+    export default function RootLayout({ children }) {
+      return (
+        <html>
+          <body>
+            {children}
+          </body>
+        </html>
+      );
+    }
+    ```
+  </Step>
+  
+  <Step title="Page-Level Metadata">
+    ```typescript
+    // app/products/[id]/page.tsx
+    import { metadataTemplates } from '@repo/seo/server/next';
+    import { JsonLd } from '@repo/seo/structured-data';
+    import { structuredData } from '@repo/seo/server/next';
+    
+    export async function generateMetadata({ params }) {
+      const product = await getProduct(params.id);
+      
+      return metadataTemplates.product({
+        name: product.title,
+        description: product.description,
+        price: product.price,
+        currency: product.currency || 'USD',
+        image: product.assets[0]?.url || '',
+        availability: product.stock > 0 ? 'InStock' : 'OutOfStock',
+        brand: product.brand,
+      });
+    }
+    
+    export default function ProductPage({ product }) {
+      const productSchema = structuredData.product({
+        name: product.title,
+        description: product.description,
+        image: product.assets.map(asset => asset.url),
+        brand: product.brand,
+        offers: {
+          price: product.price.toString(),
+          priceCurrency: product.currency || 'USD',
+          availability: product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+        },
+      });
+      
+      return (
+        <>
+          <JsonLd data={productSchema} />
+          <main>{/* Product content */}</main>
+        </>
+      );
+    }
+    ```
+  </Step>
+  
+  <Step title="Add Structured Data">
+    ```typescript
+    // app/about/page.tsx
+    import { JsonLd } from '@repo/seo/structured-data';
+    import { structuredData } from '@repo/seo/server/next';
+    
+    export default function AboutPage() {
+      const organizationSchema = structuredData.organization({
+        name: 'Forge Platform Inc.',
+        url: 'https://forge.example.com',
+        description: 'Leading provider of product management solutions',
+      });
+      
+      return (
+        <>
+          <JsonLd data={organizationSchema} />
+          <main>{/* About content */}</main>
+        </>
+      );
+    }
+    ```
+  </Step>
+</Steps>
+
+## Metadata Management
+
+### Next.js Metadata API Integration
+
+<Tabs>
+  <Tab title="Basic Metadata">
+    ```typescript
+    import { createMetadata } from '@repo/seo/server/next';
+    
+    // Static metadata
+    export const metadata = createMetadata({
+      title: 'Product Catalog',
+      description: 'Browse our comprehensive product catalog with advanced filtering and search capabilities.',
+    });
+    ```
+  </Tab>
+  
+  <Tab title="Advanced Metadata">
+    ```typescript
+    import { SEOManager } from '@repo/seo/server/next';
+    
+    const seoManager = new SEOManager({
+      applicationName: 'Forge Platform',
+      author: { name: 'Hayden Bleasel', url: 'https://haydenbleasel.com/' },
+      publisher: 'Hayden Bleasel',
+      twitterHandle: '@haydenbleasel',
+    });
+    
+    // Dynamic metadata based on content
+    export async function generateMetadata({ params, searchParams }) {
+      const category = await getCategory(params.slug);
+      
+      return seoManager.createMetadata({
+        title: `${category.name} - Product Category`,
+        description: category.description,
+        keywords: [...category.tags, 'products', category.name.toLowerCase()],
+        canonical: `/categories/${category.slug}`,
+        image: category.image,
+      });
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Metadata Templates">
+    ```typescript
+    import { metadataTemplates } from '@repo/seo/server/next';
+    
+    // Product page metadata
+    export async function generateMetadata({ params }) {
+      const product = await getProduct(params.id);
+      
+      return metadataTemplates.product({
+        name: product.title,
+        description: product.description,
+        price: product.price,
+        currency: product.currency,
+        image: product.image,
+        availability: product.stock > 0 ? 'InStock' : 'OutOfStock',
+        brand: product.brand,
+      });
+    }
+    
+    // Article metadata
+    export async function generateMetadata({ params }) {
+      const post = await getPost(params.slug);
+      
+      return metadataTemplates.article({
+        title: post.title,
+        description: post.excerpt,
+        author: post.author.name,
+        publishedTime: post.publishedAt,
+        modifiedTime: post.updatedAt,
+        image: post.featuredImage,
+        tags: post.tags,
+        section: post.category,
+      });
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Open Graph and Social Media
+
+<CodeGroup>
+```typescript Open Graph Configuration
+import { createMetadata } from '@repo/seo/server/next';
+
+export const metadata = createMetadata({
+  title: 'Revolutionary Product Management Platform',
+  description: 'Streamline your product workflow with AI-powered automation',
+  image: '/og-image.jpg',
+  openGraph: {
+    title: 'Revolutionary Product Management Platform',
+    description: 'Streamline your product workflow with AI-powered automation',
+    images: [
+      {
+        url: '/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Forge Platform Dashboard',
+      },
+    ],
+    type: 'website',
+    locale: 'en_US',
+    siteName: 'Forge Platform',
+  },
+});
+```
+
+```typescript Advanced Social Media
+import { SEOManager } from "@repo/seo/server/next";
+
+const seoManager = new SEOManager({
+  applicationName: "Forge Platform",
+  author: { name: "Hayden Bleasel", url: "https://haydenbleasel.com/" },
+  publisher: "Hayden Bleasel",
+  twitterHandle: "@forge_platform"
+});
+
+export const metadata = seoManager.createMetadata({
+  title: "Product Management Made Simple",
+  description: "Discover how Forge transforms product workflows",
+  image: "/twitter-card.jpg"
+});
+```
+
+</CodeGroup>
+
+## Structured Data
+
+### JSON-LD Schema Markup
+
+<AccordionGroup>
+  <Accordion title="Product Schema" icon="package">
+    ```typescript
+    import { JsonLd } from '@repo/seo/structured-data';
+    import { structuredData } from '@repo/seo/server/next';
+    
+    export function ProductPage({ product }) {
+      const productSchema = structuredData.product({
+        name: product.title,
+        description: product.description,
+        image: product.assets.map(asset => asset.url),
+        brand: product.brand,
+        offers: {
+          price: product.price.toString(),
+          priceCurrency: product.currency || 'USD',
+          availability: product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+          seller: 'Forge Platform',
+        },
+        aggregateRating: product.reviews?.length > 0 ? {
+          ratingValue: product.averageRating,
+          reviewCount: product.reviews.length,
+        } : undefined,
+      });
+      
+      return (
+        <>
+          <JsonLd data={productSchema} />
+          {/* Product content */}
+        </>
+      );
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Organization Schema" icon="building">
+    ```typescript
+    import { JsonLd } from '@repo/seo/structured-data';
+    import { structuredData } from '@repo/seo/server/next';
+    
+    export function AboutPage() {
+      const organizationSchema = structuredData.organization({
+        name: 'Forge Platform Inc.',
+        url: 'https://forge.example.com',
+        logo: 'https://forge.example.com/logo.png',
+        description: 'Leading provider of product management solutions',
+        contactPoint: {
+          telephone: '+1-555-123-4567',
+          contactType: 'customer service',
+        },
+        sameAs: [
+          'https://twitter.com/forge_platform',
+          'https://linkedin.com/company/forge-platform',
+          'https://github.com/forge-platform',
+        ],
+      });
+      
+      return (
+        <>
+          <JsonLd data={organizationSchema} />
+          {/* About content */}
+        </>
+      );
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Article Schema" icon="newspaper">
+    ```typescript
+    import { JsonLd } from '@repo/seo/structured-data';
+    import { structuredData } from '@repo/seo/server/next';
+    
+    export function BlogPost({ post }) {
+      const articleSchema = structuredData.article({
+        headline: post.title,
+        description: post.excerpt,
+        image: post.featuredImage,
+        author: post.author.name,
+        publisher: {
+          name: 'Forge Platform',
+          logo: 'https://forge.example.com/logo.png',
+        },
+        datePublished: post.publishedAt,
+        dateModified: post.updatedAt,
+        mainEntityOfPage: `https://forge.example.com/blog/${post.slug}`,
+      });
+      
+      return (
+        <>
+          <JsonLd data={articleSchema} />
+          {/* Article content */}
+        </>
+      );
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Sitemap Generation
+
+The SEO package provides comprehensive sitemap generation with multiple
+approaches for different use cases.
+
+### Next.js App Router (Recommended)
+
+<Tabs>
+  <Tab title="Static Sitemap">
+    ```typescript
+    // app/sitemap.ts
+    import { generateSitemapObject } from '@repo/seo/server/next';
+    import type { MetadataRoute } from 'next';
+    
+    export default function sitemap(): MetadataRoute.Sitemap {
+      const baseUrl = process.env.NEXT_PUBLIC_URL || 'https://forge.example.com';
+      
+      return generateSitemapObject([
+        {
+          url: baseUrl,
+          lastModified: new Date(),
+          changeFrequency: 'daily',
+          priority: 1,
+        },
+        {
+          url: `${baseUrl}/products`,
+          lastModified: new Date(),
+          changeFrequency: 'weekly',
+          priority: 0.8,
+        },
+        {
+          url: `${baseUrl}/about`,
+          lastModified: new Date(),
+          changeFrequency: 'monthly',
+          priority: 0.6,
+        },
+      ]);
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Dynamic Sitemap">
+    ```typescript
+    // app/sitemap.ts
+    import { generateSitemapObject } from '@repo/seo/server/next';
+    import type { MetadataRoute } from 'next';
+    
+    export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+      const baseUrl = process.env.NEXT_PUBLIC_URL || 'https://forge.example.com';
+      
+      // Fetch dynamic content
+      const products = await getAllProducts();
+      const categories = await getAllCategories();
+      const posts = await getAllBlogPosts();
+      
+      const routes = [
+        // Static routes
+        { 
+          url: baseUrl, 
+          changeFrequency: 'daily' as const, 
+          priority: 1,
+          lastModified: new Date(),
+        },
+        { 
+          url: `${baseUrl}/about`, 
+          changeFrequency: 'monthly' as const, 
+          priority: 0.6,
+          lastModified: new Date(),
+        },
+        
+        // Dynamic product pages
+        ...products.map((product) => ({
+          url: `${baseUrl}/products/${product.slug}`,
+          lastModified: product.updatedAt,
+          changeFrequency: 'weekly' as const,
+          priority: 0.8,
+        })),
+        
+        // Dynamic category pages
+        ...categories.map((category) => ({
+          url: `${baseUrl}/categories/${category.slug}`,
+          lastModified: category.updatedAt,
+          changeFrequency: 'monthly' as const,
+          priority: 0.7,
+        })),
+        
+        // Dynamic blog posts
+        ...posts.map((post) => ({
+          url: `${baseUrl}/blog/${post.slug}`,
+          lastModified: post.publishedAt,
+          changeFrequency: 'monthly' as const,
+          priority: 0.6,
+        })),
+      ];
+      
+      return generateSitemapObject(routes);
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Multiple Sitemaps">
+    ```typescript
+    // app/sitemap.ts - Main sitemap index
+    import type { MetadataRoute } from 'next';
+    
+    export default function sitemap(): MetadataRoute.Sitemap {
+      const baseUrl = process.env.NEXT_PUBLIC_URL || 'https://forge.example.com';
+      
+      return [
+        {
+          url: `${baseUrl}/sitemaps/pages.xml`,
+          lastModified: new Date(),
+        },
+        {
+          url: `${baseUrl}/sitemaps/products.xml`,
+          lastModified: new Date(),
+        },
+        {
+          url: `${baseUrl}/sitemaps/blog.xml`,
+          lastModified: new Date(),
+        },
+      ];
+    }
+    
+    // app/sitemaps/products/sitemap.ts
+    import { generateSitemapObject } from '@repo/seo/server/next';
+    
+    export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+      const products = await getAllProducts();
+      
+      return generateSitemapObject(
+        products.map((product) => ({
+          url: `https://forge.example.com/products/${product.slug}`,
+          lastModified: product.updatedAt,
+          changeFrequency: 'daily',
+          priority: 0.8,
+          // Include product images
+          images: product.assets?.map((asset) => ({
+            url: asset.url,
+            title: asset.alt || product.title,
+            caption: product.title,
+          })),
+        }))
+      );
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Advanced Sitemap Features
+
+<CodeGroup>
+```typescript Image Sitemaps
+// Include images in product sitemaps
+const productRoutes = products.map((product) => ({
+  url: `${baseUrl}/products/${product.slug}`,
+  lastModified: product.updatedAt,
+  changeFrequency: 'weekly' as const,
+  priority: 0.8,
+  images: product.assets?.map((asset) => ({
+    url: asset.url,
+    title: asset.alt || product.title,
+    caption: `${product.title} - ${asset.alt}`,
+    geo_location: product.origin?.country,
+    license: 'https://creativecommons.org/licenses/by/4.0/',
+  })),
+}));
+```
+
+```typescript Video Sitemaps
+// Include videos in content sitemaps
+const videoRoutes = videoContent.map((video) => ({
+  url: `${baseUrl}/videos/${video.slug}`,
+  lastModified: video.updatedAt,
+  changeFrequency: "monthly" as const,
+  priority: 0.7,
+  videos: [
+    {
+      thumbnail_url: video.thumbnail,
+      title: video.title,
+      description: video.description,
+      content_url: video.url,
+      player_url: `${baseUrl}/player/${video.id}`,
+      duration: video.duration,
+      rating: video.averageRating,
+      view_count: video.viewCount,
+      publication_date: video.publishedAt,
+      family_friendly: video.familyFriendly ? "yes" : "no",
+      restriction: video.restrictions,
+      platform: video.platforms,
+      live: video.isLive ? "yes" : "no"
+    }
+  ]
+}));
+```
+
+```typescript Localized Sitemaps
+// Multi-language sitemap support
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const baseUrl = process.env.NEXT_PUBLIC_URL;
+  const locales = ["en", "fr", "es", "pt", "de"];
+
+  const products = await getAllProducts();
+
+  const routes = [];
+
+  // Generate localized routes for each product
+  for (const product of products) {
+    for (const locale of locales) {
+      routes.push({
+        url: `${baseUrl}/${locale}/products/${product.slug}`,
+        lastModified: product.updatedAt,
+        changeFrequency: "weekly" as const,
+        priority: 0.8,
+        alternates: {
+          languages: locales.reduce(
+            (acc, loc) => {
+              acc[loc] = `${baseUrl}/${loc}/products/${product.slug}`;
+              return acc;
+            },
+            {} as Record<string, string>
+          )
+        }
+      });
+    }
+  }
+
+  return generateSitemapObject(routes);
+}
+```
+
+</CodeGroup>
+
+### Legacy Next-Sitemap Integration
+
+For advanced features or Pages Router compatibility:
+
+```typescript
+// next-sitemap.config.js
+const { createSitemapConfig } = require("@repo/seo/server/next");
+
+module.exports = createSitemapConfig({
+  siteUrl: process.env.SITE_URL || "https://forge.example.com",
+  generateRobotsTxt: true,
+  generateIndexSitemap: true,
+
+  // Exclude patterns
+  exclude: ["/admin/*", "/api/*", "/private/*"],
+
+  // Additional paths for static pages
+  additionalPaths: async () => [
+    { loc: "/special-page", changefreq: "monthly", priority: 0.7 }
+  ],
+
+  // Transform function for custom logic
+  transform: async (config, path) => {
+    // Custom priority based on path
+    let priority = 0.7;
+    let changefreq = "weekly";
+
+    if (path === "/") {
+      priority = 1.0;
+      changefreq = "daily";
+    } else if (path.startsWith("/products")) {
+      priority = 0.8;
+      changefreq = "daily";
+    } else if (path.startsWith("/blog")) {
+      priority = 0.6;
+      changefreq = "monthly";
+    }
+
+    return {
+      loc: path,
+      changefreq,
+      priority,
+      lastmod: new Date().toISOString()
+    };
+  },
+
+  // Robots.txt configuration
+  robotsTxtOptions: {
+    policies: [
+      { userAgent: "*", allow: "/" },
+      { userAgent: "*", disallow: ["/admin", "/api"] },
+      { userAgent: "Googlebot", allow: "/" }
+    ],
+    additionalSitemaps: ["https://forge.example.com/server-sitemap.xml"]
+  }
+});
+```
+
+### Robots.txt Generation
+
+<CodeGroup>
+```typescript Basic Robots.txt
+// app/robots.ts
+import type { MetadataRoute } from 'next';
+
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: {
+      userAgent: '*',
+      allow: '/',
+      disallow: ['/admin/', '/api/', '/private/'],
+    },
+    sitemap: 'https://forge.example.com/sitemap.xml',
+  };
+}
+```
+
+```typescript Environment-Specific Robots
+// app/robots.ts
+import type { MetadataRoute } from "next";
+
+export default function robots(): MetadataRoute.Robots {
+  const isProduction = process.env.NODE_ENV === "production";
+
+  if (!isProduction) {
+    // Block all crawlers in non-production
+    return {
+      rules: {
+        userAgent: "*",
+        disallow: "/"
+      }
+    };
+  }
+
+  return {
+    rules: {
+      userAgent: "*",
+      allow: "/",
+      disallow: ["/admin/", "/api/", "/private/", "/temp/"]
+    },
+    sitemap: "https://forge.example.com/sitemap.xml"
+  };
+}
+```
+
+</CodeGroup>
+
+## Internationalization SEO
+
+### Multi-Language Metadata
+
+<CodeGroup>
+```typescript Hreflang Implementation
+// app/[locale]/layout.tsx
+import { SEOManager } from '@repo/seo/server/next';
+
+const seoManager = new SEOManager({ applicationName: 'Forge Platform', author: {
+name: 'Hayden Bleasel', url: 'https://haydenbleasel.com/' }, publisher: 'Hayden
+Bleasel', twitterHandle: '@forge_platform', });
+
+export async function generateMetadata({ params }) {
+  const { locale } = params;
+  
+  return seoManager.createMetadata({
+    title: getLocalizedTitle(locale),
+    description: getLocalizedDescription(locale),
+    alternates: {
+      languages: {
+        'en-US': '/en',
+        'fr-FR': '/fr',
+        'es-ES': '/es',
+        'pt-PT': '/pt',
+        'de-DE': '/de',
+        'x-default': '/en', // Default language
+      },
+    },
+  });
+}
+```
+
+```typescript Localized Structured Data
+import { JsonLd } from '@repo/seo/structured-data';
+import { structuredData } from '@repo/seo/server/next';
+
+export function LocalizedProductPage({ product, locale }) {
+  const productSchema = structuredData.product({
+    name: product.translations[locale]?.title || product.title,
+    description: product.translations[locale]?.description || product.description,
+    offers: {
+      price: product.price.toString(),
+      priceCurrency: getCurrencyForLocale(locale),
+    },
+  });
+
+  return (
+    <>
+      <JsonLd data={productSchema} />
+      {/* Localized product content */}
+    </>
+  );
+}
+```
+
+</CodeGroup>
+
+## Best Practices
+
+<Warning>
+  **SEO Guidelines:** - Always include proper meta titles and descriptions - Use
+  structured data for rich search results - Implement proper
+  internationalization with hreflang - Create high-quality, relevant content
+  consistently - Use semantic HTML and proper heading hierarchy
+</Warning>
+
+### Recommended Patterns
+
+1. **Technical Foundation**
+   - Implement proper URL structures and canonical tags
+   - Use semantic HTML and proper heading hierarchy
+   - Optimize images with alt text and proper sizing
+   - Ensure fast loading times
+
+2. **Content Strategy**
+   - Focus on user intent and search query matching
+   - Create comprehensive, authoritative content
+   - Use natural keyword placement and semantic variations
+   - Implement proper internal linking structure
+
+3. **Metadata Implementation**
+   - Use the `createMetadata` function for consistent metadata
+   - Implement proper Open Graph and Twitter Card data
+   - Add structured data with `JsonLd` component
+   - Generate dynamic sitemaps with `generateSitemapObject`
+
+4. **Multi-language Support**
+   - Use `SEOManager` for internationalized metadata
+   - Implement proper hreflang attributes
+   - Localize structured data content
+   - Create language-specific sitemaps
+
+The SEO package provides essential tools and utilities for optimizing search
+engine visibility across Next.js applications, focusing on metadata generation,
+structured data, and sitemap creation.

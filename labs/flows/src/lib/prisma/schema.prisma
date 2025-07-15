@@ -1,0 +1,457 @@
+//****************************************************************
+//** Datasource and Generator Configuration
+//****************************************************************
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("PRISMA_DB_URL")
+  directUrl = env("PRISMA_DB_URL_NON_POOLING")
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters", "views", "relationJoins", "nativeDistinct", "typedSql", "strictUndefinedChecks"]
+}
+
+generator zod {
+  provider          = "prisma-zod-generator"
+  output            = "./generated/schemas"
+  isGenerateSelect  = true
+  isGenerateInclude = true
+}
+
+//****************************************************************
+//** Core Models
+//****************************************************************
+
+model Edge {
+  id            String   @id @default(cuid())
+  sourceNodeId  String
+  targetNodeId  String
+  flowId        String
+  rfId          String?
+  label         String?
+  isActive      Boolean  @default(true)
+  type          EdgeType @default(custom)
+  normalizedKey String?
+  metadata      Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  deleted       Boolean  @default(false)
+
+  flow       Flow @relation(fields: [flowId], references: [id], onDelete: Cascade)
+  sourceNode Node @relation("sourceNode", fields: [sourceNodeId], references: [id], onDelete: Cascade)
+  targetNode Node @relation("targetNode", fields: [targetNodeId], references: [id], onDelete: Cascade)
+
+  @@unique([sourceNodeId, targetNodeId])
+  @@index([sourceNodeId])
+  @@index([targetNodeId])
+  @@index([flowId])
+  @@index([isActive])
+  @@map(name: "edges")
+}
+
+model Flow {
+  createdAt  DateTime        @default(now())
+  edges      Edge[]
+  flowRuns   FlowRun[]
+  flowEvents FlowEvent[]
+  id         String          @id @default(cuid())
+  instance   Instance        @relation(fields: [instanceId], references: [id], onDelete: Cascade, onUpdate: Cascade, name: "InstanceFlows")
+  instanceId String
+  isEnabled  Boolean         @default(false)
+  method     FlowMethod      @default(observable)
+  name       String
+  metadata   Json?
+  nodes      Node[]
+  secrets    Secret[]
+  tags       Tag[]
+  testCases  TestCase[]
+  updatedAt  DateTime        @updatedAt
+  viewport   Json?
+  deleted    Boolean         @default(false)
+  auditLogs  AuditLog[]
+  statistics FlowStatistics?
+
+  @@unique([id, instanceId])
+  @@index([instanceId])
+  @@map(name: "flows")
+}
+
+model FlowEvent {
+  createdAt DateTime  @default(now())
+  flowRun   FlowRun   @relation(fields: [flowRunId], references: [id], onDelete: Cascade)
+  flowRunId Int
+  flow      Flow      @relation(fields: [flowId], references: [id], onDelete: Cascade)
+  flowId    String
+  id        Int       @id @default(autoincrement())
+  nodeId    String
+  payload   Json?
+  metadata  Json?
+  startedBy StartedBy
+
+  @@index([nodeId])
+  @@index([flowRunId])
+  @@index([flowId])
+  @@map(name: "flow_events")
+}
+
+model FlowRun {
+  flow           Flow          @relation(fields: [flowId], references: [id], onDelete: Cascade)
+  flowEvents     FlowEvent[]
+  flowId         String
+  id             Int           @id @default(autoincrement())
+  isScheduled    Boolean?
+  payload        Json?
+  metadata       Json?
+  runStatus      RunStatus
+  scheduledJob   ScheduledJob? @relation(fields: [scheduledJobId], references: [id], onDelete: SetNull)
+  scheduledJobId Int?
+  startedBy      StartedBy
+  timeEnded      DateTime?
+  timeStarted    DateTime      @default(now())
+
+  @@index([flowId])
+  @@index([scheduledJobId])
+  @@map(name: "flow_runs")
+}
+
+model Infrastructure {
+  arn        String?
+  canControl Boolean
+  createdAt  DateTime  @default(now())
+  data       Json?
+  id         String    @id @default(cuid())
+  name       String?
+  nodes      Node[]
+  type       InfraType
+  metadata   Json?
+
+  updatedAt DateTime @default(now())
+  deleted   Boolean  @default(false)
+
+  @@index([arn])
+  @@map(name: "infrastructures")
+}
+
+model Instance {
+  createdAt   DateTime   @default(now())
+  description String?    @db.Text
+  flows       Flow[]     @relation("InstanceFlows")
+  id          String     @id @default(cuid())
+  image       String?
+  logo        String?
+  name        String?
+  metadata    Json?
+  tags        Tag[]
+  tagGroups   TagGroup[]
+  updatedAt   DateTime   @default(now())
+  user        User?      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId      String?
+
+  @@index([userId])
+  @@map(name: "instances")
+}
+
+model Node {
+  arn              String?
+  createdAt        DateTime        @default(now())
+  flow             Flow            @relation(fields: [flowId], references: [id], onDelete: Cascade)
+  flowId           String
+  id               String          @id @default(cuid())
+  infrastructure   Infrastructure? @relation(fields: [infrastructureId], references: [id], onDelete: SetNull)
+  infrastructureId String?
+  name             String?
+  position         Json?
+  metadata         Json?
+  rfId             String
+  secrets          Secret[]
+  sourceEdges      Edge[]          @relation("sourceNode")
+  targetEdges      Edge[]          @relation("targetNode")
+  type             NodeType
+  updatedAt        DateTime        @updatedAt
+  deleted          Boolean         @default(false)
+  Tag              Tag[]
+
+  @@unique([flowId, rfId])
+  @@index([rfId])
+  @@index([flowId])
+  @@index([arn])
+  @@index([infrastructureId])
+  @@map(name: "nodes")
+}
+
+model ScheduledJob {
+  createdAt DateTime  @default(now())
+  createdBy String // Changed to string without relation
+  endpoint  String
+  frequency String // cron expression
+  flowRuns  FlowRun[]
+  id        Int       @id @default(autoincrement())
+  name      String
+  deleted   Boolean   @default(false)
+
+  @@index([createdBy])
+  @@map(name: "scheduled_jobs")
+}
+
+model Secret {
+  name          String
+  category      SecretCategory
+  createdAt     DateTime       @default(now())
+  flow          Flow?          @relation(fields: [flowId], references: [id], onDelete: Cascade)
+  flowId        String?
+  id            Int            @id @default(autoincrement())
+  node          Node?          @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  nodeId        String?
+  secret        String
+  shouldEncrypt Boolean        @default(true)
+  metadata      Json?
+  updatedAt     DateTime       @updatedAt
+  deleted       Boolean        @default(false)
+
+  @@index([flowId])
+  @@index([nodeId])
+  @@map(name: "secrets")
+}
+
+model Tag {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deleted   Boolean  @default(false)
+  metadata  Json?
+
+  flow       Flow?     @relation(fields: [flowId], references: [id], onDelete: Cascade)
+  flowId     String?
+  node       Node?     @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  nodeId     String?
+  tagGroup   TagGroup? @relation(fields: [tagGroupId], references: [id])
+  tagGroupId String?
+  instance   Instance  @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  instanceId String
+
+  @@unique([id, instanceId])
+  @@index([tagGroupId])
+  @@index([instanceId])
+  @@index([flowId])
+  @@index([nodeId])
+  @@map(name: "tags")
+}
+
+model TagGroup {
+  id        String   @id @default(cuid())
+  name      String
+  color     String
+  deleted   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tags      Tag[]
+  metadata  Json?
+
+  instance   Instance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  instanceId String
+
+  @@unique([id, instanceId])
+  @@index([instanceId])
+  @@map(name: "tag_groups")
+}
+
+model TestCase {
+  color     MantineColor
+  createdAt DateTime     @default(now())
+  flow      Flow         @relation(fields: [flowId], references: [id])
+  flowId    String
+  id        String       @id @default(cuid())
+  name      String?
+  metadata  Json?
+  updatedAt DateTime     @default(now())
+  deleted   Boolean      @default(false)
+
+  @@index([flowId])
+  @@map(name: "test_cases")
+}
+
+//****************************************************************
+//** User Management
+//****************************************************************
+
+model Account {
+  access_token             String?
+  expires_at               Int?
+  id                       String  @id @default(cuid())
+  id_token                 String?
+  oauth_token              String?
+  oauth_token_secret       String?
+  provider                 String
+  providerAccountId        String
+  refresh_token            String?
+  refresh_token_expires_in Int?
+  scope                    String?
+  session_state            String?
+  token_type               String?
+  type                     String
+  user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                   String
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map(name: "accounts")
+}
+
+model Session {
+  createdAt    DateTime @default(now())
+  expires      DateTime
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+
+  @@index([userId])
+  @@map(name: "sessions")
+}
+
+model User {
+  id            String     @id @default(cuid())
+  accounts      Account[]
+  createdAt     DateTime   @default(now())
+  email         String?    @unique
+  emailVerified DateTime?
+  instances     Instance[]
+  sessions      Session[]
+  auditLogs     AuditLog[]
+  image         String?
+  name          String?
+  updatedAt     DateTime   @updatedAt
+
+  @@map(name: "users")
+}
+
+model VerificationToken {
+  createdAt  DateTime @default(now())
+  expires    DateTime
+  identifier String
+  token      String   @unique
+
+  @@unique([identifier, token])
+  @@map(name: "verification_tokens")
+}
+
+//****************************************************************
+//** Audit Log Model
+//****************************************************************
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  entityType String
+  entityId   String
+  flowId     String
+  changeType String
+  before     Json?
+  after      Json?
+  userId     String
+  timestamp  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  flow Flow @relation(fields: [flowId], references: [id], onDelete: Cascade)
+
+  @@index([entityType, entityId])
+  @@index([flowId])
+  @@index([userId])
+  @@map(name: "audit_logs")
+}
+
+model FlowStatistics {
+  id             String   @id @default(cuid())
+  flow           Flow     @relation(fields: [flowId], references: [id], onDelete: Cascade)
+  flowId         String   @unique
+  totalRuns      Int      @default(0)
+  successfulRuns Int      @default(0)
+  failedRuns     Int      @default(0)
+  lastUpdated    DateTime @default(now())
+
+  @@index([flowId])
+  @@map(name: "flow_statistics")
+}
+
+//****************************************************************
+//** Enums
+//****************************************************************
+
+enum EdgeType {
+  custom
+  default
+}
+
+enum FlowMethod {
+  graphOnly
+  observable
+  sequential
+}
+
+enum InfraType {
+  database
+  graphOnly
+  other
+}
+
+enum MantineColor {
+  blue
+  cyan
+  grape
+  green
+  indigo
+  lime
+  orange
+  pink
+  red
+  teal
+  violet
+  yellow
+}
+
+// enum NodeType {
+//   default
+//   javascriptEditorLogic
+//   pythonEditorLogic
+//   newSourceNode
+// }
+
+enum NodeType {
+  anthropicGptNode
+  awsEventBridgeEvent
+  awsLambdaNode
+  awsS3Node
+  awsSnsNode
+  awsSqsNode
+  cronNode
+  default
+  githubEventReceiverSource
+  ifElseThenNode
+  javascriptEditorLogic
+  javascriptEditorNode
+  openaiGptNode
+  pythonEditorNode
+  webhook
+  webhookDestination
+  webhookSource
+}
+
+enum RunStatus {
+  failed
+  inProgress
+  paused
+  successful
+}
+
+enum SecretCategory {
+  flow
+  global
+  node
+}
+
+enum StartedBy {
+  manual
+  scheduled
+}

@@ -1,0 +1,71 @@
+{
+  "name": "@labs/monaco-editor",
+  "private": true,
+  "type": "module",
+  "sideEffects": [
+    "src/core/MonacoEditor.tsx"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist/**"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --external react",
+    "circular": "madge --circular --extensions ts,tsx,js,jsx .",
+    "dev": "tsup src/index.ts --format esm --watch --dts --external react",
+    "knip": "knip --fix --reporter json",
+    "lint": "eslint . --fix",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "peerDependencies": {
+    "@mantine/core": "catalog:",
+    "@mantine/hooks": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "monaco-editor": "^0.52.0",
+    "sql-formatter": "^15.0.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@repo/config": "workspace:*",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/qa": "workspace:*",
+    "@vitest/ui": "catalog:",
+    "@storybook/react": "^9.0.18",
+    "@t3-oss/env-nextjs": "catalog:",
+    "@types/lodash": "^4.17.13",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "knip": "catalog:",
+    "madge": "catalog:",
+    "storybook": "^9.0.18",
+    "tsup": "^8.3.5",
+    "typescript": "catalog:",
+    "typescript-plugin-css-modules": "^5.1.0",
+    "vite-tsconfig-paths": "catalog:",
+    "vitest": "catalog:"
+  },
+  "publishConfig": {
+    "access": "restricted"
+  }
+}

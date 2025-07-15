@@ -1,0 +1,19 @@
+{
+  "extends": "@repo/config/typescript/nextjs.json",
+  "compilerOptions": {
+    "types": ["node", "vitest/globals"],
+    "jsx": "preserve",
+    "jsxImportSource": "react",
+    "exactOptionalPropertyTypes": false,
+    "baseUrl": ".",
+    "paths": {
+      "#/root/*": ["./*"],
+      "#/app/*": ["./app/*"],
+      "#/auth-components/*": ["./auth-components/*"],
+      "#/src/*": ["./src/*"],
+      "#/*": ["./src/*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "next.config.js"],
+  "exclude": ["node_modules", "src/lib/prisma/generated", "src/lib/prisma/generated/**", "**/generated/**", "**/.next/**", "**/dist/**", "**/build/**"]
+}

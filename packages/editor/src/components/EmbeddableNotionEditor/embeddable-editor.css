@@ -1,0 +1,169 @@
+/* EmbeddableNotionEditor - Secure CSS using CSS Custom Properties */
+
+.embeddable-notion-editor {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
+  line-height: 1.6;
+  color: var(--editor-text, #1f2937);
+  background-color: var(--editor-bg, #ffffff);
+  border: 1px solid var(--editor-border, #e5e7eb);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.embeddable-notion-editor-content {
+  padding: 16px;
+  line-height: 1.6;
+  min-height: var(--editor-min-height, 200px);
+}
+
+.embeddable-notion-editor-content:focus {
+  outline: none;
+  border-color: var(--editor-focus, #3b82f6);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--editor-focus, #3b82f6) 20%, transparent);
+}
+
+.embeddable-notion-editor-content .is-empty::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--editor-placeholder, #9ca3af);
+  pointer-events: none;
+  height: 0;
+}
+
+.embeddable-notion-editor-content h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 1.5rem 0 0.5rem 0;
+}
+
+.embeddable-notion-editor-content h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 1.25rem 0 0.5rem 0;
+}
+
+.embeddable-notion-editor-content h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 1rem 0 0.5rem 0;
+}
+
+.embeddable-notion-editor-content p {
+  margin: 0.5rem 0;
+}
+
+.embeddable-notion-editor-content ul,
+.embeddable-notion-editor-content ol {
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+
+.embeddable-notion-editor-content blockquote {
+  border-left: 3px solid var(--editor-border, #e5e7eb);
+  padding-left: 1rem;
+  margin: 1rem 0;
+  font-style: italic;
+  color: #6b7280;
+}
+
+.embeddable-editor-task-list {
+  list-style: none;
+  padding: 0;
+}
+
+.embeddable-editor-task-item {
+  display: flex;
+  align-items: flex-start;
+  margin: 0.25rem 0;
+}
+
+.embeddable-editor-task-item input[type="checkbox"] {
+  margin-right: 0.5rem;
+  margin-top: 0.125rem;
+}
+
+.embeddable-editor-code-block {
+  background: #f7f8fa;
+  border-radius: 6px;
+  padding: 1rem;
+  margin: 1rem 0;
+  font-family: "Monaco", "Menlo", "Consolas", monospace;
+  font-size: 0.875rem;
+  overflow-x: auto;
+}
+
+.embeddable-editor-table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+}
+
+.embeddable-editor-table-header {
+  background-color: #f9fafb;
+  font-weight: 600;
+}
+
+.embeddable-editor-table-cell,
+.embeddable-editor-table-header {
+  border: 1px solid var(--editor-border, #e5e7eb);
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.embeddable-editor-link {
+  color: var(--editor-focus, #3b82f6);
+  text-decoration: underline;
+}
+
+.embeddable-editor-link:hover {
+  opacity: 0.8;
+}
+
+/* Basic toolbar styles if enabled */
+.embeddable-editor-toolbar {
+  border-bottom: 1px solid var(--editor-border, #e5e7eb);
+  padding: 8px;
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.embeddable-editor-toolbar button {
+  padding: 4px 8px;
+  border: 1px solid var(--editor-border, #e5e7eb);
+  background: var(--editor-bg, #ffffff);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.embeddable-editor-toolbar button:hover {
+  background-color: #f3f4f6;
+}
+
+.embeddable-editor-toolbar button.active {
+  background-color: var(--editor-focus, #3b82f6);
+  color: white;
+}
+
+.embeddable-notion-editor-loading {
+  padding: 1rem;
+}
+
+.embeddable-notion-editor-loading .animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}

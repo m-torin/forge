@@ -1,0 +1,9 @@
+{
+  "name": "@repo/typescript-config",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
+  "devDependencies": {}
+}

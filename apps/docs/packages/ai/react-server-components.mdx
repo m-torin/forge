@@ -1,0 +1,780 @@
+---
+title: React Server Components (RSC)
+description:
+  Streaming UI components with createStreamableUI, createStreamableValue,
+  streamUI, and AI context management for dynamic React applications
+icon: react
+---
+
+# React Server Components (RSC)
+
+Build dynamic, streaming React applications with AI-powered components using
+streamUI, createStreamableUI, createStreamableValue, and advanced AI context
+management.
+
+## Overview
+
+React Server Components (RSC) integration enables AI agents to generate and
+stream React components directly, creating dynamic user interfaces that update
+in real-time as AI processes generate content, components, and interactive
+elements.
+
+## Core RSC Functions
+
+### streamUI
+
+Generate streaming UI components with AI:
+
+```typescript
+import { streamUI } from "@repo/ai/rsc";
+import { createAnthropicModel } from "@repo/ai/server/next";
+import { z } from "zod";
+
+const result = await streamUI({
+  model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+  messages: [{
+    role: "user",
+    content: "Create a dashboard showing sales metrics"
+  }],
+  text: ({ content }) => (
+    <div className="prose max-w-none">
+      <p>{content}</p>
+    </div>
+  ),
+  tools: {
+    createChart: {
+      description: "Generate a chart component",
+      inputSchema: z.object({
+        type: z.enum(["bar", "line", "pie", "area"]),
+        data: z.array(z.object({
+          label: z.string(),
+          value: z.number()
+        })),
+        title: z.string()
+      }),
+      generate: async ({ type, data, title }) => (
+        <div className="w-full p-4">
+          <h3 className="text-lg font-semibold mb-4">{title}</h3>
+          <Chart
+            type={type}
+            data={data}
+            className="h-64"
+            responsive
+          />
+        </div>
+      )
+    },
+    createKPI: {
+      description: "Create a KPI card",
+      inputSchema: z.object({
+        title: z.string(),
+        value: z.number(),
+        change: z.number(),
+        unit: z.string().optional()
+      }),
+      generate: async ({ title, value, change, unit }) => (
+        <div className="bg-white p-6 rounded-lg shadow">
+          <h4 className="text-sm font-medium text-gray-500">{title}</h4>
+          <div className="mt-2 flex items-baseline">
+            <p className="text-2xl font-semibold text-gray-900">
+              {value.toLocaleString()}{unit}
+            </p>
+            <p className={`ml-2 text-sm ${change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {change >= 0 ? '+' : ''}{change}%
+            </p>
+          </div>
+        </div>
+      )
+    }
+  }
+});
+
+// Stream the result
+for await (const chunk of result.value) {
+  console.log("New UI chunk:", chunk);
+}
+```
+
+### createStreamableUI
+
+Create programmatically controlled streaming UI:
+
+```typescript
+import { createStreamableUI } from "@repo/ai/rsc";
+
+const streamableUI = createStreamableUI(
+  <div className="loading">
+    <div className="animate-spin h-4 w-4 border-2 border-blue-500"></div>
+    <span>Generating dashboard...</span>
+  </div>
+);
+
+// Update the UI progressively
+streamableUI.update(
+  <div className="progress">
+    <div className="w-full bg-gray-200 rounded-full h-2">
+      <div className="bg-blue-600 h-2 rounded-full w-1/4"></div>
+    </div>
+    <span>Loading data...</span>
+  </div>
+);
+
+// Add components incrementally
+streamableUI.append(
+  <div className="mt-4">
+    <KPICard title="Total Sales" value={125000} change={12.5} />
+  </div>
+);
+
+streamableUI.append(
+  <div className="mt-4">
+    <Chart type="line" data={salesData} title="Sales Trend" />
+  </div>
+);
+
+// Final completion
+streamableUI.done(
+  <div className="dashboard-complete">
+    <h2 className="text-xl font-bold">Dashboard Complete</h2>
+    <div className="grid grid-cols-2 gap-4 mt-4">
+      <KPICard title="Total Sales" value={125000} change={12.5} />
+      <KPICard title="New Customers" value={45} change={8.2} />
+    </div>
+    <div className="mt-6">
+      <Chart type="line" data={salesData} title="Sales Trend" />
+    </div>
+  </div>
+);
+```
+
+### createStreamableValue
+
+Create streaming reactive values:
+
+```typescript
+import { createStreamableValue } from "@repo/ai/rsc";
+
+const streamableData = createStreamableValue({
+  loading: true,
+  progress: 0,
+  data: null
+});
+
+// Component that uses the streamable value
+function DataVisualization() {
+  const state = streamableData.useValue();
+
+  if (state.loading) {
+    return (
+      <div className="flex items-center space-x-2">
+        <div className="animate-spin h-4 w-4 border-2 border-blue-500"></div>
+        <span>Processing data... {state.progress}%</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="data-visualization">
+      <Chart data={state.data} type="bar" />
+    </div>
+  );
+}
+
+// Update the value progressively
+async function processData() {
+  streamableData.update({ loading: true, progress: 25, data: null });
+
+  const partialData = await fetchPartialData();
+  streamableData.update({ loading: true, progress: 50, data: partialData });
+
+  const fullData = await processFullData(partialData);
+  streamableData.update({ loading: true, progress: 75, data: fullData });
+
+  const enrichedData = await enrichData(fullData);
+  streamableData.done({ loading: false, progress: 100, data: enrichedData });
+}
+```
+
+### Enhanced render Function
+
+Advanced rendering with error boundaries and patterns:
+
+```typescript
+import { render } from "@repo/ai/rsc";
+
+const ui = await render({
+  model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+  messages: [{
+    role: "user",
+    content: "Create an interactive data explorer"
+  }],
+  errorBoundary: ({ error, retry, fallback }) => (
+    <div className="error-boundary p-4 border border-red-300 rounded">
+      <h3 className="text-red-800 font-semibold">Something went wrong</h3>
+      <p className="text-red-600 mt-2">{error.message}</p>
+      <div className="mt-4 space-x-2">
+        <button
+          onClick={retry}
+          className="px-3 py-1 bg-red-600 text-white rounded"
+        >
+          Retry
+        </button>
+        <button
+          onClick={() => fallback(<div>Fallback UI</div>)}
+          className="px-3 py-1 bg-gray-600 text-white rounded"
+        >
+          Use Fallback
+        </button>
+      </div>
+    </div>
+  ),
+  loadingComponent: (
+    <div className="loading-skeleton">
+      <div className="animate-pulse space-y-4">
+        <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+        <div className="h-32 bg-gray-300 rounded"></div>
+        <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+      </div>
+    </div>
+  ),
+  suspenseBoundary: true,
+  streaming: {
+    enabled: true,
+    bufferSize: 1024,
+    flushInterval: 100
+  }
+});
+```
+
+## AI Context Management
+
+### createAI
+
+Create AI-powered application context:
+
+```typescript
+import { createAI } from "@repo/ai/rsc";
+
+const AI = createAI({
+  model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+  middleware: [
+    // Authentication middleware
+    async ({ messages, user, next }) => {
+      if (!user?.authenticated) {
+        throw new Error("Authentication required");
+      }
+      return next();
+    },
+
+    // Rate limiting middleware
+    async ({ user, next }) => {
+      const usage = await getUserUsage(user.id);
+      if (usage.requestsThisHour > 100) {
+        throw new Error("Rate limit exceeded");
+      }
+      return next();
+    },
+
+    // Logging middleware
+    async ({ messages, next }) => {
+      console.log("AI request:", messages.length, "messages");
+      const start = Date.now();
+      const result = await next();
+      console.log("AI response time:", Date.now() - start, "ms");
+      return result;
+    }
+  ],
+  tools: {
+    generateChart: {
+      description: "Generate chart components",
+      inputSchema: z.object({
+        type: z.enum(["bar", "line", "pie"]),
+        data: z.array(z.object({
+          x: z.string(),
+          y: z.number()
+        }))
+      }),
+      generate: async ({ type, data }) => (
+        <Chart type={type} data={data} responsive />
+      )
+    },
+    createForm: {
+      description: "Generate form components",
+      inputSchema: z.object({
+        fields: z.array(z.object({
+          name: z.string(),
+          type: z.enum(["text", "email", "number", "select"]),
+          label: z.string(),
+          required: z.boolean().optional()
+        }))
+      }),
+      generate: async ({ fields }) => (
+        <DynamicForm fields={fields} onSubmit={handleFormSubmit} />
+      )
+    }
+  },
+  stateManagement: {
+    enabled: true,
+    persistence: "session", // "none", "session", "local", "server"
+    maxHistorySize: 50
+  }
+});
+
+// Use in your app
+export default function App() {
+  return (
+    <AI.Provider>
+      <Dashboard />
+    </AI.Provider>
+  );
+}
+```
+
+### useAI Hook
+
+Access AI context in components:
+
+```typescript
+import { useAI } from "@repo/ai/rsc";
+
+function ChatInterface() {
+  const {
+    messages,
+    append,
+    isLoading,
+    error,
+    tools,
+    state
+  } = useAI();
+
+  const handleSend = async (message: string) => {
+    const response = await append({
+      role: "user",
+      content: message
+    });
+
+    // Response can include UI components
+    return response;
+  };
+
+  return (
+    <div className="chat-interface">
+      <div className="messages">
+        {messages.map((message, i) => (
+          <div key={i} className={`message ${message.role}`}>
+            {message.content}
+            {message.ui && <div className="message-ui">{message.ui}</div>}
+          </div>
+        ))}
+      </div>
+
+      {isLoading && (
+        <div className="loading">
+          <div className="animate-pulse">AI is thinking...</div>
+        </div>
+      )}
+
+      {error && (
+        <div className="error">
+          <p className="text-red-600">{error.message}</p>
+        </div>
+      )}
+
+      <ChatInput onSend={handleSend} disabled={isLoading} />
+    </div>
+  );
+}
+```
+
+## Advanced Patterns
+
+### Progressive Enhancement
+
+Build components that enhance progressively:
+
+```typescript
+import { streamUI } from "@repo/ai/rsc";
+
+const result = await streamUI({
+  model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+  messages: [{
+    role: "user",
+    content: "Create a product catalog with search and filters"
+  }],
+  text: ({ content }) => <div className="prose">{content}</div>,
+  tools: {
+    createCatalog: {
+      description: "Create product catalog",
+      inputSchema: z.object({
+        products: z.array(z.object({
+          id: z.string(),
+          name: z.string(),
+          price: z.number(),
+          category: z.string(),
+          image: z.string().optional()
+        })),
+        searchEnabled: z.boolean().optional(),
+        filtersEnabled: z.boolean().optional()
+      }),
+      generate: async ({ products, searchEnabled, filtersEnabled }) => {
+        // Start with basic catalog
+        const basicCatalog = createStreamableUI(
+          <div className="product-grid">
+            {products.map(product => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        );
+
+        // Add search if enabled
+        if (searchEnabled) {
+          basicCatalog.update(
+            <div>
+              <SearchBar onSearch={handleSearch} />
+              <div className="product-grid">
+                {products.map(product => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            </div>
+          );
+        }
+
+        // Add filters if enabled
+        if (filtersEnabled) {
+          const categories = [...new Set(products.map(p => p.category))];
+          basicCatalog.done(
+            <div>
+              <div className="filters-search-bar flex gap-4 mb-6">
+                <SearchBar onSearch={handleSearch} />
+                <CategoryFilter categories={categories} onChange={handleFilter} />
+                <PriceRangeFilter onChange={handlePriceFilter} />
+              </div>
+              <div className="product-grid">
+                {products.map(product => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            </div>
+          );
+        }
+
+        return basicCatalog.value;
+      }
+    }
+  }
+});
+```
+
+### Real-time Collaboration
+
+Multi-user collaborative interfaces:
+
+```typescript
+import { createAI, createStreamableUI } from "@repo/ai/rsc";
+
+const CollaborativeAI = createAI({
+  model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+  middleware: [
+    // Multi-user coordination
+    async ({ messages, user, context, next }) => {
+      // Broadcast to other users
+      broadcastToUsers(context.roomId, {
+        type: "user-activity",
+        user: user.id,
+        action: "ai-request"
+      });
+
+      const result = await next();
+
+      // Share AI response with room
+      broadcastToUsers(context.roomId, {
+        type: "ai-response",
+        content: result
+      });
+
+      return result;
+    }
+  ],
+  tools: {
+    createCollaborativeDocument: {
+      description: "Create a document multiple users can edit",
+      inputSchema: z.object({
+        title: z.string(),
+        sections: z.array(z.object({
+          heading: z.string(),
+          content: z.string()
+        }))
+      }),
+      generate: async ({ title, sections }) => {
+        const doc = createStreamableUI(
+          <div className="collaborative-doc">
+            <h1>{title}</h1>
+            <div className="loading">Preparing collaborative editing...</div>
+          </div>
+        );
+
+        // Initialize collaborative editing
+        const collaborativeDoc = await initializeCollaborativeDoc({
+          title,
+          sections,
+          roomId: context.roomId
+        });
+
+        doc.done(
+          <CollaborativeDocument
+            doc={collaborativeDoc}
+            users={context.users}
+            onEdit={handleCollaborativeEdit}
+            onCursorMove={handleCursorMove}
+          />
+        );
+
+        return doc.value;
+      }
+    }
+  }
+});
+```
+
+### Conditional Rendering
+
+Smart conditional component rendering:
+
+```typescript
+const result = await streamUI({
+  model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+  messages: [{
+    role: "user",
+    content: "Show me analytics for my e-commerce store"
+  }],
+  tools: {
+    renderAnalytics: {
+      description: "Render analytics dashboard",
+      inputSchema: z.object({
+        userTier: z.enum(["free", "pro", "enterprise"]),
+        dataAvailable: z.boolean(),
+        timeRange: z.string()
+      }),
+      generate: async ({ userTier, dataAvailable, timeRange }) => {
+        if (!dataAvailable) {
+          return (
+            <div className="no-data">
+              <p>No data available for the selected time range.</p>
+              <button onClick={handleDataRefresh}>Refresh Data</button>
+            </div>
+          );
+        }
+
+        // Different features based on user tier
+        const components = [];
+
+        // Basic analytics for all tiers
+        components.push(<BasicMetrics key="basic" />);
+
+        if (userTier === "pro" || userTier === "enterprise") {
+          components.push(<AdvancedCharts key="advanced" />);
+          components.push(<CustomerSegmentation key="segments" />);
+        }
+
+        if (userTier === "enterprise") {
+          components.push(<PredictiveAnalytics key="predictive" />);
+          components.push(<CustomReports key="reports" />);
+        }
+
+        return (
+          <div className="analytics-dashboard">
+            <h2>Analytics Dashboard - {userTier.toUpperCase()}</h2>
+            <div className="grid gap-6">
+              {components}
+            </div>
+          </div>
+        );
+      }
+    }
+  }
+});
+```
+
+## Error Handling and Fallbacks
+
+### Comprehensive Error Boundaries
+
+```typescript
+import { RSCErrorBoundary } from "@repo/ai/rsc";
+
+function App() {
+  return (
+    <RSCErrorBoundary
+      fallback={({ error, retry, reset }) => (
+        <div className="error-container">
+          <h2>AI Component Error</h2>
+          <details>
+            <summary>Error Details</summary>
+            <pre>{error.stack}</pre>
+          </details>
+          <div className="error-actions">
+            <button onClick={retry}>Retry Generation</button>
+            <button onClick={reset}>Reset to Default</button>
+            <button onClick={() => reportError(error)}>Report Issue</button>
+          </div>
+        </div>
+      )}
+      onError={({ error, errorInfo }) => {
+        // Log to monitoring service
+        logError("RSC_ERROR", { error, errorInfo });
+      }}
+    >
+      <AIGeneratedContent />
+    </RSCErrorBoundary>
+  );
+}
+```
+
+### Graceful Degradation
+
+```typescript
+const result = await streamUI({
+  model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+  messages: [{ role: "user", content: "Create an interactive chart" }],
+  tools: {
+    createChart: {
+      description: "Create interactive chart",
+      inputSchema: z.object({
+        data: z.array(z.object({ x: z.string(), y: z.number() })),
+        interactive: z.boolean().optional()
+      }),
+      generate: async ({ data, interactive }) => {
+        try {
+          // Try to create interactive chart
+          if (interactive) {
+            return <InteractiveChart data={data} />;
+          }
+        } catch (error) {
+          console.warn("Interactive chart failed, falling back to static");
+        }
+
+        // Fallback to static chart
+        return <StaticChart data={data} />;
+      }
+    }
+  },
+  fallbackToText: true, // Fallback to text if UI generation fails
+  onError: ({ error, fallback }) => {
+    console.error("UI generation error:", error);
+    return fallback("Unable to generate chart. Here's the data in text format:");
+  }
+});
+```
+
+## Performance Optimization
+
+### Lazy Loading and Code Splitting
+
+```typescript
+import { lazy, Suspense } from "react";
+
+const HeavyChart = lazy(() => import("./HeavyChart"));
+const DataTable = lazy(() => import("./DataTable"));
+
+const result = await streamUI({
+  model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+  tools: {
+    createDashboard: {
+      description: "Create performance-optimized dashboard",
+      inputSchema: z.object({
+        components: z.array(z.enum(["chart", "table", "kpi"]))
+      }),
+      generate: async ({ components }) => (
+        <div className="dashboard">
+          {components.map(component => {
+            switch (component) {
+              case "chart":
+                return (
+                  <Suspense key="chart" fallback={<ChartSkeleton />}>
+                    <HeavyChart />
+                  </Suspense>
+                );
+              case "table":
+                return (
+                  <Suspense key="table" fallback={<TableSkeleton />}>
+                    <DataTable />
+                  </Suspense>
+                );
+              case "kpi":
+                return <KPICard key="kpi" />; // Light component, no lazy loading
+              default:
+                return null;
+            }
+          })}
+        </div>
+      )
+    }
+  }
+});
+```
+
+### Caching and Memoization
+
+```typescript
+import { createCachedRSC } from "@repo/ai/rsc";
+
+const cachedStreamUI = createCachedRSC({
+  cacheKey: ({ messages, user }) => `${user.id}-${JSON.stringify(messages)}`,
+  ttl: 300000, // 5 minutes
+  invalidateOn: ["user-preference-change", "data-update"]
+});
+
+const result = await cachedStreamUI.streamUI({
+  model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+  messages: [{ role: "user", content: "Show my dashboard" }],
+  tools: dashboardTools
+});
+```
+
+## Testing
+
+### RSC Component Testing
+
+```typescript
+import { renderRSC, waitForRSCComplete } from "@repo/ai/rsc/testing";
+
+describe("RSC Components", () => {
+  it("should render streaming UI correctly", async () => {
+    const result = await renderRSC({
+      model: createMockModel(),
+      messages: [{ role: "user", content: "Create a chart" }],
+      tools: {
+        createChart: {
+          description: "Create chart",
+          inputSchema: z.object({ data: z.array(z.any()) }),
+          generate: async ({ data }) => <MockChart data={data} />
+        }
+      }
+    });
+
+    // Wait for streaming to complete
+    await waitForRSCComplete(result);
+
+    expect(result.getByTestId("chart")).toBeInTheDocument();
+  });
+
+  it("should handle errors gracefully", async () => {
+    const result = await renderRSC({
+      model: createMockModel({
+        shouldError: true
+      }),
+      messages: [{ role: "user", content: "Create a chart" }],
+      tools: mockTools,
+      fallback: <div data-testid="fallback">Error occurred</div>
+    });
+
+    expect(result.getByTestId("fallback")).toBeInTheDocument();
+  });
+});
+```
+
+React Server Components provide a powerful way to create dynamic, AI-generated
+user interfaces that stream in real-time and provide rich, interactive
+experiences. Always test thoroughly and implement proper error handling for
+production applications.

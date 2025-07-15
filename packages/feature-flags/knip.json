@@ -1,0 +1,35 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "src/client-next.ts",
+    "src/server-next.ts",
+    "examples/**/*.{ts,tsx}",
+    "**/*.config.{js,ts,mjs}",
+    "**/*.test.{js,ts,tsx}",
+    "**/*.spec.{js,ts,tsx}",
+    "__tests__/**/*.{js,ts,tsx}"
+  ],
+  "project": [
+    "src/**/*.{ts,tsx}",
+    "examples/**/*.{ts,tsx}",
+    "**/*.config.{js,ts,mjs}",
+    "**/*.test.{js,ts,tsx}",
+    "**/*.spec.{js,ts,tsx}",
+    "__tests__/**/*.{js,ts,tsx}"
+  ],
+  "ignore": ["node_modules/**", "dist/**", "build/**", "coverage/**", "*.d.ts", "**/*.d.ts"],
+  "ignoreDependencies": ["@types/*"],
+  "rules": {
+    "files": "error",
+    "dependencies": "error",
+    "devDependencies": "error",
+    "unlisted": "error",
+    "exports": "error",
+    "nsExports": "error",
+    "classMembers": "error",
+    "enumMembers": "error",
+    "types": "error",
+    "nsTypes": "error",
+    "duplicates": "error"
+  }
+}

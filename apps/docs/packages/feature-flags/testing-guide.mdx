@@ -1,0 +1,168 @@
+---
+title: Feature Flags Test Suite
+description: Comprehensive test suite for the feature flags package
+---
+
+# Feature Flags Test Suite
+
+This directory contains comprehensive tests for the `@repo/feature-flags`
+package using a DRY (Don't Repeat Yourself) approach with centralized utilities,
+factories, and data generators.
+
+## Directory Structure
+
+```
+__tests__/
+├── adapters/           # Adapter-specific tests
+│   ├── edge-config.test.ts
+│   ├── posthog-client.test.ts
+│   └── posthog-server.test.ts
+├── client/             # Client-side tests
+│   └── hooks.test.tsx
+├── server/             # Server-side tests
+│   └── flags.test.ts
+├── shared/             # Shared utility tests
+│   ├── flag.test.ts
+│   └── utils.test.ts
+├── middleware/         # Middleware tests
+│   └── index.test.ts
+├── discovery/          # Discovery tests
+│   └── index.test.ts
+├── coverage/           # Coverage and export tests
+│   ├── feature-flags-dry-comprehensive.test.ts
+│   ├── feature-flags-dry-demonstration.test.ts
+│   └── exports.test.ts
+├── test-data-generators.ts    # Centralized test data
+├── test-utils.ts              # Shared test utilities
+├── feature-flags-test-factory.ts  # Test factory functions
+├── setup.ts                   # Test setup configuration
+├── index.ts                   # Central export point
+└── README.md                  # This file
+```
+
+## Test Infrastructure
+
+### 1. Test Data Generators (`test-data-generators.ts`)
+
+- **Purpose**: Centralized test data for consistent testing
+- **Features**:
+  - Flag configurations (boolean, variants, objects, etc.)
+  - Adapter mock data (EdgeConfig, PostHog)
+  - User contexts and evaluation contexts
+  - Edge cases and performance test data
+  - Validation helpers
+
+### 2. Test Factory (`feature-flags-test-factory.ts`)
+
+- **Purpose**: Factory functions for creating standardized test suites
+- **Features**:
+  - Adapter test suite factory with common scenarios
+  - Edge Config specific test scenarios
+  - PostHog specific test scenarios
+  - Client hook test scenarios
+  - Performance test utilities
+  - Validation helpers
+
+### 3. Test Utils (`test-utils.ts`)
+
+- **Purpose**: Shared utilities for mocking and assertions
+- **Features**:
+  - Mock creation functions (adapters, clients, environments)
+  - Assertion helpers for common patterns
+  - Performance testing utilities
+  - Test wrapper functions
+
+### 4. Setup (`setup.ts`)
+
+- **Purpose**: Global test configuration and setup
+- **Features**:
+  - Mock cleanup between tests
+  - Global mocks (console, browser APIs)
+  - Test constants
+  - Environment setup
+
+## Usage Patterns
+
+### Basic Test Structure
+
+```typescript
+import { describe, test, expect, vi } from "vitest";
+import {
+  createMockAdapter,
+  assertionHelpers,
+  featureFlagTestData
+} from "../test-utils";
+
+describe("MyComponent", () => {
+  test("should work correctly", () => {
+    const mockAdapter = createMockAdapter();
+    // Use DRY utilities for consistent testing
+    assertionHelpers.assertMockCalled(mockAdapter.someMethod, 1);
+  });
+});
+```
+
+### Factory-based Testing
+
+```typescript
+import { createAdapterTestSuite } from "../feature-flags-test-factory";
+
+// Generate standardized test suite
+createAdapterTestSuite({
+  adapterName: "MyAdapter",
+  adapterFactory: () => createMyAdapter(),
+  scenarios: standardScenarios
+});
+```
+
+## Key Benefits
+
+1. **DRY Principle**: No duplicate test code or mock setup
+2. **Consistency**: All tests use the same patterns and utilities
+3. **Maintainability**: Changes to test patterns update everywhere
+4. **Comprehensive Coverage**: Factory functions ensure all edge cases are
+   tested
+5. **Performance**: Centralized utilities optimized for speed
+6. **Type Safety**: Full TypeScript support with proper typing
+
+## Running Tests
+
+```bash
+# Run all tests
+pnpm test
+
+# Run specific test file
+pnpm test edge-config.test.ts
+
+# Run tests in watch mode
+pnpm test -- --watch
+
+# Run tests with coverage
+pnpm test -- --coverage
+```
+
+## Adding New Tests
+
+1. **For new adapters**: Use `createAdapterTestSuite` with appropriate scenarios
+2. **For new utilities**: Add to `test-utils.ts` and export from `index.ts`
+3. **For new test data**: Add to `test-data-generators.ts`
+4. **For new patterns**: Add to `feature-flags-test-factory.ts`
+
+## Test Patterns
+
+### ✅ Good Patterns
+
+- Use centralized mock creators
+- Use assertion helpers for consistency
+- Use test data generators for realistic data
+- Use factory functions for common test suites
+
+### ❌ Anti-patterns
+
+- Don't create inline mocks (use utilities)
+- Don't duplicate test scenarios (use factories)
+- Don't hardcode test data (use generators)
+- Don't use bare assertions (use helpers)
+
+This organization ensures maintainable, consistent, and comprehensive test
+coverage for the feature flags package.

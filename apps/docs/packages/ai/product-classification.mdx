@@ -1,0 +1,310 @@
+---
+title: "Product Classification"
+description: "AI-powered product classification system with confidence scoring"
+---
+
+# Product Classification
+
+Basic AI-powered product classification system that categorizes products using
+OpenAI models with confidence scoring and alternative suggestions.
+
+## Overview
+
+The product classification system provides automated categorization of products
+based on their title, description, and features. It uses OpenAI's GPT models to
+analyze product information and assign categories with confidence scores.
+
+## Features
+
+- **Category Assignment**: Primary category with confidence score
+- **Alternative Categories**: Up to 3 alternative category suggestions
+- **Reasoning**: AI-generated explanation for classification decisions
+- **Confidence Scoring**: 0-1 confidence level for each classification
+- **Flexible Categories**: Support for custom category hierarchies
+
+## Basic Usage
+
+### Setting Up Categories
+
+```typescript
+import type { CategoryHierarchy } from "@repo/ai/shared";
+
+const categories: CategoryHierarchy[] = [
+  {
+    id: "electronics",
+    name: "Electronics",
+    children: [
+      { id: "phones", name: "Smartphones" },
+      { id: "computers", name: "Computers" },
+      { id: "audio", name: "Audio Equipment" }
+    ]
+  },
+  {
+    id: "clothing",
+    name: "Clothing & Accessories",
+    children: [
+      { id: "mens", name: "Men's Clothing" },
+      { id: "womens", name: "Women's Clothing" },
+      { id: "accessories", name: "Accessories" }
+    ]
+  }
+];
+```
+
+### Basic Classification
+
+```typescript
+import { AIProductClassifier } from "@repo/ai/server/next";
+
+const classifier = new AIProductClassifier(categories, "gpt-4-turbo");
+
+const product = {
+  title: "iPhone 15 Pro",
+  description:
+    "Latest Apple smartphone with A17 Pro chip and advanced camera system",
+  features: ["5G connectivity", "Face ID", "Triple camera system", "iOS 17"],
+  brand: "Apple",
+  price: 999
+};
+
+const result = await classifier.classifyProduct(product);
+
+console.log({
+  primaryCategory: result.categoryId,
+  confidence: result.confidence,
+  reasoning: result.reasoning,
+  alternatives: result.alternativeCategories
+});
+```
+
+## Classification Result
+
+The classification returns a structured result:
+
+```typescript
+interface ProductClassificationResult {
+  categoryId: string;
+  confidence: number; // 0-1 scale
+  reasoning: string;
+  alternativeCategories: Array<{
+    categoryId: string;
+    confidence: number;
+  }>;
+}
+```
+
+### Example Result
+
+```json
+{
+  "categoryId": "electronics/phones",
+  "confidence": 0.95,
+  "reasoning": "This is clearly a smartphone based on the iPhone 15 Pro title, iOS operating system, and mobile-specific features like 5G and Face ID.",
+  "alternativeCategories": [
+    {
+      "categoryId": "electronics/computers",
+      "confidence": 0.15
+    }
+  ]
+}
+```
+
+## Advanced Usage
+
+### Custom Model Selection
+
+```typescript
+// Use different models for different accuracy/cost requirements
+const fastClassifier = new AIProductClassifier(categories, "gpt-3.5-turbo");
+const accurateClassifier = new AIProductClassifier(categories, "gpt-4-turbo");
+
+// For high-volume, cost-sensitive applications
+const quickResult = await fastClassifier.classifyProduct(product);
+
+// For complex products requiring higher accuracy
+const preciseResult = await accurateClassifier.classifyProduct(product);
+```
+
+### Batch Classification
+
+```typescript
+async function classifyProductBatch(products: ProductData[]) {
+  const classifier = new AIProductClassifier(categories);
+
+  const results = await Promise.allSettled(
+    products.map((product) => classifier.classifyProduct(product))
+  );
+
+  return results.map((result, index) => ({
+    productId: products[index].id,
+    success: result.status === "fulfilled",
+    classification: result.status === "fulfilled" ? result.value : null,
+    error: result.status === "rejected" ? result.reason : null
+  }));
+}
+```
+
+### Error Handling
+
+```typescript
+import { logError } from "@repo/observability/server/next";
+
+async function safeClassification(product: ProductData) {
+  try {
+    const result = await classifier.classifyProduct(product);
+
+    // Check confidence threshold
+    if (result.confidence < 0.7) {
+      logError("Low confidence classification", {
+        productId: product.id,
+        confidence: result.confidence,
+        category: result.categoryId
+      });
+
+      // Consider manual review or alternative approaches
+      return { ...result, requiresReview: true };
+    }
+
+    return result;
+  } catch (error) {
+    logError("Classification failed", {
+      productId: product.id,
+      error: error instanceof Error ? error.message : String(error)
+    });
+
+    return {
+      categoryId: "uncategorized",
+      confidence: 0,
+      reasoning: "Classification failed due to error",
+      alternativeCategories: [],
+      error: true
+    };
+  }
+}
+```
+
+## Category Hierarchy
+
+The classification system supports nested category structures:
+
+```typescript
+const hierarchicalCategories: CategoryHierarchy[] = [
+  {
+    id: "electronics",
+    name: "Electronics",
+    children: [
+      {
+        id: "mobile",
+        name: "Mobile Devices",
+        children: [
+          { id: "smartphones", name: "Smartphones" },
+          { id: "tablets", name: "Tablets" },
+          { id: "smartwatches", name: "Smart Watches" }
+        ]
+      },
+      {
+        id: "computers",
+        name: "Computing",
+        children: [
+          { id: "laptops", name: "Laptops" },
+          { id: "desktops", name: "Desktop Computers" },
+          { id: "accessories", name: "Computer Accessories" }
+        ]
+      }
+    ]
+  }
+];
+```
+
+## Performance Optimization
+
+### Caching Results
+
+```typescript
+class CachedProductClassifier {
+  private cache = new Map<string, ProductClassificationResult>();
+  private classifier: AIProductClassifier;
+
+  constructor(categories: CategoryHierarchy[]) {
+    this.classifier = new AIProductClassifier(categories);
+  }
+
+  async classifyProduct(
+    product: ProductData
+  ): Promise<ProductClassificationResult> {
+    // Create cache key from product data
+    const cacheKey = this.createCacheKey(product);
+
+    if (this.cache.has(cacheKey)) {
+      return this.cache.get(cacheKey)!;
+    }
+
+    const result = await this.classifier.classifyProduct(product);
+    this.cache.set(cacheKey, result);
+
+    return result;
+  }
+
+  private createCacheKey(product: ProductData): string {
+    return `${product.title}|${product.description}|${product.features?.join(",")}`;
+  }
+}
+```
+
+## Limitations
+
+- **Language Support**: Currently optimized for English text
+- **Model Dependency**: Requires OpenAI API access
+- **Cost Considerations**: Each classification incurs API costs
+- **Response Time**: Network latency affects classification speed
+- **Category Scope**: Limited to provided category hierarchy
+- **Context Understanding**: May struggle with ambiguous products
+
+## Best Practices
+
+1. **Clear Categories**: Define distinct, non-overlapping categories
+2. **Quality Input**: Provide comprehensive product information
+3. **Confidence Thresholds**: Set appropriate confidence levels for your use
+   case
+4. **Error Handling**: Implement robust error handling and fallbacks
+5. **Caching**: Cache results for identical products to reduce costs
+6. **Monitoring**: Track classification accuracy and confidence distributions
+7. **Manual Review**: Flag low-confidence classifications for human review
+
+## Integration Examples
+
+### E-commerce Platform
+
+```typescript
+import { AIProductClassifier } from "@repo/ai/server/next";
+import { logInfo } from "@repo/observability/server/next";
+
+async function categorizeNewProduct(productData: ProductData) {
+  const classifier = new AIProductClassifier(ecommerceCategories);
+
+  const result = await classifier.classifyProduct(productData);
+
+  // Update product in database
+  await prisma.product.update({
+    where: { id: productData.id },
+    data: {
+      categoryId: result.categoryId,
+      classificationConfidence: result.confidence,
+      classificationReasoning: result.reasoning,
+      needsReview: result.confidence < 0.8
+    }
+  });
+
+  logInfo("Product classified", {
+    productId: productData.id,
+    category: result.categoryId,
+    confidence: result.confidence
+  });
+
+  return result;
+}
+```
+
+The product classification system provides a solid foundation for automated
+product categorization with the flexibility to adapt to different category
+structures and requirements.

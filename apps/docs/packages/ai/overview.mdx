@@ -1,0 +1,333 @@
+---
+title: "AI Package Overview"
+description:
+  "AI SDK integrations and vector operations with multi-provider support"
+icon: "brain"
+---
+
+# AI Package
+
+AI SDK integrations with vector operations, basic product classification, and
+multi-provider support for OpenAI, Anthropic, Google, and other AI services.
+
+## Overview
+
+The AI package provides foundational AI capabilities including provider
+integrations, vector operations with Upstash Vector, and basic classification
+features. It wraps the Vercel AI SDK with enhanced tooling and vector database
+integration.
+
+<CardGroup cols={2}>
+  <Card title="AI SDK Providers" icon="code">
+    OpenAI, Anthropic, Google, Perplexity, and xAI provider integrations
+  </Card>
+  <Card title="Vector Operations" icon="vector-square">
+    Upstash Vector database integration with embeddings and search
+  </Card>
+  <Card title="Basic Classification" icon="tags">
+    Product classification with confidence scoring
+  </Card>
+  <Card title="RAG Tools" icon="search">
+    Retrieval-Augmented Generation workflow scaffolding
+  </Card>
+</CardGroup>
+
+## Key Features
+
+- **Multi-Provider AI SDK**: OpenAI, Anthropic, Google, Perplexity, xAI, and
+  Deep Infra integrations
+- **Vector Database**: Upstash Vector integration with embedding support
+- **Classification System**: Basic product classification with confidence
+  scoring
+- **RAG Framework**: Vector-based retrieval-augmented generation tools
+- **Streaming Support**: Real-time text generation and chat streaming
+- **Tool System**: Extensible tool framework for AI function calling
+
+## Installation
+
+```bash
+pnpm add @repo/ai
+```
+
+## Environment Variables
+
+```bash
+# AI Providers (choose one or more)
+OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-...
+GOOGLE_GENERATIVE_AI_API_KEY=...
+
+# Vector Database (optional)
+UPSTASH_VECTOR_REST_URL=https://...
+UPSTASH_VECTOR_REST_TOKEN=...
+```
+
+## Quick Start
+
+### Basic AI Provider Usage
+
+```typescript
+import { openai } from "@ai-sdk/openai";
+import { generateText } from "ai";
+
+// Using OpenAI provider
+const result = await generateText({
+  model: openai("gpt-4"),
+  prompt: "What is artificial intelligence?"
+});
+
+console.log(result.text);
+```
+
+### Multi-Provider Setup
+
+```typescript
+import {
+  createAnthropicModel,
+  createOpenAIModel,
+  createGoogleModel
+} from "@repo/ai/server/next";
+
+// Create models from different providers
+const models = {
+  openai: createOpenAIModel("gpt-4"),
+  anthropic: createAnthropicModel("claude-3-5-sonnet-20241022"),
+  google: createGoogleModel("gemini-1.5-pro")
+};
+
+// Use based on requirements
+const result = await generateText({
+  model: models.anthropic,
+  prompt: "Explain quantum computing"
+});
+```
+
+### Product Classification
+
+```typescript
+import { AIProductClassifier } from "@repo/ai/server/next";
+
+const classifier = new AIProductClassifier(categories);
+
+const result = await classifier.classifyProduct({
+  title: "iPhone 15 Pro",
+  description: "Latest Apple smartphone with A17 Pro chip",
+  features: ["5G", "Face ID", "Triple Camera"]
+});
+
+console.log({
+  category: result.categoryId,
+  confidence: result.confidence,
+  alternatives: result.alternativeCategories
+});
+```
+
+## Core Capabilities
+
+### AI SDK Providers
+
+<Tabs>
+  <Tab title="OpenAI">
+    ```typescript
+    import { createOpenAIModel } from '@repo/ai/server/next';
+    import { generateText } from 'ai';
+
+    const model = createOpenAIModel('gpt-4');
+
+    const result = await generateText({
+      model,
+      prompt: 'Write a product description',
+    });
+    ```
+
+  </Tab>
+
+  <Tab title="Anthropic">
+    ```typescript
+    import { createAnthropicModel } from '@repo/ai/server/next';
+    import { generateText } from 'ai';
+
+    const model = createAnthropicModel('claude-3-5-sonnet-20241022');
+
+    const result = await generateText({
+      model,
+      prompt: 'Analyze this content',
+    });
+    ```
+
+  </Tab>
+
+  <Tab title="Google">
+    ```typescript
+    import { createGoogleModel } from '@repo/ai/server/next';
+    import { generateText } from 'ai';
+
+    const model = createGoogleModel('gemini-1.5-pro');
+
+    const result = await generateText({
+      model,
+      prompt: 'Generate creative content',
+    });
+    ```
+
+  </Tab>
+</Tabs>
+
+### Vector Operations
+
+<AccordionGroup>
+  <Accordion title="Vector Database Setup" icon="database">
+    ```typescript
+    import { createVectorTools } from '@repo/ai/server/next';
+    import { Index } from '@upstash/vector';
+
+    const vectorDB = new Index({
+      url: process.env.UPSTASH_VECTOR_REST_URL!,
+      token: process.env.UPSTASH_VECTOR_REST_TOKEN!,
+    });
+
+    const tools = createVectorTools({
+      vectorDB,
+      embeddingModel: 'text-embedding-3-small',
+      defaultTopK: 5,
+    });
+    ```
+
+  </Accordion>
+
+  <Accordion title="Document Storage" icon="file-text">
+    ```typescript
+    // Add documents to vector database
+    await tools.addToKnowledgeBase.execute({
+      content: 'The capital of France is Paris.',
+      id: 'france-capital',
+      metadata: { country: 'France', type: 'geography' },
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Vector Search" icon="search">
+    ```typescript
+    // Search knowledge base
+    const results = await tools.searchKnowledgeBase.execute({
+      query: 'What is the capital of France?',
+      topK: 3,
+    });
+
+    console.log(results);
+    ```
+
+  </Accordion>
+</AccordionGroup>
+
+### RAG Workflow
+
+```typescript
+import { VectorRAGWorkflow } from "@repo/ai/server/next";
+
+const ragWorkflow = new VectorRAGWorkflow({
+  vectorDB,
+  embeddingModel: "text-embedding-3-small",
+  chatModel: "gpt-4",
+  namespace: "knowledge-base",
+  topK: 5
+});
+
+// Add documents
+await ragWorkflow.addDocuments([
+  {
+    id: "doc1",
+    content: "Machine learning is a subset of artificial intelligence.",
+    metadata: { topic: "AI" }
+  }
+]);
+
+// Query with context
+const response = await ragWorkflow.query("What is machine learning?");
+console.log(response.answer);
+```
+
+## Tool System
+
+### Basic Tools
+
+```typescript
+import { createVectorTools, createBulkTools } from "@repo/ai/server/next";
+
+// Core vector operations
+const vectorTools = createVectorTools({ vectorDB });
+
+// Bulk operations for large datasets
+const bulkTools = createBulkTools({
+  vectorDB,
+  embeddingModel: "text-embedding-3-small",
+  defaultBatchSize: 100
+});
+```
+
+### Namespace Management
+
+```typescript
+import { createNamespaceTools } from "@repo/ai/server/next";
+
+const namespaceTools = createNamespaceTools({
+  vectorDB,
+  defaultNamespace: "main"
+});
+
+// Create isolated namespace
+await namespaceTools.createNamespace.execute({
+  namespace: "tenant-acme",
+  description: "ACME Corp knowledge base"
+});
+```
+
+## Package Structure
+
+### Export Pattern
+
+The package follows the standard export pattern:
+
+- `@repo/ai/client` - Browser client utilities
+- `@repo/ai/server` - Node.js server utilities
+- `@repo/ai/client/next` - Next.js client components
+- `@repo/ai/server/next` - Next.js server utilities
+- `@repo/ai/server/edge` - Edge runtime support
+- `@repo/ai/shared-env` - Environment-agnostic utilities
+
+### Type Safety
+
+```typescript
+import type {
+  ProductClassificationResult,
+  VectorSearchResult,
+  RAGResponse,
+  VectorToolsConfig
+} from "@repo/ai/server/next";
+```
+
+## Performance Considerations
+
+- **Provider Selection**: Choose models based on task complexity and cost
+  requirements
+- **Vector Operations**: Use appropriate embedding models for your use case
+- **Batch Processing**: Utilize bulk tools for large dataset operations
+- **Namespace Isolation**: Use namespaces for multi-tenant applications
+
+## Security
+
+- Keep API keys secure using environment variables
+- Use namespace isolation for multi-tenant applications
+- Implement rate limiting for production deployments
+- Validate inputs before processing with AI models
+
+## Limitations
+
+- **Image Processing**: Currently not supported
+- **Advanced RAG**: Basic implementation only
+- **Translation**: Not implemented
+- **Content Generation**: Basic capabilities only
+- **Workflow Automation**: Limited functionality
+
+The AI package provides foundational AI capabilities with room for expansion
+based on specific application needs.

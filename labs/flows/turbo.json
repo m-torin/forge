@@ -1,0 +1,25 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build", "prisma:generate", "@labs/monaco-editor#build"],
+      "outputs": [".next/**", "!.next/cache/**"],
+      "env": ["NEXT_PUBLIC_*", "PRISMA_DB_URL", "NEXTAUTH_URL", "AUTH_SECRET"]
+    },
+    "dev": {
+      "dependsOn": ["prisma:generate"],
+      "cache": false,
+      "persistent": true
+    },
+    "prisma:generate": {
+      "outputs": ["src/lib/prisma/generated/**"],
+      "cache": true
+    },
+    "test:e2e": {
+      "dependsOn": ["build"],
+      "cache": true,
+      "outputs": ["playwright-report/**", "test-results/**"]
+    }
+  }
+}

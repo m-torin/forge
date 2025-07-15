@@ -1,0 +1,423 @@
+---
+title: Upstash Vector Integration
+description:
+  Vector database operations with Upstash Vector and basic AI SDK integration
+---
+
+# Upstash Vector Integration
+
+Vector database operations with Upstash Vector integration for embeddings,
+similarity search, and basic RAG (Retrieval-Augmented Generation) workflows.
+
+## Features
+
+✅ **Vector Tools Integration** - Basic tools for vector operations  
+✅ **Embedding Support** - OpenAI embedding generation and storage  
+✅ **Namespace Support** - Multi-tenant namespace isolation  
+✅ **TypeScript Support** - Full type safety and IntelliSense  
+✅ **Bulk Operations** - Batch processing for large datasets  
+✅ **Error Handling** - Robust error handling and validation
+
+## Environment Setup
+
+```bash
+# Required: Upstash Vector Database
+UPSTASH_VECTOR_REST_URL=https://your-vector-endpoint.upstash.io
+UPSTASH_VECTOR_REST_TOKEN=your_vector_token
+
+# Required: AI Provider (for embeddings)
+OPENAI_API_KEY=your_openai_key
+
+# Optional: Namespace for multi-tenancy
+UPSTASH_VECTOR_NAMESPACE=your_namespace
+```
+
+## Basic Vector Operations
+
+### Vector Database Setup
+
+```typescript
+import { createVectorTools } from "@repo/ai/server/next";
+import { Index } from "@upstash/vector";
+
+const vectorDB = new Index({
+  url: process.env.UPSTASH_VECTOR_REST_URL!,
+  token: process.env.UPSTASH_VECTOR_REST_TOKEN!
+});
+
+const tools = createVectorTools({
+  vectorDB,
+  embeddingModel: "text-embedding-3-small",
+  defaultTopK: 5,
+  similarityThreshold: 0.7
+});
+```
+
+### Adding Documents
+
+```typescript
+// Add single document
+await tools.addToKnowledgeBase.execute({
+  content: "The capital of France is Paris.",
+  id: "france-capital",
+  metadata: { country: "France", type: "geography" }
+});
+
+// Add multiple documents
+const documents = [
+  { id: "doc1", content: "Machine learning is...", metadata: { topic: "AI" } },
+  {
+    id: "doc2",
+    content: "JavaScript is...",
+    metadata: { topic: "Programming" }
+  }
+];
+
+for (const doc of documents) {
+  await tools.addToKnowledgeBase.execute(doc);
+}
+```
+
+### Searching Documents
+
+```typescript
+// Search knowledge base
+const results = await tools.searchKnowledgeBase.execute({
+  query: "What is the capital of France?",
+  topK: 3
+});
+
+console.log("Search results:", results);
+```
+
+## Namespace Management
+
+```typescript
+import { createNamespaceTools } from "@repo/ai/server/next";
+
+const namespaceTools = createNamespaceTools({
+  vectorDB,
+  defaultNamespace: "main",
+  maxNamespaces: 10
+});
+
+// Create tenant namespace
+await namespaceTools.createNamespace.execute({
+  namespace: "tenant-acme",
+  description: "ACME Corp knowledge base"
+});
+
+// List namespaces
+const namespaces = await namespaceTools.listNamespaces.execute({
+  includeStats: true
+});
+```
+
+## Bulk Operations
+
+```typescript
+import { createBulkTools } from "@repo/ai/server/next";
+
+const bulkTools = createBulkTools({
+  vectorDB,
+  embeddingModel: "text-embedding-3-small",
+  defaultBatchSize: 100,
+  maxConcurrency: 3
+});
+
+// Bulk upsert with automatic batching
+await bulkTools.bulkUpsert.execute({
+  vectors: documents.map((doc) => ({
+    id: doc.id,
+    content: doc.content,
+    metadata: doc.metadata
+  })),
+  generateEmbeddings: true,
+  namespace: "my-namespace"
+});
+```
+
+## RAG Workflow
+
+### Basic RAG Setup
+
+```typescript
+import { VectorRAGWorkflow } from "@repo/ai/server/next";
+
+const ragWorkflow = new VectorRAGWorkflow({
+  vectorDB,
+  embeddingModel: "text-embedding-3-small",
+  chatModel: "gpt-4",
+  namespace: "knowledge-base",
+  topK: 5
+});
+
+// Add documents
+await ragWorkflow.addDocuments([
+  {
+    id: "doc1",
+    content: "Machine learning is a subset of artificial intelligence.",
+    metadata: { topic: "AI" }
+  }
+]);
+
+// Query with context
+const response = await ragWorkflow.query("What is machine learning?");
+console.log("Answer:", response.answer);
+console.log("Sources:", response.sources);
+```
+
+## Vector Analytics
+
+```typescript
+import { createAnalyticsVectorDB } from "@repo/ai/server/next";
+
+const analyticsDB = createAnalyticsVectorDB(vectorDB);
+
+// Use analyticsDB for all operations to track metrics
+await analyticsDB.query(embedding, { topK: 5 });
+
+// Get metrics
+const analytics = analyticsDB.getAnalytics();
+const metrics = analytics.getMetrics("hour");
+const usageStats = analytics.getUsageStats();
+
+console.log("Vector metrics:", {
+  totalQueries: metrics.totalQueries,
+  averageLatency: metrics.averageLatency,
+  usageStats
+});
+```
+
+## Advanced Vector Tools
+
+### Combined Tool Suite
+
+```typescript
+import { createAllVectorTools } from "@repo/ai/server/next";
+
+const allTools = createAllVectorTools({
+  vectorDB,
+  embeddingModel: "text-embedding-3-small",
+  defaultNamespace: "main",
+  defaultTopK: 5,
+  similarityThreshold: 0.7,
+  defaultBatchSize: 100,
+  maxConcurrency: 3
+});
+
+// Access all tools: namespace, bulk, range, metadata, core vector operations
+```
+
+### Metadata Management
+
+```typescript
+import { createMetadataTools } from "@repo/ai/server/next";
+
+const metadataTools = createMetadataTools({ vectorDB });
+
+// Query by metadata filters
+await metadataTools.queryByMetadata.execute({
+  filter: {
+    category: "documentation",
+    tags: { $in: ["AI", "ML"] },
+    difficulty: { $gte: 3 }
+  },
+  limit: 10
+});
+
+// Get metadata statistics
+const stats = await metadataTools.getMetadataStats.execute({
+  sampleSize: 1000
+});
+```
+
+### Range Operations
+
+```typescript
+import { createRangeTools } from "@repo/ai/server/next";
+
+const rangeTools = createRangeTools({ vectorDB });
+
+// Export vectors
+const exportResult = await rangeTools.exportVectors.execute({
+  format: "json",
+  maxVectors: 10000,
+  includeMetadata: true
+});
+
+// Paginated browsing
+const session = await rangeTools.createPaginationSession.execute({
+  sessionId: "browse-1",
+  pageSize: 50
+});
+```
+
+## Configuration Options
+
+### Vector Tools Config
+
+```typescript
+interface VectorToolsConfig {
+  vectorDB: Index;
+  embeddingModel?: string; // default: 'text-embedding-3-small'
+  defaultTopK?: number; // default: 5
+  similarityThreshold?: number; // default: 0.7
+  namespace?: string;
+}
+```
+
+### RAG Workflow Config
+
+```typescript
+interface RAGWorkflowConfig {
+  vectorDB: Index;
+  embeddingModel?: string;
+  chatModel?: string;
+  provider?: "openai" | "anthropic";
+  namespace?: string;
+  topK?: number;
+  similarityThreshold?: number;
+  maxContextLength?: number;
+}
+```
+
+## Error Handling
+
+```typescript
+import { logError } from "@repo/observability/server/next";
+
+try {
+  const results = await tools.searchKnowledgeBase.execute({
+    query: "search query",
+    topK: 5
+  });
+} catch (error) {
+  logError("Vector search failed", {
+    error: error instanceof Error ? error.message : String(error),
+    query: "search query"
+  });
+
+  // Fallback behavior
+  return { results: [], error: "Search temporarily unavailable" };
+}
+```
+
+## Performance Optimization
+
+### Caching
+
+```typescript
+class CachedVectorSearch {
+  private cache = new Map<string, any>();
+  private tools: any;
+
+  constructor(tools: any) {
+    this.tools = tools;
+  }
+
+  async search(query: string, options: any = {}) {
+    const cacheKey = `${query}:${JSON.stringify(options)}`;
+
+    if (this.cache.has(cacheKey)) {
+      return this.cache.get(cacheKey);
+    }
+
+    const results = await this.tools.searchKnowledgeBase.execute({
+      query,
+      ...options
+    });
+
+    this.cache.set(cacheKey, results);
+    return results;
+  }
+}
+```
+
+### Batch Processing
+
+```typescript
+async function processBatchDocuments(documents: any[]) {
+  const batchSize = 50;
+  const results = [];
+
+  for (let i = 0; i < documents.length; i += batchSize) {
+    const batch = documents.slice(i, i + batchSize);
+
+    const batchResults = await Promise.allSettled(
+      batch.map((doc) => tools.addToKnowledgeBase.execute(doc))
+    );
+
+    results.push(...batchResults);
+
+    // Rate limiting
+    if (i + batchSize < documents.length) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+  }
+
+  return results;
+}
+```
+
+## Environment Variables
+
+| Variable                    | Required | Description                         |
+| --------------------------- | -------- | ----------------------------------- |
+| `UPSTASH_VECTOR_REST_URL`   | ✅       | Upstash Vector endpoint URL         |
+| `UPSTASH_VECTOR_REST_TOKEN` | ✅       | Upstash Vector token                |
+| `UPSTASH_VECTOR_NAMESPACE`  | ❌       | Optional namespace                  |
+| `OPENAI_API_KEY`            | ✅       | OpenAI API key (for embeddings)     |
+| `ANTHROPIC_API_KEY`         | ❌       | Anthropic API key (for chat models) |
+
+## Type Definitions
+
+```typescript
+import type {
+  VectorToolsConfig,
+  RAGWorkflowConfig,
+  VectorSearchResult,
+  RAGResponse,
+  VectorMetrics,
+  BulkOperationProgress
+} from "@repo/ai/server/next";
+```
+
+## Limitations
+
+- **Embedding Models**: Currently supports OpenAI embeddings primarily
+- **RAG Implementation**: Basic RAG workflow implementation
+- **Auto-chunking**: Limited document chunking capabilities
+- **Stream Processing**: No real-time streaming support for large operations
+- **Advanced Filtering**: Basic metadata filtering support
+
+## Best Practices
+
+1. **Environment Configuration**: Always use environment variables for
+   credentials
+2. **Namespace Isolation**: Use namespaces for multi-tenant applications
+3. **Error Handling**: Implement comprehensive error handling and fallbacks
+4. **Batch Operations**: Use bulk tools for large dataset operations
+5. **Performance Monitoring**: Track vector operation metrics and latencies
+6. **Cache Strategy**: Implement caching for frequently accessed vectors
+7. **Rate Limiting**: Respect API rate limits and implement backoff strategies
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Connection Errors**
+   - Verify `UPSTASH_VECTOR_REST_URL` and `UPSTASH_VECTOR_REST_TOKEN`
+   - Check network connectivity
+
+2. **Embedding Failures**
+   - Ensure `OPENAI_API_KEY` is valid
+   - Verify embedding model availability
+
+3. **Performance Issues**
+   - Reduce batch sizes for large operations
+   - Implement proper caching strategies
+   - Use appropriate similarity thresholds
+
+The Upstash Vector integration provides reliable vector database operations with
+the flexibility to scale based on application requirements.

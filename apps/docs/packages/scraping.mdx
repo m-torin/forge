@@ -1,0 +1,555 @@
+---
+title: "Web Scraping"
+description:
+  "Multi-provider web scraping system with browser automation, HTML parsing, and
+  managed services for intelligent data extraction"
+icon: "spider"
+---
+
+# Web Scraping
+
+Multi-provider web scraping system that supports lightweight HTML parsing and
+browser automation for data extraction.
+
+<Info>
+  **Current Status**: Core providers (Cheerio, Playwright, Puppeteer) are fully
+  implemented. Advanced features like smart routing, caching, and managed
+  services are planned for future releases.
+</Info>
+
+## Overview
+
+The scraping package provides a comprehensive solution for web data extraction
+with automatic provider selection, smart routing, and built-in reliability
+features.
+
+<CardGroup cols={2}>
+  <Card title="Browser Automation" icon="robot">
+    Full JavaScript execution with Playwright and Puppeteer for SPAs and dynamic
+    content
+  </Card>
+  <Card title="HTML Parsing" icon="code">
+    Fast, lightweight extraction with Cheerio and Node.js fetch for static
+    content
+  </Card>
+  <Card title="Experimental Providers" icon="flask">
+    Hero browser provider for advanced automation scenarios
+  </Card>
+  <Card title="Flexible Architecture" icon="blocks">
+    Provider-based system allowing easy extension and customization
+  </Card>
+</CardGroup>
+
+## Quick Start
+
+<CodeGroup>
+```typescript Server-side Scraping
+import { createServerScraping } from '@repo/scraping/server/next';
+
+const scraper = await createServerScraping({ providers: { cheerio: {},
+playwright: { headless: true }, }, });
+
+const result = await scraper.scrape('https://example.com', { extract: { title:
+'h1', price: '.price', images: { selector: 'img', attribute: 'src', multiple:
+true }, }, });
+
+console.log(result.data); // { title: 'Product Name', price: '$29.99', images:
+['img1.jpg', 'img2.jpg'] }
+
+````
+
+```typescript Quick Scraping
+import { quickScrape } from '@repo/scraping/server/next';
+
+// Simple one-liner for basic extraction
+const data = await quickScrape('https://example.com', {
+  title: 'h1',
+  description: 'meta[name="description"]',
+});
+
+console.log(data); // { title: 'Page Title', description: 'Page description' }
+````
+
+</CodeGroup>
+
+## Available Providers
+
+### Browser Automation ✅
+
+For JavaScript-heavy sites and dynamic content:
+
+<Tabs>
+  <Tab title="Playwright">
+    ```typescript
+    const scraper = await createServerScraping({
+      providers: {
+        playwright: {
+          headless: true,
+          userAgent: 'Custom Bot/1.0',
+          defaultTimeout: 30000,
+        },
+      },
+    });
+
+    const result = await scraper.scrape('https://spa-app.com', {
+      waitForSelector: '.content',
+      screenshot: true,
+      extract: {
+        title: 'h1',
+        content: '.main-content',
+      },
+    });
+    ```
+
+  </Tab>
+
+  <Tab title="Puppeteer">
+    ```typescript
+    const scraper = await createServerScraping({
+      providers: {
+        puppeteer: {
+          headless: true,
+          userAgent: 'Custom Bot/1.0',
+        },
+      },
+    });
+
+    const result = await scraper.scrape('https://dynamic-site.com', {
+      extract: {
+        title: 'h1',
+        data: '.data-container',
+      },
+    });
+    ```
+
+  </Tab>
+</Tabs>
+
+**Best for:** SPAs, dynamic content, authenticated sessions, complex user
+interactions
+
+### HTML Parsing ✅
+
+High-performance extraction for static content:
+
+<Tabs>
+  <Tab title="Cheerio">
+    ```typescript
+    const scraper = await createServerScraping({
+      providers: {
+        cheerio: {
+          userAgent: 'Custom Bot/1.0',
+          timeout: 10000,
+        },
+      },
+    });
+
+    const result = await scraper.scrape('https://static-site.com', {
+      extract: {
+        title: 'h1',
+        content: '.article-content',
+        author: '.author-name',
+        links: { selector: 'a', attribute: 'href', multiple: true },
+      },
+    });
+    ```
+
+  </Tab>
+
+  <Tab title="Node Fetch">
+    ```typescript
+    const scraper = await createServerScraping({
+      providers: {
+        'node-fetch': {
+          userAgent: 'Custom Bot/1.0',
+          timeout: 5000,
+        },
+      },
+    });
+
+    // Basic HTML fetching with simple extraction
+    const result = await scraper.scrape('https://api-endpoint.com', {
+      extract: {
+        title: 'title',
+        description: 'meta[name="description"]',
+      },
+    });
+    ```
+
+  </Tab>
+</Tabs>
+
+**Best for:** Static HTML sites, simple content extraction, fast lightweight
+scraping
+
+### Experimental Providers ⚠️
+
+<Note>
+  Experimental providers are available but may have limited functionality or
+  require additional setup.
+</Note>
+
+<Tabs>
+  <Tab title="Hero">
+    ```typescript
+    const scraper = await createServerScraping({
+      providers: {
+        hero: {
+          // Hero-specific configuration
+        },
+      },
+    });
+
+    const result = await scraper.scrape('https://complex-spa.com', {
+      extract: {
+        title: 'h1',
+        content: '.dynamic-content',
+      },
+    });
+    ```
+
+  </Tab>
+
+  <Tab title="Console Provider">
+    ```typescript
+    const scraper = await createServerScraping({
+      providers: {
+        console: {
+          // Debug/development provider
+        },
+      },
+    });
+
+    // Useful for testing and debugging
+    const result = await scraper.scrape('https://test-site.com');
+    ```
+
+  </Tab>
+</Tabs>
+
+**Best for:** Advanced automation scenarios, development and testing
+
+## Basic Features
+
+### Multiple Provider Support
+
+Use different providers based on your needs:
+
+```typescript
+const scraper = await createServerScraping({
+  providers: {
+    cheerio: {},
+    playwright: { headless: true }
+  }
+});
+
+// Use default provider (first available)
+const result1 = await scraper.scrape("https://static-site.com", {
+  extract: { title: "h1" }
+});
+
+// Force a specific provider (when implemented)
+// const result2 = await scraper.scrape('https://spa-app.com', {
+//   provider: 'playwright',
+//   extract: { title: 'h1' },
+// });
+```
+
+### Multiple URL Scraping
+
+Scrape multiple URLs with the same extraction rules:
+
+```typescript
+// Basic multiple URL scraping
+const urls = [
+  "https://example1.com",
+  "https://example2.com",
+  "https://example3.com"
+];
+
+const results = await scraper.scrapeMultiple(urls, {
+  concurrent: 3,
+  extract: {
+    title: "h1",
+    content: ".article-content"
+  }
+});
+
+results.forEach((result, index) => {
+  console.log(`Result ${index + 1}:`, result.data);
+});
+```
+
+### Data Extraction
+
+Extract structured data from HTML:
+
+```typescript
+const result = await scraper.scrape("https://e-commerce.com/product", {
+  extract: {
+    name: "h1.product-title",
+    price: ".price-value",
+    description: ".product-description",
+    images: {
+      selector: ".product-gallery img",
+      attribute: "src",
+      multiple: true
+    },
+    availability: ".stock-status",
+    specs: {
+      selector: ".spec-item",
+      multiple: true
+    }
+  }
+});
+
+console.log(result.data);
+// {
+//   name: 'Product Name',
+//   price: '$29.99',
+//   description: 'Product description...',
+//   images: ['img1.jpg', 'img2.jpg'],
+//   availability: 'In Stock',
+//   specs: ['Spec 1', 'Spec 2']
+// }
+```
+
+## Error Handling
+
+### Basic Error Handling
+
+```typescript
+import { ScrapingError } from "@repo/scraping/server/next";
+
+try {
+  const result = await scraper.scrape("https://example.com", {
+    extract: { title: "h1" },
+    timeout: 30000
+  });
+
+  console.log(result.data);
+} catch (error) {
+  if (error instanceof ScrapingError) {
+    console.error(`Scraping failed: ${error.message}`);
+    console.error(`Error code: ${error.code}`);
+
+    // Handle specific error types
+    switch (error.code) {
+      case "NETWORK_ERROR":
+        console.log("Network issue, trying again later...");
+        break;
+      case "TIMEOUT":
+        console.log("Request timed out");
+        break;
+      default:
+        console.log("Unknown scraping error");
+    }
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+### Provider Health Checks
+
+```typescript
+// Check if providers are available
+const health = await scraper.healthCheck();
+console.log(health);
+// { cheerio: true, playwright: true }
+
+// Handle provider failures gracefully
+try {
+  const result = await scraper.scrape("https://example.com");
+} catch (error) {
+  if (error.code === "BROWSER_LAUNCH_FAILED") {
+    console.log("Browser provider failed, trying HTML parser...");
+    // Fallback logic here
+  }
+}
+```
+
+## Performance Tips
+
+### Provider Selection
+
+```typescript
+// Use Cheerio for static sites (faster)
+const staticResult = await scraper.scrape("https://static-blog.com", {
+  // Cheerio will be used automatically for simple HTML parsing
+  extract: {
+    title: "h1",
+    content: ".post-content"
+  }
+});
+
+// Use Playwright only when needed (JavaScript-heavy sites)
+const dynamicScraper = await createServerScraping({
+  providers: {
+    playwright: { headless: true }
+  }
+});
+
+const spaResult = await dynamicScraper.scrape("https://react-app.com", {
+  waitForSelector: ".content",
+  extract: {
+    data: ".dynamic-content"
+  }
+});
+```
+
+### Resource Cleanup
+
+```typescript
+// Always dispose of resources when done
+try {
+  const result = await scraper.scrape("https://example.com");
+  return result;
+} finally {
+  await scraper.dispose();
+}
+```
+
+## Next.js Integration
+
+### Server Actions
+
+```typescript
+// app/actions/scraping.ts
+"use server";
+
+import { createServerScraping } from "@repo/scraping/server/next";
+
+export async function scrapeUrl(url: string) {
+  const scraper = await createServerScraping({
+    providers: {
+      cheerio: {}
+    }
+  });
+
+  try {
+    const result = await scraper.scrape(url, {
+      extract: {
+        title: "title",
+        description: 'meta[name="description"]',
+        ogImage: 'meta[property="og:image"]'
+      }
+    });
+
+    return { success: true, data: result.data };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error"
+    };
+  } finally {
+    await scraper.dispose();
+  }
+}
+```
+
+### API Routes
+
+<Note>
+  The React hooks expect these API endpoints to exist in your Next.js app.
+  You'll need to create them if you want to use the client-side hooks.
+</Note>
+
+```typescript
+// app/api/scrape/route.ts
+import { createServerScraping } from "@repo/scraping/server/next";
+
+export async function POST(request: Request) {
+  try {
+    const { url, options } = await request.json();
+
+    const scraper = await createServerScraping({
+      providers: {
+        cheerio: {}
+      }
+    });
+
+    const result = await scraper.scrape(url, options);
+    await scraper.dispose();
+
+    return Response.json(result);
+  } catch (error) {
+    return Response.json(
+      { error: error instanceof Error ? error.message : "Scraping failed" },
+      { status: 500 }
+    );
+  }
+}
+```
+
+### Client Hooks
+
+<Warning>
+  Client hooks require corresponding API routes (see above) to be implemented in
+  your Next.js app.
+</Warning>
+
+```typescript
+// components/scraper.tsx
+'use client';
+
+import { useScrape } from '@repo/scraping/client/next';
+
+export function ScraperComponent() {
+  const { scrape, loading, data, error } = useScrape();
+
+  const handleScrape = async () => {
+    await scrape('https://example.com', {
+      extract: {
+        title: 'h1',
+        content: '.content',
+      },
+    });
+  };
+
+  return (
+    <div>
+      <button onClick={handleScrape} disabled={loading}>
+        {loading ? 'Scraping...' : 'Scrape Page'}
+      </button>
+
+      {error && <div>Error: {error.message}</div>}
+      {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
+    </div>
+  );
+}
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Provider Selection" icon="route">
+    - Use Cheerio for static HTML content (faster, less resource-intensive)
+    - Use Playwright/Puppeteer for JavaScript-heavy sites and SPAs
+    - Always dispose of scrapers when done to free resources
+    - Test with different providers to find the best fit for your use case
+  </Accordion>
+
+<Accordion title="Error Handling" icon="shield">
+  - Always wrap scraping calls in try-catch blocks - Handle ScrapingError
+  instances specifically - Implement timeouts for long-running operations - Log
+  errors with context for debugging
+</Accordion>
+
+<Accordion title="Performance" icon="gauge">
+  - Reuse scraper instances when possible - Avoid creating new scrapers for each
+  request - Use appropriate timeouts to prevent hanging - Clean up resources
+  with dispose()
+</Accordion>
+
+  <Accordion title="Legal and Ethical" icon="scale">
+    - Respect robots.txt and rate limits
+    - Use appropriate delays between requests
+    - Don't overload target servers
+    - Consider website terms of service
+    - Implement proper user agent identification
+  </Accordion>
+</AccordionGroup>
+
+The scraping package provides a flexible foundation for web data extraction with
+support for both static HTML parsing and browser automation.

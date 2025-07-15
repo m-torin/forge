@@ -1,0 +1,451 @@
+---
+title: "Database Integration"
+description: "Seamless integration with Prisma Media model for unified storage"
+icon: "database"
+---
+
+# Database Integration
+
+The storage package provides seamless integration with your Prisma database
+through the Media model, enabling unified file management with metadata,
+associations, and soft deletes.
+
+## Media Model Overview
+
+The Media model in your Prisma schema supports polymorphic associations with
+various entities:
+
+```prisma
+model Media {
+  id String @id @default(cuid())
+
+  // Media details
+  url       String
+  altText   String?
+  type      MediaType @default(IMAGE)
+  width     Int?
+  height    Int?
+  size      Int?
+  mimeType  String?
+
+  // Metadata stored as JSON
+  copy Json @db.JsonB
+
+  // Polymorphic associations
+  productId    String?
+  brandId      String?
+  categoryId   String?
+  collectionId String?
+  articleId    String?
+  taxonomyId   String?
+  reviewId     String?
+  userId       String?
+
+  // Timestamps and soft delete
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  deletedById String?
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  DOCUMENT
+  AUDIO
+  MANUAL
+  SPECIFICATION
+  CERTIFICATE
+}
+```
+
+## Database-Integrated Server Actions
+
+### Upload and Create Media
+
+Upload a file and create a Media record in one atomic operation:
+
+```typescript
+import { uploadAndCreateMediaAction } from "@repo/storage/server/next";
+
+// Upload product image
+const result = await uploadAndCreateMediaAction({
+  file: imageFile,
+  type: "IMAGE",
+  altText: "Product hero image",
+  productId: "123", // Associates with product
+  userId: session.user.id,
+  width: 1200,
+  height: 800,
+  sortOrder: 0
+});
+
+// Result contains both media record and signed URL
+const { media, url } = result.data;
+```
+
+### Get Signed URL from Media Record
+
+Retrieve a signed URL using the Media record ID:
+
+```typescript
+import { getMediaSignedUrlAction } from "@repo/storage/server/next";
+
+// Get signed URL with automatic context detection
+const url = await getMediaSignedUrlAction(mediaId, {
+  expiresIn: 3600, // Optional: custom expiration
+  forceRefresh: true // Optional: update URL in database
+});
+```
+
+### Delete Media with Storage Cleanup
+
+Soft delete the Media record and remove the file from storage:
+
+```typescript
+import { deleteMediaAndStorageAction } from "@repo/storage/server/next";
+
+// Soft delete and remove from storage
+await deleteMediaAndStorageAction(
+  mediaId,
+  session.user.id // Track who deleted it
+);
+```
+
+### Bulk Operations
+
+Handle multiple media records efficiently:
+
+```typescript
+import { bulkRefreshMediaUrlsAction } from "@repo/storage/server/next";
+
+// Refresh URLs for multiple media records
+const urls = await bulkRefreshMediaUrlsAction(
+  ["media-1", "media-2", "media-3"],
+  {
+    expiresIn: 7200
+  }
+);
+
+// URLs are returned as a map
+logInfo("Retrieved signed URL for media-1", { url: urls["media-1"] });
+```
+
+## Storing Storage Metadata
+
+The Media model's `copy` field stores storage-specific metadata:
+
+```typescript
+// Metadata structure stored in copy field
+{
+  storageKey: 'products/123/hero-image.jpg',
+  originalUrl: 'https://r2.example.com/...',
+  metadata: {
+    uploadedBy: 'user-123',
+    uploadedAt: '2025-01-17T10:30:00Z',
+    entityType: 'products',
+    entityId: '123'
+  }
+}
+```
+
+## Entity Associations
+
+### Product Media
+
+```typescript
+// Upload product images
+const heroImage = await uploadAndCreateMediaAction({
+  file: heroImageFile,
+  type: "IMAGE",
+  altText: "Product hero image",
+  productId: product.id,
+  sortOrder: 0
+});
+
+// Query product with media
+const product = await prisma.product.findUnique({
+  where: { id: productId },
+  include: {
+    media: {
+      where: { deletedAt: null },
+      orderBy: { sortOrder: "asc" }
+    }
+  }
+});
+```
+
+### Brand Media
+
+```typescript
+// Upload brand logo
+const logo = await uploadAndCreateMediaAction({
+  file: logoFile,
+  type: "IMAGE",
+  altText: `${brand.name} logo`,
+  brandId: brand.id
+});
+```
+
+### User Media
+
+```typescript
+// Upload user avatar
+const avatar = await uploadAndCreateMediaAction({
+  file: avatarFile,
+  type: "IMAGE",
+  altText: "User avatar",
+  userId: user.id
+});
+```
+
+## Advanced Queries
+
+### Find Media by Entity
+
+```typescript
+// Get all product media
+const productMedia = await prisma.media.findMany({
+  where: {
+    productId: productId,
+    deletedAt: null
+  },
+  orderBy: { sortOrder: "asc" }
+});
+
+// Get media with signed URLs
+const mediaWithUrls = await Promise.all(
+  productMedia.map(async (media) => ({
+    ...media,
+    signedUrl: await getMediaSignedUrlAction(media.id)
+  }))
+);
+```
+
+### Media Usage Report
+
+```typescript
+// Count media by type
+const mediaStats = await prisma.media.groupBy({
+  by: ["type"],
+  where: { deletedAt: null },
+  _count: { type: true }
+});
+
+// Find orphaned media
+const orphanedMedia = await prisma.media.findMany({
+  where: {
+    deletedAt: null,
+    productId: null,
+    brandId: null,
+    categoryId: null,
+    collectionId: null,
+    articleId: null,
+    taxonomyId: null,
+    reviewId: null,
+    userId: null
+  }
+});
+```
+
+## Migration from URLs to Storage Keys
+
+If you have existing Media records with URLs but no storage keys:
+
+```typescript
+// Migration script to add storage keys
+async function migrateMediaToStorage() {
+  const mediaRecords = await prisma.media.findMany({
+    where: {
+      copy: { equals: Prisma.DbNull }
+    }
+  });
+
+  for (const media of mediaRecords) {
+    // Extract key from URL
+    const url = new URL(media.url);
+    const key = url.pathname.slice(1); // Remove leading slash
+
+    // Update with storage metadata
+    await prisma.media.update({
+      where: { id: media.id },
+      data: {
+        copy: {
+          storageKey: key,
+          originalUrl: media.url,
+          migrated: true
+        }
+      }
+    });
+  }
+}
+```
+
+## Best Practices
+
+### 1. Always Associate Media
+
+```typescript
+// ❌ Bad: Orphaned media
+const media = await uploadAndCreateMediaAction({
+  file: imageFile,
+  type: "IMAGE"
+  // No association!
+});
+
+// ✅ Good: Associated with entity
+const media = await uploadAndCreateMediaAction({
+  file: imageFile,
+  type: "IMAGE",
+  productId: product.id // Clear association
+});
+```
+
+### 2. Set Meaningful Alt Text
+
+```typescript
+// ❌ Bad: Generic alt text
+altText: "Image";
+
+// ✅ Good: Descriptive alt text
+altText: `${product.name} - Front view`;
+```
+
+### 3. Use Sort Order for Galleries
+
+```typescript
+// Upload gallery images with proper ordering
+const galleryImages = await Promise.all(
+  files.map((file, index) =>
+    uploadAndCreateMediaAction({
+      file,
+      type: "IMAGE",
+      productId: product.id,
+      sortOrder: index,
+      altText: `${product.name} - Image ${index + 1}`
+    })
+  )
+);
+```
+
+### 4. Clean Up on Entity Deletion
+
+```typescript
+// When deleting a product, clean up its media
+await prisma.$transaction(async (tx) => {
+  // Get all product media
+  const productMedia = await tx.media.findMany({
+    where: { productId: productId }
+  });
+
+  // Delete from storage
+  await Promise.all(
+    productMedia.map((media) => deleteMediaAndStorageAction(media.id, userId))
+  );
+
+  // Delete the product
+  await tx.product.delete({
+    where: { id: productId }
+  });
+});
+```
+
+## Performance Optimization
+
+### Batch Loading with Signed URLs
+
+```typescript
+// Efficient loading of products with signed URLs
+async function getProductsWithSignedUrls(productIds: string[]) {
+  // Load products with media
+  const products = await prisma.product.findMany({
+    where: { id: { in: productIds } },
+    include: {
+      media: {
+        where: { deletedAt: null },
+        orderBy: { sortOrder: "asc" }
+      }
+    }
+  });
+
+  // Collect all media IDs
+  const mediaIds = products.flatMap((p) => p.media.map((m) => m.id));
+
+  // Batch refresh URLs
+  const signedUrls = await bulkRefreshMediaUrlsAction(mediaIds);
+
+  // Map URLs back to products
+  return products.map((product) => ({
+    ...product,
+    media: product.media.map((media) => ({
+      ...media,
+      signedUrl: signedUrls[media.id]
+    }))
+  }));
+}
+```
+
+### Caching Strategy
+
+```typescript
+import { unstable_cache } from "next/cache";
+
+// Cache media queries
+const getCachedProductMedia = unstable_cache(
+  async (productId: string) => {
+    const media = await prisma.media.findMany({
+      where: {
+        productId,
+        deletedAt: null
+      },
+      orderBy: { sortOrder: "asc" }
+    });
+
+    // Get signed URLs
+    const mediaIds = media.map((m) => m.id);
+    const urls = await bulkRefreshMediaUrlsAction(mediaIds);
+
+    return media.map((m) => ({
+      ...m,
+      signedUrl: urls[m.id]
+    }));
+  },
+  ["product-media"],
+  {
+    revalidate: 300, // 5 minutes
+    tags: ["media"]
+  }
+);
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Storage key not found in metadata">
+    **Solution**: Check if the Media record has the storage key in the `copy` field. If not, you may need to run a migration.
+  </Accordion>
+
+<Accordion title="Association constraints failing">
+  **Solution**: Ensure only one entity association is set per Media record. The
+  model enforces single association.
+</Accordion>
+
+  <Accordion title="Soft deletes not working">
+    **Solution**: Always use `deleteMediaAndStorageAction` which handles both soft delete and storage cleanup.
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Signed URLs" href="/packages/storage/signed-urls" icon="shield">
+    Learn about secure URL generation
+  </Card>
+  <Card
+    title="Server Actions"
+    href="/packages/storage/server-actions"
+    icon="server"
+  >
+    Explore all available server actions
+  </Card>
+</CardGroup>

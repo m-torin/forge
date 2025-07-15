@@ -1,0 +1,673 @@
+---
+title: Computer Use Tools
+description:
+  Anthropic computer interaction tools for screenshots, clicks, typing, bash
+  execution, and file editing with secure sandboxed environments
+icon: desktop
+---
+
+# Computer Use Tools
+
+Enable AI agents to interact with computer interfaces through Anthropic's
+computer use tools, including screen capture, mouse/keyboard control, bash
+execution, and file editing with enterprise-grade security.
+
+## Overview
+
+Computer use tools provide AI agents with the ability to interact with computer
+interfaces just like humans do - taking screenshots, clicking buttons, typing
+text, running commands, and editing files. These tools are built on Anthropic's
+computer_20241022, bash_20241022, and textEditor_20241022 APIs with
+comprehensive security controls.
+
+<Warning>
+  Computer use tools provide powerful system access. Always run in sandboxed
+  environments with proper permission controls and resource limits.
+</Warning>
+
+## Core Tools
+
+### Computer Tool
+
+Interact with the desktop environment through screenshots and input controls:
+
+```typescript
+import { createComputerTool } from "@repo/ai/server/tools";
+
+const computerTool = createComputerTool({
+  display: 1, // Display number
+  screenSize: { width: 1920, height: 1080 },
+  timeout: 30000,
+  security: {
+    allowedApplications: ["chrome", "vscode", "terminal"],
+    blockedRegions: [
+      { x: 0, y: 0, width: 100, height: 50 } // Block sensitive UI areas
+    ]
+  }
+});
+
+// Use with AI models
+const result = await generateText({
+  model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+  messages: [
+    {
+      role: "user",
+      content: "Take a screenshot and click on the search button"
+    }
+  ],
+  tools: { computer: computerTool }
+});
+```
+
+### Bash Tool
+
+Execute command-line operations with security controls:
+
+```typescript
+import { createBashTool } from "@repo/ai/server/tools";
+
+const bashTool = createBashTool({
+  workingDirectory: "/workspace",
+  timeout: 60000,
+  security: {
+    allowedCommands: ["ls", "cat", "grep", "find", "python", "node"],
+    blockedCommands: ["rm -rf", "sudo", "chmod 777"],
+    maxOutputSize: 10000,
+    networkAccess: false
+  },
+  environment: {
+    PATH: "/usr/local/bin:/usr/bin:/bin",
+    HOME: "/workspace"
+  }
+});
+
+const result = await generateText({
+  model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+  messages: [
+    {
+      role: "user",
+      content:
+        "List the files in the current directory and show the contents of package.json"
+    }
+  ],
+  tools: { bash: bashTool }
+});
+```
+
+### Text Editor Tool
+
+View and edit files with precise control:
+
+```typescript
+import { createTextEditorTool } from "@repo/ai/server/tools";
+
+const editorTool = createTextEditorTool({
+  allowedPaths: ["/workspace", "/tmp"],
+  maxFileSize: 1000000, // 1MB
+  backup: true,
+  security: {
+    readOnly: false,
+    allowedExtensions: [".txt", ".js", ".ts", ".py", ".md"],
+    blockedPaths: ["/etc", "/usr", "/var"]
+  }
+});
+
+const result = await generateText({
+  model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+  messages: [
+    {
+      role: "user",
+      content: "Open main.py, find the bug in the login function, and fix it"
+    }
+  ],
+  tools: { editor: editorTool }
+});
+```
+
+## Tool Combinations
+
+### Development Environment
+
+Create a complete development environment:
+
+```typescript
+import {
+  createComputerTool,
+  createBashTool,
+  createTextEditorTool,
+  createDevelopmentPreset
+} from "@repo/ai/server/tools";
+
+const devTools = createDevelopmentPreset({
+  workspace: "/workspace/myproject",
+  allowedLanguages: ["typescript", "python", "bash"],
+  testFrameworks: ["jest", "pytest"],
+  linting: true,
+  gitOperations: true
+});
+
+const result = await generateText({
+  model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+  messages: [
+    {
+      role: "user",
+      content:
+        "Create a new React component, write tests for it, and run the test suite"
+    }
+  ],
+  tools: devTools.tools
+});
+```
+
+### Data Analysis Setup
+
+Tools for data analysis workflows:
+
+```typescript
+import { createDataAnalysisPreset } from "@repo/ai/server/tools";
+
+const analysisTools = createDataAnalysisPreset({
+  dataDirectory: "/data",
+  outputDirectory: "/outputs",
+  allowedFormats: ["csv", "json", "xlsx"],
+  pythonLibraries: ["pandas", "numpy", "matplotlib", "seaborn"],
+  notebookSupport: true
+});
+
+const result = await generateText({
+  model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+  messages: [
+    {
+      role: "user",
+      content:
+        "Load the sales data CSV, perform trend analysis, and create visualizations"
+    }
+  ],
+  tools: analysisTools.tools
+});
+```
+
+### System Administration
+
+Tools for system management tasks:
+
+```typescript
+import { createSystemAdminPreset } from "@repo/ai/server/tools";
+
+const adminTools = createSystemAdminPreset({
+  logDirectory: "/var/log",
+  configDirectory: "/etc/myapp",
+  serviceManagement: true,
+  monitoringAccess: true,
+  security: {
+    requireSudoPassword: true,
+    auditCommands: true,
+    restrictedOperations: ["user-management", "network-config"]
+  }
+});
+```
+
+## Advanced Usage Patterns
+
+### Screenshot Analysis
+
+Analyze and interact with UI elements:
+
+```typescript
+const result = await generateText({
+  model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+  messages: [
+    {
+      role: "user",
+      content:
+        "Take a screenshot, identify all buttons, and click the 'Submit' button"
+    }
+  ],
+  tools: {
+    computer: createComputerTool({
+      display: 1,
+      analysisMode: true, // Enable element detection
+      confidence: 0.8 // Minimum confidence for element identification
+    })
+  }
+});
+
+// The agent will:
+// 1. Take a screenshot
+// 2. Analyze the image to identify UI elements
+// 3. Locate the Submit button
+// 4. Click on it with precise coordinates
+```
+
+### File Processing Workflow
+
+Complex file operations:
+
+```typescript
+const result = await generateText({
+  model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+  messages: [
+    {
+      role: "user",
+      content: `
+      Process the log files in /var/log:
+      1. Find all error messages from the last 24 hours
+      2. Group them by error type
+      3. Create a summary report
+      4. Save the report as error-summary.md
+    `
+    }
+  ],
+  tools: {
+    bash: createBashTool({
+      workingDirectory: "/var/log",
+      security: { allowedCommands: ["grep", "awk", "sort", "uniq", "wc"] }
+    }),
+    editor: createTextEditorTool({
+      allowedPaths: ["/var/log", "/workspace/reports"]
+    })
+  }
+});
+```
+
+### Automated Testing
+
+Run and validate automated tests:
+
+```typescript
+const result = await generateText({
+  model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+  messages: [
+    {
+      role: "user",
+      content: "Run the test suite, capture any failures, and suggest fixes"
+    }
+  ],
+  tools: {
+    bash: createBashTool({
+      workingDirectory: "/project",
+      security: {
+        allowedCommands: ["npm", "yarn", "python", "pytest", "jest"]
+      }
+    }),
+    editor: createTextEditorTool({
+      allowedPaths: ["/project/src", "/project/tests"]
+    }),
+    computer: createComputerTool({
+      display: 1,
+      captureMode: "failure-only" // Only capture screenshots on failures
+    })
+  }
+});
+```
+
+## Security Configuration
+
+### Sandboxing
+
+Run tools in isolated environments:
+
+```typescript
+import { createSecureToolsEnvironment } from "@repo/ai/server/tools";
+
+const secureEnv = createSecureToolsEnvironment({
+  containerImage: "ubuntu:22.04",
+  resourceLimits: {
+    memory: "2GB",
+    cpu: "1.0",
+    diskSpace: "5GB",
+    networkBandwidth: "10MB/s"
+  },
+  fileSystem: {
+    readOnlyPaths: ["/usr", "/lib", "/bin"],
+    tempDirectory: "/tmp",
+    workspaceDirectory: "/workspace"
+  },
+  networking: {
+    enabled: false, // Disable network access
+    allowedDomains: [], // or specify allowed domains
+    blockedPorts: [22, 3389, 5432] // Block sensitive ports
+  }
+});
+
+const tools = secureEnv.createTools({
+  computer: { display: 1 },
+  bash: { workingDirectory: "/workspace" },
+  editor: { allowedPaths: ["/workspace"] }
+});
+```
+
+### Permission Controls
+
+Fine-grained permission management:
+
+```typescript
+import { createPermissionManager } from "@repo/ai/server/tools";
+
+const permissions = createPermissionManager({
+  userLevel: "restricted", // "admin", "user", "restricted"
+  capabilities: {
+    fileSystem: {
+      read: ["/workspace", "/tmp"],
+      write: ["/workspace/output"],
+      execute: ["/workspace/scripts"]
+    },
+    network: {
+      outbound: false,
+      allowedHosts: []
+    },
+    system: {
+      processes: false,
+      services: false,
+      users: false
+    }
+  },
+  auditLogging: {
+    enabled: true,
+    logLevel: "detailed",
+    includeScreenshots: true
+  }
+});
+
+const tools = {
+  computer: createComputerTool({ permissions }),
+  bash: createBashTool({ permissions }),
+  editor: createTextEditorTool({ permissions })
+};
+```
+
+### Resource Monitoring
+
+Monitor and limit resource usage:
+
+```typescript
+import { createResourceMonitor } from "@repo/ai/server/tools";
+
+const monitor = createResourceMonitor({
+  limits: {
+    maxCPUTime: 300000, // 5 minutes
+    maxMemoryUsage: "1GB",
+    maxDiskIO: "100MB",
+    maxNetworkIO: "50MB",
+    maxFileOperations: 1000
+  },
+  alerts: {
+    cpuThreshold: 80,
+    memoryThreshold: 90,
+    diskThreshold: 95
+  },
+  actions: {
+    onThresholdExceeded: "throttle", // "throttle", "pause", "terminate"
+    onLimitExceeded: "terminate"
+  }
+});
+
+const result = await generateText({
+  model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+  messages: [{ role: "user", content: "Process the large dataset" }],
+  tools: {
+    bash: createBashTool({ resourceMonitor: monitor }),
+    editor: createTextEditorTool({ resourceMonitor: monitor })
+  }
+});
+
+// Check resource usage after execution
+console.log("Resource usage:", monitor.getUsageReport());
+```
+
+## Error Handling and Recovery
+
+### Robust Error Handling
+
+Handle tool failures gracefully:
+
+```typescript
+const result = await generateText({
+  model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+  messages: [
+    {
+      role: "user",
+      content: "Complete the development task, handling any errors"
+    }
+  ],
+  tools: {
+    computer: createComputerTool({
+      errorHandling: {
+        screenshotOnError: true,
+        retryAttempts: 3,
+        retryDelay: 1000,
+        fallbackActions: ["take-screenshot", "log-state"]
+      }
+    }),
+    bash: createBashTool({
+      errorHandling: {
+        captureStderr: true,
+        continueOnError: true,
+        logCommands: true
+      }
+    })
+  },
+  onToolError: ({ tool, error, retry, fallback }) => {
+    console.error(`Tool ${tool} failed:`, error.message);
+
+    if (error.type === "timeout") {
+      return retry({ timeout: error.timeout * 2 });
+    }
+
+    if (error.type === "permission-denied") {
+      return fallback("safe-mode");
+    }
+
+    return fallback("skip");
+  }
+});
+```
+
+### State Recovery
+
+Recover from failures with checkpoints:
+
+```typescript
+import { createStatefulTools } from "@repo/ai/server/tools";
+
+const statefulTools = createStatefulTools({
+  checkpointInterval: 30000, // Save state every 30 seconds
+  autoRecovery: true,
+  stateStorage: {
+    type: "file",
+    path: "/workspace/.tool-state"
+  }
+});
+
+const result = await generateText({
+  model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+  messages: [
+    {
+      role: "user",
+      content: "Long-running data processing task"
+    }
+  ],
+  tools: statefulTools.create({
+    bash: { workingDirectory: "/workspace" },
+    editor: { allowedPaths: ["/workspace"] }
+  }),
+  onFailure: async ({ error, state }) => {
+    console.log("Task failed, attempting recovery...");
+
+    // Restore from last checkpoint
+    const recoveredState = await statefulTools.restoreState(
+      state.lastCheckpoint
+    );
+
+    // Resume from recovered state
+    return { resume: true, state: recoveredState };
+  }
+});
+```
+
+## Integration Patterns
+
+### With Multi-Step Agents
+
+Combine with agent workflows:
+
+```typescript
+import { executeMultiStepAgent } from "@repo/ai/server/agents";
+import { createComputerTool, createBashTool } from "@repo/ai/server/tools";
+
+const result = await executeMultiStepAgent({
+  model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+  messages: [
+    {
+      role: "user",
+      content:
+        "Set up a new development environment and create a sample project"
+    }
+  ],
+  tools: {
+    computer: createComputerTool({ display: 1 }),
+    bash: createBashTool({ workingDirectory: "/workspace" }),
+    editor: createTextEditorTool({ allowedPaths: ["/workspace"] })
+  },
+  maxSteps: 15,
+  onStepFinish: ({ stepNumber, result, tools }) => {
+    console.log(`Step ${stepNumber} completed`);
+
+    // Log tool usage
+    if (tools?.computer?.lastAction) {
+      console.log("Computer action:", tools.computer.lastAction);
+    }
+  }
+});
+```
+
+### With Streaming
+
+Stream tool execution results:
+
+```typescript
+import { streamText } from "ai";
+
+const stream = await streamText({
+  model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+  messages: [
+    {
+      role: "user",
+      content: "Build and test the application step by step"
+    }
+  ],
+  tools: {
+    bash: createBashTool({
+      workingDirectory: "/project",
+      streaming: true, // Stream command output
+      onOutput: (output) => {
+        console.log("Command output:", output);
+      }
+    })
+  }
+});
+
+for await (const chunk of stream.textStream) {
+  process.stdout.write(chunk);
+}
+```
+
+## Best Practices
+
+### 1. Security First
+
+- Always run in sandboxed environments
+- Use minimal required permissions
+- Implement resource limits
+- Enable audit logging
+- Validate all inputs and outputs
+
+### 2. Error Handling
+
+- Implement comprehensive error handling
+- Use retry mechanisms with exponential backoff
+- Create fallback strategies
+- Monitor resource usage
+- Save state for long-running tasks
+
+### 3. Performance
+
+- Set appropriate timeouts
+- Limit resource usage
+- Use efficient commands
+- Cache frequently accessed data
+- Monitor and optimize tool performance
+
+### 4. User Experience
+
+- Provide clear progress updates
+- Handle tool failures gracefully
+- Give meaningful error messages
+- Allow user intervention when needed
+- Document tool capabilities and limitations
+
+### 5. Testing
+
+- Test in isolated environments
+- Validate security controls
+- Test error scenarios
+- Verify resource limits
+- Test tool combinations
+
+## Monitoring and Debugging
+
+### Tool Execution Logging
+
+```typescript
+import { createToolLogger } from "@repo/ai/server/tools";
+
+const logger = createToolLogger({
+  level: "detailed",
+  includeScreenshots: true,
+  includeTimestamp: true,
+  format: "json"
+});
+
+const tools = {
+  computer: createComputerTool({ logger }),
+  bash: createBashTool({ logger }),
+  editor: createTextEditorTool({ logger })
+};
+
+// Logs will include:
+// - Tool execution timing
+// - Input parameters
+// - Output results
+// - Screenshots (for computer tool)
+// - Error details
+// - Resource usage
+```
+
+### Performance Metrics
+
+```typescript
+import { ToolPerformanceAnalyzer } from "@repo/ai/server/tools";
+
+const analyzer = new ToolPerformanceAnalyzer();
+
+const result = await generateText({
+  model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+  messages: [{ role: "user", content: "Development task" }],
+  tools: {
+    bash: createBashTool({
+      onExecute: (params) => analyzer.recordStart("bash", params),
+      onComplete: (result) => analyzer.recordComplete("bash", result)
+    })
+  }
+});
+
+// Get performance insights
+const metrics = analyzer.getMetrics();
+console.log("Average execution time:", metrics.averageExecutionTime);
+console.log("Success rate:", metrics.successRate);
+console.log("Resource utilization:", metrics.resourceUtilization);
+```
+
+Computer use tools enable powerful automation capabilities while maintaining
+enterprise-grade security and control. Always prioritize security and test
+thoroughly in isolated environments before production deployment.

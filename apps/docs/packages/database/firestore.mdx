@@ -1,0 +1,161 @@
+---
+title: "Firestore Database (Google)"
+description:
+  "Document-based NoSQL database for real-time applications with Google
+  Firestore"
+icon: "fire"
+---
+
+# Firestore Database (Google)
+
+Document-based NoSQL database using Google Firestore for real-time applications,
+flexible data modeling, and seamless scaling.
+
+## Overview
+
+Firestore provides real-time synchronization, flexible queries, and offline
+support for modern applications requiring dynamic data structures.
+
+<CardGroup cols={2}>
+  <Card title="Real-time Updates" icon="signal">
+    Automatic data synchronization across all connected clients
+  </Card>
+  <Card title="Document-based" icon="file">
+    Flexible JSON-like document structure with nested collections
+  </Card>
+  <Card title="Offline Support" icon="wifi-slash">
+    Built-in offline capabilities with automatic sync when online
+  </Card>
+  <Card title="Security Rules" icon="shield">
+    Fine-grained security rules for data access control
+  </Card>
+</CardGroup>
+
+## Quick Start
+
+<CodeGroup>
+```typescript Next.js Server (Recommended)
+import { create, get, update } from '@repo/database/firestore/server/next';
+
+// Create document const user = await create('users', { name: 'John Doe', email:
+'john@example.com', createdAt: new Date() });
+
+// Read document const userData = await get('users', user.id);
+
+// Update document await update('users', user.id, { lastLogin: new Date() });
+
+````
+
+```typescript Node.js Server
+import { FirestoreOperations } from '@repo/database/firestore/server';
+
+const firestoreOps = new FirestoreOperations();
+
+// Same operations as above
+const user = await firestoreOps.create('users', {
+  name: 'John Doe',
+  email: 'john@example.com'
+});
+
+const userData = await firestoreOps.get('users', user.id);
+````
+
+```typescript Types Only (Client)
+import type { FirestoreDocument } from "@repo/database/firestore/client";
+
+// Use for TypeScript typing in client components
+interface User extends FirestoreDocument {
+  name: string;
+  email: string;
+  createdAt: Date;
+}
+```
+
+</CodeGroup>
+
+## Core Operations
+
+### Document Management
+
+<CodeGroup>
+```typescript Create & Read
+// Create document with auto-generated ID
+const product = await create('products', {
+  title: 'iPhone 15 Pro',
+  price: 999.99,
+  category: 'electronics',
+  inStock: true
+});
+
+// Create document with custom ID await create('products', { title: 'Samsung
+Galaxy', price: 899.99 }, 'samsung-galaxy-s24');
+
+// Read single document const product = await get('products', 'iphone-15-pro');
+
+// Read multiple documents const products = await findMany('products', { where:
+[ { field: 'category', operator: '==', value: 'electronics' } ], limit: 10 });
+
+````
+
+```typescript Update & Delete
+// Update document
+await update('products', 'iphone-15-pro', {
+  price: 899.99,
+  onSale: true,
+  updatedAt: new Date()
+});
+
+// Delete document
+await deleteDoc('products', 'iphone-15-pro');
+
+// Batch operations
+const batchInstance = batch();
+batchInstance.set(doc('products', 'prod-1'), { name: 'Product 1' });
+batchInstance.update(doc('products', 'prod-2'), { price: 99.99 });
+batchInstance.delete(doc('products', 'prod-3'));
+await batchInstance.commit();
+````
+
+</CodeGroup>
+
+## Best Practices
+
+<Warning>
+  **Firestore Best Practices:** - Structure data for your queries
+  (denormalization is often better) - Use subcollections for hierarchical data -
+  Implement proper security rules - Monitor read/write operations for cost
+  optimization
+</Warning>
+
+### Recommended Patterns
+
+1. **Document Structure**
+   - Keep documents under 1MB
+   - Use subcollections for large datasets
+   - Denormalize frequently queried data
+
+2. **Query Optimization**
+   - Create composite indexes for complex queries
+   - Use pagination for large result sets
+   - Minimize the number of reads
+
+3. **Security**
+   - Always implement Firestore security rules
+   - Validate data on both client and server
+   - Use authentication for access control
+
+## Environment Setup
+
+```bash
+# Required environment variables
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_CLIENT_EMAIL=service-account@project.iam.gserviceaccount.com
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----
+...
+-----END PRIVATE KEY-----
+"
+```
+
+The Firestore integration provides flexible document storage with real-time
+capabilities, perfect for dynamic applications requiring rapid development and
+scalability.

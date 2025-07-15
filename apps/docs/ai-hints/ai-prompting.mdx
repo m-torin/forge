@@ -1,0 +1,173 @@
+---
+title: AI Prompting Strategies
+description:
+  Effective prompting techniques for AI-assisted development with Forge
+---
+
+# AI Prompting Strategies
+
+Best practices for working with AI coding assistants within the Forge monorepo
+architecture.
+
+## Forge AI-Friendly Architecture
+
+Forge follows repeatable patterns that AI assistants can easily recognize and
+replicate:
+
+<CardGroup cols={2}>
+  <Card title="Package Structure" icon="folder">
+    Every package follows the same structure with predictable file locations
+  </Card>
+  <Card title="Environment Management" icon="key">
+    Standardized `env.ts` pattern for environment variable validation
+  </Card>
+  <Card title="Export Patterns" icon="share">
+    Consistent server/client separation across all packages
+  </Card>
+  <Card title="Testing Structure" icon="flask">
+    Consistent test organization and naming conventions
+  </Card>
+</CardGroup>
+
+## Effective AI Prompting
+
+When working with AI on Forge, provide comprehensive context:
+
+### Good Prompts
+
+- "Create a new package following Forge patterns with env.ts validation"
+- "Add a server action for user creation with Better Auth session validation"
+- "Implement a Mantine form component with Zod validation and data-testid props"
+- "Add a new model to the Prisma schema with proper relations and indexes"
+
+### Include Context
+
+Always provide these details in your prompts:
+
+- **Current file structure** and patterns
+- **Related package dependencies**
+- **Specific Forge conventions** to follow
+- **Error handling requirements**
+- **Testing requirements** (data-testid, etc.)
+- **Documentation verification** using Context7 MCP for latest API references
+
+### Context Template
+
+```
+I'm working in a Forge monorepo with these key details:
+- Package: @repo/[package-name]
+- Tech stack: Next.js 15, TypeScript, Mantine UI
+- Architecture: ESM modules, server/client separation
+- Patterns: env.ts validation, server actions, Zod schemas
+- Documentation: Use Context7 MCP for latest library API references
+
+Please [your specific request]...
+```
+
+## Documentation Resources
+
+<Warning>
+  **CRITICAL**: Always use Context7 MCP for authoritative library documentation.
+  All dependencies are kept at latest versions, so local documentation may be
+  outdated.
+</Warning>
+
+### Context7 MCP Workflow
+
+1. **Resolve Library ID**: Use `mcp__context7__resolve-library-id` first
+2. **Get Latest Docs**: Use `mcp__context7__get-library-docs` for up-to-date API
+   references
+3. **Cross-Reference**: Use local docs only for project-specific patterns
+4. **Validate**: Ensure implementation matches latest API patterns
+
+### Example Documentation Lookup
+
+```bash
+# 1. Find the library
+mcp__context7__resolve-library-id("mantine")
+
+# 2. Get specific documentation
+mcp__context7__get-library-docs("/mantinedev/mantine", topic="forms")
+
+# 3. Implement using latest patterns
+# 4. Reference local docs for Forge conventions
+```
+
+## AI Best Practices
+
+<Note>
+  **AI Best Practice**: Reference existing examples in the codebase and
+  emphasize following established Forge patterns. The consistent architecture
+  makes it easier for AI to understand and replicate successful patterns.
+</Note>
+
+### Pattern Recognition
+
+- Point to existing examples in similar packages
+- Emphasize following established conventions
+- **Verify with Context7 MCP** for latest library patterns
+- Validate against Forge standards
+- Document any necessary deviations
+
+### Context Management
+
+- Reference related files when making changes
+- Explain package dependencies clearly
+- Clarify specific requirements upfront
+- Validate AI understanding before proceeding
+
+### Incremental Development
+
+- Work in small, focused iterations
+- Single responsibility changes
+- Clear success criteria for each step
+- Immediate validation after each change
+
+## Common AI Scenarios
+
+### Package Development
+
+When creating new packages with AI assistance:
+
+1. **Use Context7 MCP** to verify latest library APIs and patterns
+2. Start with standard package structure
+3. Add environment validation with SafeEnv pattern
+4. Define TypeScript interfaces first
+5. Implement core functionality following patterns
+6. Add tests using standard configurations
+
+### Feature Implementation
+
+When adding features to existing apps:
+
+1. **Use Context7 MCP** to verify latest framework features and best practices
+2. Identify which patterns to follow (server action vs API route)
+3. Check authentication requirements
+4. Validate data with Zod schemas
+5. Use Mantine UI components consistently
+6. Add proper data-testid attributes for testing
+
+### Debugging and Fixes
+
+When troubleshooting with AI:
+
+1. Run `pnpm typecheck` and share output
+2. Check for circular dependencies with `pnpm madge --circular`
+3. Verify imports use correct package paths
+4. Ensure environment variables are properly configured
+5. Check that all dependencies are catalog versions
+
+## Verification Commands
+
+Always run these commands after AI-generated changes:
+
+```bash
+pnpm typecheck        # TypeScript validation
+pnpm lint             # Code quality
+pnpm test             # Run tests
+pnpm madge --circular # Check dependencies
+```
+
+Understanding these prompting strategies will help you work more effectively
+with AI assistants while maintaining Forge's architectural consistency and code
+quality.

@@ -1,0 +1,63 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"],
+      "inputs": [
+        "src/**",
+        "package.json",
+        "tsconfig.json",
+        "tsup.config.ts",
+        "!**/*.test.*",
+        "!**/*.spec.*"
+      ],
+      "cache": true
+    },
+    "test": {
+      "dependsOn": ["^test", "@repo/qa#build"],
+      "outputs": ["coverage/**"],
+      "inputs": [
+        "src/**",
+        "*.test.*",
+        "*.spec.*",
+        "vitest.config.*",
+        "vitest.setup.*",
+        "__tests__/**"
+      ],
+      "cache": true
+    },
+    "test:build": {
+      "dependsOn": ["build", "@repo/qa#build"],
+      "outputs": [],
+      "inputs": ["dist/**", "__tests__/build/**", "vitest.build.config.ts"],
+      "cache": true
+    },
+    "test:coverage": {
+      "dependsOn": ["^test:coverage", "@repo/qa#build"],
+      "outputs": ["coverage/**"],
+      "inputs": [
+        "src/**",
+        "*.test.*",
+        "*.spec.*",
+        "vitest.config.*",
+        "vitest.setup.*",
+        "__tests__/**"
+      ],
+      "cache": true
+    },
+    "typecheck": {
+      "dependsOn": ["^typecheck"],
+      "outputs": [],
+      "inputs": ["src/**", "*.ts", "*.tsx", "tsconfig.json", "!**/*.test.*", "!**/*.spec.*"],
+      "cache": true
+    },
+    "lint": {
+      "dependsOn": ["^lint"],
+      "outputs": [],
+      "inputs": ["src/**", "*.ts", "*.tsx", "eslint.config.*"],
+      "cache": true
+    }
+  }
+}

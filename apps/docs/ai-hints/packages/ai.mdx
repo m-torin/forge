@@ -1,0 +1,569 @@
+---
+title: "AI Package - AI Hints"
+description:
+  "Claude-specific guidance for working with the centralized AI package and
+  model registry"
+icon: "brain"
+---
+
+# AI Package Integration Guide
+
+## 🎯 Primary Usage Patterns
+
+### Centralized Model Configuration
+
+**✅ ALWAYS use the centralized model registry:**
+
+```typescript
+// ✅ Correct - Use centralized model registry
+import {
+  getBestModelForTask,
+  selectModel,
+  getModelConfig,
+  isModelAvailable,
+  MODEL_REGISTRY
+} from "@repo/ai/models";
+
+// Get best model for task
+const chatModel = getBestModelForTask("chat");
+const reasoningModel = getBestModelForTask("reasoning");
+const codeModel = getBestModelForTask("code");
+
+// Strategic model selection
+const selectedModel = selectModel({
+  strategy: "reasoning",
+  userTier: "pro",
+  fallbackEnabled: true,
+  excludeDeprecated: true
+});
+
+// Check availability before use
+if (isModelAvailable(selectedModel)) {
+  // Model is available with configured API key
+}
+```
+
+```typescript
+// ❌ Wrong - Hardcoded model names
+const modelId = "claude-3-5-sonnet-20241022"; // Will become outdated
+const modelName = "gpt-4o"; // No reasoning configuration
+const hardcoded = "anthropic:claude-4-opus-20250514"; // Don't hardcode
+```
+
+### Provider Registry Integration
+
+**✅ Use the enhanced provider registry:**
+
+```typescript
+// ✅ Correct - Use centralized provider registry
+import { registry, models } from "@repo/ai/server";
+import { getBestModelForTask } from "@repo/ai/models";
+
+// Dynamic model selection - NO hardcoded IDs
+const reasoningModelId = getBestModelForTask("reasoning");
+const claudeReasoning = registry.languageModel(`anthropic:${reasoningModelId}`);
+
+// Use helper functions for common patterns
+const bestChat = models.language.best();
+const fastModel = models.language.fast();
+const reasoningModel = models.language.reasoning();
+
+// Automatic reasoning configuration applied
+const result = await generateText({
+  model: reasoningModel,
+  prompt: "Complex reasoning task..."
+  // Headers and reasoning config applied automatically
+});
+```
+
+## 🔧 Model Selection Strategies
+
+### Task-Based Selection
+
+```typescript
+// ✅ Use task-based model selection
+import {
+  getBestModelForTask,
+  getModelRecommendations,
+  getModelConfig
+} from "@repo/ai/models";
+
+// For different use cases
+const codeModel = getBestModelForTask("code");
+const visionModel = getBestModelForTask("vision");
+const reasoningModel = getBestModelForTask("reasoning");
+const chatModel = getBestModelForTask("chat");
+
+// Get multiple recommendations
+const recommendations = getModelRecommendations("coding", "pro");
+console.log(recommendations); // Returns array of model IDs
+
+// Get detailed configuration
+const config = getModelConfig(codeModel);
+console.log(config?.name); // "Claude 3.5 Sonnet"
+console.log(config?.capabilities); // ["code", "reasoning", ...]
+```
+
+### Capability-Based Filtering
+
+```typescript
+// ✅ Filter models by capabilities
+import {
+  getModelsByCapability,
+  modelHasCapability,
+  modelSupportsReasoning
+} from "@repo/ai/models";
+
+// Get models with specific capabilities
+const reasoningModels = getModelsByCapability("reasoning");
+const visionModels = getModelsByCapability("vision");
+const computerUseModels = getModelsByCapability("computer-use");
+
+// Check if model supports features
+if (modelSupportsReasoning("claude-4-opus-20250514")) {
+  // Use reasoning-enabled flow
+}
+
+if (modelHasCapability("claude-3-5-sonnet-20241022", "computer-use")) {
+  // Enable computer tools
+}
+```
+
+## 🚀 Application Integration
+
+### AI-Chatbot Integration
+
+```typescript
+// ✅ Use centralized configuration in chatbot
+import { registry, models } from "@repo/ai/server";
+import {
+  getModelConfig,
+  isModelAvailable,
+  getBestModelForTask,
+  selectModel
+} from "@repo/ai/models";
+
+// Dynamic model selection based on user tier
+const userTier = getUserTier(); // 'free' | 'pro' | 'enterprise'
+const selectedModel = selectModel({
+  strategy: "balanced",
+  userTier,
+  fallbackEnabled: true
+});
+
+// Check availability and features
+const modelConfig = getModelConfig(selectedModel);
+const isAvailable = isModelAvailable(selectedModel);
+
+if (isAvailable && modelConfig?.reasoning?.supported) {
+  // Enable reasoning UI features
+  setReasoningEnabled(true);
+  setBudgetTokens(modelConfig.reasoning.budgetTokens || 10000);
+}
+
+// Use provider with dynamic model
+const model = registry.languageModel(
+  `${modelConfig?.provider}:${selectedModel}`
+);
+```
+
+### Environment-Based Configuration
+
+```typescript
+// ✅ Respect environment configuration
+import { env } from "@repo/ai";
+import { validateModelForUseCase } from "@repo/ai/models";
+
+// Check API key availability
+if (env.ANTHROPIC_API_KEY) {
+  const validation = validateModelForUseCase(
+    "claude-4-opus-20250514",
+    "reasoning",
+    "pro"
+  );
+
+  if (validation.valid) {
+    // Use Claude 4 for reasoning
+  } else {
+    console.warn("Model validation issues:", validation.issues);
+    // Use fallback from suggestions
+    const fallback = validation.suggestions[0];
+  }
+}
+```
+
+## 📋 Common Patterns
+
+### Model Comparison and Selection
+
+```typescript
+// ✅ Compare models systematically
+import {
+  compareModels,
+  getModelFeatureMatrix,
+  canUserAccessModel
+} from "@repo/ai/models";
+
+// Compare multiple models
+const comparison = compareModels([
+  "claude-4-opus-20250514",
+  "claude-4-sonnet-20250514",
+  "claude-3-5-sonnet-20241022"
+]);
+
+// Get feature matrix for UI
+const features = getModelFeatureMatrix(["claude-4-opus-20250514", "gpt-4o"]);
+
+// Check user access
+const userTier = getUserTier(); // 'free' | 'pro' | 'enterprise'
+const canAccess = canUserAccessModel(userTier, "high", true);
+```
+
+### Usage Tracking
+
+```typescript
+// ✅ Track model usage
+import {
+  trackModelUsage,
+  getModelUsageStats,
+  getAllUsageStats
+} from "@repo/ai/models";
+
+// Track usage after generation
+trackModelUsage("claude-4-opus-20250514", inputTokens, outputTokens);
+
+// Get statistics
+const stats = getModelUsageStats("claude-4-opus-20250514");
+const allStats = getAllUsageStats();
+
+// Log for monitoring
+logInfo("Model usage statistics", { stats: allStats });
+```
+
+## ⚠️ Critical Guidelines
+
+### Model Updates
+
+**✅ Add new models in centralized registry:**
+
+```typescript
+// ✅ Update packages/ai/src/shared/models/metadata.ts
+export const ANTHROPIC_MODEL_METADATA = {
+  // Add new model here
+  "claude-5-sonnet-20250601": {
+    id: "claude-5-sonnet-20250601",
+    name: "Claude 5 Sonnet",
+    description: "Next generation Claude model",
+    provider: "anthropic",
+    capabilities: ["reasoning", "vision", "tools", "multimodal"],
+    costTier: "high",
+    reasoning: {
+      supported: true,
+      budgetTokens: 20000,
+      headers: { "anthropic-beta": "interleaved-thinking-2025-06-01" }
+    }
+  }
+};
+```
+
+**❌ Never hardcode model names in applications:**
+
+```typescript
+// ❌ Wrong - Will break when models update
+const model = registry.languageModel("anthropic:claude-3-5-sonnet-20241022");
+const hardcoded = "claude-4-opus-20250514"; // Never do this
+
+// ✅ Right - Use centralized selection
+const model = models.language.best();
+const reasoning = models.language.reasoning();
+const chatModel = getBestModelForTask("chat");
+const dynamicModel = registry.languageModel(
+  `anthropic:${getBestModelForTask("reasoning")}`
+);
+```
+
+### Reasoning Configuration
+
+**✅ Let the registry handle reasoning configuration:**
+
+```typescript
+// ✅ Automatic reasoning configuration
+const reasoningModel = getBestModelForTask("reasoning");
+const model = registry.languageModel(`anthropic:${reasoningModel}`);
+// Headers and budget tokens automatically applied
+
+// ✅ Check reasoning support
+if (modelSupportsReasoning(selectedModel)) {
+  // Enable reasoning UI
+  const config = getModelReasoningConfig(selectedModel);
+  setBudgetTokens(config?.budgetTokens || 10000);
+}
+```
+
+**❌ Never manually configure reasoning headers:**
+
+```typescript
+// ❌ Wrong - Manual reasoning configuration
+const model = anthropic("claude-4-opus-20250514", {
+  headers: { "anthropic-beta": "interleaved-thinking-2025-05-14" }
+});
+
+// ❌ Wrong - Hardcoded reasoning settings
+const options = {
+  providerOptions: {
+    anthropic: {
+      thinking: { type: "enabled", budgetTokens: 15000 }
+    }
+  }
+};
+```
+
+## 🎯 Integration Checklist
+
+### Core Model Operations
+
+When working with the AI package:
+
+- [ ] Import from `@repo/ai/models` for model operations
+- [ ] Use `getBestModelForTask()` instead of hardcoded model names
+- [ ] Check model capabilities with `modelHasCapability()`
+- [ ] Validate user access with `canUserAccessModel()`
+- [ ] Track usage with `trackModelUsage()`
+- [ ] Use centralized provider registry from `@repo/ai/server`
+- [ ] Let the registry handle reasoning configuration automatically
+- [ ] Check `isModelAvailable()` for API key validation
+- [ ] Use `getModelRecommendations()` for user-facing model selection
+- [ ] Use `selectModel()` for strategic model selection with fallbacks
+- [ ] Never hardcode model IDs - always use selection functions
+- [ ] Check `getModelConfig()` for detailed model metadata
+- [ ] Use `validateModelForUseCase()` before critical operations
+
+### AI SDK v5 Advanced Features
+
+**Multi-Step Agents:**
+
+- [ ] Use `executeMultiStepAgent()` for complex workflows instead of single
+      generations
+- [ ] Implement step conditions with `stepCountAtMost()`, `textContains()`, etc.
+- [ ] Use agent patterns (`createResearchAgent`, `createCodeGenerationAgent`)
+      for common tasks
+- [ ] Set up dynamic model switching with `createModelSwitchingPrepareStep()`
+- [ ] Implement error recovery and graceful degradation
+- [ ] Use parallel/sequential execution for complex workflows
+
+**Computer Use Tools:**
+
+- [ ] Implement computer use tools with proper security sandboxing
+- [ ] Use `createComputerTool()` for desktop automation with security controls
+- [ ] Set up `createBashTool()` with command allowlists and working directory
+      restrictions
+- [ ] Use `createTextEditorTool()` with path restrictions and file size limits
+- [ ] Always run in sandboxed environments with resource monitoring
+- [ ] Implement comprehensive error handling and state recovery
+
+**React Server Components:**
+
+- [ ] Use RSC `streamUI()` for dynamic component generation
+- [ ] Implement `createStreamableUI()` for progressive UI updates
+- [ ] Set up `createStreamableValue()` for reactive data streams
+- [ ] Use `createAI()` context with middleware for authentication and rate
+      limiting
+- [ ] Implement proper error boundaries and fallback components
+- [ ] Test RSC components with proper streaming patterns
+
+**Prompt Management:**
+
+- [ ] Set up prompt templates and caching for frequently used prompts
+- [ ] Use `PromptTemplateRegistry` for reusable prompt templates
+- [ ] Implement `PromptCache` with appropriate TTL and eviction strategies
+- [ ] Set up prompt versioning with migration support
+- [ ] Use prompt optimization strategies to reduce costs
+- [ ] Implement template composition for complex prompts
+
+**Advanced Streaming:**
+
+- [ ] Implement advanced streaming with metadata and flow control
+- [ ] Use `MetadataStream` for comprehensive performance tracking
+- [ ] Set up backpressure handling with `BackpressureController` for high-volume
+      streams
+- [ ] Implement stream interruption and resumption for long-running tasks
+- [ ] Use `StreamInterruptionController` for pause/resume functionality
+- [ ] Set up comprehensive metadata tracking for monitoring and optimization
+
+## 📚 Complete Exports Reference
+
+### Model Selection
+
+- `getBestModelForTask(task)` - Get optimal model for specific task
+- `selectModel(config)` - Strategic model selection with user tiers
+- `getModelRecommendations(useCase, userTier)` - Multiple recommendations
+- `getModelsByProvider(provider)` - Get all models from a provider
+
+### Model Information
+
+- `getModelConfig(modelId)` - Complete model metadata
+- `modelSupportsReasoning(modelId)` - Check reasoning support
+- `getModelsByCapability(capability)` - Filter by capability
+- `isValidModelId(modelId)` - Validate model ID
+- `isModelAvailable(modelId)` - Check if API key is configured
+- `getModelReasoningConfig(modelId)` - Get reasoning-specific config
+
+### Utility Functions
+
+- `canUserAccessModel(userTier, costTier, reasoning)` - Access control
+- `validateModelForUseCase(modelId, useCase, userTier)` - Comprehensive
+  validation
+- `trackModelUsage(modelId, input, output)` - Usage tracking
+- `compareModels(modelIds)` - Model comparison
+- `getModelUsageStats(modelId)` - Get usage statistics
+- `getAllUsageStats()` - Get all model usage stats
+
+### Provider Registry (from `@repo/ai/server`)
+
+- `registry.languageModel(providerModel)` - Get configured model
+- `models.language.best()` - Best available model
+- `models.language.fast()` - Fast, cost-effective model
+- `models.language.reasoning()` - Best reasoning model
+- `models.language.claude()` - Best Claude model
+- `models.language.openai()` - Best OpenAI model
+
+### AI SDK v5 Advanced Exports
+
+**Multi-Step Agents (from `@repo/ai/server/agents`):**
+
+- `executeMultiStepAgent(config)` - Execute complex multi-step workflows
+- `createResearchAgent(config)` - Pre-configured research agent
+- `createCodeGenerationAgent(config)` - Pre-configured coding agent
+- `stepCountAtMost(n)` - Stop condition for step limits
+- `textContains(text)` - Stop condition for content matching
+- `executeParallelAgents(agents)` - Run multiple agents concurrently
+
+**Computer Use Tools (from `@repo/ai/server/tools`):**
+
+- `createComputerTool(config)` - Desktop interaction tool
+- `createBashTool(config)` - Secure command execution
+- `createTextEditorTool(config)` - File editing capabilities
+- `createDevelopmentPreset(config)` - Pre-configured dev environment
+
+**React Server Components (from `@repo/ai/rsc`):**
+
+- `streamUI(config)` - Generate streaming UI components
+- `createStreamableUI(initial)` - Programmatic UI streaming
+- `createStreamableValue(initial)` - Reactive value streaming
+- `createAI(config)` - AI context with middleware
+
+**Prompt Management (from `@repo/ai/server/prompts`):**
+
+- `PromptTemplateRegistry` - Template management system
+- `createPrompt(template, variables)` - Create prompt from template
+- `PromptCache` - Intelligent prompt caching
+- `PromptOptimizer` - Automatic prompt optimization
+
+**Advanced Streaming (from `@repo/ai/server/streaming`):**
+
+- `MetadataStream` - Rich metadata tracking
+- `BackpressureController` - Flow control for high-volume streams
+- `StreamInterruptionController` - Pause/resume stream control
+- `createInterruptibleStream(stream, controller)` - Add interruption support
+
+## 🔧 Quick Setup Guide
+
+### 1. Multi-Step Agent Setup
+
+```typescript
+// Set up multi-step agent with proper patterns
+import {
+  executeMultiStepAgent,
+  createResearchAgent
+} from "@repo/ai/server/agents";
+
+const agent = createResearchAgent({ searchTools: true, analysisTools: true });
+const result = await executeMultiStepAgent({
+  ...agent,
+  model: createAnthropicModel(getBestModelForTask("reasoning")),
+  maxSteps: 8,
+  onStepFinish: ({ stepNumber, result }) => {
+    logInfo(`Agent step ${stepNumber}`, { tokens: result.usage?.totalTokens });
+  }
+});
+```
+
+### 2. Computer Tools Setup
+
+```typescript
+// Set up secure computer tools environment
+import { createComputerTool, createBashTool } from "@repo/ai/server/tools";
+
+const secureTools = {
+  computer: createComputerTool({
+    display: 1,
+    security: { allowedApplications: ["vscode", "chrome"] }
+  }),
+  bash: createBashTool({
+    workingDirectory: "/workspace",
+    security: { allowedCommands: ["ls", "cat", "npm"], networkAccess: false }
+  })
+};
+```
+
+### 3. RSC Setup
+
+```typescript
+// Set up streaming UI with proper error handling
+import { streamUI } from "@repo/ai/rsc";
+
+const ui = await streamUI({
+  model: createAnthropicModel(getBestModelForTask("reasoning")),
+  messages: [{ role: "user", content: "Create dashboard" }],
+  text: ({ content }) => <div className="prose">{content}</div>,
+  tools: { /* tool definitions */ },
+  fallbackToText: true,
+  errorBoundary: ({ error, retry }) => (
+    <ErrorBoundary error={error} onRetry={retry} />
+  )
+});
+```
+
+### 4. Prompt Management Setup
+
+```typescript
+// Set up template registry and caching
+import { PromptTemplateRegistry, PromptCache } from "@repo/ai/server/prompts";
+
+const registry = new PromptTemplateRegistry();
+const cache = new PromptCache({ maxSize: 1000, ttl: 3600000 });
+
+// Register templates
+registry.register("analysis", {
+  template: "Analyze {{subject}} focusing on {{aspects}}",
+  variables: ["subject", "aspects"],
+  metadata: { category: "analysis", version: "1.0" }
+});
+```
+
+### 5. Advanced Streaming Setup
+
+```typescript
+// Set up metadata tracking and flow control
+import {
+  MetadataStream,
+  BackpressureController
+} from "@repo/ai/server/streaming";
+
+const metadata = new MetadataStream();
+const backpressure = new BackpressureController({ highWaterMark: 100 });
+
+// Use in streaming operations
+const stream = await streamText({
+  model: createAnthropicModel(getBestModelForTask("reasoning")),
+  messages: messages,
+  onChunk: ({ chunk }) => {
+    metadata.processChunk(chunk);
+    backpressure.write(chunk);
+  }
+});
+```
+
+This centralized approach ensures all applications stay in sync and
+automatically benefit from model updates, new reasoning capabilities, and the
+complete AI SDK v5 feature set.

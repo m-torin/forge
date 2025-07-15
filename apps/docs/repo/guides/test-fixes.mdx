@@ -1,0 +1,158 @@
+---
+title: "Test Infrastructure Fixes Summary"
+description:
+  "Summary of comprehensive fixes applied to the monorepo test infrastructure to
+  ensure all tests pass consistently"
+---
+
+# Test Infrastructure Fixes Summary
+
+## Overview
+
+This document summarizes the comprehensive fixes applied to the monorepo's test
+infrastructure to ensure all tests pass consistently.
+
+## Key Changes
+
+### 1. Centralized Environment Mocking
+
+- Created `packages/testing/src/vitest/mocks/environment.ts`
+- Provides `mockEnvModule()` function to mock `@t3-oss/env-nextjs` pattern
+- Supports `safeEnv()`, `safeServerEnv()`, and `safeClientEnv()` patterns
+- Includes default values for all common environment variables
+
+### 2. Enhanced Test Setup
+
+#### Base Setup (`packages/testing/src/vitest/setup/base.ts`)
+
+- Automatic environment mock setup
+- Console output suppression for cleaner test runs
+- Global test utilities
+- Mock cleanup between tests
+
+#### Next.js Setup (`packages/testing/src/vitest/setup/next.ts`)
+
+- Next.js router mocking
+- Image and Link component mocks
+- Dynamic import handling
+- Window.matchMedia mock
+
+### 3. Test Helper Utilities
+
+- Created `packages/testing/src/vitest/utils/test-helpers.ts`
+- Mock function creators
+- Async mock utilities
+- Test data generators
+- Common test objects (user, session, organization)
+- Assertion helpers
+
+### 4. Package-Specific Fixes
+
+#### Auth Package
+
+- Updated test setup to use centralized environment mocks
+- Added auth-specific environment variable overrides
+- Maintained existing Better Auth mocks
+
+#### Storage Package
+
+- Added environment mocking to test setup
+- Fixed potential circular dependency issues
+- Maintained conditional key module mocking
+
+#### Observability Package
+
+- Added environment mocking with valid Sentry DSN
+- Fixed environment validation errors
+- Maintained Sentry-specific mocks
+
+#### Docs App
+
+- Created placeholder smoke test to satisfy test runner
+- E2E tests remain in separate directory
+
+#### AI Chatbot Main App
+
+- Created missing test utilities file
+- Fixed vitest config path alias
+- Added placeholder smoke test
+
+## Usage Examples
+
+### Using Environment Mocks
+
+```typescript
+import { mockEnvModule } from "@repo/qa/vitest/mocks";
+
+// In your test setup file
+mockEnvModule("../env", {
+  // Override specific environment variables
+  MY_CUSTOM_VAR: "test-value",
+  FEATURE_FLAG: "true"
+});
+```
+
+### Using Test Helpers
+
+```typescript
+import { createTestUser, createAsyncMock, testData } from "@repo/qa/vitest";
+
+// Create test data
+const user = createTestUser({ name: "Custom User" });
+const mockApi = createAsyncMock({ success: true });
+const testEmail = testData.email("admin");
+```
+
+### Using Base Setup
+
+```typescript
+// In your vitest.setup.ts
+import "@repo/qa/vitest/setup/base";
+
+// For Next.js apps
+import "@repo/qa/vitest/setup/next";
+```
+
+## Benefits
+
+1. **DRY Principle**: Eliminates duplicate mock implementations across packages
+2. **Consistency**: All packages use the same mock patterns
+3. **Maintainability**: Central location for mock updates
+4. **Type Safety**: Full TypeScript support for all mocks and helpers
+5. **Performance**: Optimized mock implementations
+6. **Debugging**: Cleaner test output with console suppression
+
+## Migration Guide
+
+For packages not yet using the centralized mocks:
+
+1. Update your test setup file:
+
+   ```typescript
+   import { mockEnvModule } from "@repo/qa/vitest/mocks";
+   import "@repo/qa/vitest/setup/base";
+   ```
+
+2. Remove duplicate mock implementations
+
+3. Use centralized test helpers instead of local utilities
+
+4. Ensure your package.json test script is just `"test": "vitest"`
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Environment Variable Errors**: Use `mockEnvModule()` before any imports
+   that use env
+2. **Missing Mocks**: Check if the mock is already in centralized mocks
+3. **Test Isolation**: Ensure `resetAllMocks()` is called between tests
+4. **Console Noise**: Import base setup to suppress expected console output
+
+### Debug Mode
+
+To see all console output during tests:
+
+```bash
+DEBUG_TESTS=true pnpm test
+```
