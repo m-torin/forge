@@ -1,0 +1,111 @@
+{
+  "name": "@repo/qa",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
+    },
+    "./vitest": {
+      "types": "./dist/vitest/index.d.ts",
+      "import": "./dist/vitest/index.mjs",
+      "default": "./dist/vitest/index.mjs"
+    },
+    "./vitest/configs": {
+      "types": "./dist/vitest/configs.d.ts",
+      "import": "./dist/vitest/configs.mjs",
+      "default": "./dist/vitest/configs.mjs"
+    },
+    "./vitest/mocks": {
+      "types": "./dist/vitest/mocks/index.d.ts",
+      "import": "./dist/vitest/mocks/index.mjs",
+      "default": "./dist/vitest/mocks/index.mjs"
+    },
+    "./vitest/mocks/*": {
+      "types": "./dist/vitest/mocks/*.d.ts",
+      "import": "./dist/vitest/mocks/*.mjs",
+      "default": "./dist/vitest/mocks/*.mjs"
+    },
+    "./vitest/setup/*": {
+      "types": "./dist/vitest/setup/*.d.ts",
+      "import": "./dist/vitest/setup/*.mjs",
+      "default": "./dist/vitest/setup/*.mjs"
+    },
+    "./vitest/utils/*": {
+      "types": "./dist/vitest/utils/*.d.ts",
+      "import": "./dist/vitest/utils/*.mjs",
+      "default": "./dist/vitest/utils/*.mjs"
+    },
+    "./vitest/configs/*": {
+      "types": "./dist/vitest/configs/*.d.ts",
+      "import": "./dist/vitest/configs/*.mjs",
+      "default": "./dist/vitest/configs/*.mjs"
+    },
+    "./playwright": {
+      "types": "./dist/playwright/index.d.ts",
+      "import": "./dist/playwright/index.mjs",
+      "default": "./dist/playwright/index.mjs"
+    },
+    "./shared": {
+      "types": "./dist/shared/index.d.ts",
+      "import": "./dist/shared/index.mjs",
+      "default": "./dist/shared/index.mjs"
+    }
+  },
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "prebuild": "rm -rf dist",
+    "build": "tsc -p tsconfig.build.json",
+    "postbuild": "node ./scripts/add-extensions.mjs",
+    "build:apps": "echo \"No build script for apps\"",
+    "build:packages": "pnpm build",
+    "build:watch": "tsc -p tsconfig.build.json --watch",
+    "circular": "madge --circular --extensions ts,tsx,js,jsx .",
+    "coverage:collect": "vitest run --coverage --reporter=json",
+    "dev:apps": "echo \"No dev script for apps\"",
+    "dev:packages": "echo \"No dev script for packages\"",
+    "knip": "knip --fix --reporter json",
+    "lint": "eslint . --fix",
+    "lint:apps": "echo \"No lint script for apps\"",
+    "lint:packages": "echo \"No lint script for packages\"",
+    "playwright:install": "playwright install --with-deps chromium firefox webkit",
+    "test": "vitest run",
+    "test:apps": "echo \"No test script for apps\"",
+    "test:coverage": "vitest run --coverage",
+    "test:coverage:json": "vitest run --coverage --reporter=json",
+    "test:e2e": "echo \"No E2E tests for QA package - this package provides testing utilities only\"",
+    "test:packages": "echo \"No test script for packages\"",
+    "test:ui": "vitest --ui",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "typecheck:apps": "echo \"No typecheck script for apps\"",
+    "typecheck:packages": "echo \"No typecheck script for packages\""
+  },
+  "dependencies": {
+    "@axe-core/playwright": "^4.10.2",
+    "@faker-js/faker": "^9.9.0",
+    "@mantine/core": "catalog:",
+    "@playwright/test": "^1.54.1",
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:",
+    "@testing-library/user-event": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "@vitest/ui": "3.2.4",
+    "jsdom": "catalog:",
+    "react": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  },
+  "devDependencies": {
+    "@repo/config": "workspace:*",
+    "@repo/eslint-config": "workspace:*"
+  }
+}

@@ -1,17 +1,44 @@
 {
   "name": "@repo/storage",
-  "version": "0.0.0",
   "private": true,
+  "type": "module",
+  "exports": {
+    "./client": "./src/client.ts",
+    "./server": "./src/server.ts",
+    "./client/next": "./src/client-next.ts",
+    "./server/next": "./src/server-next.ts",
+    "./keys": {
+      "types": "./keys.ts",
+      "import": "./keys.ts"
+    }
+  },
   "scripts": {
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "circular": "madge --circular --extensions ts,tsx,js,jsx .",
+    "coverage:collect": "vitest run --coverage --reporter=json",
+    "knip": "knip --fix --reporter json",
+    "lint": "eslint . --fix",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:coverage:json": "vitest run --coverage --reporter=json",
+    "test:ui": "vitest --ui",
+    "test:watch": "vitest",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@t3-oss/env-nextjs": "^0.13.4",
+    "@aws-sdk/client-s3": "^3.844.0",
+    "@aws-sdk/lib-storage": "^3.844.0",
+    "@aws-sdk/s3-request-presigner": "^3.844.0",
+    "@repo/database": "workspace:*",
+    "@repo/observability": "workspace:*",
+    "@t3-oss/env-nextjs": "catalog:",
     "@vercel/blob": "^1.1.1",
-    "zod": "^3.25.28"
+    "chalk": "^5.4.1",
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*"
+    "@repo/config": "workspace:*",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/qa": "workspace:*",
+    "react": "catalog:"
   }
 }

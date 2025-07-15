@@ -1,0 +1,696 @@
+---
+title: "Sentry Integration"
+description:
+  "Error tracking and performance monitoring with Sentry in Next.js applications"
+---
+
+# Sentry Integration
+
+The observability package provides a unified interface for integrating Sentry
+error tracking and performance monitoring into your Next.js applications.
+
+## Environment Variables
+
+Sentry requires the following environment variables to be configured. These are
+defined in the observability package's `env.ts`:
+
+### Required for Production
+
+- `NEXT_PUBLIC_SENTRY_DSN` - Your Sentry DSN (Data Source Name)
+- `SENTRY_AUTH_TOKEN` - Authentication token for source map uploads
+- `SENTRY_ORG` - Your Sentry organization slug
+- `SENTRY_PROJECT` - Your Sentry project slug
+
+### Optional
+
+- `SENTRY_DSN` - Server-side only DSN (falls back to `NEXT_PUBLIC_SENTRY_DSN`)
+
+## Setup Guide
+
+### 1. Configure Environment Variables
+
+Add the required environment variables to your app's `.env.local` or through
+your deployment platform:
+
+```bash
+# .env.local
+NEXT_PUBLIC_SENTRY_DSN=https://your-dsn@sentry.io/project-id
+SENTRY_AUTH_TOKEN=your-auth-token
+SENTRY_ORG=your-org
+SENTRY_PROJECT=your-project
+```
+
+### 2. Update App Environment Configuration
+
+Your app's `env.ts` should include the observability environment variables:
+
+```typescript
+// apps/your-app/env.ts
+import { createEnv } from "@t3-oss/env-nextjs";
+import { z } from "zod";
+
+export const env = createEnv({
+  server: {
+    SENTRY_DSN: z.string().url().optional(),
+    SENTRY_AUTH_TOKEN: z.string().optional(),
+    SENTRY_ORG: z.string().optional(),
+    SENTRY_PROJECT: z.string().optional()
+  },
+  client: {
+    NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional()
+  },
+  runtimeEnv: {
+    SENTRY_DSN: process.env.SENTRY_DSN,
+    SENTRY_AUTH_TOKEN: process.env.SENTRY_AUTH_TOKEN,
+    SENTRY_ORG: process.env.SENTRY_ORG,
+    SENTRY_PROJECT: process.env.SENTRY_PROJECT,
+    NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN
+  }
+  // ... your app-specific config
+});
+```
+
+### 3. Configure Instrumentation
+
+Create or update your app's `instrumentation.ts` to use the observability
+package exports:
+
+```typescript
+// apps/your-app/instrumentation.ts
+/**
+ * Next.js instrumentation for your app
+ * Uses the observability package for Sentry integration
+ */
+
+// Export register and onRequestError from the observability package
+// This maintains the four-file export pattern - server-only code
+export { register, onRequestError } from "@repo/observability/server/next";
+```
+
+The `onRequestError` function fully implements the Next.js API and will:
+
+- Capture all server-side errors with full context
+- Include request information (path, method, headers)
+- Track Next.js-specific context (router type, route path, render source)
+- Group errors by digest for React Server Components
+- Work correctly with both Node.js and Edge runtimes
+
+For custom configuration, you can wrap the register function:
+
+```typescript
+// apps/your-app/instrumentation.ts
+export async function register() {
+  const { register: observabilityRegister } = await import(
+    "@repo/observability/server/next"
+  );
+
+  // Pass custom config if needed
+  await observabilityRegister({
+    providers: {
+      sentry: {
+        dsn: process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN,
+        environment: process.env.NODE_ENV,
+        // Add app-specific tags
+        options: {
+          beforeSend: (event) => {
+            event.tags = { ...event.tags, app: "your-app" };
+            return event;
+          }
+        }
+      }
+    }
+  });
+}
+
+export { onRequestError } from "@repo/observability/server/next";
+```
+
+### 4. Client-Side Instrumentation (Next.js 15.3+)
+
+Create an `instrumentation-client.ts` file for client-side initialization:
+
+```typescript
+// apps/your-app/instrumentation-client.ts
+import { initializeClient } from "@repo/observability/client/next";
+
+// Initialize client-side observability
+initializeClient({
+  providers: {
+    sentry: {
+      dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+      environment: process.env.NODE_ENV,
+
+      // Enable browser features
+      browserTracingEnabled: true,
+      feedbackEnabled: true,
+      loggingEnabled: process.env.NODE_ENV === "development",
+
+      // Session replay settings
+      replaysSessionSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 0,
+      replaysOnErrorSampleRate: 1.0,
+
+      // Privacy settings
+      sendDefaultPii: false,
+      replayMaskAllText: true,
+      replayBlockAllMedia: true,
+
+      // Performance monitoring
+      tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0,
+
+      // Experimental features
+      _experiments: {
+        enableLogs: process.env.NODE_ENV === "development"
+      }
+    }
+  }
+});
+```
+
+<Warning>
+  The `instrumentation-client.ts` file is a new feature in Next.js 15.3+ that
+  automatically loads in the browser. Make sure you're using Next.js 15.3.0 or
+  later.
+</Warning>
+
+### 5. Update Next.js Configuration
+
+Update your `next.config.ts` to use the Sentry wrapper from the observability
+package:
+
+```typescript
+// apps/your-app/next.config.ts
+import { env } from "@/env";
+import { withSentry } from "@repo/observability/server/next";
+import { logWarn } from "@repo/observability/server/next";
+
+async function buildConfig() {
+  let nextConfig = {
+    // Your Next.js config
+  };
+
+  // Apply Sentry configuration using observability package
+  if (env.SENTRY_DSN || env.NEXT_PUBLIC_SENTRY_DSN) {
+    try {
+      nextConfig = await withSentry(nextConfig, {
+        authToken: env.SENTRY_AUTH_TOKEN,
+        org: env.SENTRY_ORG,
+        project: env.SENTRY_PROJECT,
+        silent: !process.env.CI,
+        tunnelRoute: "/monitoring",
+        automaticVercelMonitors: true,
+        widenClientFileUpload: true,
+        disableLogger: true,
+        sourcemaps: {
+          deleteSourcemapsAfterUpload: true,
+          disable: false
+        }
+      });
+    } catch (error) {
+      logWarn("Sentry build integration failed", {
+        error: error.message,
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+
+  return nextConfig;
+}
+
+export default buildConfig();
+```
+
+### 5. Client-Side Integration
+
+For client-side error tracking, use the ObservabilityProvider in your root
+layout:
+
+```typescript
+// apps/your-app/app/layout.tsx
+import { ObservabilityProvider } from '@repo/observability/client/next';
+import { env } from '@/env';
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        <ObservabilityProvider
+          config={{
+            providers: {
+              sentry: {
+                dsn: env.NEXT_PUBLIC_SENTRY_DSN,
+                environment: env.NODE_ENV,
+                replaysSessionSampleRate: env.NODE_ENV === 'production' ? 0.1 : 0,
+                tracesSampleRate: env.NODE_ENV === 'production' ? 0.1 : 0,
+              },
+            },
+          }}
+        >
+          {children}
+        </ObservabilityProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+## Features
+
+### Automatic Error Tracking
+
+Once configured, Sentry automatically captures:
+
+- Unhandled errors and promise rejections
+- Server-side errors in API routes and server components
+- Client-side JavaScript errors
+- Performance metrics and traces
+- Next.js-specific error context via `onRequestError`
+
+### Browser Features (Client-Side)
+
+When using `instrumentation-client.ts` with the new configuration options:
+
+- **Browser Tracing**: Automatic page load and navigation tracking with
+  `browserTracingEnabled`
+- **User Feedback Widget**: Interactive feedback collection with
+  `feedbackEnabled`
+- **Console Logging**: Capture console logs in production with `loggingEnabled`
+- **Session Replay**: Visual reproduction of user sessions
+- **Privacy Controls**: `sendDefaultPii`, `replayMaskAllText`,
+  `replayBlockAllMedia`
+
+### Enhanced Error Context
+
+The `onRequestError` handler provides rich context for debugging:
+
+```typescript
+// Automatically captured with each error:
+{
+  request: {
+    path: '/blog/post-123',
+    method: 'GET',
+    headers: { /* request headers */ }
+  },
+  nextjs: {
+    routerKind: 'App Router',
+    routePath: '/blog/[slug]',
+    routeType: 'render',
+    renderSource: 'react-server-components',
+    revalidateReason: 'on-demand',
+    renderType: 'dynamic'
+  }
+}
+```
+
+### Automatic Error Capture via Logging
+
+When using the observability logger, errors are automatically captured to
+Sentry:
+
+```typescript
+// Server-side
+import { createServerObservability } from "@repo/observability/server/next";
+
+const observability = await createServerObservability({
+  /* config */
+});
+
+// These will automatically capture to Sentry when Sentry is enabled:
+await observability.log("error", "Database connection failed", {
+  error: new Error("Connection timeout"),
+  userId: "user-123"
+});
+
+// Error passed as metadata
+await observability.log("error", "Failed to process request", dbError);
+
+// Error message without Error object - captured as message
+await observability.log("error", "Invalid configuration detected");
+
+// Fatal errors are also captured
+await observability.log("fatal", "System crash", { error: criticalError });
+```
+
+### Manual Error Capture
+
+For more control, use the observability methods directly:
+
+```typescript
+import { useObservability } from "@repo/observability/client/next";
+
+function MyComponent() {
+  const { captureException, captureMessage, log } = useObservability();
+
+  const handleError = (error: Error) => {
+    // Explicit exception capture
+    captureException(error, {
+      tags: { component: "MyComponent" },
+      extra: { customData: "value" }
+    });
+
+    // Or use log which will auto-capture to Sentry
+    log("error", "Component error occurred", { error });
+  };
+
+  const logEvent = () => {
+    captureMessage("Important event occurred", "info");
+  };
+}
+```
+
+## Edge Runtime Limitations
+
+When running in Edge Runtime:
+
+- OpenTelemetry features are not available
+- Only basic Sentry error tracking is supported
+- Performance monitoring may be limited
+
+The observability package automatically detects the runtime and adjusts
+available features accordingly.
+
+## Troubleshooting
+
+### Sentry Not Initializing
+
+1. **Check Environment Variables**: Ensure all required env vars are set
+2. **Verify DSN Format**: The DSN should be a valid URL starting with `https://`
+3. **Check Console Logs**: Look for `[Sentry]` prefixed messages during
+   initialization
+4. **Validate Configuration**: Ensure your app includes observability
+   environment variables in `env.ts`
+
+### Source Maps Not Uploading
+
+1. **Verify Auth Token**: Ensure `SENTRY_AUTH_TOKEN` has proper permissions
+2. **Check Organization/Project**: Verify `SENTRY_ORG` and `SENTRY_PROJECT`
+   match your Sentry account
+3. **Build Logs**: Check build output for Sentry-related messages
+
+### Client-Side Errors Not Captured
+
+1. **Check Provider**: Ensure `ObservabilityProvider` wraps your app
+2. **Verify DSN**: Confirm `NEXT_PUBLIC_SENTRY_DSN` is accessible client-side
+3. **Browser Console**: Look for Sentry initialization errors
+
+## Best Practices
+
+1. **Environment-Specific Config**: Use different sample rates for dev/prod
+2. **Sensitive Data**: Use `beforeSend` to filter out sensitive information
+3. **Custom Context**: Add relevant tags and context to errors for better
+   debugging
+4. **Performance**: Keep trace sample rates low in production (0.1 or lower)
+
+## Four-File Export Pattern
+
+The observability package follows the four-file export pattern to maintain
+proper separation:
+
+- **Server-only imports**: Use `@repo/observability/server/next` in:
+  - `instrumentation.ts`
+  - `next.config.ts`
+  - Server components/actions
+
+- **Client-only imports**: Use `@repo/observability/client/next` in:
+  - Client components
+  - React hooks
+  - Browser-specific code
+
+This separation prevents Next.js build errors and ensures proper code splitting.
+
+## Built-in Defaults
+
+The observability package includes sensible defaults for Sentry configuration,
+so you only need to provide the DSN and any overrides:
+
+### Default Configuration
+
+**Core Options:**
+
+- `maxBreadcrumbs`: 100
+- `attachStacktrace`: true
+- `maxValueLength`: 250
+- `normalizeDepth`: 3
+- `normalizeMaxBreadth`: 1000
+- `enabled`: true
+- `sendClientReports`: true
+- `sendDefaultPii`: false
+
+**Error Monitoring:**
+
+- `sampleRate`: 1.0 (capture all errors)
+- Automatically ignores common browser errors:
+  - ResizeObserver errors
+  - Network errors (failed fetch, aborted, etc.)
+  - Non-Error rejections
+- Automatically ignores server errors:
+  - Connection errors (ECONNRESET, ETIMEDOUT, etc.)
+  - Socket errors
+
+**Tracing:**
+
+- `tracesSampleRate`: 0.1 in production, 1.0 in development
+- `tracePropagationTargets`: Same origin requests on client, all requests on
+  server
+- Automatically ignores health check endpoints:
+  - `/health`, `/ping`, `/_next/*`
+  - `/api/health`, `/api/ping`
+  - `/favicon.ico`, `/robots.txt`, `/sitemap.xml`
+
+**Session Replay (Client):**
+
+- `replaysSessionSampleRate`: 0.1
+- `replaysOnErrorSampleRate`: 1.0
+- `replayMaskAllText`: true
+- `replayBlockAllMedia`: true
+
+**Server-Specific:**
+
+- `shutdownTimeout`: 2000ms
+- `includeLocalVariables`: false (for performance)
+- `profilesSampleRate`: 0.1 in production, 0 in development
+
+### Minimal Configuration
+
+With these defaults, you only need to provide:
+
+```typescript
+// instrumentation-client.ts
+initializeClient({
+  providers: {
+    sentry: {
+      dsn: process.env.NEXT_PUBLIC_SENTRY_DSN
+      // All other options use sensible defaults
+    }
+  }
+});
+```
+
+### Overriding Defaults
+
+You can override any default by providing the option:
+
+```typescript
+initializeClient({
+  providers: {
+    sentry: {
+      dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+      // Override specific defaults
+      sampleRate: 0.5, // Only capture 50% of errors
+      tracesSampleRate: 0.01, // Lower trace sampling
+      ignoreErrors: [
+        ...customErrorsToIgnore
+        // Note: default ignored errors are still included
+      ]
+    }
+  }
+});
+```
+
+## Configuration Reference
+
+### Client Configuration Options
+
+All available options for `initializeClient`:
+
+```typescript
+interface SentryConfig {
+  // Core settings
+  dsn: string;
+  environment?: string;
+  release?: string;
+
+  // User privacy
+  sendDefaultPii?: boolean; // Send personally identifiable information
+
+  // Browser features
+  browserTracingEnabled?: boolean; // Enable automatic browser performance tracking
+  feedbackEnabled?: boolean; // Show user feedback widget
+  loggingEnabled?: boolean; // Capture console logs
+
+  // Session replay
+  replaysSessionSampleRate?: number; // Sample rate for all sessions (0-1)
+  replaysOnErrorSampleRate?: number; // Sample rate for sessions with errors (0-1)
+  replayMaskAllText?: boolean; // Mask all text in replays
+  replayBlockAllMedia?: boolean; // Block media in replays
+
+  // Performance
+  tracesSampleRate?: number; // Transaction sample rate (0-1)
+  profilesSampleRate?: number; // Profiling sample rate (0-1)
+
+  // Experimental
+  _experiments?: {
+    enableLogs?: boolean; // Enable experimental logging features
+  };
+
+  // Advanced
+  beforeSend?: (event: any, hint: any) => any;
+  beforeSendTransaction?: (event: any, hint: any) => any;
+  integrations?: any[];
+  options?: Record<string, any>; // Additional Sentry.init options
+}
+```
+
+### Recommended Settings by Environment
+
+**Development:**
+
+```typescript
+{
+  browserTracingEnabled: true,
+  feedbackEnabled: true,
+  loggingEnabled: true,
+  replaysSessionSampleRate: 0,
+  replaysOnErrorSampleRate: 1.0,
+  tracesSampleRate: 1.0,
+}
+```
+
+**Production (Internal Apps):**
+
+```typescript
+{
+  browserTracingEnabled: true,
+  feedbackEnabled: true,
+  loggingEnabled: false,
+  replaysSessionSampleRate: 0.1,
+  replaysOnErrorSampleRate: 1.0,
+  tracesSampleRate: 0.1,
+}
+```
+
+**Production (Public Sites):**
+
+```typescript
+{
+  browserTracingEnabled: true,
+  feedbackEnabled: true,
+  loggingEnabled: false,
+  replaysSessionSampleRate: 0.05,
+  replaysOnErrorSampleRate: 1.0,
+  tracesSampleRate: 0.05,
+  sendDefaultPii: false,
+  replayMaskAllText: true,
+  replayBlockAllMedia: true,
+}
+```
+
+## Build Options
+
+The observability package supports all Sentry build options with sensible
+defaults. Source maps are automatically uploaded when Sentry is properly
+configured.
+
+### Basic Build Configuration
+
+```typescript
+// next.config.ts
+import { withSentry } from "@repo/observability/server/next";
+
+export default await withSentry(nextConfig, {
+  // Required for source map upload
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+
+  // Optional build options (defaults shown)
+  silent: !process.env.CI, // Silent in non-CI environments
+  debug: false, // Enable debug logging in production
+  telemetry: true // Send telemetry to Sentry
+});
+```
+
+### Advanced Build Options
+
+```typescript
+export default await withSentry(nextConfig, {
+  // Source Maps
+  sourcemaps: {
+    disable: false, // Auto-disabled if missing auth config
+    deleteSourcemapsAfterUpload: true, // Clean up after upload
+    assets: ["./build/**/*.js"], // Custom asset patterns
+    ignore: ["node_modules/**"] // Files to ignore
+  },
+
+  // Release Management
+  release: {
+    name: process.env.RELEASE_VERSION,
+    create: true, // Create release in Sentry
+    finalize: true, // Mark release as deployed
+    dist: process.env.BUILD_ID
+  },
+
+  // Bundle Size Optimizations
+  bundleSizeOptimizations: {
+    excludeDebugStatements: true, // Remove debug code in production
+    excludeTracing: false // Keep tracing (set true to remove)
+  },
+
+  // Next.js Specific
+  widenClientFileUpload: true, // Upload client files from all directories
+  autoInstrumentServerFunctions: true, // Auto-wrap server functions
+  autoInstrumentMiddleware: true, // Auto-wrap middleware
+  autoInstrumentAppDirectory: true, // Auto-wrap app directory
+  tunnelRoute: "/monitoring", // Proxy route for Sentry
+  automaticVercelMonitors: true // Enable Vercel cron monitoring
+});
+```
+
+### Tree Shaking
+
+The package automatically configures webpack for optimal tree shaking:
+
+- **Debug statements** are removed in production when
+  `bundleSizeOptimizations.excludeDebugStatements` is true
+- **Tracing code** can be completely removed by setting
+  `bundleSizeOptimizations.excludeTracing` to true
+- **Feature flags** like `__SENTRY_DEBUG__` and `__SENTRY_TRACING__` are defined
+  for dead code elimination
+
+### Environment Variables for Builds
+
+```bash
+# Required for source map upload
+SENTRY_AUTH_TOKEN=your-auth-token
+SENTRY_ORG=your-org
+SENTRY_PROJECT=your-project
+
+# Optional
+SENTRY_URL=https://sentry.io/ # Custom Sentry instance
+NODE_ENV=production           # Environment detection
+CI=true                       # CI environment detection
+```
+
+### Source Maps
+
+Source maps are automatically uploaded when:
+
+1. `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, and `SENTRY_PROJECT` are provided
+2. `sourcemaps.disable` is not explicitly set to `true`
+
+The package handles:
+
+- Automatic source map generation
+- Secure upload to Sentry
+- Cleanup after upload (configurable)
+- Release association
+- Artifact bundling

@@ -1,0 +1,976 @@
+---
+title: "TypeScript Testing Patterns"
+description:
+  "Advanced TypeScript testing patterns, type safety, and testing
+  TypeScript-specific features"
+icon: "code"
+---
+
+# TypeScript Testing Patterns
+
+Advanced TypeScript testing patterns covering type safety validation, generic
+testing, interface testing, and TypeScript-specific testing utilities.
+
+## Overview
+
+TypeScript testing patterns include:
+
+- **Type safety testing** - Validating TypeScript types and interfaces
+- **Generic function testing** - Testing generic functions and type inference
+- **Interface compliance testing** - Ensuring implementations match interfaces
+- **Type assertion testing** - Testing type guards and assertions
+- **Utility type testing** - Testing custom utility types and transformations
+- **Compilation testing** - Testing TypeScript compilation and type checking
+
+## Type Safety Testing
+
+### Interface Compliance Testing
+
+```typescript
+// Testing interface implementations
+import {
+  expectType,
+  expectAssignable,
+  expectNotAssignable,
+  expectTypeOf
+} from "@repo/qa/vitest/utils/typescript";
+
+// Define interfaces
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  age?: number;
+  roles: string[];
+}
+
+interface UserRepository {
+  findById(id: string): Promise<User | null>;
+  create(data: Omit<User, "id">): Promise<User>;
+  update(id: string, data: Partial<User>): Promise<User>;
+  delete(id: string): Promise<void>;
+}
+
+describe("Type Safety", () => {
+  test("validates interface compliance", () => {
+    // Test that implementation matches interface
+    class DatabaseUserRepository implements UserRepository {
+      async findById(id: string): Promise<User | null> {
+        // Implementation
+        return null;
+      }
+
+      async create(data: Omit<User, "id">): Promise<User> {
+        // Implementation
+        return { id: "new-id", ...data };
+      }
+
+      async update(id: string, data: Partial<User>): Promise<User> {
+        // Implementation
+        throw new Error("Not implemented");
+      }
+
+      async delete(id: string): Promise<void> {
+        // Implementation
+      }
+    }
+
+    const repository = new DatabaseUserRepository();
+
+    // Type checks
+    expectType<UserRepository>(repository);
+    expectAssignable<UserRepository>(repository);
+
+    // Method signature checks
+    expectTypeOf(repository.findById).toEqualTypeOf<
+      (id: string) => Promise<User | null>
+    >();
+    expectTypeOf(repository.create).toEqualTypeOf<
+      (data: Omit<User, "id">) => Promise<User>
+    >();
+  });
+
+  test("validates data structures", () => {
+    const user: User = {
+      id: "123",
+      name: "John Doe",
+      email: "john@example.com",
+      roles: ["user"]
+    };
+
+    // Type validation
+    expectType<User>(user);
+    expectType<string>(user.id);
+    expectType<string[]>(user.roles);
+    expectType<number | undefined>(user.age);
+
+    // Invalid assignments should fail compilation
+    // expectNotAssignable<User>({ id: 123 }); // number instead of string
+    // expectNotAssignable<User>({ id: "123", name: "John" }); // missing required fields
+  });
+});
+```
+
+### Generic Function Testing
+
+```typescript
+// Testing generic functions and type inference
+import { expectTypeOf, expectType } from "@repo/qa/vitest/utils/typescript";
+
+// Generic function examples
+function createArray<T>(length: number, value: T): T[] {
+  return Array.from({ length }, () => value);
+}
+
+function mapObject<T, U>(
+  obj: Record<string, T>,
+  mapper: (value: T, key: string) => U
+): Record<string, U> {
+  const result: Record<string, U> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    result[key] = mapper(value, key);
+  }
+  return result;
+}
+
+function pick<T, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> {
+  const result = {} as Pick<T, K>;
+  for (const key of keys) {
+    result[key] = obj[key];
+  }
+  return result;
+}
+
+describe("Generic Function Testing", () => {
+  test("validates generic type inference", () => {
+    // Test createArray type inference
+    const stringArray = createArray(3, "hello");
+    const numberArray = createArray(5, 42);
+    const booleanArray = createArray(2, true);
+
+    expectTypeOf(stringArray).toEqualTypeOf<string[]>();
+    expectTypeOf(numberArray).toEqualTypeOf<number[]>();
+    expectTypeOf(booleanArray).toEqualTypeOf<boolean[]>();
+
+    expect(stringArray).toEqual(["hello", "hello", "hello"]);
+    expect(numberArray).toEqual([42, 42, 42, 42, 42]);
+  });
+
+  test("validates object mapping types", () => {
+    const numbers = { a: 1, b: 2, c: 3 };
+    const strings = mapObject(numbers, (num) => num.toString());
+    const doubled = mapObject(numbers, (num) => num * 2);
+
+    expectTypeOf(strings).toEqualTypeOf<Record<string, string>>();
+    expectTypeOf(doubled).toEqualTypeOf<Record<string, number>>();
+
+    expect(strings).toEqual({ a: "1", b: "2", c: "3" });
+    expect(doubled).toEqual({ a: 2, b: 4, c: 6 });
+  });
+
+  test("validates pick function types", () => {
+    const user = {
+      id: "123",
+      name: "John Doe",
+      email: "john@example.com",
+      age: 30,
+      isActive: true
+    };
+
+    const basicInfo = pick(user, ["id", "name"]);
+    const contactInfo = pick(user, ["name", "email"]);
+
+    expectTypeOf(basicInfo).toEqualTypeOf<{ id: string; name: string }>();
+    expectTypeOf(contactInfo).toEqualTypeOf<{ name: string; email: string }>();
+
+    expect(basicInfo).toEqual({ id: "123", name: "John Doe" });
+    expect(contactInfo).toEqual({
+      name: "John Doe",
+      email: "john@example.com"
+    });
+  });
+});
+```
+
+### Type Guard Testing
+
+```typescript
+// Testing type guards and type assertions
+import {
+  testTypeGuard,
+  validateTypeAssertion,
+  expectNarrowedType
+} from "@repo/qa/vitest/utils/typescript";
+
+// Type guard functions
+function isString(value: unknown): value is string {
+  return typeof value === "string";
+}
+
+function isUser(value: unknown): value is User {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    typeof (value as any).id === "string" &&
+    typeof (value as any).name === "string" &&
+    typeof (value as any).email === "string"
+  );
+}
+
+function isArrayOf<T>(
+  value: unknown,
+  guard: (item: unknown) => item is T
+): value is T[] {
+  return Array.isArray(value) && value.every(guard);
+}
+
+describe("Type Guard Testing", () => {
+  test("validates type guards", () => {
+    // Test string type guard
+    const stringGuard = testTypeGuard(isString);
+
+    expect(stringGuard("hello")).toBe(true);
+    expect(stringGuard(123)).toBe(false);
+    expect(stringGuard(null)).toBe(false);
+    expect(stringGuard(undefined)).toBe(false);
+
+    // Type narrowing validation
+    const unknownValue: unknown = "test string";
+    if (isString(unknownValue)) {
+      expectNarrowedType<string>(unknownValue);
+      expect(unknownValue.toUpperCase()).toBe("TEST STRING");
+    }
+  });
+
+  test("validates complex type guards", () => {
+    const validUser = {
+      id: "123",
+      name: "John Doe",
+      email: "john@example.com",
+      roles: ["user"]
+    };
+
+    const invalidUser = {
+      id: 123, // Wrong type
+      name: "John Doe"
+      // Missing email
+    };
+
+    expect(isUser(validUser)).toBe(true);
+    expect(isUser(invalidUser)).toBe(false);
+    expect(isUser(null)).toBe(false);
+    expect(isUser("not an object")).toBe(false);
+
+    // Type narrowing for valid user
+    const unknownData: unknown = validUser;
+    if (isUser(unknownData)) {
+      expectNarrowedType<User>(unknownData);
+      expect(unknownData.email).toBe("john@example.com");
+    }
+  });
+
+  test("validates generic type guards", () => {
+    const stringArray = ["a", "b", "c"];
+    const mixedArray = ["a", 1, "c"];
+    const numberArray = [1, 2, 3];
+
+    expect(isArrayOf(stringArray, isString)).toBe(true);
+    expect(isArrayOf(mixedArray, isString)).toBe(false);
+    expect(isArrayOf(numberArray, isString)).toBe(false);
+
+    // Type narrowing for array
+    const unknownArray: unknown = stringArray;
+    if (isArrayOf(unknownArray, isString)) {
+      expectNarrowedType<string[]>(unknownArray);
+      expect(unknownArray.map((s) => s.toUpperCase())).toEqual(["A", "B", "C"]);
+    }
+  });
+});
+```
+
+## Utility Type Testing
+
+### Custom Utility Types
+
+```typescript
+// Testing custom utility types
+import { expectTypeOf, expectType } from "@repo/qa/vitest/utils/typescript";
+
+// Custom utility types
+type DeepReadonly<T> = {
+  readonly [P in keyof T]: T[P] extends object ? DeepReadonly<T[P]> : T[P];
+};
+
+type RequiredKeys<T> = {
+  [K in keyof T]-?: {} extends Pick<T, K> ? never : K;
+}[keyof T];
+
+type OptionalKeys<T> = {
+  [K in keyof T]-?: {} extends Pick<T, K> ? K : never;
+}[keyof T];
+
+type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
+type RequiredBy<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
+
+type NonEmptyArray<T> = [T, ...T[]];
+
+describe("Utility Type Testing", () => {
+  test("validates DeepReadonly utility", () => {
+    interface NestedData {
+      user: {
+        profile: {
+          name: string;
+          settings: {
+            theme: string;
+            notifications: boolean;
+          };
+        };
+      };
+    }
+
+    type ReadonlyNestedData = DeepReadonly<NestedData>;
+
+    // Verify deep readonly properties
+    const data: ReadonlyNestedData = {
+      user: {
+        profile: {
+          name: "John",
+          settings: {
+            theme: "dark",
+            notifications: true
+          }
+        }
+      }
+    };
+
+    expectTypeOf<
+      ReadonlyNestedData["user"]["profile"]["name"]
+    >().toEqualTypeOf<string>();
+    expectTypeOf<
+      ReadonlyNestedData["user"]["profile"]["settings"]["theme"]
+    >().toEqualTypeOf<string>();
+
+    // These should cause compilation errors:
+    // data.user.profile.name = "Jane"; // Cannot assign to readonly property
+    // data.user.profile.settings.theme = "light"; // Cannot assign to readonly property
+  });
+
+  test("validates key extraction utilities", () => {
+    interface TestInterface {
+      required1: string;
+      required2: number;
+      optional1?: string;
+      optional2?: boolean;
+    }
+
+    type Required = RequiredKeys<TestInterface>;
+    type Optional = OptionalKeys<TestInterface>;
+
+    expectTypeOf<Required>().toEqualTypeOf<"required1" | "required2">();
+    expectTypeOf<Optional>().toEqualTypeOf<"optional1" | "optional2">();
+  });
+
+  test("validates conditional requirement utilities", () => {
+    interface UserForm {
+      name: string;
+      email: string;
+      age?: number;
+      newsletter?: boolean;
+    }
+
+    type UserFormWithAge = RequiredBy<UserForm, "age">;
+    type UserFormWithoutEmail = PartialBy<UserForm, "email">;
+
+    // Test RequiredBy
+    const userWithAge: UserFormWithAge = {
+      name: "John",
+      email: "john@example.com",
+      age: 30 // Now required
+    };
+
+    expectTypeOf<UserFormWithAge["age"]>().toEqualTypeOf<number>();
+
+    // Test PartialBy
+    const userWithoutEmail: UserFormWithoutEmail = {
+      name: "John"
+      // email is now optional
+    };
+
+    expectTypeOf<UserFormWithoutEmail["email"]>().toEqualTypeOf<
+      string | undefined
+    >();
+  });
+
+  test("validates NonEmptyArray utility", () => {
+    type StringNonEmptyArray = NonEmptyArray<string>;
+    type NumberNonEmptyArray = NonEmptyArray<number>;
+
+    const strings: StringNonEmptyArray = ["first", "second"];
+    const numbers: NumberNonEmptyArray = [1, 2, 3];
+
+    expectTypeOf<StringNonEmptyArray>().toEqualTypeOf<[string, ...string[]]>();
+    expectTypeOf<NumberNonEmptyArray>().toEqualTypeOf<[number, ...number[]]>();
+
+    // These should cause compilation errors:
+    // const empty: StringNonEmptyArray = []; // Error: not assignable
+  });
+});
+```
+
+### Advanced Type Transformations
+
+```typescript
+// Testing advanced type transformations
+describe("Advanced Type Transformations", () => {
+  // API response transformation types
+  type APIResponse<T> = {
+    data: T;
+    status: "success" | "error";
+    message?: string;
+    timestamp: string;
+  };
+
+  type ExtractData<T> = T extends APIResponse<infer U> ? U : never;
+
+  type DatabaseEntity<T> = T & {
+    id: string;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+
+  type CreateInput<T> = Omit<T, "id" | "createdAt" | "updatedAt">;
+  type UpdateInput<T> = Partial<CreateInput<T>>;
+
+  test("validates API response transformations", () => {
+    type UserResponse = APIResponse<User>;
+    type UserListResponse = APIResponse<User[]>;
+
+    type ExtractedUser = ExtractData<UserResponse>;
+    type ExtractedUserList = ExtractData<UserListResponse>;
+
+    expectTypeOf<ExtractedUser>().toEqualTypeOf<User>();
+    expectTypeOf<ExtractedUserList>().toEqualTypeOf<User[]>();
+
+    const userResponse: UserResponse = {
+      data: {
+        id: "123",
+        name: "John Doe",
+        email: "john@example.com",
+        roles: ["user"]
+      },
+      status: "success",
+      timestamp: new Date().toISOString()
+    };
+
+    expect(userResponse.data.name).toBe("John Doe");
+  });
+
+  test("validates database entity transformations", () => {
+    type UserEntity = DatabaseEntity<User>;
+    type UserCreateInput = CreateInput<UserEntity>;
+    type UserUpdateInput = UpdateInput<UserEntity>;
+
+    expectTypeOf<UserEntity>().toEqualTypeOf<
+      User & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+      }
+    >();
+
+    expectTypeOf<UserCreateInput>().toEqualTypeOf<Omit<User, "id">>();
+    expectTypeOf<UserUpdateInput>().toEqualTypeOf<Partial<Omit<User, "id">>>();
+
+    const createInput: UserCreateInput = {
+      name: "John Doe",
+      email: "john@example.com",
+      roles: ["user"]
+      // id, createdAt, updatedAt are omitted
+    };
+
+    const updateInput: UserUpdateInput = {
+      name: "Jane Doe"
+      // All fields are optional
+    };
+
+    expect(createInput.name).toBe("John Doe");
+    expect(updateInput.name).toBe("Jane Doe");
+  });
+});
+```
+
+## Function Signature Testing
+
+### Overloaded Function Testing
+
+```typescript
+// Testing function overloads
+describe("Function Overload Testing", () => {
+  // Overloaded function example
+  function processData(data: string): string;
+  function processData(data: number): number;
+  function processData(data: boolean): boolean;
+  function processData(
+    data: string | number | boolean
+  ): string | number | boolean {
+    if (typeof data === "string") {
+      return data.toUpperCase();
+    } else if (typeof data === "number") {
+      return data * 2;
+    } else {
+      return !data;
+    }
+  }
+
+  test("validates function overloads", () => {
+    // Test each overload
+    const stringResult = processData("hello");
+    const numberResult = processData(42);
+    const booleanResult = processData(true);
+
+    expectTypeOf(stringResult).toEqualTypeOf<string>();
+    expectTypeOf(numberResult).toEqualTypeOf<number>();
+    expectTypeOf(booleanResult).toEqualTypeOf<boolean>();
+
+    expect(stringResult).toBe("HELLO");
+    expect(numberResult).toBe(84);
+    expect(booleanResult).toBe(false);
+  });
+
+  // Generic overloaded function
+  function transform<T extends string>(value: T): `transformed_${T}`;
+  function transform<T extends number>(value: T): T;
+  function transform<T extends boolean>(value: T): T;
+  function transform<T>(value: T): T | `transformed_${string}` {
+    if (typeof value === "string") {
+      return `transformed_${value}` as any;
+    }
+    return value;
+  }
+
+  test("validates generic function overloads", () => {
+    const stringTransform = transform("test");
+    const numberTransform = transform(123);
+    const booleanTransform = transform(false);
+
+    expectTypeOf(stringTransform).toEqualTypeOf<`transformed_test`>();
+    expectTypeOf(numberTransform).toEqualTypeOf<number>();
+    expectTypeOf(booleanTransform).toEqualTypeOf<boolean>();
+
+    expect(stringTransform).toBe("transformed_test");
+    expect(numberTransform).toBe(123);
+    expect(booleanTransform).toBe(false);
+  });
+});
+```
+
+### Higher-Order Function Testing
+
+```typescript
+// Testing higher-order functions and their types
+describe("Higher-Order Function Testing", () => {
+  // Generic higher-order function
+  function withRetry<TArgs extends any[], TReturn>(
+    fn: (...args: TArgs) => Promise<TReturn>,
+    maxRetries: number = 3
+  ): (...args: TArgs) => Promise<TReturn> {
+    return async (...args: TArgs): Promise<TReturn> => {
+      let lastError: Error;
+
+      for (let i = 0; i <= maxRetries; i++) {
+        try {
+          return await fn(...args);
+        } catch (error) {
+          lastError = error as Error;
+          if (i === maxRetries) break;
+          await new Promise((resolve) => setTimeout(resolve, 1000 * i));
+        }
+      }
+
+      throw lastError!;
+    };
+  }
+
+  // Function composition utility
+  function compose<A, B, C>(f: (b: B) => C, g: (a: A) => B): (a: A) => C {
+    return (a: A) => f(g(a));
+  }
+
+  test("validates retry function wrapper", async () => {
+    let attemptCount = 0;
+    const unreliableFunction = async (input: string): Promise<string> => {
+      attemptCount++;
+      if (attemptCount < 3) {
+        throw new Error("Temporary failure");
+      }
+      return `processed: ${input}`;
+    };
+
+    const reliableFunction = withRetry(unreliableFunction, 5);
+
+    // Type validation
+    expectTypeOf(reliableFunction).toEqualTypeOf<
+      (input: string) => Promise<string>
+    >();
+
+    // Functional validation
+    const result = await reliableFunction("test data");
+    expect(result).toBe("processed: test data");
+    expect(attemptCount).toBe(3);
+  });
+
+  test("validates function composition", () => {
+    const addOne = (x: number): number => x + 1;
+    const toString = (x: number): string => x.toString();
+    const toUpperCase = (x: string): string => x.toUpperCase();
+
+    const composedFunction = compose(toUpperCase, toString);
+    const doubleComposed = compose(compose(toUpperCase, toString), addOne);
+
+    // Type validation
+    expectTypeOf(composedFunction).toEqualTypeOf<(a: number) => string>();
+    expectTypeOf(doubleComposed).toEqualTypeOf<(a: number) => string>();
+
+    // Functional validation
+    expect(composedFunction(42)).toBe("42");
+    expect(doubleComposed(41)).toBe("42");
+  });
+});
+```
+
+## Error Type Testing
+
+### Result Type Pattern Testing
+
+```typescript
+// Testing Result/Either type patterns for error handling
+type Result<T, E = Error> =
+  | { success: true; data: T }
+  | { success: false; error: E };
+
+type Option<T> = T | null | undefined;
+
+// Utility functions for Result type
+function ok<T>(data: T): Result<T, never> {
+  return { success: true, data };
+}
+
+function err<E>(error: E): Result<never, E> {
+  return { success: false, error };
+}
+
+function map<T, U, E>(result: Result<T, E>, fn: (data: T) => U): Result<U, E> {
+  return result.success ? ok(fn(result.data)) : result;
+}
+
+describe("Error Type Testing", () => {
+  test("validates Result type pattern", () => {
+    function divide(a: number, b: number): Result<number, string> {
+      if (b === 0) {
+        return err("Division by zero");
+      }
+      return ok(a / b);
+    }
+
+    const successResult = divide(10, 2);
+    const errorResult = divide(10, 0);
+
+    // Type validation
+    expectTypeOf(successResult).toEqualTypeOf<Result<number, string>>();
+    expectTypeOf(errorResult).toEqualTypeOf<Result<number, string>>();
+
+    // Functional validation
+    expect(successResult.success).toBe(true);
+    if (successResult.success) {
+      expect(successResult.data).toBe(5);
+    }
+
+    expect(errorResult.success).toBe(false);
+    if (!errorResult.success) {
+      expect(errorResult.error).toBe("Division by zero");
+    }
+  });
+
+  test("validates Result type transformations", () => {
+    const result = ok(42);
+    const doubled = map(result, (x) => x * 2);
+    const stringified = map(doubled, (x) => x.toString());
+
+    expectTypeOf(doubled).toEqualTypeOf<Result<number, never>>();
+    expectTypeOf(stringified).toEqualTypeOf<Result<string, never>>();
+
+    expect(stringified.success).toBe(true);
+    if (stringified.success) {
+      expect(stringified.data).toBe("84");
+    }
+  });
+
+  test("validates error propagation", () => {
+    const errorResult = err("Initial error");
+    const mapped = map(errorResult, (x) => x * 2);
+
+    expectTypeOf(mapped).toEqualTypeOf<Result<never, string>>();
+
+    expect(mapped.success).toBe(false);
+    if (!mapped.success) {
+      expect(mapped.error).toBe("Initial error");
+    }
+  });
+});
+```
+
+## Template Literal Type Testing
+
+### Template Literal Types
+
+```typescript
+// Testing template literal types
+describe("Template Literal Type Testing", () => {
+  // Event name template types
+  type EventType = "user" | "product" | "order";
+  type EventAction = "created" | "updated" | "deleted";
+  type EventName = `${EventType}.${EventAction}`;
+
+  // CSS property template types
+  type CSSUnit = "px" | "em" | "rem" | "%";
+  type CSSValue<T extends string> = `${T}${CSSUnit}`;
+
+  // API endpoint template types
+  type HTTPMethod = "GET" | "POST" | "PUT" | "DELETE";
+  type APIVersion = "v1" | "v2" | "v3";
+  type APIEndpoint<T extends string> = `/api/${APIVersion}/${T}`;
+
+  test("validates event name template types", () => {
+    const userCreated: EventName = "user.created";
+    const productUpdated: EventName = "product.updated";
+    const orderDeleted: EventName = "order.deleted";
+
+    expectTypeOf<EventName>().toEqualTypeOf<
+      | "user.created"
+      | "user.updated"
+      | "user.deleted"
+      | "product.created"
+      | "product.updated"
+      | "product.deleted"
+      | "order.created"
+      | "order.updated"
+      | "order.deleted"
+    >();
+
+    // These should cause compilation errors:
+    // const invalid: EventName = "user.invalid"; // Invalid action
+    // const invalid2: EventName = "invalid.created"; // Invalid type
+
+    expect(userCreated).toBe("user.created");
+    expect(productUpdated).toBe("product.updated");
+  });
+
+  test("validates CSS value template types", () => {
+    type Width = CSSValue<"100" | "50" | "25">;
+    type Height = CSSValue<"200" | "100">;
+
+    const width: Width = "100px";
+    const height: Height = "200em";
+
+    expectTypeOf<Width>().toEqualTypeOf<
+      | "100px"
+      | "100em"
+      | "100rem"
+      | "100%"
+      | "50px"
+      | "50em"
+      | "50rem"
+      | "50%"
+      | "25px"
+      | "25em"
+      | "25rem"
+      | "25%"
+    >();
+
+    expect(width).toBe("100px");
+    expect(height).toBe("200em");
+  });
+
+  test("validates API endpoint template types", () => {
+    type UserEndpoint = APIEndpoint<"users">;
+    type ProductEndpoint = APIEndpoint<"products">;
+
+    const userEndpoint: UserEndpoint = "/api/v1/users";
+    const productEndpoint: ProductEndpoint = "/api/v2/products";
+
+    expectTypeOf<UserEndpoint>().toEqualTypeOf<
+      "/api/v1/users" | "/api/v2/users" | "/api/v3/users"
+    >();
+
+    expect(userEndpoint).toBe("/api/v1/users");
+    expect(productEndpoint).toBe("/api/v2/products");
+  });
+});
+```
+
+## Compilation Testing
+
+### TypeScript Compilation Testing
+
+```typescript
+// Testing TypeScript compilation and type checking
+import {
+  testTypeScriptCompilation,
+  expectCompilationError,
+  expectNoCompilationErrors
+} from "@repo/qa/vitest/utils/typescript";
+
+describe("Compilation Testing", () => {
+  test("validates successful compilation", async () => {
+    const validCode = `
+      interface User {
+        id: string;
+        name: string;
+      }
+      
+      function createUser(name: string): User {
+        return {
+          id: Math.random().toString(),
+          name
+        };
+      }
+      
+      const user = createUser("John Doe");
+    `;
+
+    const compilation = await testTypeScriptCompilation(validCode);
+    expectNoCompilationErrors(compilation);
+  });
+
+  test("validates compilation errors", async () => {
+    const invalidCode = `
+      interface User {
+        id: string;
+        name: string;
+      }
+      
+      function createUser(name: string): User {
+        return {
+          id: 123, // Type error: should be string
+          name
+        };
+      }
+    `;
+
+    const compilation = await testTypeScriptCompilation(invalidCode);
+    expectCompilationError(compilation, {
+      code: 2322, // Type assignment error
+      message: /Type 'number' is not assignable to type 'string'/
+    });
+  });
+
+  test("validates strict mode compilation", async () => {
+    const codeWithImplicitAny = `
+      function processData(data) { // Implicit any
+        return data.toString();
+      }
+    `;
+
+    const strictCompilation = await testTypeScriptCompilation(
+      codeWithImplicitAny,
+      {
+        strict: true,
+        noImplicitAny: true
+      }
+    );
+
+    expectCompilationError(strictCompilation, {
+      code: 7006, // Implicit any error
+      message: /Parameter 'data' implicitly has an 'any' type/
+    });
+  });
+});
+```
+
+## Best Practices
+
+### Type Testing Utilities
+
+```typescript
+// Utility functions for type testing
+export const TypeTestingUtils = {
+  // Ensure two types are exactly equal
+  assertTypeEquality<T, U>(): T extends U
+    ? U extends T
+      ? true
+      : false
+    : false {
+    return true as any;
+  },
+
+  // Ensure type is assignable to another
+  assertAssignable<T, U>(): T extends U ? true : false {
+    return true as any;
+  },
+
+  // Ensure type has specific property
+  assertHasProperty<T, K extends string>(
+    obj: T,
+    key: K
+  ): T extends Record<K, any> ? true : false {
+    return (key in obj) as any;
+  },
+
+  // Test type is never (unreachable)
+  assertNever(_: never): void {
+    // This function should never be called
+  }
+};
+
+describe("Type Testing Best Practices", () => {
+  test("comprehensive type validation example", () => {
+    interface APIUser {
+      id: string;
+      name: string;
+      email: string;
+      createdAt: string;
+    }
+
+    interface DatabaseUser {
+      id: string;
+      name: string;
+      email: string;
+      created_at: Date;
+    }
+
+    // Transform function
+    function apiToDatabase(apiUser: APIUser): DatabaseUser {
+      return {
+        id: apiUser.id,
+        name: apiUser.name,
+        email: apiUser.email,
+        created_at: new Date(apiUser.createdAt)
+      };
+    }
+
+    // Type validation
+    const apiUser: APIUser = {
+      id: "123",
+      name: "John Doe",
+      email: "john@example.com",
+      createdAt: "2024-01-01T00:00:00Z"
+    };
+
+    const dbUser = apiToDatabase(apiUser);
+
+    // Verify transformation maintains type safety
+    expectTypeOf(dbUser).toEqualTypeOf<DatabaseUser>();
+    expect(dbUser.created_at).toBeInstanceOf(Date);
+    expect(dbUser.name).toBe("John Doe");
+
+    // Verify properties exist
+    expect(TypeTestingUtils.assertHasProperty(dbUser, "id")).toBe(true);
+    expect(TypeTestingUtils.assertHasProperty(dbUser, "created_at")).toBe(true);
+  });
+});
+```
+
+These TypeScript testing patterns provide comprehensive type safety validation,
+ensuring that TypeScript code maintains type correctness while providing runtime
+validation of type-related functionality.

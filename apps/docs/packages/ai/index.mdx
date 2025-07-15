@@ -1,0 +1,224 @@
+---
+title: AI Package
+description:
+  AI SDK integrations, vector operations, and product classification for the
+  Forge platform
+---
+
+# AI Package
+
+AI SDK integrations with vector operations, basic product classification, and
+multi-provider support for building AI-powered applications.
+
+## Overview
+
+The AI package provides foundational AI capabilities through Vercel AI SDK
+integrations, Upstash Vector database operations, and basic machine learning
+features for product classification and retrieval-augmented generation.
+
+## Key Components
+
+<CardGroup cols={2}>
+  <Card
+    title="AI SDK Providers"
+    icon="code"
+    href="/packages/ai/overview#ai-sdk-providers"
+  >
+    Multi-provider AI integrations (OpenAI, Anthropic, Google, Perplexity)
+  </Card>
+  <Card
+    title="Vector Operations"
+    icon="vector-square"
+    href="/packages/ai/upstash-vector"
+  >
+    Upstash Vector database integration for embeddings and similarity search
+  </Card>
+  <Card
+    title="Product Classification"
+    icon="tags"
+    href="/packages/ai/product-classification"
+  >
+    AI-powered product categorization with confidence scoring
+  </Card>
+  <Card
+    title="RAG Framework"
+    icon="search"
+    href="/packages/ai/overview#rag-workflow"
+  >
+    Basic retrieval-augmented generation workflow tools
+  </Card>
+</CardGroup>
+
+## Features
+
+### Core AI Functionality
+
+- **Multi-Provider Support**: OpenAI, Anthropic, Google, Perplexity, xAI, and
+  Deep Infra
+- **Text Generation**: Streaming and non-streaming text generation
+- **Tool Calling**: AI function calling with custom tools
+- **Embedding Generation**: Text embeddings for similarity search
+
+### Vector Database
+
+- **Upstash Vector Integration**: First-class support for vector operations
+- **Namespace Management**: Multi-tenant namespace isolation
+- **Bulk Operations**: Batch processing for large datasets
+- **Search & Retrieval**: Semantic search with metadata filtering
+
+### Classification System
+
+- **Product Classification**: Automated product categorization
+- **Confidence Scoring**: 0-1 confidence levels for classifications
+- **Alternative Suggestions**: Multiple category options with scores
+- **Custom Categories**: Support for hierarchical category structures
+
+## Quick Start
+
+### Installation
+
+```bash
+pnpm add @repo/ai
+```
+
+### Environment Variables
+
+```bash
+# AI Providers (choose one or more)
+OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-...
+GOOGLE_GENERATIVE_AI_API_KEY=...
+
+# Vector Database (optional)
+UPSTASH_VECTOR_REST_URL=https://...
+UPSTASH_VECTOR_REST_TOKEN=...
+```
+
+### Basic Usage
+
+```typescript
+import { generateText } from "ai";
+import { createOpenAIModel } from "@repo/ai/server/next";
+
+// Generate text with OpenAI
+const model = createOpenAIModel("gpt-4");
+const result = await generateText({
+  model,
+  prompt: "Explain artificial intelligence"
+});
+
+console.log(result.text);
+```
+
+## Architecture
+
+### Export Pattern
+
+The package follows the standard multi-environment export pattern:
+
+- `@repo/ai/client` - Browser utilities (non-Next.js)
+- `@repo/ai/server` - Node.js utilities (non-Next.js)
+- `@repo/ai/client/next` - Next.js client components
+- `@repo/ai/server/next` - Next.js server utilities
+- `@repo/ai/server/edge` - Edge runtime support
+- `@repo/ai/shared-env` - Environment-agnostic utilities
+
+### Type Safety
+
+Full TypeScript support with comprehensive type definitions:
+
+```typescript
+import type {
+  ProductClassificationResult,
+  VectorSearchResult,
+  RAGResponse,
+  VectorToolsConfig
+} from "@repo/ai/server/next";
+```
+
+## Use Cases
+
+### Content Generation
+
+```typescript
+// Basic text generation
+const content = await generateText({
+  model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+  prompt: "Write a product description for a smartphone"
+});
+```
+
+### Vector Search
+
+```typescript
+// Semantic search
+import { createVectorTools } from "@repo/ai/server/next";
+
+const tools = createVectorTools({ vectorDB });
+const results = await tools.searchKnowledgeBase.execute({
+  query: "artificial intelligence",
+  topK: 5
+});
+```
+
+### Product Classification
+
+```typescript
+// Classify products automatically
+import { AIProductClassifier } from "@repo/ai/server/next";
+
+const classifier = new AIProductClassifier(categories);
+const result = await classifier.classifyProduct({
+  title: "MacBook Pro",
+  description: "Apple laptop computer"
+});
+```
+
+## Documentation
+
+<CardGroup cols={2}>
+  <Card title="Package Overview" icon="book-open" href="/packages/ai/overview">
+    Complete feature overview and API reference
+  </Card>
+  <Card
+    title="Vector Integration"
+    icon="database"
+    href="/packages/ai/upstash-vector"
+  >
+    Upstash Vector database operations and RAG workflows
+  </Card>
+  <Card
+    title="Product Classification"
+    icon="robot"
+    href="/packages/ai/product-classification"
+  >
+    AI-powered product categorization system
+  </Card>
+  <Card title="Examples" icon="code" href="/packages/ai/overview#quick-start">
+    Code examples and usage patterns
+  </Card>
+</CardGroup>
+
+## Performance Considerations
+
+- **Provider Selection**: Choose models based on task complexity and cost
+- **Vector Operations**: Use appropriate embedding models and batch sizes
+- **Caching**: Implement caching for repeated operations
+- **Rate Limiting**: Respect API limits and implement backoff strategies
+
+## Security
+
+- Store API keys securely using environment variables
+- Use namespace isolation for multi-tenant applications
+- Validate inputs before processing with AI models
+- Implement proper error handling and fallbacks
+
+## Limitations
+
+- **Image Processing**: Not currently supported
+- **Translation**: Not implemented
+- **Advanced RAG**: Basic implementation only
+- **Workflow Automation**: Limited functionality
+
+The AI package provides a solid foundation for AI-powered features with room for
+expansion based on specific application requirements.

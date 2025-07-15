@@ -1,0 +1,862 @@
+---
+title: "Advanced Configuration"
+description:
+  "Advanced testing configuration scenarios and optimization strategies"
+icon: "cog"
+---
+
+# Advanced Configuration
+
+Advanced testing configuration scenarios, optimization strategies, and complex
+testing setups for sophisticated testing requirements.
+
+## Overview
+
+Advanced configuration covers:
+
+- **Complex multi-environment setups** - Sophisticated environment management
+- **Performance optimization** - Configuration for high-performance testing
+- **Custom configuration builders** - Creating specialized test configurations
+- **CI/CD integration** - Advanced pipeline configuration
+- **Monitoring and debugging** - Advanced debugging and monitoring setups
+
+## Multi-Environment Configuration
+
+### Environment Inheritance
+
+```typescript
+// vitest.config.ts - Advanced configuration with inheritance
+import {
+  createAdvancedConfig,
+  mergeConfigurations,
+  createEnvironmentMatrix
+} from "@repo/qa/vitest/configs";
+
+const baseConfig = createAdvancedConfig({
+  // Base configuration for all environments
+  testTimeout: 30000,
+  setupFiles: ["./setup/base.ts"],
+  globals: true,
+  environment: "node"
+});
+
+const browserConfig = mergeConfigurations(baseConfig, {
+  // Browser-specific overrides
+  environment: "happy-dom",
+  setupFiles: ["./setup/base.ts", "./setup/browser.ts"],
+  testTimeout: 60000,
+  deps: {
+    inline: ["@repo/design-system"]
+  }
+});
+
+const e2eConfig = mergeConfigurations(baseConfig, {
+  // E2E-specific configuration
+  testTimeout: 120000,
+  setupFiles: ["./setup/base.ts", "./setup/e2e.ts"],
+  testNamePattern: ".*\\.e2e\\.test\\.(ts|tsx)$",
+  maxConcurrency: 2,
+  pool: "forks"
+});
+
+// Environment matrix for different test types
+const configMatrix = createEnvironmentMatrix({
+  unit: baseConfig,
+  integration: browserConfig,
+  e2e: e2eConfig
+});
+
+export default configMatrix[process.env.TEST_TYPE || "unit"];
+```
+
+### Dynamic Configuration Loading
+
+```typescript
+// Advanced dynamic configuration
+import {
+  loadConfigurationProfile,
+  validateConfiguration,
+  optimizeConfiguration
+} from "@repo/qa/vitest/configs";
+
+async function createDynamicConfig() {
+  // Load configuration based on environment
+  const profile = await loadConfigurationProfile({
+    environment: process.env.NODE_ENV,
+    testType: process.env.TEST_TYPE,
+    platform: process.env.PLATFORM,
+    ci: !!process.env.CI
+  });
+
+  // Validate configuration
+  const validation = validateConfiguration(profile);
+  if (!validation.isValid) {
+    throw new Error(`Invalid configuration: ${validation.errors.join(", ")}`);
+  }
+
+  // Optimize for current environment
+  const optimizedConfig = optimizeConfiguration(profile, {
+    maxWorkers: process.env.CI ? 2 : 4,
+    coverage: process.env.COVERAGE === "true",
+    watch: !process.env.CI
+  });
+
+  return optimizedConfig;
+}
+
+export default createDynamicConfig();
+```
+
+### Conditional Configuration
+
+```typescript
+// Conditional configuration based on environment
+import { defineConfig } from "vitest/config";
+import type { UserConfig } from "vitest/config";
+
+interface TestEnvironment {
+  name: string;
+  config: UserConfig;
+  condition: () => boolean;
+}
+
+const environments: TestEnvironment[] = [
+  {
+    name: "local-development",
+    condition: () => !process.env.CI && process.env.NODE_ENV === "development",
+    config: {
+      test: {
+        watch: true,
+        ui: true,
+        coverage: { enabled: false },
+        maxConcurrency: 4
+      }
+    }
+  },
+  {
+    name: "ci-pipeline",
+    condition: () => !!process.env.CI,
+    config: {
+      test: {
+        watch: false,
+        ui: false,
+        coverage: { enabled: true, reporter: ["lcov", "json"] },
+        maxConcurrency: 2,
+        reporter: ["verbose", "junit"]
+      }
+    }
+  },
+  {
+    name: "performance-testing",
+    condition: () => process.env.TEST_TYPE === "performance",
+    config: {
+      test: {
+        testTimeout: 300000, // 5 minutes
+        setupFiles: ["./setup/performance.ts"],
+        include: ["**/*.perf.test.ts"],
+        pool: "forks",
+        poolOptions: {
+          forks: {
+            singleFork: true // Isolate performance tests
+          }
+        }
+      }
+    }
+  }
+];
+
+const activeEnvironment = environments.find((env) => env.condition());
+if (!activeEnvironment) {
+  throw new Error("No matching test environment configuration found");
+}
+
+export default defineConfig(activeEnvironment.config);
+```
+
+## Performance Optimization
+
+### High-Performance Configuration
+
+```typescript
+// Optimized configuration for large test suites
+import { createHighPerformanceConfig } from "@repo/qa/vitest/configs";
+
+export default createHighPerformanceConfig({
+  // Worker optimization
+  pool: "threads",
+  poolOptions: {
+    threads: {
+      maxThreads: Math.max(2, Math.floor(require("os").cpus().length * 0.75)),
+      minThreads: 2,
+      singleThread: false
+    }
+  },
+
+  // Test execution optimization
+  testTimeout: 15000,
+  hookTimeout: 10000,
+  teardownTimeout: 5000,
+
+  // File processing optimization
+  deps: {
+    optimizer: {
+      web: {
+        enabled: true,
+        include: ["@repo/design-system", "@mantine/core"]
+      }
+    },
+    inline: ["@repo/testing-utilities"],
+    external: ["puppeteer", "playwright"]
+  },
+
+  // Coverage optimization
+  coverage: {
+    provider: "v8", // Faster than c8
+    reporter: process.env.CI ? ["lcov"] : ["text"],
+    reportOnFailure: false, // Skip coverage on failures for speed
+    skipFull: true // Skip files with 100% coverage
+  },
+
+  // Cache optimization
+  cache: {
+    dir: "node_modules/.vitest"
+  },
+
+  // Memory optimization
+  isolate: false, // Share context between tests for speed
+  maxConcurrency: process.env.CI ? 2 : 4
+});
+```
+
+### Memory-Optimized Configuration
+
+```typescript
+// Configuration for memory-constrained environments
+import { createMemoryOptimizedConfig } from "@repo/qa/vitest/configs";
+
+export default createMemoryOptimizedConfig({
+  // Sequential execution to reduce memory usage
+  pool: "forks",
+  poolOptions: {
+    forks: {
+      singleFork: true,
+      isolate: true
+    }
+  },
+
+  // Garbage collection optimization
+  testTimeout: 10000,
+  env: {
+    NODE_OPTIONS: "--max-old-space-size=2048 --gc-interval=100"
+  },
+
+  // Module loading optimization
+  deps: {
+    // Minimize loaded modules
+    external: ["electron", "puppeteer", "playwright-core"],
+    inline: [] // Don't inline large packages
+  },
+
+  // Test file chunking
+  shard: process.env.CI_NODE_INDEX
+    ? {
+        index: parseInt(process.env.CI_NODE_INDEX),
+        count: parseInt(process.env.CI_NODE_TOTAL)
+      }
+    : undefined,
+
+  // Memory monitoring
+  setupFiles: ["./setup/memory-monitoring.ts"]
+});
+```
+
+## Custom Configuration Builders
+
+### Domain-Specific Configurations
+
+```typescript
+// Create specialized configuration builders
+import {
+  createConfigurationBuilder,
+  ConfigurationTemplate
+} from "@repo/qa/vitest/configs";
+
+// E-commerce testing configuration
+const ecommerceTestingConfig = createConfigurationBuilder({
+  name: "ecommerce",
+  template: ConfigurationTemplate.Integration,
+  features: {
+    database: {
+      provider: "postgresql",
+      isolationLevel: "transaction",
+      seed: "ecommerce-sample-data"
+    },
+    payments: {
+      provider: "stripe-mock",
+      webhookTesting: true
+    },
+    inventory: {
+      realTimeUpdates: false,
+      stockValidation: true
+    },
+    shipping: {
+      provider: "mock",
+      rateCalculation: true
+    }
+  },
+  setupFiles: [
+    "./setup/ecommerce-base.ts",
+    "./setup/payment-mocks.ts",
+    "./setup/inventory-system.ts"
+  ]
+});
+
+// Analytics testing configuration
+const analyticsTestingConfig = createConfigurationBuilder({
+  name: "analytics",
+  template: ConfigurationTemplate.Performance,
+  features: {
+    dataGeneration: {
+      volume: "high",
+      realism: "production-like"
+    },
+    tracking: {
+      realTime: false,
+      batchProcessing: true
+    },
+    reporting: {
+      aggregation: true,
+      timeWindows: ["1h", "24h", "7d"]
+    }
+  },
+  performance: {
+    dataSets: "large",
+    concurrency: "high",
+    memoryOptimized: true
+  }
+});
+
+// Export configurations
+export { ecommerceTestingConfig, analyticsTestingConfig };
+```
+
+### Plugin-Based Configuration
+
+```typescript
+// Advanced plugin-based configuration system
+import {
+  createPluginConfig,
+  DatabasePlugin,
+  AuthPlugin,
+  MockingPlugin,
+  PerformancePlugin
+} from "@repo/qa/vitest/configs";
+
+const advancedConfig = createPluginConfig({
+  plugins: [
+    // Database plugin with advanced features
+    DatabasePlugin({
+      providers: ["postgresql", "redis", "firestore"],
+      migrations: {
+        auto: true,
+        rollback: true,
+        validation: true
+      },
+      seeding: {
+        strategy: "factory",
+        cleanup: "automatic"
+      },
+      monitoring: {
+        queryPerformance: true,
+        connectionPooling: true
+      }
+    }),
+
+    // Authentication plugin
+    AuthPlugin({
+      providers: ["better-auth", "custom"],
+      sessions: {
+        storage: "redis",
+        encryption: true
+      },
+      testing: {
+        mockUsers: true,
+        roleSimulation: true,
+        sessionTesting: true
+      }
+    }),
+
+    // Advanced mocking plugin
+    MockingPlugin({
+      strategies: ["manual", "automatic", "ai-generated"],
+      externalAPIs: {
+        recording: true,
+        playback: true,
+        validation: true
+      },
+      performance: {
+        lazy: true,
+        caching: true
+      }
+    }),
+
+    // Performance monitoring plugin
+    PerformancePlugin({
+      metrics: ["memory", "cpu", "network", "database"],
+      profiling: {
+        enabled: process.env.PROFILE_TESTS === "true",
+        flamegraphs: true
+      },
+      budgets: {
+        testExecution: "5s",
+        memoryUsage: "100MB",
+        databaseQueries: 10
+      }
+    })
+  ]
+});
+
+export default advancedConfig;
+```
+
+## CI/CD Integration
+
+### GitHub Actions Configuration
+
+```typescript
+// Advanced GitHub Actions configuration
+import { createCIConfig } from "@repo/qa/vitest/configs";
+
+const githubActionsConfig = createCIConfig({
+  platform: "github-actions",
+
+  // Matrix testing configuration
+  matrix: {
+    node: ["18", "20", "22"],
+    os: ["ubuntu-latest", "windows-latest", "macos-latest"],
+    testType: ["unit", "integration", "e2e"]
+  },
+
+  // Parallel execution
+  parallelization: {
+    strategy: "split-by-timing", // Split based on historical timing data
+    maxJobs: 10,
+    failFast: false
+  },
+
+  // Caching strategy
+  caching: {
+    nodeModules: true,
+    testResults: true,
+    coverage: true,
+    artifacts: {
+      screenshots: true,
+      videos: true,
+      logs: true
+    }
+  },
+
+  // Reporting configuration
+  reporting: {
+    formats: ["junit", "lcov", "json"],
+    commentOnPR: true,
+    uploadArtifacts: true,
+    notifications: {
+      slack: process.env.SLACK_WEBHOOK,
+      email: process.env.NOTIFICATION_EMAIL
+    }
+  },
+
+  // Environment-specific settings
+  environments: {
+    unit: {
+      timeout: "30m",
+      retries: 2
+    },
+    integration: {
+      timeout: "45m",
+      retries: 1,
+      services: ["postgresql", "redis"]
+    },
+    e2e: {
+      timeout: "60m",
+      retries: 3,
+      browsers: ["chromium", "firefox", "webkit"]
+    }
+  }
+});
+
+export default githubActionsConfig;
+```
+
+### Pipeline Optimization
+
+```typescript
+// Pipeline-optimized configuration
+import { createPipelineConfig } from "@repo/qa/vitest/configs";
+
+const pipelineConfig = createPipelineConfig({
+  stages: {
+    // Fast feedback stage
+    "quick-tests": {
+      include: ["**/*.unit.test.ts"],
+      timeout: "5m",
+      coverage: false,
+      parallelism: "high"
+    },
+
+    // Comprehensive testing stage
+    "full-tests": {
+      include: ["**/*.test.ts"],
+      exclude: ["**/*.e2e.test.ts"],
+      timeout: "20m",
+      coverage: true,
+      parallelism: "medium"
+    },
+
+    // End-to-end testing stage
+    "e2e-tests": {
+      include: ["**/*.e2e.test.ts"],
+      timeout: "45m",
+      coverage: false,
+      parallelism: "low",
+      retry: 3
+    }
+  },
+
+  // Stage dependencies
+  dependencies: {
+    "full-tests": ["quick-tests"],
+    "e2e-tests": ["full-tests"]
+  },
+
+  // Failure handling
+  failureStrategy: {
+    quickTests: "fail-fast",
+    fullTests: "complete-all",
+    e2eTests: "retry-on-failure"
+  }
+});
+
+export default pipelineConfig;
+```
+
+## Monitoring and Debugging
+
+### Advanced Debugging Configuration
+
+```typescript
+// Debug-enabled configuration
+import { createDebugConfig } from "@repo/qa/vitest/configs";
+
+const debugConfig = createDebugConfig({
+  // Debug output configuration
+  logging: {
+    level: "debug",
+    include: ["test-execution", "mocks", "database", "network"],
+    format: "structured",
+    output: {
+      console: true,
+      file: "./logs/test-debug.log",
+      structured: "./logs/test-structured.jsonl"
+    }
+  },
+
+  // Test execution tracing
+  tracing: {
+    enabled: true,
+    includeStacks: true,
+    captureArgs: true,
+    performance: true,
+    async: true
+  },
+
+  // Mock debugging
+  mocks: {
+    logCalls: true,
+    validateUsage: true,
+    detectUnused: true,
+    trackPerformance: true
+  },
+
+  // Memory debugging
+  memory: {
+    trackLeaks: true,
+    heapSnapshots: {
+      before: true,
+      after: true,
+      threshold: "100MB"
+    },
+    gcMonitoring: true
+  },
+
+  // Database debugging
+  database: {
+    logQueries: true,
+    explainPlans: true,
+    trackConnections: true,
+    detectN1: true
+  }
+});
+
+export default debugConfig;
+```
+
+### Performance Monitoring
+
+```typescript
+// Performance monitoring configuration
+import { createMonitoringConfig } from "@repo/qa/vitest/configs";
+
+const monitoringConfig = createMonitoringConfig({
+  metrics: {
+    // Test execution metrics
+    execution: {
+      timing: true,
+      memory: true,
+      cpu: true,
+      concurrency: true
+    },
+
+    // Code coverage metrics
+    coverage: {
+      detailed: true,
+      trends: true,
+      thresholds: {
+        statements: 80,
+        branches: 75,
+        functions: 80,
+        lines: 80
+      }
+    },
+
+    // Performance budgets
+    budgets: {
+      testExecution: {
+        unit: "2s",
+        integration: "10s",
+        e2e: "30s"
+      },
+      memoryUsage: {
+        peak: "500MB",
+        average: "100MB"
+      },
+      databaseQueries: {
+        count: 50,
+        duration: "100ms"
+      }
+    }
+  },
+
+  // Alerting configuration
+  alerts: {
+    thresholds: {
+      testFailureRate: 5, // %
+      performanceDegradation: 20, // %
+      memoryIncrease: 50 // %
+    },
+    notifications: {
+      slack: true,
+      email: true,
+      dashboard: true
+    }
+  },
+
+  // Historical tracking
+  history: {
+    enabled: true,
+    retention: "30d",
+    trends: true,
+    benchmarks: true
+  }
+});
+
+export default monitoringConfig;
+```
+
+## Complex Testing Scenarios
+
+### Multi-Tenant Testing
+
+```typescript
+// Multi-tenant testing configuration
+import { createMultiTenantConfig } from "@repo/qa/vitest/configs";
+
+const multiTenantConfig = createMultiTenantConfig({
+  tenants: {
+    strategy: "database-per-tenant",
+    isolation: "complete",
+    tenants: [
+      {
+        id: "tenant-a",
+        database: "test_tenant_a",
+        features: ["premium", "analytics"],
+        config: { maxUsers: 1000 }
+      },
+      {
+        id: "tenant-b",
+        database: "test_tenant_b",
+        features: ["basic"],
+        config: { maxUsers: 100 }
+      }
+    ]
+  },
+
+  // Cross-tenant testing
+  crossTenant: {
+    isolation: true,
+    dataLeakage: false,
+    performance: {
+      resourceSharing: "minimal",
+      scaling: "independent"
+    }
+  },
+
+  // Feature flag testing per tenant
+  featureFlags: {
+    perTenant: true,
+    inheritance: "explicit",
+    overrides: {
+      "tenant-a": { newFeature: true },
+      "tenant-b": { newFeature: false }
+    }
+  }
+});
+
+export default multiTenantConfig;
+```
+
+### Microservice Testing
+
+```typescript
+// Microservice testing configuration
+import { createMicroserviceConfig } from "@repo/qa/vitest/configs";
+
+const microserviceConfig = createMicroserviceConfig({
+  services: {
+    // Service definitions
+    userService: {
+      port: 3001,
+      dependencies: ["database", "redis"],
+      healthCheck: "/health"
+    },
+    productService: {
+      port: 3002,
+      dependencies: ["database", "search"],
+      healthCheck: "/health"
+    },
+    orderService: {
+      port: 3003,
+      dependencies: ["database", "userService", "productService"],
+      healthCheck: "/health"
+    }
+  },
+
+  // Service communication
+  communication: {
+    protocol: "http",
+    timeout: 5000,
+    retries: 3,
+    circuitBreaker: {
+      enabled: true,
+      threshold: 5,
+      timeout: 10000
+    }
+  },
+
+  // Contract testing
+  contracts: {
+    enabled: true,
+    format: "openapi",
+    validation: "strict",
+    generation: "automatic"
+  },
+
+  // Integration patterns
+  integration: {
+    // Test each service in isolation
+    isolation: {
+      mocks: "external-services",
+      stubs: "internal-dependencies"
+    },
+
+    // Test service interactions
+    interaction: {
+      realServices: true,
+      messageCapture: true,
+      sequenceTesting: true
+    },
+
+    // End-to-end workflow testing
+    workflow: {
+      tracing: true,
+      monitoring: true,
+      failureSimulation: true
+    }
+  }
+});
+
+export default microserviceConfig;
+```
+
+## Configuration Validation
+
+### Schema Validation
+
+```typescript
+// Configuration schema validation
+import { validateConfig, ConfigSchema } from "@repo/qa/vitest/configs";
+
+const configSchema = ConfigSchema.object({
+  test: ConfigSchema.object({
+    timeout: ConfigSchema.number().min(1000).max(300000),
+    setupFiles: ConfigSchema.array(ConfigSchema.string()),
+    environment: ConfigSchema.enum(["node", "happy-dom", "jsdom"]),
+    globals: ConfigSchema.boolean().optional(),
+    coverage: ConfigSchema.object({
+      enabled: ConfigSchema.boolean(),
+      threshold: ConfigSchema.object({
+        statements: ConfigSchema.number().min(0).max(100),
+        branches: ConfigSchema.number().min(0).max(100),
+        functions: ConfigSchema.number().min(0).max(100),
+        lines: ConfigSchema.number().min(0).max(100)
+      }).optional()
+    }).optional()
+  }),
+
+  // Custom validation rules
+  customValidation: {
+    // Ensure setup files exist
+    setupFilesExist: (config: any) => {
+      return config.test.setupFiles?.every((file: string) =>
+        require("fs").existsSync(file)
+      );
+    },
+
+    // Validate environment consistency
+    environmentConsistency: (config: any) => {
+      if (config.test.environment === "node" && config.test.browser) {
+        return false; // Can't have browser tests in node environment
+      }
+      return true;
+    }
+  }
+});
+
+// Validate configuration
+function validateTestConfig(config: any) {
+  const validation = validateConfig(config, configSchema);
+
+  if (!validation.isValid) {
+    throw new Error(`Invalid configuration: ${validation.errors.join(", ")}`);
+  }
+
+  return validation.normalizedConfig;
+}
+
+export { validateTestConfig, configSchema };
+```
+
+These advanced configuration scenarios provide the flexibility and power needed
+for sophisticated testing requirements while maintaining performance and
+reliability across different environments and use cases.

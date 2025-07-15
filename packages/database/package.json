@@ -1,30 +1,121 @@
 {
   "name": "@repo/database",
-  "version": "0.0.0",
-  "main": "./index.ts",
-  "types": "./index.ts",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/prisma/index.ts",
+    "./prisma/server": "./src/prisma/server.ts",
+    "./prisma/server/next": "./src/prisma/server-next.ts",
+    "./prisma/zod/*": "./prisma-generated/zod/*",
+    "./prisma": {
+      "types": "./src/prisma/index.ts",
+      "import": "./src/prisma/index.ts"
+    },
+    "./prisma/edge": {
+      "types": "./src/prisma/clients/edge.ts",
+      "import": "./src/prisma/clients/edge.ts"
+    },
+    "./prisma/accelerate": {
+      "types": "./src/prisma/clients/accelerate.ts",
+      "import": "./src/prisma/clients/accelerate.ts"
+    },
+    "./firestore/client": "./src/firestore/client.ts",
+    "./firestore/server": "./src/firestore/server.ts",
+    "./firestore/client/next": "./src/firestore/client-next.ts",
+    "./firestore/server/next": "./src/firestore/server-next.ts",
+    "./redis/client": "./src/redis/client.ts",
+    "./redis/server": "./src/redis/server.ts",
+    "./redis/client/next": "./src/redis/client-next.ts",
+    "./redis/server/next": "./src/redis/server-next.ts",
+    "./upstash/client": "./src/upstash/client.ts",
+    "./upstash/server": "./src/upstash/server.ts",
+    "./upstash/client/next": "./src/upstash/client-next.ts",
+    "./upstash/server/next": "./src/upstash/server-next.ts",
+    "./types": {
+      "types": "./src/types.ts",
+      "import": "./src/types.ts"
+    },
+    "./keys": {
+      "types": "./keys.ts",
+      "import": "./keys.ts"
+    },
+    "./zod": {
+      "types": "./prisma-generated/zod/index.ts",
+      "import": "./prisma-generated/zod/index.ts"
+    }
+  },
   "scripts": {
-    "analyze": "prisma generate --no-hints --schema=./prisma/schema.prisma",
-    "build": "prisma generate --no-hints --schema=./prisma/schema.prisma",
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "analyze": "pnpm prisma:generate -- --no-hints",
+    "analyze:doppler": "pnpm prisma:generate:doppler -- --no-hints",
+    "build": "echo 'Database package build complete'",
+    "build:doppler": "pnpm analyze:doppler",
+    "circular": "madge --circular --extensions ts,tsx,js,jsx --exclude 'prisma-generated' .",
+    "clean:prisma": "rm -rf prisma-generated || true",
+    "coverage:collect": "vitest run --coverage --reporter=json",
+    "create-users": "tsx src/prisma/scripts/create-users.ts",
+    "create-users:doppler": "doppler run -- tsx src/prisma/scripts/create-users.ts",
+    "doppler:open": "doppler open",
+    "doppler:pull": "doppler secrets download --no-file --format env > .env.local",
+    "doppler:secrets": "doppler secrets",
+    "doppler:secrets:download": "doppler secrets download --no-file --format env",
+    "doppler:secrets:upload": "doppler secrets upload .env.local",
+    "knip": "knip --fix --reporter json",
+    "lint": "eslint . --fix",
+    "prisma:format": "prisma format --schema=./src/prisma",
+    "prisma:generate": "prisma generate --schema=./src/prisma",
+    "prisma:generate:doppler": "doppler run -- prisma generate --schema=./src/prisma",
+    "prisma:migrate": "prisma migrate dev --schema=./src/prisma",
+    "prisma:migrate:deploy": "prisma migrate deploy --schema=./src/prisma",
+    "prisma:migrate:deploy:doppler": "doppler run -- prisma migrate deploy --schema=./src/prisma",
+    "prisma:migrate:doppler": "doppler run -- prisma migrate dev --schema=./src/prisma",
+    "prisma:migrate:reset": "prisma migrate reset --schema=./src/prisma",
+    "prisma:migrate:reset:doppler": "doppler run -- prisma migrate reset --schema=./src/prisma",
+    "prisma:push": "prisma db push --schema=./src/prisma",
+    "prisma:push:doppler": "doppler run -- prisma db push --schema=./src/prisma",
+    "prisma:studio": "prisma studio --schema=./src/prisma",
+    "prisma:studio:doppler": "doppler run -- prisma studio --schema=./src/prisma",
+    "prisma:validate": "prisma validate --schema=./src/prisma",
+    "seed": "tsx src/prisma/src/seed/seed.ts",
+    "seed:doppler": "doppler run -- tsx src/prisma/src/seed/seed.ts",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:coverage:json": "vitest run --coverage --reporter=json",
+    "test:firestore": "vitest run __tests__/firestore.test.ts",
+    "test:integration": "vitest run __tests__/integration.test.ts",
+    "test:performance": "vitest run __tests__/performance.test.ts",
+    "test:redis": "vitest run __tests__/upstash-redis.test.ts",
+    "test:vector": "vitest run __tests__/upstash-vector.test.ts",
+    "test:watch": "vitest",
+    "typecheck": "NODE_OPTIONS='--max-old-space-size=8192' tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^1.0.0",
-    "@prisma/adapter-neon": "6.4.1",
-    "@prisma/client": "6.4.1",
-    "@t3-oss/env-nextjs": "^0.13.4",
+    "@prisma/adapter-pg": "^6.11.1",
+    "@prisma/client": "^6.11.1",
+    "@prisma/extension-accelerate": "^2.0.2",
+    "@repo/observability": "workspace:*",
+    "@t3-oss/env-nextjs": "catalog:",
+    "@upstash/redis": "^1.35.1",
+    "@upstash/vector": "^1.2.2",
+    "better-auth": "^1.2.12",
+    "chalk": "^5.4.1",
+    "firebase-admin": "^13.4.0",
+    "next": "catalog:",
+    "pg": "^8.16.3",
+    "react": "catalog:",
     "server-only": "^0.0.1",
-    "undici": "^7.10.0",
-    "ws": "^8.18.2",
-    "zod": "^3.25.28"
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
-    "@types/node": "22.15.21",
-    "@types/ws": "^8.18.1",
-    "bufferutil": "^4.0.9",
-    "prisma": "6.4.1",
-    "typescript": "^5.8.3"
+    "@faker-js/faker": "^9.9.0",
+    "@repo/config": "workspace:*",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/qa": "workspace:*",
+    "@types/pg": "^8.15.4",
+    "prisma": "^6.11.1",
+    "tsx": "^4.20.3"
+  },
+  "prisma": {
+    "seed": "tsx src/prisma/src/seed/seed.ts",
+    "schema": "./src/prisma"
   }
 }

@@ -1,0 +1,432 @@
+---
+title: "Configuration Packages"
+description:
+  "Comprehensive configuration packages for ESLint, TypeScript, Next.js, and
+  build tools in the Forge monorepo"
+icon: "gear"
+---
+
+# Configuration Packages
+
+The Forge platform provides two powerful configuration packages that handle all
+aspects of code quality, type checking, and build optimization across the entire
+monorepo.
+
+<CardGroup cols={2}>
+  <Card
+    title="ESLint Configuration"
+    icon="shield-check"
+    href="/packages/config/eslint"
+  >
+    **@repo/config-eslint** - Comprehensive ESLint configurations with 1,500+
+    lines of rules
+  </Card>
+  <Card
+    title="TypeScript Configuration"
+    icon="code"
+    href="/packages/config/typescript"
+  >
+    **@repo/config** - TypeScript, Next.js, Prettier, and Knip configurations
+  </Card>
+</CardGroup>
+
+## Primary Package: @repo/config-eslint
+
+The **@repo/config-eslint** package is the most comprehensive configuration
+package in the Forge ecosystem, providing battle-tested ESLint configurations
+for modern TypeScript and React development.
+
+### Quick Start
+
+<Tabs>
+  <Tab title="Next.js Apps">
+    ```typescript // eslint.config.ts import nextConfig from
+    '@repo/config-eslint/next'; export default nextConfig; ```
+  </Tab>
+
+<Tab title="React Packages">
+  ```typescript // eslint.config.ts import reactConfig from
+  '@repo/config-eslint/react-package'; export default reactConfig; ```
+</Tab>
+
+  <Tab title="Node.js Services">
+    ```typescript // eslint.config.ts import serverConfig from
+    '@repo/config-eslint/server'; export default serverConfig; ```
+  </Tab>
+</Tabs>
+
+### Key Features
+
+- **ESLint 9 Flat Config** - Modern configuration system with improved
+  performance
+- **1,500+ Lines of Rules** - Comprehensive rule coverage for all scenarios
+- **TypeScript-First** - Complete TypeScript support with type-aware linting
+- **Framework Specific** - Optimized configurations for React, Next.js, Remix,
+  and Node.js
+- **Security Scanning** - Built-in vulnerability detection and security best
+  practices
+- **Code Organization** - Automatic import sorting and code structure
+  enforcement
+
+<Note>
+  For detailed ESLint configuration documentation, see the [ESLint
+  Configuration](/packages/config/eslint) page.
+</Note>
+
+## Supporting Package: @repo/config
+
+The **@repo/config** package provides essential build tool configurations that
+complement the ESLint setup.
+
+### Package Overview
+
+| Configuration  | Purpose                        | Export Path                 |
+| -------------- | ------------------------------ | --------------------------- |
+| **TypeScript** | Type checking and compilation  | `@repo/config/typescript/*` |
+| **Next.js**    | Application framework settings | `@repo/config/next`         |
+| **Prettier**   | Code formatting                | `@repo/config/prettier`     |
+| **Knip**       | Dead code elimination          | `@repo/config/knip/*`       |
+
+## Next.js Configuration
+
+The Next.js configuration in `@repo/config` provides production-ready settings
+optimized for the Forge platform.
+
+### Installation
+
+```bash
+pnpm add -D @repo/config
+```
+
+### Basic Usage
+
+<Tabs>
+  <Tab title="Standard Configuration">
+    ```typescript
+    // next.config.ts
+    import { config } from '@repo/config/next';
+    
+    export default config;
+    ```
+  </Tab>
+  
+  <Tab title="With Bundle Analyzer">
+    ```typescript
+    // next.config.ts
+    import { config, withAnalyzer } from '@repo/config/next';
+    
+    const finalConfig = process.env.ANALYZE === 'true' 
+      ? withAnalyzer(config) 
+      : config;
+    
+    export default finalConfig;
+    ```
+    
+    Run analysis:
+    ```bash
+    ANALYZE=true pnpm build
+    ```
+  </Tab>
+  
+  <Tab title="Extended Configuration">
+    ```typescript
+    // next.config.ts
+    import type { NextConfig } from 'next';
+    import { config, mergeConfig } from '@repo/config/next';
+    
+    const customConfig: Partial<NextConfig> = {
+      images: {
+        domains: ['custom-cdn.example.com'],
+      },
+    };
+    
+    export default mergeConfig(config, customConfig);
+    ```
+  </Tab>
+</Tabs>
+
+### Built-in Features
+
+<AccordionGroup>
+  <Accordion title="Performance Optimization" icon="gauge">
+    - **Typed Routes**: Type-safe navigation with `experimental.typedRoutes:
+    true` - **Image Optimization**: AVIF/WebP formats with responsive sizing -
+    **Bundle Analysis**: Built-in analyzer for build optimization - **SWC
+    Compiler**: React property removal and console stripping in production -
+    **Webpack Optimizations**: Custom chunk splitting and tree shaking
+  </Accordion>
+
+<Accordion title="Integrations" icon="puzzle">
+  - **Prisma Plugin**: Monorepo workaround for database operations - **PostHog
+  Analytics**: Configured rewrites for analytics endpoints - **OpenTelemetry**:
+  Instrumentation with proper ignore patterns - **Turbopack**: SVG handling with
+  @svgr/webpack loader - **External Package Handling**: Optimized transpilation
+  of workspace packages
+</Accordion>
+
+  <Accordion title="Development Experience" icon="code">
+    - **TypeScript Integration**: Full type checking during builds - **Fast
+    Refresh**: React hot reload with strict mode - **Error Handling**: Enhanced
+    error overlays and logging - **Path Mapping**: Automatic alias resolution
+    from tsconfig.json - **Environment Detection**: Optimized settings for
+    dev/production
+  </Accordion>
+</AccordionGroup>
+
+### Configuration Examples
+
+<CodeGroup>
+```typescript Production Settings
+// Automatic production optimizations
+{
+  compiler: {
+    reactRemoveProperties: true,    // Remove data-testid in production
+    removeConsole: {                // Remove console.* except errors/warnings
+      exclude: ['error', 'warn']
+    }
+  },
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        pathname: '/**'
+      }
+    ]
+  }
+}
+```
+
+```typescript Webpack Customization
+// Advanced webpack configuration
+{
+  webpack: (config, { isServer }) => {
+    // Prisma plugin for server builds
+    if (isServer) {
+      config.plugins.push(new PrismaPlugin());
+    }
+
+    // Client-side optimizations
+    if (!isServer) {
+      config.resolve.fallback = {
+        fs: false,
+        net: false,
+        tls: false,
+        crypto: false
+      };
+    }
+
+    return config;
+  };
+}
+```
+
+```typescript PostHog Rewrites
+// Analytics endpoint proxying
+{
+  async rewrites() {
+    return {
+      beforeFiles: [
+        {
+          source: '/ingest/static/:path*',
+          destination: 'https://us-assets.i.posthog.com/static/:path*'
+        },
+        {
+          source: '/ingest/:path*',
+          destination: 'https://us.i.posthog.com/:path*'
+        }
+      ]
+    };
+  }
+}
+```
+
+</CodeGroup>
+
+## Prettier Configuration
+
+Code formatting configurations for consistent style across the monorepo.
+
+### Available Configurations
+
+<Tabs>
+  <Tab title="Full Configuration">
+    ```javascript
+    // prettier.config.mjs
+    import { config } from '@repo/config/prettier';
+    
+    export default config;
+    ```
+    
+    **Features:**
+    - Organize imports plugin
+    - Package.json formatting
+    - Shell script formatting
+    - Tailwind CSS class sorting
+  </Tab>
+
+  <Tab title="Simple Configuration">
+    ```javascript
+    // prettier.config.mjs
+    import { simpleConfig } from '@repo/config/prettier/simple';
+    
+    export default simpleConfig;
+    ```
+    
+    **Features:**
+    - Basic formatting rules only
+    - No plugin dependencies
+    - Faster execution
+  </Tab>
+</Tabs>
+
+### Formatting Features
+
+- **Import Organization**: Automatic sorting and grouping
+- **Package.json**: Consistent dependency ordering
+- **Shell Scripts**: Proper bash/sh formatting
+- **Tailwind CSS**: Class name sorting and organization
+- **Multi-language**: Support for TS, JS, JSON, MD, YAML, CSS, SCSS
+
+## Knip Configuration
+
+Dead code elimination configurations for different project types.
+
+### Usage
+
+<CodeGroup>
+```json Base Configuration
+{
+  "extends": ["@repo/config/knip/base.json"]
+}
+```
+
+```json Monorepo Configuration
+{
+  "extends": ["@repo/config/knip/monorepo.json"]
+}
+```
+
+```json Next.js Configuration
+{
+  "extends": ["@repo/config/knip/next.json"]
+}
+```
+
+</CodeGroup>
+
+### Configuration Features
+
+- **Entry Points**: Automatic detection of application entry points
+- **Workspaces**: Monorepo-aware dependency analysis
+- **Framework Support**: Next.js, React, Node.js patterns
+- **Build Integration**: Works with TypeScript and bundler configurations
+
+## Installation Guide
+
+### Prerequisites
+
+```bash
+# Core dependencies
+pnpm add -D typescript eslint prettier
+
+# Framework dependencies (as needed)
+pnpm add -D next react @types/react
+```
+
+### Package Installation
+
+<CodeGroup>
+```bash ESLint Configuration
+pnpm add -D @repo/config-eslint
+```
+
+```bash All Configurations
+pnpm add -D @repo/config @repo/config-eslint
+```
+
+</CodeGroup>
+
+### Project Setup
+
+<Steps>
+  <Step title="ESLint Configuration">
+    Create `eslint.config.ts`:
+    ```typescript
+    import config from '@repo/config-eslint/next'; // or /react-package, /server
+    export default config;
+    ```
+  </Step>
+  
+  <Step title="TypeScript Configuration">
+    Create `tsconfig.json`:
+    ```json
+    {
+      "extends": "@repo/config/typescript/nextjs.json",
+      "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+          "@/*": ["./src/*"]
+        }
+      }
+    }
+    ```
+  </Step>
+  
+  <Step title="Next.js Configuration">
+    Create `next.config.ts`:
+    ```typescript
+    import { config } from '@repo/config/next';
+    export default config;
+    ```
+  </Step>
+  
+  <Step title="Prettier Configuration">
+    Create `prettier.config.mjs`:
+    ```javascript
+    import config from '@repo/config/prettier';
+    export default config;
+    ```
+  </Step>
+</Steps>
+
+## Package Comparison
+
+| Feature              | @repo/config-eslint                           | @repo/config                         |
+| -------------------- | --------------------------------------------- | ------------------------------------ |
+| **Primary Focus**    | Code quality & linting                        | Build tools & compilation            |
+| **Lines of Code**    | 1,500+                                        | 300+                                 |
+| **Configurations**   | 6 (base, next, react, server, remix, package) | 4 (typescript, next, prettier, knip) |
+| **Dependencies**     | 25+ ESLint plugins                            | Build tools & utilities              |
+| **Complexity**       | High - comprehensive rules                    | Medium - focused utilities           |
+| **Update Frequency** | High - rule refinements                       | Low - stable configurations          |
+
+## Best Practices
+
+<Warning>
+  **Configuration Guidelines:** 1. **Use appropriate base configurations** -
+  Choose the most specific config for your project type 2. **Minimize custom
+  overrides** - The provided configurations are battle-tested 3. **Keep packages
+  updated** - Configuration packages receive frequent improvements 4. **Follow
+  the layered approach** - Use @repo/config-eslint + @repo/config together 5.
+  **Test configuration changes** - Always verify new rules don't break existing
+  code
+</Warning>
+
+### Recommended Project Setup
+
+For most projects, use both packages together:
+
+```bash
+# Install both configuration packages
+pnpm add -D @repo/config-eslint @repo/config
+
+# Use ESLint for code quality
+# Use TypeScript config for compilation
+# Use Next.js config for framework settings
+# Use Prettier for formatting
+```
+
+This provides comprehensive coverage of all development workflow aspects with
+consistent, optimized settings across the entire Forge platform.

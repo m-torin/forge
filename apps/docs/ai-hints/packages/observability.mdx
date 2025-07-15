@@ -1,0 +1,324 @@
+---
+title: "@repo/observability"
+description: AI hints for Sentry and observability package
+---
+
+# @repo/observability
+
+## Quick Facts
+
+- **Purpose**: Sentry error tracking and observability
+- **Layer**: 2 (Core Services)
+- **Edge Support**: ✅ Yes (HTTP-based implementation)
+- **Key Pattern**: Different implementations for server vs edge
+
+## Common Operations
+
+### Simplified Logging (Recommended)
+
+```typescript
+// Next.js server components, API routes, server actions
+import {
+  logInfo,
+  logError,
+  logWarn,
+  logDebug
+} from "@repo/observability/server/next";
+
+// Fire-and-forget - no await needed!
+logInfo("User action completed", { userId: user.id });
+logError("Operation failed", error, { context: "user-update" });
+logWarn("Rate limit approaching", { current: 85, limit: 100 });
+logDebug("Detailed debug info", { requestId });
+
+// Edge runtime (middleware)
+import { logInfo } from "@repo/observability/server/edge";
+export function middleware(request: Request) {
+  logInfo("Request received", { path: request.url });
+}
+
+// Optional configuration (once at startup)
+import { configureLogger } from "@repo/observability/server/next";
+configureLogger({
+  providers: {
+    console: { enabled: true, level: "debug" }
+  }
+});
+```
+
+### Server-Side Error Tracking
+
+```typescript
+import {
+  captureException,
+  captureMessage
+} from "@repo/observability/server/next";
+
+try {
+  // Risky operation
+  await performOperation();
+} catch (error) {
+  captureException(error, {
+    tags: { operation: "user-creation" },
+    user: { id: userId }
+  });
+  throw error;
+}
+
+// Custom message
+captureMessage("Custom event occurred", "info");
+```
+
+### Edge Runtime Observability
+
+```typescript
+// In middleware.ts or edge functions
+import { captureException } from "@repo/observability/server/edge";
+
+export async function middleware(request: NextRequest) {
+  try {
+    // Middleware logic
+  } catch (error) {
+    captureException(error, {
+      tags: { middleware: "auth" }
+    });
+    throw error;
+  }
+}
+```
+
+### Client-Side Error Tracking
+
+```typescript
+import { captureException } from '@repo/observability/client/next';
+
+export function ErrorBoundary({ children }: { children: ReactNode }) {
+  return (
+    <ErrorBoundary
+      fallback={<ErrorFallback />}
+      onError={(error, errorInfo) => {
+        captureException(error, {
+          contexts: { errorInfo }
+        });
+      }}
+    >
+      {children}
+    </ErrorBoundary>
+  );
+}
+```
+
+## Gotchas
+
+### ❌ Don't use server/next in edge runtime
+
+```typescript
+// ❌ Wrong - in middleware.ts
+import { captureException } from "@repo/observability/server/next";
+
+// ✅ Correct - use edge variant
+import { captureException } from "@repo/observability/server/edge";
+```
+
+### ❌ Don't use Node.js specific features in edge
+
+```typescript
+// ❌ Wrong - OpenTelemetry not available in edge
+import { trace } from "@opentelemetry/api";
+
+// ✅ Correct - edge implementation uses HTTP-based tracking
+import { captureException } from "@repo/observability/server/edge";
+```
+
+### ❌ Don't use the deprecated createLogger pattern
+
+```typescript
+// ❌ Wrong - deprecated async pattern
+import { createLogger } from "@repo/observability/server/next";
+const logger = createLogger();
+await logger.info("Message"); // Blocks execution
+
+// ✅ Correct - new fire-and-forget pattern
+import { logInfo } from "@repo/observability/server/next";
+logInfo("Message"); // Non-blocking
+```
+
+### ❌ Don't log sensitive information
+
+```typescript
+// ❌ Wrong - logging sensitive data
+captureException(error, {
+  extra: {
+    password: user.password, // Never log passwords
+    apiKey: process.env.SECRET_KEY // Never log secrets
+  }
+});
+
+// ✅ Correct - log only safe data
+captureException(error, {
+  tags: { userId: user.id },
+  extra: {
+    operation: "user-update",
+    timestamp: new Date().toISOString()
+  }
+});
+```
+
+## Performance Monitoring
+
+### Add Performance Context
+
+```typescript
+import { addBreadcrumb, setContext } from "@repo/observability/server/next";
+
+export async function performDatabaseOperation() {
+  addBreadcrumb({
+    message: "Starting database operation",
+    category: "database",
+    level: "info"
+  });
+
+  setContext("operation", {
+    type: "database",
+    table: "users",
+    method: "findMany"
+  });
+
+  const result = await db.user.findMany();
+  return result;
+}
+```
+
+### Track Custom Metrics
+
+```typescript
+import { setTag, setMeasurement } from "@repo/observability/server/next";
+
+export async function processUserData(userData: UserData) {
+  const startTime = Date.now();
+
+  setTag("user_type", userData.type);
+
+  try {
+    const result = await processData(userData);
+
+    setMeasurement("processing_time", Date.now() - startTime);
+    setTag("processing_result", "success");
+
+    return result;
+  } catch (error) {
+    setMeasurement("processing_time", Date.now() - startTime);
+    setTag("processing_result", "error");
+    throw error;
+  }
+}
+```
+
+## Error Context
+
+### Add User Context
+
+```typescript
+import { setUser } from "@repo/observability/server/next";
+
+export async function handleUserRequest(userId: string) {
+  setUser({
+    id: userId
+    // Don't include sensitive data like email or name
+  });
+
+  // Operations that might error
+}
+```
+
+### Add Request Context
+
+```typescript
+import { setContext } from "@repo/observability/server/next";
+
+export async function handleAPIRequest(request: Request) {
+  setContext("request", {
+    method: request.method,
+    url: request.url,
+    // Don't include sensitive headers
+    userAgent: request.headers.get("user-agent")
+  });
+}
+```
+
+## Environment-Specific Configuration
+
+### Server Configuration
+
+```typescript
+// Uses full Sentry SDK with all features
+import { init } from "@repo/observability/server/next";
+
+init({
+  dsn: process.env.SENTRY_DSN,
+  environment: process.env.NODE_ENV,
+  tracesSampleRate: 0.1
+});
+```
+
+### Edge Configuration
+
+```typescript
+// Uses lightweight HTTP-based implementation
+import { init } from "@repo/observability/server/edge";
+
+init({
+  dsn: process.env.SENTRY_DSN,
+  environment: process.env.NODE_ENV
+  // Limited options in edge runtime
+});
+```
+
+## Common Patterns
+
+### Server Action Error Handling
+
+```typescript
+import { captureException } from "@repo/observability/server/next";
+
+export async function createUser(formData: FormData) {
+  try {
+    const user = await db.user.create({
+      data: validated
+    });
+    return { success: true, user };
+  } catch (error) {
+    captureException(error, {
+      tags: { action: "create-user" },
+      extra: { formDataKeys: Object.keys(Object.fromEntries(formData)) }
+    });
+    return { success: false, error: "Failed to create user" };
+  }
+}
+```
+
+### API Route Error Handling
+
+```typescript
+import { captureException } from "@repo/observability/server/next";
+import { NextResponse } from "next/server";
+
+export async function POST(request: Request) {
+  try {
+    // API logic
+  } catch (error) {
+    captureException(error, {
+      tags: { api: "user-creation" }
+    });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+```
+
+## See Also
+
+- Task templates:
+  [Observability setup template](/ai-hints/task-templates#implementing-observability)

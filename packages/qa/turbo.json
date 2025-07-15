@@ -1,0 +1,30 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"],
+      "inputs": ["src/**", "package.json", "tsconfig.json", "tsconfig.build.json", "scripts/**"],
+      "cache": true
+    },
+    "test": {
+      "dependsOn": ["build"],
+      "outputs": ["coverage/**"],
+      "inputs": ["src/**", "*.test.*", "*.spec.*", "vitest.config.*", "vitest.setup.*"],
+      "cache": true
+    },
+    "typecheck": {
+      "dependsOn": ["^typecheck"],
+      "outputs": [],
+      "inputs": ["src/**", "*.ts", "*.tsx", "tsconfig.json", "tsconfig.build.json"],
+      "cache": true
+    },
+    "lint": {
+      "dependsOn": ["^lint"],
+      "outputs": [],
+      "inputs": ["src/**", "*.ts", "*.tsx", "eslint.config.*"],
+      "cache": true
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "extends": ["./src/knip/base.json"],
+  "entry": [
+    "src/next/**/*.ts",
+    "src/typescript/**/*.json",
+    "src/tsconfig/**/*.json",
+    "src/knip/**/*.json",
+    "**/*.config.{js,ts,mjs}",
+    "**/*.test.{ts,tsx}",
+    "**/*.spec.{ts,tsx}",
+    "__tests__/**/*.{ts,tsx}"
+  ],
+  "project": [
+    "src/next/**/*.ts",
+    "src/typescript/**/*.json",
+    "src/tsconfig/**/*.json",
+    "src/knip/**/*.json",
+    "**/*.config.{js,ts,mjs}",
+    "**/*.test.{ts,tsx}",
+    "**/*.spec.{ts,tsx}",
+    "__tests__/**/*.{ts,tsx}"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "_comment": "Example Edge Config structure for feature flags",
+  "flags": {
+    "example-flag": true,
+    "homepage-variant": "control",
+    "feature-rollout": 0.5,
+    "feature-config": {
+      "enabled": true,
+      "maxUsers": 1000,
+      "allowedRegions": ["us-east-1", "eu-west-1"]
+    },
+    "beta-feature": false,
+    "experiment-variant": "test-a",
+    "user-limits": {
+      "free": 10,
+      "pro": 100,
+      "enterprise": -1
+    },
+    "maintenance-mode": false,
+    "allowed-emails": ["admin@example.com", "test@example.com"],
+    "feature-percentage": 0.25,
+    "api-version": "v2"
+  },
+  "_other_keys": "Edge Config can contain other keys besides 'flags'",
+  "app-config": {
+    "theme": "dark",
+    "locale": "en"
+  }
+}

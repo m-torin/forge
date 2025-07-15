@@ -1,24 +1,132 @@
 {
   "name": "@repo/observability",
-  "version": "0.0.0",
   "private": true,
+  "type": "module",
+  "exports": {
+    "./client": "./src/client.ts",
+    "./server": "./src/server.ts",
+    "./client/next": "./src/client-next.ts",
+    "./server/next": "./src/server-next.ts",
+    "./server/edge": "./src/server-edge.ts",
+    "./server/next/edge": "./src/server-next-edge.ts",
+    "./shared-env": "./src/shared-env.ts",
+    "./keys": {
+      "types": "./keys.ts",
+      "import": "./keys.ts"
+    }
+  },
   "scripts": {
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "circular": "madge --circular --extensions ts,tsx,js,jsx .",
+    "coverage:collect": "vitest run --coverage --reporter=json",
+    "knip": "knip --fix --reporter json",
+    "lint": "eslint . --fix",
+    "test": "NODE_OPTIONS='--max-old-space-size=8192' vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:coverage:json": "vitest run --coverage --reporter=json",
+    "test:ui": "NODE_OPTIONS='--max-old-space-size=8192' vitest --ui",
+    "test:watch": "NODE_OPTIONS='--max-old-space-size=8192' vitest",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@logtail/next": "^0.2.0",
-    "@sentry/nextjs": "^9.22.0",
-    "@t3-oss/env-nextjs": "^0.13.4",
-    "react": "^19.1.0",
-    "server-only": "^0.0.1",
-    "zod": "^3.25.28"
+    "@t3-oss/env-nextjs": "catalog:",
+    "next": "catalog:",
+    "react": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
-    "@types/node": "22.15.21",
-    "@types/react": "19.1.5",
-    "@types/react-dom": "^19.1.5",
-    "typescript": "^5.8.3"
+    "@babel/parser": "^7.28.0",
+    "@babel/traverse": "^7.28.0",
+    "@babel/types": "^7.28.1",
+    "@logtail/browser": "^0.5.4",
+    "@logtail/next": "^0.2.1",
+    "@logtail/node": "^0.5.5",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.62.0",
+    "@opentelemetry/exporter-jaeger": "^2.0.1",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.203.0",
+    "@opentelemetry/resources": "^2.0.1",
+    "@opentelemetry/sdk-node": "^0.203.0",
+    "@opentelemetry/semantic-conventions": "^1.36.0",
+    "@opentelemetry/winston-transport": "^0.14.0",
+    "@repo/config": "workspace:*",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/qa": "workspace:*",
+    "@sentry/nextjs": "catalog:",
+    "@sentry/node": "^9.38.0",
+    "@sentry/react": "^9.38.0",
+    "@types/babel__traverse": "^7.20.7",
+    "@vercel/otel": "^1.13.0",
+    "jsdom": "catalog:",
+    "pino": "^9.7.0",
+    "vite": "catalog:",
+    "winston": "^3.17.0"
+  },
+  "peerDependencies": {
+    "@grafana/faro-web-sdk": "^1.4.0",
+    "@logtail/browser": "^0.5.4",
+    "@logtail/next": "^0.2.0",
+    "@logtail/node": "^0.5.5",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.60.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.202.0",
+    "@opentelemetry/resources": "^2.0.1",
+    "@opentelemetry/sdk-node": "^0.202.0",
+    "@opentelemetry/semantic-conventions": "^1.34.0",
+    "@sentry/nextjs": "catalog:",
+    "@sentry/node": "^9.28.1",
+    "@sentry/react": "^9.28.1",
+    "@vercel/otel": "^1.13.0",
+    "pino": "^9.7.0",
+    "winston": "^3.17.0"
+  },
+  "peerDependenciesMeta": {
+    "@grafana/faro-web-sdk": {
+      "optional": true
+    },
+    "@logtail/browser": {
+      "optional": true
+    },
+    "@logtail/next": {
+      "optional": true
+    },
+    "@logtail/node": {
+      "optional": true
+    },
+    "@opentelemetry/api": {
+      "optional": true
+    },
+    "@opentelemetry/auto-instrumentations-node": {
+      "optional": true
+    },
+    "@opentelemetry/exporter-trace-otlp-http": {
+      "optional": true
+    },
+    "@opentelemetry/resources": {
+      "optional": true
+    },
+    "@opentelemetry/sdk-node": {
+      "optional": true
+    },
+    "@opentelemetry/semantic-conventions": {
+      "optional": true
+    },
+    "@sentry/nextjs": {
+      "optional": true
+    },
+    "@sentry/node": {
+      "optional": true
+    },
+    "@sentry/react": {
+      "optional": true
+    },
+    "@vercel/otel": {
+      "optional": true
+    },
+    "pino": {
+      "optional": true
+    },
+    "winston": {
+      "optional": true
+    }
   }
 }

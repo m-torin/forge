@@ -1,0 +1,445 @@
+---
+title: "Architecture Overview"
+description:
+  "Comprehensive architecture guide for the Forge platform including monorepo
+  structure, package layers, and design patterns"
+icon: "building"
+---
+
+# Platform Architecture
+
+Comprehensive architecture overview of the Forge platform, covering monorepo
+structure, package layering, design patterns, and integration strategies across
+all applications and services.
+
+## Overview
+
+The Forge platform is built on a modern monorepo architecture using Turborepo
+and pnpm workspaces, with strict package layering to prevent circular
+dependencies and ensure maintainable, scalable code organization.
+
+<CardGroup cols={2}>
+  <Card title="Monorepo Structure" icon="cubes">
+    Turborepo with pnpm workspaces for efficient development and builds
+  </Card>
+  <Card title="Layer Architecture" icon="layer-group">
+    7-layer package architecture preventing circular dependencies
+  </Card>
+  <Card title="Framework Agnostic" icon="puzzle">
+    Consistent interfaces supporting multiple implementation strategies
+  </Card>
+  <Card title="Type Safety" icon="shield-check">
+    End-to-end TypeScript with strict configurations and runtime validation
+  </Card>
+</CardGroup>
+
+## Project Structure
+
+```
+forge/
+├── apps/                    # Layer 7: Applications
+│   ├── docs/               # Documentation (Port 3800)
+│   ├── email/              # Email preview (Port 3500)
+│   ├── storybook/          # Component docs (Port 3700)
+│   └── studio/             # Prisma Studio (Port 3600)
+├── packages/               # Layers 1-6: Shared packages
+│   ├── typescript-config/  # Layer 1: Foundation
+│   ├── eslint-config/      # Layer 1: Foundation
+│   ├── database/           # Layer 3: Data
+│   ├── auth/               # Layer 5: Business Logic
+│   ├── analytics/          # Layer 4: Core Services
+│   └── design-system/      # Layer 6: UI
+└── infra/                  # Infrastructure as code
+```
+
+## Dependency Layers
+
+### Layer 1: Foundation (Core Infrastructure)
+
+No dependencies on other internal packages.
+
+- `@repo/typescript-config` - Shared TypeScript configurations
+- `@repo/eslint-config` - ESLint rules and configurations
+- `@repo/next-config` - Next.js configuration wrapper
+
+### Layer 2: Core Services
+
+Low-level services that other packages depend on.
+
+- `@repo/qa` - Vitest configuration and test utilities
+- `@repo/security` - Security headers and middleware
+- `@repo/observability` - Sentry error tracking and monitoring
+
+### Layer 3: Data Management
+
+Core data services.
+
+- `@repo/database` - Prisma ORM with PostgreSQL
+
+### Layer 4: Core Business Services
+
+Services implementing core functionality.
+
+- `@repo/analytics` - Multi-provider analytics + Feature Flags
+- `@repo/email` - Email templates with React Email and Resend
+- `@repo/notifications` - Knock (backend) and Mantine (frontend) notifications
+
+### Layer 5: Business Logic
+
+Higher-level services that compose core services.
+
+- `@repo/auth` - Better Auth with organizations, teams, and API keys
+- `@repo/payments` - Stripe integration for subscriptions and credits
+- `@repo/orchestration` - Workflow execution and job processing
+- `@repo/internationalization` - Multi-language support
+
+### Layer 5.5: Specialized Services
+
+Domain-specific services that may depend on multiple business logic packages.
+
+- `@repo/ai` - AI/LLM integrations and utilities
+- `@repo/storage` - File storage abstraction
+
+### Layer 6: UI Layer
+
+Frontend packages that consume all other services.
+
+- `@repo/design-system` - Composite UI components
+
+### Layer 7: Applications
+
+End-user applications that consume all packages.
+
+## Module System
+
+<Warning>**CRITICAL**: Forge uses **ESM modules only** (no CommonJS).</Warning>
+
+### Package Configuration
+
+- **Packages** (`/packages/*`) MUST have `"type": "module"` in package.json
+- **Apps** (`/apps/*`) should NOT have `"type": "module"` - Next.js handles ESM
+  automatically
+
+### Import Rules
+
+- All internal imports use `@repo/*` namespace
+- Packages are consumed directly from source (no build step required)
+- No circular dependencies allowed
+
+## Port Assignments
+
+| Application   | Port | Description        |
+| ------------- | ---- | ------------------ |
+| Email         | 3500 | Email preview      |
+| Studio        | 3600 | Prisma Studio      |
+| Storybook     | 3700 | Component docs     |
+| Documentation | 3800 | Documentation site |
+
+## Design Patterns
+
+### Four-File Export Pattern
+
+The platform uses a consistent four-file export pattern for environment-specific
+implementations:
+
+<CodeGroup>
+```json Package Exports
+{
+  "exports": {
+    "./client": "./src/client.ts",           // Browser (non-Next.js)
+    "./server": "./src/server.ts",           // Node.js (non-Next.js)
+    "./client/next": "./src/client-next.ts", // Next.js client (REQUIRED)
+    "./server/next": "./src/server-next.ts"  // Next.js server (REQUIRED)
+  }
+}
+```
+
+```typescript Usage Examples
+// ✅ CORRECT - Next.js app
+import { useAuth } from "@repo/auth/client/next";
+import { auth } from "@repo/auth/server/next";
+import { createAnalyticsClient } from "@repo/analytics/client/next";
+
+// ✅ CORRECT - Node.js worker/service
+import { createAuth } from "@repo/auth/server";
+import { createDatabase } from "@repo/database/server";
+
+// ❌ WRONG - Using non-Next.js import in Next.js
+import { createAuth } from "@repo/auth/client"; // NO!
+import { useDatabase } from "@repo/database/server"; // NO!
+```
+
+</CodeGroup>
+
+**Critical Rule: In Next.js apps, ALWAYS use `/next` variants**
+
+### Provider Pattern
+
+Multiple packages implement the provider pattern for maximum flexibility:
+
+<Tabs>
+  <Tab title="AI Package">
+    ```typescript
+    // Framework-agnostic AI with multiple implementation paths
+    const ai = createAI({
+      providers: [
+        { name: 'openai', type: 'ai-sdk' },      // ~90% use cases
+        { name: 'anthropic', type: 'direct' },    // Provider-specific features
+        { name: 'custom', type: 'custom' },       // Specialized needs
+      ],
+      routing: {
+        'moderate': 'anthropic-direct',
+        'default': 'openai-ai-sdk',
+      },
+    });
+    ```
+  </Tab>
+
+  <Tab title="Scraping Package">
+    ```typescript
+    // Multi-provider web scraping
+    const scraper = createServerScraping({
+      providers: [
+        { name: 'cheerio', type: 'html' },        // Fast static content
+        { name: 'playwright', type: 'browser' },  // JavaScript-heavy sites
+        { name: 'scrapingbee', type: 'managed' }, // Scale and protection
+      ],
+      routing: {
+        static: 'cheerio',
+        dynamic: 'playwright',
+        protected: 'scrapingbee',
+      },
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Type Safety Strategy
+
+The platform implements comprehensive type safety from development to runtime:
+
+<CodeGroup>
+```typescript Runtime Validation with Zod
+import { z } from 'zod/v4';
+
+// Define schema for runtime validation const UserSchema = z.object({ id:
+z.string().uuid(), email: z.string().email(), name: z.string().min(2), role:
+z.enum(['admin', 'user', 'moderator']), preferences: z.object({ theme:
+z.enum(['light', 'dark', 'auto']), notifications: z.boolean(), }), });
+
+// Infer TypeScript type from schema type User = z.infer<typeof UserSchema>;
+
+// Use in API routes with validation export async function POST(request:
+Request) { const body = await request.json();
+
+// Runtime validation with type safety const user = UserSchema.parse(body);
+
+// TypeScript knows user is properly typed return Response.json({ user }); }
+
+````
+
+```typescript Environment Configuration
+// env.ts (always in package/app root, never in src/)
+import { createEnv } from '@t3-oss/env-nextjs';
+import { z } from 'zod/v4';
+
+export const env = createEnv({
+  server: {
+    DATABASE_URL: z.string().url(),
+    OPENAI_API_KEY: z.string().min(1),
+    STRIPE_SECRET_KEY: z.string().min(1),
+  },
+  client: {
+    NEXT_PUBLIC_APP_URL: z.string().url(),
+    NEXT_PUBLIC_POSTHOG_KEY: z.string().min(1),
+  },
+  runtimeEnv: {
+    DATABASE_URL: process.env.DATABASE_URL,
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
+  },
+});
+````
+
+</CodeGroup>
+
+## Performance Architecture
+
+### Build Optimization
+
+<Tabs>
+  <Tab title="Bundle Analysis">
+    ```typescript
+    // Built-in bundle analysis
+    import { config, withAnalyzer } from '@repo/next-config';
+
+    const finalConfig = process.env.ANALYZE === 'true'
+      ? withAnalyzer(config)
+      : config;
+
+    export default finalConfig;
+
+    // Usage: ANALYZE=true pnpm build
+    ```
+
+  </Tab>
+
+  <Tab title="Turborepo Caching">
+    ```json
+    {
+      "turbo": {
+        "tasks": {
+          "build": {
+            "dependsOn": ["^build"],
+            "outputs": [".next/**", "dist/**"],
+            "env": ["NODE_ENV"]
+          },
+          "test": {
+            "dependsOn": ["^build"],
+            "inputs": ["src/**/*.{ts,tsx}", "test/**/*.{ts,tsx}"]
+          }
+        }
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Runtime Performance
+
+<CodeGroup>
+```typescript Caching Strategy
+// Multi-layer caching
+import { unstable_cache } from 'next/cache';
+import { createDatabaseClient } from '@repo/database/client/next';
+
+// Database query caching const getCachedUser = unstable_cache( async (userId:
+string) => { const db = createDatabaseClient(); return db.user.findUnique({
+where: { id: userId } }); }, ['user'], { revalidate: 300, // 5 minutes tags:
+['user'], } );
+
+````
+
+```typescript Image Optimization
+// Next.js config with advanced image optimization
+{
+  images: {
+    formats: ['image/webp', 'image/avif'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    domains: ['cdn.example.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**.amazonaws.com',
+        pathname: '/images/**',
+      },
+    ],
+  }
+}
+````
+
+</CodeGroup>
+
+## Security Architecture
+
+<CodeGroup>
+```typescript Authentication & Authorization
+// Better Auth with comprehensive features
+import { auth } from '@repo/auth/server/next';
+import { rateLimit } from '@repo/security/rate-limit';
+
+export async function secureAction() {
+  // Rate limiting
+  await rateLimit('user-action', { requests: 10, window: '1m' });
+
+// Authentication const session = await auth(); if (!session?.user) throw new
+Error('Unauthorized');
+
+// Authorization if (!session.user.permissions.includes('admin')) { throw new
+Error('Insufficient permissions'); }
+
+// Action implementation return performSecureOperation(); }
+
+````
+
+```typescript Content Security Policy
+// Security headers configuration
+import { securityHeaders } from '@repo/security/headers';
+
+export default {
+  headers: async () => [
+    {
+      source: '/(.*)',
+      headers: securityHeaders({
+        contentSecurityPolicy: {
+          'default-src': ["'self'"],
+          'script-src': ["'self'", "'unsafe-eval'", "'unsafe-inline'"],
+          'style-src': ["'self'", "'unsafe-inline'"],
+          'img-src': ["'self'", 'data:', 'https:'],
+          'font-src': ["'self'"],
+          'object-src': ["'none'"],
+          'base-uri': ["'self'"],
+          'form-action': ["'self'"],
+          'frame-ancestors': ["'none'"],
+          'upgrade-insecure-requests': [],
+        },
+      }),
+    },
+  ],
+};
+````
+
+</CodeGroup>
+
+## Key Design Principles
+
+<Warning>
+  **Architecture Guidelines:** - Always follow the package layer hierarchy to
+  prevent circular dependencies - Use the four-file export pattern for
+  environment-specific code - Implement proper error boundaries and fallback
+  mechanisms - Validate all external inputs with Zod schemas - Use TypeScript
+  strict mode and maintain high type coverage - Implement comprehensive testing
+  at all architectural layers - Monitor performance and optimize bundle sizes
+  regularly
+</Warning>
+
+### Recommended Patterns
+
+1. **Package Development**
+   - Start with clear interface definitions
+   - Implement comprehensive error handling
+   - Use provider patterns for flexibility
+   - Maintain backward compatibility
+
+2. **Application Development**
+   - Prefer server actions over API routes
+   - Use Mantine components with Zod validation
+   - Implement proper loading and error states
+   - Optimize for Core Web Vitals
+
+3. **Performance Optimization**
+   - Use Next.js built-in optimizations
+   - Implement proper caching strategies
+   - Monitor bundle sizes and dependencies
+   - Use lazy loading and code splitting
+
+4. **Security Implementation**
+   - Validate all inputs with runtime schemas
+   - Implement proper authentication flows
+   - Use security headers and CSP policies
+   - Regular security audits and updates
+
+5. **Environment Configuration**
+   - Use standardized SafeEnv pattern across all packages
+   - Prevent white screen crashes with graceful fallbacks
+   - Validate environment variables with Zod schemas
+   - See
+     [Environment Configuration](/repo/architecture/environment-configuration)
+     for details
+
+The Forge platform architecture provides a solid foundation for building
+scalable, maintainable applications while maintaining flexibility and
+performance across all layers of the system.

@@ -1,20 +1,42 @@
 {
   "name": "@repo/security",
-  "version": "0.0.0",
   "private": true,
   "type": "module",
+  "exports": {
+    "./client": "./src/client.ts",
+    "./server": "./src/server.ts",
+    "./client/next": "./src/client-next.ts",
+    "./server/next": "./src/server-next.ts",
+    "./keys": {
+      "types": "./keys.ts",
+      "import": "./keys.ts"
+    }
+  },
   "scripts": {
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "circular": "madge --circular --extensions ts,tsx,js,jsx .",
+    "coverage:collect": "vitest run --coverage --reporter=json",
+    "knip": "knip --fix --reporter json",
+    "lint": "eslint . --fix",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:coverage:json": "vitest run --coverage --reporter=json",
+    "test:ui": "vitest --ui",
+    "test:watch": "vitest",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@arcjet/next": "1.0.0-beta.7",
-    "@nosecone/next": "1.0.0-beta.7",
-    "@t3-oss/env-nextjs": "^0.13.4",
-    "zod": "^3.25.28"
+    "@arcjet/next": "1.0.0-beta.9",
+    "@nosecone/next": "1.0.0-beta.9",
+    "@repo/database": "workspace:*",
+    "@t3-oss/env-nextjs": "catalog:",
+    "@upstash/ratelimit": "^2.0.5",
+    "chalk": "^5.4.1",
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
-    "typescript": "^5.8.3"
+    "@repo/config": "workspace:*",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/qa": "workspace:*",
+    "vite-tsconfig-paths": "^5.1.4"
   }
 }

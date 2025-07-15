@@ -1,53 +1,59 @@
-import { Toaster } from '@repo/design-system/components/ui/sonner';
-import { TooltipProvider } from '@repo/design-system/components/ui/tooltip';
-import { ThemeProvider } from '@repo/design-system/providers/theme';
+import { MantineProvider } from '@mantine/core';
 import { withThemeByClassName } from '@storybook/addon-themes';
-import type { Preview } from '@storybook/react';
 
-import '@repo/design-system/styles/globals.css';
+// Temporarily comment out auth decorator until proper export is available
+// import { authDecorators } from '@repo/auth/testing/mocks';
+
+import { Preview } from '@storybook/nextjs';
+
+// Import global styles
+import '../styles/globals.css';
 
 const preview: Preview = {
+  decorators: [
+    withThemeByClassName({
+      defaultTheme: 'light',
+      themes: {
+        dark: 'dark',
+        light: 'light',
+      },
+    }),
+    // authDecorators.authenticated(),
+    (Story: any) => {
+      return (
+        <MantineProvider>
+          <Story />
+        </MantineProvider>
+      );
+    },
+  ],
   parameters: {
+    chromatic: {
+      modes: {
+        dark: {
+          className: 'dark',
+          theme: 'dark',
+        },
+        light: {
+          className: 'light',
+          theme: 'light',
+        },
+      },
+    },
     controls: {
       matchers: {
         color: /(background|color)$/i,
         date: /Date$/i,
       },
     },
-    chromatic: {
-      modes: {
-        light: {
-          theme: 'light',
-          className: 'light',
-        },
-        dark: {
-          theme: 'dark',
-          className: 'dark',
-        },
-      },
+    themes: {
+      default: 'light',
+      list: [
+        { class: 'light', color: '#ffffff', name: 'light' },
+        { class: 'dark', color: '#000000', name: 'dark' },
+      ],
     },
   },
-  decorators: [
-    withThemeByClassName({
-      themes: {
-        light: 'light',
-        dark: 'dark',
-      },
-      defaultTheme: 'light',
-    }),
-    (Story) => {
-      return (
-        <div className="bg-background">
-          <ThemeProvider>
-            <TooltipProvider>
-              <Story />
-            </TooltipProvider>
-            <Toaster />
-          </ThemeProvider>
-        </div>
-      );
-    },
-  ],
 };
 
 export default preview;

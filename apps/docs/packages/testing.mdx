@@ -1,0 +1,58 @@
+---
+title: "QA Testing Package"
+description:
+  "Enterprise testing framework with comprehensive Redis testing capabilities"
+icon: "flask"
+---
+
+# QA Testing Package
+
+<Info>
+  **Package Name Update**: This package is now correctly named `@repo/qa`. All
+  documentation has been moved to the QA package section.
+</Info>
+
+The QA testing package provides enterprise-grade testing infrastructure for the
+monorepo. This redirect page ensures all links continue to work.
+
+## 🔄 Redirected Documentation
+
+This documentation has been moved to the **QA Package** section for proper
+organization:
+
+**👉 [Complete QA Testing Documentation](/packages/qa/overview)**
+
+## Quick Links
+
+- **[QA Package Overview](/packages/qa/overview)** - Complete testing framework
+  documentation
+- **[Redis Testing](/packages/qa/redis-testing-overview)** - Comprehensive Redis
+  testing framework
+- **[Vitest Utilities](/packages/qa/vitest-utilities)** - Test configuration and
+  utilities
+- **[Playwright Testing](/packages/qa/playwright-testing)** - E2E testing
+  framework
+
+## Quick Start
+
+```bash
+# Install the QA package
+pnpm add -D @repo/qa
+```
+
+```typescript
+// Use QA package imports
+import { createRedisClient } from "@repo/qa/vitest/mocks/upstash-redis";
+import { render, screen } from "@repo/qa/vitest";
+
+describe("Example Tests", () => {
+  it("should work with Redis", async () => {
+    const redis = createRedisClient();
+    await redis.set("test:key", "test-value");
+    expect(await redis.get("test:key")).toBe("test-value");
+  });
+});
+```
+
+**📚 For complete documentation, see
+[QA Package Overview](/packages/qa/overview)**

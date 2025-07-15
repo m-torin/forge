@@ -1,0 +1,15 @@
+# Build output
+dist/
+
+# Test coverage
+coverage/
+
+# Test artifacts
+test-results/
+
+# Dependencies
+node_modules/
+
+# Temp files
+*.log
+.DS_Store

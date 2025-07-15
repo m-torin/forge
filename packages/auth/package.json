@@ -1,26 +1,56 @@
 {
   "name": "@repo/auth",
-  "version": "0.0.0",
   "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/types.ts",
+    "./client": "./src/client.ts",
+    "./server": "./src/server.ts",
+    "./client/next": "./src/client-next.ts",
+    "./server/next": "./src/server-next.ts",
+    "./server/edge": "./src/server-edge.ts",
+    "./actions": "./src/server-actions.ts",
+    "./shared-env": "./src/shared/auth.ts",
+    "./types": "./src/types/index.ts",
+    "./components": "./src/components/index.ts",
+    "./testing": "./src/testing/index.ts",
+    "./testing/mocks": "./src/testing/mocks/index.ts",
+    "./config": "./src/shared/config.ts"
+  },
   "scripts": {
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "circular": "madge --circular --extensions ts,tsx,js,jsx .",
+    "coverage:collect": "vitest run --coverage --reporter=json",
+    "create-users-direct": "node --experimental-strip-types src/scripts/create-users-direct.ts",
+    "create-users-direct:doppler": "doppler run -- node --experimental-strip-types src/scripts/create-users-direct.ts",
+    "knip": "knip --fix --reporter json",
+    "lint": "eslint . --fix",
+    "setup-passwords": "node --experimental-strip-types src/scripts/setup-passwords.ts",
+    "setup-passwords:doppler": "doppler run -- node --experimental-strip-types src/scripts/setup-passwords.ts",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:coverage:json": "vitest run --coverage --reporter=json",
+    "test:ui": "vitest --ui",
+    "test:watch": "vitest",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@clerk/nextjs": "^6.20.0",
-    "@clerk/themes": "^2.2.46",
-    "@t3-oss/env-nextjs": "^0.13.4",
+    "@repo/analytics": "workspace:*",
+    "@repo/database": "workspace:*",
+    "@repo/email": "workspace:*",
+    "@repo/observability": "workspace:*",
+    "@t3-oss/env-nextjs": "catalog:",
+    "better-auth": "^1.2.12",
+    "better-auth-harmony": "^1.2.5",
+    "chalk": "^5.4.1",
+    "next": "catalog:",
     "next-themes": "^0.4.6",
-    "react": "^19.1.0",
+    "react": "catalog:",
     "server-only": "^0.0.1",
-    "zod": "^3.25.28"
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@clerk/types": "^4.59.1",
-    "@repo/typescript-config": "workspace:*",
-    "@types/node": "22.15.21",
-    "@types/react": "19.1.5",
-    "@types/react-dom": "^19.1.5",
-    "typescript": "^5.8.3"
+    "@repo/config": "workspace:*",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/qa": "workspace:*"
   }
 }

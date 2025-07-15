@@ -1,0 +1,500 @@
+---
+title: "Server Actions"
+description: "Ready-to-use server actions for Next.js applications"
+icon: "server"
+---
+
+# Server Actions
+
+The storage package provides a comprehensive set of server actions that work
+seamlessly with Next.js App Router and Server Components.
+
+## Media Actions
+
+Core server actions for file operations without database integration.
+
+### uploadMediaAction
+
+Upload a file to storage with metadata and progress tracking:
+
+```typescript
+import { uploadMediaAction } from "@repo/storage/server/next";
+import { logInfo } from "@repo/observability/server/next";
+import { logError } from "@repo/observability/server/next";
+
+const result = await uploadMediaAction(
+  "products/123/hero.jpg", // Storage key
+  file, // File, Buffer, Blob, or ArrayBuffer
+  {
+    contentType: "image/jpeg",
+    metadata: {
+      productId: "123",
+      uploadedBy: "user-456",
+      uploadedAt: new Date().toISOString()
+    },
+    onProgress: (progress) => {
+      logInfo("Upload progress", { percent: progress.percent });
+    }
+  }
+);
+
+if (result.success) {
+  logInfo("File uploaded successfully", {
+    url: result.data.url,
+    size: result.data.size,
+    etag: result.data.etag
+  });
+} else {
+  logError("File upload failed", {
+    error: result.error,
+    fileName: result.fileName,
+    timestamp: new Date().toISOString()
+  });
+}
+```
+
+### getMediaUrlAction
+
+Get a URL for a file with optional signing:
+
+```typescript
+import { getMediaUrlAction } from "@repo/storage/server/next";
+
+// Product photos are automatically signed
+const productUrl = await getMediaUrlAction("products/123/hero.jpg", {
+  context: "product", // Automatic signing
+  expiresIn: 3600 // 1 hour
+});
+
+// Force signing for any file
+const signedUrl = await getMediaUrlAction("documents/report.pdf", {
+  forceSign: true,
+  expiresIn: 1800 // 30 minutes
+});
+
+// Public URL (no signing)
+const publicUrl = await getMediaUrlAction("logos/company.svg", {
+  context: "public"
+});
+```
+
+### deleteMediaAction
+
+Delete a file from storage:
+
+```typescript
+import { deleteMediaAction } from "@repo/storage/server/next";
+
+const result = await deleteMediaAction("products/123/old-image.jpg");
+
+if (result.success) {
+  logInfo("File deleted successfully");
+}
+```
+
+### listMediaAction
+
+List files in storage with optional prefix:
+
+```typescript
+import { listMediaAction } from "@repo/storage/server/next";
+
+// List all product images
+const productImages = await listMediaAction({
+  prefix: "products/",
+  maxKeys: 100
+});
+
+if (productImages.success) {
+  productImages.data.objects.forEach((obj) => {
+    logInfo("Product image found", { key: obj.key, size: obj.size });
+  });
+}
+```
+
+## Product Media Actions
+
+Business logic layer for product-specific media operations.
+
+### uploadProductMediaAction
+
+Upload media specifically for products with validation:
+
+```typescript
+import { uploadProductMediaAction } from "@repo/storage/server/next";
+
+const result = await uploadProductMediaAction(
+  "product-123",
+  [
+    {
+      filename: "hero.jpg",
+      contentType: "image/jpeg",
+      data: heroImageBuffer
+    },
+    {
+      filename: "thumbnail.jpg",
+      contentType: "image/jpeg",
+      data: thumbnailBuffer
+    }
+  ],
+  {
+    context: "admin",
+    altText: "Product hero image",
+    description: "Main product image",
+    tags: ["hero", "featured"]
+  }
+);
+
+if (result.success) {
+  result.data.forEach(({ key, url, mediaId }) => {
+    logInfo("Product media uploaded", { key, url, mediaId });
+  });
+}
+```
+
+### getProductMediaUrlsAction
+
+Get signed URLs for all product media:
+
+```typescript
+import { getProductMediaUrlsAction } from "@repo/storage/server/next";
+
+const urls = await getProductMediaUrlsAction("product-123", {
+  context: "customer", // 1-hour expiration
+  includeDeleted: false
+});
+
+if (urls.success) {
+  urls.data.forEach(({ key, url, type }) => {
+    logInfo("Product media URL retrieved", { type, url });
+  });
+}
+```
+
+### deleteProductMediaAction
+
+Delete specific product media:
+
+```typescript
+import { deleteProductMediaAction } from "@repo/storage/server/next";
+
+const result = await deleteProductMediaAction("product-123", [
+  "hero.jpg",
+  "thumbnail.jpg"
+]);
+
+if (result.success) {
+  logInfo("Product media deleted", { deletedCount: result.data.deleted });
+}
+```
+
+## Database-Integrated Actions
+
+Actions that work with the Prisma Media model for unified storage and database
+operations.
+
+### uploadAndCreateMediaAction
+
+Upload a file and create a Media record atomically:
+
+```typescript
+import { uploadAndCreateMediaAction } from "@repo/storage/server/next";
+
+const result = await uploadAndCreateMediaAction({
+  file: imageFile,
+  type: "IMAGE",
+  altText: "Product hero image",
+  productId: "product-123", // Auto-associates
+  userId: session.user.id,
+  width: 1200,
+  height: 800,
+  sortOrder: 0
+});
+
+if (result.success) {
+  const { media, url } = result.data;
+  logInfo("Media created successfully", { mediaId: media.id, url });
+}
+```
+
+### getMediaSignedUrlAction
+
+Get a signed URL from a Media record:
+
+```typescript
+import { getMediaSignedUrlAction } from "@repo/storage/server/next";
+
+// Automatic context detection based on associations
+const url = await getMediaSignedUrlAction(mediaId, {
+  expiresIn: 3600, // Optional
+  forceRefresh: true // Update URL in database
+});
+
+if (url.success) {
+  logInfo("Signed URL retrieved", { url: url.data });
+}
+```
+
+### deleteMediaAndStorageAction
+
+Soft delete Media record and remove from storage:
+
+```typescript
+import { deleteMediaAndStorageAction } from "@repo/storage/server/next";
+
+const result = await deleteMediaAndStorageAction(
+  mediaId,
+  userId // Track who deleted it
+);
+
+if (result.success) {
+  logInfo("Media soft deleted and removed from storage");
+}
+```
+
+### bulkRefreshMediaUrlsAction
+
+Refresh signed URLs for multiple Media records:
+
+```typescript
+import { bulkRefreshMediaUrlsAction } from "@repo/storage/server/next";
+
+const mediaIds = ["media-1", "media-2", "media-3"];
+
+const urls = await bulkRefreshMediaUrlsAction(mediaIds, {
+  expiresIn: 7200 // 2 hours
+});
+
+if (urls.success) {
+  // Access URLs by media ID
+  logInfo("Bulk URLs refreshed", {
+    media1Url: urls.data["media-1"],
+    media2Url: urls.data["media-2"]
+  });
+}
+```
+
+## Usage in Server Components
+
+### Product Page Example
+
+```typescript
+// app/products/[id]/page.tsx
+import {
+  getMediaSignedUrlAction,
+  bulkRefreshMediaUrlsAction
+} from '@repo/storage/server/next';
+
+export default async function ProductPage({ params }) {
+  const product = await prisma.product.findUnique({
+    where: { id: params.id },
+    include: {
+      media: {
+        where: { deletedAt: null },
+        orderBy: { sortOrder: 'asc' }
+      }
+    }
+  });
+
+  // Get signed URLs for all media
+  const mediaIds = product.media.map(m => m.id);
+  const urls = await bulkRefreshMediaUrlsAction(mediaIds);
+
+  return (
+    <div>
+      {product.media.map(media => (
+        <img
+          key={media.id}
+          src={urls.data[media.id]}
+          alt={media.altText || product.name}
+        />
+      ))}
+    </div>
+  );
+}
+```
+
+### Upload Form Example
+
+```typescript
+// app/admin/products/[id]/upload/page.tsx
+export default function UploadPage({ params }) {
+  async function uploadImage(formData: FormData) {
+    'use server';
+
+    const file = formData.get('image') as File;
+    if (!file) return;
+
+    const buffer = await file.arrayBuffer();
+
+    const result = await uploadAndCreateMediaAction({
+      file: buffer,
+      type: 'IMAGE',
+      altText: formData.get('altText') as string,
+      productId: params.id,
+      userId: session.user.id
+    });
+
+    if (result.success) {
+      revalidatePath(`/admin/products/${params.id}`);
+      redirect(`/admin/products/${params.id}`);
+    }
+  }
+
+  return (
+    <form action={uploadImage}>
+      <input type="file" name="image" accept="image/*" required />
+      <input type="text" name="altText" placeholder="Alt text" />
+      <button type="submit">Upload</button>
+    </form>
+  );
+}
+```
+
+## Error Handling
+
+All server actions return a consistent response format:
+
+```typescript
+interface MediaActionResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+```
+
+Handle errors gracefully:
+
+```typescript
+const result = await uploadMediaAction(key, file);
+
+if (!result.success) {
+  // Handle error
+  logError('Upload failed', {
+    error: result.error,
+    fileName: result.fileName,
+    timestamp: new Date().toISOString()
+  });
+
+  // Show user-friendly message
+  return (
+    <div className="error">
+      Failed to upload file. Please try again.
+    </div>
+  );
+}
+
+// Success - use result.data
+const { url, size } = result.data;
+```
+
+## Performance Tips
+
+### 1. Use Bulk Operations
+
+```typescript
+// ❌ Bad: Individual operations
+for (const mediaId of mediaIds) {
+  await getMediaSignedUrlAction(mediaId);
+}
+
+// ✅ Good: Bulk operation
+const urls = await bulkRefreshMediaUrlsAction(mediaIds);
+```
+
+### 2. Leverage Caching
+
+Server actions include built-in caching for signed URLs:
+
+```typescript
+// First call generates URL
+const url1 = await getMediaUrlAction(key);
+
+// Subsequent calls use cache (15-minute TTL)
+const url2 = await getMediaUrlAction(key);
+```
+
+### 3. Stream Large Files
+
+For large uploads, use streaming:
+
+```typescript
+import { Readable } from "stream";
+
+const stream = fs.createReadStream("large-file.zip");
+const result = await uploadMediaAction("documents/large-file.zip", stream, {
+  contentType: "application/zip"
+  // Streaming handles memory efficiently
+});
+```
+
+## Security Considerations
+
+### 1. Validate User Permissions
+
+```typescript
+async function uploadProductMedia(productId: string, file: File) {
+  "use server";
+
+  const session = await auth();
+  if (!session) {
+    throw new Error("Unauthorized");
+  }
+
+  // Check user can modify this product
+  const canEdit = await userCanEditProduct(session.user.id, productId);
+  if (!canEdit) {
+    throw new Error("Forbidden");
+  }
+
+  // Proceed with upload
+  return uploadAndCreateMediaAction({
+    file,
+    productId,
+    userId: session.user.id
+  });
+}
+```
+
+### 2. Sanitize File Names
+
+```typescript
+function sanitizeFileName(filename: string): string {
+  return filename
+    .replace(/[^a-zA-Z0-9.-]/g, "-")
+    .replace(/--+/g, "-")
+    .toLowerCase();
+}
+
+const safeKey = `uploads/${sanitizeFileName(file.name)}`;
+```
+
+### 3. Validate File Types
+
+```typescript
+const ALLOWED_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif"
+];
+
+if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+  throw new Error("Invalid file type");
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Signed URLs" href="/packages/storage/signed-urls" icon="shield">
+    Learn about secure URL generation
+  </Card>
+  <Card
+    title="Database Integration"
+    href="/packages/storage/database-integration"
+    icon="database"
+  >
+    Integrate with Prisma Media model
+  </Card>
+</CardGroup>

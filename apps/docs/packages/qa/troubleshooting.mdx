@@ -1,0 +1,985 @@
+---
+title: "Troubleshooting"
+description:
+  "Common issues, solutions, and debugging techniques for the QA testing
+  framework"
+icon: "bug"
+---
+
+# Troubleshooting
+
+Common issues, solutions, and debugging techniques for the `@repo/qa` testing
+framework.
+
+## Overview
+
+This guide covers:
+
+- **Common configuration issues** - Setup and configuration problems
+- **Test execution problems** - Runtime errors and failures
+- **Performance issues** - Slow tests and memory problems
+- **Mock and spy issues** - Problems with test doubles
+- **Database testing issues** - Connection and transaction problems
+- **CI/CD pipeline issues** - Build and deployment problems
+
+## Configuration Issues
+
+### Import and Module Resolution
+
+```typescript
+// ❌ Common import errors
+
+// Error: Cannot find module '@repo/qa/vitest/configs'
+import { createNextAppConfig } from "@repo/qa/vitest/configs";
+
+// Error: Module not found
+import { render } from "@repo/qa/vitest/utils/render";
+```
+
+**Solutions:**
+
+```typescript
+// ✅ Correct imports
+
+// Make sure package is installed and built
+// pnpm install @repo/qa
+// pnpm --filter @repo/qa build
+
+// Check package.json exports
+import { createNextAppConfig } from "@repo/qa/vitest/configs";
+import { render } from "@repo/qa/vitest/utils/render";
+
+// For TypeScript issues, check tsconfig.json
+{
+  "compilerOptions": {
+    "moduleResolution": "bundler",
+    "paths": {
+      "@repo/*": ["../../packages/*/src", "../../packages/*"]
+    }
+  }
+}
+```
+
+### Configuration File Issues
+
+```typescript
+// ❌ Common vitest.config.ts errors
+
+// Error: defineConfig is not a function
+import { defineConfig } from "vitest/config";
+import { createNextAppConfig } from "@repo/qa/vitest/configs";
+
+export default defineConfig(createNextAppConfig());
+```
+
+**Solutions:**
+
+```typescript
+// ✅ Correct configuration
+
+// Option 1: Use createNextAppConfig directly
+import { createNextAppConfig } from "@repo/qa/vitest/configs";
+
+export default createNextAppConfig({
+  setupFiles: ["./setup.ts"]
+});
+
+// Option 2: Merge with custom config
+import { defineConfig } from "vitest/config";
+import { createNextAppConfig } from "@repo/qa/vitest/configs";
+
+const baseConfig = createNextAppConfig();
+
+export default defineConfig({
+  ...baseConfig,
+  test: {
+    ...baseConfig.test,
+    // Your custom overrides
+    timeout: 10000
+  }
+});
+```
+
+### Environment Variable Issues
+
+```typescript
+// ❌ Common environment errors
+
+// Error: Environment validation failed
+const env = safeEnv();
+// TypeError: Cannot read property 'DATABASE_URL' of undefined
+```
+
+**Solutions:**
+
+```typescript
+// ✅ Proper environment handling
+
+// 1. Check .env.local file exists
+// 2. Verify environment variables are set
+// 3. Use proper fallbacks
+
+// setup.ts
+import { safeEnv } from "@/env";
+
+beforeAll(() => {
+  const env = safeEnv();
+
+  // Check critical environment variables
+  if (!env.DATABASE_URL) {
+    console.warn("DATABASE_URL not set, using SQLite in-memory");
+  }
+
+  if (!env.REDIS_URL) {
+    console.warn("REDIS_URL not set, using mock Redis");
+  }
+});
+
+// Or set test-specific environment
+process.env.NODE_ENV = "test";
+process.env.DATABASE_URL = "sqlite::memory:";
+```
+
+## Test Execution Issues
+
+### Test Timeouts
+
+```typescript
+// ❌ Common timeout issues
+
+describe("Slow operations", () => {
+  test("processes large dataset", async () => {
+    // This might timeout with default settings
+    const result = await processLargeDataset(millionRecords);
+    expect(result).toBeDefined();
+  });
+});
+```
+
+**Solutions:**
+
+```typescript
+// ✅ Timeout management
+
+// Option 1: Increase timeout for specific test
+test("processes large dataset", async () => {
+  const result = await processLargeDataset(millionRecords);
+  expect(result).toBeDefined();
+}, 30000); // 30 second timeout
+
+// Option 2: Configure globally
+// vitest.config.ts
+export default createNextAppConfig({
+  test: {
+    timeout: 10000, // 10 seconds default
+    hookTimeout: 10000 // Setup/teardown timeout
+  }
+});
+
+// Option 3: Optimize the test
+test("processes large dataset efficiently", async () => {
+  // Use smaller dataset for testing
+  const smallDataset = millionRecords.slice(0, 1000);
+  const result = await processLargeDataset(smallDataset);
+  expect(result).toBeDefined();
+});
+```
+
+### Memory Issues
+
+```typescript
+// ❌ Memory problems
+
+describe("Memory-intensive tests", () => {
+  test("handles large objects", () => {
+    const largeArray = new Array(1000000).fill("data");
+    // Memory usage keeps growing across tests
+    globalThis.testData = largeArray; // Memory leak!
+  });
+});
+```
+
+**Solutions:**
+
+```typescript
+// ✅ Memory management
+
+describe("Memory-efficient tests", () => {
+  let testData: any[] = [];
+
+  afterEach(() => {
+    // Clean up after each test
+    testData = [];
+
+    // Force garbage collection in Node.js
+    if (global.gc) {
+      global.gc();
+    }
+  });
+
+  test("handles large objects", () => {
+    testData = new Array(100000).fill("data"); // Smaller dataset
+    // Process data
+    expect(testData.length).toBe(100000);
+
+    // Clear reference
+    testData = [];
+  });
+});
+
+// Use memory monitoring
+import { monitorMemoryUsage } from "@repo/qa/vitest/utils/test-helpers";
+
+test("monitors memory usage", () => {
+  const monitor = monitorMemoryUsage();
+
+  // Your test code
+
+  const usage = monitor.getUsage();
+  expect(usage.peak).toBeLessThan(100 * 1024 * 1024); // < 100MB
+});
+```
+
+### Async Test Issues
+
+```typescript
+// ❌ Common async problems
+
+describe("Async operations", () => {
+  test("handles promises", () => {
+    // Missing await - test completes before promise resolves
+    fetchData().then((data) => {
+      expect(data).toBeDefined();
+    });
+  });
+
+  test("handles callbacks", (done) => {
+    processData((error, result) => {
+      expect(error).toBeNull();
+      expect(result).toBeDefined();
+      // Missing done() call
+    });
+  });
+});
+```
+
+**Solutions:**
+
+```typescript
+// ✅ Proper async handling
+
+describe("Async operations", () => {
+  test("handles promises correctly", async () => {
+    const data = await fetchData();
+    expect(data).toBeDefined();
+  });
+
+  test("handles callbacks correctly", (done) => {
+    processData((error, result) => {
+      try {
+        expect(error).toBeNull();
+        expect(result).toBeDefined();
+        done(); // Always call done
+      } catch (e) {
+        done(e); // Pass errors to done
+      }
+    });
+  });
+
+  test("handles multiple promises", async () => {
+    const [user, profile, settings] = await Promise.all([
+      fetchUser(),
+      fetchProfile(),
+      fetchSettings()
+    ]);
+
+    expect(user).toBeDefined();
+    expect(profile).toBeDefined();
+    expect(settings).toBeDefined();
+  });
+});
+```
+
+## Mock and Spy Issues
+
+### Mock Not Working
+
+```typescript
+// ❌ Common mocking problems
+
+import { vi } from "vitest";
+import { emailService } from "@repo/email";
+
+describe("Email service", () => {
+  test("sends email", async () => {
+    // Mock applied too late
+    const mockSend = vi.fn();
+    emailService.send = mockSend;
+
+    await sendWelcomeEmail("user@example.com");
+
+    // Mock not called - original function was used
+    expect(mockSend).toHaveBeenCalled();
+  });
+});
+```
+
+**Solutions:**
+
+```typescript
+// ✅ Proper mocking
+
+import { vi, beforeEach } from "vitest";
+import { emailService } from "@repo/email";
+
+// Mock at module level
+vi.mock("@repo/email", () => ({
+  emailService: {
+    send: vi.fn()
+  }
+}));
+
+describe("Email service", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test("sends email", async () => {
+    const mockSend = vi.mocked(emailService.send);
+    mockSend.mockResolvedValue({ id: "email-123", status: "sent" });
+
+    await sendWelcomeEmail("user@example.com");
+
+    expect(mockSend).toHaveBeenCalledWith({
+      to: "user@example.com",
+      template: "welcome"
+    });
+  });
+});
+
+// Or use automatic mocking
+import { setupEmailMocks } from "@repo/qa/vitest/mocks/email";
+
+describe("Email service", () => {
+  beforeEach(() => {
+    setupEmailMocks();
+  });
+
+  test("sends email", async () => {
+    await sendWelcomeEmail("user@example.com");
+
+    expect(emailService.send).toHaveBeenCalled();
+  });
+});
+```
+
+### Spy Restoration Issues
+
+```typescript
+// ❌ Spy cleanup problems
+
+describe("Console logging", () => {
+  test("logs messages", () => {
+    const consoleSpy = vi.spyOn(console, "log");
+
+    logMessage("test");
+
+    expect(consoleSpy).toHaveBeenCalledWith("test");
+    // Missing cleanup - affects other tests
+  });
+});
+```
+
+**Solutions:**
+
+```typescript
+// ✅ Proper spy cleanup
+
+describe("Console logging", () => {
+  let consoleSpy: any;
+
+  beforeEach(() => {
+    consoleSpy = vi.spyOn(console, "log");
+  });
+
+  afterEach(() => {
+    consoleSpy.mockRestore();
+  });
+
+  test("logs messages", () => {
+    logMessage("test");
+    expect(consoleSpy).toHaveBeenCalledWith("test");
+  });
+
+  // Or use automatic cleanup
+  test("logs with auto cleanup", () => {
+    const spy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    logMessage("test");
+    expect(spy).toHaveBeenCalledWith("test");
+
+    spy.mockRestore();
+  });
+});
+
+// Use helper for consistent cleanup
+import { createSpyWithCleanup } from "@repo/qa/vitest/utils/test-helpers";
+
+test("uses spy helper", () => {
+  const { spy, cleanup } = createSpyWithCleanup(console, "log");
+
+  logMessage("test");
+  expect(spy).toHaveBeenCalledWith("test");
+
+  cleanup(); // Or use in afterEach
+});
+```
+
+## Database Testing Issues
+
+### Connection Problems
+
+```typescript
+// ❌ Database connection issues
+
+describe("Database operations", () => {
+  test("creates user", async () => {
+    // Connection not established
+    const user = await db.user.create({
+      data: { name: "John", email: "john@example.com" }
+    });
+    // Error: Database connection not available
+  });
+});
+```
+
+**Solutions:**
+
+```typescript
+// ✅ Proper database setup
+
+import {
+  setupTestDatabase,
+  cleanupDatabase
+} from "@repo/qa/vitest/setup/database";
+
+describe("Database operations", () => {
+  beforeAll(async () => {
+    await setupTestDatabase({
+      schema: "latest",
+      seed: "minimal"
+    });
+  });
+
+  afterAll(async () => {
+    await cleanupDatabase();
+  });
+
+  beforeEach(async () => {
+    // Clean data between tests
+    await db.user.deleteMany();
+  });
+
+  test("creates user", async () => {
+    const user = await db.user.create({
+      data: { name: "John", email: "john@example.com" }
+    });
+
+    expect(user.id).toBeTruthy();
+    expect(user.name).toBe("John");
+  });
+});
+
+// Or use transaction rollback
+import { withTransaction } from "@repo/qa/vitest/utils/database";
+
+test("creates user in transaction", async () => {
+  await withTransaction(async (tx) => {
+    const user = await tx.user.create({
+      data: { name: "John", email: "john@example.com" }
+    });
+
+    expect(user.id).toBeTruthy();
+    // Transaction automatically rolled back after test
+  });
+});
+```
+
+### Transaction Issues
+
+```typescript
+// ❌ Transaction problems
+
+describe("User creation", () => {
+  test("creates user and profile", async () => {
+    const user = await db.user.create({
+      data: { name: "John", email: "john@example.com" }
+    });
+
+    // This might fail and leave orphaned user
+    const profile = await db.profile.create({
+      data: { userId: user.id, bio: "Test bio" }
+    });
+
+    expect(profile.userId).toBe(user.id);
+  });
+});
+```
+
+**Solutions:**
+
+```typescript
+// ✅ Proper transaction handling
+
+describe("User creation", () => {
+  test("creates user and profile atomically", async () => {
+    await db.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: { name: "John", email: "john@example.com" }
+      });
+
+      const profile = await tx.profile.create({
+        data: { userId: user.id, bio: "Test bio" }
+      });
+
+      expect(profile.userId).toBe(user.id);
+    });
+  });
+
+  test("handles transaction rollback", async () => {
+    await expect(
+      db.$transaction(async (tx) => {
+        await tx.user.create({
+          data: { name: "John", email: "john@example.com" }
+        });
+
+        throw new Error("Simulate failure");
+      })
+    ).rejects.toThrow("Simulate failure");
+
+    // Verify rollback
+    const userCount = await db.user.count();
+    expect(userCount).toBe(0);
+  });
+});
+```
+
+## Component Testing Issues
+
+### Render Problems
+
+```typescript
+// ❌ Component rendering issues
+
+import { render, screen } from "@testing-library/react";
+
+describe("MyComponent", () => {
+  test("renders correctly", () => {
+    // Missing providers
+    render(<MyComponent />);
+    // Error: useAuth must be used within AuthProvider
+  });
+});
+```
+
+**Solutions:**
+
+```typescript
+// ✅ Proper component rendering
+
+import { renderWithProviders } from "@repo/qa/vitest/utils/render";
+
+describe("MyComponent", () => {
+  test("renders with providers", () => {
+    renderWithProviders(<MyComponent />, {
+      auth: { user: mockUser, isAuthenticated: true },
+      theme: { colorScheme: "light" }
+    });
+
+    expect(screen.getByText("Welcome back!")).toBeInTheDocument();
+  });
+
+  test("renders with custom wrapper", () => {
+    const CustomWrapper = ({ children }: { children: React.ReactNode }) => (
+      <AuthProvider>
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
+      </AuthProvider>
+    );
+
+    render(<MyComponent />, { wrapper: CustomWrapper });
+
+    expect(screen.getByText("Welcome back!")).toBeInTheDocument();
+  });
+});
+```
+
+### User Event Issues
+
+```typescript
+// ❌ User interaction problems
+
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+
+describe("Form interactions", () => {
+  test("submits form", async () => {
+    render(<ContactForm />);
+
+    // Missing await
+    userEvent.type(screen.getByLabelText("Name"), "John Doe");
+    userEvent.click(screen.getByRole("button", { name: "Submit" }));
+
+    // Test might pass incorrectly
+    expect(screen.getByText("Form submitted")).toBeInTheDocument();
+  });
+});
+```
+
+**Solutions:**
+
+```typescript
+// ✅ Proper user event handling
+
+import { render, screen } from "@testing-library/react";
+import { userEvent } from "@repo/qa/vitest/utils/render";
+
+describe("Form interactions", () => {
+  test("submits form correctly", async () => {
+    render(<ContactForm />);
+
+    // Await all user interactions
+    await userEvent.type(screen.getByLabelText("Name"), "John Doe");
+    await userEvent.type(screen.getByLabelText("Email"), "john@example.com");
+    await userEvent.click(screen.getByRole("button", { name: "Submit" }));
+
+    // Wait for async form submission
+    await screen.findByText("Form submitted successfully");
+  });
+
+  test("validates form errors", async () => {
+    render(<ContactForm />);
+
+    // Submit without filling required fields
+    await userEvent.click(screen.getByRole("button", { name: "Submit" }));
+
+    // Check for validation errors
+    expect(screen.getByText("Name is required")).toBeInTheDocument();
+    expect(screen.getByText("Email is required")).toBeInTheDocument();
+  });
+});
+```
+
+## Performance Issues
+
+### Slow Test Execution
+
+```typescript
+// ❌ Performance problems
+
+describe("Slow tests", () => {
+  test("processes data", async () => {
+    // Inefficient data setup
+    const users = [];
+    for (let i = 0; i < 10000; i++) {
+      users.push(await createUser(`user-${i}`));
+    }
+
+    const result = processUsers(users);
+    expect(result).toBeDefined();
+  });
+});
+```
+
+**Solutions:**
+
+```typescript
+// ✅ Performance optimization
+
+import { userFactory } from "@repo/qa/vitest/factories";
+
+describe("Optimized tests", () => {
+  test("processes data efficiently", async () => {
+    // Use factories for bulk data creation
+    const users = userFactory.createMany(1000); // Much smaller dataset
+
+    const result = processUsers(users);
+    expect(result).toBeDefined();
+  });
+
+  test("uses mocked data for performance", () => {
+    // Mock expensive operations
+    const mockProcessUsers = vi.fn().mockReturnValue("processed");
+
+    const users = userFactory.createMany(10);
+    const result = mockProcessUsers(users);
+
+    expect(result).toBe("processed");
+    expect(mockProcessUsers).toHaveBeenCalledWith(users);
+  });
+});
+
+// Profile slow tests
+import { measureRenderTime } from "@repo/qa/vitest/utils/test-helpers";
+
+test("measures component performance", () => {
+  const renderTime = measureRenderTime(<ComplexComponent />);
+  expect(renderTime).toBeLessThan(100); // < 100ms
+});
+```
+
+### Memory Leaks
+
+```typescript
+// ❌ Memory leak problems
+
+describe("Memory issues", () => {
+  const globalData: any[] = [];
+
+  test("accumulates data", () => {
+    // Data keeps accumulating
+    globalData.push(new Array(100000).fill("data"));
+    expect(globalData.length).toBeGreaterThan(0);
+  });
+});
+```
+
+**Solutions:**
+
+```typescript
+// ✅ Memory management
+
+describe("Memory efficient", () => {
+  let testData: any[] = [];
+
+  afterEach(() => {
+    // Clean up after each test
+    testData = [];
+
+    // Force garbage collection if available
+    if (global.gc) {
+      global.gc();
+    }
+  });
+
+  test("manages memory properly", () => {
+    testData = new Array(1000).fill("data"); // Reasonable size
+    expect(testData.length).toBe(1000);
+
+    // Process and clear
+    processData(testData);
+    testData = [];
+  });
+});
+
+// Use memory monitoring
+import { detectMemoryLeaks } from "@repo/qa/vitest/utils/test-helpers";
+
+test("detects memory leaks", () => {
+  const memoryChecker = detectMemoryLeaks();
+
+  // Your test code that might leak memory
+
+  const leaks = memoryChecker.check();
+  expect(leaks.detected).toBe(false);
+});
+```
+
+## CI/CD Pipeline Issues
+
+### Build Failures
+
+```bash
+# ❌ Common CI failures
+
+# Error: Cannot find module '@repo/qa'
+npm run test
+
+# Error: Database connection failed
+npm run test:integration
+
+# Error: Tests timeout in CI
+npm run test:e2e
+```
+
+**Solutions:**
+
+```bash
+# ✅ CI optimization
+
+# 1. Ensure dependencies are installed and built
+pnpm install
+pnpm --filter @repo/qa build
+
+# 2. Set proper test environment variables
+export NODE_ENV=test
+export DATABASE_URL=sqlite::memory:
+export REDIS_URL=redis://localhost:6379/1
+
+# 3. Configure appropriate timeouts
+export TEST_TIMEOUT=60000
+export CI=true
+
+# 4. Use proper test commands
+pnpm test:unit        # Fast unit tests
+pnpm test:integration # Integration tests with services
+pnpm test:e2e         # E2E tests with proper setup
+```
+
+### Environment Configuration
+
+```yaml
+# ❌ Problematic CI configuration
+
+name: Tests
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+      - run: npm install
+      - run: npm test # Missing environment setup
+```
+
+**Solutions:**
+
+```yaml
+# ✅ Proper CI configuration
+
+name: Tests
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 10s --health-timeout
+          5s --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: |
+          pnpm install
+          pnpm --filter @repo/qa build
+
+      - name: Setup test environment
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+          REDIS_URL: redis://localhost:6379/1
+          NODE_ENV: test
+        run: |
+          pnpm migrate
+          pnpm seed:test
+
+      - name: Run tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+          REDIS_URL: redis://localhost:6379/1
+          NODE_ENV: test
+          CI: true
+        run: |
+          pnpm test:unit
+          pnpm test:integration
+          pnpm test:e2e
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            test-results/
+            coverage/
+```
+
+## Debugging Techniques
+
+### Debug Configuration
+
+```typescript
+// vitest.config.ts - Debug configuration
+import { createNextAppConfig } from "@repo/qa/vitest/configs";
+
+export default createNextAppConfig({
+  test: {
+    // Enable debugging
+    logLevel: "info",
+    reporter: ["verbose"],
+
+    // Disable parallel execution for debugging
+    pool: "forks",
+    poolOptions: {
+      forks: {
+        singleFork: true
+      }
+    },
+
+    // Increase timeouts for debugging
+    testTimeout: 60000,
+    hookTimeout: 60000
+  }
+});
+```
+
+### Debug Utilities
+
+```typescript
+// Debug helpers
+import { debug } from "@repo/qa/vitest/utils/debug";
+
+test("debug test execution", () => {
+  debug.log("Starting test");
+  debug.time("operation");
+
+  const result = expensiveOperation();
+
+  debug.timeEnd("operation");
+  debug.log("Operation result:", result);
+
+  expect(result).toBeDefined();
+});
+
+// Memory debugging
+import { debugMemory } from "@repo/qa/vitest/utils/debug";
+
+test("debug memory usage", () => {
+  debugMemory.start();
+
+  const data = createLargeDataset();
+  debugMemory.checkpoint("after creation");
+
+  processDataset(data);
+  debugMemory.checkpoint("after processing");
+
+  debugMemory.report();
+});
+```
+
+This troubleshooting guide covers the most common issues encountered when using
+the `@repo/qa` testing framework and provides practical solutions for resolving
+them.

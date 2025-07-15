@@ -1,0 +1,822 @@
+---
+title: "Performance Testing"
+description:
+  "Comprehensive guide to performance testing, benchmarking, and optimization"
+icon: "gauge-high"
+---
+
+# Performance Testing
+
+Complete performance testing framework covering load testing, benchmarking,
+memory profiling, and performance optimization strategies.
+
+## Overview
+
+Performance testing capabilities include:
+
+- **Load testing** - Simulate high traffic and concurrent users
+- **Stress testing** - Test system limits and failure points
+- **Benchmark testing** - Measure and compare performance metrics
+- **Memory profiling** - Track memory usage and detect leaks
+- **Database performance** - Query optimization and connection monitoring
+- **Component performance** - React component render performance
+
+## Load Testing
+
+### Basic Load Testing Setup
+
+```typescript
+// Import load testing utilities
+import {
+  createLoadTest,
+  defineScenarios,
+  measurePerformance,
+  generateReport
+} from "@repo/qa/vitest/utils/performance";
+
+describe("API Load Testing", () => {
+  test("API handles concurrent users", async () => {
+    const loadTest = createLoadTest({
+      target: "http://localhost:3000/api",
+      duration: "30s",
+      arrivalRate: 10, // 10 requests per second
+      maxVUsers: 50 // Maximum 50 virtual users
+    });
+
+    const scenarios = defineScenarios([
+      {
+        name: "user-registration",
+        weight: 30, // 30% of traffic
+        requests: [
+          {
+            method: "POST",
+            url: "/users",
+            json: {
+              name: "Test User",
+              email: "test@example.com"
+            }
+          }
+        ]
+      },
+      {
+        name: "product-browsing",
+        weight: 50, // 50% of traffic
+        requests: [
+          { method: "GET", url: "/products" },
+          { method: "GET", url: "/products/{{ productId }}" }
+        ]
+      },
+      {
+        name: "order-placement",
+        weight: 20, // 20% of traffic
+        requests: [
+          {
+            method: "POST",
+            url: "/orders",
+            json: {
+              products: [{ id: "{{ productId }}", quantity: 1 }]
+            }
+          }
+        ]
+      }
+    ]);
+
+    const results = await loadTest.run(scenarios);
+
+    // Verify performance requirements
+    expect(results.summary.response_time.p95).toBeLessThan(500); // 95th percentile < 500ms
+    expect(results.summary.response_time.mean).toBeLessThan(200); // Average < 200ms
+    expect(results.summary.error_rate).toBeLessThan(0.01); // Error rate < 1%
+    expect(results.summary.requests_per_second).toBeGreaterThan(50); // > 50 RPS
+  });
+});
+```
+
+### Advanced Load Testing Scenarios
+
+```typescript
+// Complex load testing with ramp-up patterns
+import {
+  createAdvancedLoadTest,
+  defineRampUpPattern,
+  simulateUserBehavior
+} from "@repo/qa/vitest/utils/performance";
+
+test("gradual load increase simulation", async () => {
+  const loadTest = createAdvancedLoadTest({
+    phases: [
+      // Ramp up phase
+      {
+        duration: "2m",
+        arrivalRate: { start: 1, end: 20 }
+      },
+      // Sustained load phase
+      {
+        duration: "5m",
+        arrivalRate: 20
+      },
+      // Peak load phase
+      {
+        duration: "2m",
+        arrivalRate: { start: 20, end: 50 }
+      },
+      // Cool down phase
+      {
+        duration: "1m",
+        arrivalRate: { start: 50, end: 0 }
+      }
+    ]
+  });
+
+  const userBehavior = simulateUserBehavior({
+    name: "realistic-shopping",
+    flow: [
+      { action: "visit-homepage", probability: 1.0 },
+      { action: "browse-products", probability: 0.8 },
+      { action: "view-product-details", probability: 0.6 },
+      { action: "add-to-cart", probability: 0.3 },
+      { action: "checkout", probability: 0.2 },
+      { action: "complete-purchase", probability: 0.15 }
+    ],
+    thinkTime: { min: 1, max: 5 } // 1-5 seconds between actions
+  });
+
+  const results = await loadTest.run([userBehavior]);
+
+  // Analyze results across phases
+  expect(results.phases.rampUp.error_rate).toBeLessThan(0.005);
+  expect(results.phases.sustained.response_time.p95).toBeLessThan(800);
+  expect(results.phases.peak.response_time.p99).toBeLessThan(2000);
+});
+```
+
+### Database Load Testing
+
+```typescript
+// Database-specific load testing
+import {
+  createDatabaseLoadTest,
+  monitorConnectionPool,
+  trackQueryPerformance
+} from "@repo/qa/vitest/utils/performance";
+
+test("database handles concurrent connections", async () => {
+  const dbLoadTest = createDatabaseLoadTest({
+    connectionString: process.env.DATABASE_URL,
+    maxConnections: 100,
+    testDuration: "60s"
+  });
+
+  const connectionMonitor = monitorConnectionPool();
+  const queryTracker = trackQueryPerformance();
+
+  const scenarios = [
+    {
+      name: "read-heavy-workload",
+      weight: 70,
+      queries: [
+        "SELECT * FROM users WHERE created_at > NOW() - INTERVAL '1 day'",
+        "SELECT COUNT(*) FROM orders WHERE status = 'completed'",
+        "SELECT p.*, c.name as category FROM products p JOIN categories c ON p.category_id = c.id"
+      ]
+    },
+    {
+      name: "write-workload",
+      weight: 20,
+      queries: [
+        "INSERT INTO users (name, email) VALUES ('Test User', 'test@example.com')",
+        "UPDATE products SET stock = stock - 1 WHERE id = $1",
+        "INSERT INTO orders (user_id, total) VALUES ($1, $2)"
+      ]
+    },
+    {
+      name: "complex-analytics",
+      weight: 10,
+      queries: [
+        `SELECT 
+           DATE(created_at) as date,
+           COUNT(*) as orders,
+           SUM(total) as revenue
+         FROM orders 
+         WHERE created_at > NOW() - INTERVAL '30 days'
+         GROUP BY DATE(created_at)`
+      ]
+    }
+  ];
+
+  const results = await dbLoadTest.run(scenarios);
+
+  // Verify database performance
+  expect(results.avgQueryTime).toBeLessThan(100); // < 100ms average
+  expect(results.maxConnections).toBeLessThan(80); // < 80 concurrent connections
+  expect(connectionMonitor.poolExhaustion).toBe(false);
+  expect(queryTracker.slowQueries).toHaveLength(0); // No queries > 1s
+});
+```
+
+## Stress Testing
+
+### System Stress Testing
+
+```typescript
+// Stress testing to find breaking points
+import {
+  createStressTest,
+  findBreakingPoint,
+  measureRecovery
+} from "@repo/qa/vitest/utils/performance";
+
+test("finds system breaking point", async () => {
+  const stressTest = createStressTest({
+    startLoad: 10, // Start with 10 RPS
+    maxLoad: 1000, // Max 1000 RPS
+    increment: 10, // Increase by 10 RPS every step
+    stepDuration: "30s", // Test each load level for 30s
+    breakingCriteria: {
+      errorRate: 0.05, // 5% error rate
+      responseTime: 2000, // 2 second response time
+      availability: 0.95 // 95% availability
+    }
+  });
+
+  const endpoint = "http://localhost:3000/api/products";
+  const breakingPoint = await findBreakingPoint(stressTest, endpoint);
+
+  expect(breakingPoint.maxStableLoad).toBeGreaterThan(100); // Handle > 100 RPS
+  expect(breakingPoint.degradationStart).toBeGreaterThan(200); // Degradation starts after 200 RPS
+  expect(breakingPoint.completeFailure).toBeGreaterThan(500); // Complete failure after 500 RPS
+
+  // Test recovery after stress
+  const recovery = await measureRecovery(endpoint, {
+    waitTime: "2m", // Wait 2 minutes
+    testLoad: 50 // Test with normal load
+  });
+
+  expect(recovery.responseTime).toBeLessThan(500); // Quick recovery
+  expect(recovery.errorRate).toBeLessThan(0.01); // Low error rate after recovery
+});
+```
+
+### Memory Stress Testing
+
+```typescript
+// Memory stress testing
+import {
+  createMemoryStressTest,
+  monitorMemoryUsage,
+  detectMemoryLeaks
+} from "@repo/qa/vitest/utils/performance";
+
+test("handles memory-intensive operations", async () => {
+  const memoryMonitor = monitorMemoryUsage();
+
+  const stressTest = createMemoryStressTest({
+    operations: [
+      {
+        name: "large-dataset-processing",
+        action: async () => {
+          // Simulate processing large datasets
+          const data = Array.from({ length: 100000 }, (_, i) => ({
+            id: i,
+            data: `record-${i}`.repeat(100)
+          }));
+
+          return data.filter((item) => item.id % 2 === 0);
+        },
+        iterations: 50
+      },
+      {
+        name: "file-processing",
+        action: async () => {
+          // Simulate file processing
+          const buffer = Buffer.alloc(10 * 1024 * 1024); // 10MB buffer
+          return buffer.toString("base64").length;
+        },
+        iterations: 20
+      }
+    ]
+  });
+
+  await stressTest.run();
+
+  const memoryUsage = memoryMonitor.getStats();
+  const leaks = detectMemoryLeaks(memoryMonitor);
+
+  // Verify memory constraints
+  expect(memoryUsage.peak).toBeLessThan(500 * 1024 * 1024); // < 500MB peak
+  expect(memoryUsage.average).toBeLessThan(200 * 1024 * 1024); // < 200MB average
+  expect(leaks.detected).toBe(false);
+  expect(memoryUsage.gcFrequency).toBeLessThan(10); // Not too frequent GC
+});
+```
+
+## Benchmark Testing
+
+### Function Benchmarking
+
+```typescript
+// Benchmark function performance
+import {
+  benchmark,
+  compareBenchmarks,
+  createBenchmarkSuite
+} from "@repo/qa/vitest/utils/performance";
+
+test("compares algorithm performance", async () => {
+  const suite = createBenchmarkSuite("sorting-algorithms");
+
+  // Benchmark different sorting algorithms
+  const results = await suite.run(
+    [
+      {
+        name: "native-sort",
+        fn: (data: number[]) => [...data].sort((a, b) => a - b)
+      },
+      {
+        name: "quicksort",
+        fn: (data: number[]) => quickSort([...data])
+      },
+      {
+        name: "mergesort",
+        fn: (data: number[]) => mergeSort([...data])
+      }
+    ],
+    {
+      setup: () => Array.from({ length: 10000 }, () => Math.random()),
+      iterations: 100,
+      warmup: 10
+    }
+  );
+
+  // Verify performance expectations
+  expect(results["native-sort"].opsPerSecond).toBeGreaterThan(1000);
+  expect(results["quicksort"].avgTime).toBeLessThan(10); // < 10ms
+
+  // Compare relative performance
+  const comparison = compareBenchmarks(results, "native-sort");
+  expect(comparison["quicksort"].relative).toBeLessThan(2); // < 2x slower than native
+});
+```
+
+### Component Benchmarking
+
+```typescript
+// React component performance benchmarking
+import {
+  benchmarkComponent,
+  measureRenderTime,
+  profileComponentUpdates
+} from "@repo/qa/vitest/utils/performance";
+
+test("benchmarks component render performance", async () => {
+  const largeDataset = Array.from({ length: 1000 }, (_, i) => ({
+    id: i,
+    name: `Item ${i}`,
+    value: Math.random() * 100
+  }));
+
+  const benchmark = await benchmarkComponent(DataTable, {
+    props: { data: largeDataset },
+    scenarios: [
+      {
+        name: "initial-render",
+        action: "mount"
+      },
+      {
+        name: "data-update",
+        action: "rerender",
+        newProps: { data: largeDataset.slice(0, 500) }
+      },
+      {
+        name: "sorting",
+        action: "interaction",
+        interaction: () => screen.getByText("Sort by Name").click()
+      }
+    ],
+    iterations: 10
+  });
+
+  // Verify render performance
+  expect(benchmark.initialRender.avgTime).toBeLessThan(100); // < 100ms initial render
+  expect(benchmark.dataUpdate.avgTime).toBeLessThan(50); // < 50ms re-render
+  expect(benchmark.sorting.avgTime).toBeLessThan(200); // < 200ms sort interaction
+
+  // Check for unnecessary re-renders
+  const updates = profileComponentUpdates(DataTable, { data: largeDataset });
+  expect(updates.unnecessaryRenders).toBeLessThan(2);
+});
+```
+
+### API Benchmarking
+
+```typescript
+// API endpoint benchmarking
+import {
+  benchmarkAPI,
+  createAPIBenchmark,
+  compareEndpoints
+} from "@repo/qa/vitest/utils/performance";
+
+test("benchmarks API endpoint performance", async () => {
+  const benchmark = createAPIBenchmark({
+    baseURL: "http://localhost:3000/api",
+    headers: { Authorization: "Bearer test-token" }
+  });
+
+  const results = await benchmark.run(
+    [
+      {
+        name: "user-list",
+        method: "GET",
+        url: "/users",
+        expectedTime: 200
+      },
+      {
+        name: "user-search",
+        method: "GET",
+        url: "/users/search?q=john",
+        expectedTime: 300
+      },
+      {
+        name: "user-create",
+        method: "POST",
+        url: "/users",
+        body: { name: "Test User", email: "test@example.com" },
+        expectedTime: 500
+      }
+    ],
+    {
+      iterations: 50,
+      concurrent: 5
+    }
+  );
+
+  // Verify API performance
+  results.forEach((result) => {
+    expect(result.avgResponseTime).toBeLessThan(result.expectedTime);
+    expect(result.errorRate).toBeLessThan(0.02); // < 2% error rate
+    expect(result.p95ResponseTime).toBeLessThan(result.expectedTime * 2);
+  });
+
+  // Compare endpoint performance
+  const comparison = compareEndpoints(results);
+  expect(comparison.slowestEndpoint).not.toBe("user-list"); // User list should be fast
+});
+```
+
+## Memory Profiling
+
+### Memory Leak Detection
+
+```typescript
+// Memory leak detection
+import {
+  createMemoryProfiler,
+  detectLeaks,
+  analyzeMemoryPatterns,
+  generateMemoryReport
+} from "@repo/qa/vitest/utils/performance";
+
+test("detects memory leaks in component", async () => {
+  const profiler = createMemoryProfiler();
+
+  // Test component mounting/unmounting
+  for (let i = 0; i < 100; i++) {
+    const { unmount } = render(<ComplexComponent data={largeDataset} />);
+
+    // Simulate user interactions
+    await userEvent.click(screen.getByRole("button"));
+    await userEvent.type(screen.getByRole("textbox"), "test data");
+
+    unmount();
+
+    // Force garbage collection periodically
+    if (i % 10 === 0) {
+      global.gc?.();
+    }
+  }
+
+  const memoryAnalysis = analyzeMemoryPatterns(profiler);
+  const leaks = detectLeaks(memoryAnalysis);
+
+  expect(leaks.detected).toBe(false);
+  expect(memoryAnalysis.growthRate).toBeLessThan(0.1); // < 10% growth per iteration
+  expect(memoryAnalysis.retainedObjects).toBeLessThan(1000);
+
+  // Generate detailed report for debugging
+  const report = generateMemoryReport(memoryAnalysis);
+  if (leaks.detected) {
+    console.log("Memory leak report:", report);
+  }
+});
+```
+
+### Heap Analysis
+
+```typescript
+// Heap memory analysis
+import {
+  analyzeHeap,
+  trackObjectLifecycle,
+  identifyLargeObjects
+} from "@repo/qa/vitest/utils/performance";
+
+test("analyzes heap memory usage", async () => {
+  const heapAnalyzer = analyzeHeap();
+
+  // Create and process data
+  const processLargeDataset = (size: number) => {
+    const data = Array.from({ length: size }, (_, i) => ({
+      id: i,
+      content: `data-${i}`.repeat(1000),
+      metadata: {
+        created: new Date(),
+        processed: false
+      }
+    }));
+
+    return data
+      .filter((item) => item.id % 2 === 0)
+      .map((item) => ({
+        ...item,
+        metadata: { ...item.metadata, processed: true }
+      }));
+  };
+
+  // Track object lifecycle
+  const lifecycle = trackObjectLifecycle();
+
+  const result1 = processLargeDataset(1000);
+  const result2 = processLargeDataset(2000);
+  const result3 = processLargeDataset(3000);
+
+  const heapSnapshot = heapAnalyzer.takeSnapshot();
+  const largeObjects = identifyLargeObjects(heapSnapshot);
+  const lifecycleReport = lifecycle.getReport();
+
+  // Verify memory usage patterns
+  expect(heapSnapshot.usedJSHeapSize).toBeLessThan(100 * 1024 * 1024); // < 100MB
+  expect(largeObjects.length).toBeLessThan(10); // < 10 large objects
+  expect(lifecycleReport.averageLifetime).toBeLessThan(1000); // < 1s average lifetime
+});
+```
+
+## Database Performance
+
+### Query Performance Testing
+
+```typescript
+// Database query performance testing
+import {
+  profileQueries,
+  analyzeQueryPlans,
+  detectSlowQueries,
+  optimizeQueries
+} from "@repo/qa/vitest/utils/performance";
+
+test("profiles database query performance", async () => {
+  const queryProfiler = profileQueries(db);
+
+  // Execute various queries
+  const queries = [
+    () => db.user.findMany({ where: { active: true } }),
+    () =>
+      db.product.findMany({
+        include: { category: true, reviews: true },
+        where: { price: { gte: 100 } }
+      }),
+    () =>
+      db.order.aggregate({
+        _sum: { total: true },
+        _count: true,
+        where: {
+          createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
+        }
+      })
+  ];
+
+  // Execute queries multiple times
+  for (const query of queries) {
+    for (let i = 0; i < 10; i++) {
+      await query();
+    }
+  }
+
+  const profile = queryProfiler.getProfile();
+  const slowQueries = detectSlowQueries(profile, { threshold: 100 }); // > 100ms
+  const queryPlans = analyzeQueryPlans(profile);
+
+  // Verify query performance
+  expect(profile.averageQueryTime).toBeLessThan(50); // < 50ms average
+  expect(slowQueries.length).toBeLessThan(2); // < 2 slow queries
+  expect(queryPlans.missingIndexes).toHaveLength(0); // No missing indexes
+
+  // Get optimization suggestions
+  const optimizations = optimizeQueries(slowQueries);
+  if (optimizations.length > 0) {
+    console.log("Query optimization suggestions:", optimizations);
+  }
+});
+```
+
+### Connection Pool Monitoring
+
+```typescript
+// Database connection pool performance
+import {
+  monitorConnectionPool,
+  testConnectionScaling,
+  analyzeConnectionPatterns
+} from "@repo/qa/vitest/utils/performance";
+
+test("monitors connection pool performance", async () => {
+  const poolMonitor = monitorConnectionPool();
+
+  // Simulate concurrent database operations
+  const concurrentOperations = Array.from({ length: 50 }, async (_, i) => {
+    await db.user.create({
+      data: { name: `User ${i}`, email: `user${i}@example.com` }
+    });
+
+    await db.product.findMany({ take: 10 });
+
+    await db.order.count({
+      where: { status: "completed" }
+    });
+  });
+
+  await Promise.all(concurrentOperations);
+
+  const poolStats = poolMonitor.getStats();
+  const connectionPatterns = analyzeConnectionPatterns(poolStats);
+
+  // Verify connection pool health
+  expect(poolStats.maxConcurrentConnections).toBeLessThan(30); // < 30 connections
+  expect(poolStats.averageWaitTime).toBeLessThan(10); // < 10ms wait time
+  expect(poolStats.connectionErrors).toBe(0); // No connection errors
+  expect(connectionPatterns.leakedConnections).toBe(0); // No leaked connections
+});
+```
+
+## Performance Optimization
+
+### Bundle Size Analysis
+
+```typescript
+// Bundle size and loading performance
+import {
+  analyzeBundleSize,
+  measureLoadingPerformance,
+  identifyOptimizations
+} from "@repo/qa/vitest/utils/performance";
+
+test("analyzes bundle performance", async () => {
+  const bundleAnalysis = analyzeBundleSize({
+    entryPoint: "./src/index.tsx",
+    outputPath: "./dist"
+  });
+
+  const loadingPerformance = measureLoadingPerformance({
+    url: "http://localhost:3000",
+    metrics: ["FCP", "LCP", "FID", "CLS", "TTFB"]
+  });
+
+  // Verify bundle size constraints
+  expect(bundleAnalysis.totalSize).toBeLessThan(1024 * 1024); // < 1MB
+  expect(bundleAnalysis.chunks.vendor.size).toBeLessThan(500 * 1024); // < 500KB vendor
+  expect(bundleAnalysis.duplicatedModules).toHaveLength(0); // No duplicates
+
+  // Verify loading performance
+  expect(loadingPerformance.FCP).toBeLessThan(1500); // First Contentful Paint < 1.5s
+  expect(loadingPerformance.LCP).toBeLessThan(2500); // Largest Contentful Paint < 2.5s
+  expect(loadingPerformance.FID).toBeLessThan(100); // First Input Delay < 100ms
+  expect(loadingPerformance.CLS).toBeLessThan(0.1); // Cumulative Layout Shift < 0.1
+
+  // Get optimization suggestions
+  const optimizations = identifyOptimizations(
+    bundleAnalysis,
+    loadingPerformance
+  );
+  if (optimizations.length > 0) {
+    console.log("Performance optimizations:", optimizations);
+  }
+});
+```
+
+### Performance Budgets
+
+```typescript
+// Performance budget enforcement
+import {
+  definePerformanceBudgets,
+  enforcebudgets,
+  trackPerformanceTrends
+} from "@repo/qa/vitest/utils/performance";
+
+test("enforces performance budgets", async () => {
+  const budgets = definePerformanceBudgets({
+    // Time budgets
+    pageLoad: 3000, // 3 seconds
+    apiResponse: 500, // 500ms
+    databaseQuery: 100, // 100ms
+    componentRender: 50, // 50ms
+
+    // Size budgets
+    bundleSize: 1024 * 1024, // 1MB
+    imageSize: 500 * 1024, // 500KB
+    fontSize: 100 * 1024, // 100KB
+
+    // Resource budgets
+    memoryUsage: 100 * 1024 * 1024, // 100MB
+    cpuUsage: 80, // 80%
+    networkRequests: 50, // 50 requests
+
+    // Quality budgets
+    errorRate: 0.01, // 1%
+    availability: 0.999, // 99.9%
+    coverage: 0.8 // 80%
+  });
+
+  const currentMetrics = await measureCurrentPerformance();
+  const budgetCheck = enforcebudgets(budgets, currentMetrics);
+  const trends = trackPerformanceTrends(currentMetrics);
+
+  // Verify all budgets are met
+  expect(budgetCheck.violations).toHaveLength(0);
+  expect(budgetCheck.warnings).toHaveLength(0);
+
+  // Check performance trends
+  expect(trends.improving).toBeGreaterThan(trends.degrading);
+  expect(trends.stable).toBeGreaterThan(0.8); // 80% of metrics stable
+
+  // Alert on budget violations
+  if (budgetCheck.violations.length > 0) {
+    throw new Error(
+      `Performance budget violations: ${budgetCheck.violations.join(", ")}`
+    );
+  }
+});
+```
+
+## Best Practices
+
+### Performance Testing Strategy
+
+```typescript
+// Comprehensive performance testing strategy
+import {
+  createPerformanceTestSuite,
+  definePerformanceThresholds,
+  generatePerformanceReport
+} from "@repo/qa/vitest/utils/performance";
+
+describe("Performance Test Suite", () => {
+  const thresholds = definePerformanceThresholds({
+    // User experience thresholds
+    userExperience: {
+      pageLoad: { good: 1500, needs_improvement: 2500, poor: 4000 },
+      apiResponse: { good: 200, needs_improvement: 500, poor: 1000 },
+      interactivity: { good: 50, needs_improvement: 100, poor: 300 }
+    },
+
+    // System performance thresholds
+    system: {
+      throughput: { min: 100, target: 500, max: 1000 }, // RPS
+      errorRate: { max: 0.01, target: 0.001, min: 0 },
+      availability: { min: 0.99, target: 0.999, max: 1.0 }
+    },
+
+    // Resource usage thresholds
+    resources: {
+      memory: { max: 500 * 1024 * 1024, target: 200 * 1024 * 1024 },
+      cpu: { max: 80, target: 50 },
+      database: { maxConnections: 50, maxQueryTime: 100 }
+    }
+  });
+
+  test("comprehensive performance validation", async () => {
+    const performanceTests = createPerformanceTestSuite({
+      loadTesting: true,
+      stressTesting: true,
+      memoryProfiling: true,
+      benchmarking: true,
+      budgetEnforcement: true
+    });
+
+    const results = await performanceTests.runAll();
+    const report = generatePerformanceReport(results, thresholds);
+
+    // Verify all performance criteria
+    expect(report.overallScore).toBeGreaterThan(0.8); // > 80% overall score
+    expect(report.criticalIssues).toHaveLength(0);
+    expect(report.userExperienceScore).toBeGreaterThan(0.9); // > 90% UX score
+
+    // Save report for analysis
+    await report.save(`./performance-reports/${Date.now()}.json`);
+  });
+});
+```
+
+This comprehensive performance testing framework provides everything needed to
+ensure applications meet performance requirements under various load conditions
+while maintaining excellent user experience.

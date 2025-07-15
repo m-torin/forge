@@ -1,0 +1,470 @@
+---
+title: "Internationalization"
+description: "Multi-language support and localization for Next.js applications"
+icon: "globe"
+---
+
+# Internationalization Package
+
+Multi-language support and localization system for Next.js applications using
+App Router and automated translation management.
+
+## Overview
+
+The internationalization package provides a foundational i18n system with:
+
+<CardGroup cols={2}>
+  <Card title="Next.js App Router" icon="next-js">
+    Built for Next.js App Router with locale detection middleware
+  </Card>
+  <Card title="Dictionary System" icon="book">
+    Type-safe dictionary loading with automatic fallbacks
+  </Card>
+  <Card title="Automated Translation" icon="robot">
+    AI-powered translation generation with Languine
+  </Card>
+  <Card title="Locale-Aware Components" icon="globe">
+    Link component with automatic locale prefix handling
+  </Card>
+</CardGroup>
+
+## Supported Languages
+
+The package supports 5 primary languages:
+
+- **English (en)**: Default language
+- **Spanish (es)**: European Spanish
+- **French (fr)**: French
+- **German (de)**: German
+- **Portuguese (pt)**: Portuguese
+
+## Installation
+
+The internationalization package is included in the monorepo. No additional
+installation needed.
+
+## Quick Start
+
+### 1. Setup Middleware
+
+```typescript
+// middleware.ts
+import { internationalizationMiddleware } from "@repo/internationalization/server/next";
+
+export function middleware(request: NextRequest) {
+  return internationalizationMiddleware(request);
+}
+
+export const config = {
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"]
+};
+```
+
+### 2. Use in Server Components
+
+```tsx
+// app/[locale]/page.tsx
+import { getDictionary } from "@repo/internationalization/server/next";
+
+export default async function Page({
+  params: { locale }
+}: {
+  params: { locale: string };
+}) {
+  const dict = await getDictionary(locale);
+
+  return (
+    <div>
+      <h1>{dict.web.home.meta.title}</h1>
+      <p>{dict.web.home.meta.description}</p>
+    </div>
+  );
+}
+```
+
+### 3. Check Available Locales
+
+```typescript
+import {
+  locales,
+  isLocaleSupported
+} from "@repo/internationalization/server/next";
+
+// Available locales: ['en', 'es', 'fr', 'de', 'pt']
+console.log("Supported locales:", locales);
+
+// Check if a locale is supported
+const isValid = isLocaleSupported("es"); // true
+const isInvalid = isLocaleSupported("zh"); // false
+```
+
+## Dictionary Structure
+
+The dictionary system uses a structured JSON format:
+
+```json
+{
+  "common": {
+    "locale": "English",
+    "language": "Language"
+  },
+  "web": {
+    "global": {
+      "primaryCta": "Book a call",
+      "secondaryCta": "Sign up"
+    },
+    "header": {
+      "home": "Home",
+      "product": {
+        "title": "Product",
+        "description": "Managing a small business today is already tough.",
+        "pricing": "Pricing"
+      },
+      "blog": "Blog",
+      "docs": "Docs",
+      "contact": "Contact"
+    },
+    "home": {
+      "meta": {
+        "title": "Transform Your Business Operations Today",
+        "description": "In today's fast-paced world, your business deserves better..."
+      }
+    }
+  }
+}
+```
+
+### Dictionary Usage
+
+```typescript
+// Access nested translations
+const dict = await getDictionary("en");
+
+// Common translations
+const language = dict.common.language; // "Language"
+
+// Nested web content
+const title = dict.web.home.meta.title;
+const headerProduct = dict.web.header.product.title; // "Product"
+```
+
+## Core Features
+
+### Dictionary Loading
+
+```typescript
+import {
+  getDictionary,
+  isLocaleSupported
+} from "@repo/internationalization/server/next";
+
+// Load dictionary with automatic fallback to English
+const dict = await getDictionary("fr"); // Returns French dictionary
+const fallback = await getDictionary("invalid"); // Returns English dictionary
+
+// Check locale support
+if (isLocaleSupported(locale)) {
+  const dict = await getDictionary(locale);
+}
+```
+
+### Locale-Aware Navigation
+
+```tsx
+import { Link } from '@repo/internationalization/client/next';
+
+// Automatic locale prefix handling
+<Link href="/products">
+  Products
+</Link>
+// Renders as /es/products when locale is 'es'
+
+// External links are handled normally
+<Link href="https://external.com">
+  External Site
+</Link>
+```
+
+### Extending Dictionaries
+
+```typescript
+import { createDictionary } from "@repo/internationalization/server/next";
+
+// Extend base dictionary with custom translations
+const customDict = createDictionary({
+  custom: {
+    greeting: "Hello, custom world!",
+    farewell: "Goodbye!"
+  }
+});
+```
+
+## Environment Configuration
+
+The package requires minimal environment configuration:
+
+```bash
+# Languine AI Translation (Optional - for automated translations)
+DEEPSEEK_API_KEY="your_deepseek_api_key"
+
+# Environment Detection
+NODE_ENV="development"             # or "production"
+NEXT_PUBLIC_NODE_ENV="development" # or "production"
+```
+
+### Environment Helper
+
+```typescript
+import {
+  safeEnv,
+  isProduction,
+  isDevelopment
+} from "@repo/internationalization/env";
+
+// Safely access environment variables
+const env = safeEnv();
+console.log("DeepSeek API Key:", env.DEEPSEEK_API_KEY);
+
+// Environment checks
+if (isProduction()) {
+  // Production-specific logic
+}
+
+if (isDevelopment()) {
+  // Development-specific logic
+}
+```
+
+## Automated Translation
+
+The package uses [Languine](https://languine.ai) for AI-powered translation
+management:
+
+### Configuration
+
+```json
+// languine.json
+{
+  "locale": {
+    "source": "en",
+    "targets": ["es", "fr", "de", "pt"]
+  }
+}
+```
+
+### Translation Commands
+
+```bash
+# Generate translations using AI
+pnpm translate
+
+# Type check all code
+pnpm typecheck
+
+# Run tests
+pnpm test
+```
+
+### Adding New Languages
+
+1. **Update Languine Configuration**
+
+   ```json
+   {
+     "locale": {
+       "source": "en",
+       "targets": ["es", "fr", "de", "pt", "new-locale"]
+     }
+   }
+   ```
+
+2. **Generate Translations**
+
+   ```bash
+   pnpm translate
+   ```
+
+3. **Update Type Definitions** The package automatically handles new locales
+   once translations are generated.
+
+## Middleware Features
+
+The middleware provides automatic locale detection:
+
+```typescript
+// Automatically detects locale from:
+// 1. URL path segment (/es/page)
+// 2. Accept-Language header
+// 3. Falls back to default locale (en)
+
+export function middleware(request: NextRequest) {
+  return internationalizationMiddleware(request);
+}
+```
+
+## Testing
+
+The package includes comprehensive testing:
+
+```typescript
+import { describe, it, expect } from "vitest";
+import { getDictionary, isLocaleSupported } from "../server-next";
+
+describe("Internationalization", () => {
+  it("loads dictionary for valid locale", async () => {
+    const dict = await getDictionary("en");
+    expect(dict).toBeDefined();
+    expect(dict.common.locale).toBe("English");
+  });
+
+  it("falls back to English for invalid locale", async () => {
+    const dict = await getDictionary("invalid");
+    expect(dict).toBeDefined();
+    expect(dict.common.locale).toBe("English");
+  });
+
+  it("validates locale support correctly", () => {
+    expect(isLocaleSupported("en")).toBe(true);
+    expect(isLocaleSupported("es")).toBe(true);
+    expect(isLocaleSupported("invalid")).toBe(false);
+  });
+});
+```
+
+### Running Tests
+
+```bash
+# Run all tests
+pnpm test
+
+# Run tests in watch mode
+pnpm test:watch
+
+# Run tests with coverage
+pnpm test:coverage
+
+# Run tests with UI
+pnpm test:ui
+```
+
+## API Reference
+
+### Core Functions
+
+```typescript
+// Dictionary loading
+export function getDictionary(locale: string): Promise<Dictionary>;
+export function isLocaleSupported(locale: string): boolean;
+export const locales: readonly string[];
+
+// Dictionary extension
+export function createDictionary(extensions: Record<string, any>): Dictionary;
+
+// Types
+export interface Dictionary {
+  common: {
+    locale: string;
+    language: string;
+  };
+  web: {
+    // ... web content structure
+  };
+}
+
+export type Locale = "en" | "es" | "fr" | "de" | "pt";
+```
+
+### Environment-Specific Imports
+
+```typescript
+// For Next.js server components and API routes
+import { getDictionary } from "@repo/internationalization/server/next";
+
+// For Next.js client components
+import { Link } from "@repo/internationalization/client/next";
+
+// For non-Next.js server environments (rarely used)
+import { getDictionary } from "@repo/internationalization/server";
+
+// For non-Next.js client environments (rarely used)
+import { Link } from "@repo/internationalization/client";
+```
+
+## Best Practices
+
+### 1. Dictionary Organization
+
+- Keep translations organized in logical namespaces (`common`, `web`)
+- Use nested objects for related content
+- Maintain consistent key naming across languages
+
+### 2. Fallback Strategy
+
+- Always handle missing translations gracefully
+- The system automatically falls back to English for unsupported locales
+- Test with various locale combinations
+
+### 3. Performance
+
+- Dictionaries are loaded server-side only
+- Use static generation when possible for better performance
+- Cache dictionary loading in production
+
+### 4. Content Management
+
+- Use semantic keys rather than English text as keys
+- Plan for text expansion/contraction in different languages
+- Consider cultural context beyond just language translation
+
+## Limitations & Roadmap
+
+<Warning>
+  **Current Status**: This package provides basic internationalization with
+  dictionary loading and automated translation. Advanced formatting features are
+  planned but not yet implemented.
+</Warning>
+
+### ✅ Currently Available
+
+- Dictionary loading with locale fallback
+- Next.js App Router middleware integration
+- Locale-aware Link component
+- Automated translation with Languine
+- Basic environment configuration
+- Comprehensive testing infrastructure
+
+### 📋 Planned Features
+
+- Date/time formatting utilities
+- Number and currency formatting
+- Pluralization helpers
+- Translation interpolation
+- React hooks for client-side i18n
+- Advanced locale detection
+- Translation management CLI tools
+
+## Migration from Pages Router
+
+If migrating from Next.js Pages Router:
+
+1. **Update Middleware**: Use the App Router middleware pattern
+2. **Use Server Components**: Load dictionaries in server components instead of
+   `getServerSideProps`
+3. **Update Routing**: Use `[locale]` dynamic segments in your app directory
+   structure
+
+```typescript
+// Before (Pages Router)
+export async function getServerSideProps({ locale }) {
+  return { props: { locale } };
+}
+
+// After (App Router)
+export default async function Page({ params: { locale } }) {
+  const dict = await getDictionary(locale);
+  return <div>{dict.web.home.meta.title}</div>;
+}
+```
+
+This package provides a solid foundation for internationalization with room for
+growth as your localization requirements evolve.

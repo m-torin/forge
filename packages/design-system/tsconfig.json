@@ -1,5 +1,5 @@
 {
-  "extends": "@repo/typescript-config/nextjs.json",
+  "extends": "@repo/config/typescript/nextjs.json",
   "compilerOptions": {
     "baseUrl": ".",
     "plugins": [
@@ -8,10 +8,12 @@
       }
     ],
     "paths": {
-      "@repo/*": ["../*"],
-      "@repo/design-system/*": ["./*"]
-    }
+      "@/*": ["./ciseco/*"]
+    },
+    "types": ["vitest/globals"],
+    "declaration": false,
+    "declarationMap": false
   },
-  "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules"]
+  "include": ["**/*.ts", "**/*.tsx", "types/**/*.d.ts"],
+  "exclude": ["node_modules", "gluestack/**/*", "**/*.test.tsx", "**/*.test.ts", "__tests__/**/*"]
 }

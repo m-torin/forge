@@ -1,13 +1,22 @@
 {
-  "extends": "@repo/typescript-config/nextjs.json",
+  "extends": "@repo/config/typescript/nextjs.json",
   "compilerOptions": {
-    "baseUrl": "."
+    "baseUrl": ".",
+    "skipLibCheck": true,
+    "noEmit": true,
+    "paths": {
+      "@repo/*": ["../../packages/*"],
+      "#/root/*": ["./*"],
+      "#/*": ["./src/*"]
+    }
   },
   "include": [
     "next-env.d.ts",
     "next.config.ts",
+    ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
-  ]
+    ".storybook/**/*"
+  ],
+  "exclude": ["node_modules", "storybook-static"]
 }

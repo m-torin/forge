@@ -1,0 +1,101 @@
+---
+title: Success Markers
+description: Checklists to verify task completion
+---
+
+# Success Markers
+
+Use these checklists to ensure tasks are completed correctly. Each item should
+be verified before considering the task done.
+
+## After Adding a Database Model
+
+- [ ] `pnpm migrate` runs without errors
+- [ ] `pnpm --filter @repo/database generate` completes
+- [ ] `pnpm typecheck` passes
+- [ ] Generated types appear in `prisma-generated/`
+- [ ] Can import and use the new model in server actions
+- [ ] Relationships are properly defined with `@relation`
+- [ ] Indexes are added for foreign keys
+- [ ] Model follows naming conventions (PascalCase singular)
+
+## After Creating a Server Action
+
+- [ ] File is in `/app/actions/` directory
+- [ ] Has `'use server'` directive at top
+- [ ] Uses Zod schema for validation
+- [ ] Handles authentication if needed
+- [ ] Returns consistent response format
+- [ ] Error handling is implemented
+- [ ] `pnpm typecheck` passes
+- [ ] No database imports in client code
+
+## After Building a Component
+
+- [ ] Uses Mantine UI components
+- [ ] Includes `data-testid` prop
+- [ ] Form uses `useForm` with `zodResolver`
+- [ ] TypeScript types are properly defined
+- [ ] Component is exported correctly
+- [ ] Props interface is documented
+- [ ] No inline styles (use Mantine style props)
+- [ ] `pnpm lint` passes
+
+## After Package Changes
+
+- [ ] package.json has correct exports
+- [ ] All imports resolve correctly
+- [ ] No circular dependency warnings
+- [ ] `"type": "module"` is set for packages
+- [ ] TypeScript config extends correct base
+- [ ] `pnpm madge --circular` shows no issues
+- [ ] `pnpm build` succeeds
+
+## After Setting Up Authentication
+
+- [ ] Server actions check `auth()` before operations
+- [ ] Redirects to login when unauthorized
+- [ ] Session types are properly typed
+- [ ] No auth logic in client components
+- [ ] Protected routes have middleware checks
+- [ ] Error messages don't leak sensitive info
+
+## After Implementing a Feature
+
+- [ ] Database schema is updated (if needed)
+- [ ] Server actions handle the business logic
+- [ ] UI components are connected to actions
+- [ ] Form validation works correctly
+- [ ] Error states are handled
+- [ ] Loading states are implemented
+- [ ] Success feedback is shown to user
+- [ ] Tests are written and passing
+
+## After Writing Tests
+
+- [ ] Test files are in `__tests__` directory
+- [ ] Using Vitest imports (not Jest)
+- [ ] Tests use `data-testid` for queries
+- [ ] User interactions are tested (not implementation)
+- [ ] Mock data is realistic
+- [ ] Edge cases are covered
+- [ ] `pnpm test` passes
+
+## After Environment Setup
+
+- [ ] `env.ts` is in app root (not in src/)
+- [ ] All env vars are validated with Zod
+- [ ] Client vars start with `NEXT_PUBLIC_`
+- [ ] `.env.local` has all required values
+- [ ] No secrets in client environment
+- [ ] `pnpm build` succeeds
+
+## After Deployment Preparation
+
+- [ ] `pnpm build:doppler` succeeds
+- [ ] `pnpm typecheck` has no errors
+- [ ] `pnpm lint` passes
+- [ ] No console.logs in production code
+- [ ] Environment variables are in Doppler
+- [ ] Database migrations are ready
+- [ ] Feature flags are configured (if used)

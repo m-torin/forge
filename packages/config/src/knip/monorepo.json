@@ -1,0 +1,107 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "extends": ["./base.json"],
+  "workspaces": {
+    ".": {
+      "entry": [
+        "scripts/**/*.{js,ts,mjs}",
+        "turbo/**/*.{js,ts}",
+        "packages/*/src/index.{ts,tsx}",
+        "apps/*/src/index.{ts,tsx}",
+        "apps/*/app/**/*.{ts,tsx}",
+        "labs/*/src/index.{ts,tsx}"
+      ],
+      "project": [
+        "scripts/**/*.{js,ts,mjs}",
+        "turbo/**/*.{js,ts}",
+        "packages/**/*.{ts,tsx}",
+        "apps/**/*.{ts,tsx}",
+        "labs/**/*.{ts,tsx}"
+      ]
+    },
+    "packages/*": {
+      "entry": [
+        "src/index.{ts,tsx}",
+        "index.{ts,tsx}",
+        "**/*.config.{js,ts,mjs}",
+        "**/*.test.{js,ts,tsx}",
+        "**/*.spec.{js,ts,tsx}",
+        "__tests__/**/*.{js,ts,tsx}"
+      ],
+      "project": [
+        "src/**/*.{ts,tsx}",
+        "lib/**/*.{ts,tsx}",
+        "components/**/*.{ts,tsx}",
+        "utils/**/*.{ts,tsx}",
+        "types/**/*.{ts,tsx}",
+        "**/*.config.{js,ts,mjs}",
+        "**/*.test.{js,ts,tsx}",
+        "**/*.spec.{js,ts,tsx}",
+        "__tests__/**/*.{js,ts,tsx}"
+      ]
+    },
+    "apps/*": {
+      "entry": [
+        "src/app/**/*.{ts,tsx}",
+        "src/pages/**/*.{ts,tsx}",
+        "app/**/*.{ts,tsx}",
+        "pages/**/*.{ts,tsx}",
+        "src/index.{ts,tsx}",
+        "index.{ts,tsx}",
+        "middleware.{ts,tsx}",
+        "instrumentation.{ts,tsx}",
+        "next.config.{js,ts,mjs}",
+        "**/*.config.{js,ts,mjs}",
+        "**/*.test.{js,ts,tsx}",
+        "**/*.spec.{js,ts,tsx}",
+        "e2e/**/*.{js,ts,tsx}",
+        "__tests__/**/*.{js,ts,tsx}"
+      ],
+      "project": [
+        "src/**/*.{ts,tsx}",
+        "app/**/*.{ts,tsx}",
+        "pages/**/*.{ts,tsx}",
+        "components/**/*.{ts,tsx}",
+        "lib/**/*.{ts,tsx}",
+        "utils/**/*.{ts,tsx}",
+        "hooks/**/*.{ts,tsx}",
+        "contexts/**/*.{ts,tsx}",
+        "providers/**/*.{ts,tsx}",
+        "types/**/*.{ts,tsx}",
+        "data/**/*.{ts,tsx}",
+        "actions/**/*.{ts,tsx}",
+        "middleware.{ts,tsx}",
+        "instrumentation.{ts,tsx}",
+        "env.{ts,tsx}",
+        "**/*.config.{js,ts,mjs}",
+        "**/*.test.{js,ts,tsx}",
+        "**/*.spec.{js,ts,tsx}",
+        "e2e/**/*.{js,ts,tsx}",
+        "__tests__/**/*.{js,ts,tsx}"
+      ]
+    },
+    "labs/*": {
+      "entry": [
+        "src/app/**/*.{ts,tsx}",
+        "src/index.{ts,tsx}",
+        "index.{ts,tsx}",
+        "**/*.config.{js,ts,mjs}",
+        "**/*.test.{js,ts,tsx}",
+        "**/*.spec.{js,ts,tsx}",
+        "__tests__/**/*.{js,ts,tsx}"
+      ],
+      "project": [
+        "src/**/*.{ts,tsx}",
+        "components/**/*.{ts,tsx}",
+        "lib/**/*.{ts,tsx}",
+        "utils/**/*.{ts,tsx}",
+        "types/**/*.{ts,tsx}",
+        "**/*.config.{js,ts,mjs}",
+        "**/*.test.{js,ts,tsx}",
+        "**/*.spec.{js,ts,tsx}",
+        "__tests__/**/*.{js,ts,tsx}"
+      ]
+    }
+  },
+  "ignoreDependencies": ["@types/*", "eslint-*", "prettier", "@repo/*"]
+}

@@ -1,8 +1,16 @@
 {
-  "extends": "@repo/typescript-config/nextjs.json",
+  "extends": "@repo/config/typescript/react-library.json",
   "compilerOptions": {
-    "baseUrl": "."
+    "baseUrl": ".",
+    "types": ["vitest/globals"]
   },
-  "include": ["./*.ts", "./*.tsx"],
+  "include": [
+    "./*.ts",
+    "./*.tsx",
+    "./templates/**/*.ts",
+    "./templates/**/*.tsx",
+    "./__tests__/**/*.ts",
+    "./__tests__/**/*.tsx"
+  ],
   "exclude": ["node_modules"]
 }

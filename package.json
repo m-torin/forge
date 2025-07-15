@@ -1,45 +1,79 @@
 {
-  "name": "next-forge",
-  "version": "5.0.3",
-  "bin": {
-    "next-forge": "dist/index.js"
-  },
-  "files": [
-    "dist/index.js"
-  ],
+  "name": "forge",
   "scripts": {
-    "build": "turbo build",
-    "dev": "turbo dev",
-    "lint": "ultracite lint",
-    "format": "ultracite format",
-    "test": "turbo test",
-    "analyze": "turbo analyze",
-    "translate": "turbo translate",
-    "boundaries": "turbo boundaries",
-    "bump-deps": "npx npm-check-updates --deep -u -x react-day-picker",
-    "bump-ui": "npx shadcn@latest add --all --overwrite -c packages/design-system",
-    "migrate": "cd packages/database && npx prisma format && npx prisma generate && npx prisma db push",
-    "clean": "git clean -xdf node_modules"
+    "prebuild": "turbo build --filter=@repo/database",
+    "build": "turbo build --parallel --concurrency=8",
+    "build:affected": "turbo build --filter='...[origin/main]' --concurrency=8",
+    "build:doppler": "turbo build:doppler --concurrency=8",
+    "coverage": "node scripts/coverage.mjs",
+    "deps:check": "pnpm outdated --recursive",
+    "deps:dedupe": "pnpm dedupe",
+    "dev:doppler": "turbo dev:doppler",
+    "doppler": "turbo doppler",
+    "doppler:open": "turbo doppler:open",
+    "doppler:pull": "turbo doppler:pull",
+    "doppler:secrets": "turbo doppler:secrets",
+    "doppler:secrets:download": "turbo doppler:secrets:download",
+    "doppler:secrets:upload": "turbo doppler:secrets:upload",
+    "doppler:setup": "doppler setup",
+    "doppler:sync": "node scripts/doppler-sync.mjs",
+    "doppler:whoami": "doppler whoami",
+    "lint": "turbo prettier --only && turbo lint --only",
+    "lint:affected": "turbo lint --filter='...[origin/main]' --only",
+    "playwright:install": "pnpm exec playwright install --with-deps chromium firefox webkit",
+    "predev": "turbo build --filter=@repo/database",
+    "prisma:generate": "turbo prisma:generate",
+    "prisma:generate:doppler": "turbo prisma:generate:doppler",
+    "prisma:migrate": "pnpm --filter @repo/database prisma:migrate",
+    "prisma:migrate:doppler": "pnpm --filter @repo/database prisma:migrate:doppler",
+    "repo:bump-deps": "pnpm install && node scripts/update-workspace.mjs",
+    "repo:ci": "turbo repo:ci --concurrency=8",
+    "repo:circular": "turbo circular",
+    "repo:clean": "./scripts/clean-everything.sh",
+    "repo:knip": "turbo knip",
+    "repo:mac-setup": "./scripts/mac-setup.sh",
+    "repo:preflight": "turbo preflight --affected --continue=always",
+    "repo:reset": "pnpm repo:clean && pnpm install && pnpm build",
+    "repo:setup": "pnpm install && pnpm build && pnpm playwright:install",
+    "repo:translate": "turbo translate",
+    "test": "turbo test --concurrency=8",
+    "test:affected": "turbo test --filter='...[origin/main]' --concurrency=8",
+    "test:coverage:json": "vitest run --coverage --reporter=json",
+    "test:e2e": "turbo test:e2e --concurrency=8",
+    "test:ui": "turbo test:ui --concurrency=8",
+    "test:unit": "turbo test:unit --concurrency=8",
+    "typecheck": "turbo typecheck --only",
+    "typecheck:affected": "turbo typecheck --filter='...[origin/main]' --only"
   },
   "devDependencies": {
-    "@auto-it/first-time-contributor": "^11.3.0",
-    "@biomejs/biome": "1.9.4",
-    "@repo/typescript-config": "workspace:*",
-    "@turbo/gen": "^2.5.3",
-    "@types/node": "^22.15.21",
-    "tsup": "^8.5.0",
-    "turbo": "^2.5.3",
-    "typescript": "^5.8.3",
-    "ultracite": "^4.2.5",
-    "vitest": "^3.1.4"
+    "@playwright/test": "^1.54.1",
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:",
+    "@testing-library/user-event": "catalog:",
+    "@types/eslint": "^9.6.1",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "knip": "catalog:",
+    "madge": "catalog:",
+    "turbo": "^2.5.4",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
+  "packageManager": "pnpm@10.13.1",
   "engines": {
-    "node": ">=18"
+    "node": ">=22",
+    "pnpm": ">=10.0.0"
   },
-  "packageManager": "pnpm@10.11.0",
-  "dependencies": {
-    "@clack/prompts": "^0.11.0",
-    "commander": "^14.0.0"
-  },
-  "type": "module"
+  "pnpm": {
+    "overrides": {
+      "cookie@<0.7.0": ">=0.7.0",
+      "esbuild@<=0.24.2": ">=0.25.0",
+      "node-fetch@<2.6.7": ">=2.6.7",
+      "path-to-regexp@>=4.0.0 <6.3.0": ">=6.3.0"
+    }
+  }
 }

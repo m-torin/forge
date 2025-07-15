@@ -1,0 +1,512 @@
+---
+title: "SRH (Serverless Redis HTTP) Integration"
+description:
+  "Comprehensive guide for using Serverless Redis HTTP (SRH) in the testing
+  framework"
+---
+
+# SRH (Serverless Redis HTTP) Integration
+
+This testing framework includes comprehensive support for
+[Serverless Redis HTTP (SRH)](https://github.com/hiett/serverless-redis-http), a
+community project that provides a Redis proxy using HTTP instead of the Redis
+binary protocol. SRH is designed to be fully compatible with Upstash Redis.
+
+## Why Use SRH?
+
+SRH is particularly useful for:
+
+- **CI/CD Pipelines**: Avoid creating Upstash databases for every test run
+- **Local Development**: Test with a local Redis instance without internet
+  connectivity
+- **Kubernetes/Network Isolation**: Use Redis in environments where it's not
+  exposed to the internet
+- **Offline Development**: Work without internet access while maintaining Redis
+  functionality
+
+## Quick Start
+
+### 1. Basic Setup
+
+```typescript
+import {
+  setupSRHEnvironment,
+  cleanupSRHEnvironment,
+  createRedisAdapter
+} from "@repo/qa";
+import { logInfo, logError } from "@repo/observability/server/next";
+
+describe("My Redis Tests", () => {
+  beforeAll(() => {
+    setupSRHEnvironment({
+      url: "http://localhost:8080",
+      token: "test-token",
+      redisUrl: "redis://localhost:6379"
+    });
+  });
+
+  afterAll(() => {
+    cleanupSRHEnvironment();
+  });
+
+  it("should work with SRH", async () => {
+    const adapter = createRedisAdapter();
+    await adapter.initialize();
+
+    const testData = { id: "test-1", name: "Test Item" };
+    const created = await adapter.create("test-collection", testData);
+    expect(created).toStrictEqual(testData);
+  });
+});
+```
+
+### 2. Using SRH Container Management
+
+```typescript
+import { withSRH } from "@repo/qa";
+import { logInfo, logError } from "@repo/observability/server/next";
+
+describe("SRH Container Tests", () => {
+  const srhSetup = withSRH({
+    url: "http://localhost:8080",
+    token: "container-token"
+  });
+
+  beforeAll(async () => {
+    await srhSetup.setup();
+  });
+
+  afterAll(async () => {
+    await srhSetup.teardown();
+  });
+
+  it("should work with SRH container", async () => {
+    // Your tests here
+  });
+});
+```
+
+## Configuration Options
+
+### SRH Configuration
+
+```typescript
+interface SRHConfig {
+  url?: string; // SRH HTTP endpoint (default: http://localhost:8080)
+  token?: string; // SRH authentication token (default: test-token)
+  redisUrl?: string; // Redis connection string (default: redis://localhost:6379)
+  mode?: "env" | "file"; // SRH configuration mode (default: env)
+}
+```
+
+### Environment Variables
+
+The framework automatically detects SRH environments based on these variables:
+
+- `UPSTASH_REDIS_REST_URL`: SRH endpoint URL
+- `UPSTASH_REDIS_REST_TOKEN`: SRH authentication token
+- `SRH_MODE`: SRH configuration mode
+- `SRH_CONNECTION_STRING`: Redis connection string
+
+## Setup Methods
+
+### 1. Environment Setup
+
+```typescript
+import { setupSRHEnvironment, cleanupSRHEnvironment } from "@repo/qa";
+
+// Setup SRH environment
+setupSRHEnvironment({
+  url: "http://localhost:8080",
+  token: "my-token",
+  redisUrl: "redis://localhost:6379"
+});
+
+// Cleanup
+cleanupSRHEnvironment();
+```
+
+### 2. Container Management
+
+```typescript
+import { withSRH } from "@repo/qa";
+
+const srhSetup = withSRH({
+  url: "http://localhost:8080",
+  token: "my-token"
+});
+
+// Setup
+await srhSetup.setup();
+
+// Teardown
+await srhSetup.teardown();
+```
+
+### 3. Automatic Fallback
+
+The framework automatically falls back to mock Redis when SRH is not available:
+
+```typescript
+import { createRedisAdapter } from "@repo/qa";
+
+const adapter = createRedisAdapter();
+await adapter.initialize(); // Uses SRH if available, mock otherwise
+```
+
+## Docker Setup
+
+### Using Docker Compose
+
+Generate a Docker Compose configuration:
+
+```typescript
+import { generateSRHDockerCompose } from "@repo/qa";
+
+const dockerCompose = generateSRHDockerCompose({
+  url: "http://localhost:8080",
+  token: "my-token",
+  redisUrl: "redis://redis:6379"
+});
+
+logInfo("Generated Docker Compose configuration", { config: dockerCompose });
+```
+
+This generates:
+
+```yaml
+version: "3"
+services:
+  redis:
+    image: redis:6.2-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+
+  serverless-redis-http:
+    image: hiett/serverless-redis-http:latest
+    ports:
+      - "8080:80"
+    environment:
+      SRH_MODE: env
+      SRH_TOKEN: my-token
+      SRH_CONNECTION_STRING: redis://redis:6379
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+```
+
+### Manual Docker Setup
+
+```bash
+# Start Redis
+docker run -d -p 6379:6379 --name redis redis:6.2-alpine
+
+# Start SRH
+docker run -d -p 8080:80 --name srh \
+  -e SRH_MODE=env \
+  -e SRH_TOKEN=my-token \
+  -e SRH_CONNECTION_STRING="redis://host.docker.internal:6379" \
+  hiett/serverless-redis-http:latest
+```
+
+## GitHub Actions Integration
+
+Generate GitHub Actions configuration:
+
+```typescript
+import { generateSRHGitHubActions } from "@repo/qa";
+
+const githubActions = generateSRHGitHubActions({
+  token: "github-token"
+});
+
+logInfo("Generated GitHub Actions configuration", { config: githubActions });
+```
+
+This generates a complete GitHub Actions workflow with Redis and SRH services.
+
+## Testing Patterns
+
+### 1. Basic Redis Operations
+
+```typescript
+import { createRedisAdapter } from "@repo/qa";
+
+it("should perform basic Redis operations", async () => {
+  const adapter = createRedisAdapter();
+  await adapter.initialize();
+  const client = adapter.getClient();
+
+  // String operations
+  await client.set("key", "value", { ex: 60 });
+  expect(await client.get("key")).toBe("value");
+
+  // List operations
+  await client.lpush("list", "item1", "item2");
+  expect(await client.llen("list")).toBe(2);
+
+  // Set operations
+  await client.sadd("set", "member1", "member2");
+  expect(await client.scard("set")).toBe(2);
+
+  // Hash operations
+  await client.hset("hash", { field1: "value1", field2: "value2" });
+  expect(await client.hget("hash", "field1")).toBe("value1");
+});
+```
+
+### 2. Collection-based Operations
+
+```typescript
+it("should work with collections", async () => {
+  const adapter = createRedisAdapter();
+  await adapter.initialize();
+
+  // Create
+  const item = { id: "test-1", name: "Test Item" };
+  const created = await adapter.create("users", item);
+  expect(created).toStrictEqual(item);
+
+  // Read
+  const found = await adapter.findUnique("users", { id: "test-1" });
+  expect(found).toStrictEqual(item);
+
+  // Update
+  const updated = await adapter.update("users", "test-1", { name: "Updated" });
+  expect(updated.name).toBe("Updated");
+
+  // Delete
+  await adapter.delete("users", "test-1");
+  const deleted = await adapter.findUnique("users", { id: "test-1" });
+  expect(deleted).toBeNull();
+});
+```
+
+### 3. Bulk Operations
+
+```typescript
+it("should handle bulk operations", async () => {
+  const adapter = createRedisAdapter();
+  await adapter.initialize();
+
+  // Create multiple items
+  const items = Array.from({ length: 100 }, (_, i) => ({
+    id: `item-${i}`,
+    name: `Item ${i}`
+  }));
+
+  for (const item of items) {
+    await adapter.create("bulk-test", item);
+  }
+
+  // Find all items
+  const found = await adapter.findMany("bulk-test", { limit: 100 });
+  expect(found).toHaveLength(100);
+
+  // Count items
+  const count = await adapter.count("bulk-test");
+  expect(count).toBe(100);
+});
+```
+
+### 4. Error Handling
+
+```typescript
+it("should handle errors gracefully", async () => {
+  // Invalid SRH configuration
+  setupSRHEnvironment({
+    url: "http://invalid-url:9999",
+    token: "invalid-token"
+  });
+
+  const adapter = createRedisAdapter();
+
+  // Should fallback to mock when connection fails
+  await expect(adapter.initialize()).resolves.not.toThrow();
+
+  cleanupSRHEnvironment();
+});
+```
+
+## Performance Testing
+
+```typescript
+it("should handle performance requirements", async () => {
+  const adapter = createRedisAdapter();
+  await adapter.initialize();
+  const client = adapter.getClient();
+
+  const startTime = Date.now();
+  const operations = 1000;
+
+  // Bulk operations
+  for (let i = 0; i < operations; i++) {
+    await client.set(`perf-key-${i}`, `value-${i}`);
+  }
+
+  const duration = Date.now() - startTime;
+  expect(duration).toBeLessThan(5000); // 5 seconds max
+});
+```
+
+## Advanced Features
+
+### 1. Custom SRH Configuration
+
+```typescript
+import { createSRHTestConfig } from "@repo/qa";
+
+const config = createSRHTestConfig({
+  url: "http://custom-srh:8080",
+  token: "custom-token",
+  redisUrl: "redis://custom-redis:6379",
+  mode: "file"
+});
+```
+
+### 2. Health Checks
+
+```typescript
+import { SRHContainer } from "@repo/qa";
+import { logInfo, logError } from "@repo/observability/server/next";
+
+const srh = new SRHContainer({
+  url: "http://localhost:8080",
+  token: "test-token"
+});
+
+await srh.start();
+const isHealthy = await srh.checkHealth();
+logInfo("SRH health status", {
+  isHealthy,
+  components: srh.components.map((c) => ({
+    name: c.name,
+    status: c.status
+  })),
+  lastCheck: new Date().toISOString()
+});
+
+// Component status
+const status = await srh.getComponentStatus("database");
+logInfo("SRH component status", {
+  component: "database",
+  status: status.status,
+  latency: status.latency,
+  lastError: status.lastError
+});
+
+// Error handling
+try {
+  await srh.validateSystem();
+} catch (error) {
+  logError("SRH validation failed", {
+    error: error.message,
+    failedComponents: error.components,
+    timestamp: new Date().toISOString()
+  });
+}
+```
+
+### 3. Pattern-based Queries
+
+```typescript
+it("should support pattern-based queries", async () => {
+  const adapter = createRedisAdapter();
+  await adapter.initialize();
+
+  // Create items with different patterns
+  await adapter.create("users", { id: "user-1", name: "Alice" });
+  await adapter.create("users", { id: "user-2", name: "Bob" });
+  await adapter.create("posts", { id: "post-1", title: "Hello" });
+
+  // Query by pattern
+  const users = await adapter.findMany("users", {
+    pattern: "users:user-*",
+    limit: 10
+  });
+  expect(users).toHaveLength(2);
+
+  const posts = await adapter.findMany("posts", {
+    pattern: "posts:post-*",
+    limit: 10
+  });
+  expect(posts).toHaveLength(1);
+});
+```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Connection Failed**: SRH automatically falls back to mock Redis
+2. **Environment Variables**: Ensure `UPSTASH_REDIS_REST_URL` and
+   `UPSTASH_REDIS_REST_TOKEN` are set
+3. **Docker Issues**: Check if Redis and SRH containers are running and healthy
+4. **Port Conflicts**: Ensure ports 6379 (Redis) and 8080 (SRH) are available
+
+### Debug Mode
+
+Enable debug logging:
+
+```typescript
+// Set environment variable for debug output
+process.env.DEBUG = "srh:*";
+
+const adapter = createRedisAdapter();
+await adapter.initialize(); // Will log connection attempts
+```
+
+### Health Check
+
+```typescript
+import { SRHContainer } from "@repo/qa";
+import { logInfo, logError } from "@repo/observability/server/next";
+
+const srh = new SRHContainer();
+const isHealthy = await srh.checkHealth();
+logInfo("SRH health status", {
+  isHealthy,
+  components: srh.components.map((c) => ({
+    name: c.name,
+    status: c.status
+  })),
+  lastCheck: new Date().toISOString()
+});
+```
+
+## Best Practices
+
+1. **Always Cleanup**: Use `afterAll` hooks to cleanup SRH environment
+2. **Test Isolation**: Reset data between tests using `adapter.flushAll()`
+3. **Fallback Handling**: Don't assume SRH is always available
+4. **Performance**: Monitor test execution times with SRH vs mocks
+5. **Configuration**: Use environment-specific configurations for different test
+   environments
+
+## Migration from Mocks
+
+If you're migrating from mock Redis to SRH:
+
+1. Replace direct mock usage with `createRedisAdapter()`
+2. Add SRH environment setup to your test suites
+3. Update CI/CD pipelines to include SRH services
+4. Test both SRH and mock fallback scenarios
+
+```typescript
+// Before (mock only)
+import { mockUpstashRedisAdapter } from "@repo/qa";
+
+// After (SRH with fallback)
+import { createRedisAdapter } from "@repo/qa";
+
+const adapter = createRedisAdapter(); // Uses SRH if available, mock otherwise
+```
+
+This integration provides a seamless way to test with real Redis functionality
+while maintaining the reliability and speed of your test suite.

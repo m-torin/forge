@@ -1,23 +1,42 @@
 {
   "name": "@repo/notifications",
-  "version": "0.0.0",
   "private": true,
+  "type": "module",
+  "exports": {
+    "./client": "./src/client.tsx",
+    "./server": "./src/server.ts",
+    "./client/next": "./src/client-next.tsx",
+    "./server/next": "./src/server-next.ts",
+    "./mantine-notifications": "./mantine-notifications.tsx"
+  },
   "scripts": {
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "circular": "madge --circular --extensions ts,tsx,js,jsx .",
+    "coverage:collect": "vitest run --coverage --reporter=json",
+    "knip": "knip --fix --reporter json",
+    "lint": "eslint . --fix",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:coverage:json": "vitest run --coverage --reporter=json",
+    "test:ui": "vitest --ui",
+    "test:watch": "vitest",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@knocklabs/node": "^1.3.0",
-    "@knocklabs/react": "^0.7.11",
-    "@t3-oss/env-nextjs": "^0.13.4",
-    "react": "^19.1.0",
-    "zod": "^3.25.28"
+    "@knocklabs/node": "^1.11.0",
+    "@knocklabs/react": "^0.7.21",
+    "@mantine/notifications": "catalog:",
+    "@repo/observability": "workspace:*",
+    "@t3-oss/env-nextjs": "catalog:",
+    "@tabler/icons-react": "catalog:",
+    "chalk": "^5.4.1",
+    "react": "catalog:",
+    "server-only": "^0.0.1",
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
-    "typescript": "^5.8.3",
-    "@types/node": "22.15.21",
-    "@types/react": "19.1.5",
-    "@types/react-dom": "^19.1.5"
+    "@repo/config": "workspace:*",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/qa": "workspace:*",
+    "jsdom": "catalog:"
   }
 }

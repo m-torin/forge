@@ -1,0 +1,681 @@
+---
+title: "Storage"
+description:
+  "Multi-provider file storage with Cloudflare R2, Images, and Vercel Blob"
+icon: "hard-drive"
+---
+
+# Storage Package
+
+The storage package provides a unified interface for file storage across
+multiple providers, with advanced features like multipart uploads, streaming,
+image transformations, and presigned URLs.
+
+## Features
+
+- **Multi-Provider Support**: Cloudflare R2, Cloudflare Images, and Vercel Blob
+- **Multi-Bucket Configuration**: Support for multiple R2 buckets and
+  intelligent routing
+- **Advanced Uploads**: Multipart uploads, streaming, progress tracking,
+  concurrent uploads
+- **Image Optimization**: Automatic transformations, variants, and CDN delivery
+- **Presigned URLs**: Secure client-side uploads without exposing credentials
+- **Four-File Export Pattern**: Proper separation for Next.js and non-Next.js
+  environments
+
+## Installation
+
+The storage package is included in the monorepo. No additional installation
+needed.
+
+## Configuration
+
+### Environment Variables
+
+```bash
+# Provider selection (required in production)
+STORAGE_PROVIDER=vercel-blob # or cloudflare-r2, cloudflare-images, multi
+
+# Vercel Blob
+BLOB_READ_WRITE_TOKEN=your-token
+
+# Cloudflare Images
+CLOUDFLARE_IMAGES_ACCOUNT_ID=your-account-id
+CLOUDFLARE_IMAGES_API_TOKEN=your-api-token
+CLOUDFLARE_IMAGES_DELIVERY_URL=https://imagedelivery.net/your-account-id
+CLOUDFLARE_IMAGES_SIGNING_KEY=your-signing-key
+
+# Cloudflare R2 (single bucket - legacy support)
+R2_ACCOUNT_ID=your-account-id
+R2_ACCESS_KEY_ID=your-access-key
+R2_SECRET_ACCESS_KEY=your-secret-key
+R2_BUCKET=your-bucket-name
+
+# Cloudflare R2 (multiple buckets - JSON array)
+R2_CREDENTIALS='[{"name":"primary","bucket":"bucket1","accountId":"acc1","accessKeyId":"key1","secretAccessKey":"secret1"},{"name":"secondary","bucket":"bucket2","accountId":"acc2","accessKeyId":"key2","secretAccessKey":"secret2"}]'
+
+# Complete multi-provider config (JSON)
+STORAGE_CONFIG='{"providers":{"r2-main":{"provider":"cloudflare-r2","cloudflareR2":{...}},"images":{"provider":"cloudflare-images","cloudflareImages":{...}}},"routing":{"images":"images","documents":"r2-main"}}'
+
+# Logging configuration
+STORAGE_LOG_LEVEL=error       # info, warn, error
+STORAGE_LOG_PERFORMANCE=false # true to enable performance logging
+STORAGE_LOG_PROVIDER=console  # console, sentry, pino
+```
+
+## Server Actions
+
+The storage package includes 24 server actions for Next.js App Router
+integration:
+
+### Media Actions
+
+```typescript
+import {
+  uploadMediaAction,
+  getMediaAction,
+  listMediaAction,
+  deleteMediaAction,
+  bulkDeleteMediaAction,
+  bulkImportFromUrlsAction,
+  getMediaUrlAction
+} from "@repo/storage/server/next";
+
+// Upload file
+const result = await uploadMediaAction(formData);
+
+// List files with filtering
+const files = await listMediaAction({ prefix: "documents/" });
+
+// Bulk operations
+await bulkDeleteMediaAction(["file1.pdf", "file2.jpg"]);
+await bulkImportFromUrlsAction([
+  { url: "https://example.com/image.jpg", key: "imported.jpg" }
+]);
+```
+
+### Product Media Actions
+
+```typescript
+import {
+  uploadProductMediaAction,
+  getProductMediaAction,
+  deleteProductMediaAction,
+  bulkUpdateProductMediaAction
+} from "@repo/storage/server/next";
+
+// Product-specific upload with auth
+const result = await uploadProductMediaAction(productId, formData);
+
+// Get all product media with variants
+const media = await getProductMediaAction(productId);
+
+// Bulk update metadata
+await bulkUpdateProductMediaAction(updates);
+```
+
+### Bulk Operations
+
+```typescript
+import {
+  bulkDeleteMediaAction,
+  bulkMoveMediaAction,
+  bulkImportFromUrlsAction,
+  copyBetweenProvidersAction
+} from "@repo/storage/server/next";
+
+// Bulk delete with error handling
+const deleteResult = await bulkDeleteMediaAction([
+  "file1.pdf",
+  "file2.jpg",
+  "file3.png"
+]);
+
+// Bulk move/rename operations
+await bulkMoveMediaAction([
+  { from: "old-name.jpg", to: "new-name.jpg" },
+  { from: "temp/file.pdf", to: "documents/file.pdf" }
+]);
+
+// Import multiple files from URLs
+const importResult = await bulkImportFromUrlsAction(
+  [
+    { url: "https://example.com/image1.jpg", key: "imported1.jpg" },
+    { url: "https://example.com/image2.jpg", key: "imported2.jpg" }
+  ],
+  {
+    onProgress: (progress) => console.log(`${progress.percent}% complete`)
+  }
+);
+
+// Copy between storage providers
+await copyBetweenProvidersAction("r2-primary", "r2-backup", "important.pdf");
+```
+
+### Development Features
+
+```typescript
+// Mock storage provider for testing/development
+// Automatically used when no provider is configured
+import { storage } from "@repo/storage/server/next";
+
+// In development without storage credentials,
+// the mock provider stores files in memory/local filesystem
+const result = await storage.upload("test.jpg", fileBuffer);
+// Files stored locally when no credentials available
+```
+
+## Usage
+
+### Basic Usage
+
+```typescript
+import { storage } from "@repo/storage/server/next";
+import { safeEnv } from "@repo/storage/env";
+
+// Upload a file
+const result = await storage.upload("my-file.pdf", fileBuffer, {
+  contentType: "application/pdf",
+  metadata: { userId: "123" }
+});
+
+// Upload with progress tracking
+await storage.upload("large-file.zip", fileBuffer, {
+  onProgress: (progress) => {
+    console.log(
+      `Upload progress: ${Math.round((progress.loaded / progress.total) * 100)}%`
+    );
+  }
+});
+
+// Download a file
+const blob = await storage.download("my-file.pdf");
+
+// Get a URL (automatically signed for product photos)
+const url = await storage.getUrl("my-file.pdf", { expiresIn: 3600 });
+
+// List files with filtering
+const files = await storage.list({ prefix: "documents/", limit: 50 });
+
+// Check if file exists
+const exists = await storage.exists("my-file.pdf");
+
+// Delete a file
+await storage.delete("my-file.pdf");
+
+// Using environment configuration
+const env = safeEnv();
+if (env.STORAGE_PROVIDER === "multi") {
+  // Multi-provider configuration active
+}
+```
+
+### Multi-Storage Manager
+
+```typescript
+import { multiStorage } from "@repo/storage/server/next";
+
+// Upload with automatic provider routing
+const result = await multiStorage.upload("photo.jpg", imageBuffer, {
+  contentType: "image/jpeg"
+});
+
+// Force specific provider
+const result = await multiStorage.upload("backup.zip", data, {
+  provider: "r2-secondary"
+});
+
+// Access specific provider
+const r2Provider = multiStorage.getProvider("r2-main");
+const images = await r2Provider?.list();
+```
+
+## Cloudflare R2 Features
+
+### Multipart Uploads
+
+Large files are automatically uploaded using multipart uploads:
+
+```typescript
+import { CloudflareR2Provider } from "@repo/storage/server/next";
+
+const provider = new CloudflareR2Provider({
+  bucket: "my-bucket",
+  accountId: "account-id",
+  accessKeyId: "key",
+  secretAccessKey: "secret",
+  defaultPartSize: 10 * 1024 * 1024, // 10MB parts
+  defaultQueueSize: 6 // 6 concurrent uploads
+});
+
+// Upload with progress tracking
+await provider.upload("large-file.zip", fileStream, {
+  onProgress: (progress) => {
+    logInfo("Upload progress", { percentComplete: progress.percent });
+  }
+});
+```
+
+### Presigned URLs
+
+Generate secure URLs for client-side uploads:
+
+```typescript
+// Generate presigned upload URL
+const { url, headers } = await provider.getPresignedUploadUrl("document.pdf", {
+  expiresIn: 3600,
+  contentType: "application/pdf",
+  contentLength: 1024000
+});
+
+// Generate presigned download URL
+const downloadUrl = await provider.getPresignedDownloadUrl("document.pdf", {
+  expiresIn: 7200,
+  responseContentDisposition: 'attachment; filename="report.pdf"'
+});
+
+// Get public URL (for public buckets)
+const publicUrl = provider.getPublicUrl("image.jpg");
+```
+
+### Streaming Uploads
+
+Stream large files without loading into memory:
+
+```typescript
+import { createReadStream } from "fs";
+
+const stream = createReadStream("large-video.mp4");
+await provider.upload("video.mp4", stream, {
+  contentType: "video/mp4",
+  partSize: 50 * 1024 * 1024 // 50MB parts
+});
+```
+
+### Upload from URL
+
+```typescript
+await provider.uploadFromUrl("backup.jpg", "https://example.com/image.jpg", {
+  contentType: "image/jpeg",
+  metadata: { source: "external" }
+});
+```
+
+## Cloudflare Images Features
+
+### Image Upload with Options
+
+```typescript
+import { CloudflareImagesProvider } from "@repo/storage/server/next";
+
+const provider = new CloudflareImagesProvider({
+  accountId: "account-id",
+  apiToken: "api-token"
+});
+
+// Upload with custom options
+const result = await provider.upload("product-photo", imageFile, {
+  requireSignedURLs: true,
+  metadata: {
+    productId: "12345",
+    category: "electronics"
+  },
+  id: "custom-image-id", // Optional custom ID
+  fileName: "product.jpg"
+});
+```
+
+### Image Variants
+
+Create and manage image variants for different use cases:
+
+```typescript
+// Create a variant
+await provider.createVariant({
+  id: "thumbnail",
+  options: {
+    width: 150,
+    height: 150,
+    fit: "cover",
+    quality: 85,
+    format: "auto"
+  }
+});
+
+// List variants
+const variants = await provider.listVariants();
+
+// Delete a variant
+await provider.deleteVariant("thumbnail");
+```
+
+### Direct Upload URLs
+
+Enable secure client-side uploads:
+
+```typescript
+// Generate direct upload URL
+const { uploadURL, id } = await provider.getDirectUploadUrl();
+
+// Client-side upload
+const formData = new FormData();
+formData.append("file", file);
+
+await fetch(uploadURL, {
+  method: "POST",
+  body: formData
+});
+```
+
+### Image Transformations
+
+Get transformed image URLs with on-the-fly processing:
+
+```typescript
+// Get transformed URL
+const url = provider.getTransformedUrl("image-id", {
+  width: 800,
+  height: 600,
+  fit: "contain",
+  quality: 90,
+  format: "webp",
+  blur: 20,
+  rotate: 90,
+  sharpen: 1.5,
+  gravity: { x: 0.5, y: 0.5 }
+});
+```
+
+### Batch Operations
+
+```typescript
+// Create batch token for high-volume operations
+const { token } = await provider.createBatchToken();
+
+// Batch upload from URLs
+const results = await provider.batchUploadFromUrls(
+  [
+    { url: "https://example.com/img1.jpg", id: "img1" },
+    { url: "https://example.com/img2.jpg", id: "img2" },
+    { url: "https://example.com/img3.jpg", id: "img3" }
+  ],
+  token
+);
+```
+
+### Extended R2 Features
+
+```typescript
+// Stream downloads
+const stream = await r2Provider.downloadStream("large-file.zip");
+
+// Multipart upload coordination
+const { uploadId } = await r2Provider.createMultipartUpload("video.mp4");
+const parts = await r2Provider.uploadPart(key, uploadId, 1, chunk);
+await r2Provider.completeMultipartUpload(key, uploadId, parts);
+
+// Upload from URL
+await r2Provider.uploadFromUrl("backup.jpg", "https://example.com/image.jpg");
+```
+
+### Extended Images Features
+
+```typescript
+// Update image metadata
+await provider.updateImage("image-id", {
+  requireSignedURLs: false,
+  metadata: { status: "approved" }
+});
+
+// Get usage statistics
+const stats = await provider.getStats();
+logInfo("Storage usage stats", {
+  images: {
+    current: stats.count.current,
+    allowed: stats.count.allowed,
+    percentUsed: Math.round((stats.count.current / stats.count.allowed) * 100)
+  }
+});
+
+// List with pagination
+const { images, total, hasMore } = await provider.listAdvanced({
+  perPage: 50,
+  page: 2,
+  sortOrder: "desc"
+});
+
+// Manage signing keys
+const keys = await provider.listSigningKeys();
+const newKey = await provider.createSigningKey();
+await provider.deleteSigningKey("old-key-name");
+```
+
+## Client-Side Usage
+
+### Upload with Presigned URL
+
+```typescript
+import { uploadWithPresignedUrl } from "@repo/storage/client/next";
+
+// Get presigned URL from your API
+const presignedData = await fetch("/api/upload-url").then((r) => r.json());
+
+// Upload file with progress tracking
+await uploadWithPresignedUrl(presignedData, file, {
+  onProgress: (progress) => {
+    setUploadProgress(progress.percent);
+  }
+});
+```
+
+### Direct Upload to URL
+
+```typescript
+import { uploadDirectToUrl } from "@repo/storage/client/next";
+
+await uploadDirectToUrl(presignedUrl, file, {
+  headers: {
+    "Content-Type": file.type
+  },
+  onProgress: (progress) => {
+    console.log(`${progress.percent}% uploaded`);
+  }
+});
+```
+
+### Multipart Upload Coordination
+
+```typescript
+import {
+  ClientMultipartUpload,
+  splitFileIntoChunks
+} from "@repo/storage/client/next";
+
+const upload = new ClientMultipartUpload(uploadId, key);
+
+// Upload file in chunks
+for await (const { chunk, partNumber } of splitFileIntoChunks(
+  file,
+  5 * 1024 * 1024
+)) {
+  const presignedUrl = await getPresignedPartUrl(partNumber);
+  await upload.uploadPart(partNumber, presignedUrl, chunk);
+}
+
+// Get parts for completion
+const parts = upload.getParts();
+```
+
+## Best Practices
+
+### 1. Use Multi-Storage for Flexibility
+
+```typescript
+// Configure routing for optimal performance
+const config = {
+  routing: {
+    images: "cloudflare-images", // Image optimization
+    documents: "r2-primary", // Document storage
+    backups: "r2-secondary" // Backup storage
+  }
+};
+```
+
+### 2. Implement Progress Tracking
+
+```typescript
+// Show upload progress to users
+await storage.upload(key, file, {
+  onProgress: (progress) => {
+    updateUI({
+      percent: (progress.loaded / progress.total) * 100,
+      loaded: formatBytes(progress.loaded),
+      total: formatBytes(progress.total)
+    });
+  }
+});
+```
+
+### 3. Use Appropriate Part Sizes
+
+```typescript
+// Adjust part size based on file size and network
+const partSize =
+  fileSize > 1024 * 1024 * 1024
+    ? 50 * 1024 * 1024 // 50MB for files > 1GB
+    : 10 * 1024 * 1024; // 10MB for smaller files
+```
+
+### 4. Handle Errors Gracefully
+
+```typescript
+try {
+  await storage.upload(key, file);
+} catch (error) {
+  if (error.message.includes("Stream conversion error")) {
+    // Retry with smaller part size
+  } else if (error.message.includes("Multipart upload failed")) {
+    // Clean up partial upload
+  }
+}
+```
+
+### 5. Optimize Image Delivery
+
+```typescript
+// Use variants for consistent image sizes
+await imagesProvider.createVariant({
+  id: "hero",
+  options: {
+    width: 1920,
+    height: 1080,
+    fit: "cover",
+    quality: 85,
+    format: "auto" // Automatic WebP/AVIF
+  }
+});
+
+// Use transformed URLs for dynamic sizing
+const responsiveUrl = imagesProvider.getTransformedUrl(id, {
+  width: 800,
+  dpr: 2 // For retina displays
+});
+```
+
+## API Reference
+
+### StorageProvider Interface
+
+All providers implement this interface:
+
+```typescript
+interface StorageProvider {
+  upload(
+    key: string,
+    data: Data,
+    options?: UploadOptions
+  ): Promise<StorageObject>;
+  download(key: string): Promise<Blob>;
+  delete(key: string): Promise<void>;
+  exists(key: string): Promise<boolean>;
+  getMetadata(key: string): Promise<StorageObject>;
+  getUrl(key: string, options?: { expiresIn?: number }): Promise<string>;
+  list(options?: ListOptions): Promise<StorageObject[]>;
+}
+```
+
+### Types
+
+```typescript
+interface UploadOptions {
+  contentType?: string;
+  metadata?: Record<string, string>;
+  cacheControl?: number;
+
+  // R2/S3 specific
+  partSize?: number;
+  queueSize?: number;
+  onProgress?: (progress: UploadProgress) => void;
+
+  // Cloudflare Images specific
+  requireSignedURLs?: boolean;
+  id?: string;
+  fileName?: string;
+}
+
+interface CloudflareImagesTransformOptions {
+  width?: number;
+  height?: number;
+  fit?: "scale-down" | "contain" | "cover" | "crop" | "pad";
+  quality?: number;
+  format?: "auto" | "avif" | "webp" | "json" | "jpeg" | "png";
+  blur?: number;
+  sharpen?: number;
+  rotate?: 0 | 90 | 180 | 270 | 360;
+  // ... and more
+}
+```
+
+## Troubleshooting
+
+### Large File Uploads Failing
+
+```typescript
+// Increase part size and reduce concurrency
+await provider.upload(key, data, {
+  partSize: 100 * 1024 * 1024, // 100MB parts
+  queueSize: 2, // Reduce concurrent uploads
+  leavePartsOnError: true // For manual recovery
+});
+```
+
+### CORS Issues with Presigned URLs
+
+Ensure your R2 bucket has proper CORS configuration:
+
+```json
+{
+  "CORSRules": [
+    {
+      "AllowedOrigins": ["*"],
+      "AllowedMethods": ["GET", "PUT", "POST"],
+      "AllowedHeaders": ["*"],
+      "MaxAgeSeconds": 3600
+    }
+  ]
+}
+```
+
+### Image Upload Size Limits
+
+Cloudflare Images has a 10MB limit per image. For larger images, use R2:
+
+```typescript
+if (file.size > 10 * 1024 * 1024) {
+  // Use R2 for large images
+  await r2Provider.upload(key, file);
+} else {
+  // Use Cloudflare Images for optimization
+  await imagesProvider.upload(key, file);
+}
+```

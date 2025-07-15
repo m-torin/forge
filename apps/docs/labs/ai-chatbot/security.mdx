@@ -1,0 +1,221 @@
+---
+title: AI Tools Security Configuration
+description:
+  Security measures and configuration for AI SDK tools in the chatbot
+  application
+---
+
+# AI Tools Security Configuration
+
+This document describes the security measures implemented for AI SDK tools in
+the chatbot application.
+
+## Overview
+
+The AI chatbot includes three powerful tools that can interact with your system:
+
+- **Bash Tool**: Execute shell commands
+- **Text Editor Tool**: Read, create, and modify files
+- **Computer Tool**: Control mouse and keyboard
+
+## Security Features
+
+### 1. Workspace Restrictions
+
+All tools are restricted to operate within a designated workspace directory:
+
+- **Default**: Current working directory (`process.cwd()`)
+- **Configurable**: Set via `workspacePath` in security configuration
+- **Path Validation**: Prevents access to files outside the workspace
+- **Traversal Protection**: Blocks `../` and `..\\` path attempts
+
+### 2. Command Filtering
+
+#### Blocked Commands
+
+The following dangerous commands are automatically blocked:
+
+- System modification: `rm -rf`, `sudo`, `chmod 777`, `dd if=`
+- Process management: `killall`, `pkill`, `kill -9`
+- Network commands: `wget`, `curl`, `nc`, `ssh`, `scp`
+- Privilege escalation: `su -`, `su root`
+- System control: `shutdown`, `reboot`, `halt`
+- Package management: `apt-get`, `yum`, `brew install`
+
+#### Allowed Commands (Whitelist)
+
+When enabled, only these safe commands are permitted:
+
+- File operations: `ls`, `cat`, `head`, `tail`, `grep`, `find`
+- Text processing: `echo`, `sed`, `awk`, `cut`, `paste`
+- System info: `pwd`, `whoami`, `hostname`, `date`, `uptime`
+- Development tools: `git`, `npm`, `node`, `python`
+- File compression: `tar`, `gzip`, `zip`
+
+### 3. File Type Restrictions
+
+#### Blocked File Extensions
+
+Sensitive file types are automatically blocked:
+
+- Security files: `.env`, `.key`, `.pem`, `.ssh`, `.gpg`
+- Configuration: `.config`, `.conf`, `.ini`, `.git`
+- System files: `.sudoers`, `.passwd`, `.shadow`
+- Database files: `.db`, `.sqlite`, `.mdb`
+- Backup files: `.bak`, `.backup`, `.tmp`
+
+#### Allowed File Extensions (Whitelist)
+
+When enabled, only these file types are permitted:
+
+- Code files: `.js`, `.ts`, `.py`, `.java`, `.cpp`, `.go`
+- Text files: `.txt`, `.md`, `.log`, `.csv`
+- Web files: `.html`, `.css`, `.json`, `.xml`
+- Documentation: `.pdf`, `.doc`, `.rtf`
+
+### 4. Size Limits
+
+- **Max File Size**: 10MB (configurable)
+- **Max Command Output**: 1MB (configurable)
+- **Timeout**: 30 seconds for command execution
+
+### 5. User Confirmation
+
+- **Optional**: Require user approval before operations
+- **Configurable**: Enable/disable via `requireUserConfirmation`
+- **Production**: Recommended for high-security environments
+
+## Configuration
+
+### Security Levels
+
+#### Standard (Default)
+
+- Blocks dangerous commands
+- Restricts to workspace directory
+- Blocks sensitive file types
+- No user confirmation required
+
+#### Medium
+
+- Uses command whitelist
+- More restrictive file type filtering
+- Enhanced path validation
+
+#### High
+
+- Requires user confirmation
+- Very restrictive command whitelist
+- Minimal file type allowance
+- Strict size limits
+
+### Custom Configuration
+
+Edit `src/lib/ai/tools/security-config.ts`:
+
+```typescript
+import { logInfo } from '@repo/observability/server/next';
+
+export const AI_TOOLS_SECURITY_CONFIG: SecurityConfig = {
+  workspacePath: "/path/to/your/workspace",
+  blockedCommands: ["your", "custom", "blocked", "commands"],
+  allowedCommands: ["your", "allowed", "commands"],
+  blockedFileExtensions: [".your", ".blocked", ".extensions"],
+  allowedFileExtensions: [".your", ".allowed", ".extensions"],
+  maxFileSize: 5 * 1024 * 1024, // 5MB
+  maxCommandOutput: 512 * 1024, // 512KB
+  requireUserConfirmation: true
+};
+```
+
+## Safety Table
+
+View the current security configuration at `/safety` in your application. This
+page displays:
+
+- Current security level
+- Workspace restrictions
+- Command and file type filters
+- Size limits
+- Security notices
+
+## Best Practices
+
+### Development
+
+- Use `DEV_SECURITY_CONFIG` for more permissive settings
+- Test tools thoroughly in controlled environment
+- Monitor tool usage and outputs
+
+### Production
+
+- Use `PROD_SECURITY_CONFIG` for maximum security
+- Enable user confirmation for critical operations
+- Regularly review and update blocked commands
+- Monitor logs for security events
+- Consider additional network isolation
+
+### General
+
+- Never run the application with elevated privileges
+- Regularly update security configurations
+- Monitor file system changes
+- Keep workspace directory clean and organized
+- Backup important files before testing
+
+## Security Considerations
+
+⚠️ **Important**: These tools can read and write files on your machine. While
+security measures are in place, they are not foolproof. Consider:
+
+1. **Isolation**: Run in a virtual machine or container
+2. **Backups**: Keep regular backups of important data
+3. **Monitoring**: Watch for unexpected file changes
+4. **Updates**: Keep security configurations current
+5. **Testing**: Test tools in safe environment first
+
+## Troubleshooting
+
+### Common Issues
+
+**"Command blocked for security reasons"**
+
+- Check if command is in blocked list
+- Verify command doesn't contain blocked patterns
+- Ensure command is within workspace
+
+**"Access denied: File path must be within workspace"**
+
+- Verify file path is within configured workspace
+- Check for path traversal attempts (`../`)
+- Ensure absolute path resolution
+
+**"File too large"**
+
+- Increase `maxFileSize` in configuration
+- Split large files into smaller chunks
+- Use streaming for large file operations
+
+### Logging
+
+Enable detailed logging to troubleshoot security issues:
+
+```typescript
+import { logInfo } from '@repo/observability/server/next';
+
+// Add to your configuration
+logInfo('Security validation completed', {
+  result: validationResult,
+  timestamp: new Date().toISOString()
+});
+```
+
+## Support
+
+For security-related issues or questions:
+
+1. Review this documentation
+2. Check the safety table at `/safety`
+3. Examine security configuration files
+4. Test with minimal permissions first
+5. Contact development team for assistance

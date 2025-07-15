@@ -1,8 +1,23 @@
 {
-  "extends": "@repo/typescript-config/nextjs.json",
+  "extends": "@repo/config/typescript/nextjs.json",
   "compilerOptions": {
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "@repo/*": ["../*"]
+    }
   },
   "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "generated/**",
+    "prisma-generated/**",
+    "__tests__/performance.test.todo.ts",
+    "__tests__/upstash-redis.test.todo.ts",
+    "__tests__/upstash-vector.test.todo.ts",
+    "__tests__/firestore.test.todo.ts",
+    "__tests__/integration.test.todo.ts",
+    "redis/**",
+    "prisma/seed*.ts",
+    "src/prisma/src/seed/**"
+  ]
 }

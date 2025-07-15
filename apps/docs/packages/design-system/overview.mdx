@@ -1,0 +1,288 @@
+---
+title: "Design System - Algolia Search"
+description:
+  "Algolia search components and utilities for instant search functionality"
+icon: "magnifying-glass"
+---
+
+# Design System - Algolia Search
+
+A focused collection of Algolia search components built with React InstantSearch
+for powerful search functionality across applications.
+
+## Overview
+
+This package provides pre-built Algolia search components and utilities to
+quickly implement instant search capabilities in your applications. Built on top
+of React InstantSearch, it offers a set of composable components for building
+search interfaces.
+
+<CardGroup cols={2}>
+  <Card
+    title="Search Components"
+    icon="magnifying-glass"
+    href="/packages/design-system/components"
+  >
+    Pre-built components for search interfaces with Algolia
+  </Card>
+  <Card
+    title="React Hooks"
+    icon="code"
+    href="/packages/design-system/components"
+  >
+    Custom hooks for search state management and configuration
+  </Card>
+  <Card title="Search Provider" icon="cloud">
+    Provider component for Algolia InstantSearch context
+  </Card>
+  <Card title="Utilities" icon="wrench">
+    Search client creation and configuration helpers
+  </Card>
+</CardGroup>
+
+## Key Features
+
+- **Algolia Integration**: Built on React InstantSearch for powerful search
+  capabilities
+- **Search Components**: SearchBox, SearchResults, SearchStats, and Autocomplete
+- **Custom Hooks**: Search state management and configuration utilities
+- **TypeScript Support**: Full TypeScript definitions for all components and
+  hooks
+- **Configurable**: Flexible search configuration with custom search clients
+- **Performance**: Optimized for fast search experiences
+
+## Installation
+
+```bash
+pnpm add @repo/design-system
+```
+
+## Quick Start
+
+<Steps>
+  <Step title="Configure Algolia">
+    Set up your Algolia application and index:
+    ```bash
+    # Environment variables
+    ALGOLIA_APPLICATION_ID=your_app_id
+    ALGOLIA_SEARCH_API_KEY=your_search_key
+    ALGOLIA_INDEX_NAME=your_index_name
+    ```
+  </Step>
+  
+  <Step title="Setup Search Provider">
+    ```typescript
+    import { SearchProvider } from '@repo/design-system/algolia';
+    
+    export default function App({ children }) {
+      const searchConfig = {
+        applicationId: process.env.ALGOLIA_APPLICATION_ID,
+        searchApiKey: process.env.ALGOLIA_SEARCH_API_KEY,
+        indexName: process.env.ALGOLIA_INDEX_NAME,
+      };
+    
+      return (
+        <SearchProvider config={searchConfig}>
+          {children}
+        </SearchProvider>
+      );
+    }
+    ```
+  </Step>
+  
+  <Step title="Use Search Components">
+    ```typescript
+    import { 
+      SearchBox, 
+      SearchResults, 
+      SearchStats 
+    } from '@repo/design-system/algolia';
+    
+    export function SearchPage() {
+      return (
+        <div>
+          <SearchBox placeholder="Search products..." />
+          <SearchStats />
+          <SearchResults />
+        </div>
+      );
+    }
+    ```
+  </Step>
+</Steps>
+
+## Available Components
+
+### Search Components
+
+- **SearchProvider**: Context provider for Algolia InstantSearch
+- **SearchBox**: Search input with query handling
+- **SearchResults**: Display search results with customizable rendering
+- **SearchStats**: Show search statistics (results count, query time)
+- **Autocomplete**: Advanced autocomplete with suggestions
+
+### React Hooks
+
+- **useInstantSearch**: Access InstantSearch instance and methods
+- **useInstantSearchConfig**: Configuration utilities for search setup
+- **useSearchBox**: Search input state and query management
+- **useSearchState**: Access current search state and parameters
+
+### Utilities
+
+- **createSearchClient**: Factory for creating configured Algolia search clients
+- **getSearchConfig**: Helper for search configuration management
+
+## Import Pattern
+
+```typescript
+// Import all components and utilities from algolia namespace
+import {
+  SearchProvider,
+  SearchBox,
+  SearchResults,
+  SearchStats,
+  Autocomplete,
+  useInstantSearch,
+  useSearchBox,
+  createSearchClient
+} from "@repo/design-system/algolia";
+```
+
+## Configuration
+
+### Search Config
+
+```typescript
+interface SearchConfig {
+  applicationId: string;
+  searchApiKey: string;
+  indexName: string;
+  routing?: boolean;
+  stalledSearchDelay?: number;
+}
+```
+
+### Example Configuration
+
+```typescript
+const searchConfig = {
+  applicationId: "YOUR_APP_ID",
+  searchApiKey: "YOUR_SEARCH_KEY",
+  indexName: "products",
+  routing: true,
+  stalledSearchDelay: 200
+};
+```
+
+## Usage Examples
+
+### Basic Search Interface
+
+```typescript
+import {
+  SearchProvider,
+  SearchBox,
+  SearchResults,
+  SearchStats
+} from '@repo/design-system/algolia';
+
+function ProductSearch() {
+  const config = {
+    applicationId: process.env.ALGOLIA_APPLICATION_ID!,
+    searchApiKey: process.env.ALGOLIA_SEARCH_API_KEY!,
+    indexName: 'products'
+  };
+
+  return (
+    <SearchProvider config={config}>
+      <div className="search-container">
+        <SearchBox placeholder="Search products..." />
+        <SearchStats />
+        <SearchResults />
+      </div>
+    </SearchProvider>
+  );
+}
+```
+
+### Using Search Hooks
+
+```typescript
+import { useSearchBox, useInstantSearch } from '@repo/design-system/algolia';
+
+function CustomSearchInput() {
+  const { query, refine, clear } = useSearchBox();
+  const { results } = useInstantSearch();
+
+  return (
+    <div>
+      <input
+        value={query}
+        onChange={(e) => refine(e.target.value)}
+        placeholder="Type to search..."
+      />
+      <button onClick={clear}>Clear</button>
+      <p>{results?.nbHits} results found</p>
+    </div>
+  );
+}
+```
+
+### Custom Search Client
+
+```typescript
+import { createSearchClient } from '@repo/design-system/algolia';
+
+const customClient = createSearchClient({
+  applicationId: 'YOUR_APP_ID',
+  searchApiKey: 'YOUR_SEARCH_KEY',
+  indexName: 'custom_index'
+});
+
+// Use with SearchProvider
+<SearchProvider config={{ ...config, searchClient: customClient }}>
+  {/* Your search components */}
+</SearchProvider>
+```
+
+## TypeScript Support
+
+All components and hooks include comprehensive TypeScript definitions:
+
+```typescript
+interface SearchConfig {
+  applicationId: string;
+  searchApiKey: string;
+  indexName: string;
+  routing?: boolean;
+  stalledSearchDelay?: number;
+}
+
+interface SearchBoxProps {
+  placeholder?: string;
+  autoFocus?: boolean;
+  submitIconComponent?: React.ComponentType;
+  resetIconComponent?: React.ComponentType;
+}
+
+interface SearchResultsProps {
+  hitComponent?: React.ComponentType<{ hit: any }>;
+  className?: string;
+}
+```
+
+## Best Practices
+
+1. **Configuration**: Store Algolia credentials in environment variables
+2. **Performance**: Use appropriate `stalledSearchDelay` for your use case
+3. **Routing**: Enable routing for shareable search URLs
+4. **Customization**: Create custom hit components for your data structure
+5. **Error Handling**: Implement error boundaries for search failures
+
+## Limitations
+
+- This package contains only Algolia search functionality
+- For general UI components, use Mantine UI directly in your applications
+- Custom design tokens and theming should be implemented at the application
+  level

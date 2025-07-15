@@ -1,24 +1,77 @@
 {
   "name": "@repo/ai",
-  "version": "0.0.0",
   "private": true,
+  "type": "module",
+  "exports": {
+    "./client": {
+      "types": "./src/client.ts",
+      "default": "./src/client.ts"
+    },
+    "./server": {
+      "types": "./src/server.ts",
+      "default": "./src/server.ts"
+    },
+    "./client/next": {
+      "types": "./src/client-next.ts",
+      "default": "./src/client-next.ts"
+    },
+    "./server/next": {
+      "types": "./src/server-next.ts",
+      "default": "./src/server-next.ts"
+    },
+    "./server/edge": {
+      "types": "./src/server-edge.ts",
+      "default": "./src/server-edge.ts"
+    },
+    "./shared-env": {
+      "types": "./src/shared-env.ts",
+      "default": "./src/shared-env.ts"
+    }
+  },
   "scripts": {
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "circular": "madge --circular --extensions ts,tsx,js,jsx .",
+    "coverage:collect": "vitest run --coverage --reporter=json",
+    "knip": "knip --fix --reporter json",
+    "lint": "eslint . --fix",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:coverage:json": "vitest run --coverage --reporter=json",
+    "test:ui": "vitest --ui",
+    "test:watch": "vitest",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^1.3.22",
-    "@t3-oss/env-nextjs": "^0.13.4",
-    "ai": "^4.3.16",
-    "react": "^19.1.0",
+    "@ai-sdk/anthropic": "^1.2.12",
+    "@ai-sdk/deepinfra": "^0.2.17",
+    "@ai-sdk/google": "^1.2.22",
+    "@ai-sdk/openai": "^1.3.23",
+    "@ai-sdk/openai-compatible": "^0.2.16",
+    "@ai-sdk/perplexity": "^1.1.9",
+    "@ai-sdk/xai": "^1.2.18",
+    "@anthropic-ai/sdk": "^0.56.0",
+    "@mantine/core": "catalog:",
+    "@modelcontextprotocol/sdk": "^1.15.1",
+    "@repo/observability": "workspace:*",
+    "@t3-oss/env-nextjs": "catalog:",
+    "@tabler/icons-react": "catalog:",
+    "@upstash/vector": "^1.2.2",
+    "ai": "^4.3.19",
+    "exa-js": "^1.8.20",
+    "next": "catalog:",
+    "openai": "^5.9.0",
+    "react": "catalog:",
     "react-markdown": "^10.1.0",
-    "tailwind-merge": "^3.3.0",
-    "zod": "^3.25.28"
+    "resumable-stream": "^2.2.1",
+    "server-only": "^0.0.1",
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
-    "@types/node": "22.15.21",
-    "@types/react": "19.1.5",
-    "@types/react-dom": "^19.1.5"
+    "@repo/config": "workspace:*",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/qa": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:"
   }
 }

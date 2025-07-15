@@ -1,0 +1,4 @@
+{
+  "extends": ["@repo/config/knip"],
+  "ignoreDependencies": ["@prisma/client", "prisma"]
+}

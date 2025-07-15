@@ -1,0 +1,430 @@
+---
+title: "Algolia Search Components"
+description: "Complete reference for Algolia search components and hooks"
+---
+
+# Algolia Search Components
+
+Comprehensive reference for all available Algolia search components, hooks, and
+utilities in the design system package.
+
+## Components
+
+### SearchProvider
+
+Context provider component that wraps your application with Algolia
+InstantSearch functionality.
+
+```typescript
+import { SearchProvider } from '@repo/design-system/algolia';
+
+interface SearchProviderProps {
+  children: ReactNode;
+  config: SearchConfig;
+  routing?: boolean;
+  stalledSearchDelay?: number;
+}
+
+// Usage
+<SearchProvider
+  config={{
+    applicationId: 'YOUR_APP_ID',
+    searchApiKey: 'YOUR_SEARCH_KEY',
+    indexName: 'products'
+  }}
+  routing={true}
+  stalledSearchDelay={200}
+>
+  {/* Your search components */}
+</SearchProvider>
+```
+
+**Props:**
+
+- `config` (required): Algolia configuration object
+- `routing` (optional): Enable URL routing for search state
+- `stalledSearchDelay` (optional): Delay before showing stalled search indicator
+
+### SearchBox
+
+Search input component with query handling and customizable styling.
+
+```typescript
+import { SearchBox } from '@repo/design-system/algolia';
+
+// Basic usage
+<SearchBox placeholder="Search products..." />
+
+// Advanced usage
+<SearchBox
+  placeholder="Type to search..."
+  autoFocus={true}
+  submitIconComponent={CustomSubmitIcon}
+  resetIconComponent={CustomResetIcon}
+/>
+```
+
+**Props:**
+
+- `placeholder` (optional): Input placeholder text
+- `autoFocus` (optional): Auto-focus the input on mount
+- `submitIconComponent` (optional): Custom submit icon component
+- `resetIconComponent` (optional): Custom reset icon component
+
+### SearchResults
+
+Component for displaying search results with customizable hit rendering.
+
+```typescript
+import { SearchResults } from '@repo/design-system/algolia';
+
+// Basic usage
+<SearchResults />
+
+// With custom hit component
+<SearchResults
+  hitComponent={({ hit }) => (
+    <div>
+      <h3>{hit.title}</h3>
+      <p>{hit.description}</p>
+    </div>
+  )}
+  className="custom-results"
+/>
+```
+
+**Props:**
+
+- `hitComponent` (optional): Custom component for rendering individual hits
+- `className` (optional): Additional CSS classes
+
+### SearchStats
+
+Component displaying search statistics like result count and query time.
+
+```typescript
+import { SearchStats } from '@repo/design-system/algolia';
+
+// Basic usage
+<SearchStats />
+
+// Example output: "42 results found in 12ms"
+```
+
+**Features:**
+
+- Shows total number of results
+- Displays query processing time
+- Automatically updates with search state
+
+### Autocomplete
+
+Advanced autocomplete component with suggestions and customizable rendering.
+
+```typescript
+import { Autocomplete } from '@repo/design-system/algolia';
+
+<Autocomplete
+  placeholder="Search with autocomplete..."
+  getSources={({ query }) => [
+    {
+      sourceId: 'products',
+      getItems: () => getSearchSuggestions(query),
+      templates: {
+        item: ({ item }) => <div>{item.title}</div>
+      }
+    }
+  ]}
+/>
+```
+
+**Props:**
+
+- `placeholder` (optional): Input placeholder
+- `getSources` (required): Function returning autocomplete sources
+- Additional props from `@algolia/autocomplete-js`
+
+## Hooks
+
+### useInstantSearch
+
+Hook providing access to the InstantSearch instance and search results.
+
+```typescript
+import { useInstantSearch } from '@repo/design-system/algolia';
+
+function SearchComponent() {
+  const { results, indexUiState, setIndexUiState } = useInstantSearch();
+
+  return (
+    <div>
+      <p>Found {results?.nbHits} results</p>
+      <button onClick={() => setIndexUiState({})}>
+        Clear all filters
+      </button>
+    </div>
+  );
+}
+```
+
+**Returns:**
+
+- `results`: Current search results
+- `indexUiState`: Current search state
+- `setIndexUiState`: Function to update search state
+- Additional InstantSearch methods
+
+### useSearchBox
+
+Hook for managing search box state and query refinement.
+
+```typescript
+import { useSearchBox } from '@repo/design-system/algolia';
+
+function CustomSearchInput() {
+  const { query, refine, clear, isSearchStalled } = useSearchBox();
+
+  return (
+    <div>
+      <input
+        value={query}
+        onChange={(e) => refine(e.target.value)}
+        placeholder="Search..."
+      />
+      <button onClick={clear}>Clear</button>
+      {isSearchStalled && <span>Loading...</span>}
+    </div>
+  );
+}
+```
+
+**Returns:**
+
+- `query`: Current search query
+- `refine`: Function to update the query
+- `clear`: Function to clear the query
+- `isSearchStalled`: Boolean indicating if search is stalled
+
+### useSearchState
+
+Hook providing access to the complete search state.
+
+```typescript
+import { useSearchState } from '@repo/design-system/algolia';
+
+function SearchStateDebug() {
+  const searchState = useSearchState();
+
+  return (
+    <div>
+      <h4>Current Search State:</h4>
+      <pre>{JSON.stringify(searchState, null, 2)}</pre>
+    </div>
+  );
+}
+```
+
+**Returns:**
+
+- Complete search state object including query, filters, pagination, etc.
+
+### useInstantSearchConfig
+
+Hook for managing InstantSearch configuration and setup.
+
+```typescript
+import { useInstantSearchConfig } from '@repo/design-system/algolia';
+
+function ConfigurableSearch() {
+  const { updateConfig, currentConfig } = useInstantSearchConfig();
+
+  const switchIndex = () => {
+    updateConfig({
+      ...currentConfig,
+      indexName: 'different_index'
+    });
+  };
+
+  return (
+    <button onClick={switchIndex}>
+      Switch to different index
+    </button>
+  );
+}
+```
+
+**Returns:**
+
+- `currentConfig`: Current search configuration
+- `updateConfig`: Function to update configuration
+
+## Utilities
+
+### createSearchClient
+
+Factory function for creating configured Algolia search clients.
+
+```typescript
+import { createSearchClient } from '@repo/design-system/algolia';
+
+const searchClient = createSearchClient({
+  applicationId: 'YOUR_APP_ID',
+  searchApiKey: 'YOUR_SEARCH_KEY',
+  indexName: 'products'
+});
+
+// Use with InstantSearch
+<InstantSearch searchClient={searchClient} indexName="products">
+  {/* Components */}
+</InstantSearch>
+```
+
+**Parameters:**
+
+- `config`: SearchConfig object with Algolia credentials
+
+**Returns:**
+
+- Configured Algolia search client
+
+### getSearchConfig
+
+Helper for managing and validating search configuration.
+
+```typescript
+import { getSearchConfig } from "@repo/design-system/algolia";
+
+const config = getSearchConfig({
+  applicationId: process.env.ALGOLIA_APPLICATION_ID,
+  searchApiKey: process.env.ALGOLIA_SEARCH_API_KEY,
+  indexName: "products",
+  routing: true
+});
+
+// Validates required fields and provides defaults
+```
+
+**Parameters:**
+
+- Partial search configuration object
+
+**Returns:**
+
+- Complete, validated search configuration
+
+## Types
+
+### SearchConfig
+
+```typescript
+interface SearchConfig {
+  applicationId: string;
+  searchApiKey: string;
+  indexName: string;
+  routing?: boolean;
+  stalledSearchDelay?: number;
+}
+```
+
+### SearchBoxProps
+
+```typescript
+interface SearchBoxProps {
+  placeholder?: string;
+  autoFocus?: boolean;
+  submitIconComponent?: React.ComponentType;
+  resetIconComponent?: React.ComponentType;
+}
+```
+
+### SearchResultsProps
+
+```typescript
+interface SearchResultsProps {
+  hitComponent?: React.ComponentType<{ hit: any }>;
+  className?: string;
+}
+```
+
+## Complete Example
+
+Here's a comprehensive example using all the components together:
+
+```typescript
+import {
+  SearchProvider,
+  SearchBox,
+  SearchResults,
+  SearchStats,
+  useInstantSearch,
+  useSearchBox
+} from '@repo/design-system/algolia';
+
+// Custom hit component
+function ProductHit({ hit }) {
+  return (
+    <div className="product-hit">
+      <img src={hit.image} alt={hit.name} />
+      <div>
+        <h3>{hit.name}</h3>
+        <p>{hit.description}</p>
+        <span>${hit.price}</span>
+      </div>
+    </div>
+  );
+}
+
+// Custom search controls
+function SearchControls() {
+  const { clear } = useSearchBox();
+  const { results } = useInstantSearch();
+
+  return (
+    <div className="search-controls">
+      <button onClick={clear}>Clear Search</button>
+      <span>{results?.nbHits} products found</span>
+    </div>
+  );
+}
+
+// Main search interface
+function ProductSearch() {
+  const config = {
+    applicationId: process.env.ALGOLIA_APPLICATION_ID!,
+    searchApiKey: process.env.ALGOLIA_SEARCH_API_KEY!,
+    indexName: 'products'
+  };
+
+  return (
+    <SearchProvider config={config} routing={true}>
+      <div className="search-page">
+        <header>
+          <SearchBox placeholder="Search products..." />
+          <SearchControls />
+        </header>
+
+        <main>
+          <SearchStats />
+          <SearchResults hitComponent={ProductHit} />
+        </main>
+      </div>
+    </SearchProvider>
+  );
+}
+
+export default ProductSearch;
+```
+
+## Best Practices
+
+1. **Provider Placement**: Place `SearchProvider` as high as possible in your
+   component tree
+2. **Environment Variables**: Store Algolia credentials securely in environment
+   variables
+3. **Custom Components**: Create custom hit components for your specific data
+   structure
+4. **Error Boundaries**: Implement error boundaries around search components
+5. **Performance**: Use `stalledSearchDelay` appropriate for your search
+   response times
+6. **Routing**: Enable routing for shareable search URLs in user-facing
+   applications

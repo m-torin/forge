@@ -2,10 +2,31 @@
   "name": "docs",
   "private": true,
   "scripts": {
-    "dev": "mintlify dev --port 3004",
-    "lint": "mintlify broken-links"
+    "build": "echo 'Mintlify docs build'",
+    "build:local": "echo 'Mintlify docs build'",
+    "circular": "madge --circular --extensions ts,tsx,js,jsx .",
+    "coverage:collect": "vitest run --coverage --reporter=json",
+    "dev": "mintlify dev --port 3800",
+    "doppler:open": "doppler open",
+    "doppler:pull": "doppler secrets download --no-file --format env > .env.local",
+    "doppler:secrets": "doppler secrets",
+    "doppler:secrets:download": "doppler secrets download --no-file --format env",
+    "doppler:secrets:upload": "doppler secrets upload .env.local",
+    "knip": "knip",
+    "lint": "mintlify broken-links",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:coverage:json": "vitest run --coverage --reporter=json",
+    "test:e2e": "playwright test",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:ui": "playwright test --ui",
+    "test:ui": "vitest --ui",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "mintlify": "^4.2.15"
   },
   "devDependencies": {
-    "typescript": "^5.8.3"
+    "@repo/qa": "workspace:*"
   }
 }

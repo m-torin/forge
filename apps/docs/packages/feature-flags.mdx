@@ -1,0 +1,741 @@
+---
+title: "Feature Flags"
+description:
+  "Comprehensive feature flag system with Vercel Flags SDK, PostHog, and Edge
+  Config integration"
+icon: "flag"
+---
+
+# Feature Flags
+
+Comprehensive feature flag management using Vercel Flags SDK with support for
+static precomputation, edge middleware evaluation, PostHog integration, and
+Vercel Edge Config for ultra-low latency.
+
+## Overview
+
+The feature flags package provides a complete solution for feature flag
+management with multiple provider options, static optimization, and seamless
+Vercel Toolbar integration.
+
+<CardGroup cols={2}>
+  <Card title="Vercel Flags SDK" icon="vercel">
+    Full Vercel Flags implementation with static precomputation and edge
+    middleware support
+  </Card>
+  <Card title="PostHog Integration" icon="chart-line">
+    Complete PostHog adapter with user targeting, A/B testing, and multivariate
+    flags
+  </Card>
+  <Card title="Edge Config Provider" icon="edge">
+    Ultra-low latency flags using Vercel Edge Config with global distribution
+  </Card>
+  <Card title="Developer Tools" icon="code">
+    Vercel Toolbar integration with real-time flag overrides and discovery
+    endpoints
+  </Card>
+</CardGroup>
+
+## Quick Start
+
+<CodeGroup>
+```typescript Basic Flag Definition
+import { flag } from '@vercel/flags/next';
+
+export const showFeature = flag<boolean>({
+  key: 'show-feature',
+  decide: () => true,
+  defaultValue: false,
+  description: 'Show new feature to users',
+  options: [
+    { value: true, label: 'Enabled' },
+    { value: false, label: 'Disabled' },
+  ],
+});
+```
+
+```typescript Server Component Usage
+import { showFeature } from './flags';
+
+export default async function Page() {
+  const enabled = await showFeature();
+
+  return (
+    <div>
+      {enabled ? (
+        <NewFeature />
+      ) : (
+        <LegacyFeature />
+      )}
+    </div>
+  );
+}
+```
+
+```typescript Client Component Usage
+'use client';
+
+import { useFlag } from '@repo/feature-flags/client/next';
+import { showFeature } from './flags';
+
+export function ClientComponent() {
+  const enabled = useFlag(showFeature, false);
+
+  if (enabled === undefined) {
+    return <div>Loading...</div>;
+  }
+
+  return <div>{enabled ? 'Feature ON' : 'Feature OFF'}</div>;
+}
+```
+
+</CodeGroup>
+
+## Environment Setup
+
+### Required Environment Variables
+
+<CodeGroup>
+```bash Flags SDK
+# Required for precomputation and static optimization
+FLAGS_SECRET=your-generated-secret
+
+# Generate secret:
+
+node -e "console.log(crypto.randomBytes(32).toString('base64url'))"
+
+````
+
+```bash PostHog Integration
+# For flag evaluation
+NEXT_PUBLIC_POSTHOG_KEY=your-project-api-key
+NEXT_PUBLIC_POSTHOG_HOST=https://app.posthog.com
+
+# For discovery endpoint (optional)
+POSTHOG_PERSONAL_API_KEY=your-personal-api-key
+POSTHOG_PROJECT_ID=your-project-id
+````
+
+```bash Edge Config
+# Edge Config connection string
+EDGE_CONFIG=your-edge-config-connection-string
+```
+
+</CodeGroup>
+
+## Provider Options
+
+### 1. Standard Flags (Built-in Decide Function)
+
+Perfect for simple boolean flags and basic targeting:
+
+```typescript
+import { flag } from "@vercel/flags/next";
+
+export const maintenanceMode = flag<boolean>({
+  key: "maintenance-mode",
+  decide: async ({ headers }) => {
+    // Check if maintenance window
+    const now = new Date();
+    const maintenanceStart = new Date("2024-01-15T02:00:00Z");
+    const maintenanceEnd = new Date("2024-01-15T04:00:00Z");
+
+    return now >= maintenanceStart && now <= maintenanceEnd;
+  },
+  defaultValue: false
+});
+
+export const betaAccess = flag<boolean>({
+  key: "beta-access",
+  identify: ({ cookies }) => ({
+    user: { id: cookies.get("user-id")?.value || "anonymous" }
+  }),
+  decide: ({ entities }) => {
+    const betaUsers = ["user1", "user2", "user3"];
+    return betaUsers.includes(entities?.user?.id || "");
+  },
+  defaultValue: false
+});
+```
+
+### 2. PostHog Integration
+
+Advanced targeting with user analytics and A/B testing:
+
+<Tabs>
+  <Tab title="Boolean Flags">
+    ```typescript
+    import { flag } from '@vercel/flags/next';
+    import { postHogServerAdapter } from '@repo/feature-flags/server/next';
+
+    const identify = ({ cookies, headers }) => ({
+      user: {
+        id: cookies.get('user-id')?.value || 'anonymous',
+        email: headers.get('x-user-email'),
+      },
+    });
+
+    export const newCheckout = flag({
+      key: 'new-checkout',
+      adapter: postHogServerAdapter.isFeatureEnabled(),
+      identify,
+      defaultValue: false,
+    });
+    ```
+
+  </Tab>
+
+  <Tab title="Multivariate Flags">
+    ```typescript
+    export const checkoutTheme = flag<string>({
+      key: 'checkout-theme',
+      adapter: postHogServerAdapter.featureFlagValue(),
+      identify,
+      defaultValue: 'default',
+      options: [
+        { value: 'default', label: 'Default Theme' },
+        { value: 'modern', label: 'Modern Theme' },
+        { value: 'minimal', label: 'Minimal Theme' },
+      ],
+    });
+    ```
+  </Tab>
+
+  <Tab title="Payload Flags">
+    ```typescript
+    interface CheckoutConfig {
+      theme: string;
+      maxItems: number;
+      showRecommendations: boolean;
+    }
+
+    export const checkoutConfig = flag<CheckoutConfig>({
+      key: 'checkout-config',
+      adapter: postHogServerAdapter.featureFlagPayload((payload: any) => ({
+        theme: payload.theme || 'default',
+        maxItems: payload.maxItems || 10,
+        showRecommendations: payload.showRecommendations ?? true,
+      })),
+      identify,
+      defaultValue: {
+        theme: 'default',
+        maxItems: 10,
+        showRecommendations: true,
+      },
+    });
+    ```
+
+  </Tab>
+</Tabs>
+
+### 3. Edge Config Provider
+
+Ultra-low latency flags with global distribution:
+
+```typescript
+import { flag } from "@vercel/flags/next";
+import { edgeConfigAdapter } from "@repo/feature-flags/server/next";
+
+export const globalFeature = flag<boolean>({
+  key: "global-feature",
+  adapter: edgeConfigAdapter(),
+  defaultValue: false
+});
+
+export const appTheme = flag<string>({
+  key: "app-theme",
+  adapter: edgeConfigAdapter(),
+  defaultValue: "light",
+  options: [
+    { value: "light", label: "Light Theme" },
+    { value: "dark", label: "Dark Theme" },
+    { value: "auto", label: "Auto Theme" }
+  ]
+});
+```
+
+**Edge Config Structure:**
+
+```json
+{
+  "flags": {
+    "global-feature": true,
+    "app-theme": "dark",
+    "feature-rollout": {
+      "enabled": true,
+      "percentage": 50,
+      "regions": ["us-east-1", "eu-west-1"]
+    }
+  }
+}
+```
+
+## Static Optimization
+
+### Precomputation for Static Pages
+
+Optimize static pages by precomputing flag values:
+
+<CodeGroup>
+```typescript Flag Groups
+// flags.ts
+export const marketingFlags = [
+  showBanner,
+  summerSale,
+  heroVariant,
+] as const;
+
+export const checkoutFlags = [
+  newCheckout,
+  checkoutTheme,
+  expressCheckout,
+] as const;
+```
+
+```typescript Middleware Precomputation
+// middleware.ts
+import { type NextRequest, NextResponse } from "next/server";
+import { precompute } from "@vercel/flags/next";
+import { marketingFlags } from "./flags";
+
+export const config = {
+  matcher: ["/", "/marketing/:path*"]
+};
+
+export async function middleware(request: NextRequest) {
+  const code = await precompute(marketingFlags);
+
+  const nextUrl = new URL(
+    `/${code}${request.nextUrl.pathname}${request.nextUrl.search}`,
+    request.url
+  );
+
+  return NextResponse.rewrite(nextUrl, { request });
+}
+```
+
+```typescript Static Page Usage
+// app/[code]/page.tsx
+import { marketingFlags, showBanner, summerSale } from '../flags';
+
+type Params = Promise<{ code: string }>;
+
+export default async function MarketingPage({ params }: { params: Params }) {
+  const { code } = await params;
+
+  const banner = await showBanner(code, marketingFlags);
+  const sale = await summerSale(code, marketingFlags);
+
+  return (
+    <div>
+      {banner && <PromoBanner />}
+      {sale && <SummerSaleSection />}
+      <MainContent />
+    </div>
+  );
+}
+```
+
+</CodeGroup>
+
+### Static Generation Options
+
+<Tabs>
+  <Tab title="ISR (Recommended)">
+    ```typescript
+    // Enable Incremental Static Regeneration
+    export async function generateStaticParams() {
+      return []; // Empty array enables ISR
+    }
+
+    export default async function Layout({ children }) {
+      return children;
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Build-time Generation">
+    ```typescript
+    import { generatePermutations } from '@vercel/flags/next';
+    import { marketingFlags } from '../flags';
+
+    export async function generateStaticParams() {
+      // Generate all possible combinations
+      const codes = await generatePermutations(marketingFlags);
+      return codes.map((code) => ({ code }));
+    }
+
+    // Or with filtering
+    export async function generateStaticParams() {
+      const codes = await generatePermutations(
+        marketingFlags,
+        (combination) => {
+          // Only pre-render specific combinations
+          return combination['show-banner'] === true;
+        }
+      );
+      return codes.map((code) => ({ code }));
+    }
+    ```
+
+  </Tab>
+</Tabs>
+
+## Advanced Features
+
+### Edge Middleware Routing
+
+Use flags to route users to different page variants:
+
+```typescript
+// middleware.ts
+import { type NextRequest, NextResponse } from "next/server";
+import { experimentFlag } from "./flags";
+
+export const config = {
+  matcher: "/experiment/:path*"
+};
+
+export async function middleware(request: NextRequest) {
+  const variant = await experimentFlag();
+  const targetPath =
+    variant === "control" ? "/experiment/control" : "/experiment/variant";
+
+  return NextResponse.rewrite(new URL(targetPath, request.url));
+}
+```
+
+### Evaluation Context and User Targeting
+
+Advanced user targeting with typed contexts:
+
+```typescript
+interface UserContext {
+  user?: {
+    id: string;
+    email?: string;
+    tier?: "free" | "pro" | "enterprise";
+    location?: string;
+  };
+  organization?: {
+    id: string;
+    plan: string;
+  };
+}
+
+const identify = ({ cookies, headers }): UserContext => {
+  return {
+    user: {
+      id: cookies.get("user-id")?.value || "anonymous",
+      email: headers.get("x-user-email"),
+      tier: cookies.get("user-tier")?.value as any,
+      location: headers.get("cf-ipcountry")
+    },
+    organization: {
+      id: cookies.get("org-id")?.value || "",
+      plan: cookies.get("org-plan")?.value || "free"
+    }
+  };
+};
+
+export const enterpriseFeatures = flag<boolean, UserContext>({
+  key: "enterprise-features",
+  identify,
+  decide: ({ entities }) => {
+    return (
+      entities?.organization?.plan === "enterprise" ||
+      entities?.user?.tier === "enterprise"
+    );
+  },
+  defaultValue: false
+});
+```
+
+### Custom Evaluation Context
+
+Override context at runtime:
+
+```typescript
+// Custom context per request
+const customResult = await myFlag.run({
+  identify: {
+    user: { id: "specific-user", tier: "pro" }
+  }
+});
+
+// Dynamic context function
+const dynamicResult = await myFlag.run({
+  identify: () => getContextFromDatabase()
+});
+```
+
+### Deduplication
+
+Prevent expensive computations from running multiple times:
+
+```typescript
+import { dedupe } from "@vercel/flags/next";
+
+const getUserData = dedupe(async (userId: string) => {
+  return await database.user.findUnique({ where: { id: userId } });
+});
+
+const identifyUser = dedupe(({ cookies }) => {
+  const userId = cookies.get("user-id")?.value;
+  return userId ? getUserData(userId) : null;
+});
+```
+
+## Vercel Toolbar Integration
+
+### Discovery Endpoint Setup
+
+Enable flag management in Vercel Toolbar:
+
+<CodeGroup>
+```typescript Single Provider
+// app/.well-known/vercel/flags/route.ts
+import {
+  createFlagsDiscoveryEndpoint,
+  getProviderData
+} from '@repo/feature-flags/server/next';
+import * as flags from '@/flags';
+
+export const GET = createFlagsDiscoveryEndpoint(async () => {
+  return getProviderData(flags);
+});
+```
+
+```typescript PostHog Provider
+// app/.well-known/vercel/flags/route.ts
+import {
+  createFlagsDiscoveryEndpoint,
+  getPostHogProviderData
+} from "@repo/feature-flags/server/next";
+
+export const GET = createFlagsDiscoveryEndpoint(async () => {
+  return getPostHogProviderData({
+    personalApiKey: process.env.POSTHOG_PERSONAL_API_KEY,
+    projectId: process.env.POSTHOG_PROJECT_ID
+  });
+});
+```
+
+```typescript Edge Config Provider
+// app/.well-known/vercel/flags/route.ts
+import {
+  createFlagsDiscoveryEndpoint,
+  getEdgeConfigProviderData
+} from "@repo/feature-flags/server/next";
+
+export const GET = createFlagsDiscoveryEndpoint(async () => {
+  return getEdgeConfigProviderData({
+    options: {
+      edgeConfigItemKey: "flags",
+      teamSlug: "my-team"
+    }
+  });
+});
+```
+
+</CodeGroup>
+
+### Flag Options and Labels
+
+Configure options for the Vercel Toolbar interface:
+
+```typescript
+export const themeVariant = flag<string>({
+  key: "theme-variant",
+  decide: () => "blue",
+  options: [
+    { value: "blue", label: "Blue Theme" },
+    { value: "green", label: "Green Theme" },
+    { value: "purple", label: "Purple Theme" }
+  ]
+});
+
+export const featureRollout = flag<number>({
+  key: "feature-rollout",
+  decide: () => 50,
+  options: Array.from({ length: 11 }, (_, i) => ({
+    value: i * 10,
+    label: `${i * 10}%`
+  }))
+});
+```
+
+## Performance Optimization
+
+### Suspense Fallbacks
+
+Optimize loading states with flag-aware fallbacks:
+
+```typescript
+export default async function Page() {
+  const hasAuth = await authFlag();
+  const userTier = await userTierFlag();
+
+  return (
+    <Suspense
+      fallback={
+        hasAuth ? (
+          userTier === 'pro' ? <ProSkeleton /> : <FreeSkeleton />
+        ) : (
+          <UnauthenticatedSkeleton />
+        )
+      }
+    >
+      <Dashboard />
+    </Suspense>
+  );
+}
+```
+
+### Multiple Flag Groups
+
+Avoid unnecessary permutations by grouping related flags:
+
+```typescript
+// Separate concerns into different flag groups
+export const navigationFlags = [headerFlag, menuFlag];
+export const contentFlags = [articleFlag, sidebarFlag];
+export const experimentFlags = [abTestFlag, variantFlag];
+
+// Use different groups for different page sections
+export async function generateStaticParams() {
+  const navCodes = await generatePermutations(navigationFlags);
+  const contentCodes = await generatePermutations(contentFlags);
+
+  // Combine as needed for specific pages
+  return navCodes.map((code) => ({ code }));
+}
+```
+
+## Error Handling and Fallbacks
+
+### Graceful Degradation
+
+```typescript
+export const robustFlag = flag<boolean>({
+  key: "robust-flag",
+  decide: async () => {
+    try {
+      return await externalApi.getFlag();
+    } catch (error) {
+      logWarn("Flag evaluation failed", {
+        error,
+        action: "using default value"
+      });
+      return false; // Graceful fallback
+    }
+  },
+  defaultValue: false // Final fallback
+});
+```
+
+### Provider Fallbacks
+
+```typescript
+export const hybridFlag = flag<boolean>({
+  key: "hybrid-flag",
+  adapter: postHogServerAdapter.isFeatureEnabled(),
+  decide: async () => {
+    // Fallback if PostHog is unavailable
+    return process.env.NODE_ENV === "development";
+  },
+  defaultValue: false
+});
+```
+
+## Migration Strategies
+
+### Gradual Migration
+
+<Tabs>
+  <Tab title="From Environment Variables">
+    ```typescript
+    export const migratedFlag = flag<boolean>({
+      key: 'migrated-flag',
+      decide: () => {
+        // Start with env var, migrate to proper flag system
+        const envValue = process.env.FEATURE_ENABLED;
+        if (envValue !== undefined) {
+          return envValue === 'true';
+        }
+        // New flag logic here
+        return false;
+      },
+    });
+    ```
+  </Tab>
+
+  <Tab title="From Hard-coded Values">
+    ```typescript
+    export const graduallMigratedFlag = flag<boolean>({
+      key: 'gradually-migrated',
+      decide: ({ entities }) => {
+        // Gradual rollout to replace hard-coded feature
+        const userId = entities?.user?.id;
+        if (!userId) return false;
+
+        // Enable for specific users first
+        const earlyAdopters = ['user1', 'user2'];
+        if (earlyAdopters.includes(userId)) return true;
+
+        // Then percentage rollout
+        const hash = simpleHash(userId);
+        return (hash % 100) < 25; // 25% rollout
+      },
+    });
+    ```
+
+  </Tab>
+</Tabs>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Flag Naming and Organization" icon="tag">
+    - Use consistent naming conventions (kebab-case) - Group related flags together - Include clear
+    descriptions for all flags - Use semantic versioning for breaking changes - Organize flags by
+    feature area or team ownership
+  </Accordion>
+
+<Accordion title="Performance Considerations" icon="gauge">
+  - Use precomputation for static pages - Group flags logically to minimize
+  permutations - Implement graceful fallbacks for external providers - Cache
+  expensive computations with dedupe - Choose appropriate providers for your use
+  case
+</Accordion>
+
+<Accordion title="Development Workflow" icon="code-branch">
+  - Test flags locally with Vercel Toolbar - Use feature branches for flag
+  changes - Document flag rollout plans - Monitor flag performance and adoption
+  - Clean up unused flags regularly
+</Accordion>
+
+  <Accordion title="Security and Privacy" icon="shield">
+    - Never expose sensitive data in flag payloads - Use server-side evaluation for sensitive flags
+    - Implement proper access controls for flag management - Audit flag changes and access patterns
+    - Follow data privacy regulations for user targeting
+  </Accordion>
+</AccordionGroup>
+
+## Provider Comparison
+
+| Feature                 | Standard Flags | PostHog           | Edge Config      |
+| ----------------------- | -------------- | ----------------- | ---------------- |
+| **Performance**         | Fast           | Medium            | Ultra-fast       |
+| **Targeting**           | Basic          | Advanced          | Basic            |
+| **Analytics**           | None           | Full              | None             |
+| **Management UI**       | Vercel Toolbar | PostHog Dashboard | Vercel Dashboard |
+| **Cold Starts**         | None           | Possible          | None             |
+| **Cost**                | Free           | Paid tiers        | Included         |
+| **Complexity**          | Low            | Medium            | Low              |
+| **Global Distribution** | Yes            | No                | Yes              |
+
+The feature flags package provides a comprehensive, production-ready solution
+for feature flag management that scales from simple boolean flags to complex
+user targeting and A/B testing scenarios.

@@ -1,0 +1,1371 @@
+---
+title: "Vector Database (Upstash)"
+description:
+  "AI/ML similarity search and embeddings with Upstash Vector for intelligent
+  product matching and recommendation systems"
+icon: "vector-square"
+---
+
+# Vector Database (Upstash)
+
+High-performance vector database using Upstash Vector for AI/ML similarity
+search, embeddings, and intelligent recommendation systems.
+
+## Overview
+
+The Vector database provides sophisticated similarity search capabilities for
+AI-powered features including product recommendations, semantic search, and
+content matching.
+
+<CardGroup cols={2}>
+  <Card title="Similarity Search" icon="magnifying-glass">
+    Find similar products, content, and users based on vector embeddings
+  </Card>
+  <Card title="AI Recommendations" icon="brain">
+    Intelligent product and content recommendations using machine learning
+  </Card>
+  <Card title="Semantic Search" icon="search">
+    Natural language search with understanding of meaning and context
+  </Card>
+  <Card title="Content Matching" icon="link">
+    Automatic content categorization and duplicate detection
+  </Card>
+</CardGroup>
+
+## Quick Start
+
+<CodeGroup>
+```typescript Next.js Server (Recommended)
+import { vector } from '@repo/database/upstash/server/next';
+import { logError, logInfo } from '@repo/observability/server/next';
+
+// Store product embedding await vector.upsert([{ id: 'product-123', vector:
+[0.1, 0.2, 0.3, ...], // 1536 dimensions for OpenAI embeddings metadata: {
+title: 'iPhone 15 Pro', category: 'electronics', price: 999.99, brand: 'Apple',
+}, }]);
+
+// Find similar products const results = await vector.query({ vector:
+queryEmbedding, topK: 10, includeMetadata: true, filter: { category: { $eq:
+'electronics' }, price: { $lte: 1200 }, }, });
+
+````
+
+```typescript Node.js Server
+import { VectorOperations } from '@repo/database/upstash/server';
+import { logError, logInfo } from '@repo/observability/server/next';
+
+const vectorOps = new VectorOperations();
+
+// Same operations as above
+await vectorOps.upsert([{
+  id: 'product-123',
+  vector: [0.1, 0.2, 0.3, ...],
+  metadata: { title: 'iPhone 15 Pro', category: 'electronics' }
+}]);
+
+const results = await vectorOps.query({
+  vector: queryEmbedding,
+  topK: 10,
+  includeMetadata: true
+});
+````
+
+```typescript Types Only (Client)
+import type {
+  VectorMetadata,
+  QueryOptions
+} from "@repo/database/upstash/client";
+import { logError, logInfo } from "@repo/observability/server/next";
+
+// Use for TypeScript typing in client components
+interface ProductVector extends VectorMetadata {
+  title: string;
+  category: string;
+  price: number;
+  brand: string;
+}
+```
+
+</CodeGroup>
+
+## Core Operations
+
+### Vector Storage and Retrieval
+
+<CodeGroup>
+```typescript Product Embeddings
+// Store product with rich metadata
+interface ProductVector {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  subcategory: string;
+  brand: string;
+  price: number;
+  features: string[];
+  tags: string[];
+  imageUrl?: string;
+}
+
+async function storeProductEmbedding(product: ProductVector, embedding:
+number[]) { await upstash.upsert({ id: `product:${product.id}`, vector:
+embedding, metadata: { title: product.title, description: product.description,
+category: product.category, subcategory: product.subcategory, brand:
+product.brand, price: product.price, features: product.features.join(','), tags:
+product.tags.join(','), imageUrl: product.imageUrl, createdAt: Date.now(), },
+}); }
+
+// Batch upsert for efficiency async function batchStoreProducts(products:
+Array<{product: ProductVector, embedding: number[]}>) { const vectors =
+products.map(({ product, embedding }) => ({ id: `product:${product.id}`, vector:
+embedding, metadata: { title: product.title, category: product.category, brand:
+product.brand, price: product.price, // Include other relevant metadata }, }));
+
+// Upstash Vector supports batch operations await upstash.upsert(vectors); }
+
+````
+
+```typescript Content Embeddings
+// Store text content for semantic search
+interface ContentVector {
+  id: string;
+  type: 'article' | 'product_description' | 'user_review' | 'faq';
+  title: string;
+  content: string;
+  author?: string;
+  tags: string[];
+  language: string;
+}
+
+async function storeContentEmbedding(content: ContentVector, embedding: number[]) {
+  await upstash.upsert({
+    id: `content:${content.type}:${content.id}`,
+    vector: embedding,
+    metadata: {
+      type: content.type,
+      title: content.title,
+      content: content.content.substring(0, 500), // Truncate for metadata
+      author: content.author,
+      tags: content.tags.join(','),
+      language: content.language,
+      wordCount: content.content.split(' ').length,
+      createdAt: Date.now(),
+    },
+  });
+}
+
+// Store user behavior embeddings
+async function storeUserBehaviorEmbedding(userId: string, behaviorVector: number[]) {
+  await upstash.upsert({
+    id: `user:${userId}:behavior`,
+    vector: behaviorVector,
+    metadata: {
+      userId,
+      type: 'user_behavior',
+      lastUpdated: Date.now(),
+    },
+  });
+}
+````
+
+</CodeGroup>
+
+### Similarity Search
+
+<Tabs>
+  <Tab title="Product Recommendations">
+    ```typescript
+    // Find similar products
+    async function findSimilarProducts(
+      productId: string,
+      options: {
+        limit?: number;
+        category?: string;
+        priceRange?: { min: number; max: number };
+        brand?: string;
+        excludeSelf?: boolean;
+      } = {}
+    ) {
+      // Get the reference product's embedding
+      const referenceProduct = await upstash.fetch([`product:${productId}`]);
+      if (!referenceProduct || referenceProduct.length === 0) {
+        throw new Error('Reference product not found');
+      }
+
+      const referenceVector = referenceProduct[0].vector;
+
+      // Build filter conditions
+      const filters: any = {};
+
+      if (options.category) {
+        filters.category = { $eq: options.category };
+      }
+
+      if (options.priceRange) {
+        filters.price = {
+          $gte: options.priceRange.min,
+          $lte: options.priceRange.max,
+        };
+      }
+
+      if (options.brand) {
+        filters.brand = { $eq: options.brand };
+      }
+
+      // Perform similarity search
+      const results = await upstash.query({
+        vector: referenceVector,
+        topK: (options.limit || 10) + (options.excludeSelf ? 1 : 0),
+        includeMetadata: true,
+        includeValues: false,
+        filter: Object.keys(filters).length > 0 ? filters : undefined,
+      });
+
+      // Filter out the reference product if requested
+      let recommendations = results.matches || [];
+      if (options.excludeSelf) {
+        recommendations = recommendations.filter(
+          match => match.id !== `product:${productId}`
+        );
+      }
+
+      return recommendations.slice(0, options.limit || 10).map(match => ({
+        productId: match.id.replace('product:', ''),
+        similarity: match.score,
+        metadata: match.metadata,
+      }));
+    }
+
+    // Personalized recommendations based on user behavior
+    async function getPersonalizedRecommendations(
+      userId: string,
+      options: {
+        limit?: number;
+        categories?: string[];
+        excludeViewed?: boolean;
+      } = {}
+    ) {
+      // Get user behavior embedding
+      const userBehavior = await upstash.fetch([`user:${userId}:behavior`]);
+      if (!userBehavior || userBehavior.length === 0) {
+        // Fallback to popular products if no user behavior data
+        return getPopularProducts(options.limit || 10);
+      }
+
+      const userVector = userBehavior[0].vector;
+
+      const filters: any = {};
+      if (options.categories && options.categories.length > 0) {
+        filters.category = { $in: options.categories };
+      }
+
+      const results = await upstash.query({
+        vector: userVector,
+        topK: options.limit || 20,
+        includeMetadata: true,
+        filter: Object.keys(filters).length > 0 ? filters : undefined,
+      });
+
+      return (results.matches || []).map(match => ({
+        productId: match.id.replace('product:', ''),
+        relevanceScore: match.score,
+        metadata: match.metadata,
+      }));
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Semantic Search">
+    ```typescript
+    // Semantic search across content
+    async function semanticSearch(
+      query: string,
+      options: {
+        types?: string[];
+        limit?: number;
+        language?: string;
+        minScore?: number;
+      } = {}
+    ) {
+      // Generate embedding for the search query
+      const queryEmbedding = await generateEmbedding(query);
+
+      const filters: any = {};
+
+      if (options.types && options.types.length > 0) {
+        filters.type = { $in: options.types };
+      }
+
+      if (options.language) {
+        filters.language = { $eq: options.language };
+      }
+
+      const results = await upstash.query({
+        vector: queryEmbedding,
+        topK: options.limit || 20,
+        includeMetadata: true,
+        filter: Object.keys(filters).length > 0 ? filters : undefined,
+      });
+
+      // Filter by minimum score if specified
+      let matches = results.matches || [];
+      if (options.minScore) {
+        matches = matches.filter(match => match.score >= options.minScore);
+      }
+
+      return matches.map(match => ({
+        id: match.id,
+        type: match.metadata?.type,
+        title: match.metadata?.title,
+        content: match.metadata?.content,
+        score: match.score,
+        metadata: match.metadata,
+      }));
+    }
+
+    // Smart content categorization
+    async function categorizeContent(content: string, existingCategories: string[]) {
+      const contentEmbedding = await generateEmbedding(content);
+
+      // Find similar existing content to infer category
+      const results = await upstash.query({
+        vector: contentEmbedding,
+        topK: 5,
+        includeMetadata: true,
+        filter: {
+          type: { $eq: 'article' },
+        },
+      });
+
+      // Analyze categories of similar content
+      const categoryScores = {} as Record<string, number>;
+
+      for (const match of results.matches || []) {
+        const category = match.metadata?.category;
+        if (category && existingCategories.includes(category)) {
+          categoryScores[category] = (categoryScores[category] || 0) + match.score;
+        }
+      }
+
+      // Return top suggested categories
+      return Object.entries(categoryScores)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 3)
+        .map(([category, score]) => ({ category, confidence: score }));
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Duplicate Detection">
+    ```typescript
+    // Detect duplicate or near-duplicate content
+    async function findDuplicateContent(
+      content: string,
+      threshold: number = 0.95,
+      contentType?: string
+    ) {
+      const contentEmbedding = await generateEmbedding(content);
+
+      const filters: any = {};
+      if (contentType) {
+        filters.type = { $eq: contentType };
+      }
+
+      const results = await upstash.query({
+        vector: contentEmbedding,
+        topK: 10,
+        includeMetadata: true,
+        filter: Object.keys(filters).length > 0 ? filters : undefined,
+      });
+
+      const duplicates = (results.matches || [])
+        .filter(match => match.score >= threshold)
+        .map(match => ({
+          id: match.id,
+          similarity: match.score,
+          title: match.metadata?.title,
+          type: match.metadata?.type,
+          isDuplicate: match.score >= 0.98,
+          isNearDuplicate: match.score >= threshold && match.score < 0.98,
+        }));
+
+      return {
+        hasDuplicates: duplicates.length > 0,
+        duplicates,
+        maxSimilarity: Math.max(...duplicates.map(d => d.similarity), 0),
+      };
+    }
+
+    // Detect similar products for deduplication
+    async function findSimilarProductsForDedup(
+      product: ProductVector,
+      threshold: number = 0.90
+    ) {
+      const productEmbedding = await generateProductEmbedding(product);
+
+      const results = await upstash.query({
+        vector: productEmbedding,
+        topK: 20,
+        includeMetadata: true,
+        filter: {
+          category: { $eq: product.category },
+        },
+      });
+
+      const similar = (results.matches || [])
+        .filter(match =>
+          match.score >= threshold &&
+          match.id !== `product:${product.id}`
+        )
+        .map(match => ({
+          productId: match.id.replace('product:', ''),
+          similarity: match.score,
+          title: match.metadata?.title,
+          brand: match.metadata?.brand,
+          price: match.metadata?.price,
+          isDuplicate: match.score >= 0.95,
+        }));
+
+      return similar;
+    }
+    ```
+
+  </Tab>
+</Tabs>
+
+## Advanced Search Features
+
+### Multi-Modal Search
+
+<AccordionGroup>
+  <Accordion title="Image and Text Search" icon="image">
+    ```typescript
+    // Combined image and text embeddings
+    interface MultiModalEmbedding {
+      textEmbedding: number[];
+      imageEmbedding: number[];
+      combinedEmbedding: number[];
+    }
+
+    async function storeMultiModalProduct(
+      product: ProductVector,
+      embeddings: MultiModalEmbedding
+    ) {
+      // Store separate embeddings for different search types
+      await Promise.all([
+        // Text-based search
+        upstash.upsert({
+          id: `product:text:${product.id}`,
+          vector: embeddings.textEmbedding,
+          metadata: {
+            ...product,
+            searchType: 'text',
+          },
+        }),
+
+        // Image-based search
+        upstash.upsert({
+          id: `product:image:${product.id}`,
+          vector: embeddings.imageEmbedding,
+          metadata: {
+            ...product,
+            searchType: 'image',
+          },
+        }),
+
+        // Combined multi-modal search
+        upstash.upsert({
+          id: `product:multimodal:${product.id}`,
+          vector: embeddings.combinedEmbedding,
+          metadata: {
+            ...product,
+            searchType: 'multimodal',
+          },
+        }),
+      ]);
+    }
+
+    // Search by image similarity
+    async function searchByImage(imageEmbedding: number[], options: {
+      category?: string;
+      limit?: number;
+    } = {}) {
+      const filters: any = { searchType: { $eq: 'image' } };
+
+      if (options.category) {
+        filters.category = { $eq: options.category };
+      }
+
+      const results = await upstash.query({
+        vector: imageEmbedding,
+        topK: options.limit || 20,
+        includeMetadata: true,
+        filter: filters,
+      });
+
+      return (results.matches || []).map(match => ({
+        productId: match.id.replace('product:image:', ''),
+        similarity: match.score,
+        metadata: match.metadata,
+      }));
+    }
+    ```
+
+  </Accordion>
+
+  <Accordion title="Hybrid Search" icon="merge">
+    ```typescript
+    // Combine vector similarity with traditional search
+    async function hybridSearch(
+      query: string,
+      options: {
+        alpha?: number; // Weight for vector search (0-1)
+        textFilters?: Record<string, any>;
+        limit?: number;
+      } = {}
+    ) {
+      const alpha = options.alpha || 0.7; // Default: 70% vector, 30% text
+
+      // Vector similarity search
+      const queryEmbedding = await generateEmbedding(query);
+      const vectorResults = await upstash.query({
+        vector: queryEmbedding,
+        topK: options.limit || 50,
+        includeMetadata: true,
+        filter: options.textFilters,
+      });
+
+      // Text-based search (would typically use another search engine)
+      const textScores = await performTextSearch(query, options.textFilters);
+
+      // Combine scores
+      const combinedResults = (vectorResults.matches || []).map(match => {
+        const textScore = textScores[match.id] || 0;
+        const vectorScore = match.score;
+        const combinedScore = alpha * vectorScore + (1 - alpha) * textScore;
+
+        return {
+          ...match,
+          vectorScore,
+          textScore,
+          combinedScore,
+        };
+      });
+
+      // Sort by combined score and return top results
+      return combinedResults
+        .sort((a, b) => b.combinedScore - a.combinedScore)
+        .slice(0, options.limit || 20);
+    }
+
+    // Text search implementation (placeholder)
+    async function performTextSearch(
+      query: string,
+      filters?: Record<string, any>
+    ): Promise<Record<string, number>> {
+      // This would typically integrate with Elasticsearch, Algolia, or similar
+      // For now, returning mock scores based on text matching
+      return {};
+    }
+    ```
+
+  </Accordion>
+</AccordionGroup>
+
+### Real-time Recommendations
+
+<CodeGroup>
+```typescript User Behavior Tracking
+// Track user interactions for real-time recommendations
+interface UserInteraction {
+  userId: string;
+  type: 'view' | 'click' | 'purchase' | 'like' | 'share';
+  productId: string;
+  timestamp: number;
+  context?: {
+    searchQuery?: string;
+    category?: string;
+    source?: string;
+  };
+}
+
+class UserBehaviorTracker { private interactions: Map<string, UserInteraction[]>
+= new Map();
+
+async trackInteraction(interaction: UserInteraction) { const userKey =
+interaction.userId; const userInteractions = this.interactions.get(userKey) ||
+[];
+
+    userInteractions.push(interaction);
+
+    // Keep only recent interactions (last 1000)
+    if (userInteractions.length > 1000) {
+      userInteractions.splice(0, userInteractions.length - 1000);
+    }
+
+    this.interactions.set(userKey, userInteractions);
+
+    // Update user behavior embedding periodically
+    if (userInteractions.length % 10 === 0) {
+      await this.updateUserEmbedding(interaction.userId);
+    }
+
+}
+
+async updateUserEmbedding(userId: string) { const interactions =
+this.interactions.get(userId) || [];
+
+    // Generate behavior vector based on interactions
+    const behaviorVector = await this.generateBehaviorVector(interactions);
+
+    // Store updated user behavior embedding
+    await upstash.upsert({
+      id: `user:${userId}:behavior`,
+      vector: behaviorVector,
+      metadata: {
+        userId,
+        interactionCount: interactions.length,
+        lastUpdated: Date.now(),
+        categories: this.extractTopCategories(interactions),
+        brands: this.extractTopBrands(interactions),
+      },
+    });
+
+}
+
+private async generateBehaviorVector(interactions: UserInteraction[]):
+Promise<number[]> { // This would typically use a trained model to convert user
+behavior into vector // For demonstration, we'll create a simplified version
+
+    const recentInteractions = interactions.slice(-50); // Last 50 interactions
+    const productIds = recentInteractions.map(i => i.productId);
+
+    // Get product embeddings for interacted products
+    const productVectors = await upstash.fetch(
+      productIds.map(id => `product:${id}`)
+    );
+
+    // Weight by interaction type and recency
+    const weights = recentInteractions.map((interaction, index) => {
+      const recencyWeight = (index + 1) / recentInteractions.length;
+      const typeWeight = this.getInteractionWeight(interaction.type);
+      return recencyWeight * typeWeight;
+    });
+
+    // Compute weighted average of product vectors
+    return this.computeWeightedAverage(
+      productVectors.map(pv => pv.vector),
+      weights
+    );
+
+}
+
+private getInteractionWeight(type: UserInteraction['type']): number { const
+weights = { view: 1.0, click: 2.0, like: 3.0, share: 4.0, purchase: 5.0, };
+return weights[type] || 1.0; }
+
+private computeWeightedAverage(vectors: number[][], weights: number[]): number[]
+{ if (vectors.length === 0) return [];
+
+    const dimensions = vectors[0].length;
+    const result = new Array(dimensions).fill(0);
+    const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+
+    for (let d = 0; d < dimensions; d++) {
+      for (let i = 0; i < vectors.length; i++) {
+        result[d] += vectors[i][d] * weights[i];
+      }
+      result[d] /= totalWeight;
+    }
+
+    return result;
+
+}
+
+private extractTopCategories(interactions: UserInteraction[]): string[] { //
+Extract most frequent categories from interactions // This would typically query
+product metadata return []; }
+
+private extractTopBrands(interactions: UserInteraction[]): string[] { // Extract
+most frequent brands from interactions return []; } }
+
+````
+
+```typescript Real-time Recommendation Engine
+class RecommendationEngine {
+  private behaviorTracker = new UserBehaviorTracker();
+
+  async getRealtimeRecommendations(
+    userId: string,
+    context: {
+      currentProductId?: string;
+      category?: string;
+      limit?: number;
+    } = {}
+  ) {
+    const recommendations = [];
+
+    // 1. Collaborative filtering (similar users)
+    const collaborativeRecs = await this.getCollaborativeRecommendations(
+      userId,
+      context.limit || 10
+    );
+    recommendations.push(...collaborativeRecs);
+
+    // 2. Content-based filtering (similar products)
+    if (context.currentProductId) {
+      const contentRecs = await this.getContentBasedRecommendations(
+        context.currentProductId,
+        context.limit || 10
+      );
+      recommendations.push(...contentRecs);
+    }
+
+    // 3. Category-based recommendations
+    if (context.category) {
+      const categoryRecs = await this.getCategoryRecommendations(
+        context.category,
+        userId,
+        context.limit || 10
+      );
+      recommendations.push(...categoryRecs);
+    }
+
+    // 4. Trending/popular items
+    const trendingRecs = await this.getTrendingRecommendations(
+      context.limit || 5
+    );
+    recommendations.push(...trendingRecs);
+
+    // Deduplicate and rank
+    return this.rankAndDeduplicate(recommendations, context.limit || 20);
+  }
+
+  private async getCollaborativeRecommendations(userId: string, limit: number) {
+    // Find users with similar behavior
+    const userBehavior = await upstash.fetch([`user:${userId}:behavior`]);
+    if (!userBehavior || userBehavior.length === 0) return [];
+
+    const similarUsers = await upstash.query({
+      vector: userBehavior[0].vector,
+      topK: 10,
+      includeMetadata: true,
+      filter: {
+        type: { $eq: 'user_behavior' },
+      },
+    });
+
+    // Get products liked by similar users
+    // This would require additional data structures to track user-product interactions
+    return [];
+  }
+
+  private async getContentBasedRecommendations(productId: string, limit: number) {
+    return findSimilarProducts(productId, { limit, excludeSelf: true });
+  }
+
+  private async getCategoryRecommendations(category: string, userId: string, limit: number) {
+    // Get popular products in category that user hasn't interacted with
+    const categoryResults = await upstash.query({
+      vector: await this.getCategoryEmbedding(category),
+      topK: limit * 2, // Get more to filter out user's products
+      includeMetadata: true,
+      filter: {
+        category: { $eq: category },
+      },
+    });
+
+    // Filter out products user has already interacted with
+    // This would require tracking user interactions
+    return (categoryResults.matches || []).slice(0, limit);
+  }
+
+  private async getTrendingRecommendations(limit: number) {
+    // This would typically come from a separate analytics system
+    // For demo, return random popular products
+    return [];
+  }
+
+  private rankAndDeduplicate(recommendations: any[], limit: number) {
+    // Remove duplicates and rank by combined score
+    const seen = new Set();
+    const unique = recommendations.filter(rec => {
+      if (seen.has(rec.productId)) return false;
+      seen.add(rec.productId);
+      return true;
+    });
+
+    // Sort by score/relevance
+    unique.sort((a, b) => (b.score || b.similarity || 0) - (a.score || a.similarity || 0));
+
+    return unique.slice(0, limit);
+  }
+
+  private async getCategoryEmbedding(category: string): Promise<number[]> {
+    // Generate or retrieve category embedding
+    // This could be pre-computed from category products
+    return [];
+  }
+}
+````
+
+</CodeGroup>
+
+## Embedding Generation
+
+### Text Embeddings
+
+<Tabs>
+  <Tab title="OpenAI Integration">
+    ```typescript
+    import OpenAI from 'openai';
+
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+
+    async function generateEmbedding(text: string): Promise<number[]> {
+      try {
+        const response = await openai.embeddings.create({
+          model: 'text-embedding-3-small', // or text-embedding-3-large
+          input: text,
+          encoding_format: 'float',
+        });
+
+        return response.data[0].embedding;
+      } catch (error) {
+        logError('Embedding generation failed', {
+          error: error.message,
+          timestamp: new Date().toISOString()
+        });
+        throw error;
+      }
+    }
+
+    // Batch embedding generation for efficiency
+    async function generateBatchEmbeddings(texts: string[]): Promise<number[][]> {
+      const response = await openai.embeddings.create({
+        model: 'text-embedding-3-small',
+        input: texts,
+        encoding_format: 'float',
+      });
+
+      return response.data.map(item => item.embedding);
+    }
+
+    // Product-specific embedding
+    async function generateProductEmbedding(product: ProductVector): Promise<number[]> {
+      const text = `${product.title} ${product.description} ${product.category} ${product.brand} ${product.features.join(' ')} ${product.tags.join(' ')}`;
+      return generateEmbedding(text);
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Custom Embeddings">
+    ```typescript
+    // Custom embedding service for domain-specific models
+    class CustomEmbeddingService {
+      private modelEndpoint: string;
+      private apiKey: string;
+
+      constructor(endpoint: string, apiKey: string) {
+        this.modelEndpoint = endpoint;
+        this.apiKey = apiKey;
+      }
+
+      async generateEmbedding(text: string, model: string = 'default'): Promise<number[]> {
+        const response = await fetch(`${this.modelEndpoint}/embed`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            text,
+            model,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Embedding generation failed: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        return result.embedding;
+      }
+
+      // Specialized embeddings for different content types
+      async generateProductEmbedding(product: ProductVector): Promise<number[]> {
+        return this.generateEmbedding(
+          this.formatProductText(product),
+          'product-model'
+        );
+      }
+
+      async generateUserBehaviorEmbedding(interactions: UserInteraction[]): Promise<number[]> {
+        const behaviorText = this.formatBehaviorText(interactions);
+        return this.generateEmbedding(behaviorText, 'behavior-model');
+      }
+
+      private formatProductText(product: ProductVector): string {
+        return [
+          product.title,
+          product.description,
+          `Category: ${product.category}`,
+          `Brand: ${product.brand}`,
+          `Price: $${product.price}`,
+          `Features: ${product.features.join(', ')}`,
+          `Tags: ${product.tags.join(', ')}`,
+        ].join('\n');
+      }
+
+      private formatBehaviorText(interactions: UserInteraction[]): string {
+        const recentInteractions = interactions.slice(-20);
+        return recentInteractions.map(interaction =>
+          `${interaction.type}:${interaction.productId}`
+        ).join(' ');
+      }
+    }
+    ```
+
+  </Tab>
+</Tabs>
+
+## Performance Optimization
+
+### Efficient Vector Operations
+
+<CodeGroup>
+```typescript Batch Operations
+// Efficient batch processing
+async function processBatchVectors(
+  items: Array<{id: string, data: any}>,
+  batchSize: number = 100
+) {
+  const results = [];
+
+for (let i = 0; i < items.length; i += batchSize) { const batch = items.slice(i,
+i + batchSize);
+
+    // Generate embeddings in parallel
+    const embeddings = await Promise.all(
+      batch.map(item => generateEmbedding(item.data))
+    );
+
+    // Prepare vectors for batch upsert
+    const vectors = batch.map((item, index) => ({
+      id: item.id,
+      vector: embeddings[index],
+      metadata: {
+        ...item.data,
+        processedAt: Date.now(),
+      },
+    }));
+
+    // Batch upsert to vector database
+    await upstash.upsert(vectors);
+
+    results.push(...vectors);
+
+    // Rate limiting - wait between batches
+    if (i + batchSize < items.length) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
+}
+
+return results; }
+
+// Parallel search across multiple categories async function
+parallelCategorySearch( queryVector: number[], categories: string[], limit:
+number = 10 ) { const searchPromises = categories.map(category =>
+upstash.query({ vector: queryVector, topK: limit, includeMetadata: true, filter:
+{ category: { $eq: category }, }, }).then(result => ({ category, results:
+result.matches || [], })) );
+
+const categoryResults = await Promise.all(searchPromises);
+
+// Combine and rank results across categories const allResults =
+categoryResults.flatMap(cr => cr.results.map(r => ({ ...r, category: cr.category
+})) );
+
+return allResults .sort((a, b) => b.score - a.score) .slice(0, limit); }
+
+````
+
+```typescript Caching and Optimization
+// Cache frequently used embeddings
+class EmbeddingCache {
+  private cache = new Map<string, { embedding: number[], timestamp: number }>();
+  private readonly TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+  async getEmbedding(text: string): Promise<number[]> {
+    const cached = this.cache.get(text);
+
+    if (cached && Date.now() - cached.timestamp < this.TTL) {
+      return cached.embedding;
+    }
+
+    const embedding = await generateEmbedding(text);
+    this.cache.set(text, { embedding, timestamp: Date.now() });
+
+    return embedding;
+  }
+
+  // Periodic cleanup
+  cleanup() {
+    const now = Date.now();
+    for (const [key, value] of this.cache.entries()) {
+      if (now - value.timestamp >= this.TTL) {
+        this.cache.delete(key);
+      }
+    }
+  }
+}
+
+// Optimize search with filters
+async function optimizedVectorSearch(
+  queryVector: number[],
+  options: {
+    preFilters?: Record<string, any>;
+    postFilters?: (result: any) => boolean;
+    limit?: number;
+    scoreThreshold?: number;
+  } = {}
+) {
+  // Apply pre-filters to reduce search space
+  const searchResult = await upstash.query({
+    vector: queryVector,
+    topK: (options.limit || 20) * 2, // Get more results for post-filtering
+    includeMetadata: true,
+    filter: options.preFilters,
+  });
+
+  let results = searchResult.matches || [];
+
+  // Apply score threshold
+  if (options.scoreThreshold) {
+    results = results.filter(r => r.score >= options.scoreThreshold);
+  }
+
+  // Apply post-filters
+  if (options.postFilters) {
+    results = results.filter(options.postFilters);
+  }
+
+  return results.slice(0, options.limit || 20);
+}
+````
+
+</CodeGroup>
+
+## Monitoring and Analytics
+
+### Vector Database Metrics
+
+<AccordionGroup>
+  <Accordion title="Search Performance" icon="gauge">
+    ```typescript
+    // Track search performance and quality
+    class VectorSearchAnalytics {
+      async logSearch(searchId: string, query: {
+        type: string;
+        queryVector: number[];
+        filters?: any;
+        results: any[];
+        latency: number;
+        userId?: string;
+      }) {
+        await redis.lpush('search:logs', JSON.stringify({
+          searchId,
+          timestamp: Date.now(),
+          type: query.type,
+          filterCount: Object.keys(query.filters || {}).length,
+          resultCount: query.results.length,
+          latency: query.latency,
+          userId: query.userId,
+          topScore: query.results[0]?.score || 0,
+          avgScore: query.results.reduce((sum, r) => sum + r.score, 0) / query.results.length,
+        }));
+
+        // Keep only recent logs
+        await redis.ltrim('search:logs', 0, 9999); // Keep last 10k searches
+      }
+
+      async getSearchStats(period: 'hour' | 'day' | 'week' = 'day') {
+        const logs = await redis.lrange('search:logs', 0, -1);
+        const searches = logs.map(log => JSON.parse(log));
+
+        const cutoff = Date.now() - this.getPeriodMs(period);
+        const recentSearches = searches.filter(s => s.timestamp >= cutoff);
+
+        return {
+          totalSearches: recentSearches.length,
+          avgLatency: recentSearches.reduce((sum, s) => sum + s.latency, 0) / recentSearches.length,
+          avgResultCount: recentSearches.reduce((sum, s) => sum + s.resultCount, 0) / recentSearches.length,
+          avgTopScore: recentSearches.reduce((sum, s) => sum + s.topScore, 0) / recentSearches.length,
+          searchTypes: this.groupBy(recentSearches, 'type'),
+          userDistribution: this.groupBy(recentSearches, 'userId'),
+        };
+      }
+
+      private getPeriodMs(period: string): number {
+        const periods = {
+          hour: 60 * 60 * 1000,
+          day: 24 * 60 * 60 * 1000,
+          week: 7 * 24 * 60 * 60 * 1000,
+        };
+        return periods[period] || periods.day;
+      }
+
+      private groupBy(items: any[], key: string) {
+        return items.reduce((groups, item) => {
+          const group = item[key] || 'unknown';
+          groups[group] = (groups[group] || 0) + 1;
+          return groups;
+        }, {});
+      }
+    }
+    ```
+
+  </Accordion>
+
+  <Accordion title="Recommendation Quality" icon="star">
+    ```typescript
+    // Track recommendation effectiveness
+    class RecommendationAnalytics {
+      async trackRecommendationClick(
+        userId: string,
+        recommendationId: string,
+        productId: string,
+        position: number
+      ) {
+        await redis.hincrby(`rec:clicks:${recommendationId}`, 'total', 1);
+        await redis.hincrby(`rec:clicks:${recommendationId}`, `position:${position}`, 1);
+
+        // Track user engagement
+        await redis.lpush(`user:${userId}:rec_clicks`, JSON.stringify({
+          recommendationId,
+          productId,
+          position,
+          timestamp: Date.now(),
+        }));
+      }
+
+      async getRecommendationMetrics(recommendationId: string) {
+        const clicks = await redis.hgetall(`rec:clicks:${recommendationId}`);
+        const impressions = await redis.get(`rec:impressions:${recommendationId}`);
+
+        const totalClicks = parseInt(clicks.total || '0');
+        const totalImpressions = parseInt(impressions || '0');
+
+        return {
+          ctr: totalImpressions > 0 ? totalClicks / totalImpressions : 0,
+          totalClicks,
+          totalImpressions,
+          positionBreakdown: Object.entries(clicks)
+            .filter(([key]) => key.startsWith('position:'))
+            .map(([key, value]) => ({
+              position: parseInt(key.split(':')[1]),
+              clicks: parseInt(value),
+            })),
+        };
+      }
+
+      // A/B test different recommendation algorithms
+      async trackRecommendationExperiment(
+        userId: string,
+        experimentId: string,
+        variant: string,
+        recommendations: any[]
+      ) {
+        await redis.sadd(`experiment:${experimentId}:users`, userId);
+        await redis.hset(`experiment:${experimentId}:variants`, userId, variant);
+
+        await redis.lpush(`experiment:${experimentId}:recommendations`, JSON.stringify({
+          userId,
+          variant,
+          recommendations: recommendations.map(r => r.productId),
+          timestamp: Date.now(),
+        }));
+      }
+    }
+    ```
+
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<Warning>
+  **Vector Database Best Practices:** - Choose appropriate embedding dimensions
+  for your use case (512-1536 typically) - Implement proper data preprocessing
+  and normalization - Use metadata filters to reduce search space and improve
+  performance - Monitor search quality and adjust similarity thresholds based on
+  user feedback
+</Warning>
+
+### Recommended Patterns
+
+1. **Embedding Strategy**
+   - Use consistent embedding models across your application
+   - Preprocess and normalize text before embedding generation
+   - Cache frequently used embeddings to reduce API calls
+
+2. **Search Optimization**
+   - Use metadata filters to narrow search space
+   - Implement hybrid search combining vector similarity with traditional
+     filters
+   - Set appropriate similarity thresholds based on use case
+
+3. **Data Management**
+   - Implement batch operations for large-scale updates
+   - Regular cleanup of outdated vectors
+   - Version control for embedding models and data
+
+4. **Quality Assurance**
+   - Monitor search quality through user feedback
+   - A/B testing for recommendation algorithms
+   - Regular evaluation of embedding model performance
+
+## Integration with Embedding Models
+
+### OpenAI Embeddings
+
+```typescript
+import OpenAI from "openai";
+
+const openai = new OpenAI();
+
+async function storeDocument(text: string, metadata: any) {
+  // Generate embedding
+  const response = await openai.embeddings.create({
+    model: "text-embedding-3-small",
+    input: text
+  });
+
+  const embedding = response.data[0].embedding;
+
+  // Store in Upstash Vector
+  await adapter.create("documents", {
+    id: `doc-${Date.now()}`,
+    vector: embedding,
+    metadata
+  });
+}
+```
+
+### Semantic Search Example
+
+```typescript
+async function semanticSearch(query: string, limit = 5) {
+  // Generate query embedding
+  const response = await openai.embeddings.create({
+    model: "text-embedding-3-small",
+    input: query
+  });
+
+  const queryEmbedding = response.data[0].embedding;
+
+  // Search similar documents
+  const results = await adapter.query(
+    {
+      vector: queryEmbedding,
+      topK: limit,
+      includeMetadata: true
+    },
+    "documents"
+  );
+
+  return results.map((result) => ({
+    score: result.score,
+    metadata: result.metadata,
+    id: result.id
+  }));
+}
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Environment Variables" icon="warning">
+    **Error**: `Missing Upstash Vector environment variables` **Solution**: Ensure
+    `UPSTASH_VECTOR_REST_URL` and `UPSTASH_VECTOR_REST_TOKEN` are set in your environment variables.
+  </Accordion>
+
+<Accordion title="Dimension Mismatch" icon="arrows-alt">
+  **Error**: `Vector dimension mismatch` **Solution**: Ensure all vectors have
+  the same dimension as your index. Use consistent embedding models.
+</Accordion>
+
+  <Accordion title="Quota Exceeded" icon="exclamation-triangle">
+    **Error**: `Request quota exceeded` **Solution**: Check your Upstash Vector usage limits and
+    upgrade plan if needed.
+  </Accordion>
+</AccordionGroup>
+
+### Performance Tips
+
+- Use batch operations (`upsertMany`, `deleteMany`) for better performance
+- Keep metadata lightweight to reduce storage costs
+- Use appropriate `topK` values to balance accuracy and performance
+- Consider using namespaces to organize different types of vectors
+- Implement caching for frequently accessed vectors
+
+### Debugging
+
+```typescript
+// Test vector operations
+async function testVectorOperations() {
+  try {
+    // Test connection
+    const info = await adapter.getInfo();
+    logInfo("Vector database status", {
+      info,
+      timestamp: new Date().toISOString()
+    });
+
+    // Test embedding generation
+    const testEmbedding = await generateEmbedding("test text");
+    logInfo("Embedding dimensions", {
+      dimensions: testEmbedding.length,
+      timestamp: new Date().toISOString()
+    });
+
+    // Test upsert and query
+    await adapter.create("test", {
+      id: "test-1",
+      vector: testEmbedding,
+      metadata: { test: true }
+    });
+
+    const results = await adapter.query(
+      {
+        vector: testEmbedding,
+        topK: 1,
+        includeMetadata: true
+      },
+      "test"
+    );
+
+    logInfo("Vector query results", {
+      results,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logError("Vector operation failed", {
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+}
+```
+
+The Vector database integration provides powerful AI-driven capabilities that
+enable intelligent product recommendations, semantic search, and content
+matching, significantly enhancing user experience and business intelligence
+capabilities.

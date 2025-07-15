@@ -1,0 +1,307 @@
+---
+title: "QStash Local Development"
+description:
+  "Complete guide to running Upstash Workflows in local mode for LLM integration"
+---
+
+# QStash Local Development Mode
+
+This guide shows how to run Upstash Workflows entirely in local mode using the
+QStash development server - perfect for LLM integration and offline development.
+
+## Why Local Mode?
+
+### LLM Integration Benefits
+
+- **Local AI Servers**: Seamless integration with LMStudio, Ollama, and other
+  local LLM servers
+- **No External Dependencies**: Complete workflow execution without cloud
+  services
+- **Privacy First**: All AI processing and data stays on your machine
+- **Cost Effective**: No cloud usage charges during development
+
+### Development Advantages
+
+- **Instant Feedback**: No network latency - everything runs locally
+- **Full Control**: Complete visibility into all operations and logs
+- **Easy Debugging**: All components accessible and debuggable
+- **Offline Development**: Works completely without internet connection
+- **Reproducible Environment**: Consistent local setup across team members
+
+## Setup Process
+
+### Step 1: Install QStash CLI
+
+The QStash CLI provides a local development server that fully replicates QStash
+functionality:
+
+```bash
+# Using NPX (recommended)
+npx @upstash/qstash-cli dev
+
+# Or install globally
+npm install -g @upstash/qstash-cli
+qstash dev
+```
+
+### Step 2: Start QStash Development Server
+
+Run the development server:
+
+```bash
+npx @upstash/qstash-cli dev
+```
+
+**Expected Output:**
+
+```
+Upstash QStash development server is running at http://127.0.0.1:8080
+
+A default user has been created for you to authorize your requests.
+QSTASH_TOKEN=eyJVc2VySUQiOiJkZWZhdWx0VXNlciIsIlBhc3N3b3JkIjoiZGVmYXVsdFBhc3N3b3JkIn0=
+QSTASH_CURRENT_SIGNING_KEY=sig_7RvLjqfZBvP5KEUimQCE1pvpLuou
+QSTASH_NEXT_SIGNING_KEY=sig_7W3ZNbfKWk5NWwEs3U4ixuQ7fxwE
+
+Sample cURL request:
+curl -X POST http://127.0.0.1:8080/v2/publish/https://example.com \
+  -H "Authorization: Bearer eyJVc2VySUQiOiJkZWZhdWx0VXNlciIsIlBhc3N3b3JkIjoiZGVmYXVsdFBhc3N3b3JkIn0="
+```
+
+### Step 3: Configure Environment Variables
+
+Create `.env.local` in your app directory with the credentials from Step 2:
+
+```bash
+# QStash Local Development Server
+QSTASH_TOKEN=eyJVc2VySUQiOiJkZWZhdWx0VXNlciIsIlBhc3N3b3JkIjoiZGVmYXVsdFBhc3N3b3JkIn0=
+QSTASH_URL=http://localhost:8080
+QSTASH_CURRENT_SIGNING_KEY=sig_7RvLjqfZBvP5KEUimQCE1pvpLuou
+QSTASH_NEXT_SIGNING_KEY=sig_7W3ZNbfKWk5NWwEs3U4ixuQ7fxwE
+
+# App URL for QStash webhooks
+NEXT_PUBLIC_APP_URL=http://localhost:3303
+
+# Optional: Local LLM Integration
+LMSTUDIO_URL=http://localhost:1234/v1
+LMSTUDIO_API_KEY=lm-studio
+LMSTUDIO_MODEL=your-local-model
+```
+
+### Step 4: Start Your Application
+
+In a separate terminal, start your Next.js application:
+
+```bash
+# Individual commands
+pnpm dev:nextjs
+
+# Or combined (runs both QStash and Next.js)
+pnpm dev
+```
+
+## Local Workflow Architecture
+
+### Complete Local Stack
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Frontend      │    │   QStash Local  │    │   Workflows     │
+│   localhost:3303│ -> │   localhost:8080│ -> │   localhost:3303│
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                                              │
+         └──────────────────────┬───────────────────────┘
+                                │
+                    ┌─────────────────┐
+                    │   Local Services│
+                    │   - LLM Server  │
+                    │   - Database    │
+                    │   - Redis       │
+                    │   - File System │
+                    └─────────────────┘
+```
+
+### Execution Flow
+
+1. **User Interaction**: Triggers workflow via web interface
+2. **API Route**: Validates input and publishes message to local QStash
+3. **QStash Local**: Queues and delivers webhook to app
+4. **Workflow Handler**: Receives webhook and executes workflow
+5. **Step Execution**: Processes data using local services
+6. **Progress Updates**: Real-time feedback via local connections
+
+## Local Services Integration
+
+### LLM Server Integration
+
+Perfect for local AI development:
+
+```typescript
+// Example: Local LMStudio integration
+const response = await fetch("http://localhost:1234/v1/chat/completions", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: "Bearer lm-studio"
+  },
+  body: JSON.stringify({
+    model: "your-local-model",
+    messages: [{ role: "user", content: "Generate SEO content..." }]
+  })
+});
+```
+
+### Database Operations
+
+All database operations stay local:
+
+```typescript
+// Local database queries
+const sitemaps = await db.jollyRoger.findMany({
+  where: { sitemaps: { not: null } }
+});
+```
+
+### File System Operations
+
+Direct file system access:
+
+```typescript
+// Local file processing
+const files = await fs.readdir("./uploads");
+const processedImages = await processImagesLocally(files);
+```
+
+## Development Commands
+
+### Basic Development
+
+```bash
+# Start QStash + Next.js with colored output
+pnpm dev
+
+# Individual services
+pnpm dev:qstash # QStash development server
+pnpm dev:nextjs # Next.js application only
+```
+
+### Testing Local Mode
+
+```bash
+# Test workflow trigger
+curl -X POST http://localhost:3303/workflows/api/workflows/v3/jr-sitemaps \
+  -H "Content-Type: application/json" \
+  -d '{
+    "inputMode": "manual",
+    "sitemapUrl": "https://www.disneystore.com/sitemap_index.xml",
+    "limit": 5,
+    "batchSize": 2
+  }'
+```
+
+### Monitoring
+
+```bash
+# QStash development server logs
+# Check terminal running: npx @upstash/qstash-cli dev
+
+# Next.js application logs
+# Check terminal running: pnpm dev:nextjs
+
+# Workflow execution logs
+# Check browser console and network tab
+```
+
+## Troubleshooting Local Mode
+
+### QStash Server Issues
+
+**Error: Connection refused to localhost:8080**
+
+```bash
+# Solution: Ensure QStash dev server is running
+npx @upstash/qstash-cli dev
+```
+
+**Error: Invalid token**
+
+```bash
+# Solution: Copy exact token from QStash CLI output
+# Check .env.local has correct QSTASH_TOKEN
+```
+
+### Webhook Delivery Issues
+
+**Error: Webhook not received**
+
+```bash
+# Check app URL is accessible
+curl http://localhost:3303/workflows/api/qstash
+
+# Verify NEXT_PUBLIC_APP_URL matches running app
+echo $NEXT_PUBLIC_APP_URL
+```
+
+**Error: Workflow not found**
+
+```bash
+# Check workflow is registered in /api/qstash/route.ts
+# Verify workflow name matches trigger request
+```
+
+### Environment Variable Issues
+
+**Error: Missing environment variables**
+
+```bash
+# Copy .env.example to .env.local
+cp .env.example .env.local
+
+# Update with QStash CLI credentials
+# Restart application after changes
+```
+
+## Production Transition
+
+### Moving to Production
+
+When ready for production deployment:
+
+1. **Replace QStash Credentials**:
+
+   ```bash
+   # Production Upstash QStash
+   QSTASH_TOKEN=your-production-token
+   QSTASH_URL=https://qstash.upstash.io
+   QSTASH_CURRENT_SIGNING_KEY=prod-signing-key
+   QSTASH_NEXT_SIGNING_KEY=prod-next-key
+   ```
+
+2. **Update App URL**:
+
+   ```bash
+   NEXT_PUBLIC_APP_URL=https://your-domain.com
+   ```
+
+3. **Configure Production Services**:
+
+   ```bash
+   # Production database
+   POSTGRES_URL=postgresql://prod-db-url
+   
+   # Production LLM (if using cloud)
+   OPENAI_API_KEY=your-openai-key
+   
+   # Production storage
+   R2_BUCKET=production-bucket
+   ```
+
+### Benefits of Local-First Development
+
+- **Identical Code**: Same workflow code works in both environments
+- **Easy Testing**: Test complete workflows locally before deployment
+- **Reduced Costs**: Develop without cloud usage charges
+- **Better Debugging**: Full visibility into all components
+- **Privacy Compliance**: Sensitive data never leaves local environment
+
+The local mode setup provides a complete development environment that perfectly
+mirrors production behavior while keeping everything on your local machine.

@@ -1,0 +1,4 @@
+{
+  "extends": ["@repo/config/knip"],
+  "entry": ["src/client-next.ts", "src/server-next.ts", "examples/**/*.{ts,tsx}"]
+}

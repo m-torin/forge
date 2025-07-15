@@ -1,0 +1,305 @@
+---
+title: "Authentication Package"
+description:
+  "Enterprise-grade authentication built on Better Auth with organizations and
+  API keys"
+---
+
+# Authentication Package
+
+Enterprise-grade authentication built on Better Auth v1.2.12 with organizations,
+API keys, admin features, and multi-tenant support.
+
+## Overview
+
+The auth package provides comprehensive authentication infrastructure with
+Better Auth, including organization management, API key systems, role-based
+permissions, and admin tools. Designed for production-scale applications with
+enterprise requirements.
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Complete Auth Methods" icon="key">
+    Email/password, magic links, social OAuth (Google, GitHub), two-factor auth,
+    passkeys
+  </Card>
+  <Card title="Organization System" icon="users">
+    Multi-tenant organizations with teams, roles, and member management
+  </Card>
+  <Card title="API Key Management" icon="code">
+    Production-ready API authentication with rate limiting and permissions
+  </Card>
+  <Card title="Admin Panel" icon="shield-check">
+    User management, impersonation, session control, and ban/unban functionality
+  </Card>
+  <Card title="Role-Based Access Control" icon="user-shield">
+    Organization roles (owner, admin, member) and admin roles (super-admin,
+    moderator, support)
+  </Card>
+  <Card title="Email Integration" icon="envelope">
+    Welcome emails, password reset, verification, and notifications
+  </Card>
+</CardGroup>
+
+## Installation
+
+```bash
+pnpm add @repo/auth
+```
+
+## Environment Variables
+
+```bash
+# Better Auth
+BETTER_AUTH_SECRET=your-secret-key-here
+BETTER_AUTH_URL=http://localhost:3000 # Your app URL
+
+# Database (via @repo/database)
+DATABASE_URL=postgresql://...
+
+# Social Auth (Optional)
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+GITHUB_CLIENT_ID=...
+GITHUB_CLIENT_SECRET=...
+
+# Email (via @repo/email)
+RESEND_API_KEY=...
+EMAIL_FROM=noreply@yourdomain.com
+
+# Analytics (via @repo/analytics)
+NEXT_PUBLIC_POSTHOG_KEY=...
+```
+
+## Quick Setup
+
+<AccordionGroup>
+  <Accordion title="API Route Handler" icon="code">
+    ```typescript
+    // app/api/auth/[...all]/route.ts
+    import { auth } from '@repo/auth/server';
+    import { toNextJsHandler } from 'better-auth/next-js';
+
+    export const { GET, POST } = toNextJsHandler(auth);
+    ```
+
+  </Accordion>
+
+  <Accordion title="React Provider" icon="react">
+    ```tsx
+    // app/providers.tsx
+    import { AuthProvider } from '@repo/auth/components';
+
+    export function Providers({ children }: { children: React.ReactNode }) {
+      return <AuthProvider>{children}</AuthProvider>;
+    }
+    ```
+
+  </Accordion>
+
+  <Accordion title="Middleware Protection" icon="shield">
+    ```typescript
+    // middleware.ts
+    import { authMiddleware } from '@repo/auth/middleware';
+
+    export default authMiddleware;
+
+    export const config = {
+      matcher: ['/((?!api/auth|_next/static|_next/image|favicon.ico).*)'],
+    };
+    ```
+
+  </Accordion>
+</AccordionGroup>
+
+## Authentication Methods
+
+### Email/Password Authentication
+
+```typescript
+import { signIn, signUp } from "@repo/auth/client";
+
+// Sign up
+const result = await signUp.email({
+  email: "user@example.com",
+  password: "secure-password",
+  name: "John Doe"
+});
+
+// Sign in
+const session = await signIn.email({
+  email: "user@example.com",
+  password: "secure-password"
+});
+```
+
+### Magic Links
+
+```typescript
+import { sendMagicLink } from "@repo/auth/client";
+
+// Send magic link (20-minute expiration)
+await sendMagicLink({
+  email: "user@example.com",
+  callbackURL: "/dashboard"
+});
+```
+
+### Social Authentication
+
+```typescript
+import { signIn } from "@repo/auth/client";
+
+// Google OAuth
+await signIn.social({
+  provider: "google",
+  callbackURL: "/dashboard"
+});
+
+// GitHub OAuth
+await signIn.social({
+  provider: "github",
+  callbackURL: "/dashboard"
+});
+```
+
+## Session Management
+
+### Client-Side Session
+
+```tsx
+import { useSession } from "@repo/auth";
+
+function MyComponent() {
+  const { data: session, isPending } = useSession();
+
+  if (isPending) return <Loading />;
+  if (!session) return <SignInButton />;
+
+  return (
+    <div>
+      <p>Welcome, {session.user.name}!</p>
+      <p>Organization: {session.activeOrganization?.name}</p>
+    </div>
+  );
+}
+```
+
+### Server-Side Session
+
+```typescript
+import { auth } from '@repo/auth/server';
+
+// API route
+export async function GET(request: Request) {
+  const session = await auth.api.getSession({
+    headers: request.headers,
+  });
+
+  if (!session) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
+  return Response.json({ user: session.user });
+}
+
+// Server component
+async function ServerComponent() {
+  const session = await auth.api.getSession();
+
+  if (!session) redirect('/sign-in');
+
+  return <Dashboard user={session.user} />;
+}
+```
+
+## Organization Management
+
+### Creating Organizations
+
+```typescript
+import { organization } from "@repo/auth/client";
+
+// Create organization (limit: 5 per user)
+const newOrg = await organization.create({
+  name: "My Company",
+  slug: "my-company"
+});
+
+// Switch active organization
+await organization.setActive({
+  organizationId: newOrg.id
+});
+```
+
+### Managing Members
+
+```typescript
+// Invite member (limit: 100 invitations per org)
+await organization.inviteMember({
+  email: "member@example.com",
+  role: "admin", // owner, admin, member
+  organizationId: "org-id"
+});
+
+// Accept invitation
+await organization.acceptInvitation({
+  invitationId: "invitation-id"
+});
+
+// Update member role
+await organization.updateMemberRole({
+  userId: "user-id",
+  role: "member",
+  organizationId: "org-id"
+});
+```
+
+## API Key Management
+
+```typescript
+import { apiKey } from "@repo/auth/client";
+
+// Create API key
+const key = await apiKey.create({
+  name: "Production API",
+  expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+  permissions: ["read:users", "write:posts"],
+  metadata: { environment: "production" }
+});
+
+// API key authentication
+const response = await fetch("/api/data", {
+  headers: {
+    Authorization: `Bearer ${apiKey}`
+  }
+});
+```
+
+## Role-Based Access Control
+
+<CardGroup cols={2}>
+  <Card title="Organization Roles" icon="users">
+    - **Owner**: Full control including billing - **Admin**: Manage members and settings -
+    **Member**: Basic access and participation
+  </Card>
+
+  <Card title="System Roles" icon="shield">
+    - **Super Admin**: Platform-wide administration - **Moderator**: Content and user moderation -
+    **Support**: User assistance and basic management
+  </Card>
+</CardGroup>
+
+## Security Features
+
+- **Rate Limiting**: Built-in protection against brute force attacks
+- **Session Security**: Automatic session rotation and secure cookies
+- **CSRF Protection**: Built-in CSRF token validation
+- **Email Verification**: Required for account activation
+- **Password Requirements**: Configurable strength requirements
+- **Account Lockout**: Automatic lockout after failed attempts
+
+The authentication package provides enterprise-grade security and user
+management features built on Better Auth, designed for scalable multi-tenant
+applications.

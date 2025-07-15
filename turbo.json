@@ -1,39 +1,225 @@
 {
   "$schema": "https://turborepo.com/schema.json",
-  "globalDependencies": ["**/.env.*local"],
+  "globalDependencies": ["**/.env.*local", "pnpm-lock.yaml", "pnpm-workspace.yaml"],
+  "globalEnv": ["NODE_ENV", "CI", "VERCEL", "TURBO_TEAM", "TURBO_TOKEN"],
   "ui": "tui",
   "envMode": "loose",
   "tasks": {
     "build": {
-      "dependsOn": ["^build", "test"],
+      "dependsOn": ["^build", "@repo/database#prisma:generate", "extract-schemas"],
+      "inputs": [
+        "src/**",
+        "package.json",
+        "tsconfig.json",
+        "next.config.*",
+        "!**/*.test.*",
+        "!**/*.spec.*"
+      ],
       "outputs": [
         ".next/**",
         "!.next/cache/**",
-        ".basehub/**",
         "**/generated/**",
+        "prisma-generated/**",
         "storybook-static/**",
-        ".react-email/**"
+        ".react-email/**",
+        "dist/**",
+        "build/**",
+        "out/**"
+      ],
+      "cache": true
+    },
+    "build:doppler": {
+      "dependsOn": ["^build:doppler", "@repo/database#prisma:generate:doppler", "extract-schemas"],
+      "cache": true,
+      "inputs": [
+        "src/**",
+        "package.json",
+        "tsconfig.json",
+        "next.config.*",
+        "!**/*.test.*",
+        "!**/*.spec.*"
+      ],
+      "env": ["NODE_ENV", "NEXT_PUBLIC_*", "DATABASE_URL"],
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**",
+        "!.next/server/app/**/*.html",
+        "!.next/static/development/**",
+        "**/generated/**",
+        "prisma-generated/**",
+        "storybook-static/**",
+        ".react-email/**",
+        "dist/**",
+        "build/**",
+        "out/**"
       ]
     },
-    "test": {
-      "dependsOn": ["^test"]
+    "repo:ci": {
+      "dependsOn": [
+        "@repo/database#prisma:generate",
+        "circular",
+        "typecheck",
+        "lint",
+        "test",
+        "test:e2e",
+        "build"
+      ],
+      "cache": false
     },
-    "analyze": {
-      "dependsOn": ["^analyze"]
+    "circular": {
+      "cache": true,
+      "outputs": []
     },
     "dev": {
+      "dependsOn": ["extract-schemas"],
       "cache": false,
       "persistent": true
     },
+    "dev:doppler": {
+      "dependsOn": ["extract-schemas"],
+      "cache": false,
+      "persistent": true
+    },
+    "extract-schemas": {
+      "dependsOn": ["^prisma:generate"],
+      "outputs": ["**/src/schemas/generated/**"],
+      "cache": true
+    },
+    "knip": {
+      "cache": true,
+      "outputs": ["knip-report.json"]
+    },
+    "lint": {
+      "dependsOn": ["^lint"],
+      "cache": true,
+      "inputs": ["src/**", "*.ts", "*.tsx", "*.js", "*.jsx", ".eslintrc*", "eslint.config.*"],
+      "outputs": []
+    },
+    "preflight": {
+      "dependsOn": ["circular", "typecheck", "lint", "test:fast"],
+      "cache": false
+    },
+    "prettier": {
+      "cache": true,
+      "outputs": []
+    },
+    "prisma:generate": {
+      "outputs": ["**/prisma-generated/**"],
+      "cache": true
+    },
+    "prisma:generate:doppler": {
+      "outputs": ["**/prisma-generated/**"],
+      "cache": true
+    },
+    "test": {
+      "dependsOn": ["^test", "@repo/qa#build"],
+      "cache": true,
+      "inputs": ["src/**", "*.test.*", "*.spec.*", "vitest.config.*", "jest.config.*", "setup.*"],
+      "outputs": []
+    },
+    "test:fast": {
+      "dependsOn": ["^test:fast", "@repo/qa#build"],
+      "cache": true,
+      "env": ["VITEST_COVERAGE=false"],
+      "inputs": ["src/**", "*.test.*", "*.spec.*", "vitest.config.*", "jest.config.*", "setup.*"],
+      "outputs": []
+    },
+    "test:e2e": {
+      "dependsOn": ["build", "@repo/qa#build"],
+      "cache": true,
+      "outputs": ["playwright-report/**", "test-results/**"]
+    },
+    "test:ui": {
+      "dependsOn": ["^test:ui", "@repo/qa#build"],
+      "cache": true,
+      "outputs": []
+    },
+    "test:unit": {
+      "dependsOn": ["^test:unit", "@repo/qa#build"],
+      "cache": true,
+      "outputs": []
+    },
     "translate": {
       "dependsOn": ["^translate"],
+      "cache": true,
+      "outputs": ["**/locales/**", "**/translations/**"]
+    },
+    "typecheck": {
+      "dependsOn": ["^typecheck", "@repo/database#prisma:generate"],
+      "cache": true,
+      "inputs": ["src/**", "*.ts", "*.tsx", "tsconfig.json", "!**/*.test.*", "!**/*.spec.*"],
+      "outputs": []
+    },
+    "doppler": {
+      "cache": false,
+      "env": ["DOPPLER_TOKEN", "DOPPLER_PROJECT"]
+    },
+    "doppler:open": {
+      "cache": false,
+      "env": ["DOPPLER_TOKEN"]
+    },
+    "doppler:pull": {
+      "cache": false,
+      "env": ["DOPPLER_TOKEN", "DOPPLER_PROJECT"],
+      "outputs": [".env.local"]
+    },
+    "doppler:secrets": {
+      "cache": false,
+      "env": ["DOPPLER_TOKEN", "DOPPLER_PROJECT"]
+    },
+    "doppler:secrets:download": {
+      "cache": false,
+      "env": ["DOPPLER_TOKEN", "DOPPLER_PROJECT"]
+    },
+    "doppler:secrets:upload": {
+      "cache": false,
+      "env": ["DOPPLER_TOKEN", "DOPPLER_PROJECT"]
+    },
+    "test:affected": {
+      "dependsOn": ["^test:affected", "@repo/qa#build"],
+      "cache": true,
+      "inputs": ["src/**", "*.test.*", "*.spec.*", "vitest.config.*", "jest.config.*", "setup.*"],
+      "outputs": []
+    },
+    "test:coverage": {
+      "dependsOn": ["^test:coverage", "@repo/qa#build"],
+      "cache": true,
+      "inputs": [
+        "src/**",
+        "*.test.*",
+        "*.spec.*",
+        "vitest.config.*",
+        "jest.config.*",
+        "setup.*",
+        "__tests__/**"
+      ],
+      "outputs": ["coverage/**"],
+      "env": ["CI", "NODE_ENV", "VITEST_*"]
+    },
+    "test:watch": {
+      "dependsOn": ["@repo/qa#build"],
+      "cache": false,
+      "persistent": true
+    },
+    "test:e2e:debug": {
+      "dependsOn": ["build", "@repo/qa#build"],
       "cache": false
     },
-    "clean": {
+    "test:e2e:ui": {
+      "dependsOn": ["build", "@repo/qa#build"],
       "cache": false
     },
-    "//#clean": {
-      "cache": false
+    "typecheck:affected": {
+      "dependsOn": ["^typecheck:affected", "@repo/database#prisma:generate"],
+      "cache": true,
+      "inputs": ["src/**", "*.ts", "*.tsx", "tsconfig.json", "!**/*.test.*", "!**/*.spec.*"],
+      "outputs": []
+    },
+    "lint:affected": {
+      "dependsOn": ["^lint:affected"],
+      "cache": true,
+      "inputs": ["src/**", "*.ts", "*.tsx", "*.js", "*.jsx", ".eslintrc*", "eslint.config.*"],
+      "outputs": []
     }
   }
 }

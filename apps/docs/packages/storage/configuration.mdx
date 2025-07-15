@@ -1,0 +1,822 @@
+---
+title: "Storage Configuration"
+description:
+  "Multi-provider setup, environment variables, and routing configuration"
+icon: "gear"
+---
+
+# Storage Configuration
+
+Configure the storage package for single or multi-provider setups with
+intelligent routing and advanced options.
+
+## Environment Variables
+
+### Single Provider Setup
+
+<Tabs>
+  <Tab title="Cloudflare R2">
+```bash
+# Basic R2 configuration
+STORAGE_PROVIDER=cloudflare-r2
+R2_ACCOUNT_ID=your-account-id
+R2_ACCESS_KEY_ID=your-access-key
+R2_SECRET_ACCESS_KEY=your-secret-key
+R2_BUCKET=your-bucket-name
+# Optional: Custom domain
+R2_CUSTOM_DOMAIN=cdn.example.com
+```
+
+</Tab>
+
+<Tab title="Cloudflare Images">
+```bash
+# Cloudflare Images configuration
+STORAGE_PROVIDER=cloudflare-images
+CLOUDFLARE_IMAGES_ACCOUNT_ID=your-account-id
+CLOUDFLARE_IMAGES_API_TOKEN=your-api-token
+CLOUDFLARE_IMAGES_DELIVERY_URL=https://imagedelivery.net/your-account-id
+# Optional: For signed URLs
+CLOUDFLARE_IMAGES_SIGNING_KEY=your-signing-key
+```
+
+</Tab>
+
+  <Tab title="Vercel Blob">
+```bash
+# Vercel Blob configuration
+STORAGE_PROVIDER=vercel-blob
+BLOB_READ_WRITE_TOKEN=vercel_blob_rw_token
+```
+
+</Tab>
+</Tabs>
+
+### Multi-Bucket R2 Setup
+
+```bash
+# Multiple R2 buckets as JSON array
+R2_CREDENTIALS='[
+  {
+    "name": "primary",
+    "bucket": "primary-bucket",
+    "accountId": "account-1",
+    "accessKeyId": "key-1",
+    "secretAccessKey": "secret-1",
+    "customDomain": "cdn.example.com"
+  },
+  {
+    "name": "backup",
+    "bucket": "backup-bucket",
+    "accountId": "account-2",
+    "accessKeyId": "key-2",
+    "secretAccessKey": "secret-2"
+  },
+  {
+    "name": "media",
+    "bucket": "media-bucket",
+    "accountId": "account-1",
+    "accessKeyId": "key-1",
+    "secretAccessKey": "secret-1",
+    "region": "auto"
+  }
+]'
+```
+
+### Complete Multi-Provider Configuration
+
+```bash
+# Enable multi-provider mode
+STORAGE_PROVIDER=multi
+
+# Complete configuration as JSON
+STORAGE_CONFIG='{
+  "providers": {
+    "r2-primary": {
+      "provider": "cloudflare-r2",
+      "cloudflareR2": {
+        "accountId": "r2-account-id",
+        "accessKeyId": "r2-access-key",
+        "secretAccessKey": "r2-secret-key",
+        "bucket": "primary-bucket",
+        "customDomain": "cdn.example.com"
+      }
+    },
+    "r2-backup": {
+      "provider": "cloudflare-r2",
+      "cloudflareR2": {
+        "accountId": "r2-account-id",
+        "accessKeyId": "r2-access-key",
+        "secretAccessKey": "r2-secret-key",
+        "bucket": "backup-bucket"
+      }
+    },
+    "images": {
+      "provider": "cloudflare-images",
+      "cloudflareImages": {
+        "accountId": "images-account-id",
+        "apiToken": "images-api-token",
+        "deliveryUrl": "https://imagedelivery.net/account-id",
+        "signingKey": "images-signing-key"
+      }
+    },
+    "blob": {
+      "provider": "vercel-blob",
+      "vercelBlob": {
+        "token": "vercel-blob-token"
+      }
+    }
+  },
+  "routing": {
+    "images": "images",
+    "photos": "images",
+    "documents": "r2-primary",
+    "backups": "r2-backup",
+    "temp": "blob"
+  },
+  "fallback": "r2-primary"
+}'
+```
+
+## Provider Configuration
+
+### Cloudflare R2 Options
+
+```typescript
+interface CloudflareR2Config {
+  accountId: string;
+  accessKeyId: string;
+  secretAccessKey: string;
+  bucket: string;
+
+  // Optional settings
+  region?: string; // Default: 'auto'
+  customDomain?: string; // Custom domain for public URLs
+  defaultPartSize?: number; // Default: 100MB
+  defaultQueueSize?: number; // Default: 4
+  endpoint?: string; // Custom S3 endpoint
+  forcePathStyle?: boolean; // Force path-style URLs
+
+  // Advanced S3 client options
+  maxAttempts?: number; // Retry attempts
+  requestTimeout?: number; // Request timeout in ms
+  connectionTimeout?: number; // Connection timeout in ms
+}
+```
+
+### Cloudflare Images Options
+
+```typescript
+interface CloudflareImagesConfig {
+  accountId: string;
+  apiToken: string;
+
+  // Optional settings
+  deliveryUrl?: string; // Custom delivery URL
+  signingKey?: string; // For signed URLs
+  apiBase?: string; // API base URL
+  maxConcurrent?: number; // Max concurrent requests
+  defaultRequireSignedURLs?: boolean; // Default signing requirement
+}
+```
+
+### Vercel Blob Options
+
+```typescript
+interface VercelBlobConfig {
+  token: string;
+
+  // Optional settings
+  apiUrl?: string; // Custom API URL
+  maxSize?: number; // Max file size
+  allowedContentTypes?: string[]; // Allowed MIME types
+}
+```
+
+## Intelligent Routing
+
+### File Type Routing
+
+Configure automatic routing based on file types:
+
+```typescript
+const routingConfig = {
+  routing: {
+    // Image files go to Cloudflare Images
+    "image/*": "images",
+    "image/jpeg": "images",
+    "image/png": "images",
+    "image/webp": "images",
+    "image/gif": "images",
+
+    // Video files go to R2 primary
+    "video/*": "r2-primary",
+    "audio/*": "r2-primary",
+
+    // Documents go to R2 primary
+    "application/pdf": "r2-primary",
+    "application/msword": "r2-primary",
+    "text/*": "r2-primary",
+
+    // Archives and backups
+    "application/zip": "r2-backup",
+    "application/x-tar": "r2-backup",
+    "application/gzip": "r2-backup",
+
+    // Temporary files to Vercel Blob
+    "temp/*": "blob"
+  },
+  fallback: "r2-primary" // Default provider
+};
+```
+
+### Path-Based Routing
+
+Route based on file paths or prefixes:
+
+```typescript
+const routingConfig = {
+  routing: {
+    // Path-based routing
+    "user-avatars/": "images",
+    "product-images/": "images",
+    "hero-images/": "images",
+
+    "documents/": "r2-primary",
+    "uploads/": "r2-primary",
+    "media/videos/": "r2-primary",
+
+    "backups/": "r2-backup",
+    "archives/": "r2-backup",
+
+    "temp/": "blob",
+    "cache/": "blob"
+  }
+};
+```
+
+### Size-Based Routing
+
+Route based on file size:
+
+```typescript
+const routingConfig = {
+  routing: {
+    // Size-based routing (in bytes)
+    "<10485760": "images", // Files < 10MB to Images
+    ">=10485760": "r2-primary", // Files >= 10MB to R2
+    ">=1073741824": "r2-backup" // Files >= 1GB to backup
+  }
+};
+```
+
+### Custom Routing Logic
+
+```typescript
+import { multiStorage } from "@repo/storage/server/next";
+
+// Custom routing function
+const customRouter = (key: string, options?: any) => {
+  // Route based on user type
+  if (options?.metadata?.userType === "premium") {
+    return "r2-primary";
+  }
+
+  // Route based on file extension
+  if (key.match(/\.(jpg|jpeg|png|webp|gif)$/i)) {
+    return "images";
+  }
+
+  // Route based on file size
+  if (options?.contentLength && options.contentLength > 100 * 1024 * 1024) {
+    return "r2-backup";
+  }
+
+  return "r2-primary"; // Default
+};
+
+// Use custom routing
+await multiStorage.upload(key, data, {
+  provider: customRouter(key, options)
+});
+```
+
+## Environment-Specific Configuration
+
+### Development Environment
+
+```bash
+# .env.local (development)
+STORAGE_PROVIDER=vercel-blob
+BLOB_READ_WRITE_TOKEN=your-dev-token
+
+# Simplified setup for development
+NODE_ENV=development
+```
+
+### Staging Environment
+
+```bash
+# .env.staging
+STORAGE_PROVIDER=multi
+STORAGE_CONFIG='{
+  "providers": {
+    "r2-staging": {
+      "provider": "cloudflare-r2",
+      "cloudflareR2": {
+        "accountId": "staging-account",
+        "bucket": "staging-bucket",
+        ...
+      }
+    },
+    "images-staging": {
+      "provider": "cloudflare-images",
+      "cloudflareImages": {
+        "accountId": "staging-account",
+        ...
+      }
+    }
+  },
+  "routing": {
+    "images": "images-staging",
+    "*": "r2-staging"
+  }
+}'
+```
+
+### Production Environment
+
+```bash
+# .env.production (or Doppler)
+STORAGE_PROVIDER=multi
+STORAGE_CONFIG='{
+  "providers": {
+    "r2-us": {
+      "provider": "cloudflare-r2",
+      "cloudflareR2": {
+        "accountId": "prod-account",
+        "bucket": "prod-us-bucket",
+        "customDomain": "cdn-us.example.com"
+      }
+    },
+    "r2-eu": {
+      "provider": "cloudflare-r2",
+      "cloudflareR2": {
+        "accountId": "prod-account",
+        "bucket": "prod-eu-bucket",
+        "customDomain": "cdn-eu.example.com"
+      }
+    },
+    "images": {
+      "provider": "cloudflare-images",
+      "cloudflareImages": {
+        "accountId": "prod-account",
+        "apiToken": "prod-api-token",
+        "deliveryUrl": "https://imagedelivery.net/prod-account",
+        "signingKey": "prod-signing-key"
+      }
+    }
+  },
+  "routing": {
+    "images": "images",
+    "us/*": "r2-us",
+    "eu/*": "r2-eu",
+    "*": "r2-us"
+  }
+}'
+```
+
+## Programmatic Configuration
+
+### Direct Provider Initialization
+
+```typescript
+import {
+  CloudflareR2Provider,
+  CloudflareImagesProvider,
+  VercelBlobProvider,
+  MultiStorageManager
+} from "@repo/storage/server/next";
+
+// Initialize providers directly
+const r2Provider = new CloudflareR2Provider({
+  accountId: process.env.R2_ACCOUNT_ID!,
+  accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+  secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+  bucket: process.env.R2_BUCKET!,
+  customDomain: process.env.R2_CUSTOM_DOMAIN,
+  defaultPartSize: 50 * 1024 * 1024 // 50MB
+});
+
+const imagesProvider = new CloudflareImagesProvider({
+  accountId: process.env.CLOUDFLARE_IMAGES_ACCOUNT_ID!,
+  apiToken: process.env.CLOUDFLARE_IMAGES_API_TOKEN!,
+  deliveryUrl: process.env.CLOUDFLARE_IMAGES_DELIVERY_URL
+});
+
+const blobProvider = new VercelBlobProvider({
+  token: process.env.BLOB_READ_WRITE_TOKEN!
+});
+```
+
+### Custom Multi-Storage Setup
+
+```typescript
+// Create custom multi-storage instance
+const customMultiStorage = new MultiStorageManager({
+  providers: {
+    primary: r2Provider,
+    images: imagesProvider,
+    temp: blobProvider
+  },
+  routing: {
+    images: "images",
+    "temp/*": "temp",
+    "*": "primary"
+  },
+  fallback: "primary"
+});
+
+// Use custom instance
+await customMultiStorage.upload("document.pdf", buffer);
+```
+
+## Configuration Validation
+
+### Type-Safe Configuration
+
+```typescript
+import { z } from "zod";
+
+const storageConfigSchema = z.object({
+  providers: z.record(
+    z.object({
+      provider: z.enum(["cloudflare-r2", "cloudflare-images", "vercel-blob"]),
+      cloudflareR2: z
+        .object({
+          accountId: z.string(),
+          accessKeyId: z.string(),
+          secretAccessKey: z.string(),
+          bucket: z.string(),
+          customDomain: z.string().optional()
+        })
+        .optional(),
+      cloudflareImages: z
+        .object({
+          accountId: z.string(),
+          apiToken: z.string(),
+          deliveryUrl: z.string().optional(),
+          signingKey: z.string().optional()
+        })
+        .optional(),
+      vercelBlob: z
+        .object({
+          token: z.string()
+        })
+        .optional()
+    })
+  ),
+  routing: z.record(z.string()),
+  fallback: z.string()
+});
+
+// Validate configuration
+const config = storageConfigSchema.parse(
+  JSON.parse(process.env.STORAGE_CONFIG!)
+);
+```
+
+### Configuration Testing
+
+```typescript
+import {
+  logInfo,
+  logError,
+  logWarn,
+  logDebug
+} from "@repo/observability/server/next";
+
+// Test configuration at startup
+async function validateStorageConfig() {
+  try {
+    // Test each provider
+    await Promise.all([
+      storage.upload("test-file.txt", Buffer.from("test")),
+      storage.exists("test-file.txt"),
+      storage.delete("test-file.txt")
+    ]);
+
+    logInfo("Storage configuration valid", {
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logError("Storage configuration error", {
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+    process.exit(1);
+  }
+}
+
+// Run at application startup
+validateStorageConfig();
+
+// Configuration validation
+try {
+  await validateConfig(config);
+  logInfo("Storage configuration validation", {
+    status: "valid"
+  });
+} catch (error) {
+  logError("Storage configuration validation failed", {
+    error: error.message
+  });
+}
+
+// Credentials check
+try {
+  await validateCredentials(config);
+  logInfo("Storage credentials validation", {
+    status: "valid"
+  });
+} catch (error) {
+  logError("Storage credentials validation failed", {
+    error: error.message
+  });
+}
+
+// Network error handling
+logError("Storage network error", {
+  error: "Network connectivity issue",
+  timestamp: new Date().toISOString()
+});
+
+// Custom logging configuration
+const storage = createStorage({
+  // ... other config ...
+  logging: {
+    debug: (message, context) =>
+      logDebug("Storage Debug", { message, ...context }),
+    info: (message, context) =>
+      logInfo("Storage Info", { message, ...context }),
+    warn: (message, context) =>
+      logWarn("Storage Warning", { message, ...context }),
+    error: (message, context) =>
+      logError("Storage Error", { message, ...context })
+  },
+  hooks: {
+    pre: (request) =>
+      logInfo("Storage request", {
+        method: request.method,
+        url: request.url,
+        timestamp: new Date().toISOString()
+      }),
+    post: (response) =>
+      logInfo("Storage response", {
+        status: response.status,
+        timestamp: new Date().toISOString()
+      }),
+    error: (error) =>
+      logError("Storage request failed", {
+        error: error.message,
+        timestamp: new Date().toISOString()
+      })
+  }
+});
+```
+
+## Advanced Configuration
+
+### Connection Pooling
+
+```typescript
+const r2Provider = new CloudflareR2Provider({
+  // ... basic config
+
+  // Connection pooling
+  maxSockets: 50,
+  keepAlive: true,
+  keepAliveMsecs: 1000,
+  maxFreeSockets: 10,
+
+  // Retry configuration
+  maxAttempts: 3,
+  retryDelayOptions: {
+    base: 300,
+    customBackoff: (retryCount) => Math.pow(2, retryCount) * 300
+  }
+});
+```
+
+### Request Optimization
+
+```typescript
+const optimizedProvider = new CloudflareR2Provider({
+  // ... basic config
+
+  // Request optimization
+  requestTimeout: 30000, // 30 second timeout
+  connectionTimeout: 5000, // 5 second connection timeout
+  followRegionRedirects: true, // Follow redirects
+
+  // Multipart optimization
+  defaultPartSize: 100 * 1024 * 1024, // 100MB parts
+  defaultQueueSize: 8, // 8 concurrent uploads
+  partSizeThreshold: 50 * 1024 * 1024 // Use multipart for > 50MB
+});
+```
+
+### Caching Configuration
+
+```typescript
+// Configure caching for frequently accessed files
+const cachedProvider = new CloudflareR2Provider({
+  // ... basic config
+
+  cacheControl: {
+    default: "public, max-age=3600",
+    images: "public, max-age=86400",
+    documents: "private, max-age=3600"
+  },
+
+  metadata: {
+    defaultCacheControl: "public, max-age=3600"
+  }
+});
+```
+
+## Troubleshooting
+
+### Common Configuration Issues
+
+<AccordionGroup>
+  <Accordion title="Missing Environment Variables" icon="exclamation-triangle">
+    ```bash
+    # Check required variables
+    echo $STORAGE_PROVIDER
+    echo $R2_ACCOUNT_ID
+    echo $R2_ACCESS_KEY_ID
+
+    # Validate JSON configuration
+    node -e "console.log(JSON.parse(process.env.STORAGE_CONFIG || '{}'))"
+    ```
+
+  </Accordion>
+
+  <Accordion title="Invalid Credentials" icon="key">
+    ```typescript
+    // Test credentials
+    try {
+      await storage.list({ limit: 1 });
+      logInfo('Storage credentials valid', {
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      logError('Storage credentials invalid', {
+        error: error.message,
+        timestamp: new Date().toISOString()
+      });
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Network Issues" icon="wifi">
+    ```typescript
+    // Test connectivity
+    const provider = new CloudflareR2Provider({
+      ...config,
+      requestTimeout: 10000,
+      maxAttempts: 1,
+    });
+
+    try {
+      await provider.upload('test.txt', Buffer.from('test'));
+    } catch (error) {
+      if (error.code === 'ECONNRESET') {
+        logError('Network connectivity issue', {
+          error: 'Network connectivity issue',
+          timestamp: new Date().toISOString()
+        });
+      }
+    }
+    ```
+
+  </Accordion>
+
+  <Accordion title="CORS Configuration" icon="globe">
+    ```json
+    // R2 CORS policy
+    {
+      "CORSRules": [
+        {
+          "AllowedOrigins": ["https://your-domain.com"],
+          "AllowedMethods": ["GET", "PUT", "POST", "DELETE"],
+          "AllowedHeaders": ["*"],
+          "ExposeHeaders": ["ETag"],
+          "MaxAgeSeconds": 3600
+        }
+      ]
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Debug Configuration
+
+```typescript
+// Enable debug logging
+const debugProvider = new CloudflareR2Provider({
+  ...config,
+  logger: {
+    debug: console.debug,
+    info: console.info,
+    warn: console.warn,
+    error: console.error
+  }
+});
+
+// Monitor requests
+const monitoredProvider = new CloudflareR2Provider({
+  ...config,
+  requestHandler: {
+    pre: (request) => console.log("Request:", request.method, request.url),
+    post: (response) => console.log("Response:", response.status),
+    error: (error) => console.error("Request error:", error)
+  }
+});
+```
+
+## Configuration Examples
+
+### E-commerce Setup
+
+```typescript
+// Optimized for e-commerce with product images and documents
+const ecommerceConfig = {
+  providers: {
+    "product-images": {
+      provider: "cloudflare-images",
+      cloudflareImages: {
+        /* ... */
+      }
+    },
+    "user-uploads": {
+      provider: "cloudflare-r2",
+      cloudflareR2: {
+        bucket: "user-content",
+        customDomain: "cdn.shop.com"
+      }
+    },
+    "admin-docs": {
+      provider: "cloudflare-r2",
+      cloudflareR2: {
+        bucket: "admin-documents",
+        defaultPartSize: 50 * 1024 * 1024
+      }
+    }
+  },
+  routing: {
+    "products/": "product-images",
+    "avatars/": "product-images",
+    "documents/": "admin-docs",
+    "uploads/": "user-uploads"
+  }
+};
+```
+
+### Content Platform Setup
+
+```typescript
+// Optimized for content creation platform
+const contentConfig = {
+  providers: {
+    "media-primary": {
+      provider: "cloudflare-r2",
+      cloudflareR2: {
+        bucket: "media-primary",
+        defaultPartSize: 100 * 1024 * 1024, // Large videos
+        defaultQueueSize: 6
+      }
+    },
+    thumbnails: {
+      provider: "cloudflare-images",
+      cloudflareImages: {
+        /* ... */
+      }
+    },
+    "temp-uploads": {
+      provider: "vercel-blob",
+      vercelBlob: {
+        /* ... */
+      }
+    }
+  },
+  routing: {
+    "temp/": "temp-uploads",
+    "thumbnails/": "thumbnails",
+    "video/*": "media-primary",
+    "audio/*": "media-primary",
+    "*": "media-primary"
+  }
+};
+```

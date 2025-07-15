@@ -1,0 +1,17 @@
+{
+  "extends": ["@repo/config/knip"],
+  "entry": [
+    "index.ts",
+    "src/vitest/index.ts",
+    "src/playwright/index.ts",
+    "src/shared/index.ts",
+    "src/vitest/configs/**/*.ts",
+    "src/vitest/mocks/**/*.ts",
+    "src/vitest/setup/**/*.ts",
+    "src/vitest/utils/**/*.{ts,tsx}",
+    "src/playwright/configs/**/*.ts",
+    "src/playwright/helpers/**/*.ts",
+    "src/playwright/templates/**/*.{ts,spec.ts}",
+    "src/shared/**/*.ts"
+  ]
+}

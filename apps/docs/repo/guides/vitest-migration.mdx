@@ -1,0 +1,265 @@
+---
+title: "Centralized Mocks Migration Guide"
+description:
+  "Learn how to migrate from individual vi.mock() calls to using the centralized
+  mock system in @repo/qa"
+---
+
+# Centralized Mocks Migration Guide
+
+This guide helps you migrate from individual `vi.mock()` calls to using the
+centralized mock system in `@repo/qa`.
+
+## Quick Start
+
+### 1. Update Your Test Setup File
+
+Replace individual mock imports with the centralized mock import:
+
+```typescript
+// Before
+import { vi } from "vitest";
+vi.mock("next/navigation", () => ({
+  /* ... */
+}));
+vi.mock("posthog-js", () => ({
+  /* ... */
+}));
+vi.mock("@mantine/core", () => ({
+  /* ... */
+}));
+
+// After
+import "@repo/qa/vitest/mocks";
+```
+
+### 2. Remove Duplicate Mocks
+
+The centralized mocks already include:
+
+#### Next.js
+
+- `next/navigation`
+- `next/headers`
+- `next/cache`
+- `next/image`
+- `next/link`
+- `server-only`
+
+#### UI Libraries
+
+- `@mantine/core`
+- `@mantine/hooks`
+- `@mantine/form`
+- `@mantine/notifications`
+- `zod`
+
+#### Analytics & Monitoring
+
+- `posthog-js`
+- `posthog-node`
+- `@sentry/nextjs`
+- `@segment/analytics-next`
+- `react-ga4`
+
+#### Cloud Services
+
+- `@upstash/redis`
+- `@upstash/qstash`
+- `@upstash/workflow/nextjs`
+- `@upstash/ratelimit`
+- `@aws-sdk/client-s3`
+- `@aws-sdk/lib-storage`
+- `@aws-sdk/s3-request-presigner`
+- `@vercel/blob`
+
+#### Communication
+
+- `resend`
+- `@react-email/render`
+- `@knocklabs/node`
+- `@knocklabs/react`
+
+#### AI Services
+
+- `ai`
+- `ai/react`
+- `ai/mcp-stdio`
+- `@ai-sdk/openai`
+- `@ai-sdk/google`
+- `@ai-sdk/perplexity`
+- `@stripe/agent-toolkit/ai-sdk`
+
+#### Payments
+
+- `stripe`
+
+#### Utilities
+
+- `uuid`
+- `nanoid`
+- `date-fns`
+- `embla-carousel-react`
+- `embla-carousel-autoplay`
+- `detect-port`
+- `node-fetch`
+- `readline/promises`
+
+#### Icon Libraries
+
+- `@heroicons/react/24/solid`
+- `@heroicons/react/24/outline`
+- `@tabler/icons-react`
+- `@hugeicons/react`
+
+## Full Example
+
+### Before (Old Setup)
+
+```typescript
+// vitest.setup.ts
+import { vi } from 'vitest';
+import '@testing-library/jest-dom';
+
+// Mock Next.js
+vi.mock('next/navigation', () => ({
+  useRouter: vi.fn(() => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    // ...
+  })),
+  // ...
+}));
+
+// Mock Mantine
+vi.mock('@mantine/core', () => ({
+  Button: ({ children }) => <button>{children}</button>,
+  // ...
+}));
+
+// Mock PostHog
+vi.mock('posthog-js', () => ({
+  init: vi.fn(),
+  capture: vi.fn(),
+  // ...
+}));
+
+// Mock Stripe
+vi.mock('stripe', () => ({
+  default: vi.fn().mockImplementation(() => ({
+    customers: {
+      create: vi.fn(),
+      // ...
+    },
+  })),
+}));
+```
+
+### After (New Setup)
+
+```typescript
+// vitest.setup.ts
+import "@testing-library/jest-dom";
+import "@repo/qa/vitest/mocks";
+
+// That's it! All the mocks are now centralized
+```
+
+## Customizing Mocks
+
+If you need to customize a mock for specific tests:
+
+```typescript
+import { vi } from "vitest";
+import * as posthogJs from "posthog-js";
+import { logInfo } from "@repo/observability/server/next";
+
+// Override specific mock behavior
+beforeEach(() => {
+  vi.mocked(posthogJs.capture).mockImplementation((event, properties) => {
+    logInfo("Analytics event captured", {
+      event,
+      properties,
+      timestamp: new Date().toISOString()
+    });
+  });
+});
+```
+
+## Adding App-Specific Mocks
+
+Keep app-specific mocks in your setup file:
+
+```typescript
+// vitest.setup.ts
+import "@repo/qa/vitest/mocks";
+import { vi } from "vitest";
+
+// App-specific mocks that aren't shared
+vi.mock("@/lib/custom-analytics", () => ({
+  track: vi.fn()
+}));
+```
+
+## Helper Functions
+
+The centralized mocks provide helpful utilities:
+
+```typescript
+import {
+  resetAllMocks,
+  setupTestEnvironment,
+  cleanupTestEnvironment,
+  mockAIStreamResponse,
+  mockStripeCustomer,
+  mockEmailPayload
+  // ... and more
+} from "@repo/qa/vitest/mocks";
+
+beforeAll(() => {
+  setupTestEnvironment();
+});
+
+afterAll(() => {
+  cleanupTestEnvironment();
+});
+
+beforeEach(() => {
+  resetAllMocks();
+});
+```
+
+## Troubleshooting
+
+### Mock Not Working?
+
+1. Ensure you import the centralized mocks **before** importing the modules that
+   use them
+2. Check if the mock is actually included in the centralized mocks
+3. Clear your test cache: `pnpm test --clearCache`
+
+### Need to Add a New Mock?
+
+If a commonly used npm package isn't mocked yet:
+
+1. Check if it fits into an existing category in
+   `/packages/qa/src/vitest/mocks/`
+2. Add it to the appropriate file (e.g., `cloud-services.ts`, `utilities.ts`)
+3. Export any helper functions
+4. Submit a PR to share with the team
+
+### Mock Conflicts?
+
+If you have conflicting mocks:
+
+1. Remove your local mock first
+2. If the centralized mock doesn't meet your needs, override it after importing
+3. Consider if your customization should be added to the centralized version
+
+## Benefits
+
+- **Consistency**: All tests use the same mock implementations
+- **Maintenance**: Update mocks in one place
+- **Performance**: Faster test startup (mocks are pre-compiled)
+- **Discovery**: Easy to see what's already mocked
+- **Type Safety**: Centralized mocks maintain proper TypeScript types

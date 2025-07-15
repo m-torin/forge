@@ -1,0 +1,405 @@
+---
+title: "Zod Schema Validation"
+description: "Using Prisma-generated Zod schemas for type-safe validation"
+icon: "shield-check"
+---
+
+# Zod Schema Validation
+
+The database package provides Prisma-generated Zod schemas that ensure type-safe
+validation matching your database constraints exactly.
+
+## Overview
+
+When you run `pnpm prisma:generate`, Prisma automatically generates Zod schemas
+for all your models. These schemas provide:
+
+- **Type Safety**: Full TypeScript support with proper inference
+- **Database Alignment**: Validation rules that match your database constraints
+- **Automatic Updates**: Schemas regenerate when your database schema changes
+- **Comprehensive Coverage**: Create, update, and query schemas for all models
+
+## Installation & Setup
+
+The Zod schemas are automatically generated and exported from the database
+package:
+
+```typescript
+// Import schemas
+import {
+  ProductCreateInputSchema,
+  ProductUpdateInputSchema,
+  BrandCreateInputSchema
+} from "@repo/database/zod";
+
+// Import validation utilities
+import {
+  validateFormData,
+  transformFormToDatabase,
+  createMantineValidator
+} from "@repo/database/prisma";
+```
+
+## Using in Forms
+
+### Basic Form Validation
+
+Use the schemas directly with Mantine's form hook:
+
+```typescript
+import { useForm, zodResolver } from '@mantine/form';
+import { ProductCreateInputSchema } from '@repo/database/zod';
+
+function ProductForm() {
+  const form = useForm({
+    validate: zodResolver(ProductCreateInputSchema),
+    initialValues: {
+      name: '',
+      slug: '',
+      sku: '',
+      // ... other fields
+    },
+  });
+
+  const handleSubmit = form.onSubmit(async (values) => {
+    // Values are already validated
+    await createProductAction({ data: values });
+  });
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <TextInput {...form.getInputProps('name')} />
+      {/* Other fields */}
+    </form>
+  );
+}
+```
+
+### Custom Form Schemas
+
+For forms that don't need all fields, pick only what you need:
+
+```typescript
+import { pickSchemaFields } from "@repo/database/prisma";
+
+const formSchema = pickSchemaFields(ProductCreateInputSchema, [
+  "name",
+  "slug",
+  "sku",
+  "price"
+]).extend({
+  // Add custom validation
+  slug: z.string().regex(/^[a-z0-9-]+$/, "Must be lowercase with hyphens"),
+  // Make fields optional
+  price: z.number().min(0).optional()
+});
+
+const form = useForm({
+  validate: zodResolver(formSchema)
+});
+```
+
+### Create vs Update Forms
+
+Handle both create and update modes with appropriate schemas:
+
+```typescript
+const isEditing = !!productId;
+
+const schema = isEditing ? ProductUpdateInputSchema : ProductCreateInputSchema;
+
+const form = useForm({
+  validate: zodResolver(schema),
+  initialValues: isEditing ? existingData : defaultValues
+});
+```
+
+## Using in Server Actions
+
+### Basic Server Validation
+
+Always validate on the server, even if the client already validated:
+
+```typescript
+"use server";
+
+import { ProductCreateInputSchema } from "@repo/database/zod";
+import { validateFormData } from "@repo/database/prisma";
+
+export async function createProductAction(data: unknown) {
+  // Validate input
+  const validation = validateFormData(ProductCreateInputSchema, data);
+
+  if (!validation.success) {
+    return {
+      success: false,
+      errors: validation.formattedErrors // Field-specific errors
+    };
+  }
+
+  // Create with validated data
+  const product = await prisma.product.create({
+    data: validation.data // Type-safe!
+  });
+
+  return { success: true, data: product };
+}
+```
+
+### Data Transformation
+
+Transform form data before validation:
+
+```typescript
+export async function createProductAction(formData: unknown) {
+  // Transform form data
+  const transformed = transformFormToDatabase(formData as any, {
+    emptyStringsToNull: true,
+    trimStrings: true,
+    removeUndefined: true
+  });
+
+  // Validate transformed data
+  const validation = validateFormData(ProductCreateInputSchema, transformed);
+
+  if (!validation.success) {
+    return { success: false, errors: validation.formattedErrors };
+  }
+
+  // Proceed with database operation
+  const product = await prisma.product.create({
+    data: validation.data
+  });
+
+  return { success: true, data: product };
+}
+```
+
+### Bulk Operations
+
+Validate multiple items efficiently:
+
+```typescript
+export async function bulkCreateProducts(products: unknown[]) {
+  // Validate each product
+  const validations = products.map((product, index) => ({
+    index,
+    validation: validateFormData(ProductCreateInputSchema, product)
+  }));
+
+  // Check for errors
+  const errors = validations.filter((v) => !v.validation.success);
+  if (errors.length > 0) {
+    return {
+      success: false,
+      errors: errors.map((e) => ({
+        index: e.index,
+        errors: e.validation.formattedErrors
+      }))
+    };
+  }
+
+  // Extract validated data
+  const validatedData = validations.map((v) => v.validation.data!);
+
+  // Bulk create
+  const created = await prisma.$transaction(
+    validatedData.map((data) => prisma.product.create({ data }))
+  );
+
+  return { success: true, data: created };
+}
+```
+
+## Validation Utilities
+
+### validateFormData
+
+Validates data and returns formatted errors:
+
+```typescript
+const result = validateFormData(schema, data);
+
+if (result.success) {
+  // result.data is fully typed
+} else {
+  // result.formattedErrors has field-specific errors
+  // { "name": ["Required"], "price": ["Must be positive"] }
+}
+```
+
+### transformFormToDatabase
+
+Prepares form data for database operations:
+
+```typescript
+const dbData = transformFormToDatabase(formData, {
+  emptyStringsToNull: true, // "" becomes null
+  trimStrings: true, // "  text  " becomes "text"
+  removeUndefined: true // Remove undefined fields
+});
+```
+
+### createMantineValidator
+
+Creates a validator function for Mantine forms:
+
+```typescript
+const form = useForm({
+  validate: createMantineValidator(ProductCreateInputSchema)
+});
+```
+
+### pickSchemaFields
+
+Select specific fields from a schema:
+
+```typescript
+const partialSchema = pickSchemaFields(ProductCreateInputSchema, [
+  "name",
+  "slug",
+  "description"
+]);
+```
+
+### makeSchemaOptional
+
+Make all fields optional (useful for updates):
+
+```typescript
+const updateSchema = makeSchemaOptional(ProductCreateInputSchema);
+```
+
+## Advanced Patterns
+
+### Nested Relations
+
+Handle complex forms with nested data:
+
+```typescript
+const productWithVariantsSchema = ProductCreateInputSchema.extend({
+  variants: z.array(
+    z.object({
+      sku: z.string(),
+      price: z.number().positive(),
+      quantity: z.number().int().min(0)
+    })
+  ),
+  categoryIds: z.array(z.string().cuid())
+});
+```
+
+### Conditional Validation
+
+Apply different validation based on conditions:
+
+```typescript
+const schema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("PHYSICAL"),
+    weight: z.number().positive(),
+    dimensions: z.object({
+      length: z.number(),
+      width: z.number(),
+      height: z.number()
+    })
+  }),
+  z.object({
+    type: z.literal("DIGITAL"),
+    downloadUrl: z.string().url(),
+    fileSize: z.number()
+  })
+]);
+```
+
+### Custom Error Messages
+
+Override default error messages:
+
+```typescript
+const schema = ProductCreateInputSchema.extend({
+  name: z.string().min(1, "Product name is required"),
+  price: z.number().min(0, "Price cannot be negative")
+});
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Always Validate on Server">
+    Never trust client-side validation alone. Always validate on the server before database operations.
+  </Accordion>
+  
+  <Accordion title="Use Type Inference">
+    Let TypeScript infer types from schemas:
+    ```typescript
+    type ProductFormData = z.infer<typeof ProductCreateInputSchema>;
+    ```
+  </Accordion>
+  
+  <Accordion title="Handle Validation Errors">
+    Show field-specific errors in forms:
+    ```typescript
+    if (!result.success && result.errors) {
+      Object.entries(result.errors).forEach(([field, errors]) => {
+        form.setFieldError(field, errors[0]);
+      });
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Transform Data Appropriately">
+    Use `transformFormToDatabase` to handle common conversions like empty strings to null.
+  </Accordion>
+</AccordionGroup>
+
+## Common Issues
+
+### Field Name Mismatch
+
+**Problem**: Schema expects `name` but form has `productName`
+
+**Solution**: Map fields or update form to match schema:
+
+```typescript
+const data = {
+  name: formData.productName
+  // ... other mappings
+};
+```
+
+### Type Mismatch
+
+**Problem**: Form sends string but schema expects number
+
+**Solution**: Use proper input components:
+
+```typescript
+<NumberInput {...form.getInputProps('price')} />
+```
+
+### Missing Required Fields
+
+**Problem**: Schema requires fields not in form
+
+**Solution**: Use `pick()` to select only needed fields:
+
+```typescript
+const formSchema = pickSchemaFields(schema, ["name", "slug"]);
+```
+
+### Relationship Errors
+
+**Problem**: Trying to set relations directly
+
+**Solution**: Use Prisma's connect/disconnect syntax:
+
+```typescript
+{
+  brand: {
+    connect: {
+      id: brandId;
+    }
+  }
+}
+```

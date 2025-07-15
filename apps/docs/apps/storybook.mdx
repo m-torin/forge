@@ -1,0 +1,848 @@
+---
+title: "Storybook App"
+description:
+  "Component development and documentation with Storybook for design system and
+  UI components"
+icon: "book-open"
+---
+
+# Storybook App
+
+Component development and documentation application built with Storybook,
+providing an isolated development environment for building, testing, and
+documenting UI components for the Forge platform.
+
+## Overview
+
+The Storybook app serves as the central hub for component development, testing,
+and documentation, enabling developers to build UI components in isolation and
+create comprehensive component libraries.
+
+<CardGroup cols={2}>
+  <Card title="Component Library" icon="components">
+    Comprehensive collection of reusable UI components with live examples
+  </Card>
+  <Card title="Interactive Documentation" icon="book-open">
+    Auto-generated documentation with controls and code examples
+  </Card>
+  <Card title="Visual Testing" icon="eye">
+    Visual regression testing and cross-browser compatibility checks
+  </Card>
+  <Card title="Design Tokens" icon="palette">
+    Integration with design system tokens and theme customization
+  </Card>
+</CardGroup>
+
+## Features
+
+- **Component Isolation**: Develop components independently from applications
+- **Interactive Controls**: Real-time component prop manipulation and testing
+- **Visual Testing**: Automated visual regression testing with Chromatic
+- **Accessibility Testing**: Built-in a11y testing and compliance checking
+- **Design System Integration**: Full integration with Mantine UI and design
+  tokens
+- **Auto-Documentation**: Automatic prop documentation from TypeScript
+  definitions
+- **Multi-Theme Support**: Dark/light theme testing and custom theme variants
+- **Cross-Browser Testing**: Component compatibility across different browsers
+
+## Technology Stack
+
+- **Framework**: Storybook 8 with React 19 support
+- **UI Library**: Mantine UI v8 with custom theme integration
+- **Testing**: Chromatic for visual testing, Jest for unit testing
+- **Documentation**: Auto-generated from TypeScript and JSDoc comments
+- **Build System**: Vite for fast development and building
+- **Deployment**: Vercel with automatic Storybook deployment
+
+## Development Environment
+
+<Steps>
+  <Step title="Start Storybook Server">
+    ```bash
+    # Start Storybook development server
+    cd apps/storybook
+    pnpm dev
+    
+    # Access at http://localhost:3700
+    ```
+  </Step>
+
+<Step title="Create New Story">
+  ```bash # Generate component story pnpm generate-story ComponentName # Or
+  create manually touch src/stories/ComponentName.stories.tsx ```
+</Step>
+
+  <Step title="Build and Deploy">
+    ```bash
+    # Build static Storybook
+    pnpm build-storybook
+    
+    # Deploy to Chromatic
+    pnpm chromatic
+    ```
+  </Step>
+</Steps>
+
+## Component Stories
+
+### Story Structure
+
+<Tabs>
+  <Tab title="Basic Story">
+    ```typescript
+    // src/stories/Button.stories.tsx
+    import type { Meta, StoryObj } from '@storybook/react';
+    import { Button } from '@mantine/core';
+    
+    const meta: Meta<typeof Button> = {
+      title: 'Components/Button',
+      component: Button,
+      parameters: {
+        layout: 'centered',
+        docs: {
+          description: {
+            component: 'A flexible button component built on Mantine UI.',
+          },
+        },
+      },
+      tags: ['autodocs'],
+      argTypes: {
+        variant: {
+          control: 'select',
+          options: ['filled', 'light', 'outline', 'subtle', 'default'],
+        },
+        size: {
+          control: 'select',
+          options: ['xs', 'sm', 'md', 'lg', 'xl'],
+        },
+        color: {
+          control: 'color',
+        },
+      },
+    };
+    
+    export default meta;
+    type Story = StoryObj<typeof meta>;
+    
+    export const Default: Story = {
+      args: {
+        children: 'Button',
+        variant: 'filled',
+        size: 'md',
+      },
+    };
+    
+    export const Variants: Story = {
+      render: () => (
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <Button variant="filled">Filled</Button>
+          <Button variant="light">Light</Button>
+          <Button variant="outline">Outline</Button>
+          <Button variant="subtle">Subtle</Button>
+          <Button variant="default">Default</Button>
+        </div>
+      ),
+    };
+    ```
+  </Tab>
+  
+  <Tab title="Form Components">
+    ```typescript
+    // src/stories/TextInput.stories.tsx
+    import type { Meta, StoryObj } from '@storybook/react';
+    import { TextInput } from '@mantine/core';
+    import { IconUser, IconLock } from '@tabler/icons-react';
+    
+    const meta: Meta<typeof TextInput> = {
+      title: 'Forms/TextInput',
+      component: TextInput,
+      parameters: {
+        layout: 'centered',
+      },
+      tags: ['autodocs'],
+    };
+    
+    export default meta;
+    type Story = StoryObj<typeof meta>;
+    
+    export const Default: Story = {
+      args: {
+        label: 'Username',
+        placeholder: 'Enter your username',
+      },
+    };
+    
+    export const WithIcon: Story = {
+      args: {
+        label: 'Username',
+        placeholder: 'Enter your username',
+        leftSection: <IconUser size={16} />,
+      },
+    };
+    
+    export const Password: Story = {
+      args: {
+        label: 'Password',
+        placeholder: 'Enter your password',
+        type: 'password',
+        leftSection: <IconLock size={16} />,
+      },
+    };
+    
+    export const WithError: Story = {
+      args: {
+        label: 'Email',
+        placeholder: 'Enter your email',
+        error: 'Please enter a valid email address',
+        value: 'invalid-email',
+      },
+    };
+    ```
+  </Tab>
+  
+  <Tab title="Complex Components">
+    ```typescript
+    // src/stories/ProductCard.stories.tsx
+    import type { Meta, StoryObj } from '@storybook/react';
+    import { ProductCard } from '@repo/design-system';
+    
+    const meta: Meta<typeof ProductCard> = {
+      title: 'E-commerce/ProductCard',
+      component: ProductCard,
+      parameters: {
+        layout: 'centered',
+        backgrounds: {
+          default: 'light',
+          values: [
+            { name: 'light', value: '#ffffff' },
+            { name: 'dark', value: '#1a1b1e' },
+          ],
+        },
+      },
+      tags: ['autodocs'],
+    };
+    
+    export default meta;
+    type Story = StoryObj<typeof meta>;
+    
+    const mockProduct = {
+      id: '1',
+      title: 'iPhone 15 Pro',
+      description: 'The most advanced iPhone yet with titanium design',
+      price: 999,
+      currency: 'USD',
+      images: [
+        'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400',
+        'https://images.unsplash.com/photo-1591337676887-a217a6970a8a?w=400',
+      ],
+      brand: 'Apple',
+      category: 'Electronics',
+      rating: 4.8,
+      reviewCount: 1247,
+      inStock: true,
+    };
+    
+    export const Default: Story = {
+      args: {
+        product: mockProduct,
+      },
+    };
+    
+    export const OutOfStock: Story = {
+      args: {
+        product: {
+          ...mockProduct,
+          inStock: false,
+        },
+      },
+    };
+    
+    export const OnSale: Story = {
+      args: {
+        product: {
+          ...mockProduct,
+          originalPrice: 1199,
+          salePrice: 999,
+          onSale: true,
+        },
+      },
+    };
+    
+    export const Loading: Story = {
+      args: {
+        product: mockProduct,
+        loading: true,
+      },
+    };
+    ```
+  </Tab>
+</Tabs>
+
+### Design System Integration
+
+<CodeGroup>
+```typescript Theme Provider
+// .storybook/preview.tsx
+import type { Preview } from '@storybook/react';
+import { MantineProvider } from '@mantine/core';
+import { theme } from '@repo/design-system';
+
+const preview: Preview = { parameters: { actions: { argTypesRegex: '^on[A-Z].\*'
+}, controls: { matchers: { color: /(background|color)$/i,
+        date: /Date$/,
+}, }, backgrounds: { default: 'light', values: [ { name: 'light', value:
+'#ffffff' }, { name: 'dark', value: '#1a1b1e' }, ], }, }, decorators: [ (Story)
+=> ( <MantineProvider theme={theme}> <Story /> </MantineProvider> ), ], };
+
+export default preview;
+```
+
+```typescript Design Tokens Story
+// src/stories/DesignTokens.stories.tsx
+import type { Meta, StoryObj } from '@storybook/react';
+import { Box, Group, Text, Stack } from '@mantine/core';
+import { theme } from '@repo/design-system';
+
+const meta: Meta = {
+  title: 'Design System/Tokens',
+  parameters: {
+    layout: 'padded',
+    docs: {
+      description: {
+        component: 'Design tokens used throughout the Forge platform.',
+      },
+    },
+  },
+};
+
+export default meta;
+
+export const Colors: StoryObj = {
+  render: () => (
+    <Stack>
+      <Text size="xl" fw={600}>Color Palette</Text>
+      {Object.entries(theme.colors).map(([colorName, shades]) => (
+        <div key={colorName}>
+          <Text size="lg" fw={500} mb="xs">{colorName}</Text>
+          <Group>
+            {shades.map((color, index) => (
+              <Box
+                key={index}
+                w={80}
+                h={80}
+                style={{
+                  backgroundColor: color,
+                  borderRadius: 8,
+                  border: '1px solid #e0e0e0',
+                }}
+              >
+                <Text size="xs" c="white" p="xs">
+                  {index}
+                </Text>
+              </Box>
+            ))}
+          </Group>
+        </div>
+      ))}
+    </Stack>
+  ),
+};
+
+export const Typography: StoryObj = {
+  render: () => (
+    <Stack>
+      <Text size="xl" fw={600}>Typography Scale</Text>
+      {['xs', 'sm', 'md', 'lg', 'xl'].map((size) => (
+        <Text key={size} size={size}>
+          Text size: {size} - The quick brown fox jumps over the lazy dog
+        </Text>
+      ))}
+    </Stack>
+  ),
+};
+```
+
+</CodeGroup>
+
+## Testing and Quality Assurance
+
+### Visual Testing
+
+<AccordionGroup>
+  <Accordion title="Chromatic Integration" icon="camera">
+    ```typescript
+    // .storybook/main.ts
+    import type { StorybookConfig } from '@storybook/react-vite';
+    
+    const config: StorybookConfig = {
+      stories: ['../src/stories/**/*.stories.@(js|jsx|ts|tsx|mdx)'],
+      addons: [
+        '@storybook/addon-links',
+        '@storybook/addon-essentials',
+        '@storybook/addon-interactions',
+        '@storybook/addon-a11y',
+        '@chromatic-com/storybook',
+      ],
+      framework: {
+        name: '@storybook/react-vite',
+        options: {},
+      },
+      typescript: {
+        check: false,
+        reactDocgen: 'react-docgen-typescript',
+        reactDocgenTypescriptOptions: {
+          shouldExtractLiteralValuesFromEnum: true,
+          propFilter: (prop) => (prop.parent ? !/node_modules/.test(prop.parent.fileName) : true),
+        },
+      },
+    };
+    
+    export default config;
+    ```
+    
+    ```bash
+    # Run visual regression tests
+    pnpm chromatic --project-token=<PROJECT_TOKEN>
+    
+    # Skip unchanged stories
+    pnpm chromatic --skip-unchanged
+    
+    # Auto-accept changes
+    pnpm chromatic --auto-accept-changes
+    ```
+  </Accordion>
+  
+  <Accordion title="Accessibility Testing" icon="universal-access">
+    ```typescript
+    // Accessibility story example
+    export const AccessibilityDemo: Story = {
+      parameters: {
+        a11y: {
+          config: {
+            rules: [
+              {
+                id: 'color-contrast',
+                enabled: true,
+              },
+              {
+                id: 'focus-trap',
+                enabled: true,
+              },
+            ],
+          },
+        },
+      },
+      render: () => (
+        <div>
+          <Button aria-label="Save document">Save</Button>
+          <TextInput
+            label="Email"
+            required
+            aria-describedby="email-error"
+          />
+          <Text id="email-error" size="sm" c="red">
+            Please enter a valid email address
+          </Text>
+        </div>
+      ),
+    };
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Component Testing
+
+<Tabs>
+  <Tab title="Interaction Testing">
+    ```typescript
+    // src/stories/Button.stories.tsx with interactions
+    import { expect, userEvent, within } from '@storybook/test';
+    
+    export const ButtonClick: Story = {
+      args: {
+        children: 'Click me',
+        onClick: () => alert('Button clicked!'),
+      },
+      play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        const button = canvas.getByRole('button');
+        
+        await expect(button).toBeInTheDocument();
+        await userEvent.click(button);
+      },
+    };
+    ```
+  </Tab>
+  
+  <Tab title="Form Testing">
+    ```typescript
+    // Form interaction testing
+    export const FormSubmission: Story = {
+      render: () => {
+        const [value, setValue] = useState('');
+        const [submitted, setSubmitted] = useState(false);
+        
+        return (
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            setSubmitted(true);
+          }}>
+            <TextInput
+              label="Name"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              data-testid="name-input"
+            />
+            <Button type="submit" mt="md" data-testid="submit-button">
+              Submit
+            </Button>
+            {submitted && (
+              <Text c="green" mt="sm" data-testid="success-message">
+                Form submitted successfully!
+              </Text>
+            )}
+          </form>
+        );
+      },
+      play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        
+        const input = canvas.getByTestId('name-input');
+        const button = canvas.getByTestId('submit-button');
+        
+        await userEvent.type(input, 'John Doe');
+        await userEvent.click(button);
+        
+        await expect(canvas.getByTestId('success-message')).toBeInTheDocument();
+      },
+    };
+    ```
+  </Tab>
+</Tabs>
+
+## Documentation and Collaboration
+
+### Auto-Generated Documentation
+
+<CodeGroup>
+```typescript Component Documentation
+// Enhanced component with JSDoc
+interface ButtonProps {
+  /** Button content */
+  children: React.ReactNode;
+  /** Button variant style */
+  variant?: 'filled' | 'light' | 'outline' | 'subtle' | 'default';
+  /** Button size */
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  /** Button color from theme */
+  color?: string;
+  /** Disabled state */
+  disabled?: boolean;
+  /** Loading state with spinner */
+  loading?: boolean;
+  /** Click handler */
+  onClick?: () => void;
+}
+
+// A flexible button component built on Mantine UI export function Button({
+children, variant = 'filled', size = 'md', ...props }: ButtonProps) { return (
+
+<MantineButton variant={variant} size={size} {...props}>
+  {" "}
+  {children}
+</MantineButton>
+); }
+
+```
+
+```
+
+```
+
+```
+
+````
+
+```mdx Custom Documentation
+{/* src/stories/Button.mdx */} import { Meta, Story, Canvas, Controls } from '@storybook/blocks';
+import \* as ButtonStories from './Button.stories';
+
+<Meta of={ButtonStories} />
+
+# Button Component
+
+The Button component is a fundamental UI element used throughout the Forge platform.
+
+## Usage
+
+Buttons are used to trigger actions, navigate between pages, or submit forms.
+
+<Canvas of={ButtonStories.Default} />
+
+## Variants
+
+Different button variants for different use cases:
+
+<Canvas of={ButtonStories.Variants} />
+
+## Best Practices
+
+- Use primary buttons for main actions
+- Use secondary buttons for alternative actions
+- Always provide meaningful button text
+- Consider loading and disabled states
+
+## API Reference
+
+<Controls of={ButtonStories.Default} />
+````
+
+</CodeGroup>
+
+### Design System Documentation
+
+<AccordionGroup>
+  <Accordion title="Component Guidelines" icon="book">
+    ```typescript
+    // Component usage guidelines story
+    export const Guidelines: Story = {
+      parameters: {
+        docs: {
+          page: () => (
+            <>
+              <h1>Button Guidelines</h1>
+              
+              <h2>When to Use</h2>
+              <ul>
+                <li>Primary actions (submit, save, continue)</li>
+                <li>Navigation between steps</li>
+                <li>Triggering modal dialogs</li>
+              </ul>
+              
+              <h2>When Not to Use</h2>
+              <ul>
+                <li>Navigation between pages (use Link instead)</li>
+                <li>Non-action text (use Text instead)</li>
+              </ul>
+              
+              <h2>Accessibility</h2>
+              <ul>
+                <li>Always provide descriptive button text</li>
+                <li>Use aria-label for icon-only buttons</li>
+                <li>Ensure sufficient color contrast</li>
+              </ul>
+            </>
+          ),
+        },
+      },
+    };
+    ```
+  </Accordion>
+  
+  <Accordion title="Brand Guidelines" icon="palette">
+    ```typescript
+    export const BrandGuidelines: Story = {
+      render: () => (
+        <Stack>
+          <Title order={2}>Brand Guidelines</Title>
+          
+          <Card>
+            <Title order={3}>Primary Colors</Title>
+            <Text>Use primary blue for main actions and brand elements.</Text>
+            <Group>
+              <Box w={50} h={50} bg="blue.6" style={{ borderRadius: 8 }} />
+              <Text>#228BE6</Text>
+            </Group>
+          </Card>
+          
+          <Card>
+            <Title order={3}>Typography</Title>
+            <Text>Use consistent typography scale and weights.</Text>
+            <Stack spacing="xs">
+              <Text size="xl" fw={700}>Heading Large</Text>
+              <Text size="lg" fw={600}>Heading Medium</Text>
+              <Text size="md" fw={500}>Heading Small</Text>
+              <Text size="md">Body Text</Text>
+              <Text size="sm" c="dimmed">Supporting Text</Text>
+            </Stack>
+          </Card>
+        </Stack>
+      ),
+    };
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Deployment and CI/CD
+
+### Automated Deployment
+
+<Steps>
+  <Step title="Build Configuration">
+    ```javascript
+    // .storybook/main.ts
+    const config: StorybookConfig = {
+      // ... other config
+      staticDirs: ['../public'],
+      managerHead: (head) => `
+        ${head}
+        <link rel="icon" href="/favicon.ico" />
+        <meta name="description" content="Forge Platform Component Library" />
+      `,
+    };
+    ```
+  </Step>
+  
+  <Step title="CI/CD Pipeline">
+    ```yaml
+    # .github/workflows/storybook.yml
+    name: Deploy Storybook
+    
+    on:
+      push:
+        branches: [main]
+        paths: ['apps/storybook/**', 'packages/design-system/**']
+    
+    jobs:
+      deploy-storybook:
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v4
+          - uses: actions/setup-node@v4
+            with:
+              node-version: '20'
+              cache: 'pnpm'
+          
+          - run: pnpm install
+          - run: pnpm --filter storybook build-storybook
+          
+          # Deploy to Vercel
+          - uses: vercel/action@v1
+            with:
+              vercel-token: ${{ secrets.VERCEL_TOKEN }}
+              vercel-project-id: ${{ secrets.STORYBOOK_PROJECT_ID }}
+              vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          
+          # Visual testing with Chromatic
+          - run: pnpm --filter storybook chromatic
+            env:
+              CHROMATIC_PROJECT_TOKEN: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+    ```
+  </Step>
+  
+  <Step title="Performance Monitoring">
+    ```typescript
+    // Monitor Storybook build performance
+    export function trackStorybook() {
+      analytics.track('Storybook Build', {
+        stories: storyCount,
+        buildTime: buildDuration,
+        bundleSize: bundleSize,
+      });
+    }
+    ```
+  </Step>
+</Steps>
+
+## Best Practices
+
+<Warning>
+  **Storybook Development Guidelines:** - Keep stories focused and isolated to
+  test specific component states - Use realistic data in stories to match
+  production scenarios - Write comprehensive accessibility tests for all
+  interactive components - Maintain consistent story naming and organization
+  conventions - Document component usage guidelines and design principles
+</Warning>
+
+### Recommended Patterns
+
+1. **Story Organization**
+   - Group related components in logical folders
+   - Use consistent naming conventions
+   - Provide comprehensive component coverage
+   - Include edge cases and error states
+
+2. **Testing Strategy**
+   - Implement visual regression testing
+   - Test component interactions thoroughly
+   - Validate accessibility compliance
+   - Monitor performance metrics
+
+3. **Documentation Quality**
+   - Write clear component descriptions
+   - Provide usage examples and guidelines
+   - Document design decisions and patterns
+   - Keep documentation synchronized with code
+
+4. **Collaboration Workflow**
+   - Review stories as part of code review
+   - Share Storybook links for design feedback
+   - Use Chromatic for visual approvals
+   - Maintain design system consistency
+
+## Story Organization
+
+<Note>
+**Stories have been moved to live next to their components in the design-system package.**
+
+Stories are now co-located with their components for better organization.
+
+</Note>
+
+### Component Locations
+
+Stories are organized in the following structure:
+
+#### Ciseco E-commerce Stories
+
+Stories are located in `/packages/design-system/ciseco/components/[component]/`
+
+- E-commerce focused components for online stores
+- Product cards, shopping carts, checkout flows
+- E-commerce specific headers, heroes, and layouts
+- Built with Tailwind CSS and e-commerce best practices
+
+#### Algolia Search Stories
+
+Stories are located in `/packages/design-system/algolia/components/[component]/`
+
+- Search components powered by Algolia
+- Search boxes, results, autocomplete, and providers
+- E-commerce search examples
+- Documentation search patterns
+
+### Story Categories
+
+Stories maintain their hierarchical organization:
+
+- `ciseco/ProductCard` - E-commerce product card
+- `algolia/SearchBox` - Search input component
+
+### Component Import Examples
+
+<CodeGroup>
+```typescript Ciseco Components
+// Ciseco components
+import { ProductCard, Header } from '@repo/design-system/ciseco';
+```
+
+```typescript Algolia Components
+// Algolia components
+import { SearchBox, SearchProvider } from "@repo/design-system/algolia";
+```
+
+</CodeGroup>
+
+### Features
+
+- **Interactive Controls** - Adjust component props in real-time
+- **Responsive Design** - Test components across different screen sizes
+- **Dark Mode Support** - Toggle between light and dark themes
+- **Accessibility** - Components built with a11y best practices
+- **Documentation** - Auto-generated docs from TypeScript types
+
+The Storybook app provides a comprehensive component development and
+documentation environment that enhances design system quality, improves
+developer experience, and facilitates collaboration between design and
+development teams.

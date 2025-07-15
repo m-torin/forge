@@ -1,71 +1,91 @@
 ---
-title: Introduction
-description: 'Welcome to the home of your new documentation'
+title: "Forge Documentation"
+description:
+  "Modern, production-ready monorepo template for building scalable applications"
 ---
 
-<img
-  className="block dark:hidden"
-  src="/images/hero-light.svg"
-  alt="Hero Light"
-/>
-<img
-  className="hidden dark:block"
-  src="/images/hero-dark.svg"
-  alt="Hero Dark"
-/>
+# Forge Documentation
 
-## Setting up
+Welcome to the Forge monorepo documentation. Forge is a modern, production-ready
+monorepo template for building scalable applications.
 
-The first step to world-class documentation is setting up your editing environments.
+<Note>
+  **Forge** provides a complete foundation for building Next.js applications
+  with TypeScript, authentication, payments, and more.
+</Note>
+
+<div style={{ textAlign: "center", margin: "2rem 0" }}>
+  [Get Started](/repo/quickstart) · [Architecture](/repo/architecture/overview)
+  · [GitHub Repository](https://github.com/your-org/forge)
+</div>
+
+## Key Features
 
 <CardGroup cols={2}>
-  <Card
-    title="Edit Your Docs"
-    icon="pen-to-square"
-    href="https://mintlify.com/docs/quickstart"
-  >
-    Get your docs set up locally for easy development
+  <Card title="Next.js 15" icon="react" href="/repo/quickstart">
+    Built on the latest Next.js with App Router and React 19
   </Card>
   <Card
-    title="Preview Changes"
-    icon="image"
-    href="https://mintlify.com/docs/development"
+    title="Monorepo Architecture"
+    icon="folder-tree"
+    href="/repo/architecture/overview"
   >
-    Preview your changes before you push to make sure they're perfect
+    Turborepo-powered workspace with shared packages
+  </Card>
+  <Card
+    title="Authentication & Security"
+    icon="shield"
+    href="/packages/auth/overview"
+  >
+    Better Auth with organizations and API keys
+  </Card>
+  <Card title="Payments & Billing" icon="credit-card" href="/packages/payments">
+    Stripe integration for subscriptions and billing
+  </Card>
+  <Card title="Testing & QA" icon="flask" href="/packages/qa/overview">
+    Enterprise testing framework with Vitest and Playwright
+  </Card>
+  <Card
+    title="Database & Storage"
+    icon="database"
+    href="/packages/database/overview"
+  >
+    PostgreSQL with Prisma ORM, Redis, and file storage
   </Card>
 </CardGroup>
 
-## Make it yours
+## Quick Setup
 
-Update your docs to your brand and add valuable content for the best user conversion.
+```bash
+# Clone the repository
+git clone https://github.com/your-org/forge.git
 
-<CardGroup cols={2}>
-  <Card
-    title="Customize Style"
-    icon="palette"
-    href="https://mintlify.com/docs/settings/global"
-  >
-    Customize your docs to your company's colors and brands
-  </Card>
-  <Card
-    title="Reference APIs"
-    icon="code"
-    href="https://mintlify.com/docs/api-playground/openapi"
-  >
-    Automatically generate endpoints from an OpenAPI spec
-  </Card>
-  <Card
-    title="Add Components"
-    icon="screwdriver-wrench"
-    href="https://mintlify.com/docs/components/accordion"
-  >
-    Build interactive features and designs to guide your users
-  </Card>
-  <Card
-    title="Get Inspiration"
-    icon="stars"
-    href="https://mintlify.com/customers"
-  >
-    Check out our showcase of our favorite documentation
-  </Card>
-</CardGroup>
+# Install dependencies
+pnpm install
+
+# Run development server
+pnpm dev
+```
+
+## What's Included
+
+- **Apps**: Documentation, email preview, storybook, studio
+- **Packages**: Shared UI components, utilities, and configurations
+- **Infrastructure**: Database, authentication, payments, analytics
+- **Developer Experience**: TypeScript, ESLint, Prettier, testing
+
+## Documentation Structure
+
+This documentation provides comprehensive guidance for:
+
+- **[Architecture](/repo/architecture/overview)** - System design and patterns
+- **[Package References](/packages/qa/overview)** - Detailed package
+  documentation
+- **[Application Guides](/apps/storybook)** - App-specific documentation
+- **[Development Guides](/repo/development/overview)** - Development workflows
+  and best practices
+
+<Tip>
+  **New to Forge?** Start with the [Quick Start Guide](/repo/quickstart) to get
+  up and running in minutes.
+</Tip>

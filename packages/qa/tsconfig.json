@@ -1,0 +1,16 @@
+{
+  "extends": "@repo/config/typescript/react-library.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "dist"
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "vitest.config.ts",
+    "vitest.setup.ts",
+    "eslint.config.ts",
+    "index.ts"
+  ],
+  "exclude": ["node_modules", "dist", "src/__tests__", "src/playwright/templates"]
+}

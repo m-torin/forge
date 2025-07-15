@@ -1,0 +1,1469 @@
+---
+title: "Testing Guide"
+description:
+  "Comprehensive testing framework with Vitest, React Testing Library, and
+  database mocking"
+icon: "flask"
+---
+
+# Testing Framework
+
+Comprehensive testing infrastructure using Vitest, React Testing Library, and
+specialized database mocking for reliable, fast test execution across all
+packages and applications.
+
+## Overview
+
+The testing framework provides modular configurations for different
+environments, complete database mocking utilities, and enhanced testing tools
+for React components and Node.js applications.
+
+<CardGroup cols={2}>
+  <Card title="Vitest Framework" icon="test-tube">
+    Fast, modern testing with native TypeScript support
+  </Card>
+  <Card title="Database Mocking" icon="database">
+    Complete mocks for Firestore, Upstash Vector, and Redis
+  </Card>
+  <Card title="React Testing" icon="react">
+    Enhanced render utilities with React Testing Library
+  </Card>
+  <Card title="Environment Support" icon="gear">
+    Configurations for React, Next.js, and Node.js
+  </Card>
+</CardGroup>
+
+## Test Structure
+
+<Warning>
+  **Important**: Test files must be placed in `__tests__` directories at the
+  package/app root level, NOT inside `src/` directories. This is a monorepo-wide
+  standard.
+</Warning>
+
+### Directory Organization
+
+```
+package-or-app/
+├── __tests__/              # Tests at root, NOT in src/
+│   ├── setup.ts           # Test setup file
+│   ├── unit/              # Unit tests
+│   ├── integration/       # Integration tests
+│   └── e2e/              # E2E tests (*.spec.ts)
+├── src/
+│   └── components/
+│       ├── HelloWorld.tsx
+│       └── HelloWorld.test.tsx  # Colocated test (optional)
+├── vitest.config.ts       # Vitest config
+└── playwright.config.ts   # Playwright config (if E2E tests exist)
+```
+
+### File Naming Conventions
+
+- **Unit/Integration Tests**: `*.test.{ts,tsx}` (for Vitest)
+- **E2E Tests**: `*.spec.ts` (for Playwright)
+- **Test Files Location**:
+  - **Preferred**: `__tests__/` directory at package root
+  - **Allowed**: Colocated tests next to components (e.g., `Button.test.tsx`
+    next to `Button.tsx`)
+
+### Test Configuration
+
+All test configurations are provided by the `@repo/qa` package:
+
+```typescript
+// vitest.config.ts
+import { createNextAppConfig } from "@repo/qa/vitest/configs";
+
+export default createNextAppConfig({
+  setupFiles: ["./__tests__/setup.ts"]
+});
+
+// playwright.config.ts
+import { createAppPlaywrightConfig } from "@repo/qa/playwright";
+
+export default createAppPlaywrightConfig({
+  name: "app-name",
+  port: 3000,
+  baseURL: "http://localhost:3000"
+});
+```
+
+## Configuration Builders
+
+The `@repo/qa` package provides specialized configuration builders for different
+environments:
+
+### Available Builders
+
+<Tabs>
+  <Tab title="Next.js Apps">
+    ```typescript
+    // vitest.config.ts
+    import { createNextAppConfig } from "@repo/qa/vitest/configs";
+
+    export default createNextAppConfig({
+      setupFiles: ["./setup.ts"],
+      env: {
+        NEXT_PUBLIC_API_URL: "https://api.test.com"
+      },
+      aliases: {
+        "@custom": "./src/custom"
+      }
+    });
+    ```
+
+    **Features:**
+    - jsdom environment
+    - React plugin
+    - Next.js specific mocks (router, image, link)
+    - Standard Next.js aliases (`@`, `@/app`, `@/components`)
+    - Excludes build directories from coverage
+
+  </Tab>
+  
+  <Tab title="React Packages">
+    ```typescript
+    // vitest.config.ts
+    import { createReactPackageConfig } from "@repo/qa/vitest/configs";
+
+    export default createReactPackageConfig({
+      setupFiles: ["./test-setup.ts"]
+    });
+    ```
+
+    **Features:**
+    - jsdom environment
+    - React plugin
+    - CSS modules support
+    - Comprehensive browser API mocks
+
+  </Tab>
+  
+  <Tab title="Node.js Packages">
+    ```typescript
+    // vitest.config.ts
+    import { createNodePackageConfig } from "@repo/qa/vitest/configs";
+
+    export default createNodePackageConfig({
+      setupFiles: ["./test-setup.ts"]
+    });
+    ```
+
+    **Features:**
+    - Node environment
+    - Common Node.js module mocks
+    - Optimized for server-side testing
+
+  </Tab>
+  
+  <Tab title="Database Packages">
+    ```typescript
+    // vitest.config.ts
+    import { createDatabasePackageConfig } from "@repo/qa/vitest/configs";
+
+    export default createDatabasePackageConfig({
+      setupFiles: ["./test-setup.ts"],
+      env: {
+        DATABASE_URL: "postgresql://test:test@localhost:5432/test"
+      }
+    });
+    ```
+
+    **Features:**
+    - Node environment with extended timeouts
+    - Sequential test execution (singleFork)
+    - Database-specific mocks (Prisma, Redis)
+    - Retry configuration for flaky tests
+
+  </Tab>
+</Tabs>
+
+### Configuration Options
+
+All builders accept the same options interface:
+
+```typescript
+{
+  setupFiles?: string[];        // Additional setup files
+  excludePaths?: string[];      // Additional paths to exclude
+  coverageExclude?: string[];   // Additional coverage exclusions
+  aliases?: Record<string, string>;  // Custom aliases
+  overrides?: UserConfig;       // Vitest config overrides
+  env?: Record<string, string>; // Environment variables
+}
+```
+
+## Centralized Mocks
+
+The `@repo/qa` package includes comprehensive mocks for 90+ npm packages:
+
+### Available Mock Categories
+
+<AccordionGroup>
+  <Accordion title="AI/ML Services" icon="brain">
+    - OpenAI, Anthropic, Cohere - Replicate, HuggingFace - Complete API mocking
+    with response simulation
+  </Accordion>
+
+<Accordion title="Analytics & Tracking" icon="chart-line">
+  - PostHog, Segment, Google Analytics - Vercel Analytics, Mixpanel - Event
+  tracking simulation
+</Accordion>
+
+<Accordion title="Authentication" icon="shield">
+  - NextAuth, Better Auth, Clerk - Supabase Auth, Auth0 - Session and user state
+  mocking
+</Accordion>
+
+<Accordion title="Cloud Services" icon="cloud">
+  - AWS SDK v3, Vercel KV/Blob - Cloudflare Workers, Upstash - Storage and
+  compute service mocks
+</Accordion>
+
+<Accordion title="Communication" icon="envelope">
+  - Twilio, SendGrid, Nodemailer - Resend, PostMark - Email and SMS delivery
+  simulation
+</Accordion>
+
+<Accordion title="Database & Storage" icon="database">
+  - Prisma Client, Firebase - Upstash Redis/Vector, FaunaDB - Query and
+  transaction mocking
+</Accordion>
+
+<Accordion title="Payments" icon="credit-card">
+  - Stripe SDK complete - Payment method and transaction mocking
+</Accordion>
+
+  <Accordion title="UI Libraries" icon="puzzle">
+    - Mantine, Headless UI, Radix UI - Component and hook mocking
+  </Accordion>
+</AccordionGroup>
+
+### Using Mocks
+
+Mocks are automatically loaded when using configuration builders:
+
+```typescript
+// Automatically available in tests
+import { vi } from "vitest";
+
+test("analytics tracking", () => {
+  // PostHog mock is already active
+  posthog.capture("event", { data: "test" });
+
+  // Verify mock calls
+  expect(posthog.capture).toHaveBeenCalledWith("event", { data: "test" });
+});
+```
+
+### Custom App-Specific Mocks
+
+```typescript
+// setup.ts
+import { vi } from "vitest";
+
+// Mock app-specific modules
+vi.mock("@/lib/custom-service", () => ({
+  customService: {
+    doSomething: vi.fn().mockResolvedValue({ success: true })
+  }
+}));
+```
+
+### Absolute Imports in Tests
+
+Tests support absolute imports using the `@/` alias:
+
+```typescript
+// In test files
+import { Button } from "@/components/Button";
+import { userActions } from "@/app/actions/users";
+import { render } from "@repo/qa/vitest/utils/render";
+```
+
+## Data-TestId Standards
+
+### Overview
+
+Data-testid attributes provide stable, maintainable testing selectors that won't
+break when styling or content changes. These standards ensure consistent,
+reliable test selectors across all components.
+
+<CodeGroup>
+```tsx Naming Convention
+// General pattern
+data-testid="[component-name]-[element-type]-[modifier]"
+
+// Examples data-testid="product-card-root" data-testid="add-to-cart-button"
+data-testid="navigation-menu-mobile" data-testid="switch-input-active"
+
+````
+
+```tsx Component Interface
+interface ComponentProps {
+  testId?: string;
+  buttonTestId?: string;
+  badgeTestId?: string;
+  iconTestId?: string;
+}
+
+export function AddToCardButton({
+  testId = 'add-to-cart',
+  buttonTestId = 'add-to-cart-button',
+  badgeTestId = 'add-to-cart-badge',
+  iconTestId = 'add-to-cart-icon',
+  ...props
+}: ComponentProps) {
+  return (
+    <div data-testid={testId}>
+      <Button data-testid={buttonTestId}>
+        <ShoppingBagIcon data-testid={iconTestId} />
+        {count > 0 && <Badge data-testid={badgeTestId}>{count}</Badge>}
+      </Button>
+    </div>
+  );
+}
+````
+
+</CodeGroup>
+
+### Testing Guidelines
+
+<Tabs>
+  <Tab title="Best Practices">
+    **Recommended Patterns:**
+    - Use kebab-case for all data-testid values
+    - Include component context in the prefix
+    - Add state modifiers when relevant (`-active`, `-disabled`)
+    - Provide testId props for flexibility
+    - Test behavior, not implementation details
+
+    **Performance Considerations:**
+    - Use specific testids to reduce DOM traversal
+    - Pre-calculate testids when possible
+    - Keep testid values concise
+
+  </Tab>
+
+  <Tab title="Testing Examples">
+    ```tsx
+    // Good practice - using data-testid
+    test('should add item to cart', () => {
+      render(<AddToCardButton />);
+
+      const button = screen.getByTestId('add-to-cart-button');
+      fireEvent.click(button);
+
+      const badge = screen.getByTestId('add-to-cart-badge');
+      expect(badge).toHaveTextContent('1');
+    });
+
+    // Playwright/Cypress usage
+    await page.getByTestId('add-to-cart-button').click();
+    cy.get('[data-testid="add-to-cart-button"]').click();
+    ```
+
+  </Tab>
+</Tabs>
+
+## Design System Test Coverage
+
+### Comprehensive Test Suite Status
+
+The Mantine Ciseco design system has **100% component coverage** with
+enterprise-grade testing standards:
+
+<CardGroup cols={4}>
+  <Card title="Core UI" icon="cube">
+    12/12 components tested
+  </Card>
+  <Card title="Product" icon="shopping-cart">
+    8/8 e-commerce components
+  </Card>
+  <Card title="Navigation" icon="compass">
+    13/13 menu components
+  </Card>
+  <Card title="Forms & Filters" icon="filter">
+    7/7 search components
+  </Card>
+</CardGroup>
+
+### Testing Patterns Implemented
+
+<Tabs>
+  <Tab title="Core Features">
+    **All Components Include:** - Rendering and props testing - Event handling (click, hover, focus,
+    blur) - State management and callbacks - Custom styling and theming - Responsive design
+    verification - Loading states and error handling
+  </Tab>
+
+<Tab title="Accessibility">
+  **WCAG 2.1 AA Compliant:** - ARIA attributes and roles - Keyboard navigation
+  patterns - Focus management and trapping - Screen reader support - Color
+  contrast verification - Semantic HTML structure
+</Tab>
+
+<Tab title="E-commerce">
+  **E-commerce Workflows:** - Product card interactions - Add to cart
+  functionality - Shopping cart management - Filter and search systems -
+  Wishlist/favorites - Payment integration flows
+</Tab>
+
+  <Tab title="Performance">
+    **Optimization Testing:** - Lazy loading verification - Virtualization for large lists - Memory
+    management - Bundle size impact - Render optimization
+  </Tab>
+</Tabs>
+
+## Quick Start
+
+<Steps>
+  <Step title="Install Testing Package">
+    ```bash
+    # Testing package is already included in the monorepo
+    pnpm install
+    ```
+  </Step>
+
+  <Step title="Configure Vitest">
+    ```typescript
+    // vitest.config.ts
+    import { createNextAppConfig } from '@repo/qa/vitest/configs';
+
+    export default createNextAppConfig({
+      setupFiles: ['./__tests__/setup.ts'],
+    });
+    ```
+
+  </Step>
+
+  <Step title="Setup Test File">
+    ```typescript
+    // __tests__/setup.ts (at package root, not in src/)
+    import '@repo/qa/vitest/setup/next-app';
+
+    // Add package-specific setup
+    process.env.TEST_API_KEY = 'test_key';
+    ```
+
+  </Step>
+
+  <Step title="Create Test">
+    ```typescript
+    // __tests__/components/Button.test.tsx
+    import { render, screen } from '@repo/qa/vitest/utils/render';
+    import { Button } from '@/components/Button';
+
+    describe('Button', () => {
+      it('renders correctly', () => {
+        render(<Button>Click me</Button>);
+        expect(screen.getByText('Click me')).toBeInTheDocument();
+      });
+    });
+    ```
+
+  </Step>
+
+  <Step title="Run Tests">
+    ```bash
+    pnpm test                    # All tests
+    pnpm test -- --watch         # Watch mode
+    pnpm test -- --coverage      # With coverage
+    ```
+  </Step>
+</Steps>
+
+## Configuration Options
+
+### Environment-Specific Configs
+
+<Tabs>
+  <Tab title="React Applications">
+    ```typescript
+    // vitest.config.ts
+    import { createReactPackageConfig } from '@repo/qa/vitest/configs';
+
+    export default createReactPackageConfig({
+      setupFiles: ['./__tests__/setup.ts'],
+      overrides: {
+        test: {
+          coverage: {
+            reporter: ['text', 'json', 'html'],
+            include: ['src/**/*.{ts,tsx}'],
+            exclude: ['src/**/*.d.ts', 'src/**/*.stories.tsx'],
+            thresholds: {
+              branches: 80,
+              functions: 80,
+              lines: 80,
+              statements: 80,
+            },
+          },
+        },
+      },
+    });
+    ```
+
+  </Tab>
+
+  <Tab title="Next.js Applications">
+    ```typescript
+    // vitest.config.ts
+    import { createNextAppConfig } from '@repo/qa/vitest/configs';
+
+    export default createNextAppConfig({
+      setupFiles: ['./__tests__/setup.ts'],
+      overrides: {
+        test: {
+          coverage: {
+            include: ['src/**/*.{ts,tsx}', 'app/**/*.{ts,tsx}'],
+            exclude: [
+              'src/**/*.d.ts',
+              'app/**/layout.tsx',
+              'app/**/loading.tsx',
+              'app/**/not-found.tsx',
+              '__tests__/**',
+            ],
+          },
+        },
+      },
+    });
+    ```
+
+  </Tab>
+
+  <Tab title="Node.js Packages">
+    ```typescript
+    // vitest.config.ts
+    import { createNodePackageConfig } from '@repo/qa/vitest/configs';
+
+    export default createNodePackageConfig({
+      setupFiles: ['./__tests__/setup.ts'],
+      overrides: {
+        test: {
+          environment: 'node',
+          coverage: {
+            include: ['src/**/*.ts'],
+            exclude: ['src/**/*.d.ts', '__tests__/**'],
+          },
+          testTimeout: 10000,
+        },
+      },
+    });
+    ```
+
+  </Tab>
+</Tabs>
+
+### Configuration Options
+
+<AccordionGroup>
+  <Accordion title="Base Config Options" icon="gear">
+    ```typescript
+    interface BaseConfigOptions {
+      rootDir?: string;              // Root directory (default: process.cwd())
+      setupFiles?: string[];         // Setup files to run before tests
+      coverage?: boolean;            // Enable coverage reporting
+      environment?: 'jsdom' | 'node' | 'happy-dom';
+      aliases?: Record<string, string>; // Additional path aliases
+      testTimeout?: number;          // Global test timeout
+      globals?: boolean;             // Enable global test APIs
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="React Config Options" icon="react">
+    ```typescript
+    interface ReactConfigOptions extends BaseConfigOptions {
+      reactOptions?: {
+        // Options to pass to @vitejs/plugin-react
+        include?: string | RegExp | (string | RegExp)[];
+        exclude?: string | RegExp | (string | RegExp)[];
+        babel?: any;
+      };
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Next.js Config Options" icon="next-js">
+    ```typescript
+    interface NextConfigOptions extends ReactConfigOptions {
+      includeAppDir?: boolean;       // Include app directory in aliases
+      nextConfigPath?: string;       // Path to next.config.js
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## React Component Testing
+
+### Enhanced Render Utilities
+
+<CodeGroup>
+```typescript Basic Component Testing
+import { render, screen, userEvent } from '@repo/qa/vitest/utils/render';
+import { ProductCard } from '@/components/ProductCard';
+
+describe('ProductCard', () => { const mockProduct = { id: '1', name: 'Test
+Product', price: 29.99, image: '/test-image.jpg', };
+
+it('displays product information correctly', () => {
+render(<ProductCard product={mockProduct} />);
+
+    expect(screen.getByText('Test Product')).toBeInTheDocument();
+    expect(screen.getByText('$29.99')).toBeInTheDocument();
+    expect(screen.getByAltText('Test Product')).toHaveAttribute('src', '/test-image.jpg');
+
+});
+
+it('handles add to cart interaction', async () => { const onAddToCart = vi.fn();
+const user = userEvent.setup();
+
+    render(
+      <ProductCard
+        product={mockProduct}
+        onAddToCart={onAddToCart}
+        data-testid="product-card"
+      />
+    );
+
+    const addButton = screen.getByRole('button', { name: /add to cart/i });
+    await user.click(addButton);
+
+    expect(onAddToCart).toHaveBeenCalledWith(mockProduct.id);
+
+}); });
+
+````
+
+```typescript Provider Testing
+import { render, screen } from '@repo/qa/vitest/utils/render';
+import { MantineProvider } from '@mantine/core';
+import { ThemeProvider } from '@/providers/ThemeProvider';
+
+// Custom render with providers
+function renderWithProviders(ui: React.ReactElement) {
+  return render(ui, {
+    wrapper: ({ children }) => (
+      <MantineProvider>
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
+      </MantineProvider>
+    ),
+  });
+}
+
+describe('ThemedComponent', () => {
+  it('applies theme correctly', () => {
+    renderWithProviders(<ThemedComponent />);
+
+    const element = screen.getByTestId('themed-element');
+    expect(element).toHaveClass('theme-primary');
+  });
+});
+````
+
+</CodeGroup>
+
+### Form Testing
+
+<Tabs>
+  <Tab title="Mantine Forms">
+    ```typescript
+    import { render, screen, userEvent } from '@repo/qa/utils/render';
+    import { UserForm } from './UserForm';
+
+    describe('UserForm', () => {
+      it('validates email field correctly', async () => {
+        const user = userEvent.setup();
+        const onSubmit = vi.fn();
+
+        render(<UserForm onSubmit={onSubmit} />);
+
+        const emailInput = screen.getByLabelText(/email/i);
+        const submitButton = screen.getByRole('button', { name: /submit/i });
+
+        // Test invalid email
+        await user.type(emailInput, 'invalid-email');
+        await user.click(submitButton);
+
+        expect(screen.getByText(/invalid email/i)).toBeInTheDocument();
+        expect(onSubmit).not.toHaveBeenCalled();
+
+        // Test valid email
+        await user.clear(emailInput);
+        await user.type(emailInput, 'test@example.com');
+        await user.click(submitButton);
+
+        expect(onSubmit).toHaveBeenCalledWith({
+          email: 'test@example.com',
+        });
+      });
+    });
+    ```
+
+  </Tab>
+
+  <Tab title="Server Actions">
+    ```typescript
+    import { render, screen, userEvent } from '@repo/qa/utils/render';
+    import { updateUserAction } from './actions';
+
+    // Mock server action
+    vi.mock('./actions', () => ({
+      updateUserAction: vi.fn(),
+    }));
+
+    describe('UserEditForm', () => {
+      it('calls server action on form submission', async () => {
+        const user = userEvent.setup();
+
+        render(<UserEditForm userId="123" />);
+
+        await user.type(screen.getByLabelText(/name/i), 'John Doe');
+        await user.click(screen.getByRole('button', { name: /save/i }));
+
+        expect(updateUserAction).toHaveBeenCalledWith(
+          expect.objectContaining({
+            userId: '123',
+            name: 'John Doe',
+          })
+        );
+      });
+    });
+    ```
+
+  </Tab>
+</Tabs>
+
+## Database Testing
+
+### Database Test Helpers
+
+<CodeGroup>
+```typescript Database Testing
+import {
+  DatabaseTestHelper,
+  testDatabaseOperations,
+  createUpstashRedisAdapter,
+} from '@repo/qa';
+
+describe('User Database Operations', () => { let helper: DatabaseTestHelper;
+
+beforeEach(async () => { const adapter = createUpstashRedisAdapter(); helper =
+new DatabaseTestHelper(adapter, { provider: 'upstash-redis' }); await
+helper.setup(); });
+
+afterEach(async () => { await helper.cleanup(); });
+
+it('performs basic CRUD operations', async () => { const results = await
+testDatabaseOperations(helper, 'users');
+
+    expect(results.created).toHaveProperty('id');
+    expect(results.createdWithoutId).toMatchObject(results.testDataWithoutId);
+    expect(results.found).toBeTruthy();
+    expect(results.foundWithoutId).toMatchObject(results.testDataWithoutId);
+    expect(results.updated).toMatchObject({ ...results.testDataWithoutId, ...results.updateData });
+    expect(results.many).toHaveLength(1);
+    expect(results.manyWithoutId).toMatchObject({ ...results.testDataWithoutId, ...results.updateData });
+    expect(results.count).toBe(1);
+    expect(results.deleted).toMatchObject({ ...results.testDataWithoutId, ...results.updateData });
+    expect(results.notFound).toBeNull();
+    expect(results.finalCount).toBe(0);
+
+});
+
+it('handles user creation and retrieval', async () => { const userId = await
+helper.getAdapter().create('users', { email: 'test@example.com', name: 'Test
+User', });
+
+    const user = await helper.findItem('users', userId.id);
+    expect(user).toMatchObject({
+      email: 'test@example.com',
+      name: 'Test User',
+    });
+
+}); });
+
+````
+
+```typescript Vector Database Testing
+import {
+  VectorDatabaseTestHelper,
+  createVectorAdapter
+} from '@repo/qa';
+
+describe('Vector Search Operations', () => {
+  let helper: VectorDatabaseTestHelper;
+
+  beforeEach(async () => {
+    const adapter = createVectorAdapter();
+    helper = new VectorDatabaseTestHelper(adapter);
+    await helper.setup();
+  });
+
+  afterEach(async () => {
+    await helper.cleanup();
+  });
+
+  it('performs similarity search', async () => {
+    // Insert test vectors
+    await helper.insertVector('doc1', [0.1, 0.2, 0.3], { content: 'Test document 1' });
+    await helper.insertVector('doc2', [0.2, 0.3, 0.4], { content: 'Test document 2' });
+
+    // Search for similar vectors
+    const results = await helper.similaritySearch([0.15, 0.25, 0.35], {
+      topK: 2,
+      threshold: 0.8,
+    });
+
+    expect(results).toHaveLength(2);
+    expect(results[0].metadata.content).toBe('Test document 1');
+  });
+});
+````
+
+</CodeGroup>
+
+### Database Mock Configurations
+
+<Tabs>
+  <Tab title="Firestore Mock">
+    ```typescript
+    import { createFirestoreAdapter } from '@repo/qa';
+
+    const firestoreAdapter = createFirestoreAdapter({
+      collections: {
+        users: {
+          schema: {
+            email: 'string',
+            name: 'string',
+            createdAt: 'timestamp',
+          },
+          indexes: ['email'],
+        },
+        products: {
+          schema: {
+            name: 'string',
+            price: 'number',
+            category: 'string',
+          },
+          indexes: ['category', 'price'],
+        },
+      },
+    });
+
+    // Supports queries, transactions, batch operations
+    const users = await firestoreAdapter
+      .collection('users')
+      .where('email', '==', 'test@example.com')
+      .get();
+    ```
+
+  </Tab>
+
+  <Tab title="Redis Mock">
+    ```typescript
+    import { createUpstashRedisAdapter } from '@repo/qa';
+
+    const redisAdapter = createUpstashRedisAdapter({
+      // Optional: persist data between tests
+      persist: false,
+
+      // Optional: initial data
+      initialData: {
+        'user:1': JSON.stringify({ name: 'Test User' }),
+        'session:abc': 'session-data',
+      },
+    });
+
+    // Supports all Redis operations
+    await redisAdapter.set('key', 'value');
+    await redisAdapter.hset('hash', { field: 'value' });
+    await redisAdapter.lpush('list', 'item1', 'item2');
+    ```
+
+  </Tab>
+
+  <Tab title="Vector Mock">
+    ```typescript
+    import { createVectorAdapter } from '@repo/qa';
+
+    const vectorAdapter = createVectorAdapter({
+      dimensions: 384, // Vector dimensions
+      similarity: 'cosine', // cosine | euclidean | dotproduct
+
+      // Optional: initial vectors
+      initialVectors: [
+        {
+          id: 'doc1',
+          vector: [0.1, 0.2, 0.3],
+          metadata: { title: 'Document 1' },
+        },
+      ],
+    });
+
+    // Supports vector operations
+    await vectorAdapter.upsert([{
+      id: 'doc2',
+      vector: [0.4, 0.5, 0.6],
+      metadata: { title: 'Document 2' },
+    }]);
+    ```
+
+  </Tab>
+</Tabs>
+
+## API Testing
+
+### Server Action Testing
+
+<CodeGroup>
+```typescript Server Action Testing
+import { createMocks } from 'node-mocks-http';
+import { updateUserAction } from './actions';
+
+describe('updateUserAction', () => { it('updates user successfully', async () =>
+{ const formData = new FormData(); formData.append('userId', '123');
+formData.append('name', 'Updated Name'); formData.append('email',
+'updated@example.com');
+
+    const result = await updateUserAction(formData);
+
+    expect(result).toStrictEqual({
+      success: true,
+      user: {
+        id: '123',
+        name: 'Updated Name',
+        email: 'updated@example.com',
+      },
+    });
+
+});
+
+it('handles validation errors', async () => { const formData = new FormData();
+formData.append('userId', '123'); formData.append('email', 'invalid-email');
+
+    const result = await updateUserAction(formData);
+
+    expect(result).toStrictEqual({
+      success: false,
+      errors: {
+        email: 'Invalid email format',
+      },
+    });
+
+}); });
+
+````
+
+```typescript API Route Testing
+import { createMocks } from 'node-mocks-http';
+import handler from './api/users/[id]/route';
+
+describe('/api/users/[id]', () => {
+  it('GET returns user data', async () => {
+    const { req, res } = createMocks({
+      method: 'GET',
+      query: { id: '123' },
+    });
+
+    await handler(req, res);
+
+    expect(res._getStatusCode()).toBe(200);
+    expect(JSON.parse(res._getData())).toStrictEqual({
+      id: '123',
+      name: 'Test User',
+      email: 'test@example.com',
+    });
+  });
+
+  it('PUT updates user data', async () => {
+    const { req, res } = createMocks({
+      method: 'PUT',
+      query: { id: '123' },
+      body: {
+        name: 'Updated Name',
+        email: 'updated@example.com',
+      },
+    });
+
+    await handler(req, res);
+
+    expect(res._getStatusCode()).toBe(200);
+    expect(JSON.parse(res._getData())).toMatchObject({
+      name: 'Updated Name',
+      email: 'updated@example.com',
+    });
+  });
+});
+````
+
+</CodeGroup>
+
+### HTTP Mocking with MSW
+
+<Tabs>
+  <Tab title="Setup MSW">
+    ```typescript
+    // test/setup-msw.ts
+    import { setupServer } from 'msw/node';
+    import { http, HttpResponse } from 'msw';
+
+    export const server = setupServer(
+      // Mock API endpoints
+      http.get('/api/users', () => {
+        return HttpResponse.json([
+          { id: '1', name: 'User 1', email: 'user1@example.com' },
+          { id: '2', name: 'User 2', email: 'user2@example.com' },
+        ]);
+      }),
+
+      http.post('/api/users', async ({ request }) => {
+        const user = await request.json();
+        return HttpResponse.json({
+          id: '3',
+          ...user,
+          createdAt: new Date().toISOString(),
+        }, { status: 201 });
+      }),
+
+      http.get('/api/users/:id', ({ params }) => {
+        const { id } = params;
+        return HttpResponse.json({
+          id,
+          name: `User ${id}`,
+          email: `user${id}@example.com`,
+        });
+      }),
+    );
+
+    // Setup and teardown
+    beforeAll(() => server.listen());
+    afterEach(() => server.resetHandlers());
+    afterAll(() => server.close());
+    ```
+
+  </Tab>
+
+  <Tab title="Dynamic Mocking">
+    ```typescript
+    import { server } from './setup-msw';
+    import { http, HttpResponse } from 'msw';
+
+    describe('API Error Handling', () => {
+      it('handles 404 errors gracefully', async () => {
+        // Override handler for this specific test
+        server.use(
+          http.get('/api/users/:id', () => {
+            return new HttpResponse(null, { status: 404 });
+          })
+        );
+
+        const response = await fetch('/api/users/999');
+        expect(response.status).toBe(404);
+      });
+
+      it('handles network errors', async () => {
+        server.use(
+          http.get('/api/users', () => {
+            return HttpResponse.error();
+          })
+        );
+
+        await expect(fetch('/api/users')).rejects.toThrow();
+      });
+    });
+    ```
+
+  </Tab>
+</Tabs>
+
+## Mocking and Utilities
+
+### Setup Utilities
+
+<AccordionGroup>
+  <Accordion title="Next.js Mocks" icon="next-js">
+    ```typescript
+    import { setupNextMocks } from '@repo/qa/mocks/next';
+
+    // Automatically mocks:
+    // - next/router
+    // - next/navigation
+    // - next/image
+    // - next/link
+    // - next/headers
+    setupNextMocks({
+      router: {
+        push: vi.fn(),
+        replace: vi.fn(),
+        pathname: '/test',
+        query: {},
+      },
+      navigation: {
+        pathname: '/test',
+        searchParams: new URLSearchParams(),
+      },
+    });
+    ```
+
+  </Accordion>
+
+  <Accordion title="Browser Mocks" icon="globe">
+    ```typescript
+    import { setupBrowserMocks } from '@repo/qa/mocks/browser';
+
+    // Automatically mocks:
+    // - window.matchMedia
+    // - ResizeObserver
+    // - IntersectionObserver
+    // - localStorage/sessionStorage
+    setupBrowserMocks({
+      matchMedia: {
+        '(prefers-color-scheme: dark)': true,
+        '(max-width: 768px)': false,
+      },
+      localStorage: {
+        'theme': 'dark',
+        'user-preferences': '{"language":"en"}',
+      },
+    });
+    ```
+
+  </Accordion>
+
+  <Accordion title="Console Management" icon="terminal">
+    ```typescript
+    import { suppressConsoleErrors } from '@repo/qa/setup/common';
+
+    // Suppress specific console warnings/errors
+    suppressConsoleErrors([
+      /Warning: ReactDOM.render/,
+      /Warning: componentWillMount/,
+      /Failed to load resource/,
+    ]);
+
+    // Or suppress by log level
+    suppressConsoleErrors([], {
+      warn: true,  // Suppress all warnings
+      error: false, // Keep errors visible
+    });
+    ```
+
+  </Accordion>
+</AccordionGroup>
+
+## Advanced Testing Patterns
+
+### Test Data Factories
+
+<CodeGroup>
+```typescript User Factory
+// test/factories/user.ts
+import { faker } from '@faker-js/faker';
+
+export interface UserData {
+  id?: string;
+  email?: string;
+  name?: string;
+  role?: 'admin' | 'user';
+  createdAt?: Date;
+}
+
+export function createUser(overrides: Partial<UserData> = {}): UserData {
+  return {
+    id: faker.string.uuid(),
+    email: faker.internet.email(),
+    name: faker.person.fullName(),
+    role: 'user',
+    createdAt: faker.date.past(),
+    ...overrides,
+  };
+}
+
+export function createUsers(count: number, overrides?: Partial<UserData>): UserData[] {
+  return Array.from({ length: count }, () => createUser(overrides));
+}
+
+// Usage in tests const adminUser = createUser({ role: 'admin' }); const
+testUsers = createUsers(10);
+
+````
+
+```typescript Product Factory
+// test/factories/product.ts
+export interface ProductData {
+  id?: string;
+  name?: string;
+  price?: number;
+  category?: string;
+  inStock?: boolean;
+  tags?: string[];
+}
+
+export function createProduct(overrides: Partial<ProductData> = {}): ProductData {
+  return {
+    id: faker.string.uuid(),
+    name: faker.commerce.productName(),
+    price: Number(faker.commerce.price()),
+    category: faker.commerce.department(),
+    inStock: faker.datatype.boolean(),
+    tags: faker.helpers.arrayElements([
+      'electronics', 'clothing', 'books', 'sports', 'home'
+    ], { min: 1, max: 3 }),
+    ...overrides,
+  };
+}
+
+// Complex factory with relationships
+export function createProductWithReviews(productOverrides?: Partial<ProductData>) {
+  const product = createProduct(productOverrides);
+  const reviews = createUsers(3).map(user => ({
+    userId: user.id,
+    productId: product.id,
+    rating: faker.number.int({ min: 1, max: 5 }),
+    comment: faker.lorem.paragraph(),
+  }));
+
+  return { product, reviews };
+}
+````
+
+</CodeGroup>
+
+### Custom Testing Utilities
+
+<Tabs>
+  <Tab title="Async Testing">
+    ```typescript
+    // test/utils/async.ts
+    export async function waitForElement(
+      getElement: () => HTMLElement | null,
+      timeout = 5000
+    ): Promise<HTMLElement> {
+      const start = Date.now();
+
+      while (Date.now() - start < timeout) {
+        const element = getElement();
+        if (element) return element;
+
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      throw new Error('Element not found within timeout');
+    }
+
+    export async function waitForCondition(
+      condition: () => boolean,
+      timeout = 5000
+    ): Promise<void> {
+      const start = Date.now();
+
+      while (Date.now() - start < timeout) {
+        if (condition()) return;
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      throw new Error('Condition not met within timeout');
+    }
+
+    // Usage
+    await waitForElement(() => screen.queryByText('Loading complete'));
+    await waitForCondition(() => mockFunction.mock.calls.length > 0);
+    ```
+
+  </Tab>
+
+  <Tab title="Form Testing Utilities">
+    ```typescript
+    // test/utils/forms.ts
+    import { userEvent } from '@testing-library/user-event';
+    import { screen } from '@testing-library/react';
+
+    export async function fillForm(formData: Record<string, string>) {
+      const user = userEvent.setup();
+
+      for (const [field, value] of Object.entries(formData)) {
+        const input = screen.getByLabelText(new RegExp(field, 'i'));
+        await user.clear(input);
+        await user.type(input, value);
+      }
+    }
+
+    export async function submitForm(buttonText = /submit/i) {
+      const user = userEvent.setup();
+      const submitButton = screen.getByRole('button', { name: buttonText });
+      await user.click(submitButton);
+    }
+
+    export function expectFormErrors(errors: Record<string, string>) {
+      for (const [field, message] of Object.entries(errors)) {
+        expect(screen.getByText(message)).toBeInTheDocument();
+      }
+    }
+
+    // Usage
+    await fillForm({
+      email: 'test@example.com',
+      password: 'password123',
+      name: 'Test User',
+    });
+
+    await submitForm();
+    expectFormErrors({
+      email: 'Email already exists',
+    });
+    ```
+
+  </Tab>
+</Tabs>
+
+## Performance Testing
+
+<CodeGroup>
+```typescript Component Performance
+import { render, screen } from '@repo/qa/utils/render';
+import { performance } from 'perf_hooks';
+
+describe('ComponentPerformance', () => { it('renders large list efficiently', ()
+=> { const items = Array.from({ length: 1000 }, (\_, i) => ({ id: i, name:
+`Item ${i}`, }));
+
+    const startTime = performance.now();
+    render(<LargeList items={items} />);
+    const endTime = performance.now();
+
+    const renderTime = endTime - startTime;
+    expect(renderTime).toBeLessThan(100); // 100ms threshold
+
+    // Check that virtual scrolling is working
+    const visibleItems = screen.getAllByTestId('list-item');
+    expect(visibleItems.length).toBeLessThan(50); // Only visible items rendered
+
+}); });
+
+````
+
+```typescript Memory Leak Detection
+describe('Memory Leaks', () => {
+  it('cleans up event listeners on unmount', () => {
+    const addEventListenerSpy = vi.spyOn(window, 'addEventListener');
+    const removeEventListenerSpy = vi.spyOn(window, 'removeEventListener');
+
+    const { unmount } = render(<ComponentWithListeners />);
+
+    // Check listeners were added
+    expect(addEventListenerSpy).toHaveBeenCalled();
+
+    unmount();
+
+    // Check listeners were removed
+    expect(removeEventListenerSpy).toHaveBeenCalledTimes(
+      addEventListenerSpy.mock.calls.length
+    );
+  });
+});
+````
+
+</CodeGroup>
+
+## Coverage and Reporting
+
+### Coverage Configuration
+
+```typescript
+// vitest.config.ts
+export default createReactConfig({
+  coverage: {
+    provider: "v8",
+    reporter: ["text", "json", "html", "lcov"],
+    include: ["src/**/*.{ts,tsx}"],
+    exclude: [
+      "src/**/*.d.ts",
+      "src/**/*.stories.tsx",
+      "src/**/*.test.{ts,tsx}",
+      "src/**/index.{ts,tsx}"
+    ],
+    threshold: {
+      global: {
+        branches: 80,
+        functions: 80,
+        lines: 80,
+        statements: 80
+      },
+      // Per-file thresholds
+      "src/components/": {
+        branches: 90,
+        functions: 90,
+        lines: 90,
+        statements: 90
+      }
+    },
+    // Fail if coverage falls below threshold
+    thresholdAutoUpdate: true
+  }
+});
+```
+
+### Test Reports
+
+<Tabs>
+  <Tab title="HTML Report">
+```bash
+# Generate HTML coverage report
+pnpm test -- --coverage --reporter=html
+# View report
+open coverage/index.html
+```
+  </Tab>
+
+  <Tab title="CI Integration">
+```yaml
+# .github/workflows/test.yml
+- name: Run tests with coverage
+  run: pnpm test -- --coverage --reporter=json
+- name: Upload coverage to Codecov
+  uses: codecov/codecov-action@v3
+  with:
+    file: ./coverage/coverage-final.json
+```
+  </Tab>
+</Tabs>
+
+## Best Practices
+
+<Warning>
+  **Testing Guidelines:** - Write tests before implementing features (TDD) - Use
+  descriptive test names that explain the expected behavior - Test user
+  interactions, not implementation details - Mock external dependencies and
+  services - Maintain high test coverage (>80%) for critical code paths - Use
+  data-testid for reliable element selection
+</Warning>
+
+### Recommended Patterns
+
+1. **Test Organization**
+   - Group related tests in describe blocks
+   - Use consistent naming conventions
+   - Keep test files close to source files
+
+2. **Mocking Strategy**
+   - Mock at the boundary level (API calls, database operations)
+   - Avoid mocking internal implementation details
+   - Use factories for test data generation
+
+3. **Performance**
+   - Use appropriate test environments (jsdom vs node)
+   - Clean up resources in afterEach/afterAll
+   - Avoid unnecessary re-renders in tests
+
+4. **Maintainability**
+   - Keep tests simple and focused
+   - Use shared utilities for common operations
+   - Update tests when requirements change
+
+The testing framework provides comprehensive tools for building reliable,
+maintainable test suites that ensure code quality and prevent regressions across
+the entire Forge platform.

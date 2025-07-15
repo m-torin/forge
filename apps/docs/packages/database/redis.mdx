@@ -1,0 +1,984 @@
+---
+title: "Redis Cache (Upstash)"
+description:
+  "High-performance caching, rate limiting, and real-time data storage with
+  Upstash Redis"
+icon: "memory"
+---
+
+# Redis Cache (Upstash)
+
+High-performance Redis implementation using Upstash for caching, rate limiting,
+session storage, and real-time data operations.
+
+## Overview
+
+Redis serves as the caching and real-time data layer in the Forge platform,
+providing fast access to frequently used data and enabling real-time features.
+
+<CardGroup cols={2}>
+  <Card title="Performance Caching" icon="bolt">
+    Cache frequently accessed data with intelligent TTL management
+  </Card>
+  <Card title="Rate Limiting" icon="clock">
+    Distributed rate limiting for API protection and abuse prevention
+  </Card>
+  <Card title="Session Storage" icon="user-check">
+    Fast session management with automatic expiration
+  </Card>
+  <Card title="Real-time Data" icon="signal">
+    Pub/sub messaging and real-time updates across applications
+  </Card>
+</CardGroup>
+
+## Quick Start
+
+<CodeGroup>
+```typescript Next.js Server (Recommended)
+import { redis } from '@repo/database/redis/server/next';
+import { logInfo, logError } from '@repo/observability/server/next';
+
+// Basic operations await redis.set('user:123', { name: 'John', email:
+'john@example.com' }); const user = await redis.get('user:123');
+
+// With expiration await redis.setex('temp:token', 3600, 'abc123'); // 1 hour
+
+// Lists and queues await redis.lpush( 'notifications', JSON.stringify({ type:
+'email', recipient: 'user@example.com' }) ); const notification = await
+redis.rpop('notifications');
+
+````
+
+```typescript Node.js Server
+import { RedisOperations } from '@repo/database/redis/server';
+import { logInfo, logError } from '@repo/observability/server/next';
+
+const redisOps = new RedisOperations();
+
+// Same operations as above
+await redisOps.set('user:123', { name: 'John', email: 'john@example.com' });
+const user = await redisOps.get('user:123');
+```
+
+```typescript Next.js Client
+import { useRedisState } from "@repo/database/redis/client/next";
+import { logInfo, logError } from '@repo/observability/server/next';
+
+// Client-side Redis state management
+const [cachedData, setCachedData] = useRedisState("user:profile", null);
+```
+
+</CodeGroup>
+
+## Core Operations
+
+### Key-Value Storage
+
+<CodeGroup>
+```typescript Basic Operations
+// String operations
+await redis.set('config:theme', 'dark');
+const theme = await redis.get('config:theme');
+
+// JSON objects (automatically serialized) await redis.set('user:profile:123', {
+name: 'John Doe', email: 'john@example.com', preferences: { notifications: true,
+theme: 'dark', }, });
+
+const profile = await redis.get('user:profile:123');
+
+// Atomic operations const views = await redis.incr('page:views:homepage');
+await redis.incrby('stats:api_calls', 5);
+
+// Multiple operations await redis.mset({ 'cache:products:count': 1500,
+'cache:categories:count': 25, 'cache:last_updated': Date.now(), });
+
+const stats = await redis.mget(['cache:products:count',
+'cache:categories:count']);
+
+````
+
+```typescript Expiration Management
+// Set with expiration (seconds)
+await redis.setex("session:abc123", 3600, JSON.stringify(sessionData));
+
+// Set expiration on existing key
+await redis.expire("cache:expensive_query", 300); // 5 minutes
+
+// Check TTL
+const ttl = await redis.ttl("session:abc123");
+logInfo("Session TTL check", {
+  ttl,
+  unit: "seconds"
+});
+
+// Persist (remove expiration)
+await redis.persist("important:data");
+
+// Set expiration at specific time
+const tomorrow = new Date();
+tomorrow.setDate(tomorrow.getDate() + 1);
+await redis.expireat("daily:report", Math.floor(tomorrow.getTime() / 1000));
+```
+
+</CodeGroup>
+
+### Lists and Queues
+
+<Tabs>
+  <Tab title="Task Queues">
+    ```typescript
+    // Job queue implementation
+    interface Job {
+      id: string;
+      type: string;
+      payload: any;
+      priority: number;
+      createdAt: number;
+    }
+
+    // Add job to queue
+    const job: Job = {
+      id: crypto.randomUUID(),
+      type: 'send-email',
+      payload: {
+        to: 'user@example.com',
+        template: 'welcome',
+        data: { name: 'John' },
+      },
+      priority: 1,
+      createdAt: Date.now(),
+    };
+
+    await redis.lpush('jobs:email', JSON.stringify(job));
+
+    // Process jobs (FIFO)
+    const jobData = await redis.brpop('jobs:email', 10); // 10 second timeout
+    if (jobData) {
+      const [queueName, jobJson] = jobData;
+      const job = JSON.parse(jobJson);
+
+      try {
+        await processJob(job);
+        logInfo('Job completed', {
+          jobId: job.id,
+          status: 'success'
+        });
+      } catch (error) {
+        // Add to retry queue or DLQ
+        await redis.lpush('jobs:email:retry', JSON.stringify(job));
+        logError('Job failed', {
+          jobId: job.id,
+          error: error.message
+        });
+      }
+    }
+
+    // Priority queues using sorted sets
+    await redis.zadd('jobs:priority', job.priority, JSON.stringify(job));
+    const highPriorityJob = await redis.zpopmax('jobs:priority');
+    ```
+
+  </Tab>
+
+  <Tab title="Real-time Notifications">
+    ```typescript
+    // Notification system
+    interface Notification {
+      id: string;
+      userId: string;
+      type: 'info' | 'warning' | 'error' | 'success';
+      title: string;
+      message: string;
+      read: boolean;
+      createdAt: number;
+    }
+
+    // Add notification
+    const notification: Notification = {
+      id: crypto.randomUUID(),
+      userId: 'user123',
+      type: 'info',
+      title: 'New Message',
+      message: 'You have a new message from admin',
+      read: false,
+      createdAt: Date.now(),
+    };
+
+    await redis.lpush(`notifications:${notification.userId}`, JSON.stringify(notification));
+
+    // Limit notification history (keep last 50)
+    await redis.ltrim(`notifications:${notification.userId}`, 0, 49);
+
+    // Get user notifications
+    const notifications = await redis.lrange(`notifications:user123`, 0, 9); // Last 10
+    const parsedNotifications = notifications.map(n => JSON.parse(n));
+
+    // Mark as read
+    const notificationList = await redis.lrange(`notifications:user123`, 0, -1);
+    const updatedList = notificationList.map(n => {
+      const notification = JSON.parse(n);
+      if (notification.id === targetId) {
+        notification.read = true;
+      }
+      return JSON.stringify(notification);
+    });
+
+    // Replace entire list (atomic operation)
+    await redis.multi()
+      .del(`notifications:user123`)
+      .lpush(`notifications:user123`, ...updatedList)
+      .exec();
+    ```
+
+  </Tab>
+</Tabs>
+
+### Sorted Sets and Rankings
+
+<AccordionGroup>
+  <Accordion title="Leaderboards" icon="trophy">
+    ```typescript
+    // User scoring system
+    await redis.zadd('leaderboard:monthly', 1250, 'user:123');
+    await redis.zadd('leaderboard:monthly', 980, 'user:456');
+    await redis.zadd('leaderboard:monthly', 1580, 'user:789');
+
+    // Get top 10 users
+    const topUsers = await redis.zrevrange('leaderboard:monthly', 0, 9, 'WITHSCORES');
+
+    // Format results
+    const leaderboard = [];
+    for (let i = 0; i < topUsers.length; i += 2) {
+      leaderboard.push({
+        userId: topUsers[i],
+        score: parseInt(topUsers[i + 1]),
+        rank: Math.floor(i / 2) + 1,
+      });
+    }
+
+    // Get user's rank
+    const userRank = await redis.zrevrank('leaderboard:monthly', 'user:123');
+    const userScore = await redis.zscore('leaderboard:monthly', 'user:123');
+
+    // Users around current user
+    const userPosition = userRank || 0;
+    const context = await redis.zrevrange(
+      'leaderboard:monthly',
+      Math.max(0, userPosition - 2),
+      userPosition + 2,
+      'WITHSCORES'
+    );
+    ```
+
+  </Accordion>
+
+  <Accordion title="Time-based Analytics" icon="chart-line">
+    ```typescript
+    // Daily active users tracking
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const timestamp = Date.now();
+
+    // Track user activity
+    await redis.zadd(`active:${today}`, timestamp, `user:123`);
+
+    // Count unique active users for the day
+    const dailyActiveUsers = await redis.zcard(`active:${today}`);
+
+    // Get users active in last hour
+    const oneHourAgo = timestamp - (60 * 60 * 1000);
+    const recentlyActive = await redis.zrangebyscore(`active:${today}`, oneHourAgo, timestamp);
+
+    // Weekly analytics
+    const weekDates = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      weekDates.push(date.toISOString().split('T')[0]);
+    }
+
+    // Get daily counts for the week
+    const weeklyStats = await Promise.all(
+      weekDates.map(async (date) => ({
+        date,
+        activeUsers: await redis.zcard(`active:${date}`),
+      }))
+    );
+
+    // Cleanup old data
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const oldKey = `active:${thirtyDaysAgo.toISOString().split('T')[0]}`;
+    await redis.del(oldKey);
+    ```
+
+  </Accordion>
+</AccordionGroup>
+
+## Caching Strategies
+
+### Application Cache
+
+<CodeGroup>
+```typescript Query Result Caching
+// Database query caching
+async function getCachedProducts(organizationId: string, category?: string) {
+  const cacheKey = `products:${organizationId}${category ? `:${category}` : ''}`;
+
+// Try cache first const cached = await redis.get(cacheKey); if (cached) {
+return JSON.parse(cached); }
+
+// Fetch from database const products = await prisma.product.findMany({ where: {
+organizationId, ...(category && { category }), status: 'active', }, include: {
+assets: { where: { type: 'image' }, orderBy: { position: 'asc' }, take: 1, }, },
+});
+
+// Cache for 15 minutes await redis.setex(cacheKey, 900,
+JSON.stringify(products));
+
+return products; }
+
+// Cache invalidation async function invalidateProductCache(organizationId:
+string, category?: string) { const patterns = [ `products:${organizationId}`,
+`products:${organizationId}:*`, ];
+
+for (const pattern of patterns) { const keys = await redis.keys(pattern); if
+(keys.length > 0) { await redis.del(...keys); } } }
+
+````
+
+```typescript Session Caching
+// User session management
+interface UserSession {
+  userId: string;
+  organizationId: string;
+  permissions: string[];
+  lastActivity: number;
+  deviceInfo: {
+    userAgent: string;
+    ip: string;
+  };
+}
+
+async function createSession(sessionData: Omit<UserSession, 'lastActivity'>) {
+  const sessionId = crypto.randomUUID();
+  const session: UserSession = {
+    ...sessionData,
+    lastActivity: Date.now(),
+  };
+
+  // Store session for 7 days
+  await redis.setex(`session:${sessionId}`, 7 * 24 * 60 * 60, JSON.stringify(session));
+
+  // Track active sessions for user
+  await redis.sadd(`user:${sessionData.userId}:sessions`, sessionId);
+
+  return sessionId;
+}
+
+async function getSession(sessionId: string): Promise<UserSession | null> {
+  const sessionData = await redis.get(`session:${sessionId}`);
+  if (!sessionData) return null;
+
+  const session = JSON.parse(sessionData);
+
+  // Update last activity
+  session.lastActivity = Date.now();
+  await redis.setex(`session:${sessionId}`, 7 * 24 * 60 * 60, JSON.stringify(session));
+
+  return session;
+}
+
+async function revokeUserSessions(userId: string) {
+  const sessionIds = await redis.smembers(`user:${userId}:sessions`);
+
+  if (sessionIds.length > 0) {
+    // Delete all sessions
+    const sessionKeys = sessionIds.map(id => `session:${id}`);
+    await redis.del(...sessionKeys);
+
+    // Clear session set
+    await redis.del(`user:${userId}:sessions`);
+  }
+}
+````
+
+</CodeGroup>
+
+### Cache Patterns
+
+<Tabs>
+  <Tab title="Write-Through Cache">
+    ```typescript
+    // Write-through: Update cache and database together
+    async function updateUserProfile(userId: string, updates: Partial<User>) {
+      // Update database
+      const updatedUser = await prisma.user.update({
+        where: { id: userId },
+        data: updates,
+      });
+
+      // Update cache
+      await redis.set(
+        `user:profile:${userId}`,
+        JSON.stringify(updatedUser),
+        'EX',
+        3600 // 1 hour
+      );
+
+      return updatedUser;
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Write-Behind Cache">
+    ```typescript
+    // Write-behind: Update cache immediately, database asynchronously
+    async function updateUserPreferences(userId: string, preferences: any) {
+      // Update cache immediately
+      await redis.set(
+        `user:preferences:${userId}`,
+        JSON.stringify(preferences),
+        'EX',
+        86400 // 24 hours
+      );
+
+      // Queue database update
+      await redis.lpush('db_updates', JSON.stringify({
+        type: 'user_preferences',
+        userId,
+        data: preferences,
+        timestamp: Date.now(),
+      }));
+
+      return preferences;
+    }
+
+    // Background worker processes db_updates queue
+    async function processDatabaseUpdates() {
+      while (true) {
+        const updateData = await redis.brpop('db_updates', 10);
+        if (updateData) {
+          const [_, updateJson] = updateData;
+          const update = JSON.parse(updateJson);
+
+          try {
+            switch (update.type) {
+              case 'user_preferences':
+                await prisma.user.update({
+                  where: { id: update.userId },
+                  data: { preferences: update.data },
+                });
+                break;
+              // Handle other update types
+            }
+          } catch (error) {
+            // Retry or move to DLQ
+            await redis.lpush('db_updates:failed', updateJson);
+          }
+        }
+      }
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Cache-Aside">
+    ```typescript
+    // Cache-aside: Application manages cache explicitly
+    async function getUserProfile(userId: string) {
+      // Check cache first
+      const cached = await redis.get(`user:profile:${userId}`);
+      if (cached) {
+        return JSON.parse(cached);
+      }
+
+      // Load from database
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        include: {
+          organizations: true,
+          preferences: true,
+        },
+      });
+
+      if (user) {
+        // Store in cache for future requests
+        await redis.setex(
+          `user:profile:${userId}`,
+          3600, // 1 hour
+          JSON.stringify(user)
+        );
+      }
+
+      return user;
+    }
+
+    // Manual cache invalidation on updates
+    async function invalidateUserCache(userId: string) {
+      await redis.del(`user:profile:${userId}`);
+    }
+    ```
+
+  </Tab>
+</Tabs>
+
+## Pub/Sub and Real-time Features
+
+### Real-time Updates
+
+<CodeGroup>
+```typescript Publisher
+// Real-time product updates
+async function publishProductUpdate(productId: string, update: any) {
+  const message = {
+    type: 'product.updated',
+    productId,
+    data: update,
+    timestamp: Date.now(),
+  };
+
+// Publish to all subscribers await redis.publish('product:updates',
+JSON.stringify(message));
+
+// Also publish to organization-specific channel const product = await
+prisma.product.findUnique({ where: { id: productId }, select: { organizationId:
+true }, });
+
+if (product) { await redis.publish( `org:${product.organizationId}:products`,
+JSON.stringify(message) ); } }
+
+// Workflow status updates async function publishWorkflowStatus(workflowId:
+string, status: string, result?: any) { const message = { type:
+'workflow.status', workflowId, status, result, timestamp: Date.now(), };
+
+await redis.publish('workflow:status', JSON.stringify(message)); await
+redis.publish(`workflow:${workflowId}`, JSON.stringify(message)); }
+
+````
+
+```typescript Subscriber
+// Subscribe to real-time updates
+import { Redis } from 'ioredis';
+import { logInfo, logError } from '@repo/observability/server/next';
+
+const subscriber = new Redis({
+  host: process.env.REDIS_HOST,
+  port: parseInt(process.env.REDIS_PORT || '6379'),
+  password: process.env.REDIS_PASSWORD,
+});
+
+// Subscribe to channels
+await subscriber.subscribe('product:updates', 'workflow:status');
+
+subscriber.on('message', (channel, message) => {
+  const data = JSON.parse(message);
+
+  switch (channel) {
+    case 'product:updates':
+      handleProductUpdate(data);
+      break;
+    case 'workflow:status':
+      handleWorkflowStatusUpdate(data);
+      break;
+  }
+});
+
+// Pattern subscription for dynamic channels
+await subscriber.psubscribe('org:*:products', 'workflow:*');
+
+subscriber.on('pmessage', (pattern, channel, message) => {
+  const data = JSON.parse(message);
+
+  if (pattern === 'org:*:products') {
+    const orgId = channel.split(':')[1];
+    handleOrganizationProductUpdate(orgId, data);
+  } else if (pattern === 'workflow:*') {
+    const workflowId = channel.split(':')[1];
+    handleSpecificWorkflowUpdate(workflowId, data);
+  }
+});
+```
+
+</CodeGroup>
+
+## Rate Limiting
+
+### API Rate Limiting
+
+<AccordionGroup>
+  <Accordion title="Sliding Window Rate Limiting" icon="clock">
+    ```typescript
+    interface RateLimit {
+      limit: number;
+      window: number; // seconds
+      current: number;
+      resetTime: number;
+    }
+
+    async function checkRateLimit(key: string, limit: number, windowSeconds: number): Promise<RateLimit> {
+      const now = Date.now();
+      const windowStart = Math.floor(now / (windowSeconds * 1000)) * windowSeconds;
+      const windowKey = `rate_limit:${key}:${windowStart}`;
+
+      // Use Lua script for atomic operation
+      const luaScript = `
+        local key = KEYS[1]
+        local limit = tonumber(ARGV[1])
+        local window = tonumber(ARGV[2])
+        local now = tonumber(ARGV[3])
+
+        local current = redis.call('INCR', key)
+
+        if current == 1 then
+          redis.call('EXPIRE', key, window)
+        end
+
+        local ttl = redis.call('TTL', key)
+        local resetTime = now + (ttl * 1000)
+
+        return {current, limit, resetTime}
+      `;
+
+      const result = await redis.eval(
+        luaScript,
+        1,
+        windowKey,
+        limit.toString(),
+        windowSeconds.toString(),
+        now.toString()
+      ) as [number, number, number];
+
+      return {
+        current: result[0],
+        limit: result[1],
+        resetTime: result[2],
+        window: windowSeconds,
+      };
+    }
+
+    // Usage in API middleware
+    async function rateLimitMiddleware(userId: string, endpoint: string) {
+      const rateLimit = await checkRateLimit(
+        `api:${userId}:${endpoint}`,
+        100, // 100 requests
+        3600 // per hour
+      );
+
+      if (rateLimit.current > rateLimit.limit) {
+        throw new Error(`Rate limit exceeded. Reset at ${new Date(rateLimit.resetTime)}`);
+      }
+
+      return rateLimit;
+    }
+    ```
+
+  </Accordion>
+
+  <Accordion title="Token Bucket Rate Limiting" icon="bucket">
+    ```typescript
+    interface TokenBucket {
+      capacity: number;
+      tokens: number;
+      lastRefill: number;
+      refillRate: number; // tokens per second
+    }
+
+    async function consumeTokens(key: string, tokensRequested: number, config: TokenBucket): Promise<boolean> {
+      const luaScript = `
+        local key = KEYS[1]
+        local requested = tonumber(ARGV[1])
+        local capacity = tonumber(ARGV[2])
+        local refillRate = tonumber(ARGV[3])
+        local now = tonumber(ARGV[4])
+
+        local bucket = redis.call('HMGET', key, 'tokens', 'lastRefill')
+        local tokens = tonumber(bucket[1]) or capacity
+        local lastRefill = tonumber(bucket[2]) or now
+
+        -- Calculate tokens to add based on time elapsed
+        local elapsed = (now - lastRefill) / 1000
+        local tokensToAdd = math.floor(elapsed * refillRate)
+        tokens = math.min(capacity, tokens + tokensToAdd)
+
+        if tokens >= requested then
+          tokens = tokens - requested
+          redis.call('HMSET', key, 'tokens', tokens, 'lastRefill', now)
+          redis.call('EXPIRE', key, 3600) -- 1 hour TTL
+          return 1
+        else
+          redis.call('HMSET', key, 'tokens', tokens, 'lastRefill', now)
+          redis.call('EXPIRE', key, 3600)
+          return 0
+        end
+      `;
+
+      const result = await redis.eval(
+        luaScript,
+        1,
+        `bucket:${key}`,
+        tokensRequested.toString(),
+        config.capacity.toString(),
+        config.refillRate.toString(),
+        Date.now().toString()
+      ) as number;
+
+      return result === 1;
+    }
+
+    // Usage for different API tiers
+    const apiLimits = {
+      free: { capacity: 100, refillRate: 1/60 }, // 1 token per minute, burst 100
+      pro: { capacity: 1000, refillRate: 1/6 }, // 10 per minute, burst 1000
+      enterprise: { capacity: 10000, refillRate: 1 }, // 60 per minute, burst 10000
+    };
+
+    async function checkApiAccess(userId: string, tier: keyof typeof apiLimits) {
+      const config = apiLimits[tier];
+      const allowed = await consumeTokens(`api:${userId}`, 1, {
+        ...config,
+        tokens: config.capacity,
+        lastRefill: Date.now(),
+      });
+
+      if (!allowed) {
+        throw new Error(`API rate limit exceeded for ${tier} tier`);
+      }
+    }
+    ```
+
+  </Accordion>
+</AccordionGroup>
+
+## Performance Optimization
+
+### Connection Pooling and Performance
+
+<CodeGroup>
+```typescript Connection Configuration
+// Optimized Redis configuration
+import { Redis } from 'ioredis';
+import { logInfo, logError } from '@repo/observability/server/next';
+
+const redis = new Redis({ host: process.env.REDIS_HOST, port:
+parseInt(process.env.REDIS_PORT || '6379'), password:
+process.env.REDIS_PASSWORD,
+
+// Connection pooling maxRetriesPerRequest: 3, retryDelayOnFailover: 100,
+enableReadyCheck: true, maxLoadingTimeout: 1000,
+
+// Performance optimization lazyConnect: true, keepAlive: 30000, commandTimeout:
+5000,
+
+// Pipeline and batch operations enableAutoPipelining: true,
+
+// Cluster configuration (if using Redis Cluster) enableOfflineQueue: false, });
+
+// Error handling redis.on('error', (error) => {
+  logError('Redis connection error', {
+    error: error.message,
+    code: error.code,
+    timestamp: new Date().toISOString()
+  });
+});
+
+redis.on('ready', () => {
+  logInfo('Redis connection established', {
+    timestamp: new Date().toISOString()
+  });
+});
+
+````
+
+```typescript Batch Operations
+// Efficient batch operations using pipeline
+async function batchUpdateCache(
+  updates: Array<{ key: string; value: any; ttl?: number }>
+) {
+  const pipeline = redis.pipeline();
+
+  for (const update of updates) {
+    if (update.ttl) {
+      pipeline.setex(update.key, update.ttl, JSON.stringify(update.value));
+    } else {
+      pipeline.set(update.key, JSON.stringify(update.value));
+    }
+  }
+
+  const results = await pipeline.exec();
+
+  // Check for errors
+  const errors = results?.filter(([error]) => error !== null);
+  if (errors && errors.length > 0) {
+    logError("Redis batch update failed", {
+      errors,
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  return results;
+}
+
+// Batch retrieval
+async function batchGetCache(keys: string[]) {
+  const values = await redis.mget(...keys);
+
+  return keys.reduce(
+    (result, key, index) => {
+      const value = values[index];
+      result[key] = value ? JSON.parse(value) : null;
+      return result;
+    },
+    {} as Record<string, any>
+  );
+}
+```
+
+</CodeGroup>
+
+## Monitoring and Analytics
+
+### Cache Performance Metrics
+
+<Tabs>
+  <Tab title="Hit Rate Monitoring">
+    ```typescript
+    // Track cache hit/miss rates
+    async function getCacheStats(period: string = 'hourly') {
+      const now = Date.now();
+      const key = `cache:stats:${period}:${Math.floor(now / (60 * 60 * 1000))}`;
+
+      const stats = await redis.hmget(key, 'hits', 'misses', 'total');
+
+      return {
+        hits: parseInt(stats[0] || '0'),
+        misses: parseInt(stats[1] || '0'),
+        total: parseInt(stats[2] || '0'),
+        hitRate: stats[2] ? (parseInt(stats[0] || '0') / parseInt(stats[2])) * 100 : 0,
+      };
+    }
+
+    // Record cache hit/miss
+    async function recordCacheHit(hit: boolean) {
+      const now = Date.now();
+      const hourKey = `cache:stats:hourly:${Math.floor(now / (60 * 60 * 1000))}`;
+      const dailyKey = `cache:stats:daily:${Math.floor(now / (24 * 60 * 60 * 1000))}`;
+
+      const pipeline = redis.pipeline();
+
+      if (hit) {
+        pipeline.hincrby(hourKey, 'hits', 1);
+        pipeline.hincrby(dailyKey, 'hits', 1);
+      } else {
+        pipeline.hincrby(hourKey, 'misses', 1);
+        pipeline.hincrby(dailyKey, 'misses', 1);
+      }
+
+      pipeline.hincrby(hourKey, 'total', 1);
+      pipeline.hincrby(dailyKey, 'total', 1);
+
+      // Set expiration for cleanup
+      pipeline.expire(hourKey, 7 * 24 * 60 * 60); // 7 days
+      pipeline.expire(dailyKey, 30 * 24 * 60 * 60); // 30 days
+
+      await pipeline.exec();
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Memory Usage">
+    ```typescript
+    // Monitor Redis memory usage
+    async function getRedisInfo() {
+      const info = await redis.info('memory');
+      const lines = info.split('\r\n');
+      const memoryInfo = {} as Record<string, string>;
+
+      lines.forEach(line => {
+        if (line.includes(':')) {
+          const [key, value] = line.split(':');
+          memoryInfo[key] = value;
+        }
+      });
+
+      return {
+        usedMemory: parseInt(memoryInfo.used_memory),
+        usedMemoryHuman: memoryInfo.used_memory_human,
+        maxMemory: parseInt(memoryInfo.maxmemory || '0'),
+        memoryUsageRatio: memoryInfo.maxmemory ?
+          (parseInt(memoryInfo.used_memory) / parseInt(memoryInfo.maxmemory)) * 100 : 0,
+        keyCount: await redis.dbsize(),
+      };
+    }
+
+    // Cleanup old data based on memory pressure
+    async function cleanupOldData() {
+      const info = await getRedisInfo();
+
+      if (info.memoryUsageRatio > 80) {
+        logInfo('Redis memory cleanup initiated', {
+          reason: 'High memory usage detected',
+          timestamp: new Date().toISOString()
+        });
+
+        // Clean up expired sessions
+        const sessionKeys = await redis.keys('session:*');
+        for (const key of sessionKeys) {
+          const ttl = await redis.ttl(key);
+          if (ttl === -1) { // No expiration set
+            await redis.expire(key, 24 * 60 * 60); // Set 24 hour expiration
+          }
+        }
+
+        // Clean up old analytics data
+        const analyticsKeys = await redis.keys('cache:stats:hourly:*');
+        const cutoff = Date.now() - (7 * 24 * 60 * 60 * 1000); // 7 days ago
+
+        for (const key of analyticsKeys) {
+          const timestamp = parseInt(key.split(':')[3]) * 60 * 60 * 1000;
+          if (timestamp < cutoff) {
+            await redis.del(key);
+          }
+        }
+      }
+    }
+    ```
+
+  </Tab>
+</Tabs>
+
+## Best Practices
+
+<Warning>
+  **Redis Best Practices:** - Use appropriate data structures for your use case
+  - Implement proper TTL for all cached data - Monitor memory usage and
+  implement cleanup strategies - Use pipelines for batch operations to reduce
+  network round trips
+</Warning>
+
+### Recommended Patterns
+
+1. **Key Naming Conventions**
+   - Use hierarchical naming: `app:feature:identifier`
+   - Include version numbers for breaking changes
+   - Use consistent separators (`:` recommended)
+
+2. **Memory Management**
+   - Set appropriate TTL for all keys
+   - Use Redis's built-in data expiration
+   - Monitor memory usage and implement cleanup
+
+3. **Performance**
+   - Use pipelines for multiple operations
+   - Implement connection pooling
+   - Choose appropriate data structures
+
+4. **Error Handling**
+   - Implement graceful degradation when Redis is unavailable
+   - Use circuit breakers for Redis operations
+   - Log Redis errors for monitoring
+
+The Redis integration provides fast, reliable caching and real-time capabilities
+that significantly improve application performance and enable advanced features
+like real-time updates and sophisticated rate limiting.

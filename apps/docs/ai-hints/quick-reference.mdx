@@ -1,0 +1,108 @@
+---
+title: Package Quick Reference
+description: Summary of all packages with key details
+---
+
+# Package Quick Reference
+
+Quick lookup table for all packages in the monorepo.
+
+## Package Summary
+
+| Package                      | Layer | Purpose                    | Edge Support | Key Import                             |
+| ---------------------------- | ----- | -------------------------- | ------------ | -------------------------------------- |
+| `@repo/typescript-config`    | 1     | TypeScript configurations  | N/A          | Config only                            |
+| `@repo/eslint-config`        | 1     | ESLint configurations      | N/A          | Config only                            |
+| `@repo/next-config`          | 1     | Next.js configuration      | N/A          | `import { config }`                    |
+| `@repo/qa`                   | 2     | Test utilities and configs | N/A          | Test helpers                           |
+| `@repo/security`             | 2     | Headers, rate limiting     | ✅ Yes       | `import { ... }`                       |
+| `@repo/observability`        | 2     | Sentry, logging            | ✅ Yes       | `import { ... }/server/edge`           |
+| `@repo/database`             | 3     | Prisma ORM                 | ❌ No        | `import { db }`                        |
+| `@repo/analytics`            | 4     | PostHog, Segment, GA       | ✅ Yes       | Feature flags included                 |
+| `@repo/email`                | 4     | React Email templates      | ❌ No        | `import { ... }`                       |
+| `@repo/notifications`        | 4     | Knock + Mantine            | ✅ Yes       | `import { ... }/mantine-notifications` |
+| `@repo/auth`                 | 5     | Better Auth                | ✅ Yes       | `import { auth }/server/next`          |
+| `@repo/payments`             | 5     | Stripe integration         | ❌ No        | `import { ... }`                       |
+| `@repo/orchestration`        | 5     | Workflow engine            | ❌ No        | `import { ... }`                       |
+| `@repo/seo`                  | 5     | SEO utilities              | ✅ Yes       | `import { ... }`                       |
+| `@repo/internationalization` | 5     | i18n support               | ✅ Yes       | `import { ... }`                       |
+| `@repo/ai`                   | 5.5   | AI integrations            | ❌ No        | `import { ... }`                       |
+| `@repo/scraping`             | 5.5   | Web scraping               | ❌ No        | `import { ... }`                       |
+| `@repo/storage`              | 5.5   | File storage               | ❌ No        | `import { ... }`                       |
+| `@repo/design-system`        | 6     | Composite components       | N/A          | `import { ... }`                       |
+
+## Import Pattern Quick Guide
+
+```typescript
+// Next.js Server Component/Action
+import { something } from "@repo/package/server/next";
+
+// Next.js Client Component
+import { useSomething } from "@repo/package/client/next";
+
+// Next.js Middleware/Edge
+import { something } from "@repo/package/server/edge";
+
+// Node.js Worker
+import { something } from "@repo/package/server";
+
+// Non-Next.js Browser
+import { something } from "@repo/package/client";
+```
+
+## Common Operations by Package
+
+### @repo/auth
+
+```typescript
+// Check authentication
+const session = await auth();
+if (!session) redirect("/login");
+
+// Get user info
+const userId = session.user.id;
+```
+
+### @repo/database
+
+```typescript
+// Query data
+const user = await db.user.findUnique({ where: { id } });
+
+// Create record
+const post = await db.post.create({ data: { ... } });
+```
+
+### @repo/analytics
+
+```typescript
+// Track event
+analytics.track("event-name", { properties });
+
+// Check feature flag
+const isEnabled = await checkFeatureFlag("flag-name");
+```
+
+### @repo/notifications
+
+```typescript
+// Show notification
+notifications.show({
+  title: "Success",
+  message: "Operation completed",
+  color: "green"
+});
+```
+
+## Package Dependencies
+
+Remember the layer hierarchy:
+
+- Layer 1 (Foundation) → No dependencies
+- Layer 2 (Core) → Can use Layer 1
+- Layer 3 (Data) → Can use Layers 1-2
+- Layer 4 (Business Services) → Can use Layers 1-3
+- Layer 5 (Business Logic) → Can use Layers 1-4
+- Layer 5.5 (Specialized) → Can use Layers 1-5
+- Layer 6 (UI) → Can use Layers 1-5.5
+- Layer 7 (Apps) → Can use all layers

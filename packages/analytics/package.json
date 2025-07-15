@@ -1,25 +1,70 @@
 {
   "name": "@repo/analytics",
-  "version": "0.0.0",
   "private": true,
+  "type": "module",
+  "exports": {
+    "./client": "./src/client.ts",
+    "./server": "./src/server.ts",
+    "./client/next": "./src/client-next.ts",
+    "./server/next": "./src/server-next.ts",
+    "./server/edge": "./src/server-edge.ts",
+    "./shared-env": "./src/shared-env.ts",
+    "./types": "./src/types/index.ts",
+    "./keys": {
+      "types": "./keys.ts",
+      "import": "./keys.ts"
+    }
+  },
   "scripts": {
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "circular": "madge --circular --extensions ts,tsx,js,jsx .",
+    "coverage:collect": "vitest run --coverage --reporter=json",
+    "knip": "knip --fix --reporter json",
+    "lint": "eslint . --fix",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:coverage:json": "vitest run --coverage --reporter=json",
+    "test:ui": "vitest --ui",
+    "test:watch": "vitest",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@next/third-parties": "15.3.2",
-    "@t3-oss/env-nextjs": "^0.13.4",
-    "@vercel/analytics": "^1.5.0",
-    "posthog-js": "^1.246.0",
-    "posthog-node": "^4.17.2",
-    "react": "^19.1.0",
-    "server-only": "^0.0.1",
-    "zod": "^3.25.28"
+    "@repo/observability": "workspace:*",
+    "@t3-oss/env-nextjs": "catalog:",
+    "next": "catalog:",
+    "react": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
-    "@types/node": "22.15.21",
-    "@types/react": "19.1.5",
-    "@types/react-dom": "^19.1.5"
+    "@repo/config": "workspace:*",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/qa": "workspace:*",
+    "@segment/analytics-next": "^1.81.1",
+    "@vercel/analytics": "^1.5.0",
+    "posthog-js": "^1.257.0",
+    "posthog-node": "^5.5.0"
+  },
+  "peerDependencies": {
+    "@segment/analytics-core": "^1.8.1",
+    "@segment/analytics-next": "^1.70.0",
+    "@vercel/analytics": "^1.1.0",
+    "posthog-js": "^1.100.0",
+    "posthog-node": "^4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@segment/analytics-core": {
+      "optional": true
+    },
+    "@segment/analytics-next": {
+      "optional": true
+    },
+    "@vercel/analytics": {
+      "optional": true
+    },
+    "posthog-js": {
+      "optional": true
+    },
+    "posthog-node": {
+      "optional": true
+    }
   }
 }

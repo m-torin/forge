@@ -1,0 +1,431 @@
+---
+title: "Payments Package"
+description: "Stripe SDK wrapper with graceful degradation and AI agent toolkit"
+icon: "credit-card"
+---
+
+# Payments Package
+
+Minimal **Stripe SDK wrapper** with graceful degradation and **AI agent
+toolkit** integration for payment processing.
+
+## Overview
+
+The payments package provides a lightweight Stripe integration with:
+
+- **Server-Only Implementation**: Secure server-side Stripe SDK wrapper
+- **Graceful Degradation**: Works without configuration for development
+- **AI Agent Toolkit**: Stripe AI SDK for automated payment operations
+- **Type-Safe Configuration**: Environment validation with T3 Env
+- **Lazy Initialization**: Stripe client initialized on first use
+- **Mock Responses**: Development-friendly mock objects when unconfigured
+
+## Installation
+
+```bash
+pnpm add @repo/payments
+```
+
+## Configuration
+
+### Environment Variables
+
+```bash
+# Development (optional)
+STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
+
+# Production (required)
+STRIPE_SECRET_KEY=sk_live_your_stripe_secret_key
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
+```
+
+### Type-Safe Environment
+
+The package validates environment variables using T3 Env:
+
+```typescript
+// Automatic validation
+import { safeEnv } from "@repo/payments/env";
+const { STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET } = safeEnv();
+
+// Development: Optional with mock fallbacks
+// Production: Required and validated
+```
+
+## Basic Usage
+
+### Server-Side Stripe Operations
+
+```typescript
+import { stripe } from "@repo/payments/server";
+
+// Customer management
+const customer = await stripe.customers.create({
+  email: "customer@example.com",
+  name: "John Doe",
+  metadata: {
+    organizationId: "org_123"
+  }
+});
+
+// Payment intent creation
+const paymentIntent = await stripe.paymentIntents.create({
+  amount: 2000, // $20.00
+  currency: "usd",
+  customer: customer.id,
+  metadata: {
+    orderId: "order_456"
+  }
+});
+
+// Subscription management
+const subscription = await stripe.subscriptions.create({
+  customer: customer.id,
+  items: [
+    {
+      price: "price_1234567890",
+      quantity: 1
+    }
+  ]
+});
+```
+
+### Next.js Server Actions
+
+```typescript
+import {
+  createPaymentIntentUtil,
+  createCustomerUtil,
+  createSubscriptionUtil
+} from "@repo/payments/server/next";
+
+// Use server action utilities
+("use server");
+
+export async function createPayment(formData: FormData) {
+  const amount = Number(formData.get("amount"));
+  const email = formData.get("email") as string;
+
+  // Create customer
+  const customer = await createCustomerUtil({
+    email,
+    name: formData.get("name") as string
+  });
+
+  // Create payment intent
+  const paymentIntent = await createPaymentIntentUtil({
+    amount,
+    customer: customer.id
+  });
+
+  return paymentIntent;
+}
+```
+
+### Client-Side React Hooks
+
+```typescript
+"use client";
+import { useStripePaymentIntent, useStripeCustomer } from "@repo/payments/client/next";
+
+export function PaymentForm() {
+  const { createPaymentIntent, loading, error, paymentIntent } = useStripePaymentIntent({
+    onSuccess: (pi) => console.log('Payment intent created:', pi.id),
+    onError: (err) => console.error('Payment error:', err),
+  });
+
+  const { createCustomer, customer } = useStripeCustomer();
+
+  const handleSubmit = async (formData: FormData) => {
+    // Create payment intent via API call
+    await createPaymentIntent({
+      amount: 2000,
+      currency: 'usd',
+      metadata: { orderId: 'order_123' },
+    });
+  };
+
+  return (
+    <form action={handleSubmit}>
+      {/* Payment form */}
+      {loading && <p>Processing...</p>}
+      {error && <p>Error: {error}</p>}
+      {paymentIntent && <p>Payment intent: {paymentIntent.id}</p>}
+    </form>
+  );
+}
+```
+
+### Webhook Handling
+
+```typescript
+import { createWebhookHandler } from "@repo/payments/server/next";
+
+// Next.js App Router webhook handler
+export const POST = createWebhookHandler({
+  "payment_intent.succeeded": async (paymentIntent) => {
+    // Handle successful payment
+    console.log("Payment succeeded:", paymentIntent.id);
+  },
+
+  "customer.subscription.updated": async (subscription) => {
+    // Handle subscription changes
+    console.log("Subscription updated:", subscription.id);
+  },
+
+  "customer.subscription.deleted": async (subscription) => {
+    // Handle subscription cancellation
+    console.log("Subscription canceled:", subscription.id);
+  }
+});
+
+// Manual webhook handling
+import { stripe, constructEvent } from "@repo/payments/server";
+
+export async function POST(request: Request) {
+  const body = await request.text();
+  const signature = request.headers.get("stripe-signature");
+
+  try {
+    const event = constructEvent(body, signature);
+
+    // Handle event types...
+
+    return Response.json({ received: true });
+  } catch (error) {
+    return Response.json({ error: "Webhook error" }, { status: 400 });
+  }
+}
+```
+
+## Common Payment Flows
+
+### One-Time Payments
+
+<AccordionGroup>
+  <Accordion title="Payment Intent Flow" icon="credit-card">
+    ```typescript
+    // 1. Create payment intent
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: 2000,
+      currency: 'usd',
+      customer: customerId,
+      payment_method_types: ['card'],
+      metadata: {
+        productId: 'prod_123',
+        organizationId: 'org_456',
+      },
+    });
+
+    // 2. Return client secret to frontend
+    return Response.json({
+      clientSecret: paymentIntent.client_secret,
+    });
+
+    // 3. Handle webhook confirmation
+    // payment_intent.succeeded event
+    ```
+
+  </Accordion>
+
+  <Accordion title="Setup Intent for Saved Cards" icon="bookmark">
+    ```typescript
+    // Save payment method for future use
+    const setupIntent = await stripe.setupIntents.create({
+      customer: customerId,
+      payment_method_types: ['card'],
+      usage: 'off_session',
+    });
+
+    return Response.json({
+      clientSecret: setupIntent.client_secret,
+    });
+    ```
+
+  </Accordion>
+</AccordionGroup>
+
+### Subscription Management
+
+<AccordionGroup>
+  <Accordion title="Create Subscription" icon="repeat">
+    ```typescript
+    // Create subscription with trial
+    const subscription = await stripe.subscriptions.create({
+      customer: customerId,
+      items: [
+        {
+          price: 'price_monthly_pro',
+          quantity: 1,
+        },
+      ],
+      trial_period_days: 14,
+      metadata: {
+        organizationId: 'org_123',
+        plan: 'pro',
+      },
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Update Subscription" icon="edit">
+    ```typescript
+    // Upgrade/downgrade subscription
+    const subscription = await stripe.subscriptions.update(subscriptionId, {
+      items: [
+        {
+          id: subscriptionItemId,
+          price: 'price_monthly_enterprise',
+        },
+      ],
+      proration_behavior: 'create_prorations',
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Cancel Subscription" icon="x">
+    ```typescript
+    // Cancel at period end
+    const subscription = await stripe.subscriptions.update(subscriptionId, {
+      cancel_at_period_end: true,
+    });
+
+    // Immediate cancellation
+    const canceledSubscription = await stripe.subscriptions.cancel(subscriptionId);
+    ```
+
+  </Accordion>
+</AccordionGroup>
+
+## AI Agent Toolkit
+
+### Stripe Agent Toolkit Integration
+
+```typescript
+import { paymentsAgentToolkit } from "@repo/payments/ai";
+
+// Available when STRIPE_SECRET_KEY is configured
+if (paymentsAgentToolkit) {
+  // The toolkit provides AI agents with limited Stripe operations:
+  // - paymentLinks.create
+  // - prices.create
+  // - products.create
+  // Use with AI SDK or other agent frameworks
+  // See @stripe/agent-toolkit documentation for usage
+} else {
+  // Toolkit is null when STRIPE_SECRET_KEY is not available
+  console.log("Stripe AI toolkit not available - missing secret key");
+}
+```
+
+## Development Features
+
+### Mock Mode
+
+```typescript
+// Without STRIPE_SECRET_KEY in development
+import { stripe } from "@repo/payments/server";
+
+// Returns mock objects for development
+const mockCustomer = await stripe.customers.create({
+  email: "test@example.com"
+});
+
+// Mock customer object:
+// {
+//   id: 'cus_mock_123',
+//   email: 'test@example.com',
+//   created: 1234567890,
+//   ...
+// }
+```
+
+### Testing with Mock Mode
+
+```typescript
+// Mock mode automatically activates without STRIPE_SECRET_KEY
+import { stripe } from "@repo/payments/server";
+
+// In tests, remove STRIPE_SECRET_KEY from environment
+delete process.env.STRIPE_SECRET_KEY;
+
+test("payment processing with mocks", async () => {
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: 2000,
+    currency: "usd"
+  });
+
+  // Returns mock objects
+  expect(paymentIntent.id).toMatch(/^mock_paymentIntents_/);
+});
+```
+
+## Error Handling
+
+```typescript
+import Stripe from "stripe";
+import { logError } from "@repo/observability/server/next";
+
+try {
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: 2000,
+    currency: "usd",
+    customer: customerId
+  });
+} catch (error) {
+  switch (error.type) {
+    case "StripeCardError":
+      logError("Card payment declined", {
+        error: error.message,
+        code: error.decline_code,
+        brand: error.payment_method?.card?.brand
+      });
+      break;
+    case "StripeInvalidRequestError":
+      logError("Invalid payment request", {
+        error: error.message,
+        param: error.param
+      });
+      break;
+    default:
+      logError("Payment processing error", {
+        error: error.message,
+        type: error.type,
+        code: error.code
+      });
+  }
+  throw error;
+}
+```
+
+## Security Best Practices
+
+<Warning>
+  Always use server-side Stripe operations. Never expose secret keys to the
+  client.
+</Warning>
+
+- **Server-Only**: All Stripe operations happen server-side
+- **Webhook Verification**: Always verify webhook signatures
+- **Metadata Usage**: Store internal IDs in Stripe metadata
+- **Amount Validation**: Validate amounts before processing
+- **Idempotency**: Use idempotency keys for critical operations
+
+```typescript
+// Use idempotency for critical operations
+const paymentIntent = await stripe.paymentIntents.create(
+  {
+    amount: 2000,
+    currency: "usd",
+    customer: customerId
+  },
+  {
+    idempotencyKey: `payment_${orderId}_${timestamp}`
+  }
+);
+```
+
+The payments package provides a secure, development-friendly Stripe integration
+with AI capabilities for automated payment processing and comprehensive error
+handling.

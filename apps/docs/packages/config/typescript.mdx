@@ -1,0 +1,207 @@
+---
+title: "TypeScript Configuration"
+description:
+  "Shared TypeScript configurations optimized for Next.js, React libraries, and
+  Node.js applications"
+icon: "code"
+---
+
+# TypeScript Config Package
+
+Shared TypeScript configurations providing consistent, optimized settings across
+all packages and applications in the Forge monorepo.
+
+## Overview
+
+The TypeScript config package provides pre-configured TypeScript settings
+optimized for different project types, ensuring consistent type checking,
+compilation, and development experience across the entire codebase.
+
+<CardGroup cols={2}>
+  <Card title="Next.js Configuration" icon="react">
+    Optimized for Next.js applications with App Router and React 19
+  </Card>
+  <Card title="React Library Configuration" icon="cube">
+    Perfect for React component libraries and shared packages
+  </Card>
+  <Card title="Node.js Configuration" icon="server">
+    Configured for Node.js applications and API services
+  </Card>
+  <Card title="Base Configuration" icon="foundation">
+    Core settings shared across all project types
+  </Card>
+</CardGroup>
+
+## Installation
+
+```bash
+pnpm add -D @repo/config
+```
+
+## Available Configurations
+
+<Tabs>
+  <Tab title="Next.js Apps">
+    For Next.js applications (apps/docs, apps/storybook, etc.):
+    
+    ```json
+    // tsconfig.json
+    {
+      "extends": "@repo/config/typescript/nextjs.json",
+      "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+          "@/*": ["./src/*"]
+        }
+      },
+      "include": [
+        "next-env.d.ts",
+        "**/*.ts",
+        "**/*.tsx",
+        ".next/types/**/*.ts"
+      ],
+      "exclude": ["node_modules"]
+    }
+    ```
+  </Tab>
+  
+  <Tab title="React Libraries">
+    For React component libraries and UI packages:
+    
+    ```json
+    // tsconfig.json
+    {
+      "extends": "@repo/config/typescript/react-library.json",
+      "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+          "@/*": ["./src/*"]
+        }
+      },
+      "include": ["src/**/*"],
+      "exclude": ["node_modules", "dist", "**/*.test.*", "**/*.spec.*"]
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Node.js Services">
+    For Node.js applications and API services:
+    
+    ```json
+    // tsconfig.json
+    {
+      "extends": "@repo/config/typescript/base.json",
+      "compilerOptions": {
+        "target": "ES2022",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "allowSyntheticDefaultImports": true,
+        "baseUrl": ".",
+        "paths": {
+          "@/*": ["./src/*"]
+        }
+      },
+      "include": ["src/**/*"],
+      "exclude": ["node_modules", "dist"]
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Base Config">
+    Core configuration for all TypeScript projects:
+    
+    ```json
+    // base.json
+    {
+      "compilerOptions": {
+        "target": "ES2022",
+        "lib": ["ES2022"],
+        "allowJs": true,
+        "skipLibCheck": true,
+        "strict": true,
+        "noEmit": true,
+        "esModuleInterop": true,
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "jsx": "preserve",
+        "incremental": true,
+        "plugins": [
+          {
+            "name": "next"
+          }
+        ]
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Configuration Features
+
+### Strict Type Checking
+
+<CodeGroup>
+```json Strict Mode Settings
+{
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true
+  }
+}
+```
+
+```json Additional Checks
+{
+  "compilerOptions": {
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true
+  }
+}
+```
+
+</CodeGroup>
+
+### Modern JavaScript Features
+
+<AccordionGroup>
+  <Accordion title="ES2022 Target" icon="javascript">
+    - Top-level await support - Private class fields and methods - Class static blocks - RegExp
+    match indices - Array.at() method - Object.hasOwn() method
+  </Accordion>
+
+<Accordion title="Module System" icon="puzzle">
+  - ESNext module format for modern bundlers - Bundler module resolution for
+  optimal tree shaking - Import/export syntax with full ES module support - JSON
+  module imports for configuration files
+</Accordion>
+
+  <Accordion title="JSX Support" icon="react">
+    - Preserve JSX for Next.js transformation - React 19 compatibility - Automatic JSX runtime
+    support - TypeScript-first JSX type checking
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<Note>
+  **Configuration Guidelines:** 1. Always extend from the appropriate base
+  configuration 2. Minimize custom overrides - prefer consistent defaults 3. Use
+  strict type checking in all environments 4. Enable incremental compilation for
+  better performance 5. Keep include/exclude patterns specific and minimal
+</Note>
+
+The TypeScript config package ensures consistent, modern TypeScript
+configuration across the entire Forge platform, providing excellent developer
+experience while maintaining strict type safety and optimal performance.

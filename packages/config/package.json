@@ -1,0 +1,43 @@
+{
+  "name": "@repo/config",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./typescript": "./src/typescript/",
+    "./typescript/*": "./src/typescript/*",
+    "./next": "./src/next/index.ts",
+    "./next/keys": "./keys.ts",
+    "./prettier": "./src/prettier/index.mjs",
+    "./knip": "./src/knip/package.json",
+    "./knip/*": "./src/knip/*",
+    "./keys": {
+      "types": "./keys.ts",
+      "import": "./keys.ts"
+    }
+  },
+  "scripts": {
+    "circular": "madge --circular --extensions ts,tsx,js,jsx .",
+    "knip": "knip --fix --reporter json",
+    "prettier": "cd ../.. && pnpm exec prettier --log-level=error \"**/*.{ts,tsx,js,jsx,json,md,mdx,css,scss,yaml,yml,graphql,gql}\" --ignore-path packages/config/.prettierignore --config packages/config/src/prettier/index.mjs --write",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
+  "dependencies": {
+    "@next/bundle-analyzer": "15.4.1",
+    "@prisma/nextjs-monorepo-workaround-plugin": "^6.11.1",
+    "@t3-oss/env-core": "^0.13.8",
+    "@t3-oss/env-nextjs": "catalog:",
+    "chalk": "^5.4.1",
+    "prettier-plugin-organize-imports": "^4.1.0",
+    "prettier-plugin-packagejson": "^2.5.18",
+    "prettier-plugin-sh": "^0.18.0",
+    "prettier-plugin-tailwindcss": "^0.6.14",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "next": "catalog:",
+    "prettier": "^3.6.2"
+  },
+  "peerDependencies": {
+    "next": "catalog:"
+  }
+}

@@ -1,0 +1,424 @@
+---
+title: "Redis Testing Overview"
+description:
+  "Comprehensive Redis testing framework with mocks, SRH integration, and
+  production testing capabilities"
+icon: "database"
+---
+
+# Redis Testing Overview
+
+The Forge platform provides a comprehensive Redis testing framework that
+supports multiple testing scenarios, from fast unit tests with mocks to full
+integration testing with real Redis instances.
+
+## Testing Capabilities
+
+<CardGroup cols={2}>
+  <Card title="In-Memory Mocks" icon="memory">
+    Fast, isolated testing without external dependencies
+  </Card>
+  <Card title="SRH Integration" icon="server">
+    Real Redis behavior via HTTP proxy for CI/CD environments
+  </Card>
+  <Card title="Production Testing" icon="cloud">
+    Test against actual Upstash Redis instances
+  </Card>
+  <Card title="Automatic Fallback" icon="arrows-alt">
+    Seamless switching between implementations
+  </Card>
+</CardGroup>
+
+## Quick Start
+
+### Basic Redis Testing
+
+```typescript
+import { createRedisClient } from "@repo/qa/vitest/mocks/upstash-redis";
+
+describe("Redis Tests", () => {
+  let redis: ReturnType<typeof createRedisClient>;
+
+  beforeEach(() => {
+    redis = createRedisClient(); // Auto-detects environment
+  });
+
+  it("should handle basic operations", async () => {
+    await redis.set("test:key", "test-value");
+    const result = await redis.get("test:key");
+    expect(result).toBe("test-value");
+  });
+});
+```
+
+### SRH Integration
+
+```typescript
+import { withSRH } from "@repo/qa/vitest/setup/srh";
+import { createRedisClient } from "@repo/qa/vitest/mocks/upstash-redis";
+
+describe("Redis Integration Tests", () => {
+  it("should work with real Redis via SRH", async () => {
+    await withSRH(async () => {
+      const redis = createRedisClient();
+
+      // Test real Redis operations
+      await redis.set("user:123", JSON.stringify({ name: "John" }));
+      const user = JSON.parse((await redis.get("user:123")) || "{}");
+      expect(user.name).toBe("John");
+    });
+  });
+});
+```
+
+## Testing Strategies
+
+### Environment-Based Testing
+
+The testing framework automatically chooses the best Redis implementation based
+on your environment:
+
+| Environment           | Implementation     | Use Case                          |
+| --------------------- | ------------------ | --------------------------------- |
+| **Unit Tests**        | In-Memory Mocks    | Fast, isolated testing            |
+| **CI/CD Pipeline**    | SRH Proxy          | Real Redis behavior without setup |
+| **Integration Tests** | Real Upstash Redis | Production-like testing           |
+| **Local Development** | SRH + Local Redis  | Full Redis functionality          |
+
+### Implementation Selection
+
+```typescript
+import { createRedisClient } from "@repo/qa/vitest/mocks/upstash-redis";
+
+// Automatically selects based on environment variables:
+// - No env vars → In-memory mocks
+// - SRH_MODE=proxy → SRH adapter
+// - UPSTASH_REDIS_REST_URL → Real Upstash Redis
+const redis = createRedisClient();
+```
+
+## Key Features
+
+### Complete Redis API Support
+
+The mock implementation supports all major Redis operations:
+
+- **String Operations**: `set`, `get`, `setex`, `mset`, `mget`, `incr`, `decr`
+- **Hash Operations**: `hset`, `hget`, `hgetall`, `hincrby`, `hdel`
+- **List Operations**: `lpush`, `rpush`, `lpop`, `rpop`, `lrange`, `llen`
+- **Set Operations**: `sadd`, `srem`, `smembers`, `sismember`, `sinter`
+- **Sorted Set Operations**: `zadd`, `zrange`, `zscore`, `zcount`
+- **Key Management**: `del`, `exists`, `expire`, `ttl`, `keys`
+
+### Advanced Features
+
+- **Pipeline Support**: Batch operations for performance
+- **Expiration Handling**: Automatic key expiration with TTL
+- **JSON Serialization**: Built-in support for complex objects
+- **Pattern Matching**: Key pattern operations for bulk management
+- **Error Simulation**: Test error conditions and edge cases
+
+### Collection Adapter
+
+Higher-level operations for complex data structures:
+
+```typescript
+import { createRedisAdapter } from "@repo/qa/vitest/mocks/upstash-redis";
+
+const adapter = createRedisAdapter();
+
+// Store complex objects with expiration
+await adapter.setWithExpiry("user:123", userData, 3600);
+
+// Pattern-based operations
+await adapter.deletePattern("session:*");
+
+// Bulk operations
+await adapter.setMultiple(operations);
+```
+
+## Testing Patterns
+
+### Cache Testing
+
+```typescript
+describe("Cache Implementation", () => {
+  it("should implement cache-aside pattern", async () => {
+    const redis = createRedisClient();
+
+    const getCachedUser = async (userId: string) => {
+      const cacheKey = `user:${userId}`;
+
+      // Try cache first
+      let user = await redis.get(cacheKey);
+      if (user) return JSON.parse(user);
+
+      // Simulate database fetch
+      user = { id: userId, name: `User ${userId}` };
+
+      // Cache for 1 hour
+      await redis.setex(cacheKey, 3600, JSON.stringify(user));
+      return user;
+    };
+
+    // Test cache miss and hit
+    const user1 = await getCachedUser("123");
+    const user2 = await getCachedUser("123"); // Should hit cache
+
+    expect(user1).toStrictEqual(user2);
+  });
+});
+```
+
+### Session Management
+
+```typescript
+describe("Session Management", () => {
+  it("should handle user sessions", async () => {
+    const adapter = createRedisAdapter();
+
+    const sessionData = {
+      userId: "user_123",
+      loginTime: Date.now(),
+      permissions: ["read", "write"]
+    };
+
+    // Create session with expiration
+    await adapter.setWithExpiry("session:abc123", sessionData, 30 * 60);
+
+    // Verify session
+    const session = await adapter.get("session:abc123");
+    expect(session).toStrictEqual(sessionData);
+
+    // Test session cleanup
+    await adapter.deletePattern("session:*");
+    const remaining = await adapter.keys("session:*");
+    expect(remaining).toHaveLength(0);
+  });
+});
+```
+
+### Rate Limiting
+
+```typescript
+describe("Rate Limiting", () => {
+  it("should implement sliding window rate limiting", async () => {
+    const redis = createRedisClient();
+
+    const checkRateLimit = async (userId: string, limit = 10) => {
+      const key = `rate_limit:${userId}`;
+      const now = Date.now();
+
+      // Remove old entries
+      await redis.zremrangebyscore(key, 0, now - 60000);
+
+      // Count current requests
+      const currentCount = await redis.zcard(key);
+
+      if (currentCount >= limit) {
+        return { allowed: false, remaining: 0 };
+      }
+
+      // Add current request
+      await redis.zadd(key, { score: now, member: `${now}-${Math.random()}` });
+      await redis.expire(key, 60);
+
+      return { allowed: true, remaining: limit - currentCount - 1 };
+    };
+
+    // Test rate limiting
+    const userId = "user123";
+
+    // Make requests up to limit
+    for (let i = 0; i < 10; i++) {
+      const result = await checkRateLimit(userId);
+      expect(result.allowed).toBe(true);
+    }
+
+    // 11th request should be rate limited
+    const rateLimited = await checkRateLimit(userId);
+    expect(rateLimited.allowed).toBe(false);
+  });
+});
+```
+
+## CI/CD Integration
+
+### GitHub Actions
+
+```yaml
+name: Redis Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+
+      srh:
+        image: hiett/serverless-redis-http:latest
+        ports:
+          - 8080:80
+        env:
+          SRH_MODE: env
+          SRH_CONNECTION_STRING: redis://redis:6379
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - run: pnpm install
+      - run: pnpm test:redis
+        env:
+          SRH_MODE: proxy
+          SRH_CONNECTION_STRING: http://localhost:8080
+```
+
+### Docker Compose
+
+```yaml
+# docker-compose.test.yml
+version: "3.8"
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  srh:
+    image: hiett/serverless-redis-http:latest
+    ports:
+      - "8080:80"
+    environment:
+      SRH_MODE: env
+      SRH_CONNECTION_STRING: redis://redis:6379
+    depends_on:
+      - redis
+
+  tests:
+    build: .
+    environment:
+      SRH_MODE: proxy
+      SRH_CONNECTION_STRING: http://srh:80
+    depends_on:
+      - srh
+```
+
+## Best Practices
+
+### Test Organization
+
+<CardGroup cols={2}>
+  <Card title="Unit Tests" icon="flask">
+    Use mocks for fast, isolated testing of Redis-dependent logic
+  </Card>
+  <Card title="Integration Tests" icon="link">
+    Use SRH or real Redis for testing Redis integration points
+  </Card>
+  <Card title="Performance Tests" icon="gauge">
+    Use real Redis for performance and load testing
+  </Card>
+  <Card title="E2E Tests" icon="globe">
+    Use production Redis for end-to-end scenarios
+  </Card>
+</CardGroup>
+
+### Environment Configuration
+
+```bash
+# Local development with SRH
+SRH_MODE=proxy
+SRH_CONNECTION_STRING=http://localhost:8080
+
+# CI/CD with SRH
+SRH_MODE=proxy
+SRH_CONNECTION_STRING=http://srh:80
+
+# Production testing
+UPSTASH_REDIS_REST_URL=https://your-redis.upstash.io
+UPSTASH_REDIS_REST_TOKEN=your-token
+
+# Mock testing (default)
+# No environment variables needed
+```
+
+### Error Handling
+
+```typescript
+describe("Error Handling", () => {
+  it("should handle Redis failures gracefully", async () => {
+    const redis = createRedisClient();
+
+    // Test connection errors
+    try {
+      await redis.get("nonexistent-key");
+    } catch (error) {
+      // Should handle gracefully
+      expect(error).toBeDefined();
+    }
+
+    // Test invalid operations
+    await redis.set("string-key", "value");
+
+    try {
+      await redis.lpush("string-key", "item");
+    } catch (error) {
+      expect(error.message).toContain("wrong kind of value");
+    }
+  });
+});
+```
+
+## Documentation
+
+For detailed information about specific Redis testing capabilities:
+
+- **[SRH Integration](/packages/qa/srh-integration)** - Serverless Redis HTTP
+  testing
+- **[Upstash Redis Testing](/packages/qa/upstash-redis)** - Comprehensive Redis
+  testing patterns
+- **[Testing Framework](/packages/testing)** - General testing framework
+  overview
+
+## Migration Guide
+
+### From Direct Upstash Usage
+
+```typescript
+// Before: Direct Upstash usage
+import { Redis } from "@upstash/redis";
+const redis = new Redis({ url: "...", token: "..." });
+
+// After: Environment-aware testing
+import { createRedisClient } from "@repo/qa/vitest/mocks/upstash-redis";
+const redis = createRedisClient(); // Auto-detects environment
+```
+
+### From Manual Mocks
+
+```typescript
+// Before: Manual mocking
+vi.mock("@upstash/redis", () => ({
+  Redis: vi.fn().mockImplementation(() => ({
+    get: vi.fn(),
+    set: vi.fn()
+  }))
+}));
+
+// After: Comprehensive mock implementation
+import { createRedisClient } from "@repo/qa/vitest/mocks/upstash-redis";
+const redis = createRedisClient(); // Full Redis API support
+```
+
+The Redis testing framework provides a comprehensive solution for testing
+Redis-dependent code across all environments, from fast unit tests to
+production-like integration testing.
