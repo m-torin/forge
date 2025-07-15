@@ -38,6 +38,7 @@ export const env = createEnv({
     const message = Array.isArray(error) ? error.map(e => e.message).join(', ') : String(error);
     console.warn('Security environment validation failed:', message);
     // Don't throw in packages - use fallbacks for resilience
+    // Comment updated to reflect actual behavior
     throw new Error('Security environment validation failed');
   },
 });

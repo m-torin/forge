@@ -59,8 +59,8 @@ export function createFeatureFlagMiddleware(options: FeatureFlagMiddlewareOption
       response = NextResponse.rewrite(rewriteUrl, { request });
     }
 
-    // Set visitor ID cookie if generated
-    if (visitorId && (!request.cookies.has(visitorCookieName) || !response)) {
+    // Set visitor ID cookie if generated and not already present
+    if (visitorId && !request.cookies.has(visitorCookieName)) {
       response = response || NextResponse.next();
       response.cookies.set(visitorCookieName, visitorId, {
         httpOnly: true,

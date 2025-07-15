@@ -28,6 +28,7 @@ export function JsonLd({ data, id, strategy: strategy = 'afterInteractive' }: Js
           key={id ? `${id}-${index}` : index}
           dangerouslySetInnerHTML={{ __html: JSON.stringify(item) }}
           type="application/ld+json"
+          data-testid={id || `jsonld-script`}
         />
       ))}
     </>
@@ -47,6 +48,7 @@ export function OptimizedJsonLd({ data, id, strategy = 'afterInteractive' }: Jso
           id={id ? `${id}-${index}` : `jsonld-${index}`}
           strategy={strategy}
           type="application/ld+json"
+          data-testid={id ? `${id}-${index}` : `optimized-jsonld-script`}
         />
       ))}
     </>
@@ -62,7 +64,7 @@ interface StreamingJsonLdProps extends Record<string, any> {
 
 export function StreamingJsonLd({ dataPromise, id, fallback }: StreamingJsonLdProps) {
   return (
-    <Suspense fallback={fallback ? <JsonLd data={fallback} id={`${id}-fallback`} /> : null}>
+    <Suspense fallback={fallback ? <JsonLd data={fallback} id={id ? `${id}-0` : undefined} /> : null}>
       <StreamingJsonLdInner dataPromise={dataPromise} id={id} />
     </Suspense>
   );

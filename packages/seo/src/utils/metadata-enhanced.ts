@@ -127,12 +127,12 @@ export class SEOManager {
         type: article ? 'article' : 'website',
         ...(article && {
           article: {
-            authors: article.authors,
-            expirationTime: article.expirationTime,
-            modifiedTime: article.modifiedTime,
-            publishedTime: article.publishedTime,
-            section: article.section,
-            tags: article.tags,
+            ...(article.authors && { authors: article.authors }),
+            ...(article.expirationTime && { expirationTime: article.expirationTime }),
+            ...(article.modifiedTime && { modifiedTime: article.modifiedTime }),
+            ...(article.publishedTime && { publishedTime: article.publishedTime }),
+            ...(article.section && { section: article.section }),
+            ...(article.tags && { tags: article.tags }),
           },
         }),
       },

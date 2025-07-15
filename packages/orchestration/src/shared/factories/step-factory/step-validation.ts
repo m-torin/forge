@@ -142,3 +142,80 @@ export async function validateStepOutput<TOutput>(
     );
   }
 }
+
+/**
+ * Validate step execution result including both input and output validation
+ */
+export async function validateStepExecution<TInput, TOutput>(
+  input: TInput,
+  output: TOutput,
+  config?: StepValidationConfig<TInput>,
+  outputSchema?: z.ZodSchema<TOutput>
+): Promise<ValidationResult> {
+  const errors: string[] = [];
+
+  try {
+    // Validate input
+    await validateStepInput(input, config);
+  } catch (error) {
+    errors.push(error instanceof Error ? error.message : 'Input validation failed');
+  }
+
+  try {
+    // Validate output
+    await validateStepOutput(output, outputSchema);
+  } catch (error) {
+    errors.push(error instanceof Error ? error.message : 'Output validation failed');
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors: errors.length > 0 ? errors : undefined,
+  };
+}
+
+/**
+ * Create a step validator with custom rules
+ */
+export function createStepValidator<TInput, TOutput>(
+  config: StepValidationConfig<TInput>,
+  outputSchema?: z.ZodSchema<TOutput>
+) {
+  return {
+    async validateInput(input: TInput): Promise<ValidationResult> {
+      try {
+        await validateStepInput(input, config);
+        return { valid: true };
+      } catch (error) {
+        return {
+          valid: false,
+          errors: [error instanceof Error ? error.message : 'Input validation failed']
+        };
+      }
+    },
+
+    async validateOutput(output: TOutput): Promise<ValidationResult> {
+      try {
+        await validateStepOutput(output, outputSchema);
+        return { valid: true };
+      } catch (error) {
+        return {
+          valid: false,
+          errors: [error instanceof Error ? error.message : 'Output validation failed']
+        };
+      }
+    },
+
+    async validateExecution(input: TInput, output: TOutput): Promise<ValidationResult> {
+      return validateStepExecution(input, output, config, outputSchema);
+    },
+
+    getConfig() {
+      return config;
+    },
+
+    getOutputSchema() {
+      return outputSchema;
+    }
+  };
+}

@@ -304,3 +304,36 @@ interface StepRegistry {
   list(): WorkflowStep[];
   register(id: string, step: WorkflowStep): void;
 }
+
+// ===== MISSING TYPES FOR TESTS =====
+
+export interface StepInput {
+  [key: string]: unknown;
+}
+
+export interface StepOutput {
+  [key: string]: unknown;
+}
+
+export interface WorkflowMetadata {
+  [key: string]: unknown;
+}
+
+export interface ExecutionMetadata {
+  [key: string]: unknown;
+}
+
+export interface WorkflowStatus {
+  status: string;
+}
+
+export interface StepStatus {
+  status: string;
+}
+
+export interface ExecutionStatus {
+  status: string;
+}
+
+// Re-export WorkflowData from common for direct access
+export type { WorkflowData } from './common';

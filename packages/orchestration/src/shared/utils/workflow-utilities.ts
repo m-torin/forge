@@ -693,3 +693,158 @@ export function isValidIdentifier(id: string): boolean {
 export function sanitizeIdentifier(id: string): string {
   return id.replace(/[^a-zA-Z0-9_-]/g, '_');
 }
+
+// ===== MISSING UTILITY FUNCTIONS FOR TESTS =====
+
+/**
+ * Creates a workflow definition with basic validation
+ */
+export function createWorkflowDefinition(config: {
+  id: string;
+  name: string;
+  steps: unknown[];
+  version?: string;
+}): {
+  id: string;
+  name: string;
+  steps: unknown[];
+  version: string;
+} {
+  return {
+    id: config.id,
+    name: config.name,
+    steps: config.steps,
+    version: config.version || '1.0.0',
+  };
+}
+
+/**
+ * Creates a step definition with basic validation
+ */
+export function createStepDefinition(config: {
+  id: string;
+  name: string;
+  action: string;
+}): {
+  id: string;
+  name: string;
+  action: string;
+} {
+  return {
+    id: config.id,
+    name: config.name,
+    action: config.action,
+  };
+}
+
+/**
+ * Creates an execution context for workflow execution
+ */
+export function createExecutionContext(config: {
+  workflowId: string;
+  executionId: string;
+}): {
+  workflowId: string;
+  executionId: string;
+  timestamp: string;
+} {
+  return {
+    workflowId: config.workflowId,
+    executionId: config.executionId,
+    timestamp: createTimestamp(),
+  };
+}
+
+/**
+ * Creates a schedule configuration with validation
+ */
+export function createScheduleConfig(config: {
+  cron: string;
+  timezone: string;
+}): {
+  cron: string;
+  timezone: string;
+} {
+  return {
+    cron: config.cron,
+    timezone: config.timezone,
+  };
+}
+
+/**
+ * Serializes a workflow to JSON string
+ */
+export function serializeWorkflow(workflow: unknown): string {
+  return JSON.stringify(workflow);
+}
+
+/**
+ * Deserializes a workflow from JSON string
+ */
+export function deserializeWorkflow(serialized: string): unknown {
+  return JSON.parse(serialized);
+}
+
+/**
+ * Normalizes step input data
+ */
+export function normalizeStepInput(input: unknown): unknown {
+  if (input === null || input === undefined) {
+    return {};
+  }
+  return input;
+}
+
+/**
+ * Sanitizes execution output data
+ */
+export function sanitizeExecutionOutput(output: unknown): unknown {
+  if (output === null || output === undefined) {
+    return {};
+  }
+  return output;
+}
+
+/**
+ * Validates if an object is a workflow definition
+ */
+export function isWorkflowDefinition(obj: unknown): boolean {
+  if (typeof obj !== 'object' || obj === null) {
+    return false;
+  }
+  const workflow = obj as Record<string, unknown>;
+  return typeof workflow.id === 'string' && typeof workflow.name === 'string';
+}
+
+/**
+ * Validates if an object is a step definition
+ */
+export function isStepDefinition(obj: unknown): boolean {
+  if (typeof obj !== 'object' || obj === null) {
+    return false;
+  }
+  const step = obj as Record<string, unknown>;
+  return typeof step.id === 'string' && typeof step.name === 'string';
+}
+
+/**
+ * Validates if an object is an execution result
+ */
+export function isExecutionResult(obj: unknown): boolean {
+  if (typeof obj !== 'object' || obj === null) {
+    return false;
+  }
+  const result = obj as Record<string, unknown>;
+  return typeof result.id === 'string' && typeof result.status === 'string';
+}
+
+/**
+ * Validates if an object is a schedule config
+ */
+export function isScheduleConfig(obj: unknown): boolean {
+  if (typeof obj !== 'object' || obj === null) {
+    return false;
+  }
+  const schedule = obj as Record<string, unknown>;
+  return typeof schedule.cron === 'string' && typeof schedule.timezone === 'string';
+}

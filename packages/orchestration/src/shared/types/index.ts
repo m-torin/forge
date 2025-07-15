@@ -13,7 +13,6 @@ export type {
   OperationContext,
   ScheduleData,
   StepData,
-  WorkflowData,
 } from './common';
 
 // Saga pattern types
@@ -62,16 +61,24 @@ export type { ScheduleConfig } from './scheduler';
 
 // Core workflow types
 export type {
+  ExecutionMetadata,
+  ExecutionStatus,
   ListExecutionsOptions,
   ProviderHealth,
   RetryConfig,
+  StepInput,
+  StepOutput,
+  StepStatus,
   WorkflowContext,
+  WorkflowData,
   WorkflowDefinition,
   WorkflowError,
   WorkflowExecution,
   WorkflowExecutionMetadata,
   WorkflowExecutionStatus,
+  WorkflowMetadata,
   WorkflowProvider,
+  WorkflowStatus,
   WorkflowStep,
   WorkflowStepExecution,
   WorkflowStepStatus,
@@ -86,3 +93,9 @@ export interface ScheduledExecution {
   scheduleId: string;
   status: 'completed' | 'failed' | 'pending' | 'running';
 }
+
+// Re-export utility functions from shared utilities
+export * from '../utils';
+
+// Re-export factory functions
+export * from '../factories';

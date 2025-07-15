@@ -22,7 +22,7 @@ describe('productMediaActions', () => {
       delete: vi.fn(),
       exists: vi.fn(),
       getMetadata: vi.fn(),
-      getUrl: vi.fn(),
+      getUrl: vi.fn().mockResolvedValue('https://example.com/signed-url'),
       list: vi.fn(),
     };
 
