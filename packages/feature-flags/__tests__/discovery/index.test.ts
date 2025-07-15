@@ -1,5 +1,5 @@
 import { createFlagsDiscoveryEndpoint } from '@/discovery';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock observability
 vi.mock('@repo/observability/server/next', () => ({
@@ -16,7 +16,7 @@ describe('createFlagsDiscoveryEndpoint', () => {
     vi.clearAllMocks();
   });
 
-  it('should create a discovery endpoint function', () => {
+  test('should create a discovery endpoint function', () => {
     const getProviderData = vi.fn();
     const endpoint = createFlagsDiscoveryEndpoint(getProviderData);
 
@@ -24,7 +24,7 @@ describe('createFlagsDiscoveryEndpoint', () => {
     expect(endpoint.name).toBe('GET');
   });
 
-  it('should return provider data when successful', async () => {
+  test('should return provider data when successful', async () => {
     const mockData = {
       provider: 'test-provider',
       flags: [{ key: 'test-flag', options: [{ label: 'Enabled', value: true }] }],
@@ -40,7 +40,7 @@ describe('createFlagsDiscoveryEndpoint', () => {
     expect(result).toStrictEqual({ json: expect.any(Function), data: mockData });
   });
 
-  it('should return empty flags when provider throws error', async () => {
+  test('should return empty flags when provider throws error', async () => {
     const error = new Error('Provider error');
     const getProviderData = vi.fn().mockRejectedValue(error);
     const endpoint = createFlagsDiscoveryEndpoint(getProviderData);
@@ -61,7 +61,7 @@ describe('createFlagsDiscoveryEndpoint', () => {
     });
   });
 
-  it('should handle non-Error objects gracefully', async () => {
+  test('should handle non-Error objects gracefully', async () => {
     const getProviderData = vi.fn().mockRejectedValue('string error');
     const endpoint = createFlagsDiscoveryEndpoint(getProviderData);
 
@@ -74,7 +74,7 @@ describe('createFlagsDiscoveryEndpoint', () => {
     });
   });
 
-  it('should log errors when provider fails', async () => {
+  test('should log errors when provider fails', async () => {
     const { logError } = vi.mocked(await import('@repo/observability/server/next'));
     const error = new Error('Provider error');
     const getProviderData = vi.fn().mockRejectedValue(error);
@@ -87,7 +87,7 @@ describe('createFlagsDiscoveryEndpoint', () => {
     });
   });
 
-  it('should work with async provider data', async () => {
+  test('should work with async provider data', async () => {
     const mockData = {
       provider: 'async-provider',
       flags: [{ key: 'async-flag', options: [{ label: 'Test', value: 'test' }] }],
@@ -106,7 +106,7 @@ describe('createFlagsDiscoveryEndpoint', () => {
     expect(result).toStrictEqual({ json: expect.any(Function), data: mockData });
   });
 
-  it('should handle empty flags array', async () => {
+  test('should handle empty flags array', async () => {
     const mockData = {
       provider: 'empty-provider',
       flags: [],

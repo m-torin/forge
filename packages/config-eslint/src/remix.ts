@@ -59,6 +59,14 @@ const config: Linter.FlatConfig[] = [
       'no-console': SEVERITY.ERROR,
     },
   }),
+
+  // Environment files - allow console for error handling (remix override)
+  createConfig({
+    files: ['**/env.ts'],
+    rules: {
+      'no-console': SEVERITY.OFF,
+    },
+  }),
 ];
 
 export default config;

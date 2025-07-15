@@ -2,11 +2,11 @@
  * Basic tests for config utilities that don't require complex setup
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect } from 'vitest';
 
-describe('Config Basic Tests', () => {
-  describe('PROVIDER_REQUIREMENTS', () => {
-    it('should export provider requirements from config', async () => {
+describe('config Basic Tests', () => {
+  describe('pROVIDER_REQUIREMENTS', () => {
+    test('should export provider requirements from config', async () => {
       const { PROVIDER_REQUIREMENTS } = await import('@/shared/utils/config');
 
       expect(PROVIDER_REQUIREMENTS).toBeDefined();
@@ -17,7 +17,7 @@ describe('Config Basic Tests', () => {
       expect(PROVIDER_REQUIREMENTS).toHaveProperty('vercel');
     });
 
-    it('should export provider requirements from config-client', async () => {
+    test('should export provider requirements from config-client', async () => {
       const { PROVIDER_REQUIREMENTS } = await import('@/shared/utils/config-client');
 
       expect(PROVIDER_REQUIREMENTS).toBeDefined();
@@ -28,30 +28,30 @@ describe('Config Basic Tests', () => {
       expect(PROVIDER_REQUIREMENTS).toHaveProperty('vercel');
     });
 
-    it('should have correct requirements for PostHog', async () => {
+    test('should have correct requirements for PostHog', async () => {
       const { PROVIDER_REQUIREMENTS } = await import('@/shared/utils/config');
 
       expect(PROVIDER_REQUIREMENTS.posthog).toContain('apiKey');
-      expect(Array.isArray(PROVIDER_REQUIREMENTS.posthog)).toBe(true);
+      expect(Array.isArray(PROVIDER_REQUIREMENTS.posthog)).toBeTruthy();
     });
 
-    it('should have correct requirements for Segment', async () => {
+    test('should have correct requirements for Segment', async () => {
       const { PROVIDER_REQUIREMENTS } = await import('@/shared/utils/config');
 
       expect(PROVIDER_REQUIREMENTS.segment).toContain('writeKey');
-      expect(Array.isArray(PROVIDER_REQUIREMENTS.segment)).toBe(true);
+      expect(Array.isArray(PROVIDER_REQUIREMENTS.segment)).toBeTruthy();
     });
 
-    it('should have no requirements for console', async () => {
+    test('should have no requirements for console', async () => {
       const { PROVIDER_REQUIREMENTS } = await import('@/shared/utils/config');
 
-      expect(Array.isArray(PROVIDER_REQUIREMENTS.console)).toBe(true);
+      expect(Array.isArray(PROVIDER_REQUIREMENTS.console)).toBeTruthy();
       expect(PROVIDER_REQUIREMENTS.console).toHaveLength(0);
     });
   });
 
   describe('createConfigBuilder', () => {
-    it('should create a config builder', async () => {
+    test('should create a config builder', async () => {
       const { createConfigBuilder } = await import('@/shared/utils/config');
 
       const builder = createConfigBuilder();
@@ -65,7 +65,7 @@ describe('Config Basic Tests', () => {
       expect(typeof builder.addVercel).toBe('function');
     });
 
-    it('should build a basic config', async () => {
+    test('should build a basic config', async () => {
       const { createConfigBuilder } = await import('@/shared/utils/config');
 
       const builder = createConfigBuilder();
@@ -76,7 +76,7 @@ describe('Config Basic Tests', () => {
       expect(typeof config.providers).toBe('object');
     });
 
-    it('should chain configuration methods', async () => {
+    test('should chain configuration methods', async () => {
       const { createConfigBuilder } = await import('@/shared/utils/config');
 
       const builder = createConfigBuilder();
@@ -88,7 +88,7 @@ describe('Config Basic Tests', () => {
   });
 
   describe('getAnalyticsConfig', () => {
-    it('should get a default analytics config', async () => {
+    test('should get a default analytics config', async () => {
       const { getAnalyticsConfig } = await import('@/shared/utils/config');
 
       const config = getAnalyticsConfig();
@@ -98,7 +98,7 @@ describe('Config Basic Tests', () => {
       expect(typeof config.providers).toBe('object');
     });
 
-    it('should get analytics config from client utils', async () => {
+    test('should get analytics config from client utils', async () => {
       const { getAnalyticsConfig } = await import('@/shared/utils/config-client');
 
       const config = getAnalyticsConfig();
@@ -110,7 +110,7 @@ describe('Config Basic Tests', () => {
   });
 
   describe('validateConfig basic functionality', () => {
-    it('should validate a minimal valid config', async () => {
+    test('should validate a minimal valid config', async () => {
       const { validateConfig } = await import('@/shared/utils/config');
 
       const config = {
@@ -122,7 +122,7 @@ describe('Config Basic Tests', () => {
       expect(() => validateConfig(config)).not.toThrow();
     });
 
-    it('should validate config with multiple providers', async () => {
+    test('should validate config with multiple providers', async () => {
       const { validateConfig } = await import('@/shared/utils/config');
 
       const config = {

@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import {
-  _createSafeLogger,
-  _withMaskedErrors,
   createMaskedError,
+  _createSafeLogger as createSafeLogger,
   maskSensitiveData,
   safeConsole,
+  _withMaskedErrors as withMaskedErrors,
 } from '../../src/shared/utils/data-masking';
 
 describe('data-masking utilities', () => {
@@ -71,7 +71,7 @@ describe('data-masking utilities', () => {
       expect(masked.users[1].name).toBe('Jane');
       expect(masked.users[1].password).toBe('[REDACTED]');
       expect(masked.tokens).toBe('[REDACTED]'); // Field name contains 'token'
-      expect(masked.items).toEqual(['item1', 'item2']); // Should not be masked
+      expect(masked.items).toStrictEqual(['item1', 'item2']); // Should not be masked
     });
 
     test('should handle null and undefined values', () => {
@@ -91,7 +91,7 @@ describe('data-masking utilities', () => {
     test('should handle primitive values', () => {
       expect(maskSensitiveData('plain string')).toBe('plain string');
       expect(maskSensitiveData(123)).toBe(123);
-      expect(maskSensitiveData(true)).toBe(true);
+      expect(maskSensitiveData(true)).toBeTruthy();
       expect(maskSensitiveData(null)).toBeNull();
     });
 
@@ -202,7 +202,7 @@ describe('data-masking utilities', () => {
 
   describe('_createSafeLogger', () => {
     test('should create logger with prefix', () => {
-      const logger = _createSafeLogger('TEST');
+      const logger = createSafeLogger('TEST');
 
       expect(typeof logger.log).toBe('function');
       expect(typeof logger.warn).toBe('function');
@@ -210,7 +210,7 @@ describe('data-masking utilities', () => {
     });
 
     test('should create logger without prefix', () => {
-      const logger = _createSafeLogger();
+      const logger = createSafeLogger();
 
       expect(typeof logger.log).toBe('function');
       expect(typeof logger.warn).toBe('function');
@@ -224,15 +224,15 @@ describe('data-masking utilities', () => {
         throw new Error('Password: secret123');
       };
 
-      const wrappedFn = _withMaskedErrors(originalFn);
+      const wrappedFn = withMaskedErrors(originalFn);
 
-      await expect(wrappedFn()).rejects.toThrow();
+      await expect(wrappedFn()).rejects.toThrow('Sensitive data removed');
     });
 
     test('should preserve function return value', async () => {
       const originalFn = (x: number) => x * 2;
 
-      const wrappedFn = _withMaskedErrors(originalFn as (...args: unknown[]) => unknown);
+      const wrappedFn = withMaskedErrors(originalFn as (...args: unknown[]) => unknown);
 
       const result = await wrappedFn(5);
       expect(result).toBe(10);
@@ -241,14 +241,14 @@ describe('data-masking utilities', () => {
     test('should preserve function with no errors', async () => {
       const originalFn = () => 'success';
 
-      const wrappedFn = _withMaskedErrors(originalFn);
+      const wrappedFn = withMaskedErrors(originalFn);
 
       const result = await wrappedFn();
       expect(result).toBe('success');
     });
   });
 
-  describe('Edge Cases', () => {
+  describe('edge Cases', () => {
     test('should handle large objects efficiently', () => {
       const largeObject: any = {};
       for (let i = 0; i < 1000; i++) {
@@ -272,7 +272,7 @@ describe('data-masking utilities', () => {
       const masked = maskSensitiveData(data);
 
       // Date objects get converted to plain objects by the masking function
-      expect(masked.createdAt).toEqual({});
+      expect(masked.createdAt).toStrictEqual({});
       expect(masked.password).toBe('[REDACTED]');
     });
 
@@ -287,8 +287,8 @@ describe('data-masking utilities', () => {
 
       expect(masked.password).toBe('[REDACTED]');
       // Map and Set objects get converted to plain objects by the masking function
-      expect(masked.userMap).toEqual({});
-      expect(masked.dataSet).toEqual({});
+      expect(masked.userMap).toStrictEqual({});
+      expect(masked.dataSet).toStrictEqual({});
     });
 
     test('should handle functions', () => {

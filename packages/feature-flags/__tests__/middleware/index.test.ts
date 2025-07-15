@@ -1,5 +1,5 @@
 import { createFeatureFlagMiddleware } from '@/middleware';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock Next.js imports
 vi.mock('next/server', () => ({
@@ -46,14 +46,14 @@ describe('createFeatureFlagMiddleware', () => {
     vi.clearAllMocks();
   });
 
-  it('should create middleware function', () => {
+  test('should create middleware function', () => {
     const middleware = createFeatureFlagMiddleware();
 
     expect(middleware).toBeInstanceOf(Function);
     expect(middleware.name).toBe('featureFlagMiddleware');
   });
 
-  it('should return undefined when no flags and no visitor ID generation', async () => {
+  test('should return undefined when no flags and no visitor ID generation', async () => {
     const middleware = createFeatureFlagMiddleware({
       generateVisitorId: false,
       flags: [],
@@ -65,7 +65,7 @@ describe('createFeatureFlagMiddleware', () => {
     expect(result).toBeUndefined();
   });
 
-  it('should generate visitor ID when enabled', async () => {
+  test('should generate visitor ID when enabled', async () => {
     const { getOrGenerateVisitorId } = vi.mocked(await import('@/shared/utils'));
     getOrGenerateVisitorId.mockResolvedValue('visitor-123');
 
@@ -91,7 +91,7 @@ describe('createFeatureFlagMiddleware', () => {
     expect(result?.headers.set).toHaveBeenCalledWith('x-visitor-id', 'visitor-123');
   });
 
-  it('should use custom visitor cookie name', async () => {
+  test('should use custom visitor cookie name', async () => {
     const { getOrGenerateVisitorId } = vi.mocked(await import('@/shared/utils'));
     getOrGenerateVisitorId.mockResolvedValue('custom-visitor-123');
 
@@ -116,7 +116,7 @@ describe('createFeatureFlagMiddleware', () => {
     expect(result?.headers.set).toHaveBeenCalledWith('x-custom-visitor', 'custom-visitor-123');
   });
 
-  it('should not set visitor ID cookie if already exists', async () => {
+  test('should not set visitor ID cookie if already exists', async () => {
     const { getOrGenerateVisitorId } = vi.mocked(await import('@/shared/utils'));
     getOrGenerateVisitorId.mockResolvedValue('existing-visitor');
 
@@ -133,7 +133,7 @@ describe('createFeatureFlagMiddleware', () => {
     expect(result).toBeUndefined();
   });
 
-  it('should precompute flags when provided', async () => {
+  test('should precompute flags when provided', async () => {
     const { precompute } = vi.mocked(await import('@vercel/flags/next'));
     precompute.mockResolvedValue('computed-code-123');
 
@@ -157,7 +157,7 @@ describe('createFeatureFlagMiddleware', () => {
     expect(result).toBeDefined();
   });
 
-  it('should use custom code prefix for precomputed routes', async () => {
+  test('should use custom code prefix for precomputed routes', async () => {
     const { precompute } = vi.mocked(await import('@vercel/flags/next'));
     precompute.mockResolvedValue('code-456');
 
@@ -180,7 +180,7 @@ describe('createFeatureFlagMiddleware', () => {
     );
   });
 
-  it('should handle both flags and visitor ID generation', async () => {
+  test('should handle both flags and visitor ID generation', async () => {
     const { precompute } = vi.mocked(await import('@vercel/flags/next'));
     const { getOrGenerateVisitorId } = vi.mocked(await import('@/shared/utils'));
 
@@ -197,9 +197,9 @@ describe('createFeatureFlagMiddleware', () => {
     const result = await middleware(request as any);
 
     expect(precompute).toHaveBeenCalledWith(mockFlags);
-    expect(getOrGenerateVisitorId).toHaveBeenCalled();
+    expect(getOrGenerateVisitorId).toHaveBeenCalledWith();
     const { NextResponse } = vi.mocked(await import('next/server'));
-    expect(NextResponse.rewrite).toHaveBeenCalled();
+    expect(NextResponse.rewrite).toHaveBeenCalledWith();
     expect(result).toBeDefined();
     expect(result?.cookies.set).toHaveBeenCalledWith(
       'visitor-id',
@@ -208,7 +208,7 @@ describe('createFeatureFlagMiddleware', () => {
     );
   });
 
-  it('should handle empty flags array', async () => {
+  test('should handle empty flags array', async () => {
     const middleware = createFeatureFlagMiddleware({
       flags: [],
       generateVisitorId: false,
@@ -220,7 +220,7 @@ describe('createFeatureFlagMiddleware', () => {
     expect(result).toBeUndefined();
   });
 
-  it('should handle complex pathname and search params', async () => {
+  test('should handle complex pathname and search params', async () => {
     const { precompute } = vi.mocked(await import('@vercel/flags/next'));
     precompute.mockResolvedValue('complex-code');
 
@@ -242,7 +242,7 @@ describe('createFeatureFlagMiddleware', () => {
     );
   });
 
-  it('should set visitor ID header when cookie exists but response is created', async () => {
+  test('should set visitor ID header when cookie exists but response is created', async () => {
     const { precompute } = vi.mocked(await import('@vercel/flags/next'));
     const { getOrGenerateVisitorId } = vi.mocked(await import('@/shared/utils'));
 

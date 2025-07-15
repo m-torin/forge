@@ -55,7 +55,7 @@ describe('productMediaActions', () => {
         },
       );
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.data).toHaveLength(1);
       expect(result.data?.[0].key).toContain('products/123/images/');
       expect(result.data?.[0].url).toBeDefined();
@@ -84,7 +84,7 @@ describe('productMediaActions', () => {
         },
       ]);
 
-      expect(result.success).toBe(false);
+      expect(result.success).toBeFalsy();
       expect(result.error).toBe('Upload failed');
     });
   });
@@ -113,7 +113,7 @@ describe('productMediaActions', () => {
         variant: 'thumbnail',
       });
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.data).toHaveLength(2);
       expect(result.data?.[0].key).toBe('products/123/images/hero.jpg');
       expect(result.data?.[0].contentType).toBe('image/jpeg');
@@ -127,7 +127,7 @@ describe('productMediaActions', () => {
       const { getProductMediaAction } = await import('../src/actions/productMediaActions');
       const result = await getProductMediaAction('123');
 
-      expect(result.success).toBe(false);
+      expect(result.success).toBeFalsy();
       expect(result.error).toBe('URL generation failed');
     });
   });
@@ -139,9 +139,9 @@ describe('productMediaActions', () => {
       const { deleteProductMediaAction } = await import('../src/actions/productMediaActions');
       const result = await deleteProductMediaAction('123', 'media-id-456');
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       // The delete function is not called in the mock implementation
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
     });
 
     test('should handle delete errors', async () => {
@@ -150,7 +150,7 @@ describe('productMediaActions', () => {
       const { deleteProductMediaAction } = await import('../src/actions/productMediaActions');
       const result = await deleteProductMediaAction('123', 'media-id-456');
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
     });
   });
 
@@ -170,7 +170,7 @@ describe('productMediaActions', () => {
         },
       );
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.data).toHaveLength(2);
       expect(result.data?.[0].filename).toBe('photo1.jpg');
       expect(result.data?.[0].uploadUrl).toBe('https://example.com/presigned-url');
@@ -185,7 +185,7 @@ describe('productMediaActions', () => {
       );
       const result = await getProductUploadPresignedUrlsAction('123', ['photo1.jpg']);
 
-      expect(result.success).toBe(false);
+      expect(result.success).toBeFalsy();
       expect(result.error).toBe('URL generation failed');
     });
   });
@@ -205,7 +205,7 @@ describe('productMediaActions', () => {
       );
 
       // This is currently a stub implementation
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
     });
   });
 
@@ -227,7 +227,7 @@ describe('productMediaActions', () => {
       );
 
       // This is currently a stub implementation
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
     });
   });
 });

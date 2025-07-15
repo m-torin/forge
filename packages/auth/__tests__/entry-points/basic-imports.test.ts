@@ -2,10 +2,10 @@
  * Basic import tests for entry point files
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect } from 'vitest';
 
 describe('entry point basic structure', () => {
-  it('should have valid client.ts structure', () => {
+  test('should have valid client.ts structure', () => {
     const fs = require('fs');
     const path = require('path');
 
@@ -16,7 +16,7 @@ describe('entry point basic structure', () => {
     expect(content.length).toBeGreaterThan(0);
   });
 
-  it('should have valid server.ts structure', () => {
+  test('should have valid server.ts structure', () => {
     const fs = require('fs');
     const path = require('path');
 
@@ -27,7 +27,7 @@ describe('entry point basic structure', () => {
     expect(content.length).toBeGreaterThan(0);
   });
 
-  it('should have valid server-actions.ts structure', () => {
+  test('should have valid server-actions.ts structure', () => {
     const fs = require('fs');
     const path = require('path');
 
@@ -38,7 +38,7 @@ describe('entry point basic structure', () => {
     expect(content.length).toBeGreaterThan(0);
   });
 
-  it('should have valid types.ts structure', () => {
+  test('should have valid types.ts structure', () => {
     const fs = require('fs');
     const path = require('path');
 

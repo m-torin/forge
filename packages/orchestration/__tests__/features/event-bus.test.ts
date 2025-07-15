@@ -89,7 +89,7 @@ const createEventBus = (options?: {
       handlers.get(pattern)?.push(handler);
 
       // If replay is enabled and requested, replay historical events
-      if (options?.replay && enableReplay) {
+      if (enableReplay && options?.replay) {
         for (const event of history) {
           if (event.type === pattern || matchesPattern(pattern, event.type)) {
             handler(event);
@@ -502,7 +502,7 @@ describe('event Bus', () => {
 
       eventBus.subscribe('task.*', async (event: any) => {
         // Only handle high priority tasks
-        if (event.data?.priority === 'high') {
+        if (event.data.priority === 'high') {
           highPriorityHandler(event);
         }
       });

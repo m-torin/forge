@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, vi } from 'vitest';
 
 // Mock dependencies
 vi.mock('ai', () => ({
@@ -8,8 +8,8 @@ vi.mock('ai', () => ({
   streamText: vi.fn(),
 }));
 
-describe('Shared Module Imports', () => {
-  it('should import feature modules', async () => {
+describe('shared Module Imports', () => {
+  test('should import feature modules', async () => {
     const modules = [
       () => import('@/shared/features/classification/product-classifier'),
       () => import('@/shared/features/classification/training-storage'),
@@ -29,7 +29,7 @@ describe('Shared Module Imports', () => {
     }
   });
 
-  it('should import middleware modules', async () => {
+  test('should import middleware modules', async () => {
     const modules = [
       () => import('@/shared/middleware/error-handling'),
       () => import('@/shared/middleware/logging'),
@@ -43,7 +43,7 @@ describe('Shared Module Imports', () => {
     }
   });
 
-  it('should import model modules', async () => {
+  test('should import model modules', async () => {
     const modules = [
       () => import('@/shared/models/anthropic'),
       () => import('@/shared/models/deep-infra'),
@@ -61,7 +61,7 @@ describe('Shared Module Imports', () => {
     }
   });
 
-  it('should import streaming modules', async () => {
+  test('should import streaming modules', async () => {
     const modules = [() => import('@/shared/streaming/data-stream')];
 
     for (const importModule of modules) {
@@ -70,7 +70,7 @@ describe('Shared Module Imports', () => {
     }
   });
 
-  it('should import tool modules', async () => {
+  test('should import tool modules', async () => {
     const modules = [
       () => import('@/shared/tools/bash-tool'),
       () => import('@/shared/tools/computer-tool'),
@@ -85,7 +85,7 @@ describe('Shared Module Imports', () => {
     }
   });
 
-  it('should import type modules', async () => {
+  test('should import type modules', async () => {
     const modules = [
       () => import('@/shared/types/classification'),
       () => import('@/shared/types/config'),
@@ -102,7 +102,7 @@ describe('Shared Module Imports', () => {
     }
   });
 
-  it('should import UI modules', async () => {
+  test('should import UI modules', async () => {
     const modules = [() => import('@/shared/ui/loading-messages')];
 
     for (const importModule of modules) {
@@ -111,7 +111,7 @@ describe('Shared Module Imports', () => {
     }
   });
 
-  it('should import util modules', async () => {
+  test('should import util modules', async () => {
     const modules = [
       () => import('@/shared/utils/config'),
       () => import('@/shared/utils/messages'),

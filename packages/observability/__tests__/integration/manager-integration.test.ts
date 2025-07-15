@@ -29,19 +29,32 @@ describe('manager Integration Tests', () => {
     test('should exercise shared manager modules', async () => {
       const sharedManagerModule = await import('../../src/shared/utils/manager');
       expect(sharedManagerModule).toBeDefined();
+    });
 
-      // Test what actually exists
-      if (sharedManagerModule.createObservabilityManager) {
-        const mockConfig = { providers: { console: { type: 'console', enabled: true } } };
-        const manager = sharedManagerModule.createObservabilityManager(mockConfig, {});
-        expect(manager).toBeDefined();
+    test('should create observability manager if createObservabilityManager exists', async () => {
+      const sharedManagerModule = await import('../../src/shared/utils/manager');
+
+      // Skip test if function doesn't exist
+      if (!sharedManagerModule.createObservabilityManager) {
+        return;
       }
 
-      if (sharedManagerModule.ObservabilityManager) {
-        const mockConfig = { providers: { console: { type: 'console', enabled: true } } };
-        const manager = new sharedManagerModule.ObservabilityManager(mockConfig, {});
-        expect(manager).toBeDefined();
+      const mockConfig = { providers: { console: { type: 'console', enabled: true } } };
+      const manager = sharedManagerModule.createObservabilityManager(mockConfig, {});
+      expect(manager).toBeDefined();
+    });
+
+    test('should create ObservabilityManager if constructor exists', async () => {
+      const sharedManagerModule = await import('../../src/shared/utils/manager');
+
+      // Skip test if constructor doesn't exist
+      if (!sharedManagerModule.ObservabilityManager) {
+        return;
       }
+
+      const mockConfig = { providers: { console: { type: 'console', enabled: true } } };
+      const manager = new sharedManagerModule.ObservabilityManager(mockConfig, {});
+      expect(manager).toBeDefined();
     });
   });
 

@@ -96,7 +96,7 @@ describe('payments Server Next.js Utilities', () => {
       expect(mockHandler).toHaveBeenCalledWith({ id: 'pi_123' });
 
       const responseData = await response.json();
-      expect(responseData).toEqual({ received: true });
+      expect(responseData).toStrictEqual({ received: true });
     });
 
     test('should return error for missing signature', async () => {
@@ -118,7 +118,7 @@ describe('payments Server Next.js Utilities', () => {
 
       expect(response.status).toBe(400);
       const responseData = await response.json();
-      expect(responseData).toEqual({ error: 'Missing stripe-signature header' });
+      expect(responseData).toStrictEqual({ error: 'Missing stripe-signature header' });
     });
 
     test('should log warning for unhandled event types', async () => {
@@ -210,7 +210,7 @@ describe('payments Server Next.js Utilities', () => {
         payment_method_types: ['card'],
       });
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         id: 'pi_123',
         client_secret: 'pi_123_secret',
         status: 'requires_payment_method',
@@ -304,7 +304,7 @@ describe('payments Server Next.js Utilities', () => {
         metadata: { userId: '123' },
       });
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         id: 'cus_123',
         email: 'test@example.com',
         name: 'Test User',
@@ -335,7 +335,7 @@ describe('payments Server Next.js Utilities', () => {
         metadata: undefined,
       });
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         id: 'cus_123',
         email: 'test@example.com',
         name: null,
@@ -411,7 +411,7 @@ describe('payments Server Next.js Utilities', () => {
         trial_period_days: 14,
       });
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         id: 'sub_123',
         status: 'active',
         current_period_end: 1234567890,
@@ -444,7 +444,7 @@ describe('payments Server Next.js Utilities', () => {
         trial_period_days: undefined,
       });
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         id: 'sub_123',
         status: 'trialing',
       });
@@ -469,7 +469,7 @@ describe('payments Server Next.js Utilities', () => {
         priceId: 'price_123',
       });
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         id: 'sub_123',
         status: 'incomplete',
       });

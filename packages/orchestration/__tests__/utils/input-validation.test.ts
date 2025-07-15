@@ -20,58 +20,78 @@ describe('input-validation utilities', () => {
     test('should validate workflow ID', () => {
       expect(() => commonSchemas.workflowId.parse('valid-workflow_123')).not.toThrow();
       expect(() => commonSchemas.workflowId.parse('workflow.test')).not.toThrow();
-      expect(() => commonSchemas.workflowId.parse('')).toThrow();
-      expect(() => commonSchemas.workflowId.parse('invalid@workflow')).toThrow();
-      expect(() => commonSchemas.workflowId.parse('a'.repeat(256))).toThrow();
+      expect(() => commonSchemas.workflowId.parse('')).toThrow(
+        'String must contain at least 1 character(s)',
+      );
+      expect(() => commonSchemas.workflowId.parse('invalid@workflow')).toThrow('Invalid');
+      expect(() => commonSchemas.workflowId.parse('a'.repeat(256))).toThrow(
+        'String must contain at most 255 character(s)',
+      );
     });
 
     test('should validate execution ID', () => {
       expect(() => commonSchemas.executionId.parse('exec-123_test.run')).not.toThrow();
-      expect(() => commonSchemas.executionId.parse('')).toThrow();
-      expect(() => commonSchemas.executionId.parse('invalid#exec')).toThrow();
+      expect(() => commonSchemas.executionId.parse('')).toThrow(
+        'String must contain at least 1 character(s)',
+      );
+      expect(() => commonSchemas.executionId.parse('invalid#exec')).toThrow('Invalid');
     });
 
     test('should validate schedule ID', () => {
       expect(() => commonSchemas.scheduleId.parse('schedule-daily_backup.v1')).not.toThrow();
-      expect(() => commonSchemas.scheduleId.parse('')).toThrow();
-      expect(() => commonSchemas.scheduleId.parse('schedule with spaces')).toThrow();
+      expect(() => commonSchemas.scheduleId.parse('')).toThrow(
+        'String must contain at least 1 character(s)',
+      );
+      expect(() => commonSchemas.scheduleId.parse('schedule with spaces')).toThrow('Invalid');
     });
 
     test('should validate alert ID', () => {
       expect(() => commonSchemas.alertId.parse('alert-critical_error.v2')).not.toThrow();
-      expect(() => commonSchemas.alertId.parse('')).toThrow();
-      expect(() => commonSchemas.alertId.parse('alert/invalid')).toThrow();
+      expect(() => commonSchemas.alertId.parse('')).toThrow(
+        'String must contain at least 1 character(s)',
+      );
+      expect(() => commonSchemas.alertId.parse('alert/invalid')).toThrow('Invalid');
     });
 
     test('should validate limit with coercion', () => {
       expect(commonSchemas.limit.parse('25')).toBe(25);
       expect(commonSchemas.limit.parse(50)).toBe(50);
       expect(commonSchemas.limit.parse(undefined)).toBe(10); // default
-      expect(() => commonSchemas.limit.parse('0')).toThrow();
-      expect(() => commonSchemas.limit.parse('101')).toThrow();
-      expect(() => commonSchemas.limit.parse('invalid')).toThrow();
+      expect(() => commonSchemas.limit.parse('0')).toThrow(
+        'Number must be greater than or equal to 1',
+      );
+      expect(() => commonSchemas.limit.parse('101')).toThrow(
+        'Number must be less than or equal to 100',
+      );
+      expect(() => commonSchemas.limit.parse('invalid')).toThrow('Expected number, received nan');
     });
 
     test('should validate offset with coercion', () => {
       expect(commonSchemas.offset.parse('100')).toBe(100);
       expect(commonSchemas.offset.parse(0)).toBe(0);
       expect(commonSchemas.offset.parse(undefined)).toBe(0); // default
-      expect(() => commonSchemas.offset.parse('-1')).toThrow();
-      expect(() => commonSchemas.offset.parse('invalid')).toThrow();
+      expect(() => commonSchemas.offset.parse('-1')).toThrow(
+        'Number must be greater than or equal to 0',
+      );
+      expect(() => commonSchemas.offset.parse('invalid')).toThrow('Expected number, received nan');
     });
 
     test('should validate date string', () => {
       expect(() => commonSchemas.dateString.parse('2023-12-25T10:30:00Z')).not.toThrow();
       expect(() => commonSchemas.dateString.parse('2023-12-25T10:30:00.000Z')).not.toThrow();
-      expect(() => commonSchemas.dateString.parse('invalid-date')).toThrow();
-      expect(() => commonSchemas.dateString.parse('2023-12-25')).toThrow();
+      expect(() => commonSchemas.dateString.parse('invalid-date')).toThrow('Invalid date');
+      expect(() => commonSchemas.dateString.parse('2023-12-25')).toThrow('Invalid');
     });
 
     test('should validate tags array', () => {
       expect(() => commonSchemas.tags.parse(['tag1', 'tag2', 'tag3'])).not.toThrow();
       expect(() => commonSchemas.tags.parse([])).not.toThrow();
-      expect(() => commonSchemas.tags.parse(['a'.repeat(51)])).toThrow(); // tag too long
-      expect(() => commonSchemas.tags.parse(Array(21).fill('tag'))).toThrow(); // too many tags
+      expect(() => commonSchemas.tags.parse(['a'.repeat(51)])).toThrow(
+        'String must contain at most 50 character(s)',
+      ); // tag too long
+      expect(() => commonSchemas.tags.parse(Array(21).fill('tag'))).toThrow(
+        'Array must contain at most 20 element(s)',
+      ); // too many tags
     });
 
     test('should validate metadata object', () => {
@@ -80,12 +100,16 @@ describe('input-validation utilities', () => {
 
       // Test size limit
       const largeObject = { data: 'x'.repeat(10001) };
-      expect(() => commonSchemas.metadata.parse(largeObject)).toThrow();
+      expect(() => commonSchemas.metadata.parse(largeObject)).toThrow(
+        'Object size exceeds 10KB limit',
+      );
 
       // Test circular reference handling
       const circular: any = { name: 'test' };
       circular.self = circular;
-      expect(() => commonSchemas.metadata.parse(circular)).toThrow();
+      expect(() => commonSchemas.metadata.parse(circular)).toThrow(
+        'Converting circular structure to JSON',
+      );
     });
   });
 
@@ -108,21 +132,21 @@ describe('input-validation utilities', () => {
         apiSchemas.executeWorkflow.parse({
           options: { priority: 'invalid' },
         }),
-      ).toThrow();
+      ).toThrow('Invalid priority value');
 
       // Invalid delay
       expect(() =>
         apiSchemas.executeWorkflow.parse({
           options: { delay: -1 },
         }),
-      ).toThrow();
+      ).toThrow('Invalid delay value');
 
       // Invalid timeout
       expect(() =>
         apiSchemas.executeWorkflow.parse({
           options: { timeout: 500 },
         }),
-      ).toThrow();
+      ).toThrow('Invalid timeout value');
     });
 
     test('should validate create schedule request', () => {
@@ -145,13 +169,13 @@ describe('input-validation utilities', () => {
         apiSchemas.createSchedule.parse({
           config: { maxExecutions: 0 },
         }),
-      ).toThrow();
+      ).toThrow('Invalid maxExecutions value');
 
       expect(() =>
         apiSchemas.createSchedule.parse({
           config: { maxExecutions: -5 },
         }),
-      ).toThrow();
+      ).toThrow('Invalid maxExecutions value');
     });
 
     test('should validate create alert rule request', () => {
@@ -184,7 +208,7 @@ describe('input-validation utilities', () => {
             actions: [],
           },
         }),
-      ).toThrow();
+      ).toThrow('Invalid condition type');
 
       // Invalid window (too short)
       expect(() =>
@@ -195,7 +219,7 @@ describe('input-validation utilities', () => {
             actions: [],
           },
         }),
-      ).toThrow();
+      ).toThrow('Invalid window value');
 
       // Invalid action type
       expect(() =>
@@ -206,7 +230,7 @@ describe('input-validation utilities', () => {
             actions: [{ type: 'invalid', config: {} }],
           },
         }),
-      ).toThrow();
+      ).toThrow('Invalid action type');
     });
 
     test('should validate acknowledge alert request', () => {
@@ -218,7 +242,7 @@ describe('input-validation utilities', () => {
         apiSchemas.acknowledgeAlert.parse({
           note: 'x'.repeat(1001),
         }),
-      ).toThrow();
+      ).toThrow('Note too long');
     });
   });
 
@@ -236,7 +260,7 @@ describe('input-validation utilities', () => {
       const input = ['<script>bad</script>', 'normal', 'javascript:alert(1)'];
       const result = sanitizeInput(input);
 
-      expect(result).toEqual(['scriptbad/script', 'normal', 'alert(1)']);
+      expect(result).toStrictEqual(['scriptbad/script', 'normal', 'alert(1)']);
     });
 
     test('should sanitize objects', () => {
@@ -251,7 +275,7 @@ describe('input-validation utilities', () => {
 
       const result = sanitizeInput(input);
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         script: 'value',
         normal: 'divcontent/div',
         nested: {
@@ -268,8 +292,8 @@ describe('input-validation utilities', () => {
 
     test('should handle numbers and booleans', () => {
       expect(sanitizeInput(42)).toBe(42);
-      expect(sanitizeInput(true)).toBe(true);
-      expect(sanitizeInput(false)).toBe(false);
+      expect(sanitizeInput(true)).toBeTruthy();
+      expect(sanitizeInput(false)).toBeFalsy();
     });
 
     test('should handle nested structures', () => {
@@ -282,7 +306,7 @@ describe('input-validation utilities', () => {
 
       const result = sanitizeInput(input);
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         data: [
           { name: 'scripttest/script', value: 123 },
           { name: 'normal', tags: ['div', 'safe'] },
@@ -308,16 +332,20 @@ describe('input-validation utilities', () => {
     test('should include validation error details', () => {
       const schema = commonSchemas.workflowId;
 
+      let caughtError: any;
+
       try {
         validateRequestBody(schema, '');
       } catch (error: any) {
-        expect(error).toBeInstanceOf(WorkflowValidationError);
-        expect(error.validationErrors).toBeDefined();
-        expect(error.validationErrors.length).toBeGreaterThan(0);
-        expect(error.validationErrors[0]).toHaveProperty('message');
-        expect(error.validationErrors[0]).toHaveProperty('path');
-        expect(error.validationErrors[0]).toHaveProperty('rule');
+        caughtError = error;
       }
+
+      expect(caughtError).toBeInstanceOf(WorkflowValidationError);
+      expect(caughtError.validationErrors).toBeDefined();
+      expect(caughtError.validationErrors.length).toBeGreaterThan(0);
+      expect(caughtError.validationErrors[0]).toHaveProperty('message');
+      expect(caughtError.validationErrors[0]).toHaveProperty('path');
+      expect(caughtError.validationErrors[0]).toHaveProperty('rule');
     });
 
     test('should rethrow non-Zod errors', () => {
@@ -349,7 +377,7 @@ describe('input-validation utilities', () => {
 
       // This would create an object like { tags: ['tag1', 'tag2', 'tag3'] }
       // But our schema expects an array directly, so this will fail validation
-      expect(() => validateQueryParams(schema, params)).toThrow();
+      expect(() => validateQueryParams(schema, params)).toThrow('Validation failed');
     });
 
     test('should handle single values', () => {
@@ -374,7 +402,7 @@ describe('input-validation utilities', () => {
 
       // Check that the converted object has arrays for repeated keys
       const convertedObj = schema.parse.mock.calls[0][0];
-      expect(convertedObj.tag).toEqual(['value1', 'value2']);
+      expect(convertedObj.tag).toStrictEqual(['value1', 'value2']);
       expect(convertedObj.single).toBe('value');
     });
   });
@@ -532,7 +560,7 @@ describe('input-validation utilities', () => {
       const response = await handler(mockRequest);
 
       expect(response.status).toBe(400);
-      expect(await response.json()).toEqual({
+      expect(await response.json()).toStrictEqual({
         error: 'Validation failed',
         details: expect.any(Array),
       });
@@ -582,9 +610,9 @@ describe('input-validation utilities', () => {
     });
   });
 
-  describe('Edge Cases', () => {
+  describe('edge Cases', () => {
     test('should handle empty objects in sanitization', () => {
-      expect(sanitizeInput({})).toEqual({});
+      expect(sanitizeInput({})).toStrictEqual({});
     });
 
     test('should handle complex nested sanitization', () => {
@@ -598,7 +626,7 @@ describe('input-validation utilities', () => {
 
       const result = sanitizeInput(complex);
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         level1: {
           level2: {
             level3: ['script', { '': 'value' }],
@@ -615,7 +643,7 @@ describe('input-validation utilities', () => {
 
       const result = sanitizeInput(input);
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         keywithquotes: 'valuewithtags',
         keywithapostrophes: 'valuewithapostrophes',
       });

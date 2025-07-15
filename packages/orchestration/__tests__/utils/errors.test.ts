@@ -25,14 +25,14 @@ describe('error utilities', () => {
     vi.clearAllMocks();
   });
 
-  describe('OrchestrationError', () => {
+  describe('orchestrationError', () => {
     test('should create basic orchestration error', () => {
       const error = new OrchestrationError('Test error');
 
       expect(error.message).toBe('Test error');
       expect(error.name).toBe('OrchestrationError');
       expect(error.code).toBe('ORCHESTRATION_ERROR');
-      expect(error.retryable).toBe(false);
+      expect(error.retryable).toBeFalsy();
       expect(error.context).toBeUndefined();
     });
 
@@ -41,8 +41,8 @@ describe('error utilities', () => {
 
       expect(error.message).toBe('Custom error');
       expect(error.code).toBe('CUSTOM_CODE');
-      expect(error.retryable).toBe(true);
-      expect(error.context).toEqual({ key: 'value' });
+      expect(error.retryable).toBeTruthy();
+      expect(error.context).toStrictEqual({ key: 'value' });
     });
 
     test('should serialize error to JSON', () => {
@@ -52,14 +52,14 @@ describe('error utilities', () => {
 
       expect(json.message).toBe('JSON error');
       expect(json.code).toBe('JSON_CODE');
-      expect(json.retryable).toBe(true);
-      expect(json.context).toEqual({ test: 'data' });
+      expect(json.retryable).toBeTruthy();
+      expect(json.context).toStrictEqual({ test: 'data' });
       expect(json.name).toBe('OrchestrationError');
       expect(json.stack).toBeDefined();
     });
   });
 
-  describe('CircuitBreakerError', () => {
+  describe('circuitBreakerError', () => {
     test('should create circuit breaker error', () => {
       const error = new CircuitBreakerError('Circuit breaker open', 'user-service', 'open', {
         attempts: 3,
@@ -68,10 +68,10 @@ describe('error utilities', () => {
       expect(error.message).toBe('Circuit breaker open');
       expect(error.name).toBe('CircuitBreakerError');
       expect(error.code).toBe('CIRCUIT_BREAKER_OPEN');
-      expect(error.retryable).toBe(true);
+      expect(error.retryable).toBeTruthy();
       expect(error.circuitName).toBe('user-service');
       expect(error.state).toBe('open');
-      expect(error.context).toEqual({ attempts: 3 });
+      expect(error.context).toStrictEqual({ attempts: 3 });
     });
 
     test('should create half-open circuit breaker error', () => {
@@ -86,7 +86,7 @@ describe('error utilities', () => {
     });
   });
 
-  describe('ConfigurationError', () => {
+  describe('configurationError', () => {
     test('should create configuration error', () => {
       const error = new ConfigurationError('Invalid configuration', 'database.url', {
         provided: 'invalid-url',
@@ -95,9 +95,9 @@ describe('error utilities', () => {
       expect(error.message).toBe('Invalid configuration');
       expect(error.name).toBe('ConfigurationError');
       expect(error.code).toBe('CONFIGURATION_ERROR');
-      expect(error.retryable).toBe(false);
+      expect(error.retryable).toBeFalsy();
       expect(error.configPath).toBe('database.url');
-      expect(error.context).toEqual({ provided: 'invalid-url' });
+      expect(error.context).toStrictEqual({ provided: 'invalid-url' });
     });
 
     test('should create configuration error without path', () => {
@@ -107,14 +107,14 @@ describe('error utilities', () => {
     });
   });
 
-  describe('ProviderError', () => {
+  describe('providerError', () => {
     test('should create provider error with defaults', () => {
       const error = new ProviderError('Provider failed', 'upstash', 'workflow');
 
       expect(error.message).toBe('Provider failed');
       expect(error.name).toBe('ProviderError');
       expect(error.code).toBe('PROVIDER_ERROR');
-      expect(error.retryable).toBe(true);
+      expect(error.retryable).toBeTruthy();
       expect(error.providerName).toBe('upstash');
       expect(error.providerType).toBe('workflow');
     });
@@ -130,12 +130,12 @@ describe('error utilities', () => {
       );
 
       expect(error.code).toBe('CUSTOM_PROVIDER_ERROR');
-      expect(error.retryable).toBe(false);
-      expect(error.context).toEqual({ timeout: 5000 });
+      expect(error.retryable).toBeFalsy();
+      expect(error.context).toStrictEqual({ timeout: 5000 });
     });
   });
 
-  describe('RateLimitError', () => {
+  describe('rateLimitError', () => {
     test('should create rate limit error', () => {
       const error = new RateLimitError('Rate limit exceeded', 100, 60, 30, {
         endpoint: '/api/data',
@@ -144,11 +144,11 @@ describe('error utilities', () => {
       expect(error.message).toBe('Rate limit exceeded');
       expect(error.name).toBe('RateLimitError');
       expect(error.code).toBe('RATE_LIMIT_EXCEEDED');
-      expect(error.retryable).toBe(true);
+      expect(error.retryable).toBeTruthy();
       expect(error.limit).toBe(100);
       expect(error.window).toBe(60);
       expect(error.retryAfter).toBe(30);
-      expect(error.context).toEqual({ endpoint: '/api/data' });
+      expect(error.context).toStrictEqual({ endpoint: '/api/data' });
     });
 
     test('should create rate limit error without retryAfter', () => {
@@ -158,27 +158,27 @@ describe('error utilities', () => {
     });
   });
 
-  describe('TimeoutError', () => {
+  describe('timeoutError', () => {
     test('should create timeout error', () => {
       const error = new TimeoutError('Operation timed out', 5000, { operation: 'database-query' });
 
       expect(error.message).toBe('Operation timed out');
       expect(error.name).toBe('TimeoutError');
       expect(error.code).toBe('OPERATION_TIMEOUT');
-      expect(error.retryable).toBe(false);
+      expect(error.retryable).toBeFalsy();
       expect(error.timeoutMs).toBe(5000);
-      expect(error.context).toEqual({ operation: 'database-query' });
+      expect(error.context).toStrictEqual({ operation: 'database-query' });
     });
   });
 
-  describe('WorkflowExecutionError', () => {
+  describe('workflowExecutionError', () => {
     test('should create workflow execution error with defaults', () => {
       const error = new WorkflowExecutionError('Workflow failed', 'workflow-123');
 
       expect(error.message).toBe('Workflow failed');
       expect(error.name).toBe('WorkflowExecutionError');
       expect(error.code).toBe('WORKFLOW_EXECUTION_ERROR');
-      expect(error.retryable).toBe(true);
+      expect(error.retryable).toBeTruthy();
       expect(error.workflowId).toBe('workflow-123');
       expect(error.executionId).toBeUndefined();
       expect(error.stepId).toBeUndefined();
@@ -198,10 +198,10 @@ describe('error utilities', () => {
       );
 
       expect(error.code).toBe('STEP_EXECUTION_FAILED');
-      expect(error.retryable).toBe(false);
+      expect(error.retryable).toBeFalsy();
       expect(error.executionId).toBe('exec-789');
       expect(error.stepId).toBe('step-1');
-      expect(error.context).toEqual({
+      expect(error.context).toStrictEqual({
         executionId: 'exec-789',
         stepId: 'step-1',
         metadata: { attempt: 2 },
@@ -209,7 +209,7 @@ describe('error utilities', () => {
     });
   });
 
-  describe('WorkflowValidationError', () => {
+  describe('workflowValidationError', () => {
     test('should create workflow validation error', () => {
       const validationErrors = [
         { message: 'Missing field', path: 'steps[0].name', rule: 'required' },
@@ -223,9 +223,9 @@ describe('error utilities', () => {
       expect(error.message).toBe('Validation failed');
       expect(error.name).toBe('WorkflowValidationError');
       expect(error.code).toBe('WORKFLOW_VALIDATION_ERROR');
-      expect(error.retryable).toBe(false);
-      expect(error.validationErrors).toEqual(validationErrors);
-      expect(error.context).toEqual({ source: 'user-input' });
+      expect(error.retryable).toBeFalsy();
+      expect(error.validationErrors).toStrictEqual(validationErrors);
+      expect(error.context).toStrictEqual({ source: 'user-input' });
     });
   });
 
@@ -235,7 +235,7 @@ describe('error utilities', () => {
 
       expect(error.message).toBe('Simple error');
       expect(error.code).toBe('ORCHESTRATION_ERROR');
-      expect(error.retryable).toBe(false);
+      expect(error.retryable).toBeFalsy();
     });
 
     test('should create error with all options', () => {
@@ -249,9 +249,9 @@ describe('error utilities', () => {
 
       expect(error.message).toBe('Wrapped error');
       expect(error.code).toBe('PROVIDER_ERROR');
-      expect(error.retryable).toBe(true);
+      expect(error.retryable).toBeTruthy();
       expect(error.context?.key).toBe('value');
-      expect(error.context?.originalError).toEqual({
+      expect(error.context?.originalError).toStrictEqual({
         message: 'Original error',
         name: 'Error',
         stack: originalError.stack,
@@ -268,7 +268,7 @@ describe('error utilities', () => {
       expect(error.providerName).toBe('upstash');
       expect(error.providerType).toBe('workflow');
       expect(error.code).toBe('PROVIDER_ERROR');
-      expect(error.retryable).toBe(true);
+      expect(error.retryable).toBeTruthy();
     });
 
     test('should create provider error with original error', () => {
@@ -280,7 +280,7 @@ describe('error utilities', () => {
       });
 
       expect(error.code).toBe('PROVIDER_UNHEALTHY');
-      expect(error.retryable).toBe(false);
+      expect(error.retryable).toBeFalsy();
       expect(error.context?.originalError?.message).toBe('Connection failed');
     });
   });
@@ -298,7 +298,7 @@ describe('error utilities', () => {
       );
 
       expect(error.code).toBe('PROVIDER_NOT_FOUND');
-      expect(error.retryable).toBe(false);
+      expect(error.retryable).toBeFalsy();
     });
   });
 
@@ -308,7 +308,7 @@ describe('error utilities', () => {
 
       expect(error.message).toBe('Validation failed');
       expect(error.code).toBe('STEP_INPUT_VALIDATION_ERROR');
-      expect(error.retryable).toBe(false);
+      expect(error.retryable).toBeFalsy();
     });
 
     test('should create validation error with validation details', () => {
@@ -321,8 +321,8 @@ describe('error utilities', () => {
       });
 
       expect(error.code).toBe('WORKFLOW_VALIDATION_ERROR');
-      expect(error.context?.validationErrors).toEqual(validationErrors);
-      expect(error.context?.validationResult).toEqual({ valid: false, errors: 2 });
+      expect(error.context?.validationErrors).toStrictEqual(validationErrors);
+      expect(error.context?.validationResult).toStrictEqual({ valid: false, errors: 2 });
       expect(error.context?.source).toBe('api');
     });
   });
@@ -335,7 +335,7 @@ describe('error utilities', () => {
       expect(error.message).toBe('Execution failed');
       expect(error.workflowId).toBe('workflow-123');
       expect(error.code).toBe('WORKFLOW_EXECUTION_ERROR');
-      expect(error.retryable).toBe(true);
+      expect(error.retryable).toBeTruthy();
     });
 
     test('should create workflow execution error with all options', () => {
@@ -351,7 +351,7 @@ describe('error utilities', () => {
       expect(error.code).toBe('STEP_EXECUTION_FAILED');
       expect(error.executionId).toBe('exec-789');
       expect(error.stepId).toBe('step-1');
-      expect(error.retryable).toBe(false);
+      expect(error.retryable).toBeFalsy();
       expect(error.context?.originalError?.message).toBe('Step failed');
     });
   });
@@ -366,7 +366,7 @@ describe('error utilities', () => {
 
       expect(error.code).toBe('STEP_TIMEOUT_ERROR');
       expect(error.stepId).toBe('step-2');
-      expect(error.retryable).toBe(true);
+      expect(error.retryable).toBeTruthy();
     });
   });
 
@@ -391,8 +391,8 @@ describe('error utilities', () => {
 
       expect(details.message).toBe('Orchestration error');
       expect(details.code).toBe('CUSTOM_CODE');
-      expect(details.retryable).toBe(true);
-      expect(details.context).toEqual({ key: 'value' });
+      expect(details.retryable).toBeTruthy();
+      expect(details.context).toStrictEqual({ key: 'value' });
     });
 
     test('should extract details from WorkflowExecutionError', () => {
@@ -426,8 +426,8 @@ describe('error utilities', () => {
       const retryableError = new OrchestrationError('Error', 'CODE', true);
       const nonRetryableError = new OrchestrationError('Error', 'CODE', false);
 
-      expect(isRetryableError(retryableError)).toBe(true);
-      expect(isRetryableError(nonRetryableError)).toBe(false);
+      expect(isRetryableError(retryableError)).toBeTruthy();
+      expect(isRetryableError(nonRetryableError)).toBeFalsy();
     });
 
     test('should identify retryable network errors', () => {
@@ -443,7 +443,7 @@ describe('error utilities', () => {
       ];
 
       networkErrors.forEach(error => {
-        expect(isRetryableError(error)).toBe(true);
+        expect(isRetryableError(error)).toBeTruthy();
       });
     });
 
@@ -456,7 +456,7 @@ describe('error utilities', () => {
       ];
 
       nonRetryableErrors.forEach(error => {
-        expect(isRetryableError(error)).toBe(false);
+        expect(isRetryableError(error)).toBeFalsy();
       });
     });
 
@@ -464,11 +464,11 @@ describe('error utilities', () => {
       const error = new Error();
       error.message = undefined as any;
 
-      expect(isRetryableError(error)).toBe(false);
+      expect(isRetryableError(error)).toBeFalsy();
     });
   });
 
-  describe('OrchestrationErrorCodes enum', () => {
+  describe('orchestrationErrorCodes enum', () => {
     test('should contain expected error codes', () => {
       expect(OrchestrationErrorCodes.ORCHESTRATION_ERROR).toBe('ORCHESTRATION_ERROR');
       expect(OrchestrationErrorCodes.PROVIDER_ERROR).toBe('PROVIDER_ERROR');
@@ -478,7 +478,7 @@ describe('error utilities', () => {
     });
   });
 
-  describe('Edge Cases', () => {
+  describe('edge Cases', () => {
     test('should handle Error.captureStackTrace gracefully when unavailable', () => {
       const originalCaptureStackTrace = Error.captureStackTrace;
       delete (Error as any).captureStackTrace;
@@ -498,13 +498,13 @@ describe('error utilities', () => {
         originalError: undefined,
       });
 
-      expect(error.context).toEqual({});
+      expect(error.context).toStrictEqual({});
     });
 
     test('should handle empty validation errors array', () => {
       const error = new WorkflowValidationError('Validation failed', []);
 
-      expect(error.validationErrors).toEqual([]);
+      expect(error.validationErrors).toStrictEqual([]);
     });
   });
 });

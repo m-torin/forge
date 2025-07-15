@@ -2,7 +2,7 @@
  * Simple tests for client authentication methods
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock the auth client
 const mockAuthClient = {
@@ -34,43 +34,43 @@ describe('client authentication methods', () => {
   });
 
   describe('basic auth', () => {
-    it('should export signIn function', async () => {
+    test('should export signIn function', async () => {
       const methodsModule = await import('@/client/methods');
 
       expect(typeof methodsModule.signIn).toBe('function');
     });
 
-    it('should export signOut function', async () => {
+    test('should export signOut function', async () => {
       const methodsModule = await import('@/client/methods');
 
       expect(typeof methodsModule.signOut).toBe('function');
     });
 
-    it('should export signUp function', async () => {
+    test('should export signUp function', async () => {
       const methodsModule = await import('@/client/methods');
 
       expect(typeof methodsModule.signUp).toBe('function');
     });
 
-    it('should call signOut', async () => {
+    test('should call signOut', async () => {
       const methodsModule = await import('@/client/methods');
 
       mockAuthClient.signOut.mockResolvedValue(undefined);
 
       await methodsModule.signOut();
 
-      expect(mockAuthClient.signOut).toHaveBeenCalled();
+      expect(mockAuthClient.signOut).toHaveBeenCalledWith();
     });
   });
 
   // Mark complex tests as todo for now
   describe.todo('advanced authentication methods', () => {
-    it.todo('should handle password reset');
-    it.todo('should handle email verification');
-    it.todo('should handle two-factor authentication');
-    it.todo('should handle passkey authentication');
-    it.todo('should handle social authentication');
-    it.todo('should handle magic links');
-    it.todo('should handle session management');
+    test.todo('should handle password reset');
+    test.todo('should handle email verification');
+    test.todo('should handle two-factor authentication');
+    test.todo('should handle passkey authentication');
+    test.todo('should handle social authentication');
+    test.todo('should handle magic links');
+    test.todo('should handle session management');
   });
 });

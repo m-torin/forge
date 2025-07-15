@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, vi } from 'vitest';
 
 // Mock React and related hooks for client-side tests
 vi.mock('react', () => ({
@@ -12,8 +12,8 @@ vi.mock('react', () => ({
   forwardRef: vi.fn(comp => comp),
 }));
 
-describe('Client Module Imports', () => {
-  it('should import client entry points', async () => {
+describe('client Module Imports', () => {
+  test('should import client entry points', async () => {
     const modules = [() => import('@/client'), () => import('@/client-next')];
 
     for (const importModule of modules) {
@@ -22,7 +22,7 @@ describe('Client Module Imports', () => {
     }
   });
 
-  it('should import client provider modules', async () => {
+  test('should import client provider modules', async () => {
     const modules = [() => import('@/client/providers')];
 
     for (const importModule of modules) {
@@ -31,7 +31,7 @@ describe('Client Module Imports', () => {
     }
   });
 
-  it('should import client utils', async () => {
+  test('should import client utils', async () => {
     const modules = [() => import('@/client/utils')];
 
     for (const importModule of modules) {
@@ -40,7 +40,7 @@ describe('Client Module Imports', () => {
     }
   });
 
-  it('should import component modules', async () => {
+  test('should import component modules', async () => {
     const modules = [
       () => import('@/components'),
       () => import('@/components/chat'),
@@ -53,7 +53,7 @@ describe('Client Module Imports', () => {
     }
   });
 
-  it('should import hook modules', async () => {
+  test('should import hook modules', async () => {
     const modules = [
       () => import('@/hooks'),
       () => import('@/hooks/use-ai-stream'),

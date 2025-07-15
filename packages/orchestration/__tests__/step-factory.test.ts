@@ -20,6 +20,9 @@ import {
   StepTemplates,
 } from '../src/shared/index';
 
+// Mock server-only to prevent errors
+vi.mock('server-only', () => ({}));
+
 describe('step Factory System', () => {
   beforeEach(() => {
     // Clear registries before each test

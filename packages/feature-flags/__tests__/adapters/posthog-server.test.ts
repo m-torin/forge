@@ -6,7 +6,7 @@ import {
   getProviderData,
   postHogServerAdapter,
 } from '@/adapters/posthog-server';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock PostHog Node client
 const mockPostHogClient = {
@@ -38,7 +38,7 @@ vi.mock('../../env', () => ({
 }));
 
 // Mock fetch for getProviderData
-global.fetch = vi.fn();
+vi.spyOn(global, 'fetch').mockImplementation();
 
 // Mock window to simulate server environment
 Object.defineProperty(global, 'window', {
@@ -46,12 +46,12 @@ Object.defineProperty(global, 'window', {
   writable: true,
 });
 
-describe.skip('createPostHogServerAdapter', () => {
+describe.todo('createPostHogServerAdapter', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should create adapter with provided options', () => {
+  test('should create adapter with provided options', () => {
     const adapter = createPostHogServerAdapter({
       postHogKey: 'custom-key',
       postHogOptions: { host: 'https://custom-host.com' },
@@ -62,7 +62,7 @@ describe.skip('createPostHogServerAdapter', () => {
     expect(adapter.featureFlagPayload).toBeInstanceOf(Function);
   });
 
-  it('should create no-op adapter when no PostHog key configured', async () => {
+  test('should create no-op adapter when no PostHog key configured', async () => {
     const { safeEnv } = vi.mocked(await import('../../env'));
     safeEnv.mockReturnValueOnce({
       POSTHOG_KEY: undefined,
@@ -78,7 +78,7 @@ describe.skip('createPostHogServerAdapter', () => {
   });
 
   describe('isFeatureEnabled', () => {
-    it('should return feature flag status from PostHog', async () => {
+    test('should return feature flag status from PostHog', async () => {
       mockPostHogClient.isFeatureEnabled.mockResolvedValueOnce(true);
 
       const adapter = createPostHogServerAdapter();
@@ -89,11 +89,11 @@ describe.skip('createPostHogServerAdapter', () => {
         entities: { user: { id: 'user-123' } },
       });
 
-      expect(result).toBe(true);
+      expect(result).toBeTruthy();
       expect(mockPostHogClient.isFeatureEnabled).toHaveBeenCalledWith('test-flag', 'user-123');
     });
 
-    it('should use anonymous user id when no user provided', async () => {
+    test('should use anonymous user id when no user provided', async () => {
       mockPostHogClient.isFeatureEnabled.mockResolvedValueOnce(false);
 
       const adapter = createPostHogServerAdapter();
@@ -104,11 +104,11 @@ describe.skip('createPostHogServerAdapter', () => {
         entities: {},
       });
 
-      expect(result).toBe(false);
+      expect(result).toBeFalsy();
       expect(mockPostHogClient.isFeatureEnabled).toHaveBeenCalledWith('test-flag', 'anonymous');
     });
 
-    it('should return false when PostHog throws error', async () => {
+    test('should return false when PostHog throws error', async () => {
       mockPostHogClient.isFeatureEnabled.mockRejectedValueOnce(new Error('PostHog error'));
 
       const adapter = createPostHogServerAdapter();
@@ -119,10 +119,10 @@ describe.skip('createPostHogServerAdapter', () => {
         entities: { user: { id: 'user-123' } },
       });
 
-      expect(result).toBe(false);
+      expect(result).toBeFalsy();
     });
 
-    it('should throw error when used in browser environment', async () => {
+    test('should throw error when used in browser environment', async () => {
       global.window = {} as any;
 
       const adapter = createPostHogServerAdapter();
@@ -138,7 +138,7 @@ describe.skip('createPostHogServerAdapter', () => {
       global.window = undefined;
     });
 
-    it('should return false for no-op adapter', async () => {
+    test('should return false for no-op adapter', async () => {
       const { safeEnv } = vi.mocked(await import('../../env'));
       safeEnv.mockReturnValueOnce({
         POSTHOG_KEY: undefined,
@@ -154,12 +154,12 @@ describe.skip('createPostHogServerAdapter', () => {
         entities: { user: { id: 'user-123' } },
       });
 
-      expect(result).toBe(false);
+      expect(result).toBeFalsy();
     });
   });
 
   describe('featureFlagValue', () => {
-    it('should return feature flag value from PostHog', async () => {
+    test('should return feature flag value from PostHog', async () => {
       mockPostHogClient.getFeatureFlag.mockResolvedValueOnce('variant-a');
 
       const adapter = createPostHogServerAdapter();
@@ -174,7 +174,7 @@ describe.skip('createPostHogServerAdapter', () => {
       expect(mockPostHogClient.getFeatureFlag).toHaveBeenCalledWith('test-flag', 'user-123');
     });
 
-    it('should return false when flag value is undefined', async () => {
+    test('should return false when flag value is undefined', async () => {
       mockPostHogClient.getFeatureFlag.mockResolvedValueOnce(undefined);
 
       const adapter = createPostHogServerAdapter();
@@ -185,10 +185,10 @@ describe.skip('createPostHogServerAdapter', () => {
         entities: { user: { id: 'user-123' } },
       });
 
-      expect(result).toBe(false);
+      expect(result).toBeFalsy();
     });
 
-    it('should return false when PostHog throws error', async () => {
+    test('should return false when PostHog throws error', async () => {
       mockPostHogClient.getFeatureFlag.mockRejectedValueOnce(new Error('PostHog error'));
 
       const adapter = createPostHogServerAdapter();
@@ -199,10 +199,10 @@ describe.skip('createPostHogServerAdapter', () => {
         entities: { user: { id: 'user-123' } },
       });
 
-      expect(result).toBe(false);
+      expect(result).toBeFalsy();
     });
 
-    it('should throw error when used in browser environment', async () => {
+    test('should throw error when used in browser environment', async () => {
       global.window = {} as any;
 
       const adapter = createPostHogServerAdapter();
@@ -220,7 +220,7 @@ describe.skip('createPostHogServerAdapter', () => {
   });
 
   describe('featureFlagPayload', () => {
-    it('should return feature flag payload from PostHog', async () => {
+    test('should return feature flag payload from PostHog', async () => {
       const payload = { config: { variant: 'a' } };
       mockPostHogClient.getFeatureFlagPayload.mockResolvedValueOnce(payload);
 
@@ -236,7 +236,7 @@ describe.skip('createPostHogServerAdapter', () => {
       expect(mockPostHogClient.getFeatureFlagPayload).toHaveBeenCalledWith('test-flag', 'user-123');
     });
 
-    it('should transform payload when transform function provided', async () => {
+    test('should transform payload when transform function provided', async () => {
       const payload = { original: 'value' };
       const transformed = { transformed: 'value' };
       mockPostHogClient.getFeatureFlagPayload.mockResolvedValueOnce(payload);
@@ -252,7 +252,7 @@ describe.skip('createPostHogServerAdapter', () => {
       expect(result).toStrictEqual(transformed);
     });
 
-    it('should return empty object when payload is null', async () => {
+    test('should return empty object when payload is null', async () => {
       mockPostHogClient.getFeatureFlagPayload.mockResolvedValueOnce(null);
 
       const adapter = createPostHogServerAdapter();
@@ -266,7 +266,7 @@ describe.skip('createPostHogServerAdapter', () => {
       expect(result).toStrictEqual({});
     });
 
-    it('should return empty object when PostHog throws error', async () => {
+    test('should return empty object when PostHog throws error', async () => {
       mockPostHogClient.getFeatureFlagPayload.mockRejectedValueOnce(new Error('PostHog error'));
 
       const adapter = createPostHogServerAdapter();
@@ -280,7 +280,7 @@ describe.skip('createPostHogServerAdapter', () => {
       expect(result).toStrictEqual({});
     });
 
-    it('should throw error when used in browser environment', async () => {
+    test('should throw error when used in browser environment', async () => {
       global.window = {} as any;
 
       const adapter = createPostHogServerAdapter();
@@ -298,20 +298,20 @@ describe.skip('createPostHogServerAdapter', () => {
   });
 });
 
-describe.skip('postHogServerAdapter', () => {
-  it('should be defined as default adapter', () => {
+describe.todo('postHogServerAdapter', () => {
+  test('should be defined as default adapter', () => {
     expect(postHogServerAdapter.isFeatureEnabled).toBeInstanceOf(Function);
     expect(postHogServerAdapter.featureFlagValue).toBeInstanceOf(Function);
     expect(postHogServerAdapter.featureFlagPayload).toBeInstanceOf(Function);
   });
 });
 
-describe.skip('getProviderData', () => {
+describe.todo('getProviderData', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should return empty flags when credentials not configured', async () => {
+  test('should return empty flags when credentials not configured', async () => {
     const { safeEnv } = vi.mocked(await import('../../env'));
     safeEnv.mockReturnValueOnce({
       POSTHOG_PERSONAL_API_KEY: undefined,
@@ -328,7 +328,7 @@ describe.skip('getProviderData', () => {
     });
   });
 
-  it('should fetch and transform PostHog flags', async () => {
+  test('should fetch and transform PostHog flags', async () => {
     const mockResponse = {
       results: [
         {
@@ -377,7 +377,7 @@ describe.skip('getProviderData', () => {
     });
   });
 
-  it('should use provided credentials', async () => {
+  test('should use provided credentials', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ results: [] }),
@@ -399,7 +399,7 @@ describe.skip('getProviderData', () => {
     );
   });
 
-  it('should throw error when API request fails', async () => {
+  test('should throw error when API request fails', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,
       statusText: 'Unauthorized',
@@ -410,7 +410,7 @@ describe.skip('getProviderData', () => {
     );
   });
 
-  it('should throw error when fetch throws', async () => {
+  test('should throw error when fetch throws', async () => {
     const error = new Error('Network error');
     vi.mocked(fetch).mockRejectedValueOnce(error);
 

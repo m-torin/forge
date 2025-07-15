@@ -4,7 +4,7 @@
  * Simple tests to verify the step factory system works correctly.
  */
 
-import { beforeEach, describe, expect, test } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import {
   createWorkflowStep,
@@ -14,6 +14,9 @@ import {
   StepRegistry,
   StepTemplates,
 } from '../src/shared/index';
+
+// Mock server-only to prevent errors
+vi.mock('server-only', () => ({}));
 
 describe('basic Step Factory', () => {
   beforeEach(() => {

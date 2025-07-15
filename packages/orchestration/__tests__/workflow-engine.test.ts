@@ -8,6 +8,9 @@ import {
 
 import { createTestWorkflow, createUpstashWorkflowConfig } from './fixtures';
 
+// Mock server-only to prevent errors
+vi.mock('server-only', () => ({}));
+
 // Mock the removed placeholder functions for testing
 const createMonitoringService = (_provider?: any) => ({
   getHealthReport: vi.fn(() => ({ providers: [], status: 'healthy' })),

@@ -1,20 +1,21 @@
 import { act, renderHook } from '@testing-library/react';
-import { describe, expect, test, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { useStripeCustomer, useStripePaymentIntent } from '../src/client-next';
 
 // Mock fetch globally
-global.fetch = vi.fn();
+const mockFetch = vi.fn();
+global.fetch = mockFetch;
 
 describe('payments Client Next.js Utilities', () => {
   describe('useStripePaymentIntent', () => {
     beforeEach(() => {
-      vi.clearAllMocks();
+      mockFetch.mockClear();
     });
 
     test('should initialize with default state', () => {
       const { result } = renderHook(() => useStripePaymentIntent());
 
-      expect(result.current.loading).toBe(false);
+      expect(result.current.loading).toBeFalsy();
       expect(result.current.error).toBeNull();
       expect(result.current.paymentIntent).toBeNull();
       expect(typeof result.current.createPaymentIntent).toBe('function');
@@ -26,7 +27,7 @@ describe('payments Client Next.js Utilities', () => {
         client_secret: 'pi_123_secret',
       };
 
-      (global.fetch as any).mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse,
       });
@@ -43,14 +44,14 @@ describe('payments Client Next.js Utilities', () => {
 
       expect(result.current.loading).toBeFalsy();
       expect(result.current.error).toBeNull();
-      expect(result.current.paymentIntent).toEqual(mockResponse);
+      expect(result.current.paymentIntent).toStrictEqual(mockResponse);
       expect(onSuccess).toHaveBeenCalledWith(mockResponse);
     });
 
     test('should handle API errors', async () => {
       const mockError = { error: 'Invalid amount' };
 
-      (global.fetch as any).mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 400,
         json: async () => mockError,
@@ -76,7 +77,7 @@ describe('payments Client Next.js Utilities', () => {
     });
 
     test('should handle network errors', async () => {
-      (global.fetch as any).mockRejectedValueOnce(new Error('Network error'));
+      mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
       const onError = vi.fn();
       const { result } = renderHook(() => useStripePaymentIntent({ onError }));
@@ -98,7 +99,7 @@ describe('payments Client Next.js Utilities', () => {
     });
 
     test('should handle non-Error objects thrown by fetch', async () => {
-      (global.fetch as any).mockRejectedValueOnce('String error');
+      mockFetch.mockRejectedValueOnce('String error');
 
       const onError = vi.fn();
       const { result } = renderHook(() => useStripePaymentIntent({ onError }));
@@ -125,7 +126,7 @@ describe('payments Client Next.js Utilities', () => {
         resolvePromise = resolve;
       });
 
-      (global.fetch as any).mockReturnValueOnce(promise);
+      mockFetch.mockReturnValueOnce(promise);
 
       const { result } = renderHook(() => useStripePaymentIntent());
 
@@ -157,7 +158,7 @@ describe('payments Client Next.js Utilities', () => {
         result.current.reset();
       });
 
-      expect(result.current.loading).toBe(false);
+      expect(result.current.loading).toBeFalsy();
       expect(result.current.error).toBeNull();
       expect(result.current.paymentIntent).toBeNull();
     });
@@ -167,7 +168,7 @@ describe('payments Client Next.js Utilities', () => {
     test('should initialize with default state', () => {
       const { result } = renderHook(() => useStripeCustomer());
 
-      expect(result.current.loading).toBe(false);
+      expect(result.current.loading).toBeFalsy();
       expect(result.current.error).toBeNull();
       expect(result.current.customer).toBeNull();
       expect(typeof result.current.createCustomer).toBe('function');
@@ -179,7 +180,7 @@ describe('payments Client Next.js Utilities', () => {
         email: 'test@example.com',
       };
 
-      (global.fetch as any).mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockCustomer,
       });
@@ -196,12 +197,12 @@ describe('payments Client Next.js Utilities', () => {
 
       expect(result.current.loading).toBeFalsy();
       expect(result.current.error).toBeNull();
-      expect(result.current.customer).toEqual(mockCustomer);
+      expect(result.current.customer).toStrictEqual(mockCustomer);
       expect(onSuccess).toHaveBeenCalledWith(mockCustomer);
     });
 
     test('should handle customer creation errors', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 400,
       });
@@ -226,7 +227,7 @@ describe('payments Client Next.js Utilities', () => {
     });
 
     test('should handle non-Error objects thrown by fetch in customer creation', async () => {
-      (global.fetch as any).mockRejectedValueOnce('Network failure');
+      mockFetch.mockRejectedValueOnce('Network failure');
 
       const onError = vi.fn();
       const { result } = renderHook(() => useStripeCustomer({ onError }));
@@ -254,7 +255,7 @@ describe('payments Client Next.js Utilities', () => {
         result.current.reset();
       });
 
-      expect(result.current.loading).toBe(false);
+      expect(result.current.loading).toBeFalsy();
       expect(result.current.error).toBeNull();
       expect(result.current.customer).toBeNull();
     });

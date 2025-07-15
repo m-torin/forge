@@ -25,6 +25,9 @@ import {
   updateSuccessRate,
 } from '../../src/shared/utils/workflow-utilities';
 
+// Mock server-only to prevent errors
+vi.mock('server-only', () => ({}));
+
 // Mock external dependencies
 vi.mock('@repo/observability/shared-env', () => ({
   createServerObservability: vi.fn(() => ({
@@ -42,27 +45,27 @@ describe('workflow-utilities', () => {
     vi.clearAllMocks();
   });
 
-  describe('Configuration Objects', () => {
+  describe('configuration Objects', () => {
     test('should have CIRCUIT_BREAKER_CONFIGS with valid configurations', () => {
-      expect(CIRCUIT_BREAKER_CONFIGS.EXTERNAL_API).toEqual({
+      expect(CIRCUIT_BREAKER_CONFIGS.EXTERNAL_API).toStrictEqual({
         failureThreshold: 5,
         resetTimeout: 60000,
         rollingCountWindow: 300000,
       });
 
-      expect(CIRCUIT_BREAKER_CONFIGS.DATABASE).toEqual({
+      expect(CIRCUIT_BREAKER_CONFIGS.DATABASE).toStrictEqual({
         failureThreshold: 3,
         resetTimeout: 30000,
         rollingCountWindow: 60000,
       });
 
-      expect(CIRCUIT_BREAKER_CONFIGS.CRITICAL).toEqual({
+      expect(CIRCUIT_BREAKER_CONFIGS.CRITICAL).toStrictEqual({
         failureThreshold: 1,
         resetTimeout: 10000,
         rollingCountWindow: 30000,
       });
 
-      expect(CIRCUIT_BREAKER_CONFIGS.RESILIENT).toEqual({
+      expect(CIRCUIT_BREAKER_CONFIGS.RESILIENT).toStrictEqual({
         failureThreshold: 10,
         resetTimeout: 120000,
         rollingCountWindow: 600000,
@@ -163,34 +166,34 @@ describe('workflow-utilities', () => {
 
   describe('isValidIdentifier', () => {
     test('should validate valid identifiers', () => {
-      expect(isValidIdentifier('valid-id')).toBe(true);
-      expect(isValidIdentifier('valid_id')).toBe(true);
-      expect(isValidIdentifier('validId123')).toBe(true);
-      expect(isValidIdentifier('a')).toBe(true);
-      expect(isValidIdentifier('123')).toBe(true);
-      expect(isValidIdentifier('test.workflow')).toBe(false); // dots not allowed
+      expect(isValidIdentifier('valid-id')).toBeTruthy();
+      expect(isValidIdentifier('valid_id')).toBeTruthy();
+      expect(isValidIdentifier('validId123')).toBeTruthy();
+      expect(isValidIdentifier('a')).toBeTruthy();
+      expect(isValidIdentifier('123')).toBeTruthy();
+      expect(isValidIdentifier('test.workflow')).toBeFalsy(); // dots not allowed
     });
 
     test('should reject invalid identifiers', () => {
-      expect(isValidIdentifier('')).toBe(false);
-      expect(isValidIdentifier('  ')).toBe(false);
-      expect(isValidIdentifier('invalid id')).toBe(false); // space
-      expect(isValidIdentifier('invalid@id')).toBe(false); // @ symbol
-      expect(isValidIdentifier('invalid/id')).toBe(false); // slash
-      expect(isValidIdentifier('invalid\\id')).toBe(false); // backslash
+      expect(isValidIdentifier('')).toBeFalsy();
+      expect(isValidIdentifier('  ')).toBeFalsy();
+      expect(isValidIdentifier('invalid id')).toBeFalsy(); // space
+      expect(isValidIdentifier('invalid@id')).toBeFalsy(); // @ symbol
+      expect(isValidIdentifier('invalid/id')).toBeFalsy(); // slash
+      expect(isValidIdentifier('invalid\\id')).toBeFalsy(); // backslash
     });
 
     test('should handle null and undefined', () => {
       // Function doesn't type-check null/undefined, regex returns true for falsy values
-      expect(isValidIdentifier(null as any)).toBe(true);
-      expect(isValidIdentifier(undefined as any)).toBe(true);
+      expect(isValidIdentifier(null as any)).toBeTruthy();
+      expect(isValidIdentifier(undefined as any)).toBeTruthy();
     });
 
     test('should handle non-string inputs', () => {
       // Function doesn't type-check, regex test coerces to string
-      expect(isValidIdentifier(123 as any)).toBe(true); // '123'
-      expect(isValidIdentifier({} as any)).toBe(false); // '[object Object]' has spaces
-      expect(isValidIdentifier([] as any)).toBe(false); // '' empty string fails regex
+      expect(isValidIdentifier(123 as any)).toBeTruthy(); // '123'
+      expect(isValidIdentifier({} as any)).toBeFalsy(); // '[object Object]' has spaces
+      expect(isValidIdentifier([] as any)).toBeFalsy(); // '' empty string fails regex
     });
   });
 
@@ -233,11 +236,11 @@ describe('workflow-utilities', () => {
       const longId = 'a'.repeat(1000) + '@invalid' + 'b'.repeat(1000);
       const result = sanitizeIdentifier(longId);
       expect(result).toBe('a'.repeat(1000) + '_invalid' + 'b'.repeat(1000)); // @ becomes _
-      expect(result.length).toBe(2008); // same length, @ replaced with _
+      expect(result).toHaveLength(2008); // same length, @ replaced with _
     });
   });
 
-  describe('Edge Cases', () => {
+  describe('edge Cases', () => {
     test('should handle extreme values in formatDuration', () => {
       expect(formatDuration(0)).toBe('0ms');
       expect(formatDuration(1)).toBe('1ms');
@@ -266,7 +269,7 @@ describe('workflow-utilities', () => {
     });
   });
 
-  describe('Configuration Validation', () => {
+  describe('configuration Validation', () => {
     test('should have circuit breaker configs with required properties', () => {
       const configs = Object.values(CIRCUIT_BREAKER_CONFIGS);
 
@@ -298,13 +301,13 @@ describe('workflow-utilities', () => {
     });
   });
 
-  describe('Error Accumulator', () => {
+  describe('error Accumulator', () => {
     test('should create empty error accumulator', () => {
       const accumulator = createErrorAccumulator();
 
-      expect(accumulator.errors).toEqual([]);
-      expect(accumulator.warnings).toEqual([]);
-      expect(accumulator.summary).toEqual({
+      expect(accumulator.errors).toStrictEqual([]);
+      expect(accumulator.warnings).toStrictEqual([]);
+      expect(accumulator.summary).toStrictEqual({
         totalErrors: 0,
         criticalErrors: 0,
         highSeverityErrors: 0,
@@ -319,7 +322,7 @@ describe('workflow-utilities', () => {
       addError(accumulator, 'test-step', error, { context: 'data' });
 
       expect(accumulator.errors).toHaveLength(1);
-      expect(accumulator.errors[0]).toEqual({
+      expect(accumulator.errors[0]).toStrictEqual({
         step: 'test-step',
         error,
         context: { context: 'data' },
@@ -334,7 +337,7 @@ describe('workflow-utilities', () => {
       addWarning(accumulator, 'test-step', 'Test warning', { warn: true });
 
       expect(accumulator.warnings).toHaveLength(1);
-      expect(accumulator.warnings[0]).toEqual({
+      expect(accumulator.warnings[0]).toStrictEqual({
         step: 'test-step',
         message: 'Test warning',
         context: { warn: true },
@@ -345,21 +348,21 @@ describe('workflow-utilities', () => {
     test('should detect if accumulator has errors', () => {
       const accumulator = createErrorAccumulator();
 
-      expect(hasErrors(accumulator)).toBe(false);
+      expect(hasErrors(accumulator)).toBeFalsy();
 
       addError(accumulator, 'step', new Error('Test'));
-      expect(hasErrors(accumulator)).toBe(true);
+      expect(hasErrors(accumulator)).toBeTruthy();
     });
 
     test('should detect critical errors', () => {
       const accumulator = createErrorAccumulator();
 
-      expect(hasCriticalErrors(accumulator)).toBe(false);
+      expect(hasCriticalErrors(accumulator)).toBeFalsy();
 
       const criticalError = new Error('Critical failure');
       addError(accumulator, 'critical-step', criticalError, {}, 'critical');
 
-      expect(hasCriticalErrors(accumulator)).toBe(true);
+      expect(hasCriticalErrors(accumulator)).toBeTruthy();
     });
 
     test('should generate error summary', () => {
@@ -382,12 +385,12 @@ describe('workflow-utilities', () => {
     });
   });
 
-  describe('Partial Success Results', () => {
+  describe('partial Success Results', () => {
     test('should create partial success result', () => {
       const result = createPartialSuccessResult<string>(10);
 
-      expect(result.successful).toEqual([]);
-      expect(result.failed).toEqual([]);
+      expect(result.successful).toStrictEqual([]);
+      expect(result.failed).toStrictEqual([]);
       expect(result.successRate).toBe(0);
       expect(result.metadata.totalItems).toBe(10);
       expect(result.metadata.duration).toBe(0);
@@ -400,7 +403,7 @@ describe('workflow-utilities', () => {
       addSuccessfulResult(result, 'item1');
       addSuccessfulResult(result, 'item2');
 
-      expect(result.successful).toEqual(['item1', 'item2']);
+      expect(result.successful).toStrictEqual(['item1', 'item2']);
       expect(result.successRate).toBe(1); // 2/2 = 100%
     });
 
@@ -412,7 +415,7 @@ describe('workflow-utilities', () => {
       addFailedResult(result, 'item2', error, 1);
 
       expect(result.failed).toHaveLength(2);
-      expect(result.failed[0]).toEqual({
+      expect(result.failed[0]).toStrictEqual({
         input: 'item1',
         error,
         index: 0,
@@ -438,7 +441,7 @@ describe('workflow-utilities', () => {
     });
   });
 
-  describe('Common Schemas', () => {
+  describe('common Schemas', () => {
     test('should validate schemas exist', () => {
       expect(CommonSchemas).toBeDefined();
       expect(typeof CommonSchemas).toBe('object');
@@ -451,7 +454,7 @@ describe('workflow-utilities', () => {
     });
   });
 
-  describe('Memory Efficient Processor', () => {
+  describe('memory Efficient Processor', () => {
     test('should create memory efficient processor', () => {
       const processor = vi.fn().mockResolvedValue('processed');
       const memoryProcessor = createMemoryEfficientProcessor(processor, 256);
@@ -472,7 +475,11 @@ describe('workflow-utilities', () => {
       }
 
       expect(processor).toHaveBeenCalledTimes(3);
-      expect(results.flat()).toEqual(['processed-item1', 'processed-item2', 'processed-item3']);
+      expect(results.flat()).toStrictEqual([
+        'processed-item1',
+        'processed-item2',
+        'processed-item3',
+      ]);
     });
 
     test('should handle empty items array', async () => {
@@ -484,12 +491,12 @@ describe('workflow-utilities', () => {
         results.push(batch);
       }
 
-      expect(results).toEqual([]);
+      expect(results).toStrictEqual([]);
       expect(processor).not.toHaveBeenCalled();
     });
   });
 
-  describe('Rate Limiters', () => {
+  describe('rate Limiters', () => {
     test('should create workflow rate limiter', () => {
       const config = {
         maxRequests: 10,
@@ -532,7 +539,7 @@ describe('workflow-utilities', () => {
     });
   });
 
-  describe('RETRY_STRATEGIES configuration', () => {
+  describe('rETRY_STRATEGIES configuration', () => {
     test('should have retry strategies with valid configurations', () => {
       expect(RETRY_STRATEGIES).toBeDefined();
       expect(typeof RETRY_STRATEGIES).toBe('object');
@@ -554,7 +561,7 @@ describe('workflow-utilities', () => {
     });
   });
 
-  describe('Advanced utility functions', () => {
+  describe('advanced utility functions', () => {
     test('should handle createStepIdentifier edge cases', () => {
       expect(createStepIdentifier('', '')).toBe(':');
       expect(createStepIdentifier('workflow', '')).toBe('workflow:');
@@ -563,11 +570,11 @@ describe('workflow-utilities', () => {
     });
 
     test('should validate identifiers with edge cases', () => {
-      expect(isValidIdentifier('1')).toBe(true);
-      expect(isValidIdentifier('_')).toBe(true);
-      expect(isValidIdentifier('-')).toBe(true);
-      expect(isValidIdentifier('123-456_789')).toBe(true);
-      expect(isValidIdentifier('ValidID_123-test')).toBe(true);
+      expect(isValidIdentifier('1')).toBeTruthy();
+      expect(isValidIdentifier('_')).toBeTruthy();
+      expect(isValidIdentifier('-')).toBeTruthy();
+      expect(isValidIdentifier('123-456_789')).toBeTruthy();
+      expect(isValidIdentifier('ValidID_123-test')).toBeTruthy();
     });
 
     test('should sanitize complex identifiers', () => {

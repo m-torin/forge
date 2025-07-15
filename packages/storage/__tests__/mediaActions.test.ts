@@ -42,7 +42,7 @@ describe('mediaActions', () => {
       const { uploadMediaAction } = await import('../src/actions/mediaActions');
       const result = await uploadMediaAction('test-file.jpg', Buffer.from('test'));
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.data).toStrictEqual(mockResult);
       expect(mockStorage.upload).toHaveBeenCalledWith(
         'test-file.jpg',
@@ -57,7 +57,7 @@ describe('mediaActions', () => {
       const { uploadMediaAction } = await import('../src/actions/mediaActions');
       const result = await uploadMediaAction('test-file.jpg', Buffer.from('test'));
 
-      expect(result.success).toBe(false);
+      expect(result.success).toBeFalsy();
       expect(result.error).toBe('Upload failed');
     });
   });
@@ -75,7 +75,7 @@ describe('mediaActions', () => {
       const { getMediaAction } = await import('../src/actions/mediaActions');
       const result = await getMediaAction('test-file.jpg');
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.data).toStrictEqual(mockMetadata);
       expect(mockStorage.getMetadata).toHaveBeenCalledWith('test-file.jpg');
     });
@@ -86,7 +86,7 @@ describe('mediaActions', () => {
       const { getMediaAction } = await import('../src/actions/mediaActions');
       const result = await getMediaAction('test-file.jpg');
 
-      expect(result.success).toBe(false);
+      expect(result.success).toBeFalsy();
       expect(result.error).toBe('File not found');
     });
   });
@@ -102,7 +102,7 @@ describe('mediaActions', () => {
       const { listMediaAction } = await import('../src/actions/mediaActions');
       const result = await listMediaAction({ limit: 10 });
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.data).toStrictEqual(mockFiles);
       expect(mockStorage.list).toHaveBeenCalledWith({ limit: 10 });
     });
@@ -113,7 +113,7 @@ describe('mediaActions', () => {
       const { listMediaAction } = await import('../src/actions/mediaActions');
       const result = await listMediaAction();
 
-      expect(result.success).toBe(false);
+      expect(result.success).toBeFalsy();
       expect(result.error).toBe('List failed');
     });
   });
@@ -125,7 +125,7 @@ describe('mediaActions', () => {
       const { deleteMediaAction } = await import('../src/actions/mediaActions');
       const result = await deleteMediaAction('test-file.jpg');
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(mockStorage.delete).toHaveBeenCalledWith('test-file.jpg');
     });
 
@@ -135,7 +135,7 @@ describe('mediaActions', () => {
       const { deleteMediaAction } = await import('../src/actions/mediaActions');
       const result = await deleteMediaAction('test-file.jpg');
 
-      expect(result.success).toBe(false);
+      expect(result.success).toBeFalsy();
       expect(result.error).toBe('Delete failed');
     });
   });
@@ -147,8 +147,8 @@ describe('mediaActions', () => {
       const { existsMediaAction } = await import('../src/actions/mediaActions');
       const result = await existsMediaAction('test-file.jpg');
 
-      expect(result.success).toBe(true);
-      expect(result.data).toBe(true);
+      expect(result.success).toBeTruthy();
+      expect(result.data).toBeTruthy();
       expect(mockStorage.exists).toHaveBeenCalledWith('test-file.jpg');
     });
 
@@ -158,7 +158,7 @@ describe('mediaActions', () => {
       const { existsMediaAction } = await import('../src/actions/mediaActions');
       const result = await existsMediaAction('test-file.jpg');
 
-      expect(result.success).toBe(false);
+      expect(result.success).toBeFalsy();
       expect(result.error).toBe('Check failed');
     });
   });
@@ -173,7 +173,7 @@ describe('mediaActions', () => {
         expiresIn: 3600,
       });
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.data).toBe('https://example.com/signed-url');
       expect(mockStorage.getUrl).toHaveBeenCalledWith('products/123/photo.jpg', {
         expiresIn: 3600,
@@ -186,7 +186,7 @@ describe('mediaActions', () => {
       const { getMediaUrlAction } = await import('../src/actions/mediaActions');
       const result = await getMediaUrlAction('public/file.jpg', { context: 'public' });
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.data).toBe('https://example.com/public-url');
       expect(mockStorage.getUrl).toHaveBeenCalledWith('public/file.jpg');
     });
@@ -197,7 +197,7 @@ describe('mediaActions', () => {
       const { getMediaUrlAction } = await import('../src/actions/mediaActions');
       const result = await getMediaUrlAction('test-file.jpg');
 
-      expect(result.success).toBe(false);
+      expect(result.success).toBeFalsy();
       expect(result.error).toBe('URL generation failed');
     });
   });
@@ -210,7 +210,7 @@ describe('mediaActions', () => {
       const { downloadMediaAction } = await import('../src/actions/mediaActions');
       const result = await downloadMediaAction('test-file.jpg');
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.data).toBe(mockBlob);
       expect(mockStorage.download).toHaveBeenCalledWith('test-file.jpg');
     });
@@ -221,7 +221,7 @@ describe('mediaActions', () => {
       const { downloadMediaAction } = await import('../src/actions/mediaActions');
       const result = await downloadMediaAction('test-file.jpg');
 
-      expect(result.success).toBe(false);
+      expect(result.success).toBeFalsy();
       expect(result.error).toBe('Download failed');
     });
   });
@@ -233,7 +233,7 @@ describe('mediaActions', () => {
       const { bulkDeleteMediaAction } = await import('../src/actions/mediaActions');
       const result = await bulkDeleteMediaAction(['file1.jpg', 'file2.jpg']);
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.data?.succeeded).toStrictEqual(['file1.jpg', 'file2.jpg']);
       expect(result.data?.failed).toStrictEqual([]);
       expect(mockStorage.delete).toHaveBeenCalledTimes(2);
@@ -247,7 +247,7 @@ describe('mediaActions', () => {
       const { bulkDeleteMediaAction } = await import('../src/actions/mediaActions');
       const result = await bulkDeleteMediaAction(['file1.jpg', 'file2.jpg']);
 
-      expect(result.success).toBe(false);
+      expect(result.success).toBeFalsy();
       expect(result.data?.succeeded).toStrictEqual(['file1.jpg']);
       expect(result.data?.failed).toHaveLength(1);
       expect(result.data?.failed[0].key).toBe('file2.jpg');
@@ -265,7 +265,7 @@ describe('mediaActions', () => {
       const { listProvidersAction } = await import('../src/actions/mediaActions');
       const result = await listProvidersAction();
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.data).toStrictEqual(['provider1', 'provider2']);
     });
 
@@ -280,7 +280,7 @@ describe('mediaActions', () => {
       const { listProvidersAction } = await import('../src/actions/mediaActions');
       const result = await listProvidersAction();
 
-      expect(result.success).toBe(false);
+      expect(result.success).toBeFalsy();
       expect(result.error).toBe('Provider list failed');
     });
   });

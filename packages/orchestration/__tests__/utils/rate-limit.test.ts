@@ -22,7 +22,9 @@ vi.mock('@upstash/ratelimit', () => {
   }));
 
   // Add static methods to the mock constructor
-  (mockRatelimit as any).slidingWindow = vi.fn().mockReturnValue('sliding-window-limiter');
+  vi.spyOn(mockRatelimit as any, 'slidingWindow')
+    .mockImplementation(() => 'sliding-window-limiter')
+    .mockReturnValue('sliding-window-limiter');
 
   return {
     Ratelimit: mockRatelimit,
@@ -81,7 +83,7 @@ describe('rate-limit utilities', () => {
 
       const result = await rateLimiter.limit(request);
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.remaining).toBe(10);
       expect(result.limit).toBe(10);
       expect(result.reset).toBeGreaterThan(Date.now());
@@ -133,7 +135,7 @@ describe('rate-limit utilities', () => {
 
       const result = await rateLimiter.limit(request);
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
     });
 
     test('should extract IP from x-real-ip header', async () => {
@@ -150,7 +152,7 @@ describe('rate-limit utilities', () => {
 
       const result = await rateLimiter.limit(request);
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
     });
 
     test('should extract IP from cf-connecting-ip header', async () => {
@@ -167,7 +169,7 @@ describe('rate-limit utilities', () => {
 
       const result = await rateLimiter.limit(request);
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
     });
 
     test('should fallback to anonymous when no IP headers present', async () => {
@@ -182,7 +184,7 @@ describe('rate-limit utilities', () => {
 
       const result = await rateLimiter.limit(request);
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
     });
 
     test('should prioritize x-forwarded-for over other headers', async () => {
@@ -201,7 +203,7 @@ describe('rate-limit utilities', () => {
 
       const result = await rateLimiter.limit(request);
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
     });
   });
 
@@ -216,7 +218,7 @@ describe('rate-limit utilities', () => {
       const request = createMockRequest();
       const result = await withRateLimit(request, config);
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.limit).toBe(20);
       expect(result.remaining).toBe(20);
     });
@@ -232,7 +234,7 @@ describe('rate-limit utilities', () => {
       const result = await withRateLimit(request, config);
 
       // With no-op limiter, it always succeeds
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
     });
   });
 
@@ -305,7 +307,7 @@ describe('rate-limit utilities', () => {
     });
   });
 
-  describe('Edge Cases', () => {
+  describe('edge Cases', () => {
     test('should handle malformed x-forwarded-for header', async () => {
       const config: RateLimitConfig = {
         maxRequests: 10,
@@ -320,7 +322,7 @@ describe('rate-limit utilities', () => {
 
       const result = await rateLimiter.limit(request);
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
     });
 
     test('should handle empty header values', async () => {
@@ -339,7 +341,7 @@ describe('rate-limit utilities', () => {
 
       const result = await rateLimiter.limit(request);
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
     });
 
     test('should handle very large configuration values', () => {
@@ -385,7 +387,7 @@ describe('rate-limit utilities', () => {
     });
   });
 
-  describe('Integration scenarios', () => {
+  describe('integration scenarios', () => {
     test('should work with all configuration options', async () => {
       const customIdentifier = vi.fn().mockReturnValue('test-user-123');
       const config: RateLimitConfig = {
@@ -402,7 +404,7 @@ describe('rate-limit utilities', () => {
 
       const result = await withRateLimit(request, config);
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.limit).toBe(50);
       expect(result.remaining).toBe(50);
       // Custom identifier is not called with no-op limiter
@@ -418,7 +420,7 @@ describe('rate-limit utilities', () => {
 
       const headers = createRateLimitHeaders(result);
 
-      expect(Object.keys(headers)).toEqual([
+      expect(Object.keys(headers)).toStrictEqual([
         'X-RateLimit-Limit',
         'X-RateLimit-Remaining',
         'X-RateLimit-Reset',
@@ -436,7 +438,7 @@ describe('rate-limit utilities', () => {
 
       const headers = createRateLimitHeaders(result);
 
-      expect(Object.keys(headers)).toEqual([
+      expect(Object.keys(headers)).toStrictEqual([
         'X-RateLimit-Limit',
         'X-RateLimit-Remaining',
         'X-RateLimit-Reset',

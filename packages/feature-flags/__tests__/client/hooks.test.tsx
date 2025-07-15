@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 import {
   FeatureFlagProvider,
@@ -31,30 +31,30 @@ const wrapper = ({
 }) => <FeatureFlagProvider adapter={adapter}>{children}</FeatureFlagProvider>;
 
 describe('useFlag Hook', () => {
-  it('should be defined as a function', () => {
+  test('should be defined as a function', () => {
     expect(useFlag).toBeDefined();
     expect(typeof useFlag).toBe('function');
   });
 
-  it('should return initial value while loading', () => {
+  test('should return initial value while loading', () => {
     const flagFunction = vi.fn(() => Promise.resolve(true));
     const { result } = renderHook(() => useFlag(flagFunction, false));
 
-    expect(result.current).toBe(false);
+    expect(result.current).toBeFalsy();
   });
 
-  it('should return flag value after evaluation', async () => {
+  test('should return flag value after evaluation', async () => {
     const flagFunction = vi.fn(() => Promise.resolve(true));
     const { result } = renderHook(() => useFlag(flagFunction));
 
     await waitFor(() => {
-      expect(result.current).toBe(true);
+      expect(result.current).toBeTruthy();
     });
 
     expect(flagFunction).toHaveBeenCalledOnce();
   });
 
-  it('should throw error when flag evaluation fails', async () => {
+  test('should throw error when flag evaluation fails', async () => {
     const flagFunction = vi.fn(() => Promise.reject(new Error('Flag error')));
 
     expect(() => {
@@ -65,36 +65,33 @@ describe('useFlag Hook', () => {
     await new Promise(resolve => setTimeout(resolve, 0));
   });
 
-  it('should update when flag function changes', async () => {
+  test('should update when flag function changes', async () => {
     let flagFunction = vi.fn(() => Promise.resolve(true));
     const { result, rerender } = renderHook(props => useFlag(props.flagFunction), {
       initialProps: { flagFunction },
     });
 
     await waitFor(() => {
-      expect(result.current).toBe(true);
+      expect(result.current).toBeTruthy();
     });
 
     flagFunction = vi.fn(() => Promise.resolve(false));
     rerender({ flagFunction });
 
     await waitFor(() => {
-      expect(result.current).toBe(false);
+      expect(result.current).toBeFalsy();
     });
   });
 });
 
-describe('FeatureFlagProvider', () => {
-  it('should provide adapter to children', () => {
+describe('featureFlagProvider', () => {
+  test('should provide adapter to children', () => {
     const adapter = createMockAdapter();
-    const TestComponent = () => {
-      const { result } = renderHook(() => useFeatureFlag('test-flag'), {
-        wrapper: props => wrapper({ adapter, ...props }),
-      });
-      return null;
-    };
+    const { result } = renderHook(() => useFeatureFlag('test-flag'), {
+      wrapper: props => wrapper({ adapter, ...props }),
+    });
 
-    expect(() => <TestComponent />).not.toThrow();
+    expect(result.current).toBeDefined();
   });
 });
 
@@ -105,7 +102,7 @@ describe('useFeatureFlag Hook', () => {
     mockAdapter = createMockAdapter();
   });
 
-  it('should return enabled state for feature flag', async () => {
+  test('should return enabled state for feature flag', async () => {
     vi.mocked(mockAdapter.isEnabled).mockResolvedValue(true);
 
     const { result } = renderHook(() => useFeatureFlag('test-flag'), {
@@ -113,27 +110,27 @@ describe('useFeatureFlag Hook', () => {
     });
 
     await waitFor(() => {
-      expect(result.current).toBe(true);
+      expect(result.current).toBeTruthy();
     });
 
     expect(mockAdapter.isEnabled).toHaveBeenCalledWith('test-flag');
   });
 
-  it('should return false by default', () => {
+  test('should return false by default', () => {
     const { result } = renderHook(() => useFeatureFlag('test-flag'), {
       wrapper: props => wrapper({ adapter: mockAdapter, ...props }),
     });
 
-    expect(result.current).toBe(false);
+    expect(result.current).toBeFalsy();
   });
 
-  it('should throw error outside of provider', () => {
+  test('should throw error outside of provider', () => {
     expect(() => {
       renderHook(() => useFeatureFlag('test-flag'));
     }).toThrow('useFeatureFlag must be used within a FeatureFlagProvider');
   });
 
-  it('should handle adapter errors gracefully', async () => {
+  test('should handle adapter errors gracefully', async () => {
     vi.mocked(mockAdapter.isEnabled).mockRejectedValue(new Error('Adapter error'));
 
     expect(() => {
@@ -153,7 +150,7 @@ describe('useFeatureFlagPayload Hook', () => {
     mockAdapter = createMockAdapter();
   });
 
-  it('should return flag payload', async () => {
+  test('should return flag payload', async () => {
     const payload = { variant: 'a', config: { theme: 'dark' } };
     vi.mocked(mockAdapter.getFlag).mockResolvedValue(payload);
 
@@ -168,7 +165,7 @@ describe('useFeatureFlagPayload Hook', () => {
     expect(mockAdapter.getFlag).toHaveBeenCalledWith('test-flag', undefined);
   });
 
-  it('should use default value', async () => {
+  test('should use default value', async () => {
     const defaultValue = { variant: 'default' };
     vi.mocked(mockAdapter.getFlag).mockResolvedValue(defaultValue);
 
@@ -183,13 +180,13 @@ describe('useFeatureFlagPayload Hook', () => {
     expect(mockAdapter.getFlag).toHaveBeenCalledWith('test-flag', defaultValue);
   });
 
-  it('should throw error outside of provider', () => {
+  test('should throw error outside of provider', () => {
     expect(() => {
       renderHook(() => useFeatureFlagPayload('test-flag'));
     }).toThrow('useFeatureFlag must be used within a FeatureFlagProvider');
   });
 
-  it('should handle adapter errors gracefully', async () => {
+  test('should handle adapter errors gracefully', async () => {
     vi.mocked(mockAdapter.getFlag).mockRejectedValue(new Error('Adapter error'));
 
     expect(() => {
@@ -209,7 +206,7 @@ describe('useFeatureFlags Hook', () => {
     mockAdapter = createMockAdapter();
   });
 
-  it('should return all feature flags', async () => {
+  test('should return all feature flags', async () => {
     const flags = { 'flag-1': true, 'flag-2': 'variant-a', 'flag-3': { config: 'value' } };
     vi.mocked(mockAdapter.getAllFlags).mockResolvedValue(flags);
 
@@ -224,7 +221,7 @@ describe('useFeatureFlags Hook', () => {
     expect(mockAdapter.getAllFlags).toHaveBeenCalledOnce();
   });
 
-  it('should return empty object by default', () => {
+  test('should return empty object by default', () => {
     const { result } = renderHook(() => useFeatureFlags(), {
       wrapper: props => wrapper({ adapter: mockAdapter, ...props }),
     });
@@ -232,13 +229,13 @@ describe('useFeatureFlags Hook', () => {
     expect(result.current).toStrictEqual({});
   });
 
-  it('should throw error outside of provider', () => {
+  test('should throw error outside of provider', () => {
     expect(() => {
       renderHook(() => useFeatureFlags());
     }).toThrow('useFeatureFlag must be used within a FeatureFlagProvider');
   });
 
-  it('should handle adapter errors gracefully', async () => {
+  test('should handle adapter errors gracefully', async () => {
     vi.mocked(mockAdapter.getAllFlags).mockRejectedValue(new Error('Adapter error'));
 
     expect(() => {

@@ -2,7 +2,7 @@
  * Tests for shared admin permissions functionality
  */
 
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, vi } from 'vitest';
 
 // Mock better-auth access control
 const mockCreateAccessControl = vi.fn();
@@ -29,7 +29,7 @@ describe('shared admin permissions functionality', () => {
   });
 
   describe('adminAccessController', () => {
-    it('should create access controller with admin statements', async () => {
+    test('should create access controller with admin statements', async () => {
       const adminModule = await import('@/shared/admin-permissions');
 
       expect(mockCreateAccessControl).toHaveBeenCalledWith({
@@ -43,7 +43,7 @@ describe('shared admin permissions functionality', () => {
       expect(adminModule.adminAccessController).toBeDefined();
     });
 
-    it('should provide newRole method', async () => {
+    test('should provide newRole method', async () => {
       const adminModule = await import('@/shared/admin-permissions');
 
       expect(adminModule.adminAccessController.newRole).toBeDefined();
@@ -52,7 +52,7 @@ describe('shared admin permissions functionality', () => {
   });
 
   describe('superAdmin role', () => {
-    it('should be created with full permissions', async () => {
+    test('should be created with full permissions', async () => {
       const adminModule = await import('@/shared/admin-permissions');
 
       expect(mockNewRole).toHaveBeenCalledWith({
@@ -66,10 +66,10 @@ describe('shared admin permissions functionality', () => {
       expect(adminModule.superAdmin).toBeDefined();
     });
 
-    it('should have proper structure', async () => {
+    test('should have proper structure', async () => {
       const adminModule = await import('@/shared/admin-permissions');
 
-      expect(adminModule.superAdmin).toEqual({
+      expect(adminModule.superAdmin).toStrictEqual({
         permissions: {
           analytics: ['read'],
           billing: ['read', 'update'],
@@ -83,7 +83,7 @@ describe('shared admin permissions functionality', () => {
   });
 
   describe('moderator role', () => {
-    it('should be created with limited permissions', async () => {
+    test('should be created with limited permissions', async () => {
       const adminModule = await import('@/shared/admin-permissions');
 
       expect(mockNewRole).toHaveBeenCalledWith({
@@ -97,13 +97,13 @@ describe('shared admin permissions functionality', () => {
       expect(adminModule.moderator).toBeDefined();
     });
 
-    it('should have no billing permissions', async () => {
+    test('should have no billing permissions', async () => {
       const adminModule = await import('@/shared/admin-permissions');
 
-      expect(adminModule.moderator.permissions.billing).toEqual([]);
+      expect(adminModule.moderator.permissions.billing).toStrictEqual([]);
     });
 
-    it('should have user moderation permissions', async () => {
+    test('should have user moderation permissions', async () => {
       const adminModule = await import('@/shared/admin-permissions');
 
       const userPerms = adminModule.moderator.permissions.user;
@@ -117,7 +117,7 @@ describe('shared admin permissions functionality', () => {
   });
 
   describe('support role', () => {
-    it('should be created with read-only permissions', async () => {
+    test('should be created with read-only permissions', async () => {
       const adminModule = await import('@/shared/admin-permissions');
 
       expect(mockNewRole).toHaveBeenCalledWith({
@@ -131,19 +131,19 @@ describe('shared admin permissions functionality', () => {
       expect(adminModule.support).toBeDefined();
     });
 
-    it('should only have read permissions', async () => {
+    test('should only have read permissions', async () => {
       const adminModule = await import('@/shared/admin-permissions');
 
       const permissions = adminModule.support.permissions;
 
-      expect(permissions.analytics).toEqual(['read']);
-      expect(permissions.billing).toEqual(['read']);
-      expect(permissions.organization).toEqual(['read']);
-      expect(permissions.system).toEqual(['read']);
-      expect(permissions.user).toEqual(['read']);
+      expect(permissions.analytics).toStrictEqual(['read']);
+      expect(permissions.billing).toStrictEqual(['read']);
+      expect(permissions.organization).toStrictEqual(['read']);
+      expect(permissions.system).toStrictEqual(['read']);
+      expect(permissions.user).toStrictEqual(['read']);
     });
 
-    it('should not have any write permissions', async () => {
+    test('should not have any write permissions', async () => {
       const adminModule = await import('@/shared/admin-permissions');
 
       const permissions = adminModule.support.permissions;
@@ -159,14 +159,14 @@ describe('shared admin permissions functionality', () => {
   });
 
   describe('adminRoles collection', () => {
-    it('should export all admin roles', async () => {
+    test('should export all admin roles', async () => {
       const adminModule = await import('@/shared/admin-permissions');
 
       expect(adminModule.adminRoles).toBeDefined();
       expect(typeof adminModule.adminRoles).toBe('object');
     });
 
-    it('should include all expected roles', async () => {
+    test('should include all expected roles', async () => {
       const adminModule = await import('@/shared/admin-permissions');
 
       const roles = adminModule.adminRoles;
@@ -177,7 +177,7 @@ describe('shared admin permissions functionality', () => {
       expect(roles.support).toBeDefined();
     });
 
-    it('should have admin as alias for super-admin', async () => {
+    test('should have admin as alias for super-admin', async () => {
       const adminModule = await import('@/shared/admin-permissions');
 
       const roles = adminModule.adminRoles;
@@ -186,7 +186,7 @@ describe('shared admin permissions functionality', () => {
       expect(roles.admin).toBe(adminModule.superAdmin);
     });
 
-    it('should map roles correctly', async () => {
+    test('should map roles correctly', async () => {
       const adminModule = await import('@/shared/admin-permissions');
 
       const roles = adminModule.adminRoles;
@@ -196,7 +196,7 @@ describe('shared admin permissions functionality', () => {
       expect(roles['super-admin']).toBe(adminModule.superAdmin);
     });
 
-    it('should provide consistent role structure', async () => {
+    test('should provide consistent role structure', async () => {
       const adminModule = await import('@/shared/admin-permissions');
 
       const roles = adminModule.adminRoles;
@@ -211,7 +211,7 @@ describe('shared admin permissions functionality', () => {
   });
 
   describe('permission hierarchy', () => {
-    it('should have super-admin with most permissions', async () => {
+    test('should have super-admin with most permissions', async () => {
       const adminModule = await import('@/shared/admin-permissions');
 
       const superAdminPerms = adminModule.superAdmin.permissions;
@@ -230,12 +230,12 @@ describe('shared admin permissions functionality', () => {
       expect(moderatorCount).toBeGreaterThan(supportCount);
     });
 
-    it('should have escalating permissions structure', async () => {
+    test('should have escalating permissions structure', async () => {
       const adminModule = await import('@/shared/admin-permissions');
 
       // Support can only read
       const supportUserPerms = adminModule.support.permissions.user;
-      expect(supportUserPerms).toEqual(['read']);
+      expect(supportUserPerms).toStrictEqual(['read']);
 
       // Moderator can read, update, ban, unban
       const moderatorUserPerms = adminModule.moderator.permissions.user;
@@ -256,35 +256,39 @@ describe('shared admin permissions functionality', () => {
       expect(superAdminUserPerms).toContain('unban');
     });
 
-    it('should restrict billing access appropriately', async () => {
+    test('should restrict billing access appropriately', async () => {
       const adminModule = await import('@/shared/admin-permissions');
 
       // Support can read billing
-      expect(adminModule.support.permissions.billing).toEqual(['read']);
+      expect(adminModule.support.permissions.billing).toStrictEqual(['read']);
 
       // Moderator has no billing access
-      expect(adminModule.moderator.permissions.billing).toEqual([]);
+      expect(adminModule.moderator.permissions.billing).toStrictEqual([]);
 
       // Super admin can read and update billing
-      expect(adminModule.superAdmin.permissions.billing).toEqual(['read', 'update']);
+      expect(adminModule.superAdmin.permissions.billing).toStrictEqual(['read', 'update']);
     });
 
-    it('should restrict organization management', async () => {
+    test('should restrict organization management', async () => {
       const adminModule = await import('@/shared/admin-permissions');
 
       // Support can only read organizations
-      expect(adminModule.support.permissions.organization).toEqual(['read']);
+      expect(adminModule.support.permissions.organization).toStrictEqual(['read']);
 
       // Moderator can only read organizations
-      expect(adminModule.moderator.permissions.organization).toEqual(['read']);
+      expect(adminModule.moderator.permissions.organization).toStrictEqual(['read']);
 
       // Super admin can manage organizations
-      expect(adminModule.superAdmin.permissions.organization).toEqual(['read', 'update', 'delete']);
+      expect(adminModule.superAdmin.permissions.organization).toStrictEqual([
+        'read',
+        'update',
+        'delete',
+      ]);
     });
   });
 
   describe('role validation', () => {
-    it('should ensure all roles have required permission categories', async () => {
+    test('should ensure all roles have required permission categories', async () => {
       const adminModule = await import('@/shared/admin-permissions');
 
       const requiredCategories = ['analytics', 'billing', 'organization', 'system', 'user'];
@@ -293,12 +297,12 @@ describe('shared admin permissions functionality', () => {
       roles.forEach(role => {
         requiredCategories.forEach(category => {
           expect(role.permissions).toHaveProperty(category);
-          expect(Array.isArray(role.permissions[category])).toBe(true);
+          expect(Array.isArray(role.permissions[category])).toBeTruthy();
         });
       });
     });
 
-    it('should use only valid permission actions', async () => {
+    test('should use only valid permission actions', async () => {
       const adminModule = await import('@/shared/admin-permissions');
 
       const validActions = ['create', 'read', 'update', 'delete', 'ban', 'unban'];
@@ -313,7 +317,7 @@ describe('shared admin permissions functionality', () => {
       });
     });
 
-    it('should maintain consistent permission format', async () => {
+    test('should maintain consistent permission format', async () => {
       const adminModule = await import('@/shared/admin-permissions');
 
       const roles = [adminModule.superAdmin, adminModule.moderator, adminModule.support];
@@ -321,7 +325,7 @@ describe('shared admin permissions functionality', () => {
       roles.forEach(role => {
         Object.entries(role.permissions).forEach(([category, actions]) => {
           expect(typeof category).toBe('string');
-          expect(Array.isArray(actions)).toBe(true);
+          expect(Array.isArray(actions)).toBeTruthy();
           (actions as string[]).forEach(action => {
             expect(typeof action).toBe('string');
             expect(action.length).toBeGreaterThan(0);
@@ -332,7 +336,7 @@ describe('shared admin permissions functionality', () => {
   });
 
   describe('edge cases', () => {
-    it('should handle access controller creation properly', async () => {
+    test('should handle access controller creation properly', async () => {
       const adminModule = await import('@/shared/admin-permissions');
 
       // Verify the access controller was created with proper statements
@@ -346,21 +350,21 @@ describe('shared admin permissions functionality', () => {
       });
     });
 
-    it('should create all roles through newRole method', async () => {
+    test('should create all roles through newRole method', async () => {
       const adminModule = await import('@/shared/admin-permissions');
 
       // Should have been called 3 times (super-admin, moderator, support)
       expect(mockNewRole).toHaveBeenCalledTimes(3);
     });
 
-    it('should maintain referential equality for admin/super-admin', async () => {
+    test('should maintain referential equality for admin/super-admin', async () => {
       const adminModule = await import('@/shared/admin-permissions');
 
       expect(adminModule.adminRoles.admin).toBe(adminModule.adminRoles['super-admin']);
       expect(adminModule.adminRoles.admin).toBe(adminModule.superAdmin);
     });
 
-    it('should have immutable role definitions', async () => {
+    test('should have immutable role definitions', async () => {
       const adminModule = await import('@/shared/admin-permissions');
 
       const roles = adminModule.adminRoles;

@@ -2,7 +2,7 @@
  * Tests for server helpers functionality
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock NextResponse
 const mockNextResponseJson = vi.fn();
@@ -32,7 +32,7 @@ describe('server helpers functionality', () => {
   });
 
   describe('createAuthHelpers', () => {
-    it('should create helpers with default config', async () => {
+    test('should create helpers with default config', async () => {
       const helpersModule = await import('@/server/helpers');
 
       const helpers = helpersModule.createAuthHelpers();
@@ -43,7 +43,7 @@ describe('server helpers functionality', () => {
       expect(typeof helpers.getOptionalAuth).toBe('function');
     });
 
-    it('should create helpers with custom config', async () => {
+    test('should create helpers with custom config', async () => {
       const helpersModule = await import('@/server/helpers');
 
       const config = {
@@ -56,7 +56,7 @@ describe('server helpers functionality', () => {
       expect(helpers).toBeDefined();
     });
 
-    it('should create helpers with partial config', async () => {
+    test('should create helpers with partial config', async () => {
       const helpersModule = await import('@/server/helpers');
 
       const helpers = helpersModule.createAuthHelpers({
@@ -68,7 +68,7 @@ describe('server helpers functionality', () => {
   });
 
   describe('requireAuth', () => {
-    it('should authenticate with valid service API key', async () => {
+    test('should authenticate with valid service API key', async () => {
       const helpersModule = await import('@/server/helpers');
 
       process.env.SERVICE_API_KEY = 'valid-service-key';
@@ -86,7 +86,7 @@ describe('server helpers functionality', () => {
 
       const result = await helpers.requireAuth(mockRequest);
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         session: {
           id: 'service-session',
           activeOrganizationId: 'system',
@@ -100,7 +100,7 @@ describe('server helpers functionality', () => {
       });
     });
 
-    it('should not authenticate with invalid service API key', async () => {
+    test('should not authenticate with invalid service API key', async () => {
       const helpersModule = await import('@/server/helpers');
 
       process.env.SERVICE_API_KEY = 'valid-service-key';
@@ -131,7 +131,7 @@ describe('server helpers functionality', () => {
       );
     });
 
-    it('should authenticate with valid user session', async () => {
+    test('should authenticate with valid user session', async () => {
       const helpersModule = await import('@/server/helpers');
 
       const helpers = helpersModule.createAuthHelpers();
@@ -157,7 +157,7 @@ describe('server helpers functionality', () => {
       });
     });
 
-    it('should return 401 when no authentication provided', async () => {
+    test('should return 401 when no authentication provided', async () => {
       const helpersModule = await import('@/server/helpers');
 
       const helpers = helpersModule.createAuthHelpers();
@@ -186,7 +186,7 @@ describe('server helpers functionality', () => {
       );
     });
 
-    it('should skip service auth when SERVICE_API_KEY not set', async () => {
+    test('should skip service auth when SERVICE_API_KEY not set', async () => {
       const helpersModule = await import('@/server/helpers');
 
       // No SERVICE_API_KEY env var
@@ -212,7 +212,7 @@ describe('server helpers functionality', () => {
   });
 
   describe('getOptionalAuth', () => {
-    it('should return service auth with valid service API key', async () => {
+    test('should return service auth with valid service API key', async () => {
       const helpersModule = await import('@/server/helpers');
 
       process.env.SERVICE_API_KEY = 'valid-service-key';
@@ -230,7 +230,7 @@ describe('server helpers functionality', () => {
 
       const result = await helpers.getOptionalAuth(mockRequest);
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         session: {
           id: 'service-session',
           activeOrganizationId: 'system',
@@ -244,7 +244,7 @@ describe('server helpers functionality', () => {
       });
     });
 
-    it('should return user session when available', async () => {
+    test('should return user session when available', async () => {
       const helpersModule = await import('@/server/helpers');
 
       const helpers = helpersModule.createAuthHelpers();
@@ -267,7 +267,7 @@ describe('server helpers functionality', () => {
       expect(result).toBe(mockSession);
     });
 
-    it('should return null when no authentication available', async () => {
+    test('should return null when no authentication available', async () => {
       const helpersModule = await import('@/server/helpers');
 
       const helpers = helpersModule.createAuthHelpers();
@@ -285,7 +285,7 @@ describe('server helpers functionality', () => {
       expect(result).toBeNull();
     });
 
-    it('should not authenticate with invalid service API key', async () => {
+    test('should not authenticate with invalid service API key', async () => {
       const helpersModule = await import('@/server/helpers');
 
       process.env.SERVICE_API_KEY = 'valid-service-key';
@@ -305,7 +305,7 @@ describe('server helpers functionality', () => {
       expect(result).toBeNull();
     });
 
-    it('should use default service config when not provided', async () => {
+    test('should use default service config when not provided', async () => {
       const helpersModule = await import('@/server/helpers');
 
       process.env.SERVICE_API_KEY = 'valid-service-key';
@@ -326,7 +326,7 @@ describe('server helpers functionality', () => {
   });
 
   describe('edge cases', () => {
-    it('should handle headers.get returning null', async () => {
+    test('should handle headers.get returning null', async () => {
       const helpersModule = await import('@/server/helpers');
 
       const helpers = helpersModule.createAuthHelpers();
@@ -344,7 +344,7 @@ describe('server helpers functionality', () => {
       expect(result).toBeNull();
     });
 
-    it('should handle auth.api.getSession throwing error', async () => {
+    test('should handle auth.api.getSession throwing error', async () => {
       const helpersModule = await import('@/server/helpers');
 
       const helpers = helpersModule.createAuthHelpers();
@@ -360,7 +360,7 @@ describe('server helpers functionality', () => {
       await expect(helpers.requireAuth(mockRequest)).rejects.toThrow('Session error');
     });
 
-    it('should handle empty config object', async () => {
+    test('should handle empty config object', async () => {
       const helpersModule = await import('@/server/helpers');
 
       const helpers = helpersModule.createAuthHelpers({});
@@ -369,7 +369,7 @@ describe('server helpers functionality', () => {
       expect(helpers).toHaveProperty('getOptionalAuth');
     });
 
-    it('should handle missing SERVICE_API_KEY with API key provided', async () => {
+    test('should handle missing SERVICE_API_KEY with API key provided', async () => {
       const helpersModule = await import('@/server/helpers');
 
       // Ensure SERVICE_API_KEY is not set

@@ -5,6 +5,9 @@ import { WorkflowExecution } from '../src/shared/types';
 
 import { createTestWorkflow } from './fixtures';
 
+// Mock server-only to prevent errors
+vi.mock('server-only', () => ({}));
+
 // Mock fetch
 const mockFetch = vi.fn();
 global.fetch = mockFetch;

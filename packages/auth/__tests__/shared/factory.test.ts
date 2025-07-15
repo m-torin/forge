@@ -2,7 +2,7 @@
  * Tests for shared factory functionality
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock observability
 const mockLogWarn = vi.fn();
@@ -16,14 +16,14 @@ describe('shared factory functionality', () => {
   });
 
   describe('createTypedAuthConfig', () => {
-    it('should create config with default features', async () => {
+    test('should create config with default features', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const config = factoryModule.createTypedAuthConfig({
         database: 'test-db' as any,
       });
 
-      expect(config).toEqual({
+      expect(config).toStrictEqual({
         database: 'test-db',
         features: {
           advancedMiddleware: true,
@@ -42,7 +42,7 @@ describe('shared factory functionality', () => {
       });
     });
 
-    it('should merge custom features with defaults', async () => {
+    test('should merge custom features with defaults', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const config = factoryModule.createTypedAuthConfig({
@@ -54,7 +54,7 @@ describe('shared factory functionality', () => {
         },
       });
 
-      expect(config.features).toEqual({
+      expect(config.features).toStrictEqual({
         advancedMiddleware: true,
         admin: true, // Custom override
         apiKeys: true,
@@ -70,7 +70,7 @@ describe('shared factory functionality', () => {
       });
     });
 
-    it('should override default features completely', async () => {
+    test('should override default features completely', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const config = factoryModule.createTypedAuthConfig({
@@ -93,11 +93,11 @@ describe('shared factory functionality', () => {
 
       // All features should be false due to override
       Object.values(config.features).forEach(feature => {
-        expect(feature).toBe(false);
+        expect(feature).toBeFalsy();
       });
     });
 
-    it('should preserve other config properties', async () => {
+    test('should preserve other config properties', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const config = factoryModule.createTypedAuthConfig({
@@ -110,12 +110,12 @@ describe('shared factory functionality', () => {
       });
 
       expect(config.database).toBe('test-db');
-      expect(config.rateLimit).toEqual({ window: 60, max: 100 });
+      expect(config.rateLimit).toStrictEqual({ window: 60, max: 100 });
       expect((config as any).customProperty).toBe('test-value');
     });
   });
 
-  describe('TypedAuthRegistry', () => {
+  describe('typedAuthRegistry', () => {
     const mockConfig = {
       database: 'test-db' as any,
       features: {
@@ -134,7 +134,7 @@ describe('shared factory functionality', () => {
       },
     };
 
-    it('should initialize with config', async () => {
+    test('should initialize with config', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const registry = new factoryModule.TypedAuthRegistry(mockConfig);
@@ -142,7 +142,7 @@ describe('shared factory functionality', () => {
       expect(registry).toBeInstanceOf(factoryModule.TypedAuthRegistry);
     });
 
-    it('should provide methods based on enabled features', async () => {
+    test('should provide methods based on enabled features', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const registry = new factoryModule.TypedAuthRegistry(mockConfig);
@@ -152,7 +152,7 @@ describe('shared factory functionality', () => {
       expect(typeof methods).toBe('object');
     });
 
-    it('should provide middleware based on configuration', async () => {
+    test('should provide middleware based on configuration', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const registry = new factoryModule.TypedAuthRegistry(mockConfig);
@@ -162,7 +162,7 @@ describe('shared factory functionality', () => {
       expect(middleware.createAuthMiddleware).toBeDefined();
     });
 
-    it('should include advanced middleware when enabled', async () => {
+    test('should include advanced middleware when enabled', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const configWithAdvanced = {
@@ -182,7 +182,7 @@ describe('shared factory functionality', () => {
       expect(middleware.createWebMiddleware).toBeDefined();
     });
 
-    it('should not include advanced middleware when disabled', async () => {
+    test('should not include advanced middleware when disabled', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const configWithoutAdvanced = {
@@ -202,24 +202,24 @@ describe('shared factory functionality', () => {
       expect(middleware.createWebMiddleware).toBeUndefined();
     });
 
-    it('should check if features are enabled', async () => {
+    test('should check if features are enabled', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const registry = new factoryModule.TypedAuthRegistry(mockConfig);
 
-      expect(registry.isFeatureEnabled('apiKeys')).toBe(true);
-      expect(registry.isFeatureEnabled('teams')).toBe(true);
-      expect(registry.isFeatureEnabled('admin')).toBe(false);
-      expect(registry.isFeatureEnabled('twoFactor')).toBe(false);
+      expect(registry.isFeatureEnabled('apiKeys')).toBeTruthy();
+      expect(registry.isFeatureEnabled('teams')).toBeTruthy();
+      expect(registry.isFeatureEnabled('admin')).toBeFalsy();
+      expect(registry.isFeatureEnabled('twoFactor')).toBeFalsy();
     });
 
-    it('should provide plugin configuration', async () => {
+    test('should provide plugin configuration', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const registry = new factoryModule.TypedAuthRegistry(mockConfig);
       const pluginConfig = registry.getPluginConfig();
 
-      expect(pluginConfig).toEqual({
+      expect(pluginConfig).toStrictEqual({
         admin: false,
         apiKeys: true,
         impersonation: false,
@@ -244,27 +244,25 @@ describe('shared factory functionality', () => {
       } as any,
     };
 
-    it('should return true for enabled features', async () => {
+    test('should return true for enabled features', async () => {
       const factoryModule = await import('@/shared/factory');
 
-      expect(factoryModule.hasFeature(testConfig, 'apiKeys')).toBe(true);
-      expect(factoryModule.hasFeature(testConfig, 'organizations')).toBe(true);
+      expect(factoryModule.hasFeature(testConfig, 'apiKeys')).toBeTruthy();
+      expect(factoryModule.hasFeature(testConfig, 'organizations')).toBeTruthy();
     });
 
-    it('should return false for disabled features', async () => {
+    test('should return false for disabled features', async () => {
       const factoryModule = await import('@/shared/factory');
 
-      expect(factoryModule.hasFeature(testConfig, 'teams')).toBe(false);
-      expect(factoryModule.hasFeature(testConfig, 'admin')).toBe(false);
+      expect(factoryModule.hasFeature(testConfig, 'teams')).toBeFalsy();
+      expect(factoryModule.hasFeature(testConfig, 'admin')).toBeFalsy();
     });
 
-    it('should work as type guard', async () => {
+    test('should work as type guard', async () => {
       const factoryModule = await import('@/shared/factory');
 
-      if (factoryModule.hasFeature(testConfig, 'apiKeys')) {
-        // TypeScript should narrow the type here
-        expect(testConfig.features.apiKeys).toBe(true);
-      }
+      // TypeScript should narrow the type here
+      expect(testConfig.features.apiKeys).toBeTruthy();
     });
   });
 
@@ -277,18 +275,18 @@ describe('shared factory functionality', () => {
       } as any,
     };
 
-    it('should execute callback for enabled features', async () => {
+    test('should execute callback for enabled features', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const callback = vi.fn(() => 'result');
 
       const result = factoryModule.withFeature(testConfig, 'apiKeys', callback);
 
-      expect(callback).toHaveBeenCalled();
+      expect(callback).toHaveBeenCalledWith();
       expect(result).toBe('result');
     });
 
-    it('should not execute callback for disabled features', async () => {
+    test('should not execute callback for disabled features', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const callback = vi.fn(() => 'result');
@@ -299,28 +297,28 @@ describe('shared factory functionality', () => {
       expect(result).toBeUndefined();
     });
 
-    it('should return callback result for enabled features', async () => {
+    test('should return callback result for enabled features', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const result = factoryModule.withFeature(testConfig, 'apiKeys', () => ({ data: 'test' }));
 
-      expect(result).toEqual({ data: 'test' });
+      expect(result).toStrictEqual({ data: 'test' });
     });
   });
 
   describe('conditionalImport', () => {
-    it('should import when condition is true', async () => {
+    test('should import when condition is true', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const mockImport = vi.fn().mockResolvedValue({ exported: 'value' });
 
       const result = await factoryModule.conditionalImport(true, mockImport);
 
-      expect(mockImport).toHaveBeenCalled();
-      expect(result).toEqual({ exported: 'value' });
+      expect(mockImport).toHaveBeenCalledWith();
+      expect(result).toStrictEqual({ exported: 'value' });
     });
 
-    it('should not import when condition is false', async () => {
+    test('should not import when condition is false', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const mockImport = vi.fn().mockResolvedValue({ exported: 'value' });
@@ -331,21 +329,21 @@ describe('shared factory functionality', () => {
       expect(result).toBeNull();
     });
 
-    it('should handle import errors gracefully', async () => {
+    test('should handle import errors gracefully', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const mockImport = vi.fn().mockRejectedValue(new Error('Import failed'));
 
       const result = await factoryModule.conditionalImport(true, mockImport);
 
-      expect(mockImport).toHaveBeenCalled();
+      expect(mockImport).toHaveBeenCalledWith();
       expect(mockLogWarn).toHaveBeenCalledWith('Failed to conditionally import module', {
         error: 'Import failed',
       });
       expect(result).toBeNull();
     });
 
-    it('should handle non-Error exceptions', async () => {
+    test('should handle non-Error exceptions', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const mockImport = vi.fn().mockRejectedValue('string error');
@@ -368,7 +366,7 @@ describe('shared factory functionality', () => {
       } as any,
     };
 
-    it('should call method for enabled features', async () => {
+    test('should call method for enabled features', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const mockMethod = vi.fn((a: string, b: number) => `${a}-${b}`);
@@ -379,7 +377,7 @@ describe('shared factory functionality', () => {
       expect(result).toBe('test-123');
     });
 
-    it('should not call method for disabled features', async () => {
+    test('should not call method for disabled features', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const mockMethod = vi.fn((a: string, b: number) => `${a}-${b}`);
@@ -390,7 +388,7 @@ describe('shared factory functionality', () => {
       expect(result).toBeUndefined();
     });
 
-    it('should handle methods with no arguments', async () => {
+    test('should handle methods with no arguments', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const mockMethod = vi.fn(() => 'no-args');
@@ -401,14 +399,14 @@ describe('shared factory functionality', () => {
       expect(result).toBe('no-args');
     });
 
-    it('should handle methods with complex return types', async () => {
+    test('should handle methods with complex return types', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const mockMethod = vi.fn(() => ({ complex: { nested: 'object' } }));
 
       const result = factoryModule.callIfEnabled(testConfig, 'apiKeys', mockMethod);
 
-      expect(result).toEqual({ complex: { nested: 'object' } });
+      expect(result).toStrictEqual({ complex: { nested: 'object' } });
     });
   });
 
@@ -441,7 +439,7 @@ describe('shared factory functionality', () => {
       getImpersonationContext: vi.fn(),
     };
 
-    it('should return methods for enabled features', async () => {
+    test('should return methods for enabled features', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const proxy = factoryModule.createFeatureProxy(testConfig, mockImplementations);
@@ -452,7 +450,7 @@ describe('shared factory functionality', () => {
       expect(proxy.getCurrentOrganization).toBe(mockImplementations.getCurrentOrganization);
     });
 
-    it('should return undefined for disabled features', async () => {
+    test('should return undefined for disabled features', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const proxy = factoryModule.createFeatureProxy(testConfig, mockImplementations);
@@ -462,7 +460,7 @@ describe('shared factory functionality', () => {
       expect(proxy.getImpersonationContext).toBeUndefined();
     });
 
-    it('should return methods for features without requirements', async () => {
+    test('should return methods for features without requirements', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const implementationsWithCustom = {
@@ -476,7 +474,7 @@ describe('shared factory functionality', () => {
       expect((proxy as any).customMethod).toBe(implementationsWithCustom.customMethod);
     });
 
-    it('should handle API key related methods correctly', async () => {
+    test('should handle API key related methods correctly', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const configWithoutApiKeys = {
@@ -495,7 +493,7 @@ describe('shared factory functionality', () => {
       expect(proxy.revokeApiKey).toBeUndefined();
     });
 
-    it('should handle team related methods correctly', async () => {
+    test('should handle team related methods correctly', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const configWithoutTeams = {
@@ -514,7 +512,7 @@ describe('shared factory functionality', () => {
       expect(proxy.updateTeamRole).toBeUndefined();
     });
 
-    it('should handle organization related methods correctly', async () => {
+    test('should handle organization related methods correctly', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const configWithoutOrgs = {
@@ -535,7 +533,7 @@ describe('shared factory functionality', () => {
   });
 
   describe('edge cases', () => {
-    it('should handle empty config', async () => {
+    test('should handle empty config', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const config = factoryModule.createTypedAuthConfig({});
@@ -544,7 +542,7 @@ describe('shared factory functionality', () => {
       expect(typeof config.features).toBe('object');
     });
 
-    it('should handle undefined features in config', async () => {
+    test('should handle undefined features in config', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const config = factoryModule.createTypedAuthConfig({
@@ -555,7 +553,7 @@ describe('shared factory functionality', () => {
       expect(config.features).toBeDefined();
     });
 
-    it('should handle partial feature configuration', async () => {
+    test('should handle partial feature configuration', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const config = factoryModule.createTypedAuthConfig({
@@ -565,11 +563,11 @@ describe('shared factory functionality', () => {
         },
       });
 
-      expect(config.features.apiKeys).toBe(false);
-      expect(config.features.teams).toBe(true); // Should have default
+      expect(config.features.apiKeys).toBeFalsy();
+      expect(config.features.teams).toBeTruthy(); // Should have default
     });
 
-    it('should handle registry with minimal config', async () => {
+    test('should handle registry with minimal config', async () => {
       const factoryModule = await import('@/shared/factory');
 
       const minimalConfig = {

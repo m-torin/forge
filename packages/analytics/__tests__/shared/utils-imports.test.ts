@@ -2,11 +2,11 @@
  * Tests for utility imports and basic functionality
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect } from 'vitest';
 
-describe('Utility Imports', () => {
+describe('utility Imports', () => {
   describe('config utilities', () => {
-    it('should import config utilities without errors', async () => {
+    test('should import config utilities without errors', async () => {
       const configModule = await import('@/shared/utils/config');
 
       expect(configModule).toHaveProperty('validateConfig');
@@ -20,7 +20,7 @@ describe('Utility Imports', () => {
       expect(typeof configModule.PROVIDER_REQUIREMENTS).toBe('object');
     });
 
-    it('should import client config utilities without errors', async () => {
+    test('should import client config utilities without errors', async () => {
       const configClientModule = await import('@/shared/utils/config-client');
 
       expect(configClientModule).toHaveProperty('validateConfig');
@@ -31,7 +31,7 @@ describe('Utility Imports', () => {
   });
 
   describe('validation utilities', () => {
-    it('should import validation utilities without errors', async () => {
+    test('should import validation utilities without errors', async () => {
       const validationModule = await import('@/shared/utils/validation');
 
       expect(validationModule).toHaveProperty('validateAnalyticsConfig');
@@ -45,7 +45,7 @@ describe('Utility Imports', () => {
       expect(typeof validationModule.validateConfigOrThrow).toBe('function');
     });
 
-    it('should import client validation utilities without errors', async () => {
+    test('should import client validation utilities without errors', async () => {
       const validationClientModule = await import('@/shared/utils/validation-client');
 
       expect(validationClientModule).toHaveProperty('validateAnalyticsConfig');
@@ -55,7 +55,7 @@ describe('Utility Imports', () => {
   });
 
   describe('manager utilities', () => {
-    it('should import manager utilities without errors', async () => {
+    test('should import manager utilities without errors', async () => {
       const managerModule = await import('@/shared/utils/manager');
 
       expect(managerModule).toHaveProperty('AnalyticsManager');
@@ -67,7 +67,7 @@ describe('Utility Imports', () => {
   });
 
   describe('emitter adapter utilities', () => {
-    it('should import emitter adapter utilities without errors', async () => {
+    test('should import emitter adapter utilities without errors', async () => {
       const adapterModule = await import('@/shared/utils/emitter-adapter');
 
       expect(adapterModule).toHaveProperty('processEmitterPayload');
@@ -85,8 +85,8 @@ describe('Utility Imports', () => {
     });
   });
 
-  describe('PostHog utilities', () => {
-    it('should import PostHog bootstrap utilities without errors', async () => {
+  describe('postHog utilities', () => {
+    test('should import PostHog bootstrap utilities without errors', async () => {
       const bootstrapModule = await import('@/shared/utils/posthog-bootstrap');
 
       expect(bootstrapModule).toHaveProperty('generateDistinctId');
@@ -101,19 +101,19 @@ describe('Utility Imports', () => {
       expect(typeof bootstrapModule.validateBootstrapData).toBe('function');
     });
 
-    it('should import PostHog client utilities without errors', async () => {
+    test('should import PostHog client utilities without errors', async () => {
       expect(async () => {
         await import('@/shared/utils/posthog-client-utils');
       }).not.toThrow();
     });
 
-    it('should import PostHog Next.js utilities without errors', async () => {
+    test('should import PostHog Next.js utilities without errors', async () => {
       expect(async () => {
         await import('@/shared/utils/posthog-next-utils');
       }).not.toThrow();
     });
 
-    it('should import PostHog server utilities without errors', async () => {
+    test('should import PostHog server utilities without errors', async () => {
       expect(async () => {
         await import('@/shared/utils/posthog-server-utils');
       }).not.toThrow();

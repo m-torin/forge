@@ -3,7 +3,7 @@
  */
 
 import { renderHook } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock Next.js router
 const mockRouter = {
@@ -25,7 +25,7 @@ describe('client navigation helpers', () => {
   });
 
   describe('useAuthRedirect', () => {
-    it('should return navigation functions', async () => {
+    test('should return navigation functions', async () => {
       const navigationModule = await import('@/client/navigation');
 
       const { result } = renderHook(() => navigationModule.useAuthRedirect());
@@ -39,7 +39,7 @@ describe('client navigation helpers', () => {
     });
 
     describe('redirectAfterLogin', () => {
-      it('should redirect to dashboard by default', async () => {
+      test('should redirect to dashboard by default', async () => {
         const navigationModule = await import('@/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
@@ -49,7 +49,7 @@ describe('client navigation helpers', () => {
         expect(mockRouter.replace).toHaveBeenCalledWith('/dashboard');
       });
 
-      it('should redirect to provided returnUrl', async () => {
+      test('should redirect to provided returnUrl', async () => {
         const navigationModule = await import('@/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
@@ -59,7 +59,7 @@ describe('client navigation helpers', () => {
         expect(mockRouter.replace).toHaveBeenCalledWith('/profile');
       });
 
-      it('should redirect to custom URL', async () => {
+      test('should redirect to custom URL', async () => {
         const navigationModule = await import('@/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
@@ -69,7 +69,7 @@ describe('client navigation helpers', () => {
         expect(mockRouter.replace).toHaveBeenCalledWith('/admin/users');
       });
 
-      it('should handle empty string returnUrl', async () => {
+      test('should handle empty string returnUrl', async () => {
         const navigationModule = await import('@/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
@@ -81,7 +81,7 @@ describe('client navigation helpers', () => {
     });
 
     describe('redirectToLogin', () => {
-      it('should redirect to sign-in page without returnUrl', async () => {
+      test('should redirect to sign-in page without returnUrl', async () => {
         const navigationModule = await import('@/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
@@ -91,7 +91,7 @@ describe('client navigation helpers', () => {
         expect(mockRouter.push).toHaveBeenCalledWith('/sign-in');
       });
 
-      it('should redirect to sign-in page with returnUrl', async () => {
+      test('should redirect to sign-in page with returnUrl', async () => {
         const navigationModule = await import('@/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
@@ -101,7 +101,7 @@ describe('client navigation helpers', () => {
         expect(mockRouter.push).toHaveBeenCalledWith('/sign-in?returnUrl=%2Fprotected-page');
       });
 
-      it('should encode returnUrl properly', async () => {
+      test('should encode returnUrl properly', async () => {
         const navigationModule = await import('@/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
@@ -113,7 +113,7 @@ describe('client navigation helpers', () => {
         );
       });
 
-      it('should handle complex URLs with special characters', async () => {
+      test('should handle complex URLs with special characters', async () => {
         const navigationModule = await import('@/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
@@ -125,7 +125,7 @@ describe('client navigation helpers', () => {
         );
       });
 
-      it('should handle empty string returnUrl', async () => {
+      test('should handle empty string returnUrl', async () => {
         const navigationModule = await import('@/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
@@ -137,7 +137,7 @@ describe('client navigation helpers', () => {
     });
 
     describe('redirectToSignUp', () => {
-      it('should redirect to sign-up page without returnUrl', async () => {
+      test('should redirect to sign-up page without returnUrl', async () => {
         const navigationModule = await import('@/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
@@ -147,7 +147,7 @@ describe('client navigation helpers', () => {
         expect(mockRouter.push).toHaveBeenCalledWith('/sign-up');
       });
 
-      it('should redirect to sign-up page with returnUrl', async () => {
+      test('should redirect to sign-up page with returnUrl', async () => {
         const navigationModule = await import('@/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
@@ -157,7 +157,7 @@ describe('client navigation helpers', () => {
         expect(mockRouter.push).toHaveBeenCalledWith('/sign-up?returnUrl=%2Fonboarding');
       });
 
-      it('should encode returnUrl properly', async () => {
+      test('should encode returnUrl properly', async () => {
         const navigationModule = await import('@/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
@@ -167,7 +167,7 @@ describe('client navigation helpers', () => {
         expect(mockRouter.push).toHaveBeenCalledWith('/sign-up?returnUrl=%2Fwelcome%3Fnew%3Dtrue');
       });
 
-      it('should handle paths with fragments', async () => {
+      test('should handle paths with fragments', async () => {
         const navigationModule = await import('@/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
@@ -179,7 +179,7 @@ describe('client navigation helpers', () => {
         );
       });
 
-      it('should handle empty string returnUrl', async () => {
+      test('should handle empty string returnUrl', async () => {
         const navigationModule = await import('@/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
@@ -191,7 +191,7 @@ describe('client navigation helpers', () => {
     });
 
     describe('multiple calls', () => {
-      it('should handle multiple redirect calls', async () => {
+      test('should handle multiple redirect calls', async () => {
         const navigationModule = await import('@/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
@@ -209,7 +209,7 @@ describe('client navigation helpers', () => {
     });
 
     describe('edge cases', () => {
-      it('should handle undefined returnUrl', async () => {
+      test('should handle undefined returnUrl', async () => {
         const navigationModule = await import('@/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
@@ -223,7 +223,7 @@ describe('client navigation helpers', () => {
         expect(mockRouter.push).toHaveBeenNthCalledWith(2, '/sign-up');
       });
 
-      it('should handle null returnUrl', async () => {
+      test('should handle null returnUrl', async () => {
         const navigationModule = await import('@/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
@@ -240,7 +240,7 @@ describe('client navigation helpers', () => {
         expect(mockRouter.push).toHaveBeenNthCalledWith(2, '/sign-up');
       });
 
-      it('should handle very long URLs', async () => {
+      test('should handle very long URLs', async () => {
         const navigationModule = await import('@/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());

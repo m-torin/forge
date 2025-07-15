@@ -3,7 +3,7 @@
  */
 
 import { act, renderHook } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock logger
 vi.mock('@/client/utils/logger', () => ({
@@ -47,25 +47,25 @@ describe('client API key functionality', () => {
 
   describe('helper functions', () => {
     describe('hasPermission', () => {
-      it('should return true for any permission check', async () => {
+      test('should return true for any permission check', async () => {
         const apiKeysModule = await import('@/client/api-keys');
 
         const result = apiKeysModule.hasPermission({ resource: 'api-keys', action: 'read' });
 
-        expect(result).toBe(true);
+        expect(result).toBeTruthy();
       });
 
-      it('should always return true for client-side permission checks', async () => {
+      test('should always return true for client-side permission checks', async () => {
         const apiKeysModule = await import('@/client/api-keys');
 
         const result1 = apiKeysModule.hasPermission({ resource: 'api-keys', action: 'read' });
         const result2 = apiKeysModule.hasPermission({ resource: 'users', action: 'write' });
 
-        expect(result1).toBe(true);
-        expect(result2).toBe(true);
+        expect(result1).toBeTruthy();
+        expect(result2).toBeTruthy();
       });
 
-      it('should handle different permission types', async () => {
+      test('should handle different permission types', async () => {
         const apiKeysModule = await import('@/client/api-keys');
 
         const permissionTypes = [
@@ -76,50 +76,50 @@ describe('client API key functionality', () => {
 
         for (const permission of permissionTypes) {
           const result = apiKeysModule.hasPermission(permission);
-          expect(result).toBe(true);
+          expect(result).toBeTruthy();
         }
       });
     });
 
     describe('createApiKeyHeaders', () => {
-      it('should create proper API key headers', async () => {
+      test('should create proper API key headers', async () => {
         const apiKeysModule = await import('@/client/api-keys');
 
         const headers = apiKeysModule.createApiKeyHeaders('test-api-key');
 
-        expect(headers).toEqual({
+        expect(headers).toStrictEqual({
           'x-api-key': 'test-api-key',
         });
       });
 
-      it('should handle empty string', async () => {
+      test('should handle empty string', async () => {
         const apiKeysModule = await import('@/client/api-keys');
 
         const headers = apiKeysModule.createApiKeyHeaders('');
 
-        expect(headers).toEqual({
+        expect(headers).toStrictEqual({
           'x-api-key': '',
         });
       });
     });
 
     describe('createBearerHeaders', () => {
-      it('should create proper Bearer token headers', async () => {
+      test('should create proper Bearer token headers', async () => {
         const apiKeysModule = await import('@/client/api-keys');
 
         const headers = apiKeysModule.createBearerHeaders('test-token');
 
-        expect(headers).toEqual({
+        expect(headers).toStrictEqual({
           authorization: 'Bearer test-token',
         });
       });
 
-      it('should handle empty token', async () => {
+      test('should handle empty token', async () => {
         const apiKeysModule = await import('@/client/api-keys');
 
         const headers = apiKeysModule.createBearerHeaders('');
 
-        expect(headers).toEqual({
+        expect(headers).toStrictEqual({
           authorization: 'Bearer ',
         });
       });
@@ -139,21 +139,21 @@ describe('client API key functionality', () => {
       });
     });
 
-    it('should fetch API keys on mount', async () => {
+    test('should fetch API keys on mount', async () => {
       const apiKeysModule = await import('@/client/api-keys');
 
       renderHook(() => apiKeysModule.useApiKeys());
 
-      expect(mockListApiKeysAction).toHaveBeenCalled();
+      expect(mockListApiKeysAction).toHaveBeenCalledWith();
     });
 
-    it('should provide initial state', async () => {
+    test('should provide initial state', async () => {
       const apiKeysModule = await import('@/client/api-keys');
 
       const { result } = renderHook(() => apiKeysModule.useApiKeys());
 
-      expect(result.current.keys).toEqual([]);
-      expect(result.current.loading).toBe(true); // Initially loading is true due to fetchKeys being called
+      expect(result.current.keys).toStrictEqual([]);
+      expect(result.current.loading).toBeTruthy(); // Initially loading is true due to fetchKeys being called
       expect(result.current.error).toBeNull();
       expect(typeof result.current.createKey).toBe('function');
       expect(typeof result.current.revokeKey).toBe('function');
@@ -161,7 +161,7 @@ describe('client API key functionality', () => {
       expect(typeof result.current.fetchKeys).toBe('function');
     });
 
-    it('should handle successful key fetching', async () => {
+    test('should handle successful key fetching', async () => {
       const apiKeysModule = await import('@/client/api-keys');
 
       const { result } = renderHook(() => apiKeysModule.useApiKeys());
@@ -170,11 +170,11 @@ describe('client API key functionality', () => {
         await new Promise(resolve => setTimeout(resolve, 0));
       });
 
-      expect(result.current.keys).toEqual(mockApiKeys);
+      expect(result.current.keys).toStrictEqual(mockApiKeys);
       expect(result.current.error).toBeNull();
     });
 
-    it('should handle fetch errors', async () => {
+    test('should handle fetch errors', async () => {
       const apiKeysModule = await import('@/client/api-keys');
 
       mockListApiKeysAction.mockResolvedValue({
@@ -191,7 +191,7 @@ describe('client API key functionality', () => {
       expect(result.current.error).toBe('Fetch failed');
     });
 
-    it('should handle create key success', async () => {
+    test('should handle create key success', async () => {
       const apiKeysModule = await import('@/client/api-keys');
 
       mockCreateApiKeyAction.mockResolvedValue({
@@ -206,7 +206,7 @@ describe('client API key functionality', () => {
           name: 'New Key',
           permissions: ['read'],
         });
-        expect(createResult.success).toBe(true);
+        expect(createResult.success).toBeTruthy();
       });
 
       expect(mockCreateApiKeyAction).toHaveBeenCalledWith({
@@ -216,7 +216,7 @@ describe('client API key functionality', () => {
       });
     });
 
-    it('should handle create key with expiration date', async () => {
+    test('should handle create key with expiration date', async () => {
       const apiKeysModule = await import('@/client/api-keys');
 
       mockCreateApiKeyAction.mockResolvedValue({
@@ -243,7 +243,7 @@ describe('client API key functionality', () => {
       });
     });
 
-    it('should handle revoke key success', async () => {
+    test('should handle revoke key success', async () => {
       const apiKeysModule = await import('@/client/api-keys');
 
       mockRevokeApiKeyAction.mockResolvedValue({ success: true });
@@ -257,15 +257,15 @@ describe('client API key functionality', () => {
 
       await act(async () => {
         const revokeResult = await result.current.revokeKey('1');
-        expect(revokeResult.success).toBe(true);
+        expect(revokeResult.success).toBeTruthy();
       });
 
-      expect(result.current.keys).toEqual([
+      expect(result.current.keys).toStrictEqual([
         { id: '2', name: 'Test Key 2', maskedKey: 'sk_test...5678' },
       ]);
     });
 
-    it('should handle update key success', async () => {
+    test('should handle update key success', async () => {
       const apiKeysModule = await import('@/client/api-keys');
 
       mockUpdateApiKeyAction.mockResolvedValue({ success: true });
@@ -274,7 +274,7 @@ describe('client API key functionality', () => {
 
       await act(async () => {
         const updateResult = await result.current.updateKey('1', { name: 'Updated Key' });
-        expect(updateResult.success).toBe(true);
+        expect(updateResult.success).toBeTruthy();
       });
 
       expect(mockUpdateApiKeyAction).toHaveBeenCalledWith({
@@ -283,7 +283,7 @@ describe('client API key functionality', () => {
       });
     });
 
-    it('should handle action errors gracefully', async () => {
+    test('should handle action errors gracefully', async () => {
       const apiKeysModule = await import('@/client/api-keys');
 
       mockCreateApiKeyAction.mockRejectedValue(new Error('Network error'));
@@ -295,7 +295,7 @@ describe('client API key functionality', () => {
           name: 'New Key',
           permissions: ['read'],
         });
-        expect(createResult.success).toBe(false);
+        expect(createResult.success).toBeFalsy();
         expect(createResult.error).toBe('Network error');
       });
 
@@ -304,19 +304,19 @@ describe('client API key functionality', () => {
   });
 
   describe('useCreateApiKey hook', () => {
-    it('should provide initial state', async () => {
+    test('should provide initial state', async () => {
       const apiKeysModule = await import('@/client/api-keys');
 
       const { result } = renderHook(() => apiKeysModule.useCreateApiKey());
 
-      expect(result.current.loading).toBe(false);
+      expect(result.current.loading).toBeFalsy();
       expect(result.current.error).toBeNull();
       expect(result.current.result).toBeNull();
       expect(typeof result.current.createKey).toBe('function');
       expect(typeof result.current.reset).toBe('function');
     });
 
-    it('should handle successful key creation', async () => {
+    test('should handle successful key creation', async () => {
       const apiKeysModule = await import('@/client/api-keys');
 
       const mockResult = {
@@ -333,15 +333,15 @@ describe('client API key functionality', () => {
           name: 'Test Key',
           permissions: ['read'],
         });
-        expect(createResult).toEqual(mockResult);
+        expect(createResult).toStrictEqual(mockResult);
       });
 
-      expect(result.current.result).toEqual(mockResult);
+      expect(result.current.result).toStrictEqual(mockResult);
       expect(result.current.error).toBeNull();
-      expect(result.current.loading).toBe(false);
+      expect(result.current.loading).toBeFalsy();
     });
 
-    it('should handle creation errors', async () => {
+    test('should handle creation errors', async () => {
       const apiKeysModule = await import('@/client/api-keys');
 
       mockCreateApiKeyAction.mockResolvedValue({
@@ -359,10 +359,10 @@ describe('client API key functionality', () => {
       });
 
       expect(result.current.error).toBe('Creation failed');
-      expect(result.current.result?.success).toBe(false);
+      expect(result.current.result?.success).toBeFalsy();
     });
 
-    it('should reset state correctly', async () => {
+    test('should reset state correctly', async () => {
       const apiKeysModule = await import('@/client/api-keys');
 
       const { result } = renderHook(() => apiKeysModule.useCreateApiKey());
@@ -386,12 +386,12 @@ describe('client API key functionality', () => {
         result.current.reset();
       });
 
-      expect(result.current.loading).toBe(false);
+      expect(result.current.loading).toBeFalsy();
       expect(result.current.error).toBeNull();
       expect(result.current.result).toBeNull();
     });
 
-    it('should handle network errors', async () => {
+    test('should handle network errors', async () => {
       const apiKeysModule = await import('@/client/api-keys');
 
       mockCreateApiKeyAction.mockRejectedValue(new Error('Network failed'));
@@ -403,7 +403,7 @@ describe('client API key functionality', () => {
           name: 'Test Key',
           permissions: ['read'],
         });
-        expect(createResult.success).toBe(false);
+        expect(createResult.success).toBeFalsy();
         expect(createResult.error).toBe('Network failed');
       });
 
@@ -412,17 +412,17 @@ describe('client API key functionality', () => {
   });
 
   describe('useApiKeyValidation hook', () => {
-    it('should provide initial state', async () => {
+    test('should provide initial state', async () => {
       const apiKeysModule = await import('@/client/api-keys');
 
       const { result } = renderHook(() => apiKeysModule.useApiKeyValidation());
 
-      expect(result.current.validating).toBe(false);
+      expect(result.current.validating).toBeFalsy();
       expect(result.current.validationResult).toBeNull();
       expect(typeof result.current.validateKey).toBe('function');
     });
 
-    it('should handle successful validation', async () => {
+    test('should handle successful validation', async () => {
       const apiKeysModule = await import('@/client/api-keys');
 
       mockValidateApiKeyAction.mockResolvedValue({ success: true });
@@ -433,11 +433,11 @@ describe('client API key functionality', () => {
         await result.current.validateKey('test-api-key');
       });
 
-      expect(result.current.validationResult).toEqual({ isValid: true });
-      expect(result.current.validating).toBe(false);
+      expect(result.current.validationResult).toStrictEqual({ isValid: true });
+      expect(result.current.validating).toBeFalsy();
     });
 
-    it('should handle validation failure', async () => {
+    test('should handle validation failure', async () => {
       const apiKeysModule = await import('@/client/api-keys');
 
       mockValidateApiKeyAction.mockResolvedValue({
@@ -451,13 +451,13 @@ describe('client API key functionality', () => {
         await result.current.validateKey('invalid-key');
       });
 
-      expect(result.current.validationResult).toEqual({
+      expect(result.current.validationResult).toStrictEqual({
         isValid: false,
         error: 'Invalid key',
       });
     });
 
-    it('should handle validation errors', async () => {
+    test('should handle validation errors', async () => {
       const apiKeysModule = await import('@/client/api-keys');
 
       mockValidateApiKeyAction.mockRejectedValue(new Error('Network error'));
@@ -468,13 +468,13 @@ describe('client API key functionality', () => {
         await result.current.validateKey('test-key');
       });
 
-      expect(result.current.validationResult).toEqual({
+      expect(result.current.validationResult).toStrictEqual({
         isValid: false,
         error: 'Network error',
       });
     });
 
-    it('should set validating state during validation', async () => {
+    test('should set validating state during validation', async () => {
       const apiKeysModule = await import('@/client/api-keys');
 
       // Make the action hang to test loading state
@@ -491,7 +491,7 @@ describe('client API key functionality', () => {
         result.current.validateKey('test-key');
       });
 
-      expect(result.current.validating).toBe(true);
+      expect(result.current.validating).toBeTruthy();
 
       // Resolve the action
       await act(async () => {
@@ -499,12 +499,12 @@ describe('client API key functionality', () => {
         await actionPromise;
       });
 
-      expect(result.current.validating).toBe(false);
+      expect(result.current.validating).toBeFalsy();
     });
   });
 
   describe('re-exported utilities', () => {
-    it('should re-export shared utilities', async () => {
+    test('should re-export shared utilities', async () => {
       const apiKeysModule = await import('@/client/api-keys');
 
       expect(apiKeysModule.formatPermissionsForDisplay).toBeDefined();
@@ -518,7 +518,7 @@ describe('client API key functionality', () => {
   });
 
   describe('edge cases', () => {
-    it('should handle undefined dates correctly', async () => {
+    test('should handle undefined dates correctly', async () => {
       const apiKeysModule = await import('@/client/api-keys');
 
       mockCreateApiKeyAction.mockResolvedValue({ success: true });
@@ -540,7 +540,7 @@ describe('client API key functionality', () => {
       });
     });
 
-    it('should handle empty key arrays', async () => {
+    test('should handle empty key arrays', async () => {
       const apiKeysModule = await import('@/client/api-keys');
 
       mockListApiKeysAction.mockResolvedValue({
@@ -554,10 +554,10 @@ describe('client API key functionality', () => {
         await new Promise(resolve => setTimeout(resolve, 0));
       });
 
-      expect(result.current.keys).toEqual([]);
+      expect(result.current.keys).toStrictEqual([]);
     });
 
-    it('should handle missing error messages', async () => {
+    test('should handle missing error messages', async () => {
       const apiKeysModule = await import('@/client/api-keys');
 
       mockCreateApiKeyAction.mockResolvedValue({

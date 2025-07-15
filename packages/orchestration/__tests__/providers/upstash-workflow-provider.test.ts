@@ -592,7 +592,7 @@ describe('upstashWorkflowProvider', () => {
             const { definition, executionId, workflowId: _workflowId } = body;
 
             // Mock workflow execution
-            if (provider.useRedis) {
+            {
               // Update execution status to running
               await provider.updateExecutionStatus(executionId, 'running');
 

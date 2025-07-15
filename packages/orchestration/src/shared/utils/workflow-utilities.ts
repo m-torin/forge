@@ -721,11 +721,7 @@ export function createWorkflowDefinition(config: {
 /**
  * Creates a step definition with basic validation
  */
-export function createStepDefinition(config: {
-  id: string;
-  name: string;
-  action: string;
-}): {
+export function createStepDefinition(config: { id: string; name: string; action: string }): {
   id: string;
   name: string;
   action: string;
@@ -740,10 +736,7 @@ export function createStepDefinition(config: {
 /**
  * Creates an execution context for workflow execution
  */
-export function createExecutionContext(config: {
-  workflowId: string;
-  executionId: string;
-}): {
+export function createExecutionContext(config: { workflowId: string; executionId: string }): {
   workflowId: string;
   executionId: string;
   timestamp: string;
@@ -758,10 +751,7 @@ export function createExecutionContext(config: {
 /**
  * Creates a schedule configuration with validation
  */
-export function createScheduleConfig(config: {
-  cron: string;
-  timezone: string;
-}): {
+export function createScheduleConfig(config: { cron: string; timezone: string }): {
   cron: string;
   timezone: string;
 } {

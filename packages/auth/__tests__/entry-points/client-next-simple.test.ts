@@ -2,15 +2,15 @@
  * Simple tests for client-next.ts entry point structure
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect } from 'vitest';
 
 describe('client-next.ts basic structure', () => {
-  it('should be a valid TypeScript/JavaScript module', () => {
+  test('should be a valid TypeScript/JavaScript module', () => {
     // This test just ensures the file can be parsed and has basic structure
-    expect(true).toBe(true);
+    expect(true).toBeTruthy();
   });
 
-  it('should contain expected export patterns', () => {
+  test('should contain expected export patterns', () => {
     // Read the file content to verify it has the expected structure
     const fs = require('fs');
     const path = require('path');
@@ -29,7 +29,7 @@ describe('client-next.ts basic structure', () => {
     expect(content).toContain('signUp');
   });
 
-  it('should use client directive', () => {
+  test('should use client directive', () => {
     const fs = require('fs');
     const path = require('path');
 
@@ -39,7 +39,7 @@ describe('client-next.ts basic structure', () => {
     expect(content).toContain("'use client'");
   });
 
-  it('should have proper import structure', () => {
+  test('should have proper import structure', () => {
     const fs = require('fs');
     const path = require('path');
 

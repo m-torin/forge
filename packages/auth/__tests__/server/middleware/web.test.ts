@@ -3,7 +3,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock better-auth/cookies
 const mockGetSessionCookie = vi.fn();
@@ -35,13 +35,13 @@ vi.mock('next/server', async () => {
   };
 });
 
-describe('Web middleware', () => {
+describe('web middleware', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   describe('createWebMiddleware', () => {
-    it('should create middleware function', async () => {
+    test('should create middleware function', async () => {
       const webModule = await import('@/server/middleware/web');
 
       const middleware = webModule.createWebMiddleware();
@@ -49,7 +49,7 @@ describe('Web middleware', () => {
       expect(typeof middleware).toBe('function');
     });
 
-    it('should allow home page as public route', async () => {
+    test('should allow home page as public route', async () => {
       const webModule = await import('@/server/middleware/web');
 
       const middleware = webModule.createWebMiddleware();
@@ -59,10 +59,10 @@ describe('Web middleware', () => {
 
       await middleware(request);
 
-      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.next).toHaveBeenCalledWith();
     });
 
-    it('should allow default public routes', async () => {
+    test('should allow default public routes', async () => {
       const webModule = await import('@/server/middleware/web');
 
       const middleware = webModule.createWebMiddleware();
@@ -84,11 +84,11 @@ describe('Web middleware', () => {
 
         await middleware(request);
 
-        expect(NextResponse.next).toHaveBeenCalled();
+        expect(NextResponse.next).toHaveBeenCalledWith();
       }
     });
 
-    it('should allow custom public paths', async () => {
+    test('should allow custom public paths', async () => {
       const webModule = await import('@/server/middleware/web');
 
       const middleware = webModule.createWebMiddleware({
@@ -101,11 +101,11 @@ describe('Web middleware', () => {
 
       await middleware(request);
 
-      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.next).toHaveBeenCalledWith();
     });
 
-    describe('API routes handling', () => {
-      it('should detect API routes correctly', async () => {
+    describe('aPI routes handling', () => {
+      test('should detect API routes correctly', async () => {
         const webModule = await import('@/server/middleware/web');
 
         mockGetSessionCookie.mockReturnValue(null);
@@ -128,7 +128,7 @@ describe('Web middleware', () => {
         );
       });
 
-      it('should allow auth API routes', async () => {
+      test('should allow auth API routes', async () => {
         const webModule = await import('@/server/middleware/web');
 
         const middleware = webModule.createWebMiddleware();
@@ -138,10 +138,10 @@ describe('Web middleware', () => {
 
         await middleware(request);
 
-        expect(NextResponse.next).toHaveBeenCalled();
+        expect(NextResponse.next).toHaveBeenCalledWith();
       });
 
-      it('should handle API key authentication for API routes', async () => {
+      test('should handle API key authentication for API routes', async () => {
         const webModule = await import('@/server/middleware/web');
 
         const mockResponse = {
@@ -160,11 +160,11 @@ describe('Web middleware', () => {
 
         await middleware(request);
 
-        expect(NextResponse.next).toHaveBeenCalled();
+        expect(NextResponse.next).toHaveBeenCalledWith();
         expect(mockResponse.set).toHaveBeenCalledWith('x-auth-method', 'api-key');
       });
 
-      it('should handle Bearer token for API routes', async () => {
+      test('should handle Bearer token for API routes', async () => {
         const webModule = await import('@/server/middleware/web');
 
         const middleware = webModule.createWebMiddleware();
@@ -177,10 +177,10 @@ describe('Web middleware', () => {
 
         await middleware(request);
 
-        expect(NextResponse.next).toHaveBeenCalled();
+        expect(NextResponse.next).toHaveBeenCalledWith();
       });
 
-      it('should handle custom API key headers', async () => {
+      test('should handle custom API key headers', async () => {
         const webModule = await import('@/server/middleware/web');
 
         const middleware = webModule.createWebMiddleware({
@@ -196,10 +196,10 @@ describe('Web middleware', () => {
 
         await middleware(request);
 
-        expect(NextResponse.next).toHaveBeenCalled();
+        expect(NextResponse.next).toHaveBeenCalledWith();
       });
 
-      it('should handle session authentication for API routes', async () => {
+      test('should handle session authentication for API routes', async () => {
         const webModule = await import('@/server/middleware/web');
 
         mockGetSessionCookie.mockReturnValue({ sessionId: 'test-session' });
@@ -217,11 +217,11 @@ describe('Web middleware', () => {
 
         await middleware(request);
 
-        expect(NextResponse.next).toHaveBeenCalled();
+        expect(NextResponse.next).toHaveBeenCalledWith();
         expect(mockResponse.set).toHaveBeenCalledWith('x-auth-method', 'session');
       });
 
-      it('should allow unauthenticated API access when auth not required', async () => {
+      test('should allow unauthenticated API access when auth not required', async () => {
         const webModule = await import('@/server/middleware/web');
 
         mockGetSessionCookie.mockReturnValue(null);
@@ -236,10 +236,10 @@ describe('Web middleware', () => {
 
         await middleware(request);
 
-        expect(NextResponse.next).toHaveBeenCalled();
+        expect(NextResponse.next).toHaveBeenCalledWith();
       });
 
-      it('should include supported methods in API 401 response', async () => {
+      test('should include supported methods in API 401 response', async () => {
         const webModule = await import('@/server/middleware/web');
 
         mockGetSessionCookie.mockReturnValue(null);
@@ -268,7 +268,7 @@ describe('Web middleware', () => {
     });
 
     describe('protected routes handling', () => {
-      it('should protect default protected routes', async () => {
+      test('should protect default protected routes', async () => {
         const webModule = await import('@/server/middleware/web');
 
         mockGetSessionCookie.mockReturnValue(null);
@@ -292,7 +292,7 @@ describe('Web middleware', () => {
         }
       });
 
-      it('should protect custom protected paths', async () => {
+      test('should protect custom protected paths', async () => {
         const webModule = await import('@/server/middleware/web');
 
         mockGetSessionCookie.mockReturnValue(null);
@@ -314,7 +314,7 @@ describe('Web middleware', () => {
         );
       });
 
-      it('should allow access to protected routes with session', async () => {
+      test('should allow access to protected routes with session', async () => {
         const webModule = await import('@/server/middleware/web');
 
         mockGetSessionCookie.mockReturnValue({ sessionId: 'test-session' });
@@ -332,12 +332,12 @@ describe('Web middleware', () => {
 
         await middleware(request);
 
-        expect(NextResponse.next).toHaveBeenCalled();
+        expect(NextResponse.next).toHaveBeenCalledWith();
         expect(mockResponse.set).toHaveBeenCalledWith('x-auth-method', 'session');
         expect(mockResponse.set).toHaveBeenCalledWith('x-protected-route', 'true');
       });
 
-      it('should handle locale prefixes in protected routes', async () => {
+      test('should handle locale prefixes in protected routes', async () => {
         const webModule = await import('@/server/middleware/web');
 
         mockGetSessionCookie.mockReturnValue(null);
@@ -371,7 +371,7 @@ describe('Web middleware', () => {
         );
       });
 
-      it('should handle nested protected routes', async () => {
+      test('should handle nested protected routes', async () => {
         const webModule = await import('@/server/middleware/web');
 
         mockGetSessionCookie.mockReturnValue(null);
@@ -383,10 +383,10 @@ describe('Web middleware', () => {
 
         await middleware(request);
 
-        expect(NextResponse.redirect).toHaveBeenCalled();
+        expect(NextResponse.redirect).toHaveBeenCalledWith();
       });
 
-      it('should use custom redirect URL', async () => {
+      test('should use custom redirect URL', async () => {
         const webModule = await import('@/server/middleware/web');
 
         mockGetSessionCookie.mockReturnValue(null);
@@ -408,7 +408,7 @@ describe('Web middleware', () => {
         );
       });
 
-      it('should allow unprotected routes even without session', async () => {
+      test('should allow unprotected routes even without session', async () => {
         const webModule = await import('@/server/middleware/web');
 
         mockGetSessionCookie.mockReturnValue(null);
@@ -420,10 +420,10 @@ describe('Web middleware', () => {
 
         await middleware(request);
 
-        expect(NextResponse.next).toHaveBeenCalled();
+        expect(NextResponse.next).toHaveBeenCalledWith();
       });
 
-      it('should skip protection when requireAuth is false', async () => {
+      test('should skip protection when requireAuth is false', async () => {
         const webModule = await import('@/server/middleware/web');
 
         mockGetSessionCookie.mockReturnValue(null);
@@ -438,13 +438,13 @@ describe('Web middleware', () => {
 
         await middleware(request);
 
-        expect(NextResponse.next).toHaveBeenCalled();
+        expect(NextResponse.next).toHaveBeenCalledWith();
         expect(NextResponse.redirect).not.toHaveBeenCalled();
       });
     });
 
     describe('route detection', () => {
-      it('should correctly identify API routes', async () => {
+      test('should correctly identify API routes', async () => {
         const webModule = await import('@/server/middleware/web');
 
         const middleware = webModule.createWebMiddleware();
@@ -468,7 +468,7 @@ describe('Web middleware', () => {
         }
       });
 
-      it('should not treat auth API routes as protected', async () => {
+      test('should not treat auth API routes as protected', async () => {
         const webModule = await import('@/server/middleware/web');
 
         const middleware = webModule.createWebMiddleware();
@@ -482,11 +482,11 @@ describe('Web middleware', () => {
 
           await middleware(request);
 
-          expect(NextResponse.next).toHaveBeenCalled();
+          expect(NextResponse.next).toHaveBeenCalledWith();
         }
       });
 
-      it('should handle route prefix matching correctly', async () => {
+      test('should handle route prefix matching correctly', async () => {
         const webModule = await import('@/server/middleware/web');
 
         const middleware = webModule.createWebMiddleware({
@@ -499,20 +499,20 @@ describe('Web middleware', () => {
 
         await middleware(request);
 
-        expect(NextResponse.next).toHaveBeenCalled();
+        expect(NextResponse.next).toHaveBeenCalledWith();
       });
     });
   });
 
   describe('default middleware', () => {
-    it('should export default webMiddleware', async () => {
+    test('should export default webMiddleware', async () => {
       const webModule = await import('@/server/middleware/web');
 
       expect(webModule.webMiddleware).toBeDefined();
       expect(typeof webModule.webMiddleware).toBe('function');
     });
 
-    it('should work with default settings', async () => {
+    test('should work with default settings', async () => {
       const webModule = await import('@/server/middleware/web');
 
       const request = new NextRequest('https://example.com/sign-in', {
@@ -521,12 +521,12 @@ describe('Web middleware', () => {
 
       const result = await webModule.webMiddleware(request);
 
-      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.next).toHaveBeenCalledWith();
     });
   });
 
   describe('edge cases', () => {
-    it('should handle empty header values for API keys', async () => {
+    test('should handle empty header values for API keys', async () => {
       const webModule = await import('@/server/middleware/web');
 
       mockGetSessionCookie.mockReturnValue(null);
@@ -547,7 +547,7 @@ describe('Web middleware', () => {
       );
     });
 
-    it('should handle malformed locale patterns', async () => {
+    test('should handle malformed locale patterns', async () => {
       const webModule = await import('@/server/middleware/web');
 
       mockGetSessionCookie.mockReturnValue({ sessionId: 'test' });
@@ -561,10 +561,10 @@ describe('Web middleware', () => {
 
       await middleware(request);
 
-      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.next).toHaveBeenCalledWith();
     });
 
-    it('should handle very long URLs', async () => {
+    test('should handle very long URLs', async () => {
       const webModule = await import('@/server/middleware/web');
 
       mockGetSessionCookie.mockReturnValue(null);
@@ -584,7 +584,7 @@ describe('Web middleware', () => {
       );
     });
 
-    it('should handle URLs with query parameters', async () => {
+    test('should handle URLs with query parameters', async () => {
       const webModule = await import('@/server/middleware/web');
 
       mockGetSessionCookie.mockReturnValue(null);
@@ -605,7 +605,7 @@ describe('Web middleware', () => {
       );
     });
 
-    it('should handle missing headers gracefully', async () => {
+    test('should handle missing headers gracefully', async () => {
       const webModule = await import('@/server/middleware/web');
 
       const middleware = webModule.createWebMiddleware();
@@ -622,7 +622,7 @@ describe('Web middleware', () => {
 
       await middleware(request);
 
-      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.next).toHaveBeenCalledWith();
     });
   });
 });

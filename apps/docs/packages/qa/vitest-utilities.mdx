@@ -722,7 +722,7 @@ test("generates consistent test data", () => {
   const userData1 = generateTestData("user", { seed: 12345 });
   const userData2 = generateTestData("user", { seed: 12345 });
 
-  expect(userData1).toEqual(userData2); // Same seed = same data
+  expect(userData1).toStrictEqual(userData2); // Same seed = same data
 });
 ```
 

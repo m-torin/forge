@@ -12,7 +12,7 @@ describe('storage Keys Configuration', () => {
     process.env = originalEnv;
   });
 
-  describe.skip('environment configuration behavior', () => {
+  describe.todo('environment configuration behavior', () => {
     test('should handle Vercel Blob configuration in production', async () => {
       vi.stubEnv('NODE_ENV', 'production');
       vi.stubEnv('STORAGE_PROVIDER', 'vercel-blob');
@@ -47,7 +47,7 @@ describe('storage Keys Configuration', () => {
     });
   });
 
-  describe.skip('development environment', () => {
+  describe.todo('development environment', () => {
     test('should handle development environment gracefully', async () => {
       vi.stubEnv('NODE_ENV', 'development');
       vi.stubEnv('STORAGE_PROVIDER', 'vercel-blob');
@@ -79,7 +79,7 @@ describe('storage Keys Configuration', () => {
     });
   });
 
-  describe.skip('function behavior', () => {
+  describe.todo('function behavior', () => {
     test('should return a function', async () => {
       const { safeEnv } = await import('../env');
       expect(typeof safeEnv).toBe('function');

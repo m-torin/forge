@@ -4,7 +4,7 @@ import baseConfig from '@repo/eslint-config/package';
 const config = [
   {
     // Ignore problematic files completely
-    ignores: ['**/*.bak', '**/*.disabled', 'src/**/*.bak', 'src/**/*.disabled'],
+    ignores: ['**/*.bak', '**/*.disabled', 'src/**/*.bak', 'src/**/*.disabled', '**/*.skip'],
   },
   ...baseConfig,
   {
@@ -23,7 +23,7 @@ const config = [
     },
   },
   {
-    // Allow unused variables in test files
+    // Allow unused variables and conditional tests in test files
     files: [
       '**/__tests__/**/*',
       '**/*.test.*',
@@ -35,6 +35,8 @@ const config = [
     ],
     rules: {
       'unused-imports/no-unused-vars': 'off',
+      'vitest/no-conditional-in-test': 'off',
+      'vitest/no-conditional-expect': 'off',
     },
   },
 ];

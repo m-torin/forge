@@ -2,7 +2,7 @@
  * Tests for client authentication methods
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock the auth client
 const mockAuthClient = {
@@ -44,7 +44,7 @@ describe('client authentication methods', () => {
   });
 
   describe('signIn', () => {
-    it('should sign in successfully', async () => {
+    test('should sign in successfully', async () => {
       const methodsModule = await import('@/client/methods');
 
       mockAuthClient.signIn.email.mockResolvedValue({
@@ -57,14 +57,14 @@ describe('client authentication methods', () => {
         password: 'password123',
       });
 
-      expect(result).toEqual({ success: true });
+      expect(result).toStrictEqual({ success: true });
       expect(mockAuthClient.signIn.email).toHaveBeenCalledWith({
         email: 'test@example.com',
         password: 'password123',
       });
     });
 
-    it('should handle sign in errors from auth client', async () => {
+    test('should handle sign in errors from auth client', async () => {
       const methodsModule = await import('@/client/methods');
 
       mockAuthClient.signIn.email.mockResolvedValue({
@@ -76,13 +76,13 @@ describe('client authentication methods', () => {
         password: 'wrong',
       });
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         error: 'Invalid credentials',
         success: false,
       });
     });
 
-    it('should handle sign in errors without message', async () => {
+    test('should handle sign in errors without message', async () => {
       const methodsModule = await import('@/client/methods');
 
       mockAuthClient.signIn.email.mockResolvedValue({
@@ -94,13 +94,13 @@ describe('client authentication methods', () => {
         password: 'wrong',
       });
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         error: 'Sign in failed',
         success: false,
       });
     });
 
-    it('should handle network errors', async () => {
+    test('should handle network errors', async () => {
       const methodsModule = await import('@/client/methods');
 
       mockAuthClient.signIn.email.mockRejectedValue(new Error('Network error'));
@@ -110,13 +110,13 @@ describe('client authentication methods', () => {
         password: 'password123',
       });
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         error: 'Network error',
         success: false,
       });
     });
 
-    it('should handle non-Error exceptions', async () => {
+    test('should handle non-Error exceptions', async () => {
       const methodsModule = await import('@/client/methods');
 
       mockAuthClient.signIn.email.mockRejectedValue('String error');
@@ -126,7 +126,7 @@ describe('client authentication methods', () => {
         password: 'password123',
       });
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         error: 'Sign in failed',
         success: false,
       });
@@ -134,17 +134,17 @@ describe('client authentication methods', () => {
   });
 
   describe('signOut', () => {
-    it('should sign out successfully', async () => {
+    test('should sign out successfully', async () => {
       const methodsModule = await import('@/client/methods');
 
       mockAuthClient.signOut.mockResolvedValue(undefined);
 
       await methodsModule.signOut();
 
-      expect(mockAuthClient.signOut).toHaveBeenCalled();
+      expect(mockAuthClient.signOut).toHaveBeenCalledWith();
     });
 
-    it('should handle sign out errors gracefully', async () => {
+    test('should handle sign out errors gracefully', async () => {
       const methodsModule = await import('@/client/methods');
 
       mockAuthClient.signOut.mockRejectedValue(new Error('Sign out failed'));
@@ -155,7 +155,7 @@ describe('client authentication methods', () => {
   });
 
   describe('signUp', () => {
-    it('should sign up successfully with name', async () => {
+    test('should sign up successfully with name', async () => {
       const methodsModule = await import('@/client/methods');
 
       mockAuthClient.signUp.email.mockResolvedValue({
@@ -169,7 +169,7 @@ describe('client authentication methods', () => {
         name: 'Test User',
       });
 
-      expect(result).toEqual({ success: true });
+      expect(result).toStrictEqual({ success: true });
       expect(mockAuthClient.signUp.email).toHaveBeenCalledWith({
         email: 'test@example.com',
         password: 'password123',
@@ -177,7 +177,7 @@ describe('client authentication methods', () => {
       });
     });
 
-    it('should sign up successfully without name (use email prefix)', async () => {
+    test('should sign up successfully without name (use email prefix)', async () => {
       const methodsModule = await import('@/client/methods');
 
       mockAuthClient.signUp.email.mockResolvedValue({
@@ -190,7 +190,7 @@ describe('client authentication methods', () => {
         password: 'password123',
       });
 
-      expect(result).toEqual({ success: true });
+      expect(result).toStrictEqual({ success: true });
       expect(mockAuthClient.signUp.email).toHaveBeenCalledWith({
         email: 'test@example.com',
         password: 'password123',
@@ -198,7 +198,7 @@ describe('client authentication methods', () => {
       });
     });
 
-    it('should handle sign up errors from auth client', async () => {
+    test('should handle sign up errors from auth client', async () => {
       const methodsModule = await import('@/client/methods');
 
       mockAuthClient.signUp.email.mockResolvedValue({
@@ -210,13 +210,13 @@ describe('client authentication methods', () => {
         password: 'password123',
       });
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         error: 'Email already exists',
         success: false,
       });
     });
 
-    it('should handle sign up errors without message', async () => {
+    test('should handle sign up errors without message', async () => {
       const methodsModule = await import('@/client/methods');
 
       mockAuthClient.signUp.email.mockResolvedValue({
@@ -228,13 +228,13 @@ describe('client authentication methods', () => {
         password: 'password123',
       });
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         error: 'Sign up failed',
         success: false,
       });
     });
 
-    it('should handle network errors during sign up', async () => {
+    test('should handle network errors during sign up', async () => {
       const methodsModule = await import('@/client/methods');
 
       mockAuthClient.signUp.email.mockRejectedValue(new Error('Network error'));
@@ -244,13 +244,13 @@ describe('client authentication methods', () => {
         password: 'password123',
       });
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         error: 'Network error',
         success: false,
       });
     });
 
-    it('should handle empty email gracefully', async () => {
+    test('should handle empty email gracefully', async () => {
       const methodsModule = await import('@/client/methods');
 
       mockAuthClient.signUp.email.mockResolvedValue({
@@ -271,20 +271,20 @@ describe('client authentication methods', () => {
   });
 
   describe('edge cases', () => {
-    it('should handle undefined credentials', async () => {
+    test('should handle undefined credentials', async () => {
       const methodsModule = await import('@/client/methods');
 
       mockAuthClient.signIn.email.mockRejectedValue(new Error('Invalid input'));
 
       const result = await methodsModule.signIn(undefined as any);
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         error: 'Invalid input',
         success: false,
       });
     });
 
-    it('should handle malformed email in signUp', async () => {
+    test('should handle malformed email in signUp', async () => {
       const methodsModule = await import('@/client/methods');
 
       mockAuthClient.signUp.email.mockResolvedValue({
@@ -303,7 +303,7 @@ describe('client authentication methods', () => {
       });
     });
 
-    it('should handle concurrent method calls', async () => {
+    test('should handle concurrent method calls', async () => {
       const methodsModule = await import('@/client/methods');
 
       mockAuthClient.signIn.email.mockResolvedValue({ success: true });
@@ -315,11 +315,11 @@ describe('client authentication methods', () => {
         methodsModule.signUp({ email: 'test2@example.com', password: 'pass2' }),
       ]);
 
-      expect(signInResult.success).toBe(true);
-      expect(signUpResult.success).toBe(true);
+      expect(signInResult.success).toBeTruthy();
+      expect(signUpResult.success).toBeTruthy();
     });
 
-    it('should handle auth client returning null', async () => {
+    test('should handle auth client returning null', async () => {
       const methodsModule = await import('@/client/methods');
 
       mockAuthClient.signIn.email.mockResolvedValue(null);
@@ -329,10 +329,10 @@ describe('client authentication methods', () => {
         password: 'password123',
       });
 
-      expect(result).toEqual({ success: true });
+      expect(result).toStrictEqual({ success: true });
     });
 
-    it('should handle auth client returning undefined', async () => {
+    test('should handle auth client returning undefined', async () => {
       const methodsModule = await import('@/client/methods');
 
       mockAuthClient.signUp.email.mockResolvedValue(undefined);
@@ -342,122 +342,101 @@ describe('client authentication methods', () => {
         password: 'password123',
       });
 
-      expect(result).toEqual({ success: true });
+      expect(result).toStrictEqual({ success: true });
     });
   });
 
   describe('password methods', () => {
-    it('should handle forgot password', async () => {
+    test('should handle forgot password', async () => {
       const methodsModule = await import('@/client/methods');
 
-      // Check if forgotPassword exists and test it
-      if (methodsModule.forgotPassword) {
-        mockAuthClient.forgotPassword.mockResolvedValue({ success: true });
+      mockAuthClient.forgotPassword.mockResolvedValue({ success: true });
 
-        const result = await methodsModule.forgotPassword('test@example.com');
+      const result = await methodsModule.forgotPassword('test@example.com');
 
-        expect(mockAuthClient.forgotPassword).toHaveBeenCalledWith('test@example.com');
-      }
+      expect(mockAuthClient.forgotPassword).toHaveBeenCalledWith('test@example.com');
     });
 
-    it('should handle reset password', async () => {
+    test('should handle reset password', async () => {
       const methodsModule = await import('@/client/methods');
 
-      // Check if resetPassword exists and test it
-      if (methodsModule.resetPassword) {
-        mockAuthClient.resetPassword.mockResolvedValue({ success: true });
+      mockAuthClient.resetPassword.mockResolvedValue({ success: true });
 
-        const result = await methodsModule.resetPassword({
-          token: 'reset-token',
-          password: 'new-password',
-        });
+      const result = await methodsModule.resetPassword({
+        token: 'reset-token',
+        password: 'new-password',
+      });
 
-        expect(mockAuthClient.resetPassword).toHaveBeenCalledWith({
-          token: 'reset-token',
-          password: 'new-password',
-        });
-      }
+      expect(mockAuthClient.resetPassword).toHaveBeenCalledWith({
+        token: 'reset-token',
+        password: 'new-password',
+      });
     });
 
-    it('should handle change password', async () => {
+    test('should handle change password', async () => {
       const methodsModule = await import('@/client/methods');
 
-      // Check if changePassword exists and test it
-      if (methodsModule.changePassword) {
-        mockAuthClient.changePassword.mockResolvedValue({ success: true });
+      mockAuthClient.changePassword.mockResolvedValue({ success: true });
 
-        const result = await methodsModule.changePassword({
-          currentPassword: 'old-password',
-          newPassword: 'new-password',
-        });
+      const result = await methodsModule.changePassword({
+        currentPassword: 'old-password',
+        newPassword: 'new-password',
+      });
 
-        expect(mockAuthClient.changePassword).toHaveBeenCalledWith({
-          currentPassword: 'old-password',
-          newPassword: 'new-password',
-        });
-      }
+      expect(mockAuthClient.changePassword).toHaveBeenCalledWith({
+        currentPassword: 'old-password',
+        newPassword: 'new-password',
+      });
     });
   });
 
   describe('email verification', () => {
-    it('should handle verify email', async () => {
+    test('should handle verify email', async () => {
       const methodsModule = await import('@/client/methods');
 
-      // Check if verifyEmail exists and test it
-      if (methodsModule.verifyEmail) {
-        mockAuthClient.verifyEmail.mockResolvedValue({ success: true });
+      mockAuthClient.verifyEmail.mockResolvedValue({ success: true });
 
-        const result = await methodsModule.verifyEmail('verification-token');
+      const result = await methodsModule.verifyEmail('verification-token');
 
-        expect(mockAuthClient.verifyEmail).toHaveBeenCalledWith('verification-token');
-      }
+      expect(mockAuthClient.verifyEmail).toHaveBeenCalledWith('verification-token');
     });
 
-    it('should handle resend email verification', async () => {
+    test('should handle resend email verification', async () => {
       const methodsModule = await import('@/client/methods');
 
-      // Check if resendEmailVerification exists and test it
-      if (methodsModule.resendEmailVerification) {
-        mockAuthClient.resendEmailVerification.mockResolvedValue({ success: true });
+      mockAuthClient.resendEmailVerification.mockResolvedValue({ success: true });
 
-        const result = await methodsModule.resendEmailVerification('test@example.com');
+      const result = await methodsModule.resendEmailVerification('test@example.com');
 
-        expect(mockAuthClient.resendEmailVerification).toHaveBeenCalledWith('test@example.com');
-      }
+      expect(mockAuthClient.resendEmailVerification).toHaveBeenCalledWith('test@example.com');
     });
   });
 
   describe('user management', () => {
-    it('should handle update user', async () => {
+    test('should handle update user', async () => {
       const methodsModule = await import('@/client/methods');
 
-      // Check if updateUser exists and test it
-      if (methodsModule.updateUser) {
-        mockAuthClient.updateUser.mockResolvedValue({ success: true });
+      mockAuthClient.updateUser.mockResolvedValue({ success: true });
 
-        const result = await methodsModule.updateUser({
-          name: 'Updated Name',
-          email: 'updated@example.com',
-        });
+      const result = await methodsModule.updateUser({
+        name: 'Updated Name',
+        email: 'updated@example.com',
+      });
 
-        expect(mockAuthClient.updateUser).toHaveBeenCalledWith({
-          name: 'Updated Name',
-          email: 'updated@example.com',
-        });
-      }
+      expect(mockAuthClient.updateUser).toHaveBeenCalledWith({
+        name: 'Updated Name',
+        email: 'updated@example.com',
+      });
     });
 
-    it('should handle delete user', async () => {
+    test('should handle delete user', async () => {
       const methodsModule = await import('@/client/methods');
 
-      // Check if deleteUser exists and test it
-      if (methodsModule.deleteUser) {
-        mockAuthClient.deleteUser.mockResolvedValue({ success: true });
+      mockAuthClient.deleteUser.mockResolvedValue({ success: true });
 
-        const result = await methodsModule.deleteUser();
+      const result = await methodsModule.deleteUser();
 
-        expect(mockAuthClient.deleteUser).toHaveBeenCalled();
-      }
+      expect(mockAuthClient.deleteUser).toHaveBeenCalledWith();
     });
   });
 });

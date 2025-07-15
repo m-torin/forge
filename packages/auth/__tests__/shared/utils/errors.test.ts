@@ -2,11 +2,11 @@
  * Tests for shared error utilities
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect } from 'vitest';
 
 describe('error utilities', () => {
   describe('getErrorMessage', () => {
-    it('should extract message from Error instance', async () => {
+    test('should extract message from Error instance', async () => {
       const errorsModule = await import('@/shared/utils/errors');
 
       const error = new Error('Test error message');
@@ -15,7 +15,7 @@ describe('error utilities', () => {
       expect(message).toBe('Test error message');
     });
 
-    it('should return default message for non-Error values', async () => {
+    test('should return default message for non-Error values', async () => {
       const errorsModule = await import('@/shared/utils/errors');
 
       const message = errorsModule.getErrorMessage('string error');
@@ -23,7 +23,7 @@ describe('error utilities', () => {
       expect(message).toBe('An error occurred');
     });
 
-    it('should return custom default message', async () => {
+    test('should return custom default message', async () => {
       const errorsModule = await import('@/shared/utils/errors');
 
       const customDefault = 'Custom default message';
@@ -32,7 +32,7 @@ describe('error utilities', () => {
       expect(message).toBe(customDefault);
     });
 
-    it('should handle undefined error', async () => {
+    test('should handle undefined error', async () => {
       const errorsModule = await import('@/shared/utils/errors');
 
       const message = errorsModule.getErrorMessage(undefined);
@@ -40,7 +40,7 @@ describe('error utilities', () => {
       expect(message).toBe('An error occurred');
     });
 
-    it('should handle object that is not Error', async () => {
+    test('should handle object that is not Error', async () => {
       const errorsModule = await import('@/shared/utils/errors');
 
       const message = errorsModule.getErrorMessage({ notAnError: true });
@@ -48,7 +48,7 @@ describe('error utilities', () => {
       expect(message).toBe('An error occurred');
     });
 
-    it('should handle number error', async () => {
+    test('should handle number error', async () => {
       const errorsModule = await import('@/shared/utils/errors');
 
       const message = errorsModule.getErrorMessage(404);
@@ -58,7 +58,7 @@ describe('error utilities', () => {
   });
 
   describe('createErrorResponse', () => {
-    it('should create error response with Error instance', async () => {
+    test('should create error response with Error instance', async () => {
       const errorsModule = await import('@/shared/utils/errors');
 
       const error = new Error('Test error');
@@ -71,7 +71,7 @@ describe('error utilities', () => {
       });
     });
 
-    it('should create error response with non-Error value', async () => {
+    test('should create error response with non-Error value', async () => {
       const errorsModule = await import('@/shared/utils/errors');
 
       const response = errorsModule.createErrorResponse('string error');
@@ -83,7 +83,7 @@ describe('error utilities', () => {
       });
     });
 
-    it('should create error response with custom default message', async () => {
+    test('should create error response with custom default message', async () => {
       const errorsModule = await import('@/shared/utils/errors');
 
       const customDefault = 'Custom operation failed';
@@ -96,7 +96,7 @@ describe('error utilities', () => {
       });
     });
 
-    it('should handle typed error response', async () => {
+    test('should handle typed error response', async () => {
       const errorsModule = await import('@/shared/utils/errors');
 
       interface UserData {
@@ -114,11 +114,11 @@ describe('error utilities', () => {
       });
 
       // Type assertion to verify TypeScript types
-      expect(response.success).toBe(false);
+      expect(response.success).toBeFalsy();
       expect(response.data).toBeNull();
     });
 
-    it('should create error response with undefined error', async () => {
+    test('should create error response with undefined error', async () => {
       const errorsModule = await import('@/shared/utils/errors');
 
       const response = errorsModule.createErrorResponse(undefined);
@@ -132,7 +132,7 @@ describe('error utilities', () => {
   });
 
   describe('createSuccessResponse', () => {
-    it('should create success response with data', async () => {
+    test('should create success response with data', async () => {
       const errorsModule = await import('@/shared/utils/errors');
 
       const data = { id: '1', name: 'Test User' };
@@ -145,7 +145,7 @@ describe('error utilities', () => {
       });
     });
 
-    it('should create success response with null data', async () => {
+    test('should create success response with null data', async () => {
       const errorsModule = await import('@/shared/utils/errors');
 
       const response = errorsModule.createSuccessResponse(null);
@@ -157,7 +157,7 @@ describe('error utilities', () => {
       });
     });
 
-    it('should create success response with string data', async () => {
+    test('should create success response with string data', async () => {
       const errorsModule = await import('@/shared/utils/errors');
 
       const response = errorsModule.createSuccessResponse('success message');
@@ -169,7 +169,7 @@ describe('error utilities', () => {
       });
     });
 
-    it('should create success response with array data', async () => {
+    test('should create success response with array data', async () => {
       const errorsModule = await import('@/shared/utils/errors');
 
       const data = [{ id: 1 }, { id: 2 }];
@@ -182,7 +182,7 @@ describe('error utilities', () => {
       });
     });
 
-    it('should create success response with boolean data', async () => {
+    test('should create success response with boolean data', async () => {
       const errorsModule = await import('@/shared/utils/errors');
 
       const response = errorsModule.createSuccessResponse(true);
@@ -194,7 +194,7 @@ describe('error utilities', () => {
       });
     });
 
-    it('should preserve type information', async () => {
+    test('should preserve type information', async () => {
       const errorsModule = await import('@/shared/utils/errors');
 
       interface ApiResponse {
@@ -209,7 +209,7 @@ describe('error utilities', () => {
 
       const response = errorsModule.createSuccessResponse(data);
 
-      expect(response.success).toBe(true);
+      expect(response.success).toBeTruthy();
       expect(response.data.users).toHaveLength(1);
       expect(response.data.total).toBe(1);
       expect(response.error).toBeUndefined();

@@ -2,7 +2,7 @@
  * Tests for server actions
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock next/headers
 const mockHeaders = vi.fn(() => new Headers());
@@ -77,7 +77,7 @@ describe('server actions', () => {
   });
 
   describe('user management', () => {
-    it('should get current user successfully', async () => {
+    test('should get current user successfully', async () => {
       const { getCurrentUserAction } = await import('../src/server-actions');
 
       const mockUser = { id: 'user-123', email: 'test@example.com', name: 'Test User' };
@@ -85,13 +85,13 @@ describe('server actions', () => {
 
       const result = await getCurrentUserAction();
 
-      expect(result).toEqual(mockUser);
+      expect(result).toStrictEqual(mockUser);
       expect(mockAuth.api.getSession).toHaveBeenCalledWith({
         headers: expect.any(Headers),
       });
     });
 
-    it('should return null when no user session', async () => {
+    test('should return null when no user session', async () => {
       const { getCurrentUserAction } = await import('../src/server-actions');
 
       mockAuth.api.getSession.mockResolvedValue(null);
@@ -101,7 +101,7 @@ describe('server actions', () => {
       expect(result).toBeNull();
     });
 
-    it('should update user successfully', async () => {
+    test('should update user successfully', async () => {
       const { updateUserAction } = await import('../src/server-actions');
 
       const mockUser = { id: 'user-123', email: 'test@example.com' };
@@ -120,7 +120,7 @@ describe('server actions', () => {
       });
     });
 
-    it('should throw error when updating user without authentication', async () => {
+    test('should throw error when updating user without authentication', async () => {
       const { updateUserAction } = await import('../src/server-actions');
 
       mockAuth.api.getSession.mockResolvedValue(null);
@@ -128,7 +128,7 @@ describe('server actions', () => {
       await expect(updateUserAction({ name: 'Test' })).rejects.toThrow('Not authenticated');
     });
 
-    it('should delete user successfully', async () => {
+    test('should delete user successfully', async () => {
       const { deleteUserAction } = await import('../src/server-actions');
 
       const mockUser = { id: 'user-123', email: 'test@example.com' };
@@ -142,7 +142,7 @@ describe('server actions', () => {
       });
     });
 
-    it('should throw error when deleting user without authentication', async () => {
+    test('should throw error when deleting user without authentication', async () => {
       const { deleteUserAction } = await import('../src/server-actions');
 
       mockAuth.api.getSession.mockResolvedValue(null);
@@ -152,7 +152,7 @@ describe('server actions', () => {
   });
 
   describe('password management', () => {
-    it('should change password successfully', async () => {
+    test('should change password successfully', async () => {
       const { changePasswordAction } = await import('../src/server-actions');
 
       const passwordData = {
@@ -170,7 +170,7 @@ describe('server actions', () => {
       });
     });
 
-    it('should set password successfully', async () => {
+    test('should set password successfully', async () => {
       const { setPasswordAction } = await import('../src/server-actions');
 
       mockAuth.api.setPassword.mockResolvedValue({ success: true });
@@ -185,7 +185,7 @@ describe('server actions', () => {
   });
 
   describe('session management', () => {
-    it('should get session successfully', async () => {
+    test('should get session successfully', async () => {
       const { getSessionAction } = await import('../src/server-actions');
 
       const mockSession = { id: 'session-123', userId: 'user-123' };
@@ -193,13 +193,13 @@ describe('server actions', () => {
 
       const result = await getSessionAction();
 
-      expect(result).toEqual(mockSession);
+      expect(result).toStrictEqual(mockSession);
       expect(mockAuth.api.getSession).toHaveBeenCalledWith({
         headers: expect.any(Headers),
       });
     });
 
-    it('should delete session successfully', async () => {
+    test('should delete session successfully', async () => {
       const { deleteSessionAction } = await import('../src/server-actions');
 
       mockAuth.api.revokeSession.mockResolvedValue({ success: true });
@@ -212,7 +212,7 @@ describe('server actions', () => {
       });
     });
 
-    it('should list sessions successfully', async () => {
+    test('should list sessions successfully', async () => {
       const { listSessionsAction } = await import('../src/server-actions');
 
       const mockSessions = [{ id: 'session-1' }, { id: 'session-2' }];
@@ -220,7 +220,7 @@ describe('server actions', () => {
 
       const result = await listSessionsAction();
 
-      expect(result).toEqual(mockSessions);
+      expect(result).toStrictEqual(mockSessions);
       expect(mockAuth.api.listSessions).toHaveBeenCalledWith({
         headers: expect.any(Headers),
       });
@@ -228,7 +228,7 @@ describe('server actions', () => {
   });
 
   describe('account management', () => {
-    it('should list accounts successfully', async () => {
+    test('should list accounts successfully', async () => {
       const { listAccountsAction } = await import('../src/server-actions');
 
       const mockAccounts = [{ id: 'account-1', providerId: 'google' }];
@@ -236,10 +236,10 @@ describe('server actions', () => {
 
       const result = await listAccountsAction();
 
-      expect(result).toEqual(mockAccounts);
+      expect(result).toStrictEqual(mockAccounts);
     });
 
-    it('should unlink account successfully', async () => {
+    test('should unlink account successfully', async () => {
       const { unlinkAccountAction } = await import('../src/server-actions');
 
       mockAuth.api.unlinkAccount.mockResolvedValue({ success: true });
@@ -254,7 +254,7 @@ describe('server actions', () => {
   });
 
   describe('organization management', () => {
-    it('should create organization successfully', async () => {
+    test('should create organization successfully', async () => {
       const { createOrganizationAction } = await import('../src/server-actions');
 
       const orgData = { name: 'Test Org', slug: 'test-org' };
@@ -269,7 +269,7 @@ describe('server actions', () => {
       });
     });
 
-    it('should update organization successfully', async () => {
+    test('should update organization successfully', async () => {
       const { updateOrganizationAction } = await import('../src/server-actions');
 
       const updateData = { organizationId: 'org-123', name: 'Updated Org' };
@@ -283,7 +283,7 @@ describe('server actions', () => {
       });
     });
 
-    it('should delete organization successfully', async () => {
+    test('should delete organization successfully', async () => {
       const { deleteOrganizationAction } = await import('../src/server-actions');
 
       mockAuth.api.deleteOrganization.mockResolvedValue({ success: true });
@@ -296,7 +296,7 @@ describe('server actions', () => {
       });
     });
 
-    it('should list user organizations successfully', async () => {
+    test('should list user organizations successfully', async () => {
       const { listUserOrganizationsAction } = await import('../src/server-actions');
 
       const mockOrgs = [{ id: 'org-1' }, { id: 'org-2' }];
@@ -304,10 +304,10 @@ describe('server actions', () => {
 
       const result = await listUserOrganizationsAction();
 
-      expect(result).toEqual(mockOrgs);
+      expect(result).toStrictEqual(mockOrgs);
     });
 
-    it('should get active organization successfully', async () => {
+    test('should get active organization successfully', async () => {
       const { getActiveOrganizationAction } = await import('../src/server-actions');
 
       const mockSession = { session: { activeOrganizationId: 'org-123' } };
@@ -318,7 +318,7 @@ describe('server actions', () => {
       expect(result).toBe('org-123');
     });
 
-    it('should return null when no active organization', async () => {
+    test('should return null when no active organization', async () => {
       const { getActiveOrganizationAction } = await import('../src/server-actions');
 
       mockAuth.api.getSession.mockResolvedValue({ session: {} });
@@ -328,7 +328,7 @@ describe('server actions', () => {
       expect(result).toBeNull();
     });
 
-    it('should get organization by id successfully', async () => {
+    test('should get organization by id successfully', async () => {
       const { getOrganizationByIdAction } = await import('../src/server-actions');
 
       const mockOrg = { id: 'org-123', name: 'Test Org' };
@@ -342,7 +342,7 @@ describe('server actions', () => {
       });
     });
 
-    it('should set active organization successfully', async () => {
+    test('should set active organization successfully', async () => {
       const { setActiveOrganizationAction } = await import('../src/server-actions');
 
       mockAuth.api.setActiveOrganization.mockResolvedValue({ success: true });
@@ -355,7 +355,7 @@ describe('server actions', () => {
       });
     });
 
-    it('should list organization invitations with organizationId', async () => {
+    test('should list organization invitations with organizationId', async () => {
       const { listOrganizationInvitationsAction } = await import('../src/server-actions');
 
       const mockInvitations = [{ id: 'inv-1' }];
@@ -369,7 +369,7 @@ describe('server actions', () => {
       });
     });
 
-    it('should list organization invitations without organizationId', async () => {
+    test('should list organization invitations without organizationId', async () => {
       const { listOrganizationInvitationsAction } = await import('../src/server-actions');
 
       const mockInvitations = [{ id: 'inv-1' }];
@@ -385,7 +385,7 @@ describe('server actions', () => {
   });
 
   describe('api key management', () => {
-    it('should list api keys successfully', async () => {
+    test('should list api keys successfully', async () => {
       const { listApiKeysAction } = await import('../src/server-actions');
 
       const mockKeys = [{ id: 'key-1', name: 'Test Key' }];
@@ -393,10 +393,10 @@ describe('server actions', () => {
 
       const result = await listApiKeysAction();
 
-      expect(result).toEqual(mockKeys);
+      expect(result).toStrictEqual(mockKeys);
     });
 
-    it('should create api key successfully', async () => {
+    test('should create api key successfully', async () => {
       const { createApiKeyAction } = await import('../src/server-actions');
 
       const keyData = { name: 'Test Key', scopes: ['read'] };
@@ -411,7 +411,7 @@ describe('server actions', () => {
       });
     });
 
-    it('should update api key successfully', async () => {
+    test('should update api key successfully', async () => {
       const { updateApiKeyAction } = await import('../src/server-actions');
 
       const updateData = { id: 'key-123', name: 'Updated Key' };
@@ -425,7 +425,7 @@ describe('server actions', () => {
       });
     });
 
-    it('should delete api key successfully', async () => {
+    test('should delete api key successfully', async () => {
       const { deleteApiKeyAction } = await import('../src/server-actions');
 
       mockAuth.api.deleteApiKey.mockResolvedValue({ success: true });
@@ -438,7 +438,7 @@ describe('server actions', () => {
       });
     });
 
-    it('should get api key successfully', async () => {
+    test('should get api key successfully', async () => {
       const { getApiKeyAction } = await import('../src/server-actions');
 
       const mockKey = { id: 'key-123', name: 'Test Key' };
@@ -452,7 +452,7 @@ describe('server actions', () => {
       });
     });
 
-    it('should bulk create api keys successfully', async () => {
+    test('should bulk create api keys successfully', async () => {
       const { bulkCreateApiKeysAction } = await import('../src/server-actions');
 
       mockAuth.api.createApiKey
@@ -469,7 +469,7 @@ describe('server actions', () => {
       expect(mockAuth.api.createApiKey).toHaveBeenCalledTimes(2);
     });
 
-    it('should get api key statistics successfully', async () => {
+    test('should get api key statistics successfully', async () => {
       const { getApiKeyStatisticsAction } = await import('../src/server-actions');
 
       const mockKeys = [
@@ -481,21 +481,21 @@ describe('server actions', () => {
 
       const result = await getApiKeyStatisticsAction();
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         total: 3,
         active: 2, // Future + no expiration
         expired: 1, // Past
       });
     });
 
-    it('should handle empty api keys list in statistics', async () => {
+    test('should handle empty api keys list in statistics', async () => {
       const { getApiKeyStatisticsAction } = await import('../src/server-actions');
 
       mockAuth.api.listApiKeys.mockResolvedValue([]);
 
       const result = await getApiKeyStatisticsAction();
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         total: 0,
         active: 0,
         expired: 0,
@@ -504,7 +504,7 @@ describe('server actions', () => {
   });
 
   describe('two factor authentication', () => {
-    it('should get two factor status successfully', async () => {
+    test('should get two factor status successfully', async () => {
       const { getTwoFactorStatusAction } = await import('../src/server-actions');
 
       const mockSession = { user: { twoFactorEnabled: true } };
@@ -512,10 +512,10 @@ describe('server actions', () => {
 
       const result = await getTwoFactorStatusAction();
 
-      expect(result).toEqual({ enabled: true });
+      expect(result).toStrictEqual({ enabled: true });
     });
 
-    it('should return false when two factor not enabled', async () => {
+    test('should return false when two factor not enabled', async () => {
       const { getTwoFactorStatusAction } = await import('../src/server-actions');
 
       const mockSession = { user: { twoFactorEnabled: false } };
@@ -523,20 +523,20 @@ describe('server actions', () => {
 
       const result = await getTwoFactorStatusAction();
 
-      expect(result).toEqual({ enabled: false });
+      expect(result).toStrictEqual({ enabled: false });
     });
 
-    it('should handle missing user in session', async () => {
+    test('should handle missing user in session', async () => {
       const { getTwoFactorStatusAction } = await import('../src/server-actions');
 
       mockAuth.api.getSession.mockResolvedValue({});
 
       const result = await getTwoFactorStatusAction();
 
-      expect(result).toEqual({ enabled: false });
+      expect(result).toStrictEqual({ enabled: false });
     });
 
-    it('should enable two factor successfully', async () => {
+    test('should enable two factor successfully', async () => {
       const { enableTwoFactorAction } = await import('../src/server-actions');
 
       const mockResult = { secret: 'secret123', qrCode: 'qr-data' };
@@ -549,7 +549,7 @@ describe('server actions', () => {
       });
     });
 
-    it('should disable two factor successfully', async () => {
+    test('should disable two factor successfully', async () => {
       const { disableTwoFactorAction } = await import('../src/server-actions');
 
       mockAuth.api.disableTwoFactor.mockResolvedValue({ success: true });
@@ -562,7 +562,7 @@ describe('server actions', () => {
       });
     });
 
-    it('should get backup codes successfully', async () => {
+    test('should get backup codes successfully', async () => {
       const { getTwoFactorBackupCodesAction } = await import('../src/server-actions');
 
       const mockCodes = ['code1', 'code2', 'code3'];
@@ -570,12 +570,12 @@ describe('server actions', () => {
 
       const result = await getTwoFactorBackupCodesAction();
 
-      expect(result).toEqual(mockCodes);
+      expect(result).toStrictEqual(mockCodes);
     });
   });
 
   describe('passkey management', () => {
-    it('should list passkeys successfully', async () => {
+    test('should list passkeys successfully', async () => {
       const { listPasskeysAction } = await import('../src/server-actions');
 
       const mockPasskeys = [{ id: 'pk-1', name: 'iPhone' }];
@@ -583,10 +583,10 @@ describe('server actions', () => {
 
       const result = await listPasskeysAction();
 
-      expect(result).toEqual(mockPasskeys);
+      expect(result).toStrictEqual(mockPasskeys);
     });
 
-    it('should generate passkey registration options successfully', async () => {
+    test('should generate passkey registration options successfully', async () => {
       const { generatePasskeyRegistrationOptionsAction } = await import('../src/server-actions');
 
       const mockOptions = { challenge: 'challenge123' };
@@ -594,10 +594,10 @@ describe('server actions', () => {
 
       const result = await generatePasskeyRegistrationOptionsAction();
 
-      expect(result).toEqual(mockOptions);
+      expect(result).toStrictEqual(mockOptions);
     });
 
-    it('should delete passkey successfully', async () => {
+    test('should delete passkey successfully', async () => {
       const { deletePasskeyAction } = await import('../src/server-actions');
 
       mockAuth.api.deletePasskey.mockResolvedValue({ success: true });
@@ -612,7 +612,7 @@ describe('server actions', () => {
   });
 
   describe('admin actions', () => {
-    it('should ban user successfully', async () => {
+    test('should ban user successfully', async () => {
       const { banUserAction } = await import('../src/server-actions');
 
       mockAuth.api.admin.banUser.mockResolvedValue({ success: true });
@@ -625,7 +625,7 @@ describe('server actions', () => {
       });
     });
 
-    it('should unban user successfully', async () => {
+    test('should unban user successfully', async () => {
       const { unbanUserAction } = await import('../src/server-actions');
 
       mockAuth.api.admin.unbanUser.mockResolvedValue({ success: true });
@@ -638,7 +638,7 @@ describe('server actions', () => {
       });
     });
 
-    it('should list users successfully', async () => {
+    test('should list users successfully', async () => {
       const { listUsersAction } = await import('../src/server-actions');
 
       const mockUsers = [
@@ -649,7 +649,7 @@ describe('server actions', () => {
 
       const result = await listUsersAction();
 
-      expect(result).toEqual({ success: true, data: mockUsers });
+      expect(result).toStrictEqual({ success: true, data: mockUsers });
       expect(mockPrisma.user.findMany).toHaveBeenCalledWith({
         where: {},
         skip: 0,
@@ -669,7 +669,7 @@ describe('server actions', () => {
       });
     });
 
-    it('should list users with search query', async () => {
+    test('should list users with search query', async () => {
       const { listUsersAction } = await import('../src/server-actions');
 
       const mockUsers = [{ id: 'user-1', email: 'test@example.com' }];
@@ -695,7 +695,7 @@ describe('server actions', () => {
       });
     });
 
-    it('should handle database error in list users', async () => {
+    test('should handle database error in list users', async () => {
       const { listUsersAction } = await import('../src/server-actions');
 
       mockPrisma.user.findMany.mockRejectedValue(new Error('Database error'));
@@ -703,7 +703,7 @@ describe('server actions', () => {
       await expect(listUsersAction()).rejects.toThrow('Failed to list users: Database error');
     });
 
-    it('should impersonate user successfully', async () => {
+    test('should impersonate user successfully', async () => {
       const { impersonateUserAction } = await import('../src/server-actions');
 
       const mockResult = { sessionId: 'session-123' };
@@ -717,7 +717,7 @@ describe('server actions', () => {
       });
     });
 
-    it('should stop impersonating successfully', async () => {
+    test('should stop impersonating successfully', async () => {
       const { stopImpersonatingAction } = await import('../src/server-actions');
 
       mockAuth.api.admin.stopImpersonating.mockResolvedValue({ success: true });
@@ -729,7 +729,7 @@ describe('server actions', () => {
       });
     });
 
-    it('should bulk invite users successfully', async () => {
+    test('should bulk invite users successfully', async () => {
       const { bulkInviteUsersAction } = await import('../src/server-actions');
 
       mockAuth.api.sendInvitation
@@ -743,14 +743,14 @@ describe('server actions', () => {
       });
 
       expect(result).toHaveLength(2);
-      expect(result[0]).toEqual({
+      expect(result[0]).toStrictEqual({
         email: 'user1@example.com',
         success: true,
         result: { id: 'inv-1' },
       });
     });
 
-    it('should handle error in bulk invite users', async () => {
+    test('should handle error in bulk invite users', async () => {
       const { bulkInviteUsersAction } = await import('../src/server-actions');
 
       mockAuth.api.sendInvitation.mockRejectedValue(new Error('Invitation failed'));
@@ -763,7 +763,7 @@ describe('server actions', () => {
       ).rejects.toThrow('Failed to invite user user1@example.com: Error: Invitation failed');
     });
 
-    it('should admin delete user successfully', async () => {
+    test('should admin delete user successfully', async () => {
       const { adminDeleteUserAction } = await import('../src/server-actions');
 
       mockAuth.api.removeUser.mockResolvedValue({ success: true });
@@ -776,7 +776,7 @@ describe('server actions', () => {
       });
     });
 
-    it('should create user successfully', async () => {
+    test('should create user successfully', async () => {
       const { createUserAction } = await import('../src/server-actions');
 
       const userData = {
@@ -801,7 +801,7 @@ describe('server actions', () => {
       });
     });
 
-    it('should create user with defaults when optional fields missing', async () => {
+    test('should create user with defaults when optional fields missing', async () => {
       const { createUserAction } = await import('../src/server-actions');
 
       const userData = { email: 'test@example.com' };
@@ -829,7 +829,7 @@ describe('server actions', () => {
       vi.unstubAllGlobals();
     });
 
-    it('should set user role successfully', async () => {
+    test('should set user role successfully', async () => {
       const { setUserRoleAction } = await import('../src/server-actions');
 
       mockAuth.api.setRole.mockResolvedValue({ success: true });
@@ -842,7 +842,7 @@ describe('server actions', () => {
       });
     });
 
-    it('should revoke user sessions successfully', async () => {
+    test('should revoke user sessions successfully', async () => {
       const { revokeUserSessionsAction } = await import('../src/server-actions');
 
       mockAuth.api.revokeUserSessions.mockResolvedValue({ success: true });
@@ -857,7 +857,7 @@ describe('server actions', () => {
   });
 
   describe('admin organization management', () => {
-    it('should list organizations successfully', async () => {
+    test('should list organizations successfully', async () => {
       const { listOrganizationsAction } = await import('../src/server-actions');
 
       const mockOrgs = [{ id: 'org-1' }, { id: 'org-2' }];
@@ -874,7 +874,7 @@ describe('server actions', () => {
       });
     });
 
-    it('should list organizations with search options', async () => {
+    test('should list organizations with search options', async () => {
       const { listOrganizationsAction } = await import('../src/server-actions');
 
       const mockOrgs = [{ id: 'org-1' }];
@@ -896,7 +896,7 @@ describe('server actions', () => {
       });
     });
 
-    it('should get organization successfully', async () => {
+    test('should get organization successfully', async () => {
       const { getOrganizationAction } = await import('../src/server-actions');
 
       const mockOrg = { id: 'org-123', name: 'Test Org' };

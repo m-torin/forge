@@ -5,6 +5,9 @@ import { ProviderHealthReport, WorkflowDefinition, WorkflowExecution } from '../
 
 import { createUpstashWorkflowConfig } from './fixtures';
 
+// Mock server-only to prevent errors
+vi.mock('server-only', () => ({}));
+
 // Mock dependencies
 vi.mock('@upstash/workflow/nextjs', () => ({
   serve: vi.fn().mockReturnValue({

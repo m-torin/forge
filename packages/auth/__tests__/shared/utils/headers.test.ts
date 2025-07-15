@@ -2,11 +2,11 @@
  * Tests for shared header utilities
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect } from 'vitest';
 
 describe('header utilities', () => {
   describe('createApiKeyHeaders', () => {
-    it('should create headers with API key authorization', async () => {
+    test('should create headers with API key authorization', async () => {
       const headersModule = await import('@/shared/utils/headers');
 
       const apiKey = 'test-api-key-123';
@@ -18,7 +18,7 @@ describe('header utilities', () => {
       });
     });
 
-    it('should handle empty API key', async () => {
+    test('should handle empty API key', async () => {
       const headersModule = await import('@/shared/utils/headers');
 
       const headers = headersModule.createApiKeyHeaders('');
@@ -29,7 +29,7 @@ describe('header utilities', () => {
       });
     });
 
-    it('should handle API key with special characters', async () => {
+    test('should handle API key with special characters', async () => {
       const headersModule = await import('@/shared/utils/headers');
 
       const apiKey = 'test-key_with.special-chars123';
@@ -41,7 +41,7 @@ describe('header utilities', () => {
       });
     });
 
-    it('should handle long API key', async () => {
+    test('should handle long API key', async () => {
       const headersModule = await import('@/shared/utils/headers');
 
       const apiKey = 'a'.repeat(100);
@@ -55,7 +55,7 @@ describe('header utilities', () => {
   });
 
   describe('createBearerHeaders', () => {
-    it('should create headers with bearer token authorization', async () => {
+    test('should create headers with bearer token authorization', async () => {
       const headersModule = await import('@/shared/utils/headers');
 
       const token = 'jwt-token-abc123';
@@ -67,7 +67,7 @@ describe('header utilities', () => {
       });
     });
 
-    it('should handle empty token', async () => {
+    test('should handle empty token', async () => {
       const headersModule = await import('@/shared/utils/headers');
 
       const headers = headersModule.createBearerHeaders('');
@@ -78,7 +78,7 @@ describe('header utilities', () => {
       });
     });
 
-    it('should handle JWT token format', async () => {
+    test('should handle JWT token format', async () => {
       const headersModule = await import('@/shared/utils/headers');
 
       const token =
@@ -91,7 +91,7 @@ describe('header utilities', () => {
       });
     });
 
-    it('should handle numeric token', async () => {
+    test('should handle numeric token', async () => {
       const headersModule = await import('@/shared/utils/headers');
 
       const token = '123456789';
@@ -103,7 +103,7 @@ describe('header utilities', () => {
       });
     });
 
-    it('should handle token with spaces', async () => {
+    test('should handle token with spaces', async () => {
       const headersModule = await import('@/shared/utils/headers');
 
       const token = 'token with spaces';
@@ -117,7 +117,7 @@ describe('header utilities', () => {
   });
 
   describe('createJsonHeaders', () => {
-    it('should create basic JSON headers', async () => {
+    test('should create basic JSON headers', async () => {
       const headersModule = await import('@/shared/utils/headers');
 
       const headers = headersModule.createJsonHeaders();
@@ -127,7 +127,7 @@ describe('header utilities', () => {
       });
     });
 
-    it('should always return the same headers object structure', async () => {
+    test('should always return the same headers object structure', async () => {
       const headersModule = await import('@/shared/utils/headers');
 
       const headers1 = headersModule.createJsonHeaders();
@@ -139,7 +139,7 @@ describe('header utilities', () => {
       });
     });
 
-    it('should be compatible with Headers constructor', async () => {
+    test('should be compatible with Headers constructor', async () => {
       const headersModule = await import('@/shared/utils/headers');
 
       const headers = headersModule.createJsonHeaders();
@@ -148,7 +148,7 @@ describe('header utilities', () => {
       expect(webHeaders.get('Content-Type')).toBe('application/json');
     });
 
-    it('should be compatible with fetch requests', async () => {
+    test('should be compatible with fetch requests', async () => {
       const headersModule = await import('@/shared/utils/headers');
 
       const headers = headersModule.createJsonHeaders();
@@ -159,7 +159,7 @@ describe('header utilities', () => {
   });
 
   describe('header utility integration', () => {
-    it('should create distinct header objects', async () => {
+    test('should create distinct header objects', async () => {
       const headersModule = await import('@/shared/utils/headers');
 
       const apiHeaders = headersModule.createApiKeyHeaders('api-key');
@@ -176,7 +176,7 @@ describe('header utilities', () => {
       expect(jsonHeaders['Content-Type']).toBe('application/json');
     });
 
-    it('should be compatible with modern fetch API', async () => {
+    test('should be compatible with modern fetch API', async () => {
       const headersModule = await import('@/shared/utils/headers');
 
       const headers = headersModule.createBearerHeaders('test-token');
@@ -192,7 +192,7 @@ describe('header utilities', () => {
       expect(request.headers.get('Content-Type')).toBe('application/json');
     });
 
-    it('should handle header merging', async () => {
+    test('should handle header merging', async () => {
       const headersModule = await import('@/shared/utils/headers');
 
       const baseHeaders = headersModule.createJsonHeaders();

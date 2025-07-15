@@ -2,11 +2,11 @@
  * Tests for client entry points and exports
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect } from 'vitest';
 
-describe('Client Entry Points', () => {
+describe('client Entry Points', () => {
   describe('client.ts exports', () => {
-    it('should export main client functions', async () => {
+    test('should export main client functions', async () => {
       const clientModule = await import('@/client');
 
       expect(clientModule).toHaveProperty('createClientAnalytics');
@@ -15,7 +15,7 @@ describe('Client Entry Points', () => {
   });
 
   describe('client-next.ts exports', () => {
-    it('should export Next.js client functions', async () => {
+    test('should export Next.js client functions', async () => {
       const clientNextModule = await import('@/client-next');
 
       expect(clientNextModule).toHaveProperty('createNextJSClientAnalytics');
@@ -24,7 +24,7 @@ describe('Client Entry Points', () => {
   });
 
   describe('server.ts exports', () => {
-    it('should export server functions', async () => {
+    test('should export server functions', async () => {
       const serverModule = await import('@/server');
 
       expect(serverModule).toHaveProperty('createServerAnalytics');
@@ -33,7 +33,7 @@ describe('Client Entry Points', () => {
   });
 
   describe('server-next.ts exports', () => {
-    it('should export Next.js server functions', async () => {
+    test('should export Next.js server functions', async () => {
       const serverNextModule = await import('@/server-next');
 
       expect(serverNextModule).toHaveProperty('createServerAnalytics');
@@ -42,14 +42,14 @@ describe('Client Entry Points', () => {
   });
 
   describe('shared-env.ts exports', () => {
-    it('should export environment-agnostic functions', async () => {
+    test('should export environment-agnostic functions', async () => {
       const sharedEnvModule = await import('@/shared-env');
 
       expect(sharedEnvModule).toHaveProperty('createAnalytics');
       expect(sharedEnvModule).toHaveProperty('environmentInfo');
     });
 
-    it('should provide environment information', async () => {
+    test('should provide environment information', async () => {
       const { environmentInfo } = await import('@/shared-env');
 
       expect(environmentInfo).toHaveProperty('isServer');

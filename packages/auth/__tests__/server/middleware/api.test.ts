@@ -3,7 +3,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock better-auth/cookies
 const mockGetSessionCookie = vi.fn();
@@ -35,13 +35,13 @@ vi.mock('next/server', async () => {
   };
 });
 
-describe('API middleware', () => {
+describe('aPI middleware', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   describe('createApiMiddleware', () => {
-    it('should create middleware function', async () => {
+    test('should create middleware function', async () => {
       const apiModule = await import('@/server/middleware/api');
 
       const middleware = apiModule.createApiMiddleware();
@@ -49,7 +49,7 @@ describe('API middleware', () => {
       expect(typeof middleware).toBe('function');
     });
 
-    it('should allow public API routes', async () => {
+    test('should allow public API routes', async () => {
       const apiModule = await import('@/server/middleware/api');
 
       const middleware = apiModule.createApiMiddleware();
@@ -59,10 +59,10 @@ describe('API middleware', () => {
 
       const result = await middleware(request);
 
-      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.next).toHaveBeenCalledWith();
     });
 
-    it('should allow default public API routes', async () => {
+    test('should allow default public API routes', async () => {
       const apiModule = await import('@/server/middleware/api');
 
       const middleware = apiModule.createApiMiddleware();
@@ -76,11 +76,11 @@ describe('API middleware', () => {
 
         await middleware(request);
 
-        expect(NextResponse.next).toHaveBeenCalled();
+        expect(NextResponse.next).toHaveBeenCalledWith();
       }
     });
 
-    it('should allow custom public API routes', async () => {
+    test('should allow custom public API routes', async () => {
       const apiModule = await import('@/server/middleware/api');
 
       const middleware = apiModule.createApiMiddleware({
@@ -93,10 +93,10 @@ describe('API middleware', () => {
 
       await middleware(request);
 
-      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.next).toHaveBeenCalledWith();
     });
 
-    it('should detect API key in x-api-key header', async () => {
+    test('should detect API key in x-api-key header', async () => {
       const apiModule = await import('@/server/middleware/api');
 
       const middleware = apiModule.createApiMiddleware();
@@ -109,10 +109,10 @@ describe('API middleware', () => {
 
       const result = await middleware(request);
 
-      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.next).toHaveBeenCalledWith();
     });
 
-    it('should detect Bearer token in authorization header', async () => {
+    test('should detect Bearer token in authorization header', async () => {
       const apiModule = await import('@/server/middleware/api');
 
       const middleware = apiModule.createApiMiddleware();
@@ -125,10 +125,10 @@ describe('API middleware', () => {
 
       const result = await middleware(request);
 
-      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.next).toHaveBeenCalledWith();
     });
 
-    it('should handle authorization header without Bearer prefix', async () => {
+    test('should handle authorization header without Bearer prefix', async () => {
       const apiModule = await import('@/server/middleware/api');
 
       const middleware = apiModule.createApiMiddleware();
@@ -141,10 +141,10 @@ describe('API middleware', () => {
 
       const result = await middleware(request);
 
-      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.next).toHaveBeenCalledWith();
     });
 
-    it('should respect custom allowed headers', async () => {
+    test('should respect custom allowed headers', async () => {
       const apiModule = await import('@/server/middleware/api');
 
       const middleware = apiModule.createApiMiddleware({
@@ -160,10 +160,10 @@ describe('API middleware', () => {
 
       const result = await middleware(request);
 
-      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.next).toHaveBeenCalledWith();
     });
 
-    it('should check session when no API key provided', async () => {
+    test('should check session when no API key provided', async () => {
       const apiModule = await import('@/server/middleware/api');
 
       mockGetSessionCookie.mockReturnValue({ sessionId: 'test-session' });
@@ -176,10 +176,10 @@ describe('API middleware', () => {
       const result = await middleware(request);
 
       expect(mockGetSessionCookie).toHaveBeenCalledWith(request);
-      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.next).toHaveBeenCalledWith();
     });
 
-    it('should return 401 when no authentication provided and auth required', async () => {
+    test('should return 401 when no authentication provided and auth required', async () => {
       const apiModule = await import('@/server/middleware/api');
 
       mockGetSessionCookie.mockReturnValue(null);
@@ -203,7 +203,7 @@ describe('API middleware', () => {
       );
     });
 
-    it('should allow unauthenticated access when auth not required', async () => {
+    test('should allow unauthenticated access when auth not required', async () => {
       const apiModule = await import('@/server/middleware/api');
 
       mockGetSessionCookie.mockReturnValue(null);
@@ -218,10 +218,10 @@ describe('API middleware', () => {
 
       const result = await middleware(request);
 
-      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.next).toHaveBeenCalledWith();
     });
 
-    it('should set auth method header for API key', async () => {
+    test('should set auth method header for API key', async () => {
       const apiModule = await import('@/server/middleware/api');
 
       const mockResponse = {
@@ -243,7 +243,7 @@ describe('API middleware', () => {
       expect(mockResponse.set).toHaveBeenCalledWith('x-auth-method', 'api-key');
     });
 
-    it('should set auth method header for session', async () => {
+    test('should set auth method header for session', async () => {
       const apiModule = await import('@/server/middleware/api');
 
       mockGetSessionCookie.mockReturnValue({ sessionId: 'test-session' });
@@ -264,7 +264,7 @@ describe('API middleware', () => {
       expect(mockResponse.set).toHaveBeenCalledWith('x-auth-method', 'session');
     });
 
-    it('should set rate limit headers when enabled', async () => {
+    test('should set rate limit headers when enabled', async () => {
       const apiModule = await import('@/server/middleware/api');
 
       const mockResponse = {
@@ -289,7 +289,7 @@ describe('API middleware', () => {
       expect(mockResponse.set).toHaveBeenCalledWith('x-rate-limit-check', 'api-key');
     });
 
-    it('should handle multiple allowed headers and use first found', async () => {
+    test('should handle multiple allowed headers and use first found', async () => {
       const apiModule = await import('@/server/middleware/api');
 
       const middleware = apiModule.createApiMiddleware({
@@ -306,10 +306,10 @@ describe('API middleware', () => {
 
       const result = await middleware(request);
 
-      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.next).toHaveBeenCalledWith();
     });
 
-    it('should properly extract Bearer token from authorization header', async () => {
+    test('should properly extract Bearer token from authorization header', async () => {
       const apiModule = await import('@/server/middleware/api');
 
       const middleware = apiModule.createApiMiddleware();
@@ -322,10 +322,10 @@ describe('API middleware', () => {
 
       const result = await middleware(request);
 
-      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.next).toHaveBeenCalledWith();
     });
 
-    it('should include supported auth methods in 401 response', async () => {
+    test('should include supported auth methods in 401 response', async () => {
       const apiModule = await import('@/server/middleware/api');
 
       mockGetSessionCookie.mockReturnValue(null);
@@ -354,14 +354,14 @@ describe('API middleware', () => {
   });
 
   describe('default middleware', () => {
-    it('should export default apiMiddleware', async () => {
+    test('should export default apiMiddleware', async () => {
       const apiModule = await import('@/server/middleware/api');
 
       expect(apiModule.apiMiddleware).toBeDefined();
       expect(typeof apiModule.apiMiddleware).toBe('function');
     });
 
-    it('should work with default settings', async () => {
+    test('should work with default settings', async () => {
       const apiModule = await import('@/server/middleware/api');
 
       const request = new NextRequest('https://example.com/api/health', {
@@ -370,12 +370,12 @@ describe('API middleware', () => {
 
       const result = await apiModule.apiMiddleware(request);
 
-      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.next).toHaveBeenCalledWith();
     });
   });
 
   describe('publicPaths handling', () => {
-    it('should combine publicPaths and publicApiRoutes', async () => {
+    test('should combine publicPaths and publicApiRoutes', async () => {
       const apiModule = await import('@/server/middleware/api');
 
       const middleware = apiModule.createApiMiddleware({
@@ -388,17 +388,17 @@ describe('API middleware', () => {
         method: 'GET',
       });
       await middleware(request1);
-      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.next).toHaveBeenCalledWith();
 
       // Test publicApiRoutes
       const request2 = new NextRequest('https://example.com/api/special', {
         method: 'GET',
       });
       await middleware(request2);
-      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.next).toHaveBeenCalledWith();
     });
 
-    it('should handle route prefixes correctly', async () => {
+    test('should handle route prefixes correctly', async () => {
       const apiModule = await import('@/server/middleware/api');
 
       const middleware = apiModule.createApiMiddleware({
@@ -411,12 +411,12 @@ describe('API middleware', () => {
 
       await middleware(request);
 
-      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.next).toHaveBeenCalledWith();
     });
   });
 
   describe('edge cases', () => {
-    it('should handle empty header values', async () => {
+    test('should handle empty header values', async () => {
       const apiModule = await import('@/server/middleware/api');
 
       mockGetSessionCookie.mockReturnValue(null);
@@ -439,7 +439,7 @@ describe('API middleware', () => {
       );
     });
 
-    it('should handle malformed Bearer token', async () => {
+    test('should handle malformed Bearer token', async () => {
       const apiModule = await import('@/server/middleware/api');
 
       const middleware = apiModule.createApiMiddleware();
@@ -452,10 +452,10 @@ describe('API middleware', () => {
 
       const result = await middleware(request);
 
-      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.next).toHaveBeenCalledWith();
     });
 
-    it('should handle missing headers gracefully', async () => {
+    test('should handle missing headers gracefully', async () => {
       const apiModule = await import('@/server/middleware/api');
 
       mockGetSessionCookie.mockReturnValue(null);
@@ -470,10 +470,10 @@ describe('API middleware', () => {
 
       const result = await middleware(request);
 
-      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.next).toHaveBeenCalledWith();
     });
 
-    it('should handle case-insensitive header matching', async () => {
+    test('should handle case-insensitive header matching', async () => {
       const apiModule = await import('@/server/middleware/api');
 
       const middleware = apiModule.createApiMiddleware();
@@ -498,7 +498,7 @@ describe('API middleware', () => {
 
       const result = await middleware(request);
 
-      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.next).toHaveBeenCalledWith();
     });
   });
 });

@@ -1,5 +1,5 @@
 import { evaluateFlags, getFlagContext } from '@/server/flags';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock Next.js headers/cookies
 const mockHeaders = new Headers([
@@ -40,7 +40,7 @@ describe('getFlagContext', () => {
     vi.clearAllMocks();
   });
 
-  it('should get flag context from Next.js headers and cookies', async () => {
+  test('should get flag context from Next.js headers and cookies', async () => {
     const { parseOverrides } = vi.mocked(await import('@/shared/utils'));
     const mockOverrides = { 'test-flag': true };
     parseOverrides.mockReturnValue(mockOverrides);
@@ -56,7 +56,7 @@ describe('getFlagContext', () => {
     expect(parseOverrides).toHaveBeenCalledWith(mockCookies);
   });
 
-  it('should call headers and cookies functions', async () => {
+  test('should call headers and cookies functions', async () => {
     const { headers, cookies } = vi.mocked(await import('next/headers'));
 
     await getFlagContext();
@@ -65,7 +65,7 @@ describe('getFlagContext', () => {
     expect(cookies).toHaveBeenCalledOnce();
   });
 
-  it('should handle parseOverrides returning empty object', async () => {
+  test('should handle parseOverrides returning empty object', async () => {
     const { parseOverrides } = vi.mocked(await import('@/shared/utils'));
     parseOverrides.mockReturnValue({});
 
@@ -82,7 +82,7 @@ describe('evaluateFlags', () => {
     vi.clearAllMocks();
   });
 
-  it('should evaluate single flag', async () => {
+  test('should evaluate single flag', async () => {
     const flags = {
       testFlag: vi.fn(() => Promise.resolve(true)),
     };
@@ -95,7 +95,7 @@ describe('evaluateFlags', () => {
     expect(flags.testFlag).toHaveBeenCalledOnce();
   });
 
-  it('should evaluate multiple flags in parallel', async () => {
+  test('should evaluate multiple flags in parallel', async () => {
     const flags = {
       booleanFlag: vi.fn(() => Promise.resolve(true)),
       stringFlag: vi.fn(() => Promise.resolve('variant-a')),
@@ -118,13 +118,13 @@ describe('evaluateFlags', () => {
     expect(flags.objectFlag).toHaveBeenCalledOnce();
   });
 
-  it('should handle empty flags object', async () => {
+  test('should handle empty flags object', async () => {
     const result = await evaluateFlags({});
 
     expect(result).toStrictEqual({});
   });
 
-  it('should handle flags that resolve to undefined', async () => {
+  test('should handle flags that resolve to undefined', async () => {
     const flags = {
       undefinedFlag: vi.fn(() => Promise.resolve(undefined)),
       nullFlag: vi.fn(() => Promise.resolve(null)),
@@ -138,7 +138,7 @@ describe('evaluateFlags', () => {
     });
   });
 
-  it('should handle flags that reject', async () => {
+  test('should handle flags that reject', async () => {
     const flags = {
       successFlag: vi.fn(() => Promise.resolve(true)),
       errorFlag: vi.fn(() => Promise.reject(new Error('Flag error'))),
@@ -149,7 +149,7 @@ describe('evaluateFlags', () => {
     expect(flags.errorFlag).toHaveBeenCalledOnce();
   });
 
-  it('should maintain type safety', async () => {
+  test('should maintain type safety', async () => {
     const flags = {
       typedFlag: (): Promise<{ type: 'success'; data: string }> =>
         Promise.resolve({ type: 'success', data: 'test' }),
@@ -161,10 +161,10 @@ describe('evaluateFlags', () => {
     // TypeScript should infer correct types
     expect(result.typedFlag.type).toBe('success');
     expect(result.typedFlag.data).toBe('test');
-    expect(result.simpleFlag).toBe(true);
+    expect(result.simpleFlag).toBeTruthy();
   });
 
-  it('should evaluate flags with different resolution times', async () => {
+  test('should evaluate flags with different resolution times', async () => {
     const flags = {
       fastFlag: vi.fn(() => Promise.resolve('fast')),
       slowFlag: vi.fn(() => new Promise(resolve => setTimeout(() => resolve('slow'), 10))),
@@ -188,7 +188,7 @@ describe('evaluateFlags', () => {
     expect(flags.instantFlag).toHaveBeenCalledOnce();
   });
 
-  it('should preserve flag function call order independence', async () => {
+  test('should preserve flag function call order independence', async () => {
     let callOrder: string[] = [];
 
     const flags = {
@@ -216,6 +216,6 @@ describe('evaluateFlags', () => {
 
     // All flags should be called
     expect(callOrder).toHaveLength(3);
-    expect(callOrder).toEqual(expect.arrayContaining(['first', 'second', 'third']));
+    expect(callOrder).toStrictEqual(expect.arrayContaining(['first', 'second', 'third']));
   });
 });

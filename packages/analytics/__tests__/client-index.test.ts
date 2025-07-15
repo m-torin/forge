@@ -2,7 +2,7 @@
  * Tests for client/index.ts - client-side analytics functionality
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 describe('client/index.ts', () => {
   beforeEach(() => {
@@ -10,7 +10,7 @@ describe('client/index.ts', () => {
   });
 
   describe('exports', () => {
-    it('should export client analytics functions', async () => {
+    test('should export client analytics functions', async () => {
       const clientIndex = await import('@/client/index');
 
       expect(clientIndex).toHaveProperty('createClientAnalytics');
@@ -19,7 +19,7 @@ describe('client/index.ts', () => {
       expect(typeof clientIndex.createClientAnalyticsUninitialized).toBe('function');
     });
 
-    it('should export emitter functions', async () => {
+    test('should export emitter functions', async () => {
       const clientIndex = await import('@/client/index');
 
       expect(clientIndex).toHaveProperty('track');
@@ -34,14 +34,14 @@ describe('client/index.ts', () => {
       expect(typeof clientIndex.alias).toBe('function');
     });
 
-    it('should export ecommerce emitters', async () => {
+    test('should export ecommerce emitters', async () => {
       const clientIndex = await import('@/client/index');
 
       expect(clientIndex).toHaveProperty('ecommerce');
       expect(typeof clientIndex.ecommerce).toBe('object');
     });
 
-    it('should export utility functions', async () => {
+    test('should export utility functions', async () => {
       const clientIndex = await import('@/client/index');
 
       expect(clientIndex).toHaveProperty('createEmitterProcessor');
@@ -52,7 +52,7 @@ describe('client/index.ts', () => {
   });
 
   describe('createClientAnalytics', () => {
-    it('should create client analytics instance with config', async () => {
+    test('should create client analytics instance with config', async () => {
       const { createClientAnalytics } = await import('@/client/index');
 
       const config = {
@@ -71,7 +71,7 @@ describe('client/index.ts', () => {
       expect(typeof analytics.alias).toBe('function');
     });
 
-    it('should create uninitialized analytics', async () => {
+    test('should create uninitialized analytics', async () => {
       const { createClientAnalyticsUninitialized } = await import('@/client/index');
 
       const config = {
@@ -88,7 +88,7 @@ describe('client/index.ts', () => {
   });
 
   describe('emitter functions', () => {
-    it('should use track emitter', async () => {
+    test('should use track emitter', async () => {
       const { track, createClientAnalytics } = await import('@/client/index');
 
       const config = {
@@ -104,7 +104,7 @@ describe('client/index.ts', () => {
       await expect(analytics.emit(trackEmitter)).resolves.toBeUndefined();
     });
 
-    it('should use identify emitter', async () => {
+    test('should use identify emitter', async () => {
       const { identify, createClientAnalytics } = await import('@/client/index');
 
       const config = {
@@ -120,7 +120,7 @@ describe('client/index.ts', () => {
       await expect(analytics.emit(identifyEmitter)).resolves.toBeUndefined();
     });
 
-    it('should use page emitter', async () => {
+    test('should use page emitter', async () => {
       const { page, createClientAnalytics } = await import('@/client/index');
 
       const config = {
@@ -136,7 +136,7 @@ describe('client/index.ts', () => {
       await expect(analytics.emit(pageEmitter)).resolves.toBeUndefined();
     });
 
-    it('should use ecommerce emitters', async () => {
+    test('should use ecommerce emitters', async () => {
       const { ecommerce, createClientAnalytics } = await import('@/client/index');
 
       const config = {
@@ -158,7 +158,7 @@ describe('client/index.ts', () => {
   });
 
   describe('emitter processing', () => {
-    it('should process emitter payloads', async () => {
+    test('should process emitter payloads', async () => {
       const { track } = await import('@/client/index');
 
       const trackEmitter = track('test_event', { key: 'value' });
@@ -168,7 +168,7 @@ describe('client/index.ts', () => {
       expect(trackEmitter.type).toBe('track');
     });
 
-    it('should create emitter processor', async () => {
+    test('should create emitter processor', async () => {
       const { createEmitterProcessor, createClientAnalytics } = await import('@/client/index');
 
       const config = {
@@ -186,7 +186,7 @@ describe('client/index.ts', () => {
   });
 
   describe('error handling', () => {
-    it('should handle client analytics creation errors', async () => {
+    test('should handle client analytics creation errors', async () => {
       const { createClientAnalyticsUninitialized } = await import('@/client/index');
 
       const invalidConfig = {} as any;
@@ -194,7 +194,7 @@ describe('client/index.ts', () => {
       expect(() => createClientAnalyticsUninitialized(invalidConfig)).not.toThrow();
     });
 
-    it('should handle emitter creation errors', async () => {
+    test('should handle emitter creation errors', async () => {
       const { track } = await import('@/client/index');
 
       expect(() => track('test_event', {})).not.toThrow();

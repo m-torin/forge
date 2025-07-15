@@ -20,29 +20,29 @@ describe('message Utilities', () => {
 
   describe('getTrailingMessageId', () => {
     test('should get the last message ID', () => {
-      const result = getTrailingMessageId({ messages: mockMessages });
-      expect(result).toBe('4');
+      const result1 = getTrailingMessageId({ messages: mockMessages });
+      expect(result1).toBe('4');
     });
 
     test('should get the last message ID by role', () => {
-      const result = getTrailingMessageId({
+      const result1 = getTrailingMessageId({
         messages: mockMessages,
         role: 'user',
       });
-      expect(result).toBe('3');
+      expect(result1).toBe('3');
     });
 
     test('should return undefined for empty messages', () => {
-      const result = getTrailingMessageId({ messages: [] });
-      expect(result).toBeUndefined();
+      const result1 = getTrailingMessageId({ messages: [] });
+      expect(result1).toBeUndefined();
     });
 
     test('should return undefined when no message matches role', () => {
-      const result = getTrailingMessageId({
+      const result1 = getTrailingMessageId({
         messages: mockMessages,
         role: 'system' as any,
       });
-      expect(result).toBeUndefined();
+      expect(result1).toBeUndefined();
     });
   });
 

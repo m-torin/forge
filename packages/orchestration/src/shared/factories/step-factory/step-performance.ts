@@ -175,19 +175,19 @@ export function createPerformanceMonitor() {
   return {
     startTime: Date.now(),
     metrics: new Map<string, number>(),
-    
+
     record(name: string, value: number) {
       this.metrics.set(name, value);
     },
-    
+
     getMetrics() {
       return Object.fromEntries(this.metrics);
     },
-    
+
     reset() {
       this.startTime = Date.now();
       this.metrics.clear();
-    }
+    },
   };
 }
 
@@ -196,11 +196,11 @@ export function createPerformanceMonitor() {
  */
 export function measureStepExecution<T = any>(
   stepFn: () => Promise<T> | T,
-  options?: { enableMonitoring?: boolean; stepId?: string }
+  options?: { enableMonitoring?: boolean; stepId?: string },
 ): Promise<{ result: T; performance: StepPerformanceData }> {
   return new Promise(async (resolve, reject) => {
     const performance = initializePerformanceData(options?.enableMonitoring);
-    
+
     try {
       const result = await stepFn();
       updatePerformanceData(performance, options?.enableMonitoring);
@@ -218,12 +218,13 @@ export function measureStepExecution<T = any>(
 export function getPerformanceMetrics(performance: StepPerformanceData) {
   return {
     duration: performance.duration || 0,
-    memoryDelta: performance.memoryUsage?.after && performance.memoryUsage?.before
-      ? performance.memoryUsage.after.heapUsed - performance.memoryUsage.before.heapUsed
-      : 0,
+    memoryDelta:
+      performance.memoryUsage?.after && performance.memoryUsage?.before
+        ? performance.memoryUsage.after.heapUsed - performance.memoryUsage.before.heapUsed
+        : 0,
     cpuUser: performance.cpuUsage?.after?.user || 0,
     cpuSystem: performance.cpuUsage?.after?.system || 0,
     customMetrics: performance.customMetrics ? Object.fromEntries(performance.customMetrics) : {},
-    progress: performance.progress || { current: 0, total: 100, state: 'pending' as ProgressState }
+    progress: performance.progress || { current: 0, total: 100, state: 'pending' as ProgressState },
   };
 }

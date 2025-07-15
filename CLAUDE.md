@@ -881,8 +881,8 @@ flags in real-time via toolbar.
 - ❌ Separate test files → ✅ Co-locate in `__tests__` directories
 - ❌ `jest` imports → ✅ Use `vitest` imports
 - ❌ Manual mocking → ✅ Use Vitest's auto-mocking features
-- ❌ Using `.toEqual()` for object/array comparisons → ✅ Use `.toStrictEqual()`
-  for strict equality
+- ❌ Using `.toStrictEqual()` for object/array comparisons → ✅ Use
+  `.toStrictEqual()` for strict equality
 - ❌ Using `.toStrictEqual()` for primitives → ✅ Use `.toBe()` for primitive
   values and reference equality
 - ❌ Custom mock implementations in apps → ✅ Use centralized mocks from

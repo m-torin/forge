@@ -165,7 +165,7 @@ describe("Workflow Execution", () => {
 
     // Verify workflow steps
     const steps = workflowTracker.getSteps(execution.id);
-    expect(steps).toEqual([
+    expect(steps).toStrictEqual([
       { step: "create-profile", status: "completed" },
       { step: "send-welcome-email", status: "completed" },
       { step: "setup-preferences", status: "completed" }
@@ -546,7 +546,7 @@ describe("Database Migrations", () => {
 
     // Verify schema changes
     const tableInfo = await db.$queryRaw`
-      SELECT column_name FROM information_schema.columns 
+      SELECT column_name FROM information_schema.columns
       WHERE table_name = 'users' AND column_name = 'preferences'
     `;
     expect(tableInfo).toHaveLength(1);
@@ -558,7 +558,7 @@ describe("Database Migrations", () => {
 
     // Verify rollback
     const tableInfo = await db.$queryRaw`
-      SELECT column_name FROM information_schema.columns 
+      SELECT column_name FROM information_schema.columns
       WHERE table_name = 'users' AND column_name = 'preferences'
     `;
     expect(tableInfo).toHaveLength(0);
@@ -571,7 +571,7 @@ describe("Database Migrations", () => {
 
     expect(safety.hasBreakingChanges).toBe(false);
     expect(safety.requiresDowntime).toBe(false);
-    expect(safety.affectedTables).toEqual(["users"]);
+    expect(safety.affectedTables).toStrictEqual(["users"]);
   });
 });
 ```

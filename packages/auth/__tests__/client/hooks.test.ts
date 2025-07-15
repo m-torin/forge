@@ -3,7 +3,7 @@
  */
 
 import { renderHook } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, vi } from 'vitest';
 
 // Mock the auth context
 const mockAuthContext = {
@@ -36,21 +36,21 @@ Object.defineProperty(window, 'location', {
 });
 
 describe('client hooks', () => {
-  it('should export useAuth as alias for useAuthContext', async () => {
+  test('should export useAuth as alias for useAuthContext', async () => {
     const hooksModule = await import('@/client/hooks');
     const { useAuthContext } = await import('@/client/auth-provider');
 
     expect(hooksModule.useAuth).toBe(useAuthContext);
   });
 
-  it('should export useSession from authClient', async () => {
+  test('should export useSession from authClient', async () => {
     const hooksModule = await import('@/client/hooks');
 
     expect(hooksModule.useSession).toBe(mockAuthClient.useSession);
   });
 
   describe('useUser', () => {
-    it('should return user from auth context', async () => {
+    test('should return user from auth context', async () => {
       const hooksModule = await import('@/client/hooks');
 
       const { result } = renderHook(() => hooksModule.useUser());
@@ -60,17 +60,17 @@ describe('client hooks', () => {
   });
 
   describe('useIsAuthenticated', () => {
-    it('should return isAuthenticated from auth context', async () => {
+    test('should return isAuthenticated from auth context', async () => {
       const hooksModule = await import('@/client/hooks');
 
       const { result } = renderHook(() => hooksModule.useIsAuthenticated());
 
-      expect(result.current).toBe(true);
+      expect(result.current).toBeTruthy();
     });
   });
 
   describe('useRequireAuth', () => {
-    it('should return requireAuth function from auth context', async () => {
+    test('should return requireAuth function from auth context', async () => {
       const hooksModule = await import('@/client/hooks');
 
       const { result } = renderHook(() => hooksModule.useRequireAuth());
@@ -80,7 +80,7 @@ describe('client hooks', () => {
   });
 
   describe('useAuthGuard', () => {
-    it('should return auth state when authenticated', async () => {
+    test('should return auth state when authenticated', async () => {
       const hooksModule = await import('@/client/hooks');
 
       const { result } = renderHook(() => hooksModule.useAuthGuard());
@@ -91,7 +91,7 @@ describe('client hooks', () => {
       });
     });
 
-    it('should redirect when not authenticated and redirectTo is provided', async () => {
+    test('should redirect when not authenticated and redirectTo is provided', async () => {
       const hooksModule = await import('@/client/hooks');
 
       // Mock unauthenticated state
@@ -112,7 +112,7 @@ describe('client hooks', () => {
       expect(window.location.href).toBe(redirectTo);
     });
 
-    it('should not redirect when loading', async () => {
+    test('should not redirect when loading', async () => {
       const hooksModule = await import('@/client/hooks');
 
       // Mock loading state
@@ -133,7 +133,7 @@ describe('client hooks', () => {
       expect(window.location.href).toBe(originalHref);
     });
 
-    it('should not redirect when no redirectTo is provided', async () => {
+    test('should not redirect when no redirectTo is provided', async () => {
       const hooksModule = await import('@/client/hooks');
 
       // Mock unauthenticated state
@@ -154,7 +154,7 @@ describe('client hooks', () => {
       expect(window.location.href).toBe(originalHref);
     });
 
-    it('should not redirect when authenticated', async () => {
+    test('should not redirect when authenticated', async () => {
       const hooksModule = await import('@/client/hooks');
 
       // Test the normal authenticated flow

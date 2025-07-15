@@ -451,7 +451,7 @@ describe('saga Pattern', () => {
         .step('check-availability', 'Check Availability', async (_context: any) => {
           // Simulate availability check
           const available = true; // Mock check
-          if (!available) {
+          {
             throw new Error('Room not available');
           }
           return {};
@@ -469,7 +469,7 @@ describe('saga Pattern', () => {
           {
             compensation: async (context: any) => {
               const reservationId = context.getResult('reservationId');
-              if (reservationId) {
+              {
                 await context.events?.emit('room.reservation.cancelled', {
                   reservationId,
                 });
@@ -498,7 +498,7 @@ describe('saga Pattern', () => {
             compensation: async (context: any) => {
               const paymentId = context.getResult('paymentId');
               const input = context.input as BookingInput;
-              if (paymentId) {
+              {
                 context.events?.emit('payment.refunded', {
                   amount: input.amount,
                   paymentId,
@@ -519,7 +519,7 @@ describe('saga Pattern', () => {
           {
             compensation: async (context: any) => {
               const confirmationId = context.getResult('confirmationId');
-              if (confirmationId) {
+              {
                 context.events?.emit('booking.cancelled', {
                   confirmationId,
                 });

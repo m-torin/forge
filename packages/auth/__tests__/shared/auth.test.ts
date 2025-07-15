@@ -2,7 +2,7 @@
  * Tests for Better Auth configuration
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock dependencies
 const mockLogError = vi.fn();
@@ -121,7 +121,7 @@ describe('auth configuration', () => {
     process.env.NODE_ENV = 'test';
   });
 
-  it('should create better auth instance with correct configuration', async () => {
+  test('should create better auth instance with correct configuration', async () => {
     await import('../../src/shared/auth');
 
     expect(mockBetterAuth).toHaveBeenCalledWith({
@@ -236,14 +236,14 @@ describe('auth configuration', () => {
     });
   });
 
-  it('should configure plugins correctly', async () => {
+  test('should configure plugins correctly', async () => {
     await import('../../src/shared/auth');
 
     expect(mockAdmin).toHaveBeenCalledWith({
       impersonationSessionDuration: 86400, // 24 hours
     });
 
-    expect(mockApiKey).toHaveBeenCalled();
+    expect(mockApiKey).toHaveBeenCalledWith();
 
     expect(mockOrganization).toHaveBeenCalledWith({
       allowUserToCreateOrganization: true,
@@ -266,18 +266,18 @@ describe('auth configuration', () => {
       },
     });
 
-    expect(mockPasskey).toHaveBeenCalled();
+    expect(mockPasskey).toHaveBeenCalledWith();
     expect(mockMultiSession).toHaveBeenCalledWith({
       maximumSessions: 5,
     });
-    expect(mockBearer).toHaveBeenCalled();
-    expect(mockOneTap).toHaveBeenCalled();
+    expect(mockBearer).toHaveBeenCalledWith();
+    expect(mockOneTap).toHaveBeenCalledWith();
     expect(mockCustomSession).toHaveBeenCalledWith(expect.any(Function));
-    expect(mockOpenAPI).toHaveBeenCalled();
-    expect(mockNextCookies).toHaveBeenCalled();
+    expect(mockOpenAPI).toHaveBeenCalledWith();
+    expect(mockNextCookies).toHaveBeenCalledWith();
   });
 
-  it('should handle production environment correctly', async () => {
+  test('should handle production environment correctly', async () => {
     process.env.NODE_ENV = 'production';
 
     // Re-import to trigger reconfiguration
@@ -285,13 +285,13 @@ describe('auth configuration', () => {
     await import('../../src/shared/auth');
 
     const configCall = mockBetterAuth.mock.calls[0][0];
-    expect(configCall.rateLimit.enabled).toBe(true);
-    expect(configCall.advanced.useSecureCookies).toBe(true);
-    expect(configCall.advanced.defaultCookieAttributes.secure).toBe(true);
+    expect(configCall.rateLimit.enabled).toBeTruthy();
+    expect(configCall.advanced.useSecureCookies).toBeTruthy();
+    expect(configCall.advanced.defaultCookieAttributes.secure).toBeTruthy();
   });
 
   describe('email handlers', () => {
-    it('should handle sendPasswordResetEmail successfully', async () => {
+    test('should handle sendPasswordResetEmail successfully', async () => {
       await import('../../src/shared/auth');
 
       const configCall = mockBetterAuth.mock.calls[0][0];
@@ -313,7 +313,7 @@ describe('auth configuration', () => {
       );
     });
 
-    it('should handle sendPasswordResetEmail errors', async () => {
+    test('should handle sendPasswordResetEmail errors', async () => {
       await import('../../src/shared/auth');
 
       const configCall = mockBetterAuth.mock.calls[0][0];
@@ -332,7 +332,7 @@ describe('auth configuration', () => {
       });
     });
 
-    it('should handle sendVerificationEmail successfully', async () => {
+    test('should handle sendVerificationEmail successfully', async () => {
       await import('../../src/shared/auth');
 
       const configCall = mockBetterAuth.mock.calls[0][0];
@@ -354,7 +354,7 @@ describe('auth configuration', () => {
       );
     });
 
-    it('should handle sendVerificationEmail errors', async () => {
+    test('should handle sendVerificationEmail errors', async () => {
       await import('../../src/shared/auth');
 
       const configCall = mockBetterAuth.mock.calls[0][0];
@@ -375,7 +375,7 @@ describe('auth configuration', () => {
       });
     });
 
-    it('should handle sendChangeEmailVerification successfully', async () => {
+    test('should handle sendChangeEmailVerification successfully', async () => {
       await import('../../src/shared/auth');
 
       const configCall = mockBetterAuth.mock.calls[0][0];
@@ -400,7 +400,7 @@ describe('auth configuration', () => {
       );
     });
 
-    it('should handle sendChangeEmailVerification errors', async () => {
+    test('should handle sendChangeEmailVerification errors', async () => {
       await import('../../src/shared/auth');
 
       const configCall = mockBetterAuth.mock.calls[0][0];
@@ -423,7 +423,7 @@ describe('auth configuration', () => {
       });
     });
 
-    it('should handle sendDeleteAccountVerification successfully', async () => {
+    test('should handle sendDeleteAccountVerification successfully', async () => {
       await import('../../src/shared/auth');
 
       const configCall = mockBetterAuth.mock.calls[0][0];
@@ -448,7 +448,7 @@ describe('auth configuration', () => {
       );
     });
 
-    it('should handle beforeDelete hook', async () => {
+    test('should handle beforeDelete hook', async () => {
       await import('../../src/shared/auth');
 
       const configCall = mockBetterAuth.mock.calls[0][0];
@@ -461,7 +461,7 @@ describe('auth configuration', () => {
       expect(mockLogInfo).toHaveBeenCalledWith('Preparing to delete user: test@example.com');
     });
 
-    it('should handle afterDelete hook', async () => {
+    test('should handle afterDelete hook', async () => {
       await import('../../src/shared/auth');
 
       const configCall = mockBetterAuth.mock.calls[0][0];
@@ -476,7 +476,7 @@ describe('auth configuration', () => {
   });
 
   describe('magic link handler', () => {
-    it('should send magic link successfully with provided URL', async () => {
+    test('should send magic link successfully with provided URL', async () => {
       await import('../../src/shared/auth');
 
       const magicLinkConfig = mockMagicLink.mock.calls[0][0];
@@ -498,7 +498,7 @@ describe('auth configuration', () => {
       expect(mockLogInfo).toHaveBeenCalledWith('Magic link sent successfully to test@example.com');
     });
 
-    it('should send magic link successfully without provided URL', async () => {
+    test('should send magic link successfully without provided URL', async () => {
       await import('../../src/shared/auth');
 
       const magicLinkConfig = mockMagicLink.mock.calls[0][0];
@@ -517,7 +517,7 @@ describe('auth configuration', () => {
       });
     });
 
-    it('should handle magic link send errors', async () => {
+    test('should handle magic link send errors', async () => {
       await import('../../src/shared/auth');
 
       const magicLinkConfig = mockMagicLink.mock.calls[0][0];
@@ -538,7 +538,7 @@ describe('auth configuration', () => {
   });
 
   describe('two factor OTP handler', () => {
-    it('should send OTP successfully', async () => {
+    test('should send OTP successfully', async () => {
       await import('../../src/shared/auth');
 
       const twoFactorConfig = mockTwoFactor.mock.calls[0][0];
@@ -559,7 +559,7 @@ describe('auth configuration', () => {
       expect(mockLogInfo).toHaveBeenCalledWith('OTP sent successfully to test@example.com');
     });
 
-    it('should send OTP with fallback name', async () => {
+    test('should send OTP with fallback name', async () => {
       await import('../../src/shared/auth');
 
       const twoFactorConfig = mockTwoFactor.mock.calls[0][0];
@@ -578,7 +578,7 @@ describe('auth configuration', () => {
       });
     });
 
-    it('should handle OTP send errors', async () => {
+    test('should handle OTP send errors', async () => {
       await import('../../src/shared/auth');
 
       const twoFactorConfig = mockTwoFactor.mock.calls[0][0];
@@ -599,7 +599,7 @@ describe('auth configuration', () => {
   });
 
   describe('custom session handler', () => {
-    it('should enhance session object', async () => {
+    test('should enhance session object', async () => {
       await import('../../src/shared/auth');
 
       const customSessionHandler = mockCustomSession.mock.calls[0][0];
@@ -614,7 +614,7 @@ describe('auth configuration', () => {
 
       const enhancedSession = await customSessionHandler(inputSession);
 
-      expect(enhancedSession).toEqual({
+      expect(enhancedSession).toStrictEqual({
         ...inputSession,
         user: {
           ...inputSession.user,
@@ -624,7 +624,7 @@ describe('auth configuration', () => {
   });
 
   describe('error handling', () => {
-    it('should handle API errors', async () => {
+    test('should handle API errors', async () => {
       await import('../../src/shared/auth');
 
       const configCall = mockBetterAuth.mock.calls[0][0];
@@ -641,7 +641,7 @@ describe('auth configuration', () => {
       });
     });
 
-    it('should handle non-Error objects', async () => {
+    test('should handle non-Error objects', async () => {
       await import('../../src/shared/auth');
 
       const configCall = mockBetterAuth.mock.calls[0][0];
@@ -661,7 +661,7 @@ describe('auth configuration', () => {
   });
 
   describe('request hooks', () => {
-    it('should log requests in development mode', async () => {
+    test('should log requests in development mode', async () => {
       const originalEnv = process.env.NODE_ENV;
       process.env.NODE_ENV = 'development';
 
@@ -680,7 +680,7 @@ describe('auth configuration', () => {
       process.env.NODE_ENV = originalEnv;
     });
 
-    it('should not log requests in non-development mode', async () => {
+    test('should not log requests in non-development mode', async () => {
       process.env.NODE_ENV = 'production';
 
       vi.resetModules();
@@ -698,7 +698,7 @@ describe('auth configuration', () => {
   });
 
   describe('environment edge cases', () => {
-    it('should handle missing optional environment variables', async () => {
+    test('should handle missing optional environment variables', async () => {
       vi.resetModules();
 
       vi.doMock('../../env', () => ({
@@ -714,27 +714,27 @@ describe('auth configuration', () => {
 
       expect(configCall.baseURL).toBe('http://localhost:3000');
       expect(configCall.appName).toBe('Forge');
-      expect(configCall.trustedOrigins).toEqual([
+      expect(configCall.trustedOrigins).toStrictEqual([
         'http://localhost:3000',
         'http://localhost:3302',
         'http://localhost:3400',
       ]);
-      expect(configCall.socialProviders).toEqual({});
+      expect(configCall.socialProviders).toStrictEqual({});
     });
 
-    it('should throw error when BETTER_AUTH_SECRET is missing', async () => {
+    test('should throw error when BETTER_AUTH_SECRET is missing', async () => {
       vi.resetModules();
 
       vi.doMock('../../env', () => ({
         safeServerEnv: () => ({}),
       }));
 
-      expect(() => import('../../src/shared/auth')).rejects.toThrow(
+      await expect(() => import('../../src/shared/auth')).rejects.toThrow(
         'BETTER_AUTH_SECRET is required. Please set it in your environment variables.',
       );
     });
 
-    it('should use AUTH_SECRET as fallback', async () => {
+    test('should use AUTH_SECRET as fallback', async () => {
       vi.resetModules();
 
       vi.doMock('../../env', () => ({

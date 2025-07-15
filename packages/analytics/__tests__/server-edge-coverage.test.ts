@@ -2,192 +2,207 @@
  * Tests specifically for server-edge.ts to improve coverage
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
-describe('Server Edge Coverage Tests', () => {
+describe('server Edge Coverage Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   describe('server-edge functionality', () => {
-    it('should create server analytics with edge runtime', async () => {
+    test('should create server analytics with edge runtime', async () => {
       const serverEdge = await import('@/server-edge');
 
       expect(serverEdge).toBeDefined();
 
       // Test that functions are available
-      if ('createServerAnalytics' in serverEdge) {
-        const config = {
-          providers: {
-            console: {},
-          },
-        };
+      expect('createServerAnalytics' in serverEdge).toBeTruthy();
 
-        const analytics = await serverEdge.createServerAnalytics(config);
-        expect(analytics).toBeDefined();
-      }
+      const config = {
+        providers: {
+          console: {},
+        },
+      };
+
+      const analytics = await serverEdge.createServerAnalytics(config);
+      expect(analytics).toBeDefined();
     });
 
-    it('should handle edge runtime provider instantiation', async () => {
+    test('should handle edge runtime provider instantiation', async () => {
       const serverEdge = await import('@/server-edge');
 
-      // Test console provider if available
-      if ('ConsoleProvider' in serverEdge) {
-        const provider = new (serverEdge.ConsoleProvider as any)({});
-        expect(provider).toBeDefined();
+      // Test that createServerAnalytics can create analytics with console provider
+      const config = {
+        providers: {
+          console: {},
+        },
+      };
 
-        if (typeof provider.initialize === 'function') {
-          await expect(provider.initialize()).resolves.toBeUndefined();
-        }
-      }
+      const analytics = await serverEdge.createServerAnalytics(config);
+      expect(analytics).toBeDefined();
+      expect(analytics.providers).toBeDefined();
+      expect(analytics.providers.length).toBeGreaterThan(0);
     });
 
-    it('should use emitter functions in edge runtime', async () => {
+    test('should use emitter functions in edge runtime', async () => {
       const serverEdge = await import('@/server-edge');
 
       // Test emitter usage if analytics creation is available
-      if ('createServerAnalytics' in serverEdge && 'track' in serverEdge) {
-        const config = {
-          providers: {
-            console: {},
-          },
-        };
+      expect('createServerAnalytics' in serverEdge).toBeTruthy();
 
-        const analytics = await (serverEdge.createServerAnalytics as any)(config);
-        const trackEmitter = (serverEdge.track as any)('edge_test', { runtime: 'edge' });
+      const config = {
+        providers: {
+          console: {},
+        },
+      };
 
-        if ('emit' in analytics && typeof analytics.emit === 'function') {
-          await expect(analytics.emit(trackEmitter)).resolves.toBeUndefined();
-        }
-      }
+      const analytics = await serverEdge.createServerAnalytics(config);
+
+      expect(
+        'emit' in analytics && typeof analytics.emit === 'function' ? analytics.emit : undefined,
+      ).toBeDefined();
+      const emitResult =
+        'emit' in analytics && typeof analytics.emit === 'function'
+          ? analytics.emit({})
+          : Promise.resolve();
+      await expect(emitResult).resolves.toBeUndefined();
     });
 
-    it('should handle edge runtime analytics operations', async () => {
+    test('should handle edge runtime analytics operations', async () => {
       const serverEdge = await import('@/server-edge');
 
       // Test direct analytics operations
-      if ('createServerAnalytics' in serverEdge) {
-        const config = {
-          providers: {
-            console: {},
-          },
-        };
+      expect('createServerAnalytics' in serverEdge).toBeTruthy();
 
-        const analytics = await serverEdge.createServerAnalytics(config);
+      const config = {
+        providers: {
+          console: {},
+        },
+      };
 
-        if (typeof analytics.track === 'function') {
-          await expect(analytics.track('edge_track', { edge: true })).resolves.toBeUndefined();
-        }
+      const analytics = await serverEdge.createServerAnalytics(config);
 
-        if (typeof analytics.identify === 'function') {
-          await expect(analytics.identify('edge-user', { edge: true })).resolves.toBeUndefined();
-        }
-      }
+      expect(typeof analytics.track === 'function' ? analytics.track : undefined).toBeDefined();
+      const trackResult =
+        typeof analytics.track === 'function'
+          ? analytics.track('edge_track', { edge: true })
+          : Promise.resolve();
+      await expect(trackResult).resolves.toBeUndefined();
+
+      expect(
+        typeof analytics.identify === 'function' ? analytics.identify : undefined,
+      ).toBeDefined();
+      const identifyResult =
+        typeof analytics.identify === 'function'
+          ? analytics.identify('edge-user', { edge: true })
+          : Promise.resolve();
+      await expect(identifyResult).resolves.toBeUndefined();
     });
 
-    it('should handle ecommerce emitters in edge runtime', async () => {
+    test('should handle ecommerce emitters in edge runtime', async () => {
       const serverEdge = await import('@/server-edge');
 
-      if ('createServerAnalytics' in serverEdge && 'ecommerce' in serverEdge) {
-        const config = {
-          providers: {
-            console: {},
-          },
-        };
+      expect('createServerAnalytics' in serverEdge).toBeTruthy();
 
-        const analytics = await serverEdge.createServerAnalytics(config);
+      const config = {
+        providers: {
+          console: {},
+        },
+      };
 
-        if (
-          typeof serverEdge.ecommerce === 'object' &&
-          serverEdge.ecommerce &&
-          'productViewed' in serverEdge.ecommerce
-        ) {
-          const productEmitter = (serverEdge.ecommerce.productViewed as any)({
-            product_id: 'edge-product',
-            name: 'Edge Product',
-            price: 99.99,
-          });
+      const analytics = await serverEdge.createServerAnalytics(config);
 
-          if ('emit' in analytics && typeof analytics.emit === 'function') {
-            await expect(analytics.emit(productEmitter)).resolves.toBeUndefined();
-          }
-        }
-      }
+      // Test trackEcommerce method
+      expect(
+        'trackEcommerce' in analytics && typeof analytics.trackEcommerce === 'function'
+          ? analytics.trackEcommerce
+          : undefined,
+      ).toBeDefined();
+      const trackEcommerceResult =
+        'trackEcommerce' in analytics && typeof analytics.trackEcommerce === 'function'
+          ? analytics.trackEcommerce('product_viewed', {
+              product_id: 'edge-product',
+              name: 'Edge Product',
+              price: 99.99,
+            })
+          : Promise.resolve();
+      await expect(trackEcommerceResult).resolves.toBeUndefined();
     });
 
-    it('should handle config building in edge runtime', async () => {
+    test('should handle config building in edge runtime', async () => {
       const serverEdge = await import('@/server-edge');
 
-      if ('createConfigBuilder' in serverEdge) {
-        const builder = (serverEdge.createConfigBuilder as any)();
-        expect(builder).toBeDefined();
+      expect('getAnalyticsConfig' in serverEdge).toBeTruthy();
 
-        if ('addConsole' in builder && 'build' in builder) {
-          const config = builder.addConsole({}).build();
-          expect(config).toBeDefined();
-          expect(config).toHaveProperty('providers');
-        }
-      }
+      const config = await (serverEdge.getAnalyticsConfig as any)();
+      expect(config).toBeDefined();
+      expect(typeof config).toBe('object');
     });
 
-    it('should handle multiple provider types in edge runtime', async () => {
+    test('should handle multiple provider types in edge runtime', async () => {
       const serverEdge = await import('@/server-edge');
 
-      if ('createServerAnalytics' in serverEdge) {
-        const config = {
-          providers: {
-            console: {},
-          },
-        };
+      expect('createServerAnalytics' in serverEdge).toBeTruthy();
 
-        const analytics = await serverEdge.createServerAnalytics(config);
-        expect(analytics).toBeDefined();
+      const config = {
+        providers: {
+          console: {},
+        },
+      };
 
-        if (typeof analytics.track === 'function') {
-          await expect(analytics.track('edge_multi_provider', {})).resolves.toBeUndefined();
-        }
-      }
+      const analytics = await serverEdge.createServerAnalytics(config);
+      expect(analytics).toBeDefined();
+
+      expect(typeof analytics.track === 'function' ? analytics.track : undefined).toBeDefined();
+      const trackResult =
+        typeof analytics.track === 'function'
+          ? analytics.track('edge_multi_provider', {})
+          : Promise.resolve();
+      await expect(trackResult).resolves.toBeUndefined();
     });
 
-    it('should handle error cases in edge runtime', async () => {
+    test('should handle error cases in edge runtime', async () => {
       const serverEdge = await import('@/server-edge');
 
-      if ('createServerAnalytics' in serverEdge) {
-        // Test with empty config
-        const emptyConfig = { providers: {} };
-        const analytics = await serverEdge.createServerAnalytics(emptyConfig);
-        expect(analytics).toBeDefined();
+      expect('createServerAnalytics' in serverEdge).toBeTruthy();
 
-        // Test with invalid config
-        const invalidConfig = {} as any;
-        expect(async () => {
-          await serverEdge.createServerAnalytics(invalidConfig);
-        }).not.toThrow();
-      }
+      // Test with empty config
+      const emptyConfig = { providers: {} };
+      const analytics = await serverEdge.createServerAnalytics(emptyConfig);
+      expect(analytics).toBeDefined();
+
+      // Test with invalid config
+      const invalidConfig = {} as any;
+      expect(async () => {
+        await serverEdge.createServerAnalytics(invalidConfig);
+      }).not.toThrow();
     });
 
-    it('should handle provider initialization in edge runtime', async () => {
+    test('should handle provider initialization in edge runtime', async () => {
       const serverEdge = await import('@/server-edge');
 
-      if ('createAnalyticsManager' in serverEdge) {
-        const config = {
-          providers: {
-            console: {},
-          },
-        };
+      expect('createServerAnalytics' in serverEdge).toBeTruthy();
 
-        const manager = (serverEdge.createAnalyticsManager as any)(config);
-        expect(manager).toBeDefined();
+      const config = {
+        providers: {
+          console: {},
+        },
+      };
 
-        if (typeof manager.initialize === 'function') {
-          await expect(manager.initialize()).resolves.toBeUndefined();
-        }
-      }
+      const analytics = await serverEdge.createServerAnalytics(config);
+      expect(analytics).toBeDefined();
+
+      expect(
+        typeof analytics.initialize === 'function' ? analytics.initialize : undefined,
+      ).toBeDefined();
+      const initializeResult =
+        typeof analytics.initialize === 'function' ? analytics.initialize() : Promise.resolve();
+      await expect(initializeResult).resolves.toBeUndefined();
     });
   });
 
   describe('edge runtime imports', () => {
-    it('should import all server-edge exports', async () => {
+    test('should import all server-edge exports', async () => {
       const serverEdge = await import('@/server-edge');
 
       // Check that the module loaded successfully
@@ -199,7 +214,7 @@ describe('Server Edge Coverage Tests', () => {
       expect(exports.length).toBeGreaterThan(0);
     });
 
-    it('should handle edge runtime specific features', async () => {
+    test('should handle edge runtime specific features', async () => {
       const serverEdge = await import('@/server-edge');
 
       // Test any edge-specific functionality if available
@@ -209,7 +224,7 @@ describe('Server Edge Coverage Tests', () => {
   });
 
   describe('edge runtime compatibility', () => {
-    it('should work without Node.js specific APIs', async () => {
+    test('should work without Node.js specific APIs', async () => {
       const serverEdge = await import('@/server-edge');
 
       // This test verifies that server-edge can be imported
@@ -217,21 +232,21 @@ describe('Server Edge Coverage Tests', () => {
       expect(serverEdge).toBeDefined();
     });
 
-    it('should handle edge runtime limitations', async () => {
+    test('should handle edge runtime limitations', async () => {
       const serverEdge = await import('@/server-edge');
 
       // Test that functions don't break in edge-like environment
-      if ('createServerAnalytics' in serverEdge) {
-        const config = {
-          providers: {
-            console: {},
-          },
-        };
+      expect('createServerAnalytics' in serverEdge).toBeTruthy();
 
-        expect(async () => {
-          await serverEdge.createServerAnalytics(config);
-        }).not.toThrow();
-      }
+      const config = {
+        providers: {
+          console: {},
+        },
+      };
+
+      expect(async () => {
+        await serverEdge.createServerAnalytics(config);
+      }).not.toThrow();
     });
   });
 });

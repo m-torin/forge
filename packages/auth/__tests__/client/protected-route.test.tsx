@@ -3,7 +3,7 @@
  */
 
 import { render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock Next.js router
 const mockRouter = {
@@ -40,7 +40,7 @@ Object.defineProperty(window, 'location', {
   writable: true,
 });
 
-describe('ProtectedRoute component', () => {
+describe('protectedRoute component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Reset auth state to authenticated by default
@@ -52,7 +52,7 @@ describe('ProtectedRoute component', () => {
   });
 
   describe('authenticated user', () => {
-    it('should render children when user is authenticated', async () => {
+    test('should render children when user is authenticated', async () => {
       const ProtectedRouteModule = await import('@/client/protected-route');
 
       render(
@@ -65,7 +65,7 @@ describe('ProtectedRoute component', () => {
       expect(mockRouter.push).not.toHaveBeenCalled();
     });
 
-    it('should render children with custom props', async () => {
+    test('should render children with custom props', async () => {
       const ProtectedRouteModule = await import('@/client/protected-route');
 
       render(
@@ -90,7 +90,7 @@ describe('ProtectedRoute component', () => {
       });
     });
 
-    it('should redirect to sign-in when not authenticated', async () => {
+    test('should redirect to sign-in when not authenticated', async () => {
       const ProtectedRouteModule = await import('@/client/protected-route');
 
       render(
@@ -104,7 +104,7 @@ describe('ProtectedRoute component', () => {
       );
     });
 
-    it('should redirect to custom URL when not authenticated', async () => {
+    test('should redirect to custom URL when not authenticated', async () => {
       const ProtectedRouteModule = await import('@/client/protected-route');
 
       render(
@@ -118,7 +118,7 @@ describe('ProtectedRoute component', () => {
       );
     });
 
-    it('should show fallback content while redirecting', async () => {
+    test('should show fallback content while redirecting', async () => {
       const ProtectedRouteModule = await import('@/client/protected-route');
 
       render(
@@ -133,7 +133,7 @@ describe('ProtectedRoute component', () => {
       expect(screen.getByText('Loading...')).toBeInTheDocument();
     });
 
-    it('should show custom fallback when provided', async () => {
+    test('should show custom fallback when provided', async () => {
       const ProtectedRouteModule = await import('@/client/protected-route');
 
       render(
@@ -158,7 +158,7 @@ describe('ProtectedRoute component', () => {
       });
     });
 
-    it('should show fallback during loading', async () => {
+    test('should show fallback during loading', async () => {
       const ProtectedRouteModule = await import('@/client/protected-route');
 
       render(
@@ -172,7 +172,7 @@ describe('ProtectedRoute component', () => {
       expect(mockRouter.push).not.toHaveBeenCalled();
     });
 
-    it('should show custom fallback during loading', async () => {
+    test('should show custom fallback during loading', async () => {
       const ProtectedRouteModule = await import('@/client/protected-route');
 
       render(
@@ -189,7 +189,7 @@ describe('ProtectedRoute component', () => {
   });
 
   describe('organization requirement', () => {
-    it('should render children when user has organization', async () => {
+    test('should render children when user has organization', async () => {
       const ProtectedRouteModule = await import('@/client/protected-route');
 
       vi.mocked(require('@/client/hooks').useAuth).mockReturnValue({
@@ -212,7 +212,7 @@ describe('ProtectedRoute component', () => {
       expect(screen.getByTestId('protected-content')).toBeInTheDocument();
     });
 
-    it('should handle user without organization when required', async () => {
+    test('should handle user without organization when required', async () => {
       const ProtectedRouteModule = await import('@/client/protected-route');
 
       vi.mocked(require('@/client/hooks').useAuth).mockReturnValue({
@@ -237,8 +237,8 @@ describe('ProtectedRoute component', () => {
     });
   });
 
-  describe('URL encoding', () => {
-    it('should properly encode complex URLs', async () => {
+  describe('uRL encoding', () => {
+    test('should properly encode complex URLs', async () => {
       const ProtectedRouteModule = await import('@/client/protected-route');
 
       // Mock complex URL
@@ -267,7 +267,7 @@ describe('ProtectedRoute component', () => {
       );
     });
 
-    it('should handle URLs without search params', async () => {
+    test('should handle URLs without search params', async () => {
       const ProtectedRouteModule = await import('@/client/protected-route');
 
       Object.defineProperty(window, 'location', {
@@ -295,7 +295,7 @@ describe('ProtectedRoute component', () => {
   });
 
   describe('component props', () => {
-    it('should handle all prop combinations', async () => {
+    test('should handle all prop combinations', async () => {
       const ProtectedRouteModule = await import('@/client/protected-route');
 
       const CustomFallback = () => <div data-testid="custom-fallback">Custom Loading</div>;
@@ -313,7 +313,7 @@ describe('ProtectedRoute component', () => {
       expect(screen.getByTestId('protected-content')).toBeInTheDocument();
     });
 
-    it('should work with minimal props', async () => {
+    test('should work with minimal props', async () => {
       const ProtectedRouteModule = await import('@/client/protected-route');
 
       render(
@@ -327,7 +327,7 @@ describe('ProtectedRoute component', () => {
   });
 
   describe('edge cases', () => {
-    it('should handle missing window.location gracefully', async () => {
+    test('should handle missing window.location gracefully', async () => {
       const ProtectedRouteModule = await import('@/client/protected-route');
 
       // Mock SSR environment (no window)
@@ -354,7 +354,7 @@ describe('ProtectedRoute component', () => {
       window.location = originalLocation;
     });
 
-    it('should handle null children', async () => {
+    test('should handle null children', async () => {
       const ProtectedRouteModule = await import('@/client/protected-route');
 
       render(<ProtectedRouteModule.ProtectedRoute>{null}</ProtectedRouteModule.ProtectedRoute>);

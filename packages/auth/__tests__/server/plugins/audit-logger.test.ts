@@ -2,7 +2,7 @@
  * Tests for audit logger plugin
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock the external dependencies
 vi.mock('@repo/database/prisma/server/next', () => ({
@@ -25,7 +25,7 @@ describe('audit logger plugin', () => {
   });
 
   describe('auditLoggerPlugin', () => {
-    it('should create plugin with default options', async () => {
+    test('should create plugin with default options', async () => {
       const auditLoggerModule = await import('@/server/plugins/audit-logger');
 
       const plugin = auditLoggerModule.auditLoggerPlugin();
@@ -34,7 +34,7 @@ describe('audit logger plugin', () => {
       expect(typeof plugin).toBe('object');
     });
 
-    it('should create plugin with custom options', async () => {
+    test('should create plugin with custom options', async () => {
       const auditLoggerModule = await import('@/server/plugins/audit-logger');
 
       const customOptions = {
@@ -55,7 +55,7 @@ describe('audit logger plugin', () => {
       expect(typeof plugin).toBe('object');
     });
 
-    it('should create plugin with disabled logging', async () => {
+    test('should create plugin with disabled logging', async () => {
       const auditLoggerModule = await import('@/server/plugins/audit-logger');
 
       const disabledOptions = {
@@ -75,7 +75,7 @@ describe('audit logger plugin', () => {
       expect(typeof plugin).toBe('object');
     });
 
-    it('should create plugin with custom logger', async () => {
+    test('should create plugin with custom logger', async () => {
       const auditLoggerModule = await import('@/server/plugins/audit-logger');
 
       const customLogger = vi.fn();
@@ -89,7 +89,7 @@ describe('audit logger plugin', () => {
       expect(typeof plugin).toBe('object');
     });
 
-    it('should handle empty options object', async () => {
+    test('should handle empty options object', async () => {
       const auditLoggerModule = await import('@/server/plugins/audit-logger');
 
       const plugin = auditLoggerModule.auditLoggerPlugin({});
@@ -98,7 +98,7 @@ describe('audit logger plugin', () => {
       expect(typeof plugin).toBe('object');
     });
 
-    it('should create plugin with extreme retention values', async () => {
+    test('should create plugin with extreme retention values', async () => {
       const auditLoggerModule = await import('@/server/plugins/audit-logger');
 
       const extremeOptions = {
@@ -111,7 +111,7 @@ describe('audit logger plugin', () => {
       expect(typeof plugin).toBe('object');
     });
 
-    it('should handle zero retention days', async () => {
+    test('should handle zero retention days', async () => {
       const auditLoggerModule = await import('@/server/plugins/audit-logger');
 
       const zeroRetentionOptions = {
@@ -124,7 +124,7 @@ describe('audit logger plugin', () => {
       expect(typeof plugin).toBe('object');
     });
 
-    it('should handle negative retention days', async () => {
+    test('should handle negative retention days', async () => {
       const auditLoggerModule = await import('@/server/plugins/audit-logger');
 
       const negativeRetentionOptions = {
@@ -137,7 +137,7 @@ describe('audit logger plugin', () => {
       expect(typeof plugin).toBe('object');
     });
 
-    it('should handle partial options', async () => {
+    test('should handle partial options', async () => {
       const auditLoggerModule = await import('@/server/plugins/audit-logger');
 
       const partialOptions = {
@@ -152,7 +152,7 @@ describe('audit logger plugin', () => {
       expect(typeof plugin).toBe('object');
     });
 
-    it('should handle undefined input', async () => {
+    test('should handle undefined input', async () => {
       const auditLoggerModule = await import('@/server/plugins/audit-logger');
 
       // @ts-expect-error - testing undefined input
@@ -164,7 +164,7 @@ describe('audit logger plugin', () => {
   });
 
   describe('logging configuration scenarios', () => {
-    it('should create plugin for security-focused logging', async () => {
+    test('should create plugin for security-focused logging', async () => {
       const auditLoggerModule = await import('@/server/plugins/audit-logger');
 
       const securityOptions = {
@@ -182,7 +182,7 @@ describe('audit logger plugin', () => {
       expect(plugin).toBeDefined();
     });
 
-    it('should create plugin for minimal logging', async () => {
+    test('should create plugin for minimal logging', async () => {
       const auditLoggerModule = await import('@/server/plugins/audit-logger');
 
       const minimalOptions = {
@@ -202,7 +202,7 @@ describe('audit logger plugin', () => {
       expect(plugin).toBeDefined();
     });
 
-    it('should create plugin for development environment', async () => {
+    test('should create plugin for development environment', async () => {
       const auditLoggerModule = await import('@/server/plugins/audit-logger');
 
       const devOptions = {
@@ -215,7 +215,7 @@ describe('audit logger plugin', () => {
       expect(plugin).toBeDefined();
     });
 
-    it('should create plugin for compliance requirements', async () => {
+    test('should create plugin for compliance requirements', async () => {
       const auditLoggerModule = await import('@/server/plugins/audit-logger');
 
       const complianceOptions = {
@@ -237,7 +237,7 @@ describe('audit logger plugin', () => {
   });
 
   describe('custom logger integration', () => {
-    it('should accept async custom logger', async () => {
+    test('should accept async custom logger', async () => {
       const auditLoggerModule = await import('@/server/plugins/audit-logger');
 
       const asyncCustomLogger = vi.fn().mockResolvedValue(undefined);
@@ -250,7 +250,7 @@ describe('audit logger plugin', () => {
       expect(plugin).toBeDefined();
     });
 
-    it('should accept custom logger that throws', async () => {
+    test('should accept custom logger that throws', async () => {
       const auditLoggerModule = await import('@/server/plugins/audit-logger');
 
       const throwingLogger = vi.fn().mockRejectedValue(new Error('Logger error'));
@@ -263,7 +263,7 @@ describe('audit logger plugin', () => {
       expect(plugin).toBeDefined();
     });
 
-    it('should handle custom logger with complex event processing', async () => {
+    test('should handle custom logger with complex event processing', async () => {
       const auditLoggerModule = await import('@/server/plugins/audit-logger');
 
       const complexLogger = vi.fn(async event => {
@@ -283,7 +283,7 @@ describe('audit logger plugin', () => {
   });
 
   describe('edge cases and error handling', () => {
-    it('should handle floating point retention days', async () => {
+    test('should handle floating point retention days', async () => {
       const auditLoggerModule = await import('@/server/plugins/audit-logger');
 
       const plugin = auditLoggerModule.auditLoggerPlugin({
@@ -293,7 +293,7 @@ describe('audit logger plugin', () => {
       expect(plugin).toBeDefined();
     });
 
-    it('should handle very large retention values', async () => {
+    test('should handle very large retention values', async () => {
       const auditLoggerModule = await import('@/server/plugins/audit-logger');
 
       const plugin = auditLoggerModule.auditLoggerPlugin({
@@ -303,7 +303,7 @@ describe('audit logger plugin', () => {
       expect(plugin).toBeDefined();
     });
 
-    it('should work with all boolean options true', async () => {
+    test('should work with all boolean options true', async () => {
       const auditLoggerModule = await import('@/server/plugins/audit-logger');
 
       const allTrueOptions = {
@@ -322,7 +322,7 @@ describe('audit logger plugin', () => {
       expect(plugin).toBeDefined();
     });
 
-    it('should work with all boolean options false', async () => {
+    test('should work with all boolean options false', async () => {
       const auditLoggerModule = await import('@/server/plugins/audit-logger');
 
       const allFalseOptions = {
@@ -343,7 +343,7 @@ describe('audit logger plugin', () => {
   });
 
   describe('plugin structure validation', () => {
-    it('should maintain consistent plugin structure', async () => {
+    test('should maintain consistent plugin structure', async () => {
       const auditLoggerModule = await import('@/server/plugins/audit-logger');
 
       const plugin = auditLoggerModule.auditLoggerPlugin();
@@ -352,7 +352,7 @@ describe('audit logger plugin', () => {
       expect(typeof plugin).toBe('object');
     });
 
-    it('should work with default configuration', async () => {
+    test('should work with default configuration', async () => {
       const auditLoggerModule = await import('@/server/plugins/audit-logger');
 
       const plugin = auditLoggerModule.auditLoggerPlugin();

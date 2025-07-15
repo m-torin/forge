@@ -544,6 +544,14 @@ const config: Linter.FlatConfig[] = [
       'no-console': SEVERITY.OFF,
     },
   }),
+
+  // Environment files - allow console for error handling
+  createConfig({
+    files: ['**/env.ts'],
+    rules: {
+      'no-console': SEVERITY.OFF,
+    },
+  }),
 ];
 
 export default config;

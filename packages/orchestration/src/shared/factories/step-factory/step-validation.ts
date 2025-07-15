@@ -150,7 +150,7 @@ export async function validateStepExecution<TInput, TOutput>(
   input: TInput,
   output: TOutput,
   config?: StepValidationConfig<TInput>,
-  outputSchema?: z.ZodSchema<TOutput>
+  outputSchema?: z.ZodSchema<TOutput>,
 ): Promise<ValidationResult> {
   const errors: string[] = [];
 
@@ -179,7 +179,7 @@ export async function validateStepExecution<TInput, TOutput>(
  */
 export function createStepValidator<TInput, TOutput>(
   config: StepValidationConfig<TInput>,
-  outputSchema?: z.ZodSchema<TOutput>
+  outputSchema?: z.ZodSchema<TOutput>,
 ) {
   return {
     async validateInput(input: TInput): Promise<ValidationResult> {
@@ -189,7 +189,7 @@ export function createStepValidator<TInput, TOutput>(
       } catch (error) {
         return {
           valid: false,
-          errors: [error instanceof Error ? error.message : 'Input validation failed']
+          errors: [error instanceof Error ? error.message : 'Input validation failed'],
         };
       }
     },
@@ -201,7 +201,7 @@ export function createStepValidator<TInput, TOutput>(
       } catch (error) {
         return {
           valid: false,
-          errors: [error instanceof Error ? error.message : 'Output validation failed']
+          errors: [error instanceof Error ? error.message : 'Output validation failed'],
         };
       }
     },
@@ -216,6 +216,6 @@ export function createStepValidator<TInput, TOutput>(
 
     getOutputSchema() {
       return outputSchema;
-    }
+    },
   };
 }

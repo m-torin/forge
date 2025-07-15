@@ -1,5 +1,5 @@
 import { generateVisitorId, getOrGenerateVisitorId, parseOverrides } from '@/shared/utils';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock nanoid
 vi.mock('nanoid', () => ({
@@ -42,7 +42,7 @@ describe('generateVisitorId', () => {
     vi.clearAllMocks();
   });
 
-  it('should generate a visitor ID using nanoid', async () => {
+  test('should generate a visitor ID using nanoid', async () => {
     const { nanoid } = vi.mocked(await import('nanoid'));
     nanoid.mockReturnValue('generated-id-456');
 
@@ -52,7 +52,7 @@ describe('generateVisitorId', () => {
     expect(nanoid).toHaveBeenCalledOnce();
   });
 
-  it('should be wrapped with dedupe function', async () => {
+  test('should be wrapped with dedupe function', async () => {
     // The function is defined at module level, so dedupe is called during import
     expect(generateVisitorId).toBeInstanceOf(Function);
   });
@@ -63,7 +63,7 @@ describe('getOrGenerateVisitorId', () => {
     vi.clearAllMocks();
   });
 
-  it('should return existing visitor ID from cookies', async () => {
+  test('should return existing visitor ID from cookies', async () => {
     const cookies = createMockCookieStore({
       'visitor-id': 'existing-cookie-id',
     });
@@ -74,7 +74,7 @@ describe('getOrGenerateVisitorId', () => {
     expect(cookies.get).toHaveBeenCalledWith('visitor-id');
   });
 
-  it('should use custom cookie name', async () => {
+  test('should use custom cookie name', async () => {
     const cookies = createMockCookieStore({
       'custom-visitor': 'custom-cookie-id',
     });
@@ -85,7 +85,7 @@ describe('getOrGenerateVisitorId', () => {
     expect(cookies.get).toHaveBeenCalledWith('custom-visitor');
   });
 
-  it('should return visitor ID from headers when cookie not found', async () => {
+  test('should return visitor ID from headers when cookie not found', async () => {
     const cookies = createMockCookieStore();
     const headers = createMockHeaderStore({
       'x-visitor-id': 'header-visitor-id',
@@ -98,7 +98,7 @@ describe('getOrGenerateVisitorId', () => {
     expect(headers.get).toHaveBeenCalledWith('x-visitor-id');
   });
 
-  it('should use custom cookie name for headers', async () => {
+  test('should use custom cookie name for headers', async () => {
     const cookies = createMockCookieStore();
     const headers = createMockHeaderStore({
       'x-custom-visitor': 'custom-header-id',
@@ -110,7 +110,7 @@ describe('getOrGenerateVisitorId', () => {
     expect(headers.get).toHaveBeenCalledWith('x-custom-visitor');
   });
 
-  it('should generate new ID when not found in cookies or headers', async () => {
+  test('should generate new ID when not found in cookies or headers', async () => {
     const { nanoid } = vi.mocked(await import('nanoid'));
     nanoid.mockReturnValue('new-generated-id');
 
@@ -124,7 +124,7 @@ describe('getOrGenerateVisitorId', () => {
     expect(headers.get).toHaveBeenCalledWith('x-visitor-id');
   });
 
-  it('should generate new ID when no headers provided and cookie not found', async () => {
+  test('should generate new ID when no headers provided and cookie not found', async () => {
     const { nanoid } = vi.mocked(await import('nanoid'));
     nanoid.mockReturnValue('no-headers-id');
 
@@ -136,7 +136,7 @@ describe('getOrGenerateVisitorId', () => {
     expect(cookies.get).toHaveBeenCalledWith('visitor-id');
   });
 
-  it('should prioritize cookie over header', async () => {
+  test('should prioritize cookie over header', async () => {
     const cookies = createMockCookieStore({
       'visitor-id': 'cookie-priority-id',
     });
@@ -151,7 +151,7 @@ describe('getOrGenerateVisitorId', () => {
     expect(headers.get).not.toHaveBeenCalled();
   });
 
-  it('should handle cookies without value property', async () => {
+  test('should handle cookies without value property', async () => {
     const cookies = {
       get: vi.fn(() => ({})), // Cookie object without value
       has: vi.fn(),
@@ -177,7 +177,7 @@ describe('parseOverrides', () => {
     vi.clearAllMocks();
   });
 
-  it('should parse valid JSON overrides', () => {
+  test('should parse valid JSON overrides', () => {
     const overrides = { 'test-flag': true, 'another-flag': 'variant-a' };
     const cookies = createMockCookieStore({
       'vercel-flag-overrides': JSON.stringify(overrides),
@@ -189,7 +189,7 @@ describe('parseOverrides', () => {
     expect(cookies.get).toHaveBeenCalledWith('vercel-flag-overrides');
   });
 
-  it('should return undefined when no overrides cookie', () => {
+  test('should return undefined when no overrides cookie', () => {
     const cookies = createMockCookieStore();
 
     const result = parseOverrides(cookies);
@@ -198,7 +198,7 @@ describe('parseOverrides', () => {
     expect(cookies.get).toHaveBeenCalledWith('vercel-flag-overrides');
   });
 
-  it('should return undefined for invalid JSON', () => {
+  test('should return undefined for invalid JSON', () => {
     const cookies = createMockCookieStore({
       'vercel-flag-overrides': 'invalid-json{',
     });
@@ -208,7 +208,7 @@ describe('parseOverrides', () => {
     expect(result).toBeUndefined();
   });
 
-  it('should handle empty string overrides', () => {
+  test('should handle empty string overrides', () => {
     const cookies = createMockCookieStore({
       'vercel-flag-overrides': '',
     });
@@ -218,7 +218,7 @@ describe('parseOverrides', () => {
     expect(result).toBeUndefined();
   });
 
-  it('should parse complex override structures', () => {
+  test('should parse complex override structures', () => {
     const complexOverrides = {
       'boolean-flag': true,
       'string-flag': 'variant-b',
@@ -235,7 +235,7 @@ describe('parseOverrides', () => {
     expect(result).toStrictEqual(complexOverrides);
   });
 
-  it('should handle cookies without value property', () => {
+  test('should handle cookies without value property', () => {
     const cookies = {
       get: vi.fn(() => ({})), // Cookie object without value
       has: vi.fn(),
@@ -252,7 +252,7 @@ describe('parseOverrides', () => {
     expect(result).toBeUndefined();
   });
 
-  it('should handle null JSON', () => {
+  test('should handle null JSON', () => {
     const cookies = createMockCookieStore({
       'vercel-flag-overrides': 'null',
     });
@@ -262,7 +262,7 @@ describe('parseOverrides', () => {
     expect(result).toBeNull();
   });
 
-  it('should handle JSON parsing of primitive values', () => {
+  test('should handle JSON parsing of primitive values', () => {
     const cookies = createMockCookieStore({
       'vercel-flag-overrides': '"string-value"',
     });

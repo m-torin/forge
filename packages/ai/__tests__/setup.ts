@@ -1,6 +1,9 @@
 // Environment setup for AI tests
 import { afterAll, beforeAll, vi } from 'vitest';
 
+// Import centralized mocks from @repo/qa package
+import '@repo/qa/vitest/mocks';
+
 // Mock environment variables
 vi.stubEnv('NODE_ENV', 'test');
 vi.stubEnv('NEXT_PUBLIC_NODE_ENV', 'test');

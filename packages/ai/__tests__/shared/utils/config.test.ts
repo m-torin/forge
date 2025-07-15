@@ -18,10 +18,8 @@ describe('config Utilities', () => {
   });
 
   afterEach(() => {
-    if (originalNodeEnv !== undefined) {
+    {
       process.env.NODE_ENV = originalNodeEnv;
-    } else {
-      delete process.env.NODE_ENV;
     }
   });
 

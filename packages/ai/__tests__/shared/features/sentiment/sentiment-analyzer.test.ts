@@ -46,10 +46,10 @@ describe('sentimentAnalyzer', () => {
   describe('analyze', () => {
     test('should analyze positive sentiment', async () => {
       const text = 'I love this product! It works great.';
-      const result = await analyzer.analyze(text);
+      const result1 = await analyzer.analyze(text);
 
       expect(mockProvider.analyzeSentiment).toHaveBeenCalledWith(text);
-      expect(result).toStrictEqual({
+      expect(result1).toStrictEqual({
         sentiment: 'positive',
         confidence: 0.95,
         score: 0.8,
@@ -67,9 +67,9 @@ describe('sentimentAnalyzer', () => {
 
       analyzer = new SentimentAnalyzer(mockNegativeProvider);
       const text = 'This product is terrible and broken.';
-      const result = await analyzer.analyze(text);
+      const result1 = await analyzer.analyze(text);
 
-      expect(result).toStrictEqual({
+      expect(result1).toStrictEqual({
         sentiment: 'negative',
         confidence: 0.88,
         score: -0.6,
@@ -87,9 +87,9 @@ describe('sentimentAnalyzer', () => {
 
       analyzer = new SentimentAnalyzer(mockNeutralProvider);
       const text = 'This is a description of the product features.';
-      const result = await analyzer.analyze(text);
+      const result1 = await analyzer.analyze(text);
 
-      expect(result).toStrictEqual({
+      expect(result1).toStrictEqual({
         sentiment: 'neutral',
         confidence: 0.92,
         score: 0.1,

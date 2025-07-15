@@ -1,5 +1,4 @@
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import type { UserConfig } from 'vitest/config';
 import { baseConfig, environmentConfigs, getBaseTestConfig } from './base-config';
 import {
@@ -9,9 +8,8 @@ import {
   getVitePlugins,
 } from './vite-utils';
 
-// Get the directory where this file is located
-const filename = fileURLToPath(import.meta.url);
-const currentDir = dirname(filename);
+// Get the directory where this file is located (Node 22+ feature)
+const currentDir = import.meta.dirname;
 const setupDir = resolve(currentDir, '../setup');
 
 // Helper to create a config without vitest dependency during load
@@ -167,6 +165,8 @@ export function createNextAppConfig(options: BuilderOptions = {}): UserConfig {
         '@/utils': resolve(process.cwd(), './src/utils'),
         '@/styles': resolve(process.cwd(), './src/styles'),
         '@/types': resolve(process.cwd(), './src/types'),
+        // Add workspace package resolution for @repo/* imports
+        '@repo/qa': resolve(currentDir, '../..'),
         ...aliases,
       },
     },
@@ -219,6 +219,8 @@ export function createReactPackageConfig(options: BuilderOptions = {}): UserConf
       extensions: ['.ts', '.tsx', '.js', '.jsx', '.json', '.mjs', '.mts'],
       alias: {
         '@': resolve(process.cwd(), './src'),
+        // Add workspace package resolution for @repo/* imports
+        '@repo/qa': resolve(currentDir, '../..'),
         ...aliases,
       },
     },
@@ -267,6 +269,8 @@ export function createNodePackageConfig(options: BuilderOptions = {}): UserConfi
       extensions: ['.ts', '.tsx', '.js', '.jsx', '.json', '.mjs', '.mts'],
       alias: {
         '@': resolve(process.cwd(), './src'),
+        // Add workspace package resolution for @repo/* imports
+        '@repo/qa': resolve(currentDir, '../..'),
         ...aliases,
       },
     },
@@ -324,6 +328,8 @@ export function createDatabasePackageConfig(options: BuilderOptions = {}): UserC
       extensions: ['.ts', '.tsx', '.js', '.jsx', '.json', '.mjs', '.mts'],
       alias: {
         '@': resolve(process.cwd(), './src'),
+        // Add workspace package resolution for @repo/* imports
+        '@repo/qa': resolve(currentDir, '../..'),
         ...aliases,
       },
     },
@@ -375,6 +381,8 @@ export function createQStashPackageConfig(options: BuilderOptions = {}): UserCon
       extensions: ['.ts', '.tsx', '.js', '.jsx', '.json', '.mjs', '.mts'],
       alias: {
         '@': resolve(process.cwd(), './src'),
+        // Add workspace package resolution for @repo/* imports
+        '@repo/qa': resolve(currentDir, '../..'),
         ...aliases,
       },
     },

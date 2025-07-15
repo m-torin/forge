@@ -40,7 +40,7 @@ describe('validation utilities', () => {
         steps: [],
       };
 
-      expect(() => validateWorkflowDefinition(definition as any)).toThrow();
+      expect(() => validateWorkflowDefinition(definition as any)).toThrow('Invalid workflow definition');
     });
 
     test('should reject workflow without steps', () => {
@@ -49,7 +49,7 @@ describe('validation utilities', () => {
         name: 'Test Workflow',
       };
 
-      expect(() => validateWorkflowDefinition(definition as any)).toThrow();
+      expect(() => validateWorkflowDefinition(definition as any)).toThrow('Invalid workflow definition');
     });
 
     test('should reject workflow with empty steps array', () => {
@@ -59,7 +59,7 @@ describe('validation utilities', () => {
         steps: [],
       };
 
-      expect(() => validateWorkflowDefinition(definition)).toThrow();
+      expect(() => validateWorkflowDefinition(definition)).toThrow('Invalid workflow definition');
     });
 
     test('should validate workflow with multiple steps', () => {
@@ -120,7 +120,7 @@ describe('validation utilities', () => {
         type: 'task',
       };
 
-      expect(() => validateWorkflowStep(step as any)).toThrow();
+      expect(() => validateWorkflowStep(step as any)).toThrow('Invalid workflow step');
     });
 
     test('should reject step without action', () => {
@@ -129,7 +129,7 @@ describe('validation utilities', () => {
         name: 'Test Step',
       };
 
-      expect(() => validateWorkflowStep(step as any)).toThrow();
+      expect(() => validateWorkflowStep(step as any)).toThrow('Invalid workflow step');
     });
 
     test('should validate step with valid actions', () => {
@@ -361,7 +361,7 @@ describe('validation utilities', () => {
       const errors = validateEnvironmentVariables(['TEST_VAR_1', 'TEST_VAR_2']);
 
       expect(errors.length).toBeGreaterThan(0);
-      expect(errors.some(error => error.message.includes('TEST_VAR_2'))).toBe(true);
+      expect(errors.some(error => error.message.includes('TEST_VAR_2'))).toBeTruthy();
 
       process.env = originalEnv;
     });
@@ -431,7 +431,7 @@ describe('validation utilities', () => {
       expect(sanitized.database.password).not.toBe('db-secret');
       expect(sanitized.redis.url).toBe('redis://localhost:6379');
       expect(sanitized.redis.token).not.toBe('redis-token');
-      expect(sanitized.features.enableMetrics).toBe(true);
+      expect(sanitized.features.enableMetrics).toBeTruthy();
     });
 
     test('should handle arrays in config', () => {
@@ -443,9 +443,9 @@ describe('validation utilities', () => {
 
       const sanitized = sanitizeConfig(config);
 
-      expect(sanitized.servers).toEqual(['server1.com', 'server2.com']);
-      expect(sanitized.ports).toEqual([3000, 3001, 3002]);
-      expect(sanitized.secrets).not.toEqual(['secret1', 'secret2']);
+      expect(sanitized.servers).toStrictEqual(['server1.com', 'server2.com']);
+      expect(sanitized.ports).toStrictEqual([3000, 3001, 3002]);
+      expect(sanitized.secrets).not.toStrictEqual(['secret1', 'secret2']);
     });
 
     test('should handle null and undefined values', () => {
@@ -465,18 +465,18 @@ describe('validation utilities', () => {
     });
   });
 
-  describe('Edge Cases', () => {
+  describe('edge Cases', () => {
     test('should handle null and undefined inputs gracefully', () => {
-      expect(() => validateWorkflowDefinition(null as any)).toThrow();
-      expect(() => validateWorkflowDefinition(undefined as any)).toThrow();
-      expect(() => validateWorkflowStep(null as any)).toThrow();
-      expect(() => validateWorkflowStep(undefined as any)).toThrow();
+      expect(() => validateWorkflowDefinition(null as any)).toThrow('Invalid workflow definition');
+      expect(() => validateWorkflowDefinition(undefined as any)).toThrow('Invalid workflow definition');
+      expect(() => validateWorkflowStep(null as any)).toThrow('Invalid workflow step');
+      expect(() => validateWorkflowStep(undefined as any)).toThrow('Invalid workflow step');
     });
 
     test('should handle empty objects', () => {
-      expect(() => validateWorkflowDefinition({})).toThrow();
-      expect(() => validateWorkflowStep({})).toThrow();
-      expect(() => validateScheduleConfig({})).toThrow();
+      expect(() => validateWorkflowDefinition({})).toThrow('Invalid workflow definition');
+      expect(() => validateWorkflowStep({})).toThrow('Invalid workflow step');
+      expect(() => validateScheduleConfig({})).toThrow('Invalid schedule configuration');
     });
 
     test('should handle very large workflow definitions', () => {

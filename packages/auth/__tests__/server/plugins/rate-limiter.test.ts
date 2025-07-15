@@ -2,7 +2,7 @@
  * Tests for rate limiter plugin
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, vi } from 'vitest';
 
 // We need to check the actual implementation to test it properly
 describe('rate limiter plugin', () => {
@@ -14,7 +14,7 @@ describe('rate limiter plugin', () => {
     vi.useRealTimers();
   });
 
-  it('should create plugin with default options', async () => {
+  test('should create plugin with default options', async () => {
     const rateLimiterModule = await import('@/server/plugins/rate-limiter');
 
     const plugin = rateLimiterModule.rateLimiterPlugin();
@@ -23,7 +23,7 @@ describe('rate limiter plugin', () => {
     expect(typeof plugin).toBe('object');
   });
 
-  it('should create plugin with custom options', async () => {
+  test('should create plugin with custom options', async () => {
     const rateLimiterModule = await import('@/server/plugins/rate-limiter');
 
     const customOptions = {
@@ -40,7 +40,7 @@ describe('rate limiter plugin', () => {
     expect(typeof plugin).toBe('object');
   });
 
-  it('should handle requests with default key generation', async () => {
+  test('should handle requests with default key generation', async () => {
     const rateLimiterModule = await import('@/server/plugins/rate-limiter');
 
     const plugin = rateLimiterModule.rateLimiterPlugin({
@@ -59,7 +59,7 @@ describe('rate limiter plugin', () => {
     expect(plugin).toBeDefined();
   });
 
-  it('should handle requests with custom key generator', async () => {
+  test('should handle requests with custom key generator', async () => {
     const rateLimiterModule = await import('@/server/plugins/rate-limiter');
 
     const customKeyGenerator = vi.fn((request: Request) => {
@@ -74,14 +74,14 @@ describe('rate limiter plugin', () => {
     expect(plugin).toBeDefined();
   });
 
-  it('should export rate limiter options interface', async () => {
+  test('should export rate limiter options interface', async () => {
     const rateLimiterModule = await import('@/server/plugins/rate-limiter');
 
     // Test that the module exports the expected function
     expect(typeof rateLimiterModule.rateLimiterPlugin).toBe('function');
   });
 
-  it('should handle disabled rate limiter', async () => {
+  test('should handle disabled rate limiter', async () => {
     const rateLimiterModule = await import('@/server/plugins/rate-limiter');
 
     const plugin = rateLimiterModule.rateLimiterPlugin({
@@ -91,7 +91,7 @@ describe('rate limiter plugin', () => {
     expect(plugin).toBeDefined();
   });
 
-  it('should create plugin with all configuration options', async () => {
+  test('should create plugin with all configuration options', async () => {
     const rateLimiterModule = await import('@/server/plugins/rate-limiter');
 
     const fullConfig = {
@@ -112,7 +112,7 @@ describe('rate limiter plugin', () => {
     expect(typeof plugin).toBe('object');
   });
 
-  it('should handle requests without forwarded headers', async () => {
+  test('should handle requests without forwarded headers', async () => {
     const rateLimiterModule = await import('@/server/plugins/rate-limiter');
 
     const plugin = rateLimiterModule.rateLimiterPlugin();
@@ -123,7 +123,7 @@ describe('rate limiter plugin', () => {
     expect(plugin).toBeDefined();
   });
 
-  it('should handle requests with x-real-ip header', async () => {
+  test('should handle requests with x-real-ip header', async () => {
     const rateLimiterModule = await import('@/server/plugins/rate-limiter');
 
     const plugin = rateLimiterModule.rateLimiterPlugin();
@@ -137,7 +137,7 @@ describe('rate limiter plugin', () => {
     expect(plugin).toBeDefined();
   });
 
-  it('should handle window cleanup', async () => {
+  test('should handle window cleanup', async () => {
     const rateLimiterModule = await import('@/server/plugins/rate-limiter');
 
     const plugin = rateLimiterModule.rateLimiterPlugin({
@@ -150,7 +150,7 @@ describe('rate limiter plugin', () => {
     vi.advanceTimersByTime(2000);
   });
 
-  it('should preserve rate limit configuration', async () => {
+  test('should preserve rate limit configuration', async () => {
     const rateLimiterModule = await import('@/server/plugins/rate-limiter');
 
     const options = {

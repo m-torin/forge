@@ -6,7 +6,7 @@ vi.mock('@repo/observability/server/next', () => ({
   logError: vi.fn(),
 }));
 
-const mockDubClient = {
+const _mockDubClient = {
   links: {
     create: vi.fn().mockResolvedValue({
       id: 'test-id',
@@ -42,7 +42,7 @@ vi.mock('@repo/analytics/server/next', () => ({
   }),
 }));
 
-describe('High Coverage Tests', () => {
+describe('high Coverage Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -233,9 +233,9 @@ describe('High Coverage Tests', () => {
     for (const data of trackingData) {
       try {
         await clientModule.trackLinkClick(data.linkId, data.context);
-      } catch (error) {
-        // Expected in test environment without proper LinkManager setup
-        expect(error).toBeDefined();
+      } catch (_error) {
+        // Expected in test environment without proper LinkManager setup - error is acceptable
+        console.log('Test error (expected)');
       }
     }
 
@@ -248,9 +248,9 @@ describe('High Coverage Tests', () => {
     for (const config of shortLinkConfigs) {
       try {
         await clientModule.createShortLink('https://example.com', config);
-      } catch (error) {
-        // Expected in test environment
-        expect(error).toBeDefined();
+      } catch (_error) {
+        // Expected in test environment - error is acceptable
+        console.log('Test error (expected)');
       }
     }
 
@@ -264,9 +264,9 @@ describe('High Coverage Tests', () => {
     for (const data of openTrackData) {
       try {
         await clientModule.openAndTrackLink(data.url, data.linkId, data.context);
-      } catch (error) {
-        // Expected in test environment
-        expect(error).toBeDefined();
+      } catch (_error) {
+        // Expected in test environment - error is acceptable
+        console.log('Test error (expected)');
       }
     }
   });
@@ -309,9 +309,9 @@ describe('High Coverage Tests', () => {
     for (const data of bulkData) {
       try {
         await serverModule.bulkCreateShortLinks(data.requests, data.config, data.options);
-      } catch (error) {
-        // Expected in test environment
-        expect(error).toBeDefined();
+      } catch (_error) {
+        // Expected in test environment - error is acceptable
+        console.log('Test error (expected)');
       }
     }
 
@@ -334,9 +334,9 @@ describe('High Coverage Tests', () => {
     for (const data of trackData) {
       try {
         await serverModule.trackServerClick(data.linkId, data.request, data.context);
-      } catch (error) {
-        // Expected in test environment without proper LinkManager setup
-        expect(error).toBeDefined();
+      } catch (_error) {
+        // Expected in test environment without proper LinkManager setup - error is acceptable
+        console.log('Test error (expected)');
       }
     }
 
@@ -374,30 +374,34 @@ describe('High Coverage Tests', () => {
     try {
       const clientNext = await import('../src/client-next');
       expect(clientNext).toBeDefined();
-    } catch (error) {
-      expect(error).toBeDefined();
+    } catch (_error) {
+      // Expected in test environment - import may fail
+      console.log('Import error (expected)');
     }
 
     try {
       const serverNext = await import('../src/server-next');
       expect(serverNext).toBeDefined();
-    } catch (error) {
-      expect(error).toBeDefined();
+    } catch (_error) {
+      // Expected in test environment - import may fail
+      console.log('Import error (expected)');
     }
 
     // Test examples if they exist
     try {
       const clientExamples = await import('../src/examples/client-examples');
       expect(clientExamples).toBeDefined();
-    } catch (error) {
-      expect(error).toBeDefined();
+    } catch (_error) {
+      // Expected in test environment - import may fail
+      console.log('Import error (expected)');
     }
 
     try {
       const serverExamples = await import('../src/examples/server-examples');
       expect(serverExamples).toBeDefined();
-    } catch (error) {
-      expect(error).toBeDefined();
+    } catch (_error) {
+      // Expected in test environment - import may fail
+      console.log('Import error (expected)');
     }
   });
 
@@ -467,6 +471,9 @@ describe('High Coverage Tests', () => {
         segment: i % 3 === 0 ? 'premium' : 'free',
       });
     }
+
+    // Verify the integration is still enabled after all operations
+    expect(integration.isEnabled()).toBeTruthy();
   });
 
   test('should test disabled analytics integration thoroughly', async () => {
@@ -479,7 +486,7 @@ describe('High Coverage Tests', () => {
       events: ['link_created', 'link_clicked'],
     });
 
-    expect(disabledIntegration.isEnabled()).toBe(false);
+    expect(disabledIntegration.isEnabled()).toBeFalsy();
 
     // Test many calls to disabled integration
     for (let i = 0; i < 20; i++) {

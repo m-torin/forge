@@ -8,7 +8,7 @@ import {
   ToolMetadata,
   ToolPatterns,
 } from '@/server/tools/execution-framework';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 import { z } from 'zod/v4';
 
 // Mock dependencies
@@ -28,8 +28,8 @@ vi.mock('@/server/errors/application-errors', () => ({
   }),
 }));
 
-describe('Basic Tool Framework', () => {
-  it('should define tool execution context interface', () => {
+describe('basic Tool Framework', () => {
+  test('should define tool execution context interface', () => {
     const context: ToolExecutionContext = {
       user: { id: 'user-123', permissions: ['read'] },
       session: { id: 'session-456' },
@@ -41,7 +41,7 @@ describe('Basic Tool Framework', () => {
     expect(context.environment).toBe('development');
   });
 
-  it('should define tool metadata interface', () => {
+  test('should define tool metadata interface', () => {
     const metadata: ToolMetadata = {
       category: 'test',
       tags: ['basic'],
@@ -53,7 +53,7 @@ describe('Basic Tool Framework', () => {
     expect(metadata.version).toBe('1.0.0');
   });
 
-  it('should create enhanced tool', () => {
+  test('should create enhanced tool', () => {
     const definition: EnhancedToolDefinition = {
       name: 'test-tool',
       description: 'Test tool',
@@ -72,7 +72,7 @@ describe('Basic Tool Framework', () => {
     expect(tool.metadata.tags).toContain('basic');
   });
 
-  it('should create tool execution framework', () => {
+  test('should create tool execution framework', () => {
     const framework = new ToolExecutionFramework();
     expect(framework).toBeInstanceOf(ToolExecutionFramework);
     expect(framework.register).toBeTypeOf('function');
@@ -80,17 +80,17 @@ describe('Basic Tool Framework', () => {
     expect(framework.getAll).toBeTypeOf('function');
   });
 
-  it('should provide global framework instance', () => {
+  test('should provide global framework instance', () => {
     expect(globalToolFramework).toBeInstanceOf(ToolExecutionFramework);
   });
 
-  it('should provide tool patterns', () => {
+  test('should provide tool patterns', () => {
     expect(ToolPatterns).toBeDefined();
     expect(ToolPatterns.query).toBeTypeOf('function');
     expect(ToolPatterns.transform).toBeTypeOf('function');
   });
 
-  it('should create query pattern tool', () => {
+  test('should create query pattern tool', () => {
     const queryTool = ToolPatterns.query({
       name: 'search',
       description: 'Search tool',
@@ -101,7 +101,7 @@ describe('Basic Tool Framework', () => {
     expect(queryTool.metadata.category).toBe('search');
   });
 
-  it('should create transform pattern tool', () => {
+  test('should create transform pattern tool', () => {
     const transformTool = ToolPatterns.transform({
       name: 'transformer',
       description: 'Transform tool',
@@ -114,14 +114,14 @@ describe('Basic Tool Framework', () => {
   });
 });
 
-describe('Framework Operations', () => {
+describe('framework Operations', () => {
   let framework: ToolExecutionFramework;
 
   beforeEach(() => {
     framework = new ToolExecutionFramework();
   });
 
-  it('should register and retrieve tools', () => {
+  test('should register and retrieve tools', () => {
     const definition: EnhancedToolDefinition = {
       name: 'registered-tool',
       description: 'Registered tool',
@@ -140,7 +140,7 @@ describe('Framework Operations', () => {
     expect(tool?.metadata.category).toBe('registry');
   });
 
-  it('should filter tools by category', () => {
+  test('should filter tools by category', () => {
     framework.register({
       name: 'data-tool',
       description: 'Data tool',
@@ -162,7 +162,7 @@ describe('Framework Operations', () => {
     expect(dataTools[0].metadata.category).toBe('data');
   });
 
-  it('should filter tools by tags', () => {
+  test('should filter tools by tags', () => {
     framework.register({
       name: 'tagged-tool',
       description: 'Tagged tool',
@@ -176,7 +176,7 @@ describe('Framework Operations', () => {
     expect(importantTools[0].metadata.tags).toContain('important');
   });
 
-  it('should export tools', () => {
+  test('should export tools', () => {
     framework.register({
       name: 'export-tool',
       description: 'Export tool',
@@ -191,15 +191,12 @@ describe('Framework Operations', () => {
 
     // Check if tools are exported
     const exportedKeys = Object.keys(exported);
-    if (exportedKeys.length > 0) {
+    {
       expect(exportedKeys).toContain('export-tool');
       const exportedTool = exported['export-tool'];
-      if (exportedTool) {
+      {
         expect(typeof exportedTool).toBe('object');
       }
-    } else {
-      // The framework might not export tools if they don't have a 'tool' property
-      expect(exported).toEqual({});
     }
   });
 });

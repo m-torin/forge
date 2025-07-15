@@ -89,7 +89,7 @@ export const env = createEnv({
     NEXT_PUBLIC_AUTH_FEATURES_TWO_FACTOR: process.env.NEXT_PUBLIC_AUTH_FEATURES_TWO_FACTOR,
     NEXT_PUBLIC_AUTH_FEATURES_PASSKEYS: process.env.NEXT_PUBLIC_AUTH_FEATURES_PASSKEYS,
   },
-  onValidationError: (error) => {
+  onValidationError: error => {
     console.warn('Auth environment validation failed:', error);
     // Don't throw in packages - use fallbacks for resilience
     return undefined as never;

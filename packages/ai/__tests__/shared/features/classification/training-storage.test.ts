@@ -1,15 +1,15 @@
 import { afterEach, beforeEach, describe, expect, vi } from 'vitest';
 
-// Mock the observability module before importing training storage
-vi.mock('@repo/observability/shared-env', () => ({
-  logError: vi.fn(),
-}));
-
 import {
   FileTrainingStorage,
   InMemoryTrainingStorage,
   type TrainingData,
 } from '@/shared/features/classification/training-storage';
+
+// Mock the observability module before importing training storage
+vi.mock('@repo/observability/shared-env', () => ({
+  logError: vi.fn(),
+}));
 
 // Mock navigator.clipboard to avoid testing-library issues
 if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, vi } from 'vitest';
 
 // Mock dependencies that might cause issues
 vi.mock('ai', () => ({
@@ -40,8 +40,8 @@ vi.mock('@upstash/vector', () => ({
   Index: vi.fn(),
 }));
 
-describe('Server Module Imports', () => {
-  it('should import tools modules', async () => {
+describe('server Module Imports', () => {
+  test('should import tools modules', async () => {
     const modules = [
       () => import('@/server/tools/execution-framework'),
       () => import('@/server/tools/factory'),
@@ -56,7 +56,7 @@ describe('Server Module Imports', () => {
     }
   });
 
-  it('should import provider modules', async () => {
+  test('should import provider modules', async () => {
     const modules = [
       () => import('@/server/providers/ai-sdk-utils'),
       () => import('@/server/providers/custom-providers'),
@@ -69,7 +69,7 @@ describe('Server Module Imports', () => {
     }
   });
 
-  it('should import streaming modules', async () => {
+  test('should import streaming modules', async () => {
     const modules = [
       () => import('@/server/streaming/enhanced-streams'),
       () => import('@/server/streaming/artifact-generation'),
@@ -82,7 +82,7 @@ describe('Server Module Imports', () => {
     }
   });
 
-  it('should import vector modules', async () => {
+  test('should import vector modules', async () => {
     const modules = [
       () => import('@/server/vector/ai-sdk-integration'),
       () => import('@/server/vector/config'),
@@ -96,7 +96,7 @@ describe('Server Module Imports', () => {
     }
   });
 
-  it('should import RAG modules', async () => {
+  test('should import RAG modules', async () => {
     const modules = [
       () => import('@/server/rag/enhanced-rag'),
       () => import('@/server/rag/ai-sdk-rag'),
@@ -109,7 +109,7 @@ describe('Server Module Imports', () => {
     }
   });
 
-  it('should import error modules', async () => {
+  test('should import error modules', async () => {
     const modules = [
       () => import('@/server/errors/ai-errors'),
       () => import('@/server/errors/application-errors'),
@@ -121,7 +121,7 @@ describe('Server Module Imports', () => {
     }
   });
 
-  it('should import utils modules', async () => {
+  test('should import utils modules', async () => {
     const modules = [
       () => import('@/server/utils/model-configuration'),
       () => import('@/server/utils/model-persistence'),
@@ -135,7 +135,7 @@ describe('Server Module Imports', () => {
     }
   });
 
-  it('should import models modules', async () => {
+  test('should import models modules', async () => {
     const modules = [() => import('@/server/models/selection')];
 
     for (const importModule of modules) {
@@ -144,7 +144,7 @@ describe('Server Module Imports', () => {
     }
   });
 
-  it('should import testing modules', async () => {
+  test('should import testing modules', async () => {
     const modules = [
       () => import('@/server/testing/message-comparison'),
       () => import('@/server/testing/mock-providers'),
@@ -156,7 +156,7 @@ describe('Server Module Imports', () => {
     }
   });
 
-  it('should import analytics modules', async () => {
+  test('should import analytics modules', async () => {
     const modules = [() => import('@/server/analytics/vector-analytics')];
 
     for (const importModule of modules) {

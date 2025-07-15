@@ -2,7 +2,7 @@
  * Tests for basic server actions
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock Next.js headers
 const mockHeaders = vi.fn();
@@ -28,7 +28,7 @@ describe('basic server actions', () => {
   });
 
   describe('getSessionAction', () => {
-    it('should return session data on success', async () => {
+    test('should return session data on success', async () => {
       const actionsModule = await import('@/server/actions/basic');
 
       const mockSession = {
@@ -40,7 +40,7 @@ describe('basic server actions', () => {
 
       const result = await actionsModule.getSessionAction();
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         data: mockSession,
         success: true,
       });
@@ -49,20 +49,20 @@ describe('basic server actions', () => {
       });
     });
 
-    it('should return null data when no session', async () => {
+    test('should return null data when no session', async () => {
       const actionsModule = await import('@/server/actions/basic');
 
       mockAuth.api.getSession.mockResolvedValue(null);
 
       const result = await actionsModule.getSessionAction();
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         data: null,
         success: true,
       });
     });
 
-    it('should handle errors gracefully', async () => {
+    test('should handle errors gracefully', async () => {
       const actionsModule = await import('@/server/actions/basic');
 
       const error = new Error('Session fetch failed');
@@ -70,28 +70,28 @@ describe('basic server actions', () => {
 
       const result = await actionsModule.getSessionAction();
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         data: null,
         error: 'Session fetch failed',
         success: false,
       });
     });
 
-    it('should handle non-Error exceptions', async () => {
+    test('should handle non-Error exceptions', async () => {
       const actionsModule = await import('@/server/actions/basic');
 
       mockAuth.api.getSession.mockRejectedValue('String error');
 
       const result = await actionsModule.getSessionAction();
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         data: null,
         error: 'Unknown error',
         success: false,
       });
     });
 
-    it('should pass headers to getSession', async () => {
+    test('should pass headers to getSession', async () => {
       const actionsModule = await import('@/server/actions/basic');
 
       const mockHeadersValue = { 'x-test': 'header' };
@@ -107,14 +107,14 @@ describe('basic server actions', () => {
   });
 
   describe('deleteSessionAction', () => {
-    it('should sign out successfully', async () => {
+    test('should sign out successfully', async () => {
       const actionsModule = await import('@/server/actions/basic');
 
       mockAuth.api.signOut.mockResolvedValue(undefined);
 
       const result = await actionsModule.deleteSessionAction();
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         data: { message: 'Signed out' },
         success: true,
       });
@@ -123,7 +123,7 @@ describe('basic server actions', () => {
       });
     });
 
-    it('should handle sign out errors', async () => {
+    test('should handle sign out errors', async () => {
       const actionsModule = await import('@/server/actions/basic');
 
       const error = new Error('Sign out failed');
@@ -131,28 +131,28 @@ describe('basic server actions', () => {
 
       const result = await actionsModule.deleteSessionAction();
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         data: null,
         error: 'Sign out failed',
         success: false,
       });
     });
 
-    it('should handle non-Error exceptions in sign out', async () => {
+    test('should handle non-Error exceptions in sign out', async () => {
       const actionsModule = await import('@/server/actions/basic');
 
       mockAuth.api.signOut.mockRejectedValue('String error');
 
       const result = await actionsModule.deleteSessionAction();
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         data: null,
         error: 'Unknown error',
         success: false,
       });
     });
 
-    it('should pass headers to signOut', async () => {
+    test('should pass headers to signOut', async () => {
       const actionsModule = await import('@/server/actions/basic');
 
       const mockHeadersValue = { authorization: 'Bearer token' };
@@ -168,7 +168,7 @@ describe('basic server actions', () => {
   });
 
   describe('getCurrentUserAction', () => {
-    it('should return user data when authenticated', async () => {
+    test('should return user data when authenticated', async () => {
       const actionsModule = await import('@/server/actions/basic');
 
       const mockUser = { id: 'user-1', name: 'Test User', email: 'test@example.com' };
@@ -181,27 +181,27 @@ describe('basic server actions', () => {
 
       const result = await actionsModule.getCurrentUserAction();
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         data: mockUser,
         success: true,
       });
     });
 
-    it('should return error when not authenticated', async () => {
+    test('should return error when not authenticated', async () => {
       const actionsModule = await import('@/server/actions/basic');
 
       mockAuth.api.getSession.mockResolvedValue(null);
 
       const result = await actionsModule.getCurrentUserAction();
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         data: null,
         error: 'Not authenticated',
         success: false,
       });
     });
 
-    it('should return error when session has no user', async () => {
+    test('should return error when session has no user', async () => {
       const actionsModule = await import('@/server/actions/basic');
 
       const mockSession = {
@@ -213,14 +213,14 @@ describe('basic server actions', () => {
 
       const result = await actionsModule.getCurrentUserAction();
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         data: null,
         error: 'Not authenticated',
         success: false,
       });
     });
 
-    it('should handle session fetch errors', async () => {
+    test('should handle session fetch errors', async () => {
       const actionsModule = await import('@/server/actions/basic');
 
       const error = new Error('Session error');
@@ -228,14 +228,14 @@ describe('basic server actions', () => {
 
       const result = await actionsModule.getCurrentUserAction();
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         data: null,
         error: 'Session error',
         success: false,
       });
     });
 
-    it('should handle undefined user in session', async () => {
+    test('should handle undefined user in session', async () => {
       const actionsModule = await import('@/server/actions/basic');
 
       const mockSession = {
@@ -247,7 +247,7 @@ describe('basic server actions', () => {
 
       const result = await actionsModule.getCurrentUserAction();
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         data: null,
         error: 'Not authenticated',
         success: false,
@@ -256,21 +256,21 @@ describe('basic server actions', () => {
   });
 
   describe('edge cases', () => {
-    it('should handle headers() throwing error', async () => {
+    test('should handle headers() throwing error', async () => {
       const actionsModule = await import('@/server/actions/basic');
 
       mockHeaders.mockRejectedValue(new Error('Headers error'));
 
       const result = await actionsModule.getSessionAction();
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         data: null,
         error: 'Headers error',
         success: false,
       });
     });
 
-    it('should handle async headers properly', async () => {
+    test('should handle async headers properly', async () => {
       const actionsModule = await import('@/server/actions/basic');
 
       const mockHeadersValue = { 'custom-header': 'value' };
@@ -279,13 +279,13 @@ describe('basic server actions', () => {
 
       await actionsModule.getSessionAction();
 
-      expect(mockHeaders).toHaveBeenCalled();
+      expect(mockHeaders).toHaveBeenCalledWith();
       expect(mockAuth.api.getSession).toHaveBeenCalledWith({
         headers: mockHeadersValue,
       });
     });
 
-    it('should handle concurrent action calls', async () => {
+    test('should handle concurrent action calls', async () => {
       const actionsModule = await import('@/server/actions/basic');
 
       mockAuth.api.getSession.mockResolvedValue(null);
@@ -297,9 +297,9 @@ describe('basic server actions', () => {
         actionsModule.getCurrentUserAction(),
       ]);
 
-      expect(sessionResult.success).toBe(true);
-      expect(signOutResult.success).toBe(true);
-      expect(userResult.success).toBe(false); // No user when not authenticated
+      expect(sessionResult.success).toBeTruthy();
+      expect(signOutResult.success).toBeTruthy();
+      expect(userResult.success).toBeFalsy(); // No user when not authenticated
     });
   });
 });

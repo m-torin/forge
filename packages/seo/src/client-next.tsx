@@ -64,7 +64,9 @@ interface StreamingJsonLdProps extends Record<string, any> {
 
 export function StreamingJsonLd({ dataPromise, id, fallback }: StreamingJsonLdProps) {
   return (
-    <Suspense fallback={fallback ? <JsonLd data={fallback} id={id ? `${id}-0` : undefined} /> : null}>
+    <Suspense
+      fallback={fallback ? <JsonLd data={fallback} id={id ? `${id}-0` : undefined} /> : null}
+    >
       <StreamingJsonLdInner dataPromise={dataPromise} id={id} />
     </Suspense>
   );

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, vi } from 'vitest';
 
 // Mock dependencies for examples
 vi.mock('ai', () => ({
@@ -12,8 +12,8 @@ vi.mock('@upstash/vector', () => ({
   Index: vi.fn(),
 }));
 
-describe('Examples Module Imports', () => {
-  it('should import example files', async () => {
+describe('examples Module Imports', () => {
+  test('should import example files', async () => {
     const modules = [() => import('@/examples/upstash-rag-examples')];
 
     for (const importModule of modules) {

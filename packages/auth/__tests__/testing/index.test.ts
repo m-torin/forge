@@ -2,10 +2,10 @@
  * Tests for testing exports
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect } from 'vitest';
 
 describe('testing index exports', () => {
-  it('should export testing utilities', () => {
+  test('should export testing utilities', () => {
     const fs = require('fs');
     const path = require('path');
 
@@ -17,7 +17,7 @@ describe('testing index exports', () => {
     expect(content).toContain("export * from './vitest'");
   });
 
-  it('should be a valid module', () => {
-    expect(true).toBe(true);
+  test('should be a valid module', () => {
+    expect(true).toBeTruthy();
   });
 });

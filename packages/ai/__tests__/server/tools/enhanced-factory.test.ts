@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 import { z } from 'zod/v4';
 
 // Mock AI SDK
@@ -15,22 +15,22 @@ vi.mock('ai', () => ({
 // Mock server-only to prevent import issues in tests
 vi.mock('server-only', () => ({}));
 
-describe('Enhanced Tool Factory', () => {
+describe('enhanced Tool Factory', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should import enhanced factory successfully', async () => {
+  test('should import enhanced factory successfully', async () => {
     const enhancedFactory = await import('@/server/tools/enhanced-factory');
     expect(enhancedFactory).toBeDefined();
   });
 
-  it('should test enhanced tool creation patterns', async () => {
+  test('should test enhanced tool creation patterns', async () => {
     const { createEnhancedTool, ToolBuilder, EnhancedToolConfig } = await import(
       '@/server/tools/enhanced-factory'
     );
 
-    if (createEnhancedTool) {
+    {
       const mockConfig = {
         name: 'enhanced-calculator',
         description: 'An enhanced calculator tool with validation',
@@ -56,13 +56,13 @@ describe('Enhanced Tool Factory', () => {
         validation: { validateInputs: true, sanitizeOutputs: true },
         security: { requireAuth: false, rateLimit: { maxPerMinute: 60 } },
       };
-      const result = await createEnhancedTool(mockConfig);
-      expect(result).toBeDefined();
+      const result1 = await createEnhancedTool(mockConfig);
+      expect(result1).toBeDefined();
       expect(result.tool).toBeDefined();
       expect(result.metadata).toBeDefined();
     }
 
-    if (ToolBuilder) {
+    {
       const builder = new ToolBuilder('test-tool');
       expect(builder).toBeDefined();
       expect(builder.withDescription).toBeTypeOf('function');
@@ -71,7 +71,7 @@ describe('Enhanced Tool Factory', () => {
       expect(builder.build).toBeTypeOf('function');
     }
 
-    if (EnhancedToolConfig) {
+    {
       const validConfig = {
         name: 'file-reader',
         description: 'Read file contents',
@@ -79,33 +79,33 @@ describe('Enhanced Tool Factory', () => {
         version: '1.0.0',
         experimental: false,
       };
-      const result = EnhancedToolConfig.safeParse(validConfig);
-      expect(result.success).toBe(true);
+      const result1 = EnhancedToolConfig.safeParse(validConfig);
+      expect(result.success).toBeTruthy();
     }
   });
 
-  it('should test tool middleware and interceptors', async () => {
+  test('should test tool middleware and interceptors', async () => {
     const { addToolMiddleware, createToolInterceptor, middlewareChain } = await import(
       '@/server/tools/enhanced-factory'
     );
 
-    if (addToolMiddleware) {
+    {
       const mockTool = {
         name: 'test-tool',
         execute: async params => `Result: ${params.input}`,
       };
       const mockMiddleware = async (params, next) => {
         console.log('Before execution:', params);
-        const result = await next();
+        const result1 = await next();
         console.log('After execution:', result);
         return result;
       };
-      const result = addToolMiddleware(mockTool, [mockMiddleware]);
-      expect(result).toBeDefined();
+      const result1 = addToolMiddleware(mockTool, [mockMiddleware]);
+      expect(result1).toBeDefined();
       expect(result.middleware).toBeDefined();
     }
 
-    if (createToolInterceptor) {
+    {
       const mockInterceptor = {
         name: 'auth-interceptor',
         before: async (params, context) => {
@@ -116,29 +116,29 @@ describe('Enhanced Tool Factory', () => {
           return { ...result, processedBy: context.user.id };
         },
       };
-      const result = createToolInterceptor(mockInterceptor);
-      expect(result).toBeDefined();
+      const result1 = createToolInterceptor(mockInterceptor);
+      expect(result1).toBeDefined();
       expect(result.execute).toBeTypeOf('function');
     }
 
-    if (middlewareChain) {
+    {
       const middlewares = [
         async (params, next) => next(),
         async (params, next) => next(),
         async (params, next) => next(),
       ];
-      const result = middlewareChain(middlewares);
-      expect(result).toBeDefined();
+      const result1 = middlewareChain(middlewares);
+      expect(result1).toBeDefined();
       expect(typeof result).toBe('function');
     }
   });
 
-  it('should test tool validation and sanitization', async () => {
+  test('should test tool validation and sanitization', async () => {
     const { validateToolInput, sanitizeToolOutput, createInputValidator } = await import(
       '@/server/tools/enhanced-factory'
     );
 
-    if (validateToolInput) {
+    {
       const schema = z.object({
         email: z.string().email(),
         age: z.number().min(0).max(150),
@@ -147,15 +147,15 @@ describe('Enhanced Tool Factory', () => {
       const invalidInput = { email: 'invalid-email', age: -5 };
 
       const validResult = await validateToolInput(schema, validInput);
-      expect(validResult.success).toBe(true);
-      expect(validResult.data).toEqual(validInput);
+      expect(validResult.success).toBeTruthy();
+      expect(validResult.data).toStrictEqual(validInput);
 
       const invalidResult = await validateToolInput(schema, invalidInput);
-      expect(invalidResult.success).toBe(false);
+      expect(invalidResult.success).toBeFalsy();
       expect(invalidResult.error).toBeDefined();
     }
 
-    if (sanitizeToolOutput) {
+    {
       const mockOutput = {
         result: 'Success',
         sensitiveData: 'secret-key-123',
@@ -165,30 +165,30 @@ describe('Enhanced Tool Factory', () => {
         removeFields: ['sensitiveData'],
         maskFields: { 'userInfo.ssn': '***-**-****' },
       };
-      const result = sanitizeToolOutput(mockOutput, sanitizeRules);
-      expect(result).toBeDefined();
+      const result1 = sanitizeToolOutput(mockOutput, sanitizeRules);
+      expect(result1).toBeDefined();
       expect(result.sensitiveData).toBeUndefined();
       expect(result.userInfo.ssn).toBe('***-**-****');
     }
 
-    if (createInputValidator) {
+    {
       const mockRules = {
         required: ['name', 'email'],
         types: { name: 'string', email: 'string', age: 'number' },
         constraints: { 'name.length': { min: 2, max: 50 } },
       };
-      const result = createInputValidator(mockRules);
-      expect(result).toBeDefined();
+      const result1 = createInputValidator(mockRules);
+      expect(result1).toBeDefined();
       expect(typeof result).toBe('function');
     }
   });
 
-  it('should test tool caching and memoization', async () => {
+  test('should test tool caching and memoization', async () => {
     const { createCachedTool, toolMemoization, invalidateToolCache } = await import(
       '@/server/tools/enhanced-factory'
     );
 
-    if (createCachedTool) {
+    {
       const mockTool = {
         name: 'expensive-calculation',
         execute: async ({ n }) => {
@@ -202,13 +202,13 @@ describe('Enhanced Tool Factory', () => {
         keyGenerator: params => `calc-${JSON.stringify(params)}`,
         storage: 'memory',
       };
-      const result = createCachedTool(mockTool, cacheConfig);
-      expect(result).toBeDefined();
+      const result1 = createCachedTool(mockTool, cacheConfig);
+      expect(result1).toBeDefined();
       expect(result.tool).toBeDefined();
       expect(result.cache).toBeDefined();
     }
 
-    if (toolMemoization) {
+    {
       const mockFunction = async (x, y) => x + y;
       const memoized = toolMemoization(mockFunction, { maxSize: 100 });
       expect(memoized).toBeDefined();
@@ -221,20 +221,20 @@ describe('Enhanced Tool Factory', () => {
       expect(result1).toBe(8);
     }
 
-    if (invalidateToolCache) {
+    {
       const mockCacheKey = 'tool-cache-key-123';
-      const result = await invalidateToolCache(mockCacheKey);
-      expect(result).toBeDefined();
-      expect(result.invalidated).toBe(true);
+      const result1 = await invalidateToolCache(mockCacheKey);
+      expect(result1).toBeDefined();
+      expect(result.invalidated).toBeTruthy();
     }
   });
 
-  it('should test tool composition and chaining', async () => {
+  test('should test tool composition and chaining', async () => {
     const { compositeTools, chainTools, parallelTools } = await import(
       '@/server/tools/enhanced-factory'
     );
 
-    if (compositeTools) {
+    {
       const mockTools = [
         {
           name: 'step1',
@@ -245,18 +245,18 @@ describe('Enhanced Tool Factory', () => {
           execute: async input => ({ ...input, step2: 'completed' }),
         },
       ];
-      const result = compositeTools(mockTools, { strategy: 'sequential' });
-      expect(result).toBeDefined();
+      const result1 = compositeTools(mockTools, { strategy: 'sequential' });
+      expect(result1).toBeDefined();
       expect(result.execute).toBeTypeOf('function');
     }
 
-    if (chainTools) {
+    {
       const tool1 = { execute: async x => x * 2 };
       const tool2 = { execute: async x => x + 10 };
       const tool3 = { execute: async x => x / 3 };
 
-      const result = chainTools([tool1, tool2, tool3]);
-      expect(result).toBeDefined();
+      const result1 = chainTools([tool1, tool2, tool3]);
+      expect(result1).toBeDefined();
       expect(typeof result.execute).toBe('function');
 
       // Test the chain: 5 -> 10 -> 20 -> 6.67
@@ -264,24 +264,24 @@ describe('Enhanced Tool Factory', () => {
       expect(typeof chainResult).toBe('number');
     }
 
-    if (parallelTools) {
+    {
       const tools = [
         { name: 'task1', execute: async () => 'result1' },
         { name: 'task2', execute: async () => 'result2' },
         { name: 'task3', execute: async () => 'result3' },
       ];
-      const result = parallelTools(tools);
-      expect(result).toBeDefined();
+      const result1 = parallelTools(tools);
+      expect(result1).toBeDefined();
       expect(result.execute).toBeTypeOf('function');
     }
   });
 
-  it('should test tool versioning and compatibility', async () => {
+  test('should test tool versioning and compatibility', async () => {
     const { versionedTool, checkToolCompatibility, migrateToolVersion } = await import(
       '@/server/tools/enhanced-factory'
     );
 
-    if (versionedTool) {
+    {
       const mockVersions = {
         '1.0.0': {
           execute: async params => `v1: ${params.input}`,
@@ -296,43 +296,43 @@ describe('Enhanced Tool Factory', () => {
           features: ['enhanced processing'],
         },
       };
-      const result = versionedTool('my-tool', mockVersions);
-      expect(result).toBeDefined();
+      const result1 = versionedTool('my-tool', mockVersions);
+      expect(result1).toBeDefined();
       expect(result.getCurrentVersion).toBeTypeOf('function');
       expect(result.getVersion).toBeTypeOf('function');
     }
 
-    if (checkToolCompatibility) {
+    {
       const mockRequest = {
         toolName: 'data-processor',
         requestedVersion: '2.0.0',
         clientVersion: '1.5.0',
       };
-      const result = await checkToolCompatibility(mockRequest);
-      expect(result).toBeDefined();
+      const result1 = await checkToolCompatibility(mockRequest);
+      expect(result1).toBeDefined();
       expect(result.compatible).toBeDefined();
       expect(result.migrations).toBeDefined();
     }
 
-    if (migrateToolVersion) {
+    {
       const mockMigration = {
         from: '1.0.0',
         to: '2.0.0',
         data: { input: 'legacy format data' },
         migrationRules: { input: 'data' },
       };
-      const result = await migrateToolVersion(mockMigration);
-      expect(result).toBeDefined();
+      const result1 = await migrateToolVersion(mockMigration);
+      expect(result1).toBeDefined();
       expect(result.migrated).toBeDefined();
     }
   });
 
-  it('should test tool monitoring and analytics', async () => {
+  test('should test tool monitoring and analytics', async () => {
     const { instrumentTool, getToolMetrics, createToolDashboard } = await import(
       '@/server/tools/enhanced-factory'
     );
 
-    if (instrumentTool) {
+    {
       const mockTool = {
         name: 'api-client',
         execute: async params => `API result for ${params.endpoint}`,
@@ -342,44 +342,44 @@ describe('Enhanced Tool Factory', () => {
         sampling: 0.1, // 10% sampling
         destinations: ['console', 'metrics-store'],
       };
-      const result = instrumentTool(mockTool, instrumentConfig);
-      expect(result).toBeDefined();
+      const result1 = instrumentTool(mockTool, instrumentConfig);
+      expect(result1).toBeDefined();
       expect(result.tool).toBeDefined();
       expect(result.metrics).toBeDefined();
     }
 
-    if (getToolMetrics) {
+    {
       const mockQuery = {
         toolName: 'api-client',
         timeRange: { start: Date.now() - 86400000, end: Date.now() },
         aggregation: 'hourly',
       };
-      const result = await getToolMetrics(mockQuery);
-      expect(result).toBeDefined();
+      const result1 = await getToolMetrics(mockQuery);
+      expect(result1).toBeDefined();
       expect(result.executionCount).toBeDefined();
       expect(result.averageLatency).toBeDefined();
       expect(result.errorRate).toBeDefined();
     }
 
-    if (createToolDashboard) {
+    {
       const mockDashboard = {
         tools: ['tool1', 'tool2', 'tool3'],
         widgets: ['performance', 'usage', 'errors'],
         refreshInterval: 30000, // 30 seconds
       };
-      const result = await createToolDashboard(mockDashboard);
-      expect(result).toBeDefined();
+      const result1 = await createToolDashboard(mockDashboard);
+      expect(result1).toBeDefined();
       expect(result.dashboard).toBeDefined();
       expect(result.url).toBeDefined();
     }
   });
 
-  it('should test tool testing and quality assurance', async () => {
+  test('should test tool testing and quality assurance', async () => {
     const { createToolTest, runToolSuite, validateToolQuality } = await import(
       '@/server/tools/enhanced-factory'
     );
 
-    if (createToolTest) {
+    {
       const mockTestConfig = {
         toolName: 'string-processor',
         testCases: [
@@ -397,26 +397,26 @@ describe('Enhanced Tool Factory', () => {
         setup: async () => ({ initialized: true }),
         teardown: async () => ({ cleaned: true }),
       };
-      const result = createToolTest(mockTestConfig);
-      expect(result).toBeDefined();
+      const result1 = createToolTest(mockTestConfig);
+      expect(result1).toBeDefined();
       expect(result.run).toBeTypeOf('function');
     }
 
-    if (runToolSuite) {
+    {
       const mockSuite = {
         name: 'calculator-tools-suite',
         tools: ['add-tool', 'subtract-tool', 'multiply-tool'],
         testTypes: ['unit', 'integration', 'performance'],
         parallel: true,
       };
-      const result = await runToolSuite(mockSuite);
-      expect(result).toBeDefined();
+      const result1 = await runToolSuite(mockSuite);
+      expect(result1).toBeDefined();
       expect(result.passed).toBeDefined();
       expect(result.failed).toBeDefined();
       expect(result.summary).toBeDefined();
     }
 
-    if (validateToolQuality) {
+    {
       const mockTool = {
         name: 'quality-test-tool',
         version: '1.0.0',
@@ -427,20 +427,20 @@ describe('Enhanced Tool Factory', () => {
         reliability: { minSuccessRate: 0.99 },
         security: { validateInputs: true, sanitizeOutputs: true },
       };
-      const result = await validateToolQuality(mockTool, qualityChecks);
-      expect(result).toBeDefined();
+      const result1 = await validateToolQuality(mockTool, qualityChecks);
+      expect(result1).toBeDefined();
       expect(result.score).toBeDefined();
       expect(result.issues).toBeDefined();
       expect(result.recommendations).toBeDefined();
     }
   });
 
-  it('should test tool deployment and lifecycle', async () => {
+  test('should test tool deployment and lifecycle', async () => {
     const { deployTool, retireTool, manageToolLifecycle } = await import(
       '@/server/tools/enhanced-factory'
     );
 
-    if (deployTool) {
+    {
       const mockDeployment = {
         tool: {
           name: 'new-feature-tool',
@@ -451,13 +451,13 @@ describe('Enhanced Tool Factory', () => {
         rolloutStrategy: { type: 'canary', percentage: 10 },
         healthChecks: true,
       };
-      const result = await deployTool(mockDeployment);
-      expect(result).toBeDefined();
-      expect(result.deployed).toBe(true);
+      const result1 = await deployTool(mockDeployment);
+      expect(result1).toBeDefined();
+      expect(result.deployed).toBeTruthy();
       expect(result.deploymentId).toBeDefined();
     }
 
-    if (retireTool) {
+    {
       const mockRetirement = {
         toolName: 'legacy-tool',
         version: '0.9.0',
@@ -465,13 +465,13 @@ describe('Enhanced Tool Factory', () => {
         migrationPath: 'Use new-tool v2.0.0 instead',
         gracePeriod: 2592000000, // 30 days
       };
-      const result = await retireTool(mockRetirement);
-      expect(result).toBeDefined();
-      expect(result.retired).toBe(true);
+      const result1 = await retireTool(mockRetirement);
+      expect(result1).toBeDefined();
+      expect(result.retired).toBeTruthy();
       expect(result.sunsetDate).toBeDefined();
     }
 
-    if (manageToolLifecycle) {
+    {
       const mockLifecycle = {
         toolName: 'managed-tool',
         currentStage: 'development',
@@ -479,8 +479,8 @@ describe('Enhanced Tool Factory', () => {
         approvals: ['security-review', 'performance-test'],
         automatedChecks: true,
       };
-      const result = await manageToolLifecycle(mockLifecycle);
-      expect(result).toBeDefined();
+      const result1 = await manageToolLifecycle(mockLifecycle);
+      expect(result1).toBeDefined();
       expect(result.stage).toBeDefined();
       expect(result.nextActions).toBeDefined();
     }

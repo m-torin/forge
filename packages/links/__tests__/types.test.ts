@@ -16,8 +16,8 @@ import type {
 } from '@/shared/types/index';
 import { describe, expect, test } from 'vitest';
 
-describe('Type Definitions', () => {
-  test('LinkConfig should have correct structure', () => {
+describe('type Definitions', () => {
+  test('linkConfig should have correct structure', () => {
     const config: LinkConfig = {
       providers: {
         dub: {
@@ -33,11 +33,11 @@ describe('Type Definitions', () => {
       },
     };
 
-    expect(config.providers.dub?.enabled).toBe(true);
-    expect(config.analytics?.enabled).toBe(true);
+    expect(config.providers.dub?.enabled).toBeTruthy();
+    expect(config.analytics?.enabled).toBeTruthy();
   });
 
-  test('DubProviderConfig should have optional properties', () => {
+  test('dubProviderConfig should have optional properties', () => {
     const minimalConfig: DubProviderConfig = {
       enabled: true,
     };
@@ -52,11 +52,11 @@ describe('Type Definitions', () => {
       defaultTags: ['marketing'],
     };
 
-    expect(minimalConfig.enabled).toBe(true);
-    expect(fullConfig.defaultTags).toEqual(['marketing']);
+    expect(minimalConfig.enabled).toBeTruthy();
+    expect(fullConfig.defaultTags).toStrictEqual(['marketing']);
   });
 
-  test('CreateLinkRequest should support all properties', () => {
+  test('createLinkRequest should support all properties', () => {
     const request: CreateLinkRequest = {
       url: 'https://example.com',
       domain: 'test.sh',
@@ -95,7 +95,7 @@ describe('Type Definitions', () => {
     expect(request.geo?.US).toBe('https://us.example.com');
   });
 
-  test('Link should have all required properties', () => {
+  test('link should have all required properties', () => {
     const link: Link = {
       id: 'link-id',
       domain: 'test.sh',
@@ -125,7 +125,7 @@ describe('Type Definitions', () => {
     expect(link.tags).toHaveLength(1);
   });
 
-  test('LinkTag should have correct structure', () => {
+  test('linkTag should have correct structure', () => {
     const tag: LinkTag = {
       id: 'tag-id',
       name: 'marketing',
@@ -136,7 +136,7 @@ describe('Type Definitions', () => {
     expect(tag.color).toBe('blue');
   });
 
-  test('LinkAnalytics should have analytics data structure', () => {
+  test('linkAnalytics should have analytics data structure', () => {
     const analytics: LinkAnalytics = {
       clicks: 100,
       uniqueClicks: 80,
@@ -171,7 +171,7 @@ describe('Type Definitions', () => {
     expect(analytics.topCities[0].city).toBe('New York');
   });
 
-  test('ClickEvent should support all tracking properties', () => {
+  test('clickEvent should support all tracking properties', () => {
     const clickEvent: ClickEvent = {
       timestamp: new Date(),
       country: 'US',
@@ -193,7 +193,7 @@ describe('Type Definitions', () => {
     expect(clickEvent.browser).toBe('Chrome');
   });
 
-  test('LinkMetrics should combine link and analytics data', () => {
+  test('linkMetrics should combine link and analytics data', () => {
     const metrics: LinkMetrics = {
       link: {
         id: 'link-id',
@@ -239,7 +239,7 @@ describe('Type Definitions', () => {
     expect(metrics.timeSeries).toHaveLength(2);
   });
 
-  test('BulkCreateRequest and BulkCreateResponse should work together', () => {
+  test('bulkCreateRequest and BulkCreateResponse should work together', () => {
     const request: BulkCreateRequest = {
       links: [
         { url: 'https://example1.com' },
@@ -299,7 +299,7 @@ describe('Type Definitions', () => {
     expect(response.errors[0].url).toBe('invalid-url');
   });
 
-  test('UpdateLinkRequest should support partial updates', () => {
+  test('updateLinkRequest should support partial updates', () => {
     const updateRequest: UpdateLinkRequest = {
       title: 'Updated Title',
       description: 'Updated Description',
@@ -307,11 +307,11 @@ describe('Type Definitions', () => {
     };
 
     expect(updateRequest.title).toBe('Updated Title');
-    expect(updateRequest.archived).toBe(true);
+    expect(updateRequest.archived).toBeTruthy();
     expect(updateRequest.url).toBeUndefined(); // Optional field not set
   });
 
-  test('LinkProvider interface should define all required methods', () => {
+  test('linkProvider interface should define all required methods', () => {
     // This is a compile-time test to ensure the interface is well-defined
     const provider: LinkProvider = {
       name: 'test-provider',
@@ -332,8 +332,8 @@ describe('Type Definitions', () => {
         userId: 'user-123',
         workspaceId: 'workspace-123',
       }),
-      getLink: async (id: string) => null,
-      updateLink: async (id: string, request: UpdateLinkRequest) => ({
+      getLink: async (_id: string) => null,
+      updateLink: async (id: string, _request: UpdateLinkRequest) => ({
         id,
         domain: 'test.sh',
         key: 'abc',
@@ -350,8 +350,8 @@ describe('Type Definitions', () => {
         userId: 'user-123',
         workspaceId: 'workspace-123',
       }),
-      deleteLink: async (id: string) => {},
-      getAnalytics: async (id: string, interval = '7d') => ({
+      deleteLink: async (_id: string) => {},
+      getAnalytics: async (_id: string, _interval = '7d') => ({
         clicks: 0,
         uniqueClicks: 0,
         topCountries: [],
@@ -361,8 +361,8 @@ describe('Type Definitions', () => {
         topOs: [],
         topDevices: [],
       }),
-      getClicks: async (id: string, page = 1, pageSize = 100) => [],
-      bulkCreate: async (request: BulkCreateRequest) => ({
+      getClicks: async (_id: string, _page = 1, _pageSize = 100) => [],
+      bulkCreate: async (_request: BulkCreateRequest) => ({
         created: [],
         errors: [],
       }),
@@ -373,7 +373,7 @@ describe('Type Definitions', () => {
     expect(typeof provider.bulkCreate).toBe('function');
   });
 
-  test('LinkManager interface should extend LinkProvider functionality', () => {
+  test('linkManager interface should extend LinkProvider functionality', () => {
     // This is a compile-time test to ensure the interface is well-defined
     const manager: LinkManager = {
       createLink: async (request: CreateLinkRequest) => ({
@@ -393,9 +393,9 @@ describe('Type Definitions', () => {
         userId: 'user-123',
         workspaceId: 'workspace-123',
       }),
-      getLink: async (id: string) => null,
-      getLinkByKey: async (key: string, domain?: string) => null,
-      updateLink: async (id: string, request: UpdateLinkRequest) => ({
+      getLink: async (_id: string) => null,
+      getLinkByKey: async (_key: string, _domain?: string) => null,
+      updateLink: async (id: string, _request: UpdateLinkRequest) => ({
         id,
         domain: 'test.sh',
         key: 'abc',
@@ -412,8 +412,8 @@ describe('Type Definitions', () => {
         userId: 'user-123',
         workspaceId: 'workspace-123',
       }),
-      deleteLink: async (id: string) => {},
-      getAnalytics: async (id: string, interval = '7d') => ({
+      deleteLink: async (_id: string) => {},
+      getAnalytics: async (_id: string, _interval = '7d') => ({
         clicks: 0,
         uniqueClicks: 0,
         topCountries: [],
@@ -423,7 +423,7 @@ describe('Type Definitions', () => {
         topOs: [],
         topDevices: [],
       }),
-      getClicks: async (id: string, page = 1, pageSize = 100) => [],
+      getClicks: async (_id: string, _page = 1, _pageSize = 100) => [],
       getMetrics: async (id: string) => ({
         link: {
           id,
@@ -454,11 +454,11 @@ describe('Type Definitions', () => {
         },
         timeSeries: [],
       }),
-      bulkCreate: async (request: BulkCreateRequest) => ({
+      bulkCreate: async (_request: BulkCreateRequest) => ({
         created: [],
         errors: [],
       }),
-      trackClick: async (linkId: string, event: Partial<ClickEvent>) => {},
+      trackClick: async (_linkId: string, _event: Partial<ClickEvent>) => {},
     };
 
     expect(typeof manager.getLinkByKey).toBe('function');
@@ -466,7 +466,7 @@ describe('Type Definitions', () => {
     expect(typeof manager.trackClick).toBe('function');
   });
 
-  test('AnalyticsConfig should support various configuration options', () => {
+  test('analyticsConfig should support various configuration options', () => {
     const minimalConfig: AnalyticsConfig = {
       enabled: true,
     };
@@ -474,15 +474,15 @@ describe('Type Definitions', () => {
     const fullConfig: AnalyticsConfig = {
       enabled: true,
       provider: {
-        track: async (event: string, properties?: Record<string, any>) => {},
-        identify: async (userId: string, traits?: Record<string, any>) => {},
+        track: async (_event: string, _properties?: Record<string, any>) => {},
+        identify: async (_userId: string, _traits?: Record<string, any>) => {},
       },
       events: ['link_created', 'link_clicked', 'link_deleted'],
       sampling: 0.5,
       debugMode: true,
     };
 
-    expect(minimalConfig.enabled).toBe(true);
+    expect(minimalConfig.enabled).toBeTruthy();
     expect(fullConfig.events).toHaveLength(3);
     expect(fullConfig.sampling).toBe(0.5);
     expect(typeof fullConfig.provider?.track).toBe('function');

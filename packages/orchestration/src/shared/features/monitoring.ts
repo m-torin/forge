@@ -1007,19 +1007,19 @@ export function createMonitor(provider: WorkflowProvider) {
  */
 export function createMetricsCollector(provider: WorkflowProvider) {
   const monitor = new WorkflowMonitor(provider);
-  
+
   return {
     collect: (workflowId: string) => monitor.getWorkflowMetrics(workflowId),
     getHistory: (workflowId?: string) => monitor.getExecutionHistory(workflowId),
-    getPerformance: (workflowId: string, timeWindow: { start: Date; end: Date }) => 
+    getPerformance: (workflowId: string, timeWindow: { start: Date; end: Date }) =>
       monitor.getPerformanceMetrics(workflowId, timeWindow),
-    
-    recordExecution: (executionId: string, workflowId: string, metadata: any) => 
+
+    recordExecution: (executionId: string, workflowId: string, metadata: any) =>
       monitor.recordExecutionStart(executionId, workflowId, metadata),
-    
-    recordCompletion: (executionId: string, status: any, output?: any, error?: any) => 
+
+    recordCompletion: (executionId: string, status: any, output?: any, error?: any) =>
       monitor.recordExecutionCompletion(executionId, status, output, error),
-    
+
     cleanup: () => monitor.cleanup(),
   };
 }
@@ -1029,13 +1029,14 @@ export function createMetricsCollector(provider: WorkflowProvider) {
  */
 export function createAlertsManager(provider: WorkflowProvider) {
   const monitor = new WorkflowMonitor(provider);
-  
+
   return {
     createRule: (rule: Omit<AlertRule, 'createdAt' | 'id'>) => monitor.createAlertRule(rule),
-    updateRule: (ruleId: string, updates: Partial<AlertRule>) => monitor.updateAlertRule(ruleId, updates),
+    updateRule: (ruleId: string, updates: Partial<AlertRule>) =>
+      monitor.updateAlertRule(ruleId, updates),
     deleteRule: (ruleId: string) => monitor.deleteAlertRule(ruleId),
     getActiveAlerts: (workflowId?: string) => monitor.getActiveAlerts(workflowId),
-    acknowledgeAlert: (alertId: string, user: string, note?: string) => 
+    acknowledgeAlert: (alertId: string, user: string, note?: string) =>
       monitor.acknowledgeAlert(alertId, user, note),
     resolveAlert: (alertId: string) => monitor.resolveAlert(alertId),
   };
@@ -1046,13 +1047,13 @@ export function createAlertsManager(provider: WorkflowProvider) {
  */
 export function createPerformanceMonitor(provider: WorkflowProvider) {
   const monitor = new WorkflowMonitor(provider);
-  
+
   return {
     trackExecution: (executionId: string, data: any) => monitor.trackExecution(executionId, data),
     trackStep: (executionId: string, data: any) => monitor.trackStep(executionId, data),
-    log: (executionId: string, level: any, message: string, metadata?: any) => 
+    log: (executionId: string, level: any, message: string, metadata?: any) =>
       monitor.log(executionId, level, message, metadata),
-    getMetrics: (workflowId: string, timeWindow: { start: Date; end: Date }) => 
+    getMetrics: (workflowId: string, timeWindow: { start: Date; end: Date }) =>
       monitor.getPerformanceMetrics(workflowId, timeWindow),
     getDashboard: (workflowIds?: string[]) => monitor.getDashboardData(workflowIds),
   };
@@ -1063,19 +1064,18 @@ export function createPerformanceMonitor(provider: WorkflowProvider) {
  */
 export function createRealtimeMonitor(provider: WorkflowProvider) {
   const monitor = new WorkflowMonitor(provider);
-  
+
   return {
     getStatus: (workflowId: string) => {
       const metrics = monitor.getWorkflowMetrics(workflowId);
       return metrics ? MonitoringUtils.calculateHealthStatus(metrics) : 'unknown';
     },
-    
+
     getLiveMetrics: (workflowId: string) => monitor.getWorkflowMetrics(workflowId),
-    
-    getActiveExecutions: (workflowId?: string) => 
-      monitor.getExecutionHistory(workflowId, { limit: 100 })
-        .filter(e => e.status === 'running'),
-    
+
+    getActiveExecutions: (workflowId?: string) =>
+      monitor.getExecutionHistory(workflowId, { limit: 100 }).filter(e => e.status === 'running'),
+
     streamUpdates: async function* (workflowId: string) {
       // Simple implementation - would be enhanced with real streaming
       while (true) {
@@ -1083,10 +1083,11 @@ export function createRealtimeMonitor(provider: WorkflowProvider) {
           timestamp: new Date(),
           workflowId,
           metrics: monitor.getWorkflowMetrics(workflowId),
-          activeExecutions: monitor.getExecutionHistory(workflowId, { limit: 10 })
+          activeExecutions: monitor
+            .getExecutionHistory(workflowId, { limit: 10 })
             .filter(e => e.status === 'running').length,
         };
-        
+
         await new Promise(resolve => setTimeout(resolve, 5000)); // 5 second intervals
       }
     },
@@ -1098,14 +1099,14 @@ export function createRealtimeMonitor(provider: WorkflowProvider) {
  */
 export function createErrorTracker(provider: WorkflowProvider) {
   const monitor = new WorkflowMonitor(provider);
-  
+
   return {
     getErrors: (workflowId: string, timeRange?: { start: Date; end: Date }) => {
-      const history = monitor.getExecutionHistory(workflowId, { 
-        status: 'failed', 
-        timeRange 
+      const history = monitor.getExecutionHistory(workflowId, {
+        status: 'failed',
+        timeRange,
       });
-      
+
       return history.map(h => ({
         executionId: h.executionId,
         error: h.error,
@@ -1114,16 +1115,18 @@ export function createErrorTracker(provider: WorkflowProvider) {
         steps: h.steps.filter(s => s.status === 'failed'),
       }));
     },
-    
+
     getErrorTrends: (workflowId: string) => {
       const metrics = monitor.getWorkflowMetrics(workflowId);
-      return metrics ? {
-        errorRate: metrics.failedExecutions / metrics.totalExecutions,
-        commonErrors: metrics.commonErrors,
-        totalErrors: metrics.failedExecutions,
-      } : null;
+      return metrics
+        ? {
+            errorRate: metrics.failedExecutions / metrics.totalExecutions,
+            commonErrors: metrics.commonErrors,
+            totalErrors: metrics.failedExecutions,
+          }
+        : null;
     },
-    
+
     reportError: (executionId: string, error: any) => {
       monitor.recordExecutionCompletion(executionId, 'failed', undefined, error);
     },
@@ -1135,12 +1138,12 @@ export function createErrorTracker(provider: WorkflowProvider) {
  */
 export function createHealthChecker(provider: WorkflowProvider) {
   const monitor = new WorkflowMonitor(provider);
-  
+
   return {
     checkHealth: (workflowId: string) => {
       const metrics = monitor.getWorkflowMetrics(workflowId);
       if (!metrics) return { status: 'unknown', metrics: null };
-      
+
       return {
         status: MonitoringUtils.calculateHealthStatus(metrics),
         metrics,
@@ -1149,7 +1152,7 @@ export function createHealthChecker(provider: WorkflowProvider) {
         successRate: metrics.successRate,
       };
     },
-    
+
     getSystemHealth: () => {
       const dashboard = monitor.getDashboardData();
       return {

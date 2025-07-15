@@ -3,7 +3,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock observability
 const mockLogError = vi.fn();
@@ -46,14 +46,14 @@ vi.mock('next/server', async () => {
   };
 });
 
-describe('Node.js middleware', () => {
+describe('node.js middleware', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetAuthHeaders.mockResolvedValue({});
   });
 
   describe('createNodeMiddleware', () => {
-    it('should create middleware function', async () => {
+    test('should create middleware function', async () => {
       const nodeModule = await import('@/server/middleware/node');
 
       const middleware = nodeModule.createNodeMiddleware();
@@ -61,7 +61,7 @@ describe('Node.js middleware', () => {
       expect(typeof middleware).toBe('function');
     });
 
-    it('should allow public routes', async () => {
+    test('should allow public routes', async () => {
       const nodeModule = await import('@/server/middleware/node');
 
       const middleware = nodeModule.createNodeMiddleware();
@@ -84,11 +84,11 @@ describe('Node.js middleware', () => {
 
         await middleware(request);
 
-        expect(NextResponse.next).toHaveBeenCalled();
+        expect(NextResponse.next).toHaveBeenCalledWith();
       }
     });
 
-    it('should allow home page as public route', async () => {
+    test('should allow home page as public route', async () => {
       const nodeModule = await import('@/server/middleware/node');
 
       const middleware = nodeModule.createNodeMiddleware();
@@ -98,10 +98,10 @@ describe('Node.js middleware', () => {
 
       await middleware(request);
 
-      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.next).toHaveBeenCalledWith();
     });
 
-    it('should allow custom public paths', async () => {
+    test('should allow custom public paths', async () => {
       const nodeModule = await import('@/server/middleware/node');
 
       const middleware = nodeModule.createNodeMiddleware({
@@ -114,10 +114,10 @@ describe('Node.js middleware', () => {
 
       await middleware(request);
 
-      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.next).toHaveBeenCalledWith();
     });
 
-    it('should skip auth when requireAuth is false', async () => {
+    test('should skip auth when requireAuth is false', async () => {
       const nodeModule = await import('@/server/middleware/node');
 
       const middleware = nodeModule.createNodeMiddleware({
@@ -130,11 +130,11 @@ describe('Node.js middleware', () => {
 
       await middleware(request);
 
-      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.next).toHaveBeenCalledWith();
       expect(mockAuth.api.getSession).not.toHaveBeenCalled();
     });
 
-    it('should check session for protected routes', async () => {
+    test('should check session for protected routes', async () => {
       const nodeModule = await import('@/server/middleware/node');
 
       const mockSession = {
@@ -153,10 +153,10 @@ describe('Node.js middleware', () => {
       expect(mockAuth.api.getSession).toHaveBeenCalledWith({
         headers: {},
       });
-      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.next).toHaveBeenCalledWith();
     });
 
-    it('should redirect to sign-in when no session', async () => {
+    test('should redirect to sign-in when no session', async () => {
       const nodeModule = await import('@/server/middleware/node');
 
       mockAuth.api.getSession.mockResolvedValue(null);
@@ -175,7 +175,7 @@ describe('Node.js middleware', () => {
       );
     });
 
-    it('should use custom redirect URL', async () => {
+    test('should use custom redirect URL', async () => {
       const nodeModule = await import('@/server/middleware/node');
 
       mockAuth.api.getSession.mockResolvedValue(null);
@@ -197,7 +197,7 @@ describe('Node.js middleware', () => {
       );
     });
 
-    it('should set session cache headers when enabled', async () => {
+    test('should set session cache headers when enabled', async () => {
       const nodeModule = await import('@/server/middleware/node');
 
       const mockSession = {
@@ -227,7 +227,7 @@ describe('Node.js middleware', () => {
       expect(mockResponse.set).toHaveBeenCalledWith('x-organization-id', 'org-1');
     });
 
-    it('should not set organization header when no active organization', async () => {
+    test('should not set organization header when no active organization', async () => {
       const nodeModule = await import('@/server/middleware/node');
 
       const mockSession = {
@@ -257,7 +257,7 @@ describe('Node.js middleware', () => {
       expect(mockResponse.set).not.toHaveBeenCalledWith('x-organization-id', expect.anything());
     });
 
-    it('should not set cache headers when disabled', async () => {
+    test('should not set cache headers when disabled', async () => {
       const nodeModule = await import('@/server/middleware/node');
 
       const mockSession = {
@@ -285,7 +285,7 @@ describe('Node.js middleware', () => {
       expect(mockResponse.set).not.toHaveBeenCalledWith('x-session-cached', expect.anything());
     });
 
-    it('should handle session errors gracefully', async () => {
+    test('should handle session errors gracefully', async () => {
       const nodeModule = await import('@/server/middleware/node');
 
       const sessionError = new Error('Session validation failed');
@@ -306,7 +306,7 @@ describe('Node.js middleware', () => {
       );
     });
 
-    it('should handle non-Error exceptions', async () => {
+    test('should handle non-Error exceptions', async () => {
       const nodeModule = await import('@/server/middleware/node');
 
       mockAuth.api.getSession.mockRejectedValue('string error');
@@ -321,7 +321,7 @@ describe('Node.js middleware', () => {
       expect(mockLogError).toHaveBeenCalledWith('Node middleware error:', expect.any(Error));
     });
 
-    it('should pass auth headers to session check', async () => {
+    test('should pass auth headers to session check', async () => {
       const nodeModule = await import('@/server/middleware/node');
 
       const authHeaders = {
@@ -346,7 +346,7 @@ describe('Node.js middleware', () => {
       });
     });
 
-    it('should handle route prefixes correctly', async () => {
+    test('should handle route prefixes correctly', async () => {
       const nodeModule = await import('@/server/middleware/node');
 
       const middleware = nodeModule.createNodeMiddleware();
@@ -358,20 +358,20 @@ describe('Node.js middleware', () => {
 
       await middleware(request);
 
-      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.next).toHaveBeenCalledWith();
       expect(mockAuth.api.getSession).not.toHaveBeenCalled();
     });
   });
 
   describe('default middleware', () => {
-    it('should export default nodeMiddleware', async () => {
+    test('should export default nodeMiddleware', async () => {
       const nodeModule = await import('@/server/middleware/node');
 
       expect(nodeModule.nodeMiddleware).toBeDefined();
       expect(typeof nodeModule.nodeMiddleware).toBe('function');
     });
 
-    it('should work with default settings', async () => {
+    test('should work with default settings', async () => {
       const nodeModule = await import('@/server/middleware/node');
 
       const request = new NextRequest('https://example.com/sign-in', {
@@ -380,12 +380,12 @@ describe('Node.js middleware', () => {
 
       const result = await nodeModule.nodeMiddleware(request);
 
-      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.next).toHaveBeenCalledWith();
     });
   });
 
   describe('edge cases', () => {
-    it('should handle complex nested routes', async () => {
+    test('should handle complex nested routes', async () => {
       const nodeModule = await import('@/server/middleware/node');
 
       const middleware = nodeModule.createNodeMiddleware({
@@ -398,10 +398,10 @@ describe('Node.js middleware', () => {
 
       await middleware(request);
 
-      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.next).toHaveBeenCalledWith();
     });
 
-    it('should handle empty public paths array', async () => {
+    test('should handle empty public paths array', async () => {
       const nodeModule = await import('@/server/middleware/node');
 
       const middleware = nodeModule.createNodeMiddleware({
@@ -414,10 +414,10 @@ describe('Node.js middleware', () => {
 
       await middleware(request);
 
-      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.next).toHaveBeenCalledWith();
     });
 
-    it('should handle malformed URLs gracefully', async () => {
+    test('should handle malformed URLs gracefully', async () => {
       const nodeModule = await import('@/server/middleware/node');
 
       mockAuth.api.getSession.mockResolvedValue(null);
@@ -429,10 +429,10 @@ describe('Node.js middleware', () => {
 
       await middleware(request);
 
-      expect(NextResponse.redirect).toHaveBeenCalled();
+      expect(NextResponse.redirect).toHaveBeenCalledWith();
     });
 
-    it('should preserve query parameters in callback URL', async () => {
+    test('should preserve query parameters in callback URL', async () => {
       const nodeModule = await import('@/server/middleware/node');
 
       mockAuth.api.getSession.mockResolvedValue(null);

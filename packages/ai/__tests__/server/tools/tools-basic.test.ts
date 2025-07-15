@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, vi } from 'vitest';
 import { z } from 'zod/v4';
 
 // Mock AI SDK
@@ -31,8 +31,8 @@ vi.mock('@/server/tools/factory', async () => {
 // Mock server-only to prevent import issues in tests
 vi.mock('server-only', () => ({}));
 
-describe('Tools Basic Functionality', () => {
-  it('should import and use tool specifications', async () => {
+describe('tools Basic Functionality', () => {
+  test('should import and use tool specifications', async () => {
     const specifications = await import('@/server/tools/specifications');
 
     expect(specifications.ToolSchemas).toBeDefined();
@@ -42,7 +42,7 @@ describe('Tools Basic Functionality', () => {
     expect(specifications.getToolSpec).toBeTypeOf('function');
   });
 
-  it('should import tool factory successfully', async () => {
+  test('should import tool factory successfully', async () => {
     const factory = await import('@/server/tools/factory');
     expect(factory).toBeDefined();
     expect(factory.tool).toBeTypeOf('function');
@@ -52,17 +52,17 @@ describe('Tools Basic Functionality', () => {
     expect(factory.createSecureTool).toBeTypeOf('function');
   });
 
-  it('should import tool registry successfully', async () => {
+  test('should import tool registry successfully', async () => {
     const registry = await import('@/server/tools/registry');
     expect(registry).toBeDefined();
   });
 
-  it('should import tool types successfully', async () => {
+  test('should import tool types successfully', async () => {
     const types = await import('@/server/tools/types');
     expect(types).toBeDefined();
   });
 
-  it('should create tool using factory functions', async () => {
+  test('should create tool using factory functions', async () => {
     const { tool, commonSchemas } = await import('@/server/tools/factory');
 
     expect(tool).toBeTypeOf('function');
@@ -78,7 +78,7 @@ describe('Tools Basic Functionality', () => {
     expect(typeof testTool).toBe('object');
   });
 
-  it('should handle tool specifications and schemas', async () => {
+  test('should handle tool specifications and schemas', async () => {
     const { ToolSchemas, ToolSpecifications } = await import('@/server/tools/specifications');
 
     expect(ToolSchemas.query).toBeDefined();
@@ -88,20 +88,20 @@ describe('Tools Basic Functionality', () => {
     expect(ToolSpecifications.searchKnowledge).toBeDefined();
   });
 
-  it('should validate with schemas from specifications', async () => {
+  test('should validate with schemas from specifications', async () => {
     const { ToolSchemas } = await import('@/server/tools/specifications');
 
     const validQuery = 'test search';
-    const result = ToolSchemas.query.safeParse(validQuery);
+    const result1 = ToolSchemas.query.safeParse(validQuery);
 
-    expect(result.success).toBe(true);
+    expect(result.success).toBeTruthy();
     expect(result.data).toBe(validQuery);
   });
 
-  it('should create tool from specification', async () => {
+  test('should create tool from specification', async () => {
     const { createToolFromSpec } = await import('@/server/tools/specifications');
 
-    if (createToolFromSpec) {
+    {
       expect(createToolFromSpec).toBeTypeOf('function');
 
       const weatherTool = createToolFromSpec('weather', {
@@ -114,9 +114,6 @@ describe('Tools Basic Functionality', () => {
 
       expect(weatherTool).toBeDefined();
       expect(typeof weatherTool).toBe('object');
-    } else {
-      // If function doesn't exist, skip this part of the test
-      expect(true).toBe(true);
     }
   });
 });

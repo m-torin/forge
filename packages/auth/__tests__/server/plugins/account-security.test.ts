@@ -2,7 +2,7 @@
  * Tests for account security plugin
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 describe('account security plugin', () => {
   beforeEach(() => {
@@ -10,7 +10,7 @@ describe('account security plugin', () => {
   });
 
   describe('accountSecurityPlugin', () => {
-    it('should create plugin with default options', async () => {
+    test('should create plugin with default options', async () => {
       const accountSecurityModule = await import('@/server/plugins/account-security');
 
       const plugin = accountSecurityModule.accountSecurityPlugin();
@@ -19,7 +19,7 @@ describe('account security plugin', () => {
       expect(typeof plugin).toBe('object');
     });
 
-    it('should create plugin with custom options', async () => {
+    test('should create plugin with custom options', async () => {
       const accountSecurityModule = await import('@/server/plugins/account-security');
 
       const customOptions = {
@@ -36,7 +36,7 @@ describe('account security plugin', () => {
       expect(typeof plugin).toBe('object');
     });
 
-    it('should create plugin with partial options', async () => {
+    test('should create plugin with partial options', async () => {
       const accountSecurityModule = await import('@/server/plugins/account-security');
 
       const partialOptions = {
@@ -50,7 +50,7 @@ describe('account security plugin', () => {
       expect(typeof plugin).toBe('object');
     });
 
-    it('should handle empty options object', async () => {
+    test('should handle empty options object', async () => {
       const accountSecurityModule = await import('@/server/plugins/account-security');
 
       const plugin = accountSecurityModule.accountSecurityPlugin({});
@@ -59,7 +59,7 @@ describe('account security plugin', () => {
       expect(typeof plugin).toBe('object');
     });
 
-    it('should create plugin with extreme values', async () => {
+    test('should create plugin with extreme values', async () => {
       const accountSecurityModule = await import('@/server/plugins/account-security');
 
       const extremeOptions = {
@@ -76,7 +76,7 @@ describe('account security plugin', () => {
       expect(typeof plugin).toBe('object');
     });
 
-    it('should handle zero values', async () => {
+    test('should handle zero values', async () => {
       const accountSecurityModule = await import('@/server/plugins/account-security');
 
       const zeroOptions = {
@@ -91,7 +91,7 @@ describe('account security plugin', () => {
       expect(typeof plugin).toBe('object');
     });
 
-    it('should handle negative values', async () => {
+    test('should handle negative values', async () => {
       const accountSecurityModule = await import('@/server/plugins/account-security');
 
       const negativeOptions = {
@@ -106,7 +106,7 @@ describe('account security plugin', () => {
       expect(typeof plugin).toBe('object');
     });
 
-    it('should work with only lockout settings', async () => {
+    test('should work with only lockout settings', async () => {
       const accountSecurityModule = await import('@/server/plugins/account-security');
 
       const lockoutOptions = {
@@ -122,7 +122,7 @@ describe('account security plugin', () => {
       expect(typeof plugin).toBe('object');
     });
 
-    it('should work with only suspicious login detection', async () => {
+    test('should work with only suspicious login detection', async () => {
       const accountSecurityModule = await import('@/server/plugins/account-security');
 
       const suspiciousOptions = {
@@ -137,7 +137,7 @@ describe('account security plugin', () => {
       expect(typeof plugin).toBe('object');
     });
 
-    it('should handle boolean combinations', async () => {
+    test('should handle boolean combinations', async () => {
       const accountSecurityModule = await import('@/server/plugins/account-security');
 
       const booleanOptions = {
@@ -151,7 +151,7 @@ describe('account security plugin', () => {
       expect(typeof plugin).toBe('object');
     });
 
-    it('should handle undefined input', async () => {
+    test('should handle undefined input', async () => {
       const accountSecurityModule = await import('@/server/plugins/account-security');
 
       // @ts-expect-error - testing undefined input
@@ -163,7 +163,7 @@ describe('account security plugin', () => {
   });
 
   describe('plugin configuration edge cases', () => {
-    it('should handle very small lockout duration', async () => {
+    test('should handle very small lockout duration', async () => {
       const accountSecurityModule = await import('@/server/plugins/account-security');
 
       const plugin = accountSecurityModule.accountSecurityPlugin({
@@ -173,7 +173,7 @@ describe('account security plugin', () => {
       expect(plugin).toBeDefined();
     });
 
-    it('should handle very large attempt counts', async () => {
+    test('should handle very large attempt counts', async () => {
       const accountSecurityModule = await import('@/server/plugins/account-security');
 
       const plugin = accountSecurityModule.accountSecurityPlugin({
@@ -183,7 +183,7 @@ describe('account security plugin', () => {
       expect(plugin).toBeDefined();
     });
 
-    it('should handle decimal values', async () => {
+    test('should handle decimal values', async () => {
       const accountSecurityModule = await import('@/server/plugins/account-security');
 
       const plugin = accountSecurityModule.accountSecurityPlugin({
@@ -195,7 +195,7 @@ describe('account security plugin', () => {
       expect(plugin).toBeDefined();
     });
 
-    it('should work with minimal security settings', async () => {
+    test('should work with minimal security settings', async () => {
       const accountSecurityModule = await import('@/server/plugins/account-security');
 
       const minimalOptions = {
@@ -211,7 +211,7 @@ describe('account security plugin', () => {
       expect(plugin).toBeDefined();
     });
 
-    it('should work with maximum security settings', async () => {
+    test('should work with maximum security settings', async () => {
       const accountSecurityModule = await import('@/server/plugins/account-security');
 
       const maxSecurityOptions = {
@@ -229,7 +229,7 @@ describe('account security plugin', () => {
   });
 
   describe('integration scenarios', () => {
-    it('should create plugin for high-security environment', async () => {
+    test('should create plugin for high-security environment', async () => {
       const accountSecurityModule = await import('@/server/plugins/account-security');
 
       const highSecurityOptions = {
@@ -245,7 +245,7 @@ describe('account security plugin', () => {
       expect(plugin).toBeDefined();
     });
 
-    it('should create plugin for development environment', async () => {
+    test('should create plugin for development environment', async () => {
       const accountSecurityModule = await import('@/server/plugins/account-security');
 
       const devOptions = {
@@ -261,7 +261,7 @@ describe('account security plugin', () => {
       expect(plugin).toBeDefined();
     });
 
-    it('should create plugin for testing environment', async () => {
+    test('should create plugin for testing environment', async () => {
       const accountSecurityModule = await import('@/server/plugins/account-security');
 
       const testOptions = {
@@ -277,7 +277,7 @@ describe('account security plugin', () => {
       expect(plugin).toBeDefined();
     });
 
-    it('should handle production-like configuration', async () => {
+    test('should handle production-like configuration', async () => {
       const accountSecurityModule = await import('@/server/plugins/account-security');
 
       const productionOptions = {
@@ -295,7 +295,7 @@ describe('account security plugin', () => {
   });
 
   describe('default behavior verification', () => {
-    it('should use default values when not specified', async () => {
+    test('should use default values when not specified', async () => {
       const accountSecurityModule = await import('@/server/plugins/account-security');
 
       const plugin = accountSecurityModule.accountSecurityPlugin({});
@@ -304,7 +304,7 @@ describe('account security plugin', () => {
       expect(typeof plugin).toBe('object');
     });
 
-    it('should maintain plugin structure', async () => {
+    test('should maintain plugin structure', async () => {
       const accountSecurityModule = await import('@/server/plugins/account-security');
 
       const plugin = accountSecurityModule.accountSecurityPlugin();

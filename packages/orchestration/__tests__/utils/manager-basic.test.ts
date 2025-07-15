@@ -15,7 +15,7 @@ vi.mock('@repo/observability/shared-env', () => ({
   ),
 }));
 
-describe('OrchestrationManager - Basic Coverage', () => {
+describe('orchestrationManager - Basic Coverage', () => {
   let manager: OrchestrationManager;
 
   beforeEach(() => {
@@ -47,7 +47,7 @@ describe('OrchestrationManager - Basic Coverage', () => {
       await manager.initialize();
       const status = manager.getStatus();
 
-      expect(status.initialized).toBe(true);
+      expect(status.initialized).toBeTruthy();
       expect(status.providerCount).toBe(0);
       expect(status).toHaveProperty('metricsEnabled');
       expect(status).toHaveProperty('healthChecksEnabled');
@@ -57,41 +57,41 @@ describe('OrchestrationManager - Basic Coverage', () => {
     test('should not reinitialize when already initialized', async () => {
       await manager.initialize();
       await manager.initialize(); // Should not throw
-      expect(manager.getStatus().initialized).toBe(true);
+      expect(manager.getStatus().initialized).toBeTruthy();
     });
 
     test('should shutdown when not initialized', async () => {
       await manager.shutdown(); // Should not throw
-      expect(manager.getStatus().initialized).toBe(false);
+      expect(manager.getStatus().initialized).toBeFalsy();
     });
 
     test('should shutdown successfully after initialization', async () => {
       await manager.initialize();
       await manager.shutdown();
-      expect(manager.getStatus().initialized).toBe(false);
+      expect(manager.getStatus().initialized).toBeFalsy();
     });
   });
 
   describe('provider management without registration', () => {
     test('should throw error when getting non-existent provider', () => {
-      expect(() => manager.getProvider('non-existent')).toThrow();
+      expect(() => manager.getProvider('non-existent')).toThrow('Provider not found');
     });
 
     test('should throw error when no provider specified and no default', () => {
-      expect(() => manager.getProvider()).toThrow();
+      expect(() => manager.getProvider()).toThrow('No provider specified');
     });
 
     test('should list empty providers initially', () => {
-      expect(manager.listProviders()).toEqual([]);
+      expect(manager.listProviders()).toStrictEqual([]);
     });
 
     test('should throw error when unregistering non-existent provider', async () => {
-      await expect(manager.unregisterProvider('non-existent')).rejects.toThrow();
+      await expect(manager.unregisterProvider('non-existent')).rejects.toThrow('Provider not found');
     });
 
     test('should return empty health reports for no providers', async () => {
       const reports = await manager.healthCheckAll();
-      expect(reports).toEqual([]);
+      expect(reports).toStrictEqual([]);
     });
   });
 
@@ -116,7 +116,7 @@ describe('OrchestrationManager - Basic Coverage', () => {
         },
       };
 
-      expect(() => disabledManager.registerStep(stepDefinition)).toThrow();
+      expect(() => disabledManager.registerStep(stepDefinition)).toThrow('Step factory is not enabled');
     });
 
     test('should return undefined for getStep when factory disabled', () => {
@@ -126,22 +126,22 @@ describe('OrchestrationManager - Basic Coverage', () => {
 
     test('should return empty array for listSteps when factory disabled', () => {
       const steps = disabledManager.listSteps();
-      expect(steps).toEqual([]);
+      expect(steps).toStrictEqual([]);
     });
 
     test('should return empty array for searchSteps when factory disabled', () => {
       const results = disabledManager.searchSteps({ category: 'test' });
-      expect(results).toEqual([]);
+      expect(results).toStrictEqual([]);
     });
 
     test('should return empty array for getStepCategories when factory disabled', () => {
       const categories = disabledManager.getStepCategories();
-      expect(categories).toEqual([]);
+      expect(categories).toStrictEqual([]);
     });
 
     test('should return empty array for getStepTags when factory disabled', () => {
       const tags = disabledManager.getStepTags();
-      expect(tags).toEqual([]);
+      expect(tags).toStrictEqual([]);
     });
 
     test('should return null for getStepUsageStatistics when factory disabled', () => {
@@ -151,24 +151,24 @@ describe('OrchestrationManager - Basic Coverage', () => {
 
     test('should return error for validateStepDependencies when factory disabled', () => {
       const result = disabledManager.validateStepDependencies(['step1', 'step2']);
-      expect(result).toEqual({ errors: ['Step factory is not enabled'], valid: false });
+      expect(result).toStrictEqual({ errors: ['Step factory is not enabled'], valid: false });
     });
 
     test('should throw error for createStepExecutionPlan when factory disabled', () => {
-      expect(() => disabledManager.createStepExecutionPlan(['step1'])).toThrow();
+      expect(() => disabledManager.createStepExecutionPlan(['step1'])).toThrow('Step factory is not enabled');
     });
 
     test('should throw error for executeStep when factory disabled', async () => {
-      await expect(disabledManager.executeStep('step-1', {}, 'workflow-exec-1')).rejects.toThrow();
+      await expect(disabledManager.executeStep('step-1', {}, 'workflow-exec-1')).rejects.toThrow('Step factory is not enabled');
     });
 
     test('should return empty array for exportSteps when factory disabled', () => {
       const exported = disabledManager.exportSteps();
-      expect(exported).toEqual([]);
+      expect(exported).toStrictEqual([]);
     });
 
     test('should throw error for importSteps when factory disabled', () => {
-      expect(() => disabledManager.importSteps([])).toThrow();
+      expect(() => disabledManager.importSteps([])).toThrow('Step factory is not enabled');
     });
   });
 
@@ -176,29 +176,29 @@ describe('OrchestrationManager - Basic Coverage', () => {
     test('should throw error when executing workflow without provider', async () => {
       const definition = { id: 'workflow-1', name: 'Test Workflow', version: '1.0.0', steps: [] };
 
-      await expect(manager.executeWorkflow(definition)).rejects.toThrow();
+      await expect(manager.executeWorkflow(definition)).rejects.toThrow('No provider available');
     });
 
     test('should throw error when getting execution without provider', async () => {
-      await expect(manager.getExecution('exec-1')).rejects.toThrow();
+      await expect(manager.getExecution('exec-1')).rejects.toThrow('No provider available');
     });
 
     test('should throw error when listing executions without provider', async () => {
-      await expect(manager.listExecutions('workflow-1')).rejects.toThrow();
+      await expect(manager.listExecutions('workflow-1')).rejects.toThrow('No provider available');
     });
 
     test('should throw error when canceling execution without provider', async () => {
-      await expect(manager.cancelExecution('exec-1')).rejects.toThrow();
+      await expect(manager.cancelExecution('exec-1')).rejects.toThrow('No provider available');
     });
 
     test('should throw error when scheduling workflow without provider', async () => {
       const definition = { id: 'workflow-1', name: 'Test Workflow', version: '1.0.0', steps: [] };
 
-      await expect(manager.scheduleWorkflow(definition)).rejects.toThrow();
+      await expect(manager.scheduleWorkflow(definition)).rejects.toThrow('No provider available');
     });
 
     test('should throw error when unscheduling workflow without provider', async () => {
-      await expect(manager.unscheduleWorkflow('workflow-1')).rejects.toThrow();
+      await expect(manager.unscheduleWorkflow('workflow-1')).rejects.toThrow('No provider available');
     });
   });
 
@@ -236,9 +236,9 @@ describe('OrchestrationManager - Basic Coverage', () => {
       const status = manager.getStatus();
 
       expect(status.defaultProvider).toBe('custom-provider');
-      expect(status.healthChecksEnabled).toBe(false);
-      expect(status.metricsEnabled).toBe(false);
-      expect(status.stepFactoryEnabled).toBe(false);
+      expect(status.healthChecksEnabled).toBeFalsy();
+      expect(status.metricsEnabled).toBeFalsy();
+      expect(status.stepFactoryEnabled).toBeFalsy();
     });
 
     test('should handle metrics disabled status', () => {
@@ -246,7 +246,7 @@ describe('OrchestrationManager - Basic Coverage', () => {
       const status = manager.getStatus();
 
       expect(status.executionMetrics).toBeNull();
-      expect(status.metricsEnabled).toBe(false);
+      expect(status.metricsEnabled).toBeFalsy();
     });
 
     test('should handle step factory disabled status', () => {
@@ -254,7 +254,7 @@ describe('OrchestrationManager - Basic Coverage', () => {
       const status = manager.getStatus();
 
       expect(status.stepRegistry).toBeNull();
-      expect(status.stepFactoryEnabled).toBe(false);
+      expect(status.stepFactoryEnabled).toBeFalsy();
     });
   });
 
@@ -265,7 +265,7 @@ describe('OrchestrationManager - Basic Coverage', () => {
 
       // This should not throw since we handle most internal errors
       await errorManager.initialize();
-      expect(errorManager.getStatus().initialized).toBe(true);
+      expect(errorManager.getStatus().initialized).toBeTruthy();
     });
 
     test('should handle shutdown errors gracefully', async () => {
@@ -273,7 +273,7 @@ describe('OrchestrationManager - Basic Coverage', () => {
 
       // This should complete without throwing
       await manager.shutdown();
-      expect(manager.getStatus().initialized).toBe(false);
+      expect(manager.getStatus().initialized).toBeFalsy();
     });
   });
 });

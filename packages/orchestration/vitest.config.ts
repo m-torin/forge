@@ -1,12 +1,12 @@
 import { createNodePackageConfig } from '@repo/qa/vitest/configs';
 
 export default createNodePackageConfig({
-  setupFiles: ['./__tests__/setup/test-env.ts'],
   overrides: {
     test: {
       testTimeout: 30000,
       hookTimeout: 30000,
       include: ['**/*.{test,spec}.{ts,tsx}'],
+      setupFiles: ['./vitest.setup.ts'],
       coverage: {
         exclude: [
           'node_modules/**',
@@ -29,6 +29,8 @@ export default createNodePackageConfig({
         '"eyJVc2VySUQiOiJkZWZhdWx0VXNlciIsIlBhc3N3b3JkIjoiZGVmYXVsdFBhc3N3b3JkIn0="',
       'process.env.QSTASH_CURRENT_SIGNING_KEY': '"sig_7kYjw48mhY7kAjqNGcy6cr29RJ6r"',
       'process.env.QSTASH_NEXT_SIGNING_KEY': '"sig_5ZB6DVzB1wjE8S6rZ7eenA8Pdnhs"',
+      'process.env.UPSTASH_REDIS_REST_URL': '"https://test-redis.upstash.io"',
+      'process.env.UPSTASH_REDIS_REST_TOKEN': '"test-redis-token"',
     },
   },
 });
