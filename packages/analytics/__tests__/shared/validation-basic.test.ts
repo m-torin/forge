@@ -119,7 +119,7 @@ describe('validation Basic Tests', () => {
 
       const config = {} as any; // Invalid config
 
-      expect(() => validateConfigOrThrow(config)).toThrow('Invalid config');
+      expect(() => validateConfigOrThrow(config)).toThrow('Analytics configuration validation failed');
     });
   });
 
