@@ -284,4 +284,162 @@ describe('mediaActions', () => {
       expect(result.error).toBe('Provider list failed');
     });
   });
+
+  describe('bulkMoveMediaAction', () => {
+    test('should move multiple media files successfully', async () => {
+      mockStorage.download.mockResolvedValue(new Blob(['test-content'], { type: 'text/plain' }));
+      mockStorage.getMetadata.mockResolvedValue({ contentType: 'text/plain', size: 12 });
+      mockStorage.upload.mockResolvedValue({ key: 'new-key', url: 'https://example.com/new-key' });
+      mockStorage.delete.mockResolvedValue(undefined);
+
+      const { bulkMoveMediaAction } = await import('../src/actions/mediaActions');
+      const operations = [
+        { sourceKey: 'file1.txt', destinationKey: 'moved/file1.txt' },
+        { sourceKey: 'file2.txt', destinationKey: 'moved/file2.txt' },
+      ];
+
+      const result = await bulkMoveMediaAction(operations);
+
+      expect(result.success).toBe(true);
+      expect(result.data?.succeeded).toHaveLength(2);
+      expect(result.data?.failed).toHaveLength(0);
+    });
+
+    test('should handle failures in bulk move', async () => {
+      mockStorage.download.mockRejectedValue(new Error('Download failed'));
+
+      const { bulkMoveMediaAction } = await import('../src/actions/mediaActions');
+      const operations = [
+        { sourceKey: 'file1.txt', destinationKey: 'moved/file1.txt' },
+      ];
+
+      const result = await bulkMoveMediaAction(operations);
+
+      expect(result.success).toBe(false);
+      expect(result.data?.succeeded).toHaveLength(0);
+      expect(result.data?.failed).toHaveLength(1);
+    });
+  });
+
+  describe('copyBetweenProvidersAction', () => {
+    test('should copy file between providers successfully', async () => {
+      const mockSourceProvider = {
+        download: vi.fn().mockResolvedValue(new Blob(['test-data'], { type: 'text/plain' })),
+        getMetadata: vi.fn().mockResolvedValue({ contentType: 'text/plain', size: 9 }),
+      };
+      const mockDestProvider = {
+        upload: vi.fn().mockResolvedValue({ key: 'copied-key', url: 'https://dest.com/copied' }),
+      };
+
+      const mockMultiStorage = {
+        getProvider: vi.fn().mockImplementation((name: string) => {
+          if (name === 'source-provider') return mockSourceProvider;
+          if (name === 'dest-provider') return mockDestProvider;
+          return null;
+        }),
+      };
+
+      mockGetMultiStorage.mockReturnValue(mockMultiStorage);
+
+      const { copyBetweenProvidersAction } = await import('../src/actions/mediaActions');
+      const result = await copyBetweenProvidersAction(
+        'source-provider',
+        'dest-provider',
+        'test-file.txt'
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.data?.key).toBe('copied-key');
+    });
+
+    test('should handle provider not found error', async () => {
+      const mockMultiStorage = {
+        getProvider: vi.fn().mockReturnValue(null),
+      };
+
+      mockGetMultiStorage.mockReturnValue(mockMultiStorage);
+
+      const { copyBetweenProvidersAction } = await import('../src/actions/mediaActions');
+      const result = await copyBetweenProvidersAction(
+        'source-provider',
+        'dest-provider',
+        'test-file.txt'
+      );
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Source provider');
+    });
+  });
+
+  describe('bulkImportFromUrlsAction', () => {
+    // Mock global fetch
+    beforeEach(() => {
+      global.fetch = vi.fn();
+    });
+
+    test('should handle basic bulk import functionality', async () => {
+      // Mock successful fetch response
+      (global.fetch as any).mockResolvedValue({
+        ok: true,
+        headers: { get: () => 'image/jpeg' },
+        blob: () => Promise.resolve(new Blob(['image-data'], { type: 'image/jpeg' })),
+      });
+
+      mockStorage.upload.mockResolvedValue({ 
+        key: 'imported-image.jpg', 
+        url: 'https://example.com/imported-image.jpg' 
+      });
+
+      // Mock multi-storage for image routing
+      const mockMultiStorage = {
+        getProvider: vi.fn().mockReturnValue(null), // No special provider
+      };
+      mockGetMultiStorage.mockReturnValue(mockMultiStorage);
+
+      const { bulkImportFromUrlsAction } = await import('../src/actions/mediaActions');
+      const imports = [
+        { sourceUrl: 'https://example.com/image.jpg', destinationKey: 'images/image.jpg' },
+      ];
+
+      const result = await bulkImportFromUrlsAction(imports);
+
+      // Test that the function runs and returns a result structure
+      expect(result).toHaveProperty('success');
+      expect(result).toHaveProperty('data');
+      expect(result.data).toHaveProperty('totalProcessed');
+      expect(result.data).toHaveProperty('succeeded');
+      expect(result.data).toHaveProperty('failed');
+      expect(typeof result.data.totalProcessed).toBe('number');
+      expect(Array.isArray(result.data.succeeded)).toBe(true);
+      expect(Array.isArray(result.data.failed)).toBe(true);
+    });
+
+    test('should handle fetch errors in bulk import', async () => {
+      // Mock fetch error
+      (global.fetch as any).mockRejectedValue(new Error('Network error'));
+
+      const { bulkImportFromUrlsAction } = await import('../src/actions/mediaActions');
+      const imports = [
+        { sourceUrl: 'https://example.com/image.jpg', destinationKey: 'images/image.jpg' },
+      ];
+
+      const result = await bulkImportFromUrlsAction(imports);
+
+      expect(result.success).toBe(false);
+      expect(result.data?.failed).toHaveLength(1);
+      expect(result.data?.succeeded).toHaveLength(0);
+    });
+
+    test('should handle empty imports array', async () => {
+      const { bulkImportFromUrlsAction } = await import('../src/actions/mediaActions');
+      const imports: Array<{ sourceUrl: string; destinationKey?: string }> = [];
+
+      const result = await bulkImportFromUrlsAction(imports);
+
+      expect(result.success).toBe(true);
+      expect(result.data?.totalProcessed).toBe(0);
+      expect(result.data?.succeeded).toHaveLength(0);
+      expect(result.data?.failed).toHaveLength(0);
+    });
+  });
 });

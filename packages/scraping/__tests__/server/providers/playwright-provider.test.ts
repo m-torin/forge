@@ -1,7 +1,5 @@
 import { afterEach, beforeEach, describe, expect, vi } from 'vitest';
 
-import { PlaywrightProvider } from '@/server/providers/playwright-provider';
-
 // Mock Playwright before importing the provider
 const mockPage = {
   goto: vi.fn(),
@@ -18,6 +16,7 @@ const mockPage = {
   setCookies: vi.fn(),
   context: vi.fn(),
   setDefaultTimeout: vi.fn(),
+  title: vi.fn(),
 };
 
 const mockContext = {
@@ -52,7 +51,7 @@ vi.mock('playwright', () => ({
 }));
 
 // Mock the PlaywrightProvider class itself
-vi.mock('../../../server/providers/playwright-provider', () => {
+vi.mock('@/server/providers/playwright-provider', () => {
   class MockPlaywrightProvider {
     private browser: any = null;
     private initialized = false;
@@ -97,6 +96,8 @@ vi.mock('../../../server/providers/playwright-provider', () => {
   };
 });
 
+import { PlaywrightProvider } from '@/server/providers/playwright-provider';
+
 describe('playwrightProvider', () => {
   let provider: PlaywrightProvider;
 
@@ -104,6 +105,10 @@ describe('playwrightProvider', () => {
     vi.clearAllMocks();
     mockPage.goto.mockResolvedValue({ status: () => 200 });
     mockPage.content.mockResolvedValue('<html><body>Test content</body></html>');
+    mockPage.title.mockResolvedValue('Mock Title');
+    mockPage.waitForSelector.mockResolvedValue({}); // Mock element found
+    mockPage.screenshot.mockResolvedValue(Buffer.from('mock screenshot'));
+    mockPage.pdf.mockResolvedValue(Buffer.from('mock pdf'));
     mockPage.cookies.mockResolvedValue([]);
     mockContext.cookies.mockResolvedValue([]);
 

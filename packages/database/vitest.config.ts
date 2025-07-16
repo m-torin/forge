@@ -31,12 +31,12 @@ export default createNodePackageConfig({
       reporters: ['verbose'],
       coverage: {
         include: [
-          'firestore/**/*.ts',
-          'upstash/**/*.ts',
-          'redis/**/*.ts',
-          'prisma/**/*.ts',
-          'types.ts',
-          'keys.ts',
+          'src/firestore/**/*.ts',
+          'src/upstash/**/*.ts',
+          'src/redis/**/*.ts',
+          'src/prisma/**/*.ts',
+          'src/types.ts',
+          'src/keys.ts',
         ],
         exclude: [
           'node_modules/**',

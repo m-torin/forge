@@ -614,4 +614,154 @@ describe('storage Index', () => {
       expect(metadata.url).toBe('https://mock-storage.example.com/test-file');
     });
   });
+
+  describe('initializeMultiStorage', () => {
+    test('should initialize with R2_CREDENTIALS array', async () => {
+      mockSafeEnv.mockReturnValue({
+        R2_CREDENTIALS: [
+          {
+            name: 'r2-main',
+            accessKeyId: 'key1',
+            secretAccessKey: 'secret1',
+            bucket: 'bucket1',
+            accountId: 'account1',
+          },
+        ],
+      });
+
+      const { initializeMultiStorage, resetStorageState } = await import('../src/server');
+      resetStorageState();
+      const result = initializeMultiStorage();
+
+      expect(result).toBeDefined();
+      expect(typeof result.getProvider).toBe('function');
+    });
+
+    test('should initialize with legacy R2 environment variables', async () => {
+      mockSafeEnv.mockReturnValue({
+        R2_ACCESS_KEY_ID: 'legacy-key',
+        R2_SECRET_ACCESS_KEY: 'legacy-secret',
+        R2_BUCKET: 'legacy-bucket',
+        R2_ACCOUNT_ID: 'legacy-account',
+      });
+
+      const { initializeMultiStorage, resetStorageState } = await import('../src/server');
+      resetStorageState();
+      const result = initializeMultiStorage();
+
+      expect(result).toBeDefined();
+      expect(typeof result.getProvider).toBe('function');
+    });
+
+    test('should initialize with Cloudflare Images provider', async () => {
+      mockSafeEnv.mockReturnValue({
+        CLOUDFLARE_IMAGES_API_TOKEN: 'images-token',
+        CLOUDFLARE_IMAGES_ACCOUNT_ID: 'images-account',
+        CLOUDFLARE_IMAGES_DELIVERY_URL: 'https://images.example.com',
+        CLOUDFLARE_IMAGES_SIGNING_KEY: 'signing-key',
+      });
+
+      const { initializeMultiStorage, resetStorageState } = await import('../src/server');
+      resetStorageState();
+      const result = initializeMultiStorage();
+
+      expect(result).toBeDefined();
+      expect(typeof result.getProvider).toBe('function');
+    });
+
+    test('should initialize with Vercel Blob provider', async () => {
+      mockSafeEnv.mockReturnValue({
+        BLOB_READ_WRITE_TOKEN: 'blob-token',
+      });
+
+      const { initializeMultiStorage, resetStorageState } = await import('../src/server');
+      resetStorageState();
+      const result = initializeMultiStorage();
+
+      expect(result).toBeDefined();
+      expect(typeof result.getProvider).toBe('function');
+    });
+
+    test('should initialize with STORAGE_CONFIG as JSON string', async () => {
+      mockSafeEnv.mockReturnValue({
+        STORAGE_CONFIG: JSON.stringify({
+          providers: {
+            'test-provider': {
+              provider: 'vercel-blob',
+              vercelBlob: { token: 'test-token' },
+            },
+          },
+        }),
+      });
+
+      const { initializeMultiStorage, resetStorageState } = await import('../src/server');
+      resetStorageState();
+      const result = initializeMultiStorage();
+
+      expect(result).toBeDefined();
+      expect(typeof result.getProvider).toBe('function');
+    });
+
+    test('should initialize with STORAGE_CONFIG as object', async () => {
+      mockSafeEnv.mockReturnValue({
+        STORAGE_CONFIG: {
+          providers: {
+            'test-provider': {
+              provider: 'vercel-blob',
+              vercelBlob: { token: 'test-token' },
+            },
+          },
+        },
+      });
+
+      const { initializeMultiStorage, resetStorageState } = await import('../src/server');
+      resetStorageState();
+      const result = initializeMultiStorage();
+
+      expect(result).toBeDefined();
+      expect(typeof result.getProvider).toBe('function');
+    });
+
+    test('should return singleton instance', async () => {
+      mockSafeEnv.mockReturnValue({
+        BLOB_READ_WRITE_TOKEN: 'blob-token',
+      });
+
+      const { initializeMultiStorage, resetStorageState } = await import('../src/server');
+      resetStorageState();
+      const instance1 = initializeMultiStorage();
+      const instance2 = initializeMultiStorage();
+
+      expect(instance1).toBe(instance2);
+    });
+  });
+
+  describe('getMultiStorage', () => {
+    test('should return initialized multi-storage instance', async () => {
+      mockSafeEnv.mockReturnValue({
+        BLOB_READ_WRITE_TOKEN: 'blob-token',
+      });
+
+      const { getMultiStorage, resetStorageState } = await import('../src/server');
+      resetStorageState();
+      const result = getMultiStorage();
+
+      expect(result).toBeDefined();
+      expect(typeof result.getProvider).toBe('function');
+    });
+  });
+
+  describe('storage helper functions', () => {
+    test('should expose helper functions', async () => {
+      const { storage } = await import('../src/server');
+      
+      expect(typeof storage.delete).toBe('function');
+      expect(typeof storage.download).toBe('function');
+      expect(typeof storage.exists).toBe('function');
+      expect(typeof storage.getMetadata).toBe('function');
+      expect(typeof storage.getUrl).toBe('function');
+      expect(typeof storage.list).toBe('function');
+      expect(typeof storage.upload).toBe('function');
+    });
+  });
 });

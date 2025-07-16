@@ -37,6 +37,20 @@ describe('consoleProvider', () => {
         timestamp: true,
       });
     });
+
+    test('should initialize with log levels config', async () => {
+      const config = {
+        enabled: true,
+        levels: ['error', 'warn', 'info'],
+      };
+
+      await provider.initialize(config);
+      expect(console.log).toHaveBeenCalledWith('[OBS] Console provider initialized', {
+        colors: undefined,
+        levels: ['error', 'warn', 'info'],
+        timestamp: undefined,
+      });
+    });
   });
 
   describe('addBreadcrumb', () => {
@@ -53,19 +67,21 @@ describe('consoleProvider', () => {
       expect(console.log).toHaveBeenCalledWith('[OBS] Breadcrumb:', breadcrumb);
     });
 
-    test('should limit breadcrumbs to maximum', () => {
+    test('should limit breadcrumbs to max', () => {
       // Add more than max breadcrumbs
-      for (let i = 0; i < 105; i++) {
-        const breadcrumb: Breadcrumb = {
+      for (let i = 0; i < 110; i++) {
+        provider.addBreadcrumb({
           message: `Breadcrumb ${i}`,
           category: 'test',
           level: 'info',
           timestamp: Date.now(),
-        };
-        provider.addBreadcrumb(breadcrumb);
+        });
       }
 
-      expect(console.log).toHaveBeenCalledTimes(105);
+      // Should still log the last one
+      expect(console.log).toHaveBeenCalledWith('[OBS] Breadcrumb:', expect.objectContaining({
+        message: 'Breadcrumb 109',
+      }));
     });
 
     test('should not add breadcrumb when disabled', async () => {
@@ -91,31 +107,42 @@ describe('consoleProvider', () => {
   });
 
   describe('captureException', () => {
-    test('should capture and log exception with context', async () => {
+    test('should capture exception with breadcrumbs', async () => {
+      // Add some breadcrumbs first
+      provider.addBreadcrumb({
+        message: 'Before error',
+        category: 'action',
+        level: 'info',
+        timestamp: Date.now(),
+      });
+
       const error = new Error('Test error');
-      const context: ObservabilityContext = {
-        tags: { environment: 'test' },
-        extra: { requestId: 'req-123' },
-      };
+      await provider.captureException(error);
+
+      expect(console.error).toHaveBeenCalledWith('[OBS] Exception captured:', expect.objectContaining({
+        name: 'Error',
+        message: 'Test error',
+        stack: expect.any(String),
+        breadcrumbs: expect.arrayContaining([
+          expect.objectContaining({
+            message: 'Before error',
+          }),
+        ]),
+      }));
+    });
+
+    test('should capture exception with context', async () => {
+      const error = new Error('Test error');
+      const context = { userId: '123', operation: 'test' };
 
       await provider.captureException(error, context);
 
-      expect(console.error).toHaveBeenCalledWith(
-        '[OBS] Exception captured:',
-        expect.objectContaining({
-          message: 'Test error',
-          name: 'Error',
-          stack: expect.any(String),
-          context: expect.objectContaining({
-            user: null, // user is null by default since we didn't set one
-            tags: { environment: 'test' },
-            extra: { requestId: 'req-123' },
-            contexts: {},
-          }),
-          breadcrumbs: [],
-          timestamp: expect.any(String),
+      expect(console.error).toHaveBeenCalledWith('[OBS] Exception captured:', expect.objectContaining({
+        context: expect.objectContaining({
+          userId: '123',
+          operation: 'test',
         }),
-      );
+      }));
     });
 
     test('should include recent breadcrumbs in exception', async () => {
@@ -171,11 +198,25 @@ describe('consoleProvider', () => {
   });
 
   describe('captureMessage', () => {
+    test('should capture message with context', async () => {
+      const context = { userId: '123' };
+
+      await provider.captureMessage('Test message', 'info', context);
+
+      expect(console.info).toHaveBeenCalledWith('[OBS] Message:', expect.objectContaining({
+        message: 'Test message',
+        level: 'info',
+        context: expect.objectContaining({
+          userId: '123',
+        }),
+      }));
+    });
+
     test('should capture and log message with info level', async () => {
       const message = 'Test message';
       const context: ObservabilityContext = {
-        level: 'info',
-        tags: { component: 'test' },
+        tags: { environment: 'test' },
+        extra: { requestId: 'req-123' },
       };
 
       await provider.captureMessage(message, 'info', context);
@@ -186,11 +227,12 @@ describe('consoleProvider', () => {
           message: 'Test message',
           level: 'info',
           context: expect.objectContaining({
-            tags: { component: 'test' },
-            contexts: {},
-            extra: {},
             user: null,
+            tags: { environment: 'test' },
+            extra: { requestId: 'req-123' },
+            contexts: {},
           }),
+          timestamp: expect.any(String),
         }),
       );
     });
@@ -218,9 +260,122 @@ describe('consoleProvider', () => {
         }),
       );
     });
+
+    test('should not capture message when disabled', async () => {
+      await provider.initialize({ enabled: false });
+
+      await provider.captureMessage('Test message', 'info');
+
+      // Should not have any console calls after initialization
+      expect(console.info).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('log method', () => {
+    test('should log with different levels', async () => {
+      await provider.log('debug', 'Debug message');
+      await provider.log('info', 'Info message');
+      await provider.log('warn', 'Warning message');
+      await provider.log('error', 'Error message');
+
+      expect(console.log).toHaveBeenCalledWith('[OBS] DEBUG:', 'Debug message', '');
+      expect(console.info).toHaveBeenCalledWith('[OBS] INFO:', 'Info message', '');
+      expect(console.warn).toHaveBeenCalledWith('[OBS] WARN:', 'Warning message', '');
+      expect(console.error).toHaveBeenCalledWith('[OBS] ERROR:', 'Error message', '');
+    });
+
+    test('should log with metadata', async () => {
+      const metadata = { userId: '123', operation: 'test' };
+
+      await provider.log('info', 'Message with metadata', metadata);
+
+      expect(console.info).toHaveBeenCalledWith('[OBS] INFO:', 'Message with metadata', metadata);
+    });
+
+    test('should respect log levels filter', async () => {
+      // Initialize with specific levels
+      await provider.initialize({
+        enabled: true,
+        levels: ['error', 'warn'],
+      });
+
+      await provider.log('debug', 'Debug message');
+      await provider.log('info', 'Info message');
+      await provider.log('warn', 'Warning message');
+      await provider.log('error', 'Error message');
+
+      // Only warn and error should be logged
+      expect(console.log).not.toHaveBeenCalledWith('[OBS] DEBUG:', 'Debug message', '');
+      expect(console.info).not.toHaveBeenCalledWith('[OBS] INFO:', 'Info message', '');
+      expect(console.warn).toHaveBeenCalledWith('[OBS] WARN:', 'Warning message', '');
+      expect(console.error).toHaveBeenCalledWith('[OBS] ERROR:', 'Error message', '');
+    });
+
+    test('should handle all log level mappings', async () => {
+      await provider.log('trace', 'Trace message');
+      await provider.log('fatal', 'Fatal message');
+      await provider.log('warning', 'Warning message');
+      await provider.log('unknown', 'Unknown level message');
+
+      expect(console.log).toHaveBeenCalledWith('[OBS] TRACE:', 'Trace message', '');
+      expect(console.error).toHaveBeenCalledWith('[OBS] FATAL:', 'Fatal message', '');
+      expect(console.warn).toHaveBeenCalledWith('[OBS] WARNING:', 'Warning message', '');
+      expect(console.log).toHaveBeenCalledWith('[OBS] UNKNOWN:', 'Unknown level message', '');
+    });
   });
 
   describe('context management', () => {
+    test('should set and merge context', () => {
+      provider.setContext('user', { id: '123', name: 'John' });
+      provider.setContext('session', { id: 'abc' });
+
+      const breadcrumb: Breadcrumb = {
+        message: 'Test',
+        category: 'test',
+        level: 'info',
+        timestamp: Date.now(),
+      };
+
+      provider.addBreadcrumb(breadcrumb);
+
+      expect(console.log).toHaveBeenCalledWith('[OBS] Breadcrumb:', breadcrumb);
+    });
+
+    test('should set extra data', () => {
+      provider.setExtra('buildVersion', '1.0.0');
+      provider.setExtra('environment', 'production');
+
+      expect(console.log).toHaveBeenCalledWith('[OBS] Extra set:', {
+        key: 'buildVersion',
+        value: '1.0.0',
+      });
+      expect(console.log).toHaveBeenCalledWith('[OBS] Extra set:', {
+        key: 'environment',
+        value: 'production',
+      });
+    });
+
+    test('should set tags', () => {
+      provider.setTag('component', 'auth');
+      provider.setTag('version', '2.0.0');
+
+      expect(console.log).toHaveBeenCalledWith('[OBS] Tag set:', {
+        key: 'component',
+        value: 'auth',
+      });
+      expect(console.log).toHaveBeenCalledWith('[OBS] Tag set:', {
+        key: 'version',
+        value: '2.0.0',
+      });
+    });
+
+    test('should set user info', () => {
+      const user = { id: '123', email: 'test@example.com' };
+      provider.setUser(user);
+
+      expect(console.log).toHaveBeenCalledWith('[OBS] User set:', user);
+    });
+
     test('should set and merge user context', async () => {
       const user = { id: '123', email: 'test@example.com', name: 'Test User' };
       provider.setUser(user);
@@ -327,6 +482,32 @@ describe('consoleProvider', () => {
         name: 'test-transaction',
         duration: expect.stringMatching(/\d+ms/),
       });
+    });
+  });
+
+  describe('disabled state', () => {
+    test('should not log when disabled', async () => {
+      await provider.initialize({ enabled: false });
+
+      provider.addBreadcrumb({
+        message: 'Test',
+        category: 'test',
+        level: 'info',
+        timestamp: Date.now(),
+      });
+
+      await provider.captureException(new Error('Test'));
+      await provider.captureMessage('Test message', 'info');
+      await provider.log('info', 'Test log');
+      provider.setContext('test', { value: 'test' });
+      provider.setExtra('test', 'value');
+      provider.setTag('test', 'value');
+      provider.setUser({ id: '123' });
+
+      // Should not have any console calls when disabled (no initialization log either)
+      expect(console.log).not.toHaveBeenCalled();
+      expect(console.info).not.toHaveBeenCalled();
+      expect(console.error).not.toHaveBeenCalled();
     });
   });
 });

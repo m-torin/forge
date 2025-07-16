@@ -168,7 +168,31 @@ describe('links Package - Working Comprehensive Coverage', () => {
 
       expect(link).toHaveProperty('id');
       expect(link.url).toBe('https://example.com');
-      expect(mockDubClient.links.create).toHaveBeenCalledWith();
+      expect(mockDubClient.links.create).toHaveBeenCalledWith(expect.objectContaining({
+        url: 'https://example.com',
+        domain: 'custom.com',
+        key: 'custom-key',
+        prefix: 'prefix',
+        trackConversion: true,
+        publicStats: true,
+        tagIds: undefined,
+        comments: 'Test link',
+        expiresAt: '2024-12-31T23:59:59Z',
+        expiredUrl: 'https://expired.com',
+        password: 'secret',
+        proxy: true,
+        title: 'Test Title',
+        description: 'Test Description',
+        image: 'https://example.com/image.png',
+        video: undefined,
+        ios: 'https://apps.apple.com/app',
+        android: 'https://play.google.com/store/apps',
+        geo: {
+          AF: 'https://afghanistan.example.com',
+          US: 'https://usa.example.com',
+        },
+        utm: undefined,
+      }));
     });
 
     test('should handle create link errors', async () => {
@@ -230,7 +254,11 @@ describe('links Package - Working Comprehensive Coverage', () => {
       expect(analytics).toHaveProperty('clicks');
       expect(analytics).toHaveProperty('uniqueClicks');
       expect(analytics).toHaveProperty('topCountries');
-      expect(mockDubClient.analytics.retrieve).toHaveBeenCalledWith();
+      expect(mockDubClient.analytics.retrieve).toHaveBeenCalledWith({
+        linkId: 'test-id',
+        interval: '7d',
+        groupBy: 'timeseries',
+      });
     });
 
     test('should get clicks', async () => {

@@ -150,7 +150,31 @@ describe('links Package - High Coverage Test', () => {
 
       expect(link).toHaveProperty('id', 'test-link-id');
       expect(link.url).toBe('https://example.com');
-      expect(mockDubClient.links.create).toHaveBeenCalledWith();
+      expect(mockDubClient.links.create).toHaveBeenCalledWith(expect.objectContaining({
+        url: 'https://example.com',
+        domain: 'custom.com',
+        key: 'custom-key',
+        prefix: 'prefix',
+        trackConversion: true,
+        publicStats: true,
+        tagIds: undefined,
+        comments: 'Test link',
+        expiresAt: '2024-12-31T23:59:59Z',
+        expiredUrl: 'https://expired.com',
+        password: 'secret',
+        proxy: true,
+        title: 'Test Title',
+        description: 'Test Description',
+        image: 'https://example.com/image.png',
+        video: undefined,
+        ios: 'https://apps.apple.com/app',
+        android: 'https://play.google.com/store/apps',
+        geo: {
+          AF: 'https://afghanistan.example.com',
+          US: 'https://usa.example.com',
+        },
+        utm: undefined,
+      }));
     });
 
     test('should handle createLink errors', async () => {
@@ -224,7 +248,11 @@ describe('links Package - High Coverage Test', () => {
       expect(analytics).toHaveProperty('clicks');
       expect(analytics).toHaveProperty('uniqueClicks');
       expect(analytics).toHaveProperty('topCountries');
-      expect(mockDubClient.analytics.retrieve).toHaveBeenCalledWith();
+      expect(mockDubClient.analytics.retrieve).toHaveBeenCalledWith({
+        linkId: 'test-id',
+        interval: '7d',
+        groupBy: 'timeseries',
+      });
     });
 
     test('should get clicks with pagination', async () => {
@@ -235,7 +263,10 @@ describe('links Package - High Coverage Test', () => {
 
       expect(clicks).toHaveLength(1);
       expect(clicks[0]).toHaveProperty('country', 'US');
-      expect(mockDubClient.links.getClicks).toHaveBeenCalledWith();
+      expect(mockDubClient.links.getClicks).toHaveBeenCalledWith('test-id', {
+        page: 1,
+        pageSize: 100,
+      });
     });
 
     test('should bulk create links', async () => {
@@ -248,7 +279,10 @@ describe('links Package - High Coverage Test', () => {
 
       expect(response.created).toHaveLength(2);
       expect(response.created[0]).toHaveProperty('id', 'bulk-1');
-      expect(mockDubClient.links.createMany).toHaveBeenCalledWith();
+      expect(mockDubClient.links.createMany).toHaveBeenCalledWith([
+        { url: 'https://example1.com', domain: 'dub.sh' },
+        { url: 'https://example2.com', domain: 'dub.sh' },
+      ]);
     });
 
     test('should handle transform edge cases', async () => {
