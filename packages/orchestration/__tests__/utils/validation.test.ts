@@ -40,7 +40,7 @@ describe('validation utilities', () => {
         steps: [],
       };
 
-      expect(() => validateWorkflowDefinition(definition as any)).toThrow('Invalid workflow definition');
+      expect(() => validateWorkflowDefinition(definition as any)).toThrow('Workflow definition validation failed');
     });
 
     test('should reject workflow without steps', () => {
@@ -49,7 +49,7 @@ describe('validation utilities', () => {
         name: 'Test Workflow',
       };
 
-      expect(() => validateWorkflowDefinition(definition as any)).toThrow('Invalid workflow definition');
+      expect(() => validateWorkflowDefinition(definition as any)).toThrow('Workflow definition validation failed');
     });
 
     test('should reject workflow with empty steps array', () => {
@@ -59,7 +59,7 @@ describe('validation utilities', () => {
         steps: [],
       };
 
-      expect(() => validateWorkflowDefinition(definition)).toThrow('Invalid workflow definition');
+      expect(() => validateWorkflowDefinition(definition)).toThrow('Workflow definition validation failed');
     });
 
     test('should validate workflow with multiple steps', () => {
@@ -120,7 +120,7 @@ describe('validation utilities', () => {
         type: 'task',
       };
 
-      expect(() => validateWorkflowStep(step as any)).toThrow('Invalid workflow step');
+      expect(() => validateWorkflowStep(step as any)).toThrow('Workflow step validation failed');
     });
 
     test('should reject step without action', () => {
@@ -129,7 +129,7 @@ describe('validation utilities', () => {
         name: 'Test Step',
       };
 
-      expect(() => validateWorkflowStep(step as any)).toThrow('Invalid workflow step');
+      expect(() => validateWorkflowStep(step as any)).toThrow('Workflow step validation failed');
     });
 
     test('should validate step with valid actions', () => {
@@ -467,15 +467,15 @@ describe('validation utilities', () => {
 
   describe('edge Cases', () => {
     test('should handle null and undefined inputs gracefully', () => {
-      expect(() => validateWorkflowDefinition(null as any)).toThrow('Invalid workflow definition');
-      expect(() => validateWorkflowDefinition(undefined as any)).toThrow('Invalid workflow definition');
-      expect(() => validateWorkflowStep(null as any)).toThrow('Invalid workflow step');
-      expect(() => validateWorkflowStep(undefined as any)).toThrow('Invalid workflow step');
+      expect(() => validateWorkflowDefinition(null as any)).toThrow('Workflow definition validation failed');
+      expect(() => validateWorkflowDefinition(undefined as any)).toThrow('Workflow definition validation failed');
+      expect(() => validateWorkflowStep(null as any)).toThrow('Workflow step validation failed');
+      expect(() => validateWorkflowStep(undefined as any)).toThrow('Workflow step validation failed');
     });
 
     test('should handle empty objects', () => {
-      expect(() => validateWorkflowDefinition({})).toThrow('Invalid workflow definition');
-      expect(() => validateWorkflowStep({})).toThrow('Invalid workflow step');
+      expect(() => validateWorkflowDefinition({})).toThrow('Workflow definition validation failed');
+      expect(() => validateWorkflowStep({})).toThrow('Workflow step validation failed');
       expect(() => validateScheduleConfig({})).toThrow('Invalid schedule configuration');
     });
 

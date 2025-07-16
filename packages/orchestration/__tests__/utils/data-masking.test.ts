@@ -221,12 +221,12 @@ describe('data-masking utilities', () => {
   describe('_withMaskedErrors', () => {
     test('should wrap function to mask errors', async () => {
       const originalFn = () => {
-        throw new Error('Password: secret123');
+        throw new Error('Token: abcdef1234567890abcdef1234567890abcdef12');
       };
 
       const wrappedFn = withMaskedErrors(originalFn);
 
-      await expect(wrappedFn()).rejects.toThrow('Sensitive data removed');
+      await expect(wrappedFn()).rejects.toThrow('[REDACTED_TOKEN]');
     });
 
     test('should preserve function return value', async () => {
