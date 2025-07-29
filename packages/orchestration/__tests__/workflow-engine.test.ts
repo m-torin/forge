@@ -8,9 +8,6 @@ import {
 
 import { createTestWorkflow, createUpstashWorkflowConfig } from './fixtures';
 
-// Mock server-only to prevent errors
-vi.mock('server-only', () => ({}));
-
 // Mock the removed placeholder functions for testing
 const createMonitoringService = (_provider?: any) => ({
   getHealthReport: vi.fn(() => ({ providers: [], status: 'healthy' })),
@@ -32,36 +29,7 @@ const createSchedulingService = (_provider?: any) => ({
   unschedule: vi.fn(),
 });
 
-// Mock Upstash dependencies
-vi.mock('@upstash/workflow/nextjs', () => ({
-  serve: vi.fn().mockReturnValue({
-    GET: vi.fn(),
-    POST: vi.fn(),
-  }),
-}));
-
-vi.mock('@upstash/qstash', () => ({
-  Client: vi.fn(() => ({
-    messages: {
-      delete: vi.fn().mockResolvedValue(true),
-    },
-    publishJSON: vi.fn().mockResolvedValue({ messageId: 'msg_123' }),
-    schedules: {
-      create: vi.fn().mockResolvedValue({ scheduleId: 'schedule_123' }),
-      delete: vi.fn().mockResolvedValue(true),
-    },
-  })),
-}));
-
-vi.mock('@upstash/redis', () => ({
-  Redis: vi.fn(() => ({
-    del: vi.fn().mockResolvedValue(1),
-    get: vi.fn().mockResolvedValue(null),
-    keys: vi.fn().mockResolvedValue([]),
-    ping: vi.fn().mockResolvedValue('PONG'),
-    set: vi.fn().mockResolvedValue('OK'),
-  })),
-}));
+// 3rd party mocks removed - using @repo/qa centralized mocks
 
 describe('workflow Engine', () => {
   let mockProvider: UpstashWorkflowProvider;

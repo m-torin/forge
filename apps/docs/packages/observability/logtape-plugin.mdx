@@ -1,0 +1,229 @@
+---
+title: LogTape Plugin
+description: Integration with LogTape logging library for observability
+---
+
+# LogTape Plugin
+
+LogTape is a modern, zero-dependency logging library for TypeScript. This plugin
+provides integration with the observability system.
+
+## Features
+
+- **Zero Dependencies**: LogTape has no external dependencies
+- **Multiple Sinks**: Console, file, CloudWatch, Sentry, and more
+- **Structured Logging**: Native TypeScript support with structured data
+- **Context Propagation**: AsyncLocalStorage for request tracking
+- **Lazy Evaluation**: Performance optimization for expensive computations
+- **Filtering**: Advanced log filtering capabilities
+- **Framework Integration**: Works with Express, Koa, SvelteKit, Hono, and more
+
+## Environment Variables
+
+### Server Variables
+
+- `LOGTAPE_ENABLED`: Enable/disable LogTape plugin (default: false)
+- `LOGTAPE_LOG_LEVEL`: Log level (trace, debug, info, warning, error, fatal)
+  (default: info)
+- `LOGTAPE_CONSOLE_ENABLED`: Enable console output (default: true)
+- `LOGTAPE_FILE_PATH`: Path to log file (optional)
+- `LOGTAPE_CLOUDWATCH_LOG_GROUP`: CloudWatch log group name (optional)
+- `LOGTAPE_CLOUDWATCH_REGION`: CloudWatch region (optional)
+- `LOGTAPE_SENTRY_DSN`: Sentry DSN for error tracking (optional)
+- `LOGTAPE_CATEGORY_PREFIX`: Category prefix for logs (default: observability)
+
+### Client Variables
+
+- `NEXT_PUBLIC_LOGTAPE_ENABLED`: Enable LogTape in client (default: false)
+- `NEXT_PUBLIC_LOGTAPE_LOG_LEVEL`: Client log level (default: info)
+
+## Usage
+
+### Basic Usage
+
+```typescript
+import { createLogTapePlugin } from "@repo/observability-new/plugins/logtape";
+
+const logTapePlugin = createLogTapePlugin({
+  enabled: true,
+  logLevel: "info",
+  sinks: {
+    console: true,
+    file: { path: "/var/log/app.log" }
+  }
+});
+
+await logTapePlugin.initialize();
+```
+
+### With Multiple Sinks
+
+```typescript
+const logTapePlugin = createLogTapePlugin({
+  enabled: true,
+  logLevel: "debug",
+  sinks: {
+    console: true,
+    file: { path: "/var/log/app.log" },
+    cloudwatch: {
+      logGroup: "/aws/lambda/my-function",
+      region: "us-east-1"
+    },
+    sentry: {
+      dsn: "https://your-sentry-dsn"
+    }
+  },
+  contextPropagation: true
+});
+```
+
+### Advanced Configuration
+
+```typescript
+const logTapePlugin = createLogTapePlugin({
+  enabled: true,
+  logLevel: "info",
+  categoryPrefix: "myapp",
+  sinks: {
+    console: true,
+    file: { path: "/var/log/app.jsonl" }
+  },
+  contextPropagation: true,
+  nonBlocking: true,
+  filters: ["excludeDebug"]
+});
+```
+
+## Optional Dependencies
+
+LogTape supports various optional sink packages:
+
+- `@logtape/file`: File logging
+- `@logtape/cloudwatch-logs`: CloudWatch Logs integration
+- `@logtape/sentry`: Sentry integration
+- `@logtape/adaptor-pino`: Pino adaptor
+
+Install only the sinks you need:
+
+```bash
+npm install @logtape/file @logtape/cloudwatch-logs @logtape/sentry
+```
+
+## Framework Integration
+
+LogTape provides excellent integration with popular frameworks:
+
+### Express
+
+```typescript
+import { configure, getLogger, withContext } from "@logtape/logtape";
+
+const logger = getLogger(["express"]);
+
+app.use((req, res, next) => {
+  withContext({ requestId: crypto.randomUUID() }, () => {
+    logger.info("Request started", { method: req.method, url: req.url });
+    next();
+  });
+});
+```
+
+### Next.js
+
+```typescript
+// middleware.ts
+import { Logger } from "@logtape/logtape";
+
+export async function middleware(request: NextRequest) {
+  const logger = new Logger({ source: "middleware" });
+  logger.info("Middleware executed", { url: request.url });
+  await logger.flush();
+}
+```
+
+## Performance Features
+
+### Lazy Evaluation
+
+```typescript
+logger.debug((l) => l`Expensive computation: ${computeExpensiveValue()}`);
+```
+
+### Non-blocking Mode
+
+```typescript
+const logTapePlugin = createLogTapePlugin({
+  nonBlocking: true // Buffers logs in background
+});
+```
+
+### Context Propagation
+
+```typescript
+const logTapePlugin = createLogTapePlugin({
+  contextPropagation: true // Enables AsyncLocalStorage
+});
+```
+
+## Structured Logging
+
+LogTape excels at structured logging:
+
+```typescript
+logger.info("User logged in", {
+  userId: 123456,
+  username: "johndoe",
+  loginTime: new Date(),
+  metadata: {
+    userAgent: req.get("User-Agent"),
+    ip: req.ip
+  }
+});
+```
+
+## Filtering
+
+```typescript
+// In configuration
+filters: {
+  excludeDebug: (record) => record.level !== 'debug',
+  highPriorityOnly: (record) =>
+    record.properties.priority === 'high' || record.level === 'error'
+}
+```
+
+## Error Handling
+
+LogTape provides robust error handling:
+
+```typescript
+// Automatic error capture
+try {
+  await riskyOperation();
+} catch (error) {
+  logTapePlugin.captureException(error, {
+    extra: { operation: "riskyOperation" },
+    tags: { module: "payment" }
+  });
+}
+```
+
+## Best Practices
+
+1. **Use structured logging** for better searchability
+2. **Enable context propagation** for request tracking
+3. **Use appropriate log levels** to avoid noise
+4. **Configure multiple sinks** for redundancy
+5. **Use lazy evaluation** for expensive computations
+6. **Enable filtering** to reduce log volume
+7. **Monitor sink health** with meta loggers
+
+## Migration from HTTP API
+
+LogTape provides a more modern, feature-rich alternative to HTTP-based logging:
+
+- **Better Performance**: Zero dependencies, optimized for TypeScript
+- **More Sinks**: Console, file, CloudWatch, Sentry, database, and more
+- **Better Integration**: Framework-specific optimizations
+- **Advanced Features**: Context propagation, lazy evaluation, filtering
+- **Type Safety**: Full TypeScript support throughout

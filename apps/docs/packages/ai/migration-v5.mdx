@@ -1,0 +1,229 @@
+---
+title: AI SDK v5 Migration Guide
+description: Complete migration guide for upgrading to AI SDK v5 compliance
+---
+
+# AI SDK v5 Migration Guide
+
+This document explains the changes made to achieve full AI SDK v5 compliance.
+
+## 🚀 What Changed
+
+### 1. **Response Normalizer - REMOVED** ✅
+
+- **Deleted**: `src/shared/utils/response-normalizer.ts`
+- **Reason**: AI SDK v5 standardizes responses across all providers
+- **Action**: Remove all `normalizeResponse()` calls - use raw AI SDK responses
+
+### 2. **Custom Logging - REPLACED** ✅
+
+- **Deleted**: `src/shared/middleware/logging.ts`
+- **Added**: `src/shared/middleware/telemetry.ts`
+- **Migration**: Use v5 built-in telemetry + custom middleware
+
+**Before (v4)**:
+
+```typescript
+import { defaultLogger } from "@repo/ai/shared";
+defaultLogger.logRequest(provider, operation, options);
+```
+
+**After (v5)**:
+
+```typescript
+import { telemetryMiddleware, defaultTelemetryConfig } from "@repo/ai/shared";
+
+// Option 1: Built-in telemetry
+const result = await generateText({
+  model: openai("gpt-4o"),
+  experimental_telemetry: defaultTelemetryConfig
+  // ...
+});
+
+// Option 2: Custom middleware
+const model = wrapLanguageModel({
+  model: openai("gpt-4o"),
+  middleware: telemetryMiddleware
+});
+```
+
+### 3. **Rate Limiting - MODERNIZED** ✅
+
+- **Deleted**: `src/shared/middleware/rate-limiting.ts`
+- **Added**: `src/shared/utils/rate-limit.ts`
+- **Migration**: Use v5-compatible rate limiting patterns
+
+**Before (v4)**:
+
+```typescript
+import { defaultRateLimiter } from "@repo/ai/shared";
+const { allowed } = await defaultRateLimiter.checkRateLimit(provider);
+```
+
+**After (v5)**:
+
+```typescript
+import { aiRateLimit, withRateLimit } from '@repo/ai/shared';
+
+// Option 1: Direct usage
+const { success } = await aiRateLimit.limit(req.ip ?? 'anonymous');
+if (!success) return new Response('Rate limited', { status: 429 });
+
+// Option 2: Middleware pattern
+export async function POST(req: Request) {
+  return withRateLimit(req, async () => {
+    // Your AI logic here
+    const result = await generateText({ ... });
+    return result.toUIMessageStreamResponse();
+  });
+}
+```
+
+### 4. **Provider Configuration - MODERNIZED** ✅
+
+- **Added**: `src/server/providers/registry.ts`
+- **Migration**: Use v5 provider registry patterns
+
+**Before (v4)**:
+
+```typescript
+import { createAnthropicModel } from "@repo/ai/server";
+const model = createAnthropicModel("claude-3-sonnet");
+```
+
+**After (v5)**:
+
+```typescript
+import { registry, models } from "@repo/ai/server";
+
+// Option 1: Registry access
+const model = registry.languageModel("anthropic:sonnet");
+
+// Option 2: Helper functions
+const model = models.language.claude();
+
+// Option 3: Direct model helper
+const model = getModel("anthropic", "sonnet");
+```
+
+## 🎯 New v5 Patterns
+
+### Provider Registry
+
+```typescript
+import { registry, models } from "@repo/ai/server";
+
+// Access any configured model
+const gpt4 = registry.languageModel("openai:gpt-4o");
+const claude = registry.languageModel("anthropic:sonnet");
+const gemini = registry.languageModel("google:gemini-pro");
+
+// Use helper shortcuts
+const bestModel = models.language.best();
+const fastModel = models.language.fast();
+const reasoningModel = models.language.reasoning();
+```
+
+### Custom Model Configuration
+
+```typescript
+// Models with specific settings are pre-configured
+const reasoningModel = models.language.reasoning(); // OpenAI with high reasoning effort
+const creativeModel = registry.languageModel("openai:gpt-4o-creative"); // High temperature
+const claudeReasoning = models.language.claudeReasoning(); // Anthropic with thinking enabled
+```
+
+### Telemetry Integration
+
+```typescript
+// Built-in telemetry (recommended)
+const result = await generateText({
+  model: models.language.best(),
+  experimental_telemetry: { isEnabled: true },
+  prompt: "Your prompt here"
+});
+
+// Access telemetry data
+console.log(result.usage); // Token usage
+console.log(result.response.timestamp); // Response metadata
+```
+
+### Rate Limiting in API Routes
+
+```typescript
+// Next.js API route with rate limiting
+export async function POST(req: Request) {
+  return withRateLimit(req, async () => {
+    const result = await streamText({
+      model: models.language.best(),
+      messages: await req.json()
+    });
+
+    return result.toUIMessageStreamResponse();
+  });
+}
+```
+
+## 🔧 Backward Compatibility
+
+All existing APIs continue to work, but show deprecation warnings:
+
+```typescript
+// Still works, but deprecated
+import { createAnthropicModel } from "@repo/ai/server";
+const model = createAnthropicModel("claude-3-sonnet");
+
+// New recommended approach
+import { models } from "@repo/ai/server";
+const model = models.language.claude();
+```
+
+## 📦 Dependencies
+
+No new dependencies were added. The implementation uses:
+
+- Existing `ai` package (v5 features)
+- Existing `@ai-sdk/*` providers
+- Mock Redis for development (no Upstash required)
+
+## 🚨 Breaking Changes
+
+### Removed Functions
+
+- `normalizeResponse()` - Use raw AI SDK responses
+- `AILogger` class - Use `experimental_telemetry` or `telemetryMiddleware`
+- `AIRateLimiter` class - Use `aiRateLimit` utility
+
+### Import Changes
+
+```typescript
+// ❌ These imports no longer work
+import { normalizeResponse } from "@repo/ai/shared";
+import { defaultLogger } from "@repo/ai/shared";
+import { defaultRateLimiter } from "@repo/ai/shared";
+
+// ✅ Use these instead
+import { telemetryMiddleware } from "@repo/ai/shared";
+import { aiRateLimit } from "@repo/ai/shared";
+import { registry, models } from "@repo/ai/server";
+```
+
+## ✅ Benefits
+
+1. **Full AI SDK v5 compliance** - Latest features and patterns
+2. **Better performance** - Built-in optimizations
+3. **Improved telemetry** - OpenTelemetry integration
+4. **Standardized responses** - No custom normalization needed
+5. **Modern rate limiting** - Industry-standard patterns
+6. **Flexible provider configuration** - Easy to add new providers
+
+## 🎯 Next Steps
+
+1. Update your applications to use the new patterns
+2. Remove any direct usage of deleted functions
+3. Test rate limiting with your load patterns
+4. Monitor telemetry data in your observability stack
+5. Consider migrating to the new provider registry for better flexibility
+
+The migration maintains full backward compatibility while providing access to
+all AI SDK v5 features.

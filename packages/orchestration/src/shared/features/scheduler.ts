@@ -3,7 +3,7 @@
  * Advanced cron scheduling with timezone handling and schedule management
  */
 
-import { createServerObservability } from '@repo/observability/shared-env';
+import { createServerObservability } from '@repo/observability/server/next';
 import { WorkflowDefinition, WorkflowProvider } from '../types/workflow';
 
 export interface EnhancedScheduleConfig {
@@ -112,12 +112,10 @@ export class AdvancedScheduler {
         const executionId = await this.executeScheduledWorkflow(schedule, executionTime);
         executionIds.push(executionId);
       } catch (error) {
-        const logger = await createServerObservability({
-          providers: {
-            console: { enabled: true },
-          },
+        const logger = await createServerObservability();
+        await logger.log('error', `Failed to catch up execution for schedule ${scheduleId}`, {
+          error,
         });
-        await logger.log('error', `Failed to catch up execution for schedule ${scheduleId}`, error);
       }
     }
 

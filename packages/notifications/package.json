@@ -22,8 +22,8 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@knocklabs/node": "^1.11.0",
-    "@knocklabs/react": "^0.7.21",
+    "@knocklabs/node": "^1.11.1",
+    "@knocklabs/react": "^0.7.25",
     "@mantine/notifications": "catalog:",
     "@repo/observability": "workspace:*",
     "@t3-oss/env-nextjs": "catalog:",

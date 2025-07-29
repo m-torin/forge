@@ -16,8 +16,8 @@
  * ```
  */
 
-import { logError, logWarn } from '@repo/observability/server/edge';
-import type { Adapter } from '@vercel/flags';
+import { logError, logWarn } from '@repo/observability';
+import type { Adapter } from 'flags';
 import { safeEnv } from '../env';
 
 // Re-export Edge Config adapter (already edge-compatible)
@@ -104,10 +104,10 @@ export function createPostHogEdgeAdapter(
             const data = await response.json();
             return Boolean(data.featureFlags?.[key]);
           } catch (error) {
-            logError(
-              'PostHog edge adapter error',
-              error instanceof Error ? error : new Error(String(error)),
-            );
+            logError(error instanceof Error ? error : new Error(String(error)), {
+              provider: 'posthog-edge',
+              method: 'isFeatureEnabled',
+            });
             return false;
           }
         },
@@ -144,10 +144,10 @@ export function createPostHogEdgeAdapter(
             const value = data.featureFlags?.[key];
             return value !== undefined ? value : false;
           } catch (error) {
-            logError(
-              'PostHog edge adapter error',
-              error instanceof Error ? error : new Error(String(error)),
-            );
+            logError(error instanceof Error ? error : new Error(String(error)), {
+              provider: 'posthog-edge',
+              method: 'featureFlagValue',
+            });
             return false;
           }
         },
@@ -189,10 +189,10 @@ export function createPostHogEdgeAdapter(
             }
             return (payload as T) || defaultPayload;
           } catch (error) {
-            logError(
-              'PostHog edge adapter error',
-              error instanceof Error ? error : new Error(String(error)),
-            );
+            logError(error instanceof Error ? error : new Error(String(error)), {
+              provider: 'posthog-edge',
+              method: 'featureFlagPayload',
+            });
             return {} as T;
           }
         },
@@ -266,10 +266,10 @@ export async function getPostHogProviderData(options: {
       flags: transformedFlags,
     };
   } catch (error) {
-    logError(
-      'Error fetching PostHog provider data',
-      error instanceof Error ? error : new Error(String(error)),
-    );
+    logError(error instanceof Error ? error : new Error(String(error)), {
+      provider: 'posthog-edge',
+      method: 'getProviderData',
+    });
     throw error;
   }
 }

@@ -140,7 +140,7 @@ export class AIErrorHandler {
     }
 
     // Vercel AI SDK errors
-    if (error instanceof APICallError) {
+    if (APICallError.isInstance(error)) {
       return new AIError.APICallError(error.message, {
         url: (error as any).url,
         statusCode: (error as any).statusCode,
@@ -148,13 +148,13 @@ export class AIErrorHandler {
       });
     }
 
-    if (error instanceof InvalidPromptError) {
+    if (InvalidPromptError.isInstance(error)) {
       return new ConfigurationError(error.message, {
         prompt: (error as any).prompt,
       });
     }
 
-    if (error instanceof InvalidResponseDataError) {
+    if (InvalidResponseDataError.isInstance(error)) {
       return new AIError.InvalidResponseError(error.message, {
         responseData: (error as any).responseData,
       });
@@ -218,8 +218,9 @@ export class AIErrorHandler {
         stack: error.stack,
       });
     } else {
-      logError(`[${error.code}] ${error.message}`, error, {
+      logError(`[${error.code}] ${error.message}`, {
         ...error.context,
+        error,
         timestamp: error.timestamp,
       });
     }

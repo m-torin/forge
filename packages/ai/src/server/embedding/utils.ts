@@ -1,6 +1,21 @@
 import { openai } from '@ai-sdk/openai';
 import { cosineSimilarity, embed, embedMany } from 'ai';
-import type { EmbeddingResponse, EmbedOptions } from '../../shared/types';
+
+// Local types for compatibility
+interface EmbeddingResponse {
+  embeddings: number[][];
+  usage: {
+    tokens: number;
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+  };
+}
+
+interface EmbedOptions {
+  input: string | string[];
+  model?: string;
+}
 
 /**
  * Enhanced embedding utility for batch operations
@@ -48,8 +63,9 @@ export class EmbeddingManager {
     return {
       embeddings: result.embeddings,
       usage: {
-        completionTokens: 0,
-        promptTokens: result.usage?.tokens ?? 0,
+        tokens: result.usage?.tokens ?? 0,
+        promptTokens: result.usage?.tokens ?? 0, // For embeddings, all tokens are input tokens
+        completionTokens: 0, // Embeddings don't have completion tokens
         totalTokens: result.usage?.tokens ?? 0,
       },
     };

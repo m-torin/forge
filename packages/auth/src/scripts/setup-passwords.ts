@@ -4,6 +4,7 @@
  */
 
 import { prisma } from '@repo/database/prisma';
+import { logError, logInfo } from '@repo/observability';
 import { hashPassword } from 'better-auth/crypto';
 
 interface UserWithPassword {
@@ -23,12 +24,12 @@ const users: UserWithPassword[] = [
 ];
 
 async function setupPasswords() {
-  console.log('🔑 Setting up passwords for existing users...');
-  console.log('');
+  logInfo('🔑 Setting up passwords for existing users...');
+  logInfo('');
 
   for (const userData of users) {
     try {
-      console.log(`Setting password for ${userData.email}...`);
+      logInfo(`Setting password for ${userData.email}...`);
 
       // Find the user in the database
       const user = await prisma.user.findUnique({
@@ -36,7 +37,7 @@ async function setupPasswords() {
       });
 
       if (!user) {
-        console.log(`  ❌ User not found: ${userData.email}`);
+        logInfo(`  ❌ User not found: ${userData.email}`);
         continue;
       }
 
@@ -57,7 +58,7 @@ async function setupPasswords() {
           where: { id: existingAccount.id },
           data: { password: hashedPassword },
         });
-        console.log(`  ✅ Password updated`);
+        logInfo(`  ✅ Password updated`);
       } else {
         // Create new password account
         await prisma.account.create({
@@ -71,7 +72,7 @@ async function setupPasswords() {
             updatedAt: new Date(),
           },
         });
-        console.log(`  ✅ Password created`);
+        logInfo(`  ✅ Password created`);
       }
 
       // Update user to be email verified
@@ -79,25 +80,25 @@ async function setupPasswords() {
         where: { id: user.id },
         data: { emailVerified: true },
       });
-      console.log(`  ✅ Email verified`);
+      logInfo(`  ✅ Email verified`);
     } catch (error: any) {
-      console.error(`  ❌ Error setting password for ${userData.email}:`, error.message || error);
+      logError(`  ❌ Error setting password for ${userData.email}:`, error.message || error);
     }
   }
 
-  console.log('');
-  console.log('✅ Password setup completed!');
-  console.log('');
-  console.log('You can now login with:');
-  console.log('  Admin: admin@example.com / admin123');
-  console.log('  User: user@example.com / user1234');
+  logInfo('');
+  logInfo('✅ Password setup completed!');
+  logInfo('');
+  logInfo('You can now login with:');
+  logInfo('  Admin: admin@example.com / admin123');
+  logInfo('  User: user@example.com / user1234');
 }
 
 void (async () => {
   try {
     await setupPasswords();
   } catch (error: any) {
-    console.error(error);
+    logError(error);
   } finally {
     await prisma.$disconnect();
   }

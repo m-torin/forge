@@ -42,20 +42,25 @@ export {
 export * from './utils';
 
 // Error handling - specific exports to avoid conflicts
+export { ApplicationAIError, handleAIProviderError } from './errors';
+
+// Error recovery from middleware
 export {
-  ApplicationAIError,
   createErrorRecovery,
   defaultErrorRecovery,
-  handleAIProviderError,
-  type AIErrorCode,
-  type AIErrorType,
-  type ErrorRecoveryStrategy,
-  type ErrorSurface,
-  type ErrorVisibility,
-} from './errors';
+  type RetryStrategy,
+} from './middleware/error-recovery';
 
 // MCP Tools
 export * from './mcp';
+
+// MCP specific exports for convenience
+export {
+  createMCPToolsForStreamText,
+  createMCPToolsWithDefaults,
+  createMCPToolsWithStreamLifecycle,
+  testMCPConnectivity,
+} from './mcp/next-pattern';
 
 // Tools - specific exports to avoid conflicts
 export {
@@ -75,8 +80,9 @@ export {
   getAllTools,
   getToolsByCategory,
   getToolsByTags,
-  // Legacy tools
+  /** @deprecated Legacy tool registry - use AI SDK v5 tools instead */
   globalToolRegistry,
+  /** @deprecated Legacy tool registration - use AI SDK v5 tools instead */
   registerDefaultTools,
   registerStandardTools,
   searchTool,
@@ -84,8 +90,8 @@ export {
   simpleToolRegistry,
   tool,
   type ToolMetadata as AISDKToolMetadata,
+  /** @deprecated Use AISDKToolMetadata instead */
   type ToolMetadata as LegacyToolMetadata,
-  type ToolContext,
   type ToolWithMetadata,
 } from './tools';
 
@@ -102,8 +108,15 @@ export {
   type ToolsConfig,
 } from '../shared/tools';
 
-// Embedding Support
+// Embedding Support - v5 Enhanced
 export * from './embedding';
+// v5 Enhanced embedding utilities
+export {
+  EnhancedEmbeddingManager,
+  createEnhancedEmbeddingManager,
+  enhancedEmbedding,
+  type EnhancedEmbeddingOptions,
+} from './embedding/enhanced-utils';
 
 // Vector Database Support
 export * from './vector';
@@ -119,32 +132,77 @@ export {
 export * from './vector/ai-sdk-integration';
 
 // Document Processing
-export * from './document';
+// NOTE: Document loaders use Node.js fs/promises and should be imported separately if needed
+// export * from './document';
 
-// RAG (Retrieval Augmented Generation) - explicit exports to avoid conflicts
+// RAG (Retrieval Augmented Generation) - comprehensive enhanced implementation
 export {
-  // From enhanced-rag.ts - using aliased exports
-  DocumentProcessor,
-  RAGService,
-  createRAGSystem,
-  type DocumentProcessorConfig,
-  type ChunkingOptions as RAGChunkingOptions,
-  // From types.ts
-  type RAGConfig,
-  type RAGContext,
-  type RAGDocument,
-  type DocumentChunk as RAGDocumentChunk,
-  type RAGPipeline,
-  type RAGResponse,
-  type RAGSearchResult,
-  type RAGServiceConfig,
+  // Complete RAG system
+  createCompleteRAG,
+  createProductionRAG,
+  // Core RAG functionality
+  createRAGDatabaseBridge,
+  createRAGDatabaseBridgeFromEnv,
+  createRAGMiddleware,
+  createRAGMiddlewareFromEnv,
+  createStructuredRAG,
+  initializeRAGDegradation,
+  initializeRAGHealthMonitoring,
+  // Enhanced features
+  ragCircuitBreakerRegistry,
+  ragRetry,
+  // Schemas for structured responses
+  ragSchemas,
+  type BaseRAGResponse,
+  type CompleteRAGConfig,
+  type RAGDatabaseBridge,
+  // Types
+  type RAGDatabaseConfig,
+  type StructuredRAGConfig,
 } from './rag';
 
 // Streaming utilities
 export * from './streaming';
 
+// Next.js streaming utilities
+export {
+  streamObjectGeneration,
+  streamTextGeneration,
+  type StreamHandler,
+  type StreamObjectConfig,
+  type StreamTextConfig,
+} from './next/streaming-transformations';
+
 // Artifact/Output handling
 export * from './artifacts';
+
+// AI SDK v5 Structured Data Generation
+export * from './generation';
+export {
+  CommonSchemas,
+  StructuredDataGenerator,
+  StructuredUtils,
+  createStructuredGenerator,
+  quickGenerate,
+} from './generation/structured-data';
+
+// AI SDK v5 Advanced Middleware
+export {
+  RetryError,
+  cacheUtils,
+  cachingMiddleware,
+  createCachingMiddleware,
+  createLoggingMiddleware,
+  createRetryMiddleware,
+  loggingMiddleware,
+  retryPresets,
+  retryUtils,
+  type CacheEntry,
+  type CachingOptions,
+  type LoggingOptions,
+  type RetryConfig,
+  type RetryInfo,
+} from './middleware';
 
 // Model selection utilities - specific exports to avoid conflicts
 export {
@@ -157,3 +215,58 @@ export {
   type ModelSelectionCriteria,
   type UserEntitlements,
 } from './models';
+
+// AI SDK v5 Provider Registry
+export { getDefaultModel, getLegacyModel, getModel, models, registry } from './providers/registry';
+
+// AI SDK v5 Enhanced Lifecycle Hooks
+export {
+  LifecycleManager,
+  chainHooks,
+  createLifecycleManager,
+  createLifecycleWrapper,
+  lifecyclePresets,
+  wrapModelWithLifecycle,
+  type CompletionHookContext,
+  type ErrorHookContext,
+  type GenerationHookContext,
+  type GenerationHookResult,
+  type LifecycleContext,
+  type LifecycleHooks,
+  type ToolCallHookContext,
+} from './lifecycle';
+
+// AI SDK v5 Media Generation
+export {
+  ImageGenerationManager,
+  createImageGenerator,
+  imageGenerators,
+  imageUtils,
+  quickImage,
+  type ImageGenerationOptions,
+  type ImageGenerationResult,
+} from './media/image-generation';
+
+export {
+  SpeechManager,
+  TranscriptionManager,
+  audioUtils,
+  createSpeechManager,
+  createTranscriptionManager,
+  quickAudio,
+  type SpeechGenerationOptions,
+  type SpeechResult,
+  type TranscriptionOptions,
+  type TranscriptionResult,
+} from './media/audio-processing';
+
+// AI SDK v5 Experimental Features
+export {
+  OutputProcessor,
+  enhancedGeneration,
+  outputProcessors,
+  outputSchemas,
+  type EnhancedOutputResult,
+  type OutputTransformConfig,
+  type StreamingOutputProcessor,
+} from './experimental';

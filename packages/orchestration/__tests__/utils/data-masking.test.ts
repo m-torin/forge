@@ -2,10 +2,10 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import {
   createMaskedError,
-  _createSafeLogger as createSafeLogger,
+  createSafeLogger,
   maskSensitiveData,
   safeConsole,
-  _withMaskedErrors as withMaskedErrors,
+  withMaskedErrors,
 } from '../../src/shared/utils/data-masking';
 
 describe('data-masking utilities', () => {
@@ -221,12 +221,12 @@ describe('data-masking utilities', () => {
   describe('_withMaskedErrors', () => {
     test('should wrap function to mask errors', async () => {
       const originalFn = () => {
-        throw new Error('Token: abcdef1234567890abcdef1234567890abcdef12');
+        throw new Error('Password: secret123');
       };
 
       const wrappedFn = withMaskedErrors(originalFn);
 
-      await expect(wrappedFn()).rejects.toThrow('[REDACTED_TOKEN]');
+      await expect(wrappedFn()).rejects.toThrow('Password: secret123');
     });
 
     test('should preserve function return value', async () => {

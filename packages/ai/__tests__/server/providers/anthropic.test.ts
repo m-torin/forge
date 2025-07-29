@@ -1,35 +1,86 @@
-import { beforeEach, describe, expect, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-// Mock AI SDK
-vi.mock('ai', () => ({
-  tool: vi.fn(),
-  generateText: vi.fn(),
-  generateObject: vi.fn(),
-  streamText: vi.fn(),
-  anthropic: vi.fn(() => ({
-    chat: vi.fn(),
-    completion: vi.fn(),
+/**
+ * Anthropic Provider Tests - AI SDK v5 Patterns
+ * Updated to use official AI SDK v5 testing utilities
+ * Following MockLanguageModelV2 and simulateReadableStream patterns
+ */
+
+import { MockLanguageModelV2, simulateReadableStream } from 'ai/test';
+
+// Mock AI SDK v5 with official testing utilities
+vi.mock('ai', async importOriginal => {
+  const actual = await importOriginal<typeof import('ai')>();
+
+  return {
+    ...actual,
+    MockLanguageModelV2,
+    simulateReadableStream,
+    generateText: vi.fn(),
+    generateObject: vi.fn(),
+    streamText: vi.fn(),
+    customProvider: vi.fn(() => ({
+      languageModels: {},
+      textEmbeddingModels: {},
+    })),
+  };
+});
+
+// Mock Anthropic SDK with v5 compatible patterns
+vi.mock('@ai-sdk/anthropic', () => ({
+  anthropic: vi.fn(
+    (modelName: string = 'claude-3-5-sonnet-20241022', settings?: any) =>
+      new (vi.importMock('ai').MockLanguageModelV2)({
+        modelId: modelName,
+        doGenerate: async () => ({
+          text: 'Mock generated text',
+          usage: { inputTokens: 10, outputTokens: 20 },
+          finishReason: 'stop',
+          reasoning: 'Mock reasoning',
+          providerMetadata: {
+            anthropic: {
+              cacheCreationInputTokens: 0,
+              cacheReadInputTokens: 0,
+            },
+          },
+        }),
+      }),
+  ),
+  createAnthropic: vi.fn((options: any) => ({
+    anthropic: vi.fn(
+      (modelName: string) =>
+        new (vi.importMock('ai').MockLanguageModelV2)({
+          modelId: modelName,
+        }),
+    ),
   })),
+  // Anthropic-specific tools
+  tools: {
+    bash_20250124: vi.fn((config: any) => ({
+      toolName: 'bash_20250124',
+      execute: config.execute,
+    })),
+    textEditor_20250124: vi.fn((config: any) => ({
+      toolName: 'textEditor_20250124',
+      execute: config.execute,
+    })),
+    computer_20250124: vi.fn((config: any) => ({
+      toolName: 'computer_20250124',
+      execute: config.execute,
+    })),
+  },
+}));
+
+// Mock observability
+vi.mock('@repo/observability', () => ({
+  logInfo: vi.fn(),
+  logWarn: vi.fn(),
 }));
 
 // Mock server-only to prevent import issues in tests
 vi.mock('server-only', () => ({}));
 
-// Mock Anthropic SDK
-vi.mock('@anthropic-ai/sdk', () => ({
-  default: vi.fn(() => ({
-    messages: {
-      create: vi.fn(),
-      stream: vi.fn(),
-    },
-    completions: {
-      create: vi.fn(),
-    },
-  })),
-  Anthropic: vi.fn(),
-}));
-
-describe('anthropic Provider', () => {
+describe('anthropic Provider - v5 Patterns', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -39,412 +90,303 @@ describe('anthropic Provider', () => {
     expect(anthropicProvider).toBeDefined();
   });
 
-  test('should test anthropic client creation and configuration', async () => {
-    const { createAnthropicClient, configureAnthropic, AnthropicConfig } = await import(
-      '@/server/providers/anthropic'
-    );
+  test('should use MockLanguageModelV2 for provider testing (v5 pattern)', async () => {
+    const { MockLanguageModelV2 } = await import('ai');
 
-    expect(createAnthropicClient).toBeDefined();
-    const mockConfig = {
-      apiKey: 'test-api-key',
+    // v5 pattern
+    const mockModel = new (MockLanguageModelV2 as any)({
+      modelId: 'claude-3-5-sonnet-20241022',
+      doGenerate: async () => ({
+        finishReason: 'stop',
+        usage: { inputTokens: 15, outputTokens: 25 },
+        text: 'v5 validated response',
+        reasoning: 'This is a reasoning response',
+        providerMetadata: {
+          anthropic: {
+            cacheCreationInputTokens: 10,
+            cacheReadInputTokens: 5,
+          },
+        },
+      }),
+    });
+
+    const result = await mockModel.doGenerate({ prompt: 'Test prompt' });
+
+    expect(result.text).toBe('v5 validated response');
+    expect(result.reasoning).toBe('This is a reasoning response');
+    expect(result.usage).toStrictEqual({ inputTokens: 15, outputTokens: 25 });
+    expect(result.providerMetadata?.anthropic?.cacheCreationInputTokens).toBe(10);
+  });
+
+  test('should test streaming with simulateReadableStream (v5 pattern)', async () => {
+    const { MockLanguageModelV2, simulateReadableStream } = await import('ai');
+
+    const mockModel = new (MockLanguageModelV2 as any)({
+      doStream: async () => ({
+        stream: (simulateReadableStream as any)({
+          chunks: [
+            { type: 'text', text: 'Streaming ' },
+            { type: 'text', text: 'with ' },
+            { type: 'text', text: 'v5 patterns' },
+            {
+              type: 'finish',
+              finishReason: 'stop',
+              usage: { inputTokens: 8, outputTokens: 15 },
+            },
+          ],
+        }),
+      }),
+    });
+
+    const result = await mockModel.doStream({ prompt: 'Test streaming' });
+
+    let fullText = '';
+    let finalUsage;
+    for await (const chunk of result.stream as any) {
+      if (chunk.type === 'text') {
+        fullText += chunk.text;
+      } else if (chunk.type === 'finish') {
+        finalUsage = chunk.usage;
+      }
+    }
+
+    expect(fullText).toBe('Streaming with v5 patterns');
+    expect(finalUsage).toStrictEqual({ inputTokens: 8, outputTokens: 15 });
+  });
+
+  test('should test with experimental telemetry (v5 pattern)', async () => {
+    const { generateText } = await import('ai');
+    const { MockLanguageModelV2 } = await import('ai');
+
+    const mockModel = new (MockLanguageModelV2 as any)({
+      doGenerate: async () => ({
+        finishReason: 'stop',
+        usage: { inputTokens: 20, outputTokens: 30 },
+        text: 'Telemetry enabled response',
+      }),
+    });
+
+    const mockGenerateText = vi.mocked(generateText);
+    mockGenerateText.mockImplementation(async options => {
+      const result = await mockModel.doGenerate(options);
+      return {
+        text: result.text,
+        usage: result.usage,
+        finishReason: result.finishReason,
+        warnings: [],
+        rawCall: { rawPrompt: options.prompt, rawSettings: {} },
+        rawResponse: { headers: {}, response: {} },
+        request: { body: JSON.stringify(options) },
+        response: { messages: [], timestamp: new Date() },
+        toolCalls: [],
+        toolResults: [],
+        logprobs: undefined,
+        providerMetadata: undefined,
+        steps: [],
+        experimental_telemetry: options.experimental_telemetry,
+      };
+    });
+
+    const result = await generateText({
+      model: mockModel,
+      prompt: 'Test telemetry',
+      experimental_telemetry: {
+        isEnabled: true,
+        metadata: {
+          provider: 'anthropic',
+          model: 'claude-3-5-sonnet-20241022',
+          testCase: 'provider-integration',
+        },
+      },
+    });
+
+    expect(result.text).toBe('Telemetry enabled response');
+    expect(result.experimental_telemetry?.isEnabled).toBeTruthy();
+    expect(result.experimental_telemetry?.metadata?.provider).toBe('anthropic');
+  });
+
+  test('should test provider creation functions', async () => {
+    const { createAnthropicProvider } = await import('@/server/providers/anthropic');
+
+    // Test default provider
+    const defaultProvider = createAnthropicProvider();
+    expect(defaultProvider).toBeDefined();
+
+    // Test custom provider
+    const customProvider = createAnthropicProvider({
+      apiKey: 'test-key',
       baseURL: 'https://api.anthropic.com',
-      maxRetries: 3,
-    };
-    const result = createAnthropicClient ? await createAnthropicClient(mockConfig) : { client: {} };
-    expect(result).toBeDefined();
-
-    expect(configureAnthropic).toBeDefined();
-    const mockSettings = {
-      model: 'claude-3-opus-20240229',
-      maxTokens: 4000,
-      temperature: 0.7,
-      topP: 0.9,
-    };
-    const result = configureAnthropic ? configureAnthropic(mockSettings) : { configured: true };
-    expect(result).toBeDefined();
-
-    expect(AnthropicConfig).toBeDefined();
-    const validConfig = {
-      apiKey: 'sk-ant-test123',
-      model: 'claude-3-sonnet-20240229',
-      maxTokens: 1000,
-    };
-    const result = AnthropicConfig ? AnthropicConfig.safeParse(validConfig) : { success: true };
-    expect(result.success).toBeTruthy();
+    });
+    expect(customProvider).toBeDefined();
   });
 
-  test('should test claude model variants and selection', async () => {
-    const { ClaudeModels, selectClaudeModel, getModelCapabilities } = await import(
+  test('should test reasoning model creation', async () => {
+    const { createAnthropicWithReasoning } = await import('@/server/providers/anthropic');
+
+    const reasoningModel = createAnthropicWithReasoning('claude-3-5-sonnet-20241022', 10000);
+    expect(reasoningModel).toBeDefined();
+    expect(reasoningModel.model).toBeDefined();
+    expect(reasoningModel.generateWithReasoning).toBeTypeOf('function');
+
+    // Test generateWithReasoning
+    const result = await reasoningModel.generateWithReasoning('Test prompt');
+    expect(result).toBeDefined();
+    expect(result.text).toBe('Mock generated text');
+    expect(result.reasoning).toBe('Mock reasoning');
+  });
+
+  test('should test caching model creation', async () => {
+    const { createAnthropicWithCaching } = await import('@/server/providers/anthropic');
+
+    const cachingModel = createAnthropicWithCaching('claude-3-5-sonnet-20240620');
+    expect(cachingModel).toBeDefined();
+    expect(cachingModel.modelId).toBe('claude-3-5-sonnet-20240620');
+  });
+
+  test('should test computer tool creation', async () => {
+    const { createBashTool, createTextEditorTool, createComputerTool } = await import(
       '@/server/providers/anthropic'
     );
 
-    expect(ClaudeModels).toBeDefined();
-    expect(ClaudeModels?.OPUS).toBeDefined();
-    expect(ClaudeModels?.SONNET).toBeDefined();
-    expect(ClaudeModels?.HAIKU).toBeDefined();
+    // Mock tool functions
+    const mockBashExecute = vi.fn().mockResolvedValue('bash output');
+    const mockTextEditorExecute = vi.fn().mockResolvedValue('editor output');
+    const mockComputerExecute = vi.fn().mockResolvedValue('computer output');
 
-    expect(selectClaudeModel).toBeDefined();
-    const mockCriteria = {
-      task: 'code-generation',
-      complexity: 'high',
-      speed: 'medium',
-      cost: 'low',
-    };
-    const result = selectClaudeModel
-      ? await selectClaudeModel(mockCriteria)
-      : 'claude-3-sonnet-20240229';
-    expect(result).toBeDefined();
-    expect(typeof result).toBe('string');
+    // Test bash tool
+    const bashTool = createBashTool(mockBashExecute);
+    expect(bashTool).toBeDefined();
 
-    expect(getModelCapabilities).toBeDefined();
-    const modelName = 'claude-3-opus-20240229';
-    const result = getModelCapabilities
-      ? getModelCapabilities(modelName)
-      : { contextLength: 200000, capabilities: [] };
-    expect(result).toBeDefined();
-    expect(result.contextLength).toBeDefined();
-    expect(result.capabilities).toBeDefined();
+    // Test text editor tool
+    const textEditorTool = createTextEditorTool(mockTextEditorExecute);
+    expect(textEditorTool).toBeDefined();
+
+    // Test computer tool
+    const computerTool = createComputerTool({
+      displayWidthPx: 1920,
+      displayHeightPx: 1080,
+      execute: mockComputerExecute,
+    });
+    expect(computerTool).toBeDefined();
   });
 
-  test('should test anthropic message formatting and processing', async () => {
-    const { formatAnthropicMessage, processAnthropicResponse, convertToAnthropicFormat } =
-      await import('@/server/providers/anthropic');
-
-    expect(formatAnthropicMessage).toBeDefined();
-    const mockMessage = {
-      role: 'user',
-      content: 'Hello, Claude! How are you today?',
-      metadata: { timestamp: Date.now() },
-    };
-    const result = formatAnthropicMessage
-      ? formatAnthropicMessage(mockMessage)
-      : { role: 'user', content: 'Hello, Claude! How are you today?' };
-    expect(result).toBeDefined();
-    expect(result.role).toBe('user');
-    expect(result.content).toBeDefined();
-
-    expect(processAnthropicResponse).toBeDefined();
-    const mockResponse = {
-      content: [{ type: 'text', text: 'Hello! I am doing well, thank you for asking.' }],
-      model: 'claude-3-sonnet-20240229',
-      usage: { input_tokens: 10, output_tokens: 15 },
-    };
-    const result = processAnthropicResponse
-      ? await processAnthropicResponse(mockResponse)
-      : {
-          text: 'Hello! I am doing well, thank you for asking.',
-          usage: { input_tokens: 10, output_tokens: 15 },
-        };
-    expect(result).toBeDefined();
-    expect(result.text).toBeDefined();
-    expect(result.usage).toBeDefined();
-
-    expect(convertToAnthropicFormat).toBeDefined();
-    const mockMessages = [
-      { role: 'user', content: 'What is 2+2?' },
-      { role: 'assistant', content: '2+2 equals 4.' },
-    ];
-    const result = convertToAnthropicFormat ? convertToAnthropicFormat(mockMessages) : mockMessages;
-    expect(result).toBeDefined();
-    expect(Array.isArray(result)).toBeTruthy();
-  });
-
-  test('should test anthropic streaming capabilities', async () => {
-    const { createAnthropicStream, handleStreamChunk, streamAnthropicResponse } = await import(
+  test('should test utility functions', async () => {
+    const { analyzeSentiment, moderateContent, extractEntities } = await import(
       '@/server/providers/anthropic'
     );
 
-    expect(createAnthropicStream).toBeDefined();
-    const mockStreamConfig = {
-      model: 'claude-3-haiku-20240307',
-      messages: [{ role: 'user', content: 'Tell me a story' }],
-      stream: true,
-      maxTokens: 1000,
-    };
-    const result = createAnthropicStream
-      ? await createAnthropicStream(mockStreamConfig)
-      : { stream: {} };
-    expect(result).toBeDefined();
+    // Test sentiment analysis
+    const sentimentResult = await analyzeSentiment('I love this product!');
+    expect(sentimentResult).toBeDefined();
+    expect((sentimentResult as any).sentiment).toBe('positive');
+    expect((sentimentResult as any).confidence).toBe(0.9);
 
-    expect(handleStreamChunk).toBeDefined();
-    const mockChunk = {
-      type: 'content_block_delta',
-      delta: { type: 'text_delta', text: 'Once upon a time...' },
-    };
-    const result = handleStreamChunk
-      ? handleStreamChunk(mockChunk)
-      : { text: 'Once upon a time...' };
-    expect(result).toBeDefined();
+    // Test content moderation
+    const moderationResult = await moderateContent('This is a test message');
+    expect(moderationResult).toBeDefined();
 
-    expect(streamAnthropicResponse).toBeDefined();
-    const mockRequest = {
-      prompt: 'Write a poem about mountains',
-      model: 'claude-3-sonnet-20240229',
-      onChunk: vi.fn(),
-      onComplete: vi.fn(),
-    };
-    const result = streamAnthropicResponse
-      ? await streamAnthropicResponse(mockRequest)
-      : { success: true };
-    expect(result).toBeDefined();
+    // Test entity extraction
+    const entitiesResult = await extractEntities('John Doe works at Apple in New York');
+    expect(entitiesResult).toBeDefined();
   });
 
-  test('should test anthropic tool calling and function execution', async () => {
-    const { createAnthropicTool, executeAnthropicFunction, anthropicToolSchema } = await import(
+  test('should test cache control helpers', async () => {
+    const { createCachedMessage, validateCacheControl, extractCacheMetadata } = await import(
       '@/server/providers/anthropic'
     );
 
-    expect(createAnthropicTool).toBeDefined();
-    const mockTool = {
-      name: 'get_weather',
-      description: 'Get current weather for a location',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          location: { type: 'string', description: 'City name' },
+    // Test createCachedMessage
+    const longContent = 'a'.repeat(5000); // Long enough to meet token requirements
+    const cachedMessage = await createCachedMessage(longContent, 'system');
+    expect(cachedMessage).toBeDefined();
+    expect(cachedMessage.role).toBe('system');
+    expect(cachedMessage.content).toBe(longContent);
+    expect(cachedMessage.providerOptions).toBeDefined();
+    expect(cachedMessage.providerOptions.anthropic).toBeDefined();
+
+    // Test validateCacheControl
+    const validation = validateCacheControl(longContent, 'claude-3-5-sonnet');
+    expect(validation).toBeDefined();
+    expect(validation.canCache).toBeTruthy();
+    expect(validation.estimatedTokens).toBeGreaterThan(0);
+    expect(validation.minRequired).toBe(1024);
+
+    // Test extractCacheMetadata
+    const mockResult = {
+      providerMetadata: {
+        anthropic: {
+          cacheCreationInputTokens: 100,
+          cacheReadInputTokens: 50,
         },
       },
     };
-    const result = createAnthropicTool ? createAnthropicTool(mockTool) : { name: 'get_weather' };
-    expect(result).toBeDefined();
-    expect(result.name).toBe('get_weather');
-
-    expect(executeAnthropicFunction).toBeDefined();
-    const mockExecution = {
-      toolName: 'calculate',
-      parameters: { operation: 'add', a: 5, b: 3 },
-      context: { sessionId: 'test-session' },
-    };
-    const result = executeAnthropicFunction
-      ? await executeAnthropicFunction(mockExecution)
-      : { result: 8 };
-    expect(result).toBeDefined();
-
-    expect(anthropicToolSchema).toBeDefined();
-    const validTool = {
-      name: 'search_database',
-      description: 'Search for information in database',
-      input_schema: {
-        type: 'object',
-        properties: { query: { type: 'string' } },
-      },
-    };
-    const result = anthropicToolSchema
-      ? anthropicToolSchema.safeParse(validTool)
-      : { success: true };
-    expect(result.success).toBeTruthy();
+    const cacheMetadata = extractCacheMetadata(mockResult);
+    expect(cacheMetadata).toBeDefined();
+    expect(cacheMetadata?.cacheCreationInputTokens).toBe(100);
+    expect(cacheMetadata?.cacheReadInputTokens).toBe(50);
   });
 
-  test('should test anthropic error handling and retry logic', async () => {
-    const { handleAnthropicError, retryAnthropicRequest, anthropicErrorTypes } = await import(
-      '@/server/providers/anthropic'
-    );
+  test('should test reasoning helpers', async () => {
+    const { extractReasoning } = await import('@/server/providers/anthropic');
 
-    expect(handleAnthropicError).toBeDefined();
-    const mockError = {
-      type: 'rate_limit_error',
-      message: 'Rate limit exceeded',
-      error: { status: 429, retry_after: 60 },
+    const mockResult = {
+      text: 'test response',
+      reasoning: 'test reasoning',
+      reasoningDetails: { steps: ['step1', 'step2'] },
+      usage: { tokens: 100 },
+      providerMetadata: { anthropic: { cacheCreationInputTokens: 10 } },
     };
-    const result = handleAnthropicError
-      ? await handleAnthropicError(mockError)
-      : { shouldRetry: true, retryAfter: 60 };
-    expect(result).toBeDefined();
-    expect(result.shouldRetry).toBeDefined();
-    expect(result.retryAfter).toBeDefined();
 
-    expect(retryAnthropicRequest).toBeDefined();
-    const mockRequest = {
-      model: 'claude-3-haiku-20240307',
-      messages: [{ role: 'user', content: 'Hello' }],
-      maxRetries: 3,
-      retryDelay: 1000,
-    };
-    const result = retryAnthropicRequest
-      ? await retryAnthropicRequest(mockRequest)
-      : { success: true };
-    expect(result).toBeDefined();
-
-    expect(anthropicErrorTypes).toBeDefined();
-    expect(anthropicErrorTypes?.RATE_LIMIT).toBeDefined();
-    expect(anthropicErrorTypes?.INVALID_REQUEST).toBeDefined();
-    expect(anthropicErrorTypes?.API_ERROR).toBeDefined();
+    const extracted = extractReasoning(mockResult);
+    expect(extracted).toBeDefined();
+    expect(extracted.text).toBe('test response');
+    expect(extracted.reasoning).toBe('test reasoning');
+    expect(extracted.reasoningDetails).toStrictEqual({ steps: ['step1', 'step2'] });
   });
 
-  test('should test anthropic response parsing and validation', async () => {
-    const { parseAnthropicResponse, validateAnthropicOutput, extractAnthropicContent } =
-      await import('@/server/providers/anthropic');
+  test('should test examples', async () => {
+    const { examples } = await import('@/server/providers/anthropic');
 
-    expect(parseAnthropicResponse).toBeDefined();
-    const mockRawResponse = {
-      id: 'msg_123',
-      type: 'message',
-      role: 'assistant',
-      content: [{ type: 'text', text: 'Parsed response content' }],
-      model: 'claude-3-sonnet-20240229',
-      stop_reason: 'end_turn',
-      usage: { input_tokens: 10, output_tokens: 5 },
-    };
-    const result = parseAnthropicResponse
-      ? parseAnthropicResponse(mockRawResponse)
-      : { text: 'Parsed response content', tokenUsage: { input_tokens: 10, output_tokens: 5 } };
-    expect(result).toBeDefined();
-    expect(result.text).toBe('Parsed response content');
-    expect(result.tokenUsage).toBeDefined();
+    expect(examples).toBeDefined();
+    expect(examples.basic).toBeTypeOf('function');
+    expect(examples.reasoning).toBeTypeOf('function');
+    expect(examples.caching).toBeTypeOf('function');
+    expect(examples.computerUse).toBeTypeOf('function');
 
-    expect(validateAnthropicOutput).toBeDefined();
-    const mockOutput = {
-      text: 'Valid response',
-      finishReason: 'stop',
-      usage: { inputTokens: 10, outputTokens: 5 },
-    };
-    const result = validateAnthropicOutput
-      ? validateAnthropicOutput(mockOutput)
-      : { isValid: true };
-    expect(result).toBeDefined();
-    expect(result.isValid).toBeTruthy();
+    // Test basic example
+    const basicResult = await examples.basic();
+    expect(basicResult).toBeDefined();
+    expect(basicResult.text).toBe('Mock generated text');
 
-    expect(extractAnthropicContent).toBeDefined();
-    const mockContent = [
-      { type: 'text', text: 'First part' },
-      { type: 'text', text: ' Second part' },
-    ];
-    const result = extractAnthropicContent
-      ? extractAnthropicContent(mockContent)
-      : 'First part Second part';
-    expect(result).toBeDefined();
-    expect(typeof result).toBe('string');
-    expect(result).toBe('First part Second part');
+    // Test reasoning example
+    const reasoningResult = await examples.reasoning();
+    expect(reasoningResult).toBeDefined();
+    expect(reasoningResult.text).toBe('Mock generated text');
+    expect(reasoningResult.reasoning).toBe('Mock reasoning');
+
+    // Test caching example
+    const cachingResult = await examples.caching();
+    expect(cachingResult).toBeDefined();
+    expect(cachingResult.text).toBe('Mock generated text');
+
+    // Test computer use example
+    const computerResult = await examples.computerUse();
+    expect(computerResult).toBeDefined();
+    expect(computerResult.text).toBe('Mock generated text');
   });
 
-  test('should test anthropic cost tracking and usage analytics', async () => {
-    const { trackAnthropicUsage, calculateAnthropicCost, getUsageAnalytics } = await import(
-      '@/server/providers/anthropic'
-    );
-
-    expect(trackAnthropicUsage).toBeDefined();
-    const mockUsage = {
-      model: 'claude-3-opus-20240229',
-      inputTokens: 1000,
-      outputTokens: 500,
-      requestId: 'req-123',
-      userId: 'user-456',
-      timestamp: Date.now(),
-    };
-    const result = trackAnthropicUsage ? await trackAnthropicUsage(mockUsage) : { tracked: true };
-    expect(result).toBeDefined();
-    expect(result.tracked).toBeTruthy();
-
-    expect(calculateAnthropicCost).toBeDefined();
-    const mockCostData = {
-      model: 'claude-3-sonnet-20240229',
-      inputTokens: 2000,
-      outputTokens: 1000,
-    };
-    const result = calculateAnthropicCost
-      ? calculateAnthropicCost(mockCostData)
-      : { totalCost: 0.05, breakdown: {} };
-    expect(result).toBeDefined();
-    expect(typeof result.totalCost).toBe('number');
-    expect(result.breakdown).toBeDefined();
-
-    expect(getUsageAnalytics).toBeDefined();
-    const mockQuery = {
-      userId: 'user-456',
-      timeRange: { start: Date.now() - 86400000, end: Date.now() },
-      groupBy: 'model',
-    };
-    const result = getUsageAnalytics
-      ? await getUsageAnalytics(mockQuery)
-      : { totalRequests: 10, totalCost: 0.5 };
-    expect(result).toBeDefined();
-    expect(result.totalRequests).toBeDefined();
-    expect(result.totalCost).toBeDefined();
-  });
-
-  test('should test anthropic integration with AI SDK', async () => {
-    const { anthropicAISDKAdapter, createAnthropicProvider, wrapAnthropicClient } = await import(
-      '@/server/providers/anthropic'
-    );
-
-    expect(anthropicAISDKAdapter).toBeDefined();
-    const mockAdapter = {
-      model: 'claude-3-haiku-20240307',
+  test('should test interface types', async () => {
+    // Test that we can use the interfaces through type checking
+    const config = {
       apiKey: 'test-key',
       baseURL: 'https://api.anthropic.com',
     };
-    const result = anthropicAISDKAdapter ? anthropicAISDKAdapter(mockAdapter) : { adapter: {} };
-    expect(result).toBeDefined();
+    expect(config.apiKey).toBe('test-key');
 
-    expect(createAnthropicProvider).toBeDefined();
-    const mockProviderConfig = {
-      apiKey: 'sk-ant-test',
-      defaultModel: 'claude-3-sonnet-20240229',
-      timeout: 30000,
+    const metadata = {
+      cacheCreationInputTokens: 100,
+      cacheReadInputTokens: 50,
     };
-    const result = createAnthropicProvider
-      ? createAnthropicProvider(mockProviderConfig)
-      : { provider: {} };
-    expect(result).toBeDefined();
-    expect(result && typeof result === 'object' ? result : { provider: {} }).toHaveProperty(
-      'provider',
-    );
-
-    expect(wrapAnthropicClient).toBeDefined();
-    const mockClient = {
-      messages: { create: vi.fn(), stream: vi.fn() },
-      completions: { create: vi.fn() },
-    };
-    const result = wrapAnthropicClient
-      ? wrapAnthropicClient(mockClient)
-      : { chat: vi.fn(), stream: vi.fn() };
-    expect(result).toBeDefined();
-    expect(result.chat).toBeDefined();
-    expect(result.stream).toBeDefined();
-  });
-
-  test('should test anthropic prompt engineering and optimization', async () => {
-    const { optimizeAnthropicPrompt, formatSystemPrompt, addAnthropicContext } = await import(
-      '@/server/providers/anthropic'
-    );
-
-    expect(optimizeAnthropicPrompt).toBeDefined();
-    const mockPrompt = {
-      system: 'You are a helpful assistant',
-      user: 'Please help me with coding',
-      context: { language: 'typescript', task: 'debugging' },
-    };
-    const result = optimizeAnthropicPrompt
-      ? await optimizeAnthropicPrompt(mockPrompt)
-      : { optimized: true, tokenCount: 50 };
-    expect(result).toBeDefined();
-    expect(result.optimized).toBeDefined();
-    expect(result.tokenCount).toBeDefined();
-
-    expect(formatSystemPrompt).toBeDefined();
-    const mockSystem = {
-      role: 'You are an expert software engineer',
-      constraints: ['Be concise', 'Provide examples'],
-      context: { domain: 'web-development' },
-    };
-    const result = formatSystemPrompt
-      ? formatSystemPrompt(mockSystem)
-      : 'You are an expert software engineer';
-    expect(result).toBeDefined();
-    expect(typeof result).toBe('string');
-
-    expect(addAnthropicContext).toBeDefined();
-    const mockBase = 'Write a function to sort an array';
-    const mockContext = {
-      codebase: 'React TypeScript project',
-      constraints: 'Use modern ES6+ syntax',
-      examples: ['const sortArray = (arr) => arr.sort()'],
-    };
-    const result = addAnthropicContext
-      ? addAnthropicContext(mockBase, mockContext)
-      : mockBase + ' in React TypeScript project';
-    expect(result).toBeDefined();
-    expect(typeof result).toBe('string');
-    expect(result.length).toBeGreaterThan(mockBase.length);
+    expect(metadata.cacheCreationInputTokens).toBe(100);
   });
 });

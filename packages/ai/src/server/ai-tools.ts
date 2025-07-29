@@ -25,7 +25,7 @@ export async function createAgent(options: AgentOptions): Promise<AgentResult> {
     maxSteps: options.maxSteps ?? 2,
     ...(options.systemPrompt && { system: options.systemPrompt }),
     messages: [], // Will be populated by the caller
-  });
+  } as any);
 
   return {
     text: result.text,
@@ -48,7 +48,7 @@ export async function runAgent(
     maxSteps: options.maxSteps ?? 2,
     prompt,
     ...(options.systemPrompt && { system: options.systemPrompt }),
-  });
+  } as any);
 
   return {
     text: result.text,
@@ -70,7 +70,15 @@ export const calculatorTool = tool({
     a: z.number().describe('First number'),
     b: z.number().describe('Second number'),
   }),
-  execute: async ({ operation, a, b }) => {
+  execute: async ({
+    operation,
+    a,
+    b,
+  }: {
+    operation: 'add' | 'subtract' | 'multiply' | 'divide';
+    a: number;
+    b: number;
+  }) => {
     switch (operation) {
       case 'add':
         return a + b;
@@ -98,7 +106,13 @@ export const textProcessorTool = tool({
       .describe('The text operation'),
     text: z.string().describe('The text to process'),
   }),
-  execute: async ({ operation, text }) => {
+  execute: async ({
+    operation,
+    text,
+  }: {
+    operation: 'uppercase' | 'lowercase' | 'reverse' | 'wordcount';
+    text: string;
+  }) => {
     switch (operation) {
       case 'uppercase':
         return text.toUpperCase();

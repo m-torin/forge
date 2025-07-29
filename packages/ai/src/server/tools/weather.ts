@@ -1,4 +1,4 @@
-import { logError } from '@repo/observability/shared-env';
+import { logError } from '@repo/observability';
 import 'server-only';
 import { z } from 'zod/v4';
 import { commonSchemas, createAPITool, type ToolContext } from './factory';
@@ -44,7 +44,7 @@ export function createWeatherTool(context: ToolContext = {}) {
     {
       description: 'Get the current weather at a location',
       parameters: weatherParameters,
-      url: args =>
+      url: (args: z.infer<typeof weatherParameters>) =>
         `https://api.open-meteo.com/v1/forecast?latitude=${args.latitude}&longitude=${args.longitude}&current=temperature_2m&hourly=temperature_2m&daily=sunrise,sunset&timezone=auto`,
       method: 'GET',
       transformResponse: data => {
@@ -56,8 +56,9 @@ export function createWeatherTool(context: ToolContext = {}) {
         return parsed.data;
       },
       onError: error => {
-        logError('Weather API error', error instanceof Error ? error : new Error(String(error)), {
+        logError('Weather API error', {
           operation: 'weather_tool_api_call',
+          error: error instanceof Error ? error : new Error(String(error)),
         });
         // Return a valid weather data structure for error cases
         return {
@@ -90,16 +91,18 @@ export function createEnhancedWeatherTool(
 ) {
   const { apiKey, baseUrl = 'https://api.open-meteo.com/v1/forecast', extraParams = {} } = config;
 
+  const enhancedWeatherSchema = z.object({
+    latitude: commonSchemas.latitude,
+    longitude: commonSchemas.longitude,
+    includeHourly: z.boolean().optional().default(false).describe('Include hourly forecast'),
+    includeForecast: z.boolean().optional().default(false).describe('Include daily forecast'),
+  });
+
   return createAPITool(
     {
       description: 'Get detailed weather information at a location',
-      parameters: z.object({
-        latitude: commonSchemas.latitude,
-        longitude: commonSchemas.longitude,
-        includeHourly: z.boolean().optional().default(false).describe('Include hourly forecast'),
-        includeForecast: z.boolean().optional().default(false).describe('Include daily forecast'),
-      }),
-      url: args => {
+      parameters: enhancedWeatherSchema,
+      url: (args: z.infer<typeof enhancedWeatherSchema>) => {
         const params = new URLSearchParams({
           latitude: args.latitude.toString(),
           longitude: args.longitude.toString(),
@@ -136,13 +139,10 @@ export function createEnhancedWeatherTool(
         return parsed.data;
       },
       onError: error => {
-        logError(
-          'Enhanced weather API error',
-          error instanceof Error ? error : new Error(String(error)),
-          {
-            operation: 'enhanced_weather_tool_api_call',
-          },
-        );
+        logError('Enhanced weather API error', {
+          operation: 'enhanced_weather_tool_api_call',
+          error: error instanceof Error ? error : new Error(String(error)),
+        });
         return {
           error: 'Failed to fetch weather data',
           message: error instanceof Error ? error.message : 'Unknown error',

@@ -6,16 +6,26 @@
 
 // AI SDK-compliant tools (recommended)
 // Legacy complex tool system (deprecated but kept for compatibility)
+import { createBulkTools } from './bulk-tools';
 import {
   createDocumentTool,
   searchDocumentsTool,
   updateDocumentTool,
 } from './implementations/document';
 import { enhancedWeatherTool, weatherTool } from './implementations/weather';
+import { createMetadataTools } from './metadata-tools';
+import { createNamespaceTools } from './namespace-tools';
+import { createRangeTools } from './range-tools';
 import { globalToolRegistry, registerDefaultTools } from './registry';
+import { createVectorTools } from './vector-tools';
 
 export * from './ai-sdk-tools';
 
+// Simple, working tool factories for AI SDK v5 (recommended)
+export * from './factory-simple';
+
+// Complex tool factories (deprecated - use factory-simple for AI SDK v5)
+/** @deprecated Use factory-simple exports instead for AI SDK v5 compatibility */
 export {
   commonToolSchemas,
   createAsyncTool,
@@ -23,16 +33,25 @@ export {
   createCRUDTools,
   createEnhancedTool,
   createSearchTool,
-  type ToolContext,
   type ToolFactoryConfig,
 } from './enhanced-factory';
-export * from './factory';
+/** @deprecated Use factory-simple exports instead for AI SDK v5 compatibility */
+export {
+  combineTools,
+  createAPITool,
+  createSecureTool,
+  createStreamingTool,
+  commonSchemas as legacyCommonSchemas,
+  tool,
+  type ToolContext as LegacyToolContext,
+} from './factory';
 // Tool registry - specific exports to avoid conflicts
 export {
   createToolsFromRegistry,
   globalToolRegistry,
   registerDefaultTools,
   ToolRegistry,
+  /** @deprecated Use AISDKToolMetadata instead */
   type ToolMetadata as LegacyToolMetadata,
 } from './registry';
 
@@ -120,16 +139,35 @@ export function getAllStandardTools(context?: any) {
 }
 
 // Combined vector tool suite
-export function createAllVectorTools() {
-  // Vector tools would be imported and used here
-  // This is a placeholder implementation
+export function createAllVectorTools(config: {
+  vectorDB: any;
+  embeddingModel?: string;
+  defaultNamespace?: string;
+  defaultTopK?: number;
+  similarityThreshold?: number;
+  defaultBatchSize?: number;
+  maxConcurrency?: number;
+}) {
+  // Import all tool creation functions
+  const vectorTools = createVectorTools(config);
+  const namespaceTools = createNamespaceTools(config);
+  const metadataTools = createMetadataTools(config);
+  const rangeTools = createRangeTools(config);
+  const bulkTools = createBulkTools(config);
+
   return {
-    // Vector operations would be returned here
-    // Currently returning empty object to maintain compatibility
+    ...vectorTools,
+    ...namespaceTools,
+    ...metadataTools,
+    ...rangeTools,
+    ...bulkTools,
   };
 }
 
 export type AllVectorTools = ReturnType<typeof createAllVectorTools>;
 
-// Legacy weather tool export for backward compatibility
+/**
+ * Legacy weather tool export for backward compatibility
+ * @deprecated Use weatherTool or enhancedWeatherTool from './implementations/weather' instead
+ */
 export { getWeather } from './weather';

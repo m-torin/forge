@@ -1,21 +1,13 @@
+import type { ToolContext, ToolMetadata } from '@/server/tools/enhanced-factory';
 import { beforeEach, describe, expect, vi } from 'vitest';
 import { z } from 'zod/v4';
 
-// Mock AI SDK
-vi.mock('ai', () => ({
-  tool: vi.fn().mockImplementation(({ description, parameters, execute }) => ({
-    description,
-    parameters,
-    execute,
-  })),
-  generateText: vi.fn(),
-  streamText: vi.fn(),
-}));
+// Local mock removed - using centralized mocks from @repo/qa
 
 // Mock server-only to prevent import issues in tests
 vi.mock('server-only', () => ({}));
 
-describe('enhanced Tool Factory', () => {
+describe('enhanced Factory', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -25,464 +17,401 @@ describe('enhanced Tool Factory', () => {
     expect(enhancedFactory).toBeDefined();
   });
 
-  test('should test enhanced tool creation patterns', async () => {
-    const { createEnhancedTool, ToolBuilder, EnhancedToolConfig } = await import(
-      '@/server/tools/enhanced-factory'
-    );
+  test('should create enhanced tool with basic config', async () => {
+    const { createEnhancedTool } = await import('@/server/tools/enhanced-factory');
 
-    {
-      const mockConfig = {
-        name: 'enhanced-calculator',
-        description: 'An enhanced calculator tool with validation',
-        parameters: z.object({
-          operation: z.enum(['add', 'subtract', 'multiply', 'divide']),
-          a: z.number(),
-          b: z.number(),
-        }),
-        execute: async ({ operation, a, b }) => {
-          switch (operation) {
-            case 'add':
-              return a + b;
-            case 'subtract':
-              return a - b;
-            case 'multiply':
-              return a * b;
-            case 'divide':
-              return b !== 0 ? a / b : 'Division by zero';
-            default:
-              return 'Invalid operation';
-          }
-        },
-        validation: { validateInputs: true, sanitizeOutputs: true },
-        security: { requireAuth: false, rateLimit: { maxPerMinute: 60 } },
-      };
-      const result1 = await createEnhancedTool(mockConfig);
-      expect(result1).toBeDefined();
-      expect(result.tool).toBeDefined();
-      expect(result.metadata).toBeDefined();
-    }
-
-    {
-      const builder = new ToolBuilder('test-tool');
-      expect(builder).toBeDefined();
-      expect(builder.withDescription).toBeTypeOf('function');
-      expect(builder.withParameters).toBeTypeOf('function');
-      expect(builder.withExecution).toBeTypeOf('function');
-      expect(builder.build).toBeTypeOf('function');
-    }
-
-    {
-      const validConfig = {
-        name: 'file-reader',
-        description: 'Read file contents',
-        category: 'filesystem',
+    const mockExecute = vi.fn().mockResolvedValue('test result');
+    const config = {
+      name: 'test-tool',
+      description: 'A test tool',
+      inputSchema: z.object({
+        input: z.string(),
+      }),
+      metadata: {
+        category: 'test',
         version: '1.0.0',
-        experimental: false,
-      };
-      const result1 = EnhancedToolConfig.safeParse(validConfig);
-      expect(result.success).toBeTruthy();
-    }
+      },
+    };
+
+    const tool = createEnhancedTool(config, mockExecute);
+
+    expect(tool).toBeDefined();
+    expect(tool.description).toBe('A test tool');
+    expect(tool.parameters).toBeDefined();
+    expect(tool.metadata?.category).toBe('test');
+    expect(tool.metadata?.version).toBe('1.0.0');
   });
 
-  test('should test tool middleware and interceptors', async () => {
-    const { addToolMiddleware, createToolInterceptor, middlewareChain } = await import(
-      '@/server/tools/enhanced-factory'
-    );
+  test('should create enhanced tool with middleware', async () => {
+    const { createEnhancedTool } = await import('@/server/tools/enhanced-factory');
 
-    {
-      const mockTool = {
+    const mockExecute = vi.fn().mockResolvedValue('test result');
+    const mockBeforeExecute = vi.fn();
+    const mockAfterExecute = vi.fn();
+
+    const tool = createEnhancedTool(
+      {
         name: 'test-tool',
-        execute: async params => `Result: ${params.input}`,
-      };
-      const mockMiddleware = async (params, next) => {
-        console.log('Before execution:', params);
-        const result1 = await next();
-        console.log('After execution:', result);
-        return result;
-      };
-      const result1 = addToolMiddleware(mockTool, [mockMiddleware]);
-      expect(result1).toBeDefined();
-      expect(result.middleware).toBeDefined();
-    }
-
-    {
-      const mockInterceptor = {
-        name: 'auth-interceptor',
-        before: async (params, context) => {
-          if (!context.user) throw new Error('Authentication required');
-          return params;
-        },
-        after: async (result, context) => {
-          return { ...result, processedBy: context.user.id };
-        },
-      };
-      const result1 = createToolInterceptor(mockInterceptor);
-      expect(result1).toBeDefined();
-      expect(result.execute).toBeTypeOf('function');
-    }
-
-    {
-      const middlewares = [
-        async (params, next) => next(),
-        async (params, next) => next(),
-        async (params, next) => next(),
-      ];
-      const result1 = middlewareChain(middlewares);
-      expect(result1).toBeDefined();
-      expect(typeof result).toBe('function');
-    }
-  });
-
-  test('should test tool validation and sanitization', async () => {
-    const { validateToolInput, sanitizeToolOutput, createInputValidator } = await import(
-      '@/server/tools/enhanced-factory'
+        description: 'Test tool',
+        inputSchema: z.object({
+          input: z.string(),
+        }),
+        beforeExecute: mockBeforeExecute,
+        afterExecute: mockAfterExecute,
+      },
+      mockExecute,
     );
 
-    {
-      const schema = z.object({
-        email: z.string().email(),
-        age: z.number().min(0).max(150),
-      });
-      const validInput = { email: 'test@example.com', age: 25 };
-      const invalidInput = { email: 'invalid-email', age: -5 };
+    expect(tool).toBeDefined();
+    expect(tool.metadata).toBeDefined();
 
-      const validResult = await validateToolInput(schema, validInput);
-      expect(validResult.success).toBeTruthy();
-      expect(validResult.data).toStrictEqual(validInput);
-
-      const invalidResult = await validateToolInput(schema, invalidInput);
-      expect(invalidResult.success).toBeFalsy();
-      expect(invalidResult.error).toBeDefined();
-    }
-
-    {
-      const mockOutput = {
-        result: 'Success',
-        sensitiveData: 'secret-key-123',
-        userInfo: { name: 'John', ssn: '123-45-6789' },
-      };
-      const sanitizeRules = {
-        removeFields: ['sensitiveData'],
-        maskFields: { 'userInfo.ssn': '***-**-****' },
-      };
-      const result1 = sanitizeToolOutput(mockOutput, sanitizeRules);
-      expect(result1).toBeDefined();
-      expect(result.sensitiveData).toBeUndefined();
-      expect(result.userInfo.ssn).toBe('***-**-****');
-    }
-
-    {
-      const mockRules = {
-        required: ['name', 'email'],
-        types: { name: 'string', email: 'string', age: 'number' },
-        constraints: { 'name.length': { min: 2, max: 50 } },
-      };
-      const result1 = createInputValidator(mockRules);
-      expect(result1).toBeDefined();
-      expect(typeof result).toBe('function');
-    }
-  });
-
-  test('should test tool caching and memoization', async () => {
-    const { createCachedTool, toolMemoization, invalidateToolCache } = await import(
-      '@/server/tools/enhanced-factory'
+    const result = await tool.execute?.(
+      { input: 'test' },
+      { toolCallId: 'test-call', messages: [] },
     );
 
-    {
-      const mockTool = {
-        name: 'expensive-calculation',
-        execute: async ({ n }) => {
-          // Simulate expensive operation
-          await new Promise(resolve => setTimeout(resolve, 100));
-          return Math.factorial ? Math.factorial(n) : n * n;
-        },
-      };
-      const cacheConfig = {
-        ttl: 3600, // 1 hour
-        keyGenerator: params => `calc-${JSON.stringify(params)}`,
-        storage: 'memory',
-      };
-      const result1 = createCachedTool(mockTool, cacheConfig);
-      expect(result1).toBeDefined();
-      expect(result.tool).toBeDefined();
-      expect(result.cache).toBeDefined();
-    }
-
-    {
-      const mockFunction = async (x, y) => x + y;
-      const memoized = toolMemoization(mockFunction, { maxSize: 100 });
-      expect(memoized).toBeDefined();
-      expect(typeof memoized).toBe('function');
-
-      // Test memoization works
-      const result1 = await memoized(5, 3);
-      const result2 = await memoized(5, 3); // Should be cached
-      expect(result1).toBe(result2);
-      expect(result1).toBe(8);
-    }
-
-    {
-      const mockCacheKey = 'tool-cache-key-123';
-      const result1 = await invalidateToolCache(mockCacheKey);
-      expect(result1).toBeDefined();
-      expect(result.invalidated).toBeTruthy();
-    }
+    expect(mockBeforeExecute).toHaveBeenCalledWith({ input: 'test' }, expect.any(Object));
+    expect(mockExecute).toHaveBeenCalledWith({ input: 'test' }, expect.any(Object));
+    expect(mockAfterExecute).toHaveBeenCalledWith(
+      'test result',
+      { input: 'test' },
+      expect.any(Object),
+    );
+    expect(result).toBe('test result');
   });
 
-  test('should test tool composition and chaining', async () => {
-    const { compositeTools, chainTools, parallelTools } = await import(
-      '@/server/tools/enhanced-factory'
+  test('should handle validation and error handling', async () => {
+    const { createEnhancedTool } = await import('@/server/tools/enhanced-factory');
+
+    const mockExecute = vi.fn().mockRejectedValue(new Error('Test error'));
+    const mockValidateParams = vi.fn().mockReturnValue(false);
+    const mockOnError = vi.fn().mockReturnValue('error handled');
+
+    const config = {
+      name: 'test-tool',
+      description: 'A test tool',
+      inputSchema: z.object({
+        input: z.string(),
+      }),
+      validateParams: mockValidateParams,
+      onError: mockOnError,
+    };
+
+    const tool = createEnhancedTool(config, mockExecute);
+    const result = await tool.execute?.(
+      { input: 'test' },
+      { toolCallId: 'test-call', messages: [] },
     );
 
-    {
-      const mockTools = [
-        {
-          name: 'step1',
-          execute: async input => ({ ...input, step1: 'completed' }),
-        },
-        {
-          name: 'step2',
-          execute: async input => ({ ...input, step2: 'completed' }),
-        },
-      ];
-      const result1 = compositeTools(mockTools, { strategy: 'sequential' });
-      expect(result1).toBeDefined();
-      expect(result.execute).toBeTypeOf('function');
-    }
-
-    {
-      const tool1 = { execute: async x => x * 2 };
-      const tool2 = { execute: async x => x + 10 };
-      const tool3 = { execute: async x => x / 3 };
-
-      const result1 = chainTools([tool1, tool2, tool3]);
-      expect(result1).toBeDefined();
-      expect(typeof result.execute).toBe('function');
-
-      // Test the chain: 5 -> 10 -> 20 -> 6.67
-      const chainResult = await result.execute(5);
-      expect(typeof chainResult).toBe('number');
-    }
-
-    {
-      const tools = [
-        { name: 'task1', execute: async () => 'result1' },
-        { name: 'task2', execute: async () => 'result2' },
-        { name: 'task3', execute: async () => 'result3' },
-      ];
-      const result1 = parallelTools(tools);
-      expect(result1).toBeDefined();
-      expect(result.execute).toBeTypeOf('function');
-    }
+    expect(mockValidateParams).toHaveBeenCalledWith({ input: 'test' });
+    expect(mockOnError).toHaveBeenCalledWith(
+      new Error('Parameter validation failed'),
+      { input: 'test' },
+      {},
+    );
+    expect(result).toBe('error handled');
   });
 
-  test('should test tool versioning and compatibility', async () => {
-    const { versionedTool, checkToolCompatibility, migrateToolVersion } = await import(
-      '@/server/tools/enhanced-factory'
+  test('should create search tool', async () => {
+    const { createSearchTool } = await import('@/server/tools/enhanced-factory');
+
+    const mockSearchFunction = vi.fn().mockResolvedValue([
+      { id: '1', title: 'Result 1' },
+      { id: '2', title: 'Result 2' },
+    ]);
+
+    const searchTool = createSearchTool({
+      name: 'search-tool',
+      description: 'Search tool',
+      searchFunction: mockSearchFunction,
+    });
+
+    expect(searchTool).toBeDefined();
+    expect(searchTool.metadata?.category).toBe('search');
+
+    const result = await searchTool.execute?.(
+      { query: 'test query', topK: 5, threshold: 0.7 },
+      { toolCallId: 'test-call', messages: [] },
     );
 
-    {
-      const mockVersions = {
-        '1.0.0': {
-          execute: async params => `v1: ${params.input}`,
-          deprecated: true,
-        },
-        '2.0.0': {
-          execute: async params => `v2: ${params.data}`,
-          breaking: ['input renamed to data'],
-        },
-        '2.1.0': {
-          execute: async params => `v2.1: ${params.data} (enhanced)`,
-          features: ['enhanced processing'],
-        },
-      };
-      const result1 = versionedTool('my-tool', mockVersions);
-      expect(result1).toBeDefined();
-      expect(result.getCurrentVersion).toBeTypeOf('function');
-      expect(result.getVersion).toBeTypeOf('function');
-    }
-
-    {
-      const mockRequest = {
-        toolName: 'data-processor',
-        requestedVersion: '2.0.0',
-        clientVersion: '1.5.0',
-      };
-      const result1 = await checkToolCompatibility(mockRequest);
-      expect(result1).toBeDefined();
-      expect(result.compatible).toBeDefined();
-      expect(result.migrations).toBeDefined();
-    }
-
-    {
-      const mockMigration = {
-        from: '1.0.0',
-        to: '2.0.0',
-        data: { input: 'legacy format data' },
-        migrationRules: { input: 'data' },
-      };
-      const result1 = await migrateToolVersion(mockMigration);
-      expect(result1).toBeDefined();
-      expect(result.migrated).toBeDefined();
-    }
+    expect(mockSearchFunction).toHaveBeenCalledWith('test query', {
+      topK: 5,
+      threshold: 0.7,
+      metadata: undefined,
+    });
+    expect(result?.success).toBeTruthy();
+    expect(result?.query).toBe('test query');
+    expect(result?.results).toHaveLength(2);
+    expect(result?.count).toBe(2);
   });
 
-  test('should test tool monitoring and analytics', async () => {
-    const { instrumentTool, getToolMetrics, createToolDashboard } = await import(
-      '@/server/tools/enhanced-factory'
+  test('should create CRUD tools with proper schemas', async () => {
+    const { createCRUDTools } = await import('@/server/tools/enhanced-factory');
+
+    const mockOperations = {
+      create: vi.fn().mockResolvedValue({ id: '1', name: 'Test Item' }),
+      read: vi.fn().mockResolvedValue({ id: '1', name: 'Test Item' }),
+      update: vi.fn().mockResolvedValue({ id: '1', name: 'Updated' }),
+      delete: vi.fn().mockResolvedValue(true),
+      list: vi.fn().mockResolvedValue({
+        items: [{ id: '1', name: 'Test Item' }],
+        total: 1,
+      }),
+    };
+
+    const ItemSchema = z.object({
+      id: z.string(),
+      name: z.string(),
+    });
+
+    const tools = createCRUDTools({
+      resourceName: 'item',
+      schemas: {
+        create: z.object({ name: z.string() }),
+        update: ItemSchema.partial(),
+      },
+      operations: mockOperations,
+    });
+
+    expect(tools).toBeDefined();
+    expect(tools.create).toBeDefined();
+    expect(tools.read).toBeDefined();
+    expect(tools.update).toBeDefined();
+    expect(tools.delete).toBeDefined();
+    expect(tools.list).toBeDefined();
+
+    // Test create
+    const createResult = await tools.create.execute?.(
+      { name: 'Test Item' },
+      { toolCallId: 'test-call', messages: [] },
     );
+    expect(mockOperations.create).toHaveBeenCalledWith({ name: 'Test Item' });
+    expect(createResult?.success).toBeTruthy();
+    expect(createResult?.data).toStrictEqual({ id: '1', name: 'Test Item' });
 
-    {
-      const mockTool = {
-        name: 'api-client',
-        execute: async params => `API result for ${params.endpoint}`,
-      };
-      const instrumentConfig = {
-        metrics: ['execution-time', 'success-rate', 'error-count'],
-        sampling: 0.1, // 10% sampling
-        destinations: ['console', 'metrics-store'],
-      };
-      const result1 = instrumentTool(mockTool, instrumentConfig);
-      expect(result1).toBeDefined();
-      expect(result.tool).toBeDefined();
-      expect(result.metrics).toBeDefined();
-    }
+    // Test read
+    const readResult = await tools.read.execute?.(
+      { id: '1' },
+      { toolCallId: 'test-call', messages: [] },
+    );
+    expect(mockOperations.read).toHaveBeenCalledWith('1');
+    expect(readResult?.success).toBeTruthy();
+    expect(readResult?.data).toStrictEqual({ id: '1', name: 'Test Item' });
 
-    {
-      const mockQuery = {
-        toolName: 'api-client',
-        timeRange: { start: Date.now() - 86400000, end: Date.now() },
-        aggregation: 'hourly',
-      };
-      const result1 = await getToolMetrics(mockQuery);
-      expect(result1).toBeDefined();
-      expect(result.executionCount).toBeDefined();
-      expect(result.averageLatency).toBeDefined();
-      expect(result.errorRate).toBeDefined();
-    }
+    // Test update
+    const updateResult = await tools.update.execute?.(
+      { id: '1', data: { name: 'Updated' } },
+      { toolCallId: 'test-call', messages: [] },
+    );
+    expect(mockOperations.update).toHaveBeenCalledWith('1', { name: 'Updated' });
+    expect(updateResult?.success).toBeTruthy();
 
-    {
-      const mockDashboard = {
-        tools: ['tool1', 'tool2', 'tool3'],
-        widgets: ['performance', 'usage', 'errors'],
-        refreshInterval: 30000, // 30 seconds
-      };
-      const result1 = await createToolDashboard(mockDashboard);
-      expect(result1).toBeDefined();
-      expect(result.dashboard).toBeDefined();
-      expect(result.url).toBeDefined();
-    }
+    // Test delete
+    const deleteResult = await tools.delete.execute?.(
+      { id: '1' },
+      { toolCallId: 'test-call', messages: [] },
+    );
+    expect(mockOperations.delete).toHaveBeenCalledWith('1');
+    expect(deleteResult?.success).toBeTruthy();
+
+    // Test list
+    const listResult = await tools.list.execute?.(
+      { page: 1, pageSize: 10 },
+      { toolCallId: 'test-call', messages: [] },
+    );
+    expect(mockOperations.list).toHaveBeenCalledWith({ page: 1, pageSize: 10 });
+    expect(listResult?.success).toBeTruthy();
+    expect(listResult?.data).toHaveLength(1);
+    expect(listResult?.pagination.total).toBe(1);
   });
 
-  test('should test tool testing and quality assurance', async () => {
-    const { createToolTest, runToolSuite, validateToolQuality } = await import(
-      '@/server/tools/enhanced-factory'
+  test('should create async tool with progress tracking', async () => {
+    const { createAsyncTool } = await import('@/server/tools/enhanced-factory');
+
+    const mockExecute = vi.fn().mockImplementation(async (params, progress) => {
+      progress({ progress: 0, message: 'Starting' });
+      progress({ progress: 50, message: 'Half way' });
+      progress({ progress: 100, message: 'Complete' });
+      return 'async result';
+    });
+
+    const asyncTool = createAsyncTool({
+      name: 'async-tool',
+      description: 'Async tool with progress',
+      inputSchema: z.object({
+        input: z.string(),
+      }),
+      execute: mockExecute,
+    });
+
+    expect(asyncTool).toBeDefined();
+    expect(asyncTool.metadata?.tags).toContain('async');
+
+    const result = await asyncTool.execute?.(
+      { input: 'test' },
+      { toolCallId: 'test-call', messages: [] },
     );
 
-    {
-      const mockTestConfig = {
-        toolName: 'string-processor',
-        testCases: [
-          {
-            name: 'uppercase conversion',
-            input: { text: 'hello world', operation: 'uppercase' },
-            expected: 'HELLO WORLD',
-          },
-          {
-            name: 'reverse string',
-            input: { text: 'hello', operation: 'reverse' },
-            expected: 'olleh',
-          },
-        ],
-        setup: async () => ({ initialized: true }),
-        teardown: async () => ({ cleaned: true }),
-      };
-      const result1 = createToolTest(mockTestConfig);
-      expect(result1).toBeDefined();
-      expect(result.run).toBeTypeOf('function');
-    }
-
-    {
-      const mockSuite = {
-        name: 'calculator-tools-suite',
-        tools: ['add-tool', 'subtract-tool', 'multiply-tool'],
-        testTypes: ['unit', 'integration', 'performance'],
-        parallel: true,
-      };
-      const result1 = await runToolSuite(mockSuite);
-      expect(result1).toBeDefined();
-      expect(result.passed).toBeDefined();
-      expect(result.failed).toBeDefined();
-      expect(result.summary).toBeDefined();
-    }
-
-    {
-      const mockTool = {
-        name: 'quality-test-tool',
-        version: '1.0.0',
-        execute: async params => params.input.toUpperCase(),
-      };
-      const qualityChecks = {
-        performance: { maxLatency: 1000 },
-        reliability: { minSuccessRate: 0.99 },
-        security: { validateInputs: true, sanitizeOutputs: true },
-      };
-      const result1 = await validateToolQuality(mockTool, qualityChecks);
-      expect(result1).toBeDefined();
-      expect(result.score).toBeDefined();
-      expect(result.issues).toBeDefined();
-      expect(result.recommendations).toBeDefined();
-    }
+    expect(mockExecute).toHaveBeenCalledWith({ input: 'test' }, expect.any(Function));
+    expect(result?.result).toBe('async result');
+    expect(result?.execution.completed).toBeTruthy();
+    expect(result?.execution.progressUpdates).toHaveLength(3);
+    expect(result?.execution.progressUpdates[0].message).toBe('Starting');
+    expect(result?.execution.progressUpdates[2].message).toBe('Complete');
   });
 
-  test('should test tool deployment and lifecycle', async () => {
-    const { deployTool, retireTool, manageToolLifecycle } = await import(
-      '@/server/tools/enhanced-factory'
+  test('should create batch tool', async () => {
+    const { createBatchTool } = await import('@/server/tools/enhanced-factory');
+
+    const mockProcessItem = vi.fn().mockImplementation(async (item, index) => {
+      if (item.shouldFail) {
+        throw new Error(`Failed item ${index}`);
+      }
+      return `processed-${item.value}-${index}`;
+    });
+
+    const batchTool = createBatchTool({
+      name: 'batch-tool',
+      description: 'Batch processing tool',
+      itemSchema: z.object({
+        value: z.string(),
+        shouldFail: z.boolean().optional(),
+      }),
+      processItem: mockProcessItem,
+      maxBatchSize: 2,
+    });
+
+    expect(batchTool).toBeDefined();
+    expect(batchTool.metadata?.tags).toContain('batch');
+
+    const items = [{ value: 'item1' }, { value: 'item2', shouldFail: true }, { value: 'item3' }];
+
+    const result = await batchTool.execute?.(
+      { items, parallel: false },
+      { toolCallId: 'test-call', messages: [] },
     );
 
-    {
-      const mockDeployment = {
-        tool: {
-          name: 'new-feature-tool',
-          version: '1.0.0',
-          execute: async params => `Feature result: ${params.feature}`,
-        },
-        environment: 'staging',
-        rolloutStrategy: { type: 'canary', percentage: 10 },
-        healthChecks: true,
-      };
-      const result1 = await deployTool(mockDeployment);
-      expect(result1).toBeDefined();
-      expect(result.deployed).toBeTruthy();
-      expect(result.deploymentId).toBeDefined();
-    }
+    expect(mockProcessItem).toHaveBeenCalledTimes(3);
+    expect(result?.totalItems).toBe(3);
+    expect(result?.successful).toBe(2);
+    expect(result?.failed).toBe(1);
+    expect(result?.results).toHaveLength(3);
+    expect(result?.results[0].success).toBeTruthy();
+    expect(result?.results[1].success).toBeFalsy();
+    expect(result?.results[2].success).toBeTruthy();
+  });
 
-    {
-      const mockRetirement = {
-        toolName: 'legacy-tool',
-        version: '0.9.0',
-        reason: 'Replaced by v2.0.0',
-        migrationPath: 'Use new-tool v2.0.0 instead',
-        gracePeriod: 2592000000, // 30 days
-      };
-      const result1 = await retireTool(mockRetirement);
-      expect(result1).toBeDefined();
-      expect(result.retired).toBeTruthy();
-      expect(result.sunsetDate).toBeDefined();
-    }
+  test('should test common tool schemas', async () => {
+    const { commonToolSchemas } = await import('@/server/tools/enhanced-factory');
 
-    {
-      const mockLifecycle = {
-        toolName: 'managed-tool',
-        currentStage: 'development',
-        nextStage: 'testing',
-        approvals: ['security-review', 'performance-test'],
-        automatedChecks: true,
-      };
-      const result1 = await manageToolLifecycle(mockLifecycle);
-      expect(result1).toBeDefined();
-      expect(result.stage).toBeDefined();
-      expect(result.nextActions).toBeDefined();
-    }
+    expect(commonToolSchemas).toBeDefined();
+    expect(commonToolSchemas.query).toBeDefined();
+    expect(commonToolSchemas.topK).toBeDefined();
+    expect(commonToolSchemas.threshold).toBeDefined();
+    expect(commonToolSchemas.userId).toBeDefined();
+    expect(commonToolSchemas.namespace).toBeDefined();
+    expect(commonToolSchemas.metadata).toBeDefined();
+    expect(commonToolSchemas.pagination).toBeDefined();
+    expect(commonToolSchemas.dateRange).toBeDefined();
+    expect(commonToolSchemas.sortBy).toBeDefined();
+
+    // Test schema validation
+    const queryResult = commonToolSchemas.query.safeParse('test query');
+    expect(queryResult.success).toBeTruthy();
+
+    const topKResult = commonToolSchemas.topK.safeParse(10);
+    expect(topKResult.success).toBeTruthy();
+
+    const paginationResult = commonToolSchemas.pagination.safeParse({
+      page: 1,
+      pageSize: 10,
+    });
+    expect(paginationResult.success).toBeTruthy();
+  });
+
+  test('should test interface types', async () => {
+    // Test ToolContext interface
+    const context: ToolContext = {
+      userId: 'test-user',
+      sessionId: 'test-session',
+    };
+    expect(context.userId).toBe('test-user');
+
+    // Test ToolMetadata interface
+    const metadata: ToolMetadata = {
+      category: 'test',
+      tags: ['test', 'example'],
+      version: '1.0.0',
+      experimental: true,
+      rateLimit: {
+        maxCallsPerMinute: 100,
+        maxCallsPerHour: 1000,
+      },
+    };
+    expect(metadata.category).toBe('test');
+    expect(metadata.tags).toContain('test');
+    expect(metadata.rateLimit?.maxCallsPerMinute).toBe(100);
+  });
+
+  test('should handle CRUD tools without list operation', async () => {
+    const { createCRUDTools } = await import('@/server/tools/enhanced-factory');
+
+    const mockOperations = {
+      create: vi.fn().mockResolvedValue({ id: '1', name: 'Test Item' }),
+      read: vi.fn().mockResolvedValue({ id: '1', name: 'Test Item' }),
+      update: vi.fn().mockResolvedValue({ id: '1', name: 'Updated Item' }),
+      delete: vi.fn().mockResolvedValue(true),
+      // No list operation
+    };
+
+    const ItemSchema = z.object({
+      id: z.string(),
+      name: z.string(),
+    });
+
+    const tools = createCRUDTools({
+      resourceName: 'item',
+      schemas: {
+        create: z.object({ name: z.string() }),
+        update: ItemSchema.partial(),
+      },
+      operations: mockOperations,
+    });
+
+    expect(tools.create).toBeDefined();
+    expect(tools.read).toBeDefined();
+    expect(tools.update).toBeDefined();
+    expect(tools.delete).toBeDefined();
+    expect(tools.list).toBeUndefined();
+  });
+
+  test('should handle read operation returning null', async () => {
+    const { createCRUDTools } = await import('@/server/tools/enhanced-factory');
+
+    const mockOperations = {
+      create: vi.fn().mockResolvedValue({ id: '1', name: 'Test Item' }),
+      read: vi.fn().mockResolvedValue(null), // Item not found
+      update: vi.fn().mockResolvedValue({ id: '1', name: 'Updated Item' }),
+      delete: vi.fn().mockResolvedValue(true),
+    };
+
+    const ItemSchema = z.object({
+      id: z.string(),
+      name: z.string(),
+    });
+
+    const tools = createCRUDTools({
+      resourceName: 'item',
+      schemas: {
+        create: z.object({ name: z.string() }),
+        update: ItemSchema.partial(),
+      },
+      operations: mockOperations,
+    });
+
+    const readResult = await tools.read.execute({ id: 'nonexistent' }, {});
+    expect(readResult.success).toBeFalsy();
+    expect(readResult.data).toBeNull();
+    expect(readResult.message).toBe('item not found');
   });
 });

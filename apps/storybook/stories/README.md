@@ -45,10 +45,10 @@ pnpm dev
 
 ```typescript
 // Ciseco components
-import { ProductCard, Header } from "@repo/design-system/ciseco";
+import { ProductCard, Header } from "@repo/uix-system/mantine";
 
 // Algolia components
-import { SearchBox, SearchProvider } from "@repo/design-system/algolia";
+import { SearchBox, SearchProvider } from "@repo/uix-system/algolia";
 ```
 
 ## Features

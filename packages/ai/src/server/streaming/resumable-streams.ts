@@ -1,5 +1,5 @@
 import { logError, logInfo } from '@repo/observability/server/next';
-import { createDataStream, type DataStreamWriter } from 'ai';
+import { createUIMessageStream, type UIMessageStreamWriter } from 'ai';
 
 /**
  * Configuration for resumable stream context
@@ -59,11 +59,10 @@ export function createResumableStreamContext(
         operation: 'resumable_streams',
       });
     } else {
-      logError(
-        'Failed to create resumable stream context',
-        error instanceof Error ? error : new Error(String(error)),
-        { operation: 'resumable_streams' },
-      );
+      logError('Failed to create resumable stream context', {
+        operation: 'resumable_streams',
+        error: error instanceof Error ? error : new Error(String(error)),
+      });
     }
     return null;
   }
@@ -121,7 +120,7 @@ export function resetStreamContext(): void {
  */
 export function createResumableDataStream(
   streamId: string,
-  execute: (dataStream: DataStreamWriter) => void | Promise<void>,
+  execute: (dataStream: UIMessageStreamWriter) => void | Promise<void>,
   config?: {
     onError?: (error: unknown) => string;
     fallbackFactory?: () => ReadableStream;
@@ -130,7 +129,7 @@ export function createResumableDataStream(
   const streamContext = getStreamContext();
 
   // Create the base data stream
-  const dataStream = createDataStream({
+  const dataStream = createUIMessageStream({
     execute,
     onError: config?.onError || (() => 'An error occurred while streaming.'),
   });
@@ -148,7 +147,7 @@ export function createResumableDataStream(
  * Utility for creating empty data streams (for resumable stream fallbacks)
  */
 export function createEmptyDataStream(): ReadableStream {
-  return createDataStream({
+  return createUIMessageStream({
     execute: () => {},
   });
 }
@@ -157,12 +156,12 @@ export function createEmptyDataStream(): ReadableStream {
  * Create a restored data stream from a message
  */
 export function createRestoredDataStream(message: any): ReadableStream {
-  return createDataStream({
+  return createUIMessageStream({
     execute: buffer => {
-      buffer.writeData({
-        type: 'append-message',
-        message: JSON.stringify(message),
-      });
+      buffer.write({
+        type: 'data-append-message',
+        data: JSON.stringify(message),
+      } as any);
     },
   });
 }

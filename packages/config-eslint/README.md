@@ -1,5 +1,9 @@
-# @repo/eslint-config
+# @repo/config-eslint
 
-Shared ESLint configurations with TypeScript, React, and Next.js support.
+- _Can build:_ **NO**
 
-Complete documentation is available in `/apps/docs/`.
+- _Exports:_
+  - **Core**: `./base`, `./next`, `./react-internal`, `./react-library`
+  - **Utilities**: `./types`, `./rules`
+
+- _Documentation:_ **[ESLint Config Package](../../apps/docs/packages/config/)**

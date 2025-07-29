@@ -1,6 +1,10 @@
 # @repo/notifications
 
-Notification system with Mantine UI integration and multi-channel support.
+- _Can build:_ **NO**
 
-Complete documentation is available in
-[../../apps/docs/packages/notifications.mdx](../../apps/docs/packages/notifications.mdx).
+- _Exports:_
+  - **Core**: `./client`, `./server`, `./client/next`, `./server/next`
+  - **UI Integration**: `./mantine-notifications`
+
+- _Documentation:_
+  **[Notifications Package](../../apps/docs/packages/notifications.mdx)**

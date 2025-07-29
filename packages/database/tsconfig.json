@@ -1,23 +1,10 @@
 {
-  "extends": "@repo/config/typescript/nextjs.json",
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@repo/*": ["../*"]
-    }
-  },
-  "include": ["**/*.ts", "**/*.tsx"],
+  "extends": "@repo/config/typescript/react-library.json",
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": [
-    "node_modules",
-    "generated/**",
-    "prisma-generated/**",
-    "__tests__/performance.test.todo.ts",
-    "__tests__/upstash-redis.test.todo.ts",
-    "__tests__/upstash-vector.test.todo.ts",
-    "__tests__/firestore.test.todo.ts",
-    "__tests__/integration.test.todo.ts",
-    "redis/**",
-    "prisma/seed*.ts",
-    "src/prisma/src/seed/**"
+    "prisma-generated/zod/**/*",
+    "prisma-generated/client/runtime/**/*",
+    "prisma-generated/zod/inputTypeSchemas/**/*",
+    "prisma-generated/**/*.ts"
   ]
 }

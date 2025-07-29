@@ -1,7 +1,7 @@
 import { createClient, type EdgeConfigClient } from '@vercel/edge-config';
 
-import { logError, logWarn } from '@repo/observability/server/edge';
-import type { Adapter } from '@vercel/flags';
+import { logError, logWarn } from '@repo/observability';
+import type { Adapter } from 'flags';
 import { safeEnv } from '../../env';
 
 export interface EdgeConfigAdapterOptions {
@@ -35,15 +35,34 @@ export function createEdgeConfigAdapter(options: EdgeConfigAdapterOptions = {}) 
   const teamSlug = options.options?.teamSlug;
 
   if (!connectionString) {
-    logWarn('Edge Config connection string not configured - feature flags will return undefined', {
+    logWarn('Edge Config connection string not configured - using offline fallback mode', {
       adapter: 'edge-config',
+      mode: 'offline-fallback',
     });
-    // Return a no-op adapter that returns undefined for all flags
+    // Return an offline-compatible adapter with local fallbacks
     return function edgeConfigAdapter<T = any, E = any>(): Adapter<T, E> {
       return {
-        decide: async () => undefined as any,
+        decide: async ({ key, entities }) => {
+          // Offline fallback: use environment variables or default values
+          const envValue = process.env[`FLAG_${key.toUpperCase().replace(/-/g, '_')}`];
+          if (envValue !== undefined) {
+            // Parse boolean, number, or keep as string
+            if (envValue === 'true') return true as T;
+            if (envValue === 'false') return false as T;
+            if (!isNaN(Number(envValue))) return Number(envValue) as T;
+            return envValue as T;
+          }
+
+          // Fallback to deterministic local evaluation
+          const contextEntity = entities as any;
+          const context = contextEntity?.user?.id || contextEntity?.visitor?.id || 'anonymous';
+          const hash = (key + context).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+
+          // Return boolean by default for offline mode
+          return (hash % 2 === 0) as T;
+        },
         config: { reportValue: true },
-        origin: { provider: 'edge-config' },
+        origin: { provider: 'edge-config-offline' },
       };
     };
   }
@@ -81,8 +100,9 @@ export function createEdgeConfigAdapter(options: EdgeConfigAdapterOptions = {}) 
           return value as T;
         } catch (error) {
           logError(
-            'Error reading from Edge Config',
-            error instanceof Error ? error : new Error(String(error)),
+            error instanceof Error
+              ? error
+              : new Error('Error reading from Edge Config: ' + String(error)),
             { adapter: 'edge-config' },
           );
           throw error;
@@ -185,8 +205,9 @@ export async function getEdgeConfigProviderData(options: EdgeConfigAdapterOption
     };
   } catch (error) {
     logError(
-      'Error fetching Edge Config provider data',
-      error instanceof Error ? error : new Error(String(error)),
+      error instanceof Error
+        ? error
+        : new Error('Error fetching Edge Config provider data: ' + String(error)),
       { adapter: 'edge-config' },
     );
     throw error;

@@ -1,7 +1,8 @@
 // Playwright configurations
+export * from './configs';
 export * from './configs/app';
+export * from './configs/base-config';
+export * from './configs/package';
 
-// Playwright helpers (includes test, expect, and all utilities)
-export * from './helpers/index';
-
-// Note: Templates are not exported as they are .spec.ts files for reference only
+// Playwright helpers
+export * from './helpers';

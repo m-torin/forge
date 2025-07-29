@@ -1,4 +1,3 @@
-import type { CoreTool } from 'ai';
 import type { z } from 'zod';
 
 /**
@@ -13,8 +12,8 @@ export interface ToolDefinition<TParameters extends z.ZodTypeAny = z.ZodTypeAny,
 /**
  * Tool with additional metadata
  */
-export interface ExtendedTool<TParameters extends z.ZodTypeAny = z.ZodTypeAny, TResult = any> {
-  tool: CoreTool<TParameters, TResult>;
+export interface ExtendedTool<_TParameters extends z.ZodTypeAny = z.ZodTypeAny, _TResult = any> {
+  tool: any; // Use generic any for now since CoreTool is no longer available
   metadata?: {
     category?: string;
     version?: string;

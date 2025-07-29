@@ -1,7 +1,8 @@
+import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
 // Setup test environment manually instead of using @repo/qa import due to resolution issues
-process.env.NODE_ENV = 'test';
+(process.env as any).NODE_ENV = 'test';
 process.env.CI = 'true';
 process.env.SKIP_ENV_VALIDATION = 'true';
 

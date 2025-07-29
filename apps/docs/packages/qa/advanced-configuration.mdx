@@ -46,7 +46,7 @@ const browserConfig = mergeConfigurations(baseConfig, {
   setupFiles: ["./setup/base.ts", "./setup/browser.ts"],
   testTimeout: 60000,
   deps: {
-    inline: ["@repo/design-system"]
+    inline: ["@repo/uix-system"]
   }
 });
 
@@ -202,7 +202,7 @@ export default createHighPerformanceConfig({
     optimizer: {
       web: {
         enabled: true,
-        include: ["@repo/design-system", "@mantine/core"]
+        include: ["@repo/uix-system", "@mantine/core"]
       }
     },
     inline: ["@repo/testing-utilities"],

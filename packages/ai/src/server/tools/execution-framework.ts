@@ -1,6 +1,30 @@
-import { DataStreamWriter, tool, type CoreTool } from 'ai';
+import { tool, type UIMessageStreamWriter } from 'ai';
 import { z } from 'zod/v4';
 import { ApplicationAIError } from '../errors/application-errors';
+
+/**
+ * AI SDK v5 native write helper for execution framework
+ */
+function writeExecutionData(writer: UIMessageStreamWriter, data: any) {
+  const typeMap: Record<string, string> = {
+    tool_execution_start: 'data-tool-execution-start',
+    tool_execution_end: 'data-tool-execution-end',
+    tool_execution_error: 'error',
+  };
+
+  const v5Type = typeMap[data.type] || `data-${data.type}`;
+
+  if (v5Type === 'error') {
+    writer.write({
+      type: 'error',
+      errorText: (data.content || data)?.toString() || 'Unknown error',
+    } as any);
+  } else if (v5Type.startsWith('data-')) {
+    writer.write({ type: v5Type as any, data: data.content || data } as any);
+  } else {
+    writer.write({ type: v5Type as any, ...data } as any);
+  }
+}
 
 /**
  * Comprehensive tool execution framework for AI applications
@@ -28,7 +52,7 @@ export interface ToolExecutionContext {
   environment?: 'development' | 'production' | 'test';
 
   /** Data stream for real-time updates */
-  dataStream?: DataStreamWriter;
+  dataStream?: UIMessageStreamWriter;
 
   /** Abort signal for cancellation */
   signal?: AbortSignal;
@@ -168,25 +192,25 @@ export interface ToolExecutionResult<T = any> {
  * Enhanced tool wrapper with security and lifecycle management
  */
 export class EnhancedTool<TParams extends z.ZodTypeAny = z.ZodTypeAny, TResult = any> {
-  private coreTool: CoreTool<TParams, TResult>;
+  private coreTool: ReturnType<typeof tool>;
 
   constructor(private definition: EnhancedToolDefinition<TParams, TResult>) {
     this.coreTool = this.createCoreTool();
   }
 
-  private createCoreTool(): CoreTool<TParams, TResult> {
+  private createCoreTool(): ReturnType<typeof tool> {
     return tool({
       description: this.definition.description,
       parameters: this.definition.parameters,
-      execute: async (params, options) => {
+      execute: async (params: any, options: any) => {
         const context: ToolExecutionContext = {
           ...options,
           toolName: this.definition.name,
         };
 
-        return this.executeWithLifecycle(params, context);
+        return this.executeWithLifecycle(params as z.infer<TParams>, context);
       },
-    });
+    } as any);
   }
 
   private async executeWithLifecycle(
@@ -214,7 +238,7 @@ export class EnhancedTool<TParams extends z.ZodTypeAny = z.ZodTypeAny, TResult =
 
       // Send execution start status if streaming
       if (context.dataStream) {
-        context.dataStream.writeData({
+        writeExecutionData(context.dataStream, {
           type: 'tool_execution_start',
           content: {
             toolName: this.definition.name,
@@ -241,7 +265,7 @@ export class EnhancedTool<TParams extends z.ZodTypeAny = z.ZodTypeAny, TResult =
 
       // Send execution complete status if streaming
       if (context.dataStream) {
-        context.dataStream.writeData({
+        writeExecutionData(context.dataStream, {
           type: 'tool_execution_complete',
           content: {
             toolName: this.definition.name,
@@ -260,7 +284,7 @@ export class EnhancedTool<TParams extends z.ZodTypeAny = z.ZodTypeAny, TResult =
 
       // Send execution error status if streaming
       if (context.dataStream) {
-        context.dataStream.writeData({
+        writeExecutionData(context.dataStream, {
           type: 'tool_execution_error',
           content: {
             toolName: this.definition.name,
@@ -396,7 +420,7 @@ export class EnhancedTool<TParams extends z.ZodTypeAny = z.ZodTypeAny, TResult =
     return this.definition.metadata;
   }
 
-  get tool(): CoreTool<TParams, TResult> {
+  get tool(): ReturnType<typeof tool> {
     return this.coreTool;
   }
 }
@@ -448,8 +472,8 @@ export class ToolExecutionFramework {
     return limiter.check(userId);
   }
 
-  getToolsForExport(context?: ToolExecutionContext): Record<string, CoreTool<any, any>> {
-    const tools: Record<string, CoreTool<any, any>> = {};
+  getToolsForExport(context?: ToolExecutionContext): Record<string, ReturnType<typeof tool>> {
+    const tools: Record<string, ReturnType<typeof tool>> = {};
 
     for (const [name, enhancedTool] of this.tools) {
       // Skip deprecated tools unless explicitly requested
@@ -564,7 +588,8 @@ export const ToolPatterns = {
         version: '1.0.0',
         ...config.metadata,
       },
-      execute: async ({ query, limit }) => {
+      execute: async (params: unknown, _context: ToolExecutionContext) => {
+        const { query, limit } = params as { query: string; limit?: number };
         const results = await config.queryFunction(query, { limit });
         return {
           query,
@@ -581,7 +606,7 @@ export const ToolPatterns = {
   transform: <TInput, TOutput>(config: {
     name: string;
     description: string;
-    inputSchema: z.ZodSchema<TInput>;
+    parameters: z.ZodSchema<TInput>;
     transform: (input: TInput) => TOutput | Promise<TOutput>;
     metadata?: Partial<ToolMetadata>;
   }) => {
@@ -589,7 +614,7 @@ export const ToolPatterns = {
       name: config.name,
       description: config.description,
       parameters: z.object({
-        input: config.inputSchema,
+        input: config.parameters,
       }),
       metadata: {
         category: 'transform',

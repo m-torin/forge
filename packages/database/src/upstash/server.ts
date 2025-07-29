@@ -42,6 +42,7 @@
 
 import 'server-only';
 
+import { logWarn } from '@repo/observability';
 import { FetchResult, Index, QueryResult } from '@upstash/vector';
 
 type Dict = Record<string, unknown>;
@@ -60,16 +61,20 @@ const globalForUpstash = global as unknown as { upstash?: Index };
 /**
  * Create a singleton instance of the Upstash Vector client
  * Ensures only one connection pool per application
+ * Returns null if environment variables are not configured
  */
-export const upstashVectorClientSingleton = (): Index => {
+export const upstashVectorClientSingleton = (): Index | null => {
   if (!globalForUpstash.upstash) {
     const UPSTASH_VECTOR_REST_URL = process.env.UPSTASH_VECTOR_REST_URL;
     const UPSTASH_VECTOR_REST_TOKEN = process.env.UPSTASH_VECTOR_REST_TOKEN;
 
     if (!UPSTASH_VECTOR_REST_URL || !UPSTASH_VECTOR_REST_TOKEN) {
-      throw new Error(
-        'Missing Upstash Vector environment variables. Please set UPSTASH_VECTOR_REST_URL and UPSTASH_VECTOR_REST_TOKEN.',
-      );
+      logWarn('Upstash Vector not configured: Vector operations will be disabled', {
+        missingUrl: !UPSTASH_VECTOR_REST_URL,
+        missingToken: !UPSTASH_VECTOR_REST_TOKEN,
+        component: 'upstash-vector-client',
+      });
+      return null;
     }
 
     globalForUpstash.upstash = new Index({
@@ -82,10 +87,32 @@ export const upstashVectorClientSingleton = (): Index => {
 };
 
 /**
- * Upstash Vector client singleton instance
+ * Lazy-loaded Upstash Vector client singleton instance
  * Use this for direct vector operations in server environments
+ * Returns null if not configured
  */
-export const upstash: any = upstashVectorClientSingleton();
+export const getUpstashVectorClient = (): Index | null => upstashVectorClientSingleton();
+
+/**
+ * Upstash Vector client singleton instance
+ * Lazily initialized to allow graceful failure when env vars are missing
+ */
+let upstashClient: Index | null | undefined = undefined;
+export const upstash: Index = new Proxy({} as Index, {
+  get(_target, prop) {
+    if (upstashClient === undefined) {
+      upstashClient = getUpstashVectorClient();
+    }
+
+    if (upstashClient === null) {
+      throw new Error(
+        'Upstash Vector client not available. Please configure UPSTASH_VECTOR_REST_URL and UPSTASH_VECTOR_REST_TOKEN environment variables.',
+      );
+    }
+
+    return (upstashClient as any)[prop];
+  },
+}) as Index;
 
 // ============================================================================
 // RE-EXPORTS
@@ -124,10 +151,29 @@ export function createUpstashVectorFromEnv(): Index {
  * Provides high-level methods for all vector operations and batch processing
  */
 export class VectorOperations {
-  private client: Index;
+  private client: Index | null;
 
-  constructor(client?: Index) {
-    this.client = client || upstash;
+  constructor(client?: Index | null) {
+    this.client = client !== undefined ? client : getUpstashVectorClient();
+  }
+
+  /**
+   * Check if the vector client is available
+   */
+  isAvailable(): boolean {
+    return this.client !== null;
+  }
+
+  /**
+   * Get the client or throw if not available
+   */
+  private getClient(): Index {
+    if (this.client === null) {
+      throw new Error(
+        'Upstash Vector client not available. Please configure UPSTASH_VECTOR_REST_URL and UPSTASH_VECTOR_REST_TOKEN environment variables.',
+      );
+    }
+    return this.client;
   }
 
   /**
@@ -142,7 +188,7 @@ export class VectorOperations {
     }>,
     namespace?: string,
   ): Promise<string> {
-    const ns = this.client.namespace(namespace || '');
+    const ns = this.getClient().namespace(namespace || '');
     return await ns.upsert(vectors as any);
   }
 
@@ -160,7 +206,7 @@ export class VectorOperations {
     namespace?: string;
   }): Promise<QueryResult<Dict>[]> {
     const { namespace, ...queryOptions } = options;
-    const ns = this.client.namespace(namespace || '');
+    const ns = this.getClient().namespace(namespace || '');
     return await ns.query({
       ...queryOptions,
       topK: queryOptions.topK || 10,
@@ -182,7 +228,7 @@ export class VectorOperations {
     },
   ): Promise<QueryResult<Dict>[]> {
     const { namespace, ...queryOptions } = options || {};
-    const ns = this.client.namespace(namespace || '');
+    const ns = this.getClient().namespace(namespace || '');
     return await ns.query({
       data,
       topK: queryOptions?.topK || 10,
@@ -204,7 +250,7 @@ export class VectorOperations {
   ): Promise<FetchResult<Dict>[]> {
     const fetchIds = Array.isArray(ids) ? ids : [ids];
     const { namespace, ...fetchOptions } = options || {};
-    const ns = this.client.namespace(namespace || '');
+    const ns = this.getClient().namespace(namespace || '');
     return (await ns.fetch(fetchIds as any, fetchOptions)) as any;
   }
 
@@ -219,7 +265,7 @@ export class VectorOperations {
   ): Promise<{ deleted: number }> {
     const deleteIds = Array.isArray(ids) ? ids : [ids];
     const { namespace } = options || {};
-    const ns = this.client.namespace(namespace || '');
+    const ns = this.getClient().namespace(namespace || '');
     return await ns.delete(deleteIds);
   }
 
@@ -235,7 +281,7 @@ export class VectorOperations {
     },
   ): Promise<string> {
     const { namespace, ...updateData } = options;
-    const ns = this.client.namespace(namespace || '');
+    const ns = this.getClient().namespace(namespace || '');
     return await ns.upsert([{ id, ...updateData } as any]);
   }
 
@@ -243,21 +289,21 @@ export class VectorOperations {
    * Get index information
    */
   async info(): Promise<any> {
-    return await this.client.info();
+    return await this.getClient().info();
   }
 
   /**
    * List all namespaces
    */
   async listNamespaces(): Promise<string[]> {
-    return await this.client.listNamespaces();
+    return await this.getClient().listNamespaces();
   }
 
   /**
    * Reset the entire index
    */
   async reset(): Promise<string> {
-    return await this.client.reset();
+    return await this.getClient().reset();
   }
 
   /**
@@ -418,8 +464,8 @@ export class VectorOperations {
   /**
    * Get raw client access
    */
-  getClient(): Index {
-    return this.client;
+  getRawClient(): Index {
+    return this.getClient();
   }
 }
 
@@ -441,5 +487,5 @@ export const {
   bulkDelete,
   searchWithPagination,
   findSimilar,
-  getClient,
+  getRawClient: getClient,
 } = vectorOps;

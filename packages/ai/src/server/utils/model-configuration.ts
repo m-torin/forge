@@ -19,7 +19,7 @@ export interface ModelCapabilities {
   reasoning?: boolean;
   vision?: boolean;
   codeGeneration?: boolean;
-  maxTokens?: number;
+  maxOutputTokens?: number;
   supportedFormats?: string[];
 }
 
@@ -258,7 +258,7 @@ export const STANDARD_MODELS: ModelConfig[] = [
       reasoning: false,
       vision: false,
       codeGeneration: true,
-      maxTokens: 8192,
+      maxOutputTokens: 8192,
     },
   },
   {
@@ -269,7 +269,7 @@ export const STANDARD_MODELS: ModelConfig[] = [
       reasoning: true,
       vision: false,
       codeGeneration: true,
-      maxTokens: 8192,
+      maxOutputTokens: 8192,
     },
   },
   {
@@ -280,7 +280,7 @@ export const STANDARD_MODELS: ModelConfig[] = [
       reasoning: false,
       vision: false,
       codeGeneration: false,
-      maxTokens: 256,
+      maxOutputTokens: 256,
     },
   },
   {
@@ -291,7 +291,7 @@ export const STANDARD_MODELS: ModelConfig[] = [
       reasoning: false,
       vision: false,
       codeGeneration: true,
-      maxTokens: 8192,
+      maxOutputTokens: 8192,
     },
   },
 ];

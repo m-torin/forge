@@ -90,9 +90,7 @@ export const env = createEnv({
   },
   onValidationError: error => {
     const message = Array.isArray(error) ? error.map(e => e.message).join(', ') : String(error);
-    console.warn('Storage environment validation failed:', message);
-    // Don't throw in packages - use fallbacks for resilience
-    throw new Error('Storage environment validation failed');
+    throw new Error(`Storage environment validation failed: ${message}`);
   },
 });
 

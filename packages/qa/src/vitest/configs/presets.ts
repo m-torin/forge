@@ -16,7 +16,7 @@ const setupDir = resolve(currentDir, '../setup');
 
 // React component testing preset
 export const reactPreset: UserConfig = {
-  plugins: getVitePlugins({ react: true }),
+  plugins: getVitePlugins({ react: true }) as any,
   test: getBaseTestConfig({
     ...environmentConfigs.jsdom,
     setupFiles: [resolve(setupDir, 'common.ts')],
@@ -50,7 +50,7 @@ export const nodePreset: UserConfig = {
 
 // Next.js testing preset
 export const nextPreset: UserConfig = {
-  plugins: getVitePlugins({ react: true }),
+  plugins: getVitePlugins({ react: true }) as any,
   test: {
     ...baseTestConfig,
     environment: 'jsdom',

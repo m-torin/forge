@@ -687,7 +687,7 @@ export const verifyTwoFactorOTP = async (code: string) => {
 // Passkey authentication - Type-safe wrapper functions
 export const addPasskey = async (data?: { name?: string }) => {
   try {
-    return await authClient.passkey.addPasskey(data || {});
+    return await (authClient as any).passkey?.addPasskey(data || {});
   } catch (error) {
     logger.error('Add passkey failed:', error instanceof Error ? error : new Error(String(error)));
     throw error;
@@ -696,7 +696,7 @@ export const addPasskey = async (data?: { name?: string }) => {
 
 export const listPasskeys = async () => {
   try {
-    return await authClient.passkey.listUserPasskeys();
+    return await (authClient as any).passkey?.listUserPasskeys();
   } catch (error) {
     logger.error(
       'List passkeys failed:',
@@ -708,7 +708,7 @@ export const listPasskeys = async () => {
 
 export const deletePasskey = async (passkeyId: string) => {
   try {
-    return await authClient.passkey.deletePasskey({ id: passkeyId });
+    return await (authClient as any).passkey?.deletePasskey({ id: passkeyId });
   } catch (error) {
     logger.error(
       'Delete passkey failed:',
@@ -720,7 +720,7 @@ export const deletePasskey = async (passkeyId: string) => {
 
 export const signInWithPasskey = async (options?: { autoFill?: boolean; email?: string }) => {
   try {
-    return await authClient.signIn.passkey(options);
+    return await (authClient as any).signIn?.passkey(options);
   } catch (error) {
     logger.error(
       'Sign in with passkey failed:',
@@ -738,7 +738,9 @@ export const signUpWithPasskey = async (data: any) => {
       throw new Error(signUpResult.error.message);
     }
     // Then add passkey after successful signup
-    return await authClient.passkey.addPasskey({ name: data.passkeyName || 'Default Passkey' });
+    return await (authClient as any).passkey?.addPasskey({
+      name: data.passkeyName || 'Default Passkey',
+    });
   } catch (error) {
     logger.error(
       'Sign up with passkey failed:',

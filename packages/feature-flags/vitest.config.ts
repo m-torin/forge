@@ -1,5 +1,5 @@
-import { createReactPackageConfig } from '@repo/qa/vitest/configs';
+import { createNodePackageConfig } from '@repo/qa/vitest/configs';
 
-export default createReactPackageConfig({
+export default createNodePackageConfig({
   setupFiles: ['./test-setup.ts'],
 });

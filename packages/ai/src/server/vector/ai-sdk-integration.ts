@@ -6,21 +6,27 @@
 import { openai } from '@ai-sdk/openai';
 import { logWarn } from '@repo/observability/server/next';
 import { Index } from '@upstash/vector';
+import type { EmbeddingModel } from 'ai';
 import { embed, embedMany, tool } from 'ai';
 import { z } from 'zod/v4';
+import { trackRAGOperation } from '../rag/telemetry';
 
 // Enhanced configuration with AI SDK embedding models
 export interface UpstashAIConfig {
   vectorUrl: string;
   vectorToken: string;
-  embeddingModel?: 'text-embedding-3-small' | 'text-embedding-3-large' | 'text-embedding-ada-002';
+  embeddingModel?:
+    | 'text-embedding-3-small'
+    | 'text-embedding-3-large'
+    | 'text-embedding-ada-002'
+    | EmbeddingModel<string>;
   namespace?: string;
   dimensions?: number;
 }
 
 export class UpstashAIVector {
   private index: Index;
-  private embeddingModel: any;
+  private embeddingModel: EmbeddingModel<string>;
   private namespace?: string;
   private dimensions: number;
 
@@ -30,7 +36,12 @@ export class UpstashAIVector {
       token: config.vectorToken,
     });
 
-    this.embeddingModel = openai.embedding(config.embeddingModel || 'text-embedding-3-small');
+    // Support both string model names and EmbeddingModel instances
+    if (typeof config.embeddingModel === 'string' || !config.embeddingModel) {
+      this.embeddingModel = openai.embedding(config.embeddingModel || 'text-embedding-3-small');
+    } else {
+      this.embeddingModel = config.embeddingModel;
+    }
 
     this.namespace = config.namespace;
     this.dimensions = config.dimensions || 1536;
@@ -46,35 +57,52 @@ export class UpstashAIVector {
       metadata?: Record<string, any>;
     }>,
   ) {
-    // Generate embeddings using AI SDK
-    const { embeddings } = await embedMany({
-      model: this.embeddingModel,
-      values: data.map(item => item.content),
-    });
+    try {
+      if (!data || data.length === 0) {
+        throw new Error('No data provided for embedding');
+      }
 
-    // Format for Upstash Vector
-    const vectorData = data.map((item, index) => ({
-      id: item.id,
-      vector: embeddings[index],
-      metadata: {
-        ...item.metadata,
-        content: item.content,
-        timestamp: new Date().toISOString(),
-      },
-    }));
+      // Generate embeddings using AI SDK
+      const { embeddings } = await embedMany({
+        model: this.embeddingModel,
+        values: data.map(item => item.content),
+      });
 
-    // Upsert to vector store
-    if (this.namespace) {
-      await this.index.namespace(this.namespace).upsert(vectorData);
-    } else {
-      await this.index.upsert(vectorData);
+      if (embeddings.length !== data.length) {
+        throw new Error('Embedding count mismatch with input data');
+      }
+
+      // Format for Upstash Vector
+      const vectorData = data.map((item, index) => ({
+        id: item.id,
+        vector: embeddings[index],
+        metadata: {
+          ...item.metadata,
+          content: item.content,
+          timestamp: new Date().toISOString(),
+        },
+      }));
+
+      // Upsert to vector store
+      if (this.namespace) {
+        await this.index.namespace(this.namespace).upsert(vectorData);
+      } else {
+        await this.index.upsert(vectorData);
+      }
+
+      return {
+        success: true,
+        count: vectorData.length,
+        ids: vectorData.map(item => item.id),
+      };
+    } catch (error) {
+      logWarn('Failed to upsert with embedding', {
+        operation: 'upstash_ai_vector_upsert',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        dataCount: data?.length || 0,
+      });
+      throw error;
     }
-
-    return {
-      success: true,
-      count: vectorData.length,
-      ids: vectorData.map(item => item.id),
-    };
   }
 
   /**
@@ -87,29 +115,42 @@ export class UpstashAIVector {
       metadata?: Record<string, any>;
     }>,
   ) {
-    // Format for Upstash Vector with data field (for hosted embeddings)
-    const vectorData = data.map(item => ({
-      id: item.id,
-      data: item.content, // Using data field for Upstash hosted embeddings
-      metadata: {
-        ...item.metadata,
-        content: item.content,
-        timestamp: new Date().toISOString(),
-      },
-    }));
+    try {
+      if (!data || data.length === 0) {
+        throw new Error('No data provided for Upstash embedding');
+      }
 
-    // Upsert to vector store
-    if (this.namespace) {
-      await this.index.namespace(this.namespace).upsert(vectorData);
-    } else {
-      await this.index.upsert(vectorData);
+      // Format for Upstash Vector with data field (for hosted embeddings)
+      const vectorData = data.map(item => ({
+        id: item.id,
+        data: item.content, // Using data field for Upstash hosted embeddings
+        metadata: {
+          ...item.metadata,
+          content: item.content,
+          timestamp: new Date().toISOString(),
+        },
+      }));
+
+      // Upsert to vector store
+      if (this.namespace) {
+        await this.index.namespace(this.namespace).upsert(vectorData);
+      } else {
+        await this.index.upsert(vectorData);
+      }
+
+      return {
+        success: true,
+        count: vectorData.length,
+        ids: vectorData.map(item => item.id),
+      };
+    } catch (error) {
+      logWarn('Failed to upsert with Upstash embedding', {
+        operation: 'upstash_ai_vector_upsert_hosted',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        dataCount: data?.length || 0,
+      });
+      throw error;
     }
-
-    return {
-      success: true,
-      count: vectorData.length,
-      ids: vectorData.map(item => item.id),
-    };
   }
 
   /**
@@ -129,33 +170,51 @@ export class UpstashAIVector {
       metadata: any;
     }>
   > {
-    // Generate query embedding
-    const { embedding } = await embed({
-      model: this.embeddingModel,
-      value: query,
+    return trackRAGOperation('vector_query_embedding', async tracker => {
+      if (!query || query.trim().length === 0) {
+        throw new Error('Query cannot be empty');
+      }
+
+      const topK = options.topK || 5;
+      tracker.setQuery(query, 'embedding').setSearchParams(topK);
+
+      // Generate query embedding
+      const embeddingStart = Date.now();
+      const { embedding } = await embed({
+        model: this.embeddingModel,
+        value: query,
+      });
+      const embeddingDuration = Date.now() - embeddingStart;
+
+      // Estimate tokens (rough approximation: 1 token ≈ 4 characters)
+      const estimatedTokens = Math.ceil(query.length / 4);
+      tracker.setEmbedding(estimatedTokens, 'text-embedding-3-small', embeddingDuration);
+
+      // Query vector store
+      const queryOptions = {
+        vector: embedding,
+        topK,
+        includeMetadata: true,
+        ...(options.filter && { filter: JSON.stringify(options.filter) }),
+      };
+
+      let results;
+      if (this.namespace) {
+        results = await this.index.namespace(this.namespace).query(queryOptions);
+      } else {
+        results = await this.index.query(queryOptions);
+      }
+
+      const formattedResults = results.map(result => ({
+        id: String(result.id),
+        score: result.score || 0,
+        content: String(result.metadata?.content || ''),
+        metadata: result.metadata,
+      }));
+
+      tracker.setSearchResults(formattedResults);
+      return formattedResults;
     });
-
-    // Query vector store
-    const queryOptions = {
-      vector: embedding,
-      topK: options.topK || 5,
-      includeMetadata: true,
-      ...(options.filter && { filter: JSON.stringify(options.filter) }),
-    };
-
-    let results;
-    if (this.namespace) {
-      results = await this.index.namespace(this.namespace).query(queryOptions);
-    } else {
-      results = await this.index.query(queryOptions);
-    }
-
-    return results.map(result => ({
-      id: String(result.id),
-      score: result.score || 0,
-      content: String(result.metadata?.content || ''),
-      metadata: result.metadata,
-    }));
   }
 
   /**
@@ -175,27 +234,40 @@ export class UpstashAIVector {
       metadata: any;
     }>
   > {
-    // Query vector store using data field
-    const queryOptions = {
-      data: query, // Using data field for Upstash hosted embeddings
-      topK: options.topK || 5,
-      includeMetadata: true,
-      ...(options.filter && { filter: JSON.stringify(options.filter) }),
-    };
+    try {
+      if (!query || query.trim().length === 0) {
+        throw new Error('Query cannot be empty for Upstash embedding');
+      }
 
-    let results;
-    if (this.namespace) {
-      results = await this.index.namespace(this.namespace).query(queryOptions);
-    } else {
-      results = await this.index.query(queryOptions);
+      // Query vector store using data field
+      const queryOptions = {
+        data: query, // Using data field for Upstash hosted embeddings
+        topK: options.topK || 5,
+        includeMetadata: true,
+        ...(options.filter && { filter: JSON.stringify(options.filter) }),
+      };
+
+      let results;
+      if (this.namespace) {
+        results = await this.index.namespace(this.namespace).query(queryOptions);
+      } else {
+        results = await this.index.query(queryOptions);
+      }
+
+      return results.map(result => ({
+        id: String(result.id),
+        score: result.score || 0,
+        content: String(result.metadata?.content || ''),
+        metadata: result.metadata,
+      }));
+    } catch (error) {
+      logWarn('Failed to query with Upstash embedding', {
+        operation: 'upstash_ai_vector_query_hosted',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        query: query?.substring(0, 100), // Log first 100 chars for debugging
+      });
+      throw error;
     }
-
-    return results.map(result => ({
-      id: String(result.id),
-      score: result.score || 0,
-      content: String(result.metadata?.content || ''),
-      metadata: result.metadata,
-    }));
   }
 
   /**
@@ -279,23 +351,30 @@ export function createUpstashVectorTools(
   config: UpstashAIConfig,
   useUpstashEmbedding: boolean = false,
 ): {
-  addToKnowledgeBase: any;
+  addResource: any;
   addDocument: any;
-  searchKnowledgeBase: any;
+  getInformation: any;
 } {
   const vectorStore = new UpstashAIVector(config);
 
   return {
-    addToKnowledgeBase: tool({
-      description: 'Add content to the vector knowledge base',
+    addResource: tool({
+      description: `add a resource to your knowledge base.
+        If the user provides a random piece of knowledge unprompted, use this tool without asking for confirmation.`,
       parameters: z.object({
-        content: z.string().describe('The content to add to the knowledge base'),
+        content: z.string().describe('the content or resource to add to the knowledge base'),
         metadata: z
           .record(z.string(), z.any())
           .optional()
           .describe('Optional metadata for the content'),
       }),
-      execute: async ({ content, metadata }) => {
+      execute: async ({
+        content,
+        metadata,
+      }: {
+        content: string;
+        metadata?: Record<string, any>;
+      }) => {
         const id = `doc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
         if (useUpstashEmbedding) {
@@ -304,7 +383,7 @@ export function createUpstashVectorTools(
           await vectorStore.upsertWithEmbedding([{ id, content, metadata }]);
         }
 
-        return `Added content to knowledge base with ID: ${id}`;
+        return `Resource successfully created and embedded.`;
       },
     }),
 
@@ -318,7 +397,15 @@ export function createUpstashVectorTools(
           .optional()
           .describe('Optional metadata for the document'),
       }),
-      execute: async ({ content, title, metadata }) => {
+      execute: async ({
+        content,
+        title,
+        metadata,
+      }: {
+        content: string;
+        title?: string;
+        metadata?: Record<string, any>;
+      }) => {
         const id = `doc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const result = await vectorStore.addDocument(
           {
@@ -336,18 +423,18 @@ export function createUpstashVectorTools(
       },
     }),
 
-    searchKnowledgeBase: tool({
-      description: 'Search the vector knowledge base for relevant information',
+    getInformation: tool({
+      description: `get information from your knowledge base to answer questions.`,
       parameters: z.object({
-        query: z.string().describe('The search query'),
+        question: z.string().describe('the users question'),
         topK: z.number().optional().describe('Number of results to return (default: 5)'),
       }),
-      execute: async ({ query, topK }) => {
+      execute: async ({ question, topK }: { question: string; topK?: number }) => {
         let results;
         if (useUpstashEmbedding) {
-          results = await vectorStore.queryWithUpstashEmbedding(query, { topK });
+          results = await vectorStore.queryWithUpstashEmbedding(question, { topK });
         } else {
-          results = await vectorStore.queryWithEmbedding(query, { topK });
+          results = await vectorStore.queryWithEmbedding(question, { topK });
         }
 
         return results.map(result => ({
@@ -385,4 +472,17 @@ export function createUpstashAIVectorFromEnv(
     embeddingModel: config?.embeddingModel ?? 'text-embedding-3-small',
     dimensions: config?.dimensions ?? 1536,
   });
+}
+
+/**
+ * Create Upstash AI Vector instance with provider registry support
+ */
+export function createUpstashAIVectorWithRegistry(config: {
+  vectorUrl: string;
+  vectorToken: string;
+  embeddingModel: EmbeddingModel<string>;
+  namespace?: string;
+  dimensions?: number;
+}): UpstashAIVector {
+  return new UpstashAIVector(config);
 }

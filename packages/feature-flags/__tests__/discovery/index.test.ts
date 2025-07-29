@@ -2,7 +2,7 @@ import { createFlagsDiscoveryEndpoint } from '@/discovery';
 import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock observability
-vi.mock('@repo/observability/server/next', () => ({
+vi.mock('@repo/observability', () => ({
   logError: vi.fn(),
 }));
 
@@ -75,14 +75,14 @@ describe('createFlagsDiscoveryEndpoint', () => {
   });
 
   test('should log errors when provider fails', async () => {
-    const { logError } = vi.mocked(await import('@repo/observability/server/next'));
+    const { logError } = vi.mocked(await import('@repo/observability'));
     const error = new Error('Provider error');
     const getProviderData = vi.fn().mockRejectedValue(error);
     const endpoint = createFlagsDiscoveryEndpoint(getProviderData);
 
     await endpoint();
 
-    expect(logError).toHaveBeenCalledWith('Error in flags discovery endpoint', error, {
+    expect(logError).toHaveBeenCalledWith(error, {
       endpoint: 'discovery',
     });
   });

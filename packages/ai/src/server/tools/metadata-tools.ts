@@ -32,7 +32,15 @@ export function createMetadataTools(config: MetadataToolsConfig) {
           .describe('How to handle existing metadata'),
         namespace: z.string().optional().describe('Target namespace'),
       }),
-      execute: async ({ vectorId, metadata, mergeMode }) => {
+      execute: async ({
+        vectorId,
+        metadata,
+        mergeMode,
+      }: {
+        vectorId: string;
+        metadata: Record<string, any>;
+        mergeMode?: 'replace' | 'merge' | 'append';
+      }) => {
         try {
           // First fetch the existing vector to get current metadata
           const existing = await vectorDB.fetch([vectorId]);
@@ -100,7 +108,17 @@ export function createMetadataTools(config: MetadataToolsConfig) {
         namespace: z.string().optional().describe('Target namespace'),
         batchSize: z.number().optional().describe('Batch size for processing'),
       }),
-      execute: async ({ updates, batchSize = maxBatchSize }) => {
+      execute: async ({
+        updates,
+        batchSize = maxBatchSize,
+      }: {
+        updates: Array<{
+          vectorId: string;
+          metadata: Record<string, any>;
+          mergeMode?: 'replace' | 'merge' | 'append';
+        }>;
+        batchSize?: number;
+      }) => {
         const results = [];
         const errors = [];
 
@@ -188,7 +206,19 @@ export function createMetadataTools(config: MetadataToolsConfig) {
         includeMetadata: z.boolean().default(true).describe('Include metadata'),
         namespace: z.string().optional().describe('Target namespace'),
       }),
-      execute: async ({ filter, limit, includeVectors, includeMetadata, namespace }) => {
+      execute: async ({
+        filter,
+        limit,
+        includeVectors,
+        includeMetadata,
+        namespace,
+      }: {
+        filter?: Record<string, any>;
+        limit?: number;
+        includeVectors?: boolean;
+        includeMetadata?: boolean;
+        namespace?: string;
+      }) => {
         try {
           // Use range scan with filter since there's no direct metadata query
           const results = [];
@@ -197,7 +227,7 @@ export function createMetadataTools(config: MetadataToolsConfig) {
           do {
             const scanResult = await vectorDB.range?.({
               cursor,
-              limit: Math.min(limit * 2, 1000),
+              limit: Math.min((limit || 10) * 2, 1000),
               includeVectors,
               includeMetadata: true,
             });
@@ -208,7 +238,7 @@ export function createMetadataTools(config: MetadataToolsConfig) {
             const filtered = scanResult.vectors.filter(vector => {
               if (!vector.metadata) return false;
 
-              return Object.entries(filter).every(([key, value]) => {
+              return Object.entries(filter || {}).every(([key, value]) => {
                 const vectorValue = vector.metadata?.[key];
 
                 if (typeof value === 'object' && value !== null) {
@@ -275,7 +305,7 @@ export function createMetadataTools(config: MetadataToolsConfig) {
             results.push(...filtered);
             cursor = scanResult?.nextCursor || '';
 
-            if (results.length >= limit) break;
+            if (results.length >= (limit || 10)) break;
           } while (cursor);
 
           const finalResults = results.slice(0, limit).map(vector => ({
@@ -308,7 +338,15 @@ export function createMetadataTools(config: MetadataToolsConfig) {
           .optional()
           .describe('Specific fields to analyze (all if not specified)'),
       }),
-      execute: async ({ namespace, sampleSize, fields }) => {
+      execute: async ({
+        namespace,
+        sampleSize,
+        fields,
+      }: {
+        namespace?: string;
+        sampleSize?: number;
+        fields?: string[];
+      }) => {
         try {
           const stats: Record<string, any> = {};
           let totalVectors = 0;
@@ -317,7 +355,7 @@ export function createMetadataTools(config: MetadataToolsConfig) {
           do {
             const scanResult = await vectorDB.range?.({
               cursor,
-              limit: Math.min(sampleSize, 1000),
+              limit: Math.min(sampleSize || 100, 1000),
               includeMetadata: true,
             });
 
@@ -357,7 +395,7 @@ export function createMetadataTools(config: MetadataToolsConfig) {
 
             cursor = scanResult.nextCursor || '';
 
-            if (totalVectors >= sampleSize) break;
+            if (totalVectors >= (sampleSize || 1000)) break;
           } while (cursor);
 
           // Convert sets to arrays for JSON serialization
@@ -383,7 +421,7 @@ export function createMetadataTools(config: MetadataToolsConfig) {
             fieldsAnalyzed: Object.keys(finalStats).length,
             stats: finalStats,
             namespace: namespace || defaultNamespace,
-            sampleSize: Math.min(totalVectors, sampleSize),
+            sampleSize: Math.min(totalVectors, sampleSize || 100),
             message: `Analyzed metadata for ${totalVectors} vectors`,
           };
         } catch (error) {
@@ -404,7 +442,19 @@ export function createMetadataTools(config: MetadataToolsConfig) {
         dryRun: z.boolean().default(true).describe('Preview changes without applying them'),
         batchSize: z.number().optional().describe('Batch size for processing'),
       }),
-      execute: async ({ operations, namespace, dryRun, batchSize = maxBatchSize }) => {
+      execute: async ({
+        operations,
+        namespace,
+        dryRun,
+        batchSize = maxBatchSize,
+      }: {
+        operations: Array<
+          'remove_null' | 'remove_empty' | 'normalize_types' | 'deduplicate_arrays'
+        >;
+        namespace?: string;
+        dryRun?: boolean;
+        batchSize?: number;
+      }) => {
         const changes = [];
         let totalVectors = 0;
         let cursor = '';

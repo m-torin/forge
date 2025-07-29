@@ -11,6 +11,10 @@
       "types": "./keys.ts",
       "import": "./keys.ts"
     },
+    "./env": {
+      "types": "./env.ts",
+      "import": "./env.ts"
+    },
     "./templates/api-key-created": "./src/templates/api-key-created.tsx",
     "./templates/contact": "./src/templates/contact.tsx",
     "./templates/magic-link": "./src/templates/magic-link.tsx",
@@ -38,14 +42,14 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@react-email/components": "^0.3.1",
+    "@react-email/components": "^0.3.2",
     "@react-email/render": "^1.1.3",
     "@repo/observability": "workspace:*",
     "@t3-oss/env-nextjs": "catalog:",
     "chalk": "^5.4.1",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "resend": "^4.6.0",
+    "resend": "^4.7.0",
     "server-only": "^0.0.1",
     "zod": "catalog:"
   },

@@ -18,7 +18,7 @@ import {
   WorkflowExecution,
 } from './shared/types/index';
 // Import for internal use
-import { logWarn } from '@repo/observability/server/next';
+import { logWarn } from '@repo/observability/client';
 import { validateWorkflowDefinition } from './shared/utils/index';
 
 // Client-side patterns (safe for browser usage)

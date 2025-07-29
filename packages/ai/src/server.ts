@@ -49,7 +49,13 @@ export {
   extractEntities,
   extractReasoning,
   formatProviderError,
+  getDefaultModel,
+  getLegacyModel,
+  getModel,
+  models,
   moderateContent,
+  // AI SDK v5 Provider Registry (NEW)
+  registry,
   validateCacheControl,
   validateGenerateOptions,
   webSearchWithGemini,

@@ -1,6 +1,6 @@
-import { createNodePackageConfig } from '@repo/qa/vitest/configs';
+import { createReactPackageConfig } from '@repo/qa/vitest/configs';
 
-export default createNodePackageConfig({
+export default createReactPackageConfig({
   setupFiles: ['./test-setup.ts'],
   overrides: {
     test: {
@@ -15,10 +15,10 @@ export default createNodePackageConfig({
           '**/dynamic-import-helper.js',
         ],
         thresholds: {
-          lines: 10,
-          functions: 10,
-          branches: 10,
-          statements: 10,
+          lines: 40,
+          functions: 40,
+          branches: 40,
+          statements: 40,
         },
       },
     },

@@ -11,7 +11,16 @@ vi.mock('ai', () => ({
 describe('custom Providers', () => {
   describe('createCustomProvider', () => {
     test('should create a basic custom provider', () => {
-      const mockModel = { id: 'test-model' };
+      const mockModel = {
+        id: 'test-model',
+        specificationVersion: 'v2' as const,
+        provider: 'test',
+        modelId: 'test-model',
+        defaultObjectGenerationMode: 'json' as const,
+        supportedUrls: {},
+        doGenerate: vi.fn(),
+        doStream: vi.fn(),
+      };
       const provider = createCustomProvider({
         languageModels: {
           'test-model': mockModel,
@@ -27,7 +36,16 @@ describe('custom Providers', () => {
     });
 
     test('should include image models when provided', () => {
-      const mockModel = { id: 'test-model' };
+      const mockModel = {
+        id: 'test-model',
+        specificationVersion: 'v2' as const,
+        provider: 'test',
+        modelId: 'test-model',
+        defaultObjectGenerationMode: 'json' as const,
+        supportedUrls: {},
+        doGenerate: vi.fn(),
+        doStream: vi.fn(),
+      };
       const mockImageModel = { id: 'test-image-model' };
 
       const provider = createCustomProvider({

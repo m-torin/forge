@@ -7,7 +7,7 @@
 import { generateText, streamText } from 'ai';
 import {
   analyzeSentiment,
-  anthropic,
+  createAnthropicModel,
   createAnthropicProvider,
   createAnthropicWithReasoning,
   createBashTool,
@@ -23,7 +23,7 @@ export async function basicAnthropicExample() {
   console.log('🤖 Basic Anthropic Example');
 
   // Pure AI SDK pattern - no custom wrappers
-  const model = anthropic('claude-3-haiku-20240307');
+  const model = createAnthropicModel({ model: 'claude-3-haiku-20240307' });
 
   const result = await generateText({
     model,
@@ -42,7 +42,7 @@ export async function reasoningExample() {
 
   // Pure AI SDK pattern for reasoning
   const { text, reasoning, reasoningDetails } = await generateText({
-    model: anthropic('claude-4-opus-20250514'),
+    model: createAnthropicModel({ model: 'claude-4-opus-20250514' }),
     prompt: 'How many people will live in the world in 2040?',
     providerOptions: {
       anthropic: {
@@ -67,7 +67,7 @@ export async function cacheControlExample() {
   const errorMessage = 'ReferenceError: Cannot access "users" before initialization at line 42';
 
   const result = await generateText({
-    model: anthropic('claude-3-5-sonnet-20240620'),
+    model: createAnthropicModel({ model: 'claude-3-5-sonnet-20240620' }),
     messages: [
       {
         role: 'user',
@@ -112,7 +112,7 @@ export async function computerToolsExample() {
   });
 
   const result = await generateText({
-    model: anthropic('claude-3-5-sonnet-20241022'),
+    model: createAnthropicModel({ model: 'claude-3-5-sonnet-20241022' }),
     prompt:
       "Create a new file called example.txt, write 'Hello World' to it, and run 'cat example.txt' in the terminal",
     tools: {
@@ -180,8 +180,8 @@ export async function customProviderExample() {
 export async function streamingWithReasoningExample() {
   console.log('🌊 Streaming with Reasoning Example');
 
-  const stream = await streamText({
-    model: anthropic('claude-3-5-sonnet-20241022'),
+  const stream = streamText({
+    model: createAnthropicModel({ model: 'claude-3-5-sonnet-20241022' }),
     prompt: 'Solve this math problem step by step: What is 15% of 240?',
     providerOptions: {
       anthropic: {

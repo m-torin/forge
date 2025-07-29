@@ -3,22 +3,13 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "dist",
-    "types": ["vitest/globals", "node", "@types/babel__traverse"],
+    "types": ["vitest/globals"],
     "baseUrl": ".",
     "paths": {
       "@repo/*": ["../*"],
       "@/*": ["./src/*"]
     }
   },
-  "include": [
-    "src/**/*",
-    "__tests__/**/*",
-    "vitest.config.ts",
-    "eslint.config.ts",
-    "keys.ts",
-    "client/**/*",
-    "server/**/*",
-    "examples/**/*"
-  ],
+  "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules", "dist"]
 }

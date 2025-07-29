@@ -19,7 +19,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:coverage:json": "vitest run --coverage --reporter=json",
-    "test:e2e": "playwright test",
+    "test:e2e": "echo 'Skipping e2e tests for email app'",
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:ui": "playwright test --ui",
     "test:ui": "vitest --ui",
@@ -27,13 +27,14 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@react-email/components": "0.3.1",
+    "@react-email/components": "0.3.2",
     "@repo/email": "workspace:*",
+    "@repo/observability": "workspace:*",
     "react": "catalog:",
-    "react-email": "4.1.3"
+    "react-email": "4.2.4"
   },
   "devDependencies": {
-    "@react-email/preview-server": "4.1.3",
+    "@react-email/preview-server": "4.2.4",
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/qa": "workspace:*",

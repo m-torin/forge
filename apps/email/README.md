@@ -1,5 +1,8 @@
 # Email Preview
 
-Email template preview and development environment for React Email templates.
+- _Type:_ **Development Tool**
 
-Complete documentation is available in `/apps/docs/`.
+- _Purpose:_ **Email template preview and development environment for React
+  Email templates**
+
+- _Documentation:_ **[Email Preview](../docs/apps/email.mdx)**

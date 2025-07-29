@@ -1,10 +1,164 @@
-// Environment setup for AI tests
-import { afterAll, beforeAll, vi } from 'vitest';
+// Setup for AI package tests
+import '@testing-library/jest-dom';
+import { beforeEach, vi } from 'vitest';
 
-// Import centralized mocks from @repo/qa package
-import '@repo/qa/vitest/mocks';
+// AI SDK v5 Official Testing Utilities
+import { MockLanguageModelV2, simulateReadableStream } from 'ai/test';
 
-// Mock environment variables
+// Note: @repo/qa/vitest/setup/react-package is automatically included by createReactPackageConfig
+// No manual import needed
+
+// Mock console methods for cleaner test output
+const originalConsole = console;
+global.console = {
+  ...originalConsole,
+  error: vi.fn(),
+  log: vi.fn(),
+  warn: vi.fn(),
+};
+
+// AI SDK Mocks (using official v5 testing utilities)
+// Mock core AI functions
+vi.mock('ai', async importOriginal => {
+  const actual = await importOriginal<typeof import('ai')>();
+
+  return {
+    ...actual,
+    MockLanguageModelV2,
+    simulateReadableStream,
+    customProvider: vi.fn().mockImplementation(config => ({
+      ...config,
+      languageModels: Object.fromEntries(
+        Object.entries(config.languageModels || {}).map(([key, value]) => [
+          key,
+          vi.fn().mockReturnValue({
+            modelId: key,
+            provider: config.id || 'custom',
+            doGenerate: vi.fn().mockResolvedValue({
+              text: 'Mock generated text',
+              usage: { inputTokens: 10, outputTokens: 20 },
+              finishReason: 'stop',
+            }),
+          }),
+        ]),
+      ),
+    })),
+    embed: vi.fn(async ({ model, value }) => ({
+      embedding: [0.1, 0.2, 0.3],
+      usage: {
+        promptTokens: 10,
+        completionTokens: 0,
+        totalTokens: 10,
+      },
+    })),
+    embedMany: vi.fn(async ({ model, values }) => ({
+      embeddings: values.map(() => [0.1, 0.2, 0.3]),
+      usage: {
+        promptTokens: 10 * values.length,
+        completionTokens: 0,
+        totalTokens: 10 * values.length,
+      },
+    })),
+    generateText: vi.fn(async ({ model, prompt, messages }) => ({
+      text: 'Mock generated text',
+      usage: { promptTokens: 10, completionTokens: 20 },
+      finishReason: 'stop',
+    })),
+    streamText: vi.fn(({ model, prompt, messages }) => ({
+      textStream: {
+        [Symbol.asyncIterator]: async function* () {
+          yield 'Mock ';
+          yield 'streamed ';
+          yield 'text';
+        },
+      },
+      fullStream: {
+        [Symbol.asyncIterator]: async function* () {
+          yield { type: 'stream-start' };
+          yield { type: 'text', text: 'Mock ' };
+          yield { type: 'text', text: 'streamed ' };
+          yield { type: 'text', text: 'text' };
+          yield {
+            type: 'finish',
+            finishReason: 'stop',
+            usage: { inputTokens: 10, outputTokens: 20 },
+          };
+        },
+      },
+      text: 'Mock streamed text',
+      usage: { promptTokens: 10, completionTokens: 20 },
+      finishReason: 'stop',
+      toUIMessageStreamResponse: vi.fn().mockResolvedValue(new Response()),
+      toDataStreamResponse: vi.fn().mockResolvedValue(new Response()),
+    })),
+    generateObject: vi.fn(async ({ model, schema, prompt }) => ({
+      object: { key: 'value', sentiment: 'positive', confidence: 0.9 },
+      usage: { promptTokens: 10, completionTokens: 20 },
+      finishReason: 'stop',
+    })),
+    streamObject: vi.fn(({ model, schema, prompt }) => ({
+      fullStream: {
+        [Symbol.asyncIterator]: async function* () {
+          yield {
+            type: 'object',
+            object: { key: 'value', sentiment: 'positive', confidence: 0.9 },
+          };
+        },
+      },
+      object: { key: 'value', sentiment: 'positive', confidence: 0.9 },
+      usage: { promptTokens: 10, completionTokens: 20 },
+    })),
+    smoothStream: vi.fn(options => stream => stream),
+    tool: vi.fn().mockImplementation(config => {
+      if (!config) return null;
+      return {
+        description: config.description,
+        parameters: config.parameters,
+        execute: config.execute || (async () => ({ success: true })),
+      };
+    }),
+  };
+});
+
+// Mock @ai-sdk/react for UI components
+vi.mock('@ai-sdk/react', () => ({
+  useChat: vi.fn(() => ({
+    messages: [],
+    input: '',
+    setInput: vi.fn(),
+    setMessages: vi.fn(),
+    append: vi.fn().mockResolvedValue(undefined),
+    reload: vi.fn(),
+    stop: vi.fn(),
+    isLoading: false,
+    error: null,
+    handleInputChange: vi.fn(),
+    handleSubmit: vi.fn(),
+  })),
+  useCompletion: vi.fn(() => ({
+    completion: '',
+    input: '',
+    setInput: vi.fn(),
+    handleInputChange: vi.fn(),
+    handleSubmit: vi.fn(),
+    stop: vi.fn(),
+    isLoading: false,
+    error: null,
+    complete: vi.fn(),
+  })),
+  useAssistant: vi.fn(() => ({
+    messages: [],
+    input: '',
+    setInput: vi.fn(),
+    submitMessage: vi.fn(),
+    status: 'idle',
+    error: null,
+    threadId: null,
+    stop: vi.fn(),
+  })),
+}));
+
+// Mock environment variables for AI package
 vi.stubEnv('NODE_ENV', 'test');
 vi.stubEnv('NEXT_PUBLIC_NODE_ENV', 'test');
 
@@ -41,63 +195,38 @@ vi.stubEnv('DISABLE_AI_RATE_LIMITING', 'true');
 vi.stubEnv('USE_MOCK_AI_RESPONSES', 'true');
 vi.stubEnv('AI_REQUEST_TIMEOUT', '5000');
 
-// Only import jest-dom in browser environments
-if (typeof window !== 'undefined') {
-  import('@testing-library/jest-dom');
-}
-
-// Mock window.matchMedia if window exists
-if (typeof window !== 'undefined') {
-  Object.defineProperty(window, 'matchMedia', {
-    writable: true,
-    value: vi.fn().mockImplementation(query => ({
-      matches: false,
-      media: query,
-      onchange: null,
-      addListener: vi.fn(), // deprecated
-      removeListener: vi.fn(), // deprecated
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-    })),
-  });
-}
-
-// Mock IntersectionObserver if it exists
-if (typeof IntersectionObserver !== 'undefined') {
-  vi.spyOn(global, 'IntersectionObserver').mockImplementation(() => ({
-    observe: vi.fn(),
-    unobserve: vi.fn(),
-    disconnect: vi.fn(),
-    root: null,
-    rootMargin: '',
-    thresholds: [],
-  }));
-}
-
-// Mock ResizeObserver if it exists
-if (typeof ResizeObserver !== 'undefined') {
-  vi.spyOn(global, 'ResizeObserver').mockImplementation(() => ({
-    observe: vi.fn(),
-    unobserve: vi.fn(),
-    disconnect: vi.fn(),
-  }));
-}
-
-// Suppress React warnings during tests
-const originalWarn = console.warn;
-beforeAll(() => {
-  console.warn = (...args: any[]) => {
-    if (typeof args[0] === 'string' && args[0].includes('Warning: ReactDOM.render')) {
-      return;
-    }
-    originalWarn.call(console, ...args);
-  };
+// Common AI test configuration
+export const createAITestConfig = (overrides = {}) => ({
+  providers: {
+    openai: { apiKey: 'sk-test-ai-package-key' },
+    anthropic: { apiKey: 'sk-ant-test-ai-package-key' },
+    ...overrides,
+  },
 });
 
-afterAll(() => {
-  console.warn = originalWarn;
-});
+// Common AI test creation patterns
+export const createTestAI = async (config = createAITestConfig()) => {
+  const { createAI } = await import('@/server');
+  return createAI(config);
+};
 
-// Additional AI-specific test configuration
-// These are handled by vi.stubEnv above already
+export const createTestClientAI = async (config = createAITestConfig()) => {
+  const { createClientAI } = await import('@/client');
+  return createClientAI(config);
+};
+
+// Export test factories and generators
+export * from './ai-test-factory';
+export {
+  AIResponseGenerators,
+  ErrorDataGenerators,
+  TelemetryDataGenerators,
+  TestDataGenerators,
+  TestScenarioGenerators,
+  ToolDataGenerators,
+} from './test-data-generators';
+
+// Reset all mocks before each test
+beforeEach(() => {
+  vi.clearAllMocks();
+});

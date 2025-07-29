@@ -3,7 +3,7 @@
  * Efficient scanning and pagination for large vector datasets
  */
 
-import { logInfo } from '@repo/observability/shared-env';
+import { logInfo } from '@repo/observability';
 import { tool } from 'ai';
 import { z } from 'zod/v4';
 import type { VectorDB } from '../../shared/types/vector';
@@ -56,6 +56,13 @@ export function createRangeTools(config: RangeToolsConfig) {
         includeMetadata,
         includeData,
         namespace,
+      }: {
+        cursor?: string;
+        limit?: number;
+        includeVectors?: boolean;
+        includeMetadata?: boolean;
+        includeData?: boolean;
+        namespace?: string;
       }) => {
         // Validate limit
         const actualLimit = Math.min(limit, maxPageSize);
@@ -125,6 +132,14 @@ export function createRangeTools(config: RangeToolsConfig) {
         includeData,
         namespace,
         onProgress,
+      }: {
+        batchSize?: number;
+        maxVectors?: number;
+        includeVectors?: boolean;
+        includeMetadata?: boolean;
+        includeData?: boolean;
+        namespace?: string;
+        onProgress?: boolean;
       }) => {
         const allVectors = [];
         let cursor = '';
@@ -204,6 +219,14 @@ export function createRangeTools(config: RangeToolsConfig) {
         includeData,
         maxVectors,
         batchSize = defaultPageSize,
+      }: {
+        namespace?: string;
+        format?: 'json' | 'csv' | 'jsonl';
+        includeVectors?: boolean;
+        includeMetadata?: boolean;
+        includeData?: boolean;
+        maxVectors?: number;
+        batchSize?: number;
       }) => {
         const exportedVectors = [];
         let cursor = '';
@@ -228,7 +251,7 @@ export function createRangeTools(config: RangeToolsConfig) {
             totalExported += result.vectors.length;
             cursor = result.nextCursor || '';
 
-            if (totalExported >= maxVectors) {
+            if (totalExported >= (maxVectors || 1000)) {
               break;
             }
           } while (cursor && cursor !== '');
@@ -264,7 +287,7 @@ export function createRangeTools(config: RangeToolsConfig) {
               exportTime,
               mimeType,
               size: formattedData.length,
-              truncated: totalExported >= maxVectors,
+              truncated: totalExported >= (maxVectors || 1000),
             },
             message: `Exported ${totalExported} vectors in ${format} format`,
           };
@@ -296,6 +319,13 @@ export function createRangeTools(config: RangeToolsConfig) {
         includeMetadata,
         includeData,
         namespace,
+      }: {
+        prefix: string;
+        limit?: number;
+        includeVectors?: boolean;
+        includeMetadata?: boolean;
+        includeData?: boolean;
+        namespace?: string;
       }) => {
         const matchingVectors = [];
         let cursor = '';
@@ -367,6 +397,13 @@ export function createRangeTools(config: RangeToolsConfig) {
         includeVectors,
         includeMetadata,
         includeData,
+      }: {
+        sessionId: string;
+        pageSize?: number;
+        namespace?: string;
+        includeVectors?: boolean;
+        includeMetadata?: boolean;
+        includeData?: boolean;
       }) => {
         const actualPageSize = Math.min(pageSize, maxPageSize);
 
@@ -402,7 +439,7 @@ export function createRangeTools(config: RangeToolsConfig) {
       parameters: z.object({
         sessionId: z.string().describe('Session identifier'),
       }),
-      execute: async ({ sessionId }) => {
+      execute: async ({ sessionId }: { sessionId: string }) => {
         let session = enableCaching ? cache.get(sessionId) : null;
 
         if (!session) {

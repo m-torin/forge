@@ -1,4 +1,4 @@
-import { logError } from '@repo/observability/shared-env';
+import { logError } from '@repo/observability';
 import { InMemoryTrainingStorage, TrainingStorage } from './training-storage';
 
 export class ClassificationTrainingSystem {

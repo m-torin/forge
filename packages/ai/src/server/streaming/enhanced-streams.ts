@@ -1,9 +1,50 @@
-import { createDataStream, type DataStreamWriter } from 'ai';
+import { createUIMessageStream, type UIMessageStreamWriter } from 'ai';
 
 /**
  * Enhanced streaming utilities for AI applications
  * Provides advanced stream handling patterns including status updates, progress tracking, and error recovery
  */
+
+/**
+ * AI SDK v5 native write helper
+ * Converts legacy writeData calls to proper v5 write calls
+ */
+function writeToStream(writer: UIMessageStreamWriter, data: any) {
+  if (data.type && typeof data.type === 'string') {
+    // Map legacy types to v5 compatible types
+    const typeMap: Record<string, string> = {
+      status: 'data-status',
+      progress: 'data-progress',
+      metadata: 'metadata',
+      error: 'error',
+      'tool-call': 'tool-call',
+      'tool-result': 'tool-result',
+      'text-start': 'data-text-start',
+      'text-delta': 'text',
+      'text-end': 'data-text-end',
+      'reasoning-start': 'data-reasoning-start',
+      'reasoning-delta': 'reasoning',
+      'reasoning-end': 'data-reasoning-end',
+      finish: 'finish',
+      'finish-step': 'data-finish-step',
+    };
+
+    const v5Type = typeMap[data.type] || `data-${data.type}`;
+
+    if (v5Type === 'text') {
+      writer.write({ type: 'text', text: data.content || data.text || '' });
+    } else if (v5Type === 'reasoning') {
+      writer.write({ type: 'reasoning', text: data.content || data.text || '' });
+    } else if (v5Type.startsWith('data-')) {
+      writer.write({ type: v5Type as any, data: data.content || data } as any);
+    } else {
+      writer.write({ type: v5Type as any, ...data });
+    }
+  } else {
+    // Fallback for unstructured data
+    writer.write({ type: 'data-custom', data: data } as any);
+  }
+}
 
 /**
  * Stream status types for tracking stream state
@@ -19,27 +60,53 @@ export type StreamStatus =
   | 'cancelled';
 
 /**
- * Stream delta types for different content updates
+ * AI SDK v5 Stream part types following start/delta/end pattern
  */
 export type StreamDeltaType =
-  | 'text'
+  // Text streaming lifecycle
+  | 'text-start'
+  | 'text-delta'
+  | 'text-end'
+  // Reasoning streaming lifecycle
+  | 'reasoning-start'
+  | 'reasoning-delta'
+  | 'reasoning-end'
+  // Tool input streaming lifecycle
+  | 'tool-input-start'
+  | 'tool-input-delta'
+  | 'tool-input-end'
+  // Tool execution
+  | 'tool-call'
+  | 'tool-result'
+  // Stream lifecycle
+  | 'stream-start'
+  | 'finish'
+  | 'finish-step'
+  // Legacy types (for backward compatibility)
   | 'status'
   | 'progress'
   | 'metadata'
-  | 'tool_call'
-  | 'tool_result'
   | 'artifact'
   | 'suggestion'
-  | 'error'
-  | 'finish';
+  | 'error';
 
 /**
- * Stream delta structure
+ * Stream delta structure following AI SDK v5 patterns
  */
 export interface StreamDelta<T = any> {
   type: StreamDeltaType;
-  content: T;
+  // v5 properties
+  id?: string; // Unique ID for start/delta/end tracking
+  delta?: string; // Text content for delta updates
+  toolCallId?: string; // Tool call identifier
+  toolName?: string; // Tool name
+  input?: any; // Tool input (renamed from args in v5)
+  output?: any; // Tool output (renamed from result in v5)
+  // Enhanced metadata
+  providerMetadata?: Record<string, any>;
   timestamp?: string;
+  // Legacy content property for backward compatibility
+  content?: T;
   metadata?: Record<string, any>;
 }
 
@@ -68,9 +135,9 @@ export interface EnhancedStreamConfig {
   onError?: (error: unknown) => string | StreamDelta;
 
   /** Stream lifecycle hooks */
-  onStart?: (dataStream: DataStreamWriter) => void | Promise<void>;
-  onProgress?: (progress: number, dataStream: DataStreamWriter) => void | Promise<void>;
-  onComplete?: (dataStream: DataStreamWriter) => void | Promise<void>;
+  onStart?: (dataStream: UIMessageStreamWriter) => void | Promise<void>;
+  onProgress?: (progress: number, dataStream: UIMessageStreamWriter) => void | Promise<void>;
+  onComplete?: (dataStream: UIMessageStreamWriter) => void | Promise<void>;
 
   /** Metadata to include with all deltas */
   globalMetadata?: Record<string, any>;
@@ -85,7 +152,7 @@ export class StreamProgressTracker {
   private lastUpdate = 0;
 
   constructor(
-    private dataStream: DataStreamWriter,
+    private dataStream: UIMessageStreamWriter,
     private minUpdateInterval = 100, // ms
   ) {}
 
@@ -100,7 +167,7 @@ export class StreamProgressTracker {
     // Throttle updates
     if (now - this.lastUpdate >= this.minUpdateInterval) {
       const percentage = Math.round((this.progress / this.total) * 100);
-      this.dataStream.writeData({
+      writeToStream(this.dataStream, {
         type: 'progress',
         content: {
           current: this.progress,
@@ -126,7 +193,7 @@ export class StreamProgressTracker {
  */
 export function createEnhancedDataStream(
   execute: (
-    dataStream: DataStreamWriter,
+    dataStream: UIMessageStreamWriter,
     helpers: {
       sendStatus: (status: StreamStatus, message?: string) => void;
       sendProgress: (current: number, total?: number) => void;
@@ -148,14 +215,14 @@ export function createEnhancedDataStream(
     globalMetadata = {},
   } = config;
 
-  return createDataStream({
+  return createUIMessageStream({
     execute: async dataStream => {
       const progressTracker = new StreamProgressTracker(dataStream);
 
       // Helper functions
       const sendStatus = (status: StreamStatus, message?: string) => {
         if (statusUpdates) {
-          dataStream.writeData({
+          writeToStream(dataStream, {
             type: 'status',
             content: {
               status,
@@ -181,7 +248,7 @@ export function createEnhancedDataStream(
       };
 
       const sendDelta = <T>(delta: StreamDelta<T>) => {
-        dataStream.writeData({
+        writeToStream(dataStream, {
           type: delta.type,
           content: delta.content,
           timestamp: delta.timestamp || new Date().toISOString(),
@@ -221,12 +288,12 @@ export function createEnhancedDataStream(
         if (onError) {
           const errorResponse = onError(error);
           if (typeof errorResponse === 'string') {
-            dataStream.writeData({ type: 'error', content: errorResponse });
+            writeToStream(dataStream, { type: 'error', content: errorResponse });
           } else {
-            dataStream.writeData(errorResponse as any);
+            writeToStream(dataStream, errorResponse as any);
           }
         } else {
-          dataStream.writeData({
+          writeToStream(dataStream, {
             type: 'error',
             content: error instanceof Error ? error.message : 'An error occurred',
           });
@@ -294,7 +361,7 @@ export function createMultiplexedStream(
     onAllComplete?: () => void;
   },
 ): ReadableStream {
-  return createDataStream({
+  return createUIMessageStream({
     execute: async dataStream => {
       const aggregator = new StreamAggregator();
       const _sourceIds = Object.keys(sources);
@@ -309,7 +376,7 @@ export function createMultiplexedStream(
           const stream = await factory();
           aggregator.add(id, stream);
         } catch (error) {
-          dataStream.writeData({
+          writeToStream(dataStream, {
             type: 'error',
             content: {
               sourceId: id,
@@ -323,7 +390,7 @@ export function createMultiplexedStream(
       const completedSources = new Set<string>();
 
       for await (const { streamId, value } of aggregator.aggregate()) {
-        dataStream.writeData({
+        writeToStream(dataStream, {
           type: 'multiplexed',
           content: {
             sourceId: streamId,
@@ -355,7 +422,7 @@ export class StreamBuffer<T> {
   private flushTimer?: NodeJS.Timeout;
 
   constructor(
-    private dataStream: DataStreamWriter,
+    private dataStream: UIMessageStreamWriter,
     private config: {
       maxSize?: number;
       flushInterval?: number;
@@ -387,7 +454,7 @@ export class StreamBuffer<T> {
     }
 
     const data = this.config.onFlush ? this.config.onFlush(items) : items;
-    this.dataStream.writeData({
+    writeToStream(this.dataStream, {
       type: 'batch',
       content: data,
     });
@@ -405,14 +472,14 @@ export class StreamBuffer<T> {
  * Create a buffered stream for batching updates
  */
 export function createBufferedStream<T>(
-  execute: (dataStream: DataStreamWriter, buffer: StreamBuffer<T>) => void | Promise<void>,
+  execute: (dataStream: UIMessageStreamWriter, buffer: StreamBuffer<T>) => void | Promise<void>,
   config?: {
     maxSize?: number;
     flushInterval?: number;
     onFlush?: (items: T[]) => any;
   },
 ): ReadableStream {
-  return createDataStream({
+  return createUIMessageStream({
     execute: async dataStream => {
       const buffer = new StreamBuffer<T>(dataStream, config);
 
@@ -423,4 +490,264 @@ export function createBufferedStream<T>(
       }
     },
   });
+}
+
+/**
+ * AI SDK v5 Enhanced Streaming Utilities
+ * Implements start/delta/end lifecycle patterns following v5 specifications
+ */
+
+/**
+ * Create a v5-compliant text streaming utility
+ */
+export function createTextStreamHandler(dataStream: UIMessageStreamWriter) {
+  let streamId: string | undefined;
+  let isActive = false;
+
+  return {
+    start(id?: string): void {
+      streamId = id || `text_${Date.now()}`;
+      isActive = true;
+      writeToStream(dataStream, {
+        type: 'text-start',
+        id: streamId,
+        timestamp: new Date().toISOString(),
+      });
+    },
+
+    delta(content: string): void {
+      if (!isActive || !streamId) {
+        throw new Error('Text stream not started');
+      }
+      writeToStream(dataStream, {
+        type: 'text-delta',
+        id: streamId,
+        delta: content,
+        timestamp: new Date().toISOString(),
+      });
+    },
+
+    end(): void {
+      if (!isActive || !streamId) {
+        throw new Error('Text stream not started');
+      }
+      writeToStream(dataStream, {
+        type: 'text-end',
+        id: streamId,
+        timestamp: new Date().toISOString(),
+      });
+      isActive = false;
+      streamId = undefined;
+    },
+
+    isActive(): boolean {
+      return isActive;
+    },
+
+    getId(): string | undefined {
+      return streamId;
+    },
+  };
+}
+
+/**
+ * Create a v5-compliant reasoning streaming utility
+ */
+export function createReasoningStreamHandler(dataStream: UIMessageStreamWriter) {
+  let streamId: string | undefined;
+  let isActive = false;
+
+  return {
+    start(id?: string): void {
+      streamId = id || `reasoning_${Date.now()}`;
+      isActive = true;
+      writeToStream(dataStream, {
+        type: 'reasoning-start',
+        id: streamId,
+        timestamp: new Date().toISOString(),
+      });
+    },
+
+    delta(content: string): void {
+      if (!isActive || !streamId) {
+        throw new Error('Reasoning stream not started');
+      }
+      writeToStream(dataStream, {
+        type: 'reasoning-delta',
+        id: streamId,
+        delta: content,
+        timestamp: new Date().toISOString(),
+      });
+    },
+
+    end(): void {
+      if (!isActive || !streamId) {
+        throw new Error('Reasoning stream not started');
+      }
+      writeToStream(dataStream, {
+        type: 'reasoning-end',
+        id: streamId,
+        timestamp: new Date().toISOString(),
+      });
+      isActive = false;
+      streamId = undefined;
+    },
+
+    isActive(): boolean {
+      return isActive;
+    },
+
+    getId(): string | undefined {
+      return streamId;
+    },
+  };
+}
+
+/**
+ * Create a v5-compliant tool input streaming utility
+ */
+export function createToolInputStreamHandler(dataStream: UIMessageStreamWriter) {
+  let streamId: string | undefined;
+  let isActive = false;
+
+  return {
+    start(toolCallId: string, toolName: string, id?: string): void {
+      streamId = id || `tool_input_${Date.now()}`;
+      isActive = true;
+      writeToStream(dataStream, {
+        type: 'tool-input-start',
+        id: streamId,
+        toolCallId,
+        toolName,
+        timestamp: new Date().toISOString(),
+      });
+    },
+
+    delta(inputDelta: any): void {
+      if (!isActive || !streamId) {
+        throw new Error('Tool input stream not started');
+      }
+      writeToStream(dataStream, {
+        type: 'tool-input-delta',
+        id: streamId,
+        input: inputDelta,
+        timestamp: new Date().toISOString(),
+      });
+    },
+
+    end(finalInput: any): void {
+      if (!isActive || !streamId) {
+        throw new Error('Tool input stream not started');
+      }
+      writeToStream(dataStream, {
+        type: 'tool-input-end',
+        id: streamId,
+        input: finalInput,
+        timestamp: new Date().toISOString(),
+      });
+      isActive = false;
+      streamId = undefined;
+    },
+
+    isActive(): boolean {
+      return isActive;
+    },
+
+    getId(): string | undefined {
+      return streamId;
+    },
+  };
+}
+
+/**
+ * Create a comprehensive v5 streaming manager
+ */
+export function createV5StreamManager(dataStream: UIMessageStreamWriter) {
+  const textHandler = createTextStreamHandler(dataStream);
+  const reasoningHandler = createReasoningStreamHandler(dataStream);
+  const toolInputHandler = createToolInputStreamHandler(dataStream);
+
+  return {
+    text: textHandler,
+    reasoning: reasoningHandler,
+    toolInput: toolInputHandler,
+
+    /**
+     * Send a tool call event with v5 property names
+     */
+    toolCall(toolCallId: string, toolName: string, input: any): void {
+      writeToStream(dataStream, {
+        type: 'tool-call',
+        toolCallId,
+        toolName,
+        input, // v5 uses 'input' instead of 'args'
+        timestamp: new Date().toISOString(),
+      });
+    },
+
+    /**
+     * Send a tool result event with v5 property names
+     */
+    toolResult(toolCallId: string, output: any, metadata?: Record<string, any>): void {
+      writeToStream(dataStream, {
+        type: 'tool-result',
+        toolCallId,
+        output, // v5 uses 'output' instead of 'result'
+        providerMetadata: metadata,
+        timestamp: new Date().toISOString(),
+      });
+    },
+
+    /**
+     * Send stream lifecycle events
+     */
+    streamStart(streamId?: string): void {
+      writeToStream(dataStream, {
+        type: 'stream-start',
+        id: streamId || `stream_${Date.now()}`,
+        timestamp: new Date().toISOString(),
+      });
+    },
+
+    finish(reason?: string, metadata?: Record<string, any>): void {
+      writeToStream(dataStream, {
+        type: 'finish',
+        reason,
+        providerMetadata: metadata,
+        timestamp: new Date().toISOString(),
+      });
+    },
+
+    finishStep(stepIndex: number, metadata?: Record<string, any>): void {
+      writeToStream(dataStream, {
+        type: 'finish-step',
+        stepIndex,
+        providerMetadata: metadata,
+        timestamp: new Date().toISOString(),
+      });
+    },
+
+    /**
+     * Check if any streams are active
+     */
+    hasActiveStreams(): boolean {
+      return textHandler.isActive() || reasoningHandler.isActive() || toolInputHandler.isActive();
+    },
+
+    /**
+     * Get all active stream IDs
+     */
+    getActiveStreamIds(): string[] {
+      const ids: string[] = [];
+      const textId = textHandler.getId();
+      const reasoningId = reasoningHandler.getId();
+      const toolInputId = toolInputHandler.getId();
+
+      if (textId) ids.push(textId);
+      if (reasoningId) ids.push(reasoningId);
+      if (toolInputId) ids.push(toolInputId);
+
+      return ids;
+    },
+  };
 }

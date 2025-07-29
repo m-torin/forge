@@ -22,6 +22,11 @@
  *   where: { id: 'user123' }
  * });
  *
+ * // Using transaction utilities
+ * import { executeTransaction } from '@repo/database/prisma';
+ * const result = await executeTransaction(async (tx) => {
+ *   // transaction logic
+ * });
  * ```
  */
 
@@ -44,18 +49,33 @@ export * from '../../prisma-generated/client';
 export * as observability from './src/observability';
 
 // ============================================================================
-// SERVER ACTIONS
-// ============================================================================
-
-// Export server actions
-export * from './src/server-actions';
-
-// ============================================================================
 // ORM FUNCTIONS
 // ============================================================================
 
-// Export ORM functions
+// Export ORM functions (primary database interface)
 export * from './src/orm';
+
+// ============================================================================
+// TRANSACTION UTILITIES
+// ============================================================================
+
+// Export transaction utilities
+export * from './src/utils/transaction';
+
+// ============================================================================
+// SPECIALIZED UTILITIES
+// ============================================================================
+
+// Export review-specific utilities
+export * from './src/utils/reviewUtils';
+
+// Export registry-specific utilities
+export {
+  getMonthlyRegistryActivity,
+  getRegistryPurchaseActivity,
+  getRegistryUserEngagement,
+  getTopRegistryProducts,
+} from './src/utils/registryUtils';
 
 // ============================================================================
 // VALIDATION UTILITIES
@@ -63,3 +83,13 @@ export * from './src/orm';
 
 // Export validation utilities for working with Zod schemas
 export * from './validation';
+
+// Export validation extension error type
+export { ValidationError } from './extensions';
+
+// ============================================================================
+// SERVER ACTIONS (SEPARATE NAMESPACE)
+// ============================================================================
+
+// Export server actions under a namespace to avoid conflicts
+export * as actions from './src/server-actions';

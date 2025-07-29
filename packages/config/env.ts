@@ -2,14 +2,14 @@ import { vercel } from '@t3-oss/env-core/presets-zod';
 import { createEnv } from '@t3-oss/env-nextjs';
 import { z } from 'zod/v4';
 
-const isProduction = process.env.NODE_ENV === 'production';
+const isProductionEnv = process.env.NODE_ENV === 'production';
 // In local dev or build:local, these env vars might not be set if using .env.local
 const hasRequiredEnvVars = Boolean(
   process.env.NEXT_PUBLIC_APP_URL && process.env.NEXT_PUBLIC_WEB_URL,
 );
 
 // Make env vars optional in development or when they're missing (indicating .env.local usage)
-const requireInProduction = isProduction && hasRequiredEnvVars;
+const requireInProduction = isProductionEnv && hasRequiredEnvVars;
 
 // Direct export for Next.js webpack inlining
 export const env = createEnv({
@@ -39,8 +39,9 @@ export const env = createEnv({
     NEXT_RUNTIME: z.enum(['nodejs', 'edge']).optional(),
   },
   onValidationError: error => {
-    console.warn('Config environment validation failed:', error.message);
+    console.warn('Config environment validation failed:', error);
     // Don't throw in packages - use fallbacks for resilience
+    return undefined as never;
   },
 });
 
@@ -61,7 +62,6 @@ export function safeEnv() {
 
 // Helper functions for common patterns
 export function isProduction(): boolean {
-  const env = safeEnv();
   return process.env.NODE_ENV === 'production';
 }
 

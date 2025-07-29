@@ -81,6 +81,9 @@ export * from './server/streaming/resumable';
 export * from './server/vector';
 export * from './shared/tools';
 
+// Error handling exports
+export { ApplicationAIError, handleAIProviderError } from './server/errors/application-errors';
+
 // AI SDK-compliant route helpers (recommended)
 export {
   createAIRoutes,

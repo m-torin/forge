@@ -1,0 +1,32 @@
+name = "image-transformer"
+main = "src/index.ts"
+compatibility_date = "2023-05-15"
+
+# Build configuration
+[build]
+command = "npm run build"
+
+# Development configuration
+[dev]
+port = 8788
+host = "127.0.0.1"
+
+# Environment variables for local development
+[vars]
+ENVIRONMENT = "development"
+
+# Add KV namespace bindings for development
+[[kv_namespaces]]
+binding = "IMAGE_METADATA"
+id = "development-kv-id" # Replace with actual ID for production
+preview_id = "development-kv-id" # For local development
+
+# Add R2 bucket bindings for development
+[[r2_buckets]]
+binding = "IMAGES"
+bucket_name = "images-dev"
+
+# Secret bindings
+[[env.preview.vars]]
+name = "SIGNING_KEY"
+text = "dummy-signing-key-for-development"

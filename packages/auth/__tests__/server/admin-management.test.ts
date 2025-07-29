@@ -24,7 +24,7 @@ import {
   stopImpersonatingAction,
   unbanUserAction,
   updateUserAction,
-} from '../../src/server/admin-management';
+} from '@/server/admin-management';
 
 // Mock the auth module using vi.hoisted
 const {
@@ -280,7 +280,6 @@ describe('admin Management', () => {
         email: 'test@example.com',
         password: 'password123',
         name: 'Test User',
-        emailVerified: true,
         role: 'admin',
       });
 
@@ -368,11 +367,9 @@ describe('admin Management', () => {
       mockListUsers.mockResolvedValue({ users, total: 1 });
 
       const result = await listUsersAction({
-        page: 2,
+        offset: 25, // offset = (page - 1) * limit = (2 - 1) * 25
         limit: 25,
         search: 'test',
-        role: 'admin',
-        status: 'active',
       });
 
       expect(result).toStrictEqual({
@@ -483,7 +480,7 @@ describe('admin Management', () => {
       const sessions = [{ id: 'session-1' }, { id: 'session-2' }];
       mockListUserSessions.mockResolvedValue(sessions);
 
-      const result = await listUserSessionsAction('user-123');
+      const result = await listUserSessionsAction({ userId: 'user-123' });
 
       expect(result).toStrictEqual({
         success: true,
@@ -498,7 +495,7 @@ describe('admin Management', () => {
     test('should handle non-array response', async () => {
       mockListUserSessions.mockResolvedValue({ session: 'single' });
 
-      const result = await listUserSessionsAction('user-123');
+      const result = await listUserSessionsAction({ userId: 'user-123' });
 
       expect(result).toStrictEqual({
         success: true,
@@ -509,7 +506,7 @@ describe('admin Management', () => {
     test('should handle list sessions errors', async () => {
       mockListUserSessions.mockRejectedValue(new Error('List failed'));
 
-      const result = await listUserSessionsAction('user-123');
+      const result = await listUserSessionsAction({ userId: 'user-123' });
 
       expect(result).toStrictEqual({
         success: false,
@@ -743,7 +740,7 @@ describe('admin Management', () => {
         { status: 'rejected', reason: { message: 'Ban failed' } },
       ] as any);
 
-      const result = await bulkBanUsersAction(['user-1', 'user-2'], 'Spam');
+      const result = await bulkBanUsersAction(['user-1', 'user-2']);
 
       expect(result.success).toBeTruthy();
       expect(result.results).toHaveLength(2);
@@ -795,7 +792,7 @@ describe('admin Management', () => {
     test('should handle performSystemMaintenanceAction', async () => {
       mockMaintenance.mockResolvedValue({ completed: true });
 
-      const result = await performSystemMaintenanceAction('cleanup');
+      const result = await performSystemMaintenanceAction(['cleanup']);
 
       expect(result.success).toBeTruthy();
       expect(mockMaintenance).toHaveBeenCalledWith({

@@ -155,7 +155,6 @@ describe('audit logger plugin', () => {
     test('should handle undefined input', async () => {
       const auditLoggerModule = await import('@/server/plugins/audit-logger');
 
-      // @ts-expect-error - testing undefined input
       const plugin = auditLoggerModule.auditLoggerPlugin(undefined);
 
       expect(plugin).toBeDefined();

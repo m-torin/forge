@@ -11,9 +11,9 @@ import { z } from 'zod/v4';
  *
  * @example
  * ```typescript
- * const formSchema = createFormSchema(UserCreateInputSchema, {
- *   name: z.string().min(2),
- *   email: z.string().email()
+ * const formSchema = createFormSchema(ProductCreateInputSchema, {
+ *   slug: z.string().regex(/^[a-z0-9-]+$/),
+ *   description: z.string().optional()
  * });
  * ```
  */
@@ -40,9 +40,9 @@ export function createFormSchema<T extends z.ZodType>(
  *
  * @example
  * ```typescript
- * const result = validateFormData(UserCreateInputSchema, formData);
+ * const result = validateFormData(ProductCreateInputSchema, formData);
  * if (result.success) {
- *   await createUser(result.data);
+ *   await createProduct(result.data);
  * } else {
  *   showErrors(result.errors);
  * }
@@ -88,8 +88,8 @@ export function validateFormData<T extends z.ZodType>(
  *
  * @example
  * ```typescript
- * const basicInfoSchema = pickSchemaFields(UserCreateInputSchema, [
- *   'name', 'email', 'role'
+ * const basicInfoSchema = pickSchemaFields(ProductCreateInputSchema, [
+ *   'name', 'slug', 'description'
  * ]);
  * ```
  */
@@ -111,7 +111,7 @@ export function pickSchemaFields<T extends z.ZodObject<any>>(
  *
  * @example
  * ```typescript
- * const updateSchema = makeSchemaOptional(UserCreateInputSchema);
+ * const updateSchema = makeSchemaOptional(ProductCreateInputSchema);
  * ```
  */
 export function makeSchemaOptional<T extends z.ZodObject<any>>(
@@ -181,7 +181,7 @@ export function transformFormToDatabase(
  * @example
  * ```typescript
  * const form = useForm({
- *   validate: createMantineValidator(UserCreateInputSchema)
+ *   validate: createMantineValidator(ProductCreateInputSchema)
  * });
  * ```
  */

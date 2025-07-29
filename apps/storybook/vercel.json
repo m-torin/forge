@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm build",
+  "buildCommand": "turbo build",
   "outputDirectory": "storybook-static",
   "installCommand": "pnpm install",
   "framework": null,

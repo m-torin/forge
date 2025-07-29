@@ -29,9 +29,15 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD,
   },
-  onValidationError: error => {
-    console.warn('Scraping environment validation failed:', error.message);
-    // Don't throw in packages - use fallbacks for resilience
+  onValidationError: issues => {
+    console.error(
+      'Scraping environment validation failed:',
+      issues.map(issue => issue.message).join(', '),
+    );
+    // Always throw to satisfy TypeScript's never return type
+    throw new Error(
+      `Invalid scraping environment configuration: ${issues.map(issue => issue.message).join(', ')}`,
+    );
   },
 });
 

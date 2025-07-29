@@ -1,7 +1,7 @@
-import { logError } from '@repo/observability/server/next';
+import { logError } from '@repo/observability';
 
 // Create a simple discovery endpoint function since createFlagsDiscoveryEndpoint
-// is not available in @vercel/flags v3.1.1
+// is not available in flags v3.1.1
 export function createFlagsDiscoveryEndpoint(
   getProviderData: () => Promise<{ provider: string; flags: any[] }>,
 ) {
@@ -11,8 +11,9 @@ export function createFlagsDiscoveryEndpoint(
       return Response.json(data);
     } catch (error) {
       logError(
-        'Error in flags discovery endpoint',
-        error instanceof Error ? error : new Error(String(error)),
+        error instanceof Error
+          ? error
+          : new Error('Error in flags discovery endpoint: ' + String(error)),
         { endpoint: 'discovery' },
       );
       // Return empty flags instead of failing

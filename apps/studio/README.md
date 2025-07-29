@@ -1,5 +1,7 @@
 # Prisma Studio
 
-Database administration interface for development and debugging.
+- _Type:_ **Development Tool**
 
-Complete documentation is available in `/apps/docs/`.
+- _Purpose:_ **Database administration interface for development and debugging**
+
+- _Documentation:_ **[Prisma Studio](../docs/apps/studio.mdx)**

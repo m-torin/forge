@@ -27,8 +27,7 @@
  * @see https://dub.sh/docs/analytics
  */
 
-import { logInfo } from '@repo/observability/server/next';
-import { safeEnv } from '../../env';
+import { logInfo } from '@repo/observability';
 import { LinkAnalyticsEvent } from '../shared/types/analytics-integration';
 import { LinkConfig } from '../shared/types/index';
 
@@ -43,7 +42,7 @@ export const basicAnalyticsConfig: LinkConfig = {
   providers: {
     dub: {
       enabled: true,
-      apiKey: safeEnv().DUB_API_KEY || 'dub_example_key',
+      apiKey: 'dub_example_key', // Use fallback in examples to avoid server-client env conflicts
       defaultDomain: 'yourdomain.com',
     },
   },
@@ -60,7 +59,7 @@ export const enabledAnalyticsConfig: LinkConfig = {
   providers: {
     dub: {
       enabled: true,
-      apiKey: safeEnv().DUB_API_KEY || 'dub_example_key',
+      apiKey: 'dub_example_key', // Use fallback in examples to avoid server-client env conflicts
       defaultDomain: 'yourdomain.com',
     },
   },
@@ -81,9 +80,9 @@ export const enabledAnalyticsConfig: LinkConfig = {
  */
 export async function manualAnalyticsIntegration() {
   // Create analytics manager first
-  const { createServerAnalytics } = await import('@repo/analytics/server/next');
+  const { createAnalytics } = await import('@repo/analytics/shared-env');
 
-  const analytics = await createServerAnalytics({
+  const analytics = await createAnalytics({
     providers: {
       posthog: {
         apiKey: process.env.POSTHOG_API_KEY,
@@ -99,7 +98,7 @@ export async function manualAnalyticsIntegration() {
     providers: {
       dub: {
         enabled: true,
-        apiKey: safeEnv().DUB_API_KEY || 'dub_example_key',
+        apiKey: 'dub_example_key', // Use fallback in examples to avoid server-client env conflicts
         defaultDomain: 'yourdomain.com',
       },
     },
@@ -136,7 +135,7 @@ export async function automaticAnalyticsIntegration() {
     providers: {
       dub: {
         enabled: true,
-        apiKey: safeEnv().DUB_API_KEY || 'dub_example_key',
+        apiKey: 'dub_example_key', // Use fallback in examples to avoid server-client env conflicts
         defaultDomain: 'yourdomain.com',
       },
     },
@@ -233,7 +232,7 @@ export const developmentAnalyticsConfig: LinkConfig = {
   providers: {
     dub: {
       enabled: true,
-      apiKey: safeEnv().DUB_API_KEY || 'dub_example_key',
+      apiKey: 'dub_example_key', // Use fallback in examples to avoid server-client env conflicts
       defaultDomain: 'dub.sh',
     },
   },
@@ -252,7 +251,7 @@ export const productionAnalyticsConfig: LinkConfig = {
   providers: {
     dub: {
       enabled: true,
-      apiKey: safeEnv().DUB_API_KEY || 'dub_example_key',
+      apiKey: 'dub_example_key', // Use fallback in examples to avoid server-client env conflicts
       defaultDomain: 'yourdomain.com',
     },
   },
@@ -357,7 +356,7 @@ export async function customAnalyticsTracking() {
   });
 
   // Custom analytics tracking for business metrics
-  const analytics = await import('@repo/analytics/server/next').then((m: any) =>
+  const analytics = await import('@repo/analytics/shared-env').then((m: any) =>
     m.createNextJSServerAnalytics({
       providers: {
         posthog: { enabled: true, apiKey: process.env.POSTHOG_API_KEY },
@@ -432,7 +431,7 @@ export async function performanceMonitoring() {
   const creationTime = Date.now() - startTime;
 
   // Track performance metrics
-  const analytics = await import('@repo/analytics/server/next').then((m: any) =>
+  const analytics = await import('@repo/analytics/shared-env').then((m: any) =>
     m.createNextJSServerAnalytics({
       providers: { console: { enabled: true } },
     }),
@@ -553,7 +552,7 @@ export async function testingWithMockAnalytics() {
     },
   };
 
-  const { createServerLinkManager } = await import('@repo/links/server');
+  const { createServerLinkManager } = await import('../server');
   const linkManager = await createServerLinkManager(linkConfig);
 
   // Create a test link

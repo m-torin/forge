@@ -73,6 +73,12 @@ export function createBulkTools(config: BulkToolsConfig) {
         namespace: _namespace,
         generateEmbeddings,
         concurrency = maxConcurrency,
+      }: {
+        vectors: Array<{ id: string; content: string; metadata?: Record<string, any> }>;
+        batchSize?: number;
+        namespace?: string;
+        generateEmbeddings?: boolean;
+        concurrency?: number;
       }) => {
         const progress: BulkOperationProgress = {
           total: vectors.length,
@@ -130,7 +136,7 @@ export function createBulkTools(config: BulkToolsConfig) {
 
         const processWithRetry = async (
           batch: typeof vectors,
-          _batchIndex: number,
+          batchIndex: number,
         ): Promise<void> => {
           let attempts = 0;
           let lastError: string | undefined;
@@ -206,6 +212,11 @@ export function createBulkTools(config: BulkToolsConfig) {
         batchSize = defaultBatchSize,
         namespace: _namespace,
         concurrency = maxConcurrency,
+      }: {
+        ids: string[];
+        batchSize?: number;
+        namespace?: string;
+        concurrency?: number;
       }) => {
         const progress: BulkOperationProgress = {
           total: ids.length,
@@ -316,7 +327,15 @@ export function createBulkTools(config: BulkToolsConfig) {
           .default(false)
           .describe('Aggregate and deduplicate results across queries'),
       }),
-      execute: async ({ queries, concurrency = maxConcurrency, aggregateResults }) => {
+      execute: async ({
+        queries,
+        concurrency = maxConcurrency,
+        aggregateResults,
+      }: {
+        queries: Array<{ id?: string; content: string; topK?: number; filter?: string }>;
+        concurrency?: number;
+        aggregateResults?: boolean;
+      }) => {
         const results = new Map<string, any>();
         const errors: Array<{ queryId?: string; query: string; error: string }> = [];
 
@@ -431,7 +450,20 @@ export function createBulkTools(config: BulkToolsConfig) {
           .optional()
           .describe(`Max concurrent batches (default: ${maxConcurrency})`),
       }),
-      execute: async ({ updates, batchSize = defaultBatchSize, concurrency = maxConcurrency }) => {
+      execute: async ({
+        updates,
+        batchSize = defaultBatchSize,
+        concurrency = maxConcurrency,
+      }: {
+        updates: Array<{
+          id: string;
+          metadata?: Record<string, any>;
+          content?: string;
+          reEmbed?: boolean;
+        }>;
+        batchSize?: number;
+        concurrency?: number;
+      }) => {
         const progress: BulkOperationProgress = {
           total: updates.length,
           processed: 0,

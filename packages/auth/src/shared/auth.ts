@@ -3,7 +3,7 @@
  * This is the single source of truth for auth configuration and types
  */
 
-import { logError, logInfo } from '@repo/observability/shared-env';
+import { logError, logInfo } from '@repo/observability';
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { nextCookies } from 'better-auth/next-js';
@@ -47,9 +47,10 @@ const config = {
     })(),
   appName: env.NEXT_PUBLIC_APP_NAME || 'Forge',
   trustedOrigins: env.TRUSTED_ORIGINS?.split(',') || [
-    'http://localhost:3000',
-    'http://localhost:3302',
-    'http://localhost:3400',
+    'http://localhost:3300', // main backstage
+    'http://localhost:3301', // cms
+    'http://localhost:3302', // authmgmt
+    'http://localhost:3303', // workflows
   ],
   providers: {
     github:
@@ -125,11 +126,10 @@ export const auth = betterAuth({
 
         logInfo(`Password reset email sent successfully to ${user.email}`);
       } catch (error) {
-        logError(
-          'Failed to send password reset email',
-          error instanceof Error ? error : new Error(String(error)),
-          { email: user.email },
-        );
+        logError('Failed to send password reset email', {
+          error: error instanceof Error ? error : new Error(String(error)),
+          email: user.email,
+        });
         throw error;
       }
     },
@@ -150,11 +150,10 @@ export const auth = betterAuth({
 
         logInfo(`Verification email sent successfully to ${user.email}`);
       } catch (error) {
-        logError(
-          'Failed to send verification email',
-          error instanceof Error ? error : new Error(String(error)),
-          { email: user.email },
-        );
+        logError('Failed to send verification email', {
+          error: error instanceof Error ? error : new Error(String(error)),
+          email: user.email,
+        });
         throw error;
       }
     },
@@ -235,11 +234,11 @@ export const auth = betterAuth({
 
           logInfo(`Change email verification sent successfully to ${newEmail}`);
         } catch (error) {
-          logError(
-            'Failed to send change email verification',
-            error instanceof Error ? error : new Error(String(error)),
-            { oldEmail: user.email, newEmail },
-          );
+          logError('Failed to send change email verification', {
+            error: error instanceof Error ? error : new Error(String(error)),
+            oldEmail: user.email,
+            newEmail,
+          });
           throw error;
         }
       },
@@ -259,11 +258,10 @@ export const auth = betterAuth({
 
           logInfo(`Delete account verification sent successfully to ${user.email}`);
         } catch (error) {
-          logError(
-            'Failed to send delete account verification',
-            error instanceof Error ? error : new Error(String(error)),
-            { email: user.email },
-          );
+          logError('Failed to send delete account verification', {
+            error: error instanceof Error ? error : new Error(String(error)),
+            email: user.email,
+          });
           throw error;
         }
       },
@@ -306,7 +304,8 @@ export const auth = betterAuth({
       sameSite: 'lax',
     },
     crossSubDomainCookies: {
-      enabled: false,
+      enabled: true,
+      domain: '.localhost', // Enable sharing across localhost ports
     },
   },
 
@@ -349,11 +348,10 @@ export const auth = betterAuth({
 
           logInfo(`Magic link sent successfully to ${email}`);
         } catch (error) {
-          logError(
-            'Failed to send magic link email',
-            error instanceof Error ? error : new Error(String(error)),
-            { email },
-          );
+          logError('Failed to send magic link email', {
+            error: error instanceof Error ? error : new Error(String(error)),
+            email,
+          });
           throw error; // Re-throw to let BetterAuth handle the error
         }
       },
@@ -379,11 +377,10 @@ export const auth = betterAuth({
 
             logInfo(`OTP sent successfully to ${user.email}`);
           } catch (error) {
-            logError(
-              'Failed to send OTP email',
-              error instanceof Error ? error : new Error(String(error)),
-              { email: user.email },
-            );
+            logError('Failed to send OTP email', {
+              error: error instanceof Error ? error : new Error(String(error)),
+              email: user.email,
+            });
             throw error;
           }
         },
@@ -427,7 +424,8 @@ export const auth = betterAuth({
   onAPIError: {
     throw: false,
     onError: async (error: any, ctx: any) => {
-      logError('Better Auth API Error', error instanceof Error ? error : new Error(String(error)), {
+      logError('Better Auth API Error', {
+        error: error instanceof Error ? error : new Error(String(error)),
         path: ctx?.path,
         method: ctx?.method,
       });

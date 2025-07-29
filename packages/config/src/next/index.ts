@@ -42,6 +42,14 @@ const EXTERNAL_PACKAGES = {
   prisma: ['@prisma/client', '@prisma/engines', 'prisma'],
   database: ['@repo/database'],
   postgres: ['pg-native', 'pg-query-stream'],
+  observability: [
+    '@logtail/js',
+    '@logtail/next',
+    '@logtape/cloudwatch-logs',
+    '@logtape/file',
+    '@logtape/logtape',
+    '@logtape/sentry',
+  ],
 } as const;
 
 /**
@@ -70,6 +78,21 @@ const webpackConfig = (config: any, { isServer }: { isServer: boolean }) => {
 
     // Configure externals
     config.externals = [...(config.externals || []), createExternalsHandler()];
+
+    // Exclude test files from client bundles
+    config.module = config.module || {};
+    config.module.rules = config.module.rules || [];
+
+    config.module.rules.push({
+      test: /\.(ts|tsx|js|jsx)$/,
+      exclude: [
+        /node_modules/,
+        /__tests__/,
+        /\.test\.(ts|tsx|js|jsx)$/,
+        /\.spec\.(ts|tsx|js|jsx)$/,
+      ],
+      use: [],
+    });
   }
 
   // Common configuration for all environments
@@ -84,14 +107,37 @@ const webpackConfig = (config: any, { isServer }: { isServer: boolean }) => {
  * Creates a handler for webpack externals
  */
 const createExternalsHandler = () => {
-  const patterns = [...EXTERNAL_PACKAGES.prisma, ...EXTERNAL_PACKAGES.postgres];
+  const patterns = [
+    ...EXTERNAL_PACKAGES.prisma,
+    ...EXTERNAL_PACKAGES.postgres,
+    ...EXTERNAL_PACKAGES.observability,
+  ];
 
   return ({ request }: any, callback: any) => {
     // Check if request matches any external pattern
     const shouldExternalize =
-      patterns.some(pattern => request.includes(pattern)) ||
-      request.startsWith('@repo/database') ||
-      request.startsWith('node:');
+      patterns.some(pattern => request.includes(pattern)) || request.startsWith('node:');
+
+    // Handle @repo/database more granularly based on package.json exports
+    if (request.startsWith('@repo/database')) {
+      // Allow these specific client-safe exports
+      const allowedClientExports = [
+        '@repo/database/env',
+        '@repo/database/types',
+        '@repo/database/zod',
+        '@repo/database/prisma/zod',
+        '@repo/database/prisma/generated',
+        '@repo/database/keys', // Legacy support
+      ];
+
+      const isClientSafe = allowedClientExports.some(
+        allowed => request === allowed || request.startsWith(`${allowed}/`),
+      );
+
+      if (!isClientSafe) {
+        return callback(null, `commonjs ${request}`);
+      }
+    }
 
     if (shouldExternalize) {
       return callback(null, `commonjs ${request}`);

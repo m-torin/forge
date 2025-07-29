@@ -5,7 +5,10 @@ import { afterAll, afterEach, beforeAll, beforeEach } from 'vitest';
 
 // Import centralized mocks and setup functions
 import { resetAllMocks } from '../mocks';
-import { cleanupSRHRedisEnvironment, setupSRHRedisEnvironment } from '../mocks/upstash-redis';
+import {
+  cleanupSRHRedisEnvironment,
+  setupSRHRedisEnvironment,
+} from '../mocks/providers/upstash/redis';
 
 // Global test setup
 beforeAll(() => {

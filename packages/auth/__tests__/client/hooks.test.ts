@@ -8,9 +8,16 @@ import { describe, expect, vi } from 'vitest';
 // Mock the auth context
 const mockAuthContext = {
   user: { id: '1', name: 'Test User', email: 'test@example.com' },
+  session: { id: 'session-1', userId: '1' },
   isAuthenticated: true,
   isLoading: false,
-  requireAuth: vi.fn(),
+  activeOrganizationId: 'org-1',
+  getUserId: vi.fn(() => '1'),
+  getSessionId: vi.fn(() => 'session-1'),
+  requireAuth: vi.fn(() => ({ userId: '1', sessionId: 'session-1' })),
+  canPerformAction: vi.fn(() => true),
+  hasRole: vi.fn(() => true),
+  belongsToOrganization: vi.fn(() => true),
 };
 
 // Mock the auth provider
@@ -99,6 +106,7 @@ describe('client hooks', () => {
         ...mockAuthContext,
         isAuthenticated: false,
         isLoading: false,
+        user: null,
       });
 
       const redirectTo = '/login';
@@ -120,6 +128,7 @@ describe('client hooks', () => {
         ...mockAuthContext,
         isAuthenticated: false,
         isLoading: true,
+        user: null,
       });
 
       const originalHref = window.location.href;
@@ -141,6 +150,7 @@ describe('client hooks', () => {
         ...mockAuthContext,
         isAuthenticated: false,
         isLoading: false,
+        user: null,
       });
 
       const originalHref = window.location.href;

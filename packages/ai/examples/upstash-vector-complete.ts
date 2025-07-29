@@ -31,8 +31,8 @@ const vectorDB = new Index({
   token: process.env.UPSTASH_VECTOR_REST_TOKEN || 'token',
 });
 
-// Wrap with analytics
-const analyticsDB = createAnalyticsVectorDB(vectorDB);
+// Wrap with analytics (with type assertion for compatibility)
+const analyticsDB = createAnalyticsVectorDB(vectorDB as any);
 
 /**
  * Example 1: Basic Vector Tools Usage
@@ -48,19 +48,27 @@ async function basicVectorToolsExample() {
   });
 
   // Add a document
-  const addResult = await tools.addToKnowledgeBase.execute({
-    content: 'The capital of France is Paris. It is known for the Eiffel Tower.',
-    id: 'france-capital',
-    metadata: { country: 'France', type: 'geography' },
-  });
+  const addResult = await tools.addToVectorStore.execute(
+    {
+      id: 'doc-1',
+      content: 'This is a sample document about AI and machine learning.',
+      metadata: { category: 'technology', author: 'AI Expert' },
+      chunk: false,
+    },
+    { toolCallId: 'test-call', messages: [] },
+  );
 
   console.log('Added document:', addResult);
 
   // Search for similar content
-  const searchResult = await tools.searchKnowledgeBase.execute({
-    query: 'What is the capital of France?',
-    topK: 3,
-  });
+  const searchResult = await tools.searchVectorContext.execute(
+    {
+      query: 'What is the capital of France?',
+      topK: 3,
+      includeScores: true,
+    },
+    { toolCallId: 'example-call', messages: [] },
+  );
 
   console.log('Search results:', searchResult);
 }
@@ -78,18 +86,24 @@ async function namespaceManagementExample() {
   });
 
   // Create a new namespace for a tenant
-  const createResult = await namespaceTools.createNamespace.execute({
-    namespace: 'tenant-acme',
-    description: 'ACME Corp knowledge base',
-    metadata: { tenant: 'acme', created: new Date().toISOString() },
-  });
+  const createResult = await namespaceTools.createNamespace.execute(
+    {
+      namespace: 'tenant-acme',
+      description: 'ACME Corp knowledge base',
+      metadata: { tenant: 'acme', created: new Date().toISOString() },
+    },
+    { toolCallId: 'example-call', messages: [] },
+  );
 
   console.log('Created namespace:', createResult);
 
   // List all namespaces
-  const listResult = await namespaceTools.listNamespaces.execute({
-    includeStats: true,
-  });
+  const listResult = await namespaceTools.listNamespaces.execute(
+    {
+      includeStats: true,
+    },
+    { toolCallId: 'example-call', messages: [] },
+  );
 
   console.log('Available namespaces:', listResult);
 }
@@ -114,11 +128,14 @@ async function bulkOperationsExample() {
     { id: 'doc3', content: 'Deep learning uses multiple layers of neural networks.' },
   ];
 
-  const bulkResult = await bulkTools.bulkUpsert.execute({
-    vectors: documents,
-    generateEmbeddings: true,
-    namespace: 'ml-docs',
-  });
+  const bulkResult = await bulkTools.bulkUpsert.execute(
+    {
+      vectors: documents,
+      generateEmbeddings: true,
+      namespace: 'ml-docs',
+    },
+    { toolCallId: 'example-call', messages: [] },
+  );
 
   console.log('Bulk upsert result:', bulkResult);
 
@@ -128,11 +145,14 @@ async function bulkOperationsExample() {
     { content: 'How do neural networks work?', topK: 2 },
   ];
 
-  const queryResult = await bulkTools.bulkQuery.execute({
-    queries,
-    namespace: 'ml-docs',
-    aggregateResults: false,
-  });
+  const queryResult = await bulkTools.bulkQuery.execute(
+    {
+      queries,
+      namespace: 'ml-docs',
+      aggregateResults: false,
+    },
+    { toolCallId: 'example-call', messages: [] },
+  );
 
   console.log('Bulk query results:', queryResult);
 }
@@ -150,29 +170,42 @@ async function rangePaginationExample() {
   });
 
   // Create a pagination session
-  const sessionResult = await rangeTools.createPaginationSession.execute({
-    sessionId: 'browse-session-1',
-    pageSize: 5,
-    namespace: 'ml-docs',
-    includeMetadata: true,
-  });
+  const sessionResult = await rangeTools.createPaginationSession.execute(
+    {
+      sessionId: 'browse-session-1',
+      pageSize: 5,
+      namespace: 'ml-docs',
+      includeVectors: false,
+      includeMetadata: true,
+      includeData: true,
+    },
+    { toolCallId: 'example-call', messages: [] },
+  );
 
   console.log('Created pagination session:', sessionResult);
 
   // Get first page
-  const firstPage = await rangeTools.getNextPage.execute({
-    sessionId: 'browse-session-1',
-  });
+  const firstPage = await rangeTools.getNextPage.execute(
+    {
+      sessionId: 'browse-session-1',
+    },
+    { toolCallId: 'example-call', messages: [] },
+  );
 
   console.log('First page:', firstPage);
 
   // Export vectors
-  const exportResult = await rangeTools.exportVectors.execute({
-    namespace: 'ml-docs',
-    format: 'json',
-    maxVectors: 100,
-    includeVectors: false,
-  });
+  const exportResult = await rangeTools.exportVectors.execute(
+    {
+      namespace: 'ml-docs',
+      format: 'json',
+      maxVectors: 100,
+      includeVectors: false,
+      includeMetadata: true,
+      includeData: true,
+    },
+    { toolCallId: 'example-call', messages: [] },
+  );
 
   console.log('Export metadata:', exportResult.metadata);
 }
@@ -189,26 +222,37 @@ async function metadataManagementExample() {
   });
 
   // Update metadata for a specific vector
-  const updateResult = await metadataTools.updateMetadata.execute({
-    vectorId: 'doc1',
-    metadata: { tags: ['AI', 'ML'], difficulty: 'beginner' },
-    mergeMode: 'merge',
-  });
+  const updateResult = await metadataTools.updateMetadata.execute(
+    {
+      vectorId: 'doc1',
+      metadata: { tags: ['AI', 'ML'], difficulty: 'beginner' },
+      mergeMode: 'merge',
+    },
+    { toolCallId: 'example-call', messages: [] },
+  );
 
   console.log('Updated metadata:', updateResult);
 
   // Query by metadata
-  const queryResult = await metadataTools.queryByMetadata.execute({
-    filter: { tags: { $in: ['AI'] } },
-    limit: 5,
-  });
+  const queryResult = await metadataTools.queryByMetadata.execute(
+    {
+      filter: { tags: { $in: ['AI'] } },
+      limit: 5,
+      includeVectors: false,
+      includeMetadata: true,
+    },
+    { toolCallId: 'example-call', messages: [] },
+  );
 
   console.log('Metadata query results:', queryResult);
 
   // Get metadata statistics
-  const statsResult = await metadataTools.getMetadataStats.execute({
-    sampleSize: 100,
-  });
+  const statsResult = await metadataTools.getMetadataStats.execute(
+    {
+      sampleSize: 100,
+    },
+    { toolCallId: 'example-call', messages: [] },
+  );
 
   console.log('Metadata stats:', statsResult);
 }
@@ -308,21 +352,30 @@ async function combinedToolSuiteExample() {
   console.log('Available tools:', Object.keys(allTools));
 
   // Use multiple tools together
-  await allTools.createNamespace.execute({
-    namespace: 'combined-demo',
-    description: 'Demo namespace for combined tools',
-  });
+  await allTools.createNamespace.execute(
+    {
+      namespace: 'combined-demo',
+      description: 'Demo namespace for combined tools',
+    },
+    { toolCallId: 'example-call', messages: [] },
+  );
 
-  await allTools.bulkUpsert.execute({
-    vectors: [{ id: 'combined-1', content: 'This is a test document for combined tools demo.' }],
-    generateEmbeddings: true,
-    namespace: 'combined-demo',
-  });
+  await allTools.bulkUpsert.execute(
+    {
+      vectors: [{ id: 'combined-1', content: 'This is a test document for combined tools demo.' }],
+      generateEmbeddings: true,
+      namespace: 'combined-demo',
+    },
+    { toolCallId: 'example-call', messages: [] },
+  );
 
-  const searchResult = await allTools.searchKnowledgeBase.execute({
-    query: 'test document',
-    namespace: 'combined-demo',
-  });
+  const searchResult = await allTools.searchVectorContext.execute(
+    {
+      query: 'test document',
+      includeScores: true,
+    },
+    { toolCallId: 'example-call', messages: [] },
+  );
 
   console.log('Combined tools search result:', searchResult);
 }

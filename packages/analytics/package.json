@@ -8,7 +8,8 @@
     "./client/next": "./src/client-next.ts",
     "./server/next": "./src/server-next.ts",
     "./server/edge": "./src/server-edge.ts",
-    "./shared-env": "./src/shared-env.ts",
+    "./shared": "./src/shared.ts",
+    "./shared-env": "./src/shared.ts",
     "./types": "./src/types/index.ts",
     "./keys": {
       "types": "./keys.ts",
@@ -23,7 +24,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:coverage:json": "vitest run --coverage --reporter=json",
-    "test:ui": "vitest --ui",
+    "test:ui": "vitest --ui --coverage",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
@@ -40,8 +41,8 @@
     "@repo/qa": "workspace:*",
     "@segment/analytics-next": "^1.81.1",
     "@vercel/analytics": "^1.5.0",
-    "posthog-js": "^1.257.0",
-    "posthog-node": "^5.5.0"
+    "posthog-js": "^1.258.2",
+    "posthog-node": "^5.6.0"
   },
   "peerDependencies": {
     "@segment/analytics-core": "^1.8.1",

@@ -23,7 +23,7 @@
  *   async function fetchUser() {
  *     const user = await findUniqueUserAction({
  *       where: { id: userId },
- *       include: { sessions: true, accounts: true }
+ *       include: { profile: true }
  *     });
  *     setUser(user);
  *   }
@@ -48,7 +48,7 @@ import {
   updateManyUsersOrm,
   updateUserOrm,
   upsertUserOrm,
-} from '../orm/authOrm';
+} from '../orm/auth/userOrm';
 
 // ============================================================================
 // USER SERVER ACTIONS

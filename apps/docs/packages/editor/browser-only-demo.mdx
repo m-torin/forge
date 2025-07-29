@@ -1,0 +1,201 @@
+---
+title: Browser-Only Collaboration Demo
+description: Complete browser-only collaboration system demonstration
+---
+
+# 🚀 Browser-Only Collaboration Demo
+
+## ⚠️ OUTDATED: This demo references `MantineCollaborationEditor` which has been removed.
+
+**Please use `RealTimeEditor` or `TailwindCollaborationEditor` instead.**
+
+---
+
+## Overview
+
+This package now includes a **complete browser-only collaboration system** that
+demonstrates the full power of Tiptap + Y.js collaboration **without requiring
+any backend server**.
+
+## ✨ Key Features
+
+### 🎯 Mock Providers
+
+- **MockWebSocketProvider**: Simulates WebSocket server behavior with
+  configurable network conditions
+- **MockBroadcastProvider**: Enables real cross-tab collaboration using
+  BroadcastChannel API
+- **MockUserManager**: AI-driven user simulation with realistic editing
+  behaviors
+
+### 🌟 Capabilities
+
+- ✅ **Real-time synchronization** using Y.js CRDTs
+- ✅ **User presence and awareness** with cursors and activity indicators
+- ✅ **Automatic conflict resolution** when editing simultaneously
+- ✅ **Cross-tab collaboration** that works between browser tabs
+- ✅ **Network simulation** with configurable latency and packet drops
+- ✅ **Browser persistence** using IndexedDB
+- ✅ **Multi-user AI simulation** with different editing patterns
+- ✅ **Zero backend dependencies** - everything runs in the browser
+
+## 🎨 Storybook Demos
+
+### 1. Browser-Only Collaboration Stories
+
+Located in `src/stories/BrowserOnlyCollaboration.stories.tsx`:
+
+#### **Multi-User Simulation**
+
+- AI users with realistic editing behaviors (aggressive, moderate, passive,
+  observer)
+- Configurable user count and editing frequency
+- Real-time performance monitoring
+- Conflict resolution demonstrations
+
+#### **Cross-Tab Collaboration**
+
+- Real collaboration between browser tabs
+- Uses BroadcastChannel API for instant synchronization
+- Persistent storage with IndexedDB
+- Instructions for testing across multiple tabs
+
+#### **Network Simulation & Conflict Resolution**
+
+- Adjustable network latency (0-500ms)
+- Packet drop simulation
+- Side-by-side editors showing both Mantine and Tailwind implementations
+- Real-time conflict resolution testing
+
+#### **Performance Stress Test**
+
+- Up to 20 simulated users editing simultaneously
+- Configurable edit frequency
+- Performance metrics monitoring
+- Demonstrates Y.js scalability
+
+### 2. Enhanced Existing Stories
+
+Updated `src/stories/CollaborationDemo.stories.tsx` with:
+
+#### **Mock Provider Demo**
+
+- Interactive controls for switching between provider types
+- Network latency simulation controls
+- Real-time demonstration of both editor implementations
+- Feature showcase with detailed explanations
+
+## 🛠 Technical Implementation
+
+### Hook Enhancement
+
+The `useYjsCollaboration` hook now supports mock providers:
+
+```tsx
+const { editor, collaborators, isConnected } = useYjsCollaboration({
+  documentId: "my-document",
+  userId: "user-123",
+  userName: "John Doe",
+  // Enable mock provider
+  useMockProvider: true,
+  mockProviderType: "websocket", // or 'broadcast'
+  simulateLatency: true,
+  latencyMs: 75,
+  simulateDrops: false,
+  dropRate: 0.05
+});
+```
+
+### Component Integration
+
+Both Mantine and Tailwind editors support mock providers:
+
+```tsx
+<MantineCollaborationEditor
+  documentId="demo"
+  userId="user-1"
+  userName="Demo User"
+  // Mock provider configuration
+  useMockProvider={true}
+  mockProviderType="broadcast"
+  simulateLatency={true}
+  latencyMs={100}
+/>
+```
+
+## 🎯 Use Cases
+
+### **Demo & Presentations**
+
+- Show collaboration features without server setup
+- Works offline or in restricted environments
+- Perfect for trade shows and client demos
+
+### **Development & Testing**
+
+- Test collaboration logic in isolation
+- Simulate various network conditions
+- No backend infrastructure needed during development
+
+### **Educational**
+
+- Learn how Y.js CRDTs work
+- Understand conflict resolution mechanics
+- See real-time synchronization in action
+
+### **Prototyping**
+
+- Rapid prototyping of collaborative features
+- Test user experience before backend implementation
+- Validate collaboration workflows
+
+## 🚀 Getting Started
+
+1. **Enable Mock Provider**:
+
+   ```tsx
+   <MantineCollaborationEditor
+     useMockProvider={true}
+     mockProviderType="websocket"
+     // ... other props
+   />
+   ```
+
+2. **Test Cross-Tab Collaboration**:
+
+   ```tsx
+   <MantineCollaborationEditor
+     useMockProvider={true}
+     mockProviderType="broadcast" // Enables cross-tab sync
+     // ... other props
+   />
+   ```
+
+3. **Simulate Multiple Users**:
+   ```tsx
+   const userManager = new MockUserManager("doc-id", ydoc);
+   const users = userManager.createDemoUsers();
+   userManager.activateUsersStaggered(users.map((u) => u.id));
+   ```
+
+## 🎉 Impact
+
+This implementation showcases:
+
+- **The power of Y.js CRDTs** for building collaborative applications
+- **Browser-only collaboration** without server complexity
+- **Production-ready patterns** for real collaborative applications
+- **Educational value** for understanding distributed systems
+- **Development efficiency** by eliminating backend dependencies during testing
+
+The mock collaboration system provides a complete, self-contained demonstration
+of modern collaborative editing that runs entirely in the browser while
+maintaining all the sophisticated features of a production collaboration system.
+
+## 🔗 Next Steps
+
+- Open Storybook and navigate to "Collaboration/Browser-Only Demo"
+- Try the different scenarios and network simulations
+- Open multiple browser tabs to test cross-tab collaboration
+- Experiment with different user simulation patterns
+- Use the mock providers in your own collaborative applications!

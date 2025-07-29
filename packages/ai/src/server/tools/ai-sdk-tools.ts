@@ -3,7 +3,6 @@
  * Replaces complex tool registry with simple, discoverable patterns
  */
 
-import type { CoreTool } from 'ai';
 import { tool } from 'ai';
 import { z } from 'zod/v4';
 
@@ -22,7 +21,7 @@ export interface ToolMetadata {
  * Tool with metadata for discovery
  */
 export interface ToolWithMetadata {
-  tool: CoreTool<any, any>;
+  tool: ReturnType<typeof tool>; // Use the return type of tool() function
   metadata: ToolMetadata;
 }
 
@@ -37,7 +36,7 @@ export class SimpleToolRegistry {
     this.tools.set(name, toolWithMetadata);
   }
 
-  get(name: string): CoreTool<any, any> | undefined {
+  get(name: string): ReturnType<typeof tool> | undefined {
     return this.tools.get(name)?.tool;
   }
 
@@ -45,16 +44,16 @@ export class SimpleToolRegistry {
     return this.tools.get(name)?.metadata;
   }
 
-  getAll(): Record<string, CoreTool<any, any>> {
-    const result: Record<string, CoreTool<any, any>> = {};
+  getAll(): Record<string, ReturnType<typeof tool>> {
+    const result: Record<string, ReturnType<typeof tool>> = {};
     for (const [name, { tool: toolInstance }] of this.tools) {
       result[name] = toolInstance;
     }
     return result;
   }
 
-  getByCategory(category: string): Record<string, CoreTool<any, any>> {
-    const result: Record<string, CoreTool<any, any>> = {};
+  getByCategory(category: string): Record<string, ReturnType<typeof tool>> {
+    const result: Record<string, ReturnType<typeof tool>> = {};
     for (const [name, { tool: toolInstance, metadata }] of this.tools) {
       if (metadata.category === category) {
         result[name] = toolInstance;
@@ -63,8 +62,8 @@ export class SimpleToolRegistry {
     return result;
   }
 
-  getByTags(tags: string[]): Record<string, CoreTool<any, any>> {
-    const result: Record<string, CoreTool<any, any>> = {};
+  getByTags(tags: string[]): Record<string, ReturnType<typeof tool>> {
+    const result: Record<string, ReturnType<typeof tool>> = {};
     for (const [name, { tool: toolInstance, metadata }] of this.tools) {
       if (tags.some(tag => metadata.tags.includes(tag))) {
         result[name] = toolInstance;
@@ -96,7 +95,7 @@ export const weatherTool = tool({
     location: z.string().describe('The location to get weather for'),
     units: z.enum(['celsius', 'fahrenheit']).optional().default('celsius'),
   }),
-  execute: async ({ location, units }) => {
+  execute: async ({ location, units }: { location: string; units?: 'celsius' | 'fahrenheit' }) => {
     // Simulate weather API call
     const temperature = units === 'fahrenheit' ? 72 : 22;
     const unit = units === 'fahrenheit' ? '°F' : '°C';
@@ -123,7 +122,17 @@ export const createDocumentTool = tool({
     format: z.enum(['markdown', 'text', 'html']).optional().default('markdown'),
     tags: z.array(z.string()).optional().describe('Tags for the document'),
   }),
-  execute: async ({ title, content, format, tags }) => {
+  execute: async ({
+    title,
+    content,
+    format,
+    tags,
+  }: {
+    title: string;
+    content: string;
+    format?: 'markdown' | 'text' | 'html';
+    tags?: string[];
+  }) => {
     // Simulate document creation
     const documentId = `doc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
@@ -150,9 +159,17 @@ export const searchTool = tool({
     limit: z.number().optional().default(10).describe('Maximum number of results'),
     category: z.string().optional().describe('Filter by category'),
   }),
-  execute: async ({ query, limit, category }) => {
+  execute: async ({
+    query,
+    limit,
+    category,
+  }: {
+    query: string;
+    limit?: number;
+    category?: string;
+  }) => {
     // Simulate search
-    const results = Array.from({ length: Math.min(limit, 3) }, (_, i) => ({
+    const results = Array.from({ length: Math.min(limit || 10, 3) }, (_, i) => ({
       id: `result_${i + 1}`,
       title: `Search result ${i + 1} for "${query}"`,
       content: `This is a simulated search result for the query "${query}". In a real implementation, this would return actual search results.`,
@@ -177,7 +194,7 @@ export const calculatorTool = tool({
   parameters: z.object({
     expression: z.string().describe('Mathematical expression to evaluate (e.g., "2 + 3 * 4")'),
   }),
-  execute: async ({ expression }) => {
+  execute: async ({ expression }: { expression: string }) => {
     try {
       // Simple expression evaluation (in real app, use a proper math parser)
       // This is a simplified version for demonstration
@@ -261,33 +278,33 @@ export function registerStandardTools() {
 /**
  * Get all tools as a simple object (AI SDK pattern)
  */
-export function getAllTools(): Record<string, CoreTool<any, any>> {
+export function getAllTools(): Record<string, ReturnType<typeof tool>> {
   return simpleToolRegistry.getAll();
 }
 
 /**
  * Get tools by category
  */
-export function getToolsByCategory(category: string): Record<string, CoreTool<any, any>> {
+export function getToolsByCategory(category: string): Record<string, ReturnType<typeof tool>> {
   return simpleToolRegistry.getByCategory(category);
 }
 
 /**
  * Get tools by tags
  */
-export function getToolsByTags(tags: string[]): Record<string, CoreTool<any, any>> {
+export function getToolsByTags(tags: string[]): Record<string, ReturnType<typeof tool>> {
   return simpleToolRegistry.getByTags(tags);
 }
 
 /**
  * Create a tool set for AI SDK usage
  */
-export function createToolSet(toolNames?: string[]): Record<string, CoreTool<any, any>> {
+export function createToolSet(toolNames?: string[]): Record<string, ReturnType<typeof tool>> {
   if (!toolNames) {
     return getAllTools();
   }
 
-  const result: Record<string, CoreTool<any, any>> = {};
+  const result: Record<string, ReturnType<typeof tool>> = {};
   for (const name of toolNames) {
     const tool = simpleToolRegistry.get(name);
     if (tool) {

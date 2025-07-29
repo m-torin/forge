@@ -8,7 +8,7 @@
 
 import { nanoid } from 'nanoid';
 
-import { createServerObservability } from '@repo/observability/shared-env';
+import { createServerObservability } from '@repo/observability/server/next';
 import { type RetryOptions, withCircuitBreaker, withRetry } from '../patterns/index';
 import { WorkflowError } from '../types/errors';
 import {
@@ -66,13 +66,9 @@ export class StandardWorkflowStep<TInput = unknown, TOutput = unknown> {
       // Fire and forget logging
       (async () => {
         try {
-          const logger = await createServerObservability({
-            providers: {
-              console: { enabled: true },
-            },
-          });
+          const logger = await createServerObservability();
           logger.log(
-            'warn',
+            'warning',
             'StandardWorkflowStep: structuredClone not available, using JSON fallback',
           );
         } catch {
@@ -181,12 +177,8 @@ export class StandardWorkflowStep<TInput = unknown, TOutput = unknown> {
           // Fire and forget logging
           (async () => {
             try {
-              const logger = await createServerObservability({
-                providers: {
-                  console: { enabled: true },
-                },
-              });
-              logger.log('warn', `Cleanup failed for step ${this.#definition.id}`, cleanupError);
+              const logger = await createServerObservability();
+              logger.log('warning', `Cleanup failed for step ${this.#definition.id}`, cleanupError);
             } catch {
               // Fallback to console if logger fails
             }
@@ -344,11 +336,7 @@ export class StandardWorkflowStep<TInput = unknown, TOutput = unknown> {
               // Fire and forget logging
               (async () => {
                 try {
-                  const logger = await createServerObservability({
-                    providers: {
-                      console: { enabled: true },
-                    },
-                  });
+                  const logger = await createServerObservability();
                   logger.log(
                     'info',
                     `Retrying step ${this.#definition.id}, attempt ${attempt}: ${(error as Error)?.message || 'Unknown error'}`,
@@ -401,13 +389,9 @@ export class StandardWorkflowStep<TInput = unknown, TOutput = unknown> {
         // Fire and forget logging
         (async () => {
           try {
-            const logger = await createServerObservability({
-              providers: {
-                console: { enabled: true },
-              },
-            });
+            const logger = await createServerObservability();
             logger.log(
-              'warn',
+              'warning',
               `Error handler failed for step ${this.#definition.id}`,
               handlerError,
             );
@@ -465,11 +449,7 @@ export class StepFactory {
     // Fire and forget logging
     (async () => {
       try {
-        const logger = await createServerObservability({
-          providers: {
-            console: { enabled: true },
-          },
-        });
+        const logger = await createServerObservability();
         logger.log('debug', 'StepFactory: Initialized with ES2022+ features');
       } catch {
         // Fallback to console if logger fails

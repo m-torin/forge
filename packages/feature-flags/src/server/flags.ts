@@ -1,7 +1,7 @@
 import { parseOverrides } from '../shared/utils';
 
 // Re-export getProviderData from Vercel SDK
-export { getProviderData } from '@vercel/flags/next';
+export { getProviderData } from 'flags/next';
 
 /**
  * Get the current flag context from Next.js headers/cookies

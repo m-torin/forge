@@ -10,5 +10,5 @@
 // Re-export all client functionality
 export * from './client';
 
-// Re-export Next.js specific client components
-export { Link } from './components/link';
+// Link component has been moved to @repo/uix-system/shared/i18n
+// Import I18nLink directly from there instead of from this package

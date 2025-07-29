@@ -39,7 +39,7 @@ and production readiness.
 | `@repo/analytics`     | Multi-provider analytics       | PostHog, Vercel Analytics, Segment      |
 | `@repo/payments`      | Subscription & billing         | Stripe integration                      |
 | `@repo/email`         | Transactional emails           | React Email, Resend                     |
-| `@repo/design-system` | UI components                  | Mantine UI, Tailwind CSS                |
+| `@repo/uix-system`    | UI components & themes         | Mantine v8, Tailwind CSS v4             |
 | `@repo/observability` | Monitoring & error tracking    | Sentry, OpenTelemetry                   |
 
 ### 🛠️ **Developer Experience**

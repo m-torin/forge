@@ -22,466 +22,194 @@ describe('artifacts', () => {
   });
 
   test('should test artifact creation and management', async () => {
-    const { createArtifact, manageArtifacts, ArtifactSchema } = await import('@/server/artifacts');
+    const {
+      ArtifactHandler,
+      ArtifactRegistry,
+      ArtifactManager,
+      InMemoryArtifactStorage,
+      createArtifactHandler,
+      defaultArtifactRegistry,
+      textArtifactHandler,
+      codeArtifactHandler,
+    } = await import('@/server/artifacts');
 
-    expect(createArtifact).toBeDefined();
-    const mockArtifact = {
-      type: 'code',
-      content: 'console.log("Hello, World!");',
-      language: 'javascript',
-      metadata: { author: 'ai', timestamp: Date.now() },
-    };
-    const result = createArtifact ? await createArtifact(mockArtifact) : { id: 'mock-id' };
-    expect(result).toBeDefined();
-    expect(result.id).toBeDefined();
+    // Test ArtifactHandler
+    const handler = createArtifactHandler({
+      kind: 'test' as const,
+      name: 'Test Handler',
+      validate: () => true,
+    });
+    expect(handler).toBeDefined();
+    expect(handler.kind).toBe('test');
 
-    expect(manageArtifacts).toBeDefined();
-    const mockOperation = {
-      action: 'list',
-      filters: { type: 'code', language: 'typescript' },
-      pagination: { page: 1, limit: 10 },
-    };
-    const manageResult = manageArtifacts ? await manageArtifacts(mockOperation) : { data: [] };
-    expect(manageResult).toBeDefined();
+    // Test ArtifactRegistry
+    const registry = new ArtifactRegistry();
+    registry.register(handler);
+    expect(registry.get('test')).toBeDefined();
+    expect(registry.getKinds()).toContain('test');
 
-    expect(ArtifactSchema).toBeDefined();
-    const validArtifact = {
-      id: 'artifact-123',
-      type: 'document',
-      content: 'Sample document content',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    const schemaResult = ArtifactSchema
-      ? ArtifactSchema.safeParse(validArtifact)
-      : { success: true };
-    expect(schemaResult.success).toBeTruthy();
+    // Test ArtifactManager
+    const storage = new InMemoryArtifactStorage();
+    const manager = new ArtifactManager(registry, storage);
+
+    const artifact = await manager.create('test', 'test content', {
+      id: 'test-id',
+      title: 'Test Artifact',
+    });
+    expect(artifact).toBeDefined();
+    expect(artifact.metadata.id).toBe('test-id');
+    expect(artifact.content).toBe('test content');
+
+    // Test built-in handlers
+    expect(textArtifactHandler.kind).toBe('text');
+    expect(codeArtifactHandler.kind).toBe('code');
+    expect(defaultArtifactRegistry.getKinds()).toContain('text');
+    expect(defaultArtifactRegistry.getKinds()).toContain('code');
   });
 
   test('should test artifact types and validation', async () => {
-    const { validateArtifactType, ArtifactTypes, CodeArtifact, DocumentArtifact } = await import(
-      '@/server/artifacts'
-    );
+    const { textArtifactHandler, codeArtifactHandler, imageArtifactHandler, dataArtifactHandler } =
+      await import('@/server/artifacts');
 
-    expect(validateArtifactType).toBeDefined();
-    const validTypes = ['code', 'document', 'image', 'data'];
-    for (const type of validTypes) {
-      const result = validateArtifactType ? validateArtifactType(type) : { isValid: true };
-      expect(result.isValid).toBeTruthy();
-    }
-    const invalidResult = validateArtifactType
-      ? validateArtifactType('invalid-type')
-      : { isValid: false };
-    expect(invalidResult.isValid).toBeFalsy();
+    // Test text artifact handler
+    expect(textArtifactHandler.kind).toBe('text');
+    expect(await textArtifactHandler.validate('test text')).toBeTruthy();
 
-    expect(ArtifactTypes).toBeDefined();
-    expect(ArtifactTypes?.CODE).toBeDefined();
-    expect(ArtifactTypes?.DOCUMENT).toBeDefined();
+    // Test code artifact handler
+    expect(codeArtifactHandler.kind).toBe('code');
+    expect(await codeArtifactHandler.validate({ code: 'test', language: 'js' })).toBeTruthy();
 
-    expect(CodeArtifact).toBeDefined();
-    const mockCodeArtifact = {
-      content: 'function test() { return true; }',
-      language: 'javascript',
-      framework: 'node',
-      dependencies: ['lodash', 'express'],
-    };
-    const codeResult = CodeArtifact ? CodeArtifact.safeParse(mockCodeArtifact) : { success: true };
-    expect(codeResult.success).toBeTruthy();
+    // Test image artifact handler
+    expect(imageArtifactHandler.kind).toBe('image');
+    expect(
+      await imageArtifactHandler.validate({ url: 'http://example.com/image.jpg' }),
+    ).toBeTruthy();
 
-    expect(DocumentArtifact).toBeDefined();
-    const mockDocument = {
-      title: 'Test Document',
-      content: 'This is a test document',
-      format: 'markdown',
-      sections: ['introduction', 'body', 'conclusion'],
-    };
-    const documentResult = DocumentArtifact
-      ? DocumentArtifact.safeParse(mockDocument)
-      : { success: true };
-    expect(documentResult.success).toBeTruthy();
+    // Test data artifact handler
+    expect(dataArtifactHandler.kind).toBe('data');
+    expect(await dataArtifactHandler.validate({ format: 'json', data: [] })).toBeTruthy();
   });
 
   test('should test artifact storage and retrieval', async () => {
-    const { storeArtifact, retrieveArtifact, searchArtifacts } = await import('@/server/artifacts');
+    const { InMemoryArtifactStorage } = await import('@/server/artifacts');
 
-    expect(storeArtifact).toBeDefined();
-    const mockArtifact = {
-      id: 'test-artifact-456',
-      type: 'code',
-      content: 'const x = 42;',
-      metadata: { size: 13, encoding: 'utf8' },
+    const storage = new InMemoryArtifactStorage();
+    const testArtifact = {
+      metadata: {
+        id: 'test-456',
+        title: 'Test Artifact',
+        kind: 'test',
+        createdAt: new Date().toISOString(),
+      },
+      content: 'test content',
     };
-    const storeResult = storeArtifact ? await storeArtifact(mockArtifact) : { success: true };
-    expect(storeResult).toBeDefined();
-    expect(storeResult.success).toBeTruthy();
 
-    expect(retrieveArtifact).toBeDefined();
-    const retrieveResult = retrieveArtifact
-      ? await retrieveArtifact('test-artifact-456')
-      : { found: true, artifact: { id: 'test-artifact-456' } };
-    expect(retrieveResult).toBeDefined();
-    expect(retrieveResult.found ? retrieveResult.artifact : undefined).toBeDefined();
-    expect(retrieveResult.found ? retrieveResult.artifact.id : 'test-artifact-456').toBe(
-      'test-artifact-456',
-    );
+    // Test save
+    await storage.save(testArtifact);
 
-    expect(searchArtifacts).toBeDefined();
-    const mockQuery = {
-      text: 'javascript function',
-      filters: { type: 'code', language: 'javascript' },
-      sort: { field: 'createdAt', order: 'desc' },
-      pagination: { page: 1, limit: 20 },
-    };
-    const searchResult = searchArtifacts ? await searchArtifacts(mockQuery) : { artifacts: [] };
-    expect(searchResult).toBeDefined();
-    expect(searchResult.artifacts).toBeDefined();
-    expect(Array.isArray(searchResult.artifacts)).toBeTruthy();
+    // Test load
+    const retrieved = await storage.load('test-456');
+    expect(retrieved).toBeDefined();
+    expect(retrieved?.metadata.id).toBe('test-456');
+
+    // Test list
+    const artifacts = await storage.list();
+    expect(artifacts).toBeDefined();
+    expect(artifacts).toHaveLength(1);
+
+    // Test delete
+    await storage.delete('test-456');
+    const afterDelete = await storage.load('test-456');
+    expect(afterDelete).toBeNull();
   });
 
-  test('should test artifact versioning and history', async () => {
-    const { versionArtifact, getArtifactHistory, rollbackArtifact } = await import(
-      '@/server/artifacts'
-    );
+  test('should test artifact handler creation', async () => {
+    const { createArtifactHandler } = await import('@/server/artifacts');
 
-    expect(versionArtifact).toBeDefined();
-    const mockVersionData = {
-      artifactId: 'artifact-789',
-      changes: {
-        content: 'Updated content',
-        metadata: { lastModified: Date.now(), version: '1.1.0' },
-      },
-      changeDescription: 'Updated main functionality',
-    };
-    const versionResult = versionArtifact
-      ? await versionArtifact(mockVersionData)
-      : { version: '1.1.0' };
-    expect(versionResult).toBeDefined();
-    expect(versionResult.version).toBeDefined();
+    const customHandler = createArtifactHandler({
+      kind: 'custom',
+      name: 'Custom Handler',
+      validate: content => typeof content === 'string' && content.length > 0,
+      transform: input => input.toUpperCase(),
+    });
 
-    expect(getArtifactHistory).toBeDefined();
-    const historyResult = getArtifactHistory
-      ? await getArtifactHistory('artifact-789')
-      : { versions: [] };
-    expect(historyResult).toBeDefined();
-    expect(Array.isArray(historyResult.versions)).toBeTruthy();
-
-    expect(rollbackArtifact).toBeDefined();
-    const mockRollback = {
-      artifactId: 'artifact-789',
-      targetVersion: '1.0.0',
-      reason: 'Reverting problematic changes',
-    };
-    const rollbackResult = rollbackArtifact
-      ? await rollbackArtifact(mockRollback)
-      : { success: true };
-    expect(rollbackResult).toBeDefined();
-    expect(rollbackResult.success).toBeTruthy();
+    expect(customHandler.kind).toBe('custom');
+    expect(customHandler.name).toBe('Custom Handler');
+    expect(await customHandler.validate('test')).toBeTruthy();
+    expect(await customHandler.validate('')).toBeFalsy();
+    expect(await customHandler.transform('hello')).toBe('HELLO');
   });
 
-  test('should test artifact transformation and processing', async () => {
-    const { transformArtifact, processArtifact, convertArtifact } = await import(
-      '@/server/artifacts'
-    );
+  test('should test artifact registry functionality', async () => {
+    const { ArtifactRegistry, createArtifactHandler } = await import('@/server/artifacts');
 
-    expect(transformArtifact).toBeDefined();
-    const mockTransform = {
-      artifactId: 'artifact-101',
-      transformation: {
-        type: 'minify',
-        options: { removeComments: true, removeWhitespace: true },
-      },
-    };
-    const transformResult = transformArtifact
-      ? await transformArtifact(mockTransform)
-      : { transformed: true };
-    expect(transformResult).toBeDefined();
+    const registry = new ArtifactRegistry();
+    const handler1 = createArtifactHandler({ kind: 'type1' });
+    const handler2 = createArtifactHandler({ kind: 'type2' });
 
-    expect(processArtifact).toBeDefined();
-    const mockProcessing = {
-      artifact: {
-        type: 'code',
-        content: 'const x = 1; const y = 2; console.log(x + y);',
-        language: 'javascript',
-      },
-      processors: ['syntax-check', 'format', 'optimize'],
-    };
-    const processResult = processArtifact
-      ? await processArtifact(mockProcessing)
-      : { processed: true };
-    expect(processResult).toBeDefined();
-    expect(processResult.processed).toBeDefined();
+    // Test register
+    registry.register(handler1);
+    registry.register(handler2);
 
-    expect(convertArtifact).toBeDefined();
-    const mockConversion = {
-      sourceArtifact: {
-        type: 'code',
-        content: 'function add(a, b) { return a + b; }',
-        language: 'javascript',
-      },
-      targetFormat: {
-        type: 'code',
-        language: 'typescript',
-      },
-    };
-    const convertResult = convertArtifact
-      ? await convertArtifact(mockConversion)
-      : { converted: true };
-    expect(convertResult).toBeDefined();
-    expect(convertResult.converted).toBeDefined();
+    // Test get
+    expect(registry.get('type1')).toBe(handler1);
+    expect(registry.get('type2')).toBe(handler2);
+
+    // Test getKinds
+    const kinds = registry.getKinds();
+    expect(kinds).toContain('type1');
+    expect(kinds).toContain('type2');
+
+    // Test getAll
+    const allHandlers = registry.getAll();
+    expect(allHandlers).toHaveLength(2);
+
+    // Test unregister
+    registry.unregister('type1');
+    expect(registry.get('type1')).toBeUndefined();
+    expect(registry.getKinds()).not.toContain('type1');
   });
 
-  test('should test artifact sharing and collaboration', async () => {
-    const { shareArtifact, collaborateOnArtifact, getArtifactPermissions } = await import(
-      '@/server/artifacts'
-    );
-
-    expect(shareArtifact).toBeDefined();
-    const mockShare = {
-      artifactId: 'artifact-202',
-      shareWith: ['user-123', 'user-456'],
-      permissions: ['read', 'comment'],
-      expiresAt: new Date(Date.now() + 86400000), // 24 hours
-    };
-    const shareResult = shareArtifact
-      ? await shareArtifact(mockShare)
-      : { shareId: 'mock-share-id' };
-    expect(shareResult).toBeDefined();
-    expect(shareResult.shareId).toBeDefined();
-
-    expect(collaborateOnArtifact).toBeDefined();
-    const mockCollaboration = {
-      artifactId: 'artifact-202',
-      collaborators: [
-        { userId: 'user-123', role: 'editor' },
-        { userId: 'user-456', role: 'viewer' },
-      ],
-      settings: { realTimeSync: true, conflictResolution: 'last-write-wins' },
-    };
-    const collaborateResult = collaborateOnArtifact
-      ? await collaborateOnArtifact(mockCollaboration)
-      : { success: true };
-    expect(collaborateResult).toBeDefined();
-
-    expect(getArtifactPermissions).toBeDefined();
-    const permissionsResult = getArtifactPermissions
-      ? await getArtifactPermissions('artifact-202', 'user-123')
-      : { permissions: [] };
-    expect(permissionsResult).toBeDefined();
-    expect(permissionsResult.permissions).toBeDefined();
-    expect(Array.isArray(permissionsResult.permissions)).toBeTruthy();
-  });
-
-  test('should test artifact analytics and insights', async () => {
-    const { analyzeArtifact, getArtifactMetrics, generateArtifactReport } = await import(
-      '@/server/artifacts'
-    );
-
-    expect(analyzeArtifact).toBeDefined();
-    const mockAnalysis = {
-      artifactId: 'artifact-303',
-      analysisTypes: ['complexity', 'quality', 'performance', 'security'],
-      includeRecommendations: true,
-    };
-    const analysisResult = analyzeArtifact ? await analyzeArtifact(mockAnalysis) : { analysis: {} };
-    expect(analysisResult).toBeDefined();
-    expect(analysisResult.analysis).toBeDefined();
-
-    expect(getArtifactMetrics).toBeDefined();
-    const mockQuery = {
-      artifactIds: ['artifact-101', 'artifact-202', 'artifact-303'],
-      metrics: ['views', 'downloads', 'shares', 'ratings'],
-      timeRange: { start: Date.now() - 30 * 86400000, end: Date.now() },
-    };
-    const metricsResult = getArtifactMetrics
-      ? await getArtifactMetrics(mockQuery)
-      : { metrics: {} };
-    expect(metricsResult).toBeDefined();
-    expect(metricsResult.metrics).toBeDefined();
-
-    expect(generateArtifactReport).toBeDefined();
-    const mockReportConfig = {
-      scope: 'user',
-      userId: 'user-123',
-      reportType: 'activity-summary',
-      format: 'json',
-      includeCharts: true,
-    };
-    const reportResult = generateArtifactReport
-      ? await generateArtifactReport(mockReportConfig)
-      : { report: {} };
-    expect(reportResult).toBeDefined();
-    expect(reportResult.report).toBeDefined();
-  });
-
-  test('should test artifact security and access control', async () => {
-    const { secureArtifact, validateArtifactAccess, encryptArtifact, auditArtifactAccess } =
+  test('should test artifact manager complete workflow', async () => {
+    const { ArtifactManager, ArtifactRegistry, InMemoryArtifactStorage, createArtifactHandler } =
       await import('@/server/artifacts');
 
-    expect(secureArtifact).toBeDefined();
-    const mockSecurity = {
-      artifactId: 'artifact-404',
-      securityLevel: 'high',
-      encryption: { algorithm: 'AES-256', keyRotation: true },
-      accessControl: { requireAuth: true, allowedRoles: ['admin', 'editor'] },
-    };
-    const securityResult = secureArtifact ? await secureArtifact(mockSecurity) : { secured: true };
-    expect(securityResult).toBeDefined();
-    expect(securityResult.secured).toBeTruthy();
+    const registry = new ArtifactRegistry();
+    const storage = new InMemoryArtifactStorage();
+    const manager = new ArtifactManager(registry, storage);
 
-    expect(validateArtifactAccess).toBeDefined();
-    const mockValidation = {
-      artifactId: 'artifact-404',
-      userId: 'user-123',
-      requestedAction: 'read',
-      context: { ipAddress: '192.168.1.1', userAgent: 'test-agent' },
-    };
-    const accessResult = validateArtifactAccess
-      ? await validateArtifactAccess(mockValidation)
-      : { allowed: true };
-    expect(accessResult).toBeDefined();
-    expect(typeof accessResult.allowed).toBe('boolean');
+    // Register a handler
+    const handler = createArtifactHandler({
+      kind: 'test',
+      validate: () => true,
+    });
+    registry.register(handler);
 
-    expect(encryptArtifact).toBeDefined();
-    const mockEncryption = {
-      content: 'sensitive artifact content',
-      encryptionKey: 'test-key-123',
-      algorithm: 'AES-256-GCM',
-    };
-    const encryptResult = encryptArtifact
-      ? await encryptArtifact(mockEncryption)
-      : { encrypted: 'encrypted-content', iv: 'mock-iv' };
-    expect(encryptResult).toBeDefined();
-    expect(encryptResult.encrypted).toBeDefined();
-    expect(encryptResult.iv).toBeDefined();
+    // Create artifact
+    const artifact = await manager.create('test', 'content', {
+      id: 'test-123',
+      title: 'Test Artifact',
+    });
 
-    expect(auditArtifactAccess).toBeDefined();
-    const mockAuditQuery = {
-      artifactId: 'artifact-404',
-      timeRange: { start: Date.now() - 86400000, end: Date.now() },
-      includeDetails: true,
-    };
-    const auditResult = auditArtifactAccess
-      ? await auditArtifactAccess(mockAuditQuery)
-      : { auditLog: [] };
-    expect(auditResult).toBeDefined();
-    expect(Array.isArray(auditResult.auditLog)).toBeTruthy();
-  });
+    expect(artifact.metadata.id).toBe('test-123');
+    expect(artifact.content).toBe('content');
 
-  test('should test artifact optimization and performance', async () => {
-    const { optimizeArtifact, compressArtifact, cacheArtifact, preloadArtifact } = await import(
-      '@/server/artifacts'
-    );
+    // Get artifact
+    const retrieved = await manager.get('test-123');
+    expect(retrieved).toBeDefined();
+    expect(retrieved?.metadata.id).toBe('test-123');
 
-    expect(optimizeArtifact).toBeDefined();
-    const mockOptimization = {
-      artifactId: 'artifact-505',
-      optimizations: ['size-reduction', 'load-time', 'memory-usage'],
-      targetMetrics: { maxSize: 1024 * 1024, maxLoadTime: 500 },
-    };
-    const optimizeResult = optimizeArtifact
-      ? await optimizeArtifact(mockOptimization)
-      : { optimized: true };
-    expect(optimizeResult).toBeDefined();
-    expect(optimizeResult.optimized).toBeTruthy();
+    // Update artifact
+    const updated = await manager.update('test-123', { newProperty: 'value' });
+    expect(updated.content).toMatchObject({ newProperty: 'value' });
 
-    expect(compressArtifact).toBeDefined();
-    const mockCompression = {
-      content: 'This is a long content that should be compressed to save space and bandwidth',
-      algorithm: 'gzip',
-      level: 6,
-    };
-    const compressResult = compressArtifact
-      ? await compressArtifact(mockCompression)
-      : { compressed: 'compressed-content', compressionRatio: 0.7 };
-    expect(compressResult).toBeDefined();
-    expect(compressResult.compressed).toBeDefined();
-    expect(compressResult.compressionRatio).toBeDefined();
+    // List artifacts
+    const artifacts = await manager.list();
+    expect(artifacts).toHaveLength(1);
 
-    expect(cacheArtifact).toBeDefined();
-    const mockCache = {
-      artifactId: 'artifact-505',
-      cacheStrategy: 'aggressive',
-      ttl: 3600, // 1 hour
-      invalidationRules: ['on-update', 'on-delete'],
-    };
-    const cacheResult = cacheArtifact ? await cacheArtifact(mockCache) : { cached: true };
-    expect(cacheResult).toBeDefined();
-    expect(cacheResult.cached).toBeTruthy();
-
-    expect(preloadArtifact).toBeDefined();
-    const mockPreload = {
-      artifactIds: ['artifact-101', 'artifact-202'],
-      priority: 'high',
-      strategy: 'background-fetch',
-    };
-    const preloadResult = preloadArtifact
-      ? await preloadArtifact(mockPreload)
-      : { preloaded: true };
-    expect(preloadResult).toBeDefined();
-    expect(preloadResult.preloaded).toBeDefined();
-  });
-
-  test('should test artifact integration and export', async () => {
-    const { exportArtifact, importArtifact, integrateArtifact, bundleArtifacts } = await import(
-      '@/server/artifacts'
-    );
-
-    expect(exportArtifact).toBeDefined();
-    const mockExport = {
-      artifactId: 'artifact-606',
-      format: 'zip',
-      includeMetadata: true,
-      includeHistory: false,
-      destination: 'download',
-    };
-    const exportResult = exportArtifact
-      ? await exportArtifact(mockExport)
-      : { exportUrl: 'mock-url' };
-    expect(exportResult).toBeDefined();
-    expect(exportResult.exportUrl || exportResult.exportData).toBeDefined();
-
-    expect(importArtifact).toBeDefined();
-    const mockImport = {
-      source: 'file-upload',
-      data: 'imported artifact content',
-      format: 'json',
-      mergeStrategy: 'replace',
-      validation: { strict: true },
-    };
-    const importResult = importArtifact ? await importArtifact(mockImport) : { imported: true };
-    expect(importResult).toBeDefined();
-    expect(importResult.imported).toBeTruthy();
-
-    expect(integrateArtifact).toBeDefined();
-    const mockIntegration = {
-      artifactId: 'artifact-606',
-      targetSystem: 'github',
-      integrationConfig: {
-        repository: 'test/repo',
-        branch: 'main',
-        path: 'src/generated',
-      },
-    };
-    const integrateResult = integrateArtifact
-      ? await integrateArtifact(mockIntegration)
-      : { integrated: true };
-    expect(integrateResult).toBeDefined();
-    expect(integrateResult.integrated).toBeTruthy();
-
-    expect(bundleArtifacts).toBeDefined();
-    const mockBundle = {
-      artifactIds: ['artifact-101', 'artifact-202', 'artifact-303'],
-      bundleType: 'project',
-      bundleMetadata: {
-        name: 'Test Project Bundle',
-        version: '1.0.0',
-        description: 'A test bundle of artifacts',
-      },
-    };
-    const bundleResult = bundleArtifacts
-      ? await bundleArtifacts(mockBundle)
-      : { bundleId: 'mock-bundle-id' };
-    expect(bundleResult).toBeDefined();
-    expect(bundleResult.bundleId).toBeDefined();
+    // Delete artifact
+    await manager.delete('test-123');
+    const afterDelete = await manager.get('test-123');
+    expect(afterDelete).toBeNull();
   });
 });

@@ -1,44 +1,29 @@
-import baseConfig from '@repo/eslint-config/package';
+import baseConfig from '@repo/eslint-config';
 
-// Observability package specific overrides - very lenient for development/utility package
-const config = [
-  {
-    // Ignore problematic files completely
-    ignores: ['**/*.bak', '**/*.disabled', 'src/**/*.bak', 'src/**/*.disabled', '**/*.skip'],
-  },
+export default [
   ...baseConfig,
   {
-    files: ['**/*.{ts,tsx,js,jsx}'],
     rules: {
-      'no-console': 'off', // Allow console.log in observability package
-      'import/extensions': 'off', // Allow file extensions
-      'import/no-duplicates': 'warn', // Downgrade import duplications to warnings
-      'unused-imports/no-unused-vars': 'warn', // Downgrade to warnings
-      'unused-imports/no-unused-imports': 'warn',
-      'promise/param-names': 'off', // Allow non-standard Promise parameter names
-      'promise/prefer-await-to-then': 'off', // Allow .then() usage
-      'promise/catch-or-return': 'off', // Allow promise patterns
-      'promise/no-promise-in-callback': 'off', // Allow promises in callbacks
-      'promise/always-return': 'off', // Allow missing returns in promises
+      // Allow console logging in observability package since it's used for debugging and fallback logging
+      'no-console': 'off',
     },
   },
   {
-    // Allow unused variables and conditional tests in test files
-    files: [
-      '**/__tests__/**/*',
-      '**/*.test.*',
-      '**/*.spec.*',
-      '**/test/**/*',
-      '**/*.setup.*',
-      '**/e2e/**/*',
-      '**/*.e2e.*',
-    ],
+    files: ['__tests__/**/*.ts', '__tests__/**/*.tsx'],
     rules: {
-      'unused-imports/no-unused-vars': 'off',
-      'vitest/no-conditional-in-test': 'off',
+      // Allow test factory patterns and complex test structures
+      'vitest/no-standalone-expect': 'off',
       'vitest/no-conditional-expect': 'off',
+      'vitest/no-conditional-tests': 'off',
+      'vitest/no-conditional-in-test': 'off',
+      'vitest/expect-expect': 'off',
+    },
+  },
+  {
+    files: ['src/factory/**/*.ts'],
+    rules: {
+      // Allow .catch() for fire-and-forget promises in factory
+      'promise/prefer-await-to-then': 'off',
     },
   },
 ];
-
-export default config;

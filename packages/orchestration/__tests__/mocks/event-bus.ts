@@ -29,7 +29,6 @@ export function createMockEventBus() {
     // Add anchors
     regexPattern = `^${regexPattern}$`;
 
-    // eslint-disable-next-line security/detect-non-literal-regexp
     return new RegExp(regexPattern).test(eventType);
   }
 

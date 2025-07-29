@@ -3,7 +3,7 @@
  * Useful for development and debugging
  */
 
-import { logDebug, logWarn } from '@repo/observability/shared-env';
+import { logDebug, logWarn } from '@repo/observability';
 import type { AnalyticsProvider, ProviderConfig } from '../../shared/types/types';
 import type { ConsoleConfig } from './types';
 

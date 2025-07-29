@@ -1,282 +1,107 @@
 /**
- * Edge runtime observability for Next.js
- * Edge-compatible implementation without Node.js APIs
+ * Next.js edge runtime observability export
+ * Limited to fetch-based implementations only
  */
 
-import { SentryEdgeProvider } from './server/providers/sentry-edge';
-import {
-  ObservabilityConfig,
-  ObservabilityManager,
-  ObservabilityProvider,
-} from './shared/types/types';
-import { Environment } from './shared/utils/environment';
+import { env } from '../env';
+import { ObservabilityBuilder } from './factory/builder';
+import { createBetterStackPlugin } from './plugins/betterstack';
+import { env as betterStackEnv } from './plugins/betterstack/env';
+import { createConsolePlugin } from './plugins/console';
 
 /**
- * Edge-compatible observability manager
- * Uses lightweight providers compatible with edge runtime
+ * Create auto-configured observability for Next.js edge runtime
+ * Note: Sentry is not included here as it requires Node.js APIs
  */
-class EdgeObservabilityManager implements ObservabilityManager {
-  private providers: Map<string, ObservabilityProvider> = new Map();
-  private isInitialized = false;
-  private config: ObservabilityConfig = { providers: {} };
+export async function createEdgeObservability() {
+  const builder = ObservabilityBuilder.create().withAutoInitialize(false); // Manual init in edge runtime
 
-  async initialize(): Promise<void> {
-    return this.initializeWithConfig(this.config);
-  }
+  // Console logging control
+  const isDevelopment =
+    env.NEXT_PUBLIC_NODE_ENV === 'development' || process.env.NODE_ENV === 'development';
+  const enableConsole =
+    env.NEXT_PUBLIC_OBSERVABILITY_CONSOLE_ENABLED ?? // Explicit control
+    isDevelopment ?? // Auto in dev
+    env.NEXT_PUBLIC_OBSERVABILITY_DEBUG; // Debug mode
 
-  async initializeWithConfig(config: ObservabilityConfig): Promise<void> {
-    this.config = config;
-    if (this.isInitialized) {
-      console.warn('[Observability Edge] Already initialized');
-      return;
-    }
+  // Always add console plugin, control via enabled flag
+  builder.withPlugin(
+    createConsolePlugin({
+      prefix: '[Next.js Edge]',
+      enabled: enableConsole,
+    }),
+  );
 
-    // Initialize Sentry Edge provider if configured
-    if (config.providers?.sentry?.dsn) {
-      const sentryProvider = new SentryEdgeProvider();
-      await sentryProvider.initialize(config.providers.sentry);
-      this.providers.set('sentry', sentryProvider);
-    }
+  // Auto-activate Better Stack if source token is provided (uses fetch API)
+  const betterStackToken =
+    betterStackEnv.BETTER_STACK_SOURCE_TOKEN ||
+    betterStackEnv.BETTERSTACK_SOURCE_TOKEN ||
+    betterStackEnv.LOGTAIL_SOURCE_TOKEN;
 
-    // Add other edge-compatible providers here in the future
-    // Note: OpenTelemetry is NOT compatible with edge runtime
-
-    this.isInitialized = true;
-
-    if (Environment.isDevelopment()) {
-      console.info('[Observability Edge] Initialized with edge-compatible providers');
-    }
-  }
-
-  getProvider(name: string): ObservabilityProvider | undefined {
-    return this.providers.get(name);
-  }
-
-  async captureException(error: Error, context?: any): Promise<void> {
-    for (const provider of this.providers.values()) {
-      try {
-        await provider.captureException(error, context);
-      } catch (providerError) {
-        throw new Error(`[Observability Edge] Provider error: ${providerError}`);
-      }
-    }
-  }
-
-  async captureMessage(
-    message: string,
-    level: 'error' | 'info' | 'warning' = 'info',
-    context?: any,
-  ): Promise<void> {
-    for (const provider of this.providers.values()) {
-      try {
-        await provider.captureMessage(message, level, context);
-      } catch (providerError) {
-        throw new Error(`[Observability Edge] Provider error: ${providerError}`);
-      }
-    }
-  }
-
-  addBreadcrumb(breadcrumb: any): void {
-    for (const provider of this.providers.values()) {
-      try {
-        provider.addBreadcrumb?.(breadcrumb);
-      } catch (providerError) {
-        throw new Error(`[Observability Edge] Provider error: ${providerError}`);
-      }
-    }
-  }
-
-  setContext(key: string, context: Record<string, any>): void {
-    for (const provider of this.providers.values()) {
-      try {
-        provider.setContext?.(key, context);
-      } catch (providerError) {
-        throw new Error(`[Observability Edge] Provider error: ${providerError}`);
-      }
-    }
-  }
-
-  setTag(key: string, value: string | number | boolean): void {
-    for (const provider of this.providers.values()) {
-      try {
-        provider.setTag?.(key, value);
-      } catch (providerError) {
-        throw new Error(`[Observability Edge] Provider error: ${providerError}`);
-      }
-    }
-  }
-
-  setUser(user: { id: string; email?: string; username?: string }): void {
-    for (const provider of this.providers.values()) {
-      try {
-        provider.setUser?.(user);
-      } catch (providerError) {
-        throw new Error(`[Observability Edge] Provider error: ${providerError}`);
-      }
-    }
-  }
-
-  async log(level: string, message: string, metadata?: any): Promise<void> {
-    for (const provider of this.providers.values()) {
-      try {
-        await provider.log?.(level, message, metadata);
-      } catch (providerError) {
-        throw new Error(`[Observability Edge] Provider error: ${providerError}`);
-      }
-    }
-  }
-
-  setExtra(key: string, value: any): void {
-    for (const provider of this.providers.values()) {
-      try {
-        provider.setExtra?.(key, value);
-      } catch (providerError) {
-        throw new Error(`[Observability Edge] Provider error: ${providerError}`);
-      }
-    }
-  }
-
-  startSession(): void {
-    for (const provider of this.providers.values()) {
-      try {
-        provider.startSession?.();
-      } catch (providerError) {
-        throw new Error(`[Observability Edge] Provider error: ${providerError}`);
-      }
-    }
-  }
-
-  endSession(): void {
-    for (const provider of this.providers.values()) {
-      try {
-        provider.endSession?.();
-      } catch (providerError) {
-        throw new Error(`[Observability Edge] Provider error: ${providerError}`);
-      }
-    }
-  }
-
-  startSpan(name: string, parentSpan?: any): any {
-    // Edge runtime doesn't support OpenTelemetry spans
-    console.info(`[Observability Edge] Span created: ${name} (edge runtime, no actual span)`);
-    return { name, parentSpan };
-  }
-
-  startTransaction(name: string, context?: any): any {
-    // Edge runtime doesn't support OpenTelemetry transactions
-    console.info(
-      `[Observability Edge] Transaction created: ${name} (edge runtime, no actual transaction)`,
+  if (betterStackToken) {
+    builder.withPlugin(
+      createBetterStackPlugin({
+        sourceToken: betterStackToken,
+      }),
     );
-    return { name, context };
   }
+
+  // Note: Sentry and LogTape require Node.js APIs and aren't available in edge runtime
+  // Better Stack is the recommended solution for edge runtime logging
+
+  return builder.build();
 }
 
-// Create singleton instance
-const edgeObservabilityManager = new EdgeObservabilityManager();
+// Lazy initialization for the observability instance
+let observabilityInstance: Awaited<ReturnType<typeof createEdgeObservability>> | null = null;
 
 /**
- * Initialize edge observability with console logging only
- * OTEL disabled to avoid native module conflicts in edge runtime
+ * Get or create the observability instance
  */
-export async function register(config?: ObservabilityConfig) {
-  // Skip all OTEL initialization - just log errors to console
-  console.info('[Observability Edge] OTEL disabled, using console logging only');
-
-  // Initialize our edge observability manager
-  await edgeObservabilityManager.initializeWithConfig(config || { providers: {} });
+export async function getObservability() {
+  if (!observabilityInstance) {
+    observabilityInstance = await createEdgeObservability();
+  }
+  return observabilityInstance;
 }
 
+// Export types and utilities
+export * from './core/types';
+export { createObservability } from './factory';
+export { ObservabilityBuilder } from './factory/builder';
+
+// Re-export edge-compatible plugins only
+export * from './plugins/betterstack';
+export * from './plugins/console';
+
+// Async logger functions that handle initialization
+export const logDebug = async (message: string, context?: any) => {
+  const obs = await getObservability();
+  return obs.logDebug(message, context);
+};
+
+export const logInfo = async (message: string, context?: any) => {
+  const obs = await getObservability();
+  return obs.logInfo(message, context);
+};
+
+export const logWarn = async (message: string, context?: any) => {
+  const obs = await getObservability();
+  return obs.logWarn(message, context);
+};
+
+export const logError = async (message: string | Error, context?: any) => {
+  const obs = await getObservability();
+  return obs.logError(message, context);
+};
+
+// Legacy function for backward compatibility (no-op)
 /**
- * Capture exceptions in edge runtime
+ * @deprecated Configuration now happens through the observability system
  */
-export async function captureException(error: Error, context?: any) {
-  await edgeObservabilityManager.captureException(error, context);
-}
+export const configureLogger = (_config?: any) => {
+  // No-op: Configuration now happens through the observability system
+};
 
-/**
- * Capture messages in edge runtime
- */
-export async function captureMessage(
-  message: string,
-  level: 'error' | 'info' | 'warning' = 'info',
-  context?: any,
-) {
-  await edgeObservabilityManager.captureMessage(message, level, context);
-}
-
-/**
- * Add breadcrumb in edge runtime
- */
-export function addBreadcrumb(breadcrumb: any) {
-  edgeObservabilityManager.addBreadcrumb(breadcrumb);
-}
-
-/**
- * Set context in edge runtime
- */
-export function setContext(key: string, context: Record<string, any>) {
-  edgeObservabilityManager.setContext(key, context);
-}
-
-/**
- * Set tag in edge runtime
- */
-export function setTag(key: string, value: string | number | boolean) {
-  edgeObservabilityManager.setTag(key, value);
-}
-
-/**
- * Set user in edge runtime
- */
-export function setUser(user: { id: string; email?: string; username?: string }) {
-  edgeObservabilityManager.setUser(user);
-}
-
-/**
- * Log message in edge runtime
- */
-export async function log(level: string, message: string, metadata?: any) {
-  await edgeObservabilityManager.log(level, message, metadata);
-}
-
-/**
- * Get specific provider (for advanced usage)
- */
-export function getProvider(name: string) {
-  return edgeObservabilityManager.getProvider(name);
-}
-
-/**
- * Export the manager for advanced usage
- */
-export { edgeObservabilityManager as observabilityManager };
-
-/**
- * Export error handler for edge runtime middleware
- */
-export async function onRequestError(error: Error, request?: Request) {
-  await captureException(error, {
-    extra: {
-      url: request?.url,
-      method: request?.method,
-      headers: request ? Object.fromEntries(request.headers.entries()) : undefined,
-    },
-    tags: {
-      runtime: 'edge',
-      context: 'middleware',
-    },
-  });
-}
-
-// Export universal logger functions (they auto-detect edge runtime)
-export {
-  configureLogger,
-  logDebug,
-  logError,
-  logInfo,
-  logWarn,
-  type LogContext,
-} from './logger-functions';
-
-// Keep edge-specific createLogger for backward compatibility
-export { createLogger, type Logger } from './logger-functions-edge';
+// Re-export type
+export type LogContext = Record<string, any>;

@@ -1,5 +1,8 @@
 # Documentation
 
-Comprehensive documentation website built with Mintlify for the entire monorepo.
+- _Type:_ **Documentation Site**
 
-Complete documentation is available in `/apps/docs/`.
+- _Purpose:_ **Comprehensive documentation website built with Mintlify for the
+  entire monorepo**
+
+- _Documentation:_ **[Documentation App](../docs/apps/docs.mdx)**

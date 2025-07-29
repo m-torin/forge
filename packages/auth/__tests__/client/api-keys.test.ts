@@ -42,7 +42,7 @@ describe('client API key functionality', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Reset NODE_ENV
-    process.env.NODE_ENV = 'test';
+    vi.stubEnv('NODE_ENV', 'test');
   });
 
   describe('helper functions', () => {
@@ -50,7 +50,7 @@ describe('client API key functionality', () => {
       test('should return true for any permission check', async () => {
         const apiKeysModule = await import('@/client/api-keys');
 
-        const result = apiKeysModule.hasPermission({ resource: 'api-keys', action: 'read' });
+        const result = apiKeysModule.hasPermission({ 'api-keys': ['read'] });
 
         expect(result).toBeTruthy();
       });
@@ -58,8 +58,8 @@ describe('client API key functionality', () => {
       test('should always return true for client-side permission checks', async () => {
         const apiKeysModule = await import('@/client/api-keys');
 
-        const result1 = apiKeysModule.hasPermission({ resource: 'api-keys', action: 'read' });
-        const result2 = apiKeysModule.hasPermission({ resource: 'users', action: 'write' });
+        const result1 = apiKeysModule.hasPermission({ 'api-keys': ['read'] });
+        const result2 = apiKeysModule.hasPermission({ users: ['write'] });
 
         expect(result1).toBeTruthy();
         expect(result2).toBeTruthy();
@@ -68,16 +68,16 @@ describe('client API key functionality', () => {
       test('should handle different permission types', async () => {
         const apiKeysModule = await import('@/client/api-keys');
 
-        const permissionTypes = [
-          { resource: 'api-keys', action: 'read' },
-          { resource: 'users', action: 'write' },
-          { resource: 'admin', action: 'delete' },
+        const permissionTypes: Array<{ [key: string]: string[] }> = [
+          { 'api-keys': ['read'] },
+          { users: ['write'] },
+          { admin: ['delete'] },
         ];
 
-        for (const permission of permissionTypes) {
+        permissionTypes.forEach(permission => {
           const result = apiKeysModule.hasPermission(permission);
           expect(result).toBeTruthy();
-        }
+        });
       });
     });
 

@@ -1,5 +1,6 @@
 'use client';
 
+import { logError } from '@repo/observability';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 /**
@@ -19,10 +20,16 @@ export function useFlag<T>(flagFunction: () => Promise<T>, initialValue?: T): T 
         const result = await flagFunction();
         setValue(result);
       } catch (error) {
-        throw new Error(`Feature flag evaluation error: ${error}`);
+        // In development/test, log the error instead of throwing
+        logError('Feature flag evaluation error', { error: String(error), hook: 'useFlag' });
+        // Set a fallback value instead of throwing
+        setValue(false as T);
       }
     };
-    evaluateFlag();
+    evaluateFlag().catch(error => {
+      // Catch any remaining unhandled promise rejections
+      logError('Unhandled flag evaluation error', { error: String(error), hook: 'useFlag' });
+    });
   }, [flagFunction]);
 
   return value;
@@ -76,10 +83,19 @@ export function useFeatureFlag(key: string): boolean {
         const result = await adapter.isEnabled(key);
         setEnabled(result);
       } catch (error) {
-        throw new Error(`Feature flag check error: ${error}`);
+        // In development/test, log the error instead of throwing
+        logError('Feature flag check error', { error: String(error), hook: 'useFlagCheck' });
+        // Set fallback value instead of throwing
+        setEnabled(false);
       }
     };
-    checkEnabled();
+    checkEnabled().catch(error => {
+      // Catch any remaining unhandled promise rejections
+      logError('Unhandled feature flag check error', {
+        error: String(error),
+        hook: 'useFlagCheck',
+      });
+    });
   }, [adapter, key]);
 
   return enabled;
@@ -98,10 +114,19 @@ export function useFeatureFlagPayload<T = any>(key: string, defaultValue?: T): T
         const result = await adapter.getFlag(key, defaultValue);
         setValue(result);
       } catch (error) {
-        throw new Error(`Feature flag payload error: ${error}`);
+        // In development/test, log the error instead of throwing
+        logError('Feature flag payload error', { error: String(error), hook: 'useFlagPayload' });
+        // Set fallback value instead of throwing
+        setValue(defaultValue);
       }
     };
-    getFlagValue();
+    getFlagValue().catch(error => {
+      // Catch any remaining unhandled promise rejections
+      logError('Unhandled feature flag payload error', {
+        error: String(error),
+        hook: 'useFlagPayload',
+      });
+    });
   }, [adapter, key, defaultValue]);
 
   return value;
@@ -120,10 +145,16 @@ export function useFeatureFlags(): Record<string, any> {
         const result = await adapter.getAllFlags();
         setFlags(result);
       } catch (error) {
-        throw new Error(`Feature flags fetch error: ${error}`);
+        // In development/test, log the error instead of throwing
+        logError('Feature flags fetch error', { error: String(error), hook: 'useFlags' });
+        // Set fallback value instead of throwing
+        setFlags({});
       }
     };
-    getAllFlags();
+    getAllFlags().catch(error => {
+      // Catch any remaining unhandled promise rejections
+      logError('Unhandled feature flags fetch error', { error: String(error), hook: 'useFlags' });
+    });
   }, [adapter]);
 
   return flags;

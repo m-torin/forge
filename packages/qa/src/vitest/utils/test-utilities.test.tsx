@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { createMockPrismaClient } from '../mocks/prisma-consolidated';
+import { createMockPrismaClient } from '../mocks/internal/database';
 import { render, screen } from './render';
 
 describe('testing Package Utilities', () => {

@@ -1,4 +1,4 @@
-import { type CoreTool } from 'ai';
+import { tool } from 'ai';
 import { z } from 'zod/v4';
 import { ToolContext, createToolFactory } from './factory';
 
@@ -7,8 +7,8 @@ import { ToolContext, createToolFactory } from './factory';
  * Follows Vercel AI SDK best practices for tool organization
  */
 export class ToolRegistry {
-  private tools = new Map<string, CoreTool<any, any>>();
-  private factories = new Map<string, (context: ToolContext) => CoreTool<any, any>>();
+  private tools = new Map<string, ReturnType<typeof tool>>();
+  private factories = new Map<string, (context: ToolContext) => ReturnType<typeof tool>>();
   private metadata = new Map<string, ToolMetadata>();
 
   /**
@@ -16,13 +16,13 @@ export class ToolRegistry {
    */
   register(
     name: string,
-    tool: CoreTool<any, any> | ((context: ToolContext) => CoreTool<any, any>),
+    toolOrFactory: ReturnType<typeof tool> | ((context: ToolContext) => ReturnType<typeof tool>),
     metadata?: ToolMetadata,
   ): void {
-    if (typeof tool === 'function') {
-      this.factories.set(name, tool);
+    if (typeof toolOrFactory === 'function') {
+      this.factories.set(name, toolOrFactory);
     } else {
-      this.tools.set(name, tool);
+      this.tools.set(name, toolOrFactory);
     }
 
     if (metadata) {
@@ -33,7 +33,7 @@ export class ToolRegistry {
   /**
    * Get a tool by name
    */
-  get(name: string, context?: ToolContext): CoreTool<any, any> | undefined {
+  get(name: string, context?: ToolContext): ReturnType<typeof tool> | undefined {
     // Check static tools first
     const staticTool = this.tools.get(name);
     if (staticTool) return staticTool;
@@ -50,8 +50,8 @@ export class ToolRegistry {
   /**
    * Get all tools with optional context
    */
-  getAll(context?: ToolContext): Record<string, CoreTool<any, any>> {
-    const result: Record<string, CoreTool<any, any>> = {};
+  getAll(context?: ToolContext): Record<string, ReturnType<typeof tool>> {
+    const result: Record<string, ReturnType<typeof tool>> = {};
 
     // Add static tools
     for (const [name, tool] of this.tools) {
@@ -73,8 +73,8 @@ export class ToolRegistry {
   /**
    * Get tools by category
    */
-  getByCategory(category: string, context?: ToolContext): Record<string, CoreTool<any, any>> {
-    const result: Record<string, CoreTool<any, any>> = {};
+  getByCategory(category: string, context?: ToolContext): Record<string, ReturnType<typeof tool>> {
+    const result: Record<string, ReturnType<typeof tool>> = {};
 
     for (const [name, meta] of this.metadata) {
       if (meta.category === category) {
@@ -91,8 +91,8 @@ export class ToolRegistry {
   /**
    * Get tools by tags
    */
-  getByTags(tags: string[], context?: ToolContext): Record<string, CoreTool<any, any>> {
-    const result: Record<string, CoreTool<any, any>> = {};
+  getByTags(tags: string[], context?: ToolContext): Record<string, ReturnType<typeof tool>> {
+    const result: Record<string, ReturnType<typeof tool>> = {};
 
     for (const [name, meta] of this.metadata) {
       if (meta.tags && tags.some(tag => meta.tags?.includes(tag))) {
@@ -161,13 +161,14 @@ export function registerDefaultTools(): void {
   // File system tools
   globalToolRegistry.register(
     'readFile',
-    _context =>
+    (_context: ToolContext) =>
       toolFactory({
         description: 'Read contents of a file',
         parameters: z.object({
           path: z.string().describe('File path to read'),
         }),
-        execute: async ({ path }) => {
+        execute: async (input: unknown) => {
+          const { path } = input as { path: any };
           // Implementation would go here
           return `Contents of ${path}`;
         },
@@ -182,14 +183,15 @@ export function registerDefaultTools(): void {
   // Web tools
   globalToolRegistry.register(
     'webSearch',
-    _context =>
+    (_context: ToolContext) =>
       toolFactory({
         description: 'Search the web for information',
         parameters: z.object({
           query: z.string().describe('Search query'),
           limit: z.number().optional().default(5),
         }),
-        execute: async ({ query, limit }) => {
+        execute: async (input: unknown) => {
+          const { query, limit } = input as { query: any; limit: any };
           // Implementation would go here
           return { results: [], query, limit };
         },
@@ -214,8 +216,8 @@ export function createToolsFromRegistry(
     context?: ToolContext;
     exclude?: string[];
   },
-): Record<string, CoreTool<any, any>> {
-  let tools: Record<string, CoreTool<any, any>> = {};
+): Record<string, ReturnType<typeof tool>> {
+  let tools: Record<string, ReturnType<typeof tool>> = {};
 
   if (options) {
     if (options.categories) {
@@ -245,9 +247,9 @@ export function createToolsFromRegistry(
  * Utility to merge multiple tool collections
  */
 export function mergeTools(
-  ...toolCollections: Array<Record<string, CoreTool<any, any>>>
-): Record<string, CoreTool<any, any>> {
-  const merged: Record<string, CoreTool<any, any>> = {};
+  ...toolCollections: Array<Record<string, ReturnType<typeof tool>>>
+): Record<string, ReturnType<typeof tool>> {
+  const merged: Record<string, ReturnType<typeof tool>> = {};
 
   for (const collection of toolCollections) {
     Object.assign(merged, collection);

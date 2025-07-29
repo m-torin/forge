@@ -28,9 +28,15 @@ export const env = createEnv({
     NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL,
     NEXT_PUBLIC_NODE_ENV: process.env.NEXT_PUBLIC_NODE_ENV,
   },
-  onValidationError: _error => {
-    // Don't throw in packages - use fallbacks for resilience
-    // Silently handle validation errors to prevent crashes
+  onValidationError: issues => {
+    console.error(
+      'SEO environment validation failed:',
+      issues.map(issue => issue.message).join(', '),
+    );
+    // Always throw to satisfy TypeScript's never return type
+    throw new Error(
+      `Invalid SEO environment configuration: ${issues.map(issue => issue.message).join(', ')}`,
+    );
   },
 });
 

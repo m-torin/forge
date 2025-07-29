@@ -248,15 +248,15 @@ export class AnalyticsVectorDB {
   }
 
   async listNamespaces() {
-    return this.vectorDB.listNamespaces?.();
+    return this.vectorDB.listNamespaces?.() || [];
   }
 
   async deleteNamespace(namespace: string) {
-    return this.vectorDB.deleteNamespace?.(namespace);
+    return this.vectorDB.deleteNamespace?.(namespace) || false;
   }
 
   async update(vector: any, options?: any) {
-    return this.vectorDB.update?.(vector, options);
+    return this.vectorDB.update?.(vector, options) || false;
   }
 
   getAnalytics(): VectorAnalytics {

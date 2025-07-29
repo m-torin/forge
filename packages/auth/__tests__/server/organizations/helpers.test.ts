@@ -6,7 +6,7 @@ import {
   ensureActiveOrganization,
   getOrganizationDetails,
   getUserOrganizations,
-} from '../../../src/server/organizations/helpers';
+} from '@/server/organizations/helpers';
 
 // Use vi.hoisted to ensure mocks are available during module loading
 const {

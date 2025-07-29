@@ -1,22 +1,22 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { resetCombinedUpstashMocks, setupCombinedUpstashMocks } from '@repo/qa';
 import {
   type BatchContext,
   type BatchItem,
   type BatchResult,
   createBatchProcessor,
 } from '../../src/shared/patterns/batch';
-import { resetUpstashMocks, setupUpstashMocks } from '../utils/upstash-mocks';
 
 describe('batch Processing', () => {
-  let mocks: ReturnType<typeof setupUpstashMocks>;
+  let mocks: ReturnType<typeof setupCombinedUpstashMocks>;
 
   beforeEach(() => {
-    mocks = setupUpstashMocks();
+    mocks = setupCombinedUpstashMocks();
   });
 
   afterEach(() => {
-    resetUpstashMocks(mocks);
+    resetCombinedUpstashMocks(mocks);
   });
 
   describe('batch Processor Creation', () => {
@@ -166,7 +166,7 @@ describe('batch Processing', () => {
         name: 'progress-test',
         onComplete,
         onProgress,
-        processBatch: async (batch, context: any) => {
+        processBatch: async (batch: BatchItem[], context?: BatchContext) => {
           // Simulate progress updates
           for (let i = 0; i < batch.length; i++) {
             await context?.updateProgress({
@@ -227,7 +227,7 @@ describe('batch Processing', () => {
 
       const processor = createBatchProcessor<LargeData, string>({
         name: 'large-processor',
-        processBatch: async (batch, context: any) => {
+        processBatch: async (batch: BatchItem[], context?: BatchContext) => {
           // Simulate processing large batch in chunks
           const chunkSize = 100;
           const results: BatchResult<string>[] = [];
@@ -292,7 +292,7 @@ describe('batch Processing', () => {
       let processedItems = 0;
       const processor = createBatchProcessor<StreamData, number>({
         name: 'stream-processor',
-        processBatch: async (batch, context: any) => {
+        processBatch: async (batch: BatchItem[], context?: BatchContext) => {
           // Simulate memory-efficient processing
           const results: BatchResult<number>[] = [];
 
@@ -456,7 +456,7 @@ describe('batch Processing', () => {
 
       const transformationProcessor = createBatchProcessor<RawData, ProcessedData>({
         name: 'data-transformation',
-        onComplete: async (summary, context: any) => {
+        onComplete: async (summary: any, context?: BatchContext) => {
           await context?.events.emit('transformation.complete', {
             batchId: context?.batchId,
             duration: summary.duration,
@@ -465,7 +465,7 @@ describe('batch Processing', () => {
             totalProcessed: summary.totalProcessed,
           });
         },
-        onProgress: async (progress, context: any) => {
+        onProgress: async (progress: any, context?: BatchContext) => {
           await context?.events.emit('transformation.progress', {
             batchId: context?.batchId,
             percentage: progress.percentage,
@@ -473,7 +473,7 @@ describe('batch Processing', () => {
             total: progress.total,
           });
         },
-        processBatch: async (batch, context: any) => {
+        processBatch: async (batch: BatchItem[], context?: BatchContext) => {
           const results: BatchResult<ProcessedData>[] = [];
 
           for (const item of batch) {

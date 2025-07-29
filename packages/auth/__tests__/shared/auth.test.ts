@@ -13,7 +13,7 @@ const mockSendMagicLinkEmail = vi.fn();
 const mockSendOTPEmail = vi.fn();
 const mockPrisma = {};
 
-vi.mock('@repo/observability/shared-env', () => ({
+vi.mock('@repo/observability', () => ({
   logError: mockLogError,
   logInfo: mockLogInfo,
 }));
@@ -118,7 +118,7 @@ describe('auth configuration', () => {
     mockPasskey.mockReturnValue({});
 
     // Reset process.env
-    process.env.NODE_ENV = 'test';
+    Object.defineProperty(process.env, 'NODE_ENV', { value: 'test', writable: true });
   });
 
   test('should create better auth instance with correct configuration', async () => {
@@ -278,7 +278,7 @@ describe('auth configuration', () => {
   });
 
   test('should handle production environment correctly', async () => {
-    process.env.NODE_ENV = 'production';
+    Object.defineProperty(process.env, 'NODE_ENV', { value: 'production', writable: true });
 
     // Re-import to trigger reconfiguration
     vi.resetModules();
@@ -663,7 +663,7 @@ describe('auth configuration', () => {
   describe('request hooks', () => {
     test('should log requests in development mode', async () => {
       const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
+      Object.defineProperty(process.env, 'NODE_ENV', { value: 'development', writable: true });
 
       vi.resetModules();
       await import('../../src/shared/auth');
@@ -677,11 +677,11 @@ describe('auth configuration', () => {
 
       expect(mockLogInfo).toHaveBeenCalledWith('Auth Request: POST /auth/signin');
 
-      process.env.NODE_ENV = originalEnv;
+      Object.defineProperty(process.env, 'NODE_ENV', { value: originalEnv, writable: true });
     });
 
     test('should not log requests in non-development mode', async () => {
-      process.env.NODE_ENV = 'production';
+      Object.defineProperty(process.env, 'NODE_ENV', { value: 'production', writable: true });
 
       vi.resetModules();
       await import('../../src/shared/auth');

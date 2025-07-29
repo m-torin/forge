@@ -77,8 +77,14 @@ export const packageEnvironments = {
    * Feature flags and analytics
    */
   featureFlags: {
+    POSTHOG_KEY: 'test-posthog-key',
+    POSTHOG_HOST: 'https://app.posthog.com',
+    POSTHOG_PERSONAL_API_KEY: 'test-personal-key',
+    POSTHOG_PROJECT_ID: 'test-project-id',
+    EDGE_CONFIG: 'https://edge-config.vercel.com/test-edge-config',
     NEXT_PUBLIC_POSTHOG_KEY: 'test-key',
     NEXT_PUBLIC_POSTHOG_HOST: 'https://app.posthog.com',
+    NEXT_PUBLIC_VERCEL_ENV: 'development',
     FEATURE_FLAGS_CACHE_TTL: '300',
   },
 

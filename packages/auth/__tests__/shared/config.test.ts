@@ -4,7 +4,7 @@
 
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { createAuthConfig } from '../../src/shared/config';
+import { createAuthConfig } from '@/shared/config';
 
 // Mock the env module
 vi.mock('../../env', () => {
@@ -37,8 +37,7 @@ vi.mock('../../env', () => {
   };
 });
 
-// Import the mock setter
-const { setMockEnv } = await import('../../env');
+// Import the mock setter after the mock is set up
 
 describe('auth Configuration', () => {
   const originalEnv = process.env;
@@ -56,22 +55,20 @@ describe('auth Configuration', () => {
   });
 
   describe('createAuthConfig', () => {
-    test('should create default configuration with minimal environment', () => {
+    test('should create default configuration with minimal environment', async () => {
       // Set minimal required environment
       (process.env as any).NODE_ENV = 'development';
 
-      // Mock the env module to return development defaults
-      setMockEnv({
-        BETTER_AUTH_SECRET: 'development-secret',
-        DATABASE_URL: 'postgresql://localhost:5432/dev',
-        NEXT_PUBLIC_APP_URL: 'http://localhost:3000',
-        NEXT_PUBLIC_APP_NAME: 'App',
-        AUTH_FEATURES_ADMIN: 'true',
-        AUTH_FEATURES_API_KEYS: 'true',
-        AUTH_FEATURES_ORGANIZATIONS: 'true',
-        AUTH_FEATURES_MAGIC_LINKS: 'true',
-        AUTH_FEATURES_TWO_FACTOR: 'true',
-      });
+      // Set environment variables directly
+      process.env.BETTER_AUTH_SECRET = 'development-secret';
+      process.env.DATABASE_URL = 'postgresql://localhost:5432/dev';
+      process.env.NEXT_PUBLIC_APP_URL = 'http://localhost:3000';
+      process.env.NEXT_PUBLIC_APP_NAME = 'App';
+      process.env.AUTH_FEATURES_ADMIN = 'true';
+      process.env.AUTH_FEATURES_API_KEYS = 'true';
+      process.env.AUTH_FEATURES_ORGANIZATIONS = 'true';
+      process.env.AUTH_FEATURES_MAGIC_LINKS = 'true';
+      process.env.AUTH_FEATURES_TWO_FACTOR = 'true';
 
       const config = createAuthConfig();
 
@@ -118,8 +115,9 @@ describe('auth Configuration', () => {
       });
     });
 
-    test('should include GitHub provider when credentials are provided', () => {
-      setMockEnv({
+    test('should include GitHub provider when credentials are provided', async () => {
+      // Set environment variables directly
+      Object.assign(process.env, {
         BETTER_AUTH_SECRET: 'test-secret',
         DATABASE_URL: 'postgresql://localhost:5432/dev',
         NEXT_PUBLIC_APP_URL: 'http://localhost:3000',
@@ -136,8 +134,9 @@ describe('auth Configuration', () => {
       });
     });
 
-    test('should include Google provider when credentials are provided', () => {
-      setMockEnv({
+    test('should include Google provider when credentials are provided', async () => {
+      // Set environment variables directly
+      Object.assign(process.env, {
         BETTER_AUTH_SECRET: 'test-secret',
         DATABASE_URL: 'postgresql://localhost:5432/dev',
         NEXT_PUBLIC_APP_URL: 'http://localhost:3000',
@@ -154,8 +153,9 @@ describe('auth Configuration', () => {
       });
     });
 
-    test('should include both providers when both sets of credentials are provided', () => {
-      setMockEnv({
+    test('should include both providers when both sets of credentials are provided', async () => {
+      // Set environment variables directly
+      Object.assign(process.env, {
         BETTER_AUTH_SECRET: 'test-secret',
         DATABASE_URL: 'postgresql://localhost:5432/dev',
         NEXT_PUBLIC_APP_URL: 'http://localhost:3000',
@@ -171,8 +171,9 @@ describe('auth Configuration', () => {
       expect(config.providers).toHaveProperty('google');
     });
 
-    test('should use custom URLs when provided', () => {
-      setMockEnv({
+    test('should use custom URLs when provided', async () => {
+      // Set environment variables directly
+      Object.assign(process.env, {
         NEXT_PUBLIC_APP_URL: 'https://example.com',
         DATABASE_URL: 'postgresql://custom-host:5432/custom-db',
         BETTER_AUTH_SECRET: 'custom-secret',
@@ -185,8 +186,9 @@ describe('auth Configuration', () => {
       expect(config.secret).toBe('custom-secret');
     });
 
-    test('should not include providers when only partial credentials are provided', () => {
-      setMockEnv({
+    test('should not include providers when only partial credentials are provided', async () => {
+      // Set environment variables directly
+      Object.assign(process.env, {
         BETTER_AUTH_SECRET: 'test-secret',
         DATABASE_URL: 'postgresql://localhost:5432/dev',
         NEXT_PUBLIC_APP_URL: 'http://localhost:3000',
@@ -202,9 +204,10 @@ describe('auth Configuration', () => {
       expect(config.providers).not.toHaveProperty('google');
     });
 
-    test('should handle production environment requirements', () => {
+    test('should handle production environment requirements', async () => {
       (process.env as any).NODE_ENV = 'production';
-      setMockEnv({
+      // Set environment variables directly
+      Object.assign(process.env, {
         BETTER_AUTH_SECRET: 'production-secret',
         DATABASE_URL: 'postgresql://prod-host:5432/prod-db',
         NEXT_PUBLIC_APP_URL: 'https://production.com',
@@ -221,7 +224,8 @@ describe('auth Configuration', () => {
   describe('configuration validation', () => {
     beforeEach(() => {
       // Set up default mock env for validation tests
-      setMockEnv({
+      // Set environment variables directly
+      Object.assign(process.env, {
         BETTER_AUTH_SECRET: 'test-secret',
         DATABASE_URL: 'postgresql://localhost:5432/dev',
         NEXT_PUBLIC_APP_URL: 'http://localhost:3000',

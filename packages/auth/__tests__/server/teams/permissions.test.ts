@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-// Import test setup
-import { auth } from '../../../src/shared/auth';
+// Import test setup FIRST
+import { auth } from '@/shared/auth';
 import '../setup';
 
 import {
@@ -17,7 +17,7 @@ import {
   hasTeamRole,
   isTeamAdmin,
   isTeamOwner,
-} from '../../../src/server/teams/permissions';
+} from '@/server/teams/permissions';
 
 // Mock server-only
 vi.mock('server-only', () => ({}));
@@ -100,7 +100,7 @@ describe('team Permissions', () => {
     ...overrides,
   });
 
-  const createMockTeam = (members = []) => ({
+  const createMockTeam = (members: any[] = []) => ({
     team: {
       id: 'team-123',
       name: 'Test Team',

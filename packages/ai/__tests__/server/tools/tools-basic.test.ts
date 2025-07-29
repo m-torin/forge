@@ -1,32 +1,7 @@
 import { describe, expect, vi } from 'vitest';
 import { z } from 'zod/v4';
 
-// Mock AI SDK
-vi.mock('ai', () => ({
-  tool: vi.fn().mockImplementation(({ description, parameters, execute }) => ({
-    description,
-    parameters,
-    execute,
-  })),
-}));
-
-// Mock the tool function from factory to return a proper object
-vi.mock('@/server/tools/factory', async () => {
-  const actual = await vi.importActual<any>('@/server/tools/factory');
-  return {
-    ...actual,
-    tool: vi.fn().mockImplementation(({ description, parameters, execute }) => ({
-      description,
-      parameters,
-      execute,
-    })),
-    commonSchemas: {
-      id: { type: 'string' },
-      title: { type: 'string' },
-      description: { type: 'string' },
-    },
-  };
-});
+// AI SDK mocks are provided by @repo/qa centralized mocks
 
 // Mock server-only to prevent import issues in tests
 vi.mock('server-only', () => ({}));
@@ -70,7 +45,7 @@ describe('tools Basic Functionality', () => {
 
     const testTool = tool({
       description: 'Basic test tool',
-      parameters: z.object({ value: z.string() }),
+      inputSchema: z.object({ value: z.string() }),
       execute: async ({ value }) => `Basic: ${value}`,
     });
 
@@ -92,7 +67,7 @@ describe('tools Basic Functionality', () => {
     const { ToolSchemas } = await import('@/server/tools/specifications');
 
     const validQuery = 'test search';
-    const result1 = ToolSchemas.query.safeParse(validQuery);
+    const result = ToolSchemas.query.safeParse(validQuery);
 
     expect(result.success).toBeTruthy();
     expect(result.data).toBe(validQuery);
@@ -101,19 +76,17 @@ describe('tools Basic Functionality', () => {
   test('should create tool from specification', async () => {
     const { createToolFromSpec } = await import('@/server/tools/specifications');
 
-    {
-      expect(createToolFromSpec).toBeTypeOf('function');
+    expect(createToolFromSpec).toBeTypeOf('function');
 
-      const weatherTool = createToolFromSpec('weather', {
-        execute: async params => ({
-          temperature: 20,
-          unit: params.units || 'celsius',
-          description: 'Sunny',
-        }),
-      });
+    const weatherTool = createToolFromSpec('weather', {
+      execute: async params => ({
+        temperature: 20,
+        unit: params.units || 'celsius',
+        description: 'Sunny',
+      }),
+    });
 
-      expect(weatherTool).toBeDefined();
-      expect(typeof weatherTool).toBe('object');
-    }
+    expect(weatherTool).toBeDefined();
+    expect(typeof weatherTool).toBe('object');
   });
 });

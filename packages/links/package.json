@@ -23,7 +23,7 @@
   "dependencies": {
     "@repo/observability": "workspace:*",
     "@t3-oss/env-nextjs": "catalog:",
-    "dub": "^0.64.1",
+    "dub": "^0.64.2",
     "next": "catalog:",
     "react": "catalog:",
     "zod": "catalog:"

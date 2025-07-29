@@ -351,7 +351,10 @@ describe('protectedRoute component', () => {
       expect(screen.getByText('Loading...')).toBeInTheDocument();
 
       // Restore window.location
-      window.location = originalLocation;
+      Object.defineProperty(window, 'location', {
+        value: originalLocation,
+        writable: true,
+      });
     });
 
     test('should handle null children', async () => {

@@ -1,6 +1,9 @@
 # @repo/payments
 
-Payment processing integration with Stripe and subscription management.
+- _Can build:_ **NO**
 
-Complete documentation is available in
-[../../apps/docs/packages/payments.mdx](../../apps/docs/packages/payments.mdx).
+- _Exports:_
+  - **Core**: `./client`, `./server`, `./client/next`, `./server/next`
+  - **Utilities**: `./shared`, `./types`, `./webhooks`
+
+- _Documentation:_ **[Payments Package](../../apps/docs/packages/payments.mdx)**

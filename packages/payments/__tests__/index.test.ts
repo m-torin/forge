@@ -4,73 +4,79 @@ import { beforeEach, describe, expect, vi } from 'vitest';
 vi.mock('server-only', () => ({}));
 
 // Mock observability
-vi.mock('@repo/observability/shared-env', () => ({
+vi.mock('@repo/observability', () => ({
   logWarn: vi.fn(),
   logError: vi.fn(),
   logInfo: vi.fn(),
   logDebug: vi.fn(),
 }));
 
-// Mock Stripe SDK
-const mockStripe = {
-  checkout: {
-    sessions: {
-      create: vi.fn(),
-      list: vi.fn(),
-      retrieve: vi.fn(),
-    },
-  },
+// Create local Stripe mock for testing
+const mockStripeSdk = {
   customers: {
-    create: vi.fn(),
-    del: vi.fn(),
-    list: vi.fn(),
-    retrieve: vi.fn(),
-    update: vi.fn(),
-  },
-  invoices: {
-    create: vi.fn(),
-    del: vi.fn(),
-    list: vi.fn(),
-    retrieve: vi.fn(),
-    update: vi.fn(),
-  },
-  paymentIntents: {
-    cancel: vi.fn(),
-    create: vi.fn(),
-    list: vi.fn(),
-    retrieve: vi.fn(),
-    update: vi.fn(),
-  },
-  prices: {
-    create: vi.fn(),
-    del: vi.fn(),
-    list: vi.fn(),
-    retrieve: vi.fn(),
-    update: vi.fn(),
+    create: vi.fn().mockResolvedValue({ id: 'mock_customers_id' }),
+    retrieve: vi.fn().mockResolvedValue({ id: 'mock_customers_id' }),
+    update: vi.fn().mockResolvedValue({ id: 'mock_customers_id' }),
+    del: vi.fn().mockResolvedValue({ id: 'mock_customers_id', deleted: true }),
+    list: vi.fn().mockResolvedValue({ data: [], has_more: false }),
   },
   products: {
-    create: vi.fn(),
-    del: vi.fn(),
-    list: vi.fn(),
-    retrieve: vi.fn(),
-    update: vi.fn(),
+    create: vi.fn().mockResolvedValue({ id: 'mock_products_id' }),
+    retrieve: vi.fn().mockResolvedValue({ id: 'mock_products_id' }),
+    update: vi.fn().mockResolvedValue({ id: 'mock_products_id' }),
+    del: vi.fn().mockResolvedValue({ id: 'mock_products_id', deleted: true }),
+    list: vi.fn().mockResolvedValue({ data: [], has_more: false }),
+  },
+  prices: {
+    create: vi.fn().mockResolvedValue({ id: 'mock_prices_id' }),
+    retrieve: vi.fn().mockResolvedValue({ id: 'mock_prices_id' }),
+    update: vi.fn().mockResolvedValue({ id: 'mock_prices_id' }),
+    del: vi.fn().mockResolvedValue({ id: 'mock_prices_id', deleted: true }),
+    list: vi.fn().mockResolvedValue({ data: [], has_more: false }),
+  },
+  paymentIntents: {
+    create: vi.fn().mockResolvedValue({
+      id: 'mock_paymentIntents_id',
+      client_secret: 'mock_client_secret',
+      status: 'requires_payment_method',
+    }),
+    retrieve: vi.fn().mockResolvedValue({ id: 'mock_paymentIntents_id' }),
+    update: vi.fn().mockResolvedValue({ id: 'mock_paymentIntents_id' }),
+    confirm: vi.fn().mockResolvedValue({ id: 'mock_paymentIntents_id' }),
+    cancel: vi.fn().mockResolvedValue({ id: 'mock_paymentIntents_id' }),
   },
   subscriptions: {
-    create: vi.fn(),
-    del: vi.fn(),
-    list: vi.fn(),
-    retrieve: vi.fn(),
-    update: vi.fn(),
+    create: vi.fn().mockResolvedValue({ id: 'mock_subscriptions_id' }),
+    retrieve: vi.fn().mockResolvedValue({ id: 'mock_subscriptions_id' }),
+    update: vi.fn().mockResolvedValue({ id: 'mock_subscriptions_id' }),
+    cancel: vi.fn().mockResolvedValue({ id: 'mock_subscriptions_id' }),
+    list: vi.fn().mockResolvedValue({ data: [], has_more: false }),
+  },
+  invoices: {
+    create: vi.fn().mockResolvedValue({ id: 'mock_invoices_id' }),
+    retrieve: vi.fn().mockResolvedValue({ id: 'mock_invoices_id' }),
+    update: vi.fn().mockResolvedValue({ id: 'mock_invoices_id' }),
+    list: vi.fn().mockResolvedValue({ data: [], has_more: false }),
+  },
+  checkout: {
+    sessions: {
+      create: vi.fn().mockResolvedValue({ id: 'mock_checkout_id' }),
+      retrieve: vi.fn().mockResolvedValue({ id: 'mock_checkout_id' }),
+    },
+  },
+  webhooks: {
+    constructEvent: vi.fn().mockReturnValue({
+      type: 'payment_intent.succeeded',
+      data: { object: { id: 'mock_event_id' } },
+    }),
   },
 };
 
+// Use local Stripe mock
+const mockStripe = mockStripeSdk;
 const MockStripeConstructor = vi.fn().mockImplementation(() => mockStripe);
 
-vi.mock('stripe', () => {
-  return {
-    default: MockStripeConstructor,
-  };
-});
+// Stripe mock is already set up by @repo/qa package
 
 // Mock the env module
 const mockSafeEnv = vi.fn();
@@ -176,7 +182,7 @@ describe('stripe Payment Service', () => {
       // Mock the logger
       const mockWarn = vi.fn();
       const mockLogWarn = vi.fn();
-      vi.doMock('@repo/observability/shared-env', () => ({
+      vi.doMock('@repo/observability', () => ({
         createLogger: () => ({
           warn: mockWarn,
           info: vi.fn(),

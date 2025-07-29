@@ -1,6 +1,10 @@
 # @repo/links
 
-Link shortening and management system.
+- _Can build:_ **NO**
 
-Complete documentation is available in
-[../../apps/docs/packages/links.mdx](../../apps/docs/packages/links.mdx).
+- _Exports:_
+  - **Core**: `./client`, `./server`, `./client/next`, `./server/next`,
+    `./server/edge`
+  - **Utilities**: `./shared`, `./types`
+
+- _Documentation:_ **[Links Package](../../apps/docs/packages/links.mdx)**

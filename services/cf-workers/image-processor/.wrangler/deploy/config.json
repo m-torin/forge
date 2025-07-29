@@ -1,0 +1,4 @@
+{
+  "configPath": "../../dist/image_processor/wrangler.json",
+  "auxiliaryWorkers": []
+}

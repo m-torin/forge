@@ -11,24 +11,16 @@ import { authClient } from './client/client';
 export { authClient } from './client/client';
 
 // Export key client methods
-export const {
-  signUp,
-  signIn,
-  signOut,
-  useSession,
-  // Organization methods
-  organization,
-  useListOrganizations,
-  useActiveOrganization,
-  // Two-Factor Authentication methods
-  twoFactor,
-  // Admin methods
-  admin,
-  // API Key methods
-  apiKey,
-  // Passkey methods
-  passkey,
-} = authClient;
+export const { signUp, signIn, signOut, useSession } = authClient;
+
+// Export plugin methods safely with fallbacks
+export const organization = (authClient as any).organization || {};
+export const useListOrganizations = (authClient as any).useListOrganizations;
+export const useActiveOrganization = (authClient as any).useActiveOrganization;
+export const twoFactor = (authClient as any).twoFactor || {};
+export const admin = (authClient as any).admin || {};
+export const apiKey = (authClient as any).apiKey || {};
+export const passkey = (authClient as any).passkey || {};
 
 // Export additional hooks
 export { useAuth, useAuthGuard, useIsAuthenticated, useRequireAuth, useUser } from './client/hooks';

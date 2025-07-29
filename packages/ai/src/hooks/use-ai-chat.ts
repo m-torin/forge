@@ -1,57 +1,91 @@
 'use client';
 
-import { CreateMessage, Message, UseChatOptions, useChat as useVercelChat } from 'ai/react';
-import { useCallback } from 'react';
+import { useChat as useVercelChat } from '@ai-sdk/react';
+import { logWarn } from '@repo/observability';
+import { useCallback, useEffect } from 'react';
 
-export interface UseAIChatOptions extends Omit<UseChatOptions, 'api'> {
+// Import the exact types from AI SDK v5
+export interface UseAIChatOptions {
   api?: string;
+  id?: string;
+  initialInput?: string;
+  initialMessages?: any[];
+  headers?: Record<string, string> | Headers;
+  body?: any;
+  credentials?: 'omit' | 'same-origin' | 'include';
+  maxSteps?: number;
+  streamProtocol?: 'text' | 'data';
+  generateId?: () => string;
+  fetch?: typeof globalThis.fetch;
+
+  // Custom callback options that we implement manually
   onRateLimit?: (retryAfter: number) => void;
   onTokenUsage?: (usage: { completion: number; prompt: number; total: number }) => void;
+  onError?: (error: any) => void;
+  onFinish?: (message: any, options?: any) => void;
 }
 
 export function useAIChat({
-  api = '/api/ai/chat',
   onError,
   onFinish,
   onRateLimit,
   onTokenUsage,
+  api: _api = '/api/ai/chat',
   ...options
 }: UseAIChatOptions = {}) {
   const chat = useVercelChat({
-    api,
-    onError: (error: any) => {
-      // Handle rate limiting
-      const errorMessage = error?.message || error?.toString() || '';
+    streamProtocol: 'text',
+    ...options,
+  } as any);
+
+  // Handle errors manually since onError callback is removed in v5
+  useEffect(() => {
+    if (chat.error && onError) {
+      const errorMessage = chat.error?.message || chat.error?.toString() || '';
       if (errorMessage.includes('429') && onRateLimit) {
         const match = errorMessage.match(/retry after (\d+)/);
         const retryAfter = match ? parseInt(match[1]) : 60;
-        onRateLimit?.(retryAfter);
+        onRateLimit(retryAfter);
       }
-      onError?.(error);
-    },
-    onFinish: (message, options: any) => {
-      // Extract token usage if available
-      if (options && 'usage' in options && onTokenUsage) {
-        const usage = options.usage;
-        if (usage && typeof usage === 'object') {
-          onTokenUsage({
-            completion: (usage as any).completionTokens ?? 0,
-            prompt: (usage as any).promptTokens ?? 0,
-            total: (usage as any).totalTokens ?? 0,
-          });
-        }
-      }
-      onFinish?.(message, options);
-    },
-    streamProtocol: 'text',
-    ...options,
-  });
+      onError(chat.error);
+    }
+  }, [chat.error, onError, onRateLimit]);
 
-  // Enhanced append with retry logic
+  // Note: onFinish and onTokenUsage callbacks are not available in AI SDK v5
+  // These would need to be implemented differently if token usage tracking is needed
+  useEffect(() => {
+    if (onFinish) {
+      logWarn('onFinish callback is not supported in AI SDK v5. Consider alternative approaches.');
+    }
+    if (onTokenUsage) {
+      logWarn(
+        'onTokenUsage callback is not supported in AI SDK v5. Consider alternative approaches.',
+      );
+    }
+  }, [onFinish, onTokenUsage]);
+
+  // Enhanced append with retry logic for backward compatibility
   const appendWithRetry = useCallback(
-    async (message: CreateMessage | Message, retries = 3): Promise<void> => {
+    async (message: any, retries = 3): Promise<void> => {
       try {
-        await chat.append(message);
+        // Support both v4 and v5 message formats using append method
+        if (typeof message === 'string') {
+          // Simple string message - convert to message object
+          await chat.append({ role: 'user', content: message } as any);
+          return;
+        } else if (message.content && typeof message.content === 'string') {
+          // v4 style message with content string - already compatible
+          await chat.append(message as any);
+          return;
+        } else if (message.text) {
+          // v5 style message - convert to v4 format for append
+          await chat.append({ role: 'user', content: message.text } as any);
+          return;
+        } else {
+          // Fallback for other formats
+          await chat.append(message as any);
+          return;
+        }
       } catch (error: any) {
         const errorMessage = error?.message || error?.toString() || '';
         if (retries > 0 && errorMessage.includes('429')) {
@@ -65,13 +99,13 @@ export function useAIChat({
         throw error;
       }
     },
-    [chat],
+    [chat.append],
   );
 
   // Helper to clear messages
   const clear = useCallback(() => {
     chat.setMessages([]);
-  }, [chat]);
+  }, [chat.setMessages]);
 
   // Helper to regenerate last message
   const regenerate = useCallback(() => {
@@ -84,14 +118,17 @@ export function useAIChat({
     // Resubmit last user message
     const lastUserMessage = newMessages[newMessages.length - 1];
     if (lastUserMessage?.role === 'user') {
-      void chat.append(lastUserMessage);
+      // Use appendWithRetry for better compatibility
+      void appendWithRetry(lastUserMessage);
     }
-  }, [chat]);
+  }, [chat.messages, chat.setMessages, appendWithRetry]);
 
   return {
     ...chat,
     appendWithRetry,
     clear,
     regenerate,
+    // Backward compatibility for isLoading
+    isLoading: chat.status === 'submitted' || chat.status === 'streaming',
   };
 }

@@ -24,7 +24,8 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "mintlify": "^4.2.15"
+    "@repo/observability": "workspace:*",
+    "mintlify": "^4.2.33"
   },
   "devDependencies": {
     "@repo/qa": "workspace:*"

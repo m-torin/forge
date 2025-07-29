@@ -4,17 +4,17 @@ import {
   cleanupMockFirestoreEnvironment,
   resetMockFirestoreStorage,
   setupMockFirestoreEnvironment,
-} from '../mocks/firestore';
+} from '../mocks/providers/google/firestore';
 import {
   cleanupMockRedisEnvironment,
   resetMockRedisStorage,
   setupMockRedisEnvironment,
-} from '../mocks/upstash-redis';
+} from '../mocks/providers/upstash/redis';
 import {
   cleanupMockVectorEnvironment,
   resetMockVectorStorage,
   setupMockVectorEnvironment,
-} from '../mocks/upstash-vector';
+} from '../mocks/providers/upstash/vector';
 
 // Global database test setup
 beforeAll(async () => {

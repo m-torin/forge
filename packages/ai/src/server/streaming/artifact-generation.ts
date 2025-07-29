@@ -1,11 +1,12 @@
-import { smoothStream, streamText, type DataStreamWriter, type LanguageModel } from 'ai';
+import type { LanguageModelV2 } from '@ai-sdk/provider';
+import { smoothStream, streamText, type UIMessageStreamWriter } from 'ai';
 
 /**
  * Configuration for artifact generation
  */
 export interface ArtifactGenerationConfig {
   /** Model to use for generation */
-  model: LanguageModel;
+  model: LanguageModelV2;
   /** System prompt for the generation */
   systemPrompt: string;
   /** User prompt/input */
@@ -23,7 +24,7 @@ export interface ArtifactGenerationConfig {
  */
 export async function streamArtifactGeneration(
   config: ArtifactGenerationConfig,
-  dataStream: DataStreamWriter,
+  dataStream: UIMessageStreamWriter,
 ): Promise<string> {
   const {
     model,
@@ -45,7 +46,7 @@ export async function streamArtifactGeneration(
 
   // Add prediction metadata if enabled and existing content provided
   if (enablePrediction && existingContent) {
-    streamConfig.experimental_providerMetadata = {
+    streamConfig.providerOptions = {
       openai: {
         prediction: {
           type: 'content',
@@ -60,13 +61,13 @@ export async function streamArtifactGeneration(
   for await (const delta of fullStream) {
     const { type } = delta;
 
-    if (type === 'text-delta') {
-      const { textDelta } = delta;
-      fullContent += textDelta;
+    if (type === 'text') {
+      const { text } = delta;
+      fullContent += text;
 
-      dataStream.writeData({
-        type: 'text-delta',
-        content: textDelta,
+      dataStream.write({
+        type: 'text' as any,
+        text: text,
       });
     }
   }
@@ -86,9 +87,9 @@ export function createArtifactGenerator(
      * Generate new artifact content
      */
     async create(
-      model: LanguageModel,
+      model: LanguageModelV2,
       title: string,
-      dataStream: DataStreamWriter,
+      dataStream: UIMessageStreamWriter,
       options?: {
         systemPrompt?: string;
         chunking?: 'word' | 'line';
@@ -109,10 +110,10 @@ export function createArtifactGenerator(
      * Update existing artifact content
      */
     async update(
-      model: LanguageModel,
+      model: LanguageModelV2,
       existingContent: string,
       description: string,
-      dataStream: DataStreamWriter,
+      dataStream: UIMessageStreamWriter,
       options?: {
         systemPrompt?: string;
         chunking?: 'word' | 'line';

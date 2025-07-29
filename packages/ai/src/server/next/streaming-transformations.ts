@@ -1,14 +1,9 @@
-import {
-  smoothStream,
-  streamObject,
-  streamText,
-  type DataStreamWriter,
-  type LanguageModel,
-} from 'ai';
+import type { LanguageModelV2 } from '@ai-sdk/provider';
+import { smoothStream, streamObject, streamText, type UIMessageStreamWriter } from 'ai';
 import type { z } from 'zod';
 
 export interface StreamTextConfig {
-  model: LanguageModel;
+  model: LanguageModelV2;
   system?: string;
   prompt: string;
   enableSmoothing?: boolean;
@@ -20,7 +15,7 @@ export interface StreamTextConfig {
 }
 
 export interface StreamObjectConfig<T extends z.ZodSchema> {
-  model: LanguageModel;
+  model: LanguageModelV2;
   system?: string;
   prompt: string;
   schema: T;
@@ -38,7 +33,7 @@ export interface StreamHandler {
  */
 export async function streamTextGeneration(
   config: StreamTextConfig,
-  dataStream: DataStreamWriter,
+  dataStream: UIMessageStreamWriter,
   handler?: StreamHandler,
 ): Promise<string> {
   const {
@@ -66,7 +61,7 @@ export async function streamTextGeneration(
     }
 
     if (prediction) {
-      streamConfig.experimental_providerMetadata = {
+      streamConfig.providerOptions = {
         openai: {
           prediction,
         },
@@ -78,17 +73,17 @@ export async function streamTextGeneration(
     for await (const delta of fullStream) {
       const { type } = delta;
 
-      if (type === 'text-delta') {
-        const { textDelta } = delta;
+      if (type === 'text') {
+        const { text } = delta;
 
-        draftContent += textDelta;
+        draftContent += text;
 
-        dataStream.writeData({
-          type: 'text-delta',
-          content: textDelta,
+        dataStream.write({
+          type: 'text' as any,
+          text: text,
         });
 
-        handler?.onTextDelta?.(textDelta);
+        handler?.onTextDelta?.(text);
       }
     }
 
@@ -106,7 +101,7 @@ export async function streamTextGeneration(
  */
 export async function streamObjectGeneration<T extends z.ZodSchema>(
   config: StreamObjectConfig<T>,
-  dataStream: DataStreamWriter,
+  dataStream: UIMessageStreamWriter,
   handler?: StreamHandler,
 ): Promise<string> {
   const { model, system, prompt, schema } = config;
@@ -137,10 +132,10 @@ export async function streamObjectGeneration<T extends z.ZodSchema>(
           typeof (object as any).code === 'string'
         ) {
           const code = (object as any).code as string;
-          dataStream.writeData({
-            type: 'code-delta',
-            content: code,
-          });
+          dataStream.write({
+            type: 'data-code-delta' as any,
+            data: code,
+          } as any);
           draftContent = code;
         } else if (
           object &&
@@ -149,9 +144,9 @@ export async function streamObjectGeneration<T extends z.ZodSchema>(
           typeof (object as any).text === 'string'
         ) {
           const text = (object as any).text as string;
-          dataStream.writeData({
-            type: 'text-delta',
-            content: text,
+          dataStream.write({
+            type: 'text' as any,
+            text: text,
           });
           draftContent = text;
         } else if (
@@ -161,10 +156,10 @@ export async function streamObjectGeneration<T extends z.ZodSchema>(
           typeof (object as any).content === 'string'
         ) {
           const content = (object as any).content as string;
-          dataStream.writeData({
-            type: 'content-delta',
-            content: content,
-          });
+          dataStream.write({
+            type: 'data-content-delta' as any,
+            data: content,
+          } as any);
           draftContent = content;
         }
       }
@@ -187,7 +182,7 @@ export class StreamProcessor {
   private handlers: StreamHandler;
 
   constructor(
-    private dataStream: DataStreamWriter,
+    private dataStream: UIMessageStreamWriter,
     handlers: StreamHandler = {},
   ) {
     this.handlers = handlers;
@@ -198,9 +193,9 @@ export class StreamProcessor {
    */
   processTextDelta(textDelta: string): void {
     this.content += textDelta;
-    this.dataStream.writeData({
-      type: 'text-delta',
-      content: textDelta,
+    this.dataStream.write({
+      type: 'text' as any,
+      text: textDelta,
     });
     this.handlers.onTextDelta?.(textDelta);
   }
@@ -210,10 +205,10 @@ export class StreamProcessor {
    */
   processCodeDelta(code: string): void {
     this.content = code;
-    this.dataStream.writeData({
-      type: 'code-delta',
-      content: code,
-    });
+    this.dataStream.write({
+      type: 'data-code-delta' as any,
+      data: code,
+    } as any);
   }
 
   /**
@@ -254,21 +249,21 @@ export function createStreamingDocumentHandler<T extends string>(config: {
   onCreateDocument: (params: {
     title: string;
     processor: StreamProcessor;
-    model: LanguageModel;
+    model: LanguageModelV2;
   }) => Promise<string>;
   onUpdateDocument: (params: {
     content: string;
     description: string;
     processor: StreamProcessor;
-    model: LanguageModel;
+    model: LanguageModelV2;
   }) => Promise<string>;
 }) {
   return {
     kind: config.kind,
     createDocument: async (
       title: string,
-      dataStream: DataStreamWriter,
-      model: LanguageModel,
+      dataStream: UIMessageStreamWriter,
+      model: LanguageModelV2,
       handler?: StreamHandler,
     ): Promise<string> => {
       const processor = new StreamProcessor(dataStream, handler);
@@ -277,8 +272,8 @@ export function createStreamingDocumentHandler<T extends string>(config: {
     updateDocument: async (
       content: string,
       description: string,
-      dataStream: DataStreamWriter,
-      model: LanguageModel,
+      dataStream: UIMessageStreamWriter,
+      model: LanguageModelV2,
       handler?: StreamHandler,
     ): Promise<string> => {
       const processor = new StreamProcessor(dataStream, handler);

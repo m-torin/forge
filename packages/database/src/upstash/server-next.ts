@@ -12,7 +12,7 @@ import { cache } from 'react';
 import { upstash, upstashVectorClientSingleton } from './server';
 
 // Use centralized observability logger
-import { logError } from '@repo/observability/shared-env';
+import { logError } from '@repo/observability';
 
 type Dict = Record<string, unknown>;
 
@@ -458,7 +458,8 @@ export async function backupVectorNamespace(namespace: string): Promise<
       );
     }
   } catch (error) {
-    logError('Backup failed', error instanceof Error ? error : new Error(String(error)), {
+    logError('Backup failed', {
+      error: error instanceof Error ? error : new Error(String(error)),
       operation: 'upstash_backup',
     });
   }

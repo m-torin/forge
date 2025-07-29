@@ -38,6 +38,7 @@ export const env = createEnv({
     const errorMessage = Array.isArray(error)
       ? error.map(e => e.message).join(', ')
       : String(error);
+
     console.warn('Payments environment validation failed:', errorMessage);
     // Don't throw in packages - use fallbacks for resilience
     return undefined as never;

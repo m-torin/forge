@@ -39,7 +39,8 @@ export const createWebhookHandler = (
       return NextResponse.json({ received: true });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      logError('Webhook error', error instanceof Error ? error : new Error(message), {
+      logError('Webhook error', {
+        error: error instanceof Error ? error : new Error(message),
         operation: 'webhook',
       });
 
@@ -73,11 +74,10 @@ export const createPaymentIntentUtil = async (params: {
       status: paymentIntent.status,
     };
   } catch (error) {
-    logError(
-      'Error creating payment intent',
-      error instanceof Error ? error : new Error(String(error)),
-      { operation: 'createPaymentIntent' },
-    );
+    logError('Error creating payment intent', {
+      error: error instanceof Error ? error : new Error(String(error)),
+      operation: 'createPaymentIntent',
+    });
     throw error;
   }
 };
@@ -104,7 +104,8 @@ export const createCustomerUtil = async (params: {
       name: customer.name,
     };
   } catch (error) {
-    logError('Error creating customer', error instanceof Error ? error : new Error(String(error)), {
+    logError('Error creating customer', {
+      error: error instanceof Error ? error : new Error(String(error)),
       operation: 'createCustomer',
     });
     throw error;

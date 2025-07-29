@@ -4,7 +4,6 @@
  */
 
 import { deepinfra } from '@ai-sdk/deepinfra';
-import { LanguageModel } from 'ai';
 
 /**
  * Deep Infra Model Capabilities
@@ -150,13 +149,19 @@ export const DEEPINFRA_MODELS = {
   // Microsoft models (as per official docs)
   'microsoft/WizardLM-2-8x22B': deepinfra('microsoft/WizardLM-2-8x22B'),
 
-  // Legacy aliases for backward compatibility
+  /** @deprecated Use full model names instead */
   'llama-3.1-70b': deepinfra('meta-llama/Meta-Llama-3.1-70B-Instruct'),
+  /** @deprecated Use full model names instead */
   'llama-3.1-34b': deepinfra('meta-llama/Meta-Llama-3.1-34B-Instruct'),
+  /** @deprecated Use full model names instead */
   'llama-3.1-8b': deepinfra('meta-llama/Meta-Llama-3.1-8B-Instruct'),
+  /** @deprecated Use full model names instead */
   'qwen-72b': deepinfra('Qwen/Qwen2.5-72B-Instruct'),
+  /** @deprecated Use full model names instead */
   'qwen-14b': deepinfra('Qwen/Qwen-14B-Chat'),
+  /** @deprecated Use full model names instead */
   'qwen-7b': deepinfra('Qwen/Qwen2-7B-Instruct'),
+  /** @deprecated Use full model names instead */
   'deepseek-67b': deepinfra('deepseek-ai/deepseek-67b-chat'),
   'deepseek-33b': deepinfra('deepseek-ai/deepseek-33b-chat'),
   'deepseek-7b': deepinfra('deepseek-ai/deepseek-7b-chat'),
@@ -197,8 +202,10 @@ export function getModelCapabilities(modelId: string): {
   };
 }
 
-export function isDeepInfraModel(
-  model: LanguageModel,
-): model is (typeof DEEPINFRA_MODELS)[DeepInfraModelId] {
-  return model.provider === 'deepinfra';
-}
+// Note: This function was removed because LanguageModel no longer has a `provider` property in AI SDK v5
+// If you need to check the model type, use the model ID directly or implement custom model identification
+// export function isDeepInfraModel(
+//   model: LanguageModel,
+// ): model is (typeof DEEPINFRA_MODELS)[DeepInfraModelId] {
+//   return model.provider === 'deepinfra';
+// }

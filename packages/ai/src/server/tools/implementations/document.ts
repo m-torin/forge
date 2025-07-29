@@ -24,7 +24,13 @@ const documentStore = new Map<
  * Create document tool implementation
  */
 export const createDocumentTool = createToolFromSpec('createDocument', {
-  execute: async ({ title, content, metadata, path: filePath }) => {
+  execute: async (params: unknown) => {
+    const {
+      title,
+      content,
+      metadata,
+      path: filePath,
+    } = params as { title: string; content: string; metadata?: Record<string, any>; path?: string };
     const id = randomUUID();
     const now = new Date().toISOString();
 
@@ -63,15 +69,12 @@ export const createDocumentTool = createToolFromSpec('createDocument', {
         // eslint-disable-next-line security/detect-non-literal-fs-filename -- Dynamic file writing for document storage
         await fs.writeFile(filePath, fileContent, 'utf8');
       } catch (error) {
-        logError(
-          'Failed to save document to file',
-          error instanceof Error ? error : new Error(String(error)),
-          {
-            operation: 'document_tool_save_file',
-            documentId: id,
-            filePath,
-          },
-        );
+        logError('Failed to save document to file', {
+          operation: 'document_tool_save_file',
+          documentId: id,
+          filePath,
+          error: error instanceof Error ? error : new Error(String(error)),
+        });
         // Don't fail the operation, just log the error
       }
     }
@@ -117,7 +120,13 @@ export const createDocumentTool = createToolFromSpec('createDocument', {
  * Update document tool implementation
  */
 export const updateDocumentTool = createToolFromSpec('updateDocument', {
-  execute: async ({ id, title, content, metadata }) => {
+  execute: async (params: unknown) => {
+    const { id, title, content, metadata } = params as {
+      id: string;
+      title?: string;
+      content?: string;
+      metadata?: Record<string, any>;
+    };
     const document = documentStore.get(id);
 
     if (!document) {
@@ -158,15 +167,12 @@ export const updateDocumentTool = createToolFromSpec('updateDocument', {
         // eslint-disable-next-line security/detect-non-literal-fs-filename -- Dynamic file writing for document updates
         await fs.writeFile(document.path, fileContent, 'utf8');
       } catch (error) {
-        logError(
-          'Failed to update document file',
-          error instanceof Error ? error : new Error(String(error)),
-          {
-            operation: 'document_tool_update_file',
-            documentId: id,
-            filePath: document.path,
-          },
-        );
+        logError('Failed to update document file', {
+          operation: 'document_tool_update_file',
+          documentId: id,
+          filePath: document.path,
+          error: error instanceof Error ? error : new Error(String(error)),
+        });
       }
     }
 
@@ -199,7 +205,12 @@ export const updateDocumentTool = createToolFromSpec('updateDocument', {
  * Search documents (simple implementation)
  */
 export const searchDocumentsTool = createToolFromSpec('searchKnowledge', {
-  execute: async ({ query, limit = 10, filters }) => {
+  execute: async (params: unknown) => {
+    const {
+      query,
+      limit = 10,
+      filters,
+    } = params as { query: string; limit?: number; filters?: Record<string, any> };
     const results: Array<{
       id: string;
       title: string;
@@ -230,7 +241,7 @@ export const searchDocumentsTool = createToolFromSpec('searchKnowledge', {
 
       if (filters?.tags && doc.metadata?.tags) {
         const docTags = Array.isArray(doc.metadata.tags) ? doc.metadata.tags : [];
-        const hasMatchingTag = filters.tags.some(tag => docTags.includes(tag));
+        const hasMatchingTag = filters.tags.some((tag: string) => docTags.includes(tag));
         if (!hasMatchingTag) continue;
       }
 

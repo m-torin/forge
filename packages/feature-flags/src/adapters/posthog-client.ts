@@ -1,6 +1,6 @@
 import posthog from 'posthog-js';
 
-import type { Adapter } from '@vercel/flags';
+import type { Adapter } from 'flags';
 import { safeEnv } from '../../env';
 
 export interface PostHogClientAdapterOptions {

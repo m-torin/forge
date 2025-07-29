@@ -1,187 +1,157 @@
 /**
- * Server-side observability exports for Next.js
- * Complete Next.js 15 integration for server components, API routes, and middleware
- *
- * This file provides server-side observability functionality specifically for Next.js applications.
- * Use this in server components, API routes, middleware, and Next.js instrumentation.
- *
- * For non-Next.js applications, use '@repo/observability/server' instead.
- *
- * @example
- * ```typescript
- * import {
- *   createServerObservability,
- *   register,
- *   withObservability
- * } from '@repo/observability/server/next';
- *
- * // In your instrumentation.ts
- * export { register, onRequestError } from '@repo/observability/server/next';
- *
- * // In your next.config.ts
- * export default withObservability(nextConfig, {
- *   sentry: { org: 'my-org', project: 'my-project' }
- * };
- * ```
+ * Next.js server-specific observability export
  */
 
-// Import only the manager and types - providers are lazy loaded
-import { isEdgeRuntime } from '../env';
-import { createServerObservabilityManager } from './server/utils/manager';
-import { ObservabilityConfig, ObservabilityManager, ProviderRegistry } from './shared/types/types';
+import { env } from '../env';
+import { ObservabilityBuilder } from './factory/builder';
+import { createBetterStackPlugin } from './plugins/betterstack';
+import { env as betterStackEnv } from './plugins/betterstack/env';
+import { createConsoleServerPlugin } from './plugins/console';
+import { createLogTapePlugin } from './plugins/logtape';
+import { env as logtapeEnv } from './plugins/logtape/env';
+import { createSentryPlugin } from './plugins/sentry';
+import { env as sentryEnv } from './plugins/sentry/env';
 
-// ============================================================================
-// NEXT.JS-SPECIFIC PROVIDER REGISTRY
-// ============================================================================
+/**
+ * Create auto-configured observability for Next.js server
+ */
+export async function createServerObservability() {
+  const builder = ObservabilityBuilder.create();
 
-// Next.js-specific provider registry with smart runtime detection
-const NEXTJS_SERVER_PROVIDERS: ProviderRegistry = {
-  console: async () => {
-    const { ConsoleProvider } = await import('./shared/providers/console-provider');
-    return new ConsoleProvider();
-  },
-  // OpenTelemetry providers with edge runtime detection
-  opentelemetry: async () => {
-    // Only load in Node.js runtime, not Edge runtime
-    if (isEdgeRuntime()) {
-      throw new Error('OpenTelemetry not supported in Edge runtime');
-    }
-    const { VercelOTelProvider } = await import('./server/providers/nodejs/vercel-otel-provider');
-    return new VercelOTelProvider();
-  },
-  otel: async () => {
-    // Only load in Node.js runtime, not Edge runtime
-    if (isEdgeRuntime()) {
-      throw new Error('OpenTelemetry not supported in Edge runtime');
-    }
-    const { VercelOTelProvider } = await import('./server/providers/nodejs/vercel-otel-provider');
-    return new VercelOTelProvider();
-  },
-  sentry: async () => {
-    const { SentryServerProvider } = await import('./server/providers/sentry-server');
-    return new SentryServerProvider();
-  },
-  // Edge-compatible Sentry provider (no OpenTelemetry dependencies)
-  'sentry-edge': async () => {
-    const { SentryEdgeProvider } = await import('./server/providers/sentry-edge');
-    return new SentryEdgeProvider();
-  },
-  // Vercel OpenTelemetry provider with runtime detection
-  'vercel-otel': async () => {
-    // Only load in Node.js runtime, not Edge runtime
-    if (isEdgeRuntime()) {
-      throw new Error('Vercel OpenTelemetry not supported in Edge runtime');
-    }
-    const { VercelOTelProvider } = await import('./server/providers/nodejs/vercel-otel-provider');
-    return new VercelOTelProvider();
-  },
-  // Logtail provider (Next.js server-side)
-  logtail: async () => {
-    const { LogtailServerNextProvider } = await import('./server/providers/logtail-server-next');
-    return new LogtailServerNextProvider();
-  },
-  grafanaMonitoring: async () => {
-    // Grafana monitoring works in both Edge and Node.js runtime
-    const { GrafanaServerProvider } = await import('./server/providers/grafana-server');
-    return new GrafanaServerProvider();
-  },
+  // Console logging control
+  const isDevelopment =
+    env.NEXT_PUBLIC_NODE_ENV === 'development' || process.env.NODE_ENV === 'development';
+  const enableConsole =
+    env.NEXT_PUBLIC_OBSERVABILITY_CONSOLE_ENABLED ?? // Explicit control
+    isDevelopment ?? // Auto in dev
+    env.NEXT_PUBLIC_OBSERVABILITY_DEBUG; // Debug mode
+
+  // Always add console plugin, control via enabled flag
+  builder.withPlugin(
+    createConsoleServerPlugin({
+      prefix: '[Next.js Server]',
+      enabled: enableConsole,
+    }),
+  );
+
+  // Auto-activate Sentry if DSN is provided
+  const sentryDSN = sentryEnv.SENTRY_DSN || sentryEnv.NEXT_PUBLIC_SENTRY_DSN;
+  if (sentryDSN) {
+    const sentry = createSentryPlugin({
+      dsn: sentryDSN,
+    });
+    await sentry.initialize();
+    builder.withPlugin(sentry);
+  }
+
+  // Auto-activate Better Stack if source token is provided
+  const betterStackToken =
+    betterStackEnv.BETTER_STACK_SOURCE_TOKEN ||
+    betterStackEnv.BETTERSTACK_SOURCE_TOKEN ||
+    betterStackEnv.LOGTAIL_SOURCE_TOKEN;
+
+  if (betterStackToken) {
+    const betterstack = createBetterStackPlugin({
+      sourceToken: betterStackToken,
+    });
+    await betterstack.initialize();
+    builder.withPlugin(betterstack);
+  }
+
+  // LogTape requires explicit enablement due to complex sink configuration
+  if (logtapeEnv.LOGTAPE_ENABLED) {
+    const logtape = createLogTapePlugin({
+      sinks: {
+        console: logtapeEnv.LOGTAPE_CONSOLE_ENABLED,
+        file: logtapeEnv.LOGTAPE_FILE_PATH ? { path: logtapeEnv.LOGTAPE_FILE_PATH } : undefined,
+        cloudwatch: logtapeEnv.LOGTAPE_CLOUDWATCH_LOG_GROUP
+          ? {
+              logGroup: logtapeEnv.LOGTAPE_CLOUDWATCH_LOG_GROUP,
+              region: logtapeEnv.LOGTAPE_CLOUDWATCH_REGION || 'us-east-1',
+            }
+          : undefined,
+        sentry: logtapeEnv.LOGTAPE_SENTRY_DSN ? { dsn: logtapeEnv.LOGTAPE_SENTRY_DSN } : undefined,
+      },
+    });
+    await logtape.initialize();
+    builder.withPlugin(logtape);
+  }
+
+  return builder.build();
+}
+
+// Lazy initialization for the observability instance
+let observabilityInstance: Awaited<ReturnType<typeof createServerObservability>> | null = null;
+
+/**
+ * Get or create the observability instance
+ */
+export async function getObservability() {
+  if (!observabilityInstance) {
+    observabilityInstance = await createServerObservability();
+  }
+  return observabilityInstance;
+}
+
+// Export types and utilities
+export * from './core/types';
+export { createObservability } from './factory';
+export { ObservabilityBuilder } from './factory/builder';
+export { ObservabilityManager } from './factory/index';
+
+// Re-export plugins for direct access (excluding conflicting exports)
+export { BetterStackPlugin } from './plugins/betterstack';
+export { ConsolePlugin } from './plugins/console';
+export { LogTapePlugin } from './plugins/logtape';
+export { SentryPlugin } from './plugins/sentry';
+export { SentryMicroFrontendPlugin } from './plugins/sentry-microfrontend';
+
+// Re-export plugin-specific types with aliases to avoid conflicts
+export type { Env as BetterStackEnv, BetterStackPluginConfig } from './plugins/betterstack';
+export type { ConsolePluginConfig } from './plugins/console';
+export type { Env as LogTapeEnv, LogTapePluginConfig } from './plugins/logtape';
+export type { Env as SentryEnv, SentryPluginConfig } from './plugins/sentry';
+export type {
+  MicroFrontendMode,
+  SentryMicroFrontendConfig,
+  ZoneConfig,
+} from './plugins/sentry-microfrontend';
+
+// Re-export micro frontend presets
+export {
+  createBackstageHostPreset,
+  createBackstageMicroFrontendPreset,
+  defaultBackstageZones,
+} from './factory/presets';
+
+// Async logger functions that handle initialization
+export const logDebug = async (message: string, context?: any) => {
+  const obs = await getObservability();
+  return obs.logDebug(message, context);
 };
 
-// ============================================================================
-// NEXT.JS SERVER OBSERVABILITY FUNCTIONS
-// ============================================================================
+export const logInfo = async (message: string, context?: any) => {
+  const obs = await getObservability();
+  return obs.logInfo(message, context);
+};
 
+export const logWarn = async (message: string, context?: any) => {
+  const obs = await getObservability();
+  return obs.logWarn(message, context);
+};
+
+export const logError = async (message: string | Error, context?: any) => {
+  const obs = await getObservability();
+  return obs.logError(message, context);
+};
+
+// Legacy function for backward compatibility (no-op)
 /**
- * Create and initialize a Next.js server observability instance
- * This overrides the standard server version to use Next.js-specific providers
+ * @deprecated Configuration now happens through the observability system
  */
-export async function createServerObservability(
-  config: ObservabilityConfig,
-): Promise<ObservabilityManager> {
-  const manager = createServerObservabilityManager(config, NEXTJS_SERVER_PROVIDERS);
-  await manager.initialize();
-  return manager;
-}
+export const configureLogger = (_config?: any) => {
+  // No-op: Configuration now happens through the observability system
+};
 
-/**
- * Create a Next.js server observability instance without initializing
- * Useful when you need to control initialization timing
- */
-export function createServerObservabilityUninitialized(
-  config: ObservabilityConfig,
-): ObservabilityManager {
-  return createServerObservabilityManager(config, NEXTJS_SERVER_PROVIDERS);
-}
-
-// ============================================================================
-// RE-EXPORT TYPES AND UTILITIES (avoid importing providers)
-// ============================================================================
-
-export { getObservabilityConfig, mergeObservabilityConfig } from './next/config';
-
-export {
-  createObservabilityConfig,
-  // type VercelOTelBuildOptions, // Disabled to prevent OpenTelemetry bundling
-  withLogging,
-  withObservability,
-  withSentry,
-  type SentryBuildOptions,
-} from './next/config-wrappers';
-// Export instrumentation functions separately to avoid circular dependency
-export { onRequestError, register } from './next/instrumentation';
-// OpenTelemetry instrumentation helpers (Node.js runtime only) - removed to prevent edge runtime bundling
-
-// Logtail types for backward compatibility
-export type { LogtailConfig, LogtailOptions } from './shared/types/logtail-types';
-
-// Error handling utilities
-export {
-  createErrorBoundaryHandler,
-  createSafeFunction,
-  parseAndCaptureError,
-  parseError,
-} from './server/utils/error';
-
-// New simplified logger functions (recommended)
-export { configureLogger, logDebug, logError, logInfo, logWarn } from './logger-functions';
-
-// OpenTelemetry types (only for Node.js runtime) - removed to prevent edge runtime bundling
-
-// ============================================================================
-// NEXT.JS SERVER INSTRUMENTATION
-// ============================================================================
-
-// Configuration utilities
-export { debugConfig, validateConfig } from './server/utils/validation';
-
-export type { ConsoleConfig, ConsoleOptions } from './shared/types/console-types';
-
-// ============================================================================
-// NEXT.JS CONFIG WRAPPERS
-// ============================================================================
-
-// Provider-specific types
-export type {
-  GrafanaBusinessMetric,
-  GrafanaHealthCheck,
-  GrafanaLogEntry,
-  GrafanaMetric,
-  GrafanaMonitoringConfig,
-  GrafanaProviderConfig,
-  GrafanaTrace,
-} from './shared/types/grafana-types';
-export type { SentryConfig, SentryOptions, SentryUser } from './shared/types/sentry-types';
-
-// ============================================================================
-// NEXT.JS SERVER CONFIGURATION
-// ============================================================================
-
-// Re-export types only
-export type {
-  Breadcrumb,
-  ObservabilityConfig,
-  ObservabilityContext,
-  ObservabilityManager,
-  ObservabilityProvider,
-  ObservabilityProviderConfig,
-} from './shared/types/types';
+// Re-export type
+export type LogContext = Record<string, any>;

@@ -27,8 +27,11 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
   },
   onValidationError: error => {
-    console.warn('Orchestration environment validation failed:', error.message);
+    if (process.env.NODE_ENV !== 'test') {
+      console.warn('Orchestration environment validation failed:', error);
+    }
     // Don't throw in packages - use fallbacks for resilience
+    return undefined as never;
   },
 });
 

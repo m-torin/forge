@@ -1,35 +1,46 @@
 import { createEnv } from '@t3-oss/env-nextjs';
 import { z } from 'zod/v4';
 
-// Direct export for Next.js webpack inlining
-export const env = createEnv({
-  server: {
-    // Always optional for notifications
-    KNOCK_SECRET_API_KEY: z.string().min(1).optional(),
+// Direct export for Next.js webpack inlining - wrapped in try/catch for resilience
+let env: any = null;
 
-    // Environment detection
-    NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  },
-  client: {
-    // Always optional for notifications
-    NEXT_PUBLIC_KNOCK_API_KEY: z.string().min(1).optional(),
-    NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID: z.string().min(1).optional(),
-    NEXT_PUBLIC_NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  },
-  runtimeEnv: {
-    KNOCK_SECRET_API_KEY: process.env.KNOCK_SECRET_API_KEY || undefined,
-    NEXT_PUBLIC_KNOCK_API_KEY: process.env.NEXT_PUBLIC_KNOCK_API_KEY || undefined,
-    NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID: process.env.NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID || undefined,
-    NODE_ENV: process.env.NODE_ENV,
-    NEXT_PUBLIC_NODE_ENV: process.env.NEXT_PUBLIC_NODE_ENV,
-  },
-  onValidationError: error => {
-    const message = Array.isArray(error) ? error.map(e => e.message).join(', ') : String(error);
-    console.warn('Notifications environment validation failed:', message);
-    // Don't throw in packages - use fallbacks for resilience
-    return undefined as never;
-  },
-});
+try {
+  env = createEnv({
+    server: {
+      // Always optional for notifications
+      KNOCK_SECRET_API_KEY: z.string().min(1).optional(),
+
+      // Environment detection
+      NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+    },
+    client: {
+      // Always optional for notifications
+      NEXT_PUBLIC_KNOCK_API_KEY: z.string().min(1).optional(),
+      NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID: z.string().min(1).optional(),
+      NEXT_PUBLIC_NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+    },
+    runtimeEnv: {
+      KNOCK_SECRET_API_KEY: process.env.KNOCK_SECRET_API_KEY || undefined,
+      NEXT_PUBLIC_KNOCK_API_KEY: process.env.NEXT_PUBLIC_KNOCK_API_KEY || undefined,
+      NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID: process.env.NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID || undefined,
+      NODE_ENV: process.env.NODE_ENV,
+      NEXT_PUBLIC_NODE_ENV: process.env.NEXT_PUBLIC_NODE_ENV,
+    },
+    onValidationError: (error: any) => {
+      const message = Array.isArray(error)
+        ? error.map((e: any) => e.message).join(', ')
+        : String(error);
+      console.warn('Notifications environment validation failed:', message);
+      // Don't throw in packages - use fallbacks for resilience
+      return undefined as never;
+    },
+  });
+} catch (error) {
+  console.warn('Failed to create notifications environment:', error);
+  env = null;
+}
+
+export { env };
 
 // Helper for non-Next.js contexts (Node.js, workers, tests)
 export function safeEnv() {
@@ -61,4 +72,4 @@ export function isProduction(): boolean {
 }
 
 // Export type for better DX
-export type Env = typeof env;
+export type Env = NonNullable<typeof env>;

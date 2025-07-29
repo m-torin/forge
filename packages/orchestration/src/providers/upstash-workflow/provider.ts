@@ -5,7 +5,7 @@
 
 import { nanoid } from 'nanoid';
 
-import { logError, logInfo } from '@repo/observability/shared-env';
+import { logError, logInfo } from '@repo/observability/server/next';
 
 import {
   ListExecutionsOptions,
@@ -59,13 +59,9 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
       });
     } catch (_error) {
       // Fallback for test environments
-      logError(
-        'QStash client not available, using mock implementation',
-        new Error('QStash client fallback'),
-        {
-          operation: 'qstash_client_fallback',
-        },
-      );
+      logError(new Error('QStash client not available, using mock implementation'), {
+        operation: 'qstash_client_fallback',
+      });
       this.qstash = {
         publishJSON: () =>
           Promise.resolve({ messageId: 'mock_msg_' + Math.random().toString(36).substring(7) }),
@@ -196,13 +192,9 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
       // Fallback for test environments
       // Fire and forget logging - intentionally not awaited
 
-      logError(
-        'Workflow serve not available, using mock implementation',
-        new Error('Workflow serve fallback'),
-        {
-          operation: 'workflow_serve_fallback',
-        },
-      );
+      logError(new Error('Workflow serve not available, using mock implementation'), {
+        operation: 'workflow_serve_fallback',
+      });
       return {
         GET: async () => Response.json({ status: 'ok' }, { status: 200 }),
         POST: async (request: any) => {

@@ -123,7 +123,7 @@ describe('perplexity MCP Transport', () => {
       expect(config.transport.type).toBe('stdio');
       expect(typeof config.transport.command).toBe('string');
       expect(Array.isArray(config.transport.args)).toBeTruthy();
-      expect(config.transport.command.length).toBeGreaterThan(0);
+      expect(config.transport.command?.length).toBeGreaterThan(0);
     });
   });
 

@@ -2,11 +2,12 @@
   "extends": "@repo/config/typescript/nextjs.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "types": ["vitest/globals"],
     "paths": {
-      "@repo/*": ["../*"]
-    }
+      "@repo/*": ["../*"],
+      "@/*": ["./src/*"]
+    },
+    "types": ["vitest/globals"]
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "types/**/*.d.ts"],
-  "exclude": ["node_modules", "__tests__"]
+  "include": ["**/*.ts", "**/*.tsx", "src/types/better-auth.d.ts"],
+  "exclude": ["node_modules"]
 }

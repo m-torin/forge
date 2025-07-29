@@ -8,6 +8,44 @@ import merge from 'lodash.merge';
 import { Metadata, MetadataRoute, Viewport } from 'next';
 import 'server-only';
 
+// Type extensions for Next.js metadata properties that should exist but might be missing
+declare module 'next' {
+  interface OpenGraphMetadata {
+    type?:
+      | 'website'
+      | 'article'
+      | 'profile'
+      | 'book'
+      | 'music.song'
+      | 'music.album'
+      | 'video.movie'
+      | 'video.episode'
+      | 'video.tv_show'
+      | 'video.other';
+    publishedTime?: string;
+    modifiedTime?: string;
+    expirationTime?: string;
+    authors?: string | string[];
+    section?: string;
+    tags?: string | string[];
+    username?: string;
+    firstName?: string;
+    lastName?: string;
+    article?: {
+      authors?: string[];
+      expirationTime?: string;
+      modifiedTime?: string;
+      publishedTime?: string;
+      section?: string;
+      tags?: string[];
+    };
+  }
+
+  interface TwitterMetadata {
+    card?: 'summary' | 'summary_large_image' | 'app' | 'player';
+  }
+}
+
 // Re-export all server-side utilities
 export { createStructuredData, structuredData } from './server';
 export type { StructuredDataType } from './server';

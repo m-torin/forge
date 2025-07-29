@@ -1,10 +1,19 @@
 import { logError, logWarn } from '@repo/observability/server/next';
 import { experimental_createMCPClient } from 'ai';
 import { Experimental_StdioMCPTransport } from 'ai/mcp-stdio';
+import {
+  AISDKCompatibleMCPError,
+  MCPErrorHandlerFactory,
+  MCPErrorUtils,
+} from './ai-sdk-error-integration';
 
 export interface MCPClientConfig {
   name: string;
   transport: MCPTransportConfig;
+  retry?: MCPRetryConfig;
+  timeoutMs?: number;
+  gracefulDegradation?: boolean;
+  healthCheck?: MCPHealthCheckConfig;
 }
 
 export interface MCPTransportConfig {
@@ -35,6 +44,72 @@ export interface MCPClient {
 export type MCPTransport =
   | Experimental_StdioMCPTransport
   | { type: 'sse'; url: string; headers?: Record<string, string> };
+
+/**
+ * Retry configuration for MCP operations
+ */
+export interface MCPRetryConfig {
+  maxAttempts: number;
+  initialDelayMs: number;
+  maxDelayMs: number;
+  backoffMultiplier: number;
+  retryableErrors: string[];
+}
+
+/**
+ * Default retry configuration
+ */
+export const DEFAULT_RETRY_CONFIG: MCPRetryConfig = {
+  maxAttempts: 3,
+  initialDelayMs: 1000,
+  maxDelayMs: 10000,
+  backoffMultiplier: 2,
+  retryableErrors: ['ECONNREFUSED', 'ENOTFOUND', 'TIMEOUT', 'NETWORK_ERROR', 'CONNECTION_LOST'],
+};
+
+/**
+ * Health check configuration for MCP servers
+ */
+export interface MCPHealthCheckConfig {
+  enabled: boolean;
+  intervalMs: number;
+  timeoutMs: number;
+  failureThreshold: number;
+  recoveryThreshold: number;
+}
+
+/**
+ * Default health check configuration
+ */
+export const DEFAULT_HEALTH_CHECK_CONFIG: MCPHealthCheckConfig = {
+  enabled: true,
+  intervalMs: 60000, // 1 minute
+  timeoutMs: 5000, // 5 seconds
+  failureThreshold: 3,
+  recoveryThreshold: 2,
+};
+
+/**
+ * Health status for MCP servers
+ */
+export enum MCPHealthStatus {
+  HEALTHY = 'healthy',
+  DEGRADED = 'degraded',
+  UNHEALTHY = 'unhealthy',
+  UNKNOWN = 'unknown',
+}
+
+/**
+ * Health check result
+ */
+export interface MCPHealthCheckResult {
+  status: MCPHealthStatus;
+  lastCheck: Date;
+  consecutiveFailures: number;
+  consecutiveSuccesses: number;
+  responseTimeMs?: number;
+  error?: string;
+}
 
 /**
  * Result type for MCP client creation
@@ -70,6 +145,319 @@ export class MCPTransportError extends Error {
     this.name = 'MCPTransportError';
   }
 }
+
+export class MCPRetryableError extends Error {
+  constructor(
+    message: string,
+    public readonly attempt: number,
+    public readonly maxAttempts: number,
+    public readonly originalError?: Error,
+  ) {
+    super(message);
+    this.name = 'MCPRetryableError';
+  }
+}
+
+/**
+ * Utility function to check if an error is retryable
+ */
+function isRetryableError(error: Error, retryableErrors: string[]): boolean {
+  // Check error message for known patterns
+  const errorMessage = error.message.toUpperCase();
+  const errorCode = (error as any).code;
+
+  return retryableErrors.some(
+    pattern => errorMessage.includes(pattern.toUpperCase()) || errorCode === pattern,
+  );
+}
+
+/**
+ * Utility function to calculate exponential backoff delay
+ */
+function calculateDelay(attempt: number, config: MCPRetryConfig): number {
+  const delay = config.initialDelayMs * Math.pow(config.backoffMultiplier, attempt - 1);
+  return Math.min(delay, config.maxDelayMs);
+}
+
+/**
+ * Utility function to sleep for a given duration
+ */
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Timeout wrapper that cancels operations after a specified duration
+ */
+async function withTimeout<T>(
+  operation: () => Promise<T>,
+  timeoutMs: number,
+  context: string = 'MCP operation',
+): Promise<T> {
+  const timeoutPromise = new Promise<never>((_resolve, reject) => {
+    setTimeout(() => {
+      reject(new Error(`${context} timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+  });
+
+  return Promise.race([operation(), timeoutPromise]);
+}
+
+/**
+ * Enhanced retry wrapper with exponential backoff
+ */
+async function withRetry<T>(
+  operation: () => Promise<T>,
+  config: MCPRetryConfig = DEFAULT_RETRY_CONFIG,
+  context: string = 'MCP operation',
+): Promise<T> {
+  let lastError: Error | undefined;
+
+  for (let attempt = 1; attempt <= config.maxAttempts; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+
+      // If this is the last attempt or error is not retryable, throw
+      if (attempt === config.maxAttempts || !isRetryableError(lastError, config.retryableErrors)) {
+        logError(`${context} failed after ${attempt} attempts`, {
+          operation: 'mcp_retry_exhausted',
+          metadata: {
+            context,
+            attempt,
+            maxAttempts: config.maxAttempts,
+            error: lastError.message,
+          },
+          error: lastError,
+        });
+        throw lastError;
+      }
+
+      // Calculate delay and wait before retry
+      const delay = calculateDelay(attempt, config);
+      logWarn(
+        `${context} failed, retrying in ${delay}ms (attempt ${attempt}/${config.maxAttempts})`,
+        {
+          operation: 'mcp_retry_attempt',
+          metadata: {
+            context,
+            attempt,
+            maxAttempts: config.maxAttempts,
+            delayMs: delay,
+            error: lastError.message,
+          },
+        },
+      );
+
+      await sleep(delay);
+    }
+  }
+
+  // This should never be reached, but TypeScript needs this
+  throw lastError || new Error(`${context} failed after all retry attempts`);
+}
+
+/**
+ * Combined retry and timeout wrapper
+ */
+export async function withRetryAndTimeout<T>(
+  operation: () => Promise<T>,
+  retryConfig: MCPRetryConfig = DEFAULT_RETRY_CONFIG,
+  timeoutMs?: number,
+  context: string = 'MCP operation',
+): Promise<T> {
+  const wrappedOperation = timeoutMs ? () => withTimeout(operation, timeoutMs, context) : operation;
+
+  return withRetry(wrappedOperation, retryConfig, context);
+}
+
+/**
+ * MCP Server Health Monitor
+ * Tracks health status of MCP servers and provides graceful degradation
+ */
+export class MCPHealthMonitor {
+  private healthStatuses = new Map<string, MCPHealthCheckResult>();
+  private healthCheckIntervals = new Map<string, NodeJS.Timeout>();
+
+  /**
+   * Start health monitoring for a client configuration
+   */
+  startMonitoring(config: MCPClientConfig): void {
+    const healthConfig = config.healthCheck || DEFAULT_HEALTH_CHECK_CONFIG;
+    if (!healthConfig.enabled) return;
+
+    // Initialize health status
+    this.healthStatuses.set(config.name, {
+      status: MCPHealthStatus.UNKNOWN,
+      lastCheck: new Date(),
+      consecutiveFailures: 0,
+      consecutiveSuccesses: 0,
+    });
+
+    // Set up periodic health checks
+    const intervalId = setInterval(async () => {
+      await this.performHealthCheck(config);
+    }, healthConfig.intervalMs);
+
+    this.healthCheckIntervals.set(config.name, intervalId);
+
+    // Perform initial health check
+    this.performHealthCheck(config);
+  }
+
+  /**
+   * Stop health monitoring for a client
+   */
+  stopMonitoring(clientName: string): void {
+    const intervalId = this.healthCheckIntervals.get(clientName);
+    if (intervalId) {
+      clearInterval(intervalId);
+      this.healthCheckIntervals.delete(clientName);
+    }
+    this.healthStatuses.delete(clientName);
+  }
+
+  /**
+   * Get current health status for a client
+   */
+  getHealthStatus(clientName: string): MCPHealthCheckResult | undefined {
+    return this.healthStatuses.get(clientName);
+  }
+
+  /**
+   * Check if a client is currently healthy
+   */
+  isHealthy(clientName: string): boolean {
+    const status = this.healthStatuses.get(clientName);
+    return status?.status === MCPHealthStatus.HEALTHY;
+  }
+
+  /**
+   * Check if a client should be excluded due to poor health
+   */
+  shouldExclude(clientName: string): boolean {
+    const status = this.healthStatuses.get(clientName);
+    return status?.status === MCPHealthStatus.UNHEALTHY;
+  }
+
+  /**
+   * Perform a health check for a specific client
+   */
+  private async performHealthCheck(config: MCPClientConfig): Promise<void> {
+    const healthConfig = config.healthCheck || DEFAULT_HEALTH_CHECK_CONFIG;
+    const startTime = Date.now();
+    let result: MCPHealthCheckResult;
+
+    try {
+      // Attempt to create a temporary client and get tools
+      await withTimeout(
+        async () => {
+          const transport = createTransportFromConfig(config.transport);
+          const tempClient = (await experimental_createMCPClient({ transport })) as any;
+
+          try {
+            await tempClient.tools();
+            await tempClient.close();
+          } catch (toolError) {
+            await tempClient.close();
+            throw toolError;
+          }
+        },
+        healthConfig.timeoutMs,
+        `Health check for ${config.name}`,
+      );
+
+      // Health check succeeded
+      const responseTime = Date.now() - startTime;
+      const currentStatus = this.healthStatuses.get(config.name);
+
+      result = {
+        status: MCPHealthStatus.HEALTHY,
+        lastCheck: new Date(),
+        consecutiveFailures: 0,
+        consecutiveSuccesses: (currentStatus?.consecutiveSuccesses || 0) + 1,
+        responseTimeMs: responseTime,
+      };
+    } catch (error) {
+      // Health check failed
+      const currentStatus = this.healthStatuses.get(config.name);
+      const consecutiveFailures = (currentStatus?.consecutiveFailures || 0) + 1;
+
+      let newStatus: MCPHealthStatus;
+      if (consecutiveFailures >= healthConfig.failureThreshold) {
+        newStatus = MCPHealthStatus.UNHEALTHY;
+      } else if (consecutiveFailures > 1) {
+        newStatus = MCPHealthStatus.DEGRADED;
+      } else {
+        newStatus = MCPHealthStatus.DEGRADED;
+      }
+
+      result = {
+        status: newStatus,
+        lastCheck: new Date(),
+        consecutiveFailures,
+        consecutiveSuccesses: 0,
+        error: error instanceof Error ? error.message : String(error),
+      };
+
+      logWarn(`Health check failed for MCP client '${config.name}'`, {
+        operation: 'mcp_health_check_failed',
+        metadata: {
+          clientName: config.name,
+          consecutiveFailures,
+          status: newStatus,
+          error: result.error,
+        },
+      });
+    }
+
+    // Update health status
+    this.healthStatuses.set(config.name, result);
+
+    // Log health status changes
+    const previousStatus = this.healthStatuses.get(config.name);
+    if (previousStatus && previousStatus.status !== result.status) {
+      logWarn(
+        `MCP client '${config.name}' health status changed: ${previousStatus.status} → ${result.status}`,
+        {
+          operation: 'mcp_health_status_change',
+          metadata: {
+            clientName: config.name,
+            previousStatus: previousStatus.status,
+            newStatus: result.status,
+            consecutiveFailures: result.consecutiveFailures,
+            consecutiveSuccesses: result.consecutiveSuccesses,
+          },
+        },
+      );
+    }
+  }
+
+  /**
+   * Get summary of all client health statuses
+   */
+  getHealthSummary(): Record<string, MCPHealthCheckResult> {
+    return Object.fromEntries(this.healthStatuses);
+  }
+
+  /**
+   * Cleanup all monitoring
+   */
+  cleanup(): void {
+    // Clear all intervals
+    for (const intervalId of this.healthCheckIntervals.values()) {
+      clearInterval(intervalId);
+    }
+    this.healthCheckIntervals.clear();
+    this.healthStatuses.clear();
+  }
+}
+
+/**
+ * Global health monitor instance
+ */
+export const globalMCPHealthMonitor = new MCPHealthMonitor();
 
 /**
  * Validate transport configuration at runtime
@@ -155,30 +543,106 @@ export function createTransportFromConfig(transportConfig: MCPTransportConfig): 
 }
 
 /**
- * Per-request MCP client manager following Next.js documentation pattern
- * Creates clients per request and cleans them up automatically
+ * Per-request MCP client manager following Next.js documentation pattern with AI SDK v5 integration
+ * Creates clients per request and cleans them up automatically with proper error handling
  */
 export class MCPRequestManager {
   public clients: MCPClient[] = [];
   private tools: Record<string, any> = {};
+  private errorHandlers: Map<string, MCPErrorHandlerFactory> = new Map();
 
   async addClient(config: MCPClientConfig): Promise<void> {
-    try {
-      const transport = createTransportFromConfig(config.transport);
-      const client = (await experimental_createMCPClient({ transport })) as any;
-      this.clients.push(client);
+    const retryConfig = config.retry || DEFAULT_RETRY_CONFIG;
+    const timeoutMs = config.timeoutMs || 30000; // 30 second default timeout
+    const context = `MCP client creation (${config.name})`;
 
-      // Get tools from this client and merge them
-      const clientTools = await client.tools();
-      // Merge tools directly (later tools override earlier ones with same name)
-      Object.assign(this.tools, clientTools);
-    } catch (error) {
-      throw new MCPConnectionError(
-        `Failed to create MCP client '${config.name}'`,
-        config.name,
-        config.transport.type,
-        error instanceof Error ? error : new Error(String(error)),
+    // Create AI SDK error handler for this client
+    const errorHandler = new MCPErrorHandlerFactory(config.name, context);
+    this.errorHandlers.set(config.name, errorHandler);
+
+    // Check health status if health monitoring is enabled
+    if (globalMCPHealthMonitor.shouldExclude(config.name)) {
+      if (config.gracefulDegradation) {
+        logWarn(`Skipping unhealthy MCP client '${config.name}'`, {
+          operation: 'mcp_skip_unhealthy',
+          metadata: {
+            clientName: config.name,
+            healthStatus: globalMCPHealthMonitor.getHealthStatus(config.name),
+          },
+        });
+        return;
+      } else {
+        throw new AISDKCompatibleMCPError(
+          `MCP client '${config.name}' is marked as unhealthy`,
+          'connection-error',
+          undefined,
+          {
+            clientName: config.name,
+            transportType: config.transport.type,
+            healthStatus: globalMCPHealthMonitor.getHealthStatus(config.name),
+          },
+          true, // This is recoverable - health might improve
+        );
+      }
+    }
+
+    try {
+      await withRetryAndTimeout(
+        async () => {
+          const transport = createTransportFromConfig(config.transport);
+          const client = (await experimental_createMCPClient({ transport })) as any;
+          this.clients.push(client);
+
+          // Get tools from this client and merge them with retry
+          const clientTools = await withRetryAndTimeout(
+            () => client.tools(),
+            retryConfig,
+            timeoutMs,
+            `MCP tools retrieval (${config.name})`,
+          );
+
+          // Merge tools directly (later tools override earlier ones with same name)
+          Object.assign(this.tools, clientTools);
+
+          // Start health monitoring for this client
+          globalMCPHealthMonitor.startMonitoring(config);
+        },
+        retryConfig,
+        timeoutMs,
+        context,
       );
+    } catch (error) {
+      const originalError = error instanceof Error ? error : new Error(String(error));
+      const aiError = new AISDKCompatibleMCPError(
+        `Failed to create MCP client '${config.name}' after retries`,
+        'connection-error',
+        originalError,
+        {
+          clientName: config.name,
+          transportType: config.transport.type,
+          retryAttempts: retryConfig.maxAttempts,
+          timeoutMs,
+        },
+        MCPErrorUtils.isRecoverableError(originalError),
+      );
+
+      // If graceful degradation is enabled, log and continue
+      if (config.gracefulDegradation) {
+        logWarn(`MCP client '${config.name}' failed, continuing with degraded functionality`, {
+          operation: 'mcp_graceful_degradation',
+          metadata: {
+            clientName: config.name,
+            transportType: config.transport.type,
+            error: aiError.message,
+            errorType: aiError.errorType,
+            recoverable: aiError.recoverable,
+            ...MCPErrorUtils.extractErrorMetadata(originalError),
+          },
+        });
+        return;
+      }
+
+      throw aiError;
     }
   }
 
@@ -204,6 +668,66 @@ export class MCPRequestManager {
     await Promise.all(closePromises);
     this.clients = [];
     this.tools = {};
+  }
+
+  /**
+   * Get health summary for all managed clients
+   */
+  getHealthSummary(): Record<string, MCPHealthCheckResult> {
+    return globalMCPHealthMonitor.getHealthSummary();
+  }
+
+  /**
+   * Create AI SDK v5 compatible error handlers for all managed clients
+   */
+  createAISDKErrorHandlers(): {
+    onUncaughtError: (error: Error) => void;
+    onFinish: () => Promise<void>;
+    onStreamError: (error: Error) => void;
+  } {
+    const onUncaughtError = (error: Error) => {
+      // Create a composite error handler that handles all clients
+      for (const [_clientName, errorHandler] of this.errorHandlers.entries()) {
+        const handler = errorHandler.createUncaughtErrorHandler(() => this.close(), {
+          enableRecovery: true,
+          maxRecoveryAttempts: 1,
+        });
+        handler(error);
+      }
+    };
+
+    const onFinish = async () => {
+      try {
+        await this.close();
+      } catch (error) {
+        // Convert to AI SDK compatible error
+        const aiError = new AISDKCompatibleMCPError(
+          'Failed to close MCP clients on finish',
+          'resource-exhausted',
+          error instanceof Error ? error : new Error(String(error)),
+          {
+            clientCount: this.clients.length,
+            operation: 'finish_cleanup',
+          },
+          false,
+        );
+        throw aiError;
+      }
+    };
+
+    const onStreamError = (error: Error) => {
+      // Handle stream errors for all clients
+      for (const [_clientName, errorHandler] of this.errorHandlers.entries()) {
+        const handler = errorHandler.createStreamErrorHandler(() => this.close());
+        handler(error);
+      }
+    };
+
+    return {
+      onUncaughtError,
+      onFinish,
+      onStreamError,
+    };
   }
 }
 
@@ -271,51 +795,73 @@ export async function createMCPToolsFromConfigs(
 
   // Create all clients in parallel for better performance
   const clientPromises = configs.map(async (config): Promise<MCPClientResult | null> => {
-    let client: MCPClient | null = null;
+    const retryConfig = config.retry || DEFAULT_RETRY_CONFIG;
+    const timeoutMs = config.timeoutMs || 30000;
+    const enableGracefulDegradation =
+      config.gracefulDegradation ?? options.gracefulDegradation ?? false;
+    let client: any = null;
+
     try {
-      const transport = createTransportFromConfig(config.transport);
+      const result = await withRetryAndTimeout(
+        async (): Promise<MCPClientResult> => {
+          const transport = createTransportFromConfig(config.transport);
 
-      // Create MCP client with transport (following official docs pattern)
-      client = (await experimental_createMCPClient({ transport })) as any;
+          // Create MCP client with transport (following official docs pattern)
+          client = (await experimental_createMCPClient({ transport })) as any;
 
-      // Get tools from this client before adding to clients array
-      if (!client) throw new Error('Failed to create MCP client');
-      const toolSet = await client.tools();
+          // Get tools from this client before adding to clients array
+          if (!client) throw new Error('Failed to create MCP client');
 
-      return { client, toolSet, config };
+          const toolSet = await withRetryAndTimeout(
+            () => (client?.tools() as Promise<Record<string, any>>) ?? Promise.resolve({}),
+            retryConfig,
+            timeoutMs,
+            `MCP tools retrieval (${config.name})`,
+          );
+
+          return { client, toolSet, config };
+        },
+        retryConfig,
+        timeoutMs,
+        `MCP client creation (${config.name})`,
+      );
+
+      return result;
     } catch (error) {
       // Close the client if it was created but tool retrieval failed
       if (client) {
         try {
           await client.close();
         } catch (closeError) {
-          logError(
-            `Failed to close failed client ${config.name}`,
-            closeError instanceof Error ? closeError : new Error(String(closeError)),
-            {
-              operation: 'mcp_client_cleanup',
-              metadata: { clientName: config.name },
-            },
-          );
+          logError(`Failed to close failed client ${config.name}`, {
+            operation: 'mcp_client_cleanup',
+            metadata: { clientName: config.name },
+            error: closeError instanceof Error ? closeError : new Error(String(closeError)),
+          });
         }
       }
 
       const mcpError = new MCPConnectionError(
-        `Failed to create MCP client '${config.name}'`,
+        `Failed to create MCP client '${config.name}' after retries`,
         config.name,
         config.transport.type,
         error instanceof Error ? error : new Error(String(error)),
       );
 
-      if (options.gracefulDegradation) {
-        logWarn(`Failed to create MCP client ${config.name}`, {
-          operation: 'mcp_client_creation',
-          metadata: {
-            clientName: config.name,
-            transportType: config.transport.type,
-            error: mcpError.message,
+      if (enableGracefulDegradation) {
+        logWarn(
+          `Failed to create MCP client ${config.name}, continuing with degraded functionality`,
+          {
+            operation: 'mcp_client_creation_degraded',
+            metadata: {
+              clientName: config.name,
+              transportType: config.transport.type,
+              retryAttempts: retryConfig.maxAttempts,
+              timeoutMs,
+              error: mcpError.message,
+            },
           },
-        });
+        );
         // Return null to filter out later
         return null;
       } else {

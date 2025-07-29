@@ -1,5 +1,10 @@
 import { logError } from '@repo/observability/server/next';
-import { createDataStream, smoothStream, type DataStreamWriter, type StreamTextResult } from 'ai';
+import {
+  createUIMessageStream,
+  smoothStream,
+  type StreamTextResult,
+  type UIMessageStreamWriter,
+} from 'ai';
 
 // Standard streaming utilities following Vercel AI SDK patterns
 
@@ -12,23 +17,20 @@ export interface StreamConfig {
  * Creates a data stream with standard error handling
  */
 export function createStandardDataStream(
-  execute: (dataStream: DataStreamWriter) => void | Promise<void>,
+  execute: (dataStream: UIMessageStreamWriter) => void | Promise<void>,
   config?: StreamConfig,
 ) {
-  return createDataStream({
+  return createUIMessageStream({
     execute,
     onError:
       config?.onError ||
       ((error: unknown) => {
         // Log error using centralized logger
-        logError(
-          'Stream error occurred',
-          error instanceof Error ? error : new Error(String(error)),
-          {
-            operation: 'data_stream',
-            metadata: { streaming: true },
-          },
-        );
+        logError('Stream error occurred', {
+          operation: 'data_stream',
+          metadata: { streaming: true },
+          error: error instanceof Error ? error : new Error(String(error)),
+        });
         return 'An error occurred while streaming.';
       }),
   });
@@ -43,15 +45,18 @@ export function createSmoothStreamTransform(chunking: 'word' | 'line' = 'word') 
 
 /**
  * Helper to merge stream results into a data stream
+ * AI SDK v5: Uses writer.merge() instead of result.mergeIntoDataStream()
  */
 export function mergeIntoDataStream(
   result: StreamTextResult<any, any>,
-  dataStream: DataStreamWriter,
-  options?: {
+  dataStream: UIMessageStreamWriter,
+  _options?: {
     sendReasoning?: boolean;
   },
 ) {
-  result.mergeIntoDataStream(dataStream, options);
+  // AI SDK v5: Convert to UI message stream and merge
+  const uiMessageStream = result.toUIMessageStream();
+  dataStream.merge(uiMessageStream);
 }
 
 // Artifact generation utilities
@@ -65,4 +70,6 @@ export * from './enhanced-streams';
 
 // Additional streaming exports
 export * from './resumable';
+export * from './stream-defaults';
+export * from './ui-patterns';
 export * from './vector-context';

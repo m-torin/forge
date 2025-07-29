@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "exports": {
+    ".": "./src/index.ts",
     "./client": "./src/client.tsx",
     "./server": "./src/server.ts",
     "./client/next": "./src/client-next.tsx",
@@ -22,15 +23,18 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
+    "@t3-oss/env-nextjs": "catalog:",
     "lodash.merge": "^4.6.2",
     "react": "catalog:",
     "schema-dts": "^1.1.5",
-    "server-only": "^0.0.1"
+    "server-only": "^0.0.1",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/qa": "workspace:*",
+    "@testing-library/jest-dom": "catalog:",
     "@types/lodash.merge": "^4.6.9",
     "next": "catalog:"
   }

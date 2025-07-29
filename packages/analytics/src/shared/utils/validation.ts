@@ -2,7 +2,7 @@
  * Validation utilities for analytics configuration
  */
 
-import { logError, logInfo, logWarn } from '@repo/observability/shared-env';
+import { logError, logInfo, logWarn } from '@repo/observability';
 import { PROVIDER_REQUIREMENTS } from './config';
 
 import type { AnalyticsConfig, ProviderConfig } from '../types/types';
@@ -233,7 +233,7 @@ export async function debugConfig(config: AnalyticsConfig): Promise<void> {
   });
 
   if (result.errors.length > 0) {
-    logError('Analytics configuration errors', new Error('Validation failed'), {
+    logError(new Error('Analytics configuration errors: Validation failed'), {
       errors: result.errors,
     });
   }

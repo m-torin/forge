@@ -5,7 +5,7 @@
  * and fallback mechanisms. It eliminates code duplication between server.ts and index.ts.
  */
 
-import { logError, logWarn } from '@repo/observability/shared-env';
+import { logError, logWarn } from '@repo/observability/server';
 import languine from '../../languine.json';
 import type en from '../dictionaries/en.json';
 
@@ -33,10 +33,9 @@ export function createDictionaryLoader() {
           const mod = await import(`../dictionaries/${locale}.json`);
           return mod.default;
         } catch (error) {
-          logError(
-            `Failed to load dictionary for locale: ${locale}`,
-            error instanceof Error ? error : new Error(String(error)),
-          );
+          logError(`Failed to load dictionary for locale: ${locale}`, {
+            error: error instanceof Error ? error.message : String(error),
+          });
 
           // Fallback to English dictionary
           const fallbackMod = await import('../dictionaries/en.json');
@@ -63,7 +62,7 @@ export function createDictionaryLoader() {
       } catch (error) {
         logError(
           `Error loading dictionary for locale "${normalizedLocale}", falling back to "en"`,
-          error instanceof Error ? error : new Error(String(error)),
+          { error: error instanceof Error ? error.message : String(error) },
         );
         return dictionaries.en?.() ?? Promise.resolve({} as Dictionary);
       }

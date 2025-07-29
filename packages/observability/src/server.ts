@@ -1,156 +1,50 @@
 /**
- * Server-side observability exports (non-Next.js)
- * Complete observability solution for server/Node.js environments
- *
- * This file provides server-side observability functionality for non-Next.js applications.
- * Use this in Node.js applications, API servers, and standalone server environments.
- *
- * For Next.js applications, use '@repo/observability/server/next' instead.
- *
- * @example
- * ```typescript
- * import { createServerObservability } from '@repo/observability/server';
- *
- * const observability = await createServerObservability({
- *   providers: {
- *     sentry: { dsn: 'xxx' },
- *     'vercel-otel': { serviceName: 'api' },
- *     console: { enabled: process.env.NODE_ENV === 'development' }
- *   }
- * };
- *
- * // Use observability
- * observability.captureException(new Error('Server error'));
- * observability.log('info', 'Request received', { path: '/api/users' });
- * const transaction = observability.startTransaction('api_request');
- * ```
+ * Auto-configuring server export for Node.js environments (non-Next.js)
  */
 
-import { createServerObservabilityManager } from './server/utils/manager';
-import { ObservabilityConfig, ObservabilityManager, ProviderRegistry } from './shared/types/types';
+import { env } from '../env';
+import { ObservabilityBuilder } from './factory/builder';
+import { createConsoleServerPlugin } from './plugins/console';
 
-// Server-specific provider registry with lazy loading for all providers
-const SERVER_PROVIDERS: ProviderRegistry = {
-  console: async () => {
-    const { ConsoleProvider } = await import('./shared/providers/console-provider');
-    return new ConsoleProvider();
-  },
-  opentelemetry: async () => {
-    const { VercelOTelProvider } = await import('./server/providers/nodejs/vercel-otel-provider');
-    return new VercelOTelProvider();
-  },
-  otel: async () => {
-    const { VercelOTelProvider } = await import('./server/providers/nodejs/vercel-otel-provider');
-    return new VercelOTelProvider();
-  },
-  sentry: async () => {
-    const { SentryServerProvider } = await import('./server/providers/sentry-server');
-    return new SentryServerProvider();
-  },
-  // Lazy-load OpenTelemetry provider to avoid bundling when not used
-  'vercel-otel': async () => {
-    const { VercelOTelProvider } = await import('./server/providers/nodejs/vercel-otel-provider');
-    return new VercelOTelProvider();
-  },
-  grafanaMonitoring: async () => {
-    const { GrafanaServerProvider } = await import('./server/providers/grafana-server');
-    return new GrafanaServerProvider();
-  },
-  logtail: async () => {
-    const { LogtailServerProvider } = await import('./server/providers/logtail-server');
-    return new LogtailServerProvider();
-  },
+// Auto-configured observability for Node.js
+const builder = ObservabilityBuilder.create();
+
+// Console logging control
+const isDevelopment =
+  env.NEXT_PUBLIC_NODE_ENV === 'development' || process.env.NODE_ENV === 'development';
+const enableConsole =
+  env.NEXT_PUBLIC_OBSERVABILITY_CONSOLE_ENABLED ?? // Explicit control
+  isDevelopment ?? // Auto in dev
+  env.NEXT_PUBLIC_OBSERVABILITY_DEBUG; // Debug mode
+
+// Always add console plugin, control via enabled flag
+builder.withPlugin(
+  createConsoleServerPlugin({
+    prefix: '[Server]',
+    enabled: enableConsole,
+  }),
+);
+
+// Note: Production providers would typically be configured by the app
+// This is just a fallback for non-Next.js server usage
+
+export const observability = builder.build();
+
+// Export types and utilities
+export * from './core/types';
+export { createObservability } from './factory';
+export { ObservabilityBuilder } from './factory/builder';
+
+// Logger functions - use these instead of deprecated standalone functions
+export const { logDebug, logInfo, logWarn, logError } = observability;
+
+// Legacy function for backward compatibility (no-op)
+/**
+ * @deprecated Configuration now happens through the observability system
+ */
+export const configureLogger = (_config?: any) => {
+  // No-op: Configuration now happens through the observability system
 };
 
-// ============================================================================
-// CORE OBSERVABILITY FUNCTIONS
-// ============================================================================
-
-/**
- * Create and initialize a server observability instance
- * This is the primary way to create observability for server-side applications
- */
-export async function createServerObservability(
-  config: ObservabilityConfig,
-): Promise<ObservabilityManager> {
-  const manager = createServerObservabilityManager(config, SERVER_PROVIDERS);
-  await manager.initialize();
-  return manager;
-}
-
-/**
- * Create a server observability instance without initializing
- * Useful when you need to control initialization timing
- */
-export function createServerObservabilityUninitialized(
-  config: ObservabilityConfig,
-): ObservabilityManager {
-  return createServerObservabilityManager(config, SERVER_PROVIDERS);
-}
-
-// ============================================================================
-// TYPES
-// ============================================================================
-
-export {
-  createErrorBoundaryHandler,
-  createSafeFunction,
-  parseAndCaptureError,
-  parseError,
-  withErrorHandling,
-} from './server/utils/error';
-
-// Manager utilities
-export {
-  createServerObservabilityManager,
-  ServerObservabilityManager as ObservabilityManagerClass,
-} from './server/utils/manager';
-export { debugConfig, validateConfig } from './server/utils/validation';
-export type { ConsoleConfig, ConsoleOptions } from './shared/types/console-types';
-
-// New simplified logger functions (recommended)
-export { configureLogger, logDebug, logError, logInfo, logWarn } from './logger-functions';
-
-// ============================================================================
-// CONFIGURATION UTILITIES
-// ============================================================================
-
-// TODO: Re-enable Better Stack types once bundling issues are resolved
-// export type { BetterStackConfig, BetterStackOptions, BetterStackMetrics, BetterStackTrace, BetterStackSpan, BetterStackEvent } from './shared/types/better-stack-types';
-// Legacy Logtail types for backward compatibility
-export type { LogtailConfig, LogtailOptions } from './shared/types/logtail-types';
-
-// ============================================================================
-// ERROR HANDLING UTILITIES
-// ============================================================================
-
-export type {
-  OpenTelemetryConfig,
-  OpenTelemetryOptions,
-  VercelOTelConfig,
-} from './shared/types/opentelemetry-types';
-
-// ============================================================================
-// ADVANCED UTILITIES
-// ============================================================================
-
-// Provider-specific types
-export type {
-  GrafanaBusinessMetric,
-  GrafanaHealthCheck,
-  GrafanaLogEntry,
-  GrafanaMetric,
-  GrafanaMonitoringConfig,
-  GrafanaProviderConfig,
-  GrafanaTrace,
-} from './shared/types/grafana-types';
-export type { SentryConfig, SentryOptions, SentryUser } from './shared/types/sentry-types';
-// Core observability types
-export type {
-  Breadcrumb,
-  ObservabilityConfig,
-  ObservabilityContext,
-  ObservabilityManager,
-  ObservabilityProvider,
-  ObservabilityProviderConfig,
-} from './shared/types/types';
+// Re-export type
+export type LogContext = Record<string, any>;

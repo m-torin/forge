@@ -1,412 +1,508 @@
 import { beforeEach, describe, expect, vi } from 'vitest';
 
-// Mock AI SDK
-vi.mock('ai', () => ({
-  tool: vi.fn().mockImplementation(({ description, parameters, execute }) => ({
-    description,
-    parameters,
-    execute,
-  })),
+// Mock observability
+vi.mock('@repo/observability', () => ({
+  logInfo: vi.fn(),
 }));
 
 // Mock server-only to prevent import issues in tests
 vi.mock('server-only', () => ({}));
 
+// AI SDK mocks are provided by @repo/qa centralized mocks
+
 describe('range Tools', () => {
+  let mockVectorDB: any;
+
   beforeEach(() => {
     vi.clearAllMocks();
+
+    // Create a mock VectorDB with range method
+    mockVectorDB = {
+      range: vi.fn().mockResolvedValue({
+        vectors: [
+          {
+            id: 'test-vector-1',
+            values: [0.1, 0.2, 0.3],
+            metadata: { title: 'Test Document 1', category: 'test' },
+            data: 'test data 1',
+          },
+          {
+            id: 'test-vector-2',
+            values: [0.4, 0.5, 0.6],
+            metadata: { title: 'Test Document 2', category: 'other' },
+            data: 'test data 2',
+          },
+        ],
+        nextCursor: 'cursor_123',
+      }),
+      fetch: vi.fn(),
+      upsert: vi.fn(),
+    };
   });
 
   test('should import range tools successfully', async () => {
     const rangeTools = await import('@/server/tools/range-tools');
     expect(rangeTools).toBeDefined();
+    expect(rangeTools.createRangeTools).toBeTypeOf('function');
   });
 
-  test('should test range creation and validation', async () => {
-    const { createRange, validateRange, RangeSchema } = await import('@/server/tools/range-tools');
+  test('should create range tools with config', async () => {
+    const { createRangeTools } = await import('@/server/tools/range-tools');
 
-    {
-      const mockRange = { start: 0, end: 100, step: 1 };
-      const result1 = await createRange(mockRange);
-      expect(result1).toBeDefined();
-    }
+    const tools = createRangeTools({
+      vectorDB: mockVectorDB,
+      defaultPageSize: 50,
+      maxPageSize: 500,
+      enableCaching: true,
+    });
 
-    {
-      const mockRange = { start: 10, end: 50 };
-      const result1 = validateRange(mockRange);
-      expect(result1).toBeDefined();
-    }
-
-    {
-      const validRange = { start: 0, end: 100, inclusive: true };
-      const result1 = RangeSchema.safeParse(validRange);
-      expect(result.success).toBeTruthy();
-    }
+    expect(tools).toBeDefined();
+    expect(tools.scanVectors).toBeDefined();
+    expect(tools.scanAllVectors).toBeDefined();
+    expect(tools.exportVectors).toBeDefined();
+    expect(tools.getVectorsByPrefix).toBeDefined();
+    expect(tools.createPaginationSession).toBeDefined();
+    expect(tools.getNextPage).toBeDefined();
   });
 
-  test('should test numeric range operations', async () => {
-    const { numericRange, expandRange, compressRange } = await import('@/server/tools/range-tools');
+  test('should test scanVectors tool', async () => {
+    const { createRangeTools } = await import('@/server/tools/range-tools');
 
-    {
-      const result1 = await numericRange(1, 10, 2);
-      expect(result1).toBeDefined();
-      expect(Array.isArray(result)).toBeTruthy();
-    }
+    const tools = createRangeTools({
+      vectorDB: mockVectorDB,
+      defaultPageSize: 100,
+    });
 
-    {
-      const mockCompactRange = { start: 1, end: 5 };
-      const result1 = expandRange(mockCompactRange);
-      expect(result1).toBeDefined();
-      expect(Array.isArray(result)).toBeTruthy();
-    }
-
-    {
-      const mockArray = [1, 2, 3, 4, 5];
-      const result1 = compressRange(mockArray);
-      expect(result1).toBeDefined();
-      expect(result.start).toBe(1);
-      expect(result.end).toBe(5);
-    }
-  });
-
-  test('should test date range operations', async () => {
-    const { dateRange, createDateRange, splitDateRange } = await import(
-      '@/server/tools/range-tools'
-    );
-
-    {
-      const startDate = new Date('2024-01-01');
-      const endDate = new Date('2024-01-31');
-      const result1 = await dateRange(startDate, endDate, 'day');
-      expect(result1).toBeDefined();
-      expect(Array.isArray(result)).toBeTruthy();
-    }
-
-    {
-      const mockConfig = {
-        start: '2024-01-01',
-        end: '2024-12-31',
-        interval: 'month',
-      };
-      const result1 = createDateRange(mockConfig);
-      expect(result1).toBeDefined();
-    }
-
-    {
-      const mockRange = {
-        start: new Date('2024-01-01'),
-        end: new Date('2024-01-31'),
-      };
-      const result1 = splitDateRange(mockRange, 7); // Split into weeks
-      expect(result1).toBeDefined();
-      expect(Array.isArray(result)).toBeTruthy();
-    }
-  });
-
-  test('should test range intersection and union operations', async () => {
-    const { intersectRanges, unionRanges, subtractRanges } = await import(
-      '@/server/tools/range-tools'
-    );
-
-    {
-      const range1 = { start: 10, end: 50 };
-      const range2 = { start: 30, end: 70 };
-      const result1 = intersectRanges(range1, range2);
-      expect(result1).toBeDefined();
+    const result = await tools.scanVectors.execute(
       {
-        expect(result.start).toBe(30);
-        expect(result.end).toBe(50);
-      }
-    }
-
-    {
-      const ranges = [
-        { start: 1, end: 10 },
-        { start: 15, end: 25 },
-        { start: 8, end: 18 },
-      ];
-      const result1 = unionRanges(ranges);
-      expect(result1).toBeDefined();
-      expect(Array.isArray(result)).toBeTruthy();
-    }
-
-    {
-      const mainRange = { start: 1, end: 100 };
-      const excludeRanges = [
-        { start: 20, end: 30 },
-        { start: 50, end: 60 },
-      ];
-      const result1 = subtractRanges(mainRange, excludeRanges);
-      expect(result1).toBeDefined();
-      expect(Array.isArray(result)).toBeTruthy();
-    }
-  });
-
-  test('should test range analysis and statistics', async () => {
-    const { analyzeRange, calculateRangeStats, findRangeOutliers } = await import(
-      '@/server/tools/range-tools'
+        cursor: '',
+        limit: 10,
+        includeVectors: true,
+        includeMetadata: true,
+        includeData: true,
+      },
+      { toolCallId: 'test-call', messages: [] },
     );
 
-    {
-      const mockData = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50];
-      const result1 = await analyzeRange(mockData);
-      expect(result1).toBeDefined();
-      expect(result.min).toBeDefined();
-      expect(result.max).toBeDefined();
-      expect(result.mean).toBeDefined();
-    }
+    expect(mockVectorDB.range).toHaveBeenCalledWith({
+      cursor: '',
+      limit: 10,
+      includeVectors: true,
+      includeMetadata: true,
+      includeData: true,
+    });
 
-    {
-      const mockRange = { start: 0, end: 100, values: [10, 20, 30, 40, 50] };
-      const result1 = calculateRangeStats(mockRange);
-      expect(result1).toBeDefined();
-      expect(typeof result.variance).toBe('number');
-      expect(typeof result.standardDeviation).toBe('number');
-    }
-
-    {
-      const mockDataset = [1, 2, 3, 4, 5, 100, 6, 7, 8, 9, 10]; // 100 is an outlier
-      const result1 = findRangeOutliers(mockDataset, { method: 'iqr' });
-      expect(result1).toBeDefined();
-      expect(Array.isArray(result)).toBeTruthy();
-    }
+    expect(result).toBeDefined();
+    expect(result.vectors).toBeDefined();
+    expect(result.nextCursor).toBe('cursor_123');
+    expect(result.hasMore).toBeTruthy();
+    expect(result.totalScanned).toBe(2);
+    expect(result.currentPage).toBe(1);
+    expect(result.pageSize).toBe(10);
   });
 
-  test('should test range partitioning and segmentation', async () => {
-    const { partitionRange, segmentRange, createRangePartitions } = await import(
-      '@/server/tools/range-tools'
+  test('should test scanVectors with empty result', async () => {
+    const { createRangeTools } = await import('@/server/tools/range-tools');
+
+    // Mock empty result
+    mockVectorDB.range.mockResolvedValue(null);
+
+    const tools = createRangeTools({
+      vectorDB: mockVectorDB,
+    });
+
+    const result = await tools.scanVectors.execute(
+      {
+        cursor: '',
+        limit: 10,
+        includeVectors: false,
+        includeMetadata: true,
+        includeData: true,
+      },
+      { toolCallId: 'test-call', messages: [] },
     );
 
-    {
-      const mockRange = { start: 0, end: 100 };
-      const result1 = partitionRange(mockRange, 5); // 5 equal partitions
-      expect(result1).toBeDefined();
-      expect(Array.isArray(result)).toBeTruthy();
-      expect(result1).toHaveLength(5);
-    }
-
-    {
-      const mockData = Array.from({ length: 100 }, (_, i) => i);
-      const result1 = segmentRange(mockData, { segmentSize: 20 });
-      expect(result1).toBeDefined();
-      expect(Array.isArray(result)).toBeTruthy();
-    }
-
-    {
-      const mockConfig = {
-        totalRange: { start: 1, end: 1000 },
-        partitionStrategy: 'equal',
-        partitionCount: 10,
-      };
-      const result1 = createRangePartitions(mockConfig);
-      expect(result1).toBeDefined();
-      expect(Array.isArray(result)).toBeTruthy();
-      expect(result1).toHaveLength(10);
-    }
+    expect(result).toBeDefined();
+    expect(result.vectors).toStrictEqual([]);
+    expect(result.nextCursor).toBe('');
+    expect(result.hasMore).toBeFalsy();
+    expect(result.totalScanned).toBe(0);
   });
 
-  test('should test range filtering and selection', async () => {
-    const { filterByRange, selectRangeValues, queryRange } = await import(
-      '@/server/tools/range-tools'
-    );
+  test('should test scanAllVectors tool', async () => {
+    const { createRangeTools } = await import('@/server/tools/range-tools');
 
-    {
-      const mockData = [
-        { id: 1, value: 15 },
-        { id: 2, value: 25 },
-        { id: 3, value: 35 },
-        { id: 4, value: 45 },
-      ];
-      const mockRange = { start: 20, end: 40 };
-      const result1 = filterByRange(mockData, mockRange, 'value');
-      expect(result1).toBeDefined();
-      expect(Array.isArray(result)).toBeTruthy();
-    }
-
-    {
-      const mockDataset = {
-        values: [10, 20, 30, 40, 50, 60, 70, 80, 90],
-        metadata: { source: 'test', timestamp: Date.now() },
-      };
-      const mockCriteria = { min: 30, max: 70 };
-      const result1 = selectRangeValues(mockDataset, mockCriteria);
-      expect(result1).toBeDefined();
-    }
-
-    {
-      const mockQuery = {
-        range: { start: 100, end: 200 },
-        filters: { type: 'numeric', precision: 2 },
-        sort: 'ascending',
-      };
-      const result1 = await queryRange(mockQuery);
-      expect(result1).toBeDefined();
-    }
-  });
-
-  test('should test range transformation and mapping', async () => {
-    const { transformRange, mapRangeValues, normalizeRange } = await import(
-      '@/server/tools/range-tools'
-    );
-
-    {
-      const mockRange = { start: 0, end: 100 };
-      const mockTransform = (value: number) => value * 2 + 10;
-      const result1 = transformRange(mockRange, mockTransform);
-      expect(result1).toBeDefined();
-      expect(result.start).toBe(10); // 0 * 2 + 10
-      expect(result.end).toBe(210); // 100 * 2 + 10
-    }
-
-    {
-      const sourceRange = { start: 0, end: 100 };
-      const targetRange = { start: 0, end: 1 };
-      const value = 50;
-      const result1 = mapRangeValues(value, sourceRange, targetRange);
-      expect(result1).toBeDefined();
-      expect(typeof result).toBe('number');
-      expect(result1).toBe(0.5); // 50 maps to 0.5 in [0,1]
-    }
-
-    {
-      const mockData = [10, 20, 30, 40, 50];
-      const result1 = normalizeRange(mockData, { min: 0, max: 1 });
-      expect(result1).toBeDefined();
-      expect(Array.isArray(result)).toBeTruthy();
-      expect(Math.min(...result)).toBe(0);
-      expect(Math.max(...result)).toBe(1);
-    }
-  });
-
-  test('should test range optimization and efficiency', async () => {
-    const { optimizeRangeQuery, compactRanges, mergeOverlappingRanges } = await import(
-      '@/server/tools/range-tools'
-    );
-
-    {
-      const mockQuery = {
-        ranges: [
-          { start: 1, end: 10 },
-          { start: 5, end: 15 },
-          { start: 20, end: 30 },
+    // Mock multiple pages
+    mockVectorDB.range
+      .mockResolvedValueOnce({
+        vectors: [
+          { id: 'vec1', values: [0.1], metadata: { page: 1 } },
+          { id: 'vec2', values: [0.2], metadata: { page: 1 } },
         ],
-        operation: 'union',
-        sortResult: true,
-      };
-      const result1 = await optimizeRangeQuery(mockQuery);
-      expect(result1).toBeDefined();
-    }
+        nextCursor: 'cursor_1',
+      })
+      .mockResolvedValueOnce({
+        vectors: [{ id: 'vec3', values: [0.3], metadata: { page: 2 } }],
+        nextCursor: '',
+      });
 
-    {
-      const mockRanges = [
-        { start: 1, end: 5 },
-        { start: 6, end: 10 },
-        { start: 11, end: 15 },
-      ];
-      const result1 = compactRanges(mockRanges);
-      expect(result1).toBeDefined();
-      expect(Array.isArray(result)).toBeTruthy();
-    }
+    const tools = createRangeTools({
+      vectorDB: mockVectorDB,
+      defaultPageSize: 10,
+    });
 
-    {
-      const mockRanges = [
-        { start: 1, end: 10 },
-        { start: 8, end: 15 },
-        { start: 12, end: 20 },
-        { start: 25, end: 30 },
-      ];
-      const result1 = mergeOverlappingRanges(mockRanges);
-      expect(result1).toBeDefined();
-      expect(Array.isArray(result)).toBeTruthy();
-      expect(result.length).toBeLessThan(mockRanges.length); // Should merge overlapping ranges
-    }
-  });
-
-  test('should test range validation and error handling', async () => {
-    const { validateRangeInput, handleRangeErrors, sanitizeRange } = await import(
-      '@/server/tools/range-tools'
+    const result = await tools.scanAllVectors.execute(
+      {
+        batchSize: 2,
+        maxVectors: 100,
+        includeVectors: true,
+        includeMetadata: true,
+        includeData: true,
+        onProgress: false,
+      },
+      { toolCallId: 'test-call', messages: [] },
     );
 
-    {
-      const validRange = { start: 10, end: 50 };
-      const invalidRange = { start: 50, end: 10 }; // Invalid: start > end
-
-      const validResult = validateRangeInput(validRange);
-      expect(validResult.isValid).toBeTruthy();
-
-      const invalidResult = validateRangeInput(invalidRange);
-      expect(invalidResult.isValid).toBeFalsy();
-      expect(invalidResult.errors).toBeDefined();
-    }
-
-    {
-      const mockError = {
-        type: 'INVALID_RANGE',
-        message: 'Start value cannot be greater than end value',
-        range: { start: 100, end: 50 },
-        suggestedFix: { start: 50, end: 100 },
-      };
-      const result1 = await handleRangeErrors(mockError);
-      expect(result1).toBeDefined();
-    }
-
-    {
-      const dirtyRange = {
-        start: '10.5',
-        end: '50.7',
-        step: 'auto',
-        metadata: { source: 'user-input' },
-      };
-      const result1 = sanitizeRange(dirtyRange);
-      expect(result1).toBeDefined();
-      expect(typeof result.start).toBe('number');
-      expect(typeof result.end).toBe('number');
-    }
+    expect(result).toBeDefined();
+    expect(result.vectors).toHaveLength(3);
+    expect(result.totalScanned).toBe(3);
+    expect(result.batchCount).toBe(2);
+    expect(result.completed).toBeTruthy();
+    expect(result.truncated).toBeFalsy();
   });
 
-  test('should test advanced range algorithms', async () => {
-    const { findRangeGaps, calculateRangeCoverage, optimizeRangeSet } = await import(
-      '@/server/tools/range-tools'
+  test('should test exportVectors tool in JSON format', async () => {
+    const { createRangeTools } = await import('@/server/tools/range-tools');
+
+    const tools = createRangeTools({
+      vectorDB: mockVectorDB,
+    });
+
+    const result = await tools.exportVectors.execute(
+      {
+        format: 'json',
+        includeVectors: true,
+        includeMetadata: true,
+        includeData: true,
+        maxVectors: 1000,
+        batchSize: 100,
+      },
+      { toolCallId: 'test-call', messages: [] },
     );
 
-    {
-      const mockRanges = [
-        { start: 1, end: 10 },
-        { start: 15, end: 25 },
-        { start: 30, end: 40 },
-      ];
-      const searchSpace = { start: 1, end: 40 };
-      const result1 = findRangeGaps(mockRanges, searchSpace);
-      expect(result1).toBeDefined();
-      expect(Array.isArray(result)).toBeTruthy();
-      expect(result1).toStrictEqual([
-        { start: 11, end: 14 },
-        { start: 26, end: 29 },
-      ]);
-    }
+    expect(result).toBeDefined();
+    expect(result.data).toBeDefined();
+    expect(result.metadata).toBeDefined();
+    expect(result.metadata.format).toBe('json');
+    expect(result.metadata.mimeType).toBe('application/json');
+    expect(result.metadata.totalVectors).toBe(1000);
+    expect(result.metadata.truncated).toBeTruthy();
+  });
 
-    {
-      const mockRanges = [
-        { start: 10, end: 20 },
-        { start: 15, end: 25 },
-      ];
-      const totalSpace = { start: 0, end: 100 };
-      const result1 = calculateRangeCoverage(mockRanges, totalSpace);
-      expect(result1).toBeDefined();
-      expect(typeof result.coverage).toBe('number');
-      expect(typeof result.percentage).toBe('number');
-    }
+  test('should test exportVectors tool in CSV format', async () => {
+    const { createRangeTools } = await import('@/server/tools/range-tools');
 
-    {
-      const mockRangeSet = [
-        { start: 1, end: 5, weight: 1 },
-        { start: 3, end: 8, weight: 2 },
-        { start: 10, end: 15, weight: 1 },
-        { start: 12, end: 18, weight: 3 },
-      ];
-      const result1 = await optimizeRangeSet(mockRangeSet, { strategy: 'minimize-overlap' });
-      expect(result1).toBeDefined();
-      expect(Array.isArray(result)).toBeTruthy();
-    }
+    const tools = createRangeTools({
+      vectorDB: mockVectorDB,
+    });
+
+    const result = await tools.exportVectors.execute(
+      {
+        format: 'csv',
+        includeVectors: true,
+        includeMetadata: true,
+        includeData: true,
+        maxVectors: 1000,
+      },
+      { toolCallId: 'test-call', messages: [] },
+    );
+
+    expect(result).toBeDefined();
+    expect(result.data).toBeDefined();
+    expect(result.metadata.format).toBe('csv');
+    expect(result.metadata.mimeType).toBe('text/csv');
+    expect(result.data).toContain('id,vector,metadata,data');
+  });
+
+  test('should test exportVectors tool in JSONL format', async () => {
+    const { createRangeTools } = await import('@/server/tools/range-tools');
+
+    const tools = createRangeTools({
+      vectorDB: mockVectorDB,
+    });
+
+    const result = await tools.exportVectors.execute(
+      {
+        format: 'jsonl',
+        includeVectors: false,
+        includeMetadata: true,
+        includeData: false,
+        maxVectors: 1000,
+      },
+      { toolCallId: 'test-call', messages: [] },
+    );
+
+    expect(result).toBeDefined();
+    expect(result.data).toBeDefined();
+    expect(result.metadata.format).toBe('jsonl');
+    expect(result.metadata.mimeType).toBe('application/jsonl');
+    expect(result.data).toContain('\n');
+  });
+
+  test('should test getVectorsByPrefix tool', async () => {
+    const { createRangeTools } = await import('@/server/tools/range-tools');
+
+    // Mock vectors with different prefixes
+    mockVectorDB.range.mockResolvedValue({
+      vectors: [
+        { id: 'prefix_1', values: [0.1], metadata: { match: true } },
+        { id: 'other_1', values: [0.2], metadata: { match: false } },
+        { id: 'prefix_2', values: [0.3], metadata: { match: true } },
+      ],
+      nextCursor: '',
+    });
+
+    const tools = createRangeTools({
+      vectorDB: mockVectorDB,
+    });
+
+    const result = await tools.getVectorsByPrefix.execute(
+      {
+        prefix: 'prefix_',
+        limit: 10,
+        includeVectors: true,
+        includeMetadata: true,
+        includeData: true,
+      },
+      { toolCallId: 'test-call', messages: [] },
+    );
+
+    expect(result).toBeDefined();
+    expect(result.vectors).toHaveLength(2);
+    expect(result.vectors[0].id).toBe('prefix_1');
+    expect(result.vectors[1].id).toBe('prefix_2');
+    expect(result.totalMatches).toBe(2);
+    expect(result.totalScanned).toBe(3);
+    expect(result.prefix).toBe('prefix_');
+    expect(result.truncated).toBeFalsy();
+  });
+
+  test('should test createPaginationSession tool', async () => {
+    const { createRangeTools } = await import('@/server/tools/range-tools');
+
+    const tools = createRangeTools({
+      vectorDB: mockVectorDB,
+      enableCaching: true,
+    });
+
+    const result = await tools.createPaginationSession.execute(
+      {
+        sessionId: 'session-123',
+        pageSize: 50,
+        includeVectors: true,
+        includeMetadata: true,
+        includeData: false,
+      },
+      { toolCallId: 'test-call', messages: [] },
+    );
+
+    expect(result).toBeDefined();
+    expect(result.sessionId).toBe('session-123');
+    expect(result.created).toBeTruthy();
+    expect(result.pageSize).toBe(50);
+    expect(result.namespace).toBe('default');
+  });
+
+  test('should test getNextPage tool', async () => {
+    const { createRangeTools } = await import('@/server/tools/range-tools');
+
+    const tools = createRangeTools({
+      vectorDB: mockVectorDB,
+      enableCaching: true,
+    });
+
+    // First create a session
+    await tools.createPaginationSession.execute(
+      {
+        sessionId: 'session-123',
+        pageSize: 10,
+        includeVectors: true,
+        includeMetadata: true,
+        includeData: true,
+      },
+      { toolCallId: 'test-call', messages: [] },
+    );
+
+    // Then get next page
+    const result = await tools.getNextPage.execute(
+      {
+        sessionId: 'session-123',
+      },
+      { toolCallId: 'test-call', messages: [] },
+    );
+
+    expect(result).toBeDefined();
+    expect(result.vectors).toHaveLength(2);
+    expect(result.hasMore).toBeTruthy();
+    expect(result.currentPage).toBe(1);
+    expect(result.totalScanned).toBe(2);
+    expect(result.sessionId).toBe('session-123');
+  });
+
+  test('should handle pagination session not found', async () => {
+    const { createRangeTools } = await import('@/server/tools/range-tools');
+
+    const tools = createRangeTools({
+      vectorDB: mockVectorDB,
+      enableCaching: true,
+    });
+
+    await expect(
+      tools.getNextPage.execute(
+        {
+          sessionId: 'non-existent-session',
+        },
+        { toolCallId: 'test-call', messages: [] },
+      ),
+    ).rejects.toThrow("Pagination session 'non-existent-session' not found");
+  });
+
+  test('should handle scanVectors errors gracefully', async () => {
+    const { createRangeTools } = await import('@/server/tools/range-tools');
+
+    // Mock error in range method
+    mockVectorDB.range.mockRejectedValue(new Error('Database error'));
+
+    const tools = createRangeTools({
+      vectorDB: mockVectorDB,
+    });
+
+    await expect(
+      tools.scanVectors.execute(
+        {
+          cursor: '',
+          limit: 10,
+          includeVectors: false,
+          includeMetadata: true,
+          includeData: true,
+        },
+        { toolCallId: 'test-call', messages: [] },
+      ),
+    ).rejects.toThrow('Failed to scan vectors');
+  });
+
+  test('should handle scanAllVectors with progress updates', async () => {
+    const { createRangeTools } = await import('@/server/tools/range-tools');
+
+    // Mock multiple batches to trigger progress
+    const mockBatches = Array.from({ length: 15 }, (_, i) => ({
+      vectors: [{ id: `vec${i}`, values: [i], metadata: { batch: i } }],
+      nextCursor: i < 14 ? `cursor_${i + 1}` : '',
+    }));
+
+    mockVectorDB.range.mockImplementation(({ cursor }: { cursor: string }) => {
+      const batchIndex = cursor ? parseInt(cursor.split('_')[1]) - 1 : 0;
+      return Promise.resolve(mockBatches[batchIndex] || { vectors: [], nextCursor: '' });
+    });
+
+    const tools = createRangeTools({
+      vectorDB: mockVectorDB,
+    });
+
+    const result = await tools.scanAllVectors.execute(
+      {
+        batchSize: 1,
+        maxVectors: 20,
+        onProgress: true,
+        includeVectors: true,
+        includeMetadata: true,
+        includeData: true,
+      },
+      { toolCallId: 'test-call', messages: [] },
+    );
+
+    expect(result).toBeDefined();
+    expect(result.vectors).toHaveLength(20);
+    expect(result.batchCount).toBe(20);
+    expect(result.completed).toBeFalsy();
+  });
+
+  test('should test RangeToolsConfig interface', async () => {
+    const { createRangeTools } = await import('@/server/tools/range-tools');
+
+    const config = {
+      vectorDB: mockVectorDB,
+      defaultPageSize: 100,
+      maxPageSize: 1000,
+      enableCaching: true,
+    };
+
+    const tools = createRangeTools(config);
+    expect(tools).toBeDefined();
+
+    // Test that all required methods are present
+    expect(tools.scanVectors).toBeDefined();
+    expect(tools.scanAllVectors).toBeDefined();
+    expect(tools.exportVectors).toBeDefined();
+    expect(tools.getVectorsByPrefix).toBeDefined();
+    expect(tools.createPaginationSession).toBeDefined();
+    expect(tools.getNextPage).toBeDefined();
+  });
+
+  test('should respect maxPageSize limits', async () => {
+    const { createRangeTools } = await import('@/server/tools/range-tools');
+
+    const tools = createRangeTools({
+      vectorDB: mockVectorDB,
+      defaultPageSize: 100,
+      maxPageSize: 50,
+    });
+
+    const result = await tools.scanVectors.execute(
+      {
+        cursor: '',
+        limit: 100, // Exceeds maxPageSize
+        includeVectors: true,
+        includeMetadata: true,
+        includeData: true,
+      },
+      { toolCallId: 'test-call', messages: [] },
+    );
+
+    expect(mockVectorDB.range).toHaveBeenCalledWith({
+      cursor: '',
+      limit: 50, // Should be capped at maxPageSize
+      includeVectors: true,
+      includeMetadata: undefined,
+      includeData: undefined,
+    });
+  });
+
+  test('should handle empty vectors in export', async () => {
+    const { createRangeTools } = await import('@/server/tools/range-tools');
+
+    mockVectorDB.range.mockResolvedValue({
+      vectors: [],
+      nextCursor: '',
+    });
+
+    const tools = createRangeTools({
+      vectorDB: mockVectorDB,
+    });
+
+    const result = await tools.exportVectors.execute(
+      {
+        format: 'csv',
+        includeVectors: true,
+        includeMetadata: true,
+        includeData: true,
+        maxVectors: 1000,
+      },
+      { toolCallId: 'test-call', messages: [] },
+    );
+
+    expect(result).toBeDefined();
+    expect(result.data).toBe('');
+    expect(result.metadata.totalVectors).toBe(0);
   });
 });

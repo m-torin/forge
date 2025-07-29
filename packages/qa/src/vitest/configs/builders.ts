@@ -1,6 +1,8 @@
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { UserConfig } from 'vitest/config';
 import { baseConfig, environmentConfigs, getBaseTestConfig } from './base-config';
+import { createBrowserConfig, type BrowserTestOptions } from './browser';
 import {
   commonCssConfig,
   commonEsbuildConfig,
@@ -8,8 +10,9 @@ import {
   getVitePlugins,
 } from './vite-utils';
 
-// Get the directory where this file is located (Node 22+ feature)
-const currentDir = import.meta.dirname;
+// Get the directory where this file is located
+const filename = fileURLToPath(import.meta.url);
+const currentDir = dirname(filename);
 const setupDir = resolve(currentDir, '../setup');
 
 // Helper to create a config without vitest dependency during load
@@ -18,6 +21,14 @@ function createConfigObject(
   config: UserConfig,
   overrides: UserConfig = {},
 ): UserConfig {
+  // Prevent disabling coverage through overrides
+  if (overrides.test?.coverage?.enabled === false) {
+    console.warn(
+      'WARNING: Coverage cannot be disabled through overrides. Use threshold adjustments instead.',
+    );
+    delete overrides.test.coverage.enabled;
+  }
+
   // Manual deep merge implementation to avoid vitest dependency
   const merged = {
     ...baseConfig,
@@ -51,6 +62,8 @@ function createConfigObject(
         ...(configCoverage.exclude || []),
         ...(overrideCoverage.exclude || []),
       ],
+      // Ensure coverage remains enabled
+      enabled: true,
     };
   }
 
@@ -124,12 +137,13 @@ export function createNextAppConfig(options: BuilderOptions = {}): UserConfig {
   } = options;
 
   const config: UserConfig = {
-    plugins: getVitePlugins({ react: true }),
+    plugins: getVitePlugins({ react: true }) as any,
     test: {
       server: {
         deps: {
           inline: ['@repo/qa'],
           fallbackCJS: true,
+          moduleDirectories: ['node_modules', resolve(process.cwd(), '../../packages')],
         },
       },
       ...getBaseTestConfig({
@@ -165,10 +179,15 @@ export function createNextAppConfig(options: BuilderOptions = {}): UserConfig {
         '@/utils': resolve(process.cwd(), './src/utils'),
         '@/styles': resolve(process.cwd(), './src/styles'),
         '@/types': resolve(process.cwd(), './src/types'),
-        // Add workspace package resolution for @repo/* imports
-        '@repo/qa': resolve(currentDir, '../..'),
         ...aliases,
       },
+      dedupe: [
+        'react',
+        'react-dom',
+        'vitest',
+        '@testing-library/react',
+        '@testing-library/jest-dom',
+      ],
     },
     define: createBrowserDefines({
       'process.env.NEXT_RUNTIME': 'nodejs',
@@ -197,11 +216,12 @@ export function createReactPackageConfig(options: BuilderOptions = {}): UserConf
   } = options;
 
   const config: UserConfig = {
-    plugins: getVitePlugins({ react: true }),
+    plugins: getVitePlugins({ react: true }) as any,
     test: {
       server: {
         deps: {
           inline: ['@repo/qa'],
+          moduleDirectories: ['node_modules', resolve(process.cwd(), '../../packages')],
         },
       },
       environment: 'jsdom',
@@ -219,10 +239,15 @@ export function createReactPackageConfig(options: BuilderOptions = {}): UserConf
       extensions: ['.ts', '.tsx', '.js', '.jsx', '.json', '.mjs', '.mts'],
       alias: {
         '@': resolve(process.cwd(), './src'),
-        // Add workspace package resolution for @repo/* imports
-        '@repo/qa': resolve(currentDir, '../..'),
         ...aliases,
       },
+      dedupe: [
+        'react',
+        'react-dom',
+        'vitest',
+        '@testing-library/react',
+        '@testing-library/jest-dom',
+      ],
     },
     define: createBrowserDefines(
       Object.fromEntries(Object.entries(env).map(([key, value]) => [`process.env.${key}`, value])),
@@ -252,6 +277,7 @@ export function createNodePackageConfig(options: BuilderOptions = {}): UserConfi
       server: {
         deps: {
           inline: ['@repo/qa'],
+          moduleDirectories: ['node_modules', resolve(process.cwd(), '../../packages')],
         },
       },
       environment: 'node',
@@ -269,8 +295,6 @@ export function createNodePackageConfig(options: BuilderOptions = {}): UserConfi
       extensions: ['.ts', '.tsx', '.js', '.jsx', '.json', '.mjs', '.mts'],
       alias: {
         '@': resolve(process.cwd(), './src'),
-        // Add workspace package resolution for @repo/* imports
-        '@repo/qa': resolve(currentDir, '../..'),
         ...aliases,
       },
     },
@@ -303,6 +327,7 @@ export function createDatabasePackageConfig(options: BuilderOptions = {}): UserC
       server: {
         deps: {
           inline: ['@repo/qa'],
+          moduleDirectories: ['node_modules', resolve(process.cwd(), '../../packages')],
         },
       },
       environment: 'node',
@@ -328,8 +353,6 @@ export function createDatabasePackageConfig(options: BuilderOptions = {}): UserC
       extensions: ['.ts', '.tsx', '.js', '.jsx', '.json', '.mjs', '.mts'],
       alias: {
         '@': resolve(process.cwd(), './src'),
-        // Add workspace package resolution for @repo/* imports
-        '@repo/qa': resolve(currentDir, '../..'),
         ...aliases,
       },
     },
@@ -362,6 +385,7 @@ export function createQStashPackageConfig(options: BuilderOptions = {}): UserCon
       server: {
         deps: {
           inline: ['@repo/qa'],
+          moduleDirectories: ['node_modules', resolve(process.cwd(), '../../packages')],
         },
       },
       environment: 'node',
@@ -381,8 +405,6 @@ export function createQStashPackageConfig(options: BuilderOptions = {}): UserCon
       extensions: ['.ts', '.tsx', '.js', '.jsx', '.json', '.mjs', '.mts'],
       alias: {
         '@': resolve(process.cwd(), './src'),
-        // Add workspace package resolution for @repo/* imports
-        '@repo/qa': resolve(currentDir, '../..'),
         ...aliases,
       },
     },
@@ -403,6 +425,37 @@ export function createQStashPackageConfig(options: BuilderOptions = {}): UserCon
 }
 
 /**
+ * Creates a browser testing configuration with enhanced features
+ */
+export function createBrowserTestConfig(options: BrowserTestOptions = {}): UserConfig {
+  return createBrowserConfig(options);
+}
+
+/**
+ * Creates a Next.js app configuration with browser testing support
+ */
+export function createNextAppBrowserConfig(
+  options: BuilderOptions & BrowserTestOptions = {},
+): UserConfig {
+  const nextConfig = createNextAppConfig(options);
+  const browserConfig = createBrowserConfig(options);
+
+  return createConfigObject(nextConfig, browserConfig, options.overrides);
+}
+
+/**
+ * Creates a React package configuration with browser testing support
+ */
+export function createReactPackageBrowserConfig(
+  options: BuilderOptions & BrowserTestOptions = {},
+): UserConfig {
+  const reactConfig = createReactPackageConfig(options);
+  const browserConfig = createBrowserConfig(options);
+
+  return createConfigObject(reactConfig, browserConfig, options.overrides);
+}
+
+/**
  * Creates a custom vitest configuration by merging with base config
  */
 export function createCustomConfig(config: UserConfig): UserConfig {
@@ -416,5 +469,8 @@ export default {
   createNodePackageConfig,
   createDatabasePackageConfig,
   createQStashPackageConfig,
+  createBrowserTestConfig,
+  createNextAppBrowserConfig,
+  createReactPackageBrowserConfig,
   createCustomConfig,
 };

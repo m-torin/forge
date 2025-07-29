@@ -12,16 +12,10 @@ import {
   type FeatureFlagAdapter,
 } from '@/client/hooks';
 
-// Mock adapter for testing
-const createMockAdapter = (): FeatureFlagAdapter => ({
-  getAllFlags: vi.fn(),
-  getFlag: vi.fn(),
-  identify: vi.fn(),
-  isEnabled: vi.fn(),
-  reload: vi.fn(),
-  track: vi.fn(),
-});
+import { featureFlagTestData } from '../test-data-generators';
+import { assertionHelpers, createMockFeatureFlagAdapter } from '../test-utils';
 
+// Create wrapper component for testing
 const wrapper = ({
   adapter,
   children,
@@ -86,7 +80,8 @@ describe('useFlag Hook', () => {
 
 describe('featureFlagProvider', () => {
   test('should provide adapter to children', () => {
-    const adapter = createMockAdapter();
+    const adapter = createMockFeatureFlagAdapter();
+
     const { result } = renderHook(() => useFeatureFlag('test-flag'), {
       wrapper: props => wrapper({ adapter, ...props }),
     });
@@ -99,7 +94,7 @@ describe('useFeatureFlag Hook', () => {
   let mockAdapter: FeatureFlagAdapter;
 
   beforeEach(() => {
-    mockAdapter = createMockAdapter();
+    mockAdapter = createMockFeatureFlagAdapter();
   });
 
   test('should return enabled state for feature flag', async () => {
@@ -113,7 +108,7 @@ describe('useFeatureFlag Hook', () => {
       expect(result.current).toBeTruthy();
     });
 
-    expect(mockAdapter.isEnabled).toHaveBeenCalledWith('test-flag');
+    assertionHelpers.assertMockCalled(mockAdapter.isEnabled, 1, ['test-flag']);
   });
 
   test('should return false by default', () => {
@@ -147,7 +142,7 @@ describe('useFeatureFlagPayload Hook', () => {
   let mockAdapter: FeatureFlagAdapter;
 
   beforeEach(() => {
-    mockAdapter = createMockAdapter();
+    mockAdapter = createMockFeatureFlagAdapter();
   });
 
   test('should return flag payload', async () => {
@@ -162,7 +157,7 @@ describe('useFeatureFlagPayload Hook', () => {
       expect(result.current).toStrictEqual(payload);
     });
 
-    expect(mockAdapter.getFlag).toHaveBeenCalledWith('test-flag', undefined);
+    assertionHelpers.assertMockCalled(mockAdapter.getFlag, 1, ['test-flag', undefined]);
   });
 
   test('should use default value', async () => {
@@ -177,7 +172,7 @@ describe('useFeatureFlagPayload Hook', () => {
       expect(result.current).toStrictEqual(defaultValue);
     });
 
-    expect(mockAdapter.getFlag).toHaveBeenCalledWith('test-flag', defaultValue);
+    assertionHelpers.assertMockCalled(mockAdapter.getFlag, 1, ['test-flag', defaultValue]);
   });
 
   test('should throw error outside of provider', () => {
@@ -203,11 +198,11 @@ describe('useFeatureFlags Hook', () => {
   let mockAdapter: FeatureFlagAdapter;
 
   beforeEach(() => {
-    mockAdapter = createMockAdapter();
+    mockAdapter = createMockFeatureFlagAdapter();
   });
 
   test('should return all feature flags', async () => {
-    const flags = { 'flag-1': true, 'flag-2': 'variant-a', 'flag-3': { config: 'value' } };
+    const flags = featureFlagTestData.posthog.responses.allFlags;
     vi.mocked(mockAdapter.getAllFlags).mockResolvedValue(flags);
 
     const { result } = renderHook(() => useFeatureFlags(), {
@@ -218,7 +213,7 @@ describe('useFeatureFlags Hook', () => {
       expect(result.current).toStrictEqual(flags);
     });
 
-    expect(mockAdapter.getAllFlags).toHaveBeenCalledOnce();
+    assertionHelpers.assertMockCalled(mockAdapter.getAllFlags, 1);
   });
 
   test('should return empty object by default', () => {

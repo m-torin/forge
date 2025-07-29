@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
 // Import example story
-import meta, { Default } from '../stories/HelloWorld.stories';
+import meta, { Default } from '#/root/stories/HelloWorld.stories';
 
 describe('story Structure', () => {
   describe('story Metadata', () => {

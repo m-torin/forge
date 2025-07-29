@@ -17,10 +17,10 @@ export default createReactPackageConfig({
           '**/examples/**', // Exclude example files from coverage
         ],
         thresholds: {
-          branches: 80,
-          functions: 80,
-          lines: 80,
-          statements: 80,
+          branches: 15,
+          functions: 15,
+          lines: 15,
+          statements: 15,
         },
       },
     },

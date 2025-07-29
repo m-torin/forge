@@ -1,4 +1,21 @@
-import type { CoreMessage, LanguageModelV1StreamPart } from 'ai';
+import type { CoreMessage } from 'ai';
+
+// AI SDK v5 compatible stream part type for testing
+export type TestStreamPart =
+  | { type: 'text-delta'; textDelta: string }
+  | { type: 'reasoning'; textDelta: string }
+  | {
+      type: 'finish';
+      finishReason: 'stop' | 'tool-calls';
+      usage: { completionTokens: number; promptTokens: number };
+    }
+  | {
+      type: 'tool-call';
+      toolCallType: 'function';
+      toolCallId: string;
+      toolName: string;
+      args: string;
+    };
 
 /**
  * Compares two CoreMessage objects for equality
@@ -39,14 +56,14 @@ export function compareMessages(firstMessage: CoreMessage, secondMessage: CoreMe
 /**
  * Converts text into text delta stream parts for testing
  */
-export function textToDeltas(text: string): LanguageModelV1StreamPart[] {
+export function textToDeltas(text: string): TestStreamPart[] {
   return text.split(' ').map(word => ({ type: 'text-delta' as const, textDelta: `${word} ` }));
 }
 
 /**
  * Converts reasoning text into reasoning delta stream parts for testing
  */
-export function reasoningToDeltas(text: string): LanguageModelV1StreamPart[] {
+export function reasoningToDeltas(text: string): TestStreamPart[] {
   return text.split(' ').map(word => ({ type: 'reasoning' as const, textDelta: `${word} ` }));
 }
 
@@ -56,11 +73,10 @@ export function reasoningToDeltas(text: string): LanguageModelV1StreamPart[] {
 export function createFinishPart(
   finishReason: 'stop' | 'tool-calls' = 'stop',
   usage = { completionTokens: 10, promptTokens: 3 },
-): LanguageModelV1StreamPart {
+): TestStreamPart {
   return {
     type: 'finish',
     finishReason,
-    logprobs: undefined,
     usage,
   };
 }
@@ -72,7 +88,7 @@ export function createToolCallPart(
   toolName: string,
   args: Record<string, any>,
   toolCallId = 'call_123',
-): LanguageModelV1StreamPart {
+): TestStreamPart {
   return {
     type: 'tool-call',
     toolCallId,
@@ -85,7 +101,7 @@ export function createToolCallPart(
 /**
  * Creates a simple text delta part for testing
  */
-export function createTextDelta(text: string): LanguageModelV1StreamPart {
+export function createTextDelta(text: string): TestStreamPart {
   return {
     type: 'text-delta',
     textDelta: text,
@@ -98,7 +114,7 @@ export function createTextDelta(text: string): LanguageModelV1StreamPart {
 export function createTextResponse(
   text: string,
   finishReason: 'stop' | 'tool-calls' = 'stop',
-): LanguageModelV1StreamPart[] {
+): TestStreamPart[] {
   return [...textToDeltas(text), createFinishPart(finishReason)];
 }
 
@@ -109,7 +125,7 @@ export function createReasoningResponse(
   reasoningText: string,
   responseText: string,
   finishReason: 'stop' | 'tool-calls' = 'stop',
-): LanguageModelV1StreamPart[] {
+): TestStreamPart[] {
   return [
     ...reasoningToDeltas(reasoningText),
     ...textToDeltas(responseText),
@@ -124,6 +140,6 @@ export function createToolCallResponse(
   toolName: string,
   args: Record<string, any>,
   toolCallId = 'call_123',
-): LanguageModelV1StreamPart[] {
+): TestStreamPart[] {
   return [createToolCallPart(toolName, args, toolCallId), createFinishPart()];
 }

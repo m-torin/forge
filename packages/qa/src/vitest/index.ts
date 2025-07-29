@@ -65,11 +65,15 @@ export {
 } from './configs/presets';
 
 // Export mocks and test utilities
-export * from './factories';
-export * from './mocks';
+export * from './factories/index';
+export * from './mocks/index';
+export * from './utils/advanced-database-patterns';
 export * from './utils/console';
 export * from './utils/database';
+export * from './utils/prisma-test-setup';
 export * from './utils/render';
+export * from './utils/seed-test-utils';
+export * from './utils/test-patterns';
 
 // Export setup utilities (but not actual setup files to avoid side effects)
 export * from './setup/dynamic-examples';

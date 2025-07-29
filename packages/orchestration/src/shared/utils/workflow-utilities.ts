@@ -3,13 +3,12 @@
  * progress reporting, error handling, and fallback mechanisms
  */
 
-import { createServerObservability } from '@repo/observability/shared-env';
+import { createServerObservability, logInfo } from '@repo/observability/server/next';
 import { z } from 'zod/v4';
 
 import { StepExecutionContext } from '../factories/step-factory/step-types';
 import { CircuitBreakerPattern } from '../types/patterns';
 
-import { logInfo } from '@repo/observability/server/next';
 import { createRateLimiter, RateLimitConfig as UtilsRateLimitConfig } from './rate-limit';
 
 // ===== STANDARDIZED CIRCUIT BREAKER CONFIGURATIONS =====
@@ -473,16 +472,10 @@ export async function withFallback<T>(
         // Fire and forget logging - don't await
         (async () => {
           try {
-            const logger = await createServerObservability({
-              providers: {
-                console: { enabled: true },
-              },
+            const logger = await createServerObservability();
+            logger.log('warning', `Primary operation failed (attempt ${attempt}/${maxAttempts})`, {
+              error: lastError,
             });
-            logger.log(
-              'warn',
-              `Primary operation failed (attempt ${attempt}/${maxAttempts})`,
-              lastError,
-            );
           } catch {
             // Fallback to console if logger fails
           }
@@ -504,11 +497,7 @@ export async function withFallback<T>(
       // Fire and forget logging - don't await
       (async () => {
         try {
-          const _logger = await createServerObservability({
-            providers: {
-              console: { enabled: true },
-            },
-          });
+          const _logger = await createServerObservability();
           logInfo('Attempting fallback operation...', { component: 'WorkflowUtilities' });
         } catch {
           // Fallback to console if logger fails

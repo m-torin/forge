@@ -19,6 +19,8 @@ export interface ModelConfig {
   model: string;
   apiKey?: string;
   baseUrl?: string;
+  maxOutputTokens?: number;
+  /** @deprecated Use maxOutputTokens instead */
   maxTokens?: number;
   temperature?: number;
   // Provider-specific options (following AI SDK patterns)
@@ -58,6 +60,8 @@ export interface EnhancedGenerateOptions {
   messages?: CoreMessage[];
   prompt?: string;
   system?: string;
+  maxOutputTokens?: number;
+  /** @deprecated Use maxOutputTokens instead */
   maxTokens?: number;
   temperature?: number;
   tools?: Record<string, any>;
@@ -140,7 +144,7 @@ export function createAnthropicModel(config: Partial<ModelConfig> = {}) {
   }
 
   // Use AI SDK's anthropic provider directly with settings
-  return Object.keys(settings).length > 0 ? anthropic(modelName, settings) : anthropic(modelName);
+  return anthropic(modelName);
 }
 
 /**
@@ -170,7 +174,7 @@ export function createGoogleModel(config: Partial<ModelConfig> = {}) {
   }
 
   // Use AI SDK's google provider directly with options
-  return google(modelName, providerOptions);
+  return google(modelName);
 }
 
 /**
@@ -204,7 +208,7 @@ export async function enhancedGenerateText(options: EnhancedGenerateOptions) {
 
     const generateOptions: any = {
       model: options.model,
-      maxTokens: options.maxTokens,
+      maxOutputTokens: options.maxOutputTokens || options.maxTokens,
       temperature: options.temperature,
       tools: options.tools,
       providerOptions: options.providerOptions,
@@ -236,7 +240,7 @@ export async function enhancedStreamText(options: EnhancedGenerateOptions) {
 
     const streamOptions: any = {
       model: options.model,
-      maxTokens: options.maxTokens,
+      maxOutputTokens: options.maxOutputTokens || options.maxTokens,
       temperature: options.temperature,
       tools: options.tools,
       providerOptions: options.providerOptions,
@@ -252,7 +256,7 @@ export async function enhancedStreamText(options: EnhancedGenerateOptions) {
       }
     }
 
-    const result = await streamText(streamOptions);
+    const result = streamText(streamOptions);
     return result;
   } catch (error) {
     throw formatProviderError(error, options.model.modelId || 'unknown', 'streaming');
@@ -274,7 +278,7 @@ export async function enhancedGenerateObject<T>(
       prompt: options.prompt,
       system: options.system,
       schema: options.schema,
-      maxTokens: options.maxTokens,
+      maxOutputTokens: options.maxOutputTokens || options.maxTokens,
       temperature: options.temperature,
       output: options.output,
       providerOptions: options.providerOptions,
@@ -368,7 +372,7 @@ export function createWebSearchGoogleModel(
     providerOptions.safetySettings = options.safetySettings;
   }
 
-  return google(modelName, providerOptions);
+  return google(modelName);
 }
 
 /**
@@ -380,6 +384,8 @@ export async function webSearchWithPerplexity(
   options?: {
     model?: 'sonar-pro' | 'sonar' | 'sonar-deep-research';
     return_images?: boolean;
+    maxOutputTokens?: number;
+    /** @deprecated Use maxOutputTokens instead */
     maxTokens?: number;
     temperature?: number;
   },
@@ -395,7 +401,7 @@ export async function webSearchWithPerplexity(
   return await generateText({
     model,
     prompt,
-    maxTokens: options?.maxTokens,
+    maxOutputTokens: options?.maxOutputTokens || options?.maxTokens,
     temperature: options?.temperature,
     providerOptions: Object.keys(providerOptions).length > 0 ? providerOptions : undefined,
   });
@@ -410,6 +416,8 @@ export async function webSearchWithGemini(
   options?: {
     model?: string;
     useSearchGrounding?: boolean;
+    maxOutputTokens?: number;
+    /** @deprecated Use maxOutputTokens instead */
     maxTokens?: number;
     temperature?: number;
   },
@@ -421,7 +429,7 @@ export async function webSearchWithGemini(
   return await generateText({
     model,
     prompt,
-    maxTokens: options?.maxTokens,
+    maxOutputTokens: options?.maxOutputTokens || options?.maxTokens,
     temperature: options?.temperature,
   });
 }

@@ -3,20 +3,27 @@ import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vi
 import {
   createTestExecution,
   createTestWorkflowDefinition,
-  resetUpstashMocks,
-  setupUpstashMocks,
-} from '../utils/upstash-mocks';
+  resetCombinedUpstashMocks,
+  setupCombinedUpstashMocks,
+} from '@repo/qa';
+
+// Import DRY test utilities
+import { createTestSuite } from '../utils/test-patterns';
 
 // Set test environment before importing anything
 vi.stubEnv('NODE_ENV', 'test');
 vi.stubEnv('VITEST', 'true');
 
 // Set up mocks before importing the provider
-let mocks: ReturnType<typeof setupUpstashMocks>;
+let mocks: ReturnType<typeof setupCombinedUpstashMocks>;
 
 beforeAll(() => {
-  mocks = setupUpstashMocks();
+  mocks = setupCombinedUpstashMocks();
 });
+
+// Create test suite for provider
+const testSuite = createTestSuite('upstash-workflow-provider');
+const { data, workflows, errors } = testSuite;
 
 describe('upstashWorkflowProvider', () => {
   let provider: any;
@@ -24,7 +31,81 @@ describe('upstashWorkflowProvider', () => {
 
   beforeEach(async () => {
     // Reset mocks properly
-    resetUpstashMocks(mocks);
+    resetCombinedUpstashMocks(mocks);
+
+    // Fix Redis mock methods to actually work
+    const storage = new Map<string, string>();
+    const zsetStorage = new Map<string, Map<string, number>>();
+
+    mocks.redis.set.mockImplementation(async (key: string, value: string) => {
+      storage.set(key, value);
+      return 'OK';
+    });
+
+    mocks.redis.get.mockImplementation(async (key: string) => {
+      return storage.get(key) || null;
+    });
+
+    mocks.redis.zadd.mockImplementation(async (key: string, scoreMembers: any) => {
+      if (!zsetStorage.has(key)) {
+        zsetStorage.set(key, new Map());
+      }
+      const zset = zsetStorage.get(key)!;
+      if (typeof scoreMembers === 'object' && 'score' in scoreMembers) {
+        zset.set(scoreMembers.member, scoreMembers.score);
+      }
+      return 1;
+    });
+
+    mocks.redis.zrange.mockImplementation(
+      async (key: string, start?: number, stop?: number, options?: any) => {
+        const zset = zsetStorage.get(key);
+        if (zset) {
+          let members = Array.from(zset.keys()).sort((a, b) => {
+            const scoreA = zset.get(a) || 0;
+            const scoreB = zset.get(b) || 0;
+            return scoreA - scoreB;
+          });
+
+          // Handle reverse option
+          if (options?.rev) {
+            members = members.reverse();
+          }
+
+          return members;
+        }
+        return [];
+      },
+    );
+
+    // Mock pipeline operations
+    mocks.redis.pipeline.mockImplementation(() => {
+      const commands: Array<{ method: string; args: any[] }> = [];
+
+      return {
+        get: (key: string) => {
+          commands.push({ method: 'get', args: [key] });
+          return this; // Return this for chaining
+        },
+        set: (key: string, value: string) => {
+          commands.push({ method: 'set', args: [key, value] });
+          return this;
+        },
+        exec: async () => {
+          const results = [];
+          for (const cmd of commands) {
+            if (cmd.method === 'get') {
+              const value = storage.get(cmd.args[0]);
+              results.push([null, value || null]); // [error, result] format
+            } else if (cmd.method === 'set') {
+              storage.set(cmd.args[0], cmd.args[1]);
+              results.push([null, 'OK']);
+            }
+          }
+          return results;
+        },
+      };
+    });
 
     // Import the provider after mocks are set up
     const module = await import('../../src/providers/upstash-workflow/provider');
@@ -43,8 +124,8 @@ describe('upstashWorkflowProvider', () => {
     provider.setClients(mocks.qstash, mocks.redis);
 
     // Verify the provider is using the test mocks
-    // expect(provider.redisClient).toBe(mocks.redis);
-    // expect(provider.qstash).toBe(mocks.qstash);
+    expect(provider.redisClient).toBe(mocks.redis);
+    expect(provider.qstash).toBe(mocks.qstash);
   });
 
   afterEach(() => {
@@ -222,17 +303,43 @@ describe('upstashWorkflowProvider', () => {
   });
 
   describe('execution Management', () => {
+    test('should test Redis mock storage directly', async () => {
+      // Test basic Redis functionality
+      const key = 'test-key';
+      const value = 'test-value';
+
+      // Directly test storage
+      mocks.redis._getStorage().set(key, value);
+      const stored = mocks.redis._getStorage().get(key);
+      expect(stored).toBe(value);
+
+      // Temporarily override the mock methods to make them work
+      const storage = new Map<string, string>();
+      mocks.redis.set.mockImplementation(async (k: string, v: string) => {
+        storage.set(k, v);
+        return 'OK';
+      });
+      mocks.redis.get.mockImplementation(async (k: string) => {
+        return storage.get(k) || null;
+      });
+
+      // Test via fixed mock methods
+      await mocks.redis.set(key + '2', value + '2');
+      const retrieved = await mocks.redis.get(key + '2');
+      expect(retrieved).toBe(value + '2');
+    });
+
     test('should get execution by ID', async () => {
       const workflowId = 'test-workflow';
       const executionId = 'exec-get-by-id';
       const testExecution = createTestExecution({ id: executionId, workflowId: workflowId });
 
-      // Store execution data directly in mock storage
+      // Store execution data using Redis API
       const executionKey = `workflow:execution:${executionId}`;
       const executionData = JSON.stringify(testExecution);
 
-      // Store directly in the mock storage
-      mocks.redis._getStorage().set(executionKey, executionData);
+      // Store execution data using Redis API
+      await mocks.redis.set(executionKey, executionData);
 
       // Also add to sorted set
       await mocks.redis.zadd(`workflow:${workflowId}:executions`, {
@@ -329,9 +436,9 @@ describe('upstashWorkflowProvider', () => {
       const executionId = 'exec-list-1';
       const testExecution = createTestExecution({ id: executionId, workflowId });
 
-      // Store execution data directly in mock storage
+      // Store execution data using Redis API
       const executionKey = `workflow:execution:${executionId}`;
-      mocks.redis._getStorage().set(executionKey, JSON.stringify(testExecution));
+      await mocks.redis.set(executionKey, JSON.stringify(testExecution));
 
       // Add to sorted set
       await mocks.redis.zadd(`workflow:${workflowId}:executions`, {
@@ -353,9 +460,9 @@ describe('upstashWorkflowProvider', () => {
         status: 'completed',
       });
 
-      // Store execution data directly in mock storage
+      // Store execution data using Redis API
       const executionKey = `workflow:execution:${executionId}`;
-      mocks.redis._getStorage().set(executionKey, JSON.stringify(testExecution));
+      await mocks.redis.set(executionKey, JSON.stringify(testExecution));
 
       // Add to sorted set
       await mocks.redis.zadd(`workflow:${workflowId}:executions`, {
@@ -377,13 +484,9 @@ describe('upstashWorkflowProvider', () => {
       const testExecution1 = createTestExecution({ id: executionId1, workflowId });
       const testExecution2 = createTestExecution({ id: executionId2, workflowId });
 
-      // Store execution data directly in mock storage
-      mocks.redis
-        ._getStorage()
-        .set(`workflow:execution:${executionId1}`, JSON.stringify(testExecution1));
-      mocks.redis
-        ._getStorage()
-        .set(`workflow:execution:${executionId2}`, JSON.stringify(testExecution2));
+      // Store execution data using Redis API
+      await mocks.redis.set(`workflow:execution:${executionId1}`, JSON.stringify(testExecution1));
+      await mocks.redis.set(`workflow:execution:${executionId2}`, JSON.stringify(testExecution2));
 
       // Add to sorted set
       await mocks.redis.zadd(`workflow:${workflowId}:executions`, {
@@ -569,9 +672,9 @@ describe('upstashWorkflowProvider', () => {
       const definition = createTestWorkflowDefinition({ id: workflowId });
       const testExecution = createTestExecution({ id: executionId, workflowId });
 
-      // Store execution data directly in mock storage
+      // Store execution data using Redis API
       const executionKey = `workflow:execution:${executionId}`;
-      mocks.redis._getStorage().set(executionKey, JSON.stringify(testExecution));
+      await mocks.redis.set(executionKey, JSON.stringify(testExecution));
 
       // Add to sorted set
       await mocks.redis.zadd(`workflow:${workflowId}:executions`, {
@@ -592,7 +695,7 @@ describe('upstashWorkflowProvider', () => {
             const { definition, executionId, workflowId: _workflowId } = body;
 
             // Mock workflow execution
-            {
+            if (provider.useRedis) {
               // Update execution status to running
               await provider.updateExecutionStatus(executionId, 'running');
 

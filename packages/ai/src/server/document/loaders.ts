@@ -137,14 +137,11 @@ export class DocumentLoaderManager {
         const docs = await loader.load(source, options);
         documents.push(...docs);
       } catch (error: any) {
-        logError(
-          `Error loading ${source}`,
-          error instanceof Error ? error : new Error(String(error)),
-          {
-            operation: 'document_loading',
-            metadata: { source },
-          },
-        );
+        logError(`Error loading ${source}`, {
+          operation: 'document_loading',
+          metadata: { source },
+          error: error instanceof Error ? error : new Error(String(error)),
+        });
         // Continue with other sources
       }
     }

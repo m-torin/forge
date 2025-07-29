@@ -1,263 +1,315 @@
+import { useStripeCustomer, useStripePaymentIntent } from '@/client-next';
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { useStripeCustomer, useStripePaymentIntent } from '../src/client-next';
+
+// ================================================================================================
+// DRY PAYMENTS CLIENT TESTING PATTERNS
+// ================================================================================================
+
+/**
+ * DRY patterns for testing payment hooks
+ */
+const paymentsTestPatterns = {
+  /**
+   * Test React hook with different scenarios
+   */
+  testHook: (
+    hookName: string,
+    useHook: () => any,
+    scenarios: Array<{
+      name: string;
+      setup?: () => void;
+      action?: (result: any) => Promise<void> | void;
+      assertion: (result: any) => void;
+      options?: any;
+    }>,
+  ) => {
+    describe(hookName, () => {
+      scenarios.forEach(scenario => {
+        test(`should ${scenario.name}`, async () => {
+          if (scenario.setup) {
+            scenario.setup();
+          }
+
+          const { result } = renderHook(() => useHook());
+
+          if (scenario.action) {
+            await act(async () => {
+              await scenario.action!(result.current);
+            });
+          }
+
+          scenario.assertion(result.current);
+        });
+      });
+    });
+  },
+
+  /**
+   * Test API operations with different response scenarios
+   */
+  testAPIOperation: (
+    hookName: string,
+    useHook: (options?: any) => any,
+    operation: string,
+    scenarios: Array<{
+      name: string;
+      mockResponse?: any;
+      mockError?: any;
+      operationArgs: any;
+      setup?: () => void;
+      assertion: (result: any, mockFn?: any) => void;
+      options?: any;
+    }>,
+  ) => {
+    describe(`${hookName} ${operation}`, () => {
+      scenarios.forEach(scenario => {
+        test(`should ${scenario.name}`, async () => {
+          if (scenario.setup) {
+            scenario.setup();
+          }
+
+          const mockFn = scenario.options?.onSuccess || scenario.options?.onError;
+          const { result } = renderHook(() => useHook(scenario.options));
+
+          await act(async () => {
+            try {
+              await result.current[operation](scenario.operationArgs);
+            } catch (error) {
+              // Expected for error scenarios
+            }
+          });
+
+          scenario.assertion(result.current, mockFn);
+        });
+      });
+    });
+  },
+};
 
 // Mock fetch globally
 const mockFetch = vi.fn();
-global.fetch = mockFetch;
+vi.stubGlobal('fetch', mockFetch);
 
-describe('payments Client Next.js Utilities', () => {
-  describe('useStripePaymentIntent', () => {
-    beforeEach(() => {
-      mockFetch.mockClear();
-    });
-
-    test('should initialize with default state', () => {
-      const { result } = renderHook(() => useStripePaymentIntent());
-
-      expect(result.current.loading).toBeFalsy();
-      expect(result.current.error).toBeNull();
-      expect(result.current.paymentIntent).toBeNull();
-      expect(typeof result.current.createPaymentIntent).toBe('function');
-    });
-
-    test('should handle successful payment intent creation', async () => {
-      const mockResponse = {
-        id: 'pi_123',
-        client_secret: 'pi_123_secret',
-      };
-
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      });
-
-      const onSuccess = vi.fn();
-      const { result } = renderHook(() => useStripePaymentIntent({ onSuccess }));
-
-      await act(async () => {
-        await result.current.createPaymentIntent({
-          amount: 1000,
-          currency: 'usd',
-        });
-      });
-
-      expect(result.current.loading).toBeFalsy();
-      expect(result.current.error).toBeNull();
-      expect(result.current.paymentIntent).toStrictEqual(mockResponse);
-      expect(onSuccess).toHaveBeenCalledWith(mockResponse);
-    });
-
-    test('should handle API errors', async () => {
-      const mockError = { error: 'Invalid amount' };
-
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 400,
-        json: async () => mockError,
-      });
-
-      const onError = vi.fn();
-      const { result } = renderHook(() => useStripePaymentIntent({ onError }));
-
-      await act(async () => {
-        try {
-          await result.current.createPaymentIntent({
-            amount: 1000,
-          });
-        } catch (error) {
-          // Expected to throw
-        }
-      });
-
-      expect(result.current.loading).toBeFalsy();
-      expect(result.current.error).toBe('HTTP error! status: 400');
-      expect(result.current.paymentIntent).toBeNull();
-      expect(onError).toHaveBeenCalledWith(expect.any(Error));
-    });
-
-    test('should handle network errors', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network error'));
-
-      const onError = vi.fn();
-      const { result } = renderHook(() => useStripePaymentIntent({ onError }));
-
-      await act(async () => {
-        try {
-          await result.current.createPaymentIntent({
-            amount: 1000,
-          });
-        } catch (error) {
-          // Expected to throw
-        }
-      });
-
-      expect(result.current.loading).toBeFalsy();
-      expect(result.current.error).toBe('Network error');
-      expect(result.current.paymentIntent).toBeNull();
-      expect(onError).toHaveBeenCalledWith(expect.any(Error));
-    });
-
-    test('should handle non-Error objects thrown by fetch', async () => {
-      mockFetch.mockRejectedValueOnce('String error');
-
-      const onError = vi.fn();
-      const { result } = renderHook(() => useStripePaymentIntent({ onError }));
-
-      await act(async () => {
-        try {
-          await result.current.createPaymentIntent({
-            amount: 1000,
-          });
-        } catch (error) {
-          // Expected to throw
-        }
-      });
-
-      expect(result.current.loading).toBeFalsy();
-      expect(result.current.error).toBe('Unknown error');
-      expect(result.current.paymentIntent).toBeNull();
-      expect(onError).toHaveBeenCalledWith(expect.any(Error));
-    });
-
-    test('should set loading state during request', async () => {
-      let resolvePromise: (value: any) => void;
-      const promise = new Promise(resolve => {
-        resolvePromise = resolve;
-      });
-
-      mockFetch.mockReturnValueOnce(promise);
-
-      const { result } = renderHook(() => useStripePaymentIntent());
-
-      // Start the request
-      act(() => {
-        result.current.createPaymentIntent({ amount: 1000 });
-      });
-
-      // Should be loading
-      expect(result.current.loading).toBeTruthy();
-
-      // Resolve the promise
-      await act(async () => {
-        resolvePromise!({
-          ok: true,
-          json: async () => ({ id: 'pi_123', client_secret: 'secret' }),
-        });
-        await promise;
-      });
-
-      // Should no longer be loading
-      expect(result.current.loading).toBeFalsy();
-    });
-
-    test('should reset state', () => {
-      const { result } = renderHook(() => useStripePaymentIntent());
-
-      act(() => {
-        result.current.reset();
-      });
-
-      expect(result.current.loading).toBeFalsy();
-      expect(result.current.error).toBeNull();
-      expect(result.current.paymentIntent).toBeNull();
-    });
+describe('payments Client Next.js Utilities (DRY Modernized)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockFetch.mockResolvedValue(new Response('{}', { status: 200 }));
   });
 
-  describe('useStripeCustomer', () => {
-    test('should initialize with default state', () => {
-      const { result } = renderHook(() => useStripeCustomer());
+  // ================================================================================================
+  // PAYMENT INTENT HOOK TESTING
+  // ================================================================================================
 
-      expect(result.current.loading).toBeFalsy();
-      expect(result.current.error).toBeNull();
-      expect(result.current.customer).toBeNull();
-      expect(typeof result.current.createCustomer).toBe('function');
+  paymentsTestPatterns.testHook(
+    'useStripePaymentIntent initialization',
+    () => useStripePaymentIntent(),
+    [
+      {
+        name: 'initialize with default state',
+        assertion: result => {
+          expect(result.loading).toBeFalsy();
+          expect(result.error).toBeNull();
+          expect(result.paymentIntent).toBeNull();
+          expect(typeof result.createPaymentIntent).toBe('function');
+        },
+      },
+      {
+        name: 'reset state correctly',
+        action: result => {
+          result.reset();
+        },
+        assertion: result => {
+          expect(result.loading).toBeFalsy();
+          expect(result.error).toBeNull();
+          expect(result.paymentIntent).toBeNull();
+        },
+      },
+    ],
+  );
+
+  paymentsTestPatterns.testAPIOperation(
+    'useStripePaymentIntent',
+    options => useStripePaymentIntent(options),
+    'createPaymentIntent',
+    [
+      {
+        name: 'handle successful payment intent creation',
+        setup: () => {
+          const mockResponse = { id: 'pi_123', client_secret: 'pi_123_secret' };
+          mockFetch.mockResolvedValueOnce({
+            ok: true,
+            json: async () => mockResponse,
+          });
+        },
+        operationArgs: { amount: 1000, currency: 'usd' },
+        options: { onSuccess: vi.fn() },
+        assertion: (result, mockFn) => {
+          expect(result.loading).toBeFalsy();
+          expect(result.error).toBeNull();
+          expect(result.paymentIntent).toStrictEqual({
+            id: 'pi_123',
+            client_secret: 'pi_123_secret',
+          });
+          expect(mockFn).toHaveBeenCalledWith({ id: 'pi_123', client_secret: 'pi_123_secret' });
+        },
+      },
+      {
+        name: 'handle API errors',
+        setup: () => {
+          mockFetch.mockResolvedValueOnce({
+            ok: false,
+            status: 400,
+            json: async () => ({ error: 'Invalid amount' }),
+          });
+        },
+        operationArgs: { amount: 1000 },
+        options: { onError: vi.fn() },
+        assertion: (result, mockFn) => {
+          expect(result.loading).toBeFalsy();
+          expect(result.error).toBe('HTTP error! status: 400');
+          expect(result.paymentIntent).toBeNull();
+          expect(mockFn).toHaveBeenCalledWith(expect.any(Error));
+        },
+      },
+      {
+        name: 'handle network errors',
+        setup: () => {
+          mockFetch.mockRejectedValueOnce(new Error('Network error'));
+        },
+        operationArgs: { amount: 1000 },
+        options: { onError: vi.fn() },
+        assertion: (result, mockFn) => {
+          expect(result.loading).toBeFalsy();
+          expect(result.error).toBe('Network error');
+          expect(result.paymentIntent).toBeNull();
+          expect(mockFn).toHaveBeenCalledWith(expect.any(Error));
+        },
+      },
+      {
+        name: 'handle non-Error objects thrown by fetch',
+        setup: () => {
+          mockFetch.mockRejectedValueOnce('String error');
+        },
+        operationArgs: { amount: 1000 },
+        options: { onError: vi.fn() },
+        assertion: (result, mockFn) => {
+          expect(result.loading).toBeFalsy();
+          expect(result.error).toBe('Unknown error');
+          expect(result.paymentIntent).toBeNull();
+          expect(mockFn).toHaveBeenCalledWith(expect.any(Error));
+        },
+      },
+    ],
+  );
+
+  test('should set loading state during request', async () => {
+    let resolvePromise: (value: any) => void;
+    const promise = new Promise(resolve => {
+      resolvePromise = resolve;
     });
 
-    test('should create customer successfully', async () => {
-      const mockCustomer = {
-        id: 'cus_123',
-        email: 'test@example.com',
-      };
+    mockFetch.mockReturnValueOnce(promise);
+    const { result } = renderHook(() => useStripePaymentIntent());
 
-      mockFetch.mockResolvedValueOnce({
+    act(() => {
+      result.current.createPaymentIntent({ amount: 1000 });
+    });
+
+    expect(result.current.loading).toBeTruthy();
+
+    await act(async () => {
+      resolvePromise!({
         ok: true,
-        json: async () => mockCustomer,
+        json: async () => ({ id: 'pi_123', client_secret: 'secret' }),
       });
-
-      const onSuccess = vi.fn();
-      const { result } = renderHook(() => useStripeCustomer({ onSuccess }));
-
-      await act(async () => {
-        await result.current.createCustomer({
-          email: 'test@example.com',
-          name: 'Test User',
-        });
-      });
-
-      expect(result.current.loading).toBeFalsy();
-      expect(result.current.error).toBeNull();
-      expect(result.current.customer).toStrictEqual(mockCustomer);
-      expect(onSuccess).toHaveBeenCalledWith(mockCustomer);
+      await promise;
     });
 
-    test('should handle customer creation errors', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 400,
-      });
-
-      const onError = vi.fn();
-      const { result } = renderHook(() => useStripeCustomer({ onError }));
-
-      await act(async () => {
-        try {
-          await result.current.createCustomer({
-            email: 'test@example.com',
-          });
-        } catch (error) {
-          // Expected to throw
-        }
-      });
-
-      expect(result.current.loading).toBeFalsy();
-      expect(result.current.error).toBe('HTTP error! status: 400');
-      expect(result.current.customer).toBeNull();
-      expect(onError).toHaveBeenCalledWith(expect.any(Error));
-    });
-
-    test('should handle non-Error objects thrown by fetch in customer creation', async () => {
-      mockFetch.mockRejectedValueOnce('Network failure');
-
-      const onError = vi.fn();
-      const { result } = renderHook(() => useStripeCustomer({ onError }));
-
-      await act(async () => {
-        try {
-          await result.current.createCustomer({
-            email: 'test@example.com',
-          });
-        } catch (error) {
-          // Expected to throw
-        }
-      });
-
-      expect(result.current.loading).toBeFalsy();
-      expect(result.current.error).toBe('Unknown error');
-      expect(result.current.customer).toBeNull();
-      expect(onError).toHaveBeenCalledWith(expect.any(Error));
-    });
-
-    test('should reset customer state', () => {
-      const { result } = renderHook(() => useStripeCustomer());
-
-      act(() => {
-        result.current.reset();
-      });
-
-      expect(result.current.loading).toBeFalsy();
-      expect(result.current.error).toBeNull();
-      expect(result.current.customer).toBeNull();
-    });
+    expect(result.current.loading).toBeFalsy();
   });
+
+  // ================================================================================================
+  // CUSTOMER HOOK TESTING
+  // ================================================================================================
+
+  paymentsTestPatterns.testHook('useStripeCustomer initialization', () => useStripeCustomer(), [
+    {
+      name: 'initialize with default state',
+      assertion: result => {
+        expect(result.loading).toBeFalsy();
+        expect(result.error).toBeNull();
+        expect(result.customer).toBeNull();
+        expect(typeof result.createCustomer).toBe('function');
+      },
+    },
+    {
+      name: 'reset customer state',
+      action: result => {
+        result.reset();
+      },
+      assertion: result => {
+        expect(result.loading).toBeFalsy();
+        expect(result.error).toBeNull();
+        expect(result.customer).toBeNull();
+      },
+    },
+  ]);
+
+  paymentsTestPatterns.testAPIOperation(
+    'useStripeCustomer',
+    options => useStripeCustomer(options),
+    'createCustomer',
+    [
+      {
+        name: 'create customer successfully',
+        setup: () => {
+          const mockCustomer = { id: 'cus_123', email: 'test@example.com' };
+          mockFetch.mockResolvedValueOnce({
+            ok: true,
+            json: async () => mockCustomer,
+          });
+        },
+        operationArgs: { email: 'test@example.com', name: 'Test User' },
+        options: { onSuccess: vi.fn() },
+        assertion: (result, mockFn) => {
+          expect(result.loading).toBeFalsy();
+          expect(result.error).toBeNull();
+          expect(result.customer).toStrictEqual({ id: 'cus_123', email: 'test@example.com' });
+          expect(mockFn).toHaveBeenCalledWith({ id: 'cus_123', email: 'test@example.com' });
+        },
+      },
+      {
+        name: 'handle customer creation errors',
+        setup: () => {
+          mockFetch.mockResolvedValueOnce({
+            ok: false,
+            status: 400,
+          });
+        },
+        operationArgs: { email: 'test@example.com' },
+        options: { onError: vi.fn() },
+        assertion: (result, mockFn) => {
+          expect(result.loading).toBeFalsy();
+          expect(result.error).toBe('HTTP error! status: 400');
+          expect(result.customer).toBeNull();
+          expect(mockFn).toHaveBeenCalledWith(expect.any(Error));
+        },
+      },
+      {
+        name: 'handle non-Error objects thrown by fetch in customer creation',
+        setup: () => {
+          mockFetch.mockRejectedValueOnce('Network failure');
+        },
+        operationArgs: { email: 'test@example.com' },
+        options: { onError: vi.fn() },
+        assertion: (result, mockFn) => {
+          expect(result.loading).toBeFalsy();
+          expect(result.error).toBe('Unknown error');
+          expect(result.customer).toBeNull();
+          expect(mockFn).toHaveBeenCalledWith(expect.any(Error));
+        },
+      },
+    ],
+  );
 });

@@ -3,6 +3,10 @@
   "private": true,
   "type": "module",
   "exports": {
+    ".": {
+      "types": "./src/shared.ts",
+      "default": "./src/shared.ts"
+    },
     "./client": {
       "types": "./src/client.ts",
       "default": "./src/client.ts"
@@ -23,9 +27,17 @@
       "types": "./src/server-edge.ts",
       "default": "./src/server-edge.ts"
     },
+    "./shared": {
+      "types": "./src/shared.ts",
+      "default": "./src/shared.ts"
+    },
     "./shared-env": {
-      "types": "./src/shared-env.ts",
-      "default": "./src/shared-env.ts"
+      "types": "./src/shared.ts",
+      "default": "./src/shared.ts"
+    },
+    "./server/rag": {
+      "types": "./src/server/rag/index.ts",
+      "default": "./src/server/rag/index.ts"
     }
   },
   "scripts": {
@@ -41,24 +53,28 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^1.2.12",
-    "@ai-sdk/deepinfra": "^0.2.17",
-    "@ai-sdk/google": "^1.2.22",
-    "@ai-sdk/openai": "^1.3.23",
-    "@ai-sdk/openai-compatible": "^0.2.16",
-    "@ai-sdk/perplexity": "^1.1.9",
-    "@ai-sdk/xai": "^1.2.18",
-    "@anthropic-ai/sdk": "^0.56.0",
+    "@ai-sdk/anthropic": "catalog:",
+    "@ai-sdk/deepinfra": "catalog:",
+    "@ai-sdk/google": "catalog:",
+    "@ai-sdk/openai": "catalog:",
+    "@ai-sdk/openai-compatible": "catalog:",
+    "@ai-sdk/perplexity": "catalog:",
+    "@ai-sdk/provider": "catalog:",
+    "@ai-sdk/provider-utils": "catalog:",
+    "@ai-sdk/react": "catalog:",
+    "@ai-sdk/xai": "catalog:",
+    "@anthropic-ai/sdk": "^0.57.0",
     "@mantine/core": "catalog:",
-    "@modelcontextprotocol/sdk": "^1.15.1",
+    "@modelcontextprotocol/sdk": "^1.17.0",
+    "@repo/database": "workspace:*",
     "@repo/observability": "workspace:*",
     "@t3-oss/env-nextjs": "catalog:",
     "@tabler/icons-react": "catalog:",
     "@upstash/vector": "^1.2.2",
-    "ai": "^4.3.19",
-    "exa-js": "^1.8.20",
+    "ai": "catalog:",
+    "exa-js": "^1.8.23",
     "next": "catalog:",
-    "openai": "^5.9.0",
+    "openai": "^5.10.2",
     "react": "catalog:",
     "react-markdown": "^10.1.0",
     "resumable-stream": "^2.2.1",

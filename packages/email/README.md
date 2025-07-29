@@ -1,9 +1,11 @@
 # @repo/email
 
-React Email templates and email sending utilities with Resend integration.
+- _Can build:_ **NO**
 
-## Documentation
+- _Exports:_
+  - **Core**: `./client`, `./server`, `./client/next`, `./server/next`
+  - **Templates**: `./templates/api-key-created`, `./templates/contact`,
+    `./templates/magic-link`
+  - **Utilities**: `./keys`, `./env`
 
-Complete documentation is available at:
-
-- [Email Package Overview](../../apps/docs/packages/email.mdx)
+- _Documentation:_ **[Email Package](../../apps/docs/packages/email.mdx)**

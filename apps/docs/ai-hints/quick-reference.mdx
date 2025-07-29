@@ -1,108 +1,419 @@
 ---
-title: Package Quick Reference
-description: Summary of all packages with key details
+title: Quick Reference
+description: Summary of all packages and their key details
 ---
 
-# Package Quick Reference
+# Quick Reference
 
-Quick lookup table for all packages in the monorepo.
+Essential information about all packages in the Forge monorepo for quick lookup.
 
-## Package Summary
+## Package Overview
 
-| Package                      | Layer | Purpose                    | Edge Support | Key Import                             |
-| ---------------------------- | ----- | -------------------------- | ------------ | -------------------------------------- |
-| `@repo/typescript-config`    | 1     | TypeScript configurations  | N/A          | Config only                            |
-| `@repo/eslint-config`        | 1     | ESLint configurations      | N/A          | Config only                            |
-| `@repo/next-config`          | 1     | Next.js configuration      | N/A          | `import { config }`                    |
-| `@repo/qa`                   | 2     | Test utilities and configs | N/A          | Test helpers                           |
-| `@repo/security`             | 2     | Headers, rate limiting     | ✅ Yes       | `import { ... }`                       |
-| `@repo/observability`        | 2     | Sentry, logging            | ✅ Yes       | `import { ... }/server/edge`           |
-| `@repo/database`             | 3     | Prisma ORM                 | ❌ No        | `import { db }`                        |
-| `@repo/analytics`            | 4     | PostHog, Segment, GA       | ✅ Yes       | Feature flags included                 |
-| `@repo/email`                | 4     | React Email templates      | ❌ No        | `import { ... }`                       |
-| `@repo/notifications`        | 4     | Knock + Mantine            | ✅ Yes       | `import { ... }/mantine-notifications` |
-| `@repo/auth`                 | 5     | Better Auth                | ✅ Yes       | `import { auth }/server/next`          |
-| `@repo/payments`             | 5     | Stripe integration         | ❌ No        | `import { ... }`                       |
-| `@repo/orchestration`        | 5     | Workflow engine            | ❌ No        | `import { ... }`                       |
-| `@repo/seo`                  | 5     | SEO utilities              | ✅ Yes       | `import { ... }`                       |
-| `@repo/internationalization` | 5     | i18n support               | ✅ Yes       | `import { ... }`                       |
-| `@repo/ai`                   | 5.5   | AI integrations            | ❌ No        | `import { ... }`                       |
-| `@repo/scraping`             | 5.5   | Web scraping               | ❌ No        | `import { ... }`                       |
-| `@repo/storage`              | 5.5   | File storage               | ❌ No        | `import { ... }`                       |
-| `@repo/design-system`        | 6     | Composite components       | N/A          | `import { ... }`                       |
+| Package                      | Purpose                        | Layer | Edge Support | Key Import                                |
+| ---------------------------- | ------------------------------ | ----- | ------------ | ----------------------------------------- |
+| `@repo/auth`                 | Better Auth with organizations | 5     | ✅           | `auth` from `/server/next`                |
+| `@repo/database`             | Prisma ORM + generated types   | 3     | ❌           | `import { db }`                           |
+| `@repo/analytics`            | PostHog/GA with feature flags  | 4     | ✅           | `import { analytics }`                    |
+| `@repo/observability`        | Sentry error tracking          | 2     | ✅           | `createObservability` from `/server/next` |
+| `@repo/notifications`        | Mantine notifications          | 4     | ✅           | `/mantine-notifications`                  |
+| `@repo/email`                | Email templates and sending    | 4     | ❌           | `import { sendEmail }`                    |
+| `@repo/storage`              | Cloudflare R2/Images           | 5.5   | ✅           | `import { storage }`                      |
+| `@repo/payments`             | Stripe integration             | 5     | ❌           | `import { stripe }`                       |
+| `@repo/ai`                   | AI/ML functionality            | 5.5   | ✅           | `import { ai }`                           |
+| `@repo/scraping`             | Web scraping utilities         | 5.5   | ❌           | `import { scraper }`                      |
+| `@repo/feature-flags`        | Feature flag management        | 4     | ✅           | `import { flags }`                        |
+| `@repo/internationalization` | i18n support                   | 5     | ✅           | `import { i18n }`                         |
+| `@repo/seo`                  | SEO utilities                  | 5     | ✅           | `import { seo }`                          |
+| `@repo/links`                | Link management                | 5     | ✅           | `import { links }`                        |
+| `@repo/orchestration`        | Workflow management            | 5     | ❌           | `import { workflow }`                     |
+| `@repo/security`             | Security utilities             | 2     | ✅           | `import { security }`                     |
+| `@repo/qa`                   | Testing utilities              | 2     | ✅           | `import { testUtils }`                    |
 
-## Import Pattern Quick Guide
+## Import Patterns
+
+### Next.js Apps
 
 ```typescript
-// Next.js Server Component/Action
-import { something } from "@repo/package/server/next";
+// Server components/actions
+import { auth } from "@repo/auth/server/next";
+import { createObservability } from "@repo/observability/server/next";
 
-// Next.js Client Component
-import { useSomething } from "@repo/package/client/next";
+// Client components
+import { useAuth } from "@repo/auth/client/next";
+import { createObservability } from "@repo/observability/client/next";
 
-// Next.js Middleware/Edge
-import { something } from "@repo/package/server/edge";
-
-// Node.js Worker
-import { something } from "@repo/package/server";
-
-// Non-Next.js Browser
-import { something } from "@repo/package/client";
+// Middleware
+import { auth } from "@repo/auth/server/edge";
+import { createObservability } from "@repo/observability/server/edge";
 ```
 
-## Common Operations by Package
-
-### @repo/auth
+### Node.js Workers/Scripts
 
 ```typescript
-// Check authentication
-const session = await auth();
-if (!session) redirect("/login");
-
-// Get user info
-const userId = session.user.id;
+// Node.js only
+import { createAuth } from "@repo/auth/server";
+import { createObservability } from "@repo/observability/server";
 ```
 
-### @repo/database
+## Environment Variables
 
-```typescript
-// Query data
-const user = await db.user.findUnique({ where: { id } });
+### Required for All Apps
 
-// Create record
-const post = await db.post.create({ data: { ... } });
+```bash
+# Database
+DATABASE_URL=postgresql://...
+
+# Auth
+AUTH_SECRET=your-secret-key
+AUTH_URL=http://localhost:3000
+
+# Environment
+NODE_ENV=development
 ```
 
-### @repo/analytics
+### Optional (Auto-activates when set)
 
-```typescript
-// Track event
-analytics.track("event-name", { properties });
+```bash
+# Sentry
+SENTRY_DSN=https://xxx@sentry.io/yyy
 
-// Check feature flag
-const isEnabled = await checkFeatureFlag("flag-name");
+# PostHog
+NEXT_PUBLIC_POSTHOG_KEY=your-key
+POSTHOG_HOST=https://app.posthog.com
+
+# Cloudflare
+CLOUDFLARE_ACCOUNT_ID=your-account-id
+CLOUDFLARE_API_TOKEN=your-token
+
+# Stripe
+STRIPE_SECRET_KEY=sk_test_...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
 ```
 
-### @repo/notifications
+## Common Commands
+
+### Development
+
+```bash
+# Install dependencies
+pnpm install
+
+# Run development server
+pnpm dev
+
+# Type checking
+pnpm typecheck
+
+# Linting
+pnpm lint
+
+# Testing
+pnpm test
+```
+
+### Database
+
+```bash
+# Run migrations
+pnpm migrate
+
+# Generate Prisma client
+pnpm --filter @repo/database generate
+
+# Open Prisma Studio
+pnpm studio
+```
+
+### Building
+
+```bash
+# Build all apps
+pnpm build
+
+# Build specific app
+pnpm build --filter=app-name
+
+# Production build with Doppler
+pnpm build:doppler
+```
+
+## Testing Patterns
+
+### Component Tests
 
 ```typescript
-// Show notification
-notifications.show({
-  title: "Success",
-  message: "Operation completed",
-  color: "green"
+import { render, screen } from '@testing-library/react';
+import { Component } from './Component';
+
+test('renders component', () => {
+  render(<Component data-testid="test-component" />);
+  expect(screen.getByTestId('test-component')).toBeInTheDocument();
 });
 ```
 
-## Package Dependencies
+### Server Action Tests
 
-Remember the layer hierarchy:
+```typescript
+import { testAction } from "@repo/qa/server-actions";
 
-- Layer 1 (Foundation) → No dependencies
-- Layer 2 (Core) → Can use Layer 1
-- Layer 3 (Data) → Can use Layers 1-2
-- Layer 4 (Business Services) → Can use Layers 1-3
-- Layer 5 (Business Logic) → Can use Layers 1-4
-- Layer 5.5 (Specialized) → Can use Layers 1-5
-- Layer 6 (UI) → Can use Layers 1-5.5
-- Layer 7 (Apps) → Can use all layers
+test("creates user", async () => {
+  const result = await testAction(createUser, {
+    email: "test@example.com",
+    name: "Test User"
+  });
+
+  expect(result.success).toBe(true);
+});
+```
+
+### E2E Tests
+
+```typescript
+import { test, expect } from "@playwright/test";
+
+test("user can sign up", async ({ page }) => {
+  await page.goto("/signup");
+  await page.fill('[data-testid="email-input"]', "test@example.com");
+  await page.click('[data-testid="submit-button"]');
+  await expect(page).toHaveURL("/dashboard");
+});
+```
+
+## Error Handling Patterns
+
+### Server Actions
+
+```typescript
+export async function createUser(formData: FormData) {
+  try {
+    const validated = userSchema.parse(Object.fromEntries(formData));
+    const user = await db.user.create({ data: validated });
+    return { success: true, user };
+  } catch (error) {
+    return { success: false, error: "Failed to create user" };
+  }
+}
+```
+
+### API Routes
+
+```typescript
+export async function POST(request: Request) {
+  try {
+    const data = await request.json();
+    // Process data
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+```
+
+## Form Patterns
+
+### Mantine + Zod
+
+```typescript
+import { useForm } from "@mantine/form";
+import { zodResolver } from "mantine-form-zod-resolver";
+import { z } from "zod";
+
+const schema = z.object({
+  email: z.string().email(),
+  name: z.string().min(2)
+});
+
+const form = useForm({
+  validate: zodResolver(schema),
+  initialValues: { email: "", name: "" }
+});
+```
+
+## Authentication Patterns
+
+### Protected Server Component
+
+```typescript
+import { auth } from '@repo/auth/server/next';
+import { redirect } from 'next/navigation';
+
+export default async function ProtectedPage() {
+  const session = await auth();
+  if (!session) redirect('/login');
+
+  return <div>Welcome {session.user.name}</div>;
+}
+```
+
+### Protected Server Action
+
+```typescript
+import { auth } from "@repo/auth/server/next";
+
+export async function protectedAction() {
+  const session = await auth();
+  if (!session) {
+    throw new Error("Unauthorized");
+  }
+
+  // Use session.user.id for user operations
+}
+```
+
+## Database Patterns
+
+### Basic CRUD
+
+```typescript
+import { db } from "@repo/database";
+
+// Create
+const user = await db.user.create({
+  data: { email: "test@example.com", name: "Test" }
+});
+
+// Read
+const user = await db.user.findUnique({
+  where: { id: userId }
+});
+
+// Update
+const updated = await db.user.update({
+  where: { id: userId },
+  data: { name: "New Name" }
+});
+
+// Delete
+await db.user.delete({
+  where: { id: userId }
+});
+```
+
+### Complex Queries
+
+```typescript
+const users = await db.user.findMany({
+  where: {
+    posts: {
+      some: { published: true }
+    }
+  },
+  include: {
+    posts: {
+      where: { published: true },
+      orderBy: { createdAt: "desc" }
+    }
+  }
+});
+```
+
+## File Structure Patterns
+
+### Package Structure
+
+```
+packages/package-name/
+├── package.json
+├── src/
+│   ├── index.ts          # Main exports
+│   ├── server/           # Server-side code
+│   │   ├── next.ts       # Next.js server
+│   │   └── edge.ts       # Edge runtime
+│   ├── client/           # Client-side code
+│   │   └── next.ts       # Next.js client
+│   └── shared/           # Shared utilities
+├── env.ts                # Environment validation
+└── __tests__/            # Tests
+```
+
+### App Structure
+
+```
+apps/app-name/
+├── app/                  # Next.js app directory
+│   ├── actions/          # Server actions
+│   ├── components/       # Components
+│   └── lib/              # Utilities
+├── components/           # Shared components
+├── env.ts                # Environment validation
+└── __tests__/            # Tests
+```
+
+## Common Gotchas
+
+### ❌ Don't do this
+
+```typescript
+// Direct process.env access in client components
+"use client";
+const apiKey = process.env.API_KEY; // ❌
+
+// Using server imports in client
+("use client");
+import { auth } from "@repo/auth/server/next"; // ❌
+
+// Forgetting to regenerate Prisma client
+// After schema changes, always run:
+// pnpm --filter @repo/database generate
+```
+
+### ✅ Do this instead
+
+```typescript
+// Use safeEnv pattern
+"use client";
+import { safeEnv } from '@/env';
+const env = safeEnv();
+const apiKey = env.NEXT_PUBLIC_API_KEY; // ✅
+
+// Use client imports in client components
+"use client";
+import { useAuth } from '@repo/auth/client/next'; // ✅
+
+// Always regenerate after schema changes
+pnpm migrate
+pnpm --filter @repo/database generate
+```
+
+## Performance Tips
+
+### Server Components
+
+- Use server components by default
+- Fetch data in server components
+- Use React cache for expensive operations
+
+### Client Components
+
+- Use client components only when needed
+- Implement proper loading states
+- Use optimistic updates for better UX
+
+### Database
+
+- Use select/include to limit data
+- Implement proper indexing
+- Use batch operations when possible
+
+## Security Best Practices
+
+### Authentication
+
+- Always validate sessions in server actions
+- Use proper redirect patterns
+- Implement rate limiting
+
+### Data Validation
+
+- Use Zod schemas for all inputs
+- Validate on both client and server
+- Sanitize user inputs
+
+### Environment Variables
+
+- Never expose secrets to client
+- Use proper environment validation
+- Use Doppler for production secrets

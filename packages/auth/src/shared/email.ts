@@ -12,7 +12,7 @@ import {
   sendVerificationEmail as sendVerificationEmailTemplate,
   sendWelcomeEmail as sendWelcomeEmailTemplate,
 } from '@repo/email/server';
-import { logError } from '@repo/observability/shared-env';
+import { logError } from '@repo/observability';
 
 // Type definitions for email data
 export interface InvitationEmailData {

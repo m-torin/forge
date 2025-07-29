@@ -1,7 +1,13 @@
 # @repo/observability
 
-Centralized observability system with support for Sentry, OpenTelemetry,
-Logtail, and Grafana monitoring.
+- _Can build:_ **NO**
 
-Complete documentation is available in
-[../../apps/docs/packages/observability/overview.mdx](../../apps/docs/packages/observability/overview.mdx).
+- _Exports:_
+  - **Core**: `.`, `./client`, `./server`, `./client/next`, `./server/next`,
+    `./server/edge`, `./env`
+  - **Plugins**: `./plugins/console`, `./plugins/sentry`,
+    `./plugins/betterstack`, `./plugins/logtape`,
+    `./plugins/sentry-microfrontend` (+ env configs)
+
+- _Documentation:_
+  **[Observability Package](../apps/docs/packages/observability/overview.mdx)**

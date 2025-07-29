@@ -1,7 +1,7 @@
 import { PostHog } from 'posthog-node';
 
-import { logError, logWarn } from '@repo/observability/server/next';
-import type { Adapter } from '@vercel/flags';
+import { logError, logWarn } from '@repo/observability';
+import type { Adapter } from 'flags';
 import { safeEnv } from '../../env';
 
 export interface PostHogServerAdapterOptions {
@@ -40,25 +40,49 @@ export function createPostHogServerAdapter(
   const postHogHost = options.postHogOptions?.host || env.POSTHOG_HOST || 'https://app.posthog.com';
 
   if (!postHogKey) {
-    logWarn('PostHog API key not configured - feature flags will return false', {
+    logWarn('PostHog API key not configured - using offline fallback mode', {
       adapter: 'posthog-server',
+      mode: 'offline-fallback',
     });
-    // Return a no-op adapter that returns false for all flags
+    // Return an offline-compatible adapter with local fallbacks
     return {
       isFeatureEnabled: () => ({
-        decide: async () => false,
+        decide: async ({ key, entities }) => {
+          // Offline fallback: use local context for basic feature detection
+          const contextEntity = entities as any;
+          const userId = contextEntity?.user?.id || 'anonymous';
+          // Simple hash-based determination for consistency
+          const hash = (key + userId).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+          return hash % 2 === 0; // 50% rollout offline
+        },
         config: { reportValue: true },
-        origin: { provider: 'posthog' },
+        origin: { provider: 'posthog-offline' },
       }),
       featureFlagValue: () => ({
-        decide: async () => false,
+        decide: async ({ key, entities }) => {
+          // Offline fallback: return simple variants
+          const contextEntity = entities as any;
+          const userId = contextEntity?.user?.id || 'anonymous';
+          const hash = (key + userId).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+          return hash % 3 === 0 ? 'variant-a' : hash % 3 === 1 ? 'variant-b' : 'control';
+        },
         config: { reportValue: true },
-        origin: { provider: 'posthog' },
+        origin: { provider: 'posthog-offline' },
       }),
       featureFlagPayload: (transform?: (value: any) => any) => ({
-        decide: async () => (transform ? transform({}) : {}),
+        decide: async ({ key, entities }) => {
+          // Offline fallback: return minimal payload
+          const contextEntity = entities as any;
+          const defaultPayload = {
+            key,
+            userId: contextEntity?.user?.id || 'anonymous',
+            offline: true,
+            timestamp: Date.now(),
+          };
+          return transform ? transform(defaultPayload) : defaultPayload;
+        },
         config: { reportValue: true },
-        origin: { provider: 'posthog' },
+        origin: { provider: 'posthog-offline' },
       }),
     };
   }
@@ -79,8 +103,9 @@ export function createPostHogServerAdapter(
             return result || false;
           } catch (error) {
             logError(
-              'Error checking PostHog feature flag',
-              error instanceof Error ? error : new Error(String(error)),
+              error instanceof Error
+                ? error
+                : new Error('Error checking PostHog feature flag: ' + String(error)),
               { adapter: 'posthog-server' },
             );
             return false;
@@ -106,8 +131,9 @@ export function createPostHogServerAdapter(
             return value !== undefined ? value : false;
           } catch (error) {
             logError(
-              'Error getting PostHog feature flag value',
-              error instanceof Error ? error : new Error(String(error)),
+              error instanceof Error
+                ? error
+                : new Error('Error getting PostHog feature flag value: ' + String(error)),
               { adapter: 'posthog-server' },
             );
             return false;
@@ -137,8 +163,9 @@ export function createPostHogServerAdapter(
             return (payload as T) || defaultPayload;
           } catch (error) {
             logError(
-              'Error getting PostHog feature flag payload',
-              error instanceof Error ? error : new Error(String(error)),
+              error instanceof Error
+                ? error
+                : new Error('Error getting PostHog feature flag payload: ' + String(error)),
               { adapter: 'posthog-server' },
             );
             return defaultPayload;
@@ -211,10 +238,19 @@ export async function getProviderData(options: { personalApiKey?: string; projec
     };
   } catch (error) {
     logError(
-      'Error fetching PostHog provider data',
-      error instanceof Error ? error : new Error(String(error)),
+      error instanceof Error
+        ? error
+        : new Error('Error fetching PostHog provider data: ' + String(error)),
       { adapter: 'posthog-server' },
     );
     throw error;
   }
+}
+
+/**
+ * Reset the singleton PostHog client - for testing only
+ * @internal
+ */
+export function resetPostHogClient() {
+  serverPostHogClient = null;
 }

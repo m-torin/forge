@@ -14,7 +14,7 @@ vi.mock('@repo/email/server', () => ({
   sendWelcomeEmail: vi.fn(),
 }));
 
-vi.mock('@repo/observability/shared-env', () => ({
+vi.mock('@repo/observability', () => ({
   logError: vi.fn(),
 }));
 

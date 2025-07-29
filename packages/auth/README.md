@@ -1,7 +1,12 @@
 # @repo/auth
 
-Authentication package built on Better Auth with organization support, API keys,
-and comprehensive middleware.
+- _Can build:_ **NO**
 
-Complete documentation is available in
-[../../apps/docs/packages/auth/overview.mdx](../../apps/docs/packages/auth/overview.mdx).
+- _Exports:_
+  - **Core**: `.`, `./client`, `./server`, `./client/next`, `./server/next`,
+    `./server/edge`
+  - **Features**: `./actions`, `./components`, `./shared`, `./types`, `./config`
+  - **Testing**: `./testing`, `./testing/mocks`
+
+- _Documentation:_
+  **[Auth Package](../../apps/docs/packages/auth/overview.mdx)**

@@ -1,0 +1,657 @@
+---
+title: EmbeddableNotionEditor - Integration Guide
+description: Complete integration guide for the embeddable Notion-style editor
+---
+
+# EmbeddableNotionEditor - Integration Guide
+
+A lightweight, self-contained Notion-style editor designed for easy integration
+into any React application or website.
+
+## 🚀 Quick Start
+
+### Installation
+
+```bash
+npm install @repo/editor
+# or
+yarn add @repo/editor
+# or
+pnpm add @repo/editor
+```
+
+### Basic Usage
+
+```tsx
+import { EmbeddableNotionEditor } from "@repo/editor/components";
+
+function MyApp() {
+  const handleChange = (html: string, json: any) => {
+    console.log("Content changed:", html);
+    // Save to your backend
+  };
+
+  return (
+    <EmbeddableNotionEditor
+      placeholder="Start writing..."
+      onChange={handleChange}
+      minHeight="300px"
+    />
+  );
+}
+```
+
+## 📋 Features
+
+- **🪶 Lightweight** - Under 50KB gzipped
+- **🎨 Themeable** - Customizable colors and styling
+- **🔧 Configurable** - Enable/disable features as needed
+- **📱 Responsive** - Works on all screen sizes
+- **♿ Accessible** - Full ARIA support
+- **💾 Auto-save** - Built-in auto-save functionality
+- **🎯 Self-contained** - Includes all necessary CSS
+
+## 🛠 Configuration Options
+
+### Theme Customization
+
+```tsx
+<EmbeddableNotionEditor
+  theme={{
+    backgroundColor: "#ffffff",
+    textColor: "#1f2937",
+    borderColor: "#e5e7eb",
+    focusColor: "#3b82f6",
+    placeholderColor: "#9ca3af"
+  }}
+/>
+```
+
+### Feature Configuration
+
+```tsx
+<EmbeddableNotionEditor
+  features={{
+    formatting: true, // Bold, italic, underline
+    lists: true, // Bullet and numbered lists
+    tables: true, // Table support
+    codeBlocks: true, // Code blocks with syntax highlighting
+    links: true, // Link support
+    tasks: true, // Task list support
+    colors: true // Text and highlight colors
+  }}
+/>
+```
+
+### Auto-Save Setup
+
+```tsx
+<EmbeddableNotionEditor
+  autoSave={{
+    enabled: true,
+    delay: 1000, // Save after 1 second of inactivity
+    onSave: (content) => {
+      // Save to your backend
+      fetch("/api/save", {
+        method: "POST",
+        body: JSON.stringify({ content })
+      });
+    }
+  }}
+/>
+```
+
+## 📖 Real-World Examples
+
+### Blog Editor
+
+```tsx
+function BlogEditor({ postId, initialContent }) {
+  return (
+    <EmbeddableNotionEditor
+      content={initialContent}
+      placeholder="Write your blog post..."
+      features={{
+        formatting: true,
+        lists: true,
+        tables: false,
+        codeBlocks: true,
+        links: true,
+        tasks: false,
+        colors: true
+      }}
+      autoSave={{
+        enabled: true,
+        delay: 2000,
+        onSave: (content) => saveBlogPost(postId, content)
+      }}
+      minHeight="500px"
+    />
+  );
+}
+```
+
+### Comment System
+
+```tsx
+function CommentEditor({ onSubmit }) {
+  const [content, setContent] = useState("");
+
+  return (
+    <div>
+      <EmbeddableNotionEditor
+        placeholder="Write a comment..."
+        onChange={(html) => setContent(html)}
+        features={{
+          formatting: true,
+          lists: false,
+          tables: false,
+          codeBlocks: false,
+          links: true,
+          tasks: false,
+          colors: false
+        }}
+        showToolbar={false}
+        minHeight="100px"
+        maxWidth="100%"
+      />
+      <button onClick={() => onSubmit(content)}>Post Comment</button>
+    </div>
+  );
+}
+```
+
+### Documentation Editor
+
+```tsx
+function DocsEditor({ documentId }) {
+  return (
+    <EmbeddableNotionEditor
+      placeholder="Write documentation..."
+      features={{
+        formatting: true,
+        lists: true,
+        tables: true,
+        codeBlocks: true,
+        links: true,
+        tasks: true,
+        colors: false
+      }}
+      autoSave={{
+        enabled: true,
+        delay: 1500,
+        onSave: (content) => saveDocument(documentId, content)
+      }}
+      theme={{
+        backgroundColor: "#f9fafb",
+        focusColor: "#059669"
+      }}
+      minHeight="600px"
+    />
+  );
+}
+```
+
+### Dark Theme Example
+
+```tsx
+function DarkEditor() {
+  return (
+    <EmbeddableNotionEditor
+      placeholder="Dark mode editor..."
+      theme={{
+        backgroundColor: "#1f2937",
+        textColor: "#f9fafb",
+        borderColor: "#374151",
+        focusColor: "#60a5fa",
+        placeholderColor: "#9ca3af"
+      }}
+    />
+  );
+}
+```
+
+## 🎮 Programmatic Control
+
+Use the `useEmbeddableEditor` hook for programmatic control:
+
+```tsx
+import {
+  EmbeddableNotionEditor,
+  useEmbeddableEditor
+} from "@repo/editor/components";
+
+function AdvancedEditor() {
+  const [editor, setEditor] = useState(null);
+  const editorControls = useEmbeddableEditor();
+
+  const handleSave = () => {
+    if (editor) {
+      const content = editorControls.getHTML(editor);
+      console.log("Saving:", content);
+    }
+  };
+
+  const handleClear = () => {
+    if (editor) {
+      editorControls.clearContent(editor);
+    }
+  };
+
+  return (
+    <div>
+      <div>
+        <button onClick={handleSave}>Save</button>
+        <button onClick={handleClear}>Clear</button>
+      </div>
+
+      <EmbeddableNotionEditor
+        onUpdate={(editor) => setEditor(editor)}
+        placeholder="Content with external controls..."
+      />
+    </div>
+  );
+}
+```
+
+## 🔧 Advanced Integration
+
+### With Form Libraries
+
+```tsx
+import { useForm, Controller } from "react-hook-form";
+
+function FormWithEditor() {
+  const { control, handleSubmit } = useForm();
+
+  return (
+    <form onSubmit={handleSubmit((data) => console.log(data))}>
+      <Controller
+        name="content"
+        control={control}
+        render={({ field }) => (
+          <EmbeddableNotionEditor
+            content={field.value}
+            onChange={(html) => field.onChange(html)}
+            placeholder="Enter content..."
+          />
+        )}
+      />
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+```
+
+### With State Management
+
+```tsx
+// Redux example
+import { useDispatch, useSelector } from "react-redux";
+
+function ReduxEditor() {
+  const dispatch = useDispatch();
+  const content = useSelector((state) => state.editor.content);
+
+  return (
+    <EmbeddableNotionEditor
+      content={content}
+      onChange={(html) => dispatch(updateContent(html))}
+      autoSave={{
+        enabled: true,
+        delay: 1000,
+        onSave: (content) => dispatch(saveContent(content))
+      }}
+    />
+  );
+}
+```
+
+## 🎨 CSS Customization
+
+The editor includes all necessary CSS, but you can override styles:
+
+```css
+/* Custom styling */
+.embeddable-notion-editor {
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.embeddable-notion-editor-content {
+  font-family: "Your Custom Font", sans-serif;
+}
+
+/* Custom toolbar styling */
+.embeddable-editor-toolbar {
+  background: linear-gradient(45deg, #f0f9ff, #dbeafe);
+}
+```
+
+## 🚀 Performance Tips
+
+1. **Lazy Loading**: Import the editor dynamically for better performance:
+
+```tsx
+import dynamic from "next/dynamic";
+
+const EmbeddableEditor = dynamic(
+  () =>
+    import("@repo/editor/components").then((mod) => mod.EmbeddableNotionEditor),
+  { ssr: false }
+);
+```
+
+2. **Feature Optimization**: Only enable features you need:
+
+```tsx
+// Minimal setup for better performance
+<EmbeddableNotionEditor
+  features={{
+    formatting: true,
+    lists: false,
+    tables: false,
+    codeBlocks: false,
+    links: false,
+    tasks: false,
+    colors: false
+  }}
+/>
+```
+
+3. **Auto-save Debouncing**: Use appropriate delays:
+
+```tsx
+// For real-time collaboration: short delay
+autoSave={{ enabled: true, delay: 500 }}
+
+// For regular saving: longer delay
+autoSave={{ enabled: true, delay: 3000 }}
+```
+
+## 🔍 TypeScript Support
+
+Full TypeScript support with comprehensive type definitions:
+
+```tsx
+import type { EmbeddableNotionEditorProps } from "@repo/editor/components";
+
+const editorConfig: EmbeddableNotionEditorProps = {
+  placeholder: "Type here...",
+  features: {
+    formatting: true,
+    lists: true
+    // ... other options with full autocomplete
+  },
+  onChange: (html: string, json: any) => {
+    // Fully typed parameters
+  }
+};
+```
+
+## 🔒 Security Features & Best Practices
+
+The EmbeddableNotionEditor includes comprehensive security measures to protect
+against common web vulnerabilities:
+
+### Built-in Security Features
+
+#### 1. CSS Injection Prevention
+
+- **CSS Sanitization**: All theme values are sanitized using DOMPurify
+- **CSS Custom Properties**: Dynamic styling uses secure CSS variables instead
+  of dangerouslySetInnerHTML
+- **Dimension Validation**: Width/height values are validated and sanitized
+
+```tsx
+// ✅ Safe - values are automatically sanitized
+<EmbeddableNotionEditor
+  theme={{
+    backgroundColor: userProvidedColor, // Sanitized automatically
+    textColor: "#1f2937"
+  }}
+  minHeight={userProvidedHeight} // Validated and sanitized
+/>
+```
+
+#### 2. Content Security Policy (CSP) Support
+
+- **Nonce Generation**: Automatic nonce generation in production
+- **External CSS**: Styles are loaded from external files, not inline
+- **Script-src Ready**: Compatible with strict CSP policies
+
+```html
+<!-- Example CSP header for enhanced security -->
+<meta
+  http-equiv="Content-Security-Policy"
+  content="default-src 'self';
+               script-src 'self' 'nonce-xyz123';
+               style-src 'self' 'unsafe-inline';"
+/>
+```
+
+#### 3. URL Validation & Sanitization
+
+- **Protocol Allowlisting**: Only http:, https:, and mailto: URLs allowed
+- **Malicious URL Blocking**: Blocks javascript:, data:, file: schemes
+- **External Link Security**: Automatic rel="noopener noreferrer" for external
+  links
+
+```tsx
+// URLs are automatically validated and sanitized
+<EmbeddableNotionEditor
+  features={{ links: true }} // Safe link handling enabled
+  content={userGeneratedContent} // All URLs will be validated
+/>
+```
+
+#### 4. File Upload Security
+
+- **Binary MIME Detection**: Uses file-type package for accurate type detection
+- **Filename Sanitization**: Removes dangerous characters from filenames
+- **Size Limits**: Configurable file size restrictions
+- **Type Restrictions**: Strict allowlist of permitted file types
+
+```tsx
+<EmbeddableNotionEditor
+  features={{ mediaUpload: true }}
+  mediaUploadConfig={{
+    accept: "image/jpeg,image/png,image/gif", // Strict MIME types
+    maxSize: 5 * 1024 * 1024, // 5MB limit
+    uploadHandler: secureUploadHandler, // Your secure upload function
+    onError: (error) => {
+      // Handle validation errors
+      console.error("Upload security check failed:", error);
+    }
+  }}
+/>
+```
+
+#### 5. Content Validation
+
+- **Tiptap Security Features**: enableContentCheck and emitContentError enabled
+- **Schema Validation**: Content structure is validated against editor schema
+- **XSS Prevention**: Malicious content is automatically rejected
+
+### Security Best Practices
+
+#### 1. Server-Side Validation
+
+Always validate content on your server, even with client-side protections:
+
+```tsx
+// Client-side (EmbeddableNotionEditor handles basic security)
+<EmbeddableNotionEditor
+  onChange={(html) => {
+    // Client validation is handled automatically
+    saveToBackend(html);
+  }}
+/>
+```
+
+```javascript
+// Server-side validation (Node.js example)
+const DOMPurify = require("isomorphic-dompurify");
+
+app.post("/api/save-content", (req, res) => {
+  const { content } = req.body;
+
+  // Server-side sanitization
+  const cleanContent = DOMPurify.sanitize(content, {
+    ALLOWED_TAGS: ["p", "h1", "h2", "h3", "strong", "em", "ul", "ol", "li"],
+    ALLOWED_ATTR: ["class", "id"]
+  });
+
+  // Save cleanContent to database
+  database.save(cleanContent);
+});
+```
+
+#### 2. Content Security Policy Configuration
+
+Implement a strict CSP for maximum security:
+
+```html
+<meta
+  http-equiv="Content-Security-Policy"
+  content="
+  default-src 'self';
+  script-src 'self' 'nonce-{generated-nonce}';
+  style-src 'self' 'unsafe-inline';
+  img-src 'self' data: https:;
+  connect-src 'self' https:;
+  frame-src 'none';
+  object-src 'none';
+"
+/>
+```
+
+#### 3. Secure File Upload Implementation
+
+```tsx
+const secureUploadHandler = async (file: File) => {
+  // Client-side validation (already handled by editor)
+  // This is your server upload logic
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch("/api/upload", {
+    method: "POST",
+    body: formData,
+    headers: {
+      "X-CSRF-Token": getCsrfToken() // Add CSRF protection
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error("Upload failed security validation");
+  }
+
+  const { url } = await response.json();
+  return url;
+};
+```
+
+#### 4. Auto-Save Security
+
+Implement secure auto-save with proper authentication:
+
+```tsx
+<EmbeddableNotionEditor
+  autoSave={{
+    enabled: true,
+    delay: 2000,
+    onSave: async (content) => {
+      try {
+        await fetch("/api/auto-save", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getAuthToken()}`,
+            "X-CSRF-Token": getCsrfToken()
+          },
+          body: JSON.stringify({
+            content,
+            documentId: currentDocumentId,
+            timestamp: Date.now()
+          })
+        });
+      } catch (error) {
+        console.error("Auto-save failed:", error);
+        // Handle error appropriately
+      }
+    }
+  }}
+/>
+```
+
+### Security Audit Checklist
+
+Before deploying the EmbeddableNotionEditor in production:
+
+#### ✅ Content Security
+
+- [ ] Server-side content validation implemented
+- [ ] XSS protection verified
+- [ ] Content sanitization on save
+- [ ] HTML output sanitization on display
+
+#### ✅ File Upload Security
+
+- [ ] Server-side file type validation
+- [ ] File size limits enforced
+- [ ] Malicious file scanning
+- [ ] Secure file storage location
+
+#### ✅ Network Security
+
+- [ ] HTTPS only in production
+- [ ] CSRF protection enabled
+- [ ] Authentication tokens secured
+- [ ] Rate limiting implemented
+
+#### ✅ Client-Side Security
+
+- [ ] CSP headers configured
+- [ ] External link security attributes
+- [ ] Input validation on all forms
+- [ ] Error handling doesn't expose sensitive data
+
+### Reporting Security Issues
+
+If you discover a security vulnerability in the EmbeddableNotionEditor:
+
+1. **Do not** create a public GitHub issue
+2. **Do not** discuss the vulnerability publicly
+3. **Contact** the security team directly at security@yourcompany.com
+4. **Include** detailed reproduction steps and impact assessment
+
+### Security Updates
+
+- Security patches are released as soon as possible
+- Critical vulnerabilities are patched within 24-48 hours
+- All security updates are clearly marked in release notes
+- Subscribe to security advisories for notifications
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+1. **Styles not loading**: Make sure you're importing the component correctly
+2. **SSR issues**: Use dynamic imports for Next.js applications
+3. **Auto-save not working**: Check that the `onSave` callback is defined
+4. **CSP violations**: Ensure your CSP allows the editor's required resources
+5. **Upload failures**: Verify file types and sizes meet security requirements
+
+### Browser Support
+
+- Chrome/Edge: ✅ Full support
+- Firefox: ✅ Full support
+- Safari: ✅ Full support
+- Mobile browsers: ✅ Full support
+
+## 📝 License
+
+This embeddable editor is part of the @repo/editor package and follows the same
+license terms.

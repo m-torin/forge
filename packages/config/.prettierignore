@@ -3,6 +3,9 @@
 dist/
 storybook-static/
 coverage/
+.vitest-ui/coverage/
+html/coverage/
+coverage-browser/
 generated/
 prisma-generated/
 
@@ -33,12 +36,14 @@ apps/swr-site/nextra-remote-filepaths/
 # Ignored directories
 labs/
 services/
+infra/
 
 # Generated files that cause parsing errors
 apps/email/.react-email/**
 **/.react-email/**
 **/*.test.todo.ts
 **/test-results/**
+**/test-results.json
 **/playwright-report/**
 
 # Shell scripts with complex syntax that break prettier-plugin-sh

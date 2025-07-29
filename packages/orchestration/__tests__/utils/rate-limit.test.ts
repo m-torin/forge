@@ -8,34 +8,7 @@ import {
   type RateLimitResult,
 } from '../../src/shared/utils/rate-limit';
 
-// Mock external dependencies
-vi.mock('@upstash/ratelimit', () => {
-  const mockLimit = vi.fn().mockResolvedValue({
-    success: true,
-    remaining: 95,
-    limit: 100,
-    reset: Date.now() + 60000,
-  });
-
-  const mockRatelimit = vi.fn().mockImplementation(() => ({
-    limit: mockLimit,
-  }));
-
-  // Add static methods to the mock constructor
-  vi.spyOn(mockRatelimit as any, 'slidingWindow')
-    .mockImplementation(() => 'sliding-window-limiter')
-    .mockReturnValue('sliding-window-limiter');
-
-  return {
-    Ratelimit: mockRatelimit,
-  };
-});
-
-vi.mock('@repo/database/redis/server', () => ({
-  redis: {
-    ping: vi.fn().mockResolvedValue('PONG'),
-  },
-}));
+// 3rd party mocks are auto-imported by @repo/qa package
 
 vi.mock('@repo/observability/server/next', () => ({
   logError: vi.fn(),

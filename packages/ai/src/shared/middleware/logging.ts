@@ -1,99 +1,93 @@
-import { logError, logInfo } from '@repo/observability/shared-env';
-import {
-  isAILoggingEnabled,
-  isAIPerformanceLoggingEnabled,
-  isAIRequestLoggingEnabled,
-  isAIResponseLoggingEnabled,
-} from '../../../env';
-import { CompletionOptions, CompletionResponse } from '../types';
+/**
+ * AI SDK Logging Middleware
+ * Provides structured logging for AI operations with performance tracking
+ */
+
+import { logError, logInfo, logWarn } from '@repo/observability';
 
 export interface LoggingConfig {
   enabled: boolean;
-  logErrors: boolean;
   logRequests: boolean;
   logResponses: boolean;
-  logTokenUsage: boolean;
+  logPerformance: boolean;
+  logLevel: 'debug' | 'info' | 'warn' | 'error';
 }
 
-export class AILogger {
-  private config: LoggingConfig;
-
-  constructor(config: Partial<LoggingConfig> = {}) {
-    this.config = {
-      enabled: config.enabled ?? isAILoggingEnabled(),
-      logErrors: config.logErrors ?? true,
-      logRequests: config.logRequests ?? isAIRequestLoggingEnabled(),
-      logResponses: config.logResponses ?? isAIResponseLoggingEnabled(),
-      logTokenUsage: config.logTokenUsage ?? isAIPerformanceLoggingEnabled(),
-    };
-  }
-
-  logError(provider: string, operation: string, error: Error): void {
-    if (!this.config.enabled || !this.config.logErrors) return;
-
-    logError(`[AI] ${provider} ${operation} error`, error, {
-      operation,
-      provider,
-      timestamp: new Date().toISOString(),
-    });
-  }
-
-  logNextRequest(provider: string, operation: string, options: CompletionOptions): void {
-    if (!this.config.enabled || !this.config.logRequests) return;
-
-    // Handle both prompt and messages patterns
-    const promptInfo = options.prompt
-      ? { promptLength: options.prompt.length }
-      : { messagesCount: options.messages?.length || 0 };
-
-    logInfo(`[AI] ${provider} ${operation} request`, {
-      maxTokens: options.maxTokens,
-      model: options.model,
-      operation,
-      ...promptInfo,
-      provider,
-      temperature: options.temperature,
-      timestamp: new Date().toISOString(),
-    });
-  }
-
-  logResponse(provider: string, operation: string, response: CompletionResponse): void {
-    if (!this.config.enabled) return;
-
-    if (this.config.logTokenUsage && response.usage) {
-      logInfo(`[AI] ${provider} ${operation} usage`, {
-        finishReason: response.finishReason,
-        model: response.model,
-        operation,
-        provider,
-        timestamp: new Date().toISOString(),
-        usage: response.usage,
-      });
-    }
-
-    if (this.config.logResponses) {
-      logInfo(`[AI] ${provider} ${operation} response`, {
-        finishReason: response.finishReason,
-        operation,
-        provider,
-        textLength: response.text.length,
-        timestamp: new Date().toISOString(),
-        usage: response.usage,
-      });
-    }
-  }
-
-  logStream(provider: string, chunkCount: number, totalText: string): void {
-    if (!this.config.enabled || !this.config.logTokenUsage) return;
-
-    logInfo(`[AI] ${provider} stream completed`, {
-      chunkCount,
-      estimatedTokens: Math.ceil(totalText.length / 4),
-      provider,
-      timestamp: new Date().toISOString(),
-      totalLength: totalText.length,
-    });
-  }
+export interface AIOperationLog {
+  operation: string;
+  model: string;
+  timestamp: string;
+  duration?: number;
+  tokens?: {
+    input: number;
+    output: number;
+  };
+  success: boolean;
+  error?: string;
 }
 
-export const defaultLogger = new AILogger();
+/**
+ * Default logging configuration
+ */
+export const DEFAULT_LOGGING_CONFIG: LoggingConfig = {
+  enabled: process.env.AI_LOGGING_ENABLED === 'true',
+  logRequests: process.env.AI_LOG_REQUESTS === 'true',
+  logResponses: process.env.AI_LOG_RESPONSES === 'true',
+  logPerformance: process.env.AI_LOG_PERFORMANCE === 'true',
+  logLevel: (process.env.AI_LOG_LEVEL as LoggingConfig['logLevel']) || 'info',
+};
+
+/**
+ * Create logging middleware for AI operations
+ */
+export function createLoggingMiddleware(config: Partial<LoggingConfig> = {}) {
+  const finalConfig = { ...DEFAULT_LOGGING_CONFIG, ...config };
+
+  return {
+    logOperation: (log: AIOperationLog) => {
+      if (!finalConfig.enabled) return;
+
+      const logData = {
+        ...log,
+        config: finalConfig.logRequests || finalConfig.logResponses ? finalConfig : undefined,
+      };
+
+      if (log.success) {
+        logInfo('AI operation completed', logData);
+      } else {
+        logWarn('AI operation failed', logData);
+      }
+    },
+
+    logError: (operation: string, error: Error) => {
+      if (!finalConfig.enabled) return;
+
+      logError('AI operation error', {
+        operation,
+        error: error.message,
+        stack: error.stack,
+        timestamp: new Date().toISOString(),
+      });
+    },
+
+    logPerformance: (
+      operation: string,
+      duration: number,
+      tokens?: { input: number; output: number },
+    ) => {
+      if (!finalConfig.enabled || !finalConfig.logPerformance) return;
+
+      logInfo('AI operation performance', {
+        operation,
+        duration,
+        tokens,
+        timestamp: new Date().toISOString(),
+      });
+    },
+  };
+}
+
+/**
+ * Default logging instance
+ */
+export const aiLogger = createLoggingMiddleware();

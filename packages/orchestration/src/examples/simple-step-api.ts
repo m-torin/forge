@@ -28,7 +28,7 @@
  * @see ./step-factory-simple.ts for class-based approach
  */
 
-import { createServerObservability } from '@repo/observability/shared-env';
+import { createServerObservability } from '@repo/observability/server/next';
 import {
   compose,
   createStep,
@@ -49,11 +49,7 @@ const sendEmailStep = createStep(
   'send-welcome-email',
   async (input: { email: string; name: string }) => {
     // Simulate email sending
-    const logger = await createServerObservability({
-      providers: {
-        console: { enabled: true },
-      },
-    });
+    const logger = await createServerObservability();
     await logger.log('info', `Sending welcome email to ${input.email} for ${input.name}`);
     return { messageId: 'msg_123', status: 'sent' };
   },
@@ -83,11 +79,7 @@ const processPaymentStep = createStepWithValidation(
  */
 const monitoredStep = withStepMonitoring(sendEmailStep, {
   onStepComplete: async (stepName: string, duration: number, success: boolean) => {
-    const logger = await createServerObservability({
-      providers: {
-        console: { enabled: true },
-      },
-    });
+    const logger = await createServerObservability();
     await logger.log('info', `Step ${stepName} completed in ${duration}ms, success: ${success}`);
   },
 });
@@ -115,11 +107,7 @@ const robustEmailStep = compose(
   (step: any) =>
     withStepMonitoring(step, {
       onStepComplete: async (stepName: string, duration: number, success: boolean) => {
-        const logger = await createServerObservability({
-          providers: {
-            console: { enabled: true },
-          },
-        });
+        const logger = await createServerObservability();
         await logger.log(
           'info',
           `Step ${stepName} completed in ${duration}ms, success: ${success}`,
@@ -131,11 +119,7 @@ const robustEmailStep = compose(
 // ===== USAGE EXAMPLES =====
 
 async function demonstrateSimpleAPI() {
-  const logger = await createServerObservability({
-    providers: {
-      console: { enabled: true },
-    },
-  });
+  const logger = await createServerObservability();
 
   await logger.log('info', '=== Simple Step Factory API Demo ===\n');
 
@@ -145,7 +129,7 @@ async function demonstrateSimpleAPI() {
     email: 'user@example.com',
     name: 'John Doe',
   });
-  await logger.log('info', 'Result:', emailResult);
+  await logger.log('info', 'Result:', { result: emailResult });
   await logger.log('info', '');
 
   // Example 2: Step with validation
@@ -154,7 +138,7 @@ async function demonstrateSimpleAPI() {
     amount: 100,
     currency: 'USD',
   });
-  await logger.log('info', 'Result:', paymentResult);
+  await logger.log('info', 'Result:', { result: paymentResult });
   await logger.log('info', '');
 
   // Example 3: Enhanced step with monitoring
@@ -163,7 +147,7 @@ async function demonstrateSimpleAPI() {
     email: 'monitored@example.com',
     name: 'Jane Smith',
   });
-  await logger.log('info', 'Result:', monitoredResult);
+  await logger.log('info', 'Result:', { result: monitoredResult });
   await logger.log('info', '');
 
   // Example 4: Robust step with multiple enhancers
@@ -172,7 +156,7 @@ async function demonstrateSimpleAPI() {
     email: 'robust@example.com',
     name: 'Bob Wilson',
   });
-  await logger.log('info', 'Result: ', robustResult);
+  await logger.log('info', 'Result: ', { result: robustResult });
 }
 
 // ===== COMPARISON WITH OLD API =====

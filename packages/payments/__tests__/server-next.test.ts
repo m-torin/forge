@@ -173,7 +173,10 @@ describe('payments Server Next.js Utilities', () => {
 
       const response = await webhookHandler(mockRequest);
 
-      expect(logError).toHaveBeenCalledWith('Webhook error', expect.any(Error), expect.any(Object));
+      expect(logError).toHaveBeenCalledWith('Webhook error', {
+        error: expect.any(Error),
+        operation: 'webhook',
+      });
       expect(response.status).toBe(400);
       const responseData = await response.json();
       expect(responseData).toHaveProperty('error');
@@ -254,7 +257,8 @@ describe('payments Server Next.js Utilities', () => {
 
       await expect(createPaymentIntentUtil({ amount: 1000 })).rejects.toThrow('Stripe error');
 
-      expect(logError).toHaveBeenCalledWith('Error creating payment intent', error, {
+      expect(logError).toHaveBeenCalledWith('Error creating payment intent', {
+        error: error,
         operation: 'createPaymentIntent',
       });
     });
@@ -271,7 +275,8 @@ describe('payments Server Next.js Utilities', () => {
 
       await expect(createPaymentIntentUtil({ amount: 1000 })).rejects.toThrow('String error');
 
-      expect(logError).toHaveBeenCalledWith('Error creating payment intent', expect.any(Error), {
+      expect(logError).toHaveBeenCalledWith('Error creating payment intent', {
+        error: expect.any(Error),
         operation: 'createPaymentIntent',
       });
     });
@@ -356,7 +361,8 @@ describe('payments Server Next.js Utilities', () => {
         'Customer creation failed',
       );
 
-      expect(logError).toHaveBeenCalledWith('Error creating customer', error, {
+      expect(logError).toHaveBeenCalledWith('Error creating customer', {
+        error: error,
         operation: 'createCustomer',
       });
     });
@@ -375,7 +381,8 @@ describe('payments Server Next.js Utilities', () => {
         'String error',
       );
 
-      expect(logError).toHaveBeenCalledWith('Error creating customer', expect.any(Error), {
+      expect(logError).toHaveBeenCalledWith('Error creating customer', {
+        error: expect.any(Error),
         operation: 'createCustomer',
       });
     });

@@ -21,13 +21,18 @@ model User {
   // Soft delete support
   deletedAt DateTime?
 
+  // Author information from e-commerce schema
+  bio              String?   @db.Text // Author biography text
+  expertise        String[] // Areas of expertise
+  isVerifiedAuthor Boolean   @default(false) // Whether this is a verified expert/author
+  authorSince      DateTime? // When the user became an author
 
   // User preferences and settings
-  preferences Json? // Flexible storage for user preferences
+  preferences Json? @db.JsonB // Flexible storage for user preferences
 
   // Account status
   isSuspended       Boolean @default(false) // Whether the user is currently suspended
-  suspensionDetails Json? // Details about the suspension (reason, duration, etc.)
+  suspensionDetails Json? @db.JsonB // Details about the suspension (reason, duration, etc.)
 
   // Authentication relationships
   sessions  Session[]
@@ -37,16 +42,46 @@ model User {
   twoFactor TwoFactor?
   passkeys  Passkey[]
 
+  // E-commerce relationships
+  articles          Article[]
+  collections       Collection[]
+  media             Media[]
+  favorites         FavoriteJoin[]
+  reviews           Review[]
+  createdRegistries Registry[]             @relation("CreatedRegistries")
+  registries        RegistryUserJoin[]
+  purchases         RegistryPurchaseJoin[] @relation("UserPurchases")
+  reviewVotes       ReviewVoteJoin[]
+
+  // Cart and Order relationships
+  addresses Address[]
+  carts     Cart[]
+  orders    Order[]
+
   // Invitation relationships
   invitationsSent Invitation[] @relation("InvitedBy")
   teamMemberships TeamMember[] @relation("TeamMemberships")
 
+  // Deletion relationships
+  deletedArticles          Article[]         @relation("DeletedArticles")
+  deletedBrands            Brand[]           @relation("DeletedBrands")
+  deletedCollections       Collection[]      @relation("DeletedCollections")
+  deletedProducts          Product[]         @relation("DeletedProducts")
+  deletedTaxonomies        Taxonomy[]        @relation("DeletedTaxonomies")
+  deletedReviews           Review[]          @relation("DeletedReviews")
+  deletedRegistries        Registry[]        @relation("DeletedRegistries")
+  deletedRegistryItems     RegistryItem[]    @relation("DeletedRegistryItems")
+  deletedMedia             Media[]           @relation("DeletedMedia")
+  deletedProductCategories ProductCategory[] @relation("DeletedProductCategories")
+  deletedLocations         Location[]        @relation("DeletedLocations")
+  deletedCasts             Cast[]            @relation("DeletedCasts")
+  deletedFandoms           Fandom[]          @relation("DeletedFandoms")
+  deletedSeries            Series[]          @relation("DeletedSeries")
+  deletedStories           Story[]           @relation("DeletedStories")
+
   @@unique([email])
   @@index([email])
-  @@index([role])
-  @@index([banned])
-  @@index([deletedAt])
-  @@index([isSuspended])
+  @@index([role, banned]) // For admin filtering
   @@map("user")
 }
 
@@ -114,7 +149,7 @@ model Organization {
   slug        String       @unique
   logo        String?
   description String?
-  metadata    Json?
+  metadata    Json? @db.JsonB
   createdAt   DateTime
   updatedAt   DateTime?
   members     Member[]
@@ -222,16 +257,13 @@ model ApiKey {
   createdAt           DateTime
   updatedAt           DateTime
   permissions         String?   @db.Text
-  metadata            Json?
+  metadata            Json? @db.JsonB
   user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([organizationId])
   @@index([key])
   @@index([keyHash])
-  @@index([enabled])
-  @@index([expiresAt])
-  @@index([lastUsedAt])
   @@map("apikey")
 }
 
@@ -300,7 +332,7 @@ model AuditLog {
   email        String? // Email associated with the action
   ipAddress    String? // IP address of the request
   userAgent    String? // User agent string
-  metadata     Json? // Additional event-specific data
+  metadata     Json? @db.JsonB // Additional event-specific data
   success      Boolean // Whether the action was successful
   errorMessage String? // Error message if action failed
   timestamp    DateTime @default(now())
@@ -310,7 +342,5 @@ model AuditLog {
   @@index([email])
   @@index([type])
   @@index([timestamp])
-  @@index([userId, timestamp])
-  @@index([type, timestamp])
   @@map("audit_logs")
 }

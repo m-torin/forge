@@ -76,10 +76,13 @@ export const ANTHROPIC_MODELS = {
   'claude-3-sonnet-20240229': anthropic('claude-3-sonnet-20240229'),
   'claude-3-haiku-20240307': anthropic('claude-3-haiku-20240307'),
 
-  // Legacy aliases for backward compatibility
+  /** @deprecated Use specific Claude model names instead */
   'claude-chat': anthropic('claude-4-sonnet-20250514'),
+  /** @deprecated Use specific Claude model names instead */
   'claude-reasoning': anthropic('claude-4-sonnet-20250514'),
+  /** @deprecated Use specific Claude model names instead */
   'claude-artifacts': anthropic('claude-3-5-sonnet-20241022'),
+  /** @deprecated Use specific Claude model names instead */
   'claude-title': anthropic('claude-3-5-haiku-20241022'),
 } as const;
 

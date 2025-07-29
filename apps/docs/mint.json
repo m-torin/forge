@@ -31,11 +31,25 @@
       "pages": ["introduction", "repo/quickstart", "repo/concepts"]
     },
     {
+      "group": "AI Development Guide",
+      "pages": [
+        "ai-hints/overview",
+        "ai-hints/ai-prompting",
+        "ai-hints/decision-trees",
+        "ai-hints/command-sequences",
+        "ai-hints/success-markers",
+        "ai-hints/task-templates",
+        "ai-hints/quick-reference",
+        "ai-hints/environment-configuration"
+      ]
+    },
+    {
       "group": "Architecture",
       "pages": [
         "repo/architecture/overview",
         "repo/architecture/ai-package",
-        "repo/architecture/scraping-package"
+        "repo/architecture/scraping-package",
+        "repo/architecture/environment-configuration"
       ]
     },
     {
@@ -47,6 +61,7 @@
           "pages": [
             "packages/database/overview",
             "packages/database/prisma",
+            "packages/database/prisma-patterns",
             "packages/database/validation",
             "packages/database/redis",
             "packages/database/firestore",
@@ -86,6 +101,12 @@
             "packages/ai/overview",
             "packages/ai/upstash-vector",
             "packages/ai/product-classification",
+            "packages/ai/mcp-development",
+            "packages/ai/mcp-rag-integration",
+            "packages/ai/migration-v5",
+            "packages/ai/sdk-v5-review-findings",
+            "packages/ai/test-coverage-audit",
+            "packages/ai/testing-implementation-plan",
             "packages/scraping"
           ]
         },
@@ -95,8 +116,13 @@
           "pages": [
             "packages/observability/overview",
             "packages/observability/sentry",
+            "packages/observability/sentry-microfrontend",
+            "packages/observability/logtape-plugin",
             "packages/analytics",
-            "packages/feature-flags"
+            "packages/feature-flags",
+            "packages/feature-flags/offline-examples",
+            "packages/feature-flags/testing-guide",
+            "packages/feature-flags/unified-examples"
           ]
         }
       ]
@@ -132,32 +158,15 @@
         {
           "group": "Developer Tools",
           "icon": "code",
-          "pages": ["apps/storybook", "apps/email", "apps/studio"]
-        }
-      ]
-    },
-    {
-      "group": "Guides",
-      "pages": [
-        {
-          "group": "Setup & Migration",
-          "icon": "route",
           "pages": [
-            "repo/guides/vitest-migration",
-            "repo/guides/vite-migration",
-            "repo/guides/test-fixes"
+            "apps/storybook",
+            "apps/email",
+            "apps/studio",
+            "apps/ai-chatbot",
+            "apps/backstage-multizone"
           ]
-        },
-        {
-          "group": "Development",
-          "icon": "code-branch",
-          "pages": ["repo/guides/mantine-tailwind-extensions"]
         }
       ]
-    },
-    {
-      "group": "Design System",
-      "pages": ["packages/design-system/overview", "packages/design-system/components"]
     },
     {
       "group": "Development",
@@ -184,9 +193,11 @@
           "icon": "flask",
           "pages": [
             "repo/development/testing",
+            "packages/testing",
             {
               "group": "QA Package",
               "pages": [
+                "packages/qa/index",
                 "packages/qa/overview",
                 "packages/qa/vitest-utilities",
                 "packages/qa/playwright-testing",
@@ -204,12 +215,37 @@
               ]
             }
           ]
+        },
+        {
+          "group": "Editor & UI",
+          "icon": "edit",
+          "pages": [
+            "packages/editor/browser-only-demo",
+            "packages/editor/embeddable-editor-guide",
+            "packages/editor/tiptap-v3-migration",
+            "packages/uix-system/tailwind-v3"
+          ]
         }
       ]
     },
     {
-      "group": "Deployment",
-      "pages": ["repo/deployment"]
+      "group": "Guides",
+      "pages": [
+        {
+          "group": "Setup & Migration",
+          "icon": "route",
+          "pages": [
+            "repo/guides/vitest-migration",
+            "repo/guides/vite-migration",
+            "repo/guides/test-fixes"
+          ]
+        },
+        {
+          "group": "Development",
+          "icon": "code-branch",
+          "pages": ["repo/guides/mantine-tailwind-extensions"]
+        }
+      ]
     },
     {
       "group": "Labs",
@@ -227,6 +263,10 @@
           ]
         }
       ]
+    },
+    {
+      "group": "Deployment",
+      "pages": ["repo/deployment"]
     }
   ],
   "footerSocials": {

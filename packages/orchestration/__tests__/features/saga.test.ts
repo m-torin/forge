@@ -1,18 +1,18 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { createSaga } from '../../src/shared/features/saga';
-import { SagaContext } from '../../src/shared/types/index';
-import { resetUpstashMocks, setupUpstashMocks } from '../utils/upstash-mocks';
+import { createSaga } from '@/shared/features/saga';
+import { SagaContext } from '@/shared/types/index';
+import { resetCombinedUpstashMocks, setupCombinedUpstashMocks } from '@repo/qa';
 
 describe('saga Pattern', () => {
-  let mocks: ReturnType<typeof setupUpstashMocks>;
+  let mocks: ReturnType<typeof setupCombinedUpstashMocks>;
 
   beforeEach(() => {
-    mocks = setupUpstashMocks();
+    mocks = setupCombinedUpstashMocks();
   });
 
   afterEach(() => {
-    resetUpstashMocks(mocks);
+    resetCombinedUpstashMocks(mocks);
   });
 
   describe('saga Creation', () => {
@@ -451,7 +451,7 @@ describe('saga Pattern', () => {
         .step('check-availability', 'Check Availability', async (_context: any) => {
           // Simulate availability check
           const available = true; // Mock check
-          {
+          if (!available) {
             throw new Error('Room not available');
           }
           return {};
@@ -469,7 +469,7 @@ describe('saga Pattern', () => {
           {
             compensation: async (context: any) => {
               const reservationId = context.getResult('reservationId');
-              {
+              if (reservationId) {
                 await context.events?.emit('room.reservation.cancelled', {
                   reservationId,
                 });
@@ -498,7 +498,7 @@ describe('saga Pattern', () => {
             compensation: async (context: any) => {
               const paymentId = context.getResult('paymentId');
               const input = context.input as BookingInput;
-              {
+              if (paymentId) {
                 context.events?.emit('payment.refunded', {
                   amount: input.amount,
                   paymentId,
@@ -519,7 +519,7 @@ describe('saga Pattern', () => {
           {
             compensation: async (context: any) => {
               const confirmationId = context.getResult('confirmationId');
-              {
+              if (confirmationId) {
                 context.events?.emit('booking.cancelled', {
                   confirmationId,
                 });

@@ -1,7 +1,11 @@
 # @repo/feature-flags
 
-Feature flags implementation using Vercel Flags SDK with PostHog and Edge Config
-adapters.
+- _Can build:_ **NO**
 
-Complete documentation is available in
-[../../apps/docs/packages/feature-flags.mdx](../../apps/docs/packages/feature-flags.mdx).
+- _Exports:_
+  - **Core**: `.`, `./client`, `./server`, `./client/next`, `./server/next`,
+    `./server/edge`
+  - **Utilities**: `./types`, `./middleware`
+
+- _Documentation:_
+  **[Feature Flags Package](../../apps/docs/packages/feature-flags.mdx)**

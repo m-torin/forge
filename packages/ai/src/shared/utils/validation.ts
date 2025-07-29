@@ -1,9 +1,16 @@
-export function validateMaxTokens(maxTokens?: number): void {
-  if (maxTokens !== undefined) {
-    if (typeof maxTokens !== 'number' || maxTokens < 1) {
-      throw new Error('Max tokens must be a positive number');
+export function validateMaxOutputTokens(maxOutputTokens?: number): void {
+  if (maxOutputTokens !== undefined) {
+    if (typeof maxOutputTokens !== 'number' || maxOutputTokens < 1) {
+      throw new Error('Max output tokens must be a positive number');
     }
   }
+}
+
+/**
+ * @deprecated Use validateMaxOutputTokens instead - maxTokens renamed to maxOutputTokens in AI SDK v5
+ */
+export function validateMaxTokens(maxTokens?: number): void {
+  return validateMaxOutputTokens(maxTokens);
 }
 
 export function validatePrompt(prompt: string): void {

@@ -3,7 +3,7 @@
  * Coordinates between different link providers and handles caching/analytics
  */
 
-import { logDebug } from '@repo/observability/server/next';
+import { logDebug } from '@repo/observability';
 import {
   BulkCreateRequest,
   BulkCreateResponse,

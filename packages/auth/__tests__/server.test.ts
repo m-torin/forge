@@ -5,7 +5,7 @@
 import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Import after mocking
-import { getCurrentUser, getSession } from '../src/server/session';
+import { getCurrentUser, getSession } from '@/server/session';
 
 // Use vi.hoisted for mocks
 const { mockGetSession } = vi.hoisted(() => {

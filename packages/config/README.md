@@ -1,5 +1,9 @@
 # @repo/config
 
-Shared configuration utilities for TypeScript, Next.js, and build tools.
+- _Can build:_ **NO**
 
-Complete documentation is available in `/apps/docs/`.
+- _Exports:_
+  - **Config**: `./next`, `./typescript`, `./prettier`
+  - **Utilities**: `./shared`, `./env`
+
+- _Documentation:_ **[Config Package](../../apps/docs/packages/config/)**

@@ -20,29 +20,29 @@ describe('message Utilities', () => {
 
   describe('getTrailingMessageId', () => {
     test('should get the last message ID', () => {
-      const result1 = getTrailingMessageId({ messages: mockMessages });
-      expect(result1).toBe('4');
+      const result = getTrailingMessageId({ messages: mockMessages });
+      expect(result).toBe('4');
     });
 
     test('should get the last message ID by role', () => {
-      const result1 = getTrailingMessageId({
+      const result = getTrailingMessageId({
         messages: mockMessages,
         role: 'user',
       });
-      expect(result1).toBe('3');
+      expect(result).toBe('3');
     });
 
     test('should return undefined for empty messages', () => {
-      const result1 = getTrailingMessageId({ messages: [] });
-      expect(result1).toBeUndefined();
+      const result = getTrailingMessageId({ messages: [] });
+      expect(result).toBeUndefined();
     });
 
     test('should return undefined when no message matches role', () => {
-      const result1 = getTrailingMessageId({
+      const result = getTrailingMessageId({
         messages: mockMessages,
         role: 'system' as any,
       });
-      expect(result1).toBeUndefined();
+      expect(result).toBeUndefined();
     });
   });
 
@@ -127,7 +127,19 @@ describe('message Utilities', () => {
     });
 
     test('should identify tool messages', () => {
-      const toolMsg = { role: 'tool' as const, content: 'Tool result', toolCallId: 'call-1' };
+      const toolMsg = {
+        role: 'tool' as const,
+        content: [
+          {
+            type: 'tool-result' as const,
+            text: 'Tool result',
+            toolCallId: 'call-123',
+            toolName: 'test-tool',
+            result: 'success',
+          },
+        ],
+        toolCallId: 'call-123',
+      };
       const userMsg = { role: 'user' as const, content: 'Hello' };
 
       expect(isToolMessage(toolMsg)).toBeTruthy();

@@ -4,6 +4,7 @@ import { z } from 'zod/v4';
 // Direct export for Next.js webpack inlining
 export const env = createEnv({
   server: {
+    DATABASE_URL: z.string().url().min(1),
     UPSTASH_REDIS_REST_URL: z.string().url().min(1),
     UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
     // Firebase (optional)
@@ -18,6 +19,7 @@ export const env = createEnv({
   },
   client: {},
   runtimeEnv: {
+    DATABASE_URL: process.env.DATABASE_URL,
     UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
     UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
     // Firebase (optional)
@@ -43,6 +45,7 @@ export function safeEnv() {
 
   // Fallback values for resilience
   return {
+    DATABASE_URL: process.env.DATABASE_URL || 'postgresql://localhost:5432/dev',
     UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL || 'https://localhost:6379',
     UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN || 'development-token',
     // Firebase (optional)

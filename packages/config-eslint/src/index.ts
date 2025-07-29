@@ -52,6 +52,14 @@ const IMAGE_EXTENSIONS = {
   ico: 'always',
 } as const;
 
+const CONFIG_EXTENSIONS = {
+  config: 'always',
+} as const;
+
+const STORYBOOK_EXTENSIONS = {
+  stories: 'always',
+} as const;
+
 // Create static plugin instances for better resolution in monorepo
 const plugins = {
   '@typescript-eslint': tsPlugin as any,
@@ -75,7 +83,11 @@ const sharedRules = createRules({
   'import/no-duplicates': SEVERITY.ERROR,
   'import/no-self-import': SEVERITY.ERROR,
   'import/prefer-default-export': SEVERITY.OFF,
-  'import/extensions': [SEVERITY.ERROR, 'never', { ...STYLE_EXTENSIONS, ...IMAGE_EXTENSIONS }],
+  'import/extensions': [
+    SEVERITY.ERROR,
+    'never',
+    { ...STYLE_EXTENSIONS, ...IMAGE_EXTENSIONS, ...CONFIG_EXTENSIONS, ...STORYBOOK_EXTENSIONS },
+  ],
 
   // Core ESLint rules
   'no-console': SEVERITY.WARN,
@@ -416,6 +428,14 @@ const config: Linter.FlatConfig[] = [
     },
   }),
 
+  // Environment configuration files
+  createConfig({
+    files: ['**/env.ts'],
+    rules: {
+      'no-console': SEVERITY.OFF,
+    },
+  }),
+
   // CommonJS files
   createConfig({
     files: FILE_PATTERNS.COMMONJS_FILES,
@@ -540,14 +560,6 @@ const config: Linter.FlatConfig[] = [
   // Examples files
   createConfig({
     files: FILE_PATTERNS.EXAMPLES_FILES,
-    rules: {
-      'no-console': SEVERITY.OFF,
-    },
-  }),
-
-  // Environment files - allow console for error handling
-  createConfig({
-    files: ['**/env.ts'],
     rules: {
       'no-console': SEVERITY.OFF,
     },

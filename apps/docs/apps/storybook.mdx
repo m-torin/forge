@@ -205,7 +205,7 @@ create comprehensive component libraries.
     ```typescript
     // src/stories/ProductCard.stories.tsx
     import type { Meta, StoryObj } from '@storybook/react';
-    import { ProductCard } from '@repo/design-system';
+    import { ProductCard } from '@repo/uix-system/mantine';
     
     const meta: Meta<typeof ProductCard> = {
       title: 'E-commerce/ProductCard',
@@ -286,7 +286,7 @@ create comprehensive component libraries.
 // .storybook/preview.tsx
 import type { Preview } from '@storybook/react';
 import { MantineProvider } from '@mantine/core';
-import { theme } from '@repo/design-system';
+import { theme } from '@repo/uix-system/mantine';
 
 const preview: Preview = { parameters: { actions: { argTypesRegex: '^on[A-Z].\*'
 }, controls: { matchers: { color: /(background|color)$/i,
@@ -302,7 +302,7 @@ export default preview;
 // src/stories/DesignTokens.stories.tsx
 import type { Meta, StoryObj } from '@storybook/react';
 import { Box, Group, Text, Stack } from '@mantine/core';
-import { theme } from '@repo/design-system';
+import { theme } from '@repo/uix-system/mantine';
 
 const meta: Meta = {
   title: 'Design System/Tokens',
@@ -824,12 +824,12 @@ Stories maintain their hierarchical organization:
 <CodeGroup>
 ```typescript Ciseco Components
 // Ciseco components
-import { ProductCard, Header } from '@repo/design-system/ciseco';
+import { ProductCard, Header } from '@repo/uix-system/mantine';
 ```
 
 ```typescript Algolia Components
 // Algolia components
-import { SearchBox, SearchProvider } from "@repo/design-system/algolia";
+import { SearchBox, SearchProvider } from "@repo/uix-system/algolia";
 ```
 
 </CodeGroup>

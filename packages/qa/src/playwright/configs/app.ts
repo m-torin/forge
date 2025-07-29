@@ -1,5 +1,6 @@
 import { defineConfig, devices, expect, type PlaywrightTestConfig } from '@playwright/test';
 import { resolve } from 'node:path';
+import { getBasePlaywrightConfig } from './base-config';
 
 export interface AppTestConfig {
   /** Directory where the app is located */
@@ -14,10 +15,13 @@ export interface AppTestConfig {
   port: number;
   /** Custom aliases for path resolution */
   aliases?: Record<string, string>;
+  /** Custom test directory (defaults to './__tests__/e2e') */
+  testDir?: string;
 }
 
 /**
  * Creates a Playwright configuration for a Next.js app
+ * Extends the base config to ensure consistent settings across all apps
  */
 export function createAppPlaywrightConfig(appConfig: AppTestConfig): PlaywrightTestConfig {
   const { aliases = {} } = appConfig;
@@ -35,50 +39,45 @@ export function createAppPlaywrightConfig(appConfig: AppTestConfig): PlaywrightT
     ...aliases,
   };
 
-  return defineConfig({
-    forbidOnly: !!process.env.CI,
-    fullyParallel: true,
-    projects: [
-      {
-        name: 'chromium',
-        use: { ...devices['Desktop Chrome'] },
+  return defineConfig(
+    getBasePlaywrightConfig({
+      testDir: appConfig.testDir || './__tests__/e2e',
+      use: {
+        baseURL: appConfig.baseURL,
       },
-      {
-        name: 'firefox',
-        use: { ...devices['Desktop Firefox'] },
-      },
-      {
-        name: 'webkit',
-        use: { ...devices['Desktop Safari'] },
-      },
-      // Mobile viewports
-      {
-        name: 'Mobile Chrome',
-        use: { ...devices['Pixel 5'] },
-      },
-      {
-        name: 'Mobile Safari',
-        use: { ...devices['iPhone 12'] },
-      },
-    ],
-    reporter: process.env.CI ? 'html' : 'list',
-    retries: process.env.CI ? 2 : 0,
-    testDir: './__tests__/e2e',
-    use: {
-      baseURL: appConfig.baseURL,
-      screenshot: 'only-on-failure',
-      trace: 'on-first-retry',
-    },
-    webServer: appConfig.devCommand
-      ? {
-          command: appConfig.devCommand,
-          cwd: appConfig.appDirectory,
-          port: appConfig.port,
-          reuseExistingServer: !process.env.CI,
-        }
-      : undefined,
-    workers: process.env.CI ? 1 : undefined,
-  });
+      projects: [
+        {
+          name: 'chromium',
+          use: { ...devices['Desktop Chrome'] },
+        },
+        {
+          name: 'firefox',
+          use: { ...devices['Desktop Firefox'] },
+        },
+        {
+          name: 'webkit',
+          use: { ...devices['Desktop Safari'] },
+        },
+        // Mobile viewports for comprehensive app testing
+        {
+          name: 'Mobile Chrome',
+          use: { ...devices['Pixel 5'] },
+        },
+        {
+          name: 'Mobile Safari',
+          use: { ...devices['iPhone 12'] },
+        },
+      ],
+      webServer: appConfig.devCommand
+        ? {
+            command: appConfig.devCommand,
+            cwd: appConfig.appDirectory,
+            port: appConfig.port,
+            reuseExistingServer: !process.env.CI,
+          }
+        : undefined,
+    }),
+  );
 }
 
 /**

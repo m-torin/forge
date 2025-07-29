@@ -29,6 +29,7 @@
  * ```
  */
 
+import { logWarn } from '@repo/observability';
 import {
   ClickEvent,
   CreateLinkRequest,
@@ -78,7 +79,11 @@ export async function trackLinkClick(
   additionalData: Partial<ClickEvent> = {},
 ): Promise<void> {
   if (typeof window === 'undefined') {
-    console.warn('trackLinkClick called in non-browser environment');
+    logWarn('trackLinkClick called in non-browser environment', {
+      function: 'trackLinkClick',
+      linkId,
+      environment: 'server-side',
+    });
     return;
   }
 

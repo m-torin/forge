@@ -2,15 +2,18 @@
   "extends": "@repo/config/typescript/react-library.json",
   "compilerOptions": {
     "rootDir": ".",
-    "outDir": "dist"
+    "outDir": "dist",
+    "types": ["vitest/globals", "node"]
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "vitest.config.ts",
-    "vitest.setup.ts",
-    "eslint.config.ts",
-    "index.ts"
-  ],
-  "exclude": ["node_modules", "dist", "src/__tests__", "src/playwright/templates"]
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/__tests__",
+    "src/playwright/templates",
+    "src/vitest/examples/**",
+    "src/vitest/**/*.test.ts",
+    "src/vitest/**/*.spec.ts",
+    "src/playwright/**/*.spec.ts"
+  ]
 }

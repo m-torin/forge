@@ -4,6 +4,9 @@ import { z } from 'zod/v4';
 // Direct export for Next.js webpack inlining
 export const env = createEnv({
   server: {
+    // Flags SDK v4+ configuration
+    FLAGS_SECRET: z.string().min(32).optional(),
+
     // PostHog server-side configuration
     POSTHOG_KEY: z.string().min(1).optional(),
     POSTHOG_HOST: z.string().url().optional(),
@@ -12,6 +15,10 @@ export const env = createEnv({
 
     // Edge Config configuration
     EDGE_CONFIG: z.string().url().optional(),
+
+    // Analytics configuration
+    VERCEL_ANALYTICS_DEBUG: z.boolean().optional(),
+    NODE_ENV: z.enum(['development', 'test', 'production']).optional(),
   },
   client: {
     // PostHog client-side configuration (public)
@@ -23,11 +30,14 @@ export const env = createEnv({
   },
   runtimeEnv: {
     // Server-side environment variables
+    FLAGS_SECRET: process.env.FLAGS_SECRET,
     POSTHOG_KEY: process.env.POSTHOG_KEY,
     POSTHOG_HOST: process.env.POSTHOG_HOST,
     POSTHOG_PERSONAL_API_KEY: process.env.POSTHOG_PERSONAL_API_KEY,
     POSTHOG_PROJECT_ID: process.env.POSTHOG_PROJECT_ID,
     EDGE_CONFIG: process.env.EDGE_CONFIG,
+    VERCEL_ANALYTICS_DEBUG: process.env.VERCEL_ANALYTICS_DEBUG === 'true',
+    NODE_ENV: process.env.NODE_ENV as 'development' | 'test' | 'production',
 
     // Client-side environment variables
     NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
@@ -44,16 +54,23 @@ export const env = createEnv({
 
 // Helper for non-Next.js contexts (Node.js, workers, tests)
 export function safeEnv() {
-  if (env) return env;
+  try {
+    if (env && typeof env === 'object') return env;
+  } catch (error) {
+    // Environment validation failed, use fallbacks
+  }
 
   // Fallback values for resilience
   return {
     // Server variables
+    FLAGS_SECRET: process.env.FLAGS_SECRET || '',
     POSTHOG_KEY: process.env.POSTHOG_KEY || '',
     POSTHOG_HOST: process.env.POSTHOG_HOST || 'https://app.posthog.com',
     POSTHOG_PERSONAL_API_KEY: process.env.POSTHOG_PERSONAL_API_KEY || '',
     POSTHOG_PROJECT_ID: process.env.POSTHOG_PROJECT_ID || '',
     EDGE_CONFIG: process.env.EDGE_CONFIG || '',
+    VERCEL_ANALYTICS_DEBUG: process.env.VERCEL_ANALYTICS_DEBUG === 'true',
+    NODE_ENV: (process.env.NODE_ENV as 'development' | 'test' | 'production') || 'development',
 
     // Client variables
     NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY || '',

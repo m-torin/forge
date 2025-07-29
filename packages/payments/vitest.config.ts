@@ -1,4 +1,5 @@
 import { createNodePackageConfig } from '@repo/qa/vitest/configs';
+import { resolve } from 'node:path';
 
 export default createNodePackageConfig({
   setupFiles: ['./test-setup.ts'],
@@ -20,6 +21,11 @@ export default createNodePackageConfig({
           branches: 80,
           statements: 70,
         },
+      },
+    },
+    resolve: {
+      alias: {
+        'server-only': resolve(process.cwd(), './mocks/server-only.ts'),
       },
     },
   },

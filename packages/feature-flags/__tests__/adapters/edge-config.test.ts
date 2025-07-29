@@ -4,145 +4,166 @@ import {
   getEdgeConfigProviderData,
 } from '@/adapters/edge-config';
 import { beforeEach, describe, expect, vi } from 'vitest';
-
-// Mock Vercel Edge Config
-const mockEdgeConfigClient = {
-  get: vi.fn(),
-};
+import { featureFlagTestData } from '../test-data-generators';
+import {
+  assertionHelpers,
+  createDecideParams,
+  createMockEdgeConfigClient,
+  createMockEnvironment,
+  createMockObservability,
+  createTestWrapper,
+} from '../test-utils';
 
 vi.mock('@vercel/edge-config', () => ({
   createClient: vi.fn(),
 }));
 
-// Mock observability
-vi.mock('@repo/observability/server/edge', () => ({
+vi.mock('@repo/observability', () => ({
   logError: vi.fn(),
   logWarn: vi.fn(),
 }));
 
-// Mock environment
-vi.mock('../../env', () => ({
-  safeEnv: vi.fn(() => ({
-    EDGE_CONFIG: 'https://edge-config.vercel.com/test',
-    NODE_ENV: 'test',
-    NEXT_PUBLIC_NODE_ENV: 'test',
-  })),
-}));
+// Create test wrapper with mocks
+const testWrapper = createTestWrapper({
+  mockClient: createMockEdgeConfigClient(),
+  mockEnvironment: createMockEnvironment(),
+  mockObservability: createMockObservability(),
+});
 
 describe('createEdgeConfigAdapter', () => {
   beforeEach(async () => {
-    vi.clearAllMocks();
+    testWrapper.cleanup();
     const { createClient } = vi.mocked(await import('@vercel/edge-config'));
-    createClient.mockReturnValue(mockEdgeConfigClient);
+    createClient.mockReturnValue(testWrapper.mockClient);
   });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+    // Environment variables automatically restored due to unstubEnvs: true
+  });
+
+  // Note: Factory-generated tests have timing issues with mock setup.
+  // The error throwing functionality is tested by the manual test below:
+  // "should throw error when Edge Config client throws"
 
   test('should create adapter with connection string from options', () => {
     const adapter = createEdgeConfigAdapter({
       connectionString: 'custom-connection-string',
     });
 
-    expect(adapter).toBeInstanceOf(Function);
+    assertionHelpers.assertAdapterStructure(adapter);
   });
 
   test('should create adapter with custom Edge Config client', () => {
-    const customClient = { get: vi.fn() };
-    const adapter = createEdgeConfigAdapter({
-      connectionString: customClient,
+    const customClient = createMockEdgeConfigClient({
+      connection: {
+        baseUrl: 'https://edge-config.vercel.com',
+        id: 'custom',
+        token: 'custom-token',
+        version: '1',
+        type: 'external' as const,
+      },
     });
 
-    expect(adapter).toBeInstanceOf(Function);
+    const adapter = createEdgeConfigAdapter({
+      connectionString: customClient as any,
+    });
+
+    assertionHelpers.assertAdapterStructure(adapter);
   });
 
-  test('should create no-op adapter when no connection string configured', async () => {
-    const { safeEnv } = vi.mocked(await import('../../env'));
-    safeEnv.mockReturnValueOnce({
-      EDGE_CONFIG: undefined,
-    } as any);
+  test('should create no-op adapter when no connection string configured', () => {
+    // Use modern vi.stubEnv approach to temporarily remove EDGE_CONFIG
+    vi.stubEnv('EDGE_CONFIG', '');
 
     const adapter = createEdgeConfigAdapter();
     const flagsAdapter = adapter();
 
     expect(flagsAdapter.decide).toBeInstanceOf(Function);
-    expect(flagsAdapter.config.reportValue).toBeTruthy();
-    expect(flagsAdapter.origin.provider).toBe('edge-config');
+    expect(flagsAdapter.config?.reportValue).toBeTruthy();
+    expect(typeof flagsAdapter.origin === 'object' && flagsAdapter.origin?.provider).toBe(
+      'edge-config',
+    );
+    // Environment variables are automatically restored due to unstubEnvs: true
   });
 
   test('should return flag value from Edge Config', async () => {
-    mockEdgeConfigClient.get.mockResolvedValueOnce({
-      'test-flag': true,
-      'variant-flag': 'variant-a',
-    });
+    testWrapper.mockClient.get.mockResolvedValueOnce(
+      featureFlagTestData.edgeConfig.responses.valid,
+    );
 
     const adapter = createEdgeConfigAdapter();
     const flagsAdapter = adapter();
 
-    const result = await flagsAdapter.decide({ key: 'test-flag' });
-    expect(result).toBeTruthy();
+    const result = await flagsAdapter.decide(createDecideParams({ key: 'boolean-flag' }));
+    assertionHelpers.assertFlagDecision(result, true);
 
-    mockEdgeConfigClient.get.mockResolvedValueOnce({
-      'test-flag': true,
-      'variant-flag': 'variant-a',
-    });
+    testWrapper.mockClient.get.mockResolvedValueOnce(
+      featureFlagTestData.edgeConfig.responses.valid,
+    );
 
-    const variantResult = await flagsAdapter.decide({ key: 'variant-flag' });
-    expect(variantResult).toBe('variant-a');
+    const variantResult = await flagsAdapter.decide(createDecideParams({ key: 'variant-flag' }));
+    assertionHelpers.assertFlagDecision(variantResult, 'variant-a');
   });
 
   test('should return undefined for non-existent flag', async () => {
-    mockEdgeConfigClient.get.mockResolvedValueOnce({
+    testWrapper.mockClient.get.mockResolvedValueOnce({
       'existing-flag': true,
     });
 
     const adapter = createEdgeConfigAdapter();
     const flagsAdapter = adapter();
 
-    const result = await flagsAdapter.decide({ key: 'non-existent-flag' });
-    expect(result).toBeUndefined();
+    const result = await flagsAdapter.decide(createDecideParams({ key: 'non-existent-flag' }));
+    assertionHelpers.assertFlagDecision(result, undefined);
   });
 
   test('should return undefined when Edge Config returns null', async () => {
-    mockEdgeConfigClient.get.mockResolvedValueOnce(null);
+    testWrapper.mockClient.get.mockResolvedValueOnce(null);
 
     const adapter = createEdgeConfigAdapter();
     const flagsAdapter = adapter();
 
-    const result = await flagsAdapter.decide({ key: 'test-flag' });
-    expect(result).toBeUndefined();
+    const result = await flagsAdapter.decide(createDecideParams({ key: 'test-flag' }));
+    assertionHelpers.assertFlagDecision(result, undefined);
   });
 
   test('should return undefined when Edge Config returns non-object', async () => {
-    mockEdgeConfigClient.get.mockResolvedValueOnce('not-an-object');
+    testWrapper.mockClient.get.mockResolvedValueOnce('not-an-object');
 
     const adapter = createEdgeConfigAdapter();
     const flagsAdapter = adapter();
 
-    const result = await flagsAdapter.decide({ key: 'test-flag' });
-    expect(result).toBeUndefined();
+    const result = await flagsAdapter.decide(createDecideParams({ key: 'test-flag' }));
+    assertionHelpers.assertFlagDecision(result, undefined);
   });
 
   test('should throw error when Edge Config client throws', async () => {
     const error = new Error('Edge Config error');
-    mockEdgeConfigClient.get.mockRejectedValueOnce(error);
+    testWrapper.mockClient.get.mockRejectedValueOnce(error);
 
     const adapter = createEdgeConfigAdapter();
     const flagsAdapter = adapter();
 
-    await expect(flagsAdapter.decide({ key: 'test-flag' })).rejects.toThrow('Edge Config error');
+    await assertionHelpers.assertErrorThrown(
+      () => flagsAdapter.decide(createDecideParams({ key: 'test-flag' })),
+      'Edge Config error',
+    );
   });
 
   test('should use custom edgeConfigItemKey', async () => {
-    mockEdgeConfigClient.get.mockResolvedValueOnce({
-      'test-flag': true,
-    });
+    testWrapper.mockClient.get.mockResolvedValueOnce(
+      featureFlagTestData.edgeConfig.responses.valid,
+    );
 
     const adapter = createEdgeConfigAdapter({
       options: { edgeConfigItemKey: 'custom-flags' },
     });
     const flagsAdapter = adapter();
 
-    await flagsAdapter.decide({ key: 'test-flag' });
+    await flagsAdapter.decide(createDecideParams({ key: 'test-flag' }));
 
-    expect(mockEdgeConfigClient.get).toHaveBeenCalledWith('custom-flags');
+    assertionHelpers.assertMockCalled(testWrapper.mockClient.get, 1, ['custom-flags']);
   });
 
   test('should include teamSlug in origin when provided', () => {
@@ -151,7 +172,9 @@ describe('createEdgeConfigAdapter', () => {
     });
     const flagsAdapter = adapter();
 
-    expect(flagsAdapter.origin.teamSlug).toBe('my-team');
+    expect(typeof flagsAdapter.origin === 'object' && (flagsAdapter.origin as any)?.teamSlug).toBe(
+      'my-team',
+    );
   });
 
   test('should extract edgeConfigId from connection string', () => {
@@ -160,17 +183,30 @@ describe('createEdgeConfigAdapter', () => {
     });
     const flagsAdapter = adapter();
 
-    expect(flagsAdapter.origin.edgeConfigId).toBe('ecfg_abc123');
+    expect(
+      typeof flagsAdapter.origin === 'object' && (flagsAdapter.origin as any)?.edgeConfigId,
+    ).toBe('ecfg_abc123');
   });
 
   test('should use custom-client for custom client', () => {
-    const customClient = { get: vi.fn() };
+    const customClient = createMockEdgeConfigClient({
+      connection: {
+        baseUrl: 'https://edge-config.vercel.com',
+        id: 'custom',
+        token: 'custom-token',
+        version: '1',
+        type: 'external' as const,
+      },
+    });
+
     const adapter = createEdgeConfigAdapter({
-      connectionString: customClient,
+      connectionString: customClient as any,
     });
     const flagsAdapter = adapter();
 
-    expect(flagsAdapter.origin.edgeConfigId).toBe('custom-client');
+    expect(
+      typeof flagsAdapter.origin === 'object' && (flagsAdapter.origin as any)?.edgeConfigId,
+    ).toBe('custom-client');
   });
 });
 
@@ -182,30 +218,36 @@ describe('edgeConfigAdapter', () => {
 
 describe('getEdgeConfigProviderData', () => {
   beforeEach(async () => {
-    vi.clearAllMocks();
+    testWrapper.cleanup();
     const { createClient } = vi.mocked(await import('@vercel/edge-config'));
-    createClient.mockReturnValue(mockEdgeConfigClient);
+    createClient.mockReturnValue(testWrapper.mockClient);
   });
 
+  // Note: getEdgeConfigProviderData is not an adapter factory, so we test it separately below
+
   test('should return empty flags when no connection string', async () => {
-    const { safeEnv } = vi.mocked(await import('../../env'));
-    safeEnv.mockReturnValueOnce({
-      EDGE_CONFIG: undefined,
-    } as any);
+    // Use modern vi.stubEnv approach to temporarily remove EDGE_CONFIG
+    vi.stubEnv('EDGE_CONFIG', '');
+
+    // Clear the mock so it doesn't return any data
+    testWrapper.mockClient.get.mockResolvedValueOnce(null);
 
     const result = await getEdgeConfigProviderData();
 
+    assertionHelpers.assertProviderDataStructure(result);
     expect(result).toStrictEqual({
       provider: 'edge-config',
       flags: [],
     });
+    // Environment variables are automatically restored due to unstubEnvs: true
   });
 
   test('should return empty flags when Edge Config returns null', async () => {
-    mockEdgeConfigClient.get.mockResolvedValueOnce(null);
+    testWrapper.mockClient.get.mockResolvedValueOnce(null);
 
     const result = await getEdgeConfigProviderData();
 
+    assertionHelpers.assertProviderDataStructure(result);
     expect(result).toStrictEqual({
       provider: 'edge-config',
       flags: [],
@@ -213,12 +255,13 @@ describe('getEdgeConfigProviderData', () => {
   });
 
   test('should transform boolean flags correctly', async () => {
-    mockEdgeConfigClient.get.mockResolvedValueOnce({
+    testWrapper.mockClient.get.mockResolvedValueOnce({
       'boolean-flag': true,
     });
 
     const result = await getEdgeConfigProviderData();
 
+    assertionHelpers.assertProviderDataStructure(result);
     expect(result.flags).toStrictEqual([
       {
         key: 'boolean-flag',
@@ -231,13 +274,14 @@ describe('getEdgeConfigProviderData', () => {
   });
 
   test('should transform string variant flags correctly', async () => {
-    mockEdgeConfigClient.get.mockResolvedValueOnce({
+    testWrapper.mockClient.get.mockResolvedValueOnce({
       'variant-flag': 'variant-a',
       'control-flag': 'control',
     });
 
     const result = await getEdgeConfigProviderData();
 
+    assertionHelpers.assertProviderDataStructure(result);
     expect(result.flags).toStrictEqual([
       {
         key: 'variant-flag',
@@ -259,12 +303,13 @@ describe('getEdgeConfigProviderData', () => {
   });
 
   test('should transform regular string flags correctly', async () => {
-    mockEdgeConfigClient.get.mockResolvedValueOnce({
+    testWrapper.mockClient.get.mockResolvedValueOnce({
       'string-flag': 'some-value',
     });
 
     const result = await getEdgeConfigProviderData();
 
+    assertionHelpers.assertProviderDataStructure(result);
     expect(result.flags).toStrictEqual([
       {
         key: 'string-flag',
@@ -275,12 +320,13 @@ describe('getEdgeConfigProviderData', () => {
 
   test('should transform object flags correctly', async () => {
     const objectValue = { key: 'value' };
-    mockEdgeConfigClient.get.mockResolvedValueOnce({
+    testWrapper.mockClient.get.mockResolvedValueOnce({
       'object-flag': objectValue,
     });
 
     const result = await getEdgeConfigProviderData();
 
+    assertionHelpers.assertProviderDataStructure(result);
     expect(result.flags).toStrictEqual([
       {
         key: 'object-flag',
@@ -290,12 +336,13 @@ describe('getEdgeConfigProviderData', () => {
   });
 
   test('should transform number flags correctly', async () => {
-    mockEdgeConfigClient.get.mockResolvedValueOnce({
+    testWrapper.mockClient.get.mockResolvedValueOnce({
       'number-flag': 42,
     });
 
     const result = await getEdgeConfigProviderData();
 
+    assertionHelpers.assertProviderDataStructure(result);
     expect(result.flags).toStrictEqual([
       {
         key: 'number-flag',
@@ -306,18 +353,21 @@ describe('getEdgeConfigProviderData', () => {
 
   test('should throw error when Edge Config client throws', async () => {
     const error = new Error('Edge Config error');
-    mockEdgeConfigClient.get.mockRejectedValueOnce(error);
+    testWrapper.mockClient.get.mockRejectedValueOnce(error);
 
-    await expect(getEdgeConfigProviderData()).rejects.toThrow('Edge Config error');
+    await assertionHelpers.assertErrorThrown(
+      () => getEdgeConfigProviderData(),
+      'Edge Config error',
+    );
   });
 
   test('should use custom edgeConfigItemKey', async () => {
-    mockEdgeConfigClient.get.mockResolvedValueOnce({});
+    testWrapper.mockClient.get.mockResolvedValueOnce({});
 
     await getEdgeConfigProviderData({
       options: { edgeConfigItemKey: 'custom-flags' },
     });
 
-    expect(mockEdgeConfigClient.get).toHaveBeenCalledWith('custom-flags');
+    assertionHelpers.assertMockCalled(testWrapper.mockClient.get, 1, ['custom-flags']);
   });
 });

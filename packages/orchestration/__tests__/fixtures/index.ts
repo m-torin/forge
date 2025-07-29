@@ -9,7 +9,7 @@ import {
   WorkflowDefinition,
   WorkflowExecution,
   WorkflowStep,
-} from '../../src/shared/types';
+} from '../../src/shared/types/index';
 
 /**
  * Create a valid QStash provider config
@@ -19,7 +19,7 @@ export function createQStashConfig(
 ): UpstashQStashConfig {
   return {
     name: 'test-qstash',
-    type: 'upstash-qstash',
+    type: 'upstash-qstash' as const,
     config: {
       baseUrl: 'http://localhost:8080',
       token: 'test-qstash-token',

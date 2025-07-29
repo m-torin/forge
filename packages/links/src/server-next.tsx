@@ -37,7 +37,7 @@
 import { logError } from '@repo/observability/server/next';
 import { headers } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
-import React from 'react';
+import * as React from 'react';
 
 import {
   ClickEvent,
@@ -167,15 +167,14 @@ export async function handleLinkRedirect(
       ip,
       userAgent,
       referrer,
-      headers: Object.fromEntries(request.headers.entries()),
+      headers: {},
     });
 
     // Perform redirect
     return NextResponse.redirect(link.url, 302);
   } catch (error: any) {
     logError(
-      'Error handling link redirect',
-      error instanceof Error ? error : new Error(String(error)),
+      error instanceof Error ? error : new Error(`Error handling link redirect: ${String(error)}`),
     );
     return null;
   }
@@ -202,7 +201,7 @@ export async function trackLinkClickServer(
     ip,
     userAgent,
     referrer,
-    headers: Object.fromEntries(headersList.entries()),
+    headers: {},
     ...additionalData,
   });
 }

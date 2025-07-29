@@ -1,0 +1,334 @@
+---
+title: "Unified Feature Flags - DRY & Harmonious Implementation"
+description:
+  "Single API that automatically handles online/offline scenarios with
+  intelligent fallback"
+---
+
+# Unified Feature Flags - DRY & Harmonious Implementation
+
+This example demonstrates the **unified, transparent approach** to feature flags
+using `createVercelFlag()` - a single API that automatically handles
+online/offline scenarios with intelligent fallback.
+
+## 🎯 Key Benefits
+
+### ✅ **DRY (Don't Repeat Yourself)**
+
+- Single flag definition works for all scenarios
+- No separate online vs offline implementations
+- Reusable patterns via convenience functions
+
+### ✅ **Transparent Operation**
+
+- Same API for online and offline modes
+- Automatic fallback chain: Primary → Secondary → Offline
+- No developer awareness needed of current mode
+
+### ✅ **Intelligent Fallback**
+
+- Network failures automatically trigger offline mode
+- Environment variables can override any flag
+- Local logic ensures consistent behavior
+
+## 🏗️ Architecture
+
+### Adapter Chain Pattern
+
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│ Primary Adapter │ →  │ Secondary Adapter│ →  │ Offline Fallback│
+│ (PostHog)       │    │ (Edge Config)    │    │ (Local Logic)   │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+```
+
+### Unified Context System
+
+```typescript
+interface UnifiedContext {
+  user: { id: string; tier?: string; sessionId: string };
+  visitor: { id: string };
+  request: { country: string; userAgent: string; environment: string };
+  timestamp: number;
+}
+```
+
+## 📝 Usage Examples
+
+### 1. Simple Boolean Flag
+
+```typescript
+export const featureFlag = createBooleanFlag("my-feature", {
+  description: "Enable new feature",
+  primaryAdapter: () => postHogServerAdapter.isFeatureEnabled(),
+  secondaryAdapter: () => edgeConfigAdapter(),
+  percentage: 50 // 50% offline rollout
+});
+```
+
+### 2. A/B Test Variant Flag
+
+```typescript
+export const heroTest = createVariantFlag(
+  "hero-test",
+  [
+    { label: "Control", value: "control" },
+    { label: "Variant A", value: "variant-a" },
+    { label: "Variant B", value: "variant-b" }
+  ],
+  {
+    primaryAdapter: () => postHogServerAdapter.featureFlagValue(),
+    secondaryAdapter: () => edgeConfigAdapter()
+  }
+);
+```
+
+### 3. Complex Custom Logic
+
+```typescript
+export const premiumFlag = createVercelFlag<boolean>({
+  key: "premium-feature",
+  adapters: {
+    primary: () => postHogServerAdapter.isFeatureEnabled(),
+    secondary: () => edgeConfigAdapter(),
+    offline: {
+      type: "custom",
+      customLogic: (context) => {
+        // Premium tier users always get access
+        if (context.user.tier === "premium") return true;
+
+        // Pro users in specific regions
+        if (
+          context.user.tier === "pro" &&
+          ["US", "GB"].includes(context.request.country)
+        ) {
+          return true;
+        }
+
+        return false;
+      }
+    }
+  }
+});
+```
+
+### 4. Time-Based Scheduling
+
+```typescript
+export const maintenanceFlag = createVercelFlag<boolean>({
+  key: "maintenance-mode",
+  adapters: {
+    primary: () => edgeConfigAdapter(),
+    offline: {
+      type: "time-based",
+      schedule: {
+        days: [0], // Sunday
+        hours: [2, 3] // 2-4 AM UTC
+      }
+    }
+  }
+});
+```
+
+## 🔄 Fallback Chain Details
+
+### 1. **Primary Adapter** (Online)
+
+- PostHog server-side evaluation
+- Full feature flag capabilities
+- Real-time targeting and analytics
+
+### 2. **Secondary Adapter** (Online)
+
+- Edge Config for ultra-fast evaluation
+- Simple boolean/string/number values
+- Global edge network distribution
+
+### 3. **Environment Variables** (Offline)
+
+- Override any flag: `FLAG_MY_FEATURE=true`
+- Immediate deployment control
+- Works in any environment
+
+### 4. **Local Logic** (Offline)
+
+- **Boolean**: Percentage-based rollout using deterministic hashing
+- **Variant**: Round-robin distribution among options
+- **Custom**: User-defined logic with unified context
+- **Time-based**: Schedule-based activation
+
+## 🧪 Testing Scenarios
+
+### Online Mode (Network Available)
+
+```bash
+# PostHog and Edge Config work normally
+# Flags evaluate using external providers
+curl http://localhost:3000/examples/unified
+```
+
+### Offline Mode (Network Unavailable)
+
+```bash
+# Simulate network failure
+# Flags automatically use offline fallback
+export FLAG_NEW_FEATURE=true
+export FLAG_HERO_TEST=variant-a
+curl http://localhost:3000/examples/unified
+```
+
+### Hybrid Mode (Partial Network)
+
+```bash
+# Some adapters fail, others work
+# Automatic fallback per flag
+export POSTHOG_KEY="" # Disable PostHog
+curl http://localhost:3000/examples/unified
+```
+
+## 🎛️ Configuration Options
+
+### Offline Fallback Types
+
+#### `percentage` - Rollout percentage
+
+```typescript
+offline: { type: 'percentage', percentage: 25 }
+```
+
+#### `variant` - A/B testing variants
+
+```typescript
+offline: {
+  type: 'variant',
+  variants: ['control', 'variant-a', 'variant-b']
+}
+```
+
+#### `custom` - Custom logic
+
+```typescript
+offline: {
+  type: 'custom',
+  customLogic: (context) => {
+    // Your logic here
+    return context.user.tier === 'premium';
+  }
+}
+```
+
+#### `time-based` - Schedule-based
+
+```typescript
+offline: {
+  type: 'time-based',
+  schedule: {
+    start: '2024-01-01',
+    end: '2024-12-31',
+    days: [1, 2, 3, 4, 5], // Monday-Friday
+    hours: [9, 10, 11, 12, 13, 14, 15, 16, 17] // 9 AM - 5 PM
+  }
+}
+```
+
+## 🔍 Context Extraction
+
+The unified context system automatically extracts:
+
+### User Context
+
+- User ID from cookies (`user-id`, `auth-token`)
+- User tier from subscription data
+- Session ID for consistency
+
+### Visitor Context
+
+- Visitor ID from cookies (`visitor-id`, Google Analytics)
+- Anonymous user tracking
+
+### Request Context
+
+- Country from headers (`x-country`, Cloudflare)
+- User agent for device detection
+- Environment and deployment info
+
+## 📊 Performance Benefits
+
+### Network Efficiency
+
+- **Online**: External provider evaluation
+- **Offline**: Local evaluation (sub-millisecond)
+- **Hybrid**: Adaptive per flag
+
+### Consistency Guarantees
+
+- **Same Input = Same Output**: Deterministic hashing
+- **Cross-Request**: Stable context extraction
+- **Cross-Deployment**: Environment variable overrides
+
+### Caching Strategy
+
+- **Adapter Level**: Provider-specific caching
+- **Request Level**: Unified context cached per request
+- **Application Level**: Vercel Flags SDK deduplication
+
+## 🚀 Migration from Existing Patterns
+
+### Before (Fragmented)
+
+```typescript
+// Separate online flag
+const onlineFlag = flag({
+  adapter: postHogServerAdapter.isFeatureEnabled(),
+  key: "my-feature"
+});
+
+// Separate offline flag
+const offlineFlag = flag({
+  decide: () => Math.random() > 0.5,
+  key: "my-feature"
+});
+```
+
+### After (Unified)
+
+```typescript
+// Single flag for all scenarios
+const unifiedFlag = createBooleanFlag("my-feature", {
+  primaryAdapter: () => postHogServerAdapter.isFeatureEnabled(),
+  percentage: 50
+});
+```
+
+## 🎯 Best Practices
+
+### 1. **Choose Appropriate Fallback Type**
+
+- Use `percentage` for simple rollouts
+- Use `variant` for A/B tests
+- Use `custom` for complex business logic
+- Use `time-based` for scheduled features
+
+### 2. **Set Reasonable Offline Percentages**
+
+- Match your online targeting where possible
+- Be conservative for risky features
+- Use 0% for admin-only features
+
+### 3. **Environment Variable Naming**
+
+- Follow pattern: `FLAG_FEATURE_NAME=value`
+- Use underscores, not hyphens
+- Boolean values: `true`/`false`
+- String values: exact match
+
+### 4. **Context-Aware Logic**
+
+- Leverage user tier information
+- Consider geographic restrictions
+- Respect environment boundaries
+- Account for time zones in scheduling
+
+This unified approach eliminates the online/offline dichotomy, providing a
+single, elegant API that works transparently in any environment while
+maintaining full compatibility with existing Vercel Flags SDK patterns.

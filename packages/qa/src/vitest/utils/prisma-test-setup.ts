@@ -1,5 +1,11 @@
 import { vi } from 'vitest';
-import { createMockPrismaClient } from '../mocks/prisma-consolidated';
+import { createMockPrismaClient } from '../mocks/internal/database';
+import {
+  consoleTestUtils,
+  setupPrismaWithEnums,
+  testLifecycleUtils,
+  type PrismaWithEnumsConfig,
+} from '../mocks/internal/prisma-with-enums';
 
 // Create a mock ORM for backward compatibility
 const createMockPrismaOrm = () => ({
@@ -157,3 +163,83 @@ export const commonMockImplementations = {
     mockPrismaClient.brand.update.mockRejectedValue(new Error(errorMessage));
   },
 };
+
+/**
+ * Enhanced Prisma test setup with enum re-export support
+ *
+ * This is the recommended approach for new tests. It supports real generated
+ * enums while mocking Prisma functions, solving the type safety challenge.
+ *
+ * @example
+ * ```typescript
+ * // Import real enums first
+ * import { BrandType, ContentStatus } from '@/prisma-generated/client';
+ *
+ * // Setup enhanced mocks
+ * const { mockClient, beforeEach, afterEach } = setupEnhancedPrismaTest({
+ *   enums: { BrandType, ContentStatus }
+ * });
+ * ```
+ */
+export function setupEnhancedPrismaTest<TEnums extends Record<string, any>>(
+  config: PrismaWithEnumsConfig<TEnums>,
+) {
+  const mockClient = setupPrismaWithEnums(config);
+  const mockPrismaOrm = createMockPrismaOrm();
+
+  return {
+    mockClient,
+    mockPrismaOrm,
+    beforeEach: () => {
+      testLifecycleUtils.setupPrismaTest(mockClient);
+      // Reset ORM mocks as well
+      Object.values(mockPrismaOrm).forEach(mock => {
+        if (typeof mock === 'function' && 'mockReset' in mock) {
+          mock.mockReset();
+        }
+      });
+      mockPrismaOrm.executeTransaction.mockImplementation((fn: any) => fn(mockClient));
+    },
+    afterEach: () => {
+      testLifecycleUtils.cleanupPrismaTest();
+      resetPrismaTestMocks(mockClient, mockPrismaOrm);
+    },
+    utils: {
+      console: consoleTestUtils,
+      lifecycle: testLifecycleUtils,
+      implementations: commonMockImplementations,
+    },
+  };
+}
+
+/**
+ * Create a standardized test suite setup for database tests
+ *
+ * This utility reduces boilerplate by providing a complete test setup
+ * with console mocking, standard behaviors, and cleanup utilities.
+ */
+export function createDatabaseTestSuite<TEnums extends Record<string, any>>(
+  config: PrismaWithEnumsConfig<TEnums>,
+) {
+  const setup = setupEnhancedPrismaTest(config);
+
+  return {
+    ...setup,
+    // Common test patterns
+    mockDefaults: () => {
+      // Set common default behaviors
+      Object.keys(setup.mockClient).forEach(model => {
+        if (setup.mockClient[model]?.findUnique) {
+          setup.mockClient[model].findUnique.mockResolvedValue(null);
+          setup.mockClient[model].findFirst.mockResolvedValue(null);
+          setup.mockClient[model].findMany.mockResolvedValue([]);
+          setup.mockClient[model].create.mockResolvedValue({ id: `${model}-id` });
+          setup.mockClient[model].update.mockResolvedValue({ id: `${model}-id` });
+          setup.mockClient[model].createMany?.mockResolvedValue({});
+        }
+      });
+    },
+    // Test data factories
+    testData: createTestBrandData,
+  };
+}

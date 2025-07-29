@@ -1,4 +1,4 @@
-import { CoreTool, tool } from 'ai';
+import { tool } from 'ai';
 import { z } from 'zod/v4';
 
 // Define ToolContext locally for now
@@ -53,24 +53,25 @@ export interface ToolFactoryConfig<TParams extends z.ZodTypeAny = z.ZodTypeAny, 
 export function createEnhancedTool<TParams extends z.ZodTypeAny, TResult>(
   config: ToolFactoryConfig<TParams, TResult>,
   execute: (params: z.infer<TParams>, context: ToolContext) => Promise<TResult> | TResult,
-): CoreTool<TParams, TResult> & { metadata?: ToolMetadata } {
+): ReturnType<typeof tool> & { metadata?: ToolMetadata } {
   const wrappedTool = tool({
     description: config.description,
     parameters: config.parameters,
-    execute: async (params: z.infer<TParams>, context: ToolContext) => {
+    execute: async (params, context: any) => {
+      const typedParams = params as z.infer<TParams>;
       try {
         // Custom validation
         if (config.validateParams) {
-          const isValid = await config.validateParams(params);
+          const isValid = await config.validateParams(typedParams);
           if (!isValid) {
             throw new Error('Parameter validation failed');
           }
         }
 
         // Transform parameters
-        let transformedParams = params;
+        let transformedParams = typedParams;
         if (config.transformParams) {
-          transformedParams = await config.transformParams(params);
+          transformedParams = await config.transformParams(typedParams);
         }
 
         // Before execute hook
@@ -95,7 +96,7 @@ export function createEnhancedTool<TParams extends z.ZodTypeAny, TResult>(
       } catch (error) {
         // Error handling
         if (config.onError && error instanceof Error) {
-          return await config.onError(error, params, context);
+          return await config.onError(error, typedParams, context);
         }
         throw error;
       }
@@ -154,7 +155,13 @@ export function createSearchTool<T = any>(config: {
         ...config.metadata,
       },
     },
-    async ({ query, topK, threshold, metadata }) => {
+    async (params: {
+      query: string;
+      topK?: number;
+      threshold?: number;
+      metadata?: Record<string, any>;
+    }) => {
+      const { query, topK, threshold, metadata } = params;
       const results = await config.searchFunction(query, {
         topK,
         threshold,
@@ -224,7 +231,8 @@ export function createCRUDTools<T extends { id: string }>(config: {
         parameters: z.object({ id: z.string() }),
         metadata: { ...baseMetadata, tags: [...(baseMetadata.tags || []), 'read'] },
       },
-      async ({ id }) => {
+      async (params: { id: string }) => {
+        const { id } = params;
         const result = await config.operations.read(id);
         if (!result) {
           return {

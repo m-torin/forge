@@ -9,9 +9,9 @@ import {
   createAdvancedMiddleware,
   createCombinedMiddleware,
   createSmartMiddleware,
-} from '../../src/server/middleware/factory';
+} from '@/server/middleware/factory';
 
-import type { AuthConfig } from '../../src/shared/types';
+import type { AuthConfig } from '@/shared/types';
 
 // Mock the middleware modules using vi.hoisted
 const { mockCreateApiMiddleware, mockCreateNodeMiddleware, mockCreateWebMiddleware } = vi.hoisted(

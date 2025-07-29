@@ -1,6 +1,6 @@
 import { type DatabaseLogContext, databaseLogger } from './logger';
 
-import { Prisma } from '../../../../prisma-generated/client';
+import { Prisma, PrismaClient } from '../../../../prisma-generated/client';
 
 export function createLogConfiguration(): Prisma.LogDefinition[] {
   const config = [
@@ -18,7 +18,10 @@ export function createLogConfiguration(): Prisma.LogDefinition[] {
 }
 
 export function createQueryMiddleware(): Prisma.Middleware {
-  return async (params: any, next: any) => {
+  return async (
+    params: Prisma.MiddlewareParams,
+    next: (params: Prisma.MiddlewareParams) => Promise<any>,
+  ) => {
     const startTime = Date.now();
     const timestamp = new Date().toISOString();
 
@@ -61,11 +64,11 @@ export function createQueryMiddleware(): Prisma.Middleware {
   };
 }
 
-export function setupEventListeners(prisma: any): void {
+export function setupEventListeners(prisma: PrismaClient): void {
   const config = process.env;
 
   // Listen to error events
-  prisma.$on('error', async (event: Prisma.LogEvent) => {
+  (prisma as any).$on('error', async (event: any) => {
     const context: DatabaseLogContext = {
       error: new Error(event.message),
       operation: 'unknown',
@@ -79,7 +82,7 @@ export function setupEventListeners(prisma: any): void {
 
   // Listen to query events if enabled
   if (config.PRISMA_LOG_QUERIES === 'true') {
-    prisma.$on('query', async (event: Prisma.QueryEvent) => {
+    (prisma as any).$on('query', async (event: any) => {
       const context: DatabaseLogContext = {
         duration: event.duration,
         operation: 'query',

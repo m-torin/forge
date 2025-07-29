@@ -3,7 +3,7 @@
  * Workflow metrics, execution history tracking, and performance monitoring
  */
 
-import { createServerObservability } from '@repo/observability/shared-env';
+import { createServerObservability } from '@repo/observability/server/next';
 import { WorkflowProvider } from '../types/index';
 
 export interface AlertRule {
@@ -822,11 +822,7 @@ export class WorkflowMonitor {
 
   private async sendAlertNotifications(alert: WorkflowAlert, _rule: AlertRule): Promise<void> {
     // Implementation would send notifications through configured channels
-    const logger = await createServerObservability({
-      providers: {
-        console: { enabled: true },
-      },
-    });
+    const logger = await createServerObservability();
     await logger.log('info', `Alert triggered: ${alert.message}`);
   }
 

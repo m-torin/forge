@@ -6,6 +6,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { logError, logWarn } from '@repo/observability';
 import { ExtractedData, ScrapeOptions, ScrapeResult, SelectorMap } from '../shared/types';
 
 export interface UseExtractReturn {
@@ -206,8 +207,7 @@ export function useMultiScrape(options: UseMultiScrapeOptions = {}): UseMultiScr
                   }
                 }
               } catch {
-                // eslint-disable-next-line no-console
-                console.warn('Failed to parse response line: ', line);
+                logWarn('Failed to parse response line: ', line);
               }
             }
           }
@@ -376,8 +376,7 @@ export function useScrapeStatus() {
           });
         }
       } catch (error: any) {
-        // eslint-disable-next-line no-console
-        console.error('Failed to fetch scrape status: ', error);
+        logError('Failed to fetch scrape status: ', error);
       }
     };
 

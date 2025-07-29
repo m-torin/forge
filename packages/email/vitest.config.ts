@@ -9,7 +9,12 @@ export default createReactPackageConfig({
         '__tests__/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
       ],
       coverage: {
-        enabled: false,
+        thresholds: {
+          lines: 35,
+          functions: 35,
+          branches: 35,
+          statements: 35,
+        },
       },
     },
   },

@@ -13,11 +13,21 @@ import type { VectorEnrichedMessage, VectorSearchResult } from './shared/types/v
 
 // Next.js client exports (extends client)
 export * from './client';
-export * from './components';
 export * from './hooks';
 
 // Re-export shared types explicitly to avoid conflicts
 export type { ChatMessage } from './shared/types';
+
+// Export standard message types for AI SDK v5 compatibility
+export {
+  messageMetadataSchema,
+  type ChatHelperProps,
+  type StandardAttachment,
+  type StandardChatMessage,
+  type StandardMessageMetadata,
+  type StandardUIDataTypes,
+  type StandardUseChatHelpers,
+} from './shared/types/messages';
 
 // Shared models (client-safe metadata)
 export {
@@ -193,13 +203,10 @@ export function useVectorChat(config: {
         const assistantMessage = await chatResponse.json();
         setMessages(prev => [...prev, assistantMessage]);
       } catch (error) {
-        logError(
-          'Error in vector chat',
-          error instanceof Error ? error : new Error(String(error)),
-          {
-            operation: 'vector_chat',
-          },
-        );
+        logError('Error in vector chat', {
+          operation: 'vector_chat',
+          error: error instanceof Error ? error : new Error(String(error)),
+        });
         // Add error message
         setMessages(prev => [
           ...prev,
@@ -266,13 +273,10 @@ export function useEmbeddings(config: {
         setLastEmbeddings(data.embeddings);
         return data;
       } catch (error) {
-        logError(
-          'Error generating embeddings',
-          error instanceof Error ? error : new Error(String(error)),
-          {
-            operation: 'generate_embeddings',
-          },
-        );
+        logError('Error generating embeddings', {
+          operation: 'generate_embeddings',
+          error: error instanceof Error ? error : new Error(String(error)),
+        });
         throw error;
       } finally {
         setIsGenerating(false);
@@ -331,13 +335,10 @@ export function useVectorRecommendations(config: {
         setRecommendations(results);
         return results;
       } catch (error) {
-        logError(
-          'Error getting recommendations',
-          error instanceof Error ? error : new Error(String(error)),
-          {
-            operation: 'get_recommendations',
-          },
-        );
+        logError('Error getting recommendations', {
+          operation: 'get_recommendations',
+          error: error instanceof Error ? error : new Error(String(error)),
+        });
         return [];
       } finally {
         setIsLoading(false);

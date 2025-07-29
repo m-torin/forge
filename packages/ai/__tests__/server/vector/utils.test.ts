@@ -49,8 +49,9 @@ describe('vectorUtils', () => {
         { id: '1', content: 'First document', metadata: { type: 'article' } },
         { id: '2', content: 'Second document' },
       ];
-      (globalThis as any).mockEmbeddingManager.embedBatch.mockImplementationOnce(contents =>
-        Promise.resolve(contents.map((_, i) => [i + 0.1, i + 0.2, i + 0.3])),
+      (globalThis as any).mockEmbeddingManager.embedBatch.mockImplementationOnce(
+        (contents: string[]) =>
+          Promise.resolve(contents.map((_: string, i: number) => [i + 0.1, i + 0.2, i + 0.3])),
       );
       await vectorUtils.storeTexts(texts);
       expect(mockDB.upsert).toHaveBeenCalledWith(
@@ -123,8 +124,8 @@ describe('vectorUtils', () => {
   describe('updateTexts', () => {
     test('should update existing texts', async () => {
       const updates = [{ id: '1', content: 'Updated content', metadata: { version: 2 } }];
-      (globalThis as any).mockEmbeddingManager.embedBatch.mockImplementationOnce(contents =>
-        Promise.resolve(contents.map((_, i) => [i + 0.1, i + 0.2, i + 0.3])),
+      (globalThis as any).mockEmbeddingManager.embedBatch.mockImplementationOnce((contents: any) =>
+        Promise.resolve(contents.map((_: any, i: any) => [i + 0.1, i + 0.2, i + 0.3])),
       );
       await vectorUtils.updateTexts(updates);
       expect(mockDB.upsert).toHaveBeenCalledWith(
@@ -170,8 +171,8 @@ describe('vectorUtils', () => {
   describe('batchSearch', () => {
     test('should perform batch searches', async () => {
       const queries = ['query 1', 'query 2'];
-      (globalThis as any).mockEmbeddingManager.embedBatch.mockImplementationOnce(contents =>
-        Promise.resolve(contents.map((_, i) => [i + 0.1, i + 0.2, i + 0.3])),
+      (globalThis as any).mockEmbeddingManager.embedBatch.mockImplementationOnce((contents: any) =>
+        Promise.resolve(contents.map((_: any, i: any) => [i + 0.1, i + 0.2, i + 0.3])),
       );
       const results = await vectorUtils.batchSearch(queries);
       expect(results).toHaveLength(2);
@@ -180,8 +181,8 @@ describe('vectorUtils', () => {
 
     test('should include content in batch search results', async () => {
       const queries = ['query 1', 'query 2'];
-      (globalThis as any).mockEmbeddingManager.embedBatch.mockImplementationOnce(contents =>
-        Promise.resolve(contents.map((_, i) => [i + 0.1, i + 0.2, i + 0.3])),
+      (globalThis as any).mockEmbeddingManager.embedBatch.mockImplementationOnce((contents: any) =>
+        Promise.resolve(contents.map((_: any, i: any) => [i + 0.1, i + 0.2, i + 0.3])),
       );
       const results = await vectorUtils.batchSearch(queries, {
         includeContent: true,

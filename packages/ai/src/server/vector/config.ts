@@ -94,41 +94,41 @@ export const EMBEDDING_MODELS = {
   openai: {
     'text-embedding-3-small': {
       dimension: 1536,
-      maxTokens: 8191,
+      maxOutputTokens: 8191,
       provider: 'openai' as const,
     },
     'text-embedding-3-large': {
       dimension: 3072,
-      maxTokens: 8191,
+      maxOutputTokens: 8191,
       provider: 'openai' as const,
     },
     'text-embedding-ada-002': {
       dimension: 1536,
-      maxTokens: 8191,
+      maxOutputTokens: 8191,
       provider: 'openai' as const,
     },
   },
   cohere: {
     'embed-english-v3.0': {
       dimension: 1024,
-      maxTokens: 512,
+      maxOutputTokens: 512,
       provider: 'cohere' as const,
     },
     'embed-multilingual-v3.0': {
       dimension: 1024,
-      maxTokens: 512,
+      maxOutputTokens: 512,
       provider: 'cohere' as const,
     },
   },
   huggingface: {
     'sentence-transformers/all-MiniLM-L6-v2': {
       dimension: 384,
-      maxTokens: 256,
+      maxOutputTokens: 256,
       provider: 'huggingface' as const,
     },
     'sentence-transformers/all-mpnet-base-v2': {
       dimension: 768,
-      maxTokens: 384,
+      maxOutputTokens: 384,
       provider: 'huggingface' as const,
     },
   },
@@ -220,7 +220,7 @@ export function getEmbeddingModelConfig(modelName: string) {
   // Return default if not found
   return {
     dimension: DEFAULT_VECTOR_CONFIG.embedding.dimension,
-    maxTokens: 8191,
+    maxOutputTokens: 8191,
     provider: 'custom' as const,
   };
 }
@@ -233,7 +233,7 @@ export function calculateOptimalChunkSize(
   targetOverlapRatio: number = 0.2,
 ): { chunkSize: number; overlap: number } {
   const modelConfig = getEmbeddingModelConfig(modelName);
-  const maxTokens = modelConfig.maxTokens;
+  const maxTokens = modelConfig.maxOutputTokens;
 
   // Rough estimate: 1 token ≈ 4 characters
   const maxChars = maxTokens * 4;

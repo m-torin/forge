@@ -31,7 +31,7 @@
  * ```
  */
 
-import { logDebug, logError } from '@repo/observability/server/next';
+import { logDebug, logError } from '@repo/observability/server';
 import {
   BulkCreateResponse,
   ClickEvent,
@@ -90,8 +90,8 @@ export async function createServerLinkManagerWithAnalytics(
     try {
       // const { createServerObservability } = await import('@repo/analytics/server/next'); // Commented: property doesn't exist
       // const analytics = await createServerObservability(analyticsConfig); // Commented: property doesn't exist
-      const analyticsModule = await import('@repo/analytics/server/next');
-      const analytics = await analyticsModule.createServerAnalytics(analyticsConfig);
+      const analyticsModule = await import('@repo/analytics/shared-env');
+      const analytics = await analyticsModule.createAnalytics(analyticsConfig);
 
       enhancedConfig.analytics = {
         enabled: true,
@@ -293,8 +293,7 @@ export function createRedirectHandler(linkManager: LinkManager) {
       return { url: link.url, status: 302 };
     } catch (error: any) {
       logError(
-        'Error handling redirect',
-        error instanceof Error ? error : new Error(String(error)),
+        error instanceof Error ? error : new Error(`Error handling redirect: ${String(error)}`),
       );
       return null;
     }

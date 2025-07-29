@@ -8,4 +8,10 @@ export default [
       'no-console': 'off',
     },
   },
+  {
+    files: ['env.ts'],
+    rules: {
+      'no-console': 'off', // Allow console in env validation
+    },
+  },
 ];

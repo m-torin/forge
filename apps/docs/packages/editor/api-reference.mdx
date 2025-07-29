@@ -1,0 +1,671 @@
+---
+title: NotionEditor - API Reference
+description:
+  Complete API reference for the NotionEditor package components, hooks, and
+  utilities
+---
+
+# NotionEditor - API Reference
+
+Complete API documentation for all components, hooks, and utilities in the
+`@repo/editor` package.
+
+## 📦 Main Exports
+
+### External API (Clean)
+
+For external npm consumers:
+
+```tsx
+import { Editor } from "@repo/editor";
+import type { EditorProps } from "@repo/editor";
+```
+
+### Internal API (Full)
+
+For internal monorepo usage:
+
+```tsx
+import {
+  EmbeddableNotionEditor,
+  NotionEditor,
+  useEmbeddableEditor,
+  useCollaborativeEditing
+} from "@repo/editor";
+```
+
+---
+
+## 🎯 Components
+
+### `Editor` (External API)
+
+Clean external API that maps to `EmbeddableNotionEditor`.
+
+```tsx
+import { Editor } from "@repo/editor";
+
+<Editor
+  placeholder="Start writing..."
+  onChange={(html) => console.log(html)}
+/>;
+```
+
+**Props:** Same as [`EmbeddableNotionEditor`](#embeddablenotioneditor)
+
+---
+
+### `EmbeddableNotionEditor`
+
+The main embeddable rich text editor component.
+
+```tsx
+import { EmbeddableNotionEditor } from "@repo/editor/components/embeddable";
+
+<EmbeddableNotionEditor
+  content="<p>Initial content</p>"
+  placeholder="Start writing..."
+  onChange={(html, json) => console.log({ html, json })}
+  theme={{
+    backgroundColor: "#ffffff",
+    textColor: "#1f2937"
+  }}
+/>;
+```
+
+#### Props
+
+| Prop                | Type                                | Default              | Description                |
+| ------------------- | ----------------------------------- | -------------------- | -------------------------- |
+| `content`           | `string`                            | `""`                 | Initial HTML content       |
+| `placeholder`       | `string`                            | `"Start writing..."` | Placeholder text           |
+| `className`         | `string`                            | `""`                 | CSS class name             |
+| `editable`          | `boolean`                           | `true`               | Whether editor is editable |
+| `showToolbar`       | `boolean`                           | `true`               | Show/hide toolbar          |
+| `minHeight`         | `string`                            | `"200px"`            | Minimum editor height      |
+| `maxWidth`          | `string`                            | `"100%"`             | Maximum editor width       |
+| `theme`             | `EditorTheme`                       | Default theme        | Theme configuration        |
+| `features`          | `EditorFeatures`                    | All enabled          | Feature toggles            |
+| `autoSave`          | `AutoSaveConfig`                    | Disabled             | Auto-save configuration    |
+| `mediaUploadConfig` | `MediaUploadConfig`                 | Disabled             | File upload configuration  |
+| `onChange`          | `(html: string, json: any) => void` | -                    | Content change callback    |
+| `onUpdate`          | `(data: UpdateData) => void`        | -                    | Editor update callback     |
+| `onFocus`           | `() => void`                        | -                    | Focus event callback       |
+| `onBlur`            | `() => void`                        | -                    | Blur event callback        |
+
+#### Types
+
+```tsx
+interface EditorTheme {
+  backgroundColor?: string;
+  textColor?: string;
+  borderColor?: string;
+  focusColor?: string;
+  placeholderColor?: string;
+}
+
+interface EditorFeatures {
+  formatting?: boolean; // Bold, italic, underline
+  lists?: boolean; // Bullet and numbered lists
+  tasks?: boolean; // Task lists with checkboxes
+  links?: boolean; // Link support
+  tables?: boolean; // Table support
+  codeBlocks?: boolean; // Code blocks with syntax highlighting
+  colors?: boolean; // Text and highlight colors
+  mediaUpload?: boolean; // File upload support
+}
+
+interface AutoSaveConfig {
+  enabled: boolean;
+  delay?: number; // Milliseconds (default: 1000)
+  onSave?: (content: string) => void | Promise<void>;
+}
+
+interface MediaUploadConfig {
+  accept?: string; // MIME types (default: images only)
+  maxSize?: number; // Bytes (default: 10MB)
+  uploadHandler?: (file: File) => Promise<string>;
+  onError?: (error: Error) => void;
+}
+
+interface UpdateData {
+  editor: any; // TipTap editor instance
+  transaction: any; // ProseMirror transaction
+}
+```
+
+---
+
+### `NotionEditor`
+
+Full-featured Notion-style editor with collaboration support.
+
+```tsx
+import { NotionEditor } from "@repo/editor/components";
+
+<NotionEditor
+  documentId="doc-123"
+  userId="user-456"
+  collaboration={{
+    enabled: true,
+    websocketUrl: "wss://your-server.com/collab"
+  }}
+/>;
+```
+
+#### Props
+
+Extends `EmbeddableNotionEditor` props with:
+
+| Prop            | Type                  | Default  | Description                |
+| --------------- | --------------------- | -------- | -------------------------- |
+| `documentId`    | `string`              | -        | Unique document identifier |
+| `userId`        | `string`              | -        | Current user identifier    |
+| `collaboration` | `CollaborationConfig` | Disabled | Collaboration settings     |
+
+```tsx
+interface CollaborationConfig {
+  enabled: boolean;
+  websocketUrl: string;
+  enablePersistence?: boolean;
+  user?: {
+    id: string;
+    name: string;
+    color: string;
+    avatar?: string;
+  };
+}
+```
+
+---
+
+## 🪝 Hooks
+
+### `useEmbeddableEditor`
+
+Hook for programmatic control of the embeddable editor.
+
+```tsx
+import { useEmbeddableEditor } from "@repo/editor/hooks";
+
+function EditorControls() {
+  const {
+    getHTML,
+    getJSON,
+    setContent,
+    clearContent,
+    focus,
+    isEmpty,
+    getWordCount
+  } = useEmbeddableEditor();
+
+  return (
+    <div>
+      <button onClick={() => console.log(getHTML())}>Get HTML</button>
+      <button onClick={() => clearContent()}>Clear</button>
+    </div>
+  );
+}
+```
+
+#### Methods
+
+| Method              | Parameters                        | Returns   | Description              |
+| ------------------- | --------------------------------- | --------- | ------------------------ |
+| `getHTML`           | `(editor?: any)`                  | `string`  | Get current HTML content |
+| `getJSON`           | `(editor?: any)`                  | `object`  | Get current JSON content |
+| `getText`           | `(editor?: any)`                  | `string`  | Get plain text content   |
+| `setContent`        | `(content: string, editor?: any)` | `void`    | Set HTML content         |
+| `clearContent`      | `(editor?: any)`                  | `void`    | Clear all content        |
+| `focus`             | `(editor?: any)`                  | `void`    | Focus the editor         |
+| `isEmpty`           | `(editor?: any)`                  | `boolean` | Check if editor is empty |
+| `getWordCount`      | `(editor?: any)`                  | `number`  | Get word count           |
+| `getCharacterCount` | `(editor?: any)`                  | `number`  | Get character count      |
+
+---
+
+### `useCollaborativeEditing`
+
+Hook for collaborative editing features.
+
+```tsx
+import { useCollaborativeEditing } from "@repo/editor/hooks";
+
+function CollaborativeEditor() {
+  const { isConnected, collaborators, provider, connect, disconnect } =
+    useCollaborativeEditing({
+      documentId: "doc-123",
+      websocketUrl: "wss://your-server.com/collab",
+      user: {
+        id: "user-456",
+        name: "John Doe",
+        color: "#3b82f6"
+      }
+    });
+
+  return (
+    <div>
+      <div>Status: {isConnected ? "Connected" : "Disconnected"}</div>
+      <div>Collaborators: {collaborators.length}</div>
+    </div>
+  );
+}
+```
+
+#### Configuration
+
+```tsx
+interface CollaborationHookConfig {
+  documentId: string;
+  websocketUrl: string;
+  enablePersistence?: boolean;
+  user?: {
+    id: string;
+    name: string;
+    color: string;
+    avatar?: string;
+  };
+}
+```
+
+#### Returns
+
+```tsx
+interface CollaborationHookReturn {
+  isConnected: boolean;
+  collaborators: Collaborator[];
+  provider: any; // Y.js WebsocketProvider
+  connect: () => void;
+  disconnect: () => void;
+  reconnect: () => void;
+}
+
+interface Collaborator {
+  id: string;
+  name: string;
+  color: string;
+  avatar?: string;
+  isActive: boolean;
+  cursor?: {
+    anchor: number;
+    head: number;
+  };
+}
+```
+
+---
+
+## 🛠 Utilities
+
+### Media Upload Handlers
+
+#### `createMockUploadHandler`
+
+Creates a mock upload handler for testing.
+
+```tsx
+import { createMockUploadHandler } from "@repo/editor/utils";
+
+const mockHandler = createMockUploadHandler({
+  baseUrl: "https://example.com/uploads",
+  delay: 1000 // Simulate network delay
+});
+
+<EmbeddableNotionEditor
+  mediaUploadConfig={{
+    uploadHandler: mockHandler
+  }}
+/>;
+```
+
+#### `createStorageUploadHandler`
+
+Creates an upload handler for cloud storage.
+
+```tsx
+import { createStorageUploadHandler } from "@repo/editor/utils";
+
+const storageHandler = createStorageUploadHandler({
+  endpoint: "/api/upload",
+  headers: {
+    Authorization: "Bearer token"
+  }
+});
+```
+
+---
+
+### Security Utilities
+
+#### `sanitizeTheme`
+
+Sanitizes theme values to prevent CSS injection.
+
+```tsx
+import { sanitizeTheme } from "@repo/editor/utils";
+
+const userTheme = {
+  backgroundColor: "red; background-image: url('evil.com')"
+};
+
+const safeTheme = sanitizeTheme(userTheme);
+// Result: { backgroundColor: 'red' }
+```
+
+#### `validateURL`
+
+Validates and sanitizes URLs.
+
+```tsx
+import { validateURL, sanitizeURL } from "@repo/editor/utils";
+
+const isValid = validateURL("https://example.com"); // true
+const isMalicious = validateURL("javascript:alert(1)"); // false
+
+const safeUrl = sanitizeURL("https://example.com?q=test");
+```
+
+---
+
+### Testing Utilities
+
+#### `createEditorTestUtils`
+
+Testing utilities for editor components.
+
+```tsx
+import { createEditorTestUtils } from "@repo/editor/testing";
+
+const { renderEditor, mockEditor, getEditorContent, fireEditorEvent } =
+  createEditorTestUtils();
+
+// In your tests
+test("editor handles input", () => {
+  const { getByTestId } = renderEditor(
+    <EmbeddableNotionEditor data-testid="editor" />
+  );
+
+  const editor = getByTestId("editor");
+  fireEditorEvent(editor, "input", { html: "<p>Hello</p>" });
+
+  expect(getEditorContent(editor)).toBe("<p>Hello</p>");
+});
+```
+
+---
+
+## 🎨 CSS Classes
+
+### Main Container
+
+```css
+.embeddable-notion-editor {
+  /* Main editor container */
+}
+
+.embeddable-notion-editor-content {
+  /* Editor content area (ProseMirror) */
+}
+
+.embeddable-editor-toolbar {
+  /* Toolbar container */
+}
+```
+
+### Content Elements
+
+```css
+.embeddable-editor-list {
+  /* List styling */
+}
+
+.embeddable-editor-task-list {
+  /* Task list styling */
+}
+
+.embeddable-editor-code-block {
+  /* Code block styling */
+}
+
+.embeddable-editor-table {
+  /* Table styling */
+}
+
+.embeddable-editor-link {
+  /* Link styling */
+}
+```
+
+### Custom Properties (CSS Variables)
+
+```css
+:root {
+  --editor-bg-color: #ffffff;
+  --editor-text-color: #1f2937;
+  --editor-border-color: #e5e7eb;
+  --editor-focus-color: #3b82f6;
+  --editor-placeholder-color: #9ca3af;
+  --editor-min-height: 200px;
+}
+```
+
+---
+
+## 🔧 Configuration
+
+### TSUP Build Configuration
+
+The package uses TSUP for building. Key configuration in `tsup.config.ts`:
+
+```ts
+export default defineConfig([
+  // Main library bundle
+  {
+    entry: { index: "src/external.ts" },
+    format: ["esm", "cjs"],
+    dts: true,
+    clean: true,
+    outExtension({ format }) {
+      return {
+        js: format === "esm" ? ".mjs" : ".cjs"
+      };
+    }
+  },
+
+  // Standalone IIFE bundle
+  {
+    entry: {
+      "embeddable-standalone":
+        "src/components/EmbeddableNotionEditor/EmbeddableNotionEditor.tsx"
+    },
+    format: "iife",
+    globalName: "EmbeddableNotionEditor",
+    platform: "browser",
+    target: "es2020"
+  }
+]);
+```
+
+### Package.json Exports
+
+```json
+{
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./components": "./src/components/index.ts",
+    "./components/embeddable": "./src/components/EmbeddableNotionEditor/index.ts",
+    "./hooks": "./src/hooks/index.ts",
+    "./utils": "./src/utils/index.ts",
+    "./testing": "./src/testing/index.ts"
+  }
+}
+```
+
+---
+
+## ⚠️ Migration Guide
+
+### From v1.x to v2.x
+
+#### Breaking Changes
+
+1. **Import Paths**
+
+   ```tsx
+   // Old
+   import { EmbeddableEditor } from "@repo/editor";
+
+   // New
+   import { Editor } from "@repo/editor"; // External API
+   // or
+   import { EmbeddableNotionEditor } from "@repo/editor/components/embeddable";
+   ```
+
+2. **Hook API**
+
+   ```tsx
+   // Old
+   const { getContent } = useEditor();
+
+   // New
+   const { getHTML, getJSON } = useEmbeddableEditor();
+   ```
+
+3. **Theme Configuration**
+
+   ```tsx
+   // Old
+   theme={{ primary: '#blue' }}
+
+   // New
+   theme={{ focusColor: '#3b82f6' }}
+   ```
+
+#### Migration Steps
+
+1. Update import statements
+2. Replace hook usage
+3. Update theme configuration
+4. Test all functionality
+
+---
+
+## 🐛 Common Issues
+
+### TypeScript Errors
+
+**Error:** `Cannot find module '@repo/editor'`
+
+```bash
+# Solution: Ensure proper build
+pnpm build
+```
+
+**Error:** `Property 'getHTML' does not exist`
+
+```tsx
+// Solution: Import the hook correctly
+import { useEmbeddableEditor } from "@repo/editor/hooks";
+```
+
+### Runtime Errors
+
+**Error:** `EmbeddableNotionEditor is undefined`
+
+```html
+<!-- Solution: Check script loading -->
+<script src="./embeddable-standalone.global.js"></script>
+<script>
+  // Wait for DOM ready
+  document.addEventListener("DOMContentLoaded", function () {
+    const editor = new EmbeddableNotionEditor({
+      container: document.getElementById("editor")
+    });
+  });
+</script>
+```
+
+### CSS Issues
+
+**Issue:** Styles not loading
+
+```tsx
+// Solution: Import CSS explicitly if needed
+import "@repo/editor/dist/index.css";
+```
+
+**Issue:** Style conflicts
+
+```css
+/* Solution: Increase specificity */
+.my-app .embeddable-notion-editor {
+  /* Your overrides */
+}
+```
+
+---
+
+## 📊 Performance Tips
+
+### Bundle Size Optimization
+
+1. **Use Specific Imports**
+
+   ```tsx
+   // Good: Tree-shakeable
+   import { EmbeddableNotionEditor } from "@repo/editor/components/embeddable";
+
+   // Avoid: Imports entire library
+   import * as Editor from "@repo/editor";
+   ```
+
+2. **Disable Unused Features**
+
+   ```tsx
+   <Editor
+     features={{
+       formatting: true,
+       lists: false, // Saves ~3KB
+       tables: false, // Saves ~8KB
+       codeBlocks: false // Saves ~15KB
+     }}
+   />
+   ```
+
+3. **Lazy Loading**
+   ```tsx
+   const Editor = lazy(() =>
+     import("@repo/editor").then((m) => ({ default: m.Editor }))
+   );
+   ```
+
+### Runtime Performance
+
+1. **Debounce Auto-save**
+
+   ```tsx
+   autoSave={{
+     enabled: true,
+     delay: 2000 // Longer delay for less frequent saves
+   }}
+   ```
+
+2. **Optimize Change Handlers**
+   ```tsx
+   const handleChange = useCallback((html) => {
+     // Expensive operations
+   }, []);
+   ```
+
+---
+
+## 🔗 Related APIs
+
+- [TipTap Editor API](https://tiptap.dev/api/editor) - Underlying editor
+- [ProseMirror API](https://prosemirror.net/docs/ref/) - Core editor engine
+- [Y.js API](https://docs.yjs.dev/) - Collaboration layer

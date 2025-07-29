@@ -1,19 +1,19 @@
-// Environment setup for feature-flags tests
+// Environment setup for feature-flags tests using modern Vitest practices
 import { vi } from 'vitest';
 
-// Mock environment variables
+// Use vi.stubEnv for environment variables (modern Vitest approach)
 vi.stubEnv('NODE_ENV', 'test');
 
-// Mock PostHog configuration
+// PostHog configuration
 vi.stubEnv('POSTHOG_KEY', 'test-posthog-key');
 vi.stubEnv('POSTHOG_HOST', 'https://app.posthog.com');
-vi.stubEnv('POSTHOG_PERSONAL_API_KEY', 'test-personal-api-key');
+vi.stubEnv('POSTHOG_PERSONAL_API_KEY', 'test-personal-key');
 vi.stubEnv('POSTHOG_PROJECT_ID', 'test-project-id');
 
-// Mock Edge Config
-vi.stubEnv('EDGE_CONFIG', 'https://edge-config.vercel.com/test');
+// Edge Config
+vi.stubEnv('EDGE_CONFIG', 'https://edge-config.vercel.com/test-edge-config');
 
-// Mock public PostHog configuration
+// Public PostHog configuration
 vi.stubEnv('NEXT_PUBLIC_POSTHOG_KEY', 'test-public-posthog-key');
 vi.stubEnv('NEXT_PUBLIC_POSTHOG_HOST', 'https://app.posthog.com');
 vi.stubEnv('NEXT_PUBLIC_VERCEL_ENV', 'development');

@@ -159,15 +159,12 @@ export class VectorRAGWorkflow {
 
       return finalContext;
     } catch (error) {
-      logError(
-        'Failed to retrieve context',
-        error instanceof Error ? error : new Error(String(error)),
-        {
-          operation: 'rag_workflow_retrieve_context',
-          query: query.slice(0, 100),
-          namespace: this.config.namespace,
-        },
-      );
+      logError('Failed to retrieve context', {
+        operation: 'rag_workflow_retrieve_context',
+        query: query.slice(0, 100),
+        namespace: this.config.namespace,
+        error: error instanceof Error ? error : new Error(String(error)),
+      });
       return [];
     }
   }
@@ -195,7 +192,7 @@ Answer:`;
       const result = await generateText({
         model: this.chatModel,
         prompt,
-        maxTokens: 1000,
+        maxOutputTokens: 1000,
         temperature: 0.1,
       });
 
@@ -248,10 +245,10 @@ Question: ${query}
 Answer:`;
 
       // Stream the response
-      const result = await streamText({
+      const result = streamText({
         model: this.chatModel,
         prompt,
-        maxTokens: 1000,
+        maxOutputTokens: 1000,
         temperature: 0.1,
       });
 
@@ -345,15 +342,12 @@ Answer:`;
 
       return true;
     } catch (error) {
-      logError(
-        'Failed to update document',
-        error instanceof Error ? error : new Error(String(error)),
-        {
-          operation: 'rag_workflow_update_document',
-          documentId: id,
-          namespace: this.config.namespace,
-        },
-      );
+      logError('Failed to update document', {
+        operation: 'rag_workflow_update_document',
+        documentId: id,
+        namespace: this.config.namespace,
+        error: error instanceof Error ? error : new Error(String(error)),
+      });
       return false;
     }
   }
@@ -376,15 +370,12 @@ Answer:`;
 
       return true;
     } catch (error) {
-      logError(
-        'Failed to delete document',
-        error instanceof Error ? error : new Error(String(error)),
-        {
-          operation: 'rag_workflow_delete_document',
-          documentId: id,
-          namespace: this.config.namespace,
-        },
-      );
+      logError('Failed to delete document', {
+        operation: 'rag_workflow_delete_document',
+        documentId: id,
+        namespace: this.config.namespace,
+        error: error instanceof Error ? error : new Error(String(error)),
+      });
       return false;
     }
   }

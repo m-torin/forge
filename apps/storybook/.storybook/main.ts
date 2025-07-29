@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 
-import { StorybookConfig } from '@storybook/nextjs';
+import type { StorybookConfig } from '@storybook/nextjs';
 
 const require = createRequire(import.meta.url);
 
@@ -17,6 +17,7 @@ const config: StorybookConfig = {
     getAbsolutePath('@chromatic-com/storybook'),
     getAbsolutePath('@storybook/addon-themes'),
     getAbsolutePath('@storybook/addon-docs'),
+    getAbsolutePath('@storybook/addon-a11y'),
   ],
   core: {
     builder: {
@@ -27,21 +28,25 @@ const config: StorybookConfig = {
       },
     },
     disableTelemetry: true,
+    disableWhatsNewNotifications: true,
+  },
+  docs: {
+    docsMode: false,
+    defaultName: 'Documentation',
   },
   framework: {
     name: getAbsolutePath('@storybook/nextjs'),
-    options: {},
+    options: {
+      nextConfigPath: '../next.config.ts',
+    },
   },
   staticDirs: ['../public'],
   stories: [
-    // Only include stories from the storybook app itself and design system
-    '../stories/**/*.mdx',
+    // Only include stories from the storybook app itself and uix-system
     '../stories/**/*.stories.@(js|jsx|mjs|ts|tsx)',
-    '../../../packages/design-system/src/**/*.stories.@(js|jsx|mjs|ts|tsx)',
-    // Remove app stories to avoid conflicts and slow builds
-    // '../../../apps/web/src/**/*.stories.@(js|jsx|mjs|ts|tsx)',
-    // '../../../apps/backstage*/src/**/*.stories.@(js|jsx|mjs|ts|tsx)',
-    // '../../../apps/ai-chatbot*/src/**/*.stories.@(js|jsx|mjs|ts|tsx)',
+    '../../../packages/uix-system/src/mantine/components/**/*.stories.@(js|jsx|mjs|ts|tsx)',
+    // Include editor package stories
+    '../../../packages/editor/src/**/*.stories.@(js|jsx|mjs|ts|tsx)',
   ],
   typescript: {
     check: false,
@@ -55,8 +60,8 @@ const config: StorybookConfig = {
         // Alias @repo/auth/client to our mock implementation
         '@repo/auth/client': require.resolve('../../../packages/auth/mocks/storybook-client'),
         // Mock geist fonts for Storybook
-        'geist/font/mono': require.resolve('../../../packages/design-system/uix/mocks/geist-mono'),
-        'geist/font/sans': require.resolve('../../../packages/design-system/uix/mocks/geist-sans'),
+        'geist/font/mono': require.resolve('../../../packages/uix-system/mocks/geist-mono'),
+        'geist/font/sans': require.resolve('../../../packages/uix-system/mocks/geist-sans'),
       };
 
       // Add fallbacks for Node.js modules

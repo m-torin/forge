@@ -183,7 +183,6 @@ describe('password policy plugin', () => {
     test('should handle undefined options', async () => {
       const passwordPolicyModule = await import('@/server/plugins/password-policy');
 
-      // @ts-expect-error - testing undefined input
       const plugin = passwordPolicyModule.passwordPolicyPlugin(undefined);
 
       expect(plugin).toBeDefined();

@@ -1,5 +1,7 @@
 import { generateVisitorId, getOrGenerateVisitorId, parseOverrides } from '@/shared/utils';
 import { beforeEach, describe, expect, vi } from 'vitest';
+import { featureFlagTestData } from '../test-data-generators';
+import { assertionHelpers, createMockCookieStore } from '../test-utils';
 
 // Mock nanoid
 vi.mock('nanoid', () => ({
@@ -7,23 +9,11 @@ vi.mock('nanoid', () => ({
 }));
 
 // Mock Vercel flags dedupe
-vi.mock('@vercel/flags/next', () => ({
+vi.mock('flags/next', () => ({
   dedupe: vi.fn(fn => fn),
 }));
 
-// Mock cookie store
-const createMockCookieStore = (cookies: Record<string, string> = {}) => ({
-  get: vi.fn((name: string) => (cookies[name] ? { value: cookies[name] } : undefined)),
-  has: vi.fn((name: string) => name in cookies),
-  set: vi.fn(),
-  delete: vi.fn(),
-  clear: vi.fn(),
-  getAll: vi.fn(() => Object.entries(cookies).map(([name, value]) => ({ name, value }))),
-  toString: vi.fn(() => ''),
-  [Symbol.iterator]: vi.fn(() => Object.entries(cookies).values()),
-});
-
-// Mock header store
+// Enhanced header store mock using existing utilities
 const createMockHeaderStore = (headers: Record<string, string> = {}) => ({
   get: vi.fn((name: string) => headers[name] || null),
   has: vi.fn((name: string) => name in headers),
@@ -49,7 +39,7 @@ describe('generateVisitorId', () => {
     const id = await generateVisitorId();
 
     expect(id).toBe('generated-id-456');
-    expect(nanoid).toHaveBeenCalledOnce();
+    assertionHelpers.assertMockCalled(nanoid, 1);
   });
 
   test('should be wrapped with dedupe function', async () => {
@@ -152,16 +142,7 @@ describe('getOrGenerateVisitorId', () => {
   });
 
   test('should handle cookies without value property', async () => {
-    const cookies = {
-      get: vi.fn(() => ({})), // Cookie object without value
-      has: vi.fn(),
-      set: vi.fn(),
-      delete: vi.fn(),
-      clear: vi.fn(),
-      getAll: vi.fn(),
-      toString: vi.fn(),
-      [Symbol.iterator]: vi.fn(),
-    };
+    const cookies = createMockCookieStore(); // Empty cookie store
 
     const { nanoid } = vi.mocked(await import('nanoid'));
     nanoid.mockReturnValue('fallback-id');
@@ -222,7 +203,7 @@ describe('parseOverrides', () => {
     const complexOverrides = {
       'boolean-flag': true,
       'string-flag': 'variant-b',
-      'object-flag': { config: 'value', nested: { key: 'data' } },
+      'object-flag': featureFlagTestData.flags.objects['config-flag'],
       'array-flag': ['item1', 'item2'],
       'number-flag': 42,
     };
@@ -233,19 +214,11 @@ describe('parseOverrides', () => {
     const result = parseOverrides(cookies);
 
     expect(result).toStrictEqual(complexOverrides);
+    assertionHelpers.assertMockCalled(cookies.get, 1, ['vercel-flag-overrides']);
   });
 
   test('should handle cookies without value property', () => {
-    const cookies = {
-      get: vi.fn(() => ({})), // Cookie object without value
-      has: vi.fn(),
-      set: vi.fn(),
-      delete: vi.fn(),
-      clear: vi.fn(),
-      getAll: vi.fn(),
-      toString: vi.fn(),
-      [Symbol.iterator]: vi.fn(),
-    };
+    const cookies = createMockCookieStore(); // Empty cookie store
 
     const result = parseOverrides(cookies);
 

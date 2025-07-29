@@ -1,0 +1,190 @@
+---
+title: Backstage Multizone Environment Setup
+description:
+  Enhanced environment support for the backstage multizone architecture with
+  automatic environment detection and dynamic URL construction
+---
+
+# Backstage Multizone Environment Setup
+
+This document explains the enhanced environment support for the backstage
+multizone architecture.
+
+## Overview
+
+The backstage applications now support automatic environment detection and
+dynamic URL construction for:
+
+- **Local development** (`localhost` URLs)
+- **Vercel preview deployments** (branch-based URLs)
+- **Vercel production deployments** (custom domain URLs)
+
+## Architecture
+
+### Environment Detection
+
+The `environment.ts` utility detects the current environment using:
+
+- `NODE_ENV` for local development
+- `VERCEL_ENV` for Vercel deployments (preview/production)
+- `VERCEL_URL` for dynamic URL construction
+
+### Dynamic URL Construction
+
+Service URLs are automatically constructed based on environment:
+
+```typescript
+// Development
+http://localhost:3301  // backstage-cms
+http://localhost:3302  // backstage-authmgmt
+http://localhost:3303  // backstage-workflows
+
+// Preview (dynamic based on branch)
+https://backstage-cms-git-feature-branch.vercel.app
+https://backstage-authmgmt-git-feature-branch.vercel.app
+https://backstage-workflows-git-feature-branch.vercel.app
+
+// Production
+https://backstage-cms.vercel.app
+https://backstage-authmgmt.vercel.app
+https://backstage-workflows.vercel.app
+```
+
+## Implementation Details
+
+### 1. Environment Variables
+
+Each backstage app now supports these environment variables:
+
+```env
+# Vercel-provided (automatic)
+VERCEL_ENV=development | preview | production
+VERCEL_URL=your-deployment-url.vercel.app
+VERCEL_BRANCH_URL=your-branch-url.vercel.app
+VERCEL_GIT_COMMIT_REF=branch-name
+
+# Public versions (for client-side access)
+NEXT_PUBLIC_VERCEL_ENV=development | preview | production
+NEXT_PUBLIC_VERCEL_URL=your-deployment-url.vercel.app
+```
+
+### 2. Updated Files
+
+**Main Backstage App:**
+
+- `src/lib/environment.ts` - Environment detection utilities
+- `src/lib/services.ts` - Dynamic service URL construction
+- `next.config.ts` - Environment-aware rewrites
+- `vercel.json` - Deployment configuration
+
+**Microfrontend Apps (CMS, AuthMgmt, Workflows):**
+
+- `env.ts` - Added Vercel environment variables
+- `src/lib/environment.ts` - App-specific environment utilities (CMS only)
+- `vercel.json` - Individual deployment configurations
+
+### 3. Routing Logic
+
+The main backstage app's `next.config.ts` now includes environment-aware
+rewrites:
+
+```typescript
+// Local development
+if (envInfo.isLocal) {
+  return [
+    { source: "/cms/:path*", destination: "http://localhost:3301/:path*" }
+    // ... other services
+  ];
+}
+
+// Preview/Production
+if (envInfo.isPreview || envInfo.isProduction) {
+  return [
+    {
+      source: "/cms/:path*",
+      destination: `${getServiceUrl("backstage-cms")}/:path*`
+    }
+    // ... other services
+  ];
+}
+```
+
+## Deployment Instructions
+
+### 1. Development
+
+No changes required - existing workflow continues to work:
+
+```bash
+pnpm dev:backstage # Starts all backstage apps
+```
+
+### 2. Vercel Deployment
+
+**For Preview Deployments:**
+
+1. Push to any branch
+2. Vercel automatically creates preview deployments for each app
+3. Environment detection automatically routes between preview services
+
+**For Production Deployments:**
+
+1. Deploy each backstage app separately to Vercel
+2. Set up custom domains (optional):
+   - `backstage.yourdomain.com` (main app)
+   - `backstage-cms.yourdomain.com`
+   - `backstage-authmgmt.yourdomain.com`
+   - `backstage-workflows.yourdomain.com`
+
+### 3. Environment Variables
+
+**Vercel automatically provides:**
+
+- `VERCEL_ENV`
+- `VERCEL_URL`
+- `VERCEL_BRANCH_URL`
+- `VERCEL_GIT_COMMIT_REF`
+
+**You may need to set:**
+
+- `NEXT_PUBLIC_VERCEL_ENV` (if client-side access needed)
+- `NEXT_PUBLIC_VERCEL_URL` (if client-side access needed)
+
+## Benefits
+
+1. **Seamless Environment Support**: Works across local, preview, and production
+2. **Automatic URL Construction**: No manual URL configuration needed
+3. **Branch-based Previews**: Each branch gets its own isolated preview
+   environment
+4. **Backward Compatibility**: Existing development workflow unchanged
+5. **Robust Fallbacks**: Graceful handling of missing environment variables
+
+## Troubleshooting
+
+### Environment Detection Issues
+
+- Check `console.log` output in development for environment info
+- Use `logEnvironmentInfo()` function for debugging
+
+### URL Construction Problems
+
+- Verify `VERCEL_URL` is set correctly
+- Check fallback URLs in environment utilities
+- Test dynamic URL construction in different environments
+
+### Routing Issues
+
+- Verify `next.config.ts` rewrites are correct
+- Check that microfrontend apps are accessible at their URLs
+- Test cross-service navigation in preview environments
+
+## Testing
+
+Run the environment detection tests:
+
+```bash
+cd apps/backstage
+pnpm test src/lib/__tests__/environment.test.ts
+```
+
+<Note>This validates environment detection across all scenarios.</Note>

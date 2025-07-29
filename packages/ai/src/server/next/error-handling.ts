@@ -109,10 +109,11 @@ export class AISDKError extends Error {
     context?: AIErrorContext,
   ) {
     try {
-      logError(message, new Error(cause || 'Unknown error'), {
+      logError(message, {
         operation: 'error_handling',
         requestId: context?.requestId,
         userId: context?.userId,
+        error: new Error(cause || 'Unknown error'),
         metadata: {
           code,
           surface: this.surface,
@@ -122,14 +123,11 @@ export class AISDKError extends Error {
       });
     } catch (loggerError) {
       // Fallback to observability logger if AI logger fails
-      logError(
-        'Failed to log error via AI logger',
-        loggerError instanceof Error ? loggerError : new Error(String(loggerError)),
-        {
-          originalError: { code, message, cause: cause || 'unknown', context },
-          operation: 'ai_error_logging_fallback',
-        },
-      );
+      logError('Failed to log error via AI logger', {
+        originalError: { code, message, cause: cause || 'unknown', context },
+        operation: 'ai_error_logging_fallback',
+        error: loggerError instanceof Error ? loggerError : new Error(String(loggerError)),
+      });
     }
   }
 

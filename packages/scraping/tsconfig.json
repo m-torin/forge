@@ -6,9 +6,10 @@
     "types": ["vitest/globals"],
     "baseUrl": ".",
     "paths": {
-      "@repo/*": ["../*"]
+      "@repo/*": ["../*"],
+      "@/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*", "eslint.config.ts", "vitest.config.ts"],
-  "exclude": ["node_modules", "dist", "__tests__"]
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules", "dist"]
 }

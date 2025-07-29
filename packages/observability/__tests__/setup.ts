@@ -1,0 +1,175 @@
+import '@testing-library/jest-dom';
+import { beforeEach, vi } from 'vitest';
+
+// Import centralized mocks from @repo/qa (when available)
+// TODO: Re-enable when @repo/qa exports are built
+// import '@repo/qa/vitest/mocks/providers/sentry';
+
+// Mock console methods for cleaner test output
+const originalConsole = console;
+global.console = {
+  ...originalConsole,
+  error: vi.fn(),
+  log: vi.fn(),
+  warn: vi.fn(),
+};
+
+// Mock external dependencies used by plugins
+vi.mock('@sentry/nextjs', () => ({
+  init: vi.fn(),
+  captureException: vi.fn(),
+  captureMessage: vi.fn(),
+  setUser: vi.fn(),
+  addBreadcrumb: vi.fn(),
+  withScope: vi.fn(callback => {
+    if (callback) {
+      callback({
+        setContext: vi.fn(),
+        setUser: vi.fn(),
+      });
+    }
+  }),
+  flush: vi.fn().mockResolvedValue(true),
+  close: vi.fn().mockResolvedValue(true),
+  getClient: vi.fn(),
+  httpIntegration: vi.fn(() => ({})),
+  browserTracingIntegration: vi.fn(() => ({})),
+  replayIntegration: vi.fn(() => ({})),
+  profilesIntegration: vi.fn(() => ({})),
+}));
+
+vi.mock('@sentry/node', () => ({
+  init: vi.fn(),
+  captureException: vi.fn(),
+  captureMessage: vi.fn(),
+  setUser: vi.fn(),
+  addBreadcrumb: vi.fn(),
+  withScope: vi.fn(callback => {
+    if (callback) {
+      callback({
+        setContext: vi.fn(),
+        setUser: vi.fn(),
+      });
+    }
+  }),
+  flush: vi.fn().mockResolvedValue(true),
+  close: vi.fn().mockResolvedValue(true),
+  getClient: vi.fn(),
+  httpIntegration: vi.fn(() => ({})),
+}));
+
+vi.mock('@sentry/react', () => ({
+  init: vi.fn(),
+  captureException: vi.fn(),
+  captureMessage: vi.fn(),
+  setUser: vi.fn(),
+  addBreadcrumb: vi.fn(),
+  withScope: vi.fn(callback => {
+    if (callback) {
+      callback({
+        setContext: vi.fn(),
+        setUser: vi.fn(),
+      });
+    }
+  }),
+  flush: vi.fn().mockResolvedValue(true),
+  close: vi.fn().mockResolvedValue(true),
+  getClient: vi.fn(),
+  browserTracingIntegration: vi.fn(() => ({})),
+  replayIntegration: vi.fn(() => ({})),
+}));
+
+vi.mock('@logtail/js', () => ({
+  default: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    log: vi.fn(),
+    flush: vi.fn().mockResolvedValue(true),
+    setContext: vi.fn(),
+    removeContext: vi.fn(),
+    setUser: vi.fn(),
+    removeUser: vi.fn(),
+  })),
+  Logtail: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    log: vi.fn(),
+    flush: vi.fn().mockResolvedValue(true),
+    setContext: vi.fn(),
+    removeContext: vi.fn(),
+    setUser: vi.fn(),
+    removeUser: vi.fn(),
+  })),
+}));
+
+vi.mock('@logtape/logtape', () => ({
+  configure: vi.fn(),
+  getLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    log: vi.fn(),
+  })),
+  shutdown: vi.fn(),
+  getConsoleSink: vi.fn(() => ({
+    type: 'console',
+    level: 'info',
+  })),
+}));
+
+vi.mock('@logtape/file', () => ({
+  FileSink: vi.fn(),
+}));
+
+vi.mock('@logtape/cloudwatch-logs', () => ({
+  CloudWatchSink: vi.fn(),
+}));
+
+vi.mock('@logtape/sentry', () => ({
+  SentrySink: vi.fn(),
+}));
+
+vi.mock('node:async_hooks', () => ({
+  AsyncLocalStorage: vi.fn(),
+}));
+
+// Common observability test configuration
+export const createObservabilityTestConfig = (overrides = {}) => ({
+  plugins: {
+    console: { enabled: true },
+    ...overrides,
+  },
+});
+
+// Common observability creation patterns
+export const createTestObservability = async (config = createObservabilityTestConfig()) => {
+  const { ObservabilityBuilder } = await import('@/factory/builder');
+  const { createConsolePlugin } = await import('@/plugins/console');
+
+  return ObservabilityBuilder.create()
+    .withPlugin(createConsolePlugin(config.plugins.console))
+    .build();
+};
+
+export const createTestServerObservability = async (config = createObservabilityTestConfig()) => {
+  const { ObservabilityBuilder } = await import('@/factory/builder');
+  const { createConsoleServerPlugin } = await import('@/plugins/console');
+
+  return ObservabilityBuilder.create()
+    .withPlugin(createConsoleServerPlugin(config.plugins.console))
+    .build();
+};
+
+// Export test factories and generators (avoiding conflicts)
+export { createObservabilityTestSuite, createScenarios } from './plugin-test-factory';
+// Re-export test-data-generators through the factory to avoid conflicts
+
+// Reset all mocks before each test
+beforeEach(() => {
+  vi.clearAllMocks();
+});

@@ -1,0 +1,171 @@
+---
+title: Tiptap v3 Migration Guide
+description: Migration guide from Tiptap v2 to v3 for collaboration package
+---
+
+# Tiptap v3 Migration Guide
+
+This document provides guidance for migrating from Tiptap v2 to v3 in the
+collaboration package.
+
+## What Changed
+
+### Package Updates
+
+- **Core Packages**: All Tiptap packages updated to v3.x
+- **New Dependency**: Added `@floating-ui/dom` for floating elements
+- **Removed**: Tippy.js is no longer needed
+
+### API Changes
+
+#### Extension Configuration
+
+```diff
+// StarterKit configuration remains the same
+StarterKit.configure({
+  history: false, // Still disabled for collaboration
+})
+```
+
+#### Extension Names
+
+- `CollaborationCursor` → Still `CollaborationCursor` (no change)
+- Extension functionality remains the same
+
+#### Extension Consolidation
+
+Note: While the v3 documentation mentions `@tiptap/extensions` for consolidating
+certain utility extensions, this package may not be available in v3.0.0.
+Individual extension packages continue to work correctly.
+
+#### Menu Components (Future)
+
+```diff
+// When using BubbleMenu/FloatingMenu
+- import { BubbleMenu } from '@tiptap/react'
++ import { BubbleMenu } from '@tiptap/react/menus'
+
+// Replace tippyOptions with Floating UI options
+- <BubbleMenu tippyOptions={{ duration: 100 }}>
++ <BubbleMenu options={{ offset: 6, placement: 'top' }}>
+```
+
+## Breaking Changes
+
+### Dependencies
+
+Make sure to install the new dependencies:
+
+```bash
+pnpm add @floating-ui/dom@^1.6.0
+pnpm remove tippy.js # If previously installed
+```
+
+### Editor Configuration
+
+Most editor configuration remains the same. The main changes are:
+
+1. **Package versions**: All `@tiptap/*` packages now use v3.x
+2. **Floating UI**: New positioning system for floating elements
+3. **Performance**: Improved performance and bundle size
+
+## Migration Steps
+
+### 1. Update Dependencies
+
+Update your `package.json`:
+
+```json
+{
+  "dependencies": {
+    "@floating-ui/dom": "^1.6.0",
+    "@tiptap/core": "^3.0.0",
+    "@tiptap/extension-collaboration": "^3.0.0",
+    "@tiptap/extension-collaboration-cursor": "^3.0.0",
+    "@tiptap/react": "^3.0.0",
+    "@tiptap/starter-kit": "^3.0.0"
+  }
+}
+```
+
+### 2. Update Imports (if using BubbleMenu/FloatingMenu)
+
+```diff
+- import { BubbleMenu, FloatingMenu } from '@tiptap/react'
++ import { BubbleMenu, FloatingMenu } from '@tiptap/react/menus'
+```
+
+### 3. Update Menu Options (if using)
+
+```diff
+<BubbleMenu
+- tippyOptions={{ duration: 100 }}
++ options={{ offset: 6, placement: 'top' }}
+>
+  {/* menu content */}
+</BubbleMenu>
+```
+
+## What Stays the Same
+
+### Core APIs
+
+- `useYjsCollaboration` hook API is unchanged
+- `RealTimeEditor` component API is unchanged
+- Y.js integration remains the same
+- Collaboration features work identically
+
+### Extension Configuration
+
+- All extension configurations remain the same
+- StarterKit configuration is unchanged
+- Collaboration setup is identical
+
+### Types
+
+- All TypeScript types remain compatible
+- Component props are unchanged
+
+## Benefits of v3
+
+1. **Improved Performance**: Better rendering and memory usage
+2. **Modern Architecture**: Updated to latest React patterns
+3. **Better Bundle Size**: Optimized package structure
+4. **Enhanced APIs**: More consistent and intuitive APIs
+5. **Future-Proof**: Built for modern web standards
+
+## Compatibility
+
+This upgrade maintains full backward compatibility for:
+
+- Component APIs
+- Hook interfaces
+- Extension configurations
+- Collaboration features
+
+The migration should be seamless for most use cases, with the main changes being
+package versions and optional menu component updates.
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Type Errors**: Make sure all `@tiptap/*` packages are v3.x
+2. **Missing Dependencies**: Ensure `@floating-ui/dom` is installed
+3. **Menu Positioning**: Update from Tippy.js to Floating UI options if using
+   menus
+
+### Getting Help
+
+If you encounter issues during migration:
+
+1. Check package versions in `package.json`
+2. Verify TypeScript compilation with `pnpm typecheck`
+3. Review the Tiptap v3 official migration guide
+4. Check the collaboration package documentation
+
+## Resources
+
+- [Tiptap v3 Official Documentation](https://tiptap.dev)
+- [Floating UI Documentation](https://floating-ui.com)
+- [Y.js Documentation](https://docs.yjs.dev)

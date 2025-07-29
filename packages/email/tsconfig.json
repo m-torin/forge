@@ -2,15 +2,12 @@
   "extends": "@repo/config/typescript/react-library.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "types": ["vitest/globals"]
+    "types": ["vitest/globals"],
+    "paths": {
+      "@repo/*": ["../*"],
+      "@/*": ["./src/*"]
+    }
   },
-  "include": [
-    "./*.ts",
-    "./*.tsx",
-    "./templates/**/*.ts",
-    "./templates/**/*.tsx",
-    "./__tests__/**/*.ts",
-    "./__tests__/**/*.tsx"
-  ],
-  "exclude": ["node_modules"]
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": ["node_modules", "dist"]
 }

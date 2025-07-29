@@ -1,4 +1,29 @@
-import type { DataStreamWriter } from 'ai';
+import type { UIMessageStreamWriter } from 'ai';
+
+// AI SDK v5 compatibility adapter
+interface DataStreamWriter extends UIMessageStreamWriter {
+  writeData(data: any): void;
+  writeMessageAnnotation?(data: any): void;
+}
+
+// Create adapter that adds missing methods to UIMessageStreamWriter
+function _createCompatibleWriter(writer: UIMessageStreamWriter): DataStreamWriter {
+  return {
+    ...writer,
+    writeData(data: any) {
+      writer.write({
+        type: 'data-custom' as any,
+        data: data,
+      } as any);
+    },
+    writeMessageAnnotation(data: any) {
+      writer.write({
+        type: 'metadata' as any,
+        metadata: data,
+      } as any);
+    },
+  };
+}
 
 /**
  * Generic artifact/output handling system for AI applications
@@ -251,14 +276,14 @@ export const textArtifactHandler = createArtifactHandler({
   name: 'Text Document',
   validate: (content: string) => typeof content === 'string',
   streamCreation: async (dataStream, metadata) => {
-    dataStream.writeData({
-      type: 'artifact',
-      content: {
+    dataStream.write({
+      type: 'data-artifact' as any,
+      data: {
         kind: 'text',
         title: metadata.title,
         id: metadata.id,
       },
-    });
+    } as any);
   },
 });
 
@@ -281,14 +306,14 @@ export const codeArtifactHandler = createArtifactHandler<
     return `\`\`\`${content.language}\n${content.code}\n\`\`\``;
   },
   streamCreation: async (dataStream, metadata) => {
-    dataStream.writeData({
-      type: 'artifact',
-      content: {
+    dataStream.write({
+      type: 'data-artifact' as any,
+      data: {
         kind: 'code',
         title: metadata.title,
         id: metadata.id,
       },
-    });
+    } as any);
   },
 });
 
@@ -302,14 +327,14 @@ export const imageArtifactHandler = createArtifactHandler<
     return Boolean(content.url || content.base64);
   },
   streamCreation: async (dataStream, metadata) => {
-    dataStream.writeData({
-      type: 'artifact',
-      content: {
+    dataStream.write({
+      type: 'data-artifact' as any,
+      data: {
         kind: 'image',
         title: metadata.title,
         id: metadata.id,
       },
-    });
+    } as any);
   },
 });
 
@@ -337,14 +362,14 @@ export const dataArtifactHandler = createArtifactHandler<'data', { format: strin
     return JSON.stringify(content.data, null, 2);
   },
   streamCreation: async (dataStream, metadata) => {
-    dataStream.writeData({
-      type: 'artifact',
-      content: {
+    dataStream.write({
+      type: 'data-artifact' as any,
+      data: {
         kind: 'data',
         title: metadata.title,
         id: metadata.id,
       },
-    });
+    } as any);
   },
 });
 

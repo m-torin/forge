@@ -44,6 +44,10 @@ export {
   type AnthropicProviderMetadata,
 } from './anthropic';
 
+// AI SDK v5 Provider Registry (Recommended)
+export * from './registry';
+
 // Keep existing exports for backward compatibility
 export * from './custom-providers';
+export * from './model-factory';
 export * from './xai-provider';

@@ -154,7 +154,6 @@ describe('account security plugin', () => {
     test('should handle undefined input', async () => {
       const accountSecurityModule = await import('@/server/plugins/account-security');
 
-      // @ts-expect-error - testing undefined input
       const plugin = accountSecurityModule.accountSecurityPlugin(undefined);
 
       expect(plugin).toBeDefined();

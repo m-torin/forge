@@ -4,7 +4,7 @@
  * This file proves 100% compliance with the Vercel AI SDK Anthropic documentation
  */
 
-import { anthropic, createAnthropic, generateObject, generateText } from 'ai';
+import { generateObject, generateText } from 'ai';
 import { z } from 'zod/v4';
 import {
   createAnthropicModel,
@@ -19,6 +19,9 @@ import {
   validateCacheControl,
 } from '../src/server-next';
 
+// Import anthropic from AI SDK for compatibility
+import { anthropic } from '@ai-sdk/anthropic';
+
 /**
  * 1. Provider Instance Support (AI SDK Documentation: "Provider Instance")
  */
@@ -26,11 +29,11 @@ export async function providerInstanceExample() {
   console.log('🏭 Provider Instance Example');
 
   // Default provider instance (AI SDK pattern)
-  const defaultProvider = anthropic;
+  const defaultProvider = createAnthropicProvider();
   const model1 = defaultProvider('claude-3-haiku-20240307');
 
   // Custom provider instance (AI SDK pattern)
-  const customProvider = createAnthropic({
+  const customProvider = createAnthropicProvider({
     baseURL: 'https://api.anthropic.com/v1',
     apiKey: process.env.ANTHROPIC_API_KEY,
     headers: {
@@ -380,7 +383,7 @@ export async function completeFeatureExample() {
   const model = provider('claude-3-5-sonnet-20241022', { sendReasoning: true });
 
   // Create cached system message with validation
-  const systemMessage = createCachedMessage(
+  const systemMessage = await createCachedMessage(
     'You are an expert software engineer specializing in TypeScript, React, and AI integration. You provide detailed, actionable advice with code examples.',
     'system',
     { modelName: 'claude-3-5-sonnet-20241022', validateTokens: true },

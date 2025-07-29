@@ -1,21 +1,22 @@
-import type { CoreMessage, LanguageModelV1StreamPart } from 'ai';
+import type { CoreMessage } from 'ai';
 import {
   compareMessages,
   createReasoningResponse,
   createTextDelta,
   createTextResponse,
   createToolCallResponse,
+  type TestStreamPart,
 } from './message-comparison';
 
 export interface TestPromptResponse {
   prompt: CoreMessage;
-  response: LanguageModelV1StreamPart[];
-  reasoningResponse?: LanguageModelV1StreamPart[];
+  response: TestStreamPart[];
+  reasoningResponse?: TestStreamPart[];
 }
 
 export interface MockProviderConfig {
   responses: TestPromptResponse[];
-  defaultResponse?: LanguageModelV1StreamPart[];
+  defaultResponse?: TestStreamPart[];
   enableReasoning?: boolean;
 }
 
@@ -24,7 +25,7 @@ export interface MockProviderConfig {
  */
 export function createMockResponseHandler(
   config: MockProviderConfig,
-): (prompt: CoreMessage[], isReasoningEnabled?: boolean) => LanguageModelV1StreamPart[] {
+): (prompt: CoreMessage[], isReasoningEnabled?: boolean) => TestStreamPart[] {
   const { responses, defaultResponse, enableReasoning = false } = config;
 
   return (prompt: CoreMessage[], isReasoningEnabled = enableReasoning) => {
@@ -122,7 +123,7 @@ export function createStandardTestPrompts(): TestPromptResponse[] {
  */
 export function createStandardMockProvider(
   enableReasoning = false,
-): (prompt: CoreMessage[], isReasoningEnabled?: boolean) => LanguageModelV1StreamPart[] {
+): (prompt: CoreMessage[], isReasoningEnabled?: boolean) => TestStreamPart[] {
   return createMockResponseHandler({
     responses: createStandardTestPrompts(),
     enableReasoning,

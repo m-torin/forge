@@ -1,107 +1,120 @@
+/**
+ * AI SDK Rate Limiting Middleware
+ * Provides rate limiting functionality for AI operations
+ */
+
 export interface RateLimitConfig {
   enabled: boolean;
-  maxRequestsPerMinute: number;
-  maxTokensPerMinute: number;
+  maxRequests: number;
+  windowMs: number;
+  skipSuccessfulRequests?: boolean;
+  skipFailedRequests?: boolean;
 }
 
-export class AIRateLimiter {
-  private config: RateLimitConfig;
-  private requestCounts = new Map<string, number[]>();
-  private tokenCounts = new Map<string, number[]>();
+export interface RateLimitState {
+  requests: number;
+  resetTime: number;
+}
 
-  constructor(config: Partial<RateLimitConfig> = {}) {
-    this.config = {
-      enabled: config.enabled ?? true,
-      maxRequestsPerMinute: config.maxRequestsPerMinute ?? 60,
-      maxTokensPerMinute: config.maxTokensPerMinute ?? 10000,
-    };
-  }
+/**
+ * Default rate limit configuration
+ */
+export const DEFAULT_RATE_LIMIT_CONFIG: RateLimitConfig = {
+  enabled: process.env.DISABLE_AI_RATE_LIMITING !== 'true',
+  maxRequests: parseInt(process.env.AI_MAX_REQUESTS_PER_MINUTE || '60', 10),
+  windowMs: 60 * 1000, // 1 minute
+  skipSuccessfulRequests: false,
+  skipFailedRequests: true,
+};
 
-  async checkRateLimit(
-    provider: string,
-    estimatedTokens = 0,
-  ): Promise<{ allowed: boolean; retryAfter?: number }> {
-    if (!this.config.enabled) {
-      return { allowed: true };
+/**
+ * Simple in-memory rate limiter
+ */
+class MemoryRateLimiter {
+  private states = new Map<string, RateLimitState>();
+
+  check(
+    key: string,
+    config: RateLimitConfig,
+  ): { allowed: boolean; resetTime: number; remaining: number } {
+    if (!config.enabled) {
+      return { allowed: true, resetTime: 0, remaining: config.maxRequests };
     }
 
     const now = Date.now();
-    const oneMinuteAgo = now - 60000;
+    const state = this.states.get(key);
 
-    // Clean old entries
-    this.cleanOldEntries(provider, oneMinuteAgo);
-
-    // Check request rate limit
-    const requests = this.requestCounts.get(provider) ?? [];
-    if (requests.length >= this.config.maxRequestsPerMinute) {
-      const oldestRequest = Math.min(...requests);
-      const retryAfter = Math.ceil((oldestRequest + 60000 - now) / 1000);
-      return { allowed: false, retryAfter };
+    if (!state || now >= state.resetTime) {
+      // Reset or initialize
+      const newState: RateLimitState = {
+        requests: 1,
+        resetTime: now + config.windowMs,
+      };
+      this.states.set(key, newState);
+      return {
+        allowed: true,
+        resetTime: newState.resetTime,
+        remaining: config.maxRequests - 1,
+      };
     }
 
-    // Check token rate limit
-    const tokens = this.tokenCounts.get(provider) ?? [];
-    const totalTokens = tokens.reduce((sum, tokenCount: any) => sum + tokenCount, 0);
-    if (totalTokens + estimatedTokens > this.config.maxTokensPerMinute) {
-      const retryAfter = 60; // Wait a minute for token limit
-      return { allowed: false, retryAfter };
+    if (state.requests >= config.maxRequests) {
+      return {
+        allowed: false,
+        resetTime: state.resetTime,
+        remaining: 0,
+      };
     }
 
-    // Record this request
-    requests.push(now);
-    this.requestCounts.set(provider, requests);
-
-    if (estimatedTokens > 0) {
-      tokens.push(estimatedTokens);
-      this.tokenCounts.set(provider, tokens);
-    }
-
-    return { allowed: true };
-  }
-
-  getRateLimitStatus(provider: string): {
-    maxRequests: number;
-    maxTokens: number;
-    requestsThisMinute: number;
-    tokensThisMinute: number;
-  } {
-    const now = Date.now();
-    const oneMinuteAgo = now - 60000;
-
-    this.cleanOldEntries(provider, oneMinuteAgo);
-
-    const requests = this.requestCounts.get(provider) ?? [];
-    const tokens = this.tokenCounts.get(provider) ?? [];
-    const totalTokens = tokens.reduce((sum, count: any) => sum + count, 0);
-
+    state.requests++;
     return {
-      maxRequests: this.config.maxRequestsPerMinute,
-      maxTokens: this.config.maxTokensPerMinute,
-      requestsThisMinute: requests.length,
-      tokensThisMinute: totalTokens,
+      allowed: true,
+      resetTime: state.resetTime,
+      remaining: config.maxRequests - state.requests,
     };
   }
 
-  recordTokenUsage(provider: string, tokenCount: number): void {
-    if (!this.config.enabled) return;
-
-    const tokens = this.tokenCounts.get(provider) ?? [];
-    tokens.push(tokenCount);
-    this.tokenCounts.set(provider, tokens);
-  }
-
-  private cleanOldEntries(provider: string, cutoff: number): void {
-    // Clean request counts
-    const requests = this.requestCounts.get(provider) ?? [];
-    const recentRequests = requests.filter((timestamp: any) => timestamp > cutoff);
-    this.requestCounts.set(provider, recentRequests);
-
-    // For tokens, we'll keep them simple and reset every minute
-    // In a real implementation, you might want to track timestamps with token counts
-    if (requests.length === 0) {
-      this.tokenCounts.set(provider, []);
+  reset(key?: string) {
+    if (key) {
+      this.states.delete(key);
+    } else {
+      this.states.clear();
     }
   }
 }
 
-export const defaultRateLimiter = new AIRateLimiter();
+/**
+ * Create rate limiting middleware
+ */
+export function createRateLimitMiddleware(config: Partial<RateLimitConfig> = {}) {
+  const finalConfig = { ...DEFAULT_RATE_LIMIT_CONFIG, ...config };
+  const limiter = new MemoryRateLimiter();
+
+  return {
+    checkLimit: (identifier: string) => {
+      return limiter.check(identifier, finalConfig);
+    },
+
+    reset: (identifier?: string) => {
+      limiter.reset(identifier);
+    },
+
+    middleware: (identifier: string) => {
+      const result = limiter.check(identifier, finalConfig);
+
+      if (!result.allowed) {
+        const error = new Error('Rate limit exceeded');
+        (error as any).statusCode = 429;
+        (error as any).resetTime = result.resetTime;
+        throw error;
+      }
+
+      return result;
+    },
+  };
+}
+
+/**
+ * Default rate limiter instance
+ */
+export const aiRateLimiter = createRateLimitMiddleware();

@@ -1,6 +1,9 @@
 # @repo/security
 
-Security headers, rate limiting, and protection utilities.
+- _Can build:_ **NO**
 
-Complete documentation is available in
-[../../apps/docs/packages/security.mdx](../../apps/docs/packages/security.mdx).
+- _Exports:_
+  - **Core**: `./client`, `./server`, `./client/next`, `./server/next`
+  - **Utilities**: `./shared`, `./middleware`, `./validation`
+
+- _Documentation:_ **[Security Package](../../apps/docs/packages/security.mdx)**

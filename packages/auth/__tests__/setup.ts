@@ -7,7 +7,11 @@ import React from 'react';
 import { vi } from 'vitest';
 
 // Setup test environment manually instead of using @repo/qa import due to resolution issues
-process.env.NODE_ENV = 'test';
+Object.defineProperty(process.env, 'NODE_ENV', {
+  value: 'test',
+  writable: true,
+  configurable: true,
+});
 process.env.CI = 'true';
 process.env.SKIP_ENV_VALIDATION = 'true';
 
@@ -193,164 +197,7 @@ vi.mock('next/headers', () => ({
   })),
 }));
 
-// Mock Better Auth - need to ensure all api methods are available
-const mockAuthApi = {
-  // User management
-  banUser: vi.fn(() => Promise.resolve({ success: true })),
-  unbanUser: vi.fn(() => Promise.resolve({ success: true })),
-  deleteUser: vi.fn(() => Promise.resolve({ success: true })),
-  impersonateUser: vi.fn(() => Promise.resolve({ success: true })),
-  listUsers: vi.fn(() => Promise.resolve([])),
-  signIn: vi.fn(() => Promise.resolve({ success: true })),
-  signOut: vi.fn(() => Promise.resolve({ success: true })),
-  signUp: vi.fn(() => Promise.resolve({ success: true })),
-
-  // Session management
-  getSession: vi.fn(() => Promise.resolve(null)),
-  deleteSession: vi.fn(() => Promise.resolve({ success: true })),
-  listSessions: vi.fn(() => Promise.resolve([])),
-
-  // API Key management
-  createApiKey: vi.fn(() => Promise.resolve({ id: 'test-key', key: 'test-key-value' })),
-  deleteApiKey: vi.fn(() => Promise.resolve({ success: true })),
-  updateApiKey: vi.fn(() => Promise.resolve({ success: true })),
-  listApiKeys: vi.fn(() => Promise.resolve([])),
-  verifyApiKey: vi.fn(() =>
-    Promise.resolve({
-      apiKey: {
-        id: 'test-key',
-        name: 'Test Key',
-        permissions: ['read', 'write'],
-        organizationId: 'org-123',
-        expiresAt: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      success: true,
-    }),
-  ),
-
-  // Organization management
-  createOrganization: vi.fn(() =>
-    Promise.resolve({
-      id: 'org-123',
-      name: 'Test Organization',
-      createdAt: new Date(),
-      slug: 'test-organization',
-      updatedAt: new Date(),
-    }),
-  ),
-  deleteOrganization: vi.fn(() => Promise.resolve({ success: true })),
-  updateOrganization: vi.fn(() => Promise.resolve({ success: true })),
-  listOrganizations: vi.fn(() => Promise.resolve([])),
-  getFullOrganization: vi.fn(() =>
-    Promise.resolve({
-      organization: {
-        id: 'org-123',
-        name: 'Test Organization',
-        createdAt: new Date(),
-        slug: 'test-organization',
-        updatedAt: new Date(),
-      },
-      members: [],
-    }),
-  ),
-
-  // Organization member management
-  inviteMember: vi.fn(() => Promise.resolve({ success: true })),
-  removeMember: vi.fn(() => Promise.resolve({ success: true })),
-  updateMemberRole: vi.fn(() => Promise.resolve({ success: true })),
-  acceptInvitation: vi.fn(() => Promise.resolve({ success: true })),
-  rejectInvitation: vi.fn(() => Promise.resolve({ success: true })),
-  declineInvitation: vi.fn(() => Promise.resolve({ success: true })), // Add alias
-  cancelInvitation: vi.fn(() => Promise.resolve({ success: true })),
-
-  // Additional methods
-  inviteUser: vi.fn(() => Promise.resolve({ success: true })),
-
-  // Team management
-  createTeam: vi.fn(() =>
-    Promise.resolve({
-      id: 'team-123',
-      name: 'Test Team',
-      organizationId: 'org-123',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }),
-  ),
-  deleteTeam: vi.fn(() => Promise.resolve({ success: true })),
-  updateTeam: vi.fn(() => Promise.resolve({ success: true })),
-  listTeams: vi.fn(() => Promise.resolve([])),
-
-  // Additional organization methods
-  getActiveMember: vi.fn(() =>
-    Promise.resolve({
-      id: 'member-123',
-      userId: 'user-123',
-      organizationId: 'org-123',
-      role: 'member',
-    }),
-  ),
-  getUserOrganizations: vi.fn(() =>
-    Promise.resolve({
-      organizations: [],
-    }),
-  ),
-};
-
-// Create mock auth instance
-const mockAuth = {
-  api: mockAuthApi,
-};
-
-// Mock the auth module
-vi.mock('../src/shared/auth', () => ({
-  auth: mockAuth,
-}));
-
-// Mock better-auth itself
-vi.mock('better-auth', () => ({
-  betterAuth: vi.fn(() => mockAuth),
-}));
-
-vi.mock('better-auth/client', () => ({
-  createAuthClient: vi.fn(() => ({
-    forgetPassword: vi.fn(),
-    getSession: vi.fn(() => Promise.resolve(null)),
-    resetPassword: vi.fn(),
-    signIn: {
-      email: vi.fn(),
-      social: vi.fn(),
-    },
-    signOut: vi.fn(),
-    signUp: {
-      email: vi.fn(),
-    },
-    verifyEmail: vi.fn(),
-  })),
-}));
-
-vi.mock('better-auth/react', () => ({
-  createAuthClient: vi.fn(() => ({
-    useSession: vi.fn(() => ({
-      data: null,
-      error: null,
-      isPending: false,
-    })),
-    forgetPassword: vi.fn(),
-    getSession: vi.fn(() => Promise.resolve(null)),
-    resetPassword: vi.fn(),
-    signIn: {
-      email: vi.fn(),
-      social: vi.fn(),
-    },
-    signOut: vi.fn(),
-    signUp: {
-      email: vi.fn(),
-    },
-    verifyEmail: vi.fn(),
-  })),
-}));
+// Import centralized Better-Auth mock from @repo/qa
 
 // Additional app-specific mocks for analytics (extend centralized mock)
 vi.mock('@repo/analytics/server', () => ({
@@ -379,39 +226,6 @@ vi.mock('@repo/email/server', () => ({
   sendTeamInvitationEmail: vi.fn().mockResolvedValue(true),
   sendVerificationEmail: vi.fn(),
   sendWelcomeEmail: vi.fn(),
-}));
-
-// Mock better-auth plugins
-vi.mock('better-auth/client/plugins', () => ({
-  adminClient: vi.fn(() => ({})),
-  apiKeyClient: vi.fn(() => ({})),
-  passkeyClient: vi.fn(() => ({})),
-  magicLinkClient: vi.fn(() => ({})),
-  multiSessionClient: vi.fn(() => ({})),
-  organizationClient: vi.fn(() => ({})),
-  twoFactorClient: vi.fn(() => ({})),
-  inferAdditionalFields: vi.fn(() => ({})),
-}));
-
-vi.mock('better-auth/plugins', () => ({
-  admin: vi.fn(() => ({})),
-  apiKey: vi.fn(() => ({})),
-  bearer: vi.fn(() => ({})),
-  csrf: vi.fn(() => ({})),
-  customSession: vi.fn(() => ({})),
-  emailOTP: vi.fn(() => ({})),
-  genericOAuth: vi.fn(() => ({})),
-  jwt: vi.fn(() => ({})),
-  magicLink: vi.fn(() => ({})),
-  multiSession: vi.fn(() => ({})),
-  oneTap: vi.fn(() => ({})),
-  openAPI: vi.fn(() => ({})),
-  organization: vi.fn(() => ({})),
-  passkey: vi.fn(() => ({})),
-  phoneNumber: vi.fn(() => ({})),
-  rateLimit: vi.fn(() => ({})),
-  twoFactor: vi.fn(() => ({})),
-  username: vi.fn(() => ({})),
 }));
 
 // Base test setup is handled by vitest config

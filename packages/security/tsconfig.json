@@ -3,7 +3,8 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@repo/*": ["../*"]
+      "@repo/*": ["../*"],
+      "@/*": ["./src/*"]
     },
     "types": ["vitest/globals"]
   },

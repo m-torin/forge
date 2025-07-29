@@ -5,7 +5,7 @@
  */
 
 import { anthropic, createAnthropic } from '@ai-sdk/anthropic';
-import { logInfo, logWarn } from '@repo/observability/shared-env';
+import { logInfo, logWarn } from '@repo/observability';
 import type { LanguageModel } from 'ai';
 import { generateObject, generateText } from 'ai';
 import { z } from 'zod/v4';
@@ -36,8 +36,8 @@ export interface AnthropicProviderMetadata {
  */
 export interface AnthropicGenerateResult {
   text: string;
-  reasoning?: string;
-  reasoningDetails?: any;
+  reasoningText?: string;
+  reasoning?: any;
   usage: any;
   providerMetadata?: {
     anthropic?: AnthropicProviderMetadata;
@@ -340,8 +340,8 @@ export function validateCacheControl(
 export function extractReasoning(result: any): AnthropicGenerateResult {
   return {
     text: result.text,
+    reasoningText: result.reasoningText,
     reasoning: result.reasoning,
-    reasoningDetails: result.reasoningDetails,
     usage: result.usage,
     providerMetadata: result.providerMetadata,
   };
@@ -359,7 +359,7 @@ export function extractCacheMetadata(result: any): AnthropicProviderMetadata | u
  */
 export const examples = {
   // Basic usage
-  async basic() {
+  async basic(): Promise<any> {
     const model = anthropic('claude-3-haiku-20240307');
     return await generateText({
       model,
@@ -368,8 +368,8 @@ export const examples = {
   },
 
   // Reasoning (AI SDK pattern)
-  async reasoning() {
-    const { text, reasoning, reasoningDetails } = await generateText({
+  async reasoning(): Promise<{ text: string; reasoningText: string | undefined; reasoning: any }> {
+    const { text, reasoningText, reasoning } = await generateText({
       model: anthropic('claude-4-opus-20250514'),
       prompt: 'How many people will live in the world in 2040?',
       providerOptions: {
@@ -379,11 +379,11 @@ export const examples = {
       },
     });
 
-    return { text, reasoning, reasoningDetails };
+    return { text, reasoningText, reasoning };
   },
 
   // Cache control (AI SDK pattern)
-  async caching() {
+  async caching(): Promise<any> {
     const errorMessage = '... long error message ...';
 
     const result = await generateText({
@@ -415,7 +415,7 @@ export const examples = {
   },
 
   // Computer tools (AI SDK pattern)
-  async computerUse() {
+  async computerUse(): Promise<any> {
     const bashTool = createBashTool(async ({ command }) => {
       return `Executed: ${command}`;
     });

@@ -29,7 +29,15 @@ export function createNamespaceTools(config: NamespaceToolsConfig) {
         description: z.string().optional().describe('Optional description for the namespace'),
         metadata: z.record(z.string(), z.any()).optional().describe('Optional namespace metadata'),
       }),
-      execute: async ({ namespace, description, metadata }) => {
+      execute: async ({
+        namespace,
+        description,
+        metadata,
+      }: {
+        namespace: string;
+        description?: string;
+        metadata?: Record<string, any>;
+      }) => {
         // Validate namespace name
         if (!namespace || namespace.length === 0) {
           throw new Error('Namespace name cannot be empty');
@@ -83,7 +91,7 @@ export function createNamespaceTools(config: NamespaceToolsConfig) {
           .default(false)
           .describe('Include vector count and other stats for each namespace'),
       }),
-      execute: async ({ includeStats }) => {
+      execute: async ({ includeStats }: { includeStats?: boolean }) => {
         try {
           const namespaces = (await vectorDB.listNamespaces?.()) || [];
 
@@ -140,7 +148,13 @@ export function createNamespaceTools(config: NamespaceToolsConfig) {
           .default(false)
           .describe('Create namespace if it does not exist'),
       }),
-      execute: async ({ namespace, createIfMissing }) => {
+      execute: async ({
+        namespace,
+        createIfMissing,
+      }: {
+        namespace: string;
+        createIfMissing?: boolean;
+      }) => {
         const existingNamespaces = (await vectorDB.listNamespaces?.()) || [];
 
         if (!existingNamespaces.includes(namespace)) {
@@ -185,7 +199,15 @@ export function createNamespaceTools(config: NamespaceToolsConfig) {
         confirm: z.boolean().describe('Confirmation flag to prevent accidental deletion'),
         backup: z.boolean().default(false).describe('Create backup before deletion'),
       }),
-      execute: async ({ namespace, confirm, backup }) => {
+      execute: async ({
+        namespace,
+        confirm,
+        backup,
+      }: {
+        namespace: string;
+        confirm?: boolean;
+        backup?: boolean;
+      }) => {
         if (!confirm) {
           throw new Error('Deletion not confirmed. Set confirm=true to proceed.');
         }
@@ -258,7 +280,7 @@ export function createNamespaceTools(config: NamespaceToolsConfig) {
       parameters: z.object({
         namespace: z.string().describe('Namespace to get information about'),
       }),
-      execute: async ({ namespace }) => {
+      execute: async ({ namespace }: { namespace: string }) => {
         try {
           const existingNamespaces = (await vectorDB.listNamespaces?.()) || [];
 
@@ -301,7 +323,17 @@ export function createNamespaceTools(config: NamespaceToolsConfig) {
           .default(false)
           .describe('Delete source namespace after migration'),
       }),
-      execute: async ({ sourceNamespace, targetNamespace, batchSize, deleteSource }) => {
+      execute: async ({
+        sourceNamespace,
+        targetNamespace,
+        batchSize,
+        deleteSource,
+      }: {
+        sourceNamespace: string;
+        targetNamespace: string;
+        batchSize?: number;
+        deleteSource?: boolean;
+      }) => {
         const existingNamespaces = (await vectorDB.listNamespaces?.()) || [];
 
         if (!existingNamespaces.includes(sourceNamespace)) {

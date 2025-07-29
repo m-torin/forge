@@ -1,4 +1,7 @@
-import { appendResponseMessages, type UIMessage } from 'ai';
+// import { appendResponseMessages } from 'ai'; // Not available in current v5 beta
+
+// UIMessage type may have changed in v5
+type UIMessage = any;
 
 export interface MessageContentPart {
   type: string;
@@ -94,26 +97,19 @@ export function groupMessagesIntoSections(messages: UIMessage[]): UIMessage[][] 
  */
 export function transformConversationSection(
   section: UIMessage[],
-  config: { currentDate?: () => Date } = {},
+  _config: { currentDate?: () => Date } = {},
 ): UIMessage[] {
   const [userMessage, ...assistantMessages] = section;
-  const [firstAssistantMessage] = assistantMessages;
+  const [_firstAssistantMessage] = assistantMessages;
 
   // Filter to only assistant messages for responseMessages
   const responseMessages = assistantMessages.filter(
     (msg): msg is UIMessage & { role: 'assistant' } => msg.role === 'assistant',
   );
 
-  // Use type assertion for appendResponseMessages due to AI SDK type constraints
-  const result = appendResponseMessages({
-    messages: [userMessage] as any,
-    responseMessages: responseMessages as any,
-    _internal: {
-      currentDate: config.currentDate || (() => firstAssistantMessage?.createdAt ?? new Date()),
-    },
-  });
-
-  return result as UIMessage[];
+  // TODO: appendResponseMessages is not available in AI SDK v5
+  // For now, return the original messages format
+  return [userMessage, ...responseMessages] as UIMessage[];
 }
 
 /**

@@ -1,6 +1,11 @@
+import type {
+  LoadingContext,
+  LoadingMessageConfig,
+  UseLoadingMessagesOptions,
+} from '@/shared/ui/loading-messages';
 import { beforeEach, describe, expect, vi } from 'vitest';
 
-describe('loading Messages UI', () => {
+describe('loading Messages', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -8,420 +13,384 @@ describe('loading Messages UI', () => {
   test('should import loading messages successfully', async () => {
     const loadingMessages = await import('@/shared/ui/loading-messages');
     expect(loadingMessages).toBeDefined();
+    expect(loadingMessages.analyzeUserMessage).toBeTypeOf('function');
+    expect(loadingMessages.getContextualLoadingMessage).toBeTypeOf('function');
+    expect(loadingMessages.createLoadingMessageManager).toBeTypeOf('function');
+    expect(loadingMessages.getRandomLoadingMessage).toBeTypeOf('function');
+    expect(loadingMessages.getLoadingMessageForDuration).toBeTypeOf('function');
   });
 
-  test('should test loading message generation', async () => {
-    const { generateLoadingMessage, getRandomLoadingMessage, LoadingMessageTypes } = await import(
-      '@/shared/ui/loading-messages'
-    );
+  test('should analyze user message for code-related queries', async () => {
+    const { analyzeUserMessage } = await import('@/shared/ui/loading-messages');
 
-    expect(generateLoadingMessage).toBeDefined();
-    const mockContext = { task: 'processing', duration: 'short' };
-    const generateResult = generateLoadingMessage
-      ? generateLoadingMessage(mockContext)
-      : 'Loading...';
-    expect(generateResult).toBeDefined();
-    expect(typeof generateResult).toBe('string');
-    expect(generateResult.length).toBeGreaterThan(0);
+    const codeMessage = 'Can you help me debug this JavaScript function?';
+    const context = analyzeUserMessage(codeMessage);
 
-    expect(getRandomLoadingMessage).toBeDefined();
-    const randomResult = getRandomLoadingMessage ? getRandomLoadingMessage() : 'Loading...';
-    expect(randomResult).toBeDefined();
-    expect(typeof randomResult).toBe('string');
-
-    expect(LoadingMessageTypes).toBeDefined();
-    expect(LoadingMessageTypes?.PROCESSING).toBeDefined();
-    expect(LoadingMessageTypes?.THINKING).toBeDefined();
-    expect(LoadingMessageTypes?.GENERATING).toBeDefined();
+    expect(context.isCodeRelated).toBeTruthy();
+    expect(context.isQuestion).toBeTruthy();
+    expect(context.isDebugQuery).toBeTruthy();
+    expect(context.isCreativeWriting).toBeFalsy();
+    expect(context.isDataAnalysis).toBeFalsy();
   });
 
-  test('should test contextual loading messages', async () => {
-    const { getContextualMessage, personalizeMessage, adaptiveMessages } = await import(
-      '@/shared/ui/loading-messages'
-    );
+  test('should analyze user message for creative writing', async () => {
+    const { analyzeUserMessage } = await import('@/shared/ui/loading-messages');
 
-    expect(getContextualMessage).toBeDefined();
-    const contexts = [
-      { type: 'ai-generation', complexity: 'high' },
-      { type: 'data-processing', size: 'large' },
-      { type: 'file-upload', fileType: 'image' },
-      { type: 'search', scope: 'global' },
-    ];
+    const creativeMessage = 'Write me a short story about a robot';
+    const context = analyzeUserMessage(creativeMessage);
 
-    for (const context of contexts) {
-      const contextResult = getContextualMessage ? getContextualMessage(context) : 'Loading...';
-      expect(contextResult).toBeDefined();
-      expect(typeof contextResult).toBe('string');
-    }
-
-    expect(personalizeMessage).toBeDefined();
-    const mockUserProfile = {
-      name: 'Alice',
-      expertise: 'beginner',
-      preferences: { humor: true, technical: false },
-    };
-    const baseMessage = 'Processing your request...';
-    const personalizeResult = personalizeMessage
-      ? personalizeMessage(baseMessage, mockUserProfile)
-      : baseMessage;
-    expect(personalizeResult).toBeDefined();
-    expect(typeof personalizeResult).toBe('string');
-
-    expect(adaptiveMessages).toBeDefined();
-    const mockAdaptiveConfig = {
-      userEngagement: 0.7,
-      sessionDuration: 300000, // 5 minutes
-      previousInteractions: 15,
-    };
-    const adaptiveResult = adaptiveMessages ? adaptiveMessages(mockAdaptiveConfig) : ['Loading...'];
-    expect(adaptiveResult).toBeDefined();
-    expect(Array.isArray(adaptiveResult)).toBeTruthy();
+    expect(context.isCreativeWriting).toBeTruthy();
+    expect(context.isCodeRelated).toBeFalsy();
+    expect(context.isQuestion).toBeFalsy();
+    expect(context.isDataAnalysis).toBeFalsy();
   });
 
-  test('should test animated and progressive messages', async () => {
-    const { createAnimatedMessage, progressiveMessages, timedMessages } = await import(
-      '@/shared/ui/loading-messages'
-    );
+  test('should analyze user message for data analysis', async () => {
+    const { analyzeUserMessage } = await import('@/shared/ui/loading-messages');
 
-    expect(createAnimatedMessage).toBeDefined();
-    const mockAnimation = {
-      message: 'Loading',
-      animation: 'dots',
-      duration: 1000,
-      loop: true,
-    };
-    const animatedResult = createAnimatedMessage
-      ? createAnimatedMessage(mockAnimation)
-      : { frames: ['Loading.', 'Loading..', 'Loading...'] };
-    expect(animatedResult).toBeDefined();
-    expect(animatedResult.frames).toBeDefined();
-    expect(Array.isArray(animatedResult.frames)).toBeTruthy();
+    const dataMessage = 'Analyze this dataset and show me the trends';
+    const context = analyzeUserMessage(dataMessage);
 
-    expect(progressiveMessages).toBeDefined();
-    const mockProgression = {
-      stages: [
-        { message: 'Initializing...', duration: 1000 },
-        { message: 'Processing data...', duration: 3000 },
-        { message: 'Finalizing...', duration: 500 },
-      ],
-    };
-    const progressiveResult = progressiveMessages
-      ? progressiveMessages(mockProgression)
-      : mockProgression.stages;
-    expect(progressiveResult).toBeDefined();
-    expect(Array.isArray(progressiveResult)).toBeTruthy();
-
-    expect(timedMessages).toBeDefined();
-    const mockTiming = {
-      shortTask: { threshold: 2000, messages: ['Quick processing...'] },
-      mediumTask: { threshold: 10000, messages: ['This might take a moment...'] },
-      longTask: { threshold: 30000, messages: ['This is taking longer than expected...'] },
-    };
-    const timedResult = timedMessages
-      ? timedMessages(5000, mockTiming)
-      : 'This might take a moment...'; // 5 second task
-    expect(timedResult).toBeDefined();
-    expect(typeof timedResult).toBe('string');
+    expect(context.isDataAnalysis).toBeTruthy();
+    expect(context.isCodeRelated).toBeFalsy();
+    expect(context.isCreativeWriting).toBeFalsy();
+    expect(context.isQuestion).toBeFalsy();
   });
 
-  test('should test loading message categories and themes', async () => {
-    const { techMessages, casualMessages, professionalMessages, humorousMessages } = await import(
-      '@/shared/ui/loading-messages'
-    );
+  test('should analyze user message for research queries', async () => {
+    const { analyzeUserMessage } = await import('@/shared/ui/loading-messages');
 
-    expect(techMessages).toBeDefined();
-    const techResult = techMessages
-      ? techMessages()
-      : ['Processing data...', 'Computing results...', 'Running algorithm...'];
-    expect(techResult).toBeDefined();
-    expect(Array.isArray(techResult)).toBeTruthy();
-    expect(techResult.length).toBeGreaterThan(0);
-    // Tech messages should contain technical terms
-    const combined = techResult.join(' ').toLowerCase();
-    expect(
-      combined.includes('processing') ||
-        combined.includes('computing') ||
-        combined.includes('algorithm'),
-    ).toBeTruthy();
+    const researchMessage = 'Find information about climate change recent studies';
+    const context = analyzeUserMessage(researchMessage);
 
-    expect(casualMessages).toBeDefined();
-    const casualResult = casualMessages ? casualMessages() : ['Loading...', 'Just a moment...'];
-    expect(casualResult).toBeDefined();
-    expect(Array.isArray(casualResult)).toBeTruthy();
-
-    expect(professionalMessages).toBeDefined();
-    const professionalResult = professionalMessages
-      ? professionalMessages()
-      : ['Processing request...', 'Please wait...'];
-    expect(professionalResult).toBeDefined();
-    expect(Array.isArray(professionalResult)).toBeTruthy();
-
-    expect(humorousMessages).toBeDefined();
-    const humorousResult = humorousMessages
-      ? humorousMessages()
-      : ['Hold on, thinking...', 'Loading awesomeness...'];
-    expect(humorousResult).toBeDefined();
-    expect(Array.isArray(humorousResult)).toBeTruthy();
+    expect(context.isResearch).toBeTruthy();
+    expect(context.isCodeRelated).toBeFalsy();
+    expect(context.isCreativeWriting).toBeFalsy();
+    expect(context.isDataAnalysis).toBeFalsy();
   });
 
-  test('should test loading state management', async () => {
-    const { LoadingState, createLoadingState, updateLoadingState } = await import(
-      '@/shared/ui/loading-messages'
-    );
+  test('should analyze user message for technical queries', async () => {
+    const { analyzeUserMessage } = await import('@/shared/ui/loading-messages');
 
-    expect(LoadingState).toBeDefined();
-    const states = ['idle', 'loading', 'success', 'error'];
-    for (const state of states) {
-      expect(LoadingState ? LoadingState[state.toUpperCase()] : state).toBeDefined();
-    }
+    const technicalMessage =
+      'Explain the architecture of microservices and their scalability patterns';
+    const context = analyzeUserMessage(technicalMessage);
 
-    expect(createLoadingState).toBeDefined();
-    const mockConfig = {
-      initialMessage: 'Starting...',
-      progressEnabled: true,
-      estimatedDuration: 5000,
-    };
-    const createResult = createLoadingState
-      ? createLoadingState(mockConfig)
-      : { state: 'loading', message: 'Starting...' };
-    expect(createResult).toBeDefined();
-    expect(createResult.state).toBeDefined();
-    expect(createResult.message).toBeDefined();
-
-    expect(updateLoadingState).toBeDefined();
-    const mockState = {
-      state: 'loading',
-      progress: 0.3,
-      message: 'Processing...',
-    };
-    const mockUpdate = {
-      progress: 0.7,
-      message: 'Almost done...',
-    };
-    const updateResult = updateLoadingState
-      ? updateLoadingState(mockState, mockUpdate)
-      : { ...mockState, ...mockUpdate };
-    expect(updateResult).toBeDefined();
-    expect(updateResult.progress).toBe(0.7);
-    expect(updateResult.message).toBe('Almost done...');
+    expect(context.isTechnicalQuery).toBeTruthy();
+    expect(context.isExplanation).toBeTruthy();
+    expect(context.isQuestion).toBeTruthy(); // "Explain" triggers isQuestion
+    expect(context.isCodeRelated).toBeFalsy();
   });
 
-  test('should test internationalization support', async () => {
-    const { getLocalizedMessage, supportedLanguages, translateMessage } = await import(
-      '@/shared/ui/loading-messages'
-    );
+  test('should analyze user message for calculations', async () => {
+    const { analyzeUserMessage } = await import('@/shared/ui/loading-messages');
 
-    expect(getLocalizedMessage).toBeDefined();
-    const languages = ['en', 'es', 'fr', 'de', 'ja', 'zh'];
-    for (const lang of languages) {
-      const localizedResult = getLocalizedMessage
-        ? getLocalizedMessage('processing', lang)
-        : 'Processing...';
-      expect(localizedResult).toBeDefined();
-      expect(typeof localizedResult).toBe('string');
-      expect(localizedResult.length).toBeGreaterThan(0);
-    }
+    const calculationMessage = 'Calculate the compound interest for $1000 at 5% over 10 years';
+    const context = analyzeUserMessage(calculationMessage);
 
-    expect(supportedLanguages).toBeDefined();
-    const supportedResult = supportedLanguages ? supportedLanguages() : ['en', 'es', 'fr', 'de'];
-    expect(supportedResult).toBeDefined();
-    expect(Array.isArray(supportedResult)).toBeTruthy();
-    expect(supportedResult.length).toBeGreaterThan(0);
-    expect(supportedResult).toContain('en'); // English should always be supported
-
-    expect(translateMessage).toBeDefined();
-    const mockTranslation = {
-      message: 'Processing your request...',
-      fromLanguage: 'en',
-      toLanguage: 'es',
-      context: 'loading',
-    };
-    const translateResult = translateMessage
-      ? await translateMessage(mockTranslation)
-      : 'Procesando tu solicitud...';
-    expect(translateResult).toBeDefined();
-    expect(typeof translateResult).toBe('string');
+    expect(context.needsCalculation).toBeTruthy();
+    expect(context.isDataAnalysis).toBeTruthy(); // "Calculate" triggers isDataAnalysis
+    expect(context.isCodeRelated).toBeFalsy();
   });
 
-  test('should test accessibility features', async () => {
-    const { createAccessibleMessage, addAriaLabels, screenReaderOptimized } = await import(
-      '@/shared/ui/loading-messages'
-    );
+  test('should analyze complex requests', async () => {
+    const { analyzeUserMessage } = await import('@/shared/ui/loading-messages');
 
-    expect(createAccessibleMessage).toBeDefined();
-    const mockConfig = {
-      message: 'Loading content',
-      ariaLabel: 'Content is being loaded, please wait',
-      role: 'status',
-      live: 'polite',
-    };
-    const accessibleResult = createAccessibleMessage
-      ? createAccessibleMessage(mockConfig)
-      : { ariaLabel: 'Content is being loaded, please wait', role: 'status' };
-    expect(accessibleResult).toBeDefined();
-    expect(accessibleResult.ariaLabel).toBeDefined();
-    expect(accessibleResult.role).toBeDefined();
+    const complexMessage =
+      'I need you to analyze this code, explain how it works, write tests for it, and then create documentation. The code is about implementing a distributed cache system with Redis and needs to handle high concurrency. Please also suggest performance optimizations.';
+    const context = analyzeUserMessage(complexMessage);
 
-    expect(addAriaLabels).toBeDefined();
-    const mockMessage = {
-      text: 'Processing...',
-      context: 'form-submission',
-    };
-    const ariaResult = addAriaLabels
-      ? addAriaLabels(mockMessage)
-      : { ...mockMessage, ariaLabel: 'Processing form submission' };
-    expect(ariaResult).toBeDefined();
-    expect(ariaResult.ariaLabel || ariaResult['aria-label']).toBeDefined();
-
-    expect(screenReaderOptimized).toBeDefined();
-    const mockMessages = ['Loading step 1 of 3', 'Loading step 2 of 3', 'Loading step 3 of 3'];
-    const screenReaderResult = screenReaderOptimized
-      ? screenReaderOptimized(mockMessages)
-      : mockMessages;
-    expect(screenReaderResult).toBeDefined();
-    expect(Array.isArray(screenReaderResult)).toBeTruthy();
+    expect(context.isComplexRequest).toBeTruthy();
+    expect(context.isCodeRelated).toBeTruthy();
+    expect(context.isTechnicalQuery).toBeTruthy();
+    expect(context.isExplanation).toBeTruthy();
   });
 
-  test('should test performance and optimization', async () => {
-    const { optimizeMessages, cacheMessages, preloadMessages } = await import(
-      '@/shared/ui/loading-messages'
-    );
+  test('should get contextual loading message for code context', async () => {
+    const { getContextualLoadingMessage } = await import('@/shared/ui/loading-messages');
 
-    expect(optimizeMessages).toBeDefined();
-    const mockMessages = Array.from({ length: 1000 }, (_, i) => `Message ${i}`);
-    const optimizeResult = optimizeMessages
-      ? optimizeMessages(mockMessages, { maxSize: 100 })
-      : mockMessages.slice(0, 100);
-    expect(optimizeResult).toBeDefined();
-    expect(Array.isArray(optimizeResult)).toBeTruthy();
-    expect(optimizeResult.length).toBeLessThanOrEqual(100);
-
-    expect(cacheMessages).toBeDefined();
-    const mockCacheConfig = {
-      category: 'ai-processing',
-      ttl: 3600000, // 1 hour
-      maxSize: 50,
+    const context = {
+      isCodeRelated: true,
+      isQuestion: false,
+      isCreativeWriting: false,
+      isDataAnalysis: false,
+      isResearch: false,
+      hasAttachments: false,
+      mentionsTools: false,
+      isComplexRequest: false,
+      isTechnicalQuery: false,
+      needsCalculation: false,
     };
-    const cacheResult = cacheMessages ? await cacheMessages(mockCacheConfig) : { cached: true };
-    expect(cacheResult).toBeDefined();
-    expect(cacheResult.cached).toBeTruthy();
 
-    expect(preloadMessages).toBeDefined();
-    const mockPreloadConfig = {
-      categories: ['processing', 'uploading', 'generating'],
-      priority: 'high',
-      preloadCount: 10,
-    };
-    const preloadResult = preloadMessages
-      ? await preloadMessages(mockPreloadConfig)
-      : { preloaded: true };
-    expect(preloadResult).toBeDefined();
-    expect(preloadResult.preloaded).toBeDefined();
+    const message = getContextualLoadingMessage(context, 500);
+    expect(message).toBeDefined();
+    expect(typeof message).toBe('string');
+    expect(message.length).toBeGreaterThan(0);
   });
 
-  test('should test message customization and theming', async () => {
-    const { customizeMessage, applyTheme, createMessageTheme } = await import(
-      '@/shared/ui/loading-messages'
+  test('should get contextual loading message for different durations', async () => {
+    const { getContextualLoadingMessage } = await import('@/shared/ui/loading-messages');
+
+    const context = {
+      isCodeRelated: true,
+      isQuestion: false,
+      isCreativeWriting: false,
+      isDataAnalysis: false,
+      isResearch: false,
+      hasAttachments: false,
+      mentionsTools: false,
+      isComplexRequest: true,
+      isTechnicalQuery: false,
+      needsCalculation: false,
+    };
+
+    const shortMessage = getContextualLoadingMessage(context, 500);
+    const mediumMessage = getContextualLoadingMessage(context, 2000);
+    const longMessage = getContextualLoadingMessage(context, 4000);
+    const veryLongMessage = getContextualLoadingMessage(context, 8000);
+
+    expect(shortMessage).toBeDefined();
+    expect(mediumMessage).toBeDefined();
+    expect(longMessage).toBeDefined();
+    expect(veryLongMessage).toBeDefined();
+
+    expect(mediumMessage).toContain('This might take a moment');
+    expect(longMessage).toContain('Almost there');
+    // veryLongMessage can be any of the long messages
+    expect(veryLongMessage).toMatch(
+      /Thank you for|Processing a detailed response|Still working on|Taking extra care/,
     );
-
-    expect(customizeMessage).toBeDefined();
-    const mockCustomization = {
-      baseMessage: 'Loading...',
-      style: 'casual',
-      tone: 'friendly',
-      length: 'short',
-      includeEmoji: true,
-    };
-    const customizeResult = customizeMessage
-      ? customizeMessage(mockCustomization)
-      : 'Loading... 😊';
-    expect(customizeResult).toBeDefined();
-    expect(typeof customizeResult).toBe('string');
-
-    expect(applyTheme).toBeDefined();
-    const mockTheme = {
-      name: 'dark-mode',
-      colors: { primary: '#ffffff', secondary: '#cccccc' },
-      typography: { family: 'monospace', size: '14px' },
-      animations: { duration: 'slow', easing: 'ease-in-out' },
-    };
-    const mockMessage = { text: 'Processing...', type: 'standard' };
-    const applyResult = applyTheme
-      ? applyTheme(mockMessage, mockTheme)
-      : { ...mockMessage, theme: mockTheme };
-    expect(applyResult).toBeDefined();
-    expect(applyResult.theme).toBeDefined();
-
-    expect(createMessageTheme).toBeDefined();
-    const mockThemeConfig = {
-      basedOn: 'modern',
-      modifications: {
-        colors: { accent: '#007acc' },
-        spacing: { padding: '12px' },
-        animations: { enabled: true },
-      },
-    };
-    const themeResult = createMessageTheme
-      ? createMessageTheme(mockThemeConfig)
-      : { name: 'custom-theme', styles: {} };
-    expect(themeResult).toBeDefined();
-    expect(themeResult.name).toBeDefined();
-    expect(themeResult.styles).toBeDefined();
   });
 
-  test('should test error handling and fallbacks', async () => {
-    const { handleMessageError, fallbackMessages, validateMessageConfig } = await import(
-      '@/shared/ui/loading-messages'
-    );
+  test('should create loading message manager', async () => {
+    const { createLoadingMessageManager } = await import('@/shared/ui/loading-messages');
 
-    expect(handleMessageError).toBeDefined();
-    const mockError = {
-      type: 'MESSAGE_GENERATION_FAILED',
-      context: { category: 'ai-processing', locale: 'en' },
-      originalMessage: 'Failed to generate dynamic message',
-    };
-    const errorResult = handleMessageError
-      ? handleMessageError(mockError)
-      : { fallbackMessage: 'Loading...' };
-    expect(errorResult).toBeDefined();
-    expect(errorResult.fallbackMessage).toBeDefined();
-    expect(typeof errorResult.fallbackMessage).toBe('string');
+    const manager = createLoadingMessageManager();
 
-    expect(fallbackMessages).toBeDefined();
-    const fallbackResult = fallbackMessages
-      ? fallbackMessages()
-      : ['Loading...', 'Please wait...', 'Processing...'];
-    expect(fallbackResult).toBeDefined();
-    expect(Array.isArray(fallbackResult)).toBeTruthy();
-    expect(fallbackResult.length).toBeGreaterThan(0);
-    // Fallback messages should be simple and reliable
-    fallbackResult.forEach(message => {
-      expect(typeof message).toBe('string');
-      expect(message.length).toBeGreaterThan(0);
-      expect(message.length).toBeLessThan(100); // Should be concise
+    expect(manager).toBeDefined();
+    expect(manager.analyze).toBeTypeOf('function');
+    expect(manager.getMessage).toBeTypeOf('function');
+    expect(manager.getToolMessage).toBeTypeOf('function');
+  });
+
+  test('should get tool-specific loading messages', async () => {
+    const { createLoadingMessageManager } = await import('@/shared/ui/loading-messages');
+
+    const manager = createLoadingMessageManager();
+
+    const weatherMessage = manager.getToolMessage('weather');
+    const codeMessage = manager.getToolMessage('code');
+    const searchMessage = manager.getToolMessage('search');
+    const unknownMessage = manager.getToolMessage('unknown-tool');
+
+    expect(weatherMessage).toBeDefined();
+    expect(codeMessage).toBeDefined();
+    expect(searchMessage).toBeDefined();
+    expect(unknownMessage).toBeDefined();
+
+    expect(typeof weatherMessage).toBe('string');
+    expect(typeof codeMessage).toBe('string');
+    expect(typeof searchMessage).toBe('string');
+    expect(typeof unknownMessage).toBe('string');
+  });
+
+  test('should get random loading message', async () => {
+    const { getRandomLoadingMessage } = await import('@/shared/ui/loading-messages');
+
+    const defaultMessage = getRandomLoadingMessage();
+    const customMessage = getRandomLoadingMessage(['Custom message 1', 'Custom message 2']);
+
+    expect(defaultMessage).toBeDefined();
+    expect(customMessage).toBeDefined();
+    expect(typeof defaultMessage).toBe('string');
+    expect(typeof customMessage).toBe('string');
+    expect(['Custom message 1', 'Custom message 2']).toContain(customMessage);
+  });
+
+  test('should get loading message for duration', async () => {
+    const { getLoadingMessageForDuration } = await import('@/shared/ui/loading-messages');
+
+    const shortMessage = getLoadingMessageForDuration(500);
+    const longMessage = getLoadingMessageForDuration(6000);
+    const codeMessage = getLoadingMessageForDuration(2000, { isCodeRelated: true });
+
+    expect(shortMessage).toBeDefined();
+    expect(longMessage).toBeDefined();
+    expect(codeMessage).toBeDefined();
+
+    expect(typeof shortMessage).toBe('string');
+    expect(typeof longMessage).toBe('string');
+    expect(typeof codeMessage).toBe('string');
+  });
+
+  test('should use custom analyzer function', async () => {
+    const { analyzeUserMessage } = await import('@/shared/ui/loading-messages');
+
+    const customAnalyzer = vi.fn().mockReturnValue({
+      isCustomAnalyzed: true,
+      isCodeRelated: false, // Override default analysis
     });
 
-    expect(validateMessageConfig).toBeDefined();
-    const validConfig = {
-      type: 'processing',
-      duration: 5000,
-      context: { task: 'generation' },
-    };
-    const invalidConfig = {
-      type: 'invalid-type',
-      duration: -1000, // Invalid negative duration
+    const message = 'function test() { return true; }';
+    const context = analyzeUserMessage(message, customAnalyzer);
+
+    expect(customAnalyzer).toHaveBeenCalledWith(message);
+    expect(context.isCustomAnalyzed).toBeTruthy();
+    expect(context.isCodeRelated).toBeFalsy(); // Should be overridden
+  });
+
+  test('should handle custom message pools in config', async () => {
+    const { createLoadingMessageManager } = await import('@/shared/ui/loading-messages');
+
+    const config = {
+      messages: {
+        code: ['Custom code message'],
+        default: ['Custom default message'],
+      },
     };
 
-    const validResult = validateMessageConfig
-      ? validateMessageConfig(validConfig)
-      : { isValid: true };
-    expect(validResult.isValid).toBeTruthy();
+    const manager = createLoadingMessageManager(config);
 
-    const invalidResult = validateMessageConfig
-      ? validateMessageConfig(invalidConfig)
-      : { isValid: false, errors: ['Invalid type'] };
-    expect(invalidResult.isValid).toBeFalsy();
-    expect(invalidResult.errors).toBeDefined();
-    expect(Array.isArray(invalidResult.errors)).toBeTruthy();
+    const context = {
+      isCodeRelated: true,
+      isQuestion: false,
+      isCreativeWriting: false,
+      isDataAnalysis: false,
+      isResearch: false,
+      hasAttachments: false,
+      mentionsTools: false,
+      isComplexRequest: false,
+      isTechnicalQuery: false,
+      needsCalculation: false,
+    };
+
+    const message = manager.getMessage(context, 500);
+    expect(message).toBe('Custom code message');
+  });
+
+  test('should handle custom thresholds in config', async () => {
+    const { createLoadingMessageManager } = await import('@/shared/ui/loading-messages');
+
+    const config = {
+      thresholds: {
+        short: 500,
+        medium: 1500,
+        long: 3000,
+      },
+    };
+
+    const manager = createLoadingMessageManager(config);
+
+    const context = {
+      isCodeRelated: false,
+      isQuestion: false,
+      isCreativeWriting: false,
+      isDataAnalysis: false,
+      isResearch: false,
+      hasAttachments: false,
+      mentionsTools: false,
+      isComplexRequest: true,
+      isTechnicalQuery: false,
+      needsCalculation: false,
+    };
+
+    const mediumMessage = manager.getMessage(context, 1000);
+    expect(mediumMessage).toContain('This might take a moment');
+  });
+
+  test('should test interface types', async () => {
+    const { analyzeUserMessage, getContextualLoadingMessage } = await import(
+      '@/shared/ui/loading-messages'
+    );
+
+    // Test LoadingContext interface
+    const context: LoadingContext = {
+      isCodeRelated: true,
+      isQuestion: false,
+      isCreativeWriting: false,
+      isDataAnalysis: false,
+      isResearch: false,
+      hasAttachments: false,
+      mentionsTools: true,
+      isComplexRequest: false,
+      isTechnicalQuery: true,
+      needsCalculation: false,
+      isCustomAnalyzed: true,
+    };
+    expect(context.isCodeRelated).toBeTruthy();
+    expect(context.isCustomAnalyzed).toBeTruthy();
+
+    // Test LoadingMessageConfig interface
+    const config: LoadingMessageConfig = {
+      messages: {
+        code: ['Analyzing code...', 'Processing syntax...'],
+        technical: ['Checking technical details...'],
+      },
+      thresholds: {
+        short: 1000,
+        medium: 3000,
+        long: 5000,
+      },
+    };
+    expect(config.messages?.code).toHaveLength(2);
+
+    // Test UseLoadingMessagesOptions interface
+    const useOptions: UseLoadingMessagesOptions = {
+      message: 'How do I implement a binary search?',
+      startTime: Date.now(),
+      updateInterval: 1000,
+      messages: {
+        code: ['Analyzing algorithm...'],
+      },
+    };
+    expect(useOptions.message).toContain('binary search');
+  });
+
+  test('should handle all context types', async () => {
+    const { analyzeUserMessage } = await import('@/shared/ui/loading-messages');
+
+    const testCases = [
+      { message: 'Translate this to Spanish', expectedFlags: ['isTranslation'] },
+      { message: 'Summarize this article', expectedFlags: ['isSummarization'] },
+      { message: 'Hello, how are you?', expectedFlags: ['isConversational'] },
+      { message: 'Debug this error message', expectedFlags: ['isDebugQuery'] },
+      { message: 'Explain how this works', expectedFlags: ['isExplanation'] },
+      { message: 'What is machine learning?', expectedFlags: ['isQuestion'] },
+      { message: 'Create a blog post about AI', expectedFlags: ['isCreativeWriting'] },
+      { message: 'Analyze these sales numbers', expectedFlags: ['isDataAnalysis'] },
+      { message: 'Research the latest trends', expectedFlags: ['isResearch'] },
+      { message: 'Use the weather tool', expectedFlags: ['mentionsTools'] },
+      {
+        message:
+          'This is a very long message that contains multiple sentences and ideas. It talks about various topics including technology, science, and philosophy. The message is designed to be complex and trigger the complex request flag.',
+        expectedFlags: ['isComplexRequest'],
+      },
+      { message: 'Optimize the system architecture', expectedFlags: ['isTechnicalQuery'] },
+      { message: 'Calculate the square root of 144', expectedFlags: ['needsCalculation'] },
+    ];
+
+    testCases.forEach(({ message, expectedFlags }) => {
+      const context = analyzeUserMessage(message);
+      expectedFlags.forEach(flag => {
+        expect(context[flag as keyof typeof context]).toBeTruthy();
+      });
+    });
+  });
+
+  test('should handle tool loading messages', async () => {
+    const { toolLoadingMessages } = await import('@/shared/ui/loading-messages');
+
+    expect(toolLoadingMessages).toBeDefined();
+    expect(toolLoadingMessages.weather).toBeDefined();
+    expect(toolLoadingMessages.document).toBeDefined();
+    expect(toolLoadingMessages.code).toBeDefined();
+    expect(toolLoadingMessages.search).toBeDefined();
+    expect(toolLoadingMessages.web).toBeDefined();
+    expect(toolLoadingMessages.bash).toBeDefined();
+    expect(toolLoadingMessages.api).toBeDefined();
+
+    expect(Array.isArray(toolLoadingMessages.weather)).toBeTruthy();
+    expect(toolLoadingMessages.weather.length).toBeGreaterThan(0);
+    expect(typeof toolLoadingMessages.weather[0]).toBe('string');
   });
 });

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 // Import test setup
 import '../setup';
 
-import { auth } from '../../../src/shared/auth';
+import { auth } from '@/shared/auth';
 
 import {
   canDeleteOrganization,
@@ -18,7 +18,7 @@ import {
   hasOrganizationRole,
   isOrganizationAdmin,
   isOrganizationOwner,
-} from '../../../src/server/organizations/permissions';
+} from '@/server/organizations/permissions';
 
 // Mock server-only
 vi.mock('server-only', () => ({}));

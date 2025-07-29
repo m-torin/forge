@@ -44,7 +44,17 @@ export function createVectorTools(config: VectorToolsConfig) {
         filter: z.record(z.string(), z.any()).optional().describe('Optional metadata filters'),
         includeScores: z.boolean().default(true).describe('Include similarity scores in results'),
       }),
-      execute: async ({ query, topK = defaultTopK, filter, includeScores }) => {
+      execute: async ({
+        query,
+        topK = defaultTopK,
+        filter,
+        includeScores,
+      }: {
+        query: string;
+        topK?: number;
+        filter?: Record<string, any>;
+        includeScores?: boolean;
+      }) => {
         // Embedding-First Design (Feature 2) - Always generate embeddings
         const cacheKey = `${query}:${embeddingModel}`;
         let queryEmbedding: number[];
@@ -100,7 +110,17 @@ export function createVectorTools(config: VectorToolsConfig) {
           .describe('Additional metadata to store with the content'),
         chunk: z.boolean().default(false).describe('Whether to chunk large content automatically'),
       }),
-      execute: async ({ content, id, metadata, chunk }) => {
+      execute: async ({
+        content,
+        id,
+        metadata,
+        chunk,
+      }: {
+        content: string;
+        id?: string;
+        metadata?: Record<string, any>;
+        chunk?: boolean;
+      }) => {
         const contentId = id || `content_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
         // Handle chunking for large content
@@ -154,7 +174,17 @@ export function createVectorTools(config: VectorToolsConfig) {
           .default(true)
           .describe('Exclude the original content from results'),
       }),
-      execute: async ({ input, isId, topK = defaultTopK, excludeOriginal }) => {
+      execute: async ({
+        input,
+        isId,
+        topK = defaultTopK,
+        excludeOriginal,
+      }: {
+        input: string;
+        isId?: boolean;
+        topK?: number;
+        excludeOriginal?: boolean;
+      }) => {
         let queryEmbedding: number[];
 
         if (isId) {
@@ -204,7 +234,7 @@ export function createVectorTools(config: VectorToolsConfig) {
           .optional()
           .describe('Optional pattern to match IDs (e.g., "user_123_*")'),
       }),
-      execute: async ({ ids, pattern }) => {
+      execute: async ({ ids, pattern }: { ids: string[]; pattern?: string }) => {
         let idsToDelete = ids;
 
         if (pattern) {

@@ -22,22 +22,17 @@ export {
 // Export auth client for direct access (Next.js specific)
 export { authClient } from './client/client-next';
 
-// Export key client methods following BetterAuth demo patterns
-export const {
-  useSession,
-  // Organization methods
-  organization,
-  useListOrganizations,
-  useActiveOrganization,
-  // Two-Factor Authentication methods
-  twoFactor,
-  // Admin methods
-  admin,
-  // API Key methods
-  apiKey,
-  // Passkey methods
-  passkey,
-} = authClient;
+// Export key client methods - use safe property access for plugin methods
+export const { useSession } = authClient;
+
+// Export plugin methods safely with fallbacks
+export const organization = (authClient as any).organization || {};
+export const useListOrganizations = (authClient as any).useListOrganizations;
+export const useActiveOrganization = (authClient as any).useActiveOrganization;
+export const twoFactor = (authClient as any).twoFactor || {};
+export const admin = (authClient as any).admin || {};
+export const apiKey = (authClient as any).apiKey || {};
+export const passkey = (authClient as any).passkey || {};
 
 // Export navigation helpers
 export { useAuthRedirect } from './client/navigation';

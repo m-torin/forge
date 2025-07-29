@@ -1,6 +1,9 @@
 # @repo/seo
 
-SEO optimization and metadata management utilities.
+- _Can build:_ **NO**
 
-Complete documentation is available in
-[../../apps/docs/packages/seo.mdx](../../apps/docs/packages/seo.mdx).
+- _Exports:_
+  - **Core**: `./client`, `./server`, `./client/next`, `./server/next`
+  - **Utilities**: `./metadata`, `./structured-data`, `./sitemap`
+
+- _Documentation:_ **[SEO Package](../../apps/docs/packages/seo.mdx)**

@@ -31,16 +31,20 @@ Claude Code work more efficiently with this codebase.
 
 1. **Start with CLAUDE.md** - The root file contains essential rules and
    restrictions
-2. **Check Decision Trees** - When unsure about architectural choices
-3. **Use Task Templates** - Copy and adapt templates for common tasks
-4. **Follow Command Sequences** - For multi-step operations
-5. **Verify with Success Markers** - Ensure tasks are completed correctly
-6. **Consult Package Hints** - For package-specific guidance
+2. **Use Context7 MCP** - For any library documentation, always use Context7 MCP
+   first
+3. **Check Decision Trees** - When unsure about architectural choices
+4. **Use Task Templates** - Copy and adapt templates for common tasks
+5. **Follow Command Sequences** - For multi-step operations
+6. **Verify with Success Markers** - Ensure tasks are completed correctly
+7. **Consult Package Hints** - For package-specific guidance
 
 ## Key Principles
 
 - **Patterns over memory** - Follow established patterns rather than trying to
   remember specifics
+- **Context7 MCP first** - Always use Context7 MCP to verify latest library
+  documentation before implementing
 - **Fail fast** - Run verification commands frequently
 - **Single source of truth** - These hints are the authoritative AI reference
 - **Concise and actionable** - Every hint should lead to immediate action
@@ -48,6 +52,7 @@ Claude Code work more efficiently with this codebase.
 ## When to Reference
 
 - Starting a new feature
+- Looking up the latest library documentation (use Context7 MCP)
 - Debugging build or type errors
 - Choosing between implementation approaches
 - Working with unfamiliar packages

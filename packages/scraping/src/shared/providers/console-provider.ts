@@ -2,6 +2,7 @@
  * Console provider - Debug/development provider that logs scraping actions
  */
 
+import { logInfo } from '@repo/observability';
 import {
   ExtractedData,
   ProviderConfig,
@@ -16,13 +17,11 @@ export class ConsoleProvider implements ScrapingProvider {
   readonly type = 'custom' as const;
 
   async dispose(): Promise<void> {
-    // eslint-disable-next-line no-console
-    console.log(`[ConsoleProvider] Disposed`);
+    logInfo(`[ConsoleProvider] Disposed`);
   }
 
   async extract(html: string, selectors: SelectorMap): Promise<ExtractedData> {
-    // eslint-disable-next-line no-console
-    console.log(`[ConsoleProvider] Extracting from HTML (${html.length} chars):`, selectors);
+    logInfo(`[ConsoleProvider] Extracting from HTML (${html.length} chars):`, selectors);
 
     const data: ExtractedData = {};
 
@@ -43,19 +42,16 @@ export class ConsoleProvider implements ScrapingProvider {
   }
 
   async healthCheck(): Promise<boolean> {
-    // eslint-disable-next-line no-console
-    console.log(`[ConsoleProvider] Health check: OK`);
+    logInfo(`[ConsoleProvider] Health check: OK`);
     return true;
   }
 
   async initialize(config: ProviderConfig): Promise<void> {
-    // eslint-disable-next-line no-console
-    console.log(`[ConsoleProvider] Initialized with config: `, config);
+    logInfo(`[ConsoleProvider] Initialized with config: `, config);
   }
 
   async scrape(url: string, options: ScrapeOptions = {}): Promise<ScrapeResult> {
-    // eslint-disable-next-line no-console
-    console.log(`[ConsoleProvider] Scraping: ${url}`, options);
+    logInfo(`[ConsoleProvider] Scraping: ${url}`, options);
 
     // Simulate scraping delay
     await new Promise((resolve: any) => setTimeout(resolve, 100));

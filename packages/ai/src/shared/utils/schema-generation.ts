@@ -30,8 +30,8 @@ export function createChatRequestSchema(modelIdEnum: ReturnType<typeof createMod
   });
 
   const filePartSchema = z.object({
-    data: z.string(), // base64 or URL
-    mimeType: z.string(),
+    url: z.string(), // URL in v5
+    mediaType: z.string(), // mediaType in v5
     type: z.enum(['file']),
   });
 
@@ -45,6 +45,7 @@ export function createChatRequestSchema(modelIdEnum: ReturnType<typeof createMod
       role: z.enum(['user']),
       content: z.string().min(1).max(2000),
       parts: z.array(messagePartSchema),
+      /** @deprecated Use parts array with file parts instead - experimental_attachments removed in AI SDK v5 */
       experimental_attachments: z
         .array(
           z.object({

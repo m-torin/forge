@@ -1,4 +1,4 @@
-import { logWarn } from '@repo/observability/shared-env';
+import { logWarn } from '@repo/observability';
 import {
   BatchContentAnalysisRequest,
   ContentModerationRequest,

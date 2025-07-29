@@ -5,7 +5,8 @@ import { createToolFromSpec } from '../specifications';
  * This is a mock implementation - replace with actual weather API
  */
 export const weatherTool = createToolFromSpec('weather', {
-  execute: async ({ latitude, units = 'celsius' }) => {
+  execute: async (params: unknown) => {
+    const { latitude, units = 'celsius' } = params as { latitude: any; units?: string };
     // Mock implementation
     // In production, this would call a weather API like OpenWeatherMap
 
@@ -43,7 +44,8 @@ export const weatherTool = createToolFromSpec('weather', {
  * Enhanced weather tool with additional features
  */
 export const enhancedWeatherTool = createToolFromSpec('weather', {
-  execute: async ({ latitude, units = 'celsius' }) => {
+  execute: async (params: unknown) => {
+    const { latitude, units = 'celsius' } = params as { latitude: any; units?: string };
     // Enhanced implementation with more detailed data
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 150));

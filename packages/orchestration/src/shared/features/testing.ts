@@ -3,7 +3,7 @@
  * Workflow mocking, testing utilities, and development server capabilities
  */
 
-import { createServerObservability } from '@repo/observability/shared-env';
+import { createServerObservability } from '@repo/observability/server/next';
 import {
   WorkflowDefinition,
   WorkflowExecution,
@@ -512,11 +512,7 @@ export class WorkflowDevServer {
    */
   async reloadWorkflow(workflowId: string): Promise<void> {
     // Implementation would reload workflow definition
-    const logger = await createServerObservability({
-      providers: {
-        console: { enabled: true },
-      },
-    });
+    const logger = await createServerObservability();
     await logger.log('info', `Reloading workflow ${workflowId}`);
   }
 
@@ -529,11 +525,7 @@ export class WorkflowDevServer {
     }
 
     this.isRunning = true;
-    const logger = await createServerObservability({
-      providers: {
-        console: { enabled: true },
-      },
-    });
+    const logger = await createServerObservability();
     await logger.log('info', `Workflow development server started on port ${port}`);
 
     // Development server implementation would go here
@@ -549,11 +541,7 @@ export class WorkflowDevServer {
    */
   async stop(): Promise<void> {
     this.isRunning = false;
-    const logger = await createServerObservability({
-      providers: {
-        console: { enabled: true },
-      },
-    });
+    const logger = await createServerObservability();
     await logger.log('info', 'Workflow development server stopped');
   }
 
@@ -561,11 +549,7 @@ export class WorkflowDevServer {
    * Run tests in watch mode
    */
   async watchTests(testSuites: WorkflowTestSuite[]): Promise<void> {
-    const logger = await createServerObservability({
-      providers: {
-        console: { enabled: true },
-      },
-    });
+    const logger = await createServerObservability();
     await logger.log('info', 'Starting test watcher...');
 
     // Implementation would watch for changes and re-run tests

@@ -1,9 +1,5 @@
-import { createServerObservability } from '@repo/observability/shared-env';
+import { logError, logError as logErrorObs, logInfo, logWarn } from '@repo/observability';
 import { safeEnv } from '../../../../env';
-
-import type { ObservabilityManager } from '@repo/observability/server';
-
-let observabilityInstance: ObservabilityManager | null = null;
 
 export interface DatabaseLogContext {
   args?: unknown;
@@ -31,21 +27,19 @@ export class DatabaseLogger {
 
   async logError(error: Error, context: Partial<DatabaseLogContext>): Promise<void> {
     try {
-      const observability = await getObservability();
+      const errorData = {
+        error: error.message,
+        stack: error.stack,
+        args: context.args,
+        timestamp: context.timestamp ?? new Date().toISOString(),
+        component: 'database',
+        model: context.model ?? 'unknown',
+        operation: context.operation ?? 'unknown',
+      };
 
-      void observability.captureException(error, {
-        extra: {
-          args: context.args,
-          timestamp: context.timestamp ?? new Date().toISOString(),
-        },
-        tags: {
-          component: 'database',
-          model: context.model ?? 'unknown',
-          operation: context.operation ?? 'unknown',
-        },
-      });
-    } catch (logError: any) {
-      throw new Error(`Failed to log database error: ${logError}`);
+      void logErrorObs(error, errorData);
+    } catch (logErr: any) {
+      logError(`Failed to log database error: ${logErr}`);
     }
   }
 
@@ -57,8 +51,6 @@ export class DatabaseLogger {
     }
 
     try {
-      const observability = await getObservability();
-
       const performanceData = {
         duration: context.duration,
         model: context.model,
@@ -70,10 +62,14 @@ export class DatabaseLogger {
         timestamp: context.timestamp,
       };
 
-      const logLevel = context.duration > 1000 ? 'warn' : 'info';
-      void observability.log(logLevel, 'Database Performance', performanceData);
-    } catch (error: any) {
-      throw new Error(`Failed to log database performance: ${error}`);
+      // Use specific logger functions instead of generic log method
+      if (context.duration > 1000) {
+        void logWarn('Database Performance', performanceData);
+      } else {
+        void logInfo('Database Performance', performanceData);
+      }
+    } catch (err: any) {
+      logError(`Failed to log database performance: ${err}`);
     }
   }
 
@@ -85,8 +81,6 @@ export class DatabaseLogger {
     }
 
     try {
-      const observability = await getObservability();
-
       const logData = {
         duration: context.duration,
         model: context.model,
@@ -98,25 +92,12 @@ export class DatabaseLogger {
         }),
       };
 
-      void observability.log('info', 'Database Query', logData);
-    } catch (error: any) {
-      throw new Error(`Failed to log database query: ${error}`);
+      // Use specific logger function instead of generic log method
+      void logInfo('Database Query', logData);
+    } catch (err: any) {
+      logError(`Failed to log database query: ${err}`);
     }
   }
-}
-
-export async function getObservability(): Promise<ObservabilityManager> {
-  if (!observabilityInstance) {
-    const config = safeEnv();
-
-    observabilityInstance = await createServerObservability({
-      providers: {
-        [config.PRISMA_LOG_PROVIDER || 'console']: {},
-      },
-    });
-  }
-
-  return observabilityInstance;
 }
 
 export const databaseLogger = DatabaseLogger.getInstance();

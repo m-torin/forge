@@ -20,6 +20,7 @@ export interface LoadingContext {
   isConversational?: boolean;
   isDebugQuery?: boolean;
   isExplanation?: boolean;
+  isCustomAnalyzed?: boolean;
 }
 
 export interface LoadingMessageConfig {

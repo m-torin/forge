@@ -39,7 +39,7 @@ async function processFile(filePath) {
       // Check if it's likely a directory import
       // Common patterns: '../mocks', './utils', etc.
       const lastPart = importPath.split('/').pop();
-      const isDirectoryImport = ['mocks', 'utils', 'configs', 'setup'].includes(lastPart);
+      const isDirectoryImport = ['mocks', 'utils', 'configs', 'setup', 'helpers'].includes(lastPart);
       
       const extension = isDirectoryImport ? '/index.mjs' : '.mjs';
       

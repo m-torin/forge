@@ -9,6 +9,6 @@
       "@repo/*": ["../*"]
     }
   },
-  "include": ["src/**/*", "__tests__/**/*", "vitest.config.ts", "eslint.config.ts"],
+  "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules", "dist"]
 }

@@ -17,8 +17,17 @@
 // Re-export everything from generic client
 export * from './client';
 
-// Next.js specific client exports
-export { useFlag } from './client/hooks';
+// React hooks for client-side flag evaluation
+export {
+  clearFlagCache,
+  setClientFlagValues,
+  useFlag,
+  useFlagValue,
+  useFlags,
+} from './client/react';
 
-// Re-export client utilities from shared
-export { dedupe } from './shared/flag';
+// React components for flag display and conditional rendering
+export { ConditionalFlag, FlagProvider, FlagValues } from './client/react-components';
+
+// Note: Server-side utilities like dedupe should not be imported in client components
+// Use server components to evaluate flags and pass results as props

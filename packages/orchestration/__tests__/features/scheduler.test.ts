@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 
-import { UpstashWorkflowProvider } from '../../src/providers/upstash-workflow/provider';
-import { createAdvancedScheduler } from '../../src/shared/features/scheduler';
-import { ScheduleConfig } from '../../src/shared/types/index';
-import { resetUpstashMocks, setupUpstashMocks } from '../utils/upstash-mocks';
+import { UpstashWorkflowProvider } from '@/providers/upstash-workflow/provider';
+import { createAdvancedScheduler } from '@/shared/features/scheduler';
+import { ScheduleConfig } from '@/shared/types/index';
+import { setupCombinedUpstashMocks } from '@repo/qa';
 
 // Extended type for testing with additional tracking properties
 interface ScheduledExecution {
@@ -22,12 +22,12 @@ interface ScheduledExecution {
 const createSchedulingService = createAdvancedScheduler;
 
 describe('scheduling Service', () => {
-  let mocks: ReturnType<typeof setupUpstashMocks>;
+  let mocks: ReturnType<typeof setupCombinedUpstashMocks>;
   let provider: UpstashWorkflowProvider;
   let schedulingService: ReturnType<typeof createSchedulingService>;
 
   beforeEach(() => {
-    mocks = setupUpstashMocks();
+    mocks = setupCombinedUpstashMocks();
 
     provider = new UpstashWorkflowProvider({
       baseUrl: 'http://localhost:3001',
@@ -41,7 +41,10 @@ describe('scheduling Service', () => {
   });
 
   afterEach(() => {
-    resetUpstashMocks(mocks);
+    // Reset mocks if available
+    if (mocks && typeof (mocks as any).reset === 'function') {
+      (mocks as any).reset();
+    }
   });
 
   describe('schedule Creation', () => {

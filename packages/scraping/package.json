@@ -22,15 +22,16 @@
   },
   "dependencies": {
     "@repo/observability": "workspace:*",
+    "@t3-oss/env-nextjs": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@anthropic-ai/sdk": "^0.56.0",
+    "@anthropic-ai/sdk": "^0.57.0",
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/qa": "workspace:*",
     "next": "catalog:",
-    "openai": "^5.9.0",
+    "openai": "^5.10.2",
     "react": "catalog:",
     "react-dom": "catalog:"
   },

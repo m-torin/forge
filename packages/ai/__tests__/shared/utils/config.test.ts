@@ -18,8 +18,15 @@ describe('config Utilities', () => {
   });
 
   afterEach(() => {
-    {
-      process.env.NODE_ENV = originalNodeEnv;
+    // Restore original environment
+    if (originalNodeEnv) {
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: originalNodeEnv,
+        writable: true,
+        configurable: true,
+      });
+    } else {
+      delete (process.env as any).NODE_ENV;
     }
   });
 
@@ -39,27 +46,27 @@ describe('config Utilities', () => {
     });
 
     test('should enable logging in development environment', async () => {
-      process.env.NODE_ENV = 'development';
+      vi.stubEnv('NODE_ENV', 'development');
       const { createConfigFromEnv } = await import('@/shared/utils/config');
       const config = createConfigFromEnv();
       expect(config.enableLogging).toBeTruthy();
     });
 
     test('should disable logging in production environment', () => {
-      process.env.NODE_ENV = 'production';
+      vi.stubEnv('NODE_ENV', 'production');
       const config = createConfigFromEnv();
       expect(config.enableLogging).toBeFalsy();
     });
 
     test('should enable rate limiting in production environment', async () => {
-      process.env.NODE_ENV = 'production';
+      vi.stubEnv('NODE_ENV', 'production');
       const { createConfigFromEnv } = await import('@/shared/utils/config');
       const config = createConfigFromEnv();
       expect(config.enableRateLimit).toBeTruthy();
     });
 
     test('should disable rate limiting in development environment', () => {
-      process.env.NODE_ENV = 'development';
+      vi.stubEnv('NODE_ENV', 'development');
       const config = createConfigFromEnv();
       expect(config.enableRateLimit).toBeFalsy();
     });

@@ -94,8 +94,25 @@ export interface ScheduledExecution {
   status: 'completed' | 'failed' | 'pending' | 'running';
 }
 
-// Re-export utility functions from shared utilities
-export * from '../utils';
+// Utility functions re-exported for convenience
+// These are imported from '../utils' with careful consideration for circular dependencies
+export {
+  createExecutionContext,
+  createScheduleConfig,
+  createStepDefinition,
+  createWorkflowDefinition,
+  deserializeWorkflow,
+  isExecutionResult,
+  isScheduleConfig,
+  isStepDefinition,
+  isWorkflowDefinition,
+  normalizeStepInput,
+  sanitizeExecutionOutput,
+  serializeWorkflow,
+} from '../utils/workflow-utilities';
 
-// Re-export factory functions
-export * from '../factories';
+// Validation functions removed to prevent circular dependencies
+// Import validateWorkflowDefinition directly from '../utils/validation' when needed
+
+// Note: Removed other re-exports from '../utils' and '../factories' to prevent circular dependencies
+// Import these directly from their specific modules when needed

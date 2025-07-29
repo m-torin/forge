@@ -3,7 +3,7 @@
  * This provides utilities that work with the better-auth-harmony plugins
  */
 
-import { logWarn } from '@repo/observability/shared-env';
+import { logWarn } from '@repo/observability';
 
 // Re-export better-auth-harmony plugins for server configuration
 export { emailHarmony, phoneHarmony } from 'better-auth-harmony';

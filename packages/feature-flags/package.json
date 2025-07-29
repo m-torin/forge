@@ -27,14 +27,16 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
+    "@flags-sdk/edge-config": "^0.1.0",
+    "@flags-sdk/posthog": "^0.1.0",
     "@repo/observability": "workspace:*",
     "@t3-oss/env-nextjs": "catalog:",
-    "@vercel/edge-config": "^1.4.0",
-    "@vercel/flags": "^3.1.1",
+    "@vercel/edge-config": "^1.0.0",
+    "flags": "^4.0.1",
     "nanoid": "catalog:",
     "next": "catalog:",
-    "posthog-js": "^1.257.0",
-    "posthog-node": "^5.5.0",
+    "posthog-js": "^1.258.2",
+    "posthog-node": "^5.6.0",
     "react": "catalog:",
     "zod": "catalog:"
   },
@@ -42,5 +44,8 @@
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/qa": "workspace:*"
+  },
+  "engines": {
+    "node": ">=22.0.0"
   }
 }

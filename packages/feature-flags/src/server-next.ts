@@ -26,6 +26,16 @@
 // Re-export everything from generic server
 export * from './server';
 
+// Modern adapter exports
+export {
+  createAdapterChain,
+  createPostHogPayloadAdapter,
+  createPostHogVariantAdapter,
+  modernEdgeConfigAdapter as edgeConfigAdapter,
+  modernPostHogAdapter as postHogServerAdapter,
+  validateAdapterConfig,
+} from './adapters/modernAdapters';
+
 // Next.js specific - Vercel Flags SDK functions
 export {
   dedupe,
@@ -34,17 +44,35 @@ export {
   flag,
   generatePermutations,
   getPrecomputed,
-  precompute,
   serialize,
 } from './shared/flag';
 
 // Next.js specific - additional exports
-export { createFlagsDiscoveryEndpoint } from './discovery';
+export {
+  createModernFlagsDiscoveryEndpoint,
+  getEnhancedProviderData,
+  mergeMultipleProviders,
+} from './server/discovery';
 export * from './server/flags';
-// export { verifyAccess } from '@vercel/flags/next';
 
-// Next.js specific types
-export type { ReadonlyHeaders, ReadonlyRequestCookies } from '@vercel/flags';
+// Analytics integration
+export {
+  analyticsConfig,
+  track,
+  trackBatch,
+  trackConversion,
+  trackExperiment,
+  trackExperimentAssignment,
+  trackFlagConversion,
+  trackFlagEvaluation,
+  trackFlagEvaluationsBatch,
+} from './server/analytics';
+
+// Modern exports from flags/next package
+export { createFlagsDiscoveryEndpoint, getProviderData, precompute } from 'flags/next';
+
+// Modern exports from flags package
+export { decryptFlagValues, encryptFlagValues, verifyAccess, version } from 'flags';
 
 // Shared types
 export type * from './shared/types';

@@ -1,3 +1,4 @@
+import { logInfo } from '@repo/observability';
 import { hashPassword } from 'better-auth/crypto';
 import { PrismaClient } from '../../../../prisma-generated/client';
 
@@ -30,11 +31,11 @@ const defaultUsers: UserToCreate[] = [
  */
 async function createUsers() {
   if (process.env.SEED_SKIP_USER_CREATION === 'true') {
-    console.log('⏭️  Skipping user creation (SEED_SKIP_USER_CREATION=true)');
+    logInfo('⏭️  Skipping user creation (SEED_SKIP_USER_CREATION=true)');
     return;
   }
 
-  console.log('👥 Creating users...');
+  logInfo('👥 Creating users...');
 
   for (const userData of defaultUsers) {
     try {

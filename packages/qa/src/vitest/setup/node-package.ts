@@ -7,6 +7,9 @@
 import { vi } from 'vitest';
 import './common';
 
+// Import AI mocks for packages that need them
+import '../mocks/providers/ai';
+
 // Set test environment
 process.env.NODE_ENV = 'test';
 

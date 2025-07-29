@@ -18,7 +18,7 @@ vi.mock('next/server', () => ({
 }));
 
 // Mock Vercel flags
-vi.mock('@vercel/flags/next', () => ({
+vi.mock('flags/next', () => ({
   precompute: vi.fn(),
 }));
 
@@ -134,7 +134,7 @@ describe('createFeatureFlagMiddleware', () => {
   });
 
   test('should precompute flags when provided', async () => {
-    const { precompute } = vi.mocked(await import('@vercel/flags/next'));
+    const { precompute } = vi.mocked(await import('flags/next'));
     precompute.mockResolvedValue('computed-code-123');
 
     const mockFlags = [{ key: 'test-flag' }];
@@ -158,7 +158,7 @@ describe('createFeatureFlagMiddleware', () => {
   });
 
   test('should use custom code prefix for precomputed routes', async () => {
-    const { precompute } = vi.mocked(await import('@vercel/flags/next'));
+    const { precompute } = vi.mocked(await import('flags/next'));
     precompute.mockResolvedValue('code-456');
 
     const mockFlags = [{ key: 'test-flag' }];
@@ -181,7 +181,7 @@ describe('createFeatureFlagMiddleware', () => {
   });
 
   test('should handle both flags and visitor ID generation', async () => {
-    const { precompute } = vi.mocked(await import('@vercel/flags/next'));
+    const { precompute } = vi.mocked(await import('flags/next'));
     const { getOrGenerateVisitorId } = vi.mocked(await import('@/shared/utils'));
 
     precompute.mockResolvedValue('code-789');
@@ -198,12 +198,17 @@ describe('createFeatureFlagMiddleware', () => {
 
     expect(precompute).toHaveBeenCalledWith(mockFlags);
     expect(getOrGenerateVisitorId).toHaveBeenCalledWith(
-      request.cookies,
-      request.headers,
-      'visitor-id'
+      expect.any(Object), // cookies
+      expect.any(Object), // headers
+      'visitor-id', // cookieName
     );
     const { NextResponse } = vi.mocked(await import('next/server'));
-    expect(NextResponse.rewrite).toHaveBeenCalledWith();
+    expect(NextResponse.rewrite).toHaveBeenCalledWith(
+      expect.objectContaining({
+        href: 'https://example.com/code-789/combo-page',
+      }),
+      { request },
+    );
     expect(result).toBeDefined();
     expect(result?.cookies.set).toHaveBeenCalledWith(
       'visitor-id',
@@ -225,7 +230,7 @@ describe('createFeatureFlagMiddleware', () => {
   });
 
   test('should handle complex pathname and search params', async () => {
-    const { precompute } = vi.mocked(await import('@vercel/flags/next'));
+    const { precompute } = vi.mocked(await import('flags/next'));
     precompute.mockResolvedValue('complex-code');
 
     const mockFlags = [{ key: 'complex-flag' }];
@@ -247,7 +252,7 @@ describe('createFeatureFlagMiddleware', () => {
   });
 
   test('should set visitor ID header when cookie exists but response is created', async () => {
-    const { precompute } = vi.mocked(await import('@vercel/flags/next'));
+    const { precompute } = vi.mocked(await import('flags/next'));
     const { getOrGenerateVisitorId } = vi.mocked(await import('@/shared/utils'));
 
     precompute.mockResolvedValue('header-code');

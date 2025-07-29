@@ -3,6 +3,8 @@
  * Utilities specific to browser/client-side scraping operations
  */
 
+import { logInfo } from '@repo/observability';
+
 /**
  * Check if running in browser environment
  */
@@ -111,8 +113,7 @@ export function downloadContent(
 export function clientLog(message: string, ...args: any[]): void {
   if (isBrowser()) {
     // Client logging is acceptable for debugging purposes
-    // eslint-disable-next-line no-console
-    console.log(`[${new Date().toISOString()}] ${message}`, ...args);
+    logInfo(`[${new Date().toISOString()}] ${message}`, ...args);
   }
 }
 

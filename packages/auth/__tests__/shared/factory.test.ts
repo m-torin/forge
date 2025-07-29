@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock observability
 const mockLogWarn = vi.fn();
-vi.mock('@repo/observability/shared-env', () => ({
+vi.mock('@repo/observability', () => ({
   logWarn: mockLogWarn,
 }));
 
@@ -261,7 +261,13 @@ describe('shared factory functionality', () => {
     test('should work as type guard', async () => {
       const factoryModule = await import('@/shared/factory');
 
-      // TypeScript should narrow the type here
+      // Test the hasFeature function
+      const hasApiKeys = factoryModule.hasFeature(testConfig, 'apiKeys');
+      expect(hasApiKeys).toBeDefined();
+      expect(typeof hasApiKeys).toBe('boolean');
+
+      // Test the actual feature check without conditional logic
+      expect(factoryModule.hasFeature(testConfig, 'apiKeys')).toBeTruthy();
       expect(testConfig.features.apiKeys).toBeTruthy();
     });
   });

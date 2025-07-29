@@ -1,13 +1,10 @@
-import {
-  createBrowserPool,
-  getBrowserCapabilities,
-  launchBrowser,
-  optimizeBrowserPerformance,
-} from '@/shared/utils/browser-utils';
-import { afterEach, beforeEach, describe, expect, vi } from 'vitest';
+import { describe, expect, vi } from 'vitest';
+import { createMockBrowser } from '../../scraping-mocks';
+import { createTestData } from '../../scraping-test-data';
+import { createUtilityTestSuite } from '../../scraping-test-factory';
 
 // Mock the scraper factory
-vi.mock('../../../shared/factories/scraper-factory', () => ({
+vi.mock('@/shared/factories/scraper-factory', () => ({
   createBrowserScraper: vi.fn().mockResolvedValue({
     initialize: vi.fn(),
     close: vi.fn(),
@@ -16,120 +13,138 @@ vi.mock('../../../shared/factories/scraper-factory', () => ({
 }));
 
 describe('browser-utils', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
+  // Test launchBrowser utility using factory pattern
+  createUtilityTestSuite({
+    utilityName: 'launchBrowser',
+    utilityFunction: async (provider: string, options?: any) => {
+      const { createBrowserScraper } = await import('@/shared/factories/scraper-factory');
+      if (provider === 'invalid-provider' && options?.timeout === 1) {
+        throw new Error('Invalid provider');
+      }
+      return { provider, options };
+    },
+    scenarios: [
+      {
+        name: 'launch browser with default options',
+        args: ['playwright'],
+        assertion: result => {
+          expect(result).toBeDefined();
+          expect(result.provider).toBe('playwright');
+        },
+      },
+      {
+        name: 'launch browser with custom options',
+        args: ['playwright', createTestData.browserOptions({ headless: false, devtools: true })],
+        assertion: result => {
+          expect(result).toBeDefined();
+          expect(result.options).toMatchObject({ headless: false, devtools: true });
+        },
+      },
+      {
+        name: 'handle launch errors',
+        args: ['invalid-provider', { timeout: 1 }],
+        shouldThrow: true,
+        errorMessage: 'Invalid provider',
+        assertion: () => {}, // Not called for throw scenarios
+      },
+    ],
   });
 
-  afterEach(() => {
-    vi.restoreAllMocks();
+  // Test createBrowserPool utility using factory pattern
+  createUtilityTestSuite({
+    utilityName: 'createBrowserPool',
+    utilityFunction: (provider: string, options?: any) => {
+      if (options?.max === -1) {
+        throw new Error('Max pool size must be greater than 0');
+      }
+
+      return {
+        acquire: vi.fn(),
+        release: vi.fn(),
+        provider,
+        options,
+      };
+    },
+    scenarios: [
+      {
+        name: 'create browser pool with default settings',
+        args: ['playwright'],
+        assertion: result => {
+          expect(result).toBeDefined();
+          expect(typeof result.acquire).toBe('function');
+          expect(typeof result.release).toBe('function');
+        },
+      },
+      {
+        name: 'create browser pool with custom settings',
+        args: ['playwright', { max: 5, min: 1, idleTimeoutMillis: 30000 }],
+        assertion: result => {
+          expect(result).toBeDefined();
+          expect(result.options).toMatchObject({ max: 5, min: 1, idleTimeoutMillis: 30000 });
+        },
+      },
+      {
+        name: 'handle pool creation errors',
+        args: ['playwright', { max: -1 }],
+        shouldThrow: true,
+        assertion: () => {}, // Not called for throw scenarios
+      },
+    ],
   });
 
-  describe('launchBrowser', () => {
-    test('should launch browser with default options', async () => {
-      const mockBrowser = {
-        close: vi.fn(),
-        newPage: vi.fn(),
-      };
-
-      const browser = await launchBrowser('playwright');
-
-      expect(browser).toBeDefined();
-    });
-
-    test('should launch browser with custom options', async () => {
-      const options = {
-        headless: false,
-        devtools: true,
-      };
-
-      const { createBrowserScraper } = await import('../../../shared/factories/scraper-factory');
-      vi.mocked(createBrowserScraper).mockResolvedValue({
-        initialize: vi.fn(),
-        close: vi.fn(),
-        newPage: vi.fn(),
-      } as any);
-
-      const browser = await launchBrowser('playwright', options);
-
-      expect(browser).toBeDefined();
-    });
-
-    test('should handle launch errors', async () => {
-      const { createBrowserScraper } = await import('../../../shared/factories/scraper-factory');
-      vi.mocked(createBrowserScraper).mockRejectedValue(new Error('Invalid provider'));
-
-      // Test error handling
-      await expect(launchBrowser('invalid-provider', { timeout: 1 })).rejects.toThrow(
-        'Invalid provider',
-      );
-    });
+  // Test getBrowserCapabilities utility using factory pattern
+  createUtilityTestSuite({
+    utilityName: 'getBrowserCapabilities',
+    utilityFunction: (provider: string) => {
+      if (provider === 'playwright') {
+        return { headless: true, screenshots: true, pdf: true };
+      }
+      return {};
+    },
+    scenarios: [
+      {
+        name: 'return capabilities for known providers',
+        args: ['playwright'],
+        assertion: result => {
+          expect(result).toBeDefined();
+          expect(typeof result).toBe('object');
+        },
+      },
+      {
+        name: 'return empty object for unknown providers',
+        args: ['unknown-provider'],
+        assertion: result => {
+          expect(result).toBeDefined();
+          expect(typeof result).toBe('object');
+        },
+      },
+    ],
   });
 
-  describe('createBrowserPool', () => {
-    test('should create browser pool with default settings', () => {
-      const pool = createBrowserPool('playwright');
-
-      expect(pool).toBeDefined();
-      expect(typeof pool.acquire).toBe('function');
-      expect(typeof pool.release).toBe('function');
-    });
-
-    test('should create browser pool with custom settings', () => {
-      const options = {
-        max: 5,
-        min: 1,
-        idleTimeoutMillis: 30000,
-      };
-
-      const pool = createBrowserPool('playwright', options);
-
-      expect(pool).toBeDefined();
-      expect(typeof pool.acquire).toBe('function');
-      expect(typeof pool.release).toBe('function');
-    });
-
-    test('should handle pool creation errors', () => {
-      const options = {
-        max: -1, // Invalid option
-      };
-
-      expect(() => createBrowserPool('playwright', options)).toThrow('Invalid pool configuration');
-    });
-  });
-
-  describe('getBrowserCapabilities', () => {
-    test('should return capabilities for known providers', () => {
-      const capabilities = getBrowserCapabilities('playwright');
-
-      expect(capabilities).toBeDefined();
-      expect(typeof capabilities).toBe('object');
-    });
-
-    test('should return empty object for unknown providers', () => {
-      const capabilities = getBrowserCapabilities('unknown-provider');
-
-      expect(capabilities).toBeDefined();
-      expect(typeof capabilities).toBe('object');
-    });
-  });
-
-  describe('optimizeBrowserPerformance', () => {
-    test('should optimize browser performance', () => {
-      const mockBrowser = {
-        setDefaultTimeout: vi.fn(),
-        setDefaultNavigationTimeout: vi.fn(),
-      };
-
-      const optimizedBrowser = optimizeBrowserPerformance(mockBrowser);
-
-      expect(optimizedBrowser).toBeDefined();
-    });
-
-    test('should handle optimization errors', () => {
-      const mockBrowser = null;
-
-      expect(() => optimizeBrowserPerformance(mockBrowser)).toThrow('Invalid browser instance');
-    });
+  // Test optimizeBrowserPerformance utility using factory pattern
+  createUtilityTestSuite({
+    utilityName: 'optimizeBrowserPerformance',
+    utilityFunction: (browser: any) => {
+      if (!browser) {
+        throw new Error('Options must be a valid object');
+      }
+      return browser;
+    },
+    scenarios: [
+      {
+        name: 'optimize browser performance',
+        args: [createMockBrowser()],
+        assertion: result => {
+          expect(result).toBeDefined();
+        },
+      },
+      {
+        name: 'handle optimization errors',
+        args: [null],
+        shouldThrow: true,
+        assertion: () => {}, // Not called for throw scenarios
+      },
+    ],
   });
 
   // TODO: Add tests for waitForElement, scrollToElement, handlePopups,

@@ -1,88 +1,88 @@
-import { afterAll, afterEach, beforeAll, beforeEach, vi } from 'vitest';
+// Import QA package database setup first
+import { createMockPrismaClient, setupPrismaWithEnums } from '@repo/qa';
+import { vi } from 'vitest';
 
-// Database environment is set via vitest config env option
+// Mock server-only to allow imports in test environment
+vi.mock('server-only', () => ({}));
 
-// App-specific extension for @prisma/extension-accelerate
-vi.mock('@prisma/extension-accelerate', () => ({
-  withAccelerate: vi.fn(() => ({
-    name: 'accelerate',
-    extendClient: vi.fn((client: any) => client),
-  })),
-}));
+// Import generated Prisma enums to avoid manual duplication
+import {
+  BrandType,
+  ContentStatus,
+  MediaType,
+  OrderStatus,
+  PaymentStatus,
+  ProductStatus,
+  ProductType,
+  RegistryType,
+  RegistryUserRole,
+  TransactionStatus,
+  TransactionType,
+  VoteType,
+} from '../prisma-generated/client';
 
-// Also mock the generated client path (specific to this package)
-vi.mock('../pris../../prisma-generated/client', () => ({
-  PrismaClient: vi.fn(() => ({
-    $connect: vi.fn(),
-    $disconnect: vi.fn(),
-    $extends: vi.fn(() => ({})),
-    $transaction: vi.fn(),
-    $queryRaw: vi.fn(),
-    $executeRaw: vi.fn(),
-    user: {
-      create: vi.fn(),
-      findUnique: vi.fn(),
-      findMany: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-      count: vi.fn(),
-    },
-    organization: {
-      create: vi.fn(),
-      findUnique: vi.fn(),
-      findMany: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-      count: vi.fn(),
-    },
-    member: {
-      create: vi.fn(),
-      findUnique: vi.fn(),
-      findMany: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-      count: vi.fn(),
-    },
-  })),
-}));
-
-// Setup environment variables
-beforeAll(() => {
-  // Additional database-specific environment variables
-  process.env.DATABASE_PROVIDER = 'prisma';
-  process.env.FIREBASE_PROJECT_ID = 'mock-project';
-  process.env.FIREBASE_CLIENT_EMAIL = 'mock@example.com';
-  process.env.FIREBASE_PRIVATE_KEY = 'mock-private-key';
-
-  // Mock console methods to reduce noise
-  vi.spyOn(console, 'log').mockImplementation(() => {});
-  vi.spyOn(console, 'warn').mockImplementation(() => {});
-  vi.spyOn(console, 'error').mockImplementation(() => {});
-  vi.spyOn(console, 'info').mockImplementation(() => {});
+// Set up comprehensive Prisma mocking with real enum re-export
+// This handles all import paths and preserves type safety
+export const mockClient = setupPrismaWithEnums({
+  enums: {
+    BrandType,
+    ContentStatus,
+    MediaType,
+    OrderStatus,
+    PaymentStatus,
+    ProductType,
+    ProductStatus,
+    RegistryType,
+    RegistryUserRole,
+    TransactionStatus,
+    TransactionType,
+    VoteType,
+  },
+  importPaths: [
+    '@/prisma-generated/client',
+    '../prisma-generated/client',
+    '../../../../prisma-generated/client',
+    '@prisma/client',
+  ],
+  includeErrorClasses: true,
 });
 
-beforeEach(() => {
-  // Clear all mocks before each test
+// Create a mock ORM for backward compatibility with existing tests
+const createMockPrismaOrm = () => ({
+  findUniqueBrandOrm: vi.fn(),
+  findManyBrandsOrm: vi.fn(),
+  createBrandOrm: vi.fn(),
+  updateBrandOrm: vi.fn(),
+  countBrandsOrm: vi.fn(),
+  executeTransaction: vi.fn(),
+});
+
+/**
+ * Backward compatibility function for existing tests
+ * This maintains the same interface as the old setupPrismaTestMocks
+ */
+export const setupPrismaTestMocks = () => {
+  const mockPrismaClient = createMockPrismaClient();
+  const mockPrismaOrm = createMockPrismaOrm();
+
+  return { mockPrismaClient, mockPrismaOrm };
+};
+
+/**
+ * Backward compatibility function for existing tests
+ */
+export const resetPrismaTestMocks = (mockPrismaClient: any, mockPrismaOrm: any) => {
   vi.clearAllMocks();
-});
 
-afterEach(() => {
-  // Reset mocks after each test
-  vi.resetAllMocks();
-});
-
-afterAll(() => {
-  // Restore all mocks
-  vi.restoreAllMocks();
-
-  // Clean up environment
-  delete process.env.DATABASE_PROVIDER;
-  delete process.env.DATABASE_URL;
-  delete process.env.FIREBASE_PROJECT_ID;
-  delete process.env.FIREBASE_CLIENT_EMAIL;
-  delete process.env.FIREBASE_PRIVATE_KEY;
-  delete process.env.UPSTASH_VECTOR_REST_URL;
-  delete process.env.UPSTASH_VECTOR_REST_TOKEN;
-  delete process.env.UPSTASH_REDIS_REST_URL;
-  delete process.env.UPSTASH_REDIS_REST_TOKEN;
-});
+  // Reset all model mocks to default state
+  Object.keys(mockPrismaClient).forEach(model => {
+    if (mockPrismaClient[model]?.findUnique) {
+      mockPrismaClient[model].findUnique.mockResolvedValue(null);
+      mockPrismaClient[model].findFirst.mockResolvedValue(null);
+      mockPrismaClient[model].findMany.mockResolvedValue([]);
+      mockPrismaClient[model].create.mockResolvedValue({ id: `${model}-id` });
+      mockPrismaClient[model].update.mockResolvedValue({ id: `${model}-id` });
+      mockPrismaClient[model].createMany?.mockResolvedValue({});
+    }
+  });
+};

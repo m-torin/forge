@@ -7,4 +7,5 @@ export * from './error-handling';
 export * from './message-transformations';
 export * from './models';
 export * from './streaming-transformations';
+export * from './telemetry';
 export * from './title-generation';

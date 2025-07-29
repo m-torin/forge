@@ -26,7 +26,6 @@
  * @see https://dub.sh/docs
  */
 
-import { safeEnv } from '../../env';
 import { LinkConfig } from '../shared/types/index.js';
 
 // ============================================================================
@@ -56,9 +55,9 @@ export const productionConfig: LinkConfig = {
   providers: {
     dub: {
       enabled: true,
-      apiKey: safeEnv().DUB_API_KEY || 'dub_xxx',
-      workspace: safeEnv().DUB_WORKSPACE || 'your-workspace',
-      defaultDomain: process.env.DUB_DEFAULT_DOMAIN || 'yourdomain.com',
+      apiKey: 'dub_example_key', // Use fallback in examples
+      workspace: 'your-workspace', // Use fallback in examples
+      defaultDomain: 'yourdomain.com', // Use fallback in examples
       baseUrl: 'https://api.dub.co',
       defaultTags: ['production'],
       defaultExpiration: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
@@ -469,7 +468,7 @@ export const testConfig: LinkConfig = {
  * Helper function for testing link creation
  */
 export async function createTestLink() {
-  const { createServerLinkManager } = await import('@repo/links/server');
+  const { createServerLinkManager } = await import('../server');
 
   const linkManager = await createServerLinkManager(testConfig);
 

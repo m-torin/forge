@@ -22,20 +22,8 @@ export function createComputerTool(config: ComputerToolConfig) {
       }
     },
 
-    experimental_toToolResultContent: result => {
-      if (config.experimental_toToolResultContent) {
-        return config.experimental_toToolResultContent(result);
-      }
-
-      // Default implementation following the documentation example
-      if (typeof result === 'string') {
-        return [{ type: 'text' as const, text: result }];
-      } else if (result.type === 'image') {
-        return [{ type: 'image' as const, data: result.data, mimeType: 'image/png' }];
-      }
-
-      return [{ type: 'text' as const, text: 'Unknown result type' }];
-    },
+    // Note: experimental_toToolResultContent was removed in AI SDK v5
+    // Tool result content handling is now managed automatically by the SDK
   });
 }
 

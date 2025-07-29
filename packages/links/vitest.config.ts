@@ -10,10 +10,10 @@ export default createNodePackageConfig({
       ],
       coverage: {
         thresholds: {
-          lines: 0,
-          statements: 0,
-          branches: 0,
-          functions: 0,
+          lines: 20,
+          statements: 20,
+          branches: 30,
+          functions: 40,
         },
       },
     },

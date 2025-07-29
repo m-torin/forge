@@ -93,8 +93,7 @@ describe('client teams functionality', () => {
       const teamData = { id: 'team-123', name: 'Updated Team' };
       mockAuthClient.organization.updateTeam.mockResolvedValue(teamData);
 
-      const result = await updateTeam({
-        teamId: 'team-123',
+      const result = await updateTeam('team-123', {
         name: 'Updated Team',
         description: 'Updated description',
       });
@@ -113,7 +112,7 @@ describe('client teams functionality', () => {
       const error = new Error('Team update failed');
       mockAuthClient.organization.updateTeam.mockRejectedValue(error);
 
-      await expect(updateTeam({ teamId: 'team-123', name: 'Updated' })).rejects.toThrow(
+      await expect(updateTeam('team-123', { name: 'Updated' })).rejects.toThrow(
         'Team update failed',
       );
       expect(mockLogger.error).toHaveBeenCalledWith('Update team failed:', error);
@@ -178,7 +177,7 @@ describe('client teams functionality', () => {
 
       const result = await addTeamMember({
         teamId: 'team-123',
-        userId: 'user-123',
+        email: 'user@example.com',
         role: 'member',
       });
 
@@ -196,9 +195,9 @@ describe('client teams functionality', () => {
       const error = new Error('Add member failed');
       mockAuthClient.organization.addTeamMember.mockRejectedValue(error);
 
-      await expect(addTeamMember({ teamId: 'team-123', userId: 'user-123' })).rejects.toThrow(
-        'Add member failed',
-      );
+      await expect(
+        addTeamMember({ teamId: 'team-123', email: 'user@example.com', role: 'member' }),
+      ).rejects.toThrow('Add member failed');
       expect(mockLogger.error).toHaveBeenCalledWith('Add team member failed:', error);
     });
   });
@@ -401,9 +400,9 @@ describe('client teams functionality', () => {
 
       // Test invite error
       mockAuthClient.organization.inviteToTeam.mockRejectedValue(error);
-      await expect(inviteToTeam({ teamId: 'team-123', email: 'test@example.com' })).rejects.toThrow(
-        'Invitation failed',
-      );
+      await expect(
+        inviteToTeam({ teamId: 'team-123', email: 'test@example.com', role: 'member' }),
+      ).rejects.toThrow('Invitation failed');
 
       // Test accept error
       mockAuthClient.organization.acceptTeamInvitation.mockRejectedValue(error);
@@ -652,7 +651,7 @@ describe('client teams functionality', () => {
       // Mock organization object not existing
       (mockAuthClient as any).organization = undefined;
 
-      await expect(createTeam({ name: 'Test' })).rejects.toThrow('Organization management not available');
+      await expect(createTeam({ name: 'Test' })).rejects.toThrow('Organization not found');
     });
 
     test('should handle non-Error exceptions', async () => {
@@ -663,7 +662,7 @@ describe('client teams functionality', () => {
         updateTeam: vi.fn().mockRejectedValue('String error'),
       };
 
-      await expect(updateTeam({ teamId: 'team-123', name: 'Test' })).rejects.toThrow('Update team failed');
+      await expect(updateTeam('team-123', { name: 'Test' })).rejects.toThrow('Update team failed');
       expect(mockLogger.error).toHaveBeenCalledWith('Update team failed:', expect.any(Error));
     });
 

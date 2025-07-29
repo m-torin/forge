@@ -37,7 +37,6 @@ describe('role utilities', () => {
       const rolesModule = await import('@/shared/utils/roles');
 
       const hierarchy = ['admin', 'user'];
-      // @ts-expect-error - testing invalid role
       const result = rolesModule.hasRolePermission('unknown', 'user', hierarchy);
 
       expect(result).toBeFalsy();
@@ -47,7 +46,6 @@ describe('role utilities', () => {
       const rolesModule = await import('@/shared/utils/roles');
 
       const hierarchy = ['admin', 'user'];
-      // @ts-expect-error - testing invalid role
       const result = rolesModule.hasRolePermission('admin', 'unknown', hierarchy);
 
       expect(result).toBeFalsy();

@@ -99,7 +99,10 @@ export class SentimentAnalyzer {
     }
   }
 
-  // Legacy methods for backward compatibility
+  /**
+   * Legacy method for backward compatibility
+   * @deprecated Use analyze() method instead
+   */
   async analyzeSentiment(text: string): Promise<{
     confidence: number;
     reasoning: string;

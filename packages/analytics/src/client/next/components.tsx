@@ -39,11 +39,7 @@ export function AnalyticsProvider({
         try {
           // Initialize logger if not already initialized
           if (!logger) {
-            logger = await createClientObservability({
-              providers: {
-                console: { enabled: true },
-              },
-            });
+            logger = await createClientObservability();
           }
 
           const instance = await createNextJSClientAnalytics(config);

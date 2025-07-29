@@ -20,10 +20,11 @@ let qstashServer: QStashDevServer | null = null;
  */
 function getQStashCliPath(): string {
   // Try to find the QStash CLI in node_modules
+  const cwd = typeof process !== 'undefined' ? process.cwd() : '/tmp';
   const possiblePaths = [
     // From the testing package
     join(
-      process.cwd(),
+      cwd,
       'node_modules',
       '.pnpm',
       '@upstash+qstash-cli@2.22.3',
@@ -35,7 +36,7 @@ function getQStashCliPath(): string {
     ),
     // From the monorepo root
     join(
-      process.cwd(),
+      cwd,
       '..',
       '..',
       'node_modules',
@@ -156,6 +157,10 @@ export async function startQStashDevServer(port = 8081): Promise<QStashDevServer
   }
 
   // Set environment variables for tests
+  // In Vitest, process.env is handled via define config, but we ensure it's available
+  if (typeof globalThis.process === 'undefined') {
+    globalThis.process = { env: {} } as any;
+  }
   globalThis.process.env.QSTASH_URL = url;
   globalThis.process.env.QSTASH_TOKEN = token;
   globalThis.process.env.QSTASH_CURRENT_SIGNING_KEY = currentSigningKey;

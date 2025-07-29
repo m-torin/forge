@@ -2,7 +2,8 @@
 // Import this in your vitest.setup.ts file
 
 import { afterAll, afterEach, beforeAll, beforeEach, vi } from 'vitest';
-import { cleanupEnvironmentMocks, resetAllMocks, setupEnvironmentMocks } from '../mocks';
+import { resetAllMocks } from '../mocks';
+import { cleanupEnvironmentMocks, setupEnvironmentMocks } from '../mocks/internal/environment';
 
 // Suppress console errors in tests unless explicitly needed
 const originalError = console.error;

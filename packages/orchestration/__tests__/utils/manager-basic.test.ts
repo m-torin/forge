@@ -6,7 +6,7 @@ import {
 } from '../../src/shared/utils/manager';
 
 // Mock external dependencies
-vi.mock('@repo/observability/shared-env', () => ({
+vi.mock('@repo/observability', () => ({
   createServerObservability: vi.fn(() =>
     Promise.resolve({
       log: vi.fn(),
@@ -78,7 +78,7 @@ describe('orchestrationManager - Basic Coverage', () => {
     });
 
     test('should throw error when no provider specified and no default', () => {
-      expect(() => manager.getProvider()).toThrow('No provider specified');
+      expect(() => manager.getProvider()).toThrow('No provider specified and no default');
     });
 
     test('should list empty providers initially', () => {
@@ -86,7 +86,9 @@ describe('orchestrationManager - Basic Coverage', () => {
     });
 
     test('should throw error when unregistering non-existent provider', async () => {
-      await expect(manager.unregisterProvider('non-existent')).rejects.toThrow('Provider non-existent not found');
+      await expect(manager.unregisterProvider('non-existent')).rejects.toThrow(
+        'Provider non-existent not found',
+      );
     });
 
     test('should return empty health reports for no providers', async () => {
@@ -116,7 +118,9 @@ describe('orchestrationManager - Basic Coverage', () => {
         },
       };
 
-      expect(() => disabledManager.registerStep(stepDefinition)).toThrow('Step factory is not enabled');
+      expect(() => disabledManager.registerStep(stepDefinition)).toThrow(
+        'Step factory is not enabled',
+      );
     });
 
     test('should return undefined for getStep when factory disabled', () => {
@@ -155,11 +159,15 @@ describe('orchestrationManager - Basic Coverage', () => {
     });
 
     test('should throw error for createStepExecutionPlan when factory disabled', () => {
-      expect(() => disabledManager.createStepExecutionPlan(['step1'])).toThrow('Step factory is not enabled');
+      expect(() => disabledManager.createStepExecutionPlan(['step1'])).toThrow(
+        'Step factory is not enabled',
+      );
     });
 
     test('should throw error for executeStep when factory disabled', async () => {
-      await expect(disabledManager.executeStep('step-1', {}, 'workflow-exec-1')).rejects.toThrow('Step factory is not enabled');
+      await expect(disabledManager.executeStep('step-1', {}, 'workflow-exec-1')).rejects.toThrow(
+        'Step factory is not enabled',
+      );
     });
 
     test('should return empty array for exportSteps when factory disabled', () => {
@@ -176,29 +184,41 @@ describe('orchestrationManager - Basic Coverage', () => {
     test('should throw error when executing workflow without provider', async () => {
       const definition = { id: 'workflow-1', name: 'Test Workflow', version: '1.0.0', steps: [] };
 
-      await expect(manager.executeWorkflow(definition)).rejects.toThrow('No provider specified and no default');
+      await expect(manager.executeWorkflow(definition)).rejects.toThrow(
+        'No provider specified and no default',
+      );
     });
 
     test('should throw error when getting execution without provider', async () => {
-      await expect(manager.getExecution('exec-1')).rejects.toThrow('No provider specified and no default');
+      await expect(manager.getExecution('exec-1')).rejects.toThrow(
+        'No provider specified and no default',
+      );
     });
 
     test('should throw error when listing executions without provider', async () => {
-      await expect(manager.listExecutions('workflow-1')).rejects.toThrow('No provider specified and no default');
+      await expect(manager.listExecutions('workflow-1')).rejects.toThrow(
+        'No provider specified and no default',
+      );
     });
 
     test('should throw error when canceling execution without provider', async () => {
-      await expect(manager.cancelExecution('exec-1')).rejects.toThrow('No provider specified and no default');
+      await expect(manager.cancelExecution('exec-1')).rejects.toThrow(
+        'No provider specified and no default',
+      );
     });
 
     test('should throw error when scheduling workflow without provider', async () => {
       const definition = { id: 'workflow-1', name: 'Test Workflow', version: '1.0.0', steps: [] };
 
-      await expect(manager.scheduleWorkflow(definition)).rejects.toThrow('No provider specified and no default');
+      await expect(manager.scheduleWorkflow(definition)).rejects.toThrow(
+        'No provider specified and no default',
+      );
     });
 
     test('should throw error when unscheduling workflow without provider', async () => {
-      await expect(manager.unscheduleWorkflow('workflow-1')).rejects.toThrow('No provider specified and no default');
+      await expect(manager.unscheduleWorkflow('workflow-1')).rejects.toThrow(
+        'No provider specified and no default',
+      );
     });
   });
 

@@ -2,7 +2,7 @@
  * Type-safe auth factory with conditional feature support
  */
 
-import { logWarn } from '@repo/observability/shared-env';
+import { logWarn } from '@repo/observability';
 import type {
   AuthConfig,
   ConditionalAuthMethods,

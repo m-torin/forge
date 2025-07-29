@@ -8,29 +8,22 @@ import { google } from '@ai-sdk/google';
 
 // Create Google models with enhanced configuration
 const createGoogleModel = (modelName: string) => {
-  return google(modelName, {
-    // Default safety settings - can be overridden at runtime
-    safetySettings: [
-      {
-        category: 'HARM_CATEGORY_HATE_SPEECH',
-        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
-      },
-      {
-        category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
-      },
-      {
-        category: 'HARM_CATEGORY_HARASSMENT',
-        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
-      },
-      {
-        category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
-      },
-    ],
-    // Search grounding will be enabled via environment configuration
-    // Caching will be handled at the provider level
-  });
+  return google(modelName);
+  // Note: In AI SDK v5, safety settings and other provider options are now passed
+  // via providerOptions in the generateText/streamText call, not in the model constructor
+  // Example usage:
+  // generateText({
+  //   model: google('gemini-1.5-pro'),
+  //   providerOptions: {
+  //     google: {
+  //       safetySettings: [
+  //         { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_MEDIUM_AND_ABOVE' }
+  //       ]
+  //     }
+  //   }
+  // })
+  // Search grounding will be enabled via environment configuration
+  // Caching will be handled at the provider level
 };
 
 export const GOOGLE_MODELS = {

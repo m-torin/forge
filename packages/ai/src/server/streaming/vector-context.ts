@@ -139,15 +139,12 @@ async function enrichMessagesWithVectorContext(
       vectorContext: relevantContext,
     };
   } catch (error) {
-    logError(
-      'Error enriching messages with vector context',
-      error instanceof Error ? error : new Error(String(error)),
-      {
-        operation: 'vector_context_enrichment',
-        messageCount: messages.length,
-        searchQuery: searchQuery.slice(0, 100),
-      },
-    );
+    logError('Error enriching messages with vector context', {
+      operation: 'vector_context_enrichment',
+      messageCount: messages.length,
+      searchQuery: searchQuery.slice(0, 100),
+      error: error instanceof Error ? error : new Error(String(error)),
+    });
     return { enrichedMessages: messages, vectorContext: [] };
   }
 }
@@ -188,14 +185,11 @@ export function createVectorChatMiddleware(config: VectorStreamConfig) {
             metadata: result.metadata,
           }));
       } catch (error) {
-        logError(
-          'Error searching vector context',
-          error instanceof Error ? error : new Error(String(error)),
-          {
-            operation: 'vector_context_search',
-            query: query.slice(0, 100),
-          },
-        );
+        logError('Error searching vector context', {
+          operation: 'vector_context_search',
+          query: query.slice(0, 100),
+          error: error instanceof Error ? error : new Error(String(error)),
+        });
         return [];
       }
     },
@@ -250,14 +244,11 @@ export async function streamWithProgressiveContext(
             onContextUpdate(context);
           }
         } catch (error) {
-          logError(
-            'Error in progressive context search',
-            error instanceof Error ? error : new Error(String(error)),
-            {
-              operation: 'progressive_context_search',
-              content: content.slice(0, 100),
-            },
-          );
+          logError('Error in progressive context search', {
+            operation: 'progressive_context_search',
+            content: content.slice(0, 100),
+            error: error instanceof Error ? error : new Error(String(error)),
+          });
         }
       })();
     }

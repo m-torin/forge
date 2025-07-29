@@ -1,4 +1,4 @@
-import { logWarn } from '@repo/observability/shared-env';
+import { logWarn } from '@repo/observability';
 
 export class AIMiddlewareError extends Error {
   constructor(

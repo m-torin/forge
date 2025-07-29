@@ -5,7 +5,31 @@
  * Provides both utility functions and a helper class for data streaming
  */
 
-import type { DataStreamWriter } from 'ai';
+import type { UIMessageStreamWriter } from 'ai';
+
+// AI SDK v5 compatibility layer - DataStreamWriter interface adapter
+export interface DataStreamWriter {
+  writeData(data: any): void;
+  writeMessageAnnotation?(data: any): void;
+}
+
+// Convert UIMessageStreamWriter to DataStreamWriter interface
+export function createDataStreamAdapter(writer: UIMessageStreamWriter): DataStreamWriter {
+  return {
+    writeData(data: any) {
+      writer.write({
+        type: 'data-custom',
+        data: data,
+      } as any);
+    },
+    writeMessageAnnotation(data: any) {
+      writer.write({
+        type: 'metadata',
+        metadata: data,
+      } as any);
+    },
+  };
+}
 
 export type DataStreamMessage =
   | { type: 'kind'; content: string }

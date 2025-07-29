@@ -16,6 +16,10 @@ export const env = createEnv({
     UPSTASH_VECTOR_REST_TOKEN: z.string().optional(),
     UPSTASH_VECTOR_NAMESPACE: z.string().optional(),
 
+    // Upstash Redis (for rate limiting)
+    UPSTASH_REDIS_REST_URL: z.string().url().optional(),
+    UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
+
     // MCP Configuration
     MCP_SERVERS: z.string().optional(),
     MCP_FILESYSTEM_PATH: z.string().optional(),
@@ -62,6 +66,8 @@ export const env = createEnv({
     UPSTASH_VECTOR_REST_URL: process.env.UPSTASH_VECTOR_REST_URL,
     UPSTASH_VECTOR_REST_TOKEN: process.env.UPSTASH_VECTOR_REST_TOKEN,
     UPSTASH_VECTOR_NAMESPACE: process.env.UPSTASH_VECTOR_NAMESPACE,
+    UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
+    UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
     MCP_SERVERS: process.env.MCP_SERVERS,
     MCP_FILESYSTEM_PATH: process.env.MCP_FILESYSTEM_PATH,
     MCP_SQLITE_DB: process.env.MCP_SQLITE_DB,
@@ -100,6 +106,8 @@ export function safeEnv() {
     UPSTASH_VECTOR_REST_URL: process.env.UPSTASH_VECTOR_REST_URL || '',
     UPSTASH_VECTOR_REST_TOKEN: process.env.UPSTASH_VECTOR_REST_TOKEN || '',
     UPSTASH_VECTOR_NAMESPACE: process.env.UPSTASH_VECTOR_NAMESPACE || '',
+    UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL || '',
+    UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN || '',
     MCP_SERVERS: process.env.MCP_SERVERS || '',
     MCP_FILESYSTEM_PATH: process.env.MCP_FILESYSTEM_PATH || '',
     MCP_SQLITE_DB: process.env.MCP_SQLITE_DB || '',

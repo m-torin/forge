@@ -1,4 +1,4 @@
-import { logError } from '@repo/observability/shared-env';
+import { logError } from '@repo/observability';
 
 export interface TrainingData {
   feedbacks: {

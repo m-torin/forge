@@ -6,13 +6,7 @@
 import { logError, logWarn } from '@repo/observability/server/next';
 
 import type { CoreMessage, LanguageModel } from 'ai';
-import {
-  createDataStreamResponse,
-  generateObject,
-  generateText,
-  streamObject,
-  streamText,
-} from 'ai';
+import { generateObject, generateText, streamObject, streamText } from 'ai';
 import { NextRequest, NextResponse } from 'next/server';
 import { createAnthropicWithReasoning } from '../providers/anthropic';
 
@@ -21,6 +15,8 @@ import { createAnthropicWithReasoning } from '../providers/anthropic';
  */
 export interface AIRouteConfig {
   model?: LanguageModel;
+  maxOutputTokens?: number;
+  /** @deprecated Use maxOutputTokens instead */
   maxTokens?: number;
   temperature?: number;
   allowedOrigins?: string[];
@@ -37,7 +33,14 @@ export function createChatRoute(config: AIRouteConfig = {}) {
   return async function POST(req: NextRequest) {
     try {
       const body = await req.json();
-      const { messages, model: requestModel, maxTokens, temperature, stream = true } = body;
+      const {
+        messages,
+        model: requestModel,
+        maxTokens,
+        maxOutputTokens,
+        temperature,
+        stream = true,
+      } = body;
 
       if (!messages || !Array.isArray(messages)) {
         return NextResponse.json({ error: 'Messages array is required' }, { status: 400 });
@@ -49,16 +52,17 @@ export function createChatRoute(config: AIRouteConfig = {}) {
       const options = {
         model,
         messages: messages as CoreMessage[],
-        maxTokens: maxTokens || config.maxTokens || 1000,
+        maxOutputTokens:
+          maxOutputTokens || maxTokens || config.maxOutputTokens || config.maxTokens || 1000,
         temperature: temperature || config.temperature || 0.7,
       };
 
       if (stream && config.enableStreaming !== false) {
         // Use AI SDK's streamText function
-        const result = await streamText(options);
+        const result = streamText(options);
 
         // Return streaming response using AI SDK's helper
-        return result.toDataStreamResponse();
+        return result.toTextStreamResponse();
       } else {
         // Use AI SDK's generateText function for non-streaming
         const result = await generateText(options);
@@ -70,8 +74,9 @@ export function createChatRoute(config: AIRouteConfig = {}) {
         });
       }
     } catch (error) {
-      logError('Chat route error', error instanceof Error ? error : new Error(String(error)), {
+      logError('Chat route error', {
         operation: 'ai_chat_route',
+        error: error instanceof Error ? error : new Error(String(error)),
       });
       return NextResponse.json({ error: 'Failed to process chat request' }, { status: 500 });
     }
@@ -87,7 +92,7 @@ export function createGenerateRoute(
   return async function POST(req: NextRequest) {
     try {
       const body = await req.json();
-      const { prompt, system, model: requestModel, maxTokens, temperature } = body;
+      const { prompt, system, model: requestModel, maxTokens, maxOutputTokens, temperature } = body;
 
       if (!prompt) {
         return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
@@ -99,7 +104,8 @@ export function createGenerateRoute(
         model,
         prompt,
         system,
-        maxTokens: maxTokens || config.maxTokens || 1000,
+        maxOutputTokens:
+          maxOutputTokens || maxTokens || config.maxOutputTokens || config.maxTokens || 1000,
         temperature: temperature || config.temperature || 0.7,
       });
 
@@ -109,8 +115,9 @@ export function createGenerateRoute(
         finishReason: result.finishReason,
       });
     } catch (error) {
-      logError('Generate route error', error instanceof Error ? error : new Error(String(error)), {
+      logError('Generate route error', {
         operation: 'ai_generate_route',
+        error: error instanceof Error ? error : new Error(String(error)),
       });
       return NextResponse.json({ error: 'Failed to generate text' }, { status: 500 });
     }
@@ -124,7 +131,15 @@ export function createObjectRoute(config: AIRouteConfig = {}) {
   return async function POST(req: NextRequest) {
     try {
       const body = await req.json();
-      const { prompt, schema, model: requestModel, maxTokens, temperature, stream = false } = body;
+      const {
+        prompt,
+        schema,
+        model: requestModel,
+        maxTokens,
+        maxOutputTokens,
+        temperature,
+        stream = false,
+      } = body;
 
       if (!prompt || !schema) {
         return NextResponse.json({ error: 'Prompt and schema are required' }, { status: 400 });
@@ -136,12 +151,13 @@ export function createObjectRoute(config: AIRouteConfig = {}) {
         model,
         prompt,
         schema,
-        maxTokens: maxTokens || config.maxTokens || 1000,
+        maxOutputTokens:
+          maxOutputTokens || maxTokens || config.maxOutputTokens || config.maxTokens || 1000,
         temperature: temperature || config.temperature || 0.7,
       };
 
       if (stream && config.enableStreaming !== false) {
-        const result = await streamObject(options);
+        const result = streamObject(options);
         return result.toTextStreamResponse();
       } else {
         const result = await generateObject(options);
@@ -152,13 +168,10 @@ export function createObjectRoute(config: AIRouteConfig = {}) {
         });
       }
     } catch (error) {
-      logError(
-        'Object generation route error',
-        error instanceof Error ? error : new Error(String(error)),
-        {
-          operation: 'ai_generate_object_route',
-        },
-      );
+      logError('Object generation route error', {
+        operation: 'ai_generate_object_route',
+        error: error instanceof Error ? error : new Error(String(error)),
+      });
       return NextResponse.json({ error: 'Failed to generate object' }, { status: 500 });
     }
   };
@@ -171,7 +184,14 @@ export function createStreamRoute(config: AIRouteConfig = {}) {
   return async function POST(req: NextRequest) {
     try {
       const body = await req.json();
-      const { messages, model: requestModel, maxTokens, temperature, tools } = body;
+      const {
+        messages,
+        model: requestModel,
+        maxTokens,
+        maxOutputTokens,
+        temperature,
+        tools,
+      } = body;
 
       if (!messages || !Array.isArray(messages)) {
         return NextResponse.json({ error: 'Messages array is required' }, { status: 400 });
@@ -179,61 +199,21 @@ export function createStreamRoute(config: AIRouteConfig = {}) {
 
       const model = requestModel || config.model || createAnthropicWithReasoning().model;
 
-      const result = await streamText({
+      const result = streamText({
         model,
         messages: messages as CoreMessage[],
-        maxTokens: maxTokens || config.maxTokens || 1000,
+        maxOutputTokens:
+          maxOutputTokens || maxTokens || config.maxOutputTokens || config.maxTokens || 1000,
         temperature: temperature || config.temperature || 0.7,
         tools: config.enableTools ? tools : undefined,
       });
 
-      // Use AI SDK's data stream response for structured streaming
-      return createDataStreamResponse({
-        execute: dataStream => {
-          result.fullStream.pipeTo(
-            new WritableStream({
-              write(chunk) {
-                if (chunk.type === 'text-delta') {
-                  dataStream.writeData({
-                    type: 'text',
-                    content: chunk.textDelta,
-                  });
-                } else if (chunk.type === 'tool-call') {
-                  dataStream.writeData({
-                    type: 'tool-call',
-                    content: {
-                      toolCallId: chunk.toolCallId,
-                      toolName: chunk.toolName,
-                      args: chunk.args,
-                    },
-                  });
-                } else if (chunk.type === 'tool-result') {
-                  dataStream.writeData({
-                    type: 'tool-result',
-                    content: {
-                      toolCallId: chunk.toolCallId,
-                      toolName: chunk.toolName,
-                      args: chunk.args,
-                      result: chunk.result,
-                    },
-                  });
-                } else if (chunk.type === 'finish') {
-                  dataStream.writeData({
-                    type: 'finish',
-                    content: {
-                      usage: chunk.usage,
-                      finishReason: chunk.finishReason,
-                    },
-                  });
-                }
-              },
-            }),
-          );
-        },
-      });
+      // Use AI SDK's text streaming response
+      return result.toTextStreamResponse();
     } catch (error) {
-      logError('Stream route error', error instanceof Error ? error : new Error(String(error)), {
+      logError('Stream route error', {
         operation: 'ai_stream_route',
+        error: error instanceof Error ? error : new Error(String(error)),
       });
       return NextResponse.json({ error: 'Failed to create stream' }, { status: 500 });
     }
@@ -259,7 +239,7 @@ export function createAIRoutes(
     // Streaming with data stream
     'POST /api/stream': createStreamRoute(config),
 
-    // Legacy chat endpoint for backward compatibility
+    /** @deprecated Use 'POST /api/chat' instead */
     'POST /api/ai/chat': createChatRoute(config),
   };
 }
@@ -284,6 +264,7 @@ export function createVectorChatRoute(
         enableVectorSearch = true,
         model: requestModel,
         maxTokens,
+        maxOutputTokens,
         temperature,
       } = body;
 
@@ -335,22 +316,20 @@ export function createVectorChatRoute(
 
       const model = requestModel || config.model || createAnthropicWithReasoning().model;
 
-      const result = await streamText({
+      const result = streamText({
         model,
         messages: enhancedMessages as CoreMessage[],
-        maxTokens: maxTokens || config.maxTokens || 1000,
+        maxOutputTokens:
+          maxOutputTokens || maxTokens || config.maxOutputTokens || config.maxTokens || 1000,
         temperature: temperature || config.temperature || 0.7,
       });
 
-      return result.toDataStreamResponse();
+      return result.toTextStreamResponse();
     } catch (error) {
-      logError(
-        'Vector chat route error',
-        error instanceof Error ? error : new Error(String(error)),
-        {
-          operation: 'ai_vector_chat_route',
-        },
-      );
+      logError('Vector chat route error', {
+        operation: 'ai_vector_chat_route',
+        error: error instanceof Error ? error : new Error(String(error)),
+      });
       return NextResponse.json({ error: 'Failed to process vector chat request' }, { status: 500 });
     }
   };
@@ -366,7 +345,7 @@ export function setupAIRoutes(
 
   return createAIRoutes({
     model: defaultModel.model,
-    maxTokens: 1000,
+    maxOutputTokens: 1000,
     temperature: 0.7,
     enableStreaming: true,
     enableTools: true,

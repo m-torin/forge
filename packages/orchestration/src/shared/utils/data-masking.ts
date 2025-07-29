@@ -210,7 +210,7 @@ export const safeConsole = {
 /**
  * Create a safe logger instance
  */
-export function _createSafeLogger(prefix?: string) {
+export function createSafeLogger(prefix?: string) {
   const logPrefix = prefix ? `[${prefix}] ` : '';
 
   return {
@@ -243,7 +243,7 @@ export function _createSafeLogger(prefix?: string) {
 /**
  * Wrap a function to automatically mask any errors it throws
  */
-export function _withMaskedErrors<T extends (...args: unknown[]) => unknown>(
+export function withMaskedErrors<T extends (...args: unknown[]) => unknown>(
   fn: T,
   errorPrefix?: string,
 ): T {
@@ -264,3 +264,5 @@ export function _withMaskedErrors<T extends (...args: unknown[]) => unknown>(
     }
   }) as T;
 }
+
+// Functions are already exported above

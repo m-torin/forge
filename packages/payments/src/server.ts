@@ -1,7 +1,7 @@
 import 'server-only';
 import Stripe from 'stripe';
 
-import { logWarn } from '@repo/observability/shared-env';
+import { logWarn } from '@repo/observability';
 import { safeEnv } from '../env';
 
 let stripeInstance: Stripe | null = null;

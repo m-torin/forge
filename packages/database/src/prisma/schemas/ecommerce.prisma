@@ -1,0 +1,700 @@
+// ecommerce.prisma - E-commerce and Product Information Management Models
+
+//==============================================================================
+// PRODUCT INFORMATION MANAGEMENT (PIM) MODELS
+//==============================================================================
+
+model Product {
+  // Primary identification fields
+  id   String @id @default(cuid())
+  name String
+  slug String @unique
+
+  // Product details
+  category String
+  status   ProductStatus @default(DRAFT)
+  brand    String?
+  price    Float?
+  currency String?       @default("USD")
+  type     ProductType   @default(PHYSICAL)
+
+  // Variant-specific pricing (when type = VARIANT)
+  variantPrice   Decimal? @db.Decimal(10, 2)
+  compareAtPrice Decimal? @db.Decimal(10, 2)
+
+  // Physical properties (weight, dimensions, etc.)
+  physicalProperties Json? @db.JsonB // Weight, dimensions, and other physical attributes
+
+  // Variant-specific display properties (when type = VARIANT)
+  displayOrder Int     @default(0)
+  isDefault    Boolean @default(false)
+
+  // Content and metadata
+  copy       Json @db.JsonB
+  attributes Json @default("{}") @db.JsonB
+
+  // Hierarchical relationship
+  parentId String?
+  parent   Product?  @relation("ProductHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children Product[] @relation("ProductHierarchy")
+
+  // Relationships
+  soldBy            PdpJoin[]
+  collections       Collection[]         @relation("ProductCollection")
+  taxonomies        Taxonomy[]           @relation("ProductTaxonomy")
+  categories        ProductCategory[]    @relation("ProductCategories")
+  media             Media[]              @relation("ProductMedia")
+  favorites         FavoriteJoin[]       @relation("ProductFavorites")
+  registries        RegistryItem[]       @relation("RegistryProduct")
+  fandoms           Fandom[]             @relation("ProductFandom")
+  series            Series[]             @relation("ProductSeries")
+  stories           Story[]              @relation("ProductStory")
+  locations         Location[]           @relation("ProductLocation")
+  casts             Cast[]               @relation("ProductCast")
+  cartItems         CartItem[]
+  cartItemVariants  CartItem[]           @relation("CartItemVariant")
+  orderItems        OrderItem[]
+  orderItemVariants OrderItem[]          @relation("OrderItemVariant")
+  inventory         Inventory[]
+  inventoryVariants Inventory[]          @relation("InventoryVariant")
+  identifiers       ProductIdentifiers[]
+
+  // Metadata
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  createdBy    String?
+  deletedAt    DateTime?
+  deletedById  String?
+  deletedBy    User?     @relation("DeletedProducts", fields: [deletedById], references: [id], onDelete: SetNull)
+  aiGenerated  Boolean   @default(false)
+  aiConfidence Float?
+  aiSources    String[]  @default([])
+
+  // Guest Actions relationships
+  reviews Review[] @relation("ProductReviews")
+
+  @@index([slug])
+  @@index([category])
+  @@index([brand])
+  @@index([parentId])
+  @@index([category, status]) // For filtering products by category and status
+  @@index([status, createdAt]) // For filtered chronological queries
+  @@map("product")
+}
+
+model PdpJoin {
+  // Primary identification fields
+  id String @id @default(cuid())
+
+  // Junction fields
+  productId    String
+  brandId      String
+  canonicalUrl String  @unique
+  iframeUrl    String?
+
+  // Scraping metadata
+  tempMediaUrls String?   @db.Text
+  lastScanned   DateTime? @db.Date
+
+  // Content and metadata
+  copy Json @db.JsonB
+
+  // Relationships
+  product            Product              @relation(fields: [productId], references: [id], onDelete: Cascade)
+  brand              Brand                @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  taxonomies         Taxonomy[]           @relation("PdpJoinTaxonomy")
+  locations          Location[]           @relation("PdpJoinLocation")
+  collections        Collection[]         @relation("PdpJoinCollection")
+  media              Media[]              @relation("PdpJoinMedia")
+  manufacturerBrands Brand[]              @relation("PdpJoinManufacturerBrands")
+  identifiers        ProductIdentifiers[]
+  urls               PdpUrl[]
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productId, brandId])
+  @@index([productId])
+  @@index([brandId])
+  @@index([canonicalUrl])
+}
+
+model PdpUrl {
+  // Primary identification fields
+  id   String @id @default(cuid())
+  name String
+
+  // URL details
+  url       String     @unique
+  pdpJoinId String
+  urlType   PdpUrlType @default(LEGACY)
+  isActive  Boolean    @default(true)
+
+  // Content and metadata
+  copy Json @db.JsonB
+
+  // Relationships
+  pdpJoin PdpJoin @relation(fields: [pdpJoinId], references: [id], onDelete: Cascade)
+
+  // Metadata
+  createdAt DateTime @default(now())
+
+  @@index([url, isActive])
+  @@index([pdpJoinId, urlType])
+  @@map("pdp_urls")
+}
+
+model ProductIdentifiers {
+  // Primary identification fields
+  id String @id @default(cuid())
+
+  // Polymorphic relationships - only one should be set
+  productId    String?
+  pdpJoinId    String?
+  collectionId String?
+  brandId      String?
+
+  // Core retail identifiers
+  mpn    String? // Manufacturer Part Number
+  upcA   String? @unique // UPC-A (12 digits, preserve leading zeros)
+  ean13  String? @unique // EAN-13 (13 digits, preserve leading zeros)
+  gs1128 String? @unique // GS1-128 barcode
+  upcE   String? @unique // UPC-E (8 digits, preserve leading zeros)
+  ean8   String? @unique // EAN-8 (8 digits, preserve leading zeros)
+
+  // Book identifiers
+  isbn10 String? // ISBN-10 (preserve leading zeros, non-unique for variants)
+  isbn13 String? // ISBN-13 (preserve leading zeros, non-unique for variants)
+
+  // Platform-specific identifiers
+  asin String? @unique // Amazon Standard Identification Number
+  tcin String? @unique // Target.com Item Number
+  dpci String? @unique // Target Department-Class-Item number
+
+  // Media/App identifiers
+  themoviedbId   String? // The Movie DB ID (non-unique, multiple products can reference)
+  hardcoverappId String? @unique // HardcoverApp unique ID
+
+  // Additional barcode types
+  itf14             String? @unique // ITF-14 (case/carton codes)
+  customBarcode     String? // Flexible field for any other barcode type
+  customBarcodeType String? // Type description for custom barcode
+
+  // Primary identifier tracking
+  primaryIdentifierField String? // Which field is the primary identifier (e.g., "upcA", "ean13", "asin")
+
+  // Additional metadata
+  source     String? // Data source (amazon, target, manual, import, etc.)
+  verifiedAt DateTime? // Last verification timestamp
+  confidence Json?     @default("{}") @db.JsonB // Confidence scores per identifier
+  notes      String? // Additional notes about identifiers
+
+  // Relationships
+  product    Product?    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  pdpJoin    PdpJoin?    @relation(fields: [pdpJoinId], references: [id], onDelete: Cascade)
+  collection Collection? @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  brand      Brand?      @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productId, pdpJoinId, collectionId, brandId])
+  // Essential indexes for lookup - only keep high-use identifiers
+  @@index([upcA])
+  @@index([ean13])
+  @@index([asin])
+  @@index([productId])
+  @@index([pdpJoinId])
+  @@index([collectionId])
+  @@index([brandId])
+  @@map("product_identifiers")
+}
+
+//==============================================================================
+// E-COMMERCE CONTENT MODELS (ALPHABETICAL ORDER)
+//==============================================================================
+
+model Brand {
+  // Primary identification fields
+  id   String @id @default(cuid())
+  name String
+  slug String @unique
+
+  // Brand details
+  type    BrandType     @default(OTHER)
+  status  ContentStatus @default(DRAFT)
+  baseUrl String? // Base URL for the brand's website
+
+  // Content and metadata
+  copy Json @db.JsonB
+
+  // Hierarchical relationship
+  parentId     String?
+  parent       Brand?  @relation("BrandHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children     Brand[] @relation("BrandHierarchy")
+  displayOrder Int     @default(0)
+
+  // Relationships
+  products             PdpJoin[] // Brands where this brand is the retailer
+  collections          Collection[]          @relation("BrandToCollection")
+  media                Media[]
+  jrFindReplaceRejects JrFindReplaceReject[]
+  jollyRoger           JollyRoger?
+  identifiers          ProductIdentifiers[]
+  manufacturedProducts PdpJoin[]             @relation("PdpJoinManufacturerBrands")
+
+  // Metadata
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("DeletedBrands", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  @@index([slug])
+  @@index([parentId])
+}
+
+model Cast {
+  // Primary identification fields
+  id   String @id @default(cuid())
+  name String
+  slug String @unique
+
+  // Cast details
+  isFictional Boolean @default(true)
+
+  // Content and metadata
+  copy Json @db.JsonB
+
+  // Relationships
+  products             Product[]             @relation("ProductCast")
+  jrFindReplaceRejects JrFindReplaceReject[]
+
+  // Metadata
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("DeletedCasts", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  @@index([slug])
+}
+
+model Collection {
+  // Primary identification fields
+  id   String @id @default(cuid())
+  name String
+  slug String @unique
+
+  // Collection details
+  type   CollectionType @default(OTHER)
+  status ContentStatus  @default(DRAFT)
+  userId String?
+
+  // Content and metadata
+  copy Json @db.JsonB
+
+  // Hierarchical structure
+  parentId String?
+  parent   Collection?  @relation("CollectionHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children Collection[] @relation("CollectionHierarchy")
+
+  // Relationships
+  user        User?                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products    Product[]            @relation("ProductCollection")
+  brands      Brand[]              @relation("BrandToCollection")
+  taxonomies  Taxonomy[]           @relation("CollectionToTaxonomy")
+  categories  ProductCategory[]    @relation("CollectionToCategory")
+  pdpJoins    PdpJoin[]            @relation("PdpJoinCollection")
+  media       Media[]
+  favorites   FavoriteJoin[]
+  registries  RegistryItem[]
+  identifiers ProductIdentifiers[]
+
+  // Metadata
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("DeletedCollections", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  @@index([slug])
+  @@index([userId])
+  @@index([parentId])
+}
+
+model Fandom {
+  // Primary identification fields
+  id   String @id @default(cuid())
+  name String
+  slug String @unique
+
+  // Fandom details
+  isFictional Boolean @default(true)
+
+  // Content and metadata
+  copy Json @db.JsonB
+
+  // Relationships
+  series               Series[]
+  stories              Story[] // For standalone stories not part of a series
+  products             Product[]             @relation("ProductFandom")
+  locations            Location[]            @relation("FandomToLocation")
+  jrFindReplaceRejects JrFindReplaceReject[]
+
+  // Metadata
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("DeletedFandoms", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  @@index([slug])
+}
+
+model Location {
+  // Primary identification fields
+  id   String @id @default(cuid())
+  name String
+  slug String @unique
+
+  // Location details
+  locationType LocationType @default(PLACE)
+  lodgingType  LodgingType? // Only populated when locationType is LODGING
+  isFictional  Boolean      @default(true)
+
+  // Content and metadata
+  copy Json @db.JsonB
+
+  // Relationships
+  products             Product[]             @relation("ProductLocation")
+  fandoms              Fandom[]              @relation("FandomToLocation")
+  pdpJoins             PdpJoin[]             @relation("PdpJoinLocation")
+  taxonomies           Taxonomy[]            @relation("TaxonomyLocation")
+  jrFindReplaceRejects JrFindReplaceReject[]
+
+  // Metadata
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("DeletedLocations", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  @@index([slug])
+}
+
+model Media {
+  // Primary identification fields
+  id String @id @default(cuid())
+
+  // Media details
+  url       String
+  altText   String?
+  type      MediaType @default(IMAGE)
+  width     Int?
+  height    Int?
+  size      Int? // File size in bytes
+  mimeType  String?
+  sortOrder Int       @default(0)
+  userId    String?
+
+  // Content and metadata
+  copy Json @db.JsonB
+
+  // Entity relationships (only one should be set)
+  articleId    String?
+  brandId      String?
+  collectionId String?
+  productId    String?
+  taxonomyId   String?
+  categoryId   String?
+  pdpJoinId    String?
+
+  // Relationships
+  user       User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  article    Article?         @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  brand      Brand?           @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  collection Collection?      @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  product    Product?         @relation("ProductMedia", fields: [productId], references: [id], onDelete: SetNull)
+  taxonomy   Taxonomy?        @relation(fields: [taxonomyId], references: [id], onDelete: SetNull)
+  category   ProductCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  pdpJoin    PdpJoin?         @relation("PdpJoinMedia", fields: [pdpJoinId], references: [id], onDelete: SetNull)
+
+  // Metadata
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("DeletedMedia", fields: [deletedById], references: [id], onDelete: SetNull)
+  review      Review?   @relation("ReviewMedia", fields: [reviewId], references: [id], onDelete: Cascade)
+  reviewId    String?
+
+  @@index([userId])
+  @@index([articleId])
+  @@index([brandId])
+  @@index([collectionId])
+  @@index([productId])
+  @@index([taxonomyId])
+  @@index([reviewId])
+  @@index([categoryId])
+  @@index([pdpJoinId])
+}
+
+model ProductCategory {
+  // Primary identification fields
+  id   String @id @default(cuid())
+  name String
+  slug String @unique
+
+  // Category details
+  status ContentStatus @default(PUBLISHED)
+
+  // Content and metadata
+  copy Json @db.JsonB
+
+  // Hierarchical relationship
+  parentId     String?
+  parent       ProductCategory?  @relation("ProductCategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children     ProductCategory[] @relation("ProductCategoryHierarchy")
+  displayOrder Int               @default(0)
+
+  // Relationships
+  products    Product[]    @relation("ProductCategories")
+  collections Collection[] @relation("CollectionToCategory")
+  media       Media[]
+
+  // Metadata
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("DeletedProductCategories", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  @@index([slug])
+  @@index([parentId])
+}
+
+model Series {
+  // Primary identification fields
+  id   String @id @default(cuid())
+  name String
+  slug String @unique
+
+  // Series details
+  fandomId     String?  // Changed from String to String?
+  displayOrder Int     @default(0)
+  isFictional  Boolean @default(true)
+
+  // Content and metadata
+  copy Json @db.JsonB
+
+  // Relationships
+  fandom               Fandom?               @relation(fields: [fandomId], references: [id], onDelete: SetNull)  // Changed from required to optional
+  stories              Story[]
+  products             Product[]             @relation("ProductSeries")
+  jrFindReplaceRejects JrFindReplaceReject[]
+
+  // Metadata
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("DeletedSeries", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  @@index([slug])
+  @@index([fandomId])
+}
+
+model Story {
+  // Primary identification fields
+  id   String @id @default(cuid())
+  name String
+  slug String @unique
+
+  // Story details - Story can belong to either a Series or directly to a Fandom
+  seriesId     String?
+  fandomId     String?
+  displayOrder Int     @default(0)
+  isFictional  Boolean @default(true)
+
+  // Content and metadata
+  copy Json @db.JsonB
+
+  // Relationships
+  series               Series?               @relation(fields: [seriesId], references: [id], onDelete: SetNull)
+  fandom               Fandom?               @relation(fields: [fandomId], references: [id], onDelete: SetNull)
+  products             Product[]             @relation("ProductStory")
+  jrFindReplaceRejects JrFindReplaceReject[]
+
+  // Metadata
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("DeletedStories", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  @@index([slug])
+  @@index([seriesId])
+  @@index([fandomId])
+}
+
+model Taxonomy {
+  // Primary identification fields
+  id   String @id @default(cuid())
+  name String
+  slug String @unique
+
+  // Taxonomy details
+  type   TaxonomyType  @default(TAG)
+  status ContentStatus @default(DRAFT)
+
+  // Content and metadata
+  copy Json @db.JsonB
+
+  // Hierarchical relationship
+  parentId     String?
+  parent       Taxonomy?  @relation("TaxonomyHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children     Taxonomy[] @relation("TaxonomyHierarchy")
+  displayOrder Int        @default(0)
+  level        Int        @default(0)
+  path         String? // Computed hierarchy path like "category/subcategory/item"
+
+  // Relationships
+  products             Product[]             @relation("ProductTaxonomy")
+  collections          Collection[]          @relation("CollectionToTaxonomy")
+  pdpJoins             PdpJoin[]             @relation("PdpJoinTaxonomy")
+  locations            Location[]            @relation("TaxonomyLocation")
+  media                Media[]
+  jrFindReplaceRejects JrFindReplaceReject[]
+
+  // Metadata
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("DeletedTaxonomies", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  @@index([slug])
+  @@index([parentId])
+}
+
+//==============================================================================
+// JOLLYROGER MODELS
+//==============================================================================
+
+model JollyRoger {
+  // Primary identification fields
+  id String @id @default(cuid())
+
+  // JollyRoger details
+  canChart       Boolean       @default(true)
+  chartingMethod JrChartMethod @default(SITEMAP)
+  brandId        String?       @unique
+
+  // URL discovery configuration
+  sitemaps       String? @db.Text
+  gridUrls       String? @db.Text
+  pdpUrlPatterns Json?   @db.JsonB // PostgreSQL JSONB for indexing
+  // Format: {
+  //   "mustInclude": ["product", "item"],
+  //   "cannotInclude": ["category", "search"],
+  //   "mustIncludeOneOf": ["/p/", "/product/", "/item/"]
+  // }
+
+  // Relationships
+  brand           Brand?             @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  extractionRules JrExtractionRule[]
+
+  @@index([brandId])
+  @@map("jolly_roger")
+}
+
+model JrExtractionRule {
+  // Primary identification fields
+  id String @id @default(cuid())
+
+  // Rule details
+  jollyRogerId String
+  fieldName    JrChartRuleFor
+  isActive     Boolean        @default(true)
+
+  // PostgreSQL JSONB - indexable and queryable
+  selectors Json @default("[]") @db.JsonB
+  // Format: [
+  //   {
+  //     "priority": 1,
+  //     "source": "any",
+  //     "type": "css",
+  //     "selector": ".price-now, .product-price",
+  //     "attribute": null
+  //   },
+  //   {
+  //     "priority": 2,
+  //     "source": "playwright",
+  //     "type": "xpath",
+  //     "selector": "//meta[@property='product:price:amount']",
+  //     "attribute": "content"
+  //   },
+  //   {
+  //     "priority": 3,
+  //     "source": "scraping_bee",
+  //     "type": "json_path",
+  //     "selector": "$.product.price",
+  //     "attribute": null
+  //   }
+  // ]
+
+  // Validation rules
+  mustContain   String? @db.VarChar(255)
+  cannotContain String? @db.VarChar(255)
+
+  // Metadata tracking
+  lastSuccessfulSelector Json?     @db.JsonB // Track which selector worked last
+  // Format: {
+  //   "selector": ".price-now",
+  //   "source": "any",
+  //   "type": "css",
+  //   "timestamp": "2024-01-15T10:30:00Z"
+  // }
+  successRate            Float?
+  lastTestedAt           DateTime?
+  notes                  String?   @db.Text
+
+  // Relationships
+  jollyRoger       JollyRoger            @relation(fields: [jollyRogerId], references: [id], onDelete: Cascade)
+  findReplaceRules JrFindReplaceReject[]
+
+  @@unique([jollyRogerId, fieldName])
+  @@index([jollyRogerId])
+  @@index([fieldName])
+  // PostgreSQL GIN index for JSON queries
+  @@index([selectors], type: Gin)
+  @@map("jr_extraction_rules")
+}
+
+model JrFindReplaceReject {
+  // Primary identification fields
+  id String @id @default(cuid())
+
+  // Rule details
+  lookFor     String       @db.VarChar(255)
+  replaceWith String?      @db.VarChar(255)
+  ruleAction  JrRuleAction @default(MATCH_ON)
+  isRegex     Boolean      @default(false)
+  regexFlags  String?      @db.VarChar(10) // regex flags like 'gi'
+  priority    Int          @default(100)
+
+  // Relationships
+  brands          Brand[]
+  locations       Location[]
+  taxonomies      Taxonomy[]
+  stories         Story[]
+  fandoms         Fandom[]
+  series          Series[]
+  casts           Cast[]
+  extractionRules JrExtractionRule[]
+
+  @@map("JrFindReplace")
+}

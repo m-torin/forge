@@ -25,11 +25,8 @@ import {
   updateSuccessRate,
 } from '../../src/shared/utils/workflow-utilities';
 
-// Mock server-only to prevent errors
-vi.mock('server-only', () => ({}));
-
 // Mock external dependencies
-vi.mock('@repo/observability/shared-env', () => ({
+vi.mock('@repo/observability', () => ({
   createServerObservability: vi.fn(() => ({
     log: vi.fn(),
     error: vi.fn(),

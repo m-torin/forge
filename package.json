@@ -5,7 +5,8 @@
     "build": "turbo build --parallel --concurrency=8",
     "build:affected": "turbo build --filter='...[origin/main]' --concurrency=8",
     "build:doppler": "turbo build:doppler --concurrency=8",
-    "coverage": "node scripts/coverage.mjs",
+    "coverage": "turbo test:coverage coverage --concurrency=10",
+    "coverage:ci": "turbo test:coverage coverage --concurrency=10 --cache-dir=.turbo",
     "deps:check": "pnpm outdated --recursive",
     "deps:dedupe": "pnpm dedupe",
     "dev:doppler": "turbo dev:doppler",
@@ -46,6 +47,7 @@
     "typecheck:affected": "turbo typecheck --filter='...[origin/main]' --only"
   },
   "devDependencies": {
+    "@logtape/cloudwatch-logs": "^1.0.4",
     "@playwright/test": "^1.54.1",
     "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "catalog:",
@@ -59,7 +61,7 @@
     "eslint": "catalog:",
     "knip": "catalog:",
     "madge": "catalog:",
-    "turbo": "^2.5.4",
+    "turbo": "^2.5.5",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
@@ -69,10 +71,40 @@
     "pnpm": ">=10.0.0"
   },
   "pnpm": {
+    "onlyBuiltDependencies": [
+      "@firebase/util",
+      "@parcel/watcher",
+      "@pkgr/core",
+      "@prisma/client",
+      "@prisma/engines",
+      "@sentry-internal/node-cpu-profiler",
+      "@sentry/cli",
+      "@swc/core",
+      "@tailwindcss/oxide",
+      "@ulixee/chrome-136-0",
+      "@ulixee/unblocked-agent-mitm-socket",
+      "better-sqlite3",
+      "core-js",
+      "core-js-pure",
+      "edgedriver",
+      "esbuild",
+      "eslint-config-prettier",
+      "geckodriver",
+      "napi-postinstall",
+      "oxc-resolver",
+      "prisma",
+      "protobufjs",
+      "puppeteer",
+      "sharp",
+      "unrs-resolver"
+    ],
     "overrides": {
+      "@pkgr/core@=0.2.8": ">=0.2.9",
       "cookie@<0.7.0": ">=0.7.0",
       "esbuild@<=0.24.2": ">=0.25.0",
+      "napi-postinstall@=0.3.1": ">=0.3.2",
       "node-fetch@<2.6.7": ">=2.6.7",
+      "on-headers@<1.1.0": ">=1.1.0",
       "path-to-regexp@>=4.0.0 <6.3.0": ">=6.3.0"
     }
   }

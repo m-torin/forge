@@ -6,7 +6,7 @@
   "envMode": "loose",
   "tasks": {
     "build": {
-      "dependsOn": ["^build", "@repo/database#prisma:generate", "extract-schemas"],
+      "dependsOn": ["^build", "@repo/database#prisma:generate"],
       "inputs": [
         "src/**",
         "package.json",
@@ -29,7 +29,7 @@
       "cache": true
     },
     "build:doppler": {
-      "dependsOn": ["^build:doppler", "@repo/database#prisma:generate:doppler", "extract-schemas"],
+      "dependsOn": ["^build:doppler", "@repo/database#prisma:generate:doppler"],
       "cache": true,
       "inputs": [
         "src/**",
@@ -71,19 +71,14 @@
       "outputs": []
     },
     "dev": {
-      "dependsOn": ["extract-schemas"],
+      "dependsOn": [],
       "cache": false,
       "persistent": true
     },
     "dev:doppler": {
-      "dependsOn": ["extract-schemas"],
+      "dependsOn": [],
       "cache": false,
       "persistent": true
-    },
-    "extract-schemas": {
-      "dependsOn": ["^prisma:generate"],
-      "outputs": ["**/src/schemas/generated/**"],
-      "cache": true
     },
     "knip": {
       "cache": true,
@@ -100,7 +95,7 @@
       "cache": false
     },
     "prettier": {
-      "cache": true,
+      "cache": false,
       "outputs": []
     },
     "prisma:generate": {
@@ -146,7 +141,7 @@
     },
     "typecheck": {
       "dependsOn": ["^typecheck", "@repo/database#prisma:generate"],
-      "cache": true,
+      "cache": false,
       "inputs": ["src/**", "*.ts", "*.tsx", "tsconfig.json", "!**/*.test.*", "!**/*.spec.*"],
       "outputs": []
     },
@@ -211,7 +206,7 @@
     },
     "typecheck:affected": {
       "dependsOn": ["^typecheck:affected", "@repo/database#prisma:generate"],
-      "cache": true,
+      "cache": false,
       "inputs": ["src/**", "*.ts", "*.tsx", "tsconfig.json", "!**/*.test.*", "!**/*.spec.*"],
       "outputs": []
     },
@@ -219,6 +214,17 @@
       "dependsOn": ["^lint:affected"],
       "cache": true,
       "inputs": ["src/**", "*.ts", "*.tsx", "*.js", "*.jsx", ".eslintrc*", "eslint.config.*"],
+      "outputs": []
+    },
+    "coverage": {
+      "dependsOn": ["test:coverage"],
+      "cache": true,
+      "inputs": [
+        "coverage/**",
+        ".vitest-ui/coverage/**",
+        "html/coverage/**",
+        "coverage-browser/**"
+      ],
       "outputs": []
     }
   }

@@ -1,11 +1,6 @@
 {
-  "extends": "@repo/config/typescript/base.json",
+  "extends": "@repo/config/typescript/react-library.json",
   "compilerOptions": {
-    "lib": ["dom", "dom.iterable", "es2022"],
-    "jsx": "react-jsx",
-    "moduleResolution": "bundler",
-    "module": "esnext",
-    "target": "es2022",
     "types": ["vitest/globals"],
     "baseUrl": ".",
     "paths": {
@@ -13,6 +8,13 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*", "examples/**/*", "eslint.config.ts", "vitest.config.ts"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "*.ts",
+    "*.tsx",
+    "__tests__/**/*.ts",
+    "__tests__/**/*.tsx"
+  ],
   "exclude": ["node_modules", "dist"]
 }

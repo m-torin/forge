@@ -50,14 +50,6 @@ const config: Linter.FlatConfig[] = [
     files: SERVER_FILE_PATTERNS,
     rules: createServerRules(),
   }),
-
-  // Environment files - allow console for error handling (server override)
-  createConfig({
-    files: ['**/env.ts'],
-    rules: {
-      'no-console': SEVERITY.OFF,
-    },
-  }),
 ];
 
 export default config;

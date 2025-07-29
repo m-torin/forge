@@ -14,8 +14,8 @@ const logWarn = (_message: string, ..._args: any[]) => {
 };
 
 // Initialize Knock immediately with the API key
-const apiKey = safeEnv().KNOCK_SECRET_API_KEY ?? 'test-knock-key';
-const knock = new Knock({ apiKey });
+const apiKey = safeEnv().KNOCK_SECRET_API_KEY;
+const knock = apiKey ? new Knock({ apiKey }) : null;
 
 let hasLoggedWarning = false;
 
@@ -37,12 +37,7 @@ export const notifications = new Proxy({} as Knock, {
     const knockClient = getKnock();
 
     if (!knockClient) {
-      // Return no-op functions for common methods
-      if (typeof prop === 'string' && ['notify', 'send', 'trigger'].includes(prop)) {
-        return async () => {
-          // Silently do nothing when Knock is not configured
-        };
-      }
+      // Return undefined for all properties when Knock is not configured
       return undefined;
     }
 

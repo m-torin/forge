@@ -25,9 +25,9 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.844.0",
-    "@aws-sdk/lib-storage": "^3.844.0",
-    "@aws-sdk/s3-request-presigner": "^3.844.0",
+    "@aws-sdk/client-s3": "^3.850.0",
+    "@aws-sdk/lib-storage": "^3.850.0",
+    "@aws-sdk/s3-request-presigner": "^3.850.0",
     "@repo/database": "workspace:*",
     "@repo/observability": "workspace:*",
     "@t3-oss/env-nextjs": "catalog:",
@@ -36,6 +36,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@faker-js/faker": "^9.9.0",
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/qa": "workspace:*",

@@ -7,7 +7,7 @@ import {
 } from '@/shared/features/classification/training-storage';
 
 // Mock the observability module before importing training storage
-vi.mock('@repo/observability/shared-env', () => ({
+vi.mock('@repo/observability', () => ({
   logError: vi.fn(),
 }));
 
@@ -154,7 +154,7 @@ describe('training Storage', () => {
         vi.doMock('fs/promises', () => mockFs);
 
         // Clear previous calls to the mocked logError
-        const { logError } = await import('@repo/observability/shared-env');
+        const { logError } = await import('@repo/observability');
         vi.mocked(logError).mockClear();
 
         const loaded = await storage.load();
@@ -171,7 +171,7 @@ describe('training Storage', () => {
         vi.doMock('fs/promises', () => mockFs);
 
         // Clear previous calls to the mocked logError
-        const { logError } = await import('@repo/observability/shared-env');
+        const { logError } = await import('@repo/observability');
         vi.mocked(logError).mockClear();
 
         const loaded = await storage.load();
@@ -211,7 +211,7 @@ describe('training Storage', () => {
         vi.doMock('fs/promises', () => mockFs);
 
         // Clear previous calls to the mocked logError
-        const { logError } = await import('@repo/observability/shared-env');
+        const { logError } = await import('@repo/observability');
         vi.mocked(logError).mockClear();
 
         // Should not throw

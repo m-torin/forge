@@ -5,8 +5,8 @@ import React from 'react';
 import { describe, expect, test } from 'vitest';
 
 // Import Storybook configuration
-import mainConfig from '../.storybook/main';
-import previewConfig from '../.storybook/preview';
+import mainConfig from '#/root/.storybook/main';
+import previewConfig from '#/root/.storybook/preview';
 
 describe('storybook Configuration', () => {
   describe('main Configuration', () => {
@@ -18,11 +18,12 @@ describe('storybook Configuration', () => {
 
     test('should have required addons', () => {
       expect(mainConfig.addons).toBeDefined();
-      expect(mainConfig.addons).toHaveLength(4);
+      expect(mainConfig.addons).toHaveLength(5);
       expect(mainConfig.addons).toStrictEqual(
         expect.arrayContaining([
           expect.stringContaining('@storybook/addon-themes'),
           expect.stringContaining('@storybook/addon-docs'),
+          expect.stringContaining('@storybook/addon-a11y'),
         ]),
       );
     });

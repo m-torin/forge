@@ -17,6 +17,6 @@
   "devDependencies": {
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
-    "prisma": "^6.11.1"
+    "prisma": "^6.12.0"
   }
 }

@@ -1,8 +1,9 @@
 import '@testing-library/jest-dom';
 import { beforeEach, vi } from 'vitest';
 
-// Note: Centralized mocks were causing import resolution issues
-// Package-specific mocks defined below:
+// Import centralized mocks from @repo/qa (when available)
+// TODO: Re-enable when @repo/qa exports are built
+// import '@repo/qa/vitest/mocks/providers/vercel-analytics';
 
 // Mock console methods for cleaner test output
 const originalConsole = console;
@@ -12,12 +13,6 @@ global.console = {
   log: vi.fn(),
   warn: vi.fn(),
 };
-
-// Mock Vercel Analytics (not yet in centralized mocks)
-vi.mock('@vercel/analytics', () => ({
-  Analytics: vi.fn(),
-  track: vi.fn(),
-}));
 
 // Mock React hooks (app-specific, not in centralized mocks)
 vi.mock('react', async () => {
@@ -32,7 +27,35 @@ vi.mock('react', async () => {
   };
 });
 
-// Browser APIs are already mocked in centralized mocks
+// Common analytics test configuration
+export const createAnalyticsTestConfig = (overrides = {}) => ({
+  providers: {
+    console: {},
+    ...overrides,
+  },
+});
+
+// Common analytics creation patterns
+export const createTestAnalytics = async (config = createAnalyticsTestConfig()) => {
+  const { createClientAnalytics } = await import('@/client/index');
+  return createClientAnalytics(config);
+};
+
+export const createTestServerAnalytics = async (config = createAnalyticsTestConfig()) => {
+  const { createServerAnalytics } = await import('@/server/index');
+  return createServerAnalytics(config);
+};
+
+// Export test factories and generators
+export * from './emitter-test-factory';
+// Note: createTestData is already exported from emitter-test-factory, so we don't re-export from test-data-generators
+export {
+  ecommerceTestData,
+  edgeCaseTestData,
+  testPatterns,
+  userTestData,
+  validateTestData,
+} from './test-data-generators';
 
 // Reset all mocks before each test
 beforeEach(() => {

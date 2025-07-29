@@ -27,7 +27,7 @@ export function createExaSearchTool(config: ExaSearchConfig) {
     parameters: z.object({
       query: z.string().min(1).max(100).describe('The search query'),
     }),
-    execute: async ({ query }) => {
+    execute: async ({ query }: { query: string }) => {
       const { results } = await exa.searchAndContents(query, {
         livecrawl: config.livecrawl ?? 'always',
         numResults: config.numResults ?? 3,
@@ -52,7 +52,7 @@ export function createWebSearchTool(searchFunction: (query: string) => Promise<W
     parameters: z.object({
       query: z.string().min(1).max(100).describe('The search query'),
     }),
-    execute: async ({ query }) => {
+    execute: async ({ query }: { query: string }) => {
       return searchFunction(query);
     },
   });

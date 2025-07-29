@@ -1,0 +1,273 @@
+/* EmbeddableNotionEditor Styles */
+/* These styles are designed to work in any environment: HTML, React, Next.js */
+
+.embeddable-editor {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  border: 1px solid var(--editor-border-color, #e5e7eb);
+  border-radius: 8px;
+  background-color: var(--editor-bg-color, #ffffff);
+  color: var(--editor-text-color, #1f2937);
+  overflow: hidden;
+  min-height: 200px;
+}
+
+.embeddable-editor .ProseMirror {
+  padding: 16px;
+  min-height: inherit;
+  outline: none;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.embeddable-editor .ProseMirror:focus {
+  border-color: var(--editor-focus-color, #3b82f6);
+  box-shadow: 0 0 0 2px var(--editor-focus-color-alpha, rgba(59, 130, 246, 0.1));
+}
+
+/* Placeholder styles */
+.embeddable-editor .is-empty::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--editor-placeholder-color, #9ca3af);
+  pointer-events: none;
+  height: 0;
+  font-style: italic;
+}
+
+/* Typography styles */
+.embeddable-editor h1 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 1.5rem 0 0.5rem 0;
+  color: var(--editor-heading-color, inherit);
+}
+
+.embeddable-editor h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 1.25rem 0 0.5rem 0;
+  color: var(--editor-heading-color, inherit);
+}
+
+.embeddable-editor h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 1rem 0 0.5rem 0;
+  color: var(--editor-heading-color, inherit);
+}
+
+.embeddable-editor p {
+  margin: 0.5rem 0;
+}
+
+.embeddable-editor ul,
+.embeddable-editor ol {
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+
+.embeddable-editor blockquote {
+  border-left: 3px solid var(--editor-border-color, #e5e7eb);
+  padding-left: 1rem;
+  margin: 1rem 0;
+  font-style: italic;
+  color: var(--editor-muted-color, #6b7280);
+}
+
+/* Code blocks */
+.embeddable-editor-code-block {
+  background: var(--editor-code-bg, #f7f6f3);
+  border-radius: 6px;
+  padding: 1rem;
+  margin: 1rem 0;
+  font-family: "Monaco", "Menlo", "Consolas", monospace;
+  font-size: 0.875rem;
+  overflow-x: auto;
+  border: 1px solid var(--editor-code-border, #e5e7eb);
+}
+
+/* Inline code */
+.embeddable-editor code {
+  background: var(--editor-code-bg, #f1f5f9);
+  padding: 0.125rem 0.25rem;
+  border-radius: 3px;
+  font-family: "Monaco", "Menlo", "Consolas", monospace;
+  font-size: 0.875em;
+}
+
+/* Tables */
+.embeddable-editor-table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+  border: 1px solid var(--editor-border-color, #e5e7eb);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.embeddable-editor-table-header {
+  background-color: var(--editor-table-header-bg, #f9fafb);
+  font-weight: 600;
+}
+
+.embeddable-editor-table-cell,
+.embeddable-editor-table-header {
+  border: 1px solid var(--editor-border-color, #e5e7eb);
+  padding: 0.5rem;
+  text-align: left;
+}
+
+/* Links */
+.embeddable-editor-link {
+  color: var(--editor-link-color, var(--editor-focus-color, #3b82f6));
+  text-decoration: underline;
+  transition: opacity 0.2s;
+}
+
+.embeddable-editor-link:hover {
+  opacity: 0.8;
+}
+
+/* Toolbar styles */
+.embeddable-editor-toolbar {
+  border-bottom: 1px solid var(--editor-border-color, #e5e7eb);
+  padding: 8px;
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  background-color: var(--editor-toolbar-bg, #f9fafb);
+}
+
+.embeddable-editor-toolbar button {
+  padding: 4px 8px;
+  border: 1px solid var(--editor-border-color, #e5e7eb);
+  background: var(--editor-bg-color, #ffffff);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+  color: var(--editor-text-color, #1f2937);
+}
+
+.embeddable-editor-toolbar button:hover {
+  background-color: var(--editor-button-hover-bg, #f3f4f6);
+  border-color: var(--editor-button-hover-border, #9ca3af);
+}
+
+.embeddable-editor-toolbar button.active {
+  background-color: var(--editor-focus-color, #3b82f6);
+  color: white;
+  border-color: var(--editor-focus-color, #3b82f6);
+}
+
+.embeddable-editor-toolbar button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Task lists */
+.embeddable-editor .task-list {
+  list-style: none;
+  padding: 0;
+}
+
+.embeddable-editor .task-item {
+  display: flex;
+  align-items: flex-start;
+  margin: 0.25rem 0;
+}
+
+.embeddable-editor .task-item input[type="checkbox"] {
+  margin-right: 0.5rem;
+  margin-top: 0.125rem;
+}
+
+/* Media upload styling */
+.embeddable-editor .media-upload-node {
+  margin: 1rem 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.embeddable-editor .media-upload-node img,
+.embeddable-editor .media-upload-node video {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+}
+
+/* Dark theme support */
+.embeddable-editor[data-theme="dark"] {
+  --editor-bg-color: #1f2937;
+  --editor-text-color: #f9fafb;
+  --editor-border-color: #374151;
+  --editor-focus-color: #60a5fa;
+  --editor-focus-color-alpha: rgba(96, 165, 250, 0.1);
+  --editor-placeholder-color: #6b7280;
+  --editor-heading-color: #f3f4f6;
+  --editor-muted-color: #9ca3af;
+  --editor-code-bg: #374151;
+  --editor-code-border: #4b5563;
+  --editor-table-header-bg: #374151;
+  --editor-toolbar-bg: #374151;
+  --editor-button-hover-bg: #4b5563;
+  --editor-button-hover-border: #6b7280;
+  --editor-link-color: #60a5fa;
+}
+
+/* High contrast theme support */
+.embeddable-editor[data-theme="high-contrast"] {
+  --editor-bg-color: #ffffff;
+  --editor-text-color: #000000;
+  --editor-border-color: #000000;
+  --editor-focus-color: #0000ff;
+  --editor-focus-color-alpha: rgba(0, 0, 255, 0.1);
+  --editor-placeholder-color: #666666;
+  --editor-heading-color: #000000;
+  --editor-muted-color: #333333;
+  --editor-code-bg: #f0f0f0;
+  --editor-code-border: #000000;
+  --editor-table-header-bg: #f0f0f0;
+  --editor-toolbar-bg: #f0f0f0;
+  --editor-button-hover-bg: #e0e0e0;
+  --editor-button-hover-border: #000000;
+  --editor-link-color: #0000ff;
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .embeddable-editor .ProseMirror {
+    padding: 12px;
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+
+  .embeddable-editor-toolbar {
+    padding: 6px;
+    gap: 2px;
+  }
+
+  .embeddable-editor-toolbar button {
+    padding: 6px 8px;
+    font-size: 13px;
+  }
+}
+
+/* Print styles */
+@media print {
+  .embeddable-editor-toolbar {
+    display: none;
+  }
+
+  .embeddable-editor {
+    border: none;
+    box-shadow: none;
+  }
+
+  .embeddable-editor .ProseMirror {
+    padding: 0;
+  }
+}

@@ -3,7 +3,7 @@
  * Uses ES2022+ features including private fields, nullish coalescing, and async generators
  */
 
-import { createServerObservability } from '@repo/observability/shared-env';
+import { createServerObservability } from '@repo/observability/server/next';
 import {
   StepCompositionConfig,
   StepExecutionPlan,
@@ -603,11 +603,7 @@ export class OrchestrationManager {
                 // Fire and forget logging
                 (async () => {
                   try {
-                    const logger = await createServerObservability({
-                      providers: {
-                        console: { enabled: true },
-                      },
-                    });
+                    const logger = await createServerObservability();
                     logger.log('error', `Failed to cleanup provider ${name}`, error);
                   } catch {
                     // Fallback to console if logger fails
@@ -712,12 +708,8 @@ export class OrchestrationManager {
         // Fire and forget logging
         (async () => {
           try {
-            const logger = await createServerObservability({
-              providers: {
-                console: { enabled: true },
-              },
-            });
-            logger.log('warn', 'Health check failed', error);
+            const logger = await createServerObservability();
+            logger.log('warning', 'Health check failed', error);
           } catch {
             // Fallback to console if logger fails
           }

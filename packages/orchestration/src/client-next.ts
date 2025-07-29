@@ -1098,3 +1098,34 @@ export function useWorkflowSchedule(
     updateSchedule,
   };
 }
+
+/**
+ * Hook for managing workflow execution (alias for useWorkflow)
+ */
+export function useWorkflowExecution(
+  executionId: string,
+  options: UseWorkflowOptions,
+): UseWorkflowResult {
+  return useWorkflow(executionId, options);
+}
+
+/**
+ * Hook for managing workflow provider
+ */
+export function useWorkflowProvider(_providerId?: string): {
+  provider: WorkflowProvider | null;
+  error: Error | null;
+  isLoading: boolean;
+  setProvider: (provider: WorkflowProvider | null) => void;
+} {
+  const [provider, setProvider] = useState<WorkflowProvider | null>(null);
+  const [error, _setError] = useState<Error | null>(null);
+  const [isLoading, _setIsLoading] = useState(false);
+
+  return {
+    provider,
+    error,
+    isLoading,
+    setProvider,
+  };
+}

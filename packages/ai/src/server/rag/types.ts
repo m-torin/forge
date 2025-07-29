@@ -35,6 +35,8 @@ export interface RAGConfig {
     provider?: string;
     model?: string;
     temperature?: number;
+    maxOutputTokens?: number;
+    /** @deprecated Use maxOutputTokens instead */
     maxTokens?: number;
   };
 }

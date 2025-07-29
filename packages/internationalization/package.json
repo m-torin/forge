@@ -24,6 +24,7 @@
   "dependencies": {
     "@formatjs/intl-localematcher": "^0.6.1",
     "@repo/observability": "workspace:*",
+    "@repo/uix-system": "workspace:*",
     "@t3-oss/env-nextjs": "catalog:",
     "chalk": "^5.4.1",
     "negotiator": "^1.0.0",
@@ -36,6 +37,7 @@
     "@repo/eslint-config": "workspace:*",
     "@repo/qa": "workspace:*",
     "@types/negotiator": "^0.6.4",
-    "next": "catalog:"
+    "next": "catalog:",
+    "react": "catalog:"
   }
 }

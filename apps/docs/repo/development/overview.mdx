@@ -132,7 +132,7 @@ forge/
 │   ├── typescript-config/  # Layer 1: Foundation
 │   ├── database/           # Layer 3: Data
 │   ├── auth/              # Layer 5: Business Logic
-│   └── design-system/     # Layer 6: UI
+│   └── uix-system/        # Layer 6: UI
 └── scripts/               # Build and utility scripts
 ```
 
@@ -180,9 +180,9 @@ The monorepo follows strict layering to prevent circular dependencies:
 </Tab>
 
   <Tab title="Layer 6: UI">
-    **User interface components** - `@repo/design-system` - Composite Mantine components
-    ```typescript // Design system usage import {ProductCard} from '@repo/design-system';
-    <ProductCard product={product} />
+    **User interface components** - `@repo/uix-system` - Mantine components and themes
+    ```typescript // UI system usage import {SearchBox} from '@repo/uix-system/algolia';
+    <SearchBox placeholder="Search products..." />
     ```
   </Tab>
 </Tabs>

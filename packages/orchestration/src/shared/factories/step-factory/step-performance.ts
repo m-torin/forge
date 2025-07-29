@@ -5,7 +5,7 @@
  * for workflow step execution.
  */
 
-import { createServerObservability } from '@repo/observability/shared-env';
+import { createServerObservability } from '@repo/observability/server/next';
 import { ProgressState, StepPerformanceData } from './step-types';
 
 /**
@@ -71,11 +71,7 @@ export function createProgressReporter(
       // Fire and forget logging
       (async () => {
         try {
-          const logger = await createServerObservability({
-            providers: {
-              console: { enabled: true },
-            },
-          });
+          const logger = await createServerObservability();
           logger.log('info', `[${stepId}] Progress: ${current}/${total} ${details ?? ''}`);
         } catch {
           // Fallback to console if logger fails

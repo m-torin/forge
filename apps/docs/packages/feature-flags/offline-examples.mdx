@@ -1,0 +1,261 @@
+---
+title: Offline / Air-Gapped Feature Flags
+description: Using feature flags in offline and air-gapped environments
+---
+
+# Offline / Air-Gapped Feature Flags
+
+This example demonstrates how to use the `@repo/feature-flags` package in
+completely offline or air-gapped environments where no external network
+dependencies are available.
+
+## Overview
+
+The Vercel Feature Flags SDK can operate offline when you:
+
+- Define flags statically in your codebase
+- Use local context (cookies, headers) for decisions
+- Avoid external adapters (PostHog, Edge Config)
+- Rely on deterministic local evaluation
+
+## Features Demonstrated
+
+### 1. **Pure Offline Flag Definitions** (`flags.ts`)
+
+- Regional promo flag with cookie-based targeting
+- A/B test with deterministic visitor ID generation
+- Percentage-based feature rollout using user ID hashing
+- Theme selection based on preferences and time
+- Maintenance mode with deployment context
+
+### 2. **Server Component Integration** (`page.tsx`)
+
+- Multiple flag evaluation with `Promise.all()`
+- Conditional rendering based on flag states
+- Local context extraction from Next.js headers/cookies
+- Debug information display
+
+### 3. **Edge Middleware Support** (`middleware.ts`)
+
+- Flag precomputation at request time
+- Automatic visitor ID generation
+- Context enrichment via headers
+- Error handling with graceful fallbacks
+
+## Air-Gapped Compatibility
+
+### ✅ **Works Offline**
+
+- `flag()` function with local `decide()` logic
+- `dedupe()` for performance optimization
+- Cookie and header-based context
+- Deterministic evaluation (same input = same output)
+- Node.js 22+ runtime compatibility
+
+### ❌ **Requires Network**
+
+- PostHog adapters (`postHogServerAdapter`)
+- Edge Config adapters (`edgeConfigAdapter`)
+- Discovery endpoints (`getProviderData`)
+- Vercel Toolbar overrides
+
+## Usage Patterns
+
+### Basic Offline Flag
+
+```typescript
+export const myFlag = flag({
+  key: "my-offline-flag",
+  decide: ({ entities }) => {
+    // Pure local logic - no network calls
+    const userId = entities?.user?.id || "anonymous";
+    return userId.length % 2 === 0;
+  },
+  options: [
+    { label: "Enabled", value: true },
+    { label: "Disabled", value: false }
+  ]
+});
+```
+
+### Context-Based Evaluation
+
+```typescript
+export const regionalFlag = flag({
+  key: "regional-feature",
+  async identify({ cookies, headers }) {
+    const region = headers?.get("x-country") || "US";
+    const userId = cookies?.get("user-id")?.value || "anonymous";
+    return { user: { id: userId }, region };
+  },
+  decide: ({ entities }) => {
+    return ["EU", "CA"].includes(entities?.region);
+  }
+});
+```
+
+### Server Component Usage
+
+```typescript
+import { headers, cookies } from 'next/headers';
+import { myFlag } from './flags';
+
+export default async function Page() {
+  const isEnabled = await myFlag({
+    headers: headers(),
+    cookies: cookies()
+  });
+
+  return <div>{isEnabled ? 'Feature On' : 'Feature Off'}</div>;
+}
+```
+
+## Testing in Air-Gapped Mode
+
+### 1. **Set Up Local Context**
+
+```javascript
+// In browser console
+document.cookie = "user-id=test123; path=/";
+document.cookie = "visitor-id=visitor456; path=/";
+document.cookie = "theme-preference=dark; path=/";
+```
+
+### 2. **Environment Variables** (for Edge Config fallback)
+
+```bash
+# Set flag overrides via env vars
+FLAG_PROMO_DISCOUNT=true
+FLAG_BETA_FEATURE=false
+FLAG_MAINTENANCE_MODE=false
+```
+
+### 3. **Custom Headers** (for testing)
+
+```typescript
+// In middleware or API routes
+headers.set("x-country", "EU");
+headers.set("x-deployment-id", "maintenance-deploy-123");
+headers.set("x-environment", "production");
+```
+
+## Performance Considerations
+
+### Deduplication
+
+```typescript
+const expensiveComputation = dedupe(async ({ cookies }) => {
+  // This will only run once per request
+  return performComplexCalculation(cookies);
+});
+```
+
+### Precomputation
+
+```typescript
+// In middleware
+const flagValues = await precompute([flag1, flag2, flag3], context);
+// All flags computed once, cached for the request
+```
+
+### Local Caching
+
+- Use consistent hashing for deterministic results
+- Cache visitor IDs in cookies
+- Store preferences locally
+- Minimize computation in `decide()` functions
+
+## Best Practices
+
+### 1. **Deterministic Logic**
+
+```typescript
+// ✅ Good - same input always produces same output
+decide: ({ entities }) => {
+  const hash = entities.user.id.charCodeAt(0);
+  return hash % 2 === 0;
+};
+
+// ❌ Bad - non-deterministic
+decide: () => Math.random() > 0.5;
+```
+
+### 2. **Graceful Fallbacks**
+
+```typescript
+decide: ({ entities }) => {
+  try {
+    return complexLogic(entities);
+  } catch (error) {
+    console.warn("Flag evaluation failed:", error);
+    return false; // Safe default
+  }
+};
+```
+
+### 3. **Local Context Enrichment**
+
+```typescript
+async identify({ cookies, headers }) {
+  return {
+    user: {
+      id: cookies?.get('user-id')?.value || 'anonymous',
+      region: headers?.get('x-country') || 'US'
+    },
+    timestamp: Date.now(),
+    deployment: process.env.DEPLOYMENT_ID || 'local'
+  };
+}
+```
+
+## Adapter Fallbacks
+
+When external adapters are unavailable, the package now provides offline
+fallbacks:
+
+### PostHog Fallback
+
+- Uses hash-based user targeting
+- Returns consistent variants
+- Provides minimal payloads
+
+### Edge Config Fallback
+
+- Checks environment variables (`FLAG_*`)
+- Falls back to deterministic evaluation
+- Maintains type safety
+
+## Node.js 22 Features
+
+This implementation leverages modern Node.js 22 features:
+
+- Top-level await support
+- Enhanced performance
+- Better ESM compatibility
+- Improved error handling
+
+## Security Considerations
+
+- No external network requests
+- Local context only (cookies, headers)
+- No sensitive data in flag logic
+- Deterministic evaluation for auditability
+
+## Deployment
+
+### Air-Gapped Environments
+
+1. Bundle all dependencies
+2. Set environment variables for flag overrides
+3. Configure local context sources
+4. Test offline functionality
+
+### Edge Deployment
+
+- Works in Vercel Edge Runtime
+- Compatible with middleware
+- No network dependencies
+- Fast evaluation at the edge
+
+This example provides a complete foundation for running feature flags in any
+environment, including completely isolated air-gapped networks.

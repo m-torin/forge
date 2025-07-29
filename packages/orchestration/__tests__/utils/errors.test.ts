@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import {
   CircuitBreakerError,
@@ -20,10 +20,16 @@ import {
   WorkflowValidationError,
 } from '../../src/shared/utils/errors';
 
+// Import DRY test utilities
+import { createTestSuite } from '../utils/test-patterns';
+
+// Create test suite for error utilities
+const testSuite = createTestSuite('error-utilities');
+const { errors, validation } = testSuite;
+
 describe('error utilities', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  // Use DRY mock lifecycle
+  testSuite.setupTestSuite();
 
   describe('orchestrationError', () => {
     test('should create basic orchestration error', () => {
@@ -56,6 +62,34 @@ describe('error utilities', () => {
       expect(json.context).toStrictEqual({ test: 'data' });
       expect(json.name).toBe('OrchestrationError');
       expect(json.stack).toBeDefined();
+    });
+
+    // DRY error testing patterns
+    test('should handle various error scenarios using DRY patterns', async () => {
+      // Test multiple error types with standard patterns
+      const errorScenarios = [
+        {
+          name: 'network-error',
+          error: errors.networkError,
+          expectedMessage: 'Network error',
+        },
+        {
+          name: 'timeout-error',
+          error: errors.timeoutError,
+          expectedMessage: 'Timeout',
+        },
+        {
+          name: 'validation-error',
+          error: errors.validationError,
+          expectedMessage: 'Validation failed',
+        },
+      ];
+
+      for (const scenario of errorScenarios) {
+        const failingFunction = errors.createFailingMock(scenario.error);
+
+        await errors.testErrorHandling(() => failingFunction(), scenario.expectedMessage);
+      }
     });
   });
 

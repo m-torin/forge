@@ -14,6 +14,7 @@ vi.mock('../src/shared/auth', () => ({
 
 vi.mock('better-auth/next-js', () => ({
   toNextJsHandler: vi.fn(),
+  nextCookies: vi.fn(),
 }));
 
 vi.mock('../src/server/session', () => ({

@@ -4,7 +4,7 @@
 
 import PQueue from 'p-queue';
 
-import { createServerObservability } from '@repo/observability/shared-env';
+import { createServerObservability } from '@repo/observability/server/next';
 import { BatchPattern, PatternContext } from '../types/patterns';
 
 export interface BatchContext {
@@ -401,11 +401,7 @@ export class BatchManager<T = any, R = any> {
         // Fire and forget logging
         (async () => {
           try {
-            const logger = await createServerObservability({
-              providers: {
-                console: { enabled: true },
-              },
-            });
+            const logger = await createServerObservability();
             logger.log('error', 'Error during batch cleanup', error);
           } catch {
             // Fallback to console if logger fails

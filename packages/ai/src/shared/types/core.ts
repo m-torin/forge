@@ -1,6 +1,10 @@
+import type { LanguageModelUsage } from 'ai';
+
 export interface AICoreConfig {
   capabilities: Capability[];
   defaultModel?: string;
+  maxOutputTokens?: number;
+  /** @deprecated Use maxOutputTokens instead */
   maxTokens?: number;
   temperature?: number;
   timeout?: number;
@@ -31,6 +35,8 @@ export interface ChatMessage {
 }
 
 export interface CompletionOptions {
+  maxOutputTokens?: number;
+  /** @deprecated Use maxOutputTokens instead */
   maxTokens?: number;
   messages?: ChatMessage[];
   model?: string;
@@ -52,7 +58,7 @@ export interface CompletionResponse {
   model?: string;
   sources?: SearchSource[];
   text: string;
-  usage?: TokenUsage;
+  usage?: LanguageModelUsage;
   // Anthropic reasoning support
   reasoning?: string;
   reasoningDetails?: any;
@@ -61,7 +67,7 @@ export interface CompletionResponse {
 export interface EmbeddingResponse {
   embeddings: number[][];
   model?: string;
-  usage?: TokenUsage;
+  usage?: LanguageModelUsage;
 }
 
 export interface EmbedOptions {
@@ -86,6 +92,8 @@ export interface ModerationResult {
 
 // eslint-disable-next-line unused-imports/no-unused-vars
 export interface ObjectOptions<T = unknown> {
+  maxOutputTokens?: number;
+  /** @deprecated Use maxOutputTokens instead */
   maxTokens?: number;
   model?: string;
   output?: 'array' | 'object';
@@ -104,7 +112,7 @@ export interface StreamChunk {
   isFirst: boolean;
   isLast: boolean;
   text: string;
-  usage?: TokenUsage;
+  usage?: LanguageModelUsage;
   sources?: SearchSource[];
   providerMetadata?: any;
 }

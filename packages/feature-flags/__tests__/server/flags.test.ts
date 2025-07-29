@@ -1,22 +1,22 @@
 import { evaluateFlags, getFlagContext } from '@/server/flags';
 import { beforeEach, describe, expect, vi } from 'vitest';
+import { featureFlagTestData } from '../test-data-generators';
+import {
+  assertionHelpers,
+  createMockCookies,
+  createMockHeaders,
+  performanceHelpers,
+} from '../test-utils';
 
-// Mock Next.js headers/cookies
-const mockHeaders = new Headers([
-  ['x-forwarded-for', '127.0.0.1'],
-  ['user-agent', 'test-agent'],
-]);
+// Create consistent mock data
+const mockHeaders = createMockHeaders({
+  'x-forwarded-for': '127.0.0.1',
+  'user-agent': 'test-agent',
+});
 
-const mockCookies = {
-  get: vi.fn(),
-  has: vi.fn(),
-  set: vi.fn(),
-  delete: vi.fn(),
-  clear: vi.fn(),
-  getAll: vi.fn(() => []),
-  toString: vi.fn(() => ''),
-  [Symbol.iterator]: vi.fn(() => [].values()),
-};
+const mockCookies = createMockCookies({
+  'flag-override': 'test-flag=true',
+});
 
 vi.mock('next/headers', async () => {
   return {
@@ -31,7 +31,7 @@ vi.mock('@/shared/utils', () => ({
 }));
 
 // Mock Vercel flags SDK
-vi.mock('@vercel/flags/next', () => ({
+vi.mock('flags/next', () => ({
   getProviderData: vi.fn(),
 }));
 
@@ -92,10 +92,11 @@ describe('evaluateFlags', () => {
     expect(result).toStrictEqual({
       testFlag: true,
     });
-    expect(flags.testFlag).toHaveBeenCalledOnce();
+    assertionHelpers.assertMockCalled(flags.testFlag, 1);
   });
 
   test('should evaluate multiple flags in parallel', async () => {
+    const testFlagValues = featureFlagTestData.flags.boolean;
     const flags = {
       booleanFlag: vi.fn(() => Promise.resolve(true)),
       stringFlag: vi.fn(() => Promise.resolve('variant-a')),
@@ -112,10 +113,10 @@ describe('evaluateFlags', () => {
       objectFlag: { config: 'value' },
     });
 
-    expect(flags.booleanFlag).toHaveBeenCalledOnce();
-    expect(flags.stringFlag).toHaveBeenCalledOnce();
-    expect(flags.numberFlag).toHaveBeenCalledOnce();
-    expect(flags.objectFlag).toHaveBeenCalledOnce();
+    assertionHelpers.assertMockCalled(flags.booleanFlag, 1);
+    assertionHelpers.assertMockCalled(flags.stringFlag, 1);
+    assertionHelpers.assertMockCalled(flags.numberFlag, 1);
+    assertionHelpers.assertMockCalled(flags.objectFlag, 1);
   });
 
   test('should handle empty flags object', async () => {
@@ -144,9 +145,9 @@ describe('evaluateFlags', () => {
       errorFlag: vi.fn(() => Promise.reject(new Error('Flag error'))),
     };
 
-    await expect(evaluateFlags(flags)).rejects.toThrow('Flag error');
-    expect(flags.successFlag).toHaveBeenCalledOnce();
-    expect(flags.errorFlag).toHaveBeenCalledOnce();
+    await assertionHelpers.assertErrorThrown(() => evaluateFlags(flags), 'Flag error');
+    assertionHelpers.assertMockCalled(flags.successFlag, 1);
+    assertionHelpers.assertMockCalled(flags.errorFlag, 1);
   });
 
   test('should maintain type safety', async () => {
@@ -171,9 +172,9 @@ describe('evaluateFlags', () => {
       instantFlag: vi.fn(() => Promise.resolve('instant')),
     };
 
-    const startTime = Date.now();
-    const result = await evaluateFlags(flags);
-    const endTime = Date.now();
+    const { result, duration } = await performanceHelpers.measureExecutionTime(() =>
+      evaluateFlags(flags),
+    );
 
     expect(result).toStrictEqual({
       fastFlag: 'fast',
@@ -182,10 +183,10 @@ describe('evaluateFlags', () => {
     });
 
     // Should resolve in parallel, taking roughly the time of the slowest flag
-    expect(endTime - startTime).toBeLessThan(50); // Allow some buffer for test execution
-    expect(flags.fastFlag).toHaveBeenCalledOnce();
-    expect(flags.slowFlag).toHaveBeenCalledOnce();
-    expect(flags.instantFlag).toHaveBeenCalledOnce();
+    performanceHelpers.assertPerformance(duration, 50); // Allow some buffer for test execution
+    assertionHelpers.assertMockCalled(flags.fastFlag, 1);
+    assertionHelpers.assertMockCalled(flags.slowFlag, 1);
+    assertionHelpers.assertMockCalled(flags.instantFlag, 1);
   });
 
   test('should preserve flag function call order independence', async () => {

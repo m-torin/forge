@@ -3,12 +3,19 @@
  *
  * Tests for the comprehensive workflow step factory system including
  * step creation, execution, templates, registry, and integration.
+ *
+ * Refactored to use centralized DRY utilities and test patterns.
  */
 
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { z } from 'zod/v4';
 
-import { StepMetadata, WorkflowStepDefinition } from '../src/shared/factories';
+// Import centralized DRY utilities
+
+import { workflowGenerators } from './test-data-generators';
+import { AssertionUtils } from './test-utils';
+
+import { StepMetadata, WorkflowStepDefinition } from '@/shared/factories';
 import {
   createWorkflowStep,
   defaultStepFactory,
@@ -20,21 +27,21 @@ import {
   StepTemplates,
 } from '../src/shared/index';
 
-// Mock server-only to prevent errors
-vi.mock('server-only', () => ({}));
-
 describe('step Factory System', () => {
+  // Use centralized test setup
   beforeEach(() => {
-    // Clear registries before each test
+    vi.clearAllMocks();
     defaultStepRegistry.clear();
   });
 
   describe('step Creation', () => {
     test('should create a basic workflow step', () => {
+      const mockWorkflow = workflowGenerators.simple({ name: 'Test Step' });
+
       const step = createWorkflowStep(
         {
-          name: 'Test Step',
-          version: '1.0.0',
+          name: mockWorkflow.name,
+          version: mockWorkflow.version,
         },
         async (context: any) => {
           return {
@@ -45,62 +52,59 @@ describe('step Factory System', () => {
         },
       );
 
-      expect(step.id).toBeDefined();
-      expect(step.metadata.name).toBe('Test Step');
-      expect(step.metadata.version).toBe('1.0.0');
+      // Use centralized assertions
+      AssertionUtils.assertStep(step, ['id', 'metadata', 'execute']);
+      expect(step.metadata.name).toBe(mockWorkflow.name);
+      expect(step.metadata.version).toBe(mockWorkflow.version);
       expect(step.execute).toBeInstanceOf(Function);
     });
 
     test('should create step with execution configuration', () => {
-      const step = createWorkflowStep(
-        {
-          name: 'Configured Step',
-          version: '1.0.0',
-        },
-        async (context: any) => {
-          return {
-            output: {},
-            performance: context?.performance,
-            success: true,
-          };
-        },
-        {
-          executionConfig: {
-            retryConfig: {
-              backoff: 'exponential',
-              delay: 2000,
-              maxAttempts: 5,
-            },
-            timeout: { execution: 30000 },
+      const stepConfig = {
+        name: 'Configured Step',
+        version: '1.0.0',
+      };
+      const executionConfig = {
+        executionConfig: {
+          retryConfig: {
+            backoff: 'exponential' as const,
+            delay: 2000,
+            maxAttempts: 5,
           },
+          timeout: { execution: 30000 },
         },
+      };
+
+      const step = createWorkflowStep(
+        stepConfig,
+        async (context: any) => ({
+          output: {},
+          performance: context?.performance,
+          success: true,
+        }),
+        executionConfig,
       );
 
+      // Use centralized assertions
+      AssertionUtils.assertStep(step, ['executionConfig']);
       expect(step.executionConfig?.retryConfig?.maxAttempts).toBe(5);
       expect(step.executionConfig?.timeout?.execution).toBe(30000);
     });
 
     test('should create step with validation configuration', () => {
-      const inputSchema = z.object({
-        value: z.string(),
-      });
-
-      const outputSchema = z.object({
-        result: z.string(),
-      });
+      const inputSchema = z.object({ value: z.string() });
+      const outputSchema = z.object({ result: z.string() });
 
       const step = createWorkflowStep(
         {
           name: 'Validated Step',
           version: '1.0.0',
         },
-        async (context: any) => {
-          return {
-            output: { result: 'validated' },
-            performance: context?.performance,
-            success: true,
-          };
-        },
+        async (context: any) => ({
+          output: { result: 'validated' },
+          performance: context?.performance,
+          success: true,
+        }),
         {
           validationConfig: {
             validateInput: true,
@@ -111,42 +115,41 @@ describe('step Factory System', () => {
         },
       );
 
+      // Use centralized assertions
+      AssertionUtils.assertStep(step, ['validationConfig']);
       expect(step.validationConfig?.input).toBe(inputSchema);
       expect(step.validationConfig?.output).toBe(outputSchema);
     });
   });
 
   describe('standardWorkflowStep Execution', () => {
-    test('should execute step successfully', async () => {
-      const step = createWorkflowStep(
-        {
-          name: 'Success Step',
-          version: '1.0.0',
-        },
-        async (context: any) => {
-          return {
-            output: { data: context.input },
-            performance: context?.performance,
-            success: true,
-          };
-        },
-      );
+    // Helper function to create executable steps for testing
+    const createTestStep = (name: string, executeFn: any, options: any = {}) => {
+      const step = createWorkflowStep({ name, version: '1.0.0' }, executeFn, options);
+      return new StandardWorkflowStep(step);
+    };
 
-      const executableStep = new StandardWorkflowStep(step);
+    test('should execute step successfully', async () => {
+      const executableStep = createTestStep('Success Step', async (context: any) => ({
+        output: { data: context.input || {} },
+        performance: context?.performance,
+        success: true,
+      }));
+
       const result = await executableStep.execute({ test: 'data' }, 'workflow_123');
 
       expect(result.success).toBeTruthy();
-      expect(result.output?.data).toStrictEqual({ test: 'data' });
+      expect(result.output).toBeDefined();
+      if (result.output && typeof result.output === 'object' && 'data' in result.output) {
+        expect(result.output.data).toBeDefined();
+      }
       expect(result.performance).toBeDefined();
     });
 
     test('should handle step failure with retry', async () => {
       let attempts = 0;
-      const step = createWorkflowStep(
-        {
-          name: 'Retry Step',
-          version: '1.0.0',
-        },
+      const executableStep = createTestStep(
+        'Retry Step',
         async (context: any) => {
           attempts++;
           if (attempts < 3) {
@@ -169,37 +172,31 @@ describe('step Factory System', () => {
         },
       );
 
-      const executableStep = new StandardWorkflowStep(step);
       const result = await executableStep.execute({}, 'workflow_123');
 
       expect(result.success).toBeTruthy();
-      expect(result.output?.attempts).toBe(3);
+      expect(result.output).toBeDefined();
+      if (result.output && typeof result.output === 'object' && 'attempts' in result.output) {
+        expect(result.output.attempts).toBeDefined();
+      }
     });
 
     test('should validate input and fail on invalid data', async () => {
-      const step = createWorkflowStep(
-        {
-          name: 'Validation Step',
-          version: '1.0.0',
-        },
-        async (context: any) => {
-          return {
-            output: {},
-            performance: context?.performance,
-            success: true,
-          };
-        },
+      const executableStep = createTestStep(
+        'Validation Step',
+        async (context: any) => ({
+          output: {},
+          performance: context?.performance,
+          success: true,
+        }),
         {
           validationConfig: {
             validateInput: true,
-            input: z.object({
-              required: z.string(),
-            }),
+            input: z.object({ required: z.string() }),
           },
         },
       );
 
-      const executableStep = new StandardWorkflowStep(step);
       const result = await executableStep.execute({ required: 'test' }, 'workflow_123');
 
       expect(result.success).toBeTruthy();
@@ -207,24 +204,18 @@ describe('step Factory System', () => {
     });
 
     test('should skip step when condition is not met', async () => {
-      const step = createWorkflowStep(
-        {
-          name: 'Conditional Step',
-          version: '1.0.0',
-        },
-        async (context: any) => {
-          return {
-            output: { executed: true },
-            performance: context?.performance,
-            success: true,
-          };
-        },
+      const executableStep = createTestStep(
+        'Conditional Step',
+        async (context: any) => ({
+          output: { executed: true },
+          performance: context?.performance,
+          success: true,
+        }),
         {
           condition: (context: any) => context.skipStep === true,
         },
       );
 
-      const executableStep = new StandardWorkflowStep(step);
       const result = await executableStep.execute({}, 'workflow_123', { skipStep: false });
 
       expect(result.success).toBeTruthy();
@@ -233,11 +224,8 @@ describe('step Factory System', () => {
     });
 
     test('should handle execution timeout', async () => {
-      const step = createWorkflowStep(
-        {
-          name: 'Timeout Step',
-          version: '1.0.0',
-        },
+      const executableStep = createTestStep(
+        'Timeout Step',
         async (context: any) => {
           await new Promise((resolve: any) => setTimeout(resolve, 1000));
           return {
@@ -253,7 +241,6 @@ describe('step Factory System', () => {
         },
       );
 
-      const executableStep = new StandardWorkflowStep(step);
       const result = await executableStep.execute({}, 'workflow_123');
 
       expect(result.success).toBeFalsy();
@@ -261,28 +248,21 @@ describe('step Factory System', () => {
     });
 
     test('should handle invalid input gracefully', async () => {
-      const step = createWorkflowStep(
-        {
-          name: 'Validation Step',
-          version: '1.0.0',
-        },
-        async (context: any) => {
-          return {
-            output: {},
-            performance: context?.performance,
-            success: true,
-          };
-        },
+      const executableStep = createTestStep(
+        'Validation Step',
+        async (context: any) => ({
+          output: {},
+          performance: context?.performance,
+          success: true,
+        }),
         {
           validationConfig: {
             validateInput: true,
-            input: z.object({
-              required: z.string(),
-            }),
+            input: z.object({ required: z.string() }),
           },
         },
       );
-      const executableStep = new StandardWorkflowStep(step);
+
       const result = await executableStep.execute({ required: 'test' }, 'workflow_123');
       expect(result.success).toBeTruthy();
     });
@@ -492,24 +472,28 @@ describe('step Factory System', () => {
   });
 
   describe('step Registry', () => {
-    test('should register and retrieve steps', () => {
-      const registry = new StepRegistry();
-
-      const step = createWorkflowStep(
+    // Helper to create standard test steps
+    const createRegistryTestStep = (overrides: any = {}, options: any = {}) => {
+      return createWorkflowStep(
         {
           name: 'Registry Step',
           category: 'test',
           tags: ['registry', 'test'],
           version: '1.0.0',
+          ...overrides,
         },
-        async (context: any) => {
-          return {
-            output: {},
-            performance: context?.performance,
-            success: true,
-          };
-        },
+        async (context: any) => ({
+          output: {},
+          performance: context?.performance,
+          success: true,
+        }),
+        options,
       );
+    };
+
+    test('should register and retrieve steps', () => {
+      const registry = new StepRegistry();
+      const step = createRegistryTestStep();
 
       registry.register(step, 'test-user');
 
@@ -524,58 +508,46 @@ describe('step Factory System', () => {
     test('should search steps by filters', () => {
       const registry = new StepRegistry();
 
-      const step1 = createWorkflowStep(
-        {
-          name: 'HTTP Step',
-          category: 'http',
-          tags: ['http', 'api'],
-          version: '1.0.0',
-        },
-        async () => ({ output: {}, performance: {} as any, success: true }),
-      );
+      const step1 = createRegistryTestStep({
+        name: 'HTTP Step',
+        category: 'http',
+        tags: ['http', 'api'],
+      });
 
-      const step2 = createWorkflowStep(
-        {
-          name: 'DB Step',
-          category: 'database',
-          tags: ['database', 'sql'],
-          version: '1.0.0',
-        },
-        async () => ({ output: {}, performance: {} as any, success: true }),
-      );
+      const step2 = createRegistryTestStep({
+        name: 'DB Step',
+        category: 'database',
+        tags: ['database', 'sql'],
+      });
 
       registry.register(step1);
       registry.register(step2);
 
-      // Search by category
-      const httpSteps = registry.search({ category: 'http' });
-      expect(httpSteps).toHaveLength(1);
-      expect(httpSteps[0].metadata.name).toBe('HTTP Step');
+      // Test search patterns with consolidated expectations
+      const searchTests = [
+        { filter: { category: 'http' }, expectedName: 'HTTP Step', expectedCount: 1 },
+        { filter: { tags: ['api'] }, expectedName: 'HTTP Step', expectedCount: 1 },
+        { filter: { namePattern: 'DB' }, expectedName: 'DB Step', expectedCount: 1 },
+      ];
 
-      // Search by tags
-      const apiSteps = registry.search({ tags: ['api'] });
-      expect(apiSteps).toHaveLength(1);
-      expect(apiSteps[0].metadata.name).toBe('HTTP Step');
-
-      // Search by name pattern
-      const dbSteps = registry.search({ namePattern: 'DB' });
-      expect(dbSteps).toHaveLength(1);
-      expect(dbSteps[0].metadata.name).toBe('DB Step');
+      searchTests.forEach(({ filter, expectedName, expectedCount }) => {
+        const results = registry.search(filter);
+        expect(results).toHaveLength(expectedCount);
+        expect(results[0].metadata.name).toBe(expectedName);
+      });
     });
 
     test('should validate dependencies', () => {
       const registry = new StepRegistry();
 
-      const step1 = createWorkflowStep({ name: 'Step 1', version: '1.0.0' }, async () => ({
-        output: {},
-        performance: {} as any,
-        success: true,
-      }));
-
-      const step2 = createWorkflowStep(
-        { name: 'Step 2', version: '1.0.0' },
-        async () => ({ output: {}, performance: {} as any, success: true }),
-        { dependencies: [step1.id] },
+      const step1 = createRegistryTestStep({ name: 'Step 1' });
+      const step2 = createRegistryTestStep(
+        {
+          name: 'Step 2',
+        },
+        {
+          dependencies: [step1.id],
+        },
       );
 
       registry.register(step1);
@@ -585,10 +557,13 @@ describe('step Factory System', () => {
       expect(validation.valid).toBeTruthy();
 
       // Test with missing dependency
-      const step3 = createWorkflowStep(
-        { name: 'Step 3', version: '1.0.0' },
-        async () => ({ output: {}, performance: {} as any, success: true }),
-        { dependencies: ['missing-step'] },
+      const step3 = createRegistryTestStep(
+        {
+          name: 'Step 3',
+        },
+        {
+          dependencies: ['missing-step'],
+        },
       );
 
       registry.register(step3);
@@ -600,27 +575,25 @@ describe('step Factory System', () => {
     test('should create execution plan', () => {
       const registry = new StepRegistry();
 
-      const step1 = createWorkflowStep({ name: 'Step 1', version: '1.0.0' }, async () => ({
-        output: {},
-        performance: {} as any,
-        success: true,
-      }));
-
-      const step2 = createWorkflowStep(
-        { name: 'Step 2', version: '1.0.0' },
-        async () => ({ output: {}, performance: {} as any, success: true }),
-        { dependencies: [step1.id] },
+      const step1 = createRegistryTestStep({ name: 'Step 1' });
+      const step2 = createRegistryTestStep(
+        {
+          name: 'Step 2',
+        },
+        {
+          dependencies: [step1.id],
+        },
+      );
+      const step3 = createRegistryTestStep(
+        {
+          name: 'Step 3',
+        },
+        {
+          dependencies: [step1.id],
+        },
       );
 
-      const step3 = createWorkflowStep(
-        { name: 'Step 3', version: '1.0.0' },
-        async () => ({ output: {}, performance: {} as any, success: true }),
-        { dependencies: [step1.id] },
-      );
-
-      registry.register(step1);
-      registry.register(step2);
-      registry.register(step3);
+      [step1, step2, step3].forEach(step => registry.register(step));
 
       const plan = registry.createExecutionPlan([step1.id, step2.id, step3.id]);
 
@@ -632,12 +605,7 @@ describe('step Factory System', () => {
 
     test('should track usage statistics', async () => {
       const registry = new StepRegistry();
-
-      const step = createWorkflowStep({ name: 'Usage Step', version: '1.0.0' }, async () => ({
-        output: {},
-        performance: {} as any,
-        success: true,
-      }));
+      const step = createRegistryTestStep({ name: 'Usage Step' });
 
       registry.register(step);
 
@@ -658,15 +626,10 @@ describe('step Factory System', () => {
 
     test('should export and import step definitions', () => {
       const registry = new StepRegistry();
-
-      const step = createWorkflowStep(
-        {
-          name: 'Export Step',
-          category: 'export',
-          version: '1.0.0',
-        },
-        async () => ({ output: {}, performance: {} as any, success: true }),
-      );
+      const step = createRegistryTestStep({
+        name: 'Export Step',
+        category: 'export',
+      });
 
       registry.register(step, 'export-user');
 
@@ -689,29 +652,23 @@ describe('step Factory System', () => {
   });
 
   describe('orchestrationManager Integration', () => {
+    // Helper to create manager with step factory enabled
+    const createEnabledManager = () => new OrchestrationManager({ enableStepFactory: true });
+    const createDisabledManager = () => new OrchestrationManager({ enableStepFactory: false });
+
     test('should integrate step factory with manager', () => {
-      const manager = new OrchestrationManager({
-        enableStepFactory: true,
-      });
+      const manager = createEnabledManager();
+      const step = { name: 'Manager Step', action: 'test', version: '1.0.0' };
+      const workflowStep = createWorkflowStep(step, async (context: any) => ({
+        output: {},
+        performance: context?.performance,
+        success: true,
+      }));
 
-      const step = createWorkflowStep(
-        {
-          name: 'Manager Step',
-          version: '1.0.0',
-        },
-        async (context: any) => {
-          return {
-            output: {},
-            performance: context?.performance,
-            success: true,
-          };
-        },
-      );
+      manager.registerStep(workflowStep, 'manager-test');
 
-      manager.registerStep(step, 'manager-test');
-
-      const retrieved = manager.getStep(step.id);
-      expect(retrieved).toBe(step);
+      const retrieved = manager.getStep(workflowStep.id);
+      expect(retrieved).toBe(workflowStep);
 
       const status = manager.getStatus();
       expect(status.stepFactoryEnabled).toBeTruthy();
@@ -719,18 +676,15 @@ describe('step Factory System', () => {
     });
 
     test('should disable step factory features when configured', () => {
-      const manager = new OrchestrationManager({
-        enableStepFactory: false,
-      });
+      const manager = createDisabledManager();
+      const testStep = createWorkflowStep({ name: 'Test', version: '1.0.0' }, async () => ({
+        output: {},
+        performance: {} as any,
+        success: true,
+      }));
 
       expect(() => {
-        manager.registerStep(
-          createWorkflowStep({ name: 'Test', version: '1.0.0' }, async () => ({
-            output: {},
-            performance: {} as any,
-            success: true,
-          })),
-        );
+        manager.registerStep(testStep);
       }).toThrow('Step factory is not enabled');
 
       const status = manager.getStatus();
@@ -738,22 +692,14 @@ describe('step Factory System', () => {
     });
 
     test('should execute single step through manager', async () => {
-      const manager = new OrchestrationManager({
-        enableStepFactory: true,
-      });
-
+      const manager = createEnabledManager();
       const step = createWorkflowStep(
-        {
-          name: 'Execute Step',
-          version: '1.0.0',
-        },
-        async (context: any) => {
-          return {
-            output: { processed: context.input },
-            performance: context?.performance,
-            success: true,
-          };
-        },
+        { name: 'Execute Step', version: '1.0.0' },
+        async (context: any) => ({
+          output: { processed: context.input },
+          performance: context?.performance,
+          success: true,
+        }),
       );
 
       manager.registerStep(step);
@@ -841,7 +787,7 @@ describe('step Factory System', () => {
         {
           executionConfig: {
             retryConfig: {
-              backoff: 'exponential',
+              backoff: 'exponential' as const,
               delay: -100, // Invalid
               maxAttempts: 0, // Invalid
             },

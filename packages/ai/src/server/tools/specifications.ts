@@ -1,4 +1,4 @@
-import { tool as aiTool, type CoreTool } from 'ai';
+import { tool as aiTool } from 'ai';
 import { z } from 'zod/v4';
 
 /**
@@ -215,16 +215,13 @@ export function createToolFromSpec<T extends keyof typeof ToolSpecifications>(
     ) => Promise<z.infer<(typeof ToolSpecifications)[T]['response']>>;
     middleware?: Array<(params: any, next: () => Promise<any>) => Promise<any>>;
   },
-): CoreTool<
-  (typeof ToolSpecifications)[T]['parameters'],
-  z.infer<(typeof ToolSpecifications)[T]['response']>
-> {
+): ReturnType<typeof aiTool> {
   const spec = ToolSpecifications[specName];
 
   return aiTool({
     description: spec.description,
-    parameters: spec.parameters,
-    execute: async params => {
+    parameters: spec.parameters as any,
+    execute: async (params: any) => {
       // Apply middleware if provided
       if (implementation.middleware && implementation.middleware.length > 0) {
         let index = 0;

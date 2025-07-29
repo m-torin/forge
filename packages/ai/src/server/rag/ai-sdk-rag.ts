@@ -6,7 +6,7 @@
 import { anthropic } from '@ai-sdk/anthropic';
 import { openai } from '@ai-sdk/openai';
 import { logWarn } from '@repo/observability/server/next';
-import { streamText } from 'ai';
+import { embed, streamText } from 'ai';
 import { safeEnv } from '../../../env';
 import { createUpstashVectorTools, type UpstashAIConfig } from '../vector/ai-sdk-integration';
 
@@ -57,20 +57,14 @@ export function createRAGChatHandler(config: RAGChatConfig) {
       messages,
       system:
         config.systemPrompt ||
-        `You are a helpful RAG assistant with access to a knowledge base.
-        You can add and retrieve content from your knowledge base.
-
-        Guidelines:
-        - When answering questions, first search your knowledge base for relevant information
-        - Only respond with information found in your knowledge base or general knowledge
-        - If no relevant information is found in the knowledge base, say "I don't have specific information about that in my knowledge base."
-        - When adding information, confirm what was added
-        - Be helpful and conversational while staying accurate`,
+        `You are a helpful assistant. Check your knowledge base before answering any questions.
+        Only respond to questions using information from tool calls.
+        if no relevant information is found in the tool calls, respond, "Sorry, I don't know."`,
       tools,
       maxSteps: config.maxSteps || 3,
     });
 
-    return result.toDataStreamResponse();
+    return result.toTextStreamResponse();
   };
 }
 
@@ -95,7 +89,7 @@ export class AISDKRag {
    */
   async addContent(content: string, metadata?: Record<string, any>): Promise<string> {
     const tools = createUpstashVectorTools(this.vectorConfig, this.useUpstashEmbedding);
-    return tools.addToKnowledgeBase.execute({ content, metadata });
+    return tools.addResource.execute({ content, metadata });
   }
 
   /**
@@ -124,7 +118,7 @@ export class AISDKRag {
     }>
   > {
     const tools = createUpstashVectorTools(this.vectorConfig, this.useUpstashEmbedding);
-    return tools.searchKnowledgeBase.execute({ query, topK });
+    return tools.getInformation.execute({ question: query, topK });
   }
 
   /**
@@ -153,14 +147,14 @@ export class AISDKRag {
 
     const model = provider === 'anthropic' ? anthropic(modelName) : openai(modelName);
 
-    const { text } = await streamText({
+    const result = await streamText({
       model,
       messages: [
         {
           role: 'system',
           content:
             options?.systemPrompt ||
-            `You are a helpful assistant. Use the following context to answer the user's question. If the context doesn't contain relevant information, say so.
+            `You are a helpful assistant. Use the following context to answer the user's question. Only respond based on the provided context. If the context doesn't contain relevant information, respond "Sorry, I don't know."
 
 Context:
 ${context}`,
@@ -172,7 +166,7 @@ ${context}`,
       ],
     });
 
-    return text;
+    return result.text;
   }
 }
 
@@ -203,7 +197,8 @@ export function createAISDKRagFromEnv(options?: {
 }
 
 /**
- * Quick RAG setup function
+ * Quick RAG setup function - matches AI SDK v5 documentation pattern
+ * Create and initialize a RAG system with documents in one call
  */
 export async function quickRAG(
   documents: Array<{ content: string; title?: string; metadata?: any }>,
@@ -256,6 +251,59 @@ export async function ragQuery(
     model: config?.model,
     provider: config?.provider,
   });
+}
+
+/**
+ * Generate a single embedding - matches AI SDK documentation pattern
+ */
+export async function generateEmbedding(value: string): Promise<number[]> {
+  const input = value.replaceAll('\n', ' ');
+  const { embedding } = await embed({
+    model: openai.embedding('text-embedding-ada-002'),
+    value: input,
+  });
+  return embedding;
+}
+
+/**
+ * Find relevant content - matches AI SDK documentation pattern
+ */
+export async function findRelevantContent(
+  userQuery: string,
+  config?: {
+    vectorUrl?: string;
+    vectorToken?: string;
+    namespace?: string;
+    topK?: number;
+    threshold?: number;
+  },
+) {
+  const env = safeEnv();
+  const vectorUrl = config?.vectorUrl || env.UPSTASH_VECTOR_REST_URL;
+  const vectorToken = config?.vectorToken || env.UPSTASH_VECTOR_REST_TOKEN;
+
+  if (!vectorUrl || !vectorToken) {
+    throw new Error('Vector database not configured');
+  }
+
+  const rag = new AISDKRag({
+    vectorUrl,
+    vectorToken,
+    namespace: config?.namespace,
+    useUpstashEmbedding: false,
+  });
+
+  const results = await rag.search(userQuery, config?.topK || 4);
+
+  // Filter by threshold if provided
+  if (config?.threshold !== undefined) {
+    return results.filter(result => result.score >= (config.threshold as number));
+  }
+
+  return results.map(result => ({
+    name: result.content,
+    similarity: result.score,
+  }));
 }
 
 // Export examples for documentation

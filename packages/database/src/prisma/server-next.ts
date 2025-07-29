@@ -45,6 +45,13 @@
 // ============================================================================
 
 // Export standard Prisma client directly
+// ============================================================================
+// SERVER ACTIONS
+// ============================================================================
+
+// Export server actions with namespace to avoid conflicts
+import * as actions from './src/server-actions';
+
 export { prisma, prismaClientSingleton } from './clients/standard';
 export type { PrismaClient } from './clients/standard';
 
@@ -57,13 +64,7 @@ export * from '../../prisma-generated/client';
 
 // Export observability utilities (with runtime detection for Next.js)
 export * as observability from './src/observability';
-
-// ============================================================================
-// SERVER ACTIONS
-// ============================================================================
-
-// Export server actions
-export * from './src/server-actions';
+export { actions };
 
 // ============================================================================
 // ORM FUNCTIONS

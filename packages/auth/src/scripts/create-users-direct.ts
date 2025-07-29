@@ -4,6 +4,7 @@
  */
 
 import { prisma } from '@repo/database/prisma';
+import { logError, logInfo } from '@repo/observability';
 import { createUserAction } from '../server/admin-management';
 
 interface UserToCreate {
@@ -29,13 +30,13 @@ const users: UserToCreate[] = [
 ];
 
 async function createUsersDirectly() {
-  console.log('📝 Creating users directly through Better Auth admin functions...');
+  logInfo('📝 Creating users directly through Better Auth admin functions...');
 
-  console.log('');
+  logInfo('');
 
   for (const userData of users) {
     try {
-      console.log(`Creating ${userData.email}...`);
+      logInfo(`Creating ${userData.email}...`);
 
       // First, check if user already exists
       const existingUser = await prisma.user.findUnique({
@@ -43,7 +44,7 @@ async function createUsersDirectly() {
       });
 
       if (existingUser) {
-        console.log(`  ℹ️  User already exists`);
+        logInfo(`  ℹ️  User already exists`);
 
         // Update role if needed
         if (existingUser.role !== userData.role) {
@@ -52,7 +53,7 @@ async function createUsersDirectly() {
             where: { email: userData.email },
           });
 
-          console.log(`  ✅ Updated role to ${userData.role}`);
+          logInfo(`  ✅ Updated role to ${userData.role}`);
         }
         continue;
       }
@@ -66,11 +67,11 @@ async function createUsersDirectly() {
       });
 
       if (!result.success) {
-        console.error(`  ❌ Failed to create user:`, result.error);
+        logError(`  ❌ Failed to create user:`, result.error);
         continue;
       }
 
-      console.log(`  ✅ User created successfully`);
+      logInfo(`  ✅ User created successfully`);
 
       // Add to default organization
       const user = await prisma.user.findUnique({
@@ -100,32 +101,32 @@ async function createUsersDirectly() {
             },
           });
 
-          console.log(`  ✅ Added to default organization`);
+          logInfo(`  ✅ Added to default organization`);
         }
       }
     } catch (error: any) {
-      console.error(`  ❌ Error creating ${userData.email}: `, error.message || error);
+      logError(`  ❌ Error creating ${userData.email}: `, error.message || error);
     }
   }
 
-  console.log('');
+  logInfo('');
 
-  console.log('✅ User creation completed!');
+  logInfo('✅ User creation completed!');
 
-  console.log('');
+  logInfo('');
 
-  console.log('You can now sign in with:');
+  logInfo('You can now sign in with:');
 
-  console.log('  Admin: admin@example.com / admin123');
+  logInfo('  Admin: admin@example.com / admin123');
 
-  console.log('  User: user@example.com / user1234');
+  logInfo('  User: user@example.com / user1234');
 }
 
 void (async () => {
   try {
     await createUsersDirectly();
   } catch (error: any) {
-    console.error(error);
+    logError(error);
   } finally {
     await prisma.$disconnect();
   }

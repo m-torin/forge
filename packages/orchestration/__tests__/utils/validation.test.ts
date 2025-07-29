@@ -40,7 +40,9 @@ describe('validation utilities', () => {
         steps: [],
       };
 
-      expect(() => validateWorkflowDefinition(definition as any)).toThrow('Workflow definition validation failed');
+      expect(() => validateWorkflowDefinition(definition as any)).toThrow(
+        'Workflow definition validation failed',
+      );
     });
 
     test('should reject workflow without steps', () => {
@@ -49,7 +51,9 @@ describe('validation utilities', () => {
         name: 'Test Workflow',
       };
 
-      expect(() => validateWorkflowDefinition(definition as any)).toThrow('Workflow definition validation failed');
+      expect(() => validateWorkflowDefinition(definition as any)).toThrow(
+        'Workflow definition validation failed',
+      );
     });
 
     test('should reject workflow with empty steps array', () => {
@@ -59,7 +63,9 @@ describe('validation utilities', () => {
         steps: [],
       };
 
-      expect(() => validateWorkflowDefinition(definition)).toThrow('Workflow definition validation failed');
+      expect(() => validateWorkflowDefinition(definition)).toThrow(
+        'Workflow definition validation failed',
+      );
     });
 
     test('should validate workflow with multiple steps', () => {
@@ -300,7 +306,7 @@ describe('validation utilities', () => {
 
     test('should validate Upstash QStash provider config', () => {
       const config = {
-        type: 'upstash-qstash',
+        type: 'upstash-workflow',
         name: 'qstash-provider',
         enabled: true,
         config: {
@@ -361,7 +367,7 @@ describe('validation utilities', () => {
       const errors = validateEnvironmentVariables(['TEST_VAR_1', 'TEST_VAR_2']);
 
       expect(errors.length).toBeGreaterThan(0);
-      expect(errors.some(error => error.message.includes('TEST_VAR_2'))).toBeTruthy();
+      expect(errors.some((error: any) => error.message.includes('TEST_VAR_2'))).toBeTruthy();
 
       process.env = originalEnv;
     });
@@ -467,10 +473,16 @@ describe('validation utilities', () => {
 
   describe('edge Cases', () => {
     test('should handle null and undefined inputs gracefully', () => {
-      expect(() => validateWorkflowDefinition(null as any)).toThrow('Workflow definition validation failed');
-      expect(() => validateWorkflowDefinition(undefined as any)).toThrow('Workflow definition validation failed');
+      expect(() => validateWorkflowDefinition(null as any)).toThrow(
+        'Workflow definition validation failed',
+      );
+      expect(() => validateWorkflowDefinition(undefined as any)).toThrow(
+        'Workflow definition validation failed',
+      );
       expect(() => validateWorkflowStep(null as any)).toThrow('Workflow step validation failed');
-      expect(() => validateWorkflowStep(undefined as any)).toThrow('Workflow step validation failed');
+      expect(() => validateWorkflowStep(undefined as any)).toThrow(
+        'Workflow step validation failed',
+      );
     });
 
     test('should handle empty objects', () => {

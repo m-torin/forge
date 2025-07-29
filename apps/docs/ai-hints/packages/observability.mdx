@@ -1,6 +1,6 @@
 ---
 title: "@repo/observability"
-description: AI hints for Sentry and observability package
+description: AI hints for observability package
 ---
 
 # @repo/observability
@@ -9,80 +9,45 @@ description: AI hints for Sentry and observability package
 
 - **Purpose**: Sentry error tracking and observability
 - **Layer**: 2 (Core Services)
-- **Edge Support**: ✅ Yes (HTTP-based implementation)
-- **Key Pattern**: Different implementations for server vs edge
+- **Edge Support**: ✅ Yes (with limitations)
+- **Key Pattern**: Different exports for edge vs server runtime
 
 ## Common Operations
-
-### Simplified Logging (Recommended)
-
-```typescript
-// Next.js server components, API routes, server actions
-import {
-  logInfo,
-  logError,
-  logWarn,
-  logDebug
-} from "@repo/observability/server/next";
-
-// Fire-and-forget - no await needed!
-logInfo("User action completed", { userId: user.id });
-logError("Operation failed", error, { context: "user-update" });
-logWarn("Rate limit approaching", { current: 85, limit: 100 });
-logDebug("Detailed debug info", { requestId });
-
-// Edge runtime (middleware)
-import { logInfo } from "@repo/observability/server/edge";
-export function middleware(request: Request) {
-  logInfo("Request received", { path: request.url });
-}
-
-// Optional configuration (once at startup)
-import { configureLogger } from "@repo/observability/server/next";
-configureLogger({
-  providers: {
-    console: { enabled: true, level: "debug" }
-  }
-});
-```
 
 ### Server-Side Error Tracking
 
 ```typescript
-import {
-  captureException,
-  captureMessage
-} from "@repo/observability/server/next";
+// In Next.js server components/actions
+import { createObservability } from "@repo/observability/server/next";
 
+const observability = createObservability();
+
+// Track errors
 try {
-  // Risky operation
-  await performOperation();
+  // Your code
 } catch (error) {
-  captureException(error, {
-    tags: { operation: "user-creation" },
-    user: { id: userId }
-  });
+  observability.captureException(error);
   throw error;
 }
 
-// Custom message
-captureMessage("Custom event occurred", "info");
+// Track custom events
+observability.captureMessage("User completed checkout", "info");
 ```
 
-### Edge Runtime Observability
+### Edge Runtime Error Tracking
 
 ```typescript
 // In middleware.ts or edge functions
-import { captureException } from "@repo/observability/server/edge";
+import { createObservability } from "@repo/observability/server/edge";
+
+const observability = createObservability();
 
 export async function middleware(request: NextRequest) {
   try {
-    // Middleware logic
+    // Your middleware logic
   } catch (error) {
-    captureException(error, {
-      tags: { middleware: "auth" }
-    });
-    throw error;
+    observability.captureException(error);
+    return NextResponse.redirect(new URL("/error", request.url));
   }
 }
 ```
@@ -90,21 +55,17 @@ export async function middleware(request: NextRequest) {
 ### Client-Side Error Tracking
 
 ```typescript
-import { captureException } from '@repo/observability/client/next';
+// In client components
+import { createObservability } from "@repo/observability/client/next";
 
-export function ErrorBoundary({ children }: { children: ReactNode }) {
-  return (
-    <ErrorBoundary
-      fallback={<ErrorFallback />}
-      onError={(error, errorInfo) => {
-        captureException(error, {
-          contexts: { errorInfo }
-        });
-      }}
-    >
-      {children}
-    </ErrorBoundary>
-  );
+const observability = createObservability();
+
+export function ClientComponent() {
+  const handleError = (error: Error) => {
+    observability.captureException(error);
+  };
+
+  return <button onClick={() => handleError(new Error("Test"))}>Test Error</button>;
 }
 ```
 
@@ -114,211 +75,130 @@ export function ErrorBoundary({ children }: { children: ReactNode }) {
 
 ```typescript
 // ❌ Wrong - in middleware.ts
-import { captureException } from "@repo/observability/server/next";
+import { createObservability } from "@repo/observability/server/next";
 
 // ✅ Correct - use edge variant
-import { captureException } from "@repo/observability/server/edge";
+import { createObservability } from "@repo/observability/server/edge";
 ```
 
-### ❌ Don't use Node.js specific features in edge
+### ❌ Don't use edge exports in server components
 
 ```typescript
-// ❌ Wrong - OpenTelemetry not available in edge
-import { trace } from "@opentelemetry/api";
+// ❌ Wrong - in server component
+import { createObservability } from "@repo/observability/server/edge";
 
-// ✅ Correct - edge implementation uses HTTP-based tracking
-import { captureException } from "@repo/observability/server/edge";
+// ✅ Correct - use server/next variant
+import { createObservability } from "@repo/observability/server/next";
 ```
 
-### ❌ Don't use the deprecated createLogger pattern
+### ❌ Don't forget to handle errors gracefully
 
 ```typescript
-// ❌ Wrong - deprecated async pattern
-import { createLogger } from "@repo/observability/server/next";
-const logger = createLogger();
-await logger.info("Message"); // Blocks execution
+// ❌ Wrong - observability failure crashes app
+const observability = createObservability();
+observability.captureException(error); // Could fail
 
-// ✅ Correct - new fire-and-forget pattern
-import { logInfo } from "@repo/observability/server/next";
-logInfo("Message"); // Non-blocking
+// ✅ Correct - wrap in try-catch
+try {
+  observability.captureException(error);
+} catch (obsError) {
+  console.error("Observability failed:", obsError);
+  // Continue with app logic
+}
 ```
 
-### ❌ Don't log sensitive information
+## Configuration
+
+### Environment Variables
 
 ```typescript
-// ❌ Wrong - logging sensitive data
-captureException(error, {
-  extra: {
-    password: user.password, // Never log passwords
-    apiKey: process.env.SECRET_KEY // Never log secrets
-  }
-});
+// Required for Sentry
+SENTRY_DSN=your-sentry-dsn
+SENTRY_ORG=your-org
+SENTRY_PROJECT=your-project
 
-// ✅ Correct - log only safe data
-captureException(error, {
-  tags: { userId: user.id },
-  extra: {
-    operation: "user-update",
-    timestamp: new Date().toISOString()
-  }
+// Optional
+SENTRY_ENVIRONMENT=production
+SENTRY_RELEASE=1.0.0
+```
+
+### Custom Configuration
+
+```typescript
+import { createObservability } from "@repo/observability/server/next";
+
+const observability = createObservability({
+  dsn: process.env.SENTRY_DSN,
+  environment: process.env.NODE_ENV,
+  release: process.env.VERCEL_GIT_COMMIT_SHA,
+  tracesSampleRate: 0.1,
+  integrations: [
+    // Custom integrations
+  ]
 });
 ```
 
 ## Performance Monitoring
 
-### Add Performance Context
+### Track Performance
 
 ```typescript
-import { addBreadcrumb, setContext } from "@repo/observability/server/next";
+import { createObservability } from "@repo/observability/server/next";
 
-export async function performDatabaseOperation() {
-  addBreadcrumb({
-    message: "Starting database operation",
-    category: "database",
-    level: "info"
-  });
+const observability = createObservability();
 
-  setContext("operation", {
-    type: "database",
-    table: "users",
-    method: "findMany"
-  });
+// Start a transaction
+const transaction = observability.startTransaction({
+  name: "Database Query",
+  op: "db.query"
+});
 
+try {
+  // Your database operation
   const result = await db.user.findMany();
+
+  // Set transaction as successful
+  transaction.setStatus("ok");
   return result;
+} catch (error) {
+  // Set transaction as failed
+  transaction.setStatus("internal_error");
+  observability.captureException(error);
+  throw error;
+} finally {
+  // Finish the transaction
+  transaction.finish();
 }
 ```
 
-### Track Custom Metrics
+## User Context
+
+### Set User Information
 
 ```typescript
-import { setTag, setMeasurement } from "@repo/observability/server/next";
+import { createObservability } from "@repo/observability/server/next";
+import { auth } from "@repo/auth/server/next";
 
-export async function processUserData(userData: UserData) {
-  const startTime = Date.now();
+const observability = createObservability();
 
-  setTag("user_type", userData.type);
+export async function protectedAction() {
+  const session = await auth();
 
-  try {
-    const result = await processData(userData);
-
-    setMeasurement("processing_time", Date.now() - startTime);
-    setTag("processing_result", "success");
-
-    return result;
-  } catch (error) {
-    setMeasurement("processing_time", Date.now() - startTime);
-    setTag("processing_result", "error");
-    throw error;
-  }
-}
-```
-
-## Error Context
-
-### Add User Context
-
-```typescript
-import { setUser } from "@repo/observability/server/next";
-
-export async function handleUserRequest(userId: string) {
-  setUser({
-    id: userId
-    // Don't include sensitive data like email or name
-  });
-
-  // Operations that might error
-}
-```
-
-### Add Request Context
-
-```typescript
-import { setContext } from "@repo/observability/server/next";
-
-export async function handleAPIRequest(request: Request) {
-  setContext("request", {
-    method: request.method,
-    url: request.url,
-    // Don't include sensitive headers
-    userAgent: request.headers.get("user-agent")
-  });
-}
-```
-
-## Environment-Specific Configuration
-
-### Server Configuration
-
-```typescript
-// Uses full Sentry SDK with all features
-import { init } from "@repo/observability/server/next";
-
-init({
-  dsn: process.env.SENTRY_DSN,
-  environment: process.env.NODE_ENV,
-  tracesSampleRate: 0.1
-});
-```
-
-### Edge Configuration
-
-```typescript
-// Uses lightweight HTTP-based implementation
-import { init } from "@repo/observability/server/edge";
-
-init({
-  dsn: process.env.SENTRY_DSN,
-  environment: process.env.NODE_ENV
-  // Limited options in edge runtime
-});
-```
-
-## Common Patterns
-
-### Server Action Error Handling
-
-```typescript
-import { captureException } from "@repo/observability/server/next";
-
-export async function createUser(formData: FormData) {
-  try {
-    const user = await db.user.create({
-      data: validated
+  if (session?.user) {
+    observability.setUser({
+      id: session.user.id,
+      email: session.user.email,
+      username: session.user.name
     });
-    return { success: true, user };
-  } catch (error) {
-    captureException(error, {
-      tags: { action: "create-user" },
-      extra: { formDataKeys: Object.keys(Object.fromEntries(formData)) }
-    });
-    return { success: false, error: "Failed to create user" };
   }
-}
-```
 
-### API Route Error Handling
-
-```typescript
-import { captureException } from "@repo/observability/server/next";
-import { NextResponse } from "next/server";
-
-export async function POST(request: Request) {
-  try {
-    // API logic
-  } catch (error) {
-    captureException(error, {
-      tags: { api: "user-creation" }
-    });
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
+  // Your action logic
 }
 ```
 
 ## See Also
 
 - Task templates:
-  [Observability setup template](/ai-hints/task-templates#implementing-observability)
+  [Observability setup template](/ai-hints/task-templates#implementing-error-tracking)
+- Command sequences:
+  [Debugging build failures](/ai-hints/command-sequences#debugging-build-failures)

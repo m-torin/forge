@@ -1,3 +1,4 @@
+import { logError } from '@repo/observability';
 import { createEnv } from '@t3-oss/env-nextjs';
 import { z } from 'zod/v4';
 
@@ -24,10 +25,10 @@ export const env = createEnv({
     NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
   },
   onValidationError: (error: any) => {
-    console.error('❌ Invalid environment variables:', error);
+    logError('❌ Invalid environment variables:', error);
     // Prevent white screens in production
     if (process.env.NODE_ENV === 'production') {
-      console.error('Using fallback values');
+      logError('Using fallback values');
       process.exit(1);
     } else {
       throw new Error('Invalid environment variables');

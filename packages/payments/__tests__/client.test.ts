@@ -1,4 +1,3 @@
-import { describe, expect, test } from 'vitest';
 import {
   formatCurrency,
   isValidEmail,
@@ -6,7 +5,8 @@ import {
   SUBSCRIPTION_STATUS,
   type PaymentStatus,
   type SubscriptionStatus,
-} from '../src/client';
+} from '@/client';
+import { describe, expect, test } from 'vitest';
 
 describe('payments Client Utilities', () => {
   describe('formatCurrency', () => {

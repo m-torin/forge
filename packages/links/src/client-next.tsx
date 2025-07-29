@@ -45,7 +45,7 @@
 import { useRouter } from 'next/navigation';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
-import { logError } from '@repo/observability/server/next';
+import { logError } from '@repo/observability/client/next';
 import {
   ClickEvent,
   CreateLinkRequest,
@@ -130,7 +130,7 @@ export function LinkProvider({ config, children, fallback }: LinkProviderProps) 
   }
 
   if (error) {
-    logError('Link manager initialization error', error);
+    logError('Link manager initialization error', { error: String(error) });
     return fallback || <div>Error initializing link manager: {error}</div>;
   }
 

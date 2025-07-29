@@ -5,8 +5,7 @@
  * to add advanced functionality like retry, circuit breaking, monitoring, etc.
  */
 
-import { logInfo } from '@repo/observability/server/next';
-import { createServerObservability } from '@repo/observability/shared-env';
+import { createServerObservability, logInfo } from '@repo/observability/server/next';
 import { initializePerformanceData, updatePerformanceData } from './step-factory/step-performance';
 import { SimpleWorkflowStep, StepExecutionResult } from './step-factory/step-types';
 
@@ -107,11 +106,7 @@ export function withStepMonitoring<TInput = unknown, TOutput = unknown>(
         // Fire and forget logging
         (async () => {
           try {
-            const _logger = await createServerObservability({
-              providers: {
-                console: { enabled: true },
-              },
-            });
+            const _logger = await createServerObservability();
             logInfo('Step execution started', {
               timestamp: new Date().toISOString(),
               component: 'MONITOR',
@@ -132,11 +127,7 @@ export function withStepMonitoring<TInput = unknown, TOutput = unknown>(
         // Fire and forget logging
         (async () => {
           try {
-            const _logger = await createServerObservability({
-              providers: {
-                console: { enabled: true },
-              },
-            });
+            const _logger = await createServerObservability();
             logInfo('Step execution completed', {
               duration: performance.duration,
               component: 'MONITOR',

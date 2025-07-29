@@ -8,7 +8,7 @@
  * For non-Next.js applications, use '@repo/orchestration/server' instead.
  */
 
-import { logError, logInfo, logWarn } from '@repo/observability/shared-env';
+import { logError, logInfo, logWarn } from '@repo/observability/server/next';
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod/v4';
 
@@ -1190,7 +1190,7 @@ export function addSuccessfulResult(accumulator: ErrorAccumulator) {
 
 export async function addFailedResult(_accumulator: ErrorAccumulator) {
   // Add failed result to accumulator
-  logError('Failed result added to accumulator', new Error('Failed result in accumulator'), {
+  logError(new Error('Failed result added to accumulator'), {
     operation: 'workflow_failed_result',
   });
 }

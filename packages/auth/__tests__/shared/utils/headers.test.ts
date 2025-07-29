@@ -154,7 +154,7 @@ describe('header utilities', () => {
       const headers = headersModule.createJsonHeaders();
 
       // This would be used like: fetch(url, { headers })
-      expect(headers['Content-Type']).toBe('application/json');
+      expect((headers as Record<string, string>)['Content-Type']).toBe('application/json');
     });
   });
 
@@ -166,14 +166,14 @@ describe('header utilities', () => {
       const bearerHeaders = headersModule.createBearerHeaders('bearer-token');
       const jsonHeaders = headersModule.createJsonHeaders();
 
-      expect(apiHeaders.Authorization).toBe('Bearer api-key');
-      expect(bearerHeaders.Authorization).toBe('Bearer bearer-token');
-      expect(jsonHeaders.Authorization).toBeUndefined();
+      expect((apiHeaders as Record<string, string>).Authorization).toBe('Bearer api-key');
+      expect((bearerHeaders as Record<string, string>).Authorization).toBe('Bearer bearer-token');
+      expect((jsonHeaders as Record<string, string>).Authorization).toBeUndefined();
 
       // All should have JSON content type
-      expect(apiHeaders['Content-Type']).toBe('application/json');
-      expect(bearerHeaders['Content-Type']).toBe('application/json');
-      expect(jsonHeaders['Content-Type']).toBe('application/json');
+      expect((apiHeaders as Record<string, string>)['Content-Type']).toBe('application/json');
+      expect((bearerHeaders as Record<string, string>)['Content-Type']).toBe('application/json');
+      expect((jsonHeaders as Record<string, string>)['Content-Type']).toBe('application/json');
     });
 
     test('should be compatible with modern fetch API', async () => {

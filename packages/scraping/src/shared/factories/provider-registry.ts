@@ -3,7 +3,7 @@
  * Handles provider registration, validation, and creation
  */
 
-import { logWarn } from '@repo/observability/shared-env';
+import { logWarn } from '@repo/observability';
 import { ScrapingError, ScrapingErrorCode } from '../errors';
 import { ProviderConfig, ProviderRegistry, ScrapingProvider } from '../types/scraping-types';
 

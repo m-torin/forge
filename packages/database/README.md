@@ -1,7 +1,10 @@
 # @repo/database
 
-Database abstraction layer supporting Prisma, Cloud Firestore, Upstash Vector,
-and Redis.
+- _Can build:_ **NO**
 
-Complete documentation is available in
-[../../apps/docs/packages/database/overview.mdx](../../apps/docs/packages/database/overview.mdx).
+- _Exports:_
+  - **Core**: `.`, `./server`, `./client`, `./migrations`
+  - **Utilities**: `./types`, `./seed`, `./utils`
+
+- _Documentation:_
+  **[Database Package](../../apps/docs/packages/database/overview.mdx)**

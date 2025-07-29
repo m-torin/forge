@@ -185,6 +185,24 @@ export const CONSOLE_PRESETS = {
     info: { enabled: true },
     debug: { enabled: true },
   },
+  browser: {
+    error: { enabled: true },
+    warn: { enabled: true },
+    info: { enabled: false },
+    debug: { enabled: false },
+  },
+  edge: {
+    error: { enabled: true },
+    warn: { enabled: true },
+    info: { enabled: false },
+    debug: { enabled: false },
+  },
+  typescript: {
+    error: { enabled: true },
+    warn: { enabled: true },
+    info: { enabled: false },
+    debug: { enabled: false },
+  },
 };
 
 /**

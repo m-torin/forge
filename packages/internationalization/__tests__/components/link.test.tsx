@@ -1,7 +1,7 @@
 import { describe, expect, test, vi } from 'vitest';
 
+import { I18nLink as Link } from '@repo/uix-system/shared/i18n';
 import { useParams } from 'next/navigation';
-import { Link } from '../../src/components/link';
 
 // Mock Next.js components and hooks
 vi.mock('next/link', () => ({

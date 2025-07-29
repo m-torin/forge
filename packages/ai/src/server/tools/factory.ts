@@ -1,4 +1,4 @@
-import { tool as aiTool, type CoreTool, DataStreamWriter } from 'ai';
+import { tool as aiTool, type ToolExecutionOptions } from 'ai';
 import 'server-only';
 import { z } from 'zod/v4';
 
@@ -6,28 +6,32 @@ import { z } from 'zod/v4';
  * Common context that tools might need
  */
 export interface ToolContext {
-  dataStream?: DataStreamWriter;
+  dataStream?: any; // DataStreamWriter type not available in AI SDK v5 public API
   session?: any; // Can be typed more specifically based on auth provider
   [key: string]: any; // Allow additional context
 }
 
 /**
  * Creates a tool with context injection
- * Follows Vercel AI SDK's tool pattern
+ * Follows Vercel AI SDK v5 tool pattern
  */
 export function tool<TParameters extends z.ZodTypeAny, TResult>(
   definition: {
     description: string;
     parameters: TParameters;
-    execute: (args: z.infer<TParameters>, context: ToolContext) => TResult | Promise<TResult>;
+    execute: (
+      input: z.infer<TParameters>,
+      context: ToolContext & ToolExecutionOptions,
+    ) => TResult | Promise<TResult>;
   },
   context: ToolContext = {},
-): CoreTool<TParameters, TResult> {
+) {
   return aiTool({
     description: definition.description,
     parameters: definition.parameters,
-    execute: async args => definition.execute(args, context),
-  });
+    execute: async (input: unknown, options: ToolExecutionOptions) =>
+      definition.execute(input as z.infer<TParameters>, { ...context, ...options }),
+  } as any);
 }
 
 /**
@@ -39,12 +43,20 @@ export function createToolFactory(defaultContext: ToolContext) {
     definition: {
       description: string;
       parameters: TParameters;
-      execute: (args: z.infer<TParameters>, context: ToolContext) => TResult | Promise<TResult>;
+      execute: (
+        input: z.infer<TParameters>,
+        context: ToolContext & ToolExecutionOptions,
+      ) => TResult | Promise<TResult>;
     },
     additionalContext?: Partial<ToolContext>,
-  ): CoreTool<TParameters, TResult> => {
+  ) => {
     const mergedContext = { ...defaultContext, ...additionalContext };
-    return tool(definition, mergedContext);
+    return aiTool({
+      description: definition.description,
+      parameters: definition.parameters,
+      execute: async (input: unknown, options: ToolExecutionOptions) =>
+        definition.execute(input as z.infer<TParameters>, { ...mergedContext, ...options }),
+    } as any);
   };
 }
 
@@ -55,56 +67,54 @@ export function createAPITool<TParameters extends z.ZodTypeAny, TResult>(
   config: {
     description: string;
     parameters: TParameters;
-    url: string | ((args: z.infer<TParameters>) => string);
+    url: string | ((input: z.infer<TParameters>) => string);
     method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
-    headers?: Record<string, string> | ((args: z.infer<TParameters>) => Record<string, string>);
-    transformRequest?: (args: z.infer<TParameters>) => any;
+    headers?: Record<string, string> | ((input: z.infer<TParameters>) => Record<string, string>);
+    transformRequest?: (input: z.infer<TParameters>) => any;
     transformResponse?: (response: any) => TResult;
     onError?: (error: unknown) => TResult;
   },
-  context: ToolContext = {},
-): CoreTool<TParameters, TResult> {
-  return tool(
-    {
-      description: config.description,
-      parameters: config.parameters,
-      execute: async args => {
-        try {
-          const url = typeof config.url === 'function' ? config.url(args) : config.url;
-          const headers =
-            typeof config.headers === 'function' ? config.headers(args) : config.headers || {};
+  _context: ToolContext = {},
+) {
+  return aiTool({
+    description: config.description,
+    parameters: config.parameters,
+    execute: async (input: unknown, _options: ToolExecutionOptions) => {
+      const typedInput = input as z.infer<TParameters>;
+      try {
+        const url = typeof config.url === 'function' ? config.url(typedInput) : config.url;
+        const headers =
+          typeof config.headers === 'function' ? config.headers(typedInput) : config.headers || {};
 
-          const requestOptions: RequestInit = {
-            method: config.method || 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              ...headers,
-            },
-          };
+        const requestOptions: RequestInit = {
+          method: config.method || 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            ...headers,
+          },
+        };
 
-          if (config.method && config.method !== 'GET' && config.transformRequest) {
-            requestOptions.body = JSON.stringify(config.transformRequest(args));
-          }
-
-          const response = await fetch(url, requestOptions);
-
-          if (!response.ok) {
-            throw new Error(`API request failed: ${response.status} ${response.statusText}`);
-          }
-
-          const data = await response.json();
-
-          return config.transformResponse ? config.transformResponse(data) : data;
-        } catch (error) {
-          if (config.onError) {
-            return config.onError(error);
-          }
-          throw error;
+        if (config.method && config.method !== 'GET' && config.transformRequest) {
+          requestOptions.body = JSON.stringify(config.transformRequest(typedInput));
         }
-      },
+
+        const response = await fetch(url, requestOptions);
+
+        if (!response.ok) {
+          throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        return config.transformResponse ? config.transformResponse(data) : data;
+      } catch (error) {
+        if (config.onError) {
+          return config.onError(error);
+        }
+        throw error;
+      }
     },
-    context,
-  );
+  } as any);
 }
 
 /**
@@ -114,43 +124,44 @@ export function createStreamingTool<TParameters extends z.ZodTypeAny, TResult>(
   config: {
     description: string;
     parameters: TParameters;
-    execute: (args: z.infer<TParameters>, context: ToolContext) => TResult | Promise<TResult>;
+    execute: (
+      input: z.infer<TParameters>,
+      context: ToolContext & ToolExecutionOptions,
+    ) => TResult | Promise<TResult>;
     streamTypes?: Array<'clear' | 'finish' | 'id' | 'title' | 'kind'>;
   },
   context: ToolContext = {},
-): CoreTool<TParameters, TResult> {
-  return tool(
-    {
-      description: config.description,
-      parameters: config.parameters,
-      execute: async args => {
-        if (!context.dataStream) {
-          throw new Error('Data stream is required for streaming tools');
-        }
+) {
+  return aiTool({
+    description: config.description,
+    parameters: config.parameters,
+    execute: async (input: unknown, options: any) => {
+      const typedInput = input as z.infer<TParameters>;
+      if (!context.dataStream) {
+        throw new Error('Data stream is required for streaming tools');
+      }
 
-        // Handle pre-execution stream events
-        if (config.streamTypes?.includes('clear')) {
-          context.dataStream.writeData({
-            type: 'clear',
-            content: '',
-          });
-        }
+      // Handle pre-execution stream events
+      if (config.streamTypes?.includes('clear')) {
+        context.dataStream.write({
+          type: 'data-clear' as any,
+          data: '',
+        } as any);
+      }
 
-        const result = await config.execute(args, context);
+      const result = await config.execute(typedInput, { ...context, ...options });
 
-        // Handle post-execution stream events
-        if (config.streamTypes?.includes('finish')) {
-          context.dataStream.writeData({
-            type: 'finish',
-            content: '',
-          });
-        }
+      // Handle post-execution stream events
+      if (config.streamTypes?.includes('finish')) {
+        context.dataStream.write({
+          type: 'data-finish' as any,
+          data: '',
+        } as any);
+      }
 
-        return result;
-      },
+      return result;
     },
-    context,
-  );
+  } as any);
 }
 
 /**
@@ -160,35 +171,36 @@ export function createSecureTool<TParameters extends z.ZodTypeAny, TResult>(
   config: {
     description: string;
     parameters: TParameters;
-    execute: (args: z.infer<TParameters>, context: ToolContext) => TResult | Promise<TResult>;
+    execute: (
+      input: z.infer<TParameters>,
+      context: ToolContext & ToolExecutionOptions,
+    ) => TResult | Promise<TResult>;
     checkPermissions: (
-      args: z.infer<TParameters>,
+      input: z.infer<TParameters>,
       context: ToolContext,
     ) => boolean | Promise<boolean>;
   },
   context: ToolContext = {},
-): CoreTool<TParameters, TResult> {
-  return tool(
-    {
-      description: config.description,
-      parameters: config.parameters,
-      execute: async args => {
-        const hasPermission = await config.checkPermissions(args, context);
-        if (!hasPermission) {
-          throw new Error('Insufficient permissions for this operation');
-        }
-        return config.execute(args, context);
-      },
+) {
+  return aiTool({
+    description: config.description,
+    parameters: config.parameters,
+    execute: async (input: unknown, options: any) => {
+      const typedInput = input as z.infer<TParameters>;
+      const hasPermission = await config.checkPermissions(typedInput, context);
+      if (!hasPermission) {
+        throw new Error('Insufficient permissions for this operation');
+      }
+      return config.execute(typedInput, { ...context, ...options });
     },
-    context,
-  );
+  } as any);
 }
 
 /**
  * Utility to combine multiple tool factories with shared context
  */
-export function combineTools<T extends Record<string, CoreTool<any, any>>>(
-  toolFactories: Record<keyof T, (context: ToolContext) => CoreTool<any, any>>,
+export function combineTools<T extends Record<string, ReturnType<typeof aiTool>>>(
+  toolFactories: Record<keyof T, (context: ToolContext) => ReturnType<typeof aiTool>>,
   context: ToolContext = {},
 ): T {
   const tools = {} as T;

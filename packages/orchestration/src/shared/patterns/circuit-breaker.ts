@@ -4,7 +4,7 @@
 
 import OpossumCircuitBreaker from 'opossum';
 
-import { createServerObservability } from '@repo/observability/shared-env';
+import { createServerObservability } from '@repo/observability/server/next';
 import { CircuitBreakerPattern, PatternContext, PatternResult } from '../types/patterns';
 import { CircuitBreakerError } from '../utils/errors';
 
@@ -98,12 +98,8 @@ export class CircuitBreakerManager {
     // Default event handlers for logging
     breaker.on('open', async () => {
       try {
-        const logger = await createServerObservability({
-          providers: {
-            console: { enabled: true },
-          },
-        });
-        logger.log('warn', `Circuit breaker '${name}' opened`);
+        const logger = await createServerObservability();
+        logger.log('warning', `Circuit breaker '${name}' opened`);
       } catch {
         // Fallback to console if logger fails
       }
@@ -111,11 +107,7 @@ export class CircuitBreakerManager {
 
     breaker.on('halfOpen', async () => {
       try {
-        const logger = await createServerObservability({
-          providers: {
-            console: { enabled: true },
-          },
-        });
+        const logger = await createServerObservability();
         logger.log('info', `Circuit breaker '${name}' half-opened`);
       } catch {
         // Fallback to console if logger fails
@@ -124,11 +116,7 @@ export class CircuitBreakerManager {
 
     breaker.on('close', async () => {
       try {
-        const logger = await createServerObservability({
-          providers: {
-            console: { enabled: true },
-          },
-        });
+        const logger = await createServerObservability();
         logger.log('info', `Circuit breaker '${name}' closed`);
       } catch {
         // Fallback to console if logger fails

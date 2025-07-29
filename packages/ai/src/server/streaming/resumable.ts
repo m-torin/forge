@@ -1,5 +1,5 @@
 import { logError, logInfo } from '@repo/observability/server/next';
-import { createDataStream } from 'ai';
+import { createUIMessageStream } from 'ai';
 import { after } from 'next/server';
 import { createResumableStreamContext, type ResumableStreamContext } from 'resumable-stream';
 
@@ -21,11 +21,10 @@ export function getResumableStreamContext(): ResumableStreamContext | null {
           operation: 'resumable_streams',
         });
       } else {
-        logError(
-          'Failed to create resumable stream context',
-          error instanceof Error ? error : new Error(String(error)),
-          { operation: 'resumable_streams' },
-        );
+        logError('Failed to create resumable stream context', {
+          operation: 'resumable_streams',
+          error: error instanceof Error ? error : new Error(String(error)),
+        });
       }
     }
   }
@@ -61,9 +60,22 @@ export async function resumeOrEmptyStream(streamId: string): Promise<ReadableStr
     return null;
   }
 
-  const emptyDataStream = createDataStream({
+  const emptyDataStream = createUIMessageStream({
     execute: () => {},
   });
 
-  return streamContext.resumableStream(streamId, () => emptyDataStream);
+  // Transform UI message stream to text stream for compatibility
+  const textStream = emptyDataStream.pipeThrough(
+    new TransformStream({
+      transform(chunk, controller) {
+        if (typeof chunk === 'object' && chunk.type === 'text') {
+          controller.enqueue(chunk.text || '');
+        } else {
+          controller.enqueue('');
+        }
+      },
+    }),
+  );
+
+  return streamContext.resumableStream(streamId, () => textStream as any);
 }

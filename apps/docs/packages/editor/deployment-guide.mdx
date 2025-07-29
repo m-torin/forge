@@ -1,0 +1,525 @@
+---
+title: NotionEditor - Deployment Guide
+description:
+  Complete deployment guide for the NotionEditor package including GitHub
+  Actions, npm publishing, and CDN deployment
+---
+
+# NotionEditor - Deployment Guide
+
+This guide covers deploying the NotionEditor package for both internal monorepo
+usage and external npm distribution.
+
+## 🚀 Automated Deployment with GitHub Actions
+
+### Workflow Overview
+
+The package includes a comprehensive GitHub Actions workflow that handles:
+
+- **Multi-environment testing** (Node.js 20 & 22)
+- **Build verification** across all distribution formats
+- **Automated artifact generation**
+- **GitHub Release creation** with downloadable assets
+
+### Workflow Configuration
+
+**File:** `.github/workflows/editor-build-release.yml`
+
+**Triggers:**
+
+- Push to `main` branch
+- Pull requests to `main` branch
+- Changes in `packages/editor/**` or workflow file
+
+**Build Matrix:**
+
+```yaml
+strategy:
+  matrix:
+    node-version: [20, 22]
+```
+
+### Build Steps
+
+1. **Dependency Installation**
+
+   ```bash
+   pnpm install --frozen-lockfile
+   ```
+
+2. **Package Build**
+
+   ```bash
+   pnpm --filter @repo/editor build
+   ```
+
+3. **Testing Suite**
+
+   ```bash
+   pnpm --filter @repo/editor test       # Source tests
+   pnpm --filter @repo/editor test:build # Build artifact tests
+   ```
+
+4. **Quality Checks**
+
+   ```bash
+   pnpm --filter @repo/editor typecheck
+   pnpm --filter @repo/editor lint
+   ```
+
+5. **Artifact Upload**
+   - Build artifacts uploaded for Node.js 20 builds on `main`
+   - 30-day retention period
+   - Includes dist/, package.json, README.md, examples/
+
+### Release Automation
+
+When code is merged to `main`, the workflow automatically:
+
+1. **Creates Package Tarball**
+
+   ```bash
+   pnpm pack --pack-destination ./dist/
+   ```
+
+2. **Generates Version Info**
+
+   ```bash
+   VERSION=$(node -p "require('./package.json').version")
+   COMMIT_SHA=$(git rev-parse --short HEAD)
+   TAG="editor-v${VERSION}-${COMMIT_SHA}"
+   ```
+
+3. **Creates GitHub Release**
+   - **Tag Format:** `editor-v{version}-{commit}`
+   - **Release Name:** `Editor Package v{version}`
+   - **Includes:** All distribution files and examples
+
+### Release Assets
+
+Each release includes these downloadable assets:
+
+#### Core Bundles
+
+- `embeddable-standalone.global.js` - Standalone IIFE bundle
+- `embeddable-standalone.global.js.map` - Source map
+- `embeddable-standalone.d.ts` - TypeScript declarations
+
+#### Framework-Specific Bundles
+
+- `react-bundle.cjs` / `react-bundle.mjs` - React bundles
+- `nextjs-bundle.cjs` / `nextjs-bundle.mjs` - Next.js bundles
+- TypeScript declarations for all bundles
+
+#### Package Files
+
+- `repo-editor-{version}.tgz` - Complete npm package
+- `embeddable-standalone.html` - Usage example
+
+## 📦 Manual Deployment
+
+### Prerequisites
+
+```bash
+# Ensure Node.js 20+ is installed
+node --version # Should be >= 20.0.0
+
+# Install dependencies
+pnpm install
+```
+
+### Build Process
+
+1. **Clean Build**
+
+   ```bash
+   cd packages/editor
+   pnpm build:clean
+   ```
+
+2. **Run All Tests**
+
+   ```bash
+   pnpm test          # Source tests
+   pnpm test:build    # Build tests
+   pnpm test:coverage # Coverage report
+   ```
+
+3. **Quality Verification**
+
+   ```bash
+   pnpm typecheck # TypeScript validation
+   pnpm lint      # ESLint validation
+   pnpm circular  # Circular dependency check
+   ```
+
+4. **Package Creation**
+   ```bash
+   pnpm pack # Creates .tgz file
+   ```
+
+### Deployment Verification
+
+Before deployment, verify all distribution formats:
+
+```bash
+# Check all required files exist
+ls -la dist/
+ls -la dist/standalone/
+ls -la dist/react/
+ls -la dist/nextjs/
+
+# Verify package.json exports
+node -e "console.log(require('./package.json').exports)"
+
+# Test bundle imports
+node -e "const pkg = require('./dist/index.cjs'); console.log(Object.keys(pkg))"
+```
+
+## 🌐 CDN Deployment
+
+### Using jsDelivr
+
+The standalone bundle can be deployed to jsDelivr for global CDN access:
+
+1. **GitHub Release** (Automatic)
+
+   ```html
+   <script src="https://cdn.jsdelivr.net/gh/yourorg/repo@editor-v1.0.0-abc123/packages/editor/dist/standalone/embeddable-standalone.global.js"></script>
+   ```
+
+2. **npm Package** (After publishing)
+   ```html
+   <script src="https://cdn.jsdelivr.net/npm/@your-org/editor@1.0.0/dist/standalone/embeddable-standalone.global.js"></script>
+   ```
+
+### Using unpkg
+
+```html
+<script src="https://unpkg.com/@your-org/editor@1.0.0/dist/standalone/embeddable-standalone.global.js"></script>
+```
+
+### Self-Hosted CDN
+
+For enterprise deployments, host the bundles on your own CDN:
+
+```bash
+# Extract files from release
+tar -xzf repo-editor-1.0.0.tgz
+
+# Upload to your CDN
+aws s3 cp package/dist/standalone/ s3://your-cdn-bucket/editor/v1.0.0/ --recursive
+```
+
+```html
+<script src="https://your-cdn.com/editor/v1.0.0/embeddable-standalone.global.js"></script>
+```
+
+## 📄 npm Publishing
+
+### Internal Registry
+
+For monorepo usage, publish to your internal npm registry:
+
+```bash
+# Set registry
+npm config set registry https://your-internal-registry.com
+
+# Login
+npm login
+
+# Publish
+npm publish
+```
+
+### Public npm Registry
+
+For public distribution:
+
+```bash
+# Set public registry
+npm config set registry https://registry.npmjs.org
+
+# Login with your npm account
+npm login
+
+# Publish package
+npm publish --access public
+```
+
+### Scoped Publishing
+
+If using organization scope:
+
+```bash
+# Update package.json name
+{
+  "name": "@your-org/notion-editor",
+  ...
+}
+
+# Publish with scope
+npm publish --access public
+```
+
+## 🔄 Continuous Integration
+
+### Branch Protection
+
+Set up branch protection rules for `main`:
+
+```yaml
+# .github/branch-protection.yml
+protection_rules:
+  - pattern: "main"
+    required_status_checks:
+      - "build-and-test (20)"
+      - "build-and-test (22)"
+    enforce_admins: true
+    required_pull_request_reviews:
+      required_approving_review_count: 1
+```
+
+### Quality Gates
+
+The CI pipeline enforces these quality gates:
+
+1. **✅ All Tests Pass**
+   - Unit tests
+   - Integration tests
+   - Build tests
+   - Edge case tests
+
+2. **✅ Code Quality**
+   - TypeScript compilation
+   - ESLint validation
+   - No circular dependencies
+
+3. **✅ Build Verification**
+   - All distribution formats build successfully
+   - File sizes within acceptable limits
+   - No missing dependencies
+
+4. **✅ Security Checks**
+   - Dependency vulnerability scanning
+   - License compliance
+   - No sensitive data in builds
+
+### Deployment Environments
+
+#### Staging Environment
+
+- **Branch:** `develop`
+- **Auto-deploy:** On successful CI
+- **Purpose:** Pre-production testing
+
+#### Production Environment
+
+- **Branch:** `main`
+- **Manual approval:** Required for releases
+- **Purpose:** Live deployments
+
+## 🔐 Security Considerations
+
+### Build Security
+
+1. **Dependency Scanning**
+
+   ```bash
+   # Run security audit
+   pnpm audit
+   
+   # Fix vulnerabilities
+   pnpm audit --fix
+   ```
+
+2. **License Compliance**
+
+   ```bash
+   # Check licenses
+   npx license-checker --summary
+   ```
+
+3. **Bundle Analysis**
+
+   ```bash
+   # Analyze bundle size
+   npx bundlesize
+   
+   # Check for vulnerabilities in bundles
+   npx bundlewatch
+   ```
+
+### Deployment Security
+
+1. **Token Management**
+   - Use GitHub secrets for npm tokens
+   - Rotate tokens regularly
+   - Limit token scope to necessary packages
+
+2. **Release Signing**
+
+   ```bash
+   # Sign releases with GPG
+   git tag -s editor-v1.0.0 -m "Release v1.0.0"
+   ```
+
+3. **Integrity Verification**
+   ```bash
+   # Generate checksums
+   sha256sum dist/standalone/embeddable-standalone.global.js > checksums.txt
+   ```
+
+## 📊 Monitoring & Analytics
+
+### Build Metrics
+
+Monitor these metrics across deployments:
+
+- **Build Duration:** Target < 5 minutes
+- **Bundle Sizes:** Track size increases
+- **Test Coverage:** Maintain > 80%
+- **Dependency Count:** Monitor for bloat
+
+### Runtime Metrics
+
+For deployed applications:
+
+- **Load Time:** Track initial bundle load
+- **Error Rate:** Monitor JavaScript errors
+- **Performance:** Core Web Vitals
+- **Usage:** Feature adoption rates
+
+### Deployment Dashboard
+
+Create a dashboard tracking:
+
+```yaml
+Metrics:
+  - Build Success Rate: 99.5%
+  - Average Build Time: 3m 45s
+  - Bundle Size: 1.6MB (standalone)
+  - Test Coverage: 85%
+  - Security Issues: 0 critical
+
+Recent Deployments:
+  - editor-v1.2.0-abc123: ✅ Success (2024-01-15)
+  - editor-v1.1.9-def456: ✅ Success (2024-01-10)
+  - editor-v1.1.8-ghi789: ❌ Failed (2024-01-08)
+```
+
+## 🔧 Troubleshooting Deployments
+
+### Common Issues
+
+#### Build Failures
+
+**Issue:** TypeScript compilation errors
+
+```bash
+# Solution: Update TypeScript configurations
+pnpm typecheck --verbose
+```
+
+**Issue:** Missing dependencies in bundles
+
+```bash
+# Solution: Check external dependencies configuration
+cat tsup.config.ts | grep external
+```
+
+**Issue:** CSS not loading
+
+```bash
+# Solution: Verify CSS extraction
+ls -la dist/*.css
+```
+
+#### Test Failures
+
+**Issue:** Build tests failing
+
+```bash
+# Solution: Rebuild and verify artifacts
+pnpm build:clean
+pnpm test:build --verbose
+```
+
+**Issue:** Integration tests timing out
+
+```bash
+# Solution: Increase test timeout
+# In vitest.config.ts: testTimeout: 10000
+```
+
+#### Deployment Issues
+
+**Issue:** GitHub Action fails
+
+```bash
+# Solution: Check workflow permissions
+# Ensure GITHUB_TOKEN has necessary permissions
+```
+
+**Issue:** npm publish fails
+
+```bash
+# Solution: Verify authentication
+npm whoami
+npm config get registry
+```
+
+### Debug Commands
+
+```bash
+# Verbose build output
+pnpm build --verbose
+
+# Detailed test output
+pnpm test --reporter=verbose
+
+# Bundle analysis
+pnpm build && npx bundlewatch
+
+# Dependency tree
+pnpm list --depth=2
+```
+
+## 📋 Deployment Checklist
+
+Before each deployment:
+
+### Pre-Deployment
+
+- [ ] All tests passing locally
+- [ ] Build artifacts generated successfully
+- [ ] TypeScript compilation clean
+- [ ] ESLint validation passed
+- [ ] Security audit clean
+- [ ] Documentation updated
+- [ ] Version number bumped (if needed)
+
+### Deployment
+
+- [ ] CI/CD pipeline passed
+- [ ] All distribution formats present
+- [ ] Bundle sizes acceptable
+- [ ] Example files working
+- [ ] GitHub release created
+- [ ] Assets uploaded correctly
+
+### Post-Deployment
+
+- [ ] Download and test artifacts
+- [ ] Verify example HTML file
+- [ ] Check CDN availability (if applicable)
+- [ ] Monitor error rates
+- [ ] Update internal documentation
+- [ ] Notify stakeholders
+
+## 🔗 Related Resources
+
+- [GitHub Actions Documentation](https://docs.github.com/en/actions)
+- [npm Publishing Guide](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry)
+- [Turborepo CI Documentation](https://turbo.build/repo/docs/ci)
+- [Package Security Best Practices](https://docs.npmjs.com/packages-and-modules/securing-your-code)

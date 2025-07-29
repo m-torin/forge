@@ -3,7 +3,7 @@
  * Non-blocking integration with @repo/analytics package
  */
 
-import { logDebug } from '@repo/observability/server/next';
+import { logDebug } from '@repo/observability';
 import {
   AnalyticsConfig,
   AnalyticsIntegration,
@@ -37,11 +37,11 @@ export class LinkAnalyticsIntegration implements AnalyticsIntegration {
   private async initializeAnalyticsProvider(): Promise<void> {
     try {
       // Attempt to load analytics package without breaking if it's not available
-      const analyticsModule = await import('@repo/analytics/server/next').catch(() => null);
+      const analyticsModule = await import('@repo/analytics/shared-env').catch(() => null);
 
-      if (analyticsModule?.createServerAnalytics) {
+      if (analyticsModule?.createAnalytics) {
         // Create a minimal analytics wrapper
-        const observability = await analyticsModule.createServerAnalytics({
+        const observability = await analyticsModule.createAnalytics({
           providers: {
             console: {
               /* enabled: this.config.debugMode */
@@ -51,7 +51,6 @@ export class LinkAnalyticsIntegration implements AnalyticsIntegration {
 
         this.analytics = {
           track: async (event: string, properties?: Record<string, any>) => {
-            // await observability.log('info', `Link Event: ${event}`, properties); // Commented: log method doesn't exist
             await observability.track(event, properties);
           },
         };
@@ -340,7 +339,7 @@ export function createAnalyticsIntegration(config: AnalyticsConfig): LinkAnalyti
 // Helper function to check if analytics package is available
 export async function isAnalyticsAvailable(): Promise<boolean> {
   try {
-    await import('@repo/analytics/server');
+    await import('@repo/analytics/shared-env');
     return true;
   } catch {
     return false;

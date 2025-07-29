@@ -297,7 +297,9 @@ describe('shared admin permissions functionality', () => {
       roles.forEach(role => {
         requiredCategories.forEach(category => {
           expect(role.permissions).toHaveProperty(category);
-          expect(Array.isArray(role.permissions[category])).toBeTruthy();
+          expect(
+            Array.isArray(role.permissions[category as keyof typeof role.permissions]),
+          ).toBeTruthy();
         });
       });
     });
@@ -309,8 +311,8 @@ describe('shared admin permissions functionality', () => {
       const roles = [adminModule.superAdmin, adminModule.moderator, adminModule.support];
 
       roles.forEach(role => {
-        Object.values(role.permissions).forEach((actions: string[]) => {
-          actions.forEach(action => {
+        Object.values(role.permissions).forEach(actions => {
+          (actions as string[]).forEach(action => {
             expect(validActions).toContain(action);
           });
         });

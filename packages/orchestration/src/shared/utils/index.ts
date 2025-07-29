@@ -57,7 +57,7 @@ export {
   createMaskedError,
   maskSensitiveData,
   safeConsole,
-  _withMaskedErrors as withMaskedErrors,
+  withMaskedErrors,
 } from './data-masking';
 
 // Workflow-specific utilities
