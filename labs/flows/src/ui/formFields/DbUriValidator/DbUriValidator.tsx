@@ -59,9 +59,7 @@ const Bars: FC<{ strength: number; uriLength: number }> = ({
   uriLength,
 }) => (
   <Group gap={5} grow mt="xs" mb="md">
-    {Array(6)
-      .fill(0)
-      .map((_, index) => (
+    {['segment-1', 'segment-2', 'segment-3', 'segment-4', 'segment-5', 'segment-6'].map((segmentId, index) => (
         <Progress
           styles={{ section: { transitionDuration: '0ms' } }}
           value={
@@ -72,7 +70,7 @@ const Bars: FC<{ strength: number; uriLength: number }> = ({
                 : 0
           }
           color={strength > 80 ? 'teal' : strength > 50 ? 'yellow' : 'red'}
-          key={`progress-bar-${index}`} // Index is semantically meaningful for progress bars
+          key={segmentId}
           size={4}
         />
       ))}

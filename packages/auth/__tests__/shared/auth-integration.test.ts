@@ -65,13 +65,13 @@ vi.mock('@repo/database/prisma/server/next', () => ({
 describe('auth Integration Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env.NODE_ENV = 'test';
+    Object.defineProperty(process.env, 'NODE_ENV', { value: 'test', writable: true });
   });
 
   describe('auth factory creation', () => {
     test('should create auth factory with basic configuration', async () => {
       // Import after mocks are set up
-      const { createAuthFactory } = await import('@/shared/factory');
+      const { createAuthFactory } = await import('#/shared/factory');
 
       const factory = createAuthFactory();
 
@@ -80,7 +80,7 @@ describe('auth Integration Tests', () => {
     });
 
     test('should handle different configuration options', async () => {
-      const { createAuthFactory } = await import('@/shared/factory');
+      const { createAuthFactory } = await import('#/shared/factory');
 
       const customConfig = {
         enableAdmin: true,
@@ -96,8 +96,8 @@ describe('auth Integration Tests', () => {
 
   describe('auth configuration integration', () => {
     test('should integrate with config module', async () => {
-      const { createAuthConfig } = await import('@/shared/config');
-      const { createAuthFactory } = await import('@/shared/factory');
+      const { createAuthConfig } = await import('#/shared/config');
+      const { createAuthFactory } = await import('#/shared/factory');
 
       const config = createAuthConfig();
       const factory = createAuthFactory({
@@ -106,8 +106,8 @@ describe('auth Integration Tests', () => {
       });
 
       expect(factory).toBeDefined();
-      expect(config.features.admin).toBe(true);
-      expect(config.features.organizations).toBe(true);
+      expect(config.features.admin).toBeTruthy();
+      expect(config.features.organizations).toBeTruthy();
     });
   });
 
@@ -119,7 +119,7 @@ describe('auth Integration Tests', () => {
         safeClientEnv: () => ({}),
       }));
 
-      const { createAuthFactory } = await import('@/shared/factory');
+      const { createAuthFactory } = await import('#/shared/factory');
 
       // Should not throw with missing config
       expect(() => createAuthFactory()).not.toThrow();
@@ -128,7 +128,7 @@ describe('auth Integration Tests', () => {
 
   describe('types integration', () => {
     test('should work with TypeScript types', async () => {
-      const { createAuthFactory } = await import('@/shared/factory');
+      const { createAuthFactory } = await import('#/shared/factory');
 
       const factory = createAuthFactory();
 

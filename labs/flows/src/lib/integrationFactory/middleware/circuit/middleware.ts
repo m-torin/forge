@@ -167,7 +167,7 @@ export class CircuitBreaker {
   private reset(): void {
     this.setState(CircuitState.CLOSED);
     this.halfOpenCount = 0;
-    this.nextReset = undefined;
+    delete this.nextReset;
   }
 
   getStats(): CircuitStats {
@@ -176,8 +176,8 @@ export class CircuitBreaker {
       ...metrics,
       state: this.state,
       degraded: this.isDegraded(metrics),
-      lastFailure: this.lastFailure,
-      nextReset: this.nextReset,
+      ...(this.lastFailure && { lastFailure: this.lastFailure }),
+      ...(this.nextReset && { nextReset: this.nextReset }),
     };
   }
 }

@@ -287,3 +287,22 @@ export function useApiKeyValidation() {
     validationResult,
   };
 }
+
+// Export aliases for backwards compatibility with tests
+export async function createApiKey(data: CreateApiKeyData): Promise<CreateApiKeyResult> {
+  // Convert Date to ISO string for server action
+  const serverData = {
+    ...data,
+    expiresAt: data.expiresAt?.toISOString(),
+  };
+  return createApiKeyAction(serverData);
+}
+
+export async function listApiKeys(): Promise<ApiKeyListItem[]> {
+  const result = await listApiKeysAction();
+  return result.success ? result.keys || [] : [];
+}
+
+export async function deleteApiKey(keyId: string): Promise<RevokeApiKeyResult> {
+  return revokeApiKeyAction(keyId);
+}

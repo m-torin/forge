@@ -33,9 +33,7 @@
     "./hooks": "./src/hooks/index.ts",
     "./types": "./src/types/index.ts",
     "./providers": "./src/providers/index.ts",
-    "./utils": "./src/utils/index.ts",
-    "./testing": "./src/testing/index.ts",
-    "./testing/mocks": "./src/testing/mocks/index.ts"
+    "./utils": "./src/utils/index.ts"
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
@@ -126,6 +124,7 @@
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/qa": "workspace:*",
+    "@vitest/ui": "catalog:",
     "@types/dompurify": "^3.1.0",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",

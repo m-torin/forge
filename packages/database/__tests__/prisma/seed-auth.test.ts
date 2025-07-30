@@ -1,5 +1,5 @@
-import { seedAuth } from '@/prisma/src/seed/seed-auth';
-import { resetPrismaTestMocks, setupPrismaTestMocks } from '@/tests/setup';
+import { seedAuth } from '#/prisma/src/seed/seed-auth';
+import { resetPrismaTestMocks, setupPrismaTestMocks } from '#/tests/setup';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 describe('seedAuth', () => {

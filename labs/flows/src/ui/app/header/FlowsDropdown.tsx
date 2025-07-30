@@ -132,7 +132,7 @@ export const AppHeaderMenuBar: React.FC = () => {
                 key={item.title}
                 href={item.href}
                 title={item.title}
-                description={item.description}
+                {...(item.description && { description: item.description })}
                 Icon={item.icon}
               />
             ))}

@@ -23,6 +23,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:coverage:json": "vitest run --coverage --reporter=json",
+    "test:ui": "vitest --ui",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
@@ -70,10 +71,13 @@
     "@repo/qa": "workspace:*",
     "@storybook/nextjs": "^9.0.18",
     "@storybook/react": "^9.0.18",
+    "@vitest/ui": "catalog:",
     "jsdom": "catalog:",
     "postcss": "catalog:",
     "tailwindcss": "catalog:",
-    "vite": "catalog:"
+    "vite": "catalog:",
+    "vite-tsconfig-paths": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "@mantine/core": "catalog:",

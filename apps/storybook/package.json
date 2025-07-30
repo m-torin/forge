@@ -20,7 +20,6 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:coverage:json": "vitest run --coverage --reporter=json",
-    "test:ui": "vitest --ui",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
@@ -29,6 +28,7 @@
     "@mantine/core": "catalog:",
     "@mantine/dates": "catalog:",
     "@mantine/hooks": "catalog:",
+    "@mantine/notifications": "catalog:",
     "@repo/uix-system": "workspace:*",
     "next": "catalog:",
     "react": "catalog:",
@@ -71,6 +71,7 @@
     "tailwind-preset-mantine": "catalog:",
     "tailwindcss": "catalog:",
     "util": "^0.12.5",
+    "vite-tsconfig-paths": "catalog:",
     "zod": "catalog:"
   }
 }

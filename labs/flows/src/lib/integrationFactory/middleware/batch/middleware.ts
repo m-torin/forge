@@ -23,9 +23,9 @@ export const createBatchMiddleware = (
   options: BatchOptions = {},
 ): Middleware => {
   const opts = { ...DEFAULT_OPTIONS, ...options };
-  let batch: unknown[] = [];
-  let currentBatchSize = 0;
-  let flushTimer: NodeJS.Timeout | undefined;
+  let _batch: unknown[] = [];
+  let _currentBatchSize = 0;
+  let _flushTimer: NodeJS.Timeout | undefined;
 
   const metrics: BatchMetrics = {
     totalBatches: 0,

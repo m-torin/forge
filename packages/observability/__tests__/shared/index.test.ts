@@ -1,6 +1,6 @@
-import { observability as clientObservability } from '@/client';
-import { observability as serverObservability } from '@/server';
-import { getRuntimeEnvironment, logDebug, logError, logInfo, logWarn } from '@/shared';
+import { observability as clientObservability } from '#/client';
+import { observability as serverObservability } from '#/server';
+import { getRuntimeEnvironment, logDebug, logError, logInfo, logWarn } from '#/shared';
 import { describe, expect, test } from 'vitest';
 
 // Use centralized test utilities

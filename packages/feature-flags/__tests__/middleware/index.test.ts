@@ -1,4 +1,4 @@
-import { createFeatureFlagMiddleware } from '@/middleware';
+import { createFeatureFlagMiddleware } from '#/middleware';
 import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock Next.js imports
@@ -23,7 +23,7 @@ vi.mock('flags/next', () => ({
 }));
 
 // Mock shared utils
-vi.mock('@/shared/utils', () => ({
+vi.mock('#/shared/utils', () => ({
   getOrGenerateVisitorId: vi.fn(),
 }));
 
@@ -66,7 +66,7 @@ describe('createFeatureFlagMiddleware', () => {
   });
 
   test('should generate visitor ID when enabled', async () => {
-    const { getOrGenerateVisitorId } = vi.mocked(await import('@/shared/utils'));
+    const { getOrGenerateVisitorId } = vi.mocked(await import('#/shared/utils'));
     getOrGenerateVisitorId.mockResolvedValue('visitor-123');
 
     const middleware = createFeatureFlagMiddleware({
@@ -92,7 +92,7 @@ describe('createFeatureFlagMiddleware', () => {
   });
 
   test('should use custom visitor cookie name', async () => {
-    const { getOrGenerateVisitorId } = vi.mocked(await import('@/shared/utils'));
+    const { getOrGenerateVisitorId } = vi.mocked(await import('#/shared/utils'));
     getOrGenerateVisitorId.mockResolvedValue('custom-visitor-123');
 
     const middleware = createFeatureFlagMiddleware({
@@ -117,7 +117,7 @@ describe('createFeatureFlagMiddleware', () => {
   });
 
   test('should not set visitor ID cookie if already exists', async () => {
-    const { getOrGenerateVisitorId } = vi.mocked(await import('@/shared/utils'));
+    const { getOrGenerateVisitorId } = vi.mocked(await import('#/shared/utils'));
     getOrGenerateVisitorId.mockResolvedValue('existing-visitor');
 
     const cookies = new Map([['visitor-id', { value: 'existing-visitor' }]]);
@@ -182,7 +182,7 @@ describe('createFeatureFlagMiddleware', () => {
 
   test('should handle both flags and visitor ID generation', async () => {
     const { precompute } = vi.mocked(await import('flags/next'));
-    const { getOrGenerateVisitorId } = vi.mocked(await import('@/shared/utils'));
+    const { getOrGenerateVisitorId } = vi.mocked(await import('#/shared/utils'));
 
     precompute.mockResolvedValue('code-789');
     getOrGenerateVisitorId.mockResolvedValue('visitor-789');
@@ -253,7 +253,7 @@ describe('createFeatureFlagMiddleware', () => {
 
   test('should set visitor ID header when cookie exists but response is created', async () => {
     const { precompute } = vi.mocked(await import('flags/next'));
-    const { getOrGenerateVisitorId } = vi.mocked(await import('@/shared/utils'));
+    const { getOrGenerateVisitorId } = vi.mocked(await import('#/shared/utils'));
 
     precompute.mockResolvedValue('header-code');
     getOrGenerateVisitorId.mockResolvedValue('header-visitor');

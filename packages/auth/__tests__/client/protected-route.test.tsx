@@ -26,7 +26,7 @@ const mockAuth = {
   user: { id: '1', name: 'Test User', email: 'test@example.com' },
 };
 
-vi.mock('@/client/hooks', () => ({
+vi.mock('#/client/hooks', () => ({
   useAuth: vi.fn(() => mockAuth),
 }));
 
@@ -44,7 +44,7 @@ describe('protectedRoute component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Reset auth state to authenticated by default
-    vi.mocked(require('@/client/hooks').useAuth).mockReturnValue({
+    vi.mocked(require('#/client/hooks').useAuth).mockReturnValue({
       isAuthenticated: true,
       isLoading: false,
       user: { id: '1', name: 'Test User', email: 'test@example.com' },
@@ -53,7 +53,7 @@ describe('protectedRoute component', () => {
 
   describe('authenticated user', () => {
     test('should render children when user is authenticated', async () => {
-      const ProtectedRouteModule = await import('@/client/protected-route');
+      const ProtectedRouteModule = await import('#/client/protected-route');
 
       render(
         <ProtectedRouteModule.ProtectedRoute>
@@ -66,7 +66,7 @@ describe('protectedRoute component', () => {
     });
 
     test('should render children with custom props', async () => {
-      const ProtectedRouteModule = await import('@/client/protected-route');
+      const ProtectedRouteModule = await import('#/client/protected-route');
 
       render(
         <ProtectedRouteModule.ProtectedRoute
@@ -83,7 +83,7 @@ describe('protectedRoute component', () => {
 
   describe('unauthenticated user', () => {
     beforeEach(() => {
-      vi.mocked(require('@/client/hooks').useAuth).mockReturnValue({
+      vi.mocked(require('#/client/hooks').useAuth).mockReturnValue({
         isAuthenticated: false,
         isLoading: false,
         user: null,
@@ -91,7 +91,7 @@ describe('protectedRoute component', () => {
     });
 
     test('should redirect to sign-in when not authenticated', async () => {
-      const ProtectedRouteModule = await import('@/client/protected-route');
+      const ProtectedRouteModule = await import('#/client/protected-route');
 
       render(
         <ProtectedRouteModule.ProtectedRoute>
@@ -105,7 +105,7 @@ describe('protectedRoute component', () => {
     });
 
     test('should redirect to custom URL when not authenticated', async () => {
-      const ProtectedRouteModule = await import('@/client/protected-route');
+      const ProtectedRouteModule = await import('#/client/protected-route');
 
       render(
         <ProtectedRouteModule.ProtectedRoute redirectTo="/custom-login">
@@ -119,7 +119,7 @@ describe('protectedRoute component', () => {
     });
 
     test('should show fallback content while redirecting', async () => {
-      const ProtectedRouteModule = await import('@/client/protected-route');
+      const ProtectedRouteModule = await import('#/client/protected-route');
 
       render(
         <ProtectedRouteModule.ProtectedRoute>
@@ -134,7 +134,7 @@ describe('protectedRoute component', () => {
     });
 
     test('should show custom fallback when provided', async () => {
-      const ProtectedRouteModule = await import('@/client/protected-route');
+      const ProtectedRouteModule = await import('#/client/protected-route');
 
       render(
         <ProtectedRouteModule.ProtectedRoute
@@ -151,7 +151,7 @@ describe('protectedRoute component', () => {
 
   describe('loading state', () => {
     beforeEach(() => {
-      vi.mocked(require('@/client/hooks').useAuth).mockReturnValue({
+      vi.mocked(require('#/client/hooks').useAuth).mockReturnValue({
         isAuthenticated: false,
         isLoading: true,
         user: null,
@@ -159,7 +159,7 @@ describe('protectedRoute component', () => {
     });
 
     test('should show fallback during loading', async () => {
-      const ProtectedRouteModule = await import('@/client/protected-route');
+      const ProtectedRouteModule = await import('#/client/protected-route');
 
       render(
         <ProtectedRouteModule.ProtectedRoute>
@@ -173,7 +173,7 @@ describe('protectedRoute component', () => {
     });
 
     test('should show custom fallback during loading', async () => {
-      const ProtectedRouteModule = await import('@/client/protected-route');
+      const ProtectedRouteModule = await import('#/client/protected-route');
 
       render(
         <ProtectedRouteModule.ProtectedRoute
@@ -190,9 +190,9 @@ describe('protectedRoute component', () => {
 
   describe('organization requirement', () => {
     test('should render children when user has organization', async () => {
-      const ProtectedRouteModule = await import('@/client/protected-route');
+      const ProtectedRouteModule = await import('#/client/protected-route');
 
-      vi.mocked(require('@/client/hooks').useAuth).mockReturnValue({
+      vi.mocked(require('#/client/hooks').useAuth).mockReturnValue({
         isAuthenticated: true,
         isLoading: false,
         user: {
@@ -213,9 +213,9 @@ describe('protectedRoute component', () => {
     });
 
     test('should handle user without organization when required', async () => {
-      const ProtectedRouteModule = await import('@/client/protected-route');
+      const ProtectedRouteModule = await import('#/client/protected-route');
 
-      vi.mocked(require('@/client/hooks').useAuth).mockReturnValue({
+      vi.mocked(require('#/client/hooks').useAuth).mockReturnValue({
         isAuthenticated: true,
         isLoading: false,
         user: {
@@ -239,7 +239,7 @@ describe('protectedRoute component', () => {
 
   describe('uRL encoding', () => {
     test('should properly encode complex URLs', async () => {
-      const ProtectedRouteModule = await import('@/client/protected-route');
+      const ProtectedRouteModule = await import('#/client/protected-route');
 
       // Mock complex URL
       Object.defineProperty(window, 'location', {
@@ -250,7 +250,7 @@ describe('protectedRoute component', () => {
         writable: true,
       });
 
-      vi.mocked(require('@/client/hooks').useAuth).mockReturnValue({
+      vi.mocked(require('#/client/hooks').useAuth).mockReturnValue({
         isAuthenticated: false,
         isLoading: false,
         user: null,
@@ -268,7 +268,7 @@ describe('protectedRoute component', () => {
     });
 
     test('should handle URLs without search params', async () => {
-      const ProtectedRouteModule = await import('@/client/protected-route');
+      const ProtectedRouteModule = await import('#/client/protected-route');
 
       Object.defineProperty(window, 'location', {
         value: {
@@ -278,7 +278,7 @@ describe('protectedRoute component', () => {
         writable: true,
       });
 
-      vi.mocked(require('@/client/hooks').useAuth).mockReturnValue({
+      vi.mocked(require('#/client/hooks').useAuth).mockReturnValue({
         isAuthenticated: false,
         isLoading: false,
         user: null,
@@ -296,7 +296,7 @@ describe('protectedRoute component', () => {
 
   describe('component props', () => {
     test('should handle all prop combinations', async () => {
-      const ProtectedRouteModule = await import('@/client/protected-route');
+      const ProtectedRouteModule = await import('#/client/protected-route');
 
       const CustomFallback = () => <div data-testid="custom-fallback">Custom Loading</div>;
 
@@ -314,7 +314,7 @@ describe('protectedRoute component', () => {
     });
 
     test('should work with minimal props', async () => {
-      const ProtectedRouteModule = await import('@/client/protected-route');
+      const ProtectedRouteModule = await import('#/client/protected-route');
 
       render(
         <ProtectedRouteModule.ProtectedRoute>
@@ -328,14 +328,14 @@ describe('protectedRoute component', () => {
 
   describe('edge cases', () => {
     test('should handle missing window.location gracefully', async () => {
-      const ProtectedRouteModule = await import('@/client/protected-route');
+      const ProtectedRouteModule = await import('#/client/protected-route');
 
       // Mock SSR environment (no window)
       const originalLocation = window.location;
       // @ts-expect-error - simulating SSR
       delete window.location;
 
-      vi.mocked(require('@/client/hooks').useAuth).mockReturnValue({
+      vi.mocked(require('#/client/hooks').useAuth).mockReturnValue({
         isAuthenticated: false,
         isLoading: false,
         user: null,
@@ -358,7 +358,7 @@ describe('protectedRoute component', () => {
     });
 
     test('should handle null children', async () => {
-      const ProtectedRouteModule = await import('@/client/protected-route');
+      const ProtectedRouteModule = await import('#/client/protected-route');
 
       render(<ProtectedRouteModule.ProtectedRoute>{null}</ProtectedRouteModule.ProtectedRoute>);
 

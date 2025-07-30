@@ -105,29 +105,29 @@ interface DescribeRuleCommandOutput {
     attempts?: number;
     totalRetryDelay?: number;
   };
-  Arn?: string;
-  CreatedBy?: string;
-  Description?: string;
-  EventBusName?: string;
-  EventPattern?: string;
-  Name?: string;
-  State?: string;
+  Arn?: string | undefined;
+  CreatedBy?: string | undefined;
+  Description?: string | undefined;
+  EventBusName?: string | undefined;
+  EventPattern?: string | undefined;
+  Name?: string | undefined;
+  State?: string | undefined;
 }
 
 interface Target {
-  Arn?: string;
-  Id?: string;
+  Arn?: string | undefined;
+  Id?: string | undefined;
 }
 
 interface ListRuleNamesByTargetCommandOutput {
-  RuleNames?: string[];
+  RuleNames?: string[] | undefined;
 }
 
 interface RuleDetailsData {
   RulesDetails: {
-    RuleDetail?: DescribeRuleCommandOutput;
-    Targets?: Target[];
-    RuleNamesByTargets?: ListRuleNamesByTargetCommandOutput[];
+    RuleDetail: DescribeRuleCommandOutput;
+    Targets: Target[] | undefined;
+    RuleNamesByTargets: ListRuleNamesByTargetCommandOutput[];
   }[];
 }
 

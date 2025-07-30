@@ -12,7 +12,7 @@ import {
   serializeMcpConfig,
   validateMcpConfig,
   type McpConfig,
-} from '@/lib/feature-flags/mcp-config-parser';
+} from '#/lib/feature-flags/mcp-config-parser';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 describe('mCP Configuration Parser', () => {

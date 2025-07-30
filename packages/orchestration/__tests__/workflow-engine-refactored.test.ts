@@ -27,7 +27,7 @@ import {
   createWorkflowTestSuite,
 } from './workflow-test-factory';
 
-import { createWorkflowEngine } from '@/index';
+import { createWorkflowEngine } from '#/index';
 
 describe('workflow Engine - DRY Refactored', () => {
   let mockProvider: any;

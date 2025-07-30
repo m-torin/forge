@@ -1,6 +1,6 @@
-import type { Document } from '@/lib/db/schema';
-import { getMessageByErrorCode } from '@/lib/errors';
-import { generateUUID } from '@/lib/utils';
+import type { Document } from '#/lib/db/schema';
+import { getMessageByErrorCode } from '#/lib/errors';
+import { generateUUID } from '#/lib/utils';
 import { expect, test } from '../fixtures';
 
 const documentsCreatedByAda: Array<Document> = [];

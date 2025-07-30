@@ -150,9 +150,9 @@ export const AppHeaderUserMenu: React.FC = () => {
         <React.Fragment key={item.id}>
           {item.divider && <Menu.Divider />}
           <Menu.Item
-            component={item.href ? undefined : 'div'}
-            onClick={item.onClick}
-            color={item.isDanger ? 'red' : undefined}
+            {...(item.href ? {} : { component: 'div' })}
+            {...(item.onClick && { onClick: item.onClick })}
+            {...(item.isDanger && { color: 'red' })}
             leftSection={
               <item.icon
                 style={iconStyles}

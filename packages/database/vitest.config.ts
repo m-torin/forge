@@ -1,12 +1,13 @@
 import { createDatabasePackageConfig } from '@repo/qa/vitest/configs';
 import { resolve } from 'node:path';
 import tsconfigPaths from 'vite-tsconfig-paths';
+import { defineConfig } from 'vitest/config';
 
-export default createDatabasePackageConfig({
+const baseConfig = createDatabasePackageConfig({
   aliases: {
-    '@/': './src/',
-    '@/tests/': './__tests__/',
-    '@/prisma-generated/': './prisma-generated/',
+    '#/': './src/',
+    '#/tests/': './__tests__/',
+    '#/prisma-generated/': './prisma-generated/',
   },
   env: {
     DATABASE_PROVIDER: 'prisma',
@@ -14,7 +15,6 @@ export default createDatabasePackageConfig({
     NODE_ENV: 'test',
   },
   overrides: {
-    plugins: [tsconfigPaths({ ignoreConfigErrors: true })],
     test: {
       setupFiles: ['./__tests__/setup.ts'],
       deps: {
@@ -81,4 +81,9 @@ export default createDatabasePackageConfig({
       __TEST_ENV__: '"test"',
     },
   },
+});
+
+export default defineConfig({
+  ...baseConfig,
+  plugins: [...(baseConfig.plugins || []), tsconfigPaths()],
 });

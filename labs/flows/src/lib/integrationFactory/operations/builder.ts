@@ -67,9 +67,9 @@ export class OperationBuilder<TResult = unknown> {
         : undefined;
 
     return {
-      timeout: this.timeoutMs,
-      retries: this.retryCount,
-      cache,
+      ...(this.timeoutMs !== undefined && { timeout: this.timeoutMs }),
+      ...(this.retryCount !== undefined && { retries: this.retryCount }),
+      ...(cache && { cache }),
       metadata: this.metadata,
     };
   }

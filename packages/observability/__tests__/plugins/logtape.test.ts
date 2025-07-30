@@ -1,4 +1,4 @@
-import { LogTapePlugin, createLogTapePlugin } from '@/plugins/logtape';
+import { LogTapePlugin, createLogTapePlugin } from '#/plugins/logtape';
 import { vi } from 'vitest';
 
 // Use centralized test factory and utilities

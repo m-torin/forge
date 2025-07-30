@@ -4,7 +4,8 @@
  * and handle demo-specific behavior
  */
 import { logWarn } from '@repo/observability';
-import { env } from '#/root/env';
+import { env, DEMO_CONSTANTS } from '#/root/env';
+import { initializeDemoData } from './demoData';
 
 export const isDemoMode = (): boolean => {
   return env.DEMO_MODE === 'true';
@@ -38,10 +39,10 @@ export const createDemoError = (message: string) => ({
   demo: true
 });
 
-// Demo data constants
-export const DEMO_FLOW_ID = 'demo-flow-001';
-export const DEMO_INSTANCE_ID = env.DEMO_INSTANCE_ID;
-export const DEMO_STORAGE_KEY = 'flows-demo-data';
+// Demo data constants - now imported from env
+export const DEMO_FLOW_ID = DEMO_CONSTANTS.FLOW_ID;
+export const DEMO_INSTANCE_ID = DEMO_CONSTANTS.INSTANCE_ID;
+export const DEMO_STORAGE_KEY = DEMO_CONSTANTS.STORAGE_KEY;
 
 // localStorage utilities for demo mode
 export const saveDemoData = (key: string, data: any) => {
@@ -82,15 +83,15 @@ export const clearDemoData = () => {
 // Auto-initialize demo data when in demo mode
 export const initializeDemoModeIfNeeded = () => {
   if (isDemoModeClient() && typeof window !== 'undefined') {
-    const isInitialized = localStorage.getItem('flows-demo-data-metadata');
+    const isInitialized = localStorage.getItem(`${DEMO_CONSTANTS.STORAGE_KEY}-metadata`);
     if (!isInitialized) {
-      // Dynamic import to avoid circular dependency
-      import('./demoData').then(({ initializeDemoData }) => {
+      // No longer need dynamic import - circular dependency resolved
+      try {
         initializeDemoData();
-        return true;
-      }).catch((error) => {
-        console.error('Failed to initialize demo data:', error);
-      });
+      } catch (_error) {
+        // Failed to initialize demo data - silently handle the error
+        // In demo mode, this is not critical and shouldn't break the app
+      }
     }
   }
 };

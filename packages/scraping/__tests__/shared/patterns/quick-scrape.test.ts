@@ -1,15 +1,15 @@
-import { extractFromHtml, extractFromUrl, quickScrape } from '@/shared/patterns/quick-scrape';
+import { extractFromHtml, extractFromUrl, quickScrape } from '#/shared/patterns/quick-scrape';
 import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock the provider imports
-vi.mock('@/server/providers/cheerio-provider', () => ({
+vi.mock('#/server/providers/cheerio-provider', () => ({
   CheerioProvider: vi.fn(() => ({
     initialize: vi.fn(),
     extract: vi.fn().mockResolvedValue({ title: 'Test Title' }),
   })),
 }));
 
-vi.mock('@/shared/utils/scraping-manager', () => ({
+vi.mock('#/shared/utils/scraping-manager', () => ({
   createScrapingManager: vi.fn(),
 }));
 
@@ -67,7 +67,7 @@ describe('quick-scrape', () => {
         scrapeStream: vi.fn(),
       };
 
-      const { createScrapingManager } = await import('@/shared/utils/scraping-manager');
+      const { createScrapingManager } = await import('#/shared/utils/scraping-manager');
       vi.mocked(createScrapingManager).mockReturnValue(mockManager as any);
 
       const result = await quickScrape('https://example.com', { title: 'h1' });
@@ -89,7 +89,7 @@ describe('quick-scrape', () => {
         scrapeStream: vi.fn(),
       };
 
-      const { createScrapingManager } = await import('@/shared/utils/scraping-manager');
+      const { createScrapingManager } = await import('#/shared/utils/scraping-manager');
       vi.mocked(createScrapingManager).mockReturnValue(mockManager as any);
 
       // The function should throw an error for invalid URLs
@@ -110,7 +110,7 @@ describe('quick-scrape', () => {
         scrapeStream: vi.fn(),
       };
 
-      const { createScrapingManager } = await import('@/shared/utils/scraping-manager');
+      const { createScrapingManager } = await import('#/shared/utils/scraping-manager');
       vi.mocked(createScrapingManager).mockReturnValue(mockManager as any);
 
       await expect(quickScrape('https://example.com', { title: 'h1' })).rejects.toThrow(
@@ -136,7 +136,7 @@ describe('quick-scrape', () => {
         scrapeStream: vi.fn(),
       };
 
-      const { createScrapingManager } = await import('@/shared/utils/scraping-manager');
+      const { createScrapingManager } = await import('#/shared/utils/scraping-manager');
       vi.mocked(createScrapingManager).mockReturnValue(mockManager as any);
 
       const result = await extractFromUrl('https://example.com', { title: 'h1' });
@@ -157,7 +157,7 @@ describe('quick-scrape', () => {
         scrapeStream: vi.fn(),
       };
 
-      const { createScrapingManager } = await import('@/shared/utils/scraping-manager');
+      const { createScrapingManager } = await import('#/shared/utils/scraping-manager');
       vi.mocked(createScrapingManager).mockReturnValue(mockManager as any);
 
       await expect(extractFromUrl('https://example.com', { title: 'h1' })).rejects.toThrow(

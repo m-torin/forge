@@ -13,7 +13,7 @@ declare module '@storybook/react' {
     decorators?: any[];
   }
 
-  export interface StoryObj<T = any> {
+  export interface StoryObj<_T = any> {
     args?: any;
     parameters?: any;
     play?: any;

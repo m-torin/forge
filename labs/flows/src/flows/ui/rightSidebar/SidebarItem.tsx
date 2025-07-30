@@ -4,7 +4,7 @@ import { useIntersection } from '@mantine/hooks';
 import classes from './FlowAside.module.scss';
 import { motion, useAnimation } from 'framer-motion';
 import { IconProps } from '@tabler/icons-react';
-import { useAppContext } from '@/app/flow/[cuid]/FlowProvider';
+import { useAppContext } from '#/app/flow/[cuid]/FlowProvider';
 import { GroupData } from '#/flows/nodes';
 import { logInfo } from '@repo/observability';
 

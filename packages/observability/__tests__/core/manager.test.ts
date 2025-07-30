@@ -1,5 +1,5 @@
-import { ObservabilityManager } from '@/core/manager';
-import type { LogLevel } from '@/core/types';
+import { ObservabilityManager } from '#/core/manager';
+import type { LogLevel } from '#/core/types';
 import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Use centralized test utilities

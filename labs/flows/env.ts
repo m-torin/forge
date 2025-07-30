@@ -166,3 +166,10 @@ export const env = createEnv({
     );
   },
 });
+
+// Demo constants - centralized to avoid circular dependencies
+export const DEMO_CONSTANTS = {
+  FLOW_ID: 'demo-flow-001',
+  INSTANCE_ID: env.DEMO_INSTANCE_ID,
+  STORAGE_KEY: 'flows-demo-data',
+} as const;

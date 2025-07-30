@@ -365,7 +365,7 @@ import { auth } from "@repo/auth/server/next"; // ❌
 ```typescript
 // Use safeEnv pattern
 "use client";
-import { safeEnv } from '@/env';
+import { safeEnv } from '#/env';
 const env = safeEnv();
 const apiKey = env.NEXT_PUBLIC_API_KEY; // ✅
 

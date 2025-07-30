@@ -231,44 +231,59 @@ track_deletion() {
   fi
 }
 
-print_progress "Removing build artifacts and caches..."
+print_progress "Removing directories and folders..."
 
-# Remove build/cache directories with a single find command
-# Using -prune to avoid descending into directories we're deleting
+# Remove build/cache directories first (this will also remove files inside them)
 find . -type d \( \
-  -name "node_modules" -o \
-  -name ".next" -o \
-  -name "dist" -o \
-  -name "build" -o \
-  -name ".turbo" -o \
-  -name "coverage" -o \
+  -name ".basehub" -o \
   -name ".cache" -o \
   -name ".eslintcache" -o \
-  -name "storybook-static" -o \
-  -name ".swc" -o \
-  -name "generated" -o \
+  -name ".next" -o \
+  -name ".npm" -o \
+  -name ".pnp" -o \
   -name ".strapi" -o \
-  -name "tsconfig.tsbuildinfo" -o \
+  -name ".swc" -o \
+  -name ".turbo" -o \
+  -name ".vercel" -o \
+  -name ".yarn" -o \
   -name "*cache*" -o \
-  -name "test-results" -o \
+  -name "blob-report" -o \
+  -name "build" -o \
+  -name "coverage" -o \
+  -name "dist" -o \
+  -name "generated" -o \
+  -name "html-report" -o \
+  -name "logs" -o \
+  -name "node_modules" -o \
+  -name "out" -o \
   -name "playwright-report" -o \
-  -name "html-report" \
+  -name "prisma-generated" -o \
+  -name "storybook-static" -o \
+  -name "test-results" -o \
+  -name "tsconfig.tsbuildinfo" \
   \) -prune -print0 2> /dev/null | while IFS= read -r -d '' dir; do
   track_deletion "$dir" "dir"
   rm -rf "$dir" 2> /dev/null || true
 done
 
-print_success "Build artifacts removed"
+print_success "Directories and folders removed"
 
-print_progress "Removing lock files and logs..."
+print_progress "Removing remaining lock files and logs..."
 
-# Remove lock files, logs, and test artifacts
+# Remove any remaining lock files, logs, and test artifacts (files not in removed directories)
 find . -type f \( \
-  -name "package-lock.json" -o \
-  -name "yarn.lock" -o \
+  -name ".npmrc" -o \
+  -name ".pnp.js" -o \
+  -name ".yarn-integrity" -o \
   -name ".yarnrc" -o \
   -name ".yarnrc.yml" -o \
+  -name "npm-debug.log*" -o \
+  -name "package-lock.json" -o \
+  -name "pnpm-debug.log*" -o \
   -name "pnpm-lock.yaml" -o \
+  -name "yarn-debug.log*" -o \
+  -name "yarn-error.log*" -o \
+  -name "yarn.lock" -o \
   -name "*.log" -o \
   -name "*debug.log*" -o \
   -name "*error.log*" -o \
@@ -282,7 +297,7 @@ find . -type f \( \
   rm -f "$file" 2> /dev/null || true
 done
 
-print_success "Lock files, logs, and test artifacts removed"
+print_success "Remaining lock files, logs, and test artifacts removed"
 
 # Clean pnpm-lock.yaml at root if not already removed
 if [[ -f "pnpm-lock.yaml" ]]; then

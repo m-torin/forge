@@ -1,4 +1,4 @@
-import type { BulkOperationProgress, BulkToolsConfig } from '@/server/tools/bulk-tools';
+import type { BulkOperationProgress, BulkToolsConfig } from '#/server/tools/bulk-tools';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 // Type assertion helper for AI SDK v5 tool execute methods
@@ -54,7 +54,7 @@ describe.todo('bulk Tools', () => {
   });
 
   test('should import bulk tools successfully', async () => {
-    const bulkTools = await import('@/server/tools/bulk-tools');
+    const bulkTools = await import('#/server/tools/bulk-tools');
     expect(bulkTools).toBeDefined();
   });
 
@@ -65,7 +65,7 @@ describe.todo('bulk Tools', () => {
   test.todo('should test bulk query with debug - requires proper AI SDK v5 mocking setup');
 
   test('should create bulk tools with config', async () => {
-    const { createBulkTools } = await import('@/server/tools/bulk-tools');
+    const { createBulkTools } = await import('#/server/tools/bulk-tools');
 
     const config = {
       vectorDB: mockVectorDB,
@@ -85,7 +85,7 @@ describe.todo('bulk Tools', () => {
   });
 
   test('should test bulk upsert tool', async () => {
-    const { createBulkTools } = await import('@/server/tools/bulk-tools');
+    const { createBulkTools } = await import('#/server/tools/bulk-tools');
 
     const tools = createBulkTools({
       vectorDB: mockVectorDB,
@@ -141,7 +141,7 @@ describe.todo('bulk Tools', () => {
   });
 
   test('should test bulk delete tool', async () => {
-    const { createBulkTools } = await import('@/server/tools/bulk-tools');
+    const { createBulkTools } = await import('#/server/tools/bulk-tools');
 
     const tools = createBulkTools({
       vectorDB: mockVectorDB,
@@ -169,7 +169,7 @@ describe.todo('bulk Tools', () => {
   test.todo('should test bulk query tool - requires proper AI SDK v5 mocking setup');
 
   test('should test bulk update tool', async () => {
-    const { createBulkTools } = await import('@/server/tools/bulk-tools');
+    const { createBulkTools } = await import('#/server/tools/bulk-tools');
 
     const tools = createBulkTools({
       vectorDB: mockVectorDB,
@@ -200,7 +200,7 @@ describe.todo('bulk Tools', () => {
   test.todo('should test bulk query with aggregation - requires proper AI SDK v5 mocking setup');
 
   test('should handle vector database errors gracefully', async () => {
-    const { createBulkTools } = await import('@/server/tools/bulk-tools');
+    const { createBulkTools } = await import('#/server/tools/bulk-tools');
 
     // Mock error in vector database
     const failingVectorDB = {
@@ -233,7 +233,7 @@ describe.todo('bulk Tools', () => {
   });
 
   test('should test interface types', async () => {
-    const { createBulkTools } = await import('@/server/tools/bulk-tools');
+    const { createBulkTools } = await import('#/server/tools/bulk-tools');
 
     // Test BulkToolsConfig interface
     const config: BulkToolsConfig = {
@@ -261,7 +261,7 @@ describe.todo('bulk Tools', () => {
   });
 
   test('should test BulkTools type', async () => {
-    const { createBulkTools } = await import('@/server/tools/bulk-tools');
+    const { createBulkTools } = await import('#/server/tools/bulk-tools');
 
     const tools = createBulkTools({ vectorDB: mockVectorDB });
 

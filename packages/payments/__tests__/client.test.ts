@@ -5,7 +5,7 @@ import {
   SUBSCRIPTION_STATUS,
   type PaymentStatus,
   type SubscriptionStatus,
-} from '@/client';
+} from '#/client';
 import { describe, expect, test } from 'vitest';
 
 describe('payments Client Utilities', () => {

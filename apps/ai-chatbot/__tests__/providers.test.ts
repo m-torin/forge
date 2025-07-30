@@ -1,4 +1,4 @@
-import { myProvider } from '@/lib/ai/providers';
+import { myProvider } from '#/lib/ai/providers';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 // Mock environment variables

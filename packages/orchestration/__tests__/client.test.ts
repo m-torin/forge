@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { WorkflowClient, type WorkflowClientConfig } from '@/client';
-import { WorkflowExecution } from '@/shared/types';
+import { WorkflowClient, type WorkflowClientConfig } from '#/client';
+import { WorkflowExecution } from '#/shared/types';
 
 import { createTestWorkflow } from './fixtures';
 

@@ -336,18 +336,30 @@ export class AISDKMocker {
 
       return {
         text,
+        content: result.content || [{ type: 'text', text }],
+        reasoning: result.reasoning,
+        reasoningText: result.reasoningText,
+        files: result.files || [],
+        sources: result.sources || [],
         usage: result.usage || { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
+        totalUsage: result.totalUsage || { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
         finishReason: result.finishReason || 'stop',
         warnings: result.warnings || [],
         rawCall: { rawPrompt: options.prompt, rawSettings: {} },
         rawResponse: { headers: {}, response: {} },
         request: { body: JSON.stringify(options) },
-        response: { messages: [], timestamp: new Date() },
+        response: {
+          id: 'mock-response-id',
+          modelId: mockModel?.modelId || 'mock-model',
+          messages: [],
+          timestamp: new Date(),
+        },
         toolCalls: result.toolCalls || [],
         toolResults: result.toolResults || [],
         logprobs: undefined,
         providerMetadata: undefined,
         steps: result.steps || [],
+        experimental_output: result.experimental_output,
         experimental_telemetry: options.experimental_telemetry,
       };
     });
@@ -382,7 +394,12 @@ export class AISDKMocker {
         rawCall: { rawPrompt: options.prompt, rawSettings: {} },
         rawResponse: { headers: {}, response: {} },
         request: { body: JSON.stringify(options) },
-        response: { messages: [], timestamp: new Date() },
+        response: {
+          id: 'mock-response-id',
+          modelId: mockModel?.modelId || 'mock-model',
+          messages: [],
+          timestamp: new Date(),
+        },
         toolCalls: [],
         toolResults: [],
         steps: [],
@@ -408,7 +425,12 @@ export class AISDKMocker {
         rawCall: { rawPrompt: options.prompt, rawSettings: {} },
         rawResponse: { headers: {}, response: {} },
         request: { body: JSON.stringify(options) },
-        response: { messages: [], timestamp: new Date() },
+        response: {
+          id: 'mock-response-id',
+          modelId: mockModel?.modelId || 'mock-model',
+          messages: [],
+          timestamp: new Date(),
+        },
         logprobs: undefined,
         providerMetadata: undefined,
         experimental_telemetry: options.experimental_telemetry,
@@ -565,7 +587,6 @@ export const VercelAISDKTestPatterns = {
 
     const result = await generateText({
       model: mockModel,
-      maxSteps,
       tools,
       prompt: 'Multi-step tool test',
     });

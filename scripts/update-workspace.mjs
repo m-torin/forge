@@ -32,13 +32,11 @@
  * files that might prevent successful publishing. Use --no-verify to skip.
  */
 
-import { execSync } from 'child_process';
-import { exit } from 'process';
-import { readFileSync, writeFileSync, existsSync, readdirSync, statSync, rmSync, copyFileSync } from 'fs';
+import { exec, execSync } from 'child_process';
+import { existsSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'fs';
 import path from 'path';
-import { platform } from 'os';
+import { exit } from 'process';
 import { promisify } from 'util';
-import { exec } from 'child_process';
 
 const execAsync = promisify(exec);
 
@@ -93,8 +91,8 @@ function parseJsonPreserveFormat(content) {
     format: {
       indent,
       hasTrailingNewline,
-      lineEndings: content.includes('\r\n') ? '\r\n' : '\n'
-    }
+      lineEndings: content.includes('\r\n') ? '\r\n' : '\n',
+    },
   };
 }
 
@@ -111,7 +109,7 @@ function semverCompare(a, b) {
   const cleanB = b.split('+')[0];
 
   // Parse versions into components
-  const parseVersion = (v) => {
+  const parseVersion = v => {
     const prereleaseSplit = v.split('-');
     const versionParts = prereleaseSplit[0].split('.').map(Number);
     const prerelease = prereleaseSplit[1] ? prereleaseSplit[1].split('.') : null;
@@ -120,7 +118,7 @@ function semverCompare(a, b) {
       major: versionParts[0] || 0,
       minor: versionParts[1] || 0,
       patch: versionParts[2] || 0,
-      prerelease
+      prerelease,
     };
   };
 
@@ -255,14 +253,14 @@ async function getLatestVersion(packageName, includePrerelease = false) {
     if (includePrerelease) {
       // Get all versions including prereleases
       const { stdout } = await execAsync(`npm show ${packageName} versions --json`, {
-        encoding: 'utf-8'
+        encoding: 'utf-8',
       });
       const allVersions = JSON.parse(stdout);
       version = findLatestVersion(allVersions);
     } else {
       // Get latest stable version
       const { stdout } = await execAsync(`npm show ${packageName} version`, {
-        encoding: 'utf-8'
+        encoding: 'utf-8',
       });
       version = stdout.trim();
     }
@@ -286,7 +284,7 @@ async function getLatestPrerelease(packageName, prereleaseId) {
 
   try {
     const { stdout } = await execAsync(`npm show ${packageName} versions --json`, {
-      encoding: 'utf-8'
+      encoding: 'utf-8',
     });
     const allVersions = JSON.parse(stdout);
 
@@ -367,43 +365,43 @@ async function main() {
 
     console.log('✅ Found pnpm-workspace.yaml');
 
-  // Step 1: Upgrade PNPM to latest version using corepack
-  console.log('\n1️⃣  Upgrading PNPM to latest version');
-  console.log('Running: corepack use pnpm@latest');
-  runCommand('corepack use pnpm@latest');
+    // Step 1: Upgrade PNPM to latest version using corepack
+    console.log('\n1️⃣  Upgrading PNPM to latest version');
+    console.log('Running: corepack use pnpm@latest');
+    runCommand('corepack use pnpm@latest');
 
-  // Add a small delay to ensure corepack command completes
-  await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay
+    // Add a small delay to ensure corepack command completes
+    await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay
 
-  // Get PNPM version
-  const pnpmVersion = runCommand('pnpm --version', true).trim();
-  console.log(`📋  PNPM version: ${pnpmVersion}`);
+    // Get PNPM version
+    const pnpmVersion = runCommand('pnpm --version', true).trim();
+    console.log(`📋  PNPM version: ${pnpmVersion}`);
 
-  // Update the packageManager field in package.json
-  runCommand(`pnpm pkg set packageManager=pnpm@${pnpmVersion}`, true);
-  console.log(`✅  Updated packageManager to pnpm@${pnpmVersion}`);
+    // Update the packageManager field in package.json
+    runCommand(`pnpm pkg set packageManager=pnpm@${pnpmVersion}`, true);
+    console.log(`✅  Updated packageManager to pnpm@${pnpmVersion}`);
 
-  // Step 2: Update workspace catalog and check package.json files
-  console.log('\n2️⃣  Updating catalog entries in pnpm-workspace.yaml');
-  await updateCatalogEntries();
+    // Step 2: Update workspace catalog and check package.json files
+    console.log('\n2️⃣  Updating catalog entries in pnpm-workspace.yaml');
+    await updateCatalogEntries();
 
-  // Step 3: Fix any malformed 'catalog:' references first (before other operations)
-  console.log('\n3️⃣  Checking for and fixing malformed catalog references');
-  await fixMalformedCatalogReferences();
+    // Step 3: Fix any malformed 'catalog:' references first (before other operations)
+    console.log('\n3️⃣  Checking for and fixing malformed catalog references');
+    await fixMalformedCatalogReferences();
 
-  // Step 4: Ensure all package.json files use catalog references
-  console.log('\n4️⃣  Checking package.json files in apps/ and packages/ for catalog references');
-  const { catalogEntries } = await checkAndFixPackageJsonFiles();
+    // Step 4: Ensure all package.json files use catalog references
+    console.log('\n4️⃣  Checking package.json files in apps/ and packages/ for catalog references');
+    const { catalogEntries } = await checkAndFixPackageJsonFiles();
 
-  // Step 5: Fix package.json files with missing catalog entries
-  console.log('\n5️⃣  Fixing missing catalog references');
-  await fixMissingCatalogReferences(catalogEntries);
+    // Step 5: Fix package.json files with missing catalog entries
+    console.log('\n5️⃣  Fixing missing catalog references');
+    await fixMissingCatalogReferences(catalogEntries);
 
-  // Step 6: Update all dependencies to the latest versions
-  console.log('\n6️⃣  Updating all dependencies to latest versions');
+    // Step 6: Update all dependencies to the latest versions
+    console.log('\n6️⃣  Updating all dependencies to latest versions');
 
-  console.log('📦  First running pnpm install to ensure catalog is synchronized');
-  try {
+    console.log('📦  First running pnpm install to ensure catalog is synchronized');
+    try {
       execSync('pnpm install', { stdio: 'inherit' });
       console.log('✅  Successfully installed dependencies');
 
@@ -438,12 +436,9 @@ async function main() {
             }
 
             // Use a temporary file to capture output but not display it
-            execSync(
-              `pnpm -r pack --pack-destination ${verifyDir} > ${logFile} 2>&1`,
-              {
-                stdio: ['pipe', 'pipe', 'pipe'],
-              }
-            );
+            execSync(`pnpm -r pack --pack-destination ${verifyDir} > ${logFile} 2>&1`, {
+              stdio: ['pipe', 'pipe', 'pipe'],
+            });
 
             // Count the number of packages packed using platform-agnostic method
             const tgzFiles = readdirSync(verifyDir).filter(f => f.endsWith('.tgz'));
@@ -489,7 +484,7 @@ async function main() {
     // This needs to happen AFTER pnpm up --latest which may have reverted catalog references
     console.log('\n7️⃣  Final pass: Ensuring all catalog references are properly set');
     await checkAndFixPackageJsonFiles();
-    
+
     // Run pnpm install one more time to lock in the catalog references
     console.log('📦  Running final pnpm install to lock catalog references');
     try {
@@ -617,8 +612,12 @@ async function updateCatalogEntries() {
     let workspaceYaml = readFileSync(workspaceYamlPath, 'utf-8');
 
     // Extract and preserve the onlyBuiltDependencies section
-    const onlyBuiltDependenciesMatch = workspaceYaml.match(/^onlyBuiltDependencies:\s*\n((?:^\s+[^\n]+\n?)*)/m);
-    const onlyBuiltDependenciesSection = onlyBuiltDependenciesMatch ? onlyBuiltDependenciesMatch[0] : '';
+    const onlyBuiltDependenciesMatch = workspaceYaml.match(
+      /^onlyBuiltDependencies:\s*\n((?:^\s+[^\n]+\n?)*)/m,
+    );
+    const onlyBuiltDependenciesSection = onlyBuiltDependenciesMatch
+      ? onlyBuiltDependenciesMatch[0]
+      : '';
 
     // Remove the onlyBuiltDependencies section temporarily
     if (onlyBuiltDependenciesSection) {
@@ -658,7 +657,7 @@ async function updateCatalogEntries() {
         // More robust replacement that handles various formats
         workspaceYaml = workspaceYaml.replace(
           /^catalog:\s*\n((?:^\s+[^\n]+\n?)*)$/m,
-          fixedCatalog + '\n'
+          fixedCatalog + '\n',
         );
 
         // Write back to file
@@ -765,7 +764,7 @@ async function updateCatalogEntries() {
         // Replace existing catalog section
         workspaceYaml = workspaceYaml.replace(
           /^catalog:\s*\n((?:^\s+[^\n]+\n?)*)$/m,
-          newCatalogContent + '\n'
+          newCatalogContent + '\n',
         );
       } else {
         // Add new catalog section at the end
@@ -797,7 +796,17 @@ function isValidVersion(version) {
   if (typeof version !== 'string') return false;
 
   // Check for special protocols that aren't semver
-  const specialProtocols = ['workspace:', 'file:', 'link:', 'git+', 'github:', 'npm:', 'http:', 'https:', 'catalog:'];
+  const specialProtocols = [
+    'workspace:',
+    'file:',
+    'link:',
+    'git+',
+    'github:',
+    'npm:',
+    'http:',
+    'https:',
+    'catalog:',
+  ];
   if (specialProtocols.some(proto => version.startsWith(proto))) {
     return true; // These are valid but not semver
   }
@@ -820,7 +829,7 @@ function detectVersionPrefix(packageJson) {
   const allVersions = [
     ...Object.values(packageJson.dependencies || {}),
     ...Object.values(packageJson.devDependencies || {}),
-    ...Object.values(packageJson.peerDependencies || {})
+    ...Object.values(packageJson.peerDependencies || {}),
   ].filter(v => typeof v === 'string' && /^[~^]?\d+\.\d+\.\d+/.test(v));
 
   if (allVersions.length === 0) return DEFAULT_CONFIG.versionPrefix;
@@ -834,8 +843,9 @@ function detectVersionPrefix(packageJson) {
   });
 
   // Return most common prefix
-  return Object.entries(prefixCounts)
-    .sort(([,a], [,b]) => b - a)[0][0] || DEFAULT_CONFIG.versionPrefix;
+  return (
+    Object.entries(prefixCounts).sort(([, a], [, b]) => b - a)[0][0] || DEFAULT_CONFIG.versionPrefix
+  );
 }
 
 // Function to check and fix package.json files to use catalog references
@@ -867,7 +877,7 @@ async function checkAndFixPackageJsonFiles() {
 
     console.log(`  Found ${packageJsonFiles.length} package.json files to check`);
     console.log(`  Catalog entries available: ${Object.keys(catalogEntries).length}`);
-    
+
     // Log first few catalog entries for debugging
     const catalogSample = Object.entries(catalogEntries).slice(0, 5);
     console.log(`  Sample catalog entries:`);
@@ -886,13 +896,13 @@ async function checkAndFixPackageJsonFiles() {
         const packageJson = parsed.data;
         let needsUpdate = false;
         const updates = [];
-        
+
         // Log current file being processed
         const packageName = packageJson.name || path.basename(path.dirname(packageJsonPath));
         console.log(`  🔍 Checking ${packageName} (${packageJsonPath})`);
 
         // Check dependencies for catalog usage
-        const checkAndUpdateSection = (section) => {
+        const checkAndUpdateSection = section => {
           if (!packageJson[section]) return;
 
           for (const [pkg, version] of Object.entries(packageJson[section])) {
@@ -907,11 +917,18 @@ async function checkAndFixPackageJsonFiles() {
               !version.startsWith('catalog:') &&
               catalogEntries[pkg]
             ) {
-              console.log(`    📦 Converting ${pkg}: "${version}" → "catalog:" (catalog has "${catalogEntries[pkg]}")`);
+              console.log(
+                `    📦 Converting ${pkg}: "${version}" → "catalog:" (catalog has "${catalogEntries[pkg]}")`,
+              );
               packageJson[section][pkg] = 'catalog:';
               needsUpdate = true;
               updates.push(pkg);
-            } else if (typeof version === 'string' && !version.startsWith('catalog:') && !catalogEntries[pkg] && section === 'dependencies') {
+            } else if (
+              typeof version === 'string' &&
+              !version.startsWith('catalog:') &&
+              !catalogEntries[pkg] &&
+              section === 'dependencies'
+            ) {
               // Log packages not in catalog for debugging (only for dependencies to reduce noise)
               if (packageJsonPath.includes('webapp')) {
                 console.log(`    ⚠️  ${pkg}: "${version}" not in catalog`);
@@ -934,7 +951,7 @@ async function checkAndFixPackageJsonFiles() {
           }
 
           console.log(
-            `  📄 ${packageName}: Updated ${updates.length} dependencies to use catalog references`
+            `  📄 ${packageName}: Updated ${updates.length} dependencies to use catalog references`,
           );
           totalUpdates += updates.length;
         }
@@ -973,7 +990,7 @@ async function fixMissingCatalogReferences(catalogEntries) {
         const updates = [];
 
         // Check for catalog references that don't exist in the catalog
-        const checkAndFixSection = async (section) => {
+        const checkAndFixSection = async section => {
           if (!packageJson[section]) return;
 
           for (const [pkg, version] of Object.entries(packageJson[section])) {
@@ -1052,7 +1069,7 @@ process.on('SIGTERM', () => {
 });
 
 // Execute main function
-main().catch((error) => {
+main().catch(error => {
   console.error('❌ Script failed:', error);
   releaseLock();
   exit(1);

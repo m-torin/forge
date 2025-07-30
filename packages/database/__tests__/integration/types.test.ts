@@ -9,7 +9,7 @@ import {
   RedisOperationResult,
   VectorQuery,
   VectorSearchResult,
-} from '@/src/types';
+} from '#/src/types';
 
 describe('Database Types', () => {
   describe('DatabaseConnection interface', () => {

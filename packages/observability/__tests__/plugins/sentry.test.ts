@@ -1,4 +1,4 @@
-import { SentryPlugin, createSentryPlugin } from '@/plugins/sentry';
+import { SentryPlugin, createSentryPlugin } from '#/plugins/sentry';
 import { vi } from 'vitest';
 
 // Use centralized test factory and utilities

@@ -5,11 +5,10 @@ import { logError } from '@repo/observability';
 import { isDemoModeClient } from '#/lib/demoMode';
 import type { ReactFlowJsonObject } from '@xyflow/react';
 import type { FbNode, FbEdge, FlowUpdate } from '../types';
-import { useAppContext } from '@/app/flow/[cuid]/FlowProvider';
-import { FlowMethodSchema } from '#/lib/prisma/generated/zod';
+import { useAppContext } from '#/app/flow/[cuid]/FlowProvider';
+import { FlowMethodSchema } from '#/lib/prisma/generated/schemas';
 import { FlowCreateUpdateData, upsertFlowAction } from './action';
 import {
-  transformNodeForValidation,
   transformEdgeForValidation,
 } from './transformations';
 import {
@@ -79,20 +78,20 @@ export const useSaveFlow = () => {
 
         // Transform nodes with proper typing
         const transformedNodes = currentNodes.map((node) => {
-          const nodeForValidation = transformNodeForValidation(node, flowId);
+          const nodeData = node.data;
           return {
             where: { id: node.id },
             create: {
               type: convertToPrismaNodeType(node.type || NodeTypesEnum.Default),
-              name: nodeForValidation.name,
-              rfId: nodeForValidation.rfId,
-              metadata: nodeForValidation.metadata,
-              position: nodeForValidation.position,
-              createdAt: nodeForValidation.createdAt,
-              updatedAt: nodeForValidation.updatedAt,
-              deleted: nodeForValidation.deleted,
-              arn: nodeForValidation.arn,
-              infrastructureId: nodeForValidation.infrastructureId,
+              name: nodeData?.name ?? null,
+              rfId: node.id,
+              metadata: sanitizeJsonValue(nodeData?.metadata),
+              position: sanitizeJsonValue(node.position),
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              deleted: false,
+              arn: nodeData?.arn ?? null,
+              infrastructureId: nodeData?.infrastructureId ?? null,
             },
             update: {
               metadata: sanitizeJsonValue(node.data?.metadata),
@@ -103,20 +102,31 @@ export const useSaveFlow = () => {
         });
 
         // Transform edges with proper typing
-        const transformedEdges = currentEdges.map((edge) => ({
-          where: { id: edge.id },
-          create: {
-            ...transformEdgeForValidation(edge, flowId),
-            sourceNodeId: edge.source,
-            targetNodeId: edge.target,
-            // Convert to PrismaEdgeType
-            type: convertToPrismaEdgeType(edge.type),
-            metadata: sanitizeJsonValue(edge.data?.metadata),
-          },
-          update: {
-            metadata: sanitizeJsonValue(edge.data?.metadata),
-          },
-        }));
+        const transformedEdges = currentEdges.map((edge) => {
+          const edgeForValidation = transformEdgeForValidation(edge, flowId);
+          const { sourceNode: _sourceNode, targetNode: _targetNode, flow: _flow, ...edgeData } = edgeForValidation;
+          return {
+            where: { id: edge.id },
+            create: {
+              ...edgeData,
+              sourceNodeId: edge.source,
+              targetNodeId: edge.target,
+              type: convertToPrismaEdgeType(edge.type),
+              metadata: sanitizeJsonValue(edge.data?.metadata),
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              deleted: false,
+              isActive: edge.data?.isActive ?? false,
+              rfId: edge.id,
+              label: typeof edge.label === 'string' ? edge.label :
+                     typeof edge.data?.label === 'string' ? edge.data.label : null,
+              normalizedKey: edge.data?.normalizedKey ?? null,
+            },
+            update: {
+              metadata: sanitizeJsonValue(edge.data?.metadata),
+            },
+          };
+        });
 
         const transformedFlow: FlowCreateUpdateData = {
           id: flowId,

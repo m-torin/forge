@@ -93,7 +93,7 @@ export const setupEnvironmentMocks = (overrides = {}) => {
   });
 
   // Mock common env import paths
-  const envPaths = ['@/env', '../env', '../../env', '../../../env', './env'];
+  const envPaths = ['#/env', '../env', '../../env', '../../../env', './env'];
 
   envPaths.forEach(path => {
     vi.doMock(path, () => ({

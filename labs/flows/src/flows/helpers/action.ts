@@ -11,13 +11,21 @@ import {
   type FlowMethod,
   Prisma,
 } from '@prisma/client';
+
+// Import generated schemas only for validation
+import {
+  NodeCreateInputObjectSchema,
+  EdgeCreateInputObjectSchema,
+} from '#/lib/prisma/generated/schemas';
 import type { FbEdge } from '../types';
 
-// Helper types for Prisma JSON handling
-type PrismaJsonInput =
-  | Prisma.InputJsonValue
-  | Prisma.NullableJsonNullValueInput
-  | undefined;
+// Helper types for Prisma JSON handling (unused but kept for reference)
+// type PrismaJsonInput =
+//   | Prisma.InputJsonValue
+//   | Prisma.NullableJsonNullValueInput
+//   | undefined;
+
+// Use direct Prisma types for type definitions
 type NodeCreateData = Prisma.NodeUncheckedCreateInput;
 type NodeUpdateData = Prisma.NodeUncheckedUpdateInput;
 type EdgeCreateData = Prisma.EdgeUncheckedCreateInput;
@@ -26,9 +34,8 @@ type EdgeUpdateData = Prisma.EdgeUncheckedUpdateInput;
 // Helper function to convert JsonValue to Prisma's expected input type
 const toPrismaJson = (
   value: Prisma.JsonValue | null | undefined,
-): PrismaJsonInput => {
-  if (value === null) return Prisma.JsonNull;
-  if (value === undefined) return undefined;
+): Prisma.InputJsonValue => {
+  if (value === null || value === undefined) return {};
   return value as Prisma.InputJsonValue;
 };
 
@@ -78,15 +85,23 @@ export type FlowCreateUpdateData = {
   };
 };
 
-// Validation functions
+// Validation functions using generated Zod schemas
 const _validateNodeData = (data: unknown): data is NodeCreateData => {
-  // Add validation logic here if needed
-  return true;
+  try {
+    NodeCreateInputObjectSchema.parse(data);
+    return true;
+  } catch {
+    return false;
+  }
 };
 
 const _validateEdgeData = (data: unknown): data is EdgeCreateData => {
-  // Add validation logic here if needed
-  return true;
+  try {
+    EdgeCreateInputObjectSchema.parse(data);
+    return true;
+  } catch {
+    return false;
+  }
 };
 
 function _validateEdges(edges: FbEdge[], nodeIds: Set<string>): void {

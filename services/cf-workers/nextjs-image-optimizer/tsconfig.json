@@ -1,9 +1,13 @@
 {
   "extends": "@repo/typescript-config/cloudflare.json",
   "compilerOptions": {
+    "baseUrl": ".",
     "types": ["@cloudflare/workers-types", "vite/client"],
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "paths": {
+      "#/*": ["./src/*"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

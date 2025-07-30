@@ -96,7 +96,7 @@ describe('aI SDK Utils', () => {
   });
 
   test('should import AI SDK utils successfully', async () => {
-    const aiSDKUtils = await import('@/server/providers/ai-sdk-utils');
+    const aiSDKUtils = await import('#/server/providers/ai-sdk-utils');
     expect(aiSDKUtils).toBeDefined();
   });
 
@@ -109,7 +109,7 @@ describe('aI SDK Utils', () => {
       createDeepInfraModel,
       createModel,
       createModels,
-    } = await import('@/server/providers/ai-sdk-utils');
+    } = await import('#/server/providers/ai-sdk-utils');
 
     // Test individual model creators
     const anthropicModel = createAnthropicModel();
@@ -151,7 +151,7 @@ describe('aI SDK Utils', () => {
       enhancedStreamText,
       enhancedGenerateObject,
       createAnthropicModel,
-    } = await import('@/server/providers/ai-sdk-utils');
+    } = await import('#/server/providers/ai-sdk-utils');
 
     // Use a properly mocked model from our provider functions
     const mockModel = createAnthropicModel();
@@ -181,7 +181,7 @@ describe('aI SDK Utils', () => {
 
   test('should test utility functions', async () => {
     const { formatProviderError, validateGenerateOptions, createAnthropicModel } = await import(
-      '@/server/providers/ai-sdk-utils'
+      '#/server/providers/ai-sdk-utils'
     );
 
     // Test error formatting
@@ -215,7 +215,7 @@ describe('aI SDK Utils', () => {
       createWebSearchGoogleModel,
       webSearchWithPerplexity,
       webSearchWithGemini,
-    } = await import('@/server/providers/ai-sdk-utils');
+    } = await import('#/server/providers/ai-sdk-utils');
 
     // Test web search model creators
     const perplexityWebModel = createWebSearchPerplexityModel();
@@ -237,7 +237,7 @@ describe('aI SDK Utils', () => {
   });
 
   test('should test configuration interfaces', async () => {
-    const utils = await import('@/server/providers/ai-sdk-utils');
+    const utils = await import('#/server/providers/ai-sdk-utils');
 
     // Test that interfaces are properly exported by checking function parameters
     const config = {
@@ -251,7 +251,7 @@ describe('aI SDK Utils', () => {
   });
 
   test('should handle provider errors gracefully', async () => {
-    const { createModel } = await import('@/server/providers/ai-sdk-utils');
+    const { createModel } = await import('#/server/providers/ai-sdk-utils');
 
     // Test unsupported provider
     expect(() => createModel('unsupported-provider')).toThrow('Unsupported provider');

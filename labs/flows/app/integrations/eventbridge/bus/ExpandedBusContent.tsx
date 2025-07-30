@@ -33,11 +33,11 @@ import type {
 // Types imported from eventbridge-rules.ts and eventbridge-bus.ts
 interface RuleDetailsFromFile {
   Name: string;
-  Description?: string;
-  State?: string;
-  ScheduleExpression?: string;
-  EventPattern?: string;
-  Targets?: Target[]; // Made optional since ListRulesCommand doesn't provide Targets
+  Description?: string | undefined;
+  State?: string | undefined;
+  ScheduleExpression?: string | undefined;
+  EventPattern?: string | undefined;
+  Targets?: Target[] | undefined; // Made optional since ListRulesCommand doesn't provide Targets
 }
 
 // Base bus details from AWS SDK extended with rules
@@ -45,8 +45,8 @@ interface BusDetails {
   Arn: string;
   Name: string;
   Rules: RuleDetailsFromFile[];
-  CreationTime?: Date;
-  Policy?: string;
+  CreationTime?: Date | undefined;
+  Policy?: string | undefined;
 }
 
 // UI-specific extension for display purposes

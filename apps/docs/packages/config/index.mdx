@@ -111,43 +111,46 @@ pnpm add -D @repo/config
     ```typescript
     // next.config.ts
     import { config } from '@repo/config/next';
-    
+
     export default config;
     ```
+
   </Tab>
-  
+
   <Tab title="With Bundle Analyzer">
     ```typescript
     // next.config.ts
     import { config, withAnalyzer } from '@repo/config/next';
-    
-    const finalConfig = process.env.ANALYZE === 'true' 
-      ? withAnalyzer(config) 
+
+    const finalConfig = process.env.ANALYZE === 'true'
+      ? withAnalyzer(config)
       : config;
-    
+
     export default finalConfig;
     ```
-    
+
     Run analysis:
     ```bash
     ANALYZE=true pnpm build
     ```
+
   </Tab>
-  
+
   <Tab title="Extended Configuration">
     ```typescript
     // next.config.ts
     import type { NextConfig } from 'next';
     import { config, mergeConfig } from '@repo/config/next';
-    
+
     const customConfig: Partial<NextConfig> = {
       images: {
         domains: ['custom-cdn.example.com'],
       },
     };
-    
+
     export default mergeConfig(config, customConfig);
     ```
+
   </Tab>
 </Tabs>
 
@@ -261,29 +264,31 @@ Code formatting configurations for consistent style across the monorepo.
     ```javascript
     // prettier.config.mjs
     import { config } from '@repo/config/prettier';
-    
+
     export default config;
     ```
-    
+
     **Features:**
     - Organize imports plugin
     - Package.json formatting
     - Shell script formatting
     - Tailwind CSS class sorting
+
   </Tab>
 
   <Tab title="Simple Configuration">
     ```javascript
     // prettier.config.mjs
     import { simpleConfig } from '@repo/config/prettier/simple';
-    
+
     export default simpleConfig;
     ```
-    
+
     **Features:**
     - Basic formatting rules only
     - No plugin dependencies
     - Faster execution
+
   </Tab>
 </Tabs>
 
@@ -364,7 +369,7 @@ pnpm add -D @repo/config @repo/config-eslint
     export default config;
     ```
   </Step>
-  
+
   <Step title="TypeScript Configuration">
     Create `tsconfig.json`:
     ```json
@@ -373,21 +378,18 @@ pnpm add -D @repo/config @repo/config-eslint
       "compilerOptions": {
         "baseUrl": ".",
         "paths": {
-          "@/*": ["./src/*"]
+          "#/*": ["./src/*"]
         }
       }
     }
     ```
   </Step>
-  
-  <Step title="Next.js Configuration">
-    Create `next.config.ts`:
-    ```typescript
-    import { config } from '@repo/config/next';
-    export default config;
-    ```
-  </Step>
-  
+
+<Step title="Next.js Configuration">
+  Create `next.config.ts`: ```typescript import {config} from
+  '@repo/config/next'; export default config; ```
+</Step>
+
   <Step title="Prettier Configuration">
     Create `prettier.config.mjs`:
     ```javascript

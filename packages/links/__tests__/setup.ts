@@ -105,8 +105,8 @@ vi.mock('dub', () => ({
 }));
 
 // Mock DubProvider to ensure it has the client property and all methods
-vi.mock('@/shared/providers/dub-provider', async () => {
-  const actual = await vi.importActual('@/shared/providers/dub-provider');
+vi.mock('#/shared/providers/dub-provider', async () => {
+  const actual = await vi.importActual('#/shared/providers/dub-provider');
 
   class MockDubProvider {
     name = 'dub';
@@ -313,12 +313,12 @@ export const createLinkTestConfig = (overrides = {}) => ({
 
 // Common link manager creation patterns
 export const createTestLinkManager = async (config = createLinkTestConfig()) => {
-  const { createLinkManager } = await import('@/shared/utils/link-manager');
+  const { createLinkManager } = await import('#/shared/utils/link-manager');
   return createLinkManager(config);
 };
 
 export const createTestDubProvider = async (config = { enabled: true, apiKey: 'test-key' }) => {
-  const { DubProvider } = await import('@/shared/providers/dub-provider');
+  const { DubProvider } = await import('#/shared/providers/dub-provider');
   const { createTestData } = await import('./link-test-factory');
   const provider = new DubProvider(config);
   // Add mock properties for tests
@@ -328,7 +328,7 @@ export const createTestDubProvider = async (config = { enabled: true, apiKey: 't
 };
 
 export const createTestAnalyticsIntegration = async (config = { enabled: true }) => {
-  const { createAnalyticsIntegration } = await import('@/shared/utils/analytics-integration');
+  const { createAnalyticsIntegration } = await import('#/shared/utils/analytics-integration');
   return createAnalyticsIntegration(config);
 };
 

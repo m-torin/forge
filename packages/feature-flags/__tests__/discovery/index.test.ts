@@ -1,4 +1,4 @@
-import { createFlagsDiscoveryEndpoint } from '@/discovery';
+import { createFlagsDiscoveryEndpoint } from '#/discovery';
 import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock observability

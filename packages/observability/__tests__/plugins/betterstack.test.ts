@@ -1,4 +1,4 @@
-import { BetterStackPlugin, createBetterStackPlugin } from '@/plugins/betterstack';
+import { BetterStackPlugin, createBetterStackPlugin } from '#/plugins/betterstack';
 import { vi } from 'vitest';
 
 // Use centralized test factory and utilities

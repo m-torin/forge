@@ -3,7 +3,7 @@ import {
   createInventoryTransaction,
   generateInventoryHistory,
   generateStockLevels,
-} from '@/prisma/src/seed/mappers/inventory-mapper';
+} from '#/prisma/src/seed/mappers/inventory-mapper';
 import { describe, expect, it } from 'vitest';
 // InventoryTransactionType enum values for testing
 const InventoryTransactionType = {

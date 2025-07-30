@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { createWorkflowEngine } from '@/server';
-import { ProviderHealthReport, WorkflowDefinition, WorkflowExecution } from '@/shared/types';
+import { createWorkflowEngine } from '#/server';
+import { ProviderHealthReport, WorkflowDefinition, WorkflowExecution } from '#/shared/types';
 
 import { createUpstashWorkflowConfig } from './fixtures';
 

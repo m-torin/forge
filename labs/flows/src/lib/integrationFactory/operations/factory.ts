@@ -32,7 +32,7 @@ export class OperationFactory {
         options.defaultRetries ?? this.config.operationDefaults.retries,
       defaultCacheTtl:
         options.defaultCacheTtl ?? this.config.operationDefaults.cacheTtl,
-      middleware: options.middleware,
+      ...(options.middleware && { middleware: options.middleware }),
     };
 
     if (options.middleware) {

@@ -1,16 +1,16 @@
-import { ModelSelector } from '@/components/model-selector';
+import { ModelSelector } from '#/components/model-selector';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 // Mock the provider
-vi.mock('@/lib/ai/providers', () => ({
+vi.mock('#/lib/ai/providers', () => ({
   myProvider: {
     getAvailableModels: vi.fn(),
   },
 }));
 
 const mockGetAvailableModels = vi.mocked(
-  (await import('@/lib/ai/providers')).myProvider.getAvailableModels,
+  (await import('#/lib/ai/providers')).myProvider.getAvailableModels,
 );
 
 describe('modelSelector Component', () => {

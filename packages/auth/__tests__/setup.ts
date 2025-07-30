@@ -7,7 +7,7 @@ import React from 'react';
 import { vi } from 'vitest';
 
 // Set test environment
-process.env.NODE_ENV = 'test';
+Object.defineProperty(process.env, 'NODE_ENV', { value: 'test', writable: true });
 process.env.CI = 'true';
 process.env.SKIP_ENV_VALIDATION = 'true';
 

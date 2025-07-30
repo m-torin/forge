@@ -135,7 +135,7 @@ const answer = await rag.query("What is Paris known for?");
 ### Using Your Advanced Features
 
 ```typescript
-import { createChatbotRAGTools } from "@/lib/ai/tools/rag/rag-tools";
+import { createChatbotRAGTools } from "#/lib/ai/tools/rag/rag-tools";
 
 // Feature flag driven RAG (your existing system)
 const ragTools = createChatbotRAGTools({

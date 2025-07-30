@@ -1,4 +1,4 @@
-import { evaluateFlags, getFlagContext } from '@/server/flags';
+import { evaluateFlags, getFlagContext } from '#/server/flags';
 import { beforeEach, describe, expect, vi } from 'vitest';
 import { featureFlagTestData } from '../test-data-generators';
 import {
@@ -26,7 +26,7 @@ vi.mock('next/headers', async () => {
 });
 
 // Mock shared utils
-vi.mock('@/shared/utils', () => ({
+vi.mock('#/shared/utils', () => ({
   parseOverrides: vi.fn(),
 }));
 
@@ -41,7 +41,7 @@ describe('getFlagContext', () => {
   });
 
   test('should get flag context from Next.js headers and cookies', async () => {
-    const { parseOverrides } = vi.mocked(await import('@/shared/utils'));
+    const { parseOverrides } = vi.mocked(await import('#/shared/utils'));
     const mockOverrides = { 'test-flag': true };
     parseOverrides.mockReturnValue(mockOverrides);
 
@@ -66,7 +66,7 @@ describe('getFlagContext', () => {
   });
 
   test('should handle parseOverrides returning empty object', async () => {
-    const { parseOverrides } = vi.mocked(await import('@/shared/utils'));
+    const { parseOverrides } = vi.mocked(await import('#/shared/utils'));
     parseOverrides.mockReturnValue({});
 
     const context = await getFlagContext();

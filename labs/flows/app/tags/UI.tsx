@@ -97,7 +97,7 @@ export const TagsUI: React.FC<TagsUIProps> = ({
         setLoading(false);
       }
     },
-    [tagGroupForm],
+    [tagGroupForm, instanceId],
   );
 
   const memoizedTagGroups = useMemo(() => tagGroups, [tagGroups]);

@@ -7,7 +7,7 @@ import {
   DEFAULT_MCP_CONFIG,
   getMcpConfigWithFallback,
   parseMcpConfig,
-} from '@/lib/feature-flags/mcp-config-parser';
+} from '#/lib/feature-flags/mcp-config-parser';
 import { describe, expect } from 'vitest';
 
 describe('mCP Configuration Integration Tests', () => {

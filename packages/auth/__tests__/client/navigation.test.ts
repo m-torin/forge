@@ -26,7 +26,7 @@ describe('client navigation helpers', () => {
 
   describe('useAuthRedirect', () => {
     test('should return navigation functions', async () => {
-      const navigationModule = await import('@/client/navigation');
+      const navigationModule = await import('#/client/navigation');
 
       const { result } = renderHook(() => navigationModule.useAuthRedirect());
 
@@ -40,7 +40,7 @@ describe('client navigation helpers', () => {
 
     describe('redirectAfterLogin', () => {
       test('should redirect to dashboard by default', async () => {
-        const navigationModule = await import('@/client/navigation');
+        const navigationModule = await import('#/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
 
@@ -50,7 +50,7 @@ describe('client navigation helpers', () => {
       });
 
       test('should redirect to provided returnUrl', async () => {
-        const navigationModule = await import('@/client/navigation');
+        const navigationModule = await import('#/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
 
@@ -60,7 +60,7 @@ describe('client navigation helpers', () => {
       });
 
       test('should redirect to custom URL', async () => {
-        const navigationModule = await import('@/client/navigation');
+        const navigationModule = await import('#/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
 
@@ -70,7 +70,7 @@ describe('client navigation helpers', () => {
       });
 
       test('should handle empty string returnUrl', async () => {
-        const navigationModule = await import('@/client/navigation');
+        const navigationModule = await import('#/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
 
@@ -82,7 +82,7 @@ describe('client navigation helpers', () => {
 
     describe('redirectToLogin', () => {
       test('should redirect to sign-in page without returnUrl', async () => {
-        const navigationModule = await import('@/client/navigation');
+        const navigationModule = await import('#/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
 
@@ -92,7 +92,7 @@ describe('client navigation helpers', () => {
       });
 
       test('should redirect to sign-in page with returnUrl', async () => {
-        const navigationModule = await import('@/client/navigation');
+        const navigationModule = await import('#/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
 
@@ -102,7 +102,7 @@ describe('client navigation helpers', () => {
       });
 
       test('should encode returnUrl properly', async () => {
-        const navigationModule = await import('@/client/navigation');
+        const navigationModule = await import('#/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
 
@@ -114,7 +114,7 @@ describe('client navigation helpers', () => {
       });
 
       test('should handle complex URLs with special characters', async () => {
-        const navigationModule = await import('@/client/navigation');
+        const navigationModule = await import('#/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
 
@@ -126,7 +126,7 @@ describe('client navigation helpers', () => {
       });
 
       test('should handle empty string returnUrl', async () => {
-        const navigationModule = await import('@/client/navigation');
+        const navigationModule = await import('#/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
 
@@ -138,7 +138,7 @@ describe('client navigation helpers', () => {
 
     describe('redirectToSignUp', () => {
       test('should redirect to sign-up page without returnUrl', async () => {
-        const navigationModule = await import('@/client/navigation');
+        const navigationModule = await import('#/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
 
@@ -148,7 +148,7 @@ describe('client navigation helpers', () => {
       });
 
       test('should redirect to sign-up page with returnUrl', async () => {
-        const navigationModule = await import('@/client/navigation');
+        const navigationModule = await import('#/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
 
@@ -158,7 +158,7 @@ describe('client navigation helpers', () => {
       });
 
       test('should encode returnUrl properly', async () => {
-        const navigationModule = await import('@/client/navigation');
+        const navigationModule = await import('#/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
 
@@ -168,7 +168,7 @@ describe('client navigation helpers', () => {
       });
 
       test('should handle paths with fragments', async () => {
-        const navigationModule = await import('@/client/navigation');
+        const navigationModule = await import('#/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
 
@@ -180,7 +180,7 @@ describe('client navigation helpers', () => {
       });
 
       test('should handle empty string returnUrl', async () => {
-        const navigationModule = await import('@/client/navigation');
+        const navigationModule = await import('#/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
 
@@ -192,7 +192,7 @@ describe('client navigation helpers', () => {
 
     describe('multiple calls', () => {
       test('should handle multiple redirect calls', async () => {
-        const navigationModule = await import('@/client/navigation');
+        const navigationModule = await import('#/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
 
@@ -210,7 +210,7 @@ describe('client navigation helpers', () => {
 
     describe('edge cases', () => {
       test('should handle undefined returnUrl', async () => {
-        const navigationModule = await import('@/client/navigation');
+        const navigationModule = await import('#/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
 
@@ -224,7 +224,7 @@ describe('client navigation helpers', () => {
       });
 
       test('should handle null returnUrl', async () => {
-        const navigationModule = await import('@/client/navigation');
+        const navigationModule = await import('#/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
 
@@ -241,7 +241,7 @@ describe('client navigation helpers', () => {
       });
 
       test('should handle very long URLs', async () => {
-        const navigationModule = await import('@/client/navigation');
+        const navigationModule = await import('#/client/navigation');
 
         const { result } = renderHook(() => navigationModule.useAuthRedirect());
 

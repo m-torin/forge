@@ -5,7 +5,7 @@
  * This factory provides common test scenarios and data generators for analytics emitters.
  */
 
-import type { EmitterContext, EmitterOptions } from '@/shared/emitters/emitter-types';
+import type { EmitterContext, EmitterOptions } from '#/shared/emitters/emitter-types';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 // Common test data generators

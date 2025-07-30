@@ -13,7 +13,7 @@ import { createMockImplementations, i18nTestPatterns } from '../i18n-test-factor
 // MIDDLEWARE MODULE EXPORTS
 // ================================================================================================
 
-i18nTestPatterns.testModuleExports('middleware', '@/middleware', [
+i18nTestPatterns.testModuleExports('middleware', '#/middleware', [
   { name: 'createI18nMiddleware', type: 'function', required: false },
   { name: 'detectLocale', type: 'function', required: false },
   { name: 'i18nConfig', type: 'object', required: false },

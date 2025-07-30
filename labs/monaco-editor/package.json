@@ -46,6 +46,7 @@
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/qa": "workspace:*",
+    "@vitest/ui": "catalog:",
     "@storybook/react": "^9.0.18",
     "@t3-oss/env-nextjs": "catalog:",
     "@types/lodash": "^4.17.13",
@@ -61,6 +62,7 @@
     "tsup": "^8.3.5",
     "typescript": "catalog:",
     "typescript-plugin-css-modules": "^5.1.0",
+    "vite-tsconfig-paths": "catalog:",
     "vitest": "catalog:"
   },
   "publishConfig": {

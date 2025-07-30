@@ -5,7 +5,7 @@
  * Provides consistent testing approaches across all i18n test files.
  */
 
-import type { Dictionary, Locale } from '@/shared/dictionary-loader';
+import type { Dictionary, Locale } from '#/shared/dictionary-loader';
 import { expect, test, vi } from 'vitest';
 
 // ============================================================================

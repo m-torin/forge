@@ -88,7 +88,10 @@
   "devDependencies": {
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
-    "@repo/qa": "workspace:*"
+    "@repo/qa": "workspace:*",
+    "@vitest/ui": "catalog:",
+    "vite-tsconfig-paths": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "react": "catalog:",

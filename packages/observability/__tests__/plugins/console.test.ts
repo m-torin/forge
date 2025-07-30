@@ -1,4 +1,4 @@
-import { ConsolePlugin, ConsoleServerPlugin } from '@/plugins/console';
+import { ConsolePlugin, ConsoleServerPlugin } from '#/plugins/console';
 import { vi } from 'vitest';
 
 // Use centralized test factory and utilities

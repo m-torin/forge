@@ -1,5 +1,5 @@
 // Assign mockEmbeddingManager to globalThis to avoid hoisting issues
-import type { VectorDB } from '@/server/vector/types';
+import type { VectorDB } from '#/server/vector/types';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 (globalThis as any).mockEmbeddingManager = {
@@ -23,7 +23,7 @@ describe('vectorUtils', () => {
     vi.clearAllMocks();
     (globalThis as any).mockEmbeddingManager.embed.mockClear();
     (globalThis as any).mockEmbeddingManager.embedBatch.mockClear();
-    const mod = await import('@/server/vector/utils');
+    const mod = await import('#/server/vector/utils');
     VectorUtils = mod.VectorUtils;
     mockDB = {
       upsert: vi.fn().mockResolvedValue(undefined),
@@ -195,7 +195,7 @@ describe('vectorUtils', () => {
 
 describe('createVectorUtils', () => {
   test('should create VectorUtils instance', async () => {
-    const mod = await import('@/server/vector/utils');
+    const mod = await import('#/server/vector/utils');
     const mockDB = {} as VectorDB;
     const utils = mod.createVectorUtils(mockDB, 'test-model');
     expect(utils).toBeInstanceOf(mod.VectorUtils);
@@ -205,7 +205,7 @@ describe('createVectorUtils', () => {
 describe('vectorOps', () => {
   let vectorOps: any;
   beforeEach(async () => {
-    const mod = await import('@/server/vector/utils');
+    const mod = await import('#/server/vector/utils');
     vectorOps = mod.vectorOps;
   });
 

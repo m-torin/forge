@@ -42,13 +42,13 @@ describe.todo('metadata Tools', () => {
   });
 
   test('should import metadata tools successfully', async () => {
-    const metadataTools = await import('@/server/tools/metadata-tools');
+    const metadataTools = await import('#/server/tools/metadata-tools');
     expect(metadataTools).toBeDefined();
     expect(metadataTools.createMetadataTools).toBeTypeOf('function');
   });
 
   test('should create metadata tools with config', async () => {
-    const { createMetadataTools } = await import('@/server/tools/metadata-tools');
+    const { createMetadataTools } = await import('#/server/tools/metadata-tools');
 
     const tools = createMetadataTools({
       vectorDB: mockVectorDB,
@@ -66,7 +66,7 @@ describe.todo('metadata Tools', () => {
   });
 
   test('should test updateMetadata tool', async () => {
-    const { createMetadataTools } = await import('@/server/tools/metadata-tools');
+    const { createMetadataTools } = await import('#/server/tools/metadata-tools');
 
     const tools = createMetadataTools({
       vectorDB: mockVectorDB,
@@ -101,7 +101,7 @@ describe.todo('metadata Tools', () => {
   });
 
   test('should test bulkUpdateMetadata tool', async () => {
-    const { createMetadataTools } = await import('@/server/tools/metadata-tools');
+    const { createMetadataTools } = await import('#/server/tools/metadata-tools');
 
     const tools = createMetadataTools({
       vectorDB: mockVectorDB,
@@ -137,7 +137,7 @@ describe.todo('metadata Tools', () => {
   });
 
   test('should test queryByMetadata tool', async () => {
-    const { createMetadataTools } = await import('@/server/tools/metadata-tools');
+    const { createMetadataTools } = await import('#/server/tools/metadata-tools');
 
     const tools = createMetadataTools({
       vectorDB: mockVectorDB,
@@ -168,7 +168,7 @@ describe.todo('metadata Tools', () => {
   });
 
   test('should test queryByMetadata with complex filters', async () => {
-    const { createMetadataTools } = await import('@/server/tools/metadata-tools');
+    const { createMetadataTools } = await import('#/server/tools/metadata-tools');
 
     const tools = createMetadataTools({
       vectorDB: mockVectorDB,
@@ -196,7 +196,7 @@ describe.todo('metadata Tools', () => {
   });
 
   test('should test getMetadataStats tool', async () => {
-    const { createMetadataTools } = await import('@/server/tools/metadata-tools');
+    const { createMetadataTools } = await import('#/server/tools/metadata-tools');
 
     const tools = createMetadataTools({
       vectorDB: mockVectorDB,
@@ -225,7 +225,7 @@ describe.todo('metadata Tools', () => {
   });
 
   test('should test cleanupMetadata tool in dry run mode', async () => {
-    const { createMetadataTools } = await import('@/server/tools/metadata-tools');
+    const { createMetadataTools } = await import('#/server/tools/metadata-tools');
 
     const tools = createMetadataTools({
       vectorDB: mockVectorDB,
@@ -257,7 +257,7 @@ describe.todo('metadata Tools', () => {
   });
 
   test('should test cleanupMetadata tool with actual updates', async () => {
-    const { createMetadataTools } = await import('@/server/tools/metadata-tools');
+    const { createMetadataTools } = await import('#/server/tools/metadata-tools');
 
     // Mock vector with metadata that needs cleanup
     mockVectorDB.range.mockResolvedValue({
@@ -300,7 +300,7 @@ describe.todo('metadata Tools', () => {
   });
 
   test('should handle updateMetadata errors gracefully', async () => {
-    const { createMetadataTools } = await import('@/server/tools/metadata-tools');
+    const { createMetadataTools } = await import('#/server/tools/metadata-tools');
 
     // Mock error in fetch
     mockVectorDB.fetch.mockRejectedValue(new Error('Vector not found'));
@@ -322,7 +322,7 @@ describe.todo('metadata Tools', () => {
   });
 
   test('should handle missing vector in updateMetadata', async () => {
-    const { createMetadataTools } = await import('@/server/tools/metadata-tools');
+    const { createMetadataTools } = await import('#/server/tools/metadata-tools');
 
     // Mock empty fetch result
     mockVectorDB.fetch.mockResolvedValue([]);
@@ -344,7 +344,7 @@ describe.todo('metadata Tools', () => {
   });
 
   test('should test different merge modes', async () => {
-    const { createMetadataTools } = await import('@/server/tools/metadata-tools');
+    const { createMetadataTools } = await import('#/server/tools/metadata-tools');
 
     const tools = createMetadataTools({
       vectorDB: mockVectorDB,
@@ -378,7 +378,7 @@ describe.todo('metadata Tools', () => {
   });
 
   test('should test MetadataToolsConfig interface', async () => {
-    const { createMetadataTools } = await import('@/server/tools/metadata-tools');
+    const { createMetadataTools } = await import('#/server/tools/metadata-tools');
 
     const config = {
       vectorDB: mockVectorDB,

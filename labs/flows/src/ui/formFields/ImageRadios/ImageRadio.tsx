@@ -5,7 +5,7 @@ import React, { memo, useCallback } from 'react';
 import { Box, Text, Radio, rem } from '@mantine/core';
 import { motion } from 'framer-motion';
 import classes from './ImageRadios.module.scss';
-import { RadioItem } from './ImageRadios';
+import { RadioItem } from './types';
 import { IconProps } from '@tabler/icons-react';
 
 interface ImageRadioProps {

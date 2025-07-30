@@ -3,26 +3,20 @@
  * Helper functions for model selection, validation, and configuration
  */
 
-import {
-  MODEL_REGISTRY,
-  getModelConfig,
-  modelSupportsReasoning,
-  getModelReasoningConfig,
-  type ProviderModelConfig,
-} from './registry';
 import type { ModelCapability } from './metadata';
+import { getModelConfig, modelSupportsReasoning, type ProviderModelConfig } from './registry';
 
 /**
  * Model selection strategy types
  */
-export type ModelSelectionStrategy = 
-  | 'speed'      // Fast, cost-effective models
-  | 'balanced'   // Balance of speed and capability
-  | 'reasoning'  // Advanced reasoning capabilities
-  | 'creative'   // Creative writing and content
-  | 'vision'     // Vision and multimodal tasks
-  | 'code'       // Code generation and analysis
-  | 'computer'   // Computer use capabilities;
+export type ModelSelectionStrategy =
+  | 'speed' // Fast, cost-effective models
+  | 'balanced' // Balance of speed and capability
+  | 'reasoning' // Advanced reasoning capabilities
+  | 'creative' // Creative writing and content
+  | 'vision' // Vision and multimodal tasks
+  | 'code' // Code generation and analysis
+  | 'computer'; // Computer use capabilities;
 
 /**
  * User tier for model access control
@@ -44,11 +38,14 @@ export interface ModelSelectionConfig {
 /**
  * Default model selection strategies
  */
-export const MODEL_STRATEGIES: Record<ModelSelectionStrategy, {
-  primaryModels: string[];
-  fallbackModels: string[];
-  requiredCapabilities?: ModelCapability[];
-}> = {
+export const MODEL_STRATEGIES: Record<
+  ModelSelectionStrategy,
+  {
+    primaryModels: string[];
+    fallbackModels: string[];
+    requiredCapabilities?: ModelCapability[];
+  }
+> = {
   speed: {
     primaryModels: ['claude-3-5-haiku-20241022', 'gpt-4o-mini'],
     fallbackModels: ['claude-3-haiku-20240307'],
@@ -89,12 +86,15 @@ export const MODEL_STRATEGIES: Record<ModelSelectionStrategy, {
 /**
  * User tier access controls
  */
-export const USER_TIER_LIMITS: Record<UserTier, {
-  maxCostTier: 'low' | 'medium' | 'high';
-  allowReasoningModels: boolean;
-  allowLatestModels: boolean;
-  requestsPerHour?: number;
-}> = {
+export const USER_TIER_LIMITS: Record<
+  UserTier,
+  {
+    maxCostTier: 'low' | 'medium' | 'high';
+    allowReasoningModels: boolean;
+    allowLatestModels: boolean;
+    requestsPerHour?: number;
+  }
+> = {
   free: {
     maxCostTier: 'low',
     allowReasoningModels: false,
@@ -122,13 +122,13 @@ const MODEL_COST_TIERS: Record<string, 'low' | 'medium' | 'high'> = {
   'claude-3-haiku-20240307': 'low',
   'claude-3-5-haiku-20241022': 'low',
   'gpt-4o-mini': 'low',
-  
+
   // Medium cost
   'claude-3-5-sonnet-20240620': 'medium',
   'claude-3-5-sonnet-20241022': 'medium',
   'claude-3-7-sonnet-20250219': 'medium',
   'gpt-4o': 'medium',
-  
+
   // High cost
   'claude-4-opus-20250514': 'high',
   'claude-4-sonnet-20250514': 'high',
@@ -141,10 +141,10 @@ const MODEL_COST_TIERS: Record<string, 'low' | 'medium' | 'high'> = {
  */
 export function selectModel(config: ModelSelectionConfig): string | null {
   const strategy = MODEL_STRATEGIES[config.strategy];
-  const userLimits = USER_TIER_LIMITS[config.userTier];
-  
+  const _userLimits = USER_TIER_LIMITS[config.userTier];
+
   // Combine primary and fallback models
-  const candidateModels = config.fallbackEnabled 
+  const candidateModels = config.fallbackEnabled
     ? [...strategy.primaryModels, ...strategy.fallbackModels]
     : strategy.primaryModels;
 
@@ -166,8 +166,8 @@ export function selectModel(config: ModelSelectionConfig): string | null {
 
     // Check required capabilities
     if (config.requiresCapability) {
-      const hasAllCapabilities = config.requiresCapability.every(cap => 
-        modelConfig.metadata.capabilities?.includes(cap)
+      const hasAllCapabilities = config.requiresCapability.every(cap =>
+        modelConfig.metadata.capabilities?.includes(cap),
       );
       if (!hasAllCapabilities) return false;
     }
@@ -175,7 +175,7 @@ export function selectModel(config: ModelSelectionConfig): string | null {
     // Check strategy requirements
     if (strategy.requiredCapabilities) {
       const hasStrategyCapabilities = strategy.requiredCapabilities.every(cap =>
-        modelConfig.metadata.capabilities?.includes(cap)
+        modelConfig.metadata.capabilities?.includes(cap),
       );
       if (!hasStrategyCapabilities) return false;
     }
@@ -196,12 +196,12 @@ export function selectModel(config: ModelSelectionConfig): string | null {
  * Check if user can access a specific model
  */
 export function canUserAccessModel(
-  userTier: UserTier, 
+  userTier: UserTier,
   modelCostTier: 'low' | 'medium' | 'high',
-  isReasoningModel: boolean
+  isReasoningModel: boolean,
 ): boolean {
   const limits = USER_TIER_LIMITS[userTier];
-  
+
   // Check cost tier access
   const costTierOrder = { low: 0, medium: 1, high: 2 };
   if (costTierOrder[modelCostTier] > costTierOrder[limits.maxCostTier]) {
@@ -219,25 +219,22 @@ export function canUserAccessModel(
 /**
  * Get model recommendations for a specific use case
  */
-export function getModelRecommendations(
-  useCase: string,
-  userTier: UserTier = 'pro'
-): string[] {
+export function getModelRecommendations(useCase: string, userTier: UserTier = 'pro'): string[] {
   const useCaseToStrategy: Record<string, ModelSelectionStrategy> = {
-    'chat': 'balanced',
-    'coding': 'code',
-    'analysis': 'reasoning',
+    chat: 'balanced',
+    coding: 'code',
+    analysis: 'reasoning',
     'creative-writing': 'creative',
     'image-analysis': 'vision',
-    'automation': 'computer',
+    automation: 'computer',
     'quick-tasks': 'speed',
   };
 
   const strategy = useCaseToStrategy[useCase] || 'balanced';
-  
+
   // Get multiple recommendations
   const recommendations: string[] = [];
-  
+
   // Primary recommendation
   const primary = selectModel({
     strategy,
@@ -280,7 +277,7 @@ export function getModelRecommendations(
 export function validateModelForUseCase(
   modelId: string,
   useCase: string,
-  userTier: UserTier = 'pro'
+  userTier: UserTier = 'pro',
 ): { valid: boolean; issues: string[]; suggestions: string[] } {
   const config = getModelConfig(modelId);
   const issues: string[] = [];
@@ -307,17 +304,17 @@ export function validateModelForUseCase(
   // Use case specific validation
   const useCaseRequirements: Record<string, ModelCapability[]> = {
     'image-analysis': ['vision', 'multimodal'],
-    'coding': ['tools', 'code'],
-    'automation': ['computer-use', 'tools'],
-    'reasoning': ['reasoning'],
+    coding: ['tools', 'code'],
+    automation: ['computer-use', 'tools'],
+    reasoning: ['reasoning'],
   };
 
   const requiredCapabilities = useCaseRequirements[useCase];
   if (requiredCapabilities) {
-    const missingCapabilities = requiredCapabilities.filter(cap => 
-      !config.metadata.capabilities?.includes(cap)
+    const missingCapabilities = requiredCapabilities.filter(
+      cap => !config.metadata.capabilities?.includes(cap),
     );
-    
+
     if (missingCapabilities.length > 0) {
       issues.push(`Missing capabilities: ${missingCapabilities.join(', ')}`);
       suggestions.push('Choose a model with the required capabilities');
@@ -347,11 +344,7 @@ export interface ModelUsageStats {
  */
 const modelUsageStats = new Map<string, ModelUsageStats>();
 
-export function trackModelUsage(
-  modelId: string,
-  inputTokens: number,
-  outputTokens: number
-): void {
+export function trackModelUsage(modelId: string, inputTokens: number, outputTokens: number): void {
   const current = modelUsageStats.get(modelId) || {
     requestCount: 0,
     inputTokens: 0,
@@ -364,7 +357,7 @@ export function trackModelUsage(
   current.inputTokens += inputTokens;
   current.outputTokens += outputTokens;
   current.lastUsed = new Date();
-  
+
   // Simple cost estimation (replace with actual pricing)
   const costTier = MODEL_COST_TIERS[modelId] || 'medium';
   const costMultiplier = { low: 1, medium: 3, high: 10 }[costTier];
@@ -384,30 +377,35 @@ export function getAllUsageStats(): Record<string, ModelUsageStats> {
 /**
  * Model comparison utilities
  */
-export function compareModels(
-  modelIds: string[]
-): Record<string, ProviderModelConfig | null> {
-  return Object.fromEntries(
-    modelIds.map(id => [id, getModelConfig(id)])
-  );
+export function compareModels(modelIds: string[]): Record<string, ProviderModelConfig | null> {
+  return Object.fromEntries(modelIds.map(id => [id, getModelConfig(id)]));
 }
 
 /**
  * Get model feature matrix for comparison
  */
 export function getModelFeatureMatrix(modelIds: string[]) {
-  const capabilities: ModelCapability[] = ['reasoning', 'vision', 'tools', 'computer-use', 'multimodal'];
-  
+  const capabilities: ModelCapability[] = [
+    'reasoning',
+    'vision',
+    'tools',
+    'computer-use',
+    'multimodal',
+  ];
+
   return modelIds.map(modelId => {
     const config = getModelConfig(modelId);
     return {
       id: modelId,
       name: config?.metadata.name || modelId,
       provider: config?.provider || 'unknown',
-      capabilities: capabilities.reduce((acc, cap) => {
-        acc[cap] = config?.metadata.capabilities?.includes(cap) || false;
-        return acc;
-      }, {} as Record<ModelCapability, boolean>),
+      capabilities: capabilities.reduce(
+        (acc, cap) => {
+          acc[cap] = config?.metadata.capabilities?.includes(cap) || false;
+          return acc;
+        },
+        {} as Record<ModelCapability, boolean>,
+      ),
       reasoning: config?.metadata.reasoning?.supported || false,
       deprecated: config?.metadata.deprecated || false,
       contextWindow: config?.metadata.contextWindow,

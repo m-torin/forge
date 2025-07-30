@@ -37,6 +37,7 @@
     "@repo/eslint-config": "workspace:*",
     "@repo/qa": "workspace:*",
     "@types/negotiator": "^0.6.4",
+    "@vitest/ui": "catalog:",
     "next": "catalog:",
     "react": "catalog:"
   }

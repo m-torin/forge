@@ -1,9 +1,9 @@
-import { ChatHeader } from '@/components/chat-header';
+import { ChatHeader } from '#/components/chat-header';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 // Mock dependencies
-vi.mock('@/components/model-selector', () => ({
+vi.mock('#/components/model-selector', () => ({
   ModelSelector: ({
     selectedModel,
     onModelSelect,
@@ -18,7 +18,7 @@ vi.mock('@/components/model-selector', () => ({
   ),
 }));
 
-vi.mock('@/components/visibility-selector', () => ({
+vi.mock('#/components/visibility-selector', () => ({
   VisibilitySelector: ({ selectedVisibilityType }: { selectedVisibilityType: string }) => (
     <div data-testid="visibility-selector">
       <span>Visibility: {selectedVisibilityType}</span>
@@ -26,7 +26,7 @@ vi.mock('@/components/visibility-selector', () => ({
   ),
 }));
 
-vi.mock('@/components/chat-actions', () => ({
+vi.mock('#/components/chat-actions', () => ({
   ChatActions: ({ chatId, isReadonly }: { chatId: string; isReadonly: boolean }) => (
     <div data-testid="chat-actions">
       <span>Chat ID: {chatId}</span>
@@ -35,7 +35,7 @@ vi.mock('@/components/chat-actions', () => ({
   ),
 }));
 
-vi.mock('@/components/user-menu', () => ({
+vi.mock('#/components/user-menu', () => ({
   UserMenu: ({ session }: { session: any }) => (
     <div data-testid="user-menu">
       <span>User: {session.user.name}</span>

@@ -55,15 +55,7 @@
       ]
     },
     "repo:ci": {
-      "dependsOn": [
-        "@repo/database#prisma:generate",
-        "circular",
-        "typecheck",
-        "lint",
-        "test",
-        "test:e2e",
-        "build"
-      ],
+      "dependsOn": ["circular", "typecheck", "lint", "test", "test:ui", "test:e2e"],
       "cache": false
     },
     "circular": {
@@ -85,7 +77,7 @@
       "outputs": ["knip-report.json"]
     },
     "lint": {
-      "dependsOn": ["^lint"],
+      "dependsOn": ["^lint", "prettier"],
       "cache": true,
       "inputs": ["src/**", "*.ts", "*.tsx", "*.js", "*.jsx", ".eslintrc*", "eslint.config.*"],
       "outputs": []
@@ -94,7 +86,32 @@
       "dependsOn": ["circular", "typecheck", "lint", "test:fast"],
       "cache": false
     },
+    "@repo/config#prettier": {
+      "cache": false,
+      "outputs": []
+    },
+    "@repo/config#prettier:apps": {
+      "cache": true,
+      "inputs": ["../../apps/**/*.{ts,tsx,js,jsx,json,md,mdx,css,scss,yaml,yml}"],
+      "outputs": []
+    },
+    "@repo/config#prettier:labs": {
+      "cache": true,
+      "inputs": ["../../labs/**/*.{ts,tsx,js,jsx,json,md,mdx,css,scss,yaml,yml}"],
+      "outputs": []
+    },
+    "@repo/config#prettier:packages": {
+      "cache": true,
+      "inputs": ["../../packages/**/*.{ts,tsx,js,jsx,json,md,mdx,css,scss,yaml,yml}"],
+      "outputs": []
+    },
+    "@repo/config#prettier:monorepo": {
+      "cache": true,
+      "inputs": ["../../*.{ts,tsx,js,jsx,json,md,mdx,css,scss,yaml,yml}", "../../scripts/**/*"],
+      "outputs": []
+    },
     "prettier": {
+      "dependsOn": ["@repo/config#prettier"],
       "cache": false,
       "outputs": []
     },

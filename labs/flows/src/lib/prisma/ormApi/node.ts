@@ -196,7 +196,7 @@ export const createNode = async (
         ...data,
         flow: { connect: { id: flowId } },
         type,
-        metadata: data.metadata,
+        metadata: data.metadata ?? {},
       },
     });
   } catch (error) {
@@ -290,9 +290,7 @@ export const upsertNode = async (
         metadata: updatedMetadata,
         flow: { connect: { id: flowId } },
         type: rfNode.type,
-        infrastructure: infrastructureId
-          ? { connect: { id: infrastructureId } }
-          : undefined,
+        ...(infrastructureId && { infrastructure: { connect: { id: infrastructureId } } }),
         // Add any other columns that are based on the `data` key.
       };
 
@@ -310,7 +308,7 @@ export const upsertNode = async (
         },
         create: {
           ...baseData,
-          id: existingNodeId ?? undefined,
+          ...(existingNodeId && { id: existingNodeId }),
           createdAt: new Date(),
           updatedAt: new Date(),
         },

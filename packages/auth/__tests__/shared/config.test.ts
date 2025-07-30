@@ -4,7 +4,7 @@
 
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { createAuthConfig } from '@/shared/config';
+import { createAuthConfig } from '#/shared/config';
 
 // Mock the env module to return actual values based on process.env
 vi.mock('../../env', () => {
@@ -51,8 +51,8 @@ describe('auth Configuration', () => {
       expect(config.secret).toBe('build-time-secret');
       expect(config.appUrl).toBe('http://localhost:3000');
       expect(config.databaseUrl).toBe('postgresql://localhost:5432/dev');
-      expect(config.features.admin).toBe(true);
-      expect(config.features.organizations).toBe(true);
+      expect(config.features.admin).toBeTruthy();
+      expect(config.features.organizations).toBeTruthy();
 
       // Clean up
       delete process.env.NEXT_PHASE;

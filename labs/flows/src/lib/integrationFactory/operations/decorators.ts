@@ -23,7 +23,7 @@ class FactoryManager {
   static async reset(): Promise<void> {
     if (this.instance) {
       await this.instance.dispose();
-      this.instance = undefined;
+      delete this.instance;
     }
   }
 }

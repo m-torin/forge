@@ -1,5 +1,4 @@
 import { createNodePackageConfig } from '@repo/qa/vitest/configs';
-import viteTsconfigPaths from 'vite-tsconfig-paths';
 
 export default createNodePackageConfig({
   setupFiles: ['./test-setup.ts'],
@@ -10,6 +9,5 @@ export default createNodePackageConfig({
         '__tests__/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
       ],
     },
-    plugins: [viteTsconfigPaths({ ignoreConfigErrors: true })],
   },
 });

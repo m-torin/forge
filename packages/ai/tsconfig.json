@@ -6,10 +6,9 @@
     "types": ["vitest/globals"],
     "baseUrl": ".",
     "paths": {
-      "@repo/*": ["../*"],
-      "@/*": ["./src/*"]
+      "#/*": ["./src/*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules", "dist", "__tests__/**/*", "examples/**/*", "demo-*.ts"]
+  "exclude": ["node_modules", "dist", "examples/**/*", "demo-*.ts", "__tests__/**/*"]
 }

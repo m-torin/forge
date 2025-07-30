@@ -712,7 +712,7 @@ test("generates random test data", () => {
   });
 
   expect(testUser.name).toHaveLength(10);
-  expect(testUser.email).toMatch(/@/);
+  expect(testUser.email).toMatch(/#/);
   expect(testUser.age).toBeGreaterThanOrEqual(18);
   expect(testUser.age).toBeLessThanOrEqual(65);
 });

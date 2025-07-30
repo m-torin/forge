@@ -44,7 +44,7 @@ export const createComputeSuccess = (
     timestamp: new Date().toISOString(),
     processedData: data.processedData,
     status: errors?.length ? ComputeStatus.PARTIAL : ComputeStatus.SUCCESS,
-    errors,
+    ...(errors && { errors }),
   },
 });
 

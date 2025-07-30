@@ -1,4 +1,4 @@
-import { artifactModel, chatModel, reasoningModel, titleModel } from '@/lib/ai/models';
+import { artifactModel, chatModel, reasoningModel, titleModel } from '#/lib/ai/models';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 describe('test Models', () => {

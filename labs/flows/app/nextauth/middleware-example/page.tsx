@@ -1,4 +1,4 @@
-import CustomLink from '@/auth-components/custom-link';
+import CustomLink from '#/auth-components/custom-link';
 
 export default function Page() {
   return (

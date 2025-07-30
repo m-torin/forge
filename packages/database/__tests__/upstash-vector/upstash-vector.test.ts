@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Test imports for new four-file pattern
-import { VectorOperations } from '@/upstash/server';
+import { VectorOperations } from '#/upstash/server';
 import type { Index } from '@upstash/vector';
 
 // Mock the Upstash Vector module

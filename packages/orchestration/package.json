@@ -64,6 +64,8 @@
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/qa": "workspace:*",
-    "@types/opossum": "^8.1.9"
+    "@types/opossum": "^8.1.9",
+    "@vitest/ui": "catalog:",
+    "vite-tsconfig-paths": "catalog:"
   }
 }

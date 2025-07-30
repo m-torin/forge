@@ -8,7 +8,7 @@ import {
   normalizeProducts,
   validateCurrency,
   validateRequiredProperties,
-} from '@/shared/emitters/ecommerce/utils';
+} from '#/shared/emitters/ecommerce/utils';
 
 describe('ecommerce Utils', () => {
   describe('normalizeProductProperties', () => {

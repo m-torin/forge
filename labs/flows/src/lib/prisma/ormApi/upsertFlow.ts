@@ -18,7 +18,7 @@ import {
   logEntityChange,
   handlePrismaError,
 } from './flowUtils';
-import { FlowWithRelations } from './flow';
+import { FlowWithRelations } from './types';
 import { logInfo, logError } from '@repo/observability';
 
 /**

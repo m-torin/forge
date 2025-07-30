@@ -13,7 +13,7 @@ import {
   PayloadBuilder,
   withMetadata,
   withUTM,
-} from '@/shared/emitters/helpers';
+} from '#/shared/emitters/helpers';
 
 import type {
   EmitterContext,
@@ -21,7 +21,7 @@ import type {
   EmitterPagePayload,
   EmitterPayload,
   EmitterTrackPayload,
-} from '@/shared/emitters/emitter-types';
+} from '#/shared/emitters/emitter-types';
 
 // Mock the core emitters
 vi.mock('../../shared/emitters/emitters', () => ({

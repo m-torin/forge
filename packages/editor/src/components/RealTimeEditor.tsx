@@ -186,15 +186,20 @@ export function RealTimeEditor({
     message: string;
   } | null>(null);
 
-  const { collaborators, isConnected, sendEvent, updatePresence, disconnect } =
-    useCollaborativeEditing({
-      documentId,
-      userId: 'current-user', // This should come from auth context
-      enablePresence: showPresence,
-      enableCursors: true,
-      autoSave: true,
-      saveInterval: 2000,
-    });
+  const {
+    collaborators,
+    isConnected,
+    sendEvent,
+    updatePresence: _updatePresence,
+    disconnect,
+  } = useCollaborativeEditing({
+    documentId,
+    userId: 'current-user', // This should come from auth context
+    enablePresence: showPresence,
+    enableCursors: true,
+    autoSave: true,
+    saveInterval: 2000,
+  });
 
   const editor = useEditor({
     extensions: [StarterKit],

@@ -7,13 +7,13 @@ import {
   ToolExecutionFramework,
   ToolMetadata,
   ToolPatterns,
-} from '@/server/tools/execution-framework';
+} from '#/server/tools/execution-framework';
 import { beforeEach, describe, expect, vi } from 'vitest';
 import { z } from 'zod/v4';
 
 // AI SDK mocks are provided by @repo/qa centralized mocks
 
-vi.mock('@/server/errors/application-errors', () => ({
+vi.mock('#/server/errors/application-errors', () => ({
   ApplicationAIError: vi.fn().mockImplementation((code, message) => {
     const error = new Error(message);
     (error as any).code = code;

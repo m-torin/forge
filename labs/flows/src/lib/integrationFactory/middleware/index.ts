@@ -1,7 +1,6 @@
 // middleware/index.ts
 export * from './backpressure';
 export * from './batch';
-export * from './cache';
 export * from './circuit';
 export * from './lock';
 export * from './logging';

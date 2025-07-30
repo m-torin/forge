@@ -30,10 +30,10 @@ export function createPackagePlaywrightConfig(
   // Default aliases for TypeScript path mapping
   const defaultAliases = {
     '@': resolve(packageConfig.packageDirectory, './src'),
-    '@/components': resolve(packageConfig.packageDirectory, './src/components'),
-    '@/lib': resolve(packageConfig.packageDirectory, './src/lib'),
-    '@/utils': resolve(packageConfig.packageDirectory, './src/utils'),
-    '@/types': resolve(packageConfig.packageDirectory, './src/types'),
+    '#/components': resolve(packageConfig.packageDirectory, './src/components'),
+    '#/lib': resolve(packageConfig.packageDirectory, './src/lib'),
+    '#/utils': resolve(packageConfig.packageDirectory, './src/utils'),
+    '#/types': resolve(packageConfig.packageDirectory, './src/types'),
     ...aliases,
   };
 
@@ -87,11 +87,11 @@ export function createPackagePlaywrightTsConfig(
   aliases?: Record<string, string>,
 ) {
   const defaultAliases = {
-    '@/*': ['./src/*'],
-    '@/components/*': ['./src/components/*'],
-    '@/lib/*': ['./src/lib/*'],
-    '@/utils/*': ['./src/utils/*'],
-    '@/types/*': ['./src/types/*'],
+    '#/*': ['./src/*'],
+    '#/components/*': ['./src/components/*'],
+    '#/lib/*': ['./src/lib/*'],
+    '#/utils/*': ['./src/utils/*'],
+    '#/types/*': ['./src/types/*'],
   };
 
   return {

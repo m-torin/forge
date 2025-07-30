@@ -10,8 +10,8 @@ import {
   productSearched,
   productViewed,
   searchResultsViewed,
-} from '@/shared/emitters/ecommerce/events/product';
-import { ECOMMERCE_EVENTS } from '@/shared/emitters/ecommerce/types';
+} from '#/shared/emitters/ecommerce/events/product';
+import { ECOMMERCE_EVENTS } from '#/shared/emitters/ecommerce/types';
 
 import type {
   BaseProductProperties,
@@ -19,8 +19,8 @@ import type {
   ProductListProperties,
   RecommendationProperties,
   SearchResultsProperties,
-} from '@/shared/emitters/ecommerce/types';
-import type { EmitterOptions } from '@/shared/emitters/emitter-types';
+} from '#/shared/emitters/ecommerce/types';
+import type { EmitterOptions } from '#/shared/emitters/emitter-types';
 
 // Mock the trackEcommerce function
 vi.mock('../../shared/emitters/ecommerce/track-ecommerce', () => ({

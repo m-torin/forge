@@ -808,6 +808,149 @@ logInfo('AI health check results', {
    - Monitor usage patterns and optimize accordingly
    - Keep provider configurations flexible for easy switching
 
+## Centralized Model Configuration
+
+The AI package includes a centralized model registry system that serves as the
+single source of truth for all model configurations across providers.
+
+### Model Registry Features
+
+<CardGroup cols={2}>
+  <Card title="Unified Configuration" icon="database">
+    Single location for all model metadata, capabilities, and provider
+    configurations
+  </Card>
+  <Card title="Smart Selection" icon="brain">
+    Automatic model recommendations based on capabilities and user requirements
+  </Card>
+  <Card title="Type Safety" icon="shield">
+    Comprehensive TypeScript interfaces for model metadata and capabilities
+  </Card>
+  <Card title="Dynamic Updates" icon="refresh">
+    Easy model addition/updates without code changes across consuming
+    applications
+  </Card>
+</CardGroup>
+
+### Usage Examples
+
+<Tabs>
+  <Tab title="Model Selection">
+    ```typescript
+    import { 
+      getBestModelForTask,
+      selectModel,
+      getModelRecommendations 
+    } from '@repo/ai/models';
+
+    // Get best model for specific tasks
+    const chatModel = getBestModelForTask('chat');
+    const reasoningModel = getBestModelForTask('reasoning');
+    const visionModel = getBestModelForTask('vision');
+
+    // Strategic model selection with user tiers
+    const selectedModel = selectModel({
+      strategy: 'reasoning',
+      userTier: 'pro',
+      fallbackEnabled: true,
+      excludeDeprecated: true,
+    });
+
+    // Get recommendations for use cases
+    const recommendations = getModelRecommendations('coding', 'enterprise');
+    ```
+
+  </Tab>
+
+  <Tab title="Model Metadata">
+    ```typescript
+    import { 
+      getModelConfig,
+      modelSupportsReasoning,
+      getModelsByCapability 
+    } from '@repo/ai/models';
+
+    // Get detailed model information
+    const config = getModelConfig('claude-4-opus-20250514');
+    console.log(config?.metadata);
+    // {
+    //   name: 'Claude 4 Opus',
+    //   description: 'Most powerful model with built-in reasoning',
+    //   capabilities: ['reasoning', 'vision', 'tools', 'computer-use'],
+    //   reasoning: {
+    //     supported: true,
+    //     budgetTokens: 15000,
+    //     headers: { 'anthropic-beta': 'interleaved-thinking-2025-05-14' }
+    //   }
+    // }
+
+    // Check model capabilities
+    const hasReasoning = modelSupportsReasoning('claude-4-opus-20250514');
+    const visionModels = getModelsByCapability('vision');
+    ```
+
+  </Tab>
+
+  <Tab title="Provider Integration">
+    ```typescript
+    // The centralized registry automatically configures providers
+    import { registry } from '@repo/ai/server';
+
+    // Models are automatically configured with proper settings
+    const claude4 = registry.languageModel('anthropic:claude-4-opus-20250514');
+    // Automatically includes reasoning headers and budget tokens
+
+    const gpt4 = registry.languageModel('openai:gpt-4o');
+    // Standard configuration without reasoning
+
+    // Use in applications
+    const result = await generateText({
+      model: claude4,
+      prompt: 'Analyze this complex problem...',
+      // Reasoning is automatically enabled based on model configuration
+    });
+    ```
+
+  </Tab>
+</Tabs>
+
+### Model Capabilities
+
+The registry tracks comprehensive capabilities for intelligent model selection:
+
+```typescript
+type ModelCapability =
+  | "reasoning" // Advanced reasoning with thinking mode
+  | "vision" // Image analysis and multimodal inputs
+  | "tools" // Function calling and tool usage
+  | "computer-use" // Computer automation tools
+  | "pdf-support" // PDF document processing
+  | "search" // Web search integration
+  | "code" // Code generation and analysis
+  | "multimodal"; // Multiple input types
+```
+
+### Benefits
+
+<CardGroup cols={1}>
+  <Card title="Consistency Across Applications">
+    All applications using the AI package automatically stay in sync with the
+    latest model configurations and capabilities.
+  </Card>
+  <Card title="Easy Model Updates">
+    Adding new models or updating existing ones requires changes in only one
+    location, automatically propagating to all consumers.
+  </Card>
+  <Card title="Intelligent Selection">
+    Applications can automatically select the best model for specific tasks
+    without hardcoding model names.
+  </Card>
+  <Card title="Reasoning Integration">
+    Models with reasoning capabilities are automatically configured with proper
+    headers and settings.
+  </Card>
+</CardGroup>
+
 This architecture provides maximum flexibility while maintaining a clean,
 consistent interface for the 90% of use cases that work well with Vercel AI SDK,
 while enabling seamless access to advanced provider-specific features when

@@ -1,4 +1,4 @@
-import { ClientProgressTracker, getBrowserInfo, parseUrlParams } from '@/shared/utils/client-utils';
+import { ClientProgressTracker, getBrowserInfo, parseUrlParams } from '#/shared/utils/client-utils';
 import { describe, expect } from 'vitest';
 import { createUtilityTestSuite } from '../../scraping-test-factory';
 

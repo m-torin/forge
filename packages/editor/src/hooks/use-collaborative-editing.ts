@@ -12,7 +12,7 @@ interface CollaborativeEditingOptions extends CollaborationOptions {
 
 export function useCollaborativeEditing(options: CollaborativeEditingOptions) {
   const [documentVersion, setDocumentVersion] = useState(0);
-  const [pendingOperations, setPendingOperations] = useState<any[]>([]);
+  const [pendingOperations, _setPendingOperations] = useState<any[]>([]);
   const [isAutoSaving, setIsAutoSaving] = useState(false);
 
   const collaboration = useCollaboration(options);

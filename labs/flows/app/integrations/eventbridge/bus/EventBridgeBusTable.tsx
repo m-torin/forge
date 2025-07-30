@@ -18,10 +18,10 @@ interface EventBridgeBus {
   Name: string;
   State: string;
   Arn: string;
-  CreationTime?: Date;
-  Description?: string;
-  Policy?: string;
-  LastModifiedTime?: Date;
+  CreationTime?: Date | undefined;
+  Description?: string | undefined;  
+  Policy?: string | undefined;
+  LastModifiedTime?: Date | undefined;
 }
 
 const STATUS_CONFIG: Record<string, StatusConfig> = {

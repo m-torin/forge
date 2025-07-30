@@ -82,9 +82,7 @@ export const createAWSCommand = <
       contextMetadata.aws = {
         service: serviceName,
         operation: operationName,
-        region: client.config.region,
-        requestId: undefined,
-        attempts: undefined,
+        ...(client.config.region && { region: client.config.region }),
       };
 
       try {

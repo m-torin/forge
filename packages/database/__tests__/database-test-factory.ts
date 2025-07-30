@@ -7,8 +7,8 @@
  * Based on the successful DRY patterns from packages/orchestration.
  */
 
-import * as generators from '@/tests/database-data-generators';
-import { DatabaseTestManager } from '@/tests/database-test-setup';
+import * as generators from '#/tests/database-data-generators';
+import { DatabaseTestManager } from '#/tests/database-test-setup';
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 
 /**
@@ -187,7 +187,7 @@ export function createSeedTestSuite(config: {
   return createDatabaseTestSuite({
     suiteName,
     moduleFactory: async () => {
-      return await import(`@/prisma/src/seed/${seedFunction}`);
+      return await import(`#/prisma/src/seed/${seedFunction}`);
     },
     scenarios: [...createSeedScenarios(dependencies), ...scenarios],
     options: {

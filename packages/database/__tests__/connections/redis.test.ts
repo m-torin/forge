@@ -55,7 +55,7 @@ describe('Redis Database Connection', () => {
 
   describe('Connection Management', () => {
     it('should create Redis client successfully', async () => {
-      const { createUpstashRedisFromEnv } = await import('@/redis/server');
+      const { createUpstashRedisFromEnv } = await import('#/redis/server');
 
       const client = createUpstashRedisFromEnv();
 
@@ -63,7 +63,7 @@ describe('Redis Database Connection', () => {
     });
 
     it('should ping Redis successfully', async () => {
-      const { redis } = await import('@/redis/server');
+      const { redis } = await import('#/redis/server');
 
       mockRedis.ping.mockResolvedValue('PONG');
 
@@ -76,7 +76,7 @@ describe('Redis Database Connection', () => {
 
   describe('Basic Operations', () => {
     it('should set and get string values', async () => {
-      const { RedisOperations } = await import('@/redis/server');
+      const { RedisOperations } = await import('#/redis/server');
 
       const ops = new RedisOperations();
       const key = 'test:string';
@@ -94,7 +94,7 @@ describe('Redis Database Connection', () => {
     });
 
     it('should set values with expiration', async () => {
-      const { RedisOperations } = await import('@/redis/server');
+      const { RedisOperations } = await import('#/redis/server');
 
       const ops = new RedisOperations();
       const key = 'test:expiring';
@@ -109,7 +109,7 @@ describe('Redis Database Connection', () => {
     });
 
     it('should handle JSON serialization automatically', async () => {
-      const { RedisOperations } = await import('@/redis/server');
+      const { RedisOperations } = await import('#/redis/server');
 
       const ops = new RedisOperations();
       const key = 'test:json';
@@ -126,7 +126,7 @@ describe('Redis Database Connection', () => {
     });
 
     it('should delete keys', async () => {
-      const { RedisOperations } = await import('@/redis/server');
+      const { RedisOperations } = await import('#/redis/server');
 
       const ops = new RedisOperations();
       const key = 'test:delete';
@@ -140,7 +140,7 @@ describe('Redis Database Connection', () => {
     });
 
     it('should check key existence', async () => {
-      const { RedisOperations } = await import('@/redis/server');
+      const { RedisOperations } = await import('#/redis/server');
 
       const ops = new RedisOperations();
       const key = 'test:exists';
@@ -156,7 +156,7 @@ describe('Redis Database Connection', () => {
 
   describe('Hash Operations', () => {
     it('should set and get hash fields', async () => {
-      const { RedisOperations } = await import('@/redis/server');
+      const { RedisOperations } = await import('#/redis/server');
 
       const ops = new RedisOperations();
       const key = 'test:hash';
@@ -174,7 +174,7 @@ describe('Redis Database Connection', () => {
     });
 
     it('should get all hash fields', async () => {
-      const { RedisOperations } = await import('@/redis/server');
+      const { RedisOperations } = await import('#/redis/server');
 
       const ops = new RedisOperations();
       const key = 'test:hash:all';
@@ -191,7 +191,7 @@ describe('Redis Database Connection', () => {
 
   describe('List Operations', () => {
     it('should push and pop from lists', async () => {
-      const { RedisOperations } = await import('@/redis/server');
+      const { RedisOperations } = await import('#/redis/server');
 
       const ops = new RedisOperations();
       const key = 'test:list';
@@ -208,7 +208,7 @@ describe('Redis Database Connection', () => {
     });
 
     it('should get list range', async () => {
-      const { RedisOperations } = await import('@/redis/server');
+      const { RedisOperations } = await import('#/redis/server');
 
       const ops = new RedisOperations();
       const key = 'test:list:range';
@@ -225,7 +225,7 @@ describe('Redis Database Connection', () => {
 
   describe('Sorted Set Operations', () => {
     it('should add members to sorted set', async () => {
-      const { RedisOperations } = await import('@/redis/server');
+      const { RedisOperations } = await import('#/redis/server');
 
       const ops = new RedisOperations();
       const key = 'test:zset';
@@ -240,7 +240,7 @@ describe('Redis Database Connection', () => {
     });
 
     it('should get sorted set range', async () => {
-      const { RedisOperations } = await import('@/redis/server');
+      const { RedisOperations } = await import('#/redis/server');
 
       const ops = new RedisOperations();
       const key = 'test:zset:range';
@@ -257,7 +257,7 @@ describe('Redis Database Connection', () => {
 
   describe('Pipeline Operations', () => {
     it('should execute pipeline commands efficiently', async () => {
-      const { RedisOperations } = await import('@/redis/server');
+      const { RedisOperations } = await import('#/redis/server');
 
       const ops = new RedisOperations();
 

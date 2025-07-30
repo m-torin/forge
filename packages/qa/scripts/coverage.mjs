@@ -9,12 +9,12 @@
  * Built for Node.js 22+ with ES2023 features.
  */
 
+import columnify from 'columnify';
 import { execSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { readFile, readdir } from 'node:fs/promises';
-import { resolve, join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
-import columnify from 'columnify';
 
 // Use import.meta.dirname for Node 20.11+
 const scriptDir = import.meta.dirname ?? new URL('.', import.meta.url).pathname;
@@ -23,14 +23,14 @@ const repoRoot = resolve(scriptDir, '../../..');
 // Constants
 const COVERAGE_THRESHOLDS = {
   high: 80,
-  medium: 60
+  medium: 60,
 };
 
 const COVERAGE_LOCATIONS = [
   { dir: 'coverage', type: 'unit' },
   { dir: '.vitest-ui/coverage', type: 'ui' },
   { dir: 'html/coverage', type: 'ui' },
-  { dir: 'coverage-browser', type: 'browser' }
+  { dir: 'coverage-browser', type: 'browser' },
 ];
 
 const TEST_CONFIG_FILES = [
@@ -39,7 +39,7 @@ const TEST_CONFIG_FILES = [
   'vitest.config.mjs',
   'jest.config.js',
   'jest.config.ts',
-  'playwright.config.ts'
+  'playwright.config.ts',
 ];
 
 // ANSI color codes
@@ -49,16 +49,16 @@ const colors = {
   green: '\x1b[32m',
   yellow: '\x1b[33m',
   gray: '\x1b[90m',
-  bold: '\x1b[1m'
+  bold: '\x1b[1m',
 };
 
 // Parse command line arguments
 const { values: args } = parseArgs({
   options: {
     filter: { type: 'string' },
-    help: { type: 'boolean', short: 'h' }
+    help: { type: 'boolean', short: 'h' },
   },
-  allowPositionals: false
+  allowPositionals: false,
 });
 
 if (args.help) {
@@ -110,7 +110,7 @@ function getWorkspacePackages() {
     const output = execSync('pnpm list -r --json --depth -1', {
       cwd: repoRoot,
       encoding: 'utf8',
-      stdio: ['pipe', 'pipe', 'ignore']
+      stdio: ['pipe', 'pipe', 'ignore'],
     });
 
     const packages = JSON.parse(output);
@@ -122,7 +122,7 @@ function getWorkspacePackages() {
         name: pkg.name,
         path: pkg.path,
         isApp: pkg.path.includes('/apps/'),
-        hasTests: hasTestConfiguration(pkg.path)
+        hasTests: hasTestConfiguration(pkg.path),
       }))
       .toSorted((a, b) => {
         // Sort apps first, then packages
@@ -154,7 +154,7 @@ function calculateCoverageMetrics(data) {
     lines: { total: 0, covered: 0 },
     functions: { total: 0, covered: 0 },
     statements: { total: 0, covered: 0 },
-    branches: { total: 0, covered: 0 }
+    branches: { total: 0, covered: 0 },
   };
 
   for (const file of Object.values(data)) {
@@ -195,8 +195,8 @@ function calculateCoverageMetrics(data) {
   return Object.fromEntries(
     Object.entries(metrics).map(([key, { total, covered }]) => [
       key,
-      total > 0 ? Math.round((covered / total) * 100) : 0
-    ])
+      total > 0 ? Math.round((covered / total) * 100) : 0,
+    ]),
   );
 }
 
@@ -208,7 +208,9 @@ function calculateCoverageMetrics(data) {
 async function readWorkerCoverageFiles(tmpPath) {
   try {
     const files = await readdir(tmpPath);
-    const coverageFiles = files.filter(file => file.startsWith('coverage-') && file.endsWith('.json'));
+    const coverageFiles = files.filter(
+      file => file.startsWith('coverage-') && file.endsWith('.json'),
+    );
 
     if (coverageFiles.length === 0) {
       return null;
@@ -228,7 +230,7 @@ async function readWorkerCoverageFiles(tmpPath) {
               ...mergedData[script.url],
               functions: script.functions,
               url: script.url,
-              scriptId: script.scriptId
+              scriptId: script.scriptId,
             };
           }
         }
@@ -253,7 +255,7 @@ async function readWorkerCoverageFiles(tmpPath) {
         s: {}, // statements
         f: {}, // functions
         b: {}, // branches
-        statementMap: {}
+        statementMap: {},
       };
 
       // Process functions from V8 format
@@ -263,7 +265,7 @@ async function readWorkerCoverageFiles(tmpPath) {
           if (func.ranges?.[0]) {
             standardFormat[filePath].statementMap[index] = {
               start: { line: Math.floor(func.ranges[0].startOffset / 100) }, // Approximate line
-              end: { line: Math.floor(func.ranges[0].endOffset / 100) }
+              end: { line: Math.floor(func.ranges[0].endOffset / 100) },
             };
             standardFormat[filePath].s[index] = func.ranges[0].count || 0;
           }
@@ -294,7 +296,7 @@ async function readCoverageFromDir(coveragePath) {
         lines: Math.round(data.total.lines.pct),
         functions: Math.round(data.total.functions.pct),
         statements: Math.round(data.total.statements.pct),
-        branches: Math.round(data.total.branches.pct)
+        branches: Math.round(data.total.branches.pct),
       };
     }
   }
@@ -335,7 +337,7 @@ async function readAllCoverageData(packagePath) {
       if (data) {
         results[type] = data;
       }
-    })
+    }),
   );
 
   return results;
@@ -378,7 +380,7 @@ async function getAvailableTestTypes(packages) {
         const coverage = await readAllCoverageData(pkg.path);
         Object.keys(coverage).forEach(type => types.add(type));
       }
-    })
+    }),
   );
 
   return Array.from(types).toSorted();
@@ -394,7 +396,7 @@ async function getAvailableTestTypes(packages) {
 function calculateOptimalColumnWidths(packages, testTypes) {
   const maxPackageNameLength = Math.max(
     ...packages.map(pkg => pkg.name.length),
-    'Package/App'.length
+    'Package/App'.length,
   );
 
   // Cap package column at 30, but allow it to be smaller
@@ -405,7 +407,7 @@ function calculateOptimalColumnWidths(packages, testTypes) {
 
   return {
     package: packageColWidth,
-    metrics: Array(testTypes.length * 2).fill(metricColWidth)
+    metrics: Array(testTypes.length * 2).fill(metricColWidth),
   };
 }
 
@@ -423,15 +425,21 @@ async function displayCoverageTable(packages) {
     console.log('• Or from root: ' + color('pnpm coverage', 'green'));
     console.log('\nTo generate coverage for a specific package:');
     console.log('• Unit coverage: ' + color('pnpm test:coverage', 'green'));
-    console.log('• UI coverage: ' + color('pnpm test:ui --coverage', 'green') + ' (run tests in UI mode with coverage)');
-    console.log('• Browser coverage: ' + color('pnpm test:browser --coverage', 'green') + ' (if available)');
+    console.log(
+      '• UI coverage: ' +
+        color('pnpm test:ui --coverage', 'green') +
+        ' (run tests in UI mode with coverage)',
+    );
+    console.log(
+      '• Browser coverage: ' + color('pnpm test:browser --coverage', 'green') + ' (if available)',
+    );
     console.log('\nThen run ' + color('pnpm coverage', 'green') + ' again to see the results.');
     return;
   }
 
   // Track coverage by type for summary
   const coverageByType = Object.fromEntries(
-    testTypes.map(type => [type, { count: 0, totalLines: 0, totalFunctions: 0 }])
+    testTypes.map(type => [type, { count: 0, totalLines: 0, totalFunctions: 0 }]),
   );
 
   // Collect all package data for columnify
@@ -453,7 +461,9 @@ async function displayCoverageTable(packages) {
             // Update summary stats
             coverageByType[type].count++;
             coverageByType[type].totalLines += isNaN(coverage.lines) ? 0 : coverage.lines;
-            coverageByType[type].totalFunctions += isNaN(coverage.functions) ? 0 : coverage.functions;
+            coverageByType[type].totalFunctions += isNaN(coverage.functions)
+              ? 0
+              : coverage.functions;
           } else {
             row[`${typeName} Lines`] = color('N/A', 'gray');
             row[`${typeName} Funcs`] = color('N/A', 'gray');
@@ -462,23 +472,25 @@ async function displayCoverageTable(packages) {
 
         tableData.push(row);
       }
-    })
+    }),
   );
 
   // Display table using columnify
   console.log('\n' + color('Test Coverage Report', 'bold') + '\n');
 
-  console.log(columnify(tableData, {
-    columnSplitter: ' │ ',
-    truncate: false,
-    config: {
-      'Package/App': {
-        minWidth: 28,
-        maxWidth: 40,
-        truncate: false
-      }
-    }
-  }));
+  console.log(
+    columnify(tableData, {
+      columnSplitter: ' │ ',
+      truncate: false,
+      config: {
+        'Package/App': {
+          minWidth: 28,
+          maxWidth: 40,
+          truncate: false,
+        },
+      },
+    }),
+  );
 
   // Summary statistics
   const packagesWithTests = packages.filter(pkg => pkg.hasTests);
@@ -489,10 +501,22 @@ async function displayCoverageTable(packages) {
 
   // Check if UI coverage is missing
   if (!testTypes.includes('ui') && testTypes.includes('unit')) {
-    console.log('\n' + color('💡 Tip:', 'yellow') + ' UI coverage not found. To generate UI coverage:');
-    console.log('  • Update package.json: ' + color('"test:ui": "vitest --ui --coverage"', 'green'));
-    console.log('  • Configure vitest to use ' + color('.vitest-ui/coverage', 'green') + ' directory for UI mode');
-    console.log('  • Then run: ' + color('pnpm test:ui', 'green') + ' and check for .vitest-ui/coverage/ directory');
+    console.log(
+      '\n' + color('💡 Tip:', 'yellow') + ' UI coverage not found. To generate UI coverage:',
+    );
+    console.log(
+      '  • Update package.json: ' + color('"test:ui": "vitest --ui --coverage"', 'green'),
+    );
+    console.log(
+      '  • Configure vitest to use ' +
+        color('.vitest-ui/coverage', 'green') +
+        ' directory for UI mode',
+    );
+    console.log(
+      '  • Then run: ' +
+        color('pnpm test:ui', 'green') +
+        ' and check for .vitest-ui/coverage/ directory',
+    );
   }
 
   // Coverage by type
@@ -503,7 +527,9 @@ async function displayCoverageTable(packages) {
       const avgLines = Math.round(stats.totalLines / stats.count);
       const avgFunctions = Math.round(stats.totalFunctions / stats.count);
       const typeName = type.charAt(0).toUpperCase() + type.slice(1);
-      console.log(`  - ${typeName} tests: ${stats.count} packages (avg: ${formatPercentage(avgLines)} lines, ${formatPercentage(avgFunctions)} functions)`);
+      console.log(
+        `  - ${typeName} tests: ${stats.count} packages (avg: ${formatPercentage(avgLines)} lines, ${formatPercentage(avgFunctions)} functions)`,
+      );
     }
   });
 

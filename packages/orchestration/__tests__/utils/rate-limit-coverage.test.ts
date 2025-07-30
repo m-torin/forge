@@ -3,7 +3,16 @@
  * Tests rate limiting functionality, headers, and configuration
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
+
+// Import after mocking
+import {
+  createRateLimiter,
+  createRateLimitHeaders,
+  RateLimitConfig,
+  RateLimitResult,
+  withRateLimit,
+} from '../../src/shared/utils/rate-limit';
 
 // Mock dependencies
 vi.mock('@upstash/ratelimit', () => ({
@@ -38,29 +47,20 @@ vi.mock('@repo/database/redis/server', () => ({
   },
 }));
 
-// Import after mocking
-import {
-  createRateLimiter,
-  createRateLimitHeaders,
-  RateLimitConfig,
-  RateLimitResult,
-  withRateLimit,
-} from '../../src/shared/utils/rate-limit';
-
-describe('Rate Limiting', () => {
+describe('rate Limiting', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   describe('createRateLimiter', () => {
-    it('should create rate limiter with default config', () => {
+    test('should create rate limiter with default config', () => {
       const rateLimiter = createRateLimiter();
 
       expect(rateLimiter).toBeDefined();
       expect(typeof rateLimiter.limit).toBe('function');
     });
 
-    it('should create rate limiter with custom config', () => {
+    test('should create rate limiter with custom config', () => {
       const config: RateLimitConfig = {
         maxRequests: 200,
         windowMs: 120000,
@@ -81,7 +81,7 @@ describe('Rate Limiting', () => {
       );
     });
 
-    it('should create rate limiter with fixed window algorithm', () => {
+    test('should create rate limiter with fixed window algorithm', () => {
       const config: RateLimitConfig = {
         maxRequests: 100,
         windowMs: 60000,
@@ -93,7 +93,7 @@ describe('Rate Limiting', () => {
       expect(rateLimiter).toBeDefined();
     });
 
-    it('should handle missing optional fields', () => {
+    test('should handle missing optional fields', () => {
       const config: RateLimitConfig = {
         maxRequests: 50,
         windowMs: 30000,
@@ -107,20 +107,20 @@ describe('Rate Limiting', () => {
     });
   });
 
-  describe('RateLimiter limit method', () => {
-    it('should allow request when under limit', async () => {
+  describe('rateLimiter limit method', () => {
+    test('should allow request when under limit', async () => {
       const rateLimiter = createRateLimiter();
 
       const result = await rateLimiter.limit('test-key');
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.limit).toBe(100);
       expect(result.remaining).toBe(95);
       expect(result.reset).toBeInstanceOf(Date);
       expect(typeof result.resetTime).toBe('number');
     });
 
-    it('should deny request when over limit', async () => {
+    test('should deny request when over limit', async () => {
       const { Ratelimit } = await import('@upstash/ratelimit');
       const mockLimit = vi.fn().mockResolvedValue({
         success: false,
@@ -142,11 +142,11 @@ describe('Rate Limiting', () => {
       const rateLimiter = createRateLimiter();
       const result = await rateLimiter.limit('test-key');
 
-      expect(result.success).toBe(false);
+      expect(result.success).toBeFalsy();
       expect(result.remaining).toBe(0);
     });
 
-    it('should handle rate limiter errors gracefully', async () => {
+    test('should handle rate limiter errors gracefully', async () => {
       const { Ratelimit } = await import('@upstash/ratelimit');
       const mockLimit = vi.fn().mockRejectedValue(new Error('Redis connection failed'));
 
@@ -163,23 +163,23 @@ describe('Rate Limiting', () => {
       const result = await rateLimiter.limit('test-key');
 
       // Should fail gracefully
-      expect(result.success).toBe(false);
+      expect(result.success).toBeFalsy();
       expect(result.error).toBeDefined();
     });
 
-    it('should use different identifiers for different keys', async () => {
+    test('should use different identifiers for different keys', async () => {
       const rateLimiter = createRateLimiter();
 
       await rateLimiter.limit('key-1');
       await rateLimiter.limit('key-2');
 
       // Both should work independently
-      expect(true).toBe(true); // Basic assertion to ensure no errors
+      expect(true).toBeTruthy(); // Basic assertion to ensure no errors
     });
   });
 
   describe('withRateLimit', () => {
-    it('should execute function when under rate limit', async () => {
+    test('should execute function when under rate limit', async () => {
       const fn = vi.fn().mockResolvedValue('success');
       const rateLimitedFn = withRateLimit(fn, {
         maxRequests: 100,
@@ -192,7 +192,7 @@ describe('Rate Limiting', () => {
       expect(fn).toHaveBeenCalledWith('test-identifier');
     });
 
-    it('should throw error when rate limit exceeded', async () => {
+    test('should throw error when rate limit exceeded', async () => {
       const { Ratelimit } = await import('@upstash/ratelimit');
       const mockLimit = vi.fn().mockResolvedValue({
         success: false,
@@ -221,7 +221,7 @@ describe('Rate Limiting', () => {
       expect(fn).not.toHaveBeenCalled();
     });
 
-    it('should generate identifier from function arguments', async () => {
+    test('should generate identifier from function arguments', async () => {
       const fn = vi.fn().mockResolvedValue('success');
       const rateLimitedFn = withRateLimit(fn, {
         maxRequests: 100,
@@ -233,7 +233,7 @@ describe('Rate Limiting', () => {
       expect(fn).toHaveBeenCalledWith('arg1', 'arg2', { key: 'value' });
     });
 
-    it('should use custom identifier function', async () => {
+    test('should use custom identifier function', async () => {
       const fn = vi.fn().mockResolvedValue('success');
       const identifierFn = vi.fn().mockReturnValue('custom-id');
 
@@ -246,10 +246,10 @@ describe('Rate Limiting', () => {
       await rateLimitedFn('arg1', 'arg2');
 
       expect(identifierFn).toHaveBeenCalledWith('arg1', 'arg2');
-      expect(fn).toHaveBeenCalled();
+      expect(fn).toHaveBeenCalledWith();
     });
 
-    it('should handle async functions', async () => {
+    test('should handle async functions', async () => {
       const asyncFn = vi.fn().mockImplementation(async (value: string) => {
         await new Promise(resolve => setTimeout(resolve, 10));
         return `async-${value}`;
@@ -266,7 +266,7 @@ describe('Rate Limiting', () => {
       expect(asyncFn).toHaveBeenCalledWith('test');
     });
 
-    it('should preserve function context and arguments', async () => {
+    test('should preserve function context and arguments', async () => {
       const fn = vi.fn().mockResolvedValue('result');
       const rateLimitedFn = withRateLimit(fn, {
         maxRequests: 100,
@@ -282,7 +282,7 @@ describe('Rate Limiting', () => {
   });
 
   describe('createRateLimitHeaders', () => {
-    it('should create rate limit headers from result', () => {
+    test('should create rate limit headers from result', () => {
       const result: RateLimitResult = {
         success: true,
         limit: 100,
@@ -298,7 +298,7 @@ describe('Rate Limiting', () => {
       expect(headers['X-RateLimit-Reset']).toBe('1704110400');
     });
 
-    it('should create headers when rate limit exceeded', () => {
+    test('should create headers when rate limit exceeded', () => {
       const result: RateLimitResult = {
         success: false,
         limit: 100,
@@ -314,7 +314,7 @@ describe('Rate Limiting', () => {
       expect(headers['X-RateLimit-Reset']).toBe('1704110700');
     });
 
-    it('should handle edge case with zero remaining', () => {
+    test('should handle edge case with zero remaining', () => {
       const result: RateLimitResult = {
         success: false,
         limit: 50,
@@ -328,7 +328,7 @@ describe('Rate Limiting', () => {
       expect(headers['X-RateLimit-Remaining']).toBe('0');
     });
 
-    it('should handle large limit values', () => {
+    test('should handle large limit values', () => {
       const result: RateLimitResult = {
         success: true,
         limit: 999999,
@@ -344,8 +344,8 @@ describe('Rate Limiting', () => {
     });
   });
 
-  describe('Configuration Edge Cases', () => {
-    it('should handle very low rate limits', () => {
+  describe('configuration Edge Cases', () => {
+    test('should handle very low rate limits', () => {
       const config: RateLimitConfig = {
         maxRequests: 1,
         windowMs: 1000,
@@ -357,7 +357,7 @@ describe('Rate Limiting', () => {
       expect(rateLimiter.config.maxRequests).toBe(1);
     });
 
-    it('should handle very high rate limits', () => {
+    test('should handle very high rate limits', () => {
       const config: RateLimitConfig = {
         maxRequests: 1000000,
         windowMs: 1000,
@@ -369,7 +369,7 @@ describe('Rate Limiting', () => {
       expect(rateLimiter.config.maxRequests).toBe(1000000);
     });
 
-    it('should handle very short time windows', () => {
+    test('should handle very short time windows', () => {
       const config: RateLimitConfig = {
         maxRequests: 100,
         windowMs: 100, // 100ms
@@ -381,7 +381,7 @@ describe('Rate Limiting', () => {
       expect(rateLimiter.config.windowMs).toBe(100);
     });
 
-    it('should handle very long time windows', () => {
+    test('should handle very long time windows', () => {
       const config: RateLimitConfig = {
         maxRequests: 100,
         windowMs: 86400000, // 24 hours
@@ -393,7 +393,7 @@ describe('Rate Limiting', () => {
       expect(rateLimiter.config.windowMs).toBe(86400000);
     });
 
-    it('should handle empty prefix', () => {
+    test('should handle empty prefix', () => {
       const config: RateLimitConfig = {
         maxRequests: 100,
         windowMs: 60000,
@@ -406,7 +406,7 @@ describe('Rate Limiting', () => {
       expect(rateLimiter.config.prefix).toBe('');
     });
 
-    it('should handle special characters in prefix', () => {
+    test('should handle special characters in prefix', () => {
       const config: RateLimitConfig = {
         maxRequests: 100,
         windowMs: 60000,
@@ -420,8 +420,8 @@ describe('Rate Limiting', () => {
     });
   });
 
-  describe('Integration Tests', () => {
-    it('should work with multiple rate limiters', async () => {
+  describe('integration Tests', () => {
+    test('should work with multiple rate limiters', async () => {
       const strictLimiter = createRateLimiter({
         maxRequests: 10,
         windowMs: 60000,
@@ -437,13 +437,13 @@ describe('Rate Limiting', () => {
       const strictResult = await strictLimiter.limit('test-key');
       const lenientResult = await lenientLimiter.limit('test-key');
 
-      expect(strictResult.success).toBe(true);
-      expect(lenientResult.success).toBe(true);
+      expect(strictResult.success).toBeTruthy();
+      expect(lenientResult.success).toBeTruthy();
       expect(strictResult.limit).toBe(10);
       expect(lenientResult.limit).toBe(1000);
     });
 
-    it('should integrate rate limiting with function execution', async () => {
+    test('should integrate rate limiting with function execution', async () => {
       let callCount = 0;
       const fn = vi.fn().mockImplementation(() => {
         callCount++;
@@ -467,7 +467,7 @@ describe('Rate Limiting', () => {
       expect(fn).toHaveBeenCalledTimes(3);
     });
 
-    it('should handle rate limiting with custom identifier generation', async () => {
+    test('should handle rate limiting with custom identifier generation', async () => {
       const fn = vi.fn().mockResolvedValue('success');
 
       // Create identifier based on user ID from first argument
@@ -486,7 +486,7 @@ describe('Rate Limiting', () => {
       expect(fn).toHaveBeenCalledTimes(3);
     });
 
-    it('should create appropriate headers for API responses', async () => {
+    test('should create appropriate headers for API responses', async () => {
       const rateLimiter = createRateLimiter({
         maxRequests: 100,
         windowMs: 60000,
@@ -506,8 +506,8 @@ describe('Rate Limiting', () => {
     });
   });
 
-  describe('Error Handling and Edge Cases', () => {
-    it('should handle null/undefined identifiers gracefully', async () => {
+  describe('error Handling and Edge Cases', () => {
+    test('should handle null/undefined identifiers gracefully', async () => {
       const rateLimiter = createRateLimiter();
 
       const result1 = await rateLimiter.limit(null as any);
@@ -518,17 +518,17 @@ describe('Rate Limiting', () => {
       expect(result2).toBeDefined();
     });
 
-    it('should handle very long identifier strings', async () => {
+    test('should handle very long identifier strings', async () => {
       const rateLimiter = createRateLimiter();
       const longIdentifier = 'a'.repeat(1000);
 
       const result = await rateLimiter.limit(longIdentifier);
 
       expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
     });
 
-    it('should handle concurrent rate limit checks', async () => {
+    test('should handle concurrent rate limit checks', async () => {
       const rateLimiter = createRateLimiter({
         maxRequests: 100,
         windowMs: 60000,
@@ -543,7 +543,7 @@ describe('Rate Limiting', () => {
 
       // All should succeed for different identifiers
       results.forEach(result => {
-        expect(result.success).toBe(true);
+        expect(result.success).toBeTruthy();
       });
     });
   });

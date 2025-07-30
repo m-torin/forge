@@ -292,11 +292,11 @@ export function createEdgeRuntimeConfig(options: EdgeRuntimeOptions = {}): UserC
       extensions: ['.ts', '.tsx', '.js', '.jsx', '.json', '.mjs', '.mts'],
       alias: {
         '@': resolve(process.cwd(), './src'),
-        '@/lib': resolve(process.cwd(), './src/lib'),
-        '@/utils': resolve(process.cwd(), './src/utils'),
-        '@/types': resolve(process.cwd(), './src/types'),
-        '@/middleware': resolve(process.cwd(), './src/middleware'),
-        '@/api': resolve(process.cwd(), './src/api'),
+        '#/lib': resolve(process.cwd(), './src/lib'),
+        '#/utils': resolve(process.cwd(), './src/utils'),
+        '#/types': resolve(process.cwd(), './src/types'),
+        '#/middleware': resolve(process.cwd(), './src/middleware'),
+        '#/api': resolve(process.cwd(), './src/api'),
         ...aliases,
       },
 
@@ -405,10 +405,10 @@ export function createNextJsMiddlewareConfig(options: EdgeRuntimeOptions = {}): 
     setupFiles: [resolve(setupDir, 'edge-runtime-middleware.mjs'), ...(options.setupFiles || [])],
     aliases: {
       '@': resolve(process.cwd(), './src'),
-      '@/middleware': resolve(process.cwd(), './src/middleware'),
-      '@/lib': resolve(process.cwd(), './src/lib'),
-      '@/utils': resolve(process.cwd(), './src/utils'),
-      '@/types': resolve(process.cwd(), './src/types'),
+      '#/middleware': resolve(process.cwd(), './src/middleware'),
+      '#/lib': resolve(process.cwd(), './src/lib'),
+      '#/utils': resolve(process.cwd(), './src/utils'),
+      '#/types': resolve(process.cwd(), './src/types'),
       ...options.aliases,
     },
     env: {
@@ -429,11 +429,11 @@ export function createEdgeApiConfig(options: EdgeRuntimeOptions = {}): UserConfi
     include: ['**/*api*.test.*', '**/*route*.test.*', '**/*.api.test.*', '**/*.route.test.*'],
     aliases: {
       '@': resolve(process.cwd(), './src'),
-      '@/app': resolve(process.cwd(), './src/app'),
-      '@/api': resolve(process.cwd(), './src/api'),
-      '@/lib': resolve(process.cwd(), './src/lib'),
-      '@/utils': resolve(process.cwd(), './src/utils'),
-      '@/types': resolve(process.cwd(), './src/types'),
+      '#/app': resolve(process.cwd(), './src/app'),
+      '#/api': resolve(process.cwd(), './src/api'),
+      '#/lib': resolve(process.cwd(), './src/lib'),
+      '#/utils': resolve(process.cwd(), './src/utils'),
+      '#/types': resolve(process.cwd(), './src/types'),
       ...options.aliases,
     },
   });
@@ -449,10 +449,10 @@ export function createEdgeWorkerConfig(options: EdgeRuntimeOptions = {}): UserCo
     strictMode: true, // Workers should be strict about edge runtime
     aliases: {
       '@': resolve(process.cwd(), './src'),
-      '@/workers': resolve(process.cwd(), './src/workers'),
-      '@/lib': resolve(process.cwd(), './src/lib'),
-      '@/utils': resolve(process.cwd(), './src/utils'),
-      '@/types': resolve(process.cwd(), './src/types'),
+      '#/workers': resolve(process.cwd(), './src/workers'),
+      '#/lib': resolve(process.cwd(), './src/lib'),
+      '#/utils': resolve(process.cwd(), './src/utils'),
+      '#/types': resolve(process.cwd(), './src/types'),
       ...options.aliases,
     },
   });
@@ -468,10 +468,10 @@ export function createEdgeServerlessConfig(options: EdgeRuntimeOptions = {}): Us
     testTimeout: 30000, // Serverless functions might need more time
     aliases: {
       '@': resolve(process.cwd(), './src'),
-      '@/functions': resolve(process.cwd(), './src/functions'),
-      '@/lib': resolve(process.cwd(), './src/lib'),
-      '@/utils': resolve(process.cwd(), './src/utils'),
-      '@/types': resolve(process.cwd(), './src/types'),
+      '#/functions': resolve(process.cwd(), './src/functions'),
+      '#/lib': resolve(process.cwd(), './src/lib'),
+      '#/utils': resolve(process.cwd(), './src/utils'),
+      '#/types': resolve(process.cwd(), './src/types'),
       ...options.aliases,
     },
   });

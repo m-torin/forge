@@ -24,7 +24,6 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:coverage:json": "vitest run --coverage --reporter=json",
-    "test:ui": "vitest --ui --coverage",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
@@ -42,7 +41,9 @@
     "@segment/analytics-next": "^1.81.1",
     "@vercel/analytics": "^1.5.0",
     "posthog-js": "^1.258.2",
-    "posthog-node": "^5.6.0"
+    "posthog-node": "^5.6.0",
+    "vite-tsconfig-paths": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "@segment/analytics-core": "^1.8.1",

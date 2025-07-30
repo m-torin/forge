@@ -14,7 +14,7 @@ import {
   IconX,
 } from '@tabler/icons-react';
 import { clsx } from 'clsx';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { SavedDocument } from '../../hooks/use-document-persistence';
 
 // Search filters interface
@@ -245,9 +245,9 @@ export function DocumentSearch({
 
   // Highlight text matches
   const highlightText = (parts: Array<{ text: string; isMatch: boolean }>) => {
-    return parts.map((part, index) => (
+    return parts.map(part => (
       <span
-        key={part.text + index}
+        key={`highlight-${part.text}-${part.isMatch}-${part.text.length}`}
         className={clsx(
           part.isMatch && highlightMatches && 'bg-yellow-200 font-medium text-yellow-900',
         )}
@@ -481,7 +481,14 @@ export function DocumentSearch({
               searchResults.map(result => (
                 <div
                   key={result.document.id}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => onSelectDocument(result.document.id)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      onSelectDocument(result.document.id);
+                    }
+                  }}
                   className="group cursor-pointer rounded-lg border border-gray-200 bg-white p-4 transition-all hover:border-blue-300 hover:shadow-md"
                 >
                   {/* Document Header */}
@@ -519,15 +526,22 @@ export function DocumentSearch({
                           <span className="mb-1 block text-xs text-gray-500">
                             Match in content:
                           </span>
-                          <span
-                            className="leading-relaxed"
-                            dangerouslySetInnerHTML={{
-                              __html: `...${match.context.replace(
-                                new RegExp(match.text, 'gi'),
-                                `<mark class="bg-yellow-200 text-yellow-900 font-medium px-1 rounded">${match.text}</mark>`,
-                              )}...`,
-                            }}
-                          />
+                          <span className="leading-relaxed">
+                            ...
+                            {match.context.split(match.text).map((part, partIdx, arr) => (
+                              <React.Fragment
+                                key={`context-${match.position}-${match.text}-${part.slice(0, 10)}-${part.length}`}
+                              >
+                                {part}
+                                {partIdx < arr.length - 1 && (
+                                  <mark className="rounded bg-yellow-200 px-1 font-medium text-yellow-900">
+                                    {match.text}
+                                  </mark>
+                                )}
+                              </React.Fragment>
+                            ))}
+                            ...
+                          </span>
                         </div>
                       ))}
                     </div>

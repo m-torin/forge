@@ -1,4 +1,4 @@
-import type { ToolContext, ToolMetadata } from '@/server/tools/enhanced-factory';
+import type { ToolContext, ToolMetadata } from '#/server/tools/enhanced-factory';
 import { beforeEach, describe, expect, vi } from 'vitest';
 import { z } from 'zod/v4';
 
@@ -13,12 +13,12 @@ describe('enhanced Factory', () => {
   });
 
   test('should import enhanced factory successfully', async () => {
-    const enhancedFactory = await import('@/server/tools/enhanced-factory');
+    const enhancedFactory = await import('#/server/tools/enhanced-factory');
     expect(enhancedFactory).toBeDefined();
   });
 
   test('should create enhanced tool with basic config', async () => {
-    const { createEnhancedTool } = await import('@/server/tools/enhanced-factory');
+    const { createEnhancedTool } = await import('#/server/tools/enhanced-factory');
 
     const mockExecute = vi.fn().mockResolvedValue('test result');
     const config = {
@@ -43,7 +43,7 @@ describe('enhanced Factory', () => {
   });
 
   test('should create enhanced tool with middleware', async () => {
-    const { createEnhancedTool } = await import('@/server/tools/enhanced-factory');
+    const { createEnhancedTool } = await import('#/server/tools/enhanced-factory');
 
     const mockExecute = vi.fn().mockResolvedValue('test result');
     const mockBeforeExecute = vi.fn();
@@ -81,7 +81,7 @@ describe('enhanced Factory', () => {
   });
 
   test('should handle validation and error handling', async () => {
-    const { createEnhancedTool } = await import('@/server/tools/enhanced-factory');
+    const { createEnhancedTool } = await import('#/server/tools/enhanced-factory');
 
     const mockExecute = vi.fn().mockRejectedValue(new Error('Test error'));
     const mockValidateParams = vi.fn().mockReturnValue(false);
@@ -113,7 +113,7 @@ describe('enhanced Factory', () => {
   });
 
   test('should create search tool', async () => {
-    const { createSearchTool } = await import('@/server/tools/enhanced-factory');
+    const { createSearchTool } = await import('#/server/tools/enhanced-factory');
 
     const mockSearchFunction = vi.fn().mockResolvedValue([
       { id: '1', title: 'Result 1' },
@@ -146,7 +146,7 @@ describe('enhanced Factory', () => {
   });
 
   test('should create CRUD tools with proper schemas', async () => {
-    const { createCRUDTools } = await import('@/server/tools/enhanced-factory');
+    const { createCRUDTools } = await import('#/server/tools/enhanced-factory');
 
     const mockOperations = {
       create: vi.fn().mockResolvedValue({ id: '1', name: 'Test Item' }),
@@ -226,7 +226,7 @@ describe('enhanced Factory', () => {
   });
 
   test('should create async tool with progress tracking', async () => {
-    const { createAsyncTool } = await import('@/server/tools/enhanced-factory');
+    const { createAsyncTool } = await import('#/server/tools/enhanced-factory');
 
     const mockExecute = vi.fn().mockImplementation(async (params, progress) => {
       progress({ progress: 0, message: 'Starting' });
@@ -261,7 +261,7 @@ describe('enhanced Factory', () => {
   });
 
   test('should create batch tool', async () => {
-    const { createBatchTool } = await import('@/server/tools/enhanced-factory');
+    const { createBatchTool } = await import('#/server/tools/enhanced-factory');
 
     const mockProcessItem = vi.fn().mockImplementation(async (item, index) => {
       if (item.shouldFail) {
@@ -302,7 +302,7 @@ describe('enhanced Factory', () => {
   });
 
   test('should test common tool schemas', async () => {
-    const { commonToolSchemas } = await import('@/server/tools/enhanced-factory');
+    const { commonToolSchemas } = await import('#/server/tools/enhanced-factory');
 
     expect(commonToolSchemas).toBeDefined();
     expect(commonToolSchemas.query).toBeDefined();
@@ -354,7 +354,7 @@ describe('enhanced Factory', () => {
   });
 
   test('should handle CRUD tools without list operation', async () => {
-    const { createCRUDTools } = await import('@/server/tools/enhanced-factory');
+    const { createCRUDTools } = await import('#/server/tools/enhanced-factory');
 
     const mockOperations = {
       create: vi.fn().mockResolvedValue({ id: '1', name: 'Test Item' }),
@@ -386,7 +386,7 @@ describe('enhanced Factory', () => {
   });
 
   test('should handle read operation returning null', async () => {
-    const { createCRUDTools } = await import('@/server/tools/enhanced-factory');
+    const { createCRUDTools } = await import('#/server/tools/enhanced-factory');
 
     const mockOperations = {
       create: vi.fn().mockResolvedValue({ id: '1', name: 'Test Item' }),

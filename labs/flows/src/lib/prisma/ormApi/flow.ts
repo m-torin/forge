@@ -2,34 +2,14 @@
 
 import { prisma } from '#/lib/prisma/client';
 import {
-  Node,
-  Edge,
   FlowMethod,
   Prisma,
-  Tag,
-  Secret,
   Flow,
 } from '@prisma/client';
 import { upsertFlowWithNodesAndEdges } from './upsertFlow';
 import { FullFlow } from './flowUtils';
 import { logError, logDebug } from '@repo/observability';
-
-/**
- * Represents a Flow along with its related entities.
- */
-export type FlowWithRelations = {
-  id: string;
-  instanceId: string;
-  name: string;
-  method: FlowMethod;
-  isEnabled: boolean;
-  viewport?: Prisma.JsonValue;
-  metadata?: Prisma.JsonValue; // Ensure metadata is included
-  nodes?: Node[];
-  edges?: Edge[];
-  tags?: Tag[];
-  secrets?: Secret[];
-};
+import { FlowWithRelations } from './types';
 
 /**
  * Retrieves all flows for a specific instance.

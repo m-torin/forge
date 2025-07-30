@@ -1,7 +1,7 @@
 import {
   generateProductIdentifiers,
   generateVariantIdentifiers,
-} from '@/prisma/src/seed/mappers/product-identifiers-mapper';
+} from '#/prisma/src/seed/mappers/product-identifiers-mapper';
 import { describe, expect, it } from 'vitest';
 
 describe('product-identifiers-mapper', () => {

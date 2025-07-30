@@ -1,8 +1,8 @@
+import { useCollaboration } from '#/hooks/use-collaboration';
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { useCollaboration } from '../../src/hooks/use-collaboration.js';
-import { createMockCollaborationEvent } from '../../src/testing/factories.js';
-import { setupWebSocketMock } from '../../src/testing/mocks/websocket-mock.js';
+import { createMockCollaborationEvent } from '../testing/factories.js';
+import { setupWebSocketMock } from '../testing/mocks/websocket-mock.js';
 
 describe('useCollaboration', () => {
   const mockSetup = setupWebSocketMock({ autoConnect: true, latency: 0 });

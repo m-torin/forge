@@ -10,7 +10,7 @@ import { createMockPrismaClient } from './database';
 
 // Static mock paths that need to be mocked at module level
 const COMMON_PRISMA_PATHS = [
-  '@/prisma-generated/client',
+  '#/prisma-generated/client',
   '../prisma-generated/client',
   '../../../../prisma-generated/client',
   '@prisma/client',
@@ -24,7 +24,7 @@ let sharedMockObject: any = {
 
 // Mock all common paths at module level (these are hoisted)
 // We need to use direct vi.mock calls to avoid hoisting issues
-vi.mock('@/prisma-generated/client', () => sharedMockObject);
+vi.mock('#/prisma-generated/client', () => sharedMockObject);
 vi.mock('../prisma-generated/client', () => sharedMockObject);
 vi.mock('../../../../prisma-generated/client', () => sharedMockObject);
 vi.mock('@prisma/client', () => sharedMockObject);
@@ -71,7 +71,7 @@ export interface PrismaWithEnumsConfig<TEnums = Record<string, any>> {
  *
  * setupPrismaWithEnums({
  *   enums: { BrandType, ContentStatus },
- *   importPaths: ['@/prisma-generated/client', '../prisma-generated/client']
+ *   importPaths: ['#/prisma-generated/client', '../prisma-generated/client']
  * });
  * ```
  */
@@ -81,7 +81,7 @@ export function setupPrismaWithEnums<TEnums extends Record<string, any>>(
   const {
     enums,
     importPaths = [
-      '@/prisma-generated/client',
+      '#/prisma-generated/client',
       '../prisma-generated/client',
       '../../../../prisma-generated/client',
       '@prisma/client',

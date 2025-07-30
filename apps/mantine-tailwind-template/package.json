@@ -15,9 +15,13 @@
     "knip": "knip --fix --reporter json",
     "lint": "eslint . --fix",
     "start": "next start",
-    "test": "vitest --run",
-    "test:coverage": "vitest --coverage --run",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:ui": "playwright test --ui",
     "test:ui": "vitest --ui",
+    "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },
   "overrides": {
@@ -41,6 +45,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@playwright/test": "catalog:",
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/qa": "workspace:*",
@@ -53,6 +58,7 @@
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "@vitest/coverage-v8": "catalog:",
+    "@vitest/ui": "catalog:",
     "eslint": "catalog:",
     "knip": "catalog:",
     "madge": "catalog:",
@@ -60,6 +66,7 @@
     "tailwindcss": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
+    "vite-tsconfig-paths": "^5.1.4",
     "vitest": "catalog:"
   }
 }

@@ -1,4 +1,4 @@
-import { generateVisitorId, getOrGenerateVisitorId, parseOverrides } from '@/shared/utils';
+import { generateVisitorId, getOrGenerateVisitorId, parseOverrides } from '#/shared/utils';
 import { beforeEach, describe, expect, vi } from 'vitest';
 import { featureFlagTestData } from '../test-data-generators';
 import { assertionHelpers, createMockCookieStore } from '../test-utils';

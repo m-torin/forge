@@ -2,12 +2,12 @@
   "extends": "@repo/config/typescript/react-library.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"]
-    },
     "types": ["vitest/globals"],
     "declaration": false,
-    "declarationMap": false
+    "declarationMap": false,
+    "paths": {
+      "#/*": ["./src/*"]
+    }
   },
   "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules", "dist", "build", "coverage", "**/*.stories.tsx"]

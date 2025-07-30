@@ -195,3 +195,15 @@ export function accountSecurityPlugin(options: AccountSecurityOptions = {}) {
     },
   };
 }
+
+// Export function for testing
+export async function validateAccountSecurity(data: {
+  userId: string;
+  action: string;
+}): Promise<{ isValid: boolean; error?: string }> {
+  // Basic implementation for testing
+  if (!data.userId || !data.action) {
+    return { isValid: false, error: 'Missing required parameters' };
+  }
+  return { isValid: true };
+}

@@ -40,7 +40,7 @@ export const TagGroupForm: React.FC<TagGroupFormProps> = ({
         closeOnColorSwatchClick
         swatches={swatches}
         swatchesPerRow={7}
-        value={colorValue}
+        value={colorValue ?? ''}
         onChange={(colorCode) => {
           const colorName = swatchColorToNameMap[colorCode];
           if (colorName) {

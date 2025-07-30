@@ -3,7 +3,7 @@ import * as aiReact from '@ai-sdk/react';
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { useAIChat } from '@/hooks/use-ai-chat';
+import { useAIChat } from '#/hooks/use-ai-chat';
 
 // ai/react is already mocked by centralized mocks in @repo/qa
 // The mock provides useChat, useCompletion, and useAssistant hooks

@@ -9,7 +9,7 @@ import {
   FlowValues,
   Flow as PrismaFlow,
 } from '#/lib/prisma';
-import { DbData } from '@/app/flow/[cuid]/types';
+import { DbData } from '#/app/flow/[cuid]/types';
 import { logInfo, logError, logDebug } from '@repo/observability';
 
 /**
@@ -36,10 +36,10 @@ export const getFlowAction = async (
       secrets: flow.secrets ?? [],
     };
 
-    logDebug('Transformed DbData for client', { 
-      flowId: dbData.flow.id, 
-      tagsCount: dbData.tags.length, 
-      secretsCount: dbData.secrets.length 
+    logDebug('Transformed DbData for client', {
+      flowId: dbData.flow.id,
+      tagsCount: dbData.tags.length,
+      secretsCount: dbData.secrets.length
     });
     return dbData;
   } catch (error) {
@@ -79,10 +79,10 @@ export const getFlowByIdAction = async (
       const { getUserInstanceId } = await import('./defaultInstance');
       validatedInstanceId = await getUserInstanceId();
     }
-    
+
     // Use the secure getFlow method that validates instanceId
     const flow = await getFlow(flowId, validatedInstanceId);
-    
+
     if (!flow) return null;
 
     const dbData: DbData = {

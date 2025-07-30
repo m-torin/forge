@@ -7,7 +7,7 @@ import { describe, expect } from 'vitest';
 describe('utility Imports', () => {
   describe('config utilities', () => {
     test('should import config utilities without errors', async () => {
-      const configModule = await import('@/shared/utils/config');
+      const configModule = await import('#/shared/utils/config');
 
       expect(configModule).toHaveProperty('validateConfig');
       expect(configModule).toHaveProperty('createConfigBuilder');
@@ -21,7 +21,7 @@ describe('utility Imports', () => {
     });
 
     test('should import client config utilities without errors', async () => {
-      const configClientModule = await import('@/shared/utils/config-client');
+      const configClientModule = await import('#/shared/utils/config-client');
 
       expect(configClientModule).toHaveProperty('validateConfig');
       expect(configClientModule).toHaveProperty('createConfigBuilder');
@@ -32,7 +32,7 @@ describe('utility Imports', () => {
 
   describe('validation utilities', () => {
     test('should import validation utilities without errors', async () => {
-      const validationModule = await import('@/shared/utils/validation');
+      const validationModule = await import('#/shared/utils/validation');
 
       expect(validationModule).toHaveProperty('validateAnalyticsConfig');
       expect(validationModule).toHaveProperty('validateProvider');
@@ -46,7 +46,7 @@ describe('utility Imports', () => {
     });
 
     test('should import client validation utilities without errors', async () => {
-      const validationClientModule = await import('@/shared/utils/validation-client');
+      const validationClientModule = await import('#/shared/utils/validation-client');
 
       expect(validationClientModule).toHaveProperty('validateAnalyticsConfig');
       expect(validationClientModule).toHaveProperty('validateProvider');
@@ -56,7 +56,7 @@ describe('utility Imports', () => {
 
   describe('manager utilities', () => {
     test('should import manager utilities without errors', async () => {
-      const managerModule = await import('@/shared/utils/manager');
+      const managerModule = await import('#/shared/utils/manager');
 
       expect(managerModule).toHaveProperty('AnalyticsManager');
       expect(managerModule).toHaveProperty('createAnalyticsManager');
@@ -68,7 +68,7 @@ describe('utility Imports', () => {
 
   describe('emitter adapter utilities', () => {
     test('should import emitter adapter utilities without errors', async () => {
-      const adapterModule = await import('@/shared/utils/emitter-adapter');
+      const adapterModule = await import('#/shared/utils/emitter-adapter');
 
       expect(adapterModule).toHaveProperty('processEmitterPayload');
       expect(adapterModule).toHaveProperty('processIdentifyPayload');
@@ -87,7 +87,7 @@ describe('utility Imports', () => {
 
   describe('postHog utilities', () => {
     test('should import PostHog bootstrap utilities without errors', async () => {
-      const bootstrapModule = await import('@/shared/utils/posthog-bootstrap');
+      const bootstrapModule = await import('#/shared/utils/posthog-bootstrap');
 
       expect(bootstrapModule).toHaveProperty('generateDistinctId');
       expect(bootstrapModule).toHaveProperty('parsePostHogCookie');
@@ -103,19 +103,19 @@ describe('utility Imports', () => {
 
     test('should import PostHog client utilities without errors', async () => {
       expect(async () => {
-        await import('@/shared/utils/posthog-client-utils');
+        await import('#/shared/utils/posthog-client-utils');
       }).not.toThrow();
     });
 
     test('should import PostHog Next.js utilities without errors', async () => {
       expect(async () => {
-        await import('@/shared/utils/posthog-next-utils');
+        await import('#/shared/utils/posthog-next-utils');
       }).not.toThrow();
     });
 
     test('should import PostHog server utilities without errors', async () => {
       expect(async () => {
-        await import('@/shared/utils/posthog-server-utils');
+        await import('#/shared/utils/posthog-server-utils');
       }).not.toThrow();
     });
   });

@@ -7,14 +7,14 @@ import { describe, expect } from 'vitest';
 describe('console Provider Imports', () => {
   describe('client provider', () => {
     test('should import console client provider without errors', async () => {
-      const { ConsoleProvider } = await import('@/providers/console/client');
+      const { ConsoleProvider } = await import('#/providers/console/client');
 
       expect(ConsoleProvider).toBeDefined();
       expect(typeof ConsoleProvider).toBe('function');
     });
 
     test('should create console provider instance', async () => {
-      const { ConsoleProvider } = await import('@/providers/console/client');
+      const { ConsoleProvider } = await import('#/providers/console/client');
 
       const config = {};
       const provider = new ConsoleProvider(config);
@@ -31,14 +31,14 @@ describe('console Provider Imports', () => {
 
   describe('server provider', () => {
     test('should import console server provider without errors', async () => {
-      const { ConsoleProvider } = await import('@/providers/console/server');
+      const { ConsoleProvider } = await import('#/providers/console/server');
 
       expect(ConsoleProvider).toBeDefined();
       expect(typeof ConsoleProvider).toBe('function');
     });
 
     test('should create server console provider instance', async () => {
-      const { ConsoleProvider } = await import('@/providers/console/server');
+      const { ConsoleProvider } = await import('#/providers/console/server');
 
       const config = {};
       const provider = new ConsoleProvider(config);
@@ -56,7 +56,7 @@ describe('console Provider Imports', () => {
   describe('provider index', () => {
     test('should export provider from index without errors', async () => {
       expect(async () => {
-        await import('@/providers/console');
+        await import('#/providers/console');
       }).not.toThrow();
     });
   });
@@ -64,7 +64,7 @@ describe('console Provider Imports', () => {
   describe('console types', () => {
     test('should import console types without errors', async () => {
       expect(async () => {
-        await import('@/providers/console/types');
+        await import('#/providers/console/types');
       }).not.toThrow();
     });
   });

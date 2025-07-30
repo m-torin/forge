@@ -3,7 +3,7 @@
  * Focuses on testing all error classes, functions, and edge cases
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect } from 'vitest';
 
 import {
   CircuitBreakerError,
@@ -25,30 +25,30 @@ import {
   isRetryableError,
 } from '../../src/shared/utils/errors';
 
-describe('Error Classes', () => {
-  describe('OrchestrationError', () => {
-    it('should create basic orchestration error', () => {
+describe('error Classes', () => {
+  describe('orchestrationError', () => {
+    test('should create basic orchestration error', () => {
       const error = new OrchestrationError('Test error');
 
       expect(error.name).toBe('OrchestrationError');
       expect(error.message).toBe('Test error');
       expect(error.code).toBe('ORCHESTRATION_ERROR');
-      expect(error.retryable).toBe(false);
+      expect(error.retryable).toBeFalsy();
       expect(error.context).toBeUndefined();
     });
 
-    it('should create orchestration error with all parameters', () => {
+    test('should create orchestration error with all parameters', () => {
       const context = { key: 'value' };
       const error = new OrchestrationError('Custom error', 'CUSTOM_CODE', true, context);
 
       expect(error.name).toBe('OrchestrationError');
       expect(error.message).toBe('Custom error');
       expect(error.code).toBe('CUSTOM_CODE');
-      expect(error.retryable).toBe(true);
+      expect(error.retryable).toBeTruthy();
       expect(error.context).toEqual(context);
     });
 
-    it('should serialize to JSON', () => {
+    test('should serialize to JSON', () => {
       const context = { key: 'value' };
       const error = new OrchestrationError('Test error', 'TEST_CODE', true, context);
 
@@ -57,25 +57,25 @@ describe('Error Classes', () => {
       expect(json.name).toBe('OrchestrationError');
       expect(json.message).toBe('Test error');
       expect(json.code).toBe('TEST_CODE');
-      expect(json.retryable).toBe(true);
+      expect(json.retryable).toBeTruthy();
       expect(json.context).toEqual(context);
       expect(json.stack).toBeDefined();
     });
   });
 
-  describe('CircuitBreakerError', () => {
-    it('should create circuit breaker error', () => {
+  describe('circuitBreakerError', () => {
+    test('should create circuit breaker error', () => {
       const error = new CircuitBreakerError('Circuit breaker open', 'test-circuit', 'open');
 
       expect(error.name).toBe('CircuitBreakerError');
       expect(error.message).toBe('Circuit breaker open');
       expect(error.code).toBe('CIRCUIT_BREAKER_OPEN');
-      expect(error.retryable).toBe(true);
+      expect(error.retryable).toBeTruthy();
       expect(error.circuitName).toBe('test-circuit');
       expect(error.state).toBe('open');
     });
 
-    it('should create circuit breaker error with half-open state', () => {
+    test('should create circuit breaker error with half-open state', () => {
       const context = { attempts: 3 };
       const error = new CircuitBreakerError(
         'Circuit half-open',
@@ -89,18 +89,18 @@ describe('Error Classes', () => {
     });
   });
 
-  describe('ConfigurationError', () => {
-    it('should create configuration error', () => {
+  describe('configurationError', () => {
+    test('should create configuration error', () => {
       const error = new ConfigurationError('Invalid config');
 
       expect(error.name).toBe('ConfigurationError');
       expect(error.message).toBe('Invalid config');
       expect(error.code).toBe('CONFIGURATION_ERROR');
-      expect(error.retryable).toBe(false);
+      expect(error.retryable).toBeFalsy();
       expect(error.configPath).toBeUndefined();
     });
 
-    it('should create configuration error with path and context', () => {
+    test('should create configuration error with path and context', () => {
       const context = { field: 'timeout' };
       const error = new ConfigurationError('Invalid timeout', 'app.timeout', context);
 
@@ -109,19 +109,19 @@ describe('Error Classes', () => {
     });
   });
 
-  describe('ProviderError', () => {
-    it('should create provider error with defaults', () => {
+  describe('providerError', () => {
+    test('should create provider error with defaults', () => {
       const error = new ProviderError('Provider failed', 'test-provider', 'upstash');
 
       expect(error.name).toBe('ProviderError');
       expect(error.message).toBe('Provider failed');
       expect(error.code).toBe('PROVIDER_ERROR');
-      expect(error.retryable).toBe(true);
+      expect(error.retryable).toBeTruthy();
       expect(error.providerName).toBe('test-provider');
       expect(error.providerType).toBe('upstash');
     });
 
-    it('should create provider error with custom parameters', () => {
+    test('should create provider error with custom parameters', () => {
       const context = { attempt: 2 };
       const error = new ProviderError(
         'Custom provider error',
@@ -133,25 +133,25 @@ describe('Error Classes', () => {
       );
 
       expect(error.code).toBe('CUSTOM_PROVIDER_ERROR');
-      expect(error.retryable).toBe(false);
+      expect(error.retryable).toBeFalsy();
       expect(error.context).toEqual(context);
     });
   });
 
-  describe('RateLimitError', () => {
-    it('should create rate limit error', () => {
+  describe('rateLimitError', () => {
+    test('should create rate limit error', () => {
       const error = new RateLimitError('Rate limit exceeded', 100, 3600, 120);
 
       expect(error.name).toBe('RateLimitError');
       expect(error.message).toBe('Rate limit exceeded');
       expect(error.code).toBe('RATE_LIMIT_EXCEEDED');
-      expect(error.retryable).toBe(true);
+      expect(error.retryable).toBeTruthy();
       expect(error.limit).toBe(100);
       expect(error.window).toBe(3600);
       expect(error.retryAfter).toBe(120);
     });
 
-    it('should create rate limit error without retry after', () => {
+    test('should create rate limit error without retry after', () => {
       const context = { userId: '123' };
       const error = new RateLimitError('Rate limit hit', 50, 1800, undefined, context);
 
@@ -160,18 +160,18 @@ describe('Error Classes', () => {
     });
   });
 
-  describe('TimeoutError', () => {
-    it('should create timeout error', () => {
+  describe('timeoutError', () => {
+    test('should create timeout error', () => {
       const error = new TimeoutError('Operation timed out', 5000);
 
       expect(error.name).toBe('TimeoutError');
       expect(error.message).toBe('Operation timed out');
       expect(error.code).toBe('OPERATION_TIMEOUT');
-      expect(error.retryable).toBe(false);
+      expect(error.retryable).toBeFalsy();
       expect(error.timeoutMs).toBe(5000);
     });
 
-    it('should create timeout error with context', () => {
+    test('should create timeout error with context', () => {
       const context = { operation: 'database-query' };
       const error = new TimeoutError('DB timeout', 10000, context);
 
@@ -179,20 +179,20 @@ describe('Error Classes', () => {
     });
   });
 
-  describe('WorkflowExecutionError', () => {
-    it('should create workflow execution error with defaults', () => {
+  describe('workflowExecutionError', () => {
+    test('should create workflow execution error with defaults', () => {
       const error = new WorkflowExecutionError('Workflow failed', 'workflow-123');
 
       expect(error.name).toBe('WorkflowExecutionError');
       expect(error.message).toBe('Workflow failed');
       expect(error.code).toBe('WORKFLOW_EXECUTION_ERROR');
-      expect(error.retryable).toBe(true);
+      expect(error.retryable).toBeTruthy();
       expect(error.workflowId).toBe('workflow-123');
       expect(error.executionId).toBeUndefined();
       expect(error.stepId).toBeUndefined();
     });
 
-    it('should create workflow execution error with full context', () => {
+    test('should create workflow execution error with full context', () => {
       const context = {
         executionId: 'exec-456',
         stepId: 'step-789',
@@ -207,15 +207,15 @@ describe('Error Classes', () => {
       );
 
       expect(error.code).toBe('STEP_EXECUTION_FAILED');
-      expect(error.retryable).toBe(false);
+      expect(error.retryable).toBeFalsy();
       expect(error.executionId).toBe('exec-456');
       expect(error.stepId).toBe('step-789');
       expect(error.context).toEqual(context);
     });
   });
 
-  describe('WorkflowValidationError', () => {
-    it('should create workflow validation error', () => {
+  describe('workflowValidationError', () => {
+    test('should create workflow validation error', () => {
       const validationErrors = [
         { message: 'Invalid step', path: 'steps[0]' },
         { message: 'Missing required field', path: 'name', rule: 'required' },
@@ -225,11 +225,11 @@ describe('Error Classes', () => {
       expect(error.name).toBe('WorkflowValidationError');
       expect(error.message).toBe('Validation failed');
       expect(error.code).toBe('WORKFLOW_VALIDATION_ERROR');
-      expect(error.retryable).toBe(false);
+      expect(error.retryable).toBeFalsy();
       expect(error.validationErrors).toEqual(validationErrors);
     });
 
-    it('should create workflow validation error with context', () => {
+    test('should create workflow validation error with context', () => {
       const validationErrors = [{ message: 'Invalid', path: 'field' }];
       const context = { source: 'api' };
       const error = new WorkflowValidationError('Validation error', validationErrors, context);
@@ -239,18 +239,18 @@ describe('Error Classes', () => {
   });
 });
 
-describe('Error Factory Functions', () => {
+describe('error Factory Functions', () => {
   describe('createOrchestrationError', () => {
-    it('should create error with defaults', () => {
+    test('should create error with defaults', () => {
       const error = createOrchestrationError('Test error');
 
       expect(error.message).toBe('Test error');
       expect(error.code).toBe(OrchestrationErrorCodes.ORCHESTRATION_ERROR);
-      expect(error.retryable).toBe(false);
+      expect(error.retryable).toBeFalsy();
       expect(error.context).toEqual({});
     });
 
-    it('should create error with all options', () => {
+    test('should create error with all options', () => {
       const originalError = new Error('Original error');
       const context = { key: 'value' };
       const error = createOrchestrationError('Custom error', {
@@ -261,7 +261,7 @@ describe('Error Factory Functions', () => {
       });
 
       expect(error.code).toBe(OrchestrationErrorCodes.INITIALIZATION_ERROR);
-      expect(error.retryable).toBe(true);
+      expect(error.retryable).toBeTruthy();
       expect(error.context.key).toBe('value');
       expect(error.context.originalError).toEqual({
         message: 'Original error',
@@ -272,17 +272,17 @@ describe('Error Factory Functions', () => {
   });
 
   describe('createProviderError', () => {
-    it('should create provider error with defaults', () => {
+    test('should create provider error with defaults', () => {
       const error = createProviderError('Provider error', 'test-provider', 'upstash');
 
       expect(error.message).toBe('Provider error');
       expect(error.providerName).toBe('test-provider');
       expect(error.providerType).toBe('upstash');
       expect(error.code).toBe('PROVIDER_ERROR');
-      expect(error.retryable).toBe(true);
+      expect(error.retryable).toBeTruthy();
     });
 
-    it('should create provider error with options', () => {
+    test('should create provider error with options', () => {
       const originalError = new Error('Network error');
       const error = createProviderError('Connection failed', 'redis-provider', 'redis', {
         code: 'CONNECTION_ERROR',
@@ -291,7 +291,7 @@ describe('Error Factory Functions', () => {
       });
 
       expect(error.code).toBe('CONNECTION_ERROR');
-      expect(error.retryable).toBe(false);
+      expect(error.retryable).toBeFalsy();
       expect(error.context.originalError).toEqual({
         message: 'Network error',
         name: 'Error',
@@ -301,27 +301,27 @@ describe('Error Factory Functions', () => {
   });
 
   describe('createProviderErrorWithCode', () => {
-    it('should create provider error with orchestration error code', () => {
+    test('should create provider error with orchestration error code', () => {
       const error = createProviderErrorWithCode('Provider unhealthy', 'test-provider', 'upstash', {
         code: OrchestrationErrorCodes.PROVIDER_UNHEALTHY,
         retryable: false,
       });
 
       expect(error.code).toBe(OrchestrationErrorCodes.PROVIDER_UNHEALTHY);
-      expect(error.retryable).toBe(false);
+      expect(error.retryable).toBeFalsy();
     });
   });
 
   describe('createValidationError', () => {
-    it('should create validation error with defaults', () => {
+    test('should create validation error with defaults', () => {
       const error = createValidationError('Validation failed');
 
       expect(error.message).toBe('Validation failed');
       expect(error.code).toBe(OrchestrationErrorCodes.STEP_INPUT_VALIDATION_ERROR);
-      expect(error.retryable).toBe(false);
+      expect(error.retryable).toBeFalsy();
     });
 
-    it('should create validation error with validation details', () => {
+    test('should create validation error with validation details', () => {
       const validationErrors = [{ field: 'name', error: 'required' }];
       const validationResult = { success: false, errors: validationErrors };
       const error = createValidationError('Schema validation failed', {
@@ -337,16 +337,16 @@ describe('Error Factory Functions', () => {
   });
 
   describe('createWorkflowExecutionError', () => {
-    it('should create workflow execution error with defaults', () => {
+    test('should create workflow execution error with defaults', () => {
       const error = createWorkflowExecutionError('Execution failed', 'workflow-123');
 
       expect(error.message).toBe('Execution failed');
       expect(error.workflowId).toBe('workflow-123');
       expect(error.code).toBe('WORKFLOW_EXECUTION_ERROR');
-      expect(error.retryable).toBe(true);
+      expect(error.retryable).toBeTruthy();
     });
 
-    it('should create workflow execution error with full options', () => {
+    test('should create workflow execution error with full options', () => {
       const originalError = new Error('Step error');
       const error = createWorkflowExecutionError('Step execution failed', 'workflow-456', {
         code: 'STEP_EXECUTION_ERROR',
@@ -359,7 +359,7 @@ describe('Error Factory Functions', () => {
       expect(error.code).toBe('STEP_EXECUTION_ERROR');
       expect(error.executionId).toBe('exec-789');
       expect(error.stepId).toBe('step-123');
-      expect(error.retryable).toBe(false);
+      expect(error.retryable).toBeFalsy();
       expect(error.context.originalError).toEqual({
         message: 'Step error',
         name: 'Error',
@@ -369,7 +369,7 @@ describe('Error Factory Functions', () => {
   });
 
   describe('createWorkflowExecutionErrorWithCode', () => {
-    it('should create workflow execution error with orchestration error code', () => {
+    test('should create workflow execution error with orchestration error code', () => {
       const error = createWorkflowExecutionErrorWithCode('Step timeout', 'workflow-123', {
         code: OrchestrationErrorCodes.STEP_TIMEOUT_ERROR,
         stepId: 'step-456',
@@ -378,14 +378,14 @@ describe('Error Factory Functions', () => {
 
       expect(error.code).toBe(OrchestrationErrorCodes.STEP_TIMEOUT_ERROR);
       expect(error.stepId).toBe('step-456');
-      expect(error.retryable).toBe(true);
+      expect(error.retryable).toBeTruthy();
     });
   });
 });
 
-describe('Error Utility Functions', () => {
+describe('error Utility Functions', () => {
   describe('extractErrorDetails', () => {
-    it('should extract details from basic error', () => {
+    test('should extract details from basic error', () => {
       const error = new Error('Basic error');
       const details = extractErrorDetails(error);
 
@@ -394,7 +394,7 @@ describe('Error Utility Functions', () => {
       expect(details.stack).toBeDefined();
     });
 
-    it('should extract details from orchestration error', () => {
+    test('should extract details from orchestration error', () => {
       const context = { key: 'value' };
       const error = new OrchestrationError('Orchestration error', 'CUSTOM_CODE', true, context);
       const details = extractErrorDetails(error);
@@ -402,11 +402,11 @@ describe('Error Utility Functions', () => {
       expect(details.message).toBe('Orchestration error');
       expect(details.name).toBe('OrchestrationError');
       expect(details.code).toBe('CUSTOM_CODE');
-      expect(details.retryable).toBe(true);
+      expect(details.retryable).toBeTruthy();
       expect(details.context).toEqual(context);
     });
 
-    it('should extract details from workflow execution error', () => {
+    test('should extract details from workflow execution error', () => {
       const error = new WorkflowExecutionError(
         'Workflow error',
         'workflow-123',
@@ -421,7 +421,7 @@ describe('Error Utility Functions', () => {
       expect(details.stepId).toBe('step-789');
     });
 
-    it('should extract details from provider error', () => {
+    test('should extract details from provider error', () => {
       const error = new ProviderError('Provider error', 'test-provider', 'upstash');
       const details = extractErrorDetails(error);
 
@@ -429,7 +429,7 @@ describe('Error Utility Functions', () => {
       expect(details.providerType).toBe('upstash');
     });
 
-    it('should handle error with null message', () => {
+    test('should handle error with null message', () => {
       const error = new Error();
       // Force null message for edge case testing
       (error as any).message = null;
@@ -440,15 +440,15 @@ describe('Error Utility Functions', () => {
   });
 
   describe('isRetryableError', () => {
-    it('should return retryable status for orchestration error', () => {
+    test('should return retryable status for orchestration error', () => {
       const retryableError = new OrchestrationError('Error', 'CODE', true);
       const nonRetryableError = new OrchestrationError('Error', 'CODE', false);
 
-      expect(isRetryableError(retryableError)).toBe(true);
-      expect(isRetryableError(nonRetryableError)).toBe(false);
+      expect(isRetryableError(retryableError)).toBeTruthy();
+      expect(isRetryableError(nonRetryableError)).toBeFalsy();
     });
 
-    it('should detect retryable network errors', () => {
+    test('should detect retryable network errors', () => {
       const networkErrors = [
         new Error('ECONNRESET'),
         new Error('ENOTFOUND error occurred'),
@@ -461,11 +461,11 @@ describe('Error Utility Functions', () => {
       ];
 
       networkErrors.forEach(error => {
-        expect(isRetryableError(error)).toBe(true);
+        expect(isRetryableError(error)).toBeTruthy();
       });
     });
 
-    it('should not mark non-retryable errors as retryable', () => {
+    test('should not mark non-retryable errors as retryable', () => {
       const nonRetryableErrors = [
         new Error('Invalid input'),
         new Error('Authentication failed'),
@@ -474,27 +474,27 @@ describe('Error Utility Functions', () => {
       ];
 
       nonRetryableErrors.forEach(error => {
-        expect(isRetryableError(error)).toBe(false);
+        expect(isRetryableError(error)).toBeFalsy();
       });
     });
 
-    it('should handle errors with null/undefined message', () => {
+    test('should handle errors with null/undefined message', () => {
       const error = new Error();
       (error as any).message = null;
 
-      expect(isRetryableError(error)).toBe(false);
+      expect(isRetryableError(error)).toBeFalsy();
     });
 
-    it('should handle non-Error objects gracefully', () => {
+    test('should handle non-Error objects gracefully', () => {
       const notAnError = { message: 'ECONNRESET' } as Error;
 
-      expect(isRetryableError(notAnError)).toBe(true);
+      expect(isRetryableError(notAnError)).toBeTruthy();
     });
   });
 });
 
-describe('OrchestrationErrorCodes', () => {
-  it('should have all expected error codes', () => {
+describe('orchestrationErrorCodes', () => {
+  test('should have all expected error codes', () => {
     const expectedCodes = [
       'ORCHESTRATION_ERROR',
       'INITIALIZATION_ERROR',

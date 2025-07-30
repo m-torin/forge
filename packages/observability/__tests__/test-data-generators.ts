@@ -5,7 +5,7 @@
  * Reduces duplication and ensures realistic test scenarios.
  */
 
-import type { Breadcrumb, LogLevel, ObservabilityContext, ObservabilityUser } from '@/core/types';
+import type { Breadcrumb, LogLevel, ObservabilityContext, ObservabilityUser } from '#/core/types';
 
 // Common test data patterns
 export const testPatterns = {

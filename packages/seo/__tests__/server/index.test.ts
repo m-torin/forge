@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { createStructuredData, structuredData } from '@/server';
+import { createStructuredData, structuredData } from '#/server';
 
 describe('@repo/seo/server', () => {
   describe('createStructuredData', () => {

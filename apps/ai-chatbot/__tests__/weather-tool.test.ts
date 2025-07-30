@@ -1,4 +1,4 @@
-import { getWeather } from '@/lib/ai/tools/utilities/get-weather';
+import { getWeather } from '#/lib/ai/tools/utilities/get-weather';
 import { describe, expect, test, vi } from 'vitest';
 
 // Mock the AI package weather tool

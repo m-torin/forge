@@ -1,5 +1,5 @@
 import { Prisma, Secret } from '@prisma/client';
-import { logEntityChange } from '.';
+import { logEntityChange } from './helpers';
 
 /**
  * Generic helper function to upsert related Secrets.

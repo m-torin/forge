@@ -15,6 +15,9 @@ export const baseTestConfig: UserConfig['test'] = {
   // Global setup
   globals: true,
 
+  // UI safety - prevent browser opening in CI
+  ui: false,
+
   // Coverage configuration
   coverage: {
     enabled: false,

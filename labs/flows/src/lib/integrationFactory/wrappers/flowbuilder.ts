@@ -5,8 +5,6 @@ import type { CacheConfig, WrapperConfig } from '../core';
 import {
   createLoggingMiddleware,
   ConsoleLogger,
-  createCacheMiddleware,
-  MemoryCacheProvider,
   createCircuitBreakerMiddleware,
   Middleware,
 } from '../middleware';
@@ -45,7 +43,6 @@ const DEFAULT_WRAPPER_CONFIG: Required<WrapperConfig> = Object.freeze({
     resetTimeout: 60000, // 1 minute reset timeout
     halfOpenLimit: 5, // Allow 5 requests in half-open
     degradationThreshold: 10000, // 10 second degradation threshold
-    onStateChange: undefined, // Optional callback
   },
   metadata: {}, // Add empty object as default metadata
 });
@@ -140,19 +137,11 @@ export const flowbuilderOperation = <TInput, TOutput>(
     const factory = createOperationFactory({
       defaultTimeout: finalConfig.timeout,
       defaultRetries: finalConfig.retries,
-      defaultCacheTtl: finalConfig.cache.enabled
-        ? finalConfig.cache.ttl
-        : undefined,
+      ...(finalConfig.cache.enabled && { defaultCacheTtl: finalConfig.cache.ttl }),
       middleware: [
         finalConfig.logging.enabled &&
           createLoggingMiddleware(new ConsoleLogger(), {
             redactKeys: finalConfig.logging.redactKeys,
-          }),
-        finalConfig.cache.enabled &&
-          createCacheMiddleware(new MemoryCacheProvider(), {
-            enabled: true,
-            keyPrefix: finalConfig.cache.key,
-            ttl: finalConfig.cache.ttl,
           }),
         finalConfig.circuit.enabled &&
           createCircuitBreakerMiddleware({
@@ -163,7 +152,7 @@ export const flowbuilderOperation = <TInput, TOutput>(
             resetTimeout: finalConfig.circuit.resetTimeout,
             halfOpenLimit: finalConfig.circuit.halfOpenLimit,
             degradationThreshold: finalConfig.circuit.degradationThreshold,
-            onStateChange: finalConfig.circuit.onStateChange,
+            ...(finalConfig.circuit.onStateChange && { onStateChange: finalConfig.circuit.onStateChange }),
           }),
       ].filter(
         (m): m is Middleware => m !== false,
@@ -201,7 +190,7 @@ export const flowbuilderOperation = <TInput, TOutput>(
       return {
         timeout: customConfig?.timeout ?? finalConfig.timeout,
         retries: customConfig?.retries ?? finalConfig.retries,
-        cache,
+        ...(cache && { cache }),
         metadata,
       };
     } catch (error) {

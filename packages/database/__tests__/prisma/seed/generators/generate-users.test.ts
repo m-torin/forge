@@ -2,7 +2,7 @@ import {
   generateCustomerProfile,
   generateUser,
   generateUserAddress,
-} from '@/prisma/src/seed/generators/generate-users';
+} from '#/prisma/src/seed/generators/generate-users';
 import { environmentUtils, testCasePatterns, testDataGenerators } from '@repo/qa/vitest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 

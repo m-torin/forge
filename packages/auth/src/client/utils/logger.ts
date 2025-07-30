@@ -131,3 +131,14 @@ export const syncLogger = {
 export const logger = authLogger;
 
 export default authLogger;
+
+// Export alias for backwards compatibility with tests
+export function createLogger(_config?: any, _level?: string) {
+  // Basic implementation for testing
+  return {
+    info: (message: string, ...args: any[]) => logInfo(message, { args }),
+    warn: (message: string, ...args: any[]) => logWarn(message, { args }),
+    error: (message: string, ...args: any[]) => logError(message, undefined, { args }),
+    debug: (message: string, ...args: any[]) => logDebug(message, { args }),
+  };
+}

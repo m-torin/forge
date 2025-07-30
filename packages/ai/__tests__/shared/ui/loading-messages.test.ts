@@ -2,7 +2,7 @@ import type {
   LoadingContext,
   LoadingMessageConfig,
   UseLoadingMessagesOptions,
-} from '@/shared/ui/loading-messages';
+} from '#/shared/ui/loading-messages';
 import { beforeEach, describe, expect, vi } from 'vitest';
 
 describe('loading Messages', () => {
@@ -11,7 +11,7 @@ describe('loading Messages', () => {
   });
 
   test('should import loading messages successfully', async () => {
-    const loadingMessages = await import('@/shared/ui/loading-messages');
+    const loadingMessages = await import('#/shared/ui/loading-messages');
     expect(loadingMessages).toBeDefined();
     expect(loadingMessages.analyzeUserMessage).toBeTypeOf('function');
     expect(loadingMessages.getContextualLoadingMessage).toBeTypeOf('function');
@@ -21,7 +21,7 @@ describe('loading Messages', () => {
   });
 
   test('should analyze user message for code-related queries', async () => {
-    const { analyzeUserMessage } = await import('@/shared/ui/loading-messages');
+    const { analyzeUserMessage } = await import('#/shared/ui/loading-messages');
 
     const codeMessage = 'Can you help me debug this JavaScript function?';
     const context = analyzeUserMessage(codeMessage);
@@ -34,7 +34,7 @@ describe('loading Messages', () => {
   });
 
   test('should analyze user message for creative writing', async () => {
-    const { analyzeUserMessage } = await import('@/shared/ui/loading-messages');
+    const { analyzeUserMessage } = await import('#/shared/ui/loading-messages');
 
     const creativeMessage = 'Write me a short story about a robot';
     const context = analyzeUserMessage(creativeMessage);
@@ -46,7 +46,7 @@ describe('loading Messages', () => {
   });
 
   test('should analyze user message for data analysis', async () => {
-    const { analyzeUserMessage } = await import('@/shared/ui/loading-messages');
+    const { analyzeUserMessage } = await import('#/shared/ui/loading-messages');
 
     const dataMessage = 'Analyze this dataset and show me the trends';
     const context = analyzeUserMessage(dataMessage);
@@ -58,7 +58,7 @@ describe('loading Messages', () => {
   });
 
   test('should analyze user message for research queries', async () => {
-    const { analyzeUserMessage } = await import('@/shared/ui/loading-messages');
+    const { analyzeUserMessage } = await import('#/shared/ui/loading-messages');
 
     const researchMessage = 'Find information about climate change recent studies';
     const context = analyzeUserMessage(researchMessage);
@@ -70,7 +70,7 @@ describe('loading Messages', () => {
   });
 
   test('should analyze user message for technical queries', async () => {
-    const { analyzeUserMessage } = await import('@/shared/ui/loading-messages');
+    const { analyzeUserMessage } = await import('#/shared/ui/loading-messages');
 
     const technicalMessage =
       'Explain the architecture of microservices and their scalability patterns';
@@ -83,7 +83,7 @@ describe('loading Messages', () => {
   });
 
   test('should analyze user message for calculations', async () => {
-    const { analyzeUserMessage } = await import('@/shared/ui/loading-messages');
+    const { analyzeUserMessage } = await import('#/shared/ui/loading-messages');
 
     const calculationMessage = 'Calculate the compound interest for $1000 at 5% over 10 years';
     const context = analyzeUserMessage(calculationMessage);
@@ -94,7 +94,7 @@ describe('loading Messages', () => {
   });
 
   test('should analyze complex requests', async () => {
-    const { analyzeUserMessage } = await import('@/shared/ui/loading-messages');
+    const { analyzeUserMessage } = await import('#/shared/ui/loading-messages');
 
     const complexMessage =
       'I need you to analyze this code, explain how it works, write tests for it, and then create documentation. The code is about implementing a distributed cache system with Redis and needs to handle high concurrency. Please also suggest performance optimizations.';
@@ -107,7 +107,7 @@ describe('loading Messages', () => {
   });
 
   test('should get contextual loading message for code context', async () => {
-    const { getContextualLoadingMessage } = await import('@/shared/ui/loading-messages');
+    const { getContextualLoadingMessage } = await import('#/shared/ui/loading-messages');
 
     const context = {
       isCodeRelated: true,
@@ -129,7 +129,7 @@ describe('loading Messages', () => {
   });
 
   test('should get contextual loading message for different durations', async () => {
-    const { getContextualLoadingMessage } = await import('@/shared/ui/loading-messages');
+    const { getContextualLoadingMessage } = await import('#/shared/ui/loading-messages');
 
     const context = {
       isCodeRelated: true,
@@ -163,7 +163,7 @@ describe('loading Messages', () => {
   });
 
   test('should create loading message manager', async () => {
-    const { createLoadingMessageManager } = await import('@/shared/ui/loading-messages');
+    const { createLoadingMessageManager } = await import('#/shared/ui/loading-messages');
 
     const manager = createLoadingMessageManager();
 
@@ -174,7 +174,7 @@ describe('loading Messages', () => {
   });
 
   test('should get tool-specific loading messages', async () => {
-    const { createLoadingMessageManager } = await import('@/shared/ui/loading-messages');
+    const { createLoadingMessageManager } = await import('#/shared/ui/loading-messages');
 
     const manager = createLoadingMessageManager();
 
@@ -195,7 +195,7 @@ describe('loading Messages', () => {
   });
 
   test('should get random loading message', async () => {
-    const { getRandomLoadingMessage } = await import('@/shared/ui/loading-messages');
+    const { getRandomLoadingMessage } = await import('#/shared/ui/loading-messages');
 
     const defaultMessage = getRandomLoadingMessage();
     const customMessage = getRandomLoadingMessage(['Custom message 1', 'Custom message 2']);
@@ -208,7 +208,7 @@ describe('loading Messages', () => {
   });
 
   test('should get loading message for duration', async () => {
-    const { getLoadingMessageForDuration } = await import('@/shared/ui/loading-messages');
+    const { getLoadingMessageForDuration } = await import('#/shared/ui/loading-messages');
 
     const shortMessage = getLoadingMessageForDuration(500);
     const longMessage = getLoadingMessageForDuration(6000);
@@ -224,7 +224,7 @@ describe('loading Messages', () => {
   });
 
   test('should use custom analyzer function', async () => {
-    const { analyzeUserMessage } = await import('@/shared/ui/loading-messages');
+    const { analyzeUserMessage } = await import('#/shared/ui/loading-messages');
 
     const customAnalyzer = vi.fn().mockReturnValue({
       isCustomAnalyzed: true,
@@ -240,7 +240,7 @@ describe('loading Messages', () => {
   });
 
   test('should handle custom message pools in config', async () => {
-    const { createLoadingMessageManager } = await import('@/shared/ui/loading-messages');
+    const { createLoadingMessageManager } = await import('#/shared/ui/loading-messages');
 
     const config = {
       messages: {
@@ -269,7 +269,7 @@ describe('loading Messages', () => {
   });
 
   test('should handle custom thresholds in config', async () => {
-    const { createLoadingMessageManager } = await import('@/shared/ui/loading-messages');
+    const { createLoadingMessageManager } = await import('#/shared/ui/loading-messages');
 
     const config = {
       thresholds: {
@@ -300,7 +300,7 @@ describe('loading Messages', () => {
 
   test('should test interface types', async () => {
     const { analyzeUserMessage, getContextualLoadingMessage } = await import(
-      '@/shared/ui/loading-messages'
+      '#/shared/ui/loading-messages'
     );
 
     // Test LoadingContext interface
@@ -347,7 +347,7 @@ describe('loading Messages', () => {
   });
 
   test('should handle all context types', async () => {
-    const { analyzeUserMessage } = await import('@/shared/ui/loading-messages');
+    const { analyzeUserMessage } = await import('#/shared/ui/loading-messages');
 
     const testCases = [
       { message: 'Translate this to Spanish', expectedFlags: ['isTranslation'] },
@@ -378,7 +378,7 @@ describe('loading Messages', () => {
   });
 
   test('should handle tool loading messages', async () => {
-    const { toolLoadingMessages } = await import('@/shared/ui/loading-messages');
+    const { toolLoadingMessages } = await import('#/shared/ui/loading-messages');
 
     expect(toolLoadingMessages).toBeDefined();
     expect(toolLoadingMessages.weather).toBeDefined();

@@ -24,15 +24,15 @@ import {
   requireAuth,
   validateApiKey,
   validateApiKeyWithRateLimit,
-} from '@/server/api-keys/validation';
-import type { PermissionCheck } from '@/shared/api-keys';
-import { auth } from '@/shared/auth';
+} from '#/server/api-keys/validation';
+import type { PermissionCheck } from '#/shared/api-keys';
+import { auth } from '#/shared/auth';
 
 // Set up all mocks
 setupAllMocks();
 
 // Mock the auth module directly for this test
-vi.mock('@/shared/auth', () => ({
+vi.mock('#/shared/auth', () => ({
   auth: {
     api: {
       verifyApiKey: vi.fn(),

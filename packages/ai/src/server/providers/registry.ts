@@ -46,13 +46,7 @@ import {
   wrapLanguageModel,
 } from 'ai';
 import { safeEnv } from '../../../env';
-import {
-  MODEL_REGISTRY,
-  getModelsByProvider,
-  getModelConfig,
-  getModelReasoningConfig,
-  getBestModelForTask,
-} from '../../shared/models';
+import { getBestModelForTask, getModelConfig, getModelsByProvider } from '../../shared/models';
 
 // Get environment configuration
 const env = safeEnv();
@@ -171,10 +165,10 @@ const anthropicProvider = customProvider({
     // Build language models from registry
     anthropicModels.forEach(modelConfig => {
       const { id, actualModelId, metadata } = modelConfig;
-      
+
       // Create base model
       const baseModel = anthropic(actualModelId);
-      
+
       // Apply reasoning configuration if supported
       if (metadata.reasoning?.supported) {
         models[id] = wrapLanguageModel({
@@ -182,8 +176,8 @@ const anthropicProvider = customProvider({
           middleware: defaultSettingsMiddleware({
             settings: {
               maxOutputTokens: metadata.outputLimit || 100000,
-              ...(metadata.reasoning.headers && { 
-                headers: metadata.reasoning.headers 
+              ...(metadata.reasoning.headers && {
+                headers: metadata.reasoning.headers,
               }),
               ...(metadata.reasoning.budgetTokens && {
                 providerOptions: {
@@ -208,7 +202,8 @@ const anthropicProvider = customProvider({
     models.opus = models['claude-4-opus-20250514'] || models['claude-3-opus-20240229'];
     models.sonnet = models['claude-4-sonnet-20250514'] || models['claude-3-5-sonnet-20241022'];
     models.haiku = models['claude-3-5-haiku-20241022'] || models['claude-3-haiku-20240307'];
-    models['sonnet-reasoning'] = models['claude-4-sonnet-20250514'] || models['claude-3-7-sonnet-20250219'];
+    models['sonnet-reasoning'] =
+      models['claude-4-sonnet-20250514'] || models['claude-3-7-sonnet-20250219'];
 
     return models;
   })(),
@@ -430,14 +425,14 @@ export const models = {
       const bestModel = getBestModelForTask('chat');
       return registry.languageModel(`anthropic:${bestModel}` as any);
     },
-    
+
     reasoning: () => {
       const reasoningModel = getBestModelForTask('reasoning');
       const config = getModelConfig(reasoningModel);
       const provider = config?.provider || 'anthropic';
       return registry.languageModel(`${provider}:${reasoningModel}` as any);
     },
-    
+
     creative: () => registry.languageModel('anthropic:claude-4-sonnet-20250514'),
 
     // Fast models
@@ -446,7 +441,7 @@ export const models = {
     // Anthropic models - using latest available
     claude: () => registry.languageModel('anthropic:claude-4-sonnet-20250514'),
     claudeReasoning: () => registry.languageModel('anthropic:claude-4-opus-20250514'),
-    
+
     // Vision models
     vision: () => {
       const visionModel = getBestModelForTask('vision');
@@ -454,7 +449,7 @@ export const models = {
       const provider = config?.provider || 'anthropic';
       return registry.languageModel(`${provider}:${visionModel}` as any);
     },
-    
+
     // Code models
     code: () => {
       const codeModel = getBestModelForTask('code');

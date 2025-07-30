@@ -13,7 +13,7 @@ import { createFormContext, UseFormReturnType, useForm } from '@mantine/form';
 import { zodResolver } from 'mantine-form-zod-resolver';
 import { FbNode, FbNodeData } from '#/flows/types';
 import { useReactFlow, Node } from '@xyflow/react';
-import { useAppContext } from '@/app/flow/[cuid]/FlowProvider';
+import { useAppContext } from '#/app/flow/[cuid]/FlowProvider';
 import {
   CombinedContextType,
   UseFbNodeProps,
@@ -194,7 +194,7 @@ export const useFbNode = <T extends Record<string, any>>({
   // Memoize contexts
   const nodeContext = useMemo(
     () => ({
-      initialNodeData,
+      ...(initialNodeData && { initialNodeData }),
       nodeProps,
       nodeMeta,
       modalOpened,
@@ -246,7 +246,7 @@ export const useFbNode = <T extends Record<string, any>>({
   );
 
   return {
-    nodeData: initialNodeData,
+    ...(initialNodeData && { nodeData: initialNodeData }),
     form,
     CombinedProviderComponent,
     updateNode,

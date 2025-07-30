@@ -2,7 +2,7 @@ import {
   createPdpJoin,
   generateProductRetailerDistribution,
   shouldIncludeBrandDirectSale,
-} from '@/prisma/src/seed/mappers/pdp-join-mapper';
+} from '#/prisma/src/seed/mappers/pdp-join-mapper';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 describe('pdp-join-mapper', () => {

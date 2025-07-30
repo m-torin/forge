@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react';
 import { describe, expect, test } from 'vitest';
 
-import { JsonLd } from '@/client';
+import { JsonLd } from '#/client';
 
 describe('@repo/seo/client', () => {
   test('renders JSON-LD script tag with single data object', () => {

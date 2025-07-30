@@ -7,10 +7,9 @@
     "types": ["node", "vitest/globals"],
     "baseUrl": ".",
     "paths": {
-      "@repo/*": ["../*"],
-      "@/*": ["./src/*"]
+      "#/*": ["./src/*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["dist", "build", "node_modules", "__tests__/**/*", "src/languages/sas.ts"]
+  "exclude": ["dist", "build", "node_modules", "src/languages/sas.ts"]
 }

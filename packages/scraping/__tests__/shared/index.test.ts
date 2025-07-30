@@ -1,8 +1,8 @@
 import { describe, expect } from 'vitest';
 
-import { extractFromHtml } from '@/shared/patterns/quick-scrape';
-import { ScrapingConfig, SelectorMap } from '@/shared/types/scraping-types';
-import { validateConfigOrThrow } from '@/shared/utils/validation';
+import { extractFromHtml } from '#/shared/patterns/quick-scrape';
+import { ScrapingConfig, SelectorMap } from '#/shared/types/scraping-types';
+import { validateConfigOrThrow } from '#/shared/utils/validation';
 
 describe('shared Scraping Utilities', () => {
   describe('extractFromHtml', () => {

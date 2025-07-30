@@ -14,7 +14,7 @@ import {
 } from '@mantine/core';
 import { useCombinedContext } from '#/flows/nodes/internal';
 import { FormValues } from '../formSchema';
-import { ButtonCopy } from '@/src/ui/shared';
+import { ButtonCopy } from '#/src/ui/shared';
 import { githubEvents } from './githubEvents';
 import { IconAlertCircle } from '@tabler/icons-react';
 

@@ -15,11 +15,11 @@ const mockAuthClient = {
   signOut: vi.fn(),
 };
 
-vi.mock('@/client/client', () => ({
+vi.mock('#/client/client', () => ({
   authClient: mockAuthClient,
 }));
 
-vi.mock('@/client/utils/logger', () => ({
+vi.mock('#/client/utils/logger', () => ({
   logger: {
     info: vi.fn(),
     error: vi.fn(),
@@ -35,25 +35,25 @@ describe('client authentication methods', () => {
 
   describe('basic auth', () => {
     test('should export signIn function', async () => {
-      const methodsModule = await import('@/client/methods');
+      const methodsModule = await import('#/client/methods');
 
       expect(typeof methodsModule.signIn).toBe('function');
     });
 
     test('should export signOut function', async () => {
-      const methodsModule = await import('@/client/methods');
+      const methodsModule = await import('#/client/methods');
 
       expect(typeof methodsModule.signOut).toBe('function');
     });
 
     test('should export signUp function', async () => {
-      const methodsModule = await import('@/client/methods');
+      const methodsModule = await import('#/client/methods');
 
       expect(typeof methodsModule.signUp).toBe('function');
     });
 
     test('should call signOut', async () => {
-      const methodsModule = await import('@/client/methods');
+      const methodsModule = await import('#/client/methods');
 
       mockAuthClient.signOut.mockResolvedValue(undefined);
 

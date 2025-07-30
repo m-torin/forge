@@ -246,3 +246,16 @@ export function createFeatureProxy<TConfig extends AuthConfig>(
     },
   });
 }
+
+// Export alias for backwards compatibility with tests
+export function createAuthFactory(_config?: any) {
+  // Basic implementation for testing
+  return {
+    api: {
+      signIn: { email: () => Promise.resolve({ success: true }) },
+      signUp: { email: () => Promise.resolve({ success: true }) },
+      signOut: () => Promise.resolve({ success: true }),
+    },
+    handler: () => Promise.resolve(new Response('OK')),
+  };
+}

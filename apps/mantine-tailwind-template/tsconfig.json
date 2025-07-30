@@ -1,10 +1,11 @@
 {
   "extends": "@repo/config/typescript/nextjs.json",
   "compilerOptions": {
-    "types": ["vitest/globals"],
+    "baseUrl": ".",
+    "types": ["vitest/globals", "@testing-library/jest-dom"],
     "paths": {
-      "#/root/env": ["./env"],
-      "@/*": ["./*"]
+      "#/root/*": ["./*"],
+      "#/*": ["./src/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "next.config.js"],

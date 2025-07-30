@@ -8,25 +8,25 @@ describe('provider Imports', () => {
   describe('postHog provider imports', () => {
     test('should import PostHog client provider without errors', async () => {
       expect(async () => {
-        await import('@/providers/posthog/client');
+        await import('#/providers/posthog/client');
       }).not.toThrow();
     });
 
     test('should import PostHog server provider without errors', async () => {
       expect(async () => {
-        await import('@/providers/posthog/server');
+        await import('#/providers/posthog/server');
       }).not.toThrow();
     });
 
     test('should import PostHog index without errors', async () => {
       expect(async () => {
-        await import('@/providers/posthog');
+        await import('#/providers/posthog');
       }).not.toThrow();
     });
 
     test('should import PostHog types without errors', async () => {
       expect(async () => {
-        await import('@/providers/posthog/types');
+        await import('#/providers/posthog/types');
       }).not.toThrow();
     });
   });
@@ -34,25 +34,25 @@ describe('provider Imports', () => {
   describe('segment provider imports', () => {
     test('should import Segment client provider without errors', async () => {
       expect(async () => {
-        await import('@/providers/segment/client');
+        await import('#/providers/segment/client');
       }).not.toThrow();
     });
 
     test('should import Segment server provider without errors', async () => {
       expect(async () => {
-        await import('@/providers/segment/server');
+        await import('#/providers/segment/server');
       }).not.toThrow();
     });
 
     test('should import Segment index without errors', async () => {
       expect(async () => {
-        await import('@/providers/segment');
+        await import('#/providers/segment');
       }).not.toThrow();
     });
 
     test('should import Segment types without errors', async () => {
       expect(async () => {
-        await import('@/providers/segment/types');
+        await import('#/providers/segment/types');
       }).not.toThrow();
     });
   });
@@ -60,32 +60,32 @@ describe('provider Imports', () => {
   describe('vercel provider imports', () => {
     test('should import Vercel client provider without errors', async () => {
       expect(async () => {
-        await import('@/providers/vercel/client');
+        await import('#/providers/vercel/client');
       }).not.toThrow();
     });
 
     test('should import Vercel server provider without errors', async () => {
       expect(async () => {
-        await import('@/providers/vercel/server');
+        await import('#/providers/vercel/server');
       }).not.toThrow();
     });
 
     test('should import Vercel index without errors', async () => {
       expect(async () => {
-        await import('@/providers/vercel');
+        await import('#/providers/vercel');
       }).not.toThrow();
     });
 
     test('should import Vercel types without errors', async () => {
       expect(async () => {
-        await import('@/providers/vercel/types');
+        await import('#/providers/vercel/types');
       }).not.toThrow();
     });
   });
 
   describe('provider constructors', () => {
     test('should create PostHog client provider instance', async () => {
-      const { PostHogClientProvider } = await import('@/providers/posthog/client');
+      const { PostHogClientProvider } = await import('#/providers/posthog/client');
 
       const config = { apiKey: 'test' };
       const provider = new PostHogClientProvider(config);
@@ -97,7 +97,7 @@ describe('provider Imports', () => {
     });
 
     test('should create Segment client provider instance', async () => {
-      const { SegmentClientProvider } = await import('@/providers/segment/client');
+      const { SegmentClientProvider } = await import('#/providers/segment/client');
 
       const config = { writeKey: 'test' };
       const provider = new SegmentClientProvider(config);
@@ -109,7 +109,7 @@ describe('provider Imports', () => {
     });
 
     test('should create Vercel client provider instance', async () => {
-      const { VercelClientProvider } = await import('@/providers/vercel/client');
+      const { VercelClientProvider } = await import('#/providers/vercel/client');
 
       const config = {};
       const provider = new VercelClientProvider(config);

@@ -117,7 +117,7 @@ export const makeRequest = async (
       const response = await fetch(url.toString(), {
         method,
         headers,
-        body,
+        ...(body && { body }),
       });
 
       // Return immediately on 404 without retrying

@@ -718,3 +718,8 @@ export async function getOrganizationStatisticsAction(organizationId: string): P
 // Backward compatibility aliases
 export const inviteMember = inviteUserAction;
 export const revokeInvitation = cancelInvitationAction;
+
+// Export aliases for backwards compatibility with tests
+export const createOrganization = createOrganizationAction;
+export const getOrganization = getFullOrganizationAction;
+export const updateOrganization = updateOrganizationAction;

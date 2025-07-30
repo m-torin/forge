@@ -5,8 +5,8 @@
  * This factory provides common test scenarios and data generators for observability plugins.
  */
 
-import type { ObservabilityPlugin } from '@/core/plugin';
-import type { Breadcrumb, LogLevel, ObservabilityContext, ObservabilityUser } from '@/core/types';
+import type { ObservabilityPlugin } from '#/core/plugin';
+import type { Breadcrumb, LogLevel, ObservabilityContext, ObservabilityUser } from '#/core/types';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 // Common test data generators for observability

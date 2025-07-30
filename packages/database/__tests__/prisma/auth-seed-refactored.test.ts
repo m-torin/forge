@@ -1,4 +1,4 @@
-import { seedAuth } from '@/prisma/src/seed/seed-auth';
+import { seedAuth } from '#/prisma/src/seed/seed-auth';
 import { createDatabaseTestSuite, databaseAssertions, mockScenarios } from '@repo/qa';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -12,7 +12,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 describe('seedAuth (DRY Refactored)', () => {
   const testSuite = createDatabaseTestSuite({
     enums: {},
-    importPaths: ['@/prisma-generated/client'],
+    importPaths: ['#/prisma-generated/client'],
     includeErrorClasses: true,
   });
 

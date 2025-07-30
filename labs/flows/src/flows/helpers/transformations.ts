@@ -1,17 +1,17 @@
-import { z } from 'zod';
-import { NodeSchema, EdgeSchema } from '#/lib/prisma/generated/zod';
+import { EdgeCreateInputObjectSchema } from '#/lib/prisma/generated/schemas';
 import { FbNode, FbEdge, FbNodeData, FbEdgeData } from '../types';
 import { NodeType, Prisma } from '@prisma/client';
 
-type NodeSchemaType = z.infer<typeof NodeSchema>;
-type EdgeSchemaType = z.infer<typeof EdgeSchema>;
+// Use direct Prisma types for type definitions
+type NodeSchemaType = Prisma.NodeCreateInput;
+type EdgeSchemaType = Prisma.EdgeCreateInput;
 
 /**
  * Ensure value is a valid Prisma.JsonValue
  */
-const ensureJsonValue = (value: unknown): Prisma.JsonValue => {
+const ensureJsonValue = (value: unknown): Prisma.InputJsonValue => {
   if (value === null || value === undefined) {
-    return null;
+    return {};
   }
 
   if (
@@ -27,14 +27,14 @@ const ensureJsonValue = (value: unknown): Prisma.JsonValue => {
   }
 
   if (typeof value === 'object') {
-    const result: Record<string, Prisma.JsonValue> = {};
+    const result: Record<string, Prisma.InputJsonValue> = {};
     for (const [key, val] of Object.entries(value)) {
       result[key] = ensureJsonValue(val);
     }
     return result;
   }
 
-  return null;
+  return {};
 };
 
 /**
@@ -87,9 +87,9 @@ export const transformNodeForValidation = (
     updatedAt: now,
     deleted: false,
     flow: { connect: { id: flowId } },
-    infrastructure: nodeData?.infrastructureId
-      ? { connect: { id: nodeData.infrastructureId } }
-      : undefined,
+    ...(nodeData?.infrastructureId && {
+      infrastructure: { connect: { id: nodeData.infrastructureId } }
+    }),
     sourceEdges: { connect: [] },
     targetEdges: { connect: [] },
     secrets: { connect: [] },
@@ -122,7 +122,7 @@ export const transformEdgeForValidation = (
       : {}),
   };
 
-  const transformedEdge = EdgeSchema.parse({
+  const transformedEdge = EdgeCreateInputObjectSchema.parse({
     id: edge.id,
     flowId,
     sourceNodeId: edge.source,

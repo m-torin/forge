@@ -107,19 +107,37 @@ function CollaborativeNotionEditorCore({
 
   // Initialize upload handlers async
   useEffect(() => {
-    if (enableImageUpload) {
-      createStorageUploadHandler(imageUploadConfig).then(setUploadHandler);
-    } else {
-      setUploadHandler(undefined);
-    }
+    const initImageUpload = async () => {
+      if (enableImageUpload) {
+        try {
+          const handler = await createStorageUploadHandler(imageUploadConfig);
+          setUploadHandler(handler);
+        } catch {
+          // Silently ignore upload handler creation errors
+        }
+      } else {
+        setUploadHandler(undefined);
+      }
+    };
+
+    void initImageUpload();
   }, [enableImageUpload, imageUploadConfig]);
 
   useEffect(() => {
-    if (enableMediaUpload && mediaUploadConfig) {
-      createStorageUploadHandler(mediaUploadConfig).then(setMediaUploadHandler);
-    } else {
-      setMediaUploadHandler(undefined);
-    }
+    const initMediaUpload = async () => {
+      if (enableMediaUpload && mediaUploadConfig) {
+        try {
+          const handler = await createStorageUploadHandler(mediaUploadConfig);
+          setMediaUploadHandler(handler);
+        } catch {
+          // Silently ignore upload handler creation errors
+        }
+      } else {
+        setMediaUploadHandler(undefined);
+      }
+    };
+
+    void initMediaUpload();
   }, [enableMediaUpload, mediaUploadConfig]);
 
   // Enhanced extensions for collaborative NotionEditor

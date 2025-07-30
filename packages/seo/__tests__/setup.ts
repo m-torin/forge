@@ -209,7 +209,7 @@ export const createSEOTestConfig = (overrides: any = {}) => ({
 
 // Common metadata creation patterns
 export const createTestMetadata = async (config = {}) => {
-  const { createMetadata } = await import('@/utils/metadata');
+  const { createMetadata } = await import('#/utils/metadata');
   return createMetadata({
     title: 'Test Page',
     description: 'Test page description',
@@ -218,7 +218,7 @@ export const createTestMetadata = async (config = {}) => {
 };
 
 export const createTestStructuredData = async (type: string, data = {}) => {
-  const module = await import('@/components/structured-data');
+  const module = await import('#/components/structured-data');
   const functionName = `create${type.charAt(0).toUpperCase() + type.slice(1)}Schema`;
   const createFunction = (module as any)[functionName];
 

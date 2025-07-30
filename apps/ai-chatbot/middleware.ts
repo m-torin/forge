@@ -1,5 +1,5 @@
-import { env } from '@/env';
-import { guestRegex, isDevelopmentEnvironment } from '@/lib/constants';
+import { guestRegex, isDevelopmentEnvironment } from '#/lib/constants';
+import { env } from '#/root/env';
 import { getToken } from 'next-auth/jwt';
 import { NextResponse, type NextRequest } from 'next/server';
 

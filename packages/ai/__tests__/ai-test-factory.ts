@@ -14,7 +14,7 @@ import type { LanguageModel } from 'ai';
 import { expect, vi } from 'vitest';
 
 // Import types from AI package
-import type { StreamHandler } from '@/server';
+import type { StreamHandler } from '#/server';
 
 // Common test data generators
 export const createTestData = {

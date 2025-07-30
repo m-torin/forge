@@ -31,7 +31,6 @@ dist
 prisma-generated
 *.tsbuildinfo
 
-
 # Debug
 .log*
 
@@ -47,4 +46,3 @@ prisma-generated
 
 # BaseHub
 .basehub
-

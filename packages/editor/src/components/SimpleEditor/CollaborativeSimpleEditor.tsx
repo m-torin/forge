@@ -28,7 +28,7 @@ export function CollaborativeSimpleEditor({
   simulateDrops = false,
   dropRate = 0.05,
   className,
-  placeholder = 'Start writing...',
+  placeholder: _placeholder = 'Start writing...',
 }: CollaborativeSimpleEditorProps) {
   const { editor, collaborators, isConnected, isLoading, error } = useYjsCollaboration({
     documentId,

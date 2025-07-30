@@ -124,7 +124,7 @@ const PopoverContent = React.forwardRef<HTMLDivElement, PopoverContentProps>(
         document.removeEventListener('mousedown', handleClickOutside);
         document.removeEventListener('keydown', handleEscape);
       };
-    }, [context.open, context.onOpenChange]);
+    }, [context]);
 
     if (!context.open) return null;
 
@@ -219,8 +219,12 @@ export function LinkPreview({ url, children, delay = 500, showPreview = true }: 
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <div
         className="relative inline-block"
+        role="button"
+        tabIndex={0}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        onFocus={handleMouseEnter}
+        onBlur={handleMouseLeave}
       >
         {children}
 
@@ -298,6 +302,7 @@ function LinkPreviewCard({ data, isLoading, error, url }: LinkPreviewCardProps) 
           <img
             src={data.image}
             alt={data.title}
+            role="presentation"
             className="h-full w-full object-cover"
             onError={e => {
               (e.target as HTMLImageElement).style.display = 'none';
@@ -312,6 +317,7 @@ function LinkPreviewCard({ data, isLoading, error, url }: LinkPreviewCardProps) 
             <img
               src={data.favicon}
               alt=""
+              role="presentation"
               className="mt-0.5 h-4 w-4 flex-shrink-0"
               onError={e => {
                 (e.target as HTMLImageElement).style.display = 'none';
@@ -528,7 +534,19 @@ export function LinkEditor({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="fixed inset-0 bg-black/20" onClick={onClose} />
+      <div
+        className="fixed inset-0 bg-black/20"
+        onClick={onClose}
+        role="button"
+        tabIndex={0}
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onClose();
+          }
+        }}
+        aria-label="Close preview"
+      />
 
       <div
         className="relative w-96 rounded-lg border border-gray-200 bg-white p-4 shadow-xl"

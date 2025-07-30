@@ -17,6 +17,8 @@ export interface AppTestConfig {
   aliases?: Record<string, string>;
   /** Custom test directory (defaults to './__tests__/e2e') */
   testDir?: string;
+  /** Custom timeout for server startup in ms (defaults to 60000) */
+  serverTimeout?: number;
 }
 
 /**
@@ -29,13 +31,13 @@ export function createAppPlaywrightConfig(appConfig: AppTestConfig): PlaywrightT
   // Default aliases for TypeScript path mapping
   const defaultAliases = {
     '@': resolve(appConfig.appDirectory, './src'),
-    '@/app': resolve(appConfig.appDirectory, './src/app'),
-    '@/components': resolve(appConfig.appDirectory, './src/components'),
-    '@/lib': resolve(appConfig.appDirectory, './src/lib'),
-    '@/hooks': resolve(appConfig.appDirectory, './src/hooks'),
-    '@/utils': resolve(appConfig.appDirectory, './src/utils'),
-    '@/styles': resolve(appConfig.appDirectory, './src/styles'),
-    '@/types': resolve(appConfig.appDirectory, './src/types'),
+    '#/app': resolve(appConfig.appDirectory, './src/app'),
+    '#/components': resolve(appConfig.appDirectory, './src/components'),
+    '#/lib': resolve(appConfig.appDirectory, './src/lib'),
+    '#/hooks': resolve(appConfig.appDirectory, './src/hooks'),
+    '#/utils': resolve(appConfig.appDirectory, './src/utils'),
+    '#/styles': resolve(appConfig.appDirectory, './src/styles'),
+    '#/types': resolve(appConfig.appDirectory, './src/types'),
     ...aliases,
   };
 
@@ -70,10 +72,16 @@ export function createAppPlaywrightConfig(appConfig: AppTestConfig): PlaywrightT
       ],
       webServer: appConfig.devCommand
         ? {
-            command: appConfig.devCommand,
+            command:
+              process.env.CI && appConfig.devCommand.includes('mintlify')
+                ? `${appConfig.devCommand} --no-open`
+                : appConfig.devCommand,
             cwd: appConfig.appDirectory,
             port: appConfig.port,
+            timeout: appConfig.serverTimeout || 120000, // 2 minutes default
             reuseExistingServer: !process.env.CI,
+            stdout: 'pipe',
+            stderr: 'pipe',
           }
         : undefined,
     }),
@@ -183,14 +191,14 @@ export class AppTestHelpers {
  */
 export function createPlaywrightTsConfig(appDirectory: string, aliases?: Record<string, string>) {
   const defaultAliases = {
-    '@/*': ['./src/*'],
-    '@/app/*': ['./src/app/*'],
-    '@/components/*': ['./src/components/*'],
-    '@/lib/*': ['./src/lib/*'],
-    '@/hooks/*': ['./src/hooks/*'],
-    '@/utils/*': ['./src/utils/*'],
-    '@/styles/*': ['./src/styles/*'],
-    '@/types/*': ['./src/types/*'],
+    '#/*': ['./src/*'],
+    '#/app/*': ['./src/app/*'],
+    '#/components/*': ['./src/components/*'],
+    '#/lib/*': ['./src/lib/*'],
+    '#/hooks/*': ['./src/hooks/*'],
+    '#/utils/*': ['./src/utils/*'],
+    '#/styles/*': ['./src/styles/*'],
+    '#/types/*': ['./src/types/*'],
   };
 
   return {

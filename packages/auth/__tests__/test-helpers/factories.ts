@@ -3,7 +3,7 @@
  * Provides reusable mock objects and data generators to reduce duplication
  */
 
-import type { Organization } from '@/shared/types';
+import type { Organization } from '#/shared/types';
 import { vi } from 'vitest';
 
 /**

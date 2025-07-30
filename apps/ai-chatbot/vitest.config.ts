@@ -1,5 +1,5 @@
 import { createNextAppConfig } from '@repo/qa/vitest/configs';
-import path from 'path';
+import viteTsconfigPaths from 'vite-tsconfig-paths';
 
 /**
  * Vitest configuration for ai-chatbot application
@@ -7,11 +7,11 @@ import path from 'path';
  */
 export default createNextAppConfig({
   setupFiles: ['__tests__/setup.ts'],
-  aliases: {
-    '@': path.resolve(process.cwd(), './'),
-  },
   excludePaths: [
     'tests/**/*', // Exclude the old test files that have import issues
-    'lib/ai/models.test.ts', // Exclude the problematic models test file
+    'src/lib/ai/models.test.ts', // Exclude the problematic models test file
   ],
+  overrides: {
+    plugins: [viteTsconfigPaths({ ignoreConfigErrors: true })],
+  },
 });

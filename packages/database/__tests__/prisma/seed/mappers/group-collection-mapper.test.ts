@@ -1,9 +1,9 @@
-import { ContentStatus } from '@/prisma-generated/client';
+import { ContentStatus } from '#/prisma-generated/client';
 import {
   createGroupCollectionHierarchy,
   extractGroupCollectionCounts,
   mapWebappGroupCollectionToPrisma,
-} from '@/prisma/src/seed/mappers/group-collection-mapper';
+} from '#/prisma/src/seed/mappers/group-collection-mapper';
 import { describe, expect, it } from 'vitest';
 
 describe('group-collection-mapper', () => {

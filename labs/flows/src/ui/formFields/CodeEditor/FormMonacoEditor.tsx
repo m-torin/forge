@@ -91,10 +91,10 @@ export function FormMonacoEditor({
    * useUncontrolled manages the editor's value in both controlled and uncontrolled modes.
    */
   const [_value, handleChange] = useUncontrolled<string>({
-    value,
-    defaultValue,
+    value: value ?? '',
+    defaultValue: defaultValue ?? '',
     finalValue: '',
-    onChange,
+    onChange: onChange ?? (() => {}),
   });
 
   /**
@@ -122,7 +122,7 @@ export function FormMonacoEditor({
         defaultValue={defaultValue}
         onChange={handleChange}
         height={numericHeight}
-        onMount={onMount}
+        {...(onMount && { onMount })}
         language={language}
         readOnly={readOnly}
         theme={theme}

@@ -1,8 +1,8 @@
-import { CollectionType, ContentStatus } from '@/prisma-generated/client';
+import { CollectionType, ContentStatus } from '#/prisma-generated/client';
 import {
   extractCollectionMedia,
   mapWebappCollectionToPrisma,
-} from '@/prisma/src/seed/mappers/collection-mapper';
+} from '#/prisma/src/seed/mappers/collection-mapper';
 import { describe, expect, it } from 'vitest';
 
 describe('collection-mapper', () => {

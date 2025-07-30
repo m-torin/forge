@@ -7,7 +7,7 @@ import { describe, expect } from 'vitest';
 describe('shared Emitters Index', () => {
   describe('emitter exports', () => {
     test('should export core emitters', async () => {
-      const emittersModule = await import('@/shared/emitters');
+      const emittersModule = await import('#/shared/emitters');
 
       // Core emitters
       expect(emittersModule).toHaveProperty('track');
@@ -19,7 +19,7 @@ describe('shared Emitters Index', () => {
     });
 
     test('should export utility functions', async () => {
-      const emittersModule = await import('@/shared/emitters');
+      const emittersModule = await import('#/shared/emitters');
 
       // Utilities
       expect(emittersModule).toHaveProperty('createUserSession');
@@ -29,7 +29,7 @@ describe('shared Emitters Index', () => {
     });
 
     test('should export builders and helpers', async () => {
-      const emittersModule = await import('@/shared/emitters');
+      const emittersModule = await import('#/shared/emitters');
 
       // Builders
       expect(emittersModule).toHaveProperty('PayloadBuilder');
@@ -38,7 +38,7 @@ describe('shared Emitters Index', () => {
     });
 
     test('should export type guards', async () => {
-      const emittersModule = await import('@/shared/emitters');
+      const emittersModule = await import('#/shared/emitters');
 
       // Type guards
       expect(emittersModule).toHaveProperty('isTrackPayload');
@@ -49,7 +49,7 @@ describe('shared Emitters Index', () => {
     });
 
     test('should export ecommerce namespace', async () => {
-      const emittersModule = await import('@/shared/emitters');
+      const emittersModule = await import('#/shared/emitters');
 
       expect(emittersModule).toHaveProperty('ecommerce');
       expect(typeof emittersModule.ecommerce).toBe('object');
@@ -58,7 +58,7 @@ describe('shared Emitters Index', () => {
 
   describe('function types', () => {
     test('should export functions as functions', async () => {
-      const { track, identify, page, group, alias } = await import('@/shared/emitters');
+      const { track, identify, page, group, alias } = await import('#/shared/emitters');
 
       expect(typeof track).toBe('function');
       expect(typeof identify).toBe('function');
@@ -68,7 +68,7 @@ describe('shared Emitters Index', () => {
     });
 
     test('should export builders as constructors', async () => {
-      const { PayloadBuilder, ContextBuilder, EventBatch } = await import('@/shared/emitters');
+      const { PayloadBuilder, ContextBuilder, EventBatch } = await import('#/shared/emitters');
 
       expect(typeof PayloadBuilder).toBe('function');
       expect(typeof ContextBuilder).toBe('function');

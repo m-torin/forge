@@ -379,7 +379,7 @@ export const validateVisibilityTimeoutConsistency = (
  */
 export const validateFIFOMessage = (
   input: SendMessageCommandInput,
-  options: SQSValidationOptions['message'],
+  _options: SQSValidationOptions['message'],
 ): void => {
   if (!input.MessageGroupId) {
     throw createSQSValidationError(

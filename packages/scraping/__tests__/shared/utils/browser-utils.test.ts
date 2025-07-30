@@ -4,7 +4,7 @@ import { createTestData } from '../../scraping-test-data';
 import { createUtilityTestSuite } from '../../scraping-test-factory';
 
 // Mock the scraper factory
-vi.mock('@/shared/factories/scraper-factory', () => ({
+vi.mock('#/shared/factories/scraper-factory', () => ({
   createBrowserScraper: vi.fn().mockResolvedValue({
     initialize: vi.fn(),
     close: vi.fn(),
@@ -17,7 +17,7 @@ describe('browser-utils', () => {
   createUtilityTestSuite({
     utilityName: 'launchBrowser',
     utilityFunction: async (provider: string, options?: any) => {
-      const { createBrowserScraper } = await import('@/shared/factories/scraper-factory');
+      const { createBrowserScraper } = await import('#/shared/factories/scraper-factory');
       if (provider === 'invalid-provider' && options?.timeout === 1) {
         throw new Error('Invalid provider');
       }

@@ -1,4 +1,4 @@
-import { createCustomProvider, withReasoningMiddleware } from '@/server/providers/custom-providers';
+import { createCustomProvider, withReasoningMiddleware } from '#/server/providers/custom-providers';
 import { describe, expect, vi } from 'vitest';
 
 // Mock the AI SDK

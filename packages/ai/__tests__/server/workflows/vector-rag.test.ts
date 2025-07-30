@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Import AI SDK V5 testing utilities
-import type { RAGContext, RAGResponse, RAGWorkflowConfig } from '@/server/workflows/vector-rag';
+import type { RAGContext, RAGResponse, RAGWorkflowConfig } from '#/server/workflows/vector-rag';
 import { MockLanguageModelV2 } from 'ai/test';
 
 // Mock the AI SDK functions directly in the test file
@@ -80,7 +80,7 @@ describe('vector RAG Workflows', () => {
 
   // Helper function to create workflow with mock models
   const createMockWorkflow = async (config: any = {}) => {
-    const { VectorRAGWorkflow } = await import('@/server/workflows/vector-rag');
+    const { VectorRAGWorkflow } = await import('#/server/workflows/vector-rag');
 
     const workflow = new VectorRAGWorkflow({
       vectorDB: mockVectorDB,
@@ -95,7 +95,7 @@ describe('vector RAG Workflows', () => {
   };
 
   test('should import vector RAG workflow successfully', async () => {
-    const vectorRag = await import('@/server/workflows/vector-rag');
+    const vectorRag = await import('#/server/workflows/vector-rag');
     expect(vectorRag).toBeDefined();
     expect(vectorRag.VectorRAGWorkflow).toBeDefined();
     expect(vectorRag.createRAGWorkflow).toBeTypeOf('function');
@@ -385,7 +385,7 @@ describe('vector RAG Workflows', () => {
   });
 
   test('should test interface types', async () => {
-    const vectorRag = await import('@/server/workflows/vector-rag');
+    const vectorRag = await import('#/server/workflows/vector-rag');
 
     // Test that interfaces are properly exported by using them in type annotations
     const config: RAGWorkflowConfig = {

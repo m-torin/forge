@@ -1,5 +1,5 @@
-import { ReviewType } from '@/prisma-generated/client';
-import { mapWebappReviewToPrisma } from '@/prisma/src/seed/mappers/review-mapper';
+import { ReviewType } from '#/prisma-generated/client';
+import { mapWebappReviewToPrisma } from '#/prisma/src/seed/mappers/review-mapper';
 import { describe, expect, it } from 'vitest';
 
 describe('review-mapper', () => {

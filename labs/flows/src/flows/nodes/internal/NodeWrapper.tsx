@@ -122,9 +122,6 @@ export const NodeWrapper = memo((props: NodeWrapperProps) => {
       openModal,
       id,
       colorBase,
-      node,
-      isSource,
-      isDestination,
     ],
   );
 
@@ -155,7 +152,7 @@ export const NodeWrapper = memo((props: NodeWrapperProps) => {
             type="source"
             position={Position.Bottom}
             id={`${id}-source`}
-            isConnectable={node.connectable}
+            isConnectable={node.connectable ?? true}
             colorBase={colorBase}
           />
         )}
@@ -165,7 +162,7 @@ export const NodeWrapper = memo((props: NodeWrapperProps) => {
             type="target"
             position={Position.Top}
             id={`${id}-target`}
-            isConnectable={node.connectable}
+            isConnectable={node.connectable ?? true}
             colorBase={colorBase}
           />
         )}

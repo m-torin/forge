@@ -4,8 +4,7 @@
     "baseUrl": ".",
     "types": ["vitest/globals"],
     "paths": {
-      "@repo/*": ["../*"],
-      "@/*": ["./src/*"]
+      "#/*": ["./src/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],

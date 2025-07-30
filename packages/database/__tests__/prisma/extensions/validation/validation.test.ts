@@ -2,8 +2,8 @@
  * Simple test to verify validation extension works
  * Run with: npx tsx src/prisma/extensions/validation/__tests__/validation.test.ts
  */
-import { prisma } from '@/prisma/clients/standard';
-import { ValidationError } from '@/prisma/extensions/validation/types';
+import { prisma } from '#/prisma/clients/standard';
+import { ValidationError } from '#/prisma/extensions/validation/types';
 
 async function testValidation() {
   console.log('Testing validation extension...\n');

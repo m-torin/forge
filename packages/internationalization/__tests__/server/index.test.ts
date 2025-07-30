@@ -13,7 +13,7 @@ import { createMockImplementations, i18nTestPatterns } from '../i18n-test-factor
 // SERVER MODULE EXPORTS
 // ================================================================================================
 
-i18nTestPatterns.testModuleExports('server', '@/server', [
+i18nTestPatterns.testModuleExports('server', '#/server', [
   { name: 'getI18n', type: 'function', required: false },
   { name: 'createServerI18n', type: 'function', required: false },
   { name: 'i18nMiddleware', type: 'function', required: false },
@@ -24,7 +24,7 @@ i18nTestPatterns.testModuleExports('server', '@/server', [
 // SERVER-NEXT MODULE EXPORTS
 // ================================================================================================
 
-i18nTestPatterns.testModuleExports('server-next', '@/server-next', [
+i18nTestPatterns.testModuleExports('server-next', '#/server-next', [
   { name: 'getI18n', type: 'function', required: false },
   { name: 'createNextServerI18n', type: 'function', required: false },
   { name: 'i18nMiddleware', type: 'function', required: false },

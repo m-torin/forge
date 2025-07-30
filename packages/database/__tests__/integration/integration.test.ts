@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Test imports for new four-file pattern
-import { FirestoreOperations } from '@/firestore/server';
-import { RedisOperations } from '@/redis/server';
-import { VectorOperations } from '@/upstash/server';
+import { FirestoreOperations } from '#/firestore/server';
+import { RedisOperations } from '#/redis/server';
+import { VectorOperations } from '#/upstash/server';
 import type { Redis } from '@upstash/redis';
 import type { Index } from '@upstash/vector';
 import type { Firestore } from 'firebase-admin/firestore';

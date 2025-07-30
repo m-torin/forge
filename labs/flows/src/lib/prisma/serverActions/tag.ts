@@ -48,16 +48,16 @@ export const createTagAction = async (
   try {
     const createData: Prisma.TagCreateWithoutInstanceInput = {
       name: data.name,
-      tagGroup: data.tagGroupId
-        ? {
-            connect: {
-              id_instanceId: {
-                id: data.tagGroupId,
-                instanceId,
-              },
+      ...(data.tagGroupId && {
+        tagGroup: {
+          connect: {
+            id_instanceId: {
+              id: data.tagGroupId,
+              instanceId,
             },
-          }
-        : undefined,
+          },
+        },
+      }),
     };
 
     return await createTag(createData, instanceId);
@@ -106,7 +106,7 @@ export const updateTagAction = async (
 ): Promise<Tag> => {
   try {
     const updateData: Prisma.TagUpdateWithoutInstanceInput = {
-      name: data.name,
+      ...(data.name !== undefined && { name: data.name }),
       tagGroup: data.tagGroupId
         ? {
             connect: {

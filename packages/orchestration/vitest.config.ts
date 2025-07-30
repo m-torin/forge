@@ -1,8 +1,10 @@
 import { createQStashPackageConfig } from '@repo/qa/vitest/configs';
+import viteTsconfigPaths from 'vite-tsconfig-paths';
 
 export default createQStashPackageConfig({
   setupFiles: ['./__tests__/setup/test-env.ts'],
   overrides: {
+    plugins: [viteTsconfigPaths({ ignoreConfigErrors: true })],
     test: {
       testTimeout: 30000,
       hookTimeout: 30000,

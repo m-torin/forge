@@ -41,13 +41,13 @@ describe('range Tools', () => {
   });
 
   test('should import range tools successfully', async () => {
-    const rangeTools = await import('@/server/tools/range-tools');
+    const rangeTools = await import('#/server/tools/range-tools');
     expect(rangeTools).toBeDefined();
     expect(rangeTools.createRangeTools).toBeTypeOf('function');
   });
 
   test('should create range tools with config', async () => {
-    const { createRangeTools } = await import('@/server/tools/range-tools');
+    const { createRangeTools } = await import('#/server/tools/range-tools');
 
     const tools = createRangeTools({
       vectorDB: mockVectorDB,
@@ -66,7 +66,7 @@ describe('range Tools', () => {
   });
 
   test('should test scanVectors tool', async () => {
-    const { createRangeTools } = await import('@/server/tools/range-tools');
+    const { createRangeTools } = await import('#/server/tools/range-tools');
 
     const tools = createRangeTools({
       vectorDB: mockVectorDB,
@@ -102,7 +102,7 @@ describe('range Tools', () => {
   });
 
   test('should test scanVectors with empty result', async () => {
-    const { createRangeTools } = await import('@/server/tools/range-tools');
+    const { createRangeTools } = await import('#/server/tools/range-tools');
 
     // Mock empty result
     mockVectorDB.range.mockResolvedValue(null);
@@ -130,7 +130,7 @@ describe('range Tools', () => {
   });
 
   test('should test scanAllVectors tool', async () => {
-    const { createRangeTools } = await import('@/server/tools/range-tools');
+    const { createRangeTools } = await import('#/server/tools/range-tools');
 
     // Mock multiple pages
     mockVectorDB.range
@@ -172,7 +172,7 @@ describe('range Tools', () => {
   });
 
   test('should test exportVectors tool in JSON format', async () => {
-    const { createRangeTools } = await import('@/server/tools/range-tools');
+    const { createRangeTools } = await import('#/server/tools/range-tools');
 
     const tools = createRangeTools({
       vectorDB: mockVectorDB,
@@ -200,7 +200,7 @@ describe('range Tools', () => {
   });
 
   test('should test exportVectors tool in CSV format', async () => {
-    const { createRangeTools } = await import('@/server/tools/range-tools');
+    const { createRangeTools } = await import('#/server/tools/range-tools');
 
     const tools = createRangeTools({
       vectorDB: mockVectorDB,
@@ -225,7 +225,7 @@ describe('range Tools', () => {
   });
 
   test('should test exportVectors tool in JSONL format', async () => {
-    const { createRangeTools } = await import('@/server/tools/range-tools');
+    const { createRangeTools } = await import('#/server/tools/range-tools');
 
     const tools = createRangeTools({
       vectorDB: mockVectorDB,
@@ -250,7 +250,7 @@ describe('range Tools', () => {
   });
 
   test('should test getVectorsByPrefix tool', async () => {
-    const { createRangeTools } = await import('@/server/tools/range-tools');
+    const { createRangeTools } = await import('#/server/tools/range-tools');
 
     // Mock vectors with different prefixes
     mockVectorDB.range.mockResolvedValue({
@@ -288,7 +288,7 @@ describe('range Tools', () => {
   });
 
   test('should test createPaginationSession tool', async () => {
-    const { createRangeTools } = await import('@/server/tools/range-tools');
+    const { createRangeTools } = await import('#/server/tools/range-tools');
 
     const tools = createRangeTools({
       vectorDB: mockVectorDB,
@@ -314,7 +314,7 @@ describe('range Tools', () => {
   });
 
   test('should test getNextPage tool', async () => {
-    const { createRangeTools } = await import('@/server/tools/range-tools');
+    const { createRangeTools } = await import('#/server/tools/range-tools');
 
     const tools = createRangeTools({
       vectorDB: mockVectorDB,
@@ -350,7 +350,7 @@ describe('range Tools', () => {
   });
 
   test('should handle pagination session not found', async () => {
-    const { createRangeTools } = await import('@/server/tools/range-tools');
+    const { createRangeTools } = await import('#/server/tools/range-tools');
 
     const tools = createRangeTools({
       vectorDB: mockVectorDB,
@@ -368,7 +368,7 @@ describe('range Tools', () => {
   });
 
   test('should handle scanVectors errors gracefully', async () => {
-    const { createRangeTools } = await import('@/server/tools/range-tools');
+    const { createRangeTools } = await import('#/server/tools/range-tools');
 
     // Mock error in range method
     mockVectorDB.range.mockRejectedValue(new Error('Database error'));
@@ -392,7 +392,7 @@ describe('range Tools', () => {
   });
 
   test('should handle scanAllVectors with progress updates', async () => {
-    const { createRangeTools } = await import('@/server/tools/range-tools');
+    const { createRangeTools } = await import('#/server/tools/range-tools');
 
     // Mock multiple batches to trigger progress
     const mockBatches = Array.from({ length: 15 }, (_, i) => ({
@@ -428,7 +428,7 @@ describe('range Tools', () => {
   });
 
   test('should test RangeToolsConfig interface', async () => {
-    const { createRangeTools } = await import('@/server/tools/range-tools');
+    const { createRangeTools } = await import('#/server/tools/range-tools');
 
     const config = {
       vectorDB: mockVectorDB,
@@ -450,7 +450,7 @@ describe('range Tools', () => {
   });
 
   test('should respect maxPageSize limits', async () => {
-    const { createRangeTools } = await import('@/server/tools/range-tools');
+    const { createRangeTools } = await import('#/server/tools/range-tools');
 
     const tools = createRangeTools({
       vectorDB: mockVectorDB,
@@ -479,7 +479,7 @@ describe('range Tools', () => {
   });
 
   test('should handle empty vectors in export', async () => {
-    const { createRangeTools } = await import('@/server/tools/range-tools');
+    const { createRangeTools } = await import('#/server/tools/range-tools');
 
     mockVectorDB.range.mockResolvedValue({
       vectors: [],

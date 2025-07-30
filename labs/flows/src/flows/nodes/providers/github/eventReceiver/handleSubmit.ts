@@ -41,8 +41,25 @@ export const handleSubmit = async (
       throw new Error(validation.error.message);
     }
 
+    // Clean data for exactOptionalPropertyTypes compatibility
+    const cleanedValues = {
+      name: values.name,
+      isEnabled: values.isEnabled,
+      metadata: values.metadata ? {
+        repositoryUrl: values.metadata.repositoryUrl,
+        secret: values.metadata.secret,
+        events: values.metadata.events,
+        ...(values.metadata.webhookUrl && { webhookUrl: values.metadata.webhookUrl }),
+      } : null,
+      uxMeta: {
+        ...(values.uxMeta.heading && { heading: values.uxMeta.heading }),
+        ...(values.uxMeta.isExpanded !== undefined && { isExpanded: values.uxMeta.isExpanded }),
+        ...(values.uxMeta.layer !== undefined && { layer: values.uxMeta.layer }),
+      },
+    };
+
     // Call the server action to configure webhook
-    const result = await configureGithubWebhook(values);
+    const result = await configureGithubWebhook(cleanedValues);
 
     if (!result.success) {
       throw new Error(result.error);
@@ -59,7 +76,7 @@ export const handleSubmit = async (
     return {
       success: true,
       message,
-      webhookId: result.webhookId,
+      ...(result.webhookId && { webhookId: result.webhookId }),
     };
   } catch (error) {
     const message =

@@ -24,10 +24,13 @@ export interface MentionSuggestionRef {
   onKeyDown: (props: { event: KeyboardEvent }) => boolean;
 }
 
-interface MentionSuggestionProps extends SuggestionProps<User> {}
+interface MentionSuggestionProps extends SuggestionProps<User> {
+  _editor?: any;
+  _range?: any;
+}
 
 const MentionSuggestion = forwardRef<MentionSuggestionRef, MentionSuggestionProps>(
-  ({ items, command, editor, range, query }, ref) => {
+  ({ items, command, _editor, _range, query }, ref) => {
     const [selectedIndex, setSelectedIndex] = useState(0);
 
     const filteredItems = useMemo(() => {

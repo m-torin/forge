@@ -3,12 +3,12 @@ import {
   OrderItemStatus,
   OrderStatus,
   PaymentStatus,
-} from '@/prisma-generated/client';
+} from '#/prisma-generated/client';
 import {
   extractOrderAddress,
   extractOrderItems,
   mapWebappOrderToPrisma,
-} from '@/prisma/src/seed/mappers/order-mapper';
+} from '#/prisma/src/seed/mappers/order-mapper';
 import { describe, expect, it } from 'vitest';
 
 describe('order-mapper', () => {

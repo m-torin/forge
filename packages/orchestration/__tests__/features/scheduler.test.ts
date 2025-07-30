@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 
-import { UpstashWorkflowProvider } from '@/providers/upstash-workflow/provider';
-import { createAdvancedScheduler } from '@/shared/features/scheduler';
-import { ScheduleConfig } from '@/shared/types/index';
+import { UpstashWorkflowProvider } from '#/providers/upstash-workflow/provider';
+import { createAdvancedScheduler } from '#/shared/features/scheduler';
+import { ScheduleConfig } from '#/shared/types/index';
 import { setupCombinedUpstashMocks } from '@repo/qa';
 
 // Extended type for testing with additional tracking properties

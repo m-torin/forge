@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, vi } from 'vitest';
 
-import { createClientScraping, quickScrape } from '@/client';
-import { ScrapingConfig, SelectorMap } from '@/shared/types/scraping-types';
+import { createClientScraping, quickScrape } from '#/client';
+import { ScrapingConfig, SelectorMap } from '#/shared/types/scraping-types';
 
 // Mock fetch for client tests
 vi.spyOn(global, 'fetch').mockResolvedValue({
@@ -54,7 +54,7 @@ const { mockFetchProvider } = vi.hoisted(() => {
 });
 
 // Mock the FetchProvider
-vi.mock('@/client/providers/fetch-provider', () => ({
+vi.mock('#/client/providers/fetch-provider', () => ({
   FetchProvider: mockFetchProvider,
 }));
 

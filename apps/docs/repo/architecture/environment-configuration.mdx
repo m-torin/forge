@@ -586,7 +586,7 @@ const isDev = process.env.NEXT_PUBLIC_NODE_ENV === "development";
 
 // ✅ CORRECT - SafeEnv pattern
 ("use client");
-import { safeEnv } from "@/env";
+import { safeEnv } from "#/env";
 const env = safeEnv();
 const isDev = env.NEXT_PUBLIC_NODE_ENV === "development";
 ```
@@ -623,7 +623,7 @@ Never import `process.env` directly in application code:
 const apiKey = process.env.API_KEY;
 
 // ✅ CORRECT
-import { safeEnv } from "@/env";
+import { safeEnv } from "#/env";
 const env = safeEnv();
 const apiKey = env.API_KEY;
 ```
@@ -817,7 +817,7 @@ const isDev = process.env.NEXT_PUBLIC_NODE_ENV === "development";
 
 // ✅ CORRECT - SafeEnv pattern
 ("use client");
-import { safeEnv } from "@/env";
+import { safeEnv } from "#/env";
 const env = safeEnv();
 const isDev = env.NEXT_PUBLIC_NODE_ENV === "development";
 ```

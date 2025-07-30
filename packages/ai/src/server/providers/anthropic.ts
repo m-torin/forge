@@ -174,13 +174,15 @@ export function createComputerTool(config: {
   // Add default experimental handler if not provided
   const configWithHandler = {
     ...config,
-    experimental_toToolResultContent: config.experimental_toToolResultContent || ((result: any) => {
-      return typeof result === 'string'
-        ? [{ type: 'text', text: result }]
-        : [{ type: 'image', data: result.data, mediaType: 'image/png' }];
-    }),
+    experimental_toToolResultContent:
+      config.experimental_toToolResultContent ||
+      ((result: any) => {
+        return typeof result === 'string'
+          ? [{ type: 'text', text: result }]
+          : [{ type: 'image', data: result.data, mediaType: 'image/png' }];
+      }),
   };
-  
+
   return anthropic.tools.computer_20241022(configWithHandler);
 }
 
@@ -436,7 +438,7 @@ export const examples = {
     const computerTool = createComputerTool({
       displayWidthPx: 1920,
       displayHeightPx: 1080,
-      execute: async ({ action, coordinate, text }) => {
+      execute: async ({ action, coordinate: _coordinate, text: _text }) => {
         switch (action) {
           case 'screenshot': {
             return {

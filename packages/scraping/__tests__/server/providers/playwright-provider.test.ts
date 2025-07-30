@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, vi } from 'vitest';
 
-import { PlaywrightProvider } from '@/server/providers/playwright-provider';
+import { PlaywrightProvider } from '#/server/providers/playwright-provider';
 
 // Mock Playwright before importing the provider
 const mockPage = {

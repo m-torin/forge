@@ -1,6 +1,6 @@
+import { useYjsCollaboration } from '#/hooks/use-yjs-collaboration';
 import { renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { useYjsCollaboration } from '../../src/hooks/use-yjs-collaboration.js';
 
 // Mock Y.js and WebSocket dependencies
 vi.mock('yjs', () => ({

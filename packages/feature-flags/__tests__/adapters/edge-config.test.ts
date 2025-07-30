@@ -2,7 +2,7 @@ import {
   createEdgeConfigAdapter,
   edgeConfigAdapter,
   getEdgeConfigProviderData,
-} from '@/adapters/edge-config';
+} from '#/adapters/edge-config';
 import { beforeEach, describe, expect, vi } from 'vitest';
 import { featureFlagTestData } from '../test-data-generators';
 import {

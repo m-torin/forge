@@ -4,7 +4,7 @@ import {
   FileTrainingStorage,
   InMemoryTrainingStorage,
   type TrainingData,
-} from '@/shared/features/classification/training-storage';
+} from '#/shared/features/classification/training-storage';
 
 // Mock the observability module before importing training storage
 vi.mock('@repo/observability', () => ({

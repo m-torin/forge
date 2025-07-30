@@ -148,8 +148,8 @@ export const createObservabilityTestConfig = (overrides = {}) => ({
 
 // Common observability creation patterns
 export const createTestObservability = async (config = createObservabilityTestConfig()) => {
-  const { ObservabilityBuilder } = await import('@/factory/builder');
-  const { createConsolePlugin } = await import('@/plugins/console');
+  const { ObservabilityBuilder } = await import('#/factory/builder');
+  const { createConsolePlugin } = await import('#/plugins/console');
 
   return ObservabilityBuilder.create()
     .withPlugin(createConsolePlugin(config.plugins.console))
@@ -157,8 +157,8 @@ export const createTestObservability = async (config = createObservabilityTestCo
 };
 
 export const createTestServerObservability = async (config = createObservabilityTestConfig()) => {
-  const { ObservabilityBuilder } = await import('@/factory/builder');
-  const { createConsoleServerPlugin } = await import('@/plugins/console');
+  const { ObservabilityBuilder } = await import('#/factory/builder');
+  const { createConsoleServerPlugin } = await import('#/plugins/console');
 
   return ObservabilityBuilder.create()
     .withPlugin(createConsoleServerPlugin(config.plugins.console))

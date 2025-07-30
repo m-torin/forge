@@ -18,7 +18,7 @@ setupClientMocks();
 const mockAuthClient = createMockAuthClient();
 
 // Mock the client methods module
-vi.mock('@/client/methods', () => ({
+vi.mock('#/client/methods', () => ({
   signIn: vi.fn().mockResolvedValue({ success: true }),
   signUp: vi.fn().mockResolvedValue({ success: true }),
   signOut: vi.fn().mockResolvedValue({ success: true }),
@@ -43,7 +43,7 @@ describe('client Methods (DRY)', () => {
   createClientMethodTestSuite({
     methodName: 'signIn',
     methodFn: async (credentials: any) => {
-      const methods = await import('@/client/methods');
+      const methods = await import('#/client/methods');
       return methods.signIn(credentials);
     },
     testArgs: [{ email: 'test@example.com', password: 'password123' }],
@@ -52,7 +52,7 @@ describe('client Methods (DRY)', () => {
       {
         name: 'should handle signin with remember me',
         test: async () => {
-          const methods = await import('@/client/methods');
+          const methods = await import('#/client/methods');
 
           vi.mocked(mockAuthClient.signIn).mockResolvedValue({ success: true, rememberMe: true });
 
@@ -68,7 +68,7 @@ describe('client Methods (DRY)', () => {
       {
         name: 'should handle signin with invalid credentials',
         test: async () => {
-          const methods = await import('@/client/methods');
+          const methods = await import('#/client/methods');
 
           vi.mocked(mockAuthClient.signIn).mockResolvedValue({
             success: false,
@@ -89,7 +89,7 @@ describe('client Methods (DRY)', () => {
   createClientMethodTestSuite({
     methodName: 'signUp',
     methodFn: async (userData: any) => {
-      const methods = await import('@/client/methods');
+      const methods = await import('#/client/methods');
       return methods.signUp(userData);
     },
     testArgs: [{ email: 'test@example.com', password: 'password123' }],
@@ -98,7 +98,7 @@ describe('client Methods (DRY)', () => {
       {
         name: 'should handle signup with additional fields',
         test: async () => {
-          const methods = await import('@/client/methods');
+          const methods = await import('#/client/methods');
 
           vi.mocked(mockAuthClient.signUp).mockResolvedValue({ success: true, userId: 'user-123' });
 
@@ -118,7 +118,7 @@ describe('client Methods (DRY)', () => {
   createClientMethodTestSuite({
     methodName: 'signOut',
     methodFn: async () => {
-      const methods = await import('@/client/methods');
+      const methods = await import('#/client/methods');
       return methods.signOut();
     },
     testArgs: [],
@@ -129,15 +129,15 @@ describe('client Methods (DRY)', () => {
   createClientFeatureTestSuite('Authentication', {
     methods: {
       signIn: async (credentials: any) => {
-        const methods = await import('@/client/methods');
+        const methods = await import('#/client/methods');
         return methods.signIn(credentials);
       },
       signUp: async (userData: any) => {
-        const methods = await import('@/client/methods');
+        const methods = await import('#/client/methods');
         return methods.signUp(userData);
       },
       signOut: async () => {
-        const methods = await import('@/client/methods');
+        const methods = await import('#/client/methods');
         return methods.signOut();
       },
     },
@@ -149,7 +149,7 @@ describe('client Methods (DRY)', () => {
 
     passwordMethods.forEach(method => {
       test(`should test ${method} availability`, async () => {
-        const methods = await import('@/client/methods');
+        const methods = await import('#/client/methods');
         const hasMethod = method in methods && methods[method as keyof typeof methods];
         expect(hasMethod).toBeDefined();
       });
@@ -162,7 +162,7 @@ describe('client Methods (DRY)', () => {
 
     emailMethods.forEach(method => {
       test(`should test ${method} availability`, async () => {
-        const methods = await import('@/client/methods');
+        const methods = await import('#/client/methods');
         const hasMethod = method in methods && methods[method as keyof typeof methods];
         expect(hasMethod).toBeDefined();
       });
@@ -175,7 +175,7 @@ describe('client Methods (DRY)', () => {
 
     userMethods.forEach(method => {
       test(`should test ${method} availability`, async () => {
-        const methods = await import('@/client/methods');
+        const methods = await import('#/client/methods');
         const hasMethod = method in methods && methods[method as keyof typeof methods];
         expect(hasMethod).toBeDefined();
       });
@@ -185,7 +185,7 @@ describe('client Methods (DRY)', () => {
   // Module structure tests
   describe('module Structure', () => {
     test('should verify methods module structure', async () => {
-      const methods = await import('@/client/methods');
+      const methods = await import('#/client/methods');
 
       expect(methods).toBeDefined();
       expect(typeof methods).toBe('object');
@@ -197,7 +197,7 @@ describe('client Methods (DRY)', () => {
     });
 
     test('should verify method signatures', async () => {
-      const methods = await import('@/client/methods');
+      const methods = await import('#/client/methods');
 
       // Check method signatures
       expect(methods.signIn.length).toBeGreaterThanOrEqual(1);
@@ -206,7 +206,7 @@ describe('client Methods (DRY)', () => {
     });
 
     test('should handle method errors gracefully', async () => {
-      const methods = await import('@/client/methods');
+      const methods = await import('#/client/methods');
 
       // Mock client to throw errors
       vi.mocked(mockAuthClient.signIn).mockRejectedValue(new Error('Network error'));

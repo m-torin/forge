@@ -7,12 +7,12 @@
  * - Reduced boilerplate code
  */
 
-import { BrandType, ContentStatus } from '@/prisma-generated/client';
+import { BrandType, ContentStatus } from '#/prisma-generated/client';
 import {
   createBrandFromVendor,
   createRetailerBrand,
   RETAILER_BRANDS,
-} from '@/prisma/src/seed/mappers/brand-mapper';
+} from '#/prisma/src/seed/mappers/brand-mapper';
 import { environmentUtils } from '@repo/qa/src/vitest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 

@@ -17,7 +17,7 @@ export const mockClient = setupPrismaWithEnums({
     VoteType,
   },
   importPaths: [
-    '@/prisma-generated/client',
+    '#/prisma-generated/client',
     '../prisma-generated/client',
     '../../../../prisma-generated/client',
     '@prisma/client',

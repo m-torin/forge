@@ -1,7 +1,7 @@
-import { cn, getMantineSpacing, validateMantineSpacing } from '@/mantine/utils';
-import { createTailwindV3Classes, getTailwindV3Spacing } from '@/tailwind/v3/utils';
-import { createV4CustomProperty, getTailwindV4Spacing } from '@/tailwind/v4/utils';
 import { describe, expect } from 'vitest';
+import { cn, getMantineSpacing, validateMantineSpacing } from '#/mantine/utils';
+import { createTailwindV3Classes, getTailwindV3Spacing } from '#/tailwind/v3/utils';
+import { createV4CustomProperty, getTailwindV4Spacing } from '#/tailwind/v4/utils';
 
 describe('uIX System Utils', () => {
   describe('shared Utils', () => {

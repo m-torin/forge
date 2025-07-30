@@ -223,6 +223,7 @@ export function ContextMenu({ editor, children }: ContextMenuProps) {
       {contextMenu.isOpen && (
         <div className="context-menu-portal fixed inset-0 z-50" style={{ pointerEvents: 'none' }}>
           <div
+            role="menu"
             className="context-menu-content absolute min-w-[200px] rounded-lg border border-gray-200 bg-white py-1 shadow-xl"
             style={{
               left: contextMenu.x,
@@ -309,9 +310,16 @@ function SubmenuItem({ label, icon, items, onItemClick }: SubmenuItemProps) {
 
   return (
     <div
+      role="menuitem"
+      tabIndex={0}
       className="relative"
       onMouseEnter={() => setIsSubmenuOpen(true)}
       onMouseLeave={() => setIsSubmenuOpen(false)}
+      onKeyDown={e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          setIsSubmenuOpen(!isSubmenuOpen);
+        }
+      }}
     >
       <div className="context-menu-item flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-gray-50">
         <div className="flex items-center gap-3">

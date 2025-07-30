@@ -5,10 +5,9 @@ import classes from './FlowsSelectField.module.scss';
 /**
  * Props for FlowsSelectField component.
  * Extends Mantine's SelectProps to inherit all select input properties.
- * Additionally allows any other arbitrary props including flexible classNames.
  */
 interface FlowsSelectFieldProps extends SelectProps {
-  classNames?: SelectProps['classNames'];
+  // Inherits classNames from SelectProps without redefinition
 }
 
 /**
@@ -22,16 +21,17 @@ interface FlowsSelectFieldProps extends SelectProps {
 export const FlowsSelectField = memo(
   forwardRef<HTMLInputElement, FlowsSelectFieldProps>(
     ({ label, placeholder, error, classNames, ...rest }, ref) => {
-      // Ensure classNames is an object before accessing its properties
-      const computedClassNames =
-        typeof classNames === 'object' && classNames !== null
-          ? {
-              input: error ? classes.invalid : classNames?.input,
-              wrapper: classNames?.wrapper || '',
-              label: classNames?.label || '',
-              ...classNames,
-            }
-          : undefined;
+      // Handle classNames which can be an object or function
+      const computedClassNames = classNames && typeof classNames === 'object' ? {
+        input: error ? classes.invalid : (classNames.input ?? ''),
+        wrapper: classNames.wrapper ?? '',
+        label: classNames.label ?? '',
+        ...classNames,
+      } : {
+        input: error ? classes.invalid : '',
+        wrapper: '',
+        label: '',
+      };
 
       return (
         <div className={classes.fieldContainer}>

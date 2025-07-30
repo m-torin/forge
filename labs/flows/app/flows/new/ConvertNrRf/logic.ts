@@ -12,8 +12,8 @@ export interface EdgeData {
   id: string;
   source: string;
   target: string;
-  sourcePort?: number;
-  targetPort?: number;
+  sourcePort?: number | undefined;
+  targetPort?: number | undefined;
 }
 
 export interface SubflowPort {
@@ -123,7 +123,7 @@ export const createFlowConverter =
                 source: node.id,
                 target: wire.id,
                 sourcePort: inputIndex,
-                targetPort: wire.port,
+                targetPort: wire.port ?? undefined,
               });
             });
           });
@@ -135,7 +135,7 @@ export const createFlowConverter =
                 id: `${wire.id}-${node.id}-out-${outputIndex}`,
                 source: wire.id,
                 target: node.id,
-                sourcePort: wire.port,
+                sourcePort: wire.port ?? undefined,
                 targetPort: outputIndex,
               });
             });

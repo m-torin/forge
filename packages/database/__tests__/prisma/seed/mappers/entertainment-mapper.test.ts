@@ -7,7 +7,7 @@ import {
   SEED_FANDOMS,
   SEED_SERIES,
   SEED_STORIES,
-} from '@/prisma/src/seed/mappers/entertainment-mapper';
+} from '#/prisma/src/seed/mappers/entertainment-mapper';
 import { describe, expect, it } from 'vitest';
 // ContentStatus enum value for testing
 const ContentStatus = {

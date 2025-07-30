@@ -66,7 +66,7 @@ const SENSITIVE_PATTERNS = [
   { pattern: /\b[A-Za-z0-9]{32,}\b/g, replacement: '[REDACTED_TOKEN]' },
 
   // URLs with credentials
-  { pattern: /([a-zA-Z]+:\/\/)([^:]+):([^@]+)@/g, replacement: '$1[REDACTED]:[REDACTED]@' },
+  { pattern: /([a-zA-Z]+:\/\/)([^:]+):([^@]+)#/g, replacement: '$1[REDACTED]:[REDACTED]@' },
 
   // Email addresses (partial masking)
   {

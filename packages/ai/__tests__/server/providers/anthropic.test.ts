@@ -86,7 +86,7 @@ describe('anthropic Provider - v5 Patterns', () => {
   });
 
   test('should import anthropic provider successfully', async () => {
-    const anthropicProvider = await import('@/server/providers/anthropic');
+    const anthropicProvider = await import('#/server/providers/anthropic');
     expect(anthropicProvider).toBeDefined();
   });
 
@@ -206,7 +206,7 @@ describe('anthropic Provider - v5 Patterns', () => {
   });
 
   test('should test provider creation functions', async () => {
-    const { createAnthropicProvider } = await import('@/server/providers/anthropic');
+    const { createAnthropicProvider } = await import('#/server/providers/anthropic');
 
     // Test default provider
     const defaultProvider = createAnthropicProvider();
@@ -221,7 +221,7 @@ describe('anthropic Provider - v5 Patterns', () => {
   });
 
   test('should test reasoning model creation', async () => {
-    const { createAnthropicWithReasoning } = await import('@/server/providers/anthropic');
+    const { createAnthropicWithReasoning } = await import('#/server/providers/anthropic');
 
     const reasoningModel = createAnthropicWithReasoning('claude-3-5-sonnet-20241022', 10000);
     expect(reasoningModel).toBeDefined();
@@ -236,7 +236,7 @@ describe('anthropic Provider - v5 Patterns', () => {
   });
 
   test('should test caching model creation', async () => {
-    const { createAnthropicWithCaching } = await import('@/server/providers/anthropic');
+    const { createAnthropicWithCaching } = await import('#/server/providers/anthropic');
 
     const cachingModel = createAnthropicWithCaching('claude-3-5-sonnet-20240620');
     expect(cachingModel).toBeDefined();
@@ -245,7 +245,7 @@ describe('anthropic Provider - v5 Patterns', () => {
 
   test('should test computer tool creation', async () => {
     const { createBashTool, createTextEditorTool, createComputerTool } = await import(
-      '@/server/providers/anthropic'
+      '#/server/providers/anthropic'
     );
 
     // Mock tool functions
@@ -272,7 +272,7 @@ describe('anthropic Provider - v5 Patterns', () => {
 
   test('should test utility functions', async () => {
     const { analyzeSentiment, moderateContent, extractEntities } = await import(
-      '@/server/providers/anthropic'
+      '#/server/providers/anthropic'
     );
 
     // Test sentiment analysis
@@ -292,7 +292,7 @@ describe('anthropic Provider - v5 Patterns', () => {
 
   test('should test cache control helpers', async () => {
     const { createCachedMessage, validateCacheControl, extractCacheMetadata } = await import(
-      '@/server/providers/anthropic'
+      '#/server/providers/anthropic'
     );
 
     // Test createCachedMessage
@@ -327,7 +327,7 @@ describe('anthropic Provider - v5 Patterns', () => {
   });
 
   test('should test reasoning helpers', async () => {
-    const { extractReasoning } = await import('@/server/providers/anthropic');
+    const { extractReasoning } = await import('#/server/providers/anthropic');
 
     const mockResult = {
       text: 'test response',
@@ -345,7 +345,7 @@ describe('anthropic Provider - v5 Patterns', () => {
   });
 
   test('should test examples', async () => {
-    const { examples } = await import('@/server/providers/anthropic');
+    const { examples } = await import('#/server/providers/anthropic');
 
     expect(examples).toBeDefined();
     expect(examples.basic).toBeTypeOf('function');

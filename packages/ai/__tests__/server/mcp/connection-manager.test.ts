@@ -9,7 +9,7 @@ const mockMCPClient = {
 
 const mockCreateMCPClient = vi.fn().mockResolvedValue(mockMCPClient);
 
-vi.mock('@/server/mcp/client', () => ({
+vi.mock('#/server/mcp/client', () => ({
   createMCPClient: mockCreateMCPClient,
 }));
 
@@ -20,13 +20,13 @@ describe('mCP Connection Manager', () => {
 
   afterEach(async () => {
     // Cleanup any connections
-    const { MCPConnectionManager } = await import('@/server/mcp/connection-manager');
+    const { MCPConnectionManager } = await import('#/server/mcp/connection-manager');
     await MCPConnectionManager.getInstance().closeAll();
   });
 
   describe('connection Management', () => {
     test('should create and manage multiple MCP connections', async () => {
-      const { MCPConnectionManager } = await import('@/server/mcp/connection-manager');
+      const { MCPConnectionManager } = await import('#/server/mcp/connection-manager');
 
       const manager = MCPConnectionManager.getInstance();
 
@@ -64,7 +64,7 @@ describe('mCP Connection Manager', () => {
     });
 
     test('should reuse existing connections', async () => {
-      const { MCPConnectionManager } = await import('@/server/mcp/connection-manager');
+      const { MCPConnectionManager } = await import('#/server/mcp/connection-manager');
 
       const manager = MCPConnectionManager.getInstance();
 
@@ -87,7 +87,7 @@ describe('mCP Connection Manager', () => {
     });
 
     test('should handle connection failures gracefully', async () => {
-      const { MCPConnectionManager } = await import('@/server/mcp/connection-manager');
+      const { MCPConnectionManager } = await import('#/server/mcp/connection-manager');
 
       const manager = MCPConnectionManager.getInstance();
 
@@ -109,7 +109,7 @@ describe('mCP Connection Manager', () => {
     });
 
     test('should close specific connections', async () => {
-      const { MCPConnectionManager } = await import('@/server/mcp/connection-manager');
+      const { MCPConnectionManager } = await import('#/server/mcp/connection-manager');
 
       const manager = MCPConnectionManager.getInstance();
 
@@ -134,7 +134,7 @@ describe('mCP Connection Manager', () => {
     });
 
     test('should close all connections', async () => {
-      const { MCPConnectionManager } = await import('@/server/mcp/connection-manager');
+      const { MCPConnectionManager } = await import('#/server/mcp/connection-manager');
 
       const manager = MCPConnectionManager.getInstance();
 
@@ -162,7 +162,7 @@ describe('mCP Connection Manager', () => {
 
   describe('tool Discovery and Aggregation', () => {
     test('should aggregate tools from all connections', async () => {
-      const { MCPConnectionManager } = await import('@/server/mcp/connection-manager');
+      const { MCPConnectionManager } = await import('#/server/mcp/connection-manager');
 
       const manager = MCPConnectionManager.getInstance();
 
@@ -203,7 +203,7 @@ describe('mCP Connection Manager', () => {
     });
 
     test('should handle tool name conflicts', async () => {
-      const { MCPConnectionManager } = await import('@/server/mcp/connection-manager');
+      const { MCPConnectionManager } = await import('#/server/mcp/connection-manager');
 
       const manager = MCPConnectionManager.getInstance();
 
@@ -252,7 +252,7 @@ describe('mCP Connection Manager', () => {
     });
 
     test('should filter tools by capability', async () => {
-      const { MCPConnectionManager } = await import('@/server/mcp/connection-manager');
+      const { MCPConnectionManager } = await import('#/server/mcp/connection-manager');
 
       const manager = MCPConnectionManager.getInstance();
 
@@ -288,7 +288,7 @@ describe('mCP Connection Manager', () => {
 
   describe('request Routing', () => {
     test('should route tool execution to correct server', async () => {
-      const { MCPConnectionManager } = await import('@/server/mcp/connection-manager');
+      const { MCPConnectionManager } = await import('#/server/mcp/connection-manager');
 
       const manager = MCPConnectionManager.getInstance();
 
@@ -341,7 +341,7 @@ describe('mCP Connection Manager', () => {
     });
 
     test('should handle tool execution errors', async () => {
-      const { MCPConnectionManager } = await import('@/server/mcp/connection-manager');
+      const { MCPConnectionManager } = await import('#/server/mcp/connection-manager');
 
       const manager = MCPConnectionManager.getInstance();
 
@@ -366,7 +366,7 @@ describe('mCP Connection Manager', () => {
     });
 
     test('should handle unknown tool requests', async () => {
-      const { MCPConnectionManager } = await import('@/server/mcp/connection-manager');
+      const { MCPConnectionManager } = await import('#/server/mcp/connection-manager');
 
       const manager = MCPConnectionManager.getInstance();
 
@@ -378,7 +378,7 @@ describe('mCP Connection Manager', () => {
 
   describe('connection Health Monitoring', () => {
     test('should monitor connection health', async () => {
-      const { MCPConnectionManager } = await import('@/server/mcp/connection-manager');
+      const { MCPConnectionManager } = await import('#/server/mcp/connection-manager');
 
       const manager = MCPConnectionManager.getInstance();
 
@@ -408,7 +408,7 @@ describe('mCP Connection Manager', () => {
     });
 
     test('should detect unhealthy connections', async () => {
-      const { MCPConnectionManager } = await import('@/server/mcp/connection-manager');
+      const { MCPConnectionManager } = await import('#/server/mcp/connection-manager');
 
       const manager = MCPConnectionManager.getInstance();
 
@@ -438,7 +438,7 @@ describe('mCP Connection Manager', () => {
     });
 
     test('should automatically reconnect failed connections', async () => {
-      const { MCPConnectionManager } = await import('@/server/mcp/connection-manager');
+      const { MCPConnectionManager } = await import('#/server/mcp/connection-manager');
 
       const manager = MCPConnectionManager.getInstance();
 
@@ -477,7 +477,7 @@ describe('mCP Connection Manager', () => {
 
   describe('load Balancing', () => {
     test('should load balance requests across multiple servers', async () => {
-      const { MCPConnectionManager } = await import('@/server/mcp/connection-manager');
+      const { MCPConnectionManager } = await import('#/server/mcp/connection-manager');
 
       const manager = MCPConnectionManager.getInstance();
 
@@ -521,7 +521,7 @@ describe('mCP Connection Manager', () => {
     });
 
     test('should handle server failures in load balancing', async () => {
-      const { MCPConnectionManager } = await import('@/server/mcp/connection-manager');
+      const { MCPConnectionManager } = await import('#/server/mcp/connection-manager');
 
       const manager = MCPConnectionManager.getInstance();
 
@@ -566,7 +566,7 @@ describe('mCP Connection Manager', () => {
 
   describe('caching and Performance', () => {
     test('should cache tool definitions', async () => {
-      const { MCPConnectionManager } = await import('@/server/mcp/connection-manager');
+      const { MCPConnectionManager } = await import('#/server/mcp/connection-manager');
 
       const manager = MCPConnectionManager.getInstance();
 
@@ -592,7 +592,7 @@ describe('mCP Connection Manager', () => {
     });
 
     test('should invalidate cache when connections change', async () => {
-      const { MCPConnectionManager } = await import('@/server/mcp/connection-manager');
+      const { MCPConnectionManager } = await import('#/server/mcp/connection-manager');
 
       const manager = MCPConnectionManager.getInstance();
 
@@ -627,7 +627,7 @@ describe('mCP Connection Manager', () => {
 
   describe('concurrent Operations', () => {
     test('should handle concurrent connections safely', async () => {
-      const { MCPConnectionManager } = await import('@/server/mcp/connection-manager');
+      const { MCPConnectionManager } = await import('#/server/mcp/connection-manager');
 
       const manager = MCPConnectionManager.getInstance();
 
@@ -647,7 +647,7 @@ describe('mCP Connection Manager', () => {
     });
 
     test('should handle concurrent tool executions', async () => {
-      const { MCPConnectionManager } = await import('@/server/mcp/connection-manager');
+      const { MCPConnectionManager } = await import('#/server/mcp/connection-manager');
 
       const manager = MCPConnectionManager.getInstance();
 

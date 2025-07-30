@@ -43,7 +43,7 @@ pnpm add -D @repo/config
 <Tabs>
   <Tab title="Next.js Apps">
     For Next.js applications (apps/docs, apps/storybook, etc.):
-    
+
     ```json
     // tsconfig.json
     {
@@ -51,7 +51,7 @@ pnpm add -D @repo/config
       "compilerOptions": {
         "baseUrl": ".",
         "paths": {
-          "@/*": ["./src/*"]
+          "#/*": ["./src/*"]
         }
       },
       "include": [
@@ -63,11 +63,12 @@ pnpm add -D @repo/config
       "exclude": ["node_modules"]
     }
     ```
+
   </Tab>
-  
+
   <Tab title="React Libraries">
     For React component libraries and UI packages:
-    
+
     ```json
     // tsconfig.json
     {
@@ -75,18 +76,19 @@ pnpm add -D @repo/config
       "compilerOptions": {
         "baseUrl": ".",
         "paths": {
-          "@/*": ["./src/*"]
+          "#/*": ["./src/*"]
         }
       },
       "include": ["src/**/*"],
       "exclude": ["node_modules", "dist", "**/*.test.*", "**/*.spec.*"]
     }
     ```
+
   </Tab>
-  
+
   <Tab title="Node.js Services">
     For Node.js applications and API services:
-    
+
     ```json
     // tsconfig.json
     {
@@ -98,18 +100,19 @@ pnpm add -D @repo/config
         "allowSyntheticDefaultImports": true,
         "baseUrl": ".",
         "paths": {
-          "@/*": ["./src/*"]
+          "#/*": ["./src/*"]
         }
       },
       "include": ["src/**/*"],
       "exclude": ["node_modules", "dist"]
     }
     ```
+
   </Tab>
-  
+
   <Tab title="Base Config">
     Core configuration for all TypeScript projects:
-    
+
     ```json
     // base.json
     {
@@ -135,6 +138,7 @@ pnpm add -D @repo/config
       }
     }
     ```
+
   </Tab>
 </Tabs>
 

@@ -142,7 +142,7 @@ export const FormEditor = <TFormValues extends Record<string, any>>({
           {fields.map((field) => (
             <Grid.Col
               key={`edit-field-${field.label || field.name || Math.random()}`}
-              span={{ base: field.span?.base ?? 12, xs: field.span?.xs }}
+              span={{ base: field.span?.base ?? 12, ...(field.span?.xs !== undefined && { xs: field.span.xs }) }}
             >
               {field.type === 'textarea' ? (
                 <Textarea
@@ -222,7 +222,7 @@ export const EnhancedDataTable = <T extends BaseRecord>({
 }): React.JSX.Element => {
   const scrollViewportRef = useRef<HTMLDivElement>(null);
   const [expandedRecordIds, setExpandedRecordIds] = useUncontrolled<number[]>({
-    value: undefined,
+    value: [],
     defaultValue: [],
     finalValue: [],
     onChange: (_ids: number[]) => {
@@ -272,14 +272,14 @@ export const EnhancedDataTable = <T extends BaseRecord>({
             </Box>
           ) : undefined
         }
-        rowExpansion={rowExpansionConfig}
+        {...(rowExpansionConfig && { rowExpansion: rowExpansionConfig })}
         totalRecords={totalRecords}
         recordsPerPage={pageSize}
         page={page}
         onPageChange={() => {}}
         sortStatus={sortStatus}
-        onSortStatusChange={onSort}
-        onScrollToBottom={onLoadMore}
+        {...(onSort && { onSortStatusChange: onSort })}
+        {...(onLoadMore && { onScrollToBottom: onLoadMore })}
         scrollViewportRef={scrollViewportRef}
         fetching={loading}
         loaderType="oval"
@@ -389,13 +389,13 @@ export const EntityTable = <T extends BaseRecord>({
         idAccessor="id"
         onPageChange={handlePageChange}
         noRecordsText="No records found"
-        rowExpansion={rowExpansionConfig}
+        {...(rowExpansionConfig && { rowExpansion: rowExpansionConfig })}
         totalRecords={totalRecords}
         recordsPerPage={pageSize}
         page={page}
         sortStatus={sortStatus}
-        onSortStatusChange={onSort}
-        onScrollToBottom={onLoadMore}
+        {...(onSort && { onSortStatusChange: onSort })}
+        {...(onLoadMore && { onScrollToBottom: onLoadMore })}
         fetching={loading}
         loaderType="oval"
         loaderSize="lg"

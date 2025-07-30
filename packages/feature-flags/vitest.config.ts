@@ -1,6 +1,8 @@
 import { createNodePackageConfig } from '@repo/qa/vitest/configs';
+import tsconfigPaths from 'vite-tsconfig-paths';
+import { defineConfig } from 'vitest/config';
 
-export default createNodePackageConfig({
+const baseConfig = createNodePackageConfig({
   setupFiles: ['./test-setup.ts'],
   overrides: {
     test: {

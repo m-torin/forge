@@ -44,3 +44,6 @@ export const authClient = createAuthClient({
     }),
   ],
 });
+
+// Export alias for backwards compatibility with tests
+export { createAuthClient };

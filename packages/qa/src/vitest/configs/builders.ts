@@ -171,14 +171,10 @@ export function createNextAppConfig(options: BuilderOptions = {}): UserConfig {
     resolve: {
       extensions: ['.ts', '.tsx', '.js', '.jsx', '.json', '.mjs', '.mts'],
       alias: {
-        '@': resolve(process.cwd(), './src'),
-        '@/app': resolve(process.cwd(), './src/app'),
-        '@/components': resolve(process.cwd(), './src/components'),
-        '@/lib': resolve(process.cwd(), './src/lib'),
-        '@/hooks': resolve(process.cwd(), './src/hooks'),
-        '@/utils': resolve(process.cwd(), './src/utils'),
-        '@/styles': resolve(process.cwd(), './src/styles'),
-        '@/types': resolve(process.cwd(), './src/types'),
+        '#/root/*': resolve(process.cwd(), './*'),
+        '#/*': resolve(process.cwd(), './src/*'),
+        '@repo/*': resolve(process.cwd(), '../../packages/*'),
+        '@labs/*': resolve(process.cwd(), '../../labs/*'),
         ...aliases,
       },
       dedupe: [
@@ -238,7 +234,10 @@ export function createReactPackageConfig(options: BuilderOptions = {}): UserConf
     resolve: {
       extensions: ['.ts', '.tsx', '.js', '.jsx', '.json', '.mjs', '.mts'],
       alias: {
-        '@': resolve(process.cwd(), './src'),
+        '#/root/*': resolve(process.cwd(), './*'),
+        '#/*': resolve(process.cwd(), './src/*'),
+        '@repo/*': resolve(process.cwd(), '../../packages/*'),
+        '@labs/*': resolve(process.cwd(), '../../labs/*'),
         ...aliases,
       },
       dedupe: [
@@ -294,7 +293,10 @@ export function createNodePackageConfig(options: BuilderOptions = {}): UserConfi
     resolve: {
       extensions: ['.ts', '.tsx', '.js', '.jsx', '.json', '.mjs', '.mts'],
       alias: {
-        '@': resolve(process.cwd(), './src'),
+        '#/root/*': resolve(process.cwd(), './*'),
+        '#/*': resolve(process.cwd(), './src/*'),
+        '@repo/*': resolve(process.cwd(), '../../packages/*'),
+        '@labs/*': resolve(process.cwd(), '../../labs/*'),
         ...aliases,
       },
     },
@@ -352,7 +354,10 @@ export function createDatabasePackageConfig(options: BuilderOptions = {}): UserC
     resolve: {
       extensions: ['.ts', '.tsx', '.js', '.jsx', '.json', '.mjs', '.mts'],
       alias: {
-        '@': resolve(process.cwd(), './src'),
+        '#/root/*': resolve(process.cwd(), './*'),
+        '#/*': resolve(process.cwd(), './src/*'),
+        '@repo/*': resolve(process.cwd(), '../../packages/*'),
+        '@labs/*': resolve(process.cwd(), '../../labs/*'),
         ...aliases,
       },
     },

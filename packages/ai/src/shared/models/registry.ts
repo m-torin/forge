@@ -6,12 +6,12 @@
 
 import {
   ANTHROPIC_MODEL_METADATA,
-  PERPLEXITY_MODEL_METADATA,
-  XAI_MODEL_METADATA,
   GOOGLE_MODEL_METADATA,
   OPENAI_COMPATIBLE_MODEL_METADATA,
-  type ModelMetadata,
+  PERPLEXITY_MODEL_METADATA,
+  XAI_MODEL_METADATA,
   type ModelCapability,
+  type ModelMetadata,
   type ReasoningConfig,
 } from './metadata';
 
@@ -27,13 +27,13 @@ export interface ProviderModelConfig {
 export interface ModelRegistry {
   // All available models by ID
   models: Record<string, ProviderModelConfig>;
-  
+
   // Models grouped by provider
   providers: Record<string, ProviderModelConfig[]>;
-  
+
   // Model aliases (for backward compatibility)
   aliases: Record<string, string>;
-  
+
   // Capability-based model groups
   capabilities: Record<ModelCapability, ProviderModelConfig[]>;
 }
@@ -47,14 +47,14 @@ export const MODEL_ALIASES = {
   'claude-reasoning': 'claude-4-sonnet-20250514',
   'claude-artifacts': 'claude-3-5-sonnet-20241022',
   'claude-title': 'claude-3-5-haiku-20241022',
-  
+
   // Convenience aliases
   'claude-4-opus': 'claude-4-opus-20250514',
   'claude-4-sonnet': 'claude-4-sonnet-20250514',
   'claude-3-7-sonnet': 'claude-3-7-sonnet-20250219',
   'claude-3-5-sonnet': 'claude-3-5-sonnet-20241022',
   'claude-3-5-haiku': 'claude-3-5-haiku-20241022',
-  
+
   // Provider-generic aliases
   'chat-model': 'claude-4-sonnet-20250514',
   'chat-model-reasoning': 'claude-4-opus-20250514',
@@ -82,7 +82,7 @@ const PROVIDER_MODELS: Record<string, Record<string, string>> = {
     'claude-3-haiku-20240307': 'claude-3-haiku-20240307',
   },
   perplexity: {
-    'sonar': 'sonar',
+    sonar: 'sonar',
     'sonar-pro': 'sonar-pro',
     'sonar-deep-research': 'sonar-deep-research',
     'sonar-reasoning': 'sonar-reasoning',
@@ -128,7 +128,7 @@ function buildModelRegistry(): ModelRegistry {
     id: string,
     actualModelId: string,
     provider: string,
-    metadata: ModelMetadata
+    metadata: ModelMetadata,
   ) => {
     const config: ProviderModelConfig = {
       id,
@@ -147,7 +147,7 @@ function buildModelRegistry(): ModelRegistry {
 
     // Group by capabilities
     if (metadata.capabilities) {
-      metadata.capabilities.forEach((capability) => {
+      metadata.capabilities.forEach(capability => {
         capabilities[capability].push(config);
       });
     }
@@ -179,10 +179,13 @@ function buildModelRegistry(): ModelRegistry {
 
   // Add OpenAI-compatible models (LMStudio, Ollama, DeepSeek)
   Object.entries(OPENAI_COMPATIBLE_MODEL_METADATA).forEach(([id, metadata]) => {
-    const provider = id.includes('lmstudio') ? 'lmstudio' 
-                    : id.includes('ollama') ? 'ollama'
-                    : id.includes('deepseek') ? 'deepseek'
-                    : 'openai-compatible';
+    const provider = id.includes('lmstudio')
+      ? 'lmstudio'
+      : id.includes('ollama')
+        ? 'ollama'
+        : id.includes('deepseek')
+          ? 'deepseek'
+          : 'openai-compatible';
     addModel(id, id, provider, metadata);
   });
 
@@ -264,11 +267,11 @@ export function getAllModelIds(): string[] {
  */
 export function getChatModels(): ProviderModelConfig[] {
   return Object.values(MODEL_REGISTRY.models).filter(
-    (config) => 
-      !config.metadata.deprecated && 
-      (config.metadata.capabilities?.includes('tools') || 
-       config.metadata.capabilities?.includes('reasoning') ||
-       config.metadata.capabilities?.includes('multimodal'))
+    config =>
+      !config.metadata.deprecated &&
+      (config.metadata.capabilities?.includes('tools') ||
+        config.metadata.capabilities?.includes('reasoning') ||
+        config.metadata.capabilities?.includes('multimodal')),
   );
 }
 
@@ -285,13 +288,13 @@ export function getBestModelForTask(task: 'reasoning' | 'vision' | 'code' | 'cha
 
   const capability = taskToCapability[task];
   const models = getModelsByCapability(capability);
-  
+
   // Prefer non-deprecated models
   const nonDeprecated = models.filter(m => !m.metadata.deprecated);
   if (nonDeprecated.length > 0) {
     return nonDeprecated[0].id;
   }
-  
+
   // Fallback to any model with the capability
   return models[0]?.id || 'claude-4-sonnet-20250514';
 }

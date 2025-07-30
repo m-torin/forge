@@ -1,5 +1,5 @@
-import CustomLink from '@/auth-components/custom-link';
-import SessionData from '@/auth-components/session-data';
+import CustomLink from '#/auth-components/custom-link';
+import SessionData from '#/auth-components/session-data';
 import { auth } from '#/auth';
 
 export default async function Page() {

@@ -173,7 +173,7 @@ export const commonMockImplementations = {
  * @example
  * ```typescript
  * // Import real enums first
- * import { BrandType, ContentStatus } from '@/prisma-generated/client';
+ * import { BrandType, ContentStatus } from '#/prisma-generated/client';
  *
  * // Setup enhanced mocks
  * const { mockClient, beforeEach, afterEach } = setupEnhancedPrismaTest({

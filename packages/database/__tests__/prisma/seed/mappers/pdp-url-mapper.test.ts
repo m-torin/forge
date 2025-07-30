@@ -1,4 +1,4 @@
-import { generatePdpUrls } from '@/prisma/src/seed/mappers/pdp-url-mapper';
+import { generatePdpUrls } from '#/prisma/src/seed/mappers/pdp-url-mapper';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 describe('pdp-url-mapper', () => {

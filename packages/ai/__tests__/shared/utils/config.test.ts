@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, vi } from 'vitest';
 
-import { convertToManagerConfig, createConfigFromEnv, validateConfig } from '@/shared/utils/config';
+import { convertToManagerConfig, createConfigFromEnv, validateConfig } from '#/shared/utils/config';
 
-import { AIConfig } from '@/shared/types/config';
+import { AIConfig } from '#/shared/types/config';
 
 // Tests use environment variables set in setup.ts
 
@@ -47,7 +47,7 @@ describe('config Utilities', () => {
 
     test('should enable logging in development environment', async () => {
       vi.stubEnv('NODE_ENV', 'development');
-      const { createConfigFromEnv } = await import('@/shared/utils/config');
+      const { createConfigFromEnv } = await import('#/shared/utils/config');
       const config = createConfigFromEnv();
       expect(config.enableLogging).toBeTruthy();
     });
@@ -60,7 +60,7 @@ describe('config Utilities', () => {
 
     test('should enable rate limiting in production environment', async () => {
       vi.stubEnv('NODE_ENV', 'production');
-      const { createConfigFromEnv } = await import('@/shared/utils/config');
+      const { createConfigFromEnv } = await import('#/shared/utils/config');
       const config = createConfigFromEnv();
       expect(config.enableRateLimit).toBeTruthy();
     });

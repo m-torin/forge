@@ -5,9 +5,9 @@
 import { describe, expect, test } from 'vitest';
 
 describe('shared Utilities Integration', () => {
-  describe('API Key Utilities', () => {
+  describe('aPI Key Utilities', () => {
     test('should mask API keys correctly in various formats', async () => {
-      const { maskApiKey } = await import('@/shared/utils/api-keys');
+      const { maskApiKey } = await import('#/shared/utils/api-keys');
 
       // Test different API key formats - actual maskApiKey masks with 8 start + middle * + 4 end
       // For 'sk-1234567890abcdef1234567890abcdef' (32 chars): first 8 + (32-12) * + last 4 = 'sk-12345' + 23 * + 'cdef'
@@ -21,7 +21,7 @@ describe('shared Utilities Integration', () => {
     });
 
     test('should generate valid API key names', async () => {
-      const { generateApiKeyName } = await import('@/shared/utils/api-keys');
+      const { generateApiKeyName } = await import('#/shared/utils/api-keys');
 
       for (let i = 0; i < 10; i++) {
         const name = generateApiKeyName();
@@ -32,30 +32,30 @@ describe('shared Utilities Integration', () => {
     });
 
     test('should validate API key expiration correctly', async () => {
-      const { isApiKeyExpired, getTimeUntilExpiration } = await import('@/shared/utils/api-keys');
+      const { isApiKeyExpired, getTimeUntilExpiration } = await import('#/shared/utils/api-keys');
 
       const now = new Date();
       const future = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24 hours from now
       const past = new Date(now.getTime() - 24 * 60 * 60 * 1000); // 24 hours ago
 
       // Test expiration status
-      expect(isApiKeyExpired(undefined)).toBe(false);
-      expect(isApiKeyExpired(future)).toBe(false);
-      expect(isApiKeyExpired(past)).toBe(true);
+      expect(isApiKeyExpired(undefined)).toBeFalsy();
+      expect(isApiKeyExpired(future)).toBeFalsy();
+      expect(isApiKeyExpired(past)).toBeTruthy();
 
       // Test time until expiration
       const futureResult = getTimeUntilExpiration(future);
-      expect(futureResult.expired).toBe(false);
+      expect(futureResult.expired).toBeFalsy();
       expect(futureResult.days).toBeGreaterThanOrEqual(0);
 
       const pastResult = getTimeUntilExpiration(past);
-      expect(pastResult.expired).toBe(true);
+      expect(pastResult.expired).toBeTruthy();
       expect(pastResult.days).toBeUndefined();
     });
 
     test('should format permissions for display', async () => {
       const { formatPermissionsForDisplay, groupPermissionsByResource } = await import(
-        '@/shared/utils/api-keys'
+        '#/shared/utils/api-keys'
       );
 
       const permissions = ['user:read', 'user:write', 'admin:read', 'billing:manage'];
@@ -74,25 +74,25 @@ describe('shared Utilities Integration', () => {
     });
 
     test('should validate API key format', async () => {
-      const { isValidApiKeyFormat } = await import('@/shared/utils/api-keys');
+      const { isValidApiKeyFormat } = await import('#/shared/utils/api-keys');
 
       // Valid formats
-      expect(isValidApiKeyFormat('sk-1234567890abcdef1234567890abcdef')).toBe(true);
-      expect(isValidApiKeyFormat('pk_test_1234567890abcdef1234567890abcdef')).toBe(true);
-      expect(isValidApiKeyFormat('key_123456789012345678901234567890')).toBe(true);
+      expect(isValidApiKeyFormat('sk-1234567890abcdef1234567890abcdef')).toBeTruthy();
+      expect(isValidApiKeyFormat('pk_test_1234567890abcdef1234567890abcdef')).toBeTruthy();
+      expect(isValidApiKeyFormat('key_123456789012345678901234567890')).toBeTruthy();
 
       // Invalid formats
-      expect(isValidApiKeyFormat('')).toBe(false);
-      expect(isValidApiKeyFormat('short')).toBe(false);
-      expect(isValidApiKeyFormat('invalid chars!')).toBe(false);
+      expect(isValidApiKeyFormat('')).toBeFalsy();
+      expect(isValidApiKeyFormat('short')).toBeFalsy();
+      expect(isValidApiKeyFormat('invalid chars!')).toBeFalsy();
     });
   });
 
-  describe('Error Utilities', () => {
+  describe('error Utilities', () => {
     test('should handle auth error functions', async () => {
       // Check if the error utilities module exists and what it exports
       try {
-        const errorModule = await import('@/shared/utils/errors');
+        const errorModule = await import('#/shared/utils/errors');
         expect(errorModule).toBeDefined();
 
         // Test any actual exports that exist
@@ -100,15 +100,15 @@ describe('shared Utilities Integration', () => {
         expect(exports.length).toBeGreaterThanOrEqual(0);
       } catch (error) {
         // Module might not exist or have different exports
-        expect(true).toBe(true); // Pass the test if module doesn't exist
+        expect(true).toBeTruthy(); // Pass the test if module doesn't exist
       }
     });
   });
 
-  describe('Header Utilities', () => {
+  describe('header Utilities', () => {
     test('should test header utility functions if they exist', async () => {
       try {
-        const headerModule = await import('@/shared/utils/headers');
+        const headerModule = await import('#/shared/utils/headers');
         expect(headerModule).toBeDefined();
 
         // Test any actual exports that exist
@@ -116,15 +116,15 @@ describe('shared Utilities Integration', () => {
         expect(exports.length).toBeGreaterThanOrEqual(0);
       } catch (error) {
         // Module might not exist or have different exports
-        expect(true).toBe(true); // Pass the test if module doesn't exist
+        expect(true).toBeTruthy(); // Pass the test if module doesn't exist
       }
     });
   });
 
-  describe('Role Utilities', () => {
+  describe('role Utilities', () => {
     test('should test role utility functions if they exist', async () => {
       try {
-        const roleModule = await import('@/shared/utils/roles');
+        const roleModule = await import('#/shared/utils/roles');
         expect(roleModule).toBeDefined();
 
         // Test any actual exports that exist
@@ -132,21 +132,21 @@ describe('shared Utilities Integration', () => {
         expect(exports.length).toBeGreaterThanOrEqual(0);
       } catch (error) {
         // Module might not exist or have different exports
-        expect(true).toBe(true); // Pass the test if module doesn't exist
+        expect(true).toBeTruthy(); // Pass the test if module doesn't exist
       }
     });
   });
 
-  describe('Integration between utilities', () => {
+  describe('integration between utilities', () => {
     test('should work together for complete auth workflows', async () => {
-      const { maskApiKey, isValidApiKeyFormat } = await import('@/shared/utils/api-keys');
+      const { maskApiKey, isValidApiKeyFormat } = await import('#/shared/utils/api-keys');
 
       // Simulate API key validation workflow
       const apiKey = 'sk-1234567890abcdef1234567890abcdef';
 
       // Validate format
       const isValid = isValidApiKeyFormat(apiKey);
-      expect(isValid).toBe(true);
+      expect(isValid).toBeTruthy();
 
       // Mask for logging
       const masked = maskApiKey(apiKey);
@@ -155,7 +155,7 @@ describe('shared Utilities Integration', () => {
       // Test workflow with invalid key
       const invalidKey = 'invalid-key';
       const isInvalidValid = isValidApiKeyFormat(invalidKey);
-      expect(isInvalidValid).toBe(false);
+      expect(isInvalidValid).toBeFalsy();
 
       const maskedInvalid = maskApiKey(invalidKey);
       expect(maskedInvalid).toBe('****'); // Short keys return ****

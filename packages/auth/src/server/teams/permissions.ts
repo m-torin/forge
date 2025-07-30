@@ -12,56 +12,6 @@ import { getAuthHeaders } from '../get-headers';
 import type { TeamPermissionCheck, TeamPermissionResult } from '../../shared/teams';
 
 /**
- * Checks if a user has permission to perform an action on a team
- */
-export async function checkTeamPermission(
-  check: TeamPermissionCheck,
-): Promise<TeamPermissionResult> {
-  try {
-    const session = await auth.api.getSession({ headers: await getAuthHeaders() });
-
-    if (!session) {
-      return { error: 'Authentication required', hasPermission: false };
-    }
-
-    const { permission, teamId, userId } = check;
-    const targetUserId = userId || session.user.id;
-
-    // Get team data with members using better-auth native method
-    const teamResult = await auth.api.getTeam({
-      headers: await getAuthHeaders(),
-      query: { teamId },
-    });
-
-    if (!teamResult?.team) {
-      return { error: 'Team not found or access denied', hasPermission: false };
-    }
-
-    // Find user's membership in the team
-    const membership = (teamResult.team.members || []).find(
-      (member: any) => member.userId === targetUserId,
-    );
-
-    if (!membership) {
-      return { error: 'User is not a team member', hasPermission: false };
-    }
-
-    const hasPermission = roleHasPermission(membership.role, permission);
-
-    return {
-      hasPermission,
-      role: membership.role,
-    };
-  } catch (error) {
-    logError(
-      'Check team permission error:',
-      error instanceof Error ? error : new Error(String(error)),
-    );
-    return { error: 'Failed to check permission', hasPermission: false };
-  }
-}
-
-/**
  * Checks if the current user can manage a specific team member
  */
 export async function canManageTeamMember(teamId: string, targetUserId: string): Promise<boolean> {
@@ -366,5 +316,88 @@ export async function hasTeamRole(teamId: string, role: string, userId?: string)
   } catch (error) {
     logError('Has team role error:', error instanceof Error ? error : new Error(String(error)));
     return false;
+  }
+}
+
+// Export alias for backwards compatibility with tests
+export async function getUserTeamRole(userId: string, teamId: string): Promise<string | null> {
+  try {
+    const result = await getUserTeamPermissions(teamId, userId);
+    return result.role || null;
+  } catch {
+    return null;
+  }
+}
+
+// Export overloaded function for tests that expect different signature
+export async function checkTeamPermission(
+  userId: string,
+  teamId: string,
+  permission: string,
+): Promise<boolean>;
+export async function checkTeamPermission(
+  check: TeamPermissionCheck,
+): Promise<TeamPermissionResult>;
+export async function checkTeamPermission(
+  userIdOrCheck: string | TeamPermissionCheck,
+  teamId?: string,
+  permission?: string,
+): Promise<boolean | TeamPermissionResult> {
+  if (typeof userIdOrCheck === 'string') {
+    // Legacy signature for tests
+    if (!teamId || !permission) {
+      throw new Error('teamId and permission are required for legacy signature');
+    }
+    const result = await checkTeamPermission({
+      userId: userIdOrCheck,
+      teamId,
+      permission,
+    });
+    return result.hasPermission;
+  } else {
+    // Original implementation with object parameter
+    const check = userIdOrCheck;
+    try {
+      const session = await auth.api.getSession({ headers: await getAuthHeaders() });
+
+      if (!session) {
+        return { error: 'Authentication required', hasPermission: false };
+      }
+
+      const { permission: perm, teamId: tId, userId } = check;
+      const targetUserId = userId || session.user.id;
+
+      // Get team data with members using better-auth native method
+      const teamResult = await auth.api.getTeam({
+        headers: await getAuthHeaders(),
+        query: { teamId: tId },
+      });
+
+      if (!teamResult?.team) {
+        return { error: 'Team not found or access denied', hasPermission: false };
+      }
+
+      // Find user's membership in the team
+      const membership = (teamResult.team.members || []).find(
+        (member: any) => member.userId === targetUserId,
+      );
+
+      if (!membership) {
+        return { error: 'User is not a team member', hasPermission: false };
+      }
+
+      const hasPermission = roleHasPermission(membership.role, perm);
+
+      return {
+        hasPermission,
+        role: membership.role,
+      };
+    } catch (error) {
+      logError(
+        'Check team permission error:',
+        error instanceof Error ? error : new Error(String(error)),
+      );
+      return { error: 'Failed to check permission', hasPermission: false };
+    }
   }
 }

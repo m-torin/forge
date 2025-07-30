@@ -9,8 +9,7 @@ import classes from './FlowsTextField.module.scss';
  * Extends Mantine's TextInputProps to inherit all text input properties.
  */
 interface FlowsTextFieldProps extends TextInputProps {
-  // Extend with any additional custom props if needed
-  classNames?: TextInputProps['classNames'];
+  // Inherits classNames from TextInputProps without redefinition
 }
 
 /**
@@ -24,16 +23,17 @@ interface FlowsTextFieldProps extends TextInputProps {
 export const FlowsTextField = memo(
   forwardRef<HTMLInputElement, FlowsTextFieldProps>(
     ({ label, placeholder, error, classNames, ...rest }, ref) => {
-      // Ensure classNames is an object before accessing its properties
-      const computedClassNames =
-        typeof classNames === 'object' && classNames !== null
-          ? {
-              input: error ? classes.invalid : classNames?.input,
-              wrapper: classNames?.wrapper || '',
-              label: classNames?.label || '',
-              ...classNames,
-            }
-          : undefined;
+      // Handle classNames which can be an object or function
+      const computedClassNames = classNames && typeof classNames === 'object' ? {
+        input: error ? classes.invalid : (classNames.input ?? ''),
+        wrapper: classNames.wrapper ?? '',
+        label: classNames.label ?? '',
+        ...classNames,
+      } : {
+        input: error ? classes.invalid : '',
+        wrapper: '',
+        label: '',
+      };
 
       return (
         <div className={classes.fieldContainer}>

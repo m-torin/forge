@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Import after mocks are set up
-import { createScraper, createServerScraper } from '@/shared/factories/scraper-factory';
+import { createScraper, createServerScraper } from '#/shared/factories/scraper-factory';
 
 // Use vi.hoisted to ensure mocks are available before module imports
 const { mockPlaywrightProvider, mockCheerioProvider, mockFetchProvider, mockConsoleProvider } =

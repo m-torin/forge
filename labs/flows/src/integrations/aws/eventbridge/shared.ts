@@ -117,7 +117,13 @@ export const validateResourceIdentifier = (
       details: result.error.issues,
     } as ErrorContext;
   }
-  return result.data;
+  // Clean up undefined values to satisfy exactOptionalPropertyTypes
+  const data = result.data;
+  return {
+    type: data.type,
+    id: data.id,
+    ...(data.region && { region: data.region }),
+  };
 };
 
 /**

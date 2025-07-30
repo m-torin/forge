@@ -3,7 +3,10 @@
  * Tests retry strategies, delay calculations, and error handling
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
+
+// Import after mocking
+import { calculateDelay, withRetry } from '../../src/shared/patterns/retry';
 
 // Mock dependencies
 vi.mock('p-retry', () => ({
@@ -36,16 +39,13 @@ vi.mock('../utils/errors', () => ({
   }),
 }));
 
-// Import after mocking
-import { calculateDelay, withRetry } from '../../src/shared/patterns/retry';
-
-describe('Retry Pattern', () => {
+describe('retry Pattern', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   describe('calculateDelay', () => {
-    it('should calculate fixed delay', () => {
+    test('should calculate fixed delay', () => {
       const pattern = {
         baseDelay: 1000,
         strategy: 'fixed' as const,
@@ -57,7 +57,7 @@ describe('Retry Pattern', () => {
       expect(calculateDelay(3, pattern)).toBe(1000);
     });
 
-    it('should calculate linear delay', () => {
+    test('should calculate linear delay', () => {
       const pattern = {
         baseDelay: 1000,
         strategy: 'linear' as const,
@@ -69,7 +69,7 @@ describe('Retry Pattern', () => {
       expect(calculateDelay(3, pattern)).toBe(3000);
     });
 
-    it('should calculate exponential delay', () => {
+    test('should calculate exponential delay', () => {
       const pattern = {
         baseDelay: 1000,
         strategy: 'exponential' as const,
@@ -82,7 +82,7 @@ describe('Retry Pattern', () => {
       expect(calculateDelay(4, pattern)).toBe(8000);
     });
 
-    it('should apply maximum delay cap', () => {
+    test('should apply maximum delay cap', () => {
       const pattern = {
         baseDelay: 1000,
         strategy: 'exponential' as const,
@@ -97,7 +97,7 @@ describe('Retry Pattern', () => {
       expect(calculateDelay(5, pattern)).toBe(5000); // Capped
     });
 
-    it('should apply jitter when enabled', () => {
+    test('should apply jitter when enabled', () => {
       const pattern = {
         baseDelay: 1000,
         strategy: 'fixed' as const,
@@ -117,7 +117,7 @@ describe('Retry Pattern', () => {
       // (though they might be the same due to randomness)
     });
 
-    it('should handle jitter with maximum delay', () => {
+    test('should handle jitter with maximum delay', () => {
       const pattern = {
         baseDelay: 1000,
         strategy: 'exponential' as const,
@@ -132,7 +132,7 @@ describe('Retry Pattern', () => {
       expect(delay).toBeLessThanOrEqual(2500); // 2000 + 25%
     });
 
-    it('should default to exponential strategy', () => {
+    test('should default to exponential strategy', () => {
       const pattern = {
         baseDelay: 1000,
         jitter: false,
@@ -145,7 +145,7 @@ describe('Retry Pattern', () => {
   });
 
   describe('withRetry', () => {
-    it('should execute function successfully on first attempt', async () => {
+    test('should execute function successfully on first attempt', async () => {
       const fn = vi.fn().mockResolvedValue('success');
       const retryFn = withRetry(fn);
 
@@ -155,7 +155,7 @@ describe('Retry Pattern', () => {
       expect(fn).toHaveBeenCalledTimes(1);
     });
 
-    it('should retry on failure and succeed', async () => {
+    test('should retry on failure and succeed', async () => {
       const fn = vi
         .fn()
         .mockRejectedValueOnce(new Error('First attempt failed'))
@@ -169,7 +169,7 @@ describe('Retry Pattern', () => {
       expect(fn).toHaveBeenCalledTimes(2);
     });
 
-    it('should respect maxAttempts limit', async () => {
+    test('should respect maxAttempts limit', async () => {
       const fn = vi.fn().mockRejectedValue(new Error('Always fails'));
       const retryFn = withRetry(fn, { maxAttempts: 3 });
 
@@ -177,7 +177,7 @@ describe('Retry Pattern', () => {
       expect(fn).toHaveBeenCalledTimes(3);
     });
 
-    it('should use custom shouldRetry function', async () => {
+    test('should use custom shouldRetry function', async () => {
       const fn = vi
         .fn()
         .mockRejectedValueOnce(new Error('retryable-error'))
@@ -198,7 +198,7 @@ describe('Retry Pattern', () => {
       expect(shouldRetry).toHaveBeenCalledTimes(2);
     });
 
-    it('should use default retry logic when shouldRetry not provided', async () => {
+    test('should use default retry logic when shouldRetry not provided', async () => {
       const fn = vi
         .fn()
         .mockRejectedValueOnce(new Error('retryable-error'))
@@ -211,7 +211,7 @@ describe('Retry Pattern', () => {
       expect(fn).toHaveBeenCalledTimes(2);
     });
 
-    it('should pass arguments to the wrapped function', async () => {
+    test('should pass arguments to the wrapped function', async () => {
       const fn = vi.fn().mockResolvedValue('success');
       const retryFn = withRetry(fn);
 
@@ -220,7 +220,7 @@ describe('Retry Pattern', () => {
       expect(fn).toHaveBeenCalledWith('arg1', 'arg2', { option: 'value' });
     });
 
-    it('should work with different retry strategies', async () => {
+    test('should work with different retry strategies', async () => {
       const fn = vi
         .fn()
         .mockRejectedValueOnce(new Error('First fail'))
@@ -239,7 +239,7 @@ describe('Retry Pattern', () => {
       expect(fn).toHaveBeenCalledTimes(3);
     });
 
-    it('should handle async functions', async () => {
+    test('should handle async functions', async () => {
       const asyncFn = vi.fn().mockImplementation(async (value: string) => {
         await new Promise(resolve => setTimeout(resolve, 10));
         if (value === 'fail') {
@@ -258,7 +258,7 @@ describe('Retry Pattern', () => {
       await expect(retryFn('fail')).rejects.toThrow('Async failure');
     });
 
-    it('should handle retry with context', async () => {
+    test('should handle retry with context', async () => {
       const fn = vi
         .fn()
         .mockRejectedValueOnce(new Error('Context error'))
@@ -280,7 +280,7 @@ describe('Retry Pattern', () => {
       expect(fn).toHaveBeenCalledTimes(2);
     });
 
-    it('should work with zero base delay', async () => {
+    test('should work with zero base delay', async () => {
       const fn = vi
         .fn()
         .mockRejectedValueOnce(new Error('First fail'))
@@ -297,7 +297,7 @@ describe('Retry Pattern', () => {
       expect(fn).toHaveBeenCalledTimes(2);
     });
 
-    it('should handle functions that return non-promise values', async () => {
+    test('should handle functions that return non-promise values', async () => {
       const syncFn = vi.fn().mockReturnValue('sync-result');
       const retryFn = withRetry(syncFn);
 
@@ -308,8 +308,8 @@ describe('Retry Pattern', () => {
     });
   });
 
-  describe('Edge Cases and Error Scenarios', () => {
-    it('should handle function that throws non-Error objects', async () => {
+  describe('edge Cases and Error Scenarios', () => {
+    test('should handle function that throws non-Error objects', async () => {
       const fn = vi.fn().mockImplementation(() => {
         throw 'String error';
       });
@@ -320,15 +320,15 @@ describe('Retry Pattern', () => {
       expect(fn).toHaveBeenCalledTimes(2);
     });
 
-    it('should handle function that returns rejected promise', async () => {
-      const fn = vi.fn().mockReturnValue(Promise.reject(new Error('Rejected promise')));
+    test('should handle function that returns rejected promise', async () => {
+      const fn = vi.fn().mockRejectedValue(new Error('Rejected promise'));
       const retryFn = withRetry(fn, { maxAttempts: 2 });
 
       await expect(retryFn()).rejects.toThrow('Rejected promise');
       expect(fn).toHaveBeenCalledTimes(2);
     });
 
-    it('should handle very large maxAttempts', async () => {
+    test('should handle very large maxAttempts', async () => {
       const fn = vi
         .fn()
         .mockRejectedValueOnce(new Error('Fail 1'))
@@ -343,7 +343,7 @@ describe('Retry Pattern', () => {
       expect(fn).toHaveBeenCalledTimes(3);
     });
 
-    it('should handle maxAttempts of 1 (no retries)', async () => {
+    test('should handle maxAttempts of 1 (no retries)', async () => {
       const fn = vi.fn().mockRejectedValue(new Error('No retries'));
       const retryFn = withRetry(fn, { maxAttempts: 1 });
 
@@ -351,7 +351,7 @@ describe('Retry Pattern', () => {
       expect(fn).toHaveBeenCalledTimes(1);
     });
 
-    it('should handle shouldRetry function that throws', async () => {
+    test('should handle shouldRetry function that throws', async () => {
       const fn = vi.fn().mockRejectedValue(new Error('Function error'));
       const shouldRetry = vi.fn().mockImplementation(() => {
         throw new Error('shouldRetry error');
@@ -367,8 +367,8 @@ describe('Retry Pattern', () => {
     });
   });
 
-  describe('Integration with calculateDelay', () => {
-    it('should use calculated delays in retry attempts', async () => {
+  describe('integration with calculateDelay', () => {
+    test('should use calculated delays in retry attempts', async () => {
       const fn = vi
         .fn()
         .mockRejectedValueOnce(new Error('Fail 1'))

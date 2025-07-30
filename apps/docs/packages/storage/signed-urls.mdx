@@ -55,7 +55,7 @@ Different contexts have different default expiration times:
 Automatically handles signed URLs with refresh before expiration:
 
 ```typescript
-import { SignedProductImage } from '@/components/guest/SignedProductImage';
+import { SignedProductImage } from '#/components/guest/SignedProductImage';
 import { logError } from '@repo/observability/server/next';
 
 export function ProductPage({ product }) {
@@ -78,7 +78,7 @@ export function ProductPage({ product }) {
 For custom implementations:
 
 ```typescript
-import { useSignedMediaUrl } from '@/hooks/useSignedMediaUrl';
+import { useSignedMediaUrl } from '#/hooks/useSignedMediaUrl';
 
 export function MediaViewer({ storageKey }) {
   const { url, loading, error, refresh } = useSignedMediaUrl(storageKey, {
@@ -209,7 +209,7 @@ export async function getProtectedMediaUrl(mediaId: string) {
 ### E-commerce Product Gallery
 
 ```typescript
-import { SignedListingImageGallery } from '@/components/ui/ListingImageGallery/SignedListingImageGallery';
+import { SignedListingImageGallery } from '#/components/ui/ListingImageGallery/SignedListingImageGallery';
 
 export function ProductGallery({ product }) {
   // Transform product images for signed gallery
@@ -232,7 +232,7 @@ export function ProductGallery({ product }) {
 ### Admin Media Manager
 
 ```typescript
-import { useSignedMediaUrls } from '@/hooks/useSignedMediaUrl';
+import { useSignedMediaUrls } from '#/hooks/useSignedMediaUrl';
 
 export function MediaManager({ mediaItems }) {
   // Batch load signed URLs

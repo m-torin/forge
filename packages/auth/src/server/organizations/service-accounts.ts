@@ -416,3 +416,7 @@ export async function regenerateServiceAccountTokenAction(data: {
     };
   }
 }
+
+// Export aliases for backwards compatibility with tests
+export const createServiceAccount = createServiceAccountAction;
+export const getServiceAccount = getServiceAccountAction;

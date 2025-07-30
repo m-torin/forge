@@ -2,7 +2,7 @@
 
 import { Editor } from '@tiptap/core';
 import { clsx } from 'clsx';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 interface User {
   id: string;
@@ -72,7 +72,7 @@ export function MentionDropdown({
     [editor, onClose],
   );
 
-  const handleKeyDown = useCallback(
+  const _handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
       if (!isOpen) return false;
 
@@ -107,9 +107,9 @@ export function MentionDropdown({
   );
 
   // Reset selected index when filtered users change
-  useMemo(() => {
+  useEffect(() => {
     setSelectedIndex(0);
-  }, [filteredUsers]);
+  }, [filteredUsers.length]);
 
   if (!isOpen || !editor || filteredUsers.length === 0) return null;
 

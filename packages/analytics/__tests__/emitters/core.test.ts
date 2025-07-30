@@ -3,7 +3,7 @@
  * Tests the primary emitter functions following Segment.io specification
  */
 
-import { alias, group, identify, page, track } from '@/shared/emitters/emitters';
+import { alias, group, identify, page, track } from '#/shared/emitters/emitters';
 import { describe, expect, test } from 'vitest';
 import { createEmitterTestSuite, createScenarios, createTestData } from '../setup';
 
@@ -13,7 +13,7 @@ import type {
   EmitterIdentifyPayload,
   EmitterPagePayload,
   EmitterTrackPayload,
-} from '@/shared/emitters/emitter-types';
+} from '#/shared/emitters/emitter-types';
 
 describe('core Analytics Emitters', () => {
   const testOptions = createTestData.options();

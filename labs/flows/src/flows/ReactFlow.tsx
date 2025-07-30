@@ -16,7 +16,7 @@ import { useField } from '@mantine/form';
 import { logInfo, logError, logDebug } from '@repo/observability';
 import { isDemoModeClient } from '#/lib/demoMode';
 import { useReactFlowSetup } from './propHandlers';
-import { useAppContext } from '@/app/flow/[cuid]/FlowProvider';
+import { useAppContext } from '#/app/flow/[cuid]/FlowProvider';
 import { FlowAside } from './ui/rightSidebar';
 import { rfNodeTypes } from './nodes';
 import { CustomControls, MiniMapNode } from './ui';

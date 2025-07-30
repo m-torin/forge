@@ -1,4 +1,4 @@
-import { ProviderRegistry } from '@/shared/types/scraping-types';
+import { ProviderRegistry } from '#/shared/types/scraping-types';
 import '@testing-library/jest-dom';
 import { beforeEach, vi } from 'vitest';
 import { createMockProvider } from './scraping-test-factory';
@@ -189,7 +189,7 @@ export const createScrapingTestConfig = (overrides: any = {}) => ({
 
 // Common scraper manager creation patterns
 export const createTestScrapingManager = async (config = createScrapingTestConfig()) => {
-  const { createScrapingManager } = await import('@/shared/utils/scraping-manager');
+  const { createScrapingManager } = await import('#/shared/utils/scraping-manager');
   const mockProviderRegistry: ProviderRegistry = {
     playwright: () => createMockProvider('playwright'),
     fetch: () => createMockProvider('fetch'),

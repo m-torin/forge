@@ -25,7 +25,7 @@ vi.mock('../../src/index', () => ({
 
 describe('server-next', () => {
   test('exports all email sending functions', async () => {
-    const serverNext = await import('@/server-next');
+    const serverNext = await import('#/server-next');
 
     // Should re-export all email sending functions from index
     expect(serverNext.sendMagicLinkEmail).toBeDefined();
@@ -48,7 +48,7 @@ describe('server-next', () => {
   });
 
   test('exports all templates', async () => {
-    const serverNext = await import('@/server-next');
+    const serverNext = await import('#/server-next');
 
     // Should re-export all templates from index
     expect(serverNext.MagicLinkTemplate).toBeDefined();
@@ -68,7 +68,7 @@ describe('server-next', () => {
   });
 
   test('exports resend proxy instance', async () => {
-    const serverNext = await import('@/server-next');
+    const serverNext = await import('#/server-next');
 
     // Should re-export resend instance from index
     expect(serverNext.resend).toBeDefined();

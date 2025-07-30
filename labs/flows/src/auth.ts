@@ -9,11 +9,11 @@ import type { NextAuthConfig } from 'next-auth';
 
 export const config: NextAuthConfig = {
   theme: { logo: 'https://authjs.dev/img/logo-sm.png' },
-  adapter: isDemoMode() ? undefined : PrismaAdapter(prismaEdge),
+  ...(isDemoMode() ? {} : { adapter: PrismaAdapter(prismaEdge) }),
   providers: isDemoMode() ? [] : [
     GitHub({
-      clientId: process.env.GITHUB_ID,
-      clientSecret: process.env.GITHUB_SECRET,
+      clientId: process.env.GITHUB_ID ?? '',
+      clientSecret: process.env.GITHUB_SECRET ?? '',
     }),
   ],
   basePath: '/auth',
@@ -52,7 +52,7 @@ export const config: NextAuthConfig = {
       
       if (trigger === 'update') token.name = session.user.name;
       if (account?.provider === 'github') {
-        token.accessToken = account.access_token;
+        token.accessToken = account.access_token ?? '';
       }
       return token;
     },

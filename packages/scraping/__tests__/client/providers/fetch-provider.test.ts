@@ -1,4 +1,4 @@
-import { FetchProvider } from '@/client/providers/fetch-provider';
+import { FetchProvider } from '#/client/providers/fetch-provider';
 import { afterEach, beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock global fetch

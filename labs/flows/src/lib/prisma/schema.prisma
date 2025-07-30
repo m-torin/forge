@@ -14,9 +14,10 @@ generator client {
 }
 
 generator zod {
-  provider                         = "zod-prisma-types"
-  createOptionalDefaultValuesTypes = true
-  createRelationValuesTypes        = true
+  provider          = "prisma-zod-generator"
+  output            = "./generated/schemas"
+  isGenerateSelect  = true
+  isGenerateInclude = true
 }
 
 //****************************************************************

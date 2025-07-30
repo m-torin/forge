@@ -1,5 +1,14 @@
-import { createNodePackageConfig } from '@repo/qa/vitest/configs';
+import { createReactPackageConfig } from '@repo/qa/vitest/configs';
+import tsconfigPaths from 'vite-tsconfig-paths';
+import { defineConfig } from 'vitest/config';
 
-export default createNodePackageConfig({
+const baseConfig = createReactPackageConfig({
   setupFiles: ['./__tests__/setup.ts'],
+  overrides: {},
+});
+
+// Add vite-tsconfig-paths plugin to handle TypeScript path resolution
+export default defineConfig({
+  ...baseConfig,
+  plugins: [...(baseConfig.plugins || []), tsconfigPaths()],
 });

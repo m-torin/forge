@@ -15,7 +15,7 @@ import {
   removeMemberAction,
   updateMemberRoleAction,
   updateOrganizationAction,
-} from '@/server/organizations/management';
+} from '#/server/organizations/management';
 
 // Set up all mocks
 setupAllMocks();

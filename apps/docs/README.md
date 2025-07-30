@@ -5,4 +5,4 @@
 - _Purpose:_ **Comprehensive documentation website built with Mintlify for the
   entire monorepo**
 
-- _Documentation:_ **[Documentation App](../docs/apps/docs.mdx)**
+- _Documentation:_ **[Documentation App](apps/docs.mdx)**

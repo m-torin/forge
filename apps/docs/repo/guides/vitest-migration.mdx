@@ -196,7 +196,7 @@ import "@repo/qa/vitest/mocks";
 import { vi } from "vitest";
 
 // App-specific mocks that aren't shared
-vi.mock("@/lib/custom-analytics", () => ({
+vi.mock("#/lib/custom-analytics", () => ({
   track: vi.fn()
 }));
 ```

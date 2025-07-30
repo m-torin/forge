@@ -1,5 +1,5 @@
-import { ReviewType, VoteType } from '@/prisma-generated/client';
-import { generateReview, generateReviewVotes } from '@/prisma/src/seed/generators/generate-reviews';
+import { ReviewType, VoteType } from '#/prisma-generated/client';
+import { generateReview, generateReviewVotes } from '#/prisma/src/seed/generators/generate-reviews';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 describe('generate-reviews', () => {

@@ -17,7 +17,7 @@ describe('artifacts', () => {
   });
 
   test('should import artifacts successfully', async () => {
-    const artifacts = await import('@/server/artifacts');
+    const artifacts = await import('#/server/artifacts');
     expect(artifacts).toBeDefined();
   });
 
@@ -31,7 +31,7 @@ describe('artifacts', () => {
       defaultArtifactRegistry,
       textArtifactHandler,
       codeArtifactHandler,
-    } = await import('@/server/artifacts');
+    } = await import('#/server/artifacts');
 
     // Test ArtifactHandler
     const handler = createArtifactHandler({
@@ -69,7 +69,7 @@ describe('artifacts', () => {
 
   test('should test artifact types and validation', async () => {
     const { textArtifactHandler, codeArtifactHandler, imageArtifactHandler, dataArtifactHandler } =
-      await import('@/server/artifacts');
+      await import('#/server/artifacts');
 
     // Test text artifact handler
     expect(textArtifactHandler.kind).toBe('text');
@@ -91,7 +91,7 @@ describe('artifacts', () => {
   });
 
   test('should test artifact storage and retrieval', async () => {
-    const { InMemoryArtifactStorage } = await import('@/server/artifacts');
+    const { InMemoryArtifactStorage } = await import('#/server/artifacts');
 
     const storage = new InMemoryArtifactStorage();
     const testArtifact = {
@@ -124,7 +124,7 @@ describe('artifacts', () => {
   });
 
   test('should test artifact handler creation', async () => {
-    const { createArtifactHandler } = await import('@/server/artifacts');
+    const { createArtifactHandler } = await import('#/server/artifacts');
 
     const customHandler = createArtifactHandler({
       kind: 'custom',
@@ -141,7 +141,7 @@ describe('artifacts', () => {
   });
 
   test('should test artifact registry functionality', async () => {
-    const { ArtifactRegistry, createArtifactHandler } = await import('@/server/artifacts');
+    const { ArtifactRegistry, createArtifactHandler } = await import('#/server/artifacts');
 
     const registry = new ArtifactRegistry();
     const handler1 = createArtifactHandler({ kind: 'type1' });
@@ -172,7 +172,7 @@ describe('artifacts', () => {
 
   test('should test artifact manager complete workflow', async () => {
     const { ArtifactManager, ArtifactRegistry, InMemoryArtifactStorage, createArtifactHandler } =
-      await import('@/server/artifacts');
+      await import('#/server/artifacts');
 
     const registry = new ArtifactRegistry();
     const storage = new InMemoryArtifactStorage();

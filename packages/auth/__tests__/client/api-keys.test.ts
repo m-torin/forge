@@ -6,7 +6,7 @@ import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Mock logger
-vi.mock('@/client/utils/logger', () => ({
+vi.mock('#/client/utils/logger', () => ({
   logger: {
     warn: vi.fn(),
   },
@@ -19,7 +19,7 @@ const mockRevokeApiKeyAction = vi.fn();
 const mockUpdateApiKeyAction = vi.fn();
 const mockValidateApiKeyAction = vi.fn();
 
-vi.mock('@/server/actions', () => ({
+vi.mock('#/server/actions', () => ({
   createApiKeyAction: mockCreateApiKeyAction,
   listApiKeysAction: mockListApiKeysAction,
   revokeApiKeyAction: mockRevokeApiKeyAction,
@@ -28,7 +28,7 @@ vi.mock('@/server/actions', () => ({
 }));
 
 // Mock shared utilities
-vi.mock('@/shared/utils/api-keys', () => ({
+vi.mock('#/shared/utils/api-keys', () => ({
   formatPermissionsForDisplay: vi.fn(),
   generateApiKeyName: vi.fn(),
   getTimeUntilExpiration: vi.fn(),
@@ -48,7 +48,7 @@ describe('client API key functionality', () => {
   describe('helper functions', () => {
     describe('hasPermission', () => {
       test('should return true for any permission check', async () => {
-        const apiKeysModule = await import('@/client/api-keys');
+        const apiKeysModule = await import('#/client/api-keys');
 
         const result = apiKeysModule.hasPermission({ 'api-keys': ['read'] });
 
@@ -56,7 +56,7 @@ describe('client API key functionality', () => {
       });
 
       test('should always return true for client-side permission checks', async () => {
-        const apiKeysModule = await import('@/client/api-keys');
+        const apiKeysModule = await import('#/client/api-keys');
 
         const result1 = apiKeysModule.hasPermission({ 'api-keys': ['read'] });
         const result2 = apiKeysModule.hasPermission({ users: ['write'] });
@@ -66,7 +66,7 @@ describe('client API key functionality', () => {
       });
 
       test('should handle different permission types', async () => {
-        const apiKeysModule = await import('@/client/api-keys');
+        const apiKeysModule = await import('#/client/api-keys');
 
         const permissionTypes: Array<{ [key: string]: string[] }> = [
           { 'api-keys': ['read'] },
@@ -83,7 +83,7 @@ describe('client API key functionality', () => {
 
     describe('createApiKeyHeaders', () => {
       test('should create proper API key headers', async () => {
-        const apiKeysModule = await import('@/client/api-keys');
+        const apiKeysModule = await import('#/client/api-keys');
 
         const headers = apiKeysModule.createApiKeyHeaders('test-api-key');
 
@@ -93,7 +93,7 @@ describe('client API key functionality', () => {
       });
 
       test('should handle empty string', async () => {
-        const apiKeysModule = await import('@/client/api-keys');
+        const apiKeysModule = await import('#/client/api-keys');
 
         const headers = apiKeysModule.createApiKeyHeaders('');
 
@@ -105,7 +105,7 @@ describe('client API key functionality', () => {
 
     describe('createBearerHeaders', () => {
       test('should create proper Bearer token headers', async () => {
-        const apiKeysModule = await import('@/client/api-keys');
+        const apiKeysModule = await import('#/client/api-keys');
 
         const headers = apiKeysModule.createBearerHeaders('test-token');
 
@@ -115,7 +115,7 @@ describe('client API key functionality', () => {
       });
 
       test('should handle empty token', async () => {
-        const apiKeysModule = await import('@/client/api-keys');
+        const apiKeysModule = await import('#/client/api-keys');
 
         const headers = apiKeysModule.createBearerHeaders('');
 
@@ -140,7 +140,7 @@ describe('client API key functionality', () => {
     });
 
     test('should fetch API keys on mount', async () => {
-      const apiKeysModule = await import('@/client/api-keys');
+      const apiKeysModule = await import('#/client/api-keys');
 
       renderHook(() => apiKeysModule.useApiKeys());
 
@@ -148,7 +148,7 @@ describe('client API key functionality', () => {
     });
 
     test('should provide initial state', async () => {
-      const apiKeysModule = await import('@/client/api-keys');
+      const apiKeysModule = await import('#/client/api-keys');
 
       const { result } = renderHook(() => apiKeysModule.useApiKeys());
 
@@ -162,7 +162,7 @@ describe('client API key functionality', () => {
     });
 
     test('should handle successful key fetching', async () => {
-      const apiKeysModule = await import('@/client/api-keys');
+      const apiKeysModule = await import('#/client/api-keys');
 
       const { result } = renderHook(() => apiKeysModule.useApiKeys());
 
@@ -175,7 +175,7 @@ describe('client API key functionality', () => {
     });
 
     test('should handle fetch errors', async () => {
-      const apiKeysModule = await import('@/client/api-keys');
+      const apiKeysModule = await import('#/client/api-keys');
 
       mockListApiKeysAction.mockResolvedValue({
         success: false,
@@ -192,7 +192,7 @@ describe('client API key functionality', () => {
     });
 
     test('should handle create key success', async () => {
-      const apiKeysModule = await import('@/client/api-keys');
+      const apiKeysModule = await import('#/client/api-keys');
 
       mockCreateApiKeyAction.mockResolvedValue({
         success: true,
@@ -217,7 +217,7 @@ describe('client API key functionality', () => {
     });
 
     test('should handle create key with expiration date', async () => {
-      const apiKeysModule = await import('@/client/api-keys');
+      const apiKeysModule = await import('#/client/api-keys');
 
       mockCreateApiKeyAction.mockResolvedValue({
         success: true,
@@ -244,7 +244,7 @@ describe('client API key functionality', () => {
     });
 
     test('should handle revoke key success', async () => {
-      const apiKeysModule = await import('@/client/api-keys');
+      const apiKeysModule = await import('#/client/api-keys');
 
       mockRevokeApiKeyAction.mockResolvedValue({ success: true });
 
@@ -266,7 +266,7 @@ describe('client API key functionality', () => {
     });
 
     test('should handle update key success', async () => {
-      const apiKeysModule = await import('@/client/api-keys');
+      const apiKeysModule = await import('#/client/api-keys');
 
       mockUpdateApiKeyAction.mockResolvedValue({ success: true });
 
@@ -284,7 +284,7 @@ describe('client API key functionality', () => {
     });
 
     test('should handle action errors gracefully', async () => {
-      const apiKeysModule = await import('@/client/api-keys');
+      const apiKeysModule = await import('#/client/api-keys');
 
       mockCreateApiKeyAction.mockRejectedValue(new Error('Network error'));
 
@@ -305,7 +305,7 @@ describe('client API key functionality', () => {
 
   describe('useCreateApiKey hook', () => {
     test('should provide initial state', async () => {
-      const apiKeysModule = await import('@/client/api-keys');
+      const apiKeysModule = await import('#/client/api-keys');
 
       const { result } = renderHook(() => apiKeysModule.useCreateApiKey());
 
@@ -317,7 +317,7 @@ describe('client API key functionality', () => {
     });
 
     test('should handle successful key creation', async () => {
-      const apiKeysModule = await import('@/client/api-keys');
+      const apiKeysModule = await import('#/client/api-keys');
 
       const mockResult = {
         success: true,
@@ -342,7 +342,7 @@ describe('client API key functionality', () => {
     });
 
     test('should handle creation errors', async () => {
-      const apiKeysModule = await import('@/client/api-keys');
+      const apiKeysModule = await import('#/client/api-keys');
 
       mockCreateApiKeyAction.mockResolvedValue({
         success: false,
@@ -363,7 +363,7 @@ describe('client API key functionality', () => {
     });
 
     test('should reset state correctly', async () => {
-      const apiKeysModule = await import('@/client/api-keys');
+      const apiKeysModule = await import('#/client/api-keys');
 
       const { result } = renderHook(() => apiKeysModule.useCreateApiKey());
 
@@ -392,7 +392,7 @@ describe('client API key functionality', () => {
     });
 
     test('should handle network errors', async () => {
-      const apiKeysModule = await import('@/client/api-keys');
+      const apiKeysModule = await import('#/client/api-keys');
 
       mockCreateApiKeyAction.mockRejectedValue(new Error('Network failed'));
 
@@ -413,7 +413,7 @@ describe('client API key functionality', () => {
 
   describe('useApiKeyValidation hook', () => {
     test('should provide initial state', async () => {
-      const apiKeysModule = await import('@/client/api-keys');
+      const apiKeysModule = await import('#/client/api-keys');
 
       const { result } = renderHook(() => apiKeysModule.useApiKeyValidation());
 
@@ -423,7 +423,7 @@ describe('client API key functionality', () => {
     });
 
     test('should handle successful validation', async () => {
-      const apiKeysModule = await import('@/client/api-keys');
+      const apiKeysModule = await import('#/client/api-keys');
 
       mockValidateApiKeyAction.mockResolvedValue({ success: true });
 
@@ -438,7 +438,7 @@ describe('client API key functionality', () => {
     });
 
     test('should handle validation failure', async () => {
-      const apiKeysModule = await import('@/client/api-keys');
+      const apiKeysModule = await import('#/client/api-keys');
 
       mockValidateApiKeyAction.mockResolvedValue({
         success: false,
@@ -458,7 +458,7 @@ describe('client API key functionality', () => {
     });
 
     test('should handle validation errors', async () => {
-      const apiKeysModule = await import('@/client/api-keys');
+      const apiKeysModule = await import('#/client/api-keys');
 
       mockValidateApiKeyAction.mockRejectedValue(new Error('Network error'));
 
@@ -475,7 +475,7 @@ describe('client API key functionality', () => {
     });
 
     test('should set validating state during validation', async () => {
-      const apiKeysModule = await import('@/client/api-keys');
+      const apiKeysModule = await import('#/client/api-keys');
 
       // Make the action hang to test loading state
       let resolveAction: (value: any) => void;
@@ -505,7 +505,7 @@ describe('client API key functionality', () => {
 
   describe('re-exported utilities', () => {
     test('should re-export shared utilities', async () => {
-      const apiKeysModule = await import('@/client/api-keys');
+      const apiKeysModule = await import('#/client/api-keys');
 
       expect(apiKeysModule.formatPermissionsForDisplay).toBeDefined();
       expect(apiKeysModule.generateApiKeyName).toBeDefined();
@@ -519,7 +519,7 @@ describe('client API key functionality', () => {
 
   describe('edge cases', () => {
     test('should handle undefined dates correctly', async () => {
-      const apiKeysModule = await import('@/client/api-keys');
+      const apiKeysModule = await import('#/client/api-keys');
 
       mockCreateApiKeyAction.mockResolvedValue({ success: true });
 
@@ -541,7 +541,7 @@ describe('client API key functionality', () => {
     });
 
     test('should handle empty key arrays', async () => {
-      const apiKeysModule = await import('@/client/api-keys');
+      const apiKeysModule = await import('#/client/api-keys');
 
       mockListApiKeysAction.mockResolvedValue({
         success: true,
@@ -558,7 +558,7 @@ describe('client API key functionality', () => {
     });
 
     test('should handle missing error messages', async () => {
-      const apiKeysModule = await import('@/client/api-keys');
+      const apiKeysModule = await import('#/client/api-keys');
 
       mockCreateApiKeyAction.mockResolvedValue({
         success: false,

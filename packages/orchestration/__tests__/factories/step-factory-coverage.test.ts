@@ -32,7 +32,7 @@ describe('step Factory Additional Coverage', () => {
   describe('step Factory Core', () => {
     test('should import step factory module', async () => {
       try {
-        const stepFactoryModule = await import('@/shared/factories/step-factory');
+        const stepFactoryModule = await import('#/shared/factories/step-factory');
         expect(stepFactoryModule.defaultStepFactory).toBeDefined();
         const hasCreateStepFactory = !!(stepFactoryModule as any).createStepFactory;
         const createStepFactoryType = hasCreateStepFactory
@@ -48,7 +48,7 @@ describe('step Factory Additional Coverage', () => {
     });
 
     test('should create custom step factory', async () => {
-      const importTest = await testDynamicImport(() => import('@/shared/factories/step-factory'));
+      const importTest = await testDynamicImport(() => import('#/shared/factories/step-factory'));
 
       expect(typeof importTest.success).toBe('boolean');
 
@@ -100,7 +100,7 @@ describe('step Factory Additional Coverage', () => {
     });
 
     test('should handle step creation with different parameters', async () => {
-      const importTest = await testDynamicImport(() => import('@/shared/factories/step-factory'));
+      const importTest = await testDynamicImport(() => import('#/shared/factories/step-factory'));
 
       expect(typeof importTest.success).toBe('boolean');
 
@@ -446,7 +446,7 @@ describe('step Factory Additional Coverage', () => {
       let enhancers: any = null;
 
       try {
-        enhancers = await import('@/shared/factories/step-factory-enhancers');
+        enhancers = await import('#/shared/factories/step-factory-enhancers');
         importSucceeded = true;
       } catch (error) {
         importSucceeded = false;
@@ -507,7 +507,7 @@ describe('step Factory Additional Coverage', () => {
       let enhancers: any = null;
 
       try {
-        enhancers = await import('@/shared/factories/step-factory-enhancers');
+        enhancers = await import('#/shared/factories/step-factory-enhancers');
         importSucceeded = true;
       } catch (error) {
         importSucceeded = false;
@@ -571,7 +571,7 @@ describe('step Factory Additional Coverage', () => {
       let enhancers: any = null;
 
       try {
-        enhancers = await import('@/shared/factories/step-factory-enhancers');
+        enhancers = await import('#/shared/factories/step-factory-enhancers');
         importSucceeded = true;
       } catch (error) {
         importSucceeded = false;
@@ -628,7 +628,7 @@ describe('step Factory Additional Coverage', () => {
       let enhancers: any = null;
 
       try {
-        enhancers = await import('@/shared/factories/step-factory-enhancers');
+        enhancers = await import('#/shared/factories/step-factory-enhancers');
         importSucceeded = true;
       } catch (error) {
         importSucceeded = false;
@@ -689,7 +689,7 @@ describe('step Factory Additional Coverage', () => {
       let enhancers: any = null;
 
       try {
-        enhancers = await import('@/shared/factories/step-factory-enhancers');
+        enhancers = await import('#/shared/factories/step-factory-enhancers');
         importSucceeded = true;
       } catch (error) {
         importSucceeded = false;
@@ -982,7 +982,7 @@ describe('step Factory Additional Coverage', () => {
       let performance: any = null;
 
       try {
-        performance = await import('@/shared/factories/step-factory/step-performance');
+        performance = await import('#/shared/factories/step-factory/step-performance');
         importSucceeded = true;
       } catch (error) {
         importSucceeded = false;
@@ -1021,7 +1021,7 @@ describe('step Factory Additional Coverage', () => {
       let performanceModule: any = null;
 
       try {
-        performanceModule = await import('@/shared/factories/step-factory/step-performance');
+        performanceModule = await import('#/shared/factories/step-factory/step-performance');
         importSucceeded = true;
       } catch (error) {
         importSucceeded = false;
@@ -1074,7 +1074,7 @@ describe('step Factory Additional Coverage', () => {
       let performanceModule: any = null;
 
       try {
-        performanceModule = await import('@/shared/factories/step-factory/step-performance');
+        performanceModule = await import('#/shared/factories/step-factory/step-performance');
         importSucceeded = true;
       } catch (error) {
         importSucceeded = false;
@@ -1129,7 +1129,7 @@ describe('step Factory Additional Coverage', () => {
       let validation: any = null;
 
       try {
-        validation = await import('@/shared/factories/step-factory/step-validation');
+        validation = await import('#/shared/factories/step-factory/step-validation');
         importSucceeded = true;
       } catch (error) {
         importSucceeded = false;
@@ -1166,7 +1166,7 @@ describe('step Factory Additional Coverage', () => {
       let validationModule: any = null;
 
       try {
-        validationModule = await import('@/shared/factories/step-factory/step-validation');
+        validationModule = await import('#/shared/factories/step-factory/step-validation');
         importSucceeded = true;
       } catch (error) {
         importSucceeded = false;
@@ -1217,7 +1217,7 @@ describe('step Factory Additional Coverage', () => {
       let validationModule: any = null;
 
       try {
-        validationModule = await import('@/shared/factories/step-factory/step-validation');
+        validationModule = await import('#/shared/factories/step-factory/step-validation');
         importSucceeded = true;
       } catch (error) {
         importSucceeded = false;

@@ -1,9 +1,9 @@
-import { CartStatus } from '@/prisma-generated/client';
+import { CartStatus } from '#/prisma-generated/client';
 import {
   extractCartItems,
   findVariantForCartItem,
   mapWebappCartToPrisma,
-} from '@/prisma/src/seed/mappers/cart-mapper';
+} from '#/prisma/src/seed/mappers/cart-mapper';
 import { describe, expect, it } from 'vitest';
 
 describe('cart-mapper', () => {

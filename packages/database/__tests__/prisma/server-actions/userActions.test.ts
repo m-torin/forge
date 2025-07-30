@@ -23,7 +23,7 @@ const mockPrisma = {
   $transaction: vi.fn(),
 };
 
-vi.mock('@/prisma', () => ({
+vi.mock('#/prisma', () => ({
   prisma: mockPrisma,
 }));
 
@@ -34,7 +34,7 @@ describe('User Actions', () => {
 
   describe('createUser', () => {
     it('should create a new user with valid data', async () => {
-      const { createUser } = await import('@/prisma/src/server-actions/userActions');
+      const { createUser } = await import('#/prisma/src/server-actions/userActions');
 
       const userData = createTestUser();
       const expectedUser = { id: 'user-1', ...userData };
@@ -50,7 +50,7 @@ describe('User Actions', () => {
     });
 
     it('should handle user creation errors', async () => {
-      const { createUser } = await import('@/prisma/src/server-actions/userActions');
+      const { createUser } = await import('#/prisma/src/server-actions/userActions');
 
       const userData = createTestUser();
       const error = new Error('Database connection failed');
@@ -61,7 +61,7 @@ describe('User Actions', () => {
     });
 
     it('should validate required fields', async () => {
-      const { createUser } = await import('@/prisma/src/server-actions/userActions');
+      const { createUser } = await import('#/prisma/src/server-actions/userActions');
 
       const invalidUserData = { name: '' }; // Missing required fields
 
@@ -71,7 +71,7 @@ describe('User Actions', () => {
 
   describe('getUserById', () => {
     it('should retrieve user by ID', async () => {
-      const { getUserById } = await import('@/prisma/src/server-actions/userActions');
+      const { getUserById } = await import('#/prisma/src/server-actions/userActions');
 
       const userId = 'user-1';
       const expectedUser = createTestUser({ id: userId });
@@ -87,7 +87,7 @@ describe('User Actions', () => {
     });
 
     it('should return null for non-existent user', async () => {
-      const { getUserById } = await import('@/prisma/src/server-actions/userActions');
+      const { getUserById } = await import('#/prisma/src/server-actions/userActions');
 
       const userId = 'non-existent';
 
@@ -99,7 +99,7 @@ describe('User Actions', () => {
     });
 
     it('should handle database errors', async () => {
-      const { getUserById } = await import('@/prisma/src/server-actions/userActions');
+      const { getUserById } = await import('#/prisma/src/server-actions/userActions');
 
       const userId = 'user-1';
       const error = new Error('Database timeout');
@@ -112,7 +112,7 @@ describe('User Actions', () => {
 
   describe('updateUser', () => {
     it('should update user data', async () => {
-      const { updateUser } = await import('@/prisma/src/server-actions/userActions');
+      const { updateUser } = await import('#/prisma/src/server-actions/userActions');
 
       const userId = 'user-1';
       const updateData = { name: 'Updated Name', email: 'updated@example.com' };
@@ -130,7 +130,7 @@ describe('User Actions', () => {
     });
 
     it('should handle update validation errors', async () => {
-      const { updateUser } = await import('@/prisma/src/server-actions/userActions');
+      const { updateUser } = await import('#/prisma/src/server-actions/userActions');
 
       const userId = 'user-1';
       const invalidData = { email: 'invalid-email' };
@@ -141,7 +141,7 @@ describe('User Actions', () => {
 
   describe('deleteUser', () => {
     it('should delete user by ID', async () => {
-      const { deleteUser } = await import('@/prisma/src/server-actions/userActions');
+      const { deleteUser } = await import('#/prisma/src/server-actions/userActions');
 
       const userId = 'user-1';
       const deletedUser = createTestUser({ id: userId });
@@ -157,7 +157,7 @@ describe('User Actions', () => {
     });
 
     it('should handle deletion of non-existent user', async () => {
-      const { deleteUser } = await import('@/prisma/src/server-actions/userActions');
+      const { deleteUser } = await import('#/prisma/src/server-actions/userActions');
 
       const userId = 'non-existent';
       const error = new Error('Record not found');
@@ -170,7 +170,7 @@ describe('User Actions', () => {
 
   describe('listUsers', () => {
     it('should list users with default pagination', async () => {
-      const { listUsers } = await import('@/prisma/src/server-actions/userActions');
+      const { listUsers } = await import('#/prisma/src/server-actions/userActions');
 
       const users = [createTestUser({ id: 'user-1' }), createTestUser({ id: 'user-2' })];
 
@@ -187,7 +187,7 @@ describe('User Actions', () => {
     });
 
     it('should support custom pagination', async () => {
-      const { listUsers } = await import('@/prisma/src/server-actions/userActions');
+      const { listUsers } = await import('#/prisma/src/server-actions/userActions');
 
       const options = { limit: 10, offset: 5 };
       const users = [createTestUser({ id: 'user-1' })];
@@ -205,7 +205,7 @@ describe('User Actions', () => {
     });
 
     it('should support filtering and search', async () => {
-      const { listUsers } = await import('@/prisma/src/server-actions/userActions');
+      const { listUsers } = await import('#/prisma/src/server-actions/userActions');
 
       const options = { search: 'john', status: 'active' };
       const users = [createTestUser({ id: 'user-1', name: 'John Doe' })];
@@ -232,7 +232,7 @@ describe('User Actions', () => {
 
   describe('getUserCount', () => {
     it('should return total user count', async () => {
-      const { getUserCount } = await import('@/prisma/src/server-actions/userActions');
+      const { getUserCount } = await import('#/prisma/src/server-actions/userActions');
 
       const expectedCount = 150;
 
@@ -245,7 +245,7 @@ describe('User Actions', () => {
     });
 
     it('should support filtered count', async () => {
-      const { getUserCount } = await import('@/prisma/src/server-actions/userActions');
+      const { getUserCount } = await import('#/prisma/src/server-actions/userActions');
 
       const filter = { status: 'active' };
       const expectedCount = 120;
@@ -263,7 +263,7 @@ describe('User Actions', () => {
 
   describe('transaction operations', () => {
     it('should handle bulk user operations in transaction', async () => {
-      const { bulkCreateUsers } = await import('@/prisma/src/server-actions/userActions');
+      const { bulkCreateUsers } = await import('#/prisma/src/server-actions/userActions');
 
       const usersData = [createTestUser({ id: 'user-1' }), createTestUser({ id: 'user-2' })];
 
@@ -278,7 +278,7 @@ describe('User Actions', () => {
     });
 
     it('should rollback transaction on error', async () => {
-      const { bulkCreateUsers } = await import('@/prisma/src/server-actions/userActions');
+      const { bulkCreateUsers } = await import('#/prisma/src/server-actions/userActions');
 
       const usersData = [createTestUser({ id: 'user-1' }), createTestUser({ id: 'user-2' })];
 
@@ -291,7 +291,7 @@ describe('User Actions', () => {
 
   describe('error handling and edge cases', () => {
     it('should handle empty input gracefully', async () => {
-      const { listUsers } = await import('@/prisma/src/server-actions/userActions');
+      const { listUsers } = await import('#/prisma/src/server-actions/userActions');
 
       mockPrisma.user.findMany.mockResolvedValue([]);
 
@@ -301,7 +301,7 @@ describe('User Actions', () => {
     });
 
     it('should validate pagination limits', async () => {
-      const { listUsers } = await import('@/prisma/src/server-actions/userActions');
+      const { listUsers } = await import('#/prisma/src/server-actions/userActions');
 
       const options = { limit: 1000 }; // Exceeds maximum
 
@@ -309,7 +309,7 @@ describe('User Actions', () => {
     });
 
     it('should sanitize search input', async () => {
-      const { listUsers } = await import('@/prisma/src/server-actions/userActions');
+      const { listUsers } = await import('#/prisma/src/server-actions/userActions');
 
       const options = { search: '<script>alert("xss")</script>' };
 
@@ -325,7 +325,7 @@ describe('User Actions', () => {
 
   describe('performance considerations', () => {
     it('should include performance-critical fields in queries', async () => {
-      const { getUserWithProfile } = await import('@/prisma/src/server-actions/userActions');
+      const { getUserWithProfile } = await import('#/prisma/src/server-actions/userActions');
 
       const userId = 'user-1';
       const userWithProfile = {
@@ -353,7 +353,7 @@ describe('User Actions', () => {
     });
 
     it('should use efficient indexing for large datasets', async () => {
-      const { searchUsersByEmail } = await import('@/prisma/src/server-actions/userActions');
+      const { searchUsersByEmail } = await import('#/prisma/src/server-actions/userActions');
 
       const email = 'test@example.com';
       const users = [createTestUser({ email })];

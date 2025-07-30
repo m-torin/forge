@@ -170,9 +170,9 @@ async function uploadWithStoragePackage(
     }
 
     return result.url;
-  } catch (_error) {
-    if (_error instanceof Error) {
-      throw _error;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
     }
     throw new Error('Failed to upload image');
   }
@@ -225,7 +225,7 @@ async function uploadWithCustomEndpoint(
           } else {
             reject(new Error('No URL returned from upload endpoint'));
           }
-        } catch (error) {
+        } catch (_error) {
           reject(new Error('Invalid response from upload endpoint'));
         }
       } else {

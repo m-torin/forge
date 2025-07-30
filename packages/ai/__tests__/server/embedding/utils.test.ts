@@ -1,5 +1,5 @@
 // Assign mocks to globalThis to avoid hoisting issues
-import type { EmbedOptions } from '@/shared/types';
+import type { EmbedOptions } from '#/shared/types';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 // Create mock functions
@@ -32,14 +32,14 @@ describe('embeddingManager', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    const mod = await import('@/server/embedding/utils');
+    const mod = await import('#/server/embedding/utils');
     EmbeddingManager = mod.EmbeddingManager;
     manager = new EmbeddingManager();
   });
 
   describe('constructor', () => {
     test('should create manager with default model', async () => {
-      const mod = await import('@/server/embedding/utils');
+      const mod = await import('#/server/embedding/utils');
       const EmbeddingManager = mod.EmbeddingManager;
       const manager = new EmbeddingManager();
       expect(manager).toBeInstanceOf(EmbeddingManager);
@@ -49,7 +49,7 @@ describe('embeddingManager', () => {
     });
 
     test('should create manager with custom model', async () => {
-      const mod = await import('@/server/embedding/utils');
+      const mod = await import('#/server/embedding/utils');
       const EmbeddingManager = mod.EmbeddingManager;
       new EmbeddingManager('text-embedding-3-large');
       expect((globalThis as any).mockOpenaiEmbedding).toHaveBeenCalledWith(
@@ -58,7 +58,7 @@ describe('embeddingManager', () => {
     });
 
     test('should use default model when no model specified', async () => {
-      const mod = await import('@/server/embedding/utils');
+      const mod = await import('#/server/embedding/utils');
       const EmbeddingManager = mod.EmbeddingManager;
       new EmbeddingManager();
       expect((globalThis as any).mockOpenaiEmbedding).toHaveBeenCalledWith(
@@ -312,13 +312,13 @@ describe('embeddingManager', () => {
 
 describe('createEmbeddingManager', () => {
   test('should create EmbeddingManager instance', async () => {
-    const mod = await import('@/server/embedding/utils');
+    const mod = await import('#/server/embedding/utils');
     const manager = mod.createEmbeddingManager();
     expect(manager).toBeInstanceOf(mod.EmbeddingManager);
   });
 
   test('should pass model name to constructor', async () => {
-    const mod = await import('@/server/embedding/utils');
+    const mod = await import('#/server/embedding/utils');
     mod.createEmbeddingManager('custom-model');
     expect((globalThis as any).mockOpenaiEmbedding).toHaveBeenCalledWith('custom-model');
   });
@@ -328,7 +328,7 @@ describe('embedding utility functions', () => {
   let embedding: any;
   beforeEach(async () => {
     vi.clearAllMocks();
-    const mod = await import('@/server/embedding/utils');
+    const mod = await import('#/server/embedding/utils');
     embedding = mod.embedding;
   });
 

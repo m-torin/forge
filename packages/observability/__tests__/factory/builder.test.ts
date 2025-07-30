@@ -1,4 +1,4 @@
-import { ObservabilityBuilder } from '@/factory/builder';
+import { ObservabilityBuilder } from '#/factory/builder';
 import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Use centralized test utilities

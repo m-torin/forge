@@ -44,7 +44,7 @@ const mockPrisma = {
   $transaction: vi.fn(),
 };
 
-vi.mock('@/prisma', () => ({
+vi.mock('#/prisma', () => ({
   prisma: mockPrisma,
 }));
 
@@ -55,7 +55,7 @@ describe('Product ORM', () => {
 
   describe('Product Creation', () => {
     it('should create a product with basic information', async () => {
-      const { createProduct } = await import('@/prisma/src/orm/ecommerce/productOrm');
+      const { createProduct } = await import('#/prisma/src/orm/ecommerce/productOrm');
 
       const productData = createTestProduct({
         name: 'Test Product',
@@ -86,7 +86,7 @@ describe('Product ORM', () => {
     });
 
     it('should create product with variants', async () => {
-      const { createProductWithVariants } = await import('@/prisma/src/orm/ecommerce/productOrm');
+      const { createProductWithVariants } = await import('#/prisma/src/orm/ecommerce/productOrm');
 
       const productData = createTestProduct();
       const variantsData = [
@@ -109,7 +109,7 @@ describe('Product ORM', () => {
     });
 
     it('should generate unique slug for products with same name', async () => {
-      const { createProduct } = await import('@/prisma/src/orm/ecommerce/productOrm');
+      const { createProduct } = await import('#/prisma/src/orm/ecommerce/productOrm');
 
       const productData = createTestProduct({ name: 'Duplicate Product' });
 
@@ -133,7 +133,7 @@ describe('Product ORM', () => {
 
   describe('Product Retrieval', () => {
     it('should find product by ID with all relations', async () => {
-      const { getProductById } = await import('@/prisma/src/orm/ecommerce/productOrm');
+      const { getProductById } = await import('#/prisma/src/orm/ecommerce/productOrm');
 
       const productId = 'prod-1';
       const expectedProduct = {
@@ -185,7 +185,7 @@ describe('Product ORM', () => {
     });
 
     it('should find product by slug', async () => {
-      const { getProductBySlug } = await import('@/prisma/src/orm/ecommerce/productOrm');
+      const { getProductBySlug } = await import('#/prisma/src/orm/ecommerce/productOrm');
 
       const slug = 'test-product';
       const expectedProduct = createTestProduct({ slug });
@@ -202,7 +202,7 @@ describe('Product ORM', () => {
     });
 
     it('should search products with filters', async () => {
-      const { searchProducts } = await import('@/prisma/src/orm/ecommerce/productOrm');
+      const { searchProducts } = await import('#/prisma/src/orm/ecommerce/productOrm');
 
       const filters = {
         query: 'electronics',
@@ -285,7 +285,7 @@ describe('Product ORM', () => {
 
   describe('Product Updates', () => {
     it('should update basic product information', async () => {
-      const { updateProduct } = await import('@/prisma/src/orm/ecommerce/productOrm');
+      const { updateProduct } = await import('#/prisma/src/orm/ecommerce/productOrm');
 
       const productId = 'prod-1';
       const updateData = {
@@ -316,7 +316,7 @@ describe('Product ORM', () => {
     });
 
     it('should update product categories', async () => {
-      const { updateProductCategories } = await import('@/prisma/src/orm/ecommerce/productOrm');
+      const { updateProductCategories } = await import('#/prisma/src/orm/ecommerce/productOrm');
 
       const productId = 'prod-1';
       const categoryIds = ['cat-1', 'cat-3', 'cat-5'];
@@ -347,7 +347,7 @@ describe('Product ORM', () => {
     });
 
     it('should update product inventory across variants', async () => {
-      const { updateProductInventory } = await import('@/prisma/src/orm/ecommerce/productOrm');
+      const { updateProductInventory } = await import('#/prisma/src/orm/ecommerce/productOrm');
 
       const productId = 'prod-1';
       const inventoryUpdates = [
@@ -366,7 +366,7 @@ describe('Product ORM', () => {
 
   describe('Product Deletion', () => {
     it('should soft delete product', async () => {
-      const { deleteProduct } = await import('@/prisma/src/orm/ecommerce/productOrm');
+      const { deleteProduct } = await import('#/prisma/src/orm/ecommerce/productOrm');
 
       const productId = 'prod-1';
       const deletedProduct = {
@@ -390,7 +390,7 @@ describe('Product ORM', () => {
     });
 
     it('should permanently delete product with cascade', async () => {
-      const { permanentlyDeleteProduct } = await import('@/prisma/src/orm/ecommerce/productOrm');
+      const { permanentlyDeleteProduct } = await import('#/prisma/src/orm/ecommerce/productOrm');
 
       const productId = 'prod-1';
 
@@ -409,7 +409,7 @@ describe('Product ORM', () => {
 
   describe('Product Analytics', () => {
     it('should get product performance metrics', async () => {
-      const { getProductMetrics } = await import('@/prisma/src/orm/ecommerce/productOrm');
+      const { getProductMetrics } = await import('#/prisma/src/orm/ecommerce/productOrm');
 
       const productId = 'prod-1';
       const dateRange = {
@@ -441,7 +441,7 @@ describe('Product ORM', () => {
     });
 
     it('should get top selling products', async () => {
-      const { getTopSellingProducts } = await import('@/prisma/src/orm/ecommerce/productOrm');
+      const { getTopSellingProducts } = await import('#/prisma/src/orm/ecommerce/productOrm');
 
       const options = {
         limit: 10,
@@ -507,7 +507,7 @@ describe('Product ORM', () => {
 
   describe('Error Handling', () => {
     it('should handle duplicate SKU errors', async () => {
-      const { createProduct } = await import('@/prisma/src/orm/ecommerce/productOrm');
+      const { createProduct } = await import('#/prisma/src/orm/ecommerce/productOrm');
 
       const productData = createTestProduct({ sku: 'DUPLICATE-SKU' });
 
@@ -519,7 +519,7 @@ describe('Product ORM', () => {
     });
 
     it('should handle invalid category assignments', async () => {
-      const { updateProductCategories } = await import('@/prisma/src/orm/ecommerce/productOrm');
+      const { updateProductCategories } = await import('#/prisma/src/orm/ecommerce/productOrm');
 
       const productId = 'prod-1';
       const invalidCategoryIds = ['invalid-cat-1', 'invalid-cat-2'];
@@ -534,7 +534,7 @@ describe('Product ORM', () => {
     });
 
     it('should validate price ranges', async () => {
-      const { createProduct } = await import('@/prisma/src/orm/ecommerce/productOrm');
+      const { createProduct } = await import('#/prisma/src/orm/ecommerce/productOrm');
 
       const productData = createTestProduct({ price: -10 });
 
@@ -544,7 +544,7 @@ describe('Product ORM', () => {
 
   describe('Performance Optimizations', () => {
     it('should use efficient queries for large product catalogs', async () => {
-      const { getProductsForCatalog } = await import('@/prisma/src/orm/ecommerce/productOrm');
+      const { getProductsForCatalog } = await import('#/prisma/src/orm/ecommerce/productOrm');
 
       const options = {
         limit: 100,
@@ -591,7 +591,7 @@ describe('Product ORM', () => {
     });
 
     it('should batch update operations efficiently', async () => {
-      const { batchUpdateProductPrices } = await import('@/prisma/src/orm/ecommerce/productOrm');
+      const { batchUpdateProductPrices } = await import('#/prisma/src/orm/ecommerce/productOrm');
 
       const priceUpdates = [
         { productId: 'prod-1', price: 29.99 },

@@ -1,5 +1,5 @@
-import { SentimentAnalyzer } from '@/shared/features/sentiment/sentiment-analyzer';
-import type { AIProvider } from '@/shared/types/provider';
+import { SentimentAnalyzer } from '#/shared/features/sentiment/sentiment-analyzer';
+import type { AIProvider } from '#/shared/types/provider';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 // Mock provider

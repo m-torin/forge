@@ -39,7 +39,10 @@
     "@repo/eslint-config": "workspace:*",
     "@repo/qa": "workspace:*",
     "@t3-oss/env-nextjs": "catalog:",
+    "@vitest/ui": "catalog:",
     "next": "catalog:",
+    "vite-tsconfig-paths": "catalog:",
+    "vitest": "catalog:",
     "zod": "catalog:"
   }
 }

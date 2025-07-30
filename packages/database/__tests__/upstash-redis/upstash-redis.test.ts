@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Test imports for new four-file pattern
-import { RedisOperations } from '@/redis/server';
+import { RedisOperations } from '#/redis/server';
 import type { Redis } from '@upstash/redis';
 
 // Mock the Upstash Redis module

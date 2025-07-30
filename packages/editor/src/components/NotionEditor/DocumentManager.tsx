@@ -282,8 +282,15 @@ export function DocumentManager({
               {filteredDocuments.map(doc => (
                 <div
                   key={doc.id}
+                  role="button"
+                  tabIndex={0}
                   className="group flex cursor-pointer items-center gap-4 p-4 transition-colors hover:bg-gray-50"
                   onClick={() => onLoadDocument(doc.id)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      onLoadDocument(doc.id);
+                    }
+                  }}
                 >
                   {/* Favorite Star */}
                   <button

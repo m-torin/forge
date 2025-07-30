@@ -1,6 +1,8 @@
 import { createReactPackageConfig } from '@repo/qa/vitest/configs';
+import tsconfigPaths from 'vite-tsconfig-paths';
+import { defineConfig } from 'vitest/config';
 
-export default createReactPackageConfig({
+const baseConfig = createReactPackageConfig({
   setupFiles: ['./__tests__/setup.ts'],
   overrides: {
     test: {
@@ -38,4 +40,9 @@ export default createReactPackageConfig({
       },
     },
   },
+});
+
+export default defineConfig({
+  ...baseConfig,
+  plugins: [...(baseConfig.plugins || []), tsconfigPaths()],
 });

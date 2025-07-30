@@ -206,12 +206,12 @@ export const createAITestConfig = (overrides = {}) => ({
 
 // Common AI test creation patterns
 export const createTestAI = async (config = createAITestConfig()) => {
-  const { createAI } = await import('@/server');
+  const { createAI } = await import('#/server');
   return createAI(config);
 };
 
 export const createTestClientAI = async (config = createAITestConfig()) => {
-  const { createClientAI } = await import('@/client');
+  const { createClientAI } = await import('#/client');
   return createClientAI(config);
 };
 

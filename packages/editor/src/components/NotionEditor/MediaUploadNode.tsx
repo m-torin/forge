@@ -46,6 +46,7 @@ export interface MediaUploadProps extends MediaUploadOptions {
   updateAttributes: (attributes: Record<string, any>) => void;
   deleteNode: () => void;
   editor: any;
+  _editor?: any;
 }
 
 interface UploadState {
@@ -317,7 +318,7 @@ const MediaUploadComponent = forwardRef<any, MediaUploadProps>(
       node,
       updateAttributes,
       deleteNode,
-      editor,
+      _editor,
       accept = 'image/*,video/*,audio/*',
       maxSize,
       maxSizes = {},
@@ -567,7 +568,7 @@ const MediaUploadComponent = forwardRef<any, MediaUploadProps>(
       if (uploadState.uploading) return;
       // Use Mantine's file dialog instead of native file input
       fileDialog.open();
-    }, [uploadState.uploading, fileDialog.open]);
+    }, [uploadState.uploading, fileDialog]);
 
     const handleCancel = useCallback(() => {
       if (abortControllerRef.current) {

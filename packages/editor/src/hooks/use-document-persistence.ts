@@ -54,7 +54,7 @@ export function useDocumentPersistence(
     title = 'Untitled Document',
     autoSave = { enabled: true, interval: 30000 }, // 30 seconds
     enableRecovery = true,
-    enableCompression = false, // Disabled by default for now
+    enableCompression: _enableCompression = false, // Disabled by default for now
     storageQuotaWarning = 80, // Warn at 80% storage usage
     maxStorageSize = 50 * 1024 * 1024, // 50MB default limit
   } = options;

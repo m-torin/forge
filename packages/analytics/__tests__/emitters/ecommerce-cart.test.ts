@@ -5,8 +5,8 @@ import {
   cartUpdated,
   cartViewed,
   checkoutProgressed,
-} from '@/shared/emitters/ecommerce/events/cart-checkout';
-import { ECOMMERCE_EVENTS } from '@/shared/emitters/ecommerce/types';
+} from '#/shared/emitters/ecommerce/events/cart-checkout';
+import { ECOMMERCE_EVENTS } from '#/shared/emitters/ecommerce/types';
 
 import type {
   BaseProductProperties,
@@ -14,7 +14,7 @@ import type {
   CartProperties,
   CartUpdateProperties,
   CheckoutProgressProperties,
-} from '@/shared/emitters/ecommerce/types';
+} from '#/shared/emitters/ecommerce/types';
 
 // Mock the trackEcommerce function
 vi.mock('../../shared/emitters/ecommerce/track-ecommerce', () => ({

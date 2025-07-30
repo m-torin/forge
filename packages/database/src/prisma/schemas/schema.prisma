@@ -9,13 +9,14 @@ generator client {
   previewFeatures = ["driverAdapters"]
 }
 
+generator zod {
+  provider          = "prisma-zod-generator"
+  output            = "../../../prisma-generated/zod"
+  isGenerateSelect  = true
+  isGenerateInclude = true
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-
-// generator zod {
-//   provider         = "npx  zod-prisma-types"
-//   output           = "../../../prisma-generated/zod"
-//   useMultipleFiles = true
-// }

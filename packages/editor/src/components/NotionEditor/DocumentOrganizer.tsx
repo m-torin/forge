@@ -99,18 +99,18 @@ export function DocumentOrganizer({
   onCreateFolder,
   onUpdateFolder,
   onDeleteFolder,
-  onMoveDocumentToFolder,
+  onMoveDocumentToFolder: _onMoveDocumentToFolder,
   onCreateTag,
   onUpdateTag,
   onDeleteTag,
-  onAddTagToDocument,
-  onRemoveTagFromDocument,
+  onAddTagToDocument: _onAddTagToDocument,
+  onRemoveTagFromDocument: _onRemoveTagFromDocument,
   onSelectDocument,
   onTogglePin,
   onToggleArchive,
   className,
   showCreateButtons = true,
-  enableDragDrop = true,
+  enableDragDrop: _enableDragDrop = true,
 }: DocumentOrganizerProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('folders');
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
@@ -189,7 +189,14 @@ export function DocumentOrganizer({
     return (
       <div
         key={doc.id}
+        role="button"
+        tabIndex={0}
         onClick={() => onSelectDocument(doc.id)}
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            onSelectDocument(doc.id);
+          }
+        }}
         className="group flex cursor-pointer items-center gap-3 rounded-lg p-3 transition-colors hover:bg-gray-50"
       >
         <IconFile size={16} className="flex-shrink-0 text-gray-500" />

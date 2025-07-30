@@ -6,8 +6,7 @@
     "types": ["vitest/globals"],
     "baseUrl": ".",
     "paths": {
-      "@repo/*": ["../*"],
-      "@/*": ["./src/*"]
+      "#/*": ["./src/*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx"],

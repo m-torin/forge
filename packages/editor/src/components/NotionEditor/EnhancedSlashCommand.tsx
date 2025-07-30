@@ -157,7 +157,7 @@ interface SlashSuggestionProps extends SuggestionProps<SlashCommandItem> {}
 
 // Slash suggestion component
 const SlashSuggestion = forwardRef<SlashSuggestionRef, SlashSuggestionProps>(
-  ({ items, command, editor, range, query }, ref) => {
+  ({ items, command, editor: _editor, range: _range, query }, ref) => {
     const [selectedIndex, setSelectedIndex] = useState(0);
 
     // Group commands by category
@@ -276,12 +276,15 @@ const SlashSuggestion = forwardRef<SlashSuggestionRef, SlashSuggestionProps>(
                   </div>
                   {item.shortcut && (
                     <div className="flex flex-shrink-0 items-center gap-1">
-                      {item.shortcut.split('+').map((key, keyIndex) => (
-                        <span key={keyIndex} className="inline-flex">
+                      {item.shortcut.split('+').map((key, keyIndex, arr) => (
+                        <span
+                          key={`${item.title}-shortcut-${key}-${key.length}`}
+                          className="inline-flex"
+                        >
                           <kbd className="rounded border border-gray-300 bg-gray-100 px-1.5 py-0.5 text-xs font-semibold text-gray-600 shadow-sm">
                             {key.replace('Cmd', '⌘').replace('Shift', '⇧').replace('Alt', '⌥')}
                           </kbd>
-                          {keyIndex < (item.shortcut?.split('+').length || 0) - 1 && (
+                          {keyIndex < arr.length - 1 && (
                             <span className="mx-0.5 text-gray-400">+</span>
                           )}
                         </span>
@@ -330,7 +333,7 @@ export const EnhancedSlashCommand = Extension.create<{
             logWarn('Slash command failed to execute:', props.title);
           }
         },
-        items: ({ query, editor }: { query: string; editor: Editor }) => {
+        items: ({ query, editor: _editor }: { query: string; editor: Editor }) => {
           return ENHANCED_SLASH_COMMANDS.filter(item => {
             const lowercaseQuery = query.toLowerCase();
             return (

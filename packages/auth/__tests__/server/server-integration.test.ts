@@ -52,7 +52,7 @@ describe('server Integration Tests', () => {
 
   describe('server helpers', () => {
     test('should validate user permissions', async () => {
-      const { validateUserPermissions, hasPermission } = await import('@/server/helpers');
+      const { validateUserPermissions, hasPermission } = await import('#/server/helpers');
 
       const user = { id: '1', role: 'admin' };
       const permissions = ['read', 'write'];
@@ -65,7 +65,7 @@ describe('server Integration Tests', () => {
     });
 
     test('should handle user session management', async () => {
-      const { validateSession, createSession } = await import('@/server/helpers');
+      const { validateSession, createSession } = await import('#/server/helpers');
 
       // Mock session validation
       const sessionResult = await validateSession('test-session-id');
@@ -77,10 +77,10 @@ describe('server Integration Tests', () => {
     });
   });
 
-  describe('API key service authentication', () => {
+  describe('aPI key service authentication', () => {
     test('should create service auth tokens', async () => {
       const { createServiceAuth, verifyServiceAuth } = await import(
-        '@/server/api-keys/service-auth'
+        '#/server/api-keys/service-auth'
       );
 
       // Test service auth creation
@@ -97,7 +97,7 @@ describe('server Integration Tests', () => {
     });
 
     test('should handle token parsing from headers', async () => {
-      const { parseServiceToken } = await import('@/server/api-keys/service-auth');
+      const { parseServiceToken } = await import('#/server/api-keys/service-auth');
 
       // Mock headers object
       const headers = new Headers();
@@ -108,10 +108,10 @@ describe('server Integration Tests', () => {
     });
   });
 
-  describe('API key validation', () => {
+  describe('aPI key validation', () => {
     test('should validate API key format and permissions', async () => {
       const { validateApiKey, validateApiKeyPermissions } = await import(
-        '@/server/api-keys/validation'
+        '#/server/api-keys/validation'
       );
 
       const apiKey = {
@@ -121,7 +121,7 @@ describe('server Integration Tests', () => {
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
       };
 
-      const validationResult = validateApiKey(apiKey);
+      const validationResult = await validateApiKey(new Headers());
       expect(validationResult).toBeDefined();
       expect(typeof validationResult.isValid).toBe('boolean');
 
@@ -132,7 +132,7 @@ describe('server Integration Tests', () => {
 
   describe('middleware integration', () => {
     test('should create API middleware', async () => {
-      const { createApiMiddleware } = await import('@/server/middleware/api');
+      const { createApiMiddleware } = await import('#/server/middleware/api');
 
       const middleware = createApiMiddleware({
         requireAuth: true,
@@ -143,7 +143,7 @@ describe('server Integration Tests', () => {
     });
 
     test('should create web middleware', async () => {
-      const { createWebMiddleware } = await import('@/server/middleware/web');
+      const { createWebMiddleware } = await import('#/server/middleware/web');
 
       const middleware = createWebMiddleware({
         publicPaths: ['/login', '/signup'],
@@ -154,7 +154,7 @@ describe('server Integration Tests', () => {
     });
 
     test('should create Node.js middleware', async () => {
-      const { createNodeMiddleware } = await import('@/server/middleware/node');
+      const { createNodeMiddleware } = await import('#/server/middleware/node');
 
       const middleware = createNodeMiddleware({
         sessionRequired: true,
@@ -167,14 +167,14 @@ describe('server Integration Tests', () => {
   describe('organization management', () => {
     test('should handle organization operations', async () => {
       const { createOrganization, getOrganization, updateOrganization } = await import(
-        '@/server/organizations/management'
+        '#/server/organizations/management'
       );
 
       // Test organization creation
       const createResult = await createOrganization({
         name: 'Test Org',
         slug: 'test-org',
-        ownerId: 'user-1',
+        description: 'Test Organization',
       });
       expect(createResult).toBeDefined();
 
@@ -183,7 +183,8 @@ describe('server Integration Tests', () => {
       expect(getResult).toBeDefined();
 
       // Test updating organization
-      const updateResult = await updateOrganization('org-1', {
+      const updateResult = await updateOrganization({
+        organizationId: 'org-1',
         name: 'Updated Org',
       });
       expect(updateResult).toBeDefined();
@@ -191,7 +192,7 @@ describe('server Integration Tests', () => {
 
     test('should handle organization permissions', async () => {
       const { checkOrganizationPermission, getUserOrganizationRole } = await import(
-        '@/server/organizations/permissions'
+        '#/server/organizations/permissions'
       );
 
       const hasPermission = await checkOrganizationPermission('user-1', 'org-1', 'admin');
@@ -203,7 +204,7 @@ describe('server Integration Tests', () => {
 
     test('should handle service accounts', async () => {
       const { createServiceAccount, getServiceAccount } = await import(
-        '@/server/organizations/service-accounts'
+        '#/server/organizations/service-accounts'
       );
 
       const createResult = await createServiceAccount({
@@ -213,7 +214,10 @@ describe('server Integration Tests', () => {
       });
       expect(createResult).toBeDefined();
 
-      const getResult = await getServiceAccount('service-1');
+      const getResult = await getServiceAccount({
+        serviceAccountId: 'service-1',
+        organizationId: 'org-1',
+      });
       expect(getResult).toBeDefined();
     });
   });
@@ -221,7 +225,7 @@ describe('server Integration Tests', () => {
   describe('team management', () => {
     test('should handle team operations', async () => {
       const { createTeam, addTeamMember, removeTeamMember } = await import(
-        '@/server/teams/actions'
+        '#/server/teams/actions'
       );
 
       // Test team creation
@@ -232,7 +236,7 @@ describe('server Integration Tests', () => {
       expect(createResult).toBeDefined();
 
       // Test adding team member
-      const addResult = await addTeamMember('team-1', 'user-1', 'member');
+      const addResult = await addTeamMember('team-1', 'user-1');
       expect(addResult).toBeDefined();
 
       // Test removing team member
@@ -241,7 +245,7 @@ describe('server Integration Tests', () => {
     });
 
     test('should handle team permissions', async () => {
-      const { checkTeamPermission, getUserTeamRole } = await import('@/server/teams/permissions');
+      const { checkTeamPermission, getUserTeamRole } = await import('#/server/teams/permissions');
 
       const hasPermission = await checkTeamPermission('user-1', 'team-1', 'write');
       expect(typeof hasPermission).toBe('boolean');
@@ -253,7 +257,7 @@ describe('server Integration Tests', () => {
 
   describe('security plugins', () => {
     test('should validate account security', async () => {
-      const { validateAccountSecurity } = await import('@/server/plugins/account-security');
+      const { validateAccountSecurity } = await import('#/server/plugins/account-security');
 
       const result = await validateAccountSecurity({
         userId: 'user-1',
@@ -265,21 +269,21 @@ describe('server Integration Tests', () => {
     });
 
     test('should handle password policy validation', async () => {
-      const { validatePasswordPolicy } = await import('@/server/plugins/password-policy');
+      const { validatePasswordPolicy } = await import('#/server/plugins/password-policy');
 
       const strongPassword = 'SecurePassword123!';
       const weakPassword = 'weak';
 
       const strongResult = validatePasswordPolicy(strongPassword);
-      expect(strongResult.isValid).toBe(true);
+      expect(strongResult.isValid).toBeTruthy();
 
       const weakResult = validatePasswordPolicy(weakPassword);
-      expect(weakResult.isValid).toBe(false);
-      expect(Array.isArray(weakResult.errors)).toBe(true);
+      expect(weakResult.isValid).toBeFalsy();
+      expect(Array.isArray(weakResult.errors)).toBeTruthy();
     });
 
     test('should handle rate limiting', async () => {
-      const { checkRateLimit } = await import('@/server/plugins/rate-limiter');
+      const { checkRateLimit } = await import('#/server/plugins/rate-limiter');
 
       const result = await checkRateLimit({
         identifier: 'user-1',
@@ -291,7 +295,7 @@ describe('server Integration Tests', () => {
     });
 
     test('should log audit events', async () => {
-      const { logAuditEvent } = await import('@/server/plugins/audit-logger');
+      const { logAuditEvent } = await import('#/server/plugins/audit-logger');
 
       const result = await logAuditEvent({
         userId: 'user-1',
@@ -306,32 +310,33 @@ describe('server Integration Tests', () => {
 
   describe('error handling', () => {
     test('should handle database connection errors', async () => {
-      // Mock database error
-      vi.mocked(
-        vi.importActual('@repo/database/prisma/server/next'),
-      ).prisma.user.findUnique.mockRejectedValueOnce(new Error('Database connection failed'));
+      // Mock database error - get the prisma mock properly
+      const { prisma } = await import('@repo/database/prisma/server/next');
+      vi.mocked(prisma.user.findUnique).mockRejectedValueOnce(
+        new Error('Database connection failed'),
+      );
 
-      const { validateSession } = await import('@/server/helpers');
+      const { validateSession } = await import('#/server/helpers');
 
       await expect(validateSession('test-id')).rejects.toThrow();
     });
 
     test('should handle invalid authentication tokens', async () => {
-      const { verifyServiceAuth } = await import('@/server/api-keys/service-auth');
+      const { verifyServiceAuth } = await import('#/server/api-keys/service-auth');
 
       const result = await verifyServiceAuth('invalid-token');
-      expect(result.isValid).toBe(false);
+      expect(result.isValid).toBeFalsy();
     });
   });
 
   describe('admin management integration', () => {
     test('should handle admin user operations', async () => {
       const { promoteToAdmin, revokeAdminAccess, isUserAdmin } = await import(
-        '@/server/admin-management'
+        '#/server/admin-management'
       );
 
       // Test promoting user to admin
-      const promoteResult = await promoteToAdmin('user-1');
+      const promoteResult = await promoteToAdmin('user-1', 'admin');
       expect(promoteResult).toBeDefined();
 
       // Test checking admin status

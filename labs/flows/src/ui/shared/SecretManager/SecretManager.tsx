@@ -52,8 +52,8 @@ export const SecretManager: FC<SecretManagerProps> = memo(
       openLoading();
       try {
         const fetchedSecrets = await getAllRelevantSecretsAction({
-          nodeId,
-          flowId,
+          ...(nodeId && { nodeId }),
+          ...(flowId && { flowId }),
         });
 
         if (fetchedSecrets) {

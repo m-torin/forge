@@ -2,7 +2,7 @@ import { render } from '@testing-library/react';
 import { describe, expect } from 'vitest';
 
 // Import the component to test
-import { JsonLd } from '@/client';
+import { JsonLd } from '#/client';
 
 describe('@repo/seo/json-ld', () => {
   test('renders JSON-LD script tag with the provided data', () => {

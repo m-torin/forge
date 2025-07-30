@@ -9,7 +9,7 @@ import {
   extractPhoneNumbers,
   extractStructuredData,
   extractText,
-} from '@/shared/utils/extraction';
+} from '#/shared/utils/extraction';
 import { edgeCases, testPatterns } from '../../scraping-test-data';
 import { createUtilityTestSuite } from '../../scraping-test-factory';
 

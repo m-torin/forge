@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, vi } from 'vitest';
 
-import { createPostHogClientAdapter } from '@/adapters/posthog-client';
+import { createPostHogClientAdapter } from '#/adapters/posthog-client';
 
 vi.mock('posthog-js', () => {
   const mockIsFeatureEnabled = vi.fn();

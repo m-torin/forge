@@ -37,12 +37,12 @@ export const createAnalyticsTestConfig = (overrides = {}) => ({
 
 // Common analytics creation patterns
 export const createTestAnalytics = async (config = createAnalyticsTestConfig()) => {
-  const { createClientAnalytics } = await import('@/client/index');
+  const { createClientAnalytics } = await import('#/client/index');
   return createClientAnalytics(config);
 };
 
 export const createTestServerAnalytics = async (config = createAnalyticsTestConfig()) => {
-  const { createServerAnalytics } = await import('@/server/index');
+  const { createServerAnalytics } = await import('#/server/index');
   return createServerAnalytics(config);
 };
 

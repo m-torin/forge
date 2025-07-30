@@ -127,7 +127,7 @@ export const DropdownMenuContent = forwardRef<HTMLDivElement, DropdownMenuConten
         document.removeEventListener('mousedown', handleClickOutside);
         document.removeEventListener('keydown', handleEscape);
       };
-    }, [context.open]);
+    }, [context]);
 
     if (!context.open) return null;
 
@@ -205,7 +205,15 @@ export const DropdownMenuItem = forwardRef<HTMLDivElement, DropdownMenuItemProps
     return (
       <div
         ref={ref}
+        role="menuitem"
+        tabIndex={disabled ? -1 : 0}
         onClick={handleClick}
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleClick();
+          }
+        }}
         data-disabled={disabled}
         className={clsx(
           'dropdown-menu-item',

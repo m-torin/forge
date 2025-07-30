@@ -36,6 +36,7 @@
     "@repo/qa": "workspace:*",
     "@testing-library/jest-dom": "catalog:",
     "@types/lodash.merge": "^4.6.9",
+    "@vitest/ui": "catalog:",
     "next": "catalog:"
   }
 }

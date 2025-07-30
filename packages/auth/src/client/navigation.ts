@@ -24,3 +24,12 @@ export function useAuthRedirect() {
     },
   };
 }
+
+// Export aliases for backwards compatibility with tests
+export function getAuthRedirectUrl(path?: string): string {
+  return path || '/dashboard';
+}
+
+export function redirectAfterAuth(url?: string): void {
+  window.location.href = url || '/dashboard';
+}

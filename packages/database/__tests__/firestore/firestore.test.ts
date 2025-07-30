@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Test imports for new four-file pattern
-import { FirestoreOperations } from '@/firestore/server';
+import { FirestoreOperations } from '#/firestore/server';
 import type { Firestore } from 'firebase-admin/firestore';
 
 // Mock the Firestore module

@@ -23,7 +23,7 @@ import {
   testModuleImport,
 } from './workflow-test-factory';
 
-import { createWorkflowEngine, UpstashWorkflowProvider } from '@/index';
+import { createWorkflowEngine, UpstashWorkflowProvider } from '#/index';
 
 describe('workflow Engine - DRY Migrated Tests', () => {
   let mockProvider: UpstashWorkflowProvider;

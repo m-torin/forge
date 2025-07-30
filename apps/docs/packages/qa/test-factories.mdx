@@ -40,7 +40,7 @@ test("creates test users", () => {
   expect(user).toMatchObject({
     id: expect.any(String),
     name: expect.any(String),
-    email: expect.stringMatching(/@/),
+    email: expect.stringMatching(/#/),
     createdAt: expect.any(Date)
   });
 
@@ -535,7 +535,7 @@ describe("Factory System", () => {
     // Verify all users have required fields
     users.forEach((user) => {
       expect(user.id).toBeTruthy();
-      expect(user.email).toMatch(/@/);
+      expect(user.email).toMatch(/#/);
       expect(user.createdAt).toBeInstanceOf(Date);
     });
 

@@ -4,7 +4,7 @@
  */
 
 import { createRequire } from 'module';
-import { dirname, join } from 'path';
+import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -16,7 +16,7 @@ const require = createRequire(import.meta.url);
  * @param {string} pluginName - Name of the Prettier plugin
  * @returns {string} Resolved plugin path or fallback name
  */
-const resolvePlugin = (pluginName) => {
+const resolvePlugin = pluginName => {
   try {
     return require.resolve(pluginName);
   } catch {

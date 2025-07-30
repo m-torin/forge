@@ -7,7 +7,7 @@ import {
   isToolMessage,
   isUserMessage,
   prepareMessagesForUI,
-} from '@/shared/utils/messages';
+} from '#/shared/utils/messages';
 import { describe, expect } from 'vitest';
 
 describe('message Utilities', () => {

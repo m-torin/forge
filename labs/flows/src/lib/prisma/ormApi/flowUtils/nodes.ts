@@ -1,5 +1,5 @@
 import { Prisma, Node } from '@prisma/client';
-import { logEntityChange } from '.';
+import { logEntityChange } from './helpers';
 import { logInfo } from '@repo/observability';
 
 export interface InternalNode extends Node {

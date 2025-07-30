@@ -16,9 +16,9 @@
  */
 
 import { execSync } from 'child_process';
-import { exit } from 'process';
 import { existsSync, readdirSync, statSync } from 'fs';
 import path from 'path';
+import { exit } from 'process';
 
 // Command line flags
 const DRY_RUN_FLAG = process.argv.includes('--dry-run');
@@ -58,7 +58,7 @@ function findAppsWithEnvFiles() {
 
     for (const appName of appEntries) {
       const appPath = path.join(appsDir, appName);
-      
+
       try {
         const stat = statSync(appPath);
         if (!stat.isDirectory()) continue;
@@ -68,7 +68,7 @@ function findAppsWithEnvFiles() {
           appsWithEnv.push({
             name: appName,
             path: appPath,
-            envFile: envPath
+            envFile: envPath,
           });
         }
       } catch (err) {
@@ -100,14 +100,14 @@ async function uploadAppSecrets(app) {
   try {
     // Change to app directory and run doppler upload
     const command = `cd "${appPath}" && doppler secrets upload .env.local`;
-    
+
     if (!SILENT_FLAG) {
       console.log(`  Running: doppler secrets upload .env.local`);
     }
 
-    execSync(command, { 
+    execSync(command, {
       encoding: 'utf-8',
-      stdio: SILENT_FLAG ? 'pipe' : 'inherit'
+      stdio: SILENT_FLAG ? 'pipe' : 'inherit',
     });
 
     if (!SILENT_FLAG) {
@@ -144,7 +144,7 @@ async function main() {
 
   // Upload secrets for each app
   const results = [];
-  
+
   for (const app of appsWithEnv) {
     const result = await uploadAppSecrets(app);
     results.push(result);
@@ -156,7 +156,7 @@ async function main() {
 
   console.log(`\n📊 Summary:`);
   console.log(`  ✅ Successful: ${successful.length}`);
-  
+
   if (failed.length > 0) {
     console.log(`  ❌ Failed: ${failed.length}`);
     failed.forEach(f => {
@@ -173,7 +173,7 @@ async function main() {
 }
 
 // Execute main function
-main().catch((error) => {
+main().catch(error => {
   console.error('❌ Script failed:', error);
   exit(1);
 });

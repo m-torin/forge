@@ -6,15 +6,8 @@ import { useUncontrolled } from '@mantine/hooks';
 import { UseFormReturnType } from '@mantine/form';
 import { motion } from 'framer-motion';
 import ImageRadio from './ImageRadio';
-import { IconProps } from '@tabler/icons-react';
 import { logInfo } from '@repo/observability';
-
-export interface RadioItem {
-  value: string;
-  label: string;
-  icon: React.ComponentType<IconProps>;
-  helperText?: string;
-}
+import { RadioItem } from './types';
 
 export interface ImageRadiosProps {
   items?: RadioItem[];
@@ -33,9 +26,9 @@ export const ImageRadios = ({
 }: ImageRadiosProps) => {
   const [value, setValue] = useUncontrolled({
     value: form?.getValues().flowMethod,
-    defaultValue,
+    defaultValue: defaultValue ?? '',
     finalValue: '',
-    onChange,
+    onChange: onChange || (() => {}),
   });
 
   if (!form) {

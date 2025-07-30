@@ -1,6 +1,6 @@
 import { describe, expect } from 'vitest';
 
-import { flag } from '@/shared/flag';
+import { flag } from '#/shared/flag';
 
 describe('flag utility', () => {
   describe('basic flag creation', () => {

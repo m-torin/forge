@@ -51,7 +51,7 @@ export const createMockDatabaseClient = (overrides = {}) => {
       BarcodeType,
     },
     importPaths: [
-      '@/prisma-generated/client',
+      '#/prisma-generated/client',
       '../prisma-generated/client',
       '../../../../prisma-generated/client',
       '@prisma/client',

@@ -75,3 +75,9 @@ export function useOrganization() {
     error: null,
   };
 }
+
+// Export alias for backwards compatibility with tests
+export function useAuthLoading() {
+  const { isLoading } = useAuthContext();
+  return isLoading;
+}

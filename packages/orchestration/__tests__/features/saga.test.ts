@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { createSaga } from '@/shared/features/saga';
-import { SagaContext } from '@/shared/types/index';
+import { createSaga } from '#/shared/features/saga';
+import { SagaContext } from '#/shared/types/index';
 import { resetCombinedUpstashMocks, setupCombinedUpstashMocks } from '@repo/qa';
 
 describe('saga Pattern', () => {

@@ -170,7 +170,7 @@ const NodeFormContent: FC = () => {
 
   return (
     <Stack bg="var(--mantine-color-body)" gap="md" p="md">
-      <NodeFormHeader mode={currentMode} nodeId={node?.nodeId} />
+      <NodeFormHeader mode={currentMode} nodeId={node?.nodeId ?? ''} />
 
       <SharedConfig />
 

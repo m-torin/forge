@@ -15,7 +15,7 @@ import { i18nTestPatterns } from '../i18n-test-factory';
 describe('server Entry Points', () => {
   // Test main server entry point
   test('should export from main server module', async () => {
-    const serverModule = await import('@/server');
+    const serverModule = await import('#/server');
 
     expect(serverModule).toBeDefined();
     expect(typeof serverModule).toBe('object');
@@ -40,7 +40,7 @@ describe('server Entry Points', () => {
 
   // Test server-next entry point
   test('should export from server-next module', async () => {
-    const serverNextModule = await import('@/server-next');
+    const serverNextModule = await import('#/server-next');
 
     expect(serverNextModule).toBeDefined();
     expect(typeof serverNextModule).toBe('object');
@@ -65,7 +65,7 @@ describe('server Entry Points', () => {
 
   // Test index entry point
   test('should export from main index module', async () => {
-    const indexModule = await import('@/index');
+    const indexModule = await import('#/index');
 
     expect(indexModule).toBeDefined();
     expect(typeof indexModule).toBe('object');
@@ -88,7 +88,7 @@ describe('server Entry Points', () => {
 const serverEntryPoints = [
   {
     name: 'server',
-    path: '@/server',
+    path: '#/server',
     expectedExports: [
       { name: 'getI18n', type: 'function', required: false },
       { name: 'createServerI18n', type: 'function', required: false },
@@ -97,7 +97,7 @@ const serverEntryPoints = [
   },
   {
     name: 'server-next',
-    path: '@/server-next',
+    path: '#/server-next',
     expectedExports: [
       { name: 'getI18n', type: 'function', required: false },
       { name: 'createNextServerI18n', type: 'function', required: false },
@@ -106,7 +106,7 @@ const serverEntryPoints = [
   },
   {
     name: 'index',
-    path: '@/index',
+    path: '#/index',
     expectedExports: [
       { name: 'locales', type: 'object', required: false },
       { name: 'Locale', type: 'constant', required: false },
@@ -127,7 +127,7 @@ serverEntryPoints.forEach(entryPoint => {
 describe('shared Utility Entry Points', () => {
   test('should export from dictionary-loader', async () => {
     try {
-      const dictionaryLoaderModule = await import('@/shared/dictionary-loader');
+      const dictionaryLoaderModule = await import('#/shared/dictionary-loader');
       expect(dictionaryLoaderModule).toBeDefined();
 
       if (dictionaryLoaderModule.createDictionaryLoader) {
@@ -145,7 +145,7 @@ describe('shared Utility Entry Points', () => {
 
   test('should export from utils/extend', async () => {
     try {
-      const extendModule = await import('@/utils/extend');
+      const extendModule = await import('#/utils/extend');
       expect(extendModule).toBeDefined();
 
       if (extendModule.createDictionary) {
@@ -164,8 +164,8 @@ describe('shared Utility Entry Points', () => {
 
 describe('export Consistency', () => {
   test('should have consistent function exports across server modules', async () => {
-    const serverModule = await import('@/server');
-    const serverNextModule = await import('@/server-next');
+    const serverModule = await import('#/server');
+    const serverNextModule = await import('#/server-next');
 
     const serverExports = Object.keys(serverModule);
     const serverNextExports = Object.keys(serverNextModule);
@@ -182,8 +182,8 @@ describe('export Consistency', () => {
   });
 
   test('should not have conflicting dictionary exports', async () => {
-    const serverModule = await import('@/server');
-    const serverNextModule = await import('@/server-next');
+    const serverModule = await import('#/server');
+    const serverNextModule = await import('#/server-next');
 
     // If both modules export getDictionary, they should be compatible
     if (serverModule.getDictionary && serverNextModule.getDictionary) {
@@ -193,8 +193,8 @@ describe('export Consistency', () => {
   });
 
   test('should have consistent type exports', async () => {
-    const indexModule = await import('@/index');
-    const dictionaryLoaderModule = await import('@/shared/dictionary-loader').catch(() => null);
+    const indexModule = await import('#/index');
+    const dictionaryLoaderModule = await import('#/shared/dictionary-loader').catch(() => null);
 
     if (indexModule.locales && dictionaryLoaderModule?.locales) {
       // Both should export locales array
@@ -211,9 +211,9 @@ describe('export Consistency', () => {
 describe('import Resolution', () => {
   test('should resolve server module imports correctly', async () => {
     const importTests = [
-      { path: '@/server', description: 'main server module' },
-      { path: '@/server-next', description: 'server-next module' },
-      { path: '@/index', description: 'main index module' },
+      { path: '#/server', description: 'main server module' },
+      { path: '#/server-next', description: 'server-next module' },
+      { path: '#/index', description: 'main index module' },
     ];
 
     for (const importTest of importTests) {
@@ -230,8 +230,8 @@ describe('import Resolution', () => {
 
   test('should handle shared utility imports correctly', async () => {
     const utilityTests = [
-      { path: '@/shared/dictionary-loader', description: 'dictionary loader' },
-      { path: '@/utils/extend', description: 'extend utility' },
+      { path: '#/shared/dictionary-loader', description: 'dictionary loader' },
+      { path: '#/utils/extend', description: 'extend utility' },
     ];
 
     for (const utilityTest of utilityTests) {
@@ -248,10 +248,10 @@ describe('import Resolution', () => {
 
   test('should handle missing imports gracefully', async () => {
     const missingImports = [
-      '@/server/non-existent',
-      '@/shared/non-existent',
-      '@/utils/non-existent',
-      '@/invalid/path',
+      '#/server/non-existent',
+      '#/shared/non-existent',
+      '#/utils/non-existent',
+      '#/invalid/path',
     ];
 
     for (const importPath of missingImports) {
@@ -278,7 +278,7 @@ describe('environment Compatibility', () => {
     delete (global as any).window;
 
     try {
-      const serverModule = await import('@/server');
+      const serverModule = await import('#/server');
       expect(serverModule).toBeDefined();
 
       // Should work without browser APIs
@@ -296,7 +296,7 @@ describe('environment Compatibility', () => {
     process.env.NEXT_RUNTIME = 'nodejs';
 
     try {
-      const serverNextModule = await import('@/server-next');
+      const serverNextModule = await import('#/server-next');
       expect(serverNextModule).toBeDefined();
 
       // Should work with Next.js server runtime
@@ -312,7 +312,7 @@ describe('environment Compatibility', () => {
     process.env.NEXT_RUNTIME = 'edge';
 
     try {
-      const serverModule = await import('@/server');
+      const serverModule = await import('#/server');
       expect(serverModule).toBeDefined();
 
       // Should work with edge runtime
@@ -346,7 +346,7 @@ describe('environment Compatibility', () => {
 describe('middleware Entry Points', () => {
   test('should export from middleware module', async () => {
     try {
-      const middlewareModule = await import('@/middleware');
+      const middlewareModule = await import('#/middleware');
       expect(middlewareModule).toBeDefined();
 
       if (middlewareModule.createI18nMiddleware) {
@@ -387,9 +387,9 @@ describe('middleware Entry Points', () => {
 describe('export Validation', () => {
   test('should have valid TypeScript exports', async () => {
     const modules = [
-      { name: 'server', path: '@/server' },
-      { name: 'server-next', path: '@/server-next' },
-      { name: 'index', path: '@/index' },
+      { name: 'server', path: '#/server' },
+      { name: 'server-next', path: '#/server-next' },
+      { name: 'index', path: '#/index' },
     ];
 
     for (const module of modules) {
@@ -413,9 +413,9 @@ describe('export Validation', () => {
 
   test('should not export internal implementation details', async () => {
     const modules = [
-      { name: 'server', path: '@/server' },
-      { name: 'server-next', path: '@/server-next' },
-      { name: 'index', path: '@/index' },
+      { name: 'server', path: '#/server' },
+      { name: 'server-next', path: '#/server-next' },
+      { name: 'index', path: '#/index' },
     ];
 
     const internalExports = ['_internal', '__private', 'implementation', 'cache', 'loader'];
@@ -437,8 +437,8 @@ describe('export Validation', () => {
 
   test('should export proper locale and dictionary types', async () => {
     try {
-      const indexModule = await import('@/index');
-      const dictionaryLoaderModule = await import('@/shared/dictionary-loader').catch(() => null);
+      const indexModule = await import('#/index');
+      const dictionaryLoaderModule = await import('#/shared/dictionary-loader').catch(() => null);
 
       // Check locale exports
       if (indexModule.locales) {

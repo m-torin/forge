@@ -5,8 +5,7 @@
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
-      "@repo/*": ["../*"],
-      "@/*": ["./src/*"]
+      "#/*": ["./src/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],

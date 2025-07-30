@@ -3,7 +3,10 @@
  * Tests the createWorkflowEngine function and workflow engine functionality
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from 'vitest';
+
+// Import after mocking
+import { createWorkflowEngine, workflowEngine } from '../src/server';
 
 // Mock dependencies before importing
 vi.mock('@repo/database/redis/server', () => ({
@@ -50,16 +53,13 @@ vi.mock('../src/shared/utils/index', () => ({
   WorkflowExecutionError: vi.fn(),
 }));
 
-// Import after mocking
-import { createWorkflowEngine, workflowEngine } from '../src/server';
-
-describe('Server Orchestration', () => {
+describe('server Orchestration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   describe('createWorkflowEngine', () => {
-    it('should create workflow engine with default configuration', () => {
+    test('should create workflow engine with default configuration', () => {
       const engine = createWorkflowEngine();
 
       expect(engine).toBeDefined();
@@ -74,7 +74,7 @@ describe('Server Orchestration', () => {
       expect(engine.shutdown).toBeDefined();
     });
 
-    it('should create workflow engine with custom configuration', () => {
+    test('should create workflow engine with custom configuration', () => {
       const config = {
         defaultProvider: 'test-provider',
         enableHealthChecks: true,
@@ -86,7 +86,7 @@ describe('Server Orchestration', () => {
       expect(engine).toBeDefined();
     });
 
-    it('should create workflow engine with providers configuration', () => {
+    test('should create workflow engine with providers configuration', () => {
       const config = {
         providers: [
           {
@@ -105,7 +105,7 @@ describe('Server Orchestration', () => {
       expect(engine).toBeDefined();
     });
 
-    it('should handle rate-limit provider type during initialization', async () => {
+    test('should handle rate-limit provider type during initialization', async () => {
       const config = {
         providers: [
           {
@@ -125,7 +125,7 @@ describe('Server Orchestration', () => {
       await expect(engine.initialize()).resolves.toBeUndefined();
     });
 
-    it('should throw error for unknown provider type', async () => {
+    test('should throw error for unknown provider type', async () => {
       const config = {
         providers: [
           {
@@ -142,7 +142,7 @@ describe('Server Orchestration', () => {
     });
   });
 
-  describe('Workflow Engine Methods', () => {
+  describe('workflow Engine Methods', () => {
     let engine: ReturnType<typeof createWorkflowEngine>;
 
     beforeEach(() => {
@@ -150,7 +150,7 @@ describe('Server Orchestration', () => {
     });
 
     describe('executeWorkflow', () => {
-      it('should execute workflow successfully', async () => {
+      test('should execute workflow successfully', async () => {
         const definition = {
           id: 'test-workflow',
           name: 'Test Workflow',
@@ -163,7 +163,7 @@ describe('Server Orchestration', () => {
         expect(result).toEqual({ executionId: 'exec-123' });
       });
 
-      it('should execute workflow with provider name', async () => {
+      test('should execute workflow with provider name', async () => {
         const definition = {
           id: 'test-workflow',
           name: 'Test Workflow',
@@ -177,7 +177,7 @@ describe('Server Orchestration', () => {
         expect(result).toEqual({ executionId: 'exec-123' });
       });
 
-      it('should execute workflow without input', async () => {
+      test('should execute workflow without input', async () => {
         const definition = {
           id: 'test-workflow',
           name: 'Test Workflow',
@@ -191,13 +191,13 @@ describe('Server Orchestration', () => {
     });
 
     describe('getExecution', () => {
-      it('should get execution by id', async () => {
+      test('should get execution by id', async () => {
         const result = await engine.getExecution('exec-123');
 
         expect(result).toEqual({ status: 'completed' });
       });
 
-      it('should get execution with provider name', async () => {
+      test('should get execution with provider name', async () => {
         const result = await engine.getExecution('exec-123', 'test-provider');
 
         expect(result).toEqual({ status: 'completed' });
@@ -205,7 +205,7 @@ describe('Server Orchestration', () => {
     });
 
     describe('getStatus', () => {
-      it('should return engine status', () => {
+      test('should return engine status', () => {
         const status = engine.getStatus();
 
         expect(status).toEqual({ initialized: true });
@@ -213,7 +213,7 @@ describe('Server Orchestration', () => {
     });
 
     describe('healthCheck', () => {
-      it('should perform health check', async () => {
+      test('should perform health check', async () => {
         const result = await engine.healthCheck();
 
         expect(result).toEqual({ healthy: true });
@@ -221,11 +221,11 @@ describe('Server Orchestration', () => {
     });
 
     describe('initialize', () => {
-      it('should initialize engine', async () => {
+      test('should initialize engine', async () => {
         await expect(engine.initialize()).resolves.toBeUndefined();
       });
 
-      it('should initialize with upstash-workflow provider', async () => {
+      test('should initialize with upstash-workflow provider', async () => {
         const engineWithProvider = createWorkflowEngine({
           providers: [
             {
@@ -244,20 +244,20 @@ describe('Server Orchestration', () => {
     });
 
     describe('listExecutions', () => {
-      it('should list executions', async () => {
+      test('should list executions', async () => {
         const result = await engine.listExecutions('workflow-123');
 
         expect(result).toEqual([]);
       });
 
-      it('should list executions with options', async () => {
+      test('should list executions with options', async () => {
         const options = { limit: 10, offset: 0 };
         const result = await engine.listExecutions('workflow-123', options);
 
         expect(result).toEqual([]);
       });
 
-      it('should list executions with provider name', async () => {
+      test('should list executions with provider name', async () => {
         const options = { limit: 10 };
         const result = await engine.listExecutions('workflow-123', options, 'test-provider');
 
@@ -266,7 +266,7 @@ describe('Server Orchestration', () => {
     });
 
     describe('scheduleWorkflow', () => {
-      it('should schedule workflow', async () => {
+      test('should schedule workflow', async () => {
         const definition = {
           id: 'scheduled-workflow',
           name: 'Scheduled Workflow',
@@ -278,7 +278,7 @@ describe('Server Orchestration', () => {
         expect(result).toEqual({ scheduleId: 'sched-123' });
       });
 
-      it('should schedule workflow with provider name', async () => {
+      test('should schedule workflow with provider name', async () => {
         const definition = {
           id: 'scheduled-workflow',
           name: 'Scheduled Workflow',
@@ -292,20 +292,20 @@ describe('Server Orchestration', () => {
     });
 
     describe('shutdown', () => {
-      it('should shutdown engine', async () => {
+      test('should shutdown engine', async () => {
         await expect(engine.shutdown()).resolves.toBeUndefined();
       });
     });
 
     describe('manager property', () => {
-      it('should expose manager instance', () => {
+      test('should expose manager instance', () => {
         expect(engine.manager).toBeDefined();
       });
     });
   });
 
-  describe('Default Workflow Engine', () => {
-    it('should export default workflow engine instance', () => {
+  describe('default Workflow Engine', () => {
+    test('should export default workflow engine instance', () => {
       expect(workflowEngine).toBeDefined();
       expect(workflowEngine.executeWorkflow).toBeDefined();
       expect(workflowEngine.getExecution).toBeDefined();
@@ -319,8 +319,8 @@ describe('Server Orchestration', () => {
     });
   });
 
-  describe('Error Handling', () => {
-    it('should handle validation errors in executeWorkflow', async () => {
+  describe('error Handling', () => {
+    test('should handle validation errors in executeWorkflow', async () => {
       const { validateWorkflowDefinition } = await import('../src/shared/utils/index');
 
       // Mock validation to throw an error
@@ -334,7 +334,7 @@ describe('Server Orchestration', () => {
       await expect(engine.executeWorkflow(definition)).rejects.toThrow('Validation failed');
     });
 
-    it('should handle validation errors in scheduleWorkflow', async () => {
+    test('should handle validation errors in scheduleWorkflow', async () => {
       const { validateWorkflowDefinition } = await import('../src/shared/utils/index');
 
       // Mock validation to throw an error
@@ -350,7 +350,7 @@ describe('Server Orchestration', () => {
       );
     });
 
-    it('should handle manager initialization errors', async () => {
+    test('should handle manager initialization errors', async () => {
       const { OrchestrationManager } = await import('../src/shared/utils/index');
 
       // Mock manager initialization to fail
@@ -366,7 +366,7 @@ describe('Server Orchestration', () => {
       await expect(engine.initialize()).rejects.toThrow('Init failed');
     });
 
-    it('should handle provider registration errors', async () => {
+    test('should handle provider registration errors', async () => {
       const { OrchestrationManager } = await import('../src/shared/utils/index');
 
       // Mock manager to fail on provider registration
@@ -395,8 +395,8 @@ describe('Server Orchestration', () => {
     });
   });
 
-  describe('Integration Scenarios', () => {
-    it('should handle complete workflow lifecycle', async () => {
+  describe('integration Scenarios', () => {
+    test('should handle complete workflow lifecycle', async () => {
       const engine = createWorkflowEngine({
         defaultProvider: 'test-provider',
         enableHealthChecks: true,
@@ -449,7 +449,7 @@ describe('Server Orchestration', () => {
       await engine.shutdown();
     });
 
-    it('should handle mixed provider types', async () => {
+    test('should handle mixed provider types', async () => {
       const config = {
         providers: [
           {

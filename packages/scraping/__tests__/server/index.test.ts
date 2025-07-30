@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Import after mocks are set up
-import { createServerScraping, quickScrape } from '@/server';
-import { ScrapingConfig, SelectorMap } from '@/shared/types/scraping-types';
+import { createServerScraping, quickScrape } from '#/server';
+import { ScrapingConfig, SelectorMap } from '#/shared/types/scraping-types';
 
 // Use vi.hoisted to ensure mocks are available before module imports
 const { mockNodeFetchProvider, mockCheerioProvider, mockPlaywrightProvider, mockConsoleProvider } =

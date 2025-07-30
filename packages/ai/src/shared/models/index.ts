@@ -4,69 +4,62 @@
  */
 
 // Core types and metadata
-export type {
-  ModelCapability,
-  ReasoningConfig,
-  ModelMetadata,
-} from './metadata';
+export type { ModelCapability, ModelMetadata, ReasoningConfig } from './metadata';
 
 export {
   ANTHROPIC_MODEL_METADATA,
-  PERPLEXITY_MODEL_METADATA,
-  XAI_MODEL_METADATA,
+  DEEPSEEK_MODEL_METADATA,
   GOOGLE_MODEL_METADATA,
   LMSTUDIO_MODEL_METADATA,
   OLLAMA_MODEL_METADATA,
-  DEEPSEEK_MODEL_METADATA,
   OPENAI_COMPATIBLE_MODEL_METADATA,
+  PERPLEXITY_MODEL_METADATA,
+  XAI_MODEL_METADATA,
 } from './metadata';
 
 // Registry and configuration
-export type {
-  ProviderModelConfig,
-  ModelRegistry,
-} from './registry';
+export type { ModelRegistry, ProviderModelConfig } from './registry';
 
 export {
-  MODEL_REGISTRY,
-  MODEL_ALIASES,
-  getModelConfig,
-  getModelsByProvider,
-  getModelsByCapability,
-  modelHasCapability,
-  modelSupportsReasoning,
-  getModelReasoningConfig,
-  getAllModelIds,
-  getChatModels,
-  getBestModelForTask,
-  REASONING_MODELS,
-  VISION_MODELS,
   CODE_MODELS,
   COMPUTER_USE_MODELS,
-  isValidModelId,
-  isDeprecatedModel,
-  getProviderModelId,
+  MODEL_ALIASES,
+  MODEL_REGISTRY,
+  REASONING_MODELS,
+  VISION_MODELS,
+  getAllModelIds,
+  getBestModelForTask,
+  getChatModels,
+  getModelConfig,
   getModelProvider,
+  getModelReasoningConfig,
+  getModelsByCapability,
+  getModelsByProvider,
+  getProviderModelId,
+  isDeprecatedModel,
+  isValidModelId,
+  modelHasCapability,
+  modelSupportsReasoning,
 } from './registry';
 
 // Utility functions
 export type {
-  ModelSelectionStrategy,
-  UserTier,
   ModelSelectionConfig,
+  ModelSelectionStrategy,
   ModelUsageStats,
+  UserTier,
 } from './utils';
 
 export {
   MODEL_STRATEGIES,
   USER_TIER_LIMITS,
-  selectModel,
   canUserAccessModel,
-  getModelRecommendations,
-  validateModelForUseCase,
-  trackModelUsage,
-  getModelUsageStats,
-  getAllUsageStats,
   compareModels,
+  getAllUsageStats,
   getModelFeatureMatrix,
+  getModelRecommendations,
+  getModelUsageStats,
+  selectModel,
+  trackModelUsage,
+  validateModelForUseCase,
 } from './utils';

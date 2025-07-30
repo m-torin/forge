@@ -219,6 +219,12 @@ vi.mock('@mantine/core', () => {
   return {
     // Layout components
     AppShell: createMockComponent('AppShell'),
+    AppShellHeader: createMockComponent('AppShellHeader'),
+    AppShellMain: createMockComponent('AppShellMain'),
+    AppShellNavbar: createMockComponent('AppShellNavbar'),
+    AppShellAside: createMockComponent('AppShellAside'),
+    AppShellFooter: createMockComponent('AppShellFooter'),
+    AppShellSection: createMockComponent('AppShellSection'),
     Container: createMockComponent('Container'),
     Group: createMockComponent('Group'),
     Stack: createMockComponent('Stack'),
@@ -290,6 +296,7 @@ vi.mock('@mantine/core', () => {
     // Theme and providers
     MantineProvider: ({ children, ...props }: any) =>
       React.createElement('div', { ...props, 'data-testid': 'mantine-provider' }, children),
+    createTheme: vi.fn((theme = {}) => ({ ...theme, colors: {}, spacing: {} })),
     useMantineTheme: vi.fn(() => ({ colors: {}, spacing: {} })),
     useMantineColorScheme: vi.fn(() => ({ colorScheme: 'light', toggleColorScheme: vi.fn() })),
 

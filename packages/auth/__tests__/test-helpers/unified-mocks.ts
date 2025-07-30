@@ -81,7 +81,7 @@ export const createUnifiedMockSetup = (
 
   // Apply mocks based on options
   if (mockAuth) {
-    vi.mock('@/shared/auth', () => ({
+    vi.mock('#/shared/auth', () => ({
       auth: {
         api: mockObjects.auth,
       },

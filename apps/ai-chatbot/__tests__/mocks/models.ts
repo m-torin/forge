@@ -1,55 +1,30 @@
-import { createOpenAI } from '@ai-sdk/openai';
-import { wrapLanguageModel } from 'ai';
+// Test-safe mock of models for E2E tests
+export interface ChatModel {
+  id: string;
+  name: string;
+  description: string;
+  provider?: string;
+  capabilities?: string[];
+  reasoning?: boolean;
+  deprecated?: boolean;
+}
 
-/**
- * Mock models for testing environments
- * These use real providers with minimal API calls and fixed responses
- */
-
-// Create a mock OpenAI provider that doesn't make real API calls
-const mockOpenAI = createOpenAI({
-  apiKey: 'mock-key',
-  baseURL: 'https://api.openai.com/v1', // Will be intercepted in tests
-});
-
-// Wrap models to provide consistent test behavior
-export const createMockModels = () => {
-  return {
-    chatModel: wrapLanguageModel({
-      model: mockOpenAI('gpt-4o'),
-      middleware: {
-        wrapGenerate: async ({ doGenerate }) => {
-          // In tests, this would be mocked by test framework
-          return doGenerate();
-        },
-      },
-    }),
-
-    reasoningModel: wrapLanguageModel({
-      model: mockOpenAI('gpt-4o'),
-      middleware: {
-        wrapGenerate: async ({ doGenerate }) => {
-          return doGenerate();
-        },
-      },
-    }),
-
-    titleModel: wrapLanguageModel({
-      model: mockOpenAI('gpt-4o-mini'),
-      middleware: {
-        wrapGenerate: async ({ doGenerate }) => {
-          return doGenerate();
-        },
-      },
-    }),
-
-    artifactModel: wrapLanguageModel({
-      model: mockOpenAI('gpt-4o'),
-      middleware: {
-        wrapGenerate: async ({ doGenerate }) => {
-          return doGenerate();
-        },
-      },
-    }),
-  };
-};
+// Static test data that doesn't import server-only modules
+export const chatModels: ChatModel[] = [
+  {
+    id: 'chat-model',
+    name: 'Chat Model',
+    description: 'Primary model for all-purpose chat (dynamic provider selection)',
+    provider: 'Dynamic',
+    capabilities: ['tools', 'multimodal', 'reasoning'],
+    reasoning: true,
+  },
+  {
+    id: 'chat-model-reasoning',
+    name: 'Reasoning Model',
+    description: 'Advanced reasoning model (dynamic provider selection)',
+    provider: 'Dynamic',
+    capabilities: ['reasoning', 'tools', 'multimodal'],
+    reasoning: true,
+  },
+];

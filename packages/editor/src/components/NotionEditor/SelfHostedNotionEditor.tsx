@@ -83,7 +83,7 @@ export function SelfHostedNotionEditor({
 
   // Export manager
   const {
-    exportDocument,
+    exportDocument: _exportDocument,
     quickExport,
     exportWithTemplate,
     saveTemplate,
@@ -96,6 +96,7 @@ export function SelfHostedNotionEditor({
   } = useExportManager(editor);
 
   // UI preferences
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const [uiPreferences, setUiPreferences] = useLocalStorage({
     key: 'notion-editor-ui-preferences',
     defaultValue: {
@@ -210,6 +211,15 @@ export function SelfHostedNotionEditor({
             <div
               className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
               onClick={() => setSidebarOpen(false)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setSidebarOpen(false);
+                }
+              }}
+              aria-label="Close sidebar"
             />
           )}
 

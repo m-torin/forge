@@ -1,11 +1,11 @@
-import { ProductStatus, ProductType } from '@/prisma-generated/client';
+import { ProductStatus, ProductType } from '#/prisma-generated/client';
 import {
   generateProduct,
   generateProductMedia,
   generateProductName,
   generateProductSKU,
   generateProductVariants,
-} from '@/prisma/src/seed/generators/generate-products';
+} from '#/prisma/src/seed/generators/generate-products';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 describe('generate-products', () => {

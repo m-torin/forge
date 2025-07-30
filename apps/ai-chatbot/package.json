@@ -22,12 +22,13 @@
     "knip": "knip --fix --reporter json",
     "lint": "eslint . --fix",
     "start": "next start",
-    "test": "vitest --run",
-    "test:coverage": "vitest --coverage --run",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:ui": "playwright test --ui",
     "test:ui": "vitest --ui",
+    "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },
   "overrides": {
@@ -136,6 +137,7 @@
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "@vitest/coverage-v8": "catalog:",
+    "@vitest/ui": "catalog:",
     "drizzle-kit": "^0.31.4",
     "eslint": "catalog:",
     "knip": "catalog:",
@@ -145,6 +147,7 @@
     "tsx": "^4.20.3",
     "typescript": "catalog:",
     "vite": "catalog:",
+    "vite-tsconfig-paths": "catalog:",
     "vitest": "catalog:"
   }
 }

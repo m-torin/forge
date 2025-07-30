@@ -3,7 +3,20 @@
  * Tests the core step factory functionality, patterns, and error handling
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, vi } from 'vitest';
+
+// Import after mocking
+import {
+  StandardWorkflowStep,
+  compose,
+  createStep,
+  createStepWithValidation,
+  toSimpleStep,
+  withStepCircuitBreaker,
+  withStepMonitoring,
+  withStepRetry,
+  withStepTimeout,
+} from '../../src/shared/factories/step-factory';
 
 // Mock dependencies
 vi.mock('@repo/observability/server/next', () => ({
@@ -53,20 +66,7 @@ vi.mock('../../src/shared/factories/step-factory/step-validation', () => ({
   validateStepOutput: vi.fn().mockResolvedValue(undefined),
 }));
 
-// Import after mocking
-import {
-  StandardWorkflowStep,
-  compose,
-  createStep,
-  createStepWithValidation,
-  toSimpleStep,
-  withStepCircuitBreaker,
-  withStepMonitoring,
-  withStepRetry,
-  withStepTimeout,
-} from '../../src/shared/factories/step-factory';
-
-describe('StandardWorkflowStep', () => {
+describe('standardWorkflowStep', () => {
   let mockDefinition: any;
   let mockConfig: any;
 
@@ -86,7 +86,7 @@ describe('StandardWorkflowStep', () => {
     };
 
     // Reset global mock
-    global.structuredClone = vi.fn().mockImplementation(obj => JSON.parse(JSON.stringify(obj)));
+    vi.spyOn(global, 'structuredClone').mockImplementation(obj => JSON.parse(JSON.stringify(obj)));
   });
 
   afterEach(() => {
@@ -94,19 +94,19 @@ describe('StandardWorkflowStep', () => {
   });
 
   describe('constructor', () => {
-    it('should create a StandardWorkflowStep instance', () => {
+    test('should create a StandardWorkflowStep instance', () => {
       const step = new StandardWorkflowStep(mockDefinition, mockConfig);
 
       expect(step).toBeInstanceOf(StandardWorkflowStep);
     });
 
-    it('should create a StandardWorkflowStep with default config', () => {
+    test('should create a StandardWorkflowStep with default config', () => {
       const step = new StandardWorkflowStep(mockDefinition);
 
       expect(step).toBeInstanceOf(StandardWorkflowStep);
     });
 
-    it('should handle missing structuredClone gracefully', () => {
+    test('should handle missing structuredClone gracefully', () => {
       // Temporarily remove structuredClone to test fallback
       const originalStructuredClone = global.structuredClone;
       delete (global as any).structuredClone;
@@ -120,7 +120,7 @@ describe('StandardWorkflowStep', () => {
   });
 
   describe('validateDefinition', () => {
-    it('should validate step definition', () => {
+    test('should validate step definition', () => {
       const result = StandardWorkflowStep.validateDefinition(mockDefinition);
 
       expect(result).toEqual({ valid: true, errors: [] });
@@ -134,27 +134,27 @@ describe('StandardWorkflowStep', () => {
       step = new StandardWorkflowStep(mockDefinition, mockConfig);
     });
 
-    it('should execute step successfully', async () => {
+    test('should execute step successfully', async () => {
       const input = { test: 'data' };
       const workflowExecutionId = 'workflow-123';
 
       const result = await step.execute(input, workflowExecutionId);
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.performance).toBeDefined();
     });
 
-    it('should execute step with previous steps context', async () => {
+    test('should execute step with previous steps context', async () => {
       const input = { test: 'data' };
       const workflowExecutionId = 'workflow-123';
       const previousStepsContext = { previousStep: 'result' };
 
       const result = await step.execute(input, workflowExecutionId, previousStepsContext);
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
     });
 
-    it('should execute step with metadata', async () => {
+    test('should execute step with metadata', async () => {
       const input = { test: 'data' };
       const workflowExecutionId = 'workflow-123';
       const previousStepsContext = {};
@@ -162,20 +162,20 @@ describe('StandardWorkflowStep', () => {
 
       const result = await step.execute(input, workflowExecutionId, previousStepsContext, metadata);
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
     });
 
-    it('should execute step with abort signal', async () => {
+    test('should execute step with abort signal', async () => {
       const input = { test: 'data' };
       const workflowExecutionId = 'workflow-123';
       const abortController = new AbortController();
 
       const result = await step.execute(input, workflowExecutionId, {}, {}, abortController.signal);
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
     });
 
-    it('should skip execution when condition is not met', async () => {
+    test('should skip execution when condition is not met', async () => {
       const stepWithCondition = new StandardWorkflowStep(
         {
           ...mockDefinition,
@@ -189,11 +189,11 @@ describe('StandardWorkflowStep', () => {
 
       const result = await stepWithCondition.execute(input, workflowExecutionId);
 
-      expect(result.success).toBe(true);
-      expect(result.skipped).toBe(true);
+      expect(result.success).toBeTruthy();
+      expect(result.skipped).toBeTruthy();
     });
 
-    it('should execute when condition is met', async () => {
+    test('should execute when condition is met', async () => {
       const stepWithCondition = new StandardWorkflowStep(
         {
           ...mockDefinition,
@@ -207,11 +207,11 @@ describe('StandardWorkflowStep', () => {
 
       const result = await stepWithCondition.execute(input, workflowExecutionId);
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.skipped).toBeUndefined();
     });
 
-    it('should handle validation errors', async () => {
+    test('should handle validation errors', async () => {
       const { validateStepInput } = await import(
         '../../src/shared/factories/step-factory/step-validation'
       );
@@ -232,11 +232,11 @@ describe('StandardWorkflowStep', () => {
 
       const result = await stepWithValidation.execute(input, workflowExecutionId);
 
-      expect(result.success).toBe(false);
+      expect(result.success).toBeFalsy();
       expect(result.error).toBeDefined();
     });
 
-    it('should handle execution errors', async () => {
+    test('should handle execution errors', async () => {
       const errorDefinition = {
         ...mockDefinition,
         execute: vi.fn().mockRejectedValue(new Error('Execution failed')),
@@ -249,11 +249,11 @@ describe('StandardWorkflowStep', () => {
 
       const result = await step.execute(input, workflowExecutionId);
 
-      expect(result.success).toBe(false);
+      expect(result.success).toBeFalsy();
       expect(result.error).toBeDefined();
     });
 
-    it('should run cleanup function', async () => {
+    test('should run cleanup function', async () => {
       const cleanup = vi.fn().mockResolvedValue(undefined);
       const stepWithCleanup = new StandardWorkflowStep(
         {
@@ -268,10 +268,10 @@ describe('StandardWorkflowStep', () => {
 
       await stepWithCleanup.execute(input, workflowExecutionId);
 
-      expect(cleanup).toHaveBeenCalled();
+      expect(cleanup).toHaveBeenCalledWith();
     });
 
-    it('should handle cleanup errors gracefully', async () => {
+    test('should handle cleanup errors gracefully', async () => {
       const cleanup = vi.fn().mockRejectedValue(new Error('Cleanup failed'));
       const stepWithCleanup = new StandardWorkflowStep(
         {
@@ -286,11 +286,11 @@ describe('StandardWorkflowStep', () => {
 
       const result = await stepWithCleanup.execute(input, workflowExecutionId);
 
-      expect(result.success).toBe(true);
-      expect(cleanup).toHaveBeenCalled();
+      expect(result.success).toBeTruthy();
+      expect(cleanup).toHaveBeenCalledWith();
     });
 
-    it('should validate output when configured', async () => {
+    test('should validate output when configured', async () => {
       const { validateStepOutput } = await import(
         '../../src/shared/factories/step-factory/step-validation'
       );
@@ -311,12 +311,12 @@ describe('StandardWorkflowStep', () => {
 
       await stepWithOutputValidation.execute(input, workflowExecutionId);
 
-      expect(validateStepOutput).toHaveBeenCalled();
+      expect(validateStepOutput).toHaveBeenCalledWith();
     });
   });
 
   describe('getMetadata', () => {
-    it('should return step metadata', () => {
+    test('should return step metadata', () => {
       const step = new StandardWorkflowStep(mockDefinition, mockConfig);
 
       const metadata = step.getMetadata();
@@ -329,7 +329,7 @@ describe('StandardWorkflowStep', () => {
       });
     });
 
-    it('should track execution count and time', async () => {
+    test('should track execution count and time', async () => {
       const step = new StandardWorkflowStep(mockDefinition, mockConfig);
 
       await step.execute({ test: 'data' }, 'workflow-123');
@@ -342,13 +342,13 @@ describe('StandardWorkflowStep', () => {
   });
 });
 
-describe('Factory Functions', () => {
+describe('factory Functions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   describe('createStep', () => {
-    it('should create a simple step', () => {
+    test('should create a simple step', () => {
       const stepFunction = vi.fn().mockResolvedValue('result');
       const step = createStep('test-step', stepFunction);
 
@@ -357,7 +357,7 @@ describe('Factory Functions', () => {
       expect(step.execute).toBe(stepFunction);
     });
 
-    it('should create a step with config', () => {
+    test('should create a step with config', () => {
       const stepFunction = vi.fn().mockResolvedValue('result');
       const config = { timeout: 5000 };
       const step = createStep('test-step', stepFunction, config);
@@ -369,7 +369,7 @@ describe('Factory Functions', () => {
   });
 
   describe('createStepWithValidation', () => {
-    it('should create a step with validation schema', () => {
+    test('should create a step with validation schema', () => {
       const stepFunction = vi.fn().mockResolvedValue('result');
       const inputSchema = { type: 'object' };
       const outputSchema = { type: 'string' };
@@ -388,7 +388,7 @@ describe('Factory Functions', () => {
       expect(step.validationConfig.output).toBe(outputSchema);
     });
 
-    it('should create a step with validation options', () => {
+    test('should create a step with validation options', () => {
       const stepFunction = vi.fn().mockResolvedValue('result');
       const inputSchema = { type: 'object' };
       const outputSchema = { type: 'string' };
@@ -402,12 +402,12 @@ describe('Factory Functions', () => {
         options,
       );
 
-      expect(step.validationConfig.validateInput).toBe(false);
+      expect(step.validationConfig.validateInput).toBeFalsy();
     });
   });
 
   describe('toSimpleStep', () => {
-    it('should convert function to simple step', () => {
+    test('should convert function to simple step', () => {
       const stepFunction = vi.fn().mockResolvedValue('result');
       const simpleStep = toSimpleStep(stepFunction);
 
@@ -415,7 +415,7 @@ describe('Factory Functions', () => {
       expect(typeof simpleStep).toBe('function');
     });
 
-    it('should execute simple step function', async () => {
+    test('should execute simple step function', async () => {
       const stepFunction = vi.fn().mockResolvedValue('result');
       const simpleStep = toSimpleStep(stepFunction);
 
@@ -427,7 +427,7 @@ describe('Factory Functions', () => {
   });
 
   describe('compose', () => {
-    it('should compose multiple steps', () => {
+    test('should compose multiple steps', () => {
       const step1 = vi.fn().mockResolvedValue('result1');
       const step2 = vi.fn().mockResolvedValue('result2');
 
@@ -437,7 +437,7 @@ describe('Factory Functions', () => {
       expect(typeof composedStep).toBe('function');
     });
 
-    it('should execute composed steps in sequence', async () => {
+    test('should execute composed steps in sequence', async () => {
       const step1 = vi.fn().mockResolvedValue('result1');
       const step2 = vi.fn().mockImplementation(input => `${input}-result2`);
 
@@ -450,7 +450,7 @@ describe('Factory Functions', () => {
       expect(result).toBe('result1-result2');
     });
 
-    it('should handle composition errors', async () => {
+    test('should handle composition errors', async () => {
       const step1 = vi.fn().mockRejectedValue(new Error('Step 1 failed'));
       const step2 = vi.fn().mockResolvedValue('result2');
 
@@ -463,13 +463,13 @@ describe('Factory Functions', () => {
   });
 });
 
-describe('Step Enhancement Functions', () => {
+describe('step Enhancement Functions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   describe('withStepRetry', () => {
-    it('should create step with retry configuration', () => {
+    test('should create step with retry configuration', () => {
       const stepFunction = vi.fn().mockResolvedValue('result');
       const retryOptions = { maxAttempts: 3, delay: 1000 };
 
@@ -479,7 +479,7 @@ describe('Step Enhancement Functions', () => {
       expect(typeof enhancedStep).toBe('function');
     });
 
-    it('should apply retry pattern to step execution', async () => {
+    test('should apply retry pattern to step execution', async () => {
       const stepFunction = vi
         .fn()
         .mockRejectedValueOnce(new Error('Attempt 1'))
@@ -496,7 +496,7 @@ describe('Step Enhancement Functions', () => {
   });
 
   describe('withStepCircuitBreaker', () => {
-    it('should create step with circuit breaker configuration', () => {
+    test('should create step with circuit breaker configuration', () => {
       const stepFunction = vi.fn().mockResolvedValue('result');
       const circuitOptions = { failureThreshold: 5, resetTimeout: 60000 };
 
@@ -506,7 +506,7 @@ describe('Step Enhancement Functions', () => {
       expect(typeof enhancedStep).toBe('function');
     });
 
-    it('should apply circuit breaker pattern to step execution', async () => {
+    test('should apply circuit breaker pattern to step execution', async () => {
       const stepFunction = vi.fn().mockResolvedValue('result');
       const enhancedStep = withStepCircuitBreaker(stepFunction, { failureThreshold: 3 });
 
@@ -518,7 +518,7 @@ describe('Step Enhancement Functions', () => {
   });
 
   describe('withStepTimeout', () => {
-    it('should create step with timeout configuration', () => {
+    test('should create step with timeout configuration', () => {
       const stepFunction = vi.fn().mockResolvedValue('result');
       const timeout = 5000;
 
@@ -528,7 +528,7 @@ describe('Step Enhancement Functions', () => {
       expect(typeof enhancedStep).toBe('function');
     });
 
-    it('should apply timeout to step execution', async () => {
+    test('should apply timeout to step execution', async () => {
       const stepFunction = vi.fn().mockResolvedValue('result');
       const enhancedStep = withStepTimeout(stepFunction, 1000);
 
@@ -538,7 +538,7 @@ describe('Step Enhancement Functions', () => {
       expect(stepFunction).toHaveBeenCalledWith('input');
     });
 
-    it('should handle timeout errors', async () => {
+    test('should handle timeout errors', async () => {
       const stepFunction = vi
         .fn()
         .mockImplementation(() => new Promise(resolve => setTimeout(resolve, 2000)));
@@ -549,7 +549,7 @@ describe('Step Enhancement Functions', () => {
   });
 
   describe('withStepMonitoring', () => {
-    it('should create step with monitoring configuration', () => {
+    test('should create step with monitoring configuration', () => {
       const stepFunction = vi.fn().mockResolvedValue('result');
       const monitoringConfig = { enableMetrics: true, enableLogging: true };
 
@@ -559,7 +559,7 @@ describe('Step Enhancement Functions', () => {
       expect(typeof enhancedStep).toBe('function');
     });
 
-    it('should apply monitoring to step execution', async () => {
+    test('should apply monitoring to step execution', async () => {
       const stepFunction = vi.fn().mockResolvedValue('result');
       const enhancedStep = withStepMonitoring(stepFunction, { enableMetrics: true });
 
@@ -571,8 +571,8 @@ describe('Step Enhancement Functions', () => {
   });
 });
 
-describe('Integration Tests', () => {
-  it('should create and execute complex step with all patterns', async () => {
+describe('integration Tests', () => {
+  test('should create and execute complex step with all patterns', async () => {
     const stepFunction = vi.fn().mockResolvedValue({ success: true, data: 'complex-result' });
 
     // Create step with validation
@@ -608,12 +608,12 @@ describe('Integration Tests', () => {
       { source: 'integration-test' },
     );
 
-    expect(result.success).toBe(true);
+    expect(result.success).toBeTruthy();
     expect(result.performance).toBeDefined();
-    expect(stepFunction).toHaveBeenCalled();
+    expect(stepFunction).toHaveBeenCalledWith();
   });
 
-  it('should handle step failure with all error handling patterns', async () => {
+  test('should handle step failure with all error handling patterns', async () => {
     const stepFunction = vi.fn().mockRejectedValue(new Error('Step failed'));
 
     const step = createStep('failing-step', stepFunction);
@@ -626,12 +626,12 @@ describe('Integration Tests', () => {
 
     const result = await workflowStep.execute({ test: 'input' }, 'workflow-123');
 
-    expect(result.success).toBe(false);
+    expect(result.success).toBeFalsy();
     expect(result.error).toBeDefined();
     expect(result.performance).toBeDefined();
   });
 
-  it('should compose multiple enhanced steps', async () => {
+  test('should compose multiple enhanced steps', async () => {
     const step1 = vi.fn().mockResolvedValue('step1-result');
     const step2 = vi.fn().mockImplementation(input => `${input}-step2`);
     const step3 = vi.fn().mockImplementation(input => `${input}-step3`);

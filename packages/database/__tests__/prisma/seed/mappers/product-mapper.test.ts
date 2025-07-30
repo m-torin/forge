@@ -1,9 +1,9 @@
-import { MediaType, ProductStatus, ProductType } from '@/prisma-generated/client';
+import { MediaType, ProductStatus, ProductType } from '#/prisma-generated/client';
 import {
   extractProductMedia,
   extractProductVariants,
   mapWebappProductToPrisma,
-} from '@/prisma/src/seed/mappers/product-mapper';
+} from '#/prisma/src/seed/mappers/product-mapper';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 describe('product-mapper', () => {

@@ -135,22 +135,40 @@ function NotionEditorCore({
 
   // Initialize upload handlers async
   useEffect(() => {
-    if (enableImageUpload) {
-      createStorageUploadHandler(imageUploadConfig).then(setUploadHandler);
-    } else {
-      setUploadHandler(undefined);
-    }
+    const initImageUpload = async () => {
+      if (enableImageUpload) {
+        try {
+          const handler = await createStorageUploadHandler(imageUploadConfig);
+          setUploadHandler(handler);
+        } catch {
+          // Silently ignore upload handler creation errors
+        }
+      } else {
+        setUploadHandler(undefined);
+      }
+    };
+
+    void initImageUpload();
   }, [enableImageUpload, imageUploadConfig]);
 
   useEffect(() => {
-    if (enableMediaUpload) {
-      createStorageUploadHandler({
-        accept: ALL_MEDIA_TYPES,
-        ...mediaUploadConfig,
-      }).then(setMediaUploadHandler);
-    } else {
-      setMediaUploadHandler(undefined);
-    }
+    const initMediaUpload = async () => {
+      if (enableMediaUpload) {
+        try {
+          const handler = await createStorageUploadHandler({
+            accept: ALL_MEDIA_TYPES,
+            ...mediaUploadConfig,
+          });
+          setMediaUploadHandler(handler);
+        } catch {
+          // Silently ignore upload handler creation errors
+        }
+      } else {
+        setMediaUploadHandler(undefined);
+      }
+    };
+
+    void initMediaUpload();
   }, [enableMediaUpload, mediaUploadConfig]);
 
   const editor: Editor | null = useEditor({
@@ -387,7 +405,7 @@ function NotionEditorCore({
                 handle.draggable = true;
                 return handle;
               },
-              onNodeChange: ({ node, editor }) => {
+              onNodeChange: ({ node, _editor }: { node: any; editor: any; _editor?: any }) => {
                 // Optional: Add hover highlighting or other interactions
                 if (node) {
                   logInfo('Hovering over node:', node.type.name);

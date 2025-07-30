@@ -5,7 +5,6 @@
     "skipLibCheck": true,
     "noEmit": true,
     "paths": {
-      "@repo/*": ["../../packages/*"],
       "#/root/*": ["./*"],
       "#/*": ["./src/*"]
     }

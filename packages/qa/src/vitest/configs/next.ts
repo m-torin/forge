@@ -33,8 +33,8 @@ export function createNextConfig(options: NextConfigOptions = {}): UserConfig {
   const aliases = {
     ...(config.resolve?.alias || {}),
     // Add app directory if requested
-    ...(includeAppDir ? { '@/app': path.resolve(process.cwd(), './app') } : {}),
-    '@/components': path.resolve(process.cwd(), './components'),
+    ...(includeAppDir ? { '#/app': path.resolve(process.cwd(), './app') } : {}),
+    '#/components': path.resolve(process.cwd(), './components'),
     '#/lib': path.resolve(process.cwd(), './lib'),
   };
 

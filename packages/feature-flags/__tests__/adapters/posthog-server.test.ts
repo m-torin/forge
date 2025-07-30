@@ -6,7 +6,7 @@ import {
   getProviderData,
   postHogServerAdapter,
   resetPostHogClient,
-} from '@/adapters/posthog-server';
+} from '#/adapters/posthog-server';
 import { beforeEach, describe, expect, vi } from 'vitest';
 import {
   assertionHelpers,

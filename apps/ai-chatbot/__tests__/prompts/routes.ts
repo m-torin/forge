@@ -1,4 +1,4 @@
-import { generateUUID } from '@/lib/utils';
+import { generateUUID } from '#/lib/utils';
 
 export const TEST_PROMPTS = {
   SKY: {

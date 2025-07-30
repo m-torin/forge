@@ -9,24 +9,22 @@ import {
   Prisma,
   FlowMethod,
   NodeType as PrismaNodeType,
+  NodeType,
   EdgeType,
 } from '@prisma/client';
-import { NodeTypesEnum } from './nodes';
+
+// Import generated schemas only for validation
+
+
 
 // ==================================================================================
 // Type Definitions & Schemas
 // ==================================================================================
 
 // 1. Define a single source of truth for node types
-const NODE_TYPES = [...Object.values(NodeTypesEnum)] as [string, ...string[]];
+const NODE_TYPES = Object.values(NodeType) as [string, ...string[]];
 
-// 2. Define NodeTypeEnum using the single source of truth
-const _NodeTypeEnum = z.enum(NODE_TYPES);
-
-// 3. Infer NodeType from NodeTypeEnum for type safety
-type NodeType = z.infer<typeof _NodeTypeEnum>;
-
-// 4. Define ReactFlowNodeSchema using NodeTypeEnum consistently
+// 2. Define ReactFlowNodeSchema
 const ReactFlowNodeSchema = z.object({
   id: z.string(),
   type: z.string(),

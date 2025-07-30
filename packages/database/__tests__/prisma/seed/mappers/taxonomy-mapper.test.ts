@@ -1,11 +1,11 @@
-import { ContentStatus, TaxonomyType } from '@/prisma-generated/client';
+import { ContentStatus, TaxonomyType } from '#/prisma-generated/client';
 import {
   colorTaxonomies,
   getAllTaxonomies,
   getStatusTaxonomy,
   sizeTaxonomies,
   statusTaxonomies,
-} from '@/prisma/src/seed/mappers/taxonomy-mapper';
+} from '#/prisma/src/seed/mappers/taxonomy-mapper';
 import { describe, expect, it } from 'vitest';
 
 describe('taxonomy-mapper', () => {

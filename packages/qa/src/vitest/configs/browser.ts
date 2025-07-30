@@ -259,7 +259,7 @@ export function createBrowserConfig(options: BrowserTestOptions = {}): UserConfi
           port: 63315,
           host: 'localhost',
         },
-        ui: true,
+        ui: !process.env.CI,
       },
 
       // Server configuration for browser mode
@@ -273,11 +273,10 @@ export function createBrowserConfig(options: BrowserTestOptions = {}): UserConfi
     resolve: {
       extensions: ['.ts', '.tsx', '.js', '.jsx', '.json', '.mjs', '.mts'],
       alias: {
-        '@': resolve(process.cwd(), './src'),
-        '@/components': resolve(process.cwd(), './src/components'),
-        '@/lib': resolve(process.cwd(), './src/lib'),
-        '@/utils': resolve(process.cwd(), './src/utils'),
-        '@/types': resolve(process.cwd(), './src/types'),
+        '#/root/*': resolve(process.cwd(), './*'),
+        '#/*': resolve(process.cwd(), './src/*'),
+        '@repo/*': resolve(process.cwd(), '../../packages/*'),
+        '@labs/*': resolve(process.cwd(), '../../labs/*'),
         ...aliases,
       },
     },

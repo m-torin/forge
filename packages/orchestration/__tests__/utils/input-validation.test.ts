@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { WorkflowValidationError } from '@/shared/utils/errors';
+import { WorkflowValidationError } from '#/shared/utils/errors';
 import {
   apiSchemas,
   commonSchemas,

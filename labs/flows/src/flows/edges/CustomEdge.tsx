@@ -65,8 +65,8 @@ export const CustomEdge = (props: FbEdgeProps) => {
         id={id}
         path={edgePath}
         style={edgeStyle}
-        markerStart={markerStart}
-        markerEnd={markerEnd}
+        {...(markerStart && { markerStart })}
+        {...(markerEnd && { markerEnd })}
         interactionWidth={interactionWidth}
         className={selected ? 'selected' : ''}
         {...restProps}
@@ -79,7 +79,7 @@ export const CustomEdge = (props: FbEdgeProps) => {
         y={labelY}
         isEditable={data?.isEditable ?? true}
         isDeletable={data?.isDeletable ?? true}
-        selected={selected}
+        selected={selected ?? false}
       />
     </>
   );

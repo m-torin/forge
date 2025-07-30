@@ -117,11 +117,11 @@ environments:
     - jsdom environment
     - React plugin
     - Next.js specific mocks (router, image, link)
-    - Standard Next.js aliases (`@`, `@/app`, `@/components`)
+    - Standard Next.js aliases (`@`, `#/app`, `#/components`)
     - Excludes build directories from coverage
 
   </Tab>
-  
+
   <Tab title="React Packages">
     ```typescript
     // vitest.config.ts
@@ -139,7 +139,7 @@ environments:
     - Comprehensive browser API mocks
 
   </Tab>
-  
+
   <Tab title="Node.js Packages">
     ```typescript
     // vitest.config.ts
@@ -156,7 +156,7 @@ environments:
     - Optimized for server-side testing
 
   </Tab>
-  
+
   <Tab title="Database Packages">
     ```typescript
     // vitest.config.ts
@@ -264,7 +264,7 @@ test("analytics tracking", () => {
 import { vi } from "vitest";
 
 // Mock app-specific modules
-vi.mock("@/lib/custom-service", () => ({
+vi.mock("#/lib/custom-service", () => ({
   customService: {
     doSomething: vi.fn().mockResolvedValue({ success: true })
   }
@@ -273,12 +273,12 @@ vi.mock("@/lib/custom-service", () => ({
 
 ### Absolute Imports in Tests
 
-Tests support absolute imports using the `@/` alias:
+Tests support absolute imports using the `#/` alias:
 
 ```typescript
 // In test files
-import { Button } from "@/components/Button";
-import { userActions } from "@/app/actions/users";
+import { Button } from "#/components/Button";
+import { userActions } from "#/app/actions/users";
 import { render } from "@repo/qa/vitest/utils/render";
 ```
 
@@ -453,7 +453,7 @@ enterprise-grade testing standards:
     ```typescript
     // __tests__/components/Button.test.tsx
     import { render, screen } from '@repo/qa/vitest/utils/render';
-    import { Button } from '@/components/Button';
+    import { Button } from '#/components/Button';
 
     describe('Button', () => {
       it('renders correctly', () => {
@@ -602,7 +602,7 @@ enterprise-grade testing standards:
 <CodeGroup>
 ```typescript Basic Component Testing
 import { render, screen, userEvent } from '@repo/qa/vitest/utils/render';
-import { ProductCard } from '@/components/ProductCard';
+import { ProductCard } from '#/components/ProductCard';
 
 describe('ProductCard', () => { const mockProduct = { id: '1', name: 'Test
 Product', price: 29.99, image: '/test-image.jpg', };
@@ -639,7 +639,7 @@ const user = userEvent.setup();
 ```typescript Provider Testing
 import { render, screen } from '@repo/qa/vitest/utils/render';
 import { MantineProvider } from '@mantine/core';
-import { ThemeProvider } from '@/providers/ThemeProvider';
+import { ThemeProvider } from '#/providers/ThemeProvider';
 
 // Custom render with providers
 function renderWithProviders(ui: React.ReactElement) {

@@ -1,4 +1,4 @@
-import { createLocation, SEED_LOCATIONS } from '@/prisma/src/seed/mappers/location-mapper';
+import { createLocation, SEED_LOCATIONS } from '#/prisma/src/seed/mappers/location-mapper';
 import { describe, expect, it } from 'vitest';
 
 describe('location-mapper', () => {

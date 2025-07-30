@@ -7,7 +7,7 @@ import { describe, expect } from 'vitest';
 describe('config Basic Tests', () => {
   describe('pROVIDER_REQUIREMENTS', () => {
     test('should export provider requirements from config', async () => {
-      const { PROVIDER_REQUIREMENTS } = await import('@/shared/utils/config');
+      const { PROVIDER_REQUIREMENTS } = await import('#/shared/utils/config');
 
       expect(PROVIDER_REQUIREMENTS).toBeDefined();
       expect(typeof PROVIDER_REQUIREMENTS).toBe('object');
@@ -18,7 +18,7 @@ describe('config Basic Tests', () => {
     });
 
     test('should export provider requirements from config-client', async () => {
-      const { PROVIDER_REQUIREMENTS } = await import('@/shared/utils/config-client');
+      const { PROVIDER_REQUIREMENTS } = await import('#/shared/utils/config-client');
 
       expect(PROVIDER_REQUIREMENTS).toBeDefined();
       expect(typeof PROVIDER_REQUIREMENTS).toBe('object');
@@ -29,21 +29,21 @@ describe('config Basic Tests', () => {
     });
 
     test('should have correct requirements for PostHog', async () => {
-      const { PROVIDER_REQUIREMENTS } = await import('@/shared/utils/config');
+      const { PROVIDER_REQUIREMENTS } = await import('#/shared/utils/config');
 
       expect(PROVIDER_REQUIREMENTS.posthog).toContain('apiKey');
       expect(Array.isArray(PROVIDER_REQUIREMENTS.posthog)).toBeTruthy();
     });
 
     test('should have correct requirements for Segment', async () => {
-      const { PROVIDER_REQUIREMENTS } = await import('@/shared/utils/config');
+      const { PROVIDER_REQUIREMENTS } = await import('#/shared/utils/config');
 
       expect(PROVIDER_REQUIREMENTS.segment).toContain('writeKey');
       expect(Array.isArray(PROVIDER_REQUIREMENTS.segment)).toBeTruthy();
     });
 
     test('should have no requirements for console', async () => {
-      const { PROVIDER_REQUIREMENTS } = await import('@/shared/utils/config');
+      const { PROVIDER_REQUIREMENTS } = await import('#/shared/utils/config');
 
       expect(Array.isArray(PROVIDER_REQUIREMENTS.console)).toBeTruthy();
       expect(PROVIDER_REQUIREMENTS.console).toHaveLength(0);
@@ -52,7 +52,7 @@ describe('config Basic Tests', () => {
 
   describe('createConfigBuilder', () => {
     test('should create a config builder', async () => {
-      const { createConfigBuilder } = await import('@/shared/utils/config');
+      const { createConfigBuilder } = await import('#/shared/utils/config');
 
       const builder = createConfigBuilder();
 
@@ -66,7 +66,7 @@ describe('config Basic Tests', () => {
     });
 
     test('should build a basic config', async () => {
-      const { createConfigBuilder } = await import('@/shared/utils/config');
+      const { createConfigBuilder } = await import('#/shared/utils/config');
 
       const builder = createConfigBuilder();
       const config = builder.build();
@@ -77,7 +77,7 @@ describe('config Basic Tests', () => {
     });
 
     test('should chain configuration methods', async () => {
-      const { createConfigBuilder } = await import('@/shared/utils/config');
+      const { createConfigBuilder } = await import('#/shared/utils/config');
 
       const builder = createConfigBuilder();
       const config = builder.addConsole({}).build();
@@ -89,7 +89,7 @@ describe('config Basic Tests', () => {
 
   describe('getAnalyticsConfig', () => {
     test('should get a default analytics config', async () => {
-      const { getAnalyticsConfig } = await import('@/shared/utils/config');
+      const { getAnalyticsConfig } = await import('#/shared/utils/config');
 
       const config = getAnalyticsConfig();
 
@@ -99,7 +99,7 @@ describe('config Basic Tests', () => {
     });
 
     test('should get analytics config from client utils', async () => {
-      const { getAnalyticsConfig } = await import('@/shared/utils/config-client');
+      const { getAnalyticsConfig } = await import('#/shared/utils/config-client');
 
       const config = getAnalyticsConfig();
 
@@ -111,7 +111,7 @@ describe('config Basic Tests', () => {
 
   describe('validateConfig basic functionality', () => {
     test('should validate a minimal valid config', async () => {
-      const { validateConfig } = await import('@/shared/utils/config');
+      const { validateConfig } = await import('#/shared/utils/config');
 
       const config = {
         providers: {
@@ -123,7 +123,7 @@ describe('config Basic Tests', () => {
     });
 
     test('should validate config with multiple providers', async () => {
-      const { validateConfig } = await import('@/shared/utils/config');
+      const { validateConfig } = await import('#/shared/utils/config');
 
       const config = {
         providers: {

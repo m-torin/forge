@@ -20,7 +20,19 @@ export function KeyboardShortcutsHelp({ isOpen, onClose }: KeyboardShortcutsHelp
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black bg-opacity-50" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-black bg-opacity-50"
+        onClick={onClose}
+        role="button"
+        tabIndex={0}
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onClose();
+          }
+        }}
+        aria-label="Close shortcuts help"
+      />
 
       {/* Modal */}
       <div className="relative mx-4 max-h-[80vh] w-full max-w-4xl overflow-hidden rounded-lg bg-white shadow-xl">
@@ -76,13 +88,15 @@ export function KeyboardShortcutsHelp({ isOpen, onClose }: KeyboardShortcutsHelp
                     <div className="flex items-center gap-1">
                       {getFormattedShortcut(shortcut.shortcut)
                         .split('+')
-                        .map((key, keyIndex) => (
-                          <span key={keyIndex} className="inline-flex">
+                        .map((key, keyIndex, arr) => (
+                          <span
+                            key={`${shortcut.description}-${key}-${key.length}`}
+                            className="inline-flex"
+                          >
                             <kbd className="rounded border border-gray-300 bg-white px-2 py-1 text-xs font-semibold text-gray-800 shadow-sm">
                               {key.trim()}
                             </kbd>
-                            {keyIndex <
-                              getFormattedShortcut(shortcut.shortcut).split('+').length - 1 && (
+                            {keyIndex < arr.length - 1 && (
                               <span className="mx-1 text-gray-400">+</span>
                             )}
                           </span>

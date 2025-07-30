@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect } from 'vitest';
 
-import { couponApplied, couponRemoved } from '@/shared/emitters/ecommerce/events/coupon';
-import { ECOMMERCE_EVENTS } from '@/shared/emitters/ecommerce/types';
+import { couponApplied, couponRemoved } from '#/shared/emitters/ecommerce/events/coupon';
+import { ECOMMERCE_EVENTS } from '#/shared/emitters/ecommerce/types';
 
-import type { CouponProperties } from '@/shared/emitters/ecommerce/types';
+import type { CouponProperties } from '#/shared/emitters/ecommerce/types';
 
 describe('coupon Emitters', () => {
   beforeEach(() => {

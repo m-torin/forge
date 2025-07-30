@@ -8,15 +8,15 @@ import {
   orderStatusUpdated,
   returnCompleted,
   returnRequested,
-} from '@/shared/emitters/ecommerce/events/order';
-import { ECOMMERCE_EVENTS } from '@/shared/emitters/ecommerce/types';
+} from '#/shared/emitters/ecommerce/events/order';
+import { ECOMMERCE_EVENTS } from '#/shared/emitters/ecommerce/types';
 
 import type {
   BaseProductProperties,
   OrderProperties,
   OrderStatusProperties,
   ReturnProperties,
-} from '@/shared/emitters/ecommerce/types';
+} from '#/shared/emitters/ecommerce/types';
 
 // Mock the trackEcommerce function
 vi.mock('../../shared/emitters/ecommerce/track-ecommerce', () => ({

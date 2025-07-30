@@ -9,7 +9,7 @@ import {
   getTeamAction,
   getTeamStatsAction,
   updateTeamAction,
-} from '@/server/teams/actions';
+} from '#/server/teams/actions';
 
 // Set up all mocks
 setupAllMocks();

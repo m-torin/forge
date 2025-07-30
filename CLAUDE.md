@@ -266,6 +266,7 @@ rateLimit.exceeded.mockLimit();
   `chore`
 - Pre-commit: `pnpm typecheck && pnpm lint`
 - Never commit secrets
+- No attribution in commit messages
 
 ### Package Layers (Dependency Order)
 

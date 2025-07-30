@@ -1,11 +1,11 @@
 /**
  * @vitest-environment jsdom
  */
+import { EmbeddableNotionEditor } from '#/components/EmbeddableNotionEditor/EmbeddableNotionEditor';
 import { fireEvent } from '@testing-library/react';
 import { useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { EmbeddableNotionEditor } from '../../src/components/EmbeddableNotionEditor/EmbeddableNotionEditor';
-import { renderWithoutProvider, screen } from '../../src/testing/test-utils';
+import { renderWithoutProvider, screen } from '../testing/test-utils';
 
 // Mock all external dependencies
 vi.mock('@tiptap/react', () => ({

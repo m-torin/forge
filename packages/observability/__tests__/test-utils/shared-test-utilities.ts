@@ -3,8 +3,8 @@
  * Reduces code duplication and provides consistent test patterns
  */
 
-import type { ObservabilityPlugin, ObservabilityServerPlugin } from '@/core/plugin';
-import type { Breadcrumb, LogLevel, ObservabilityContext, ObservabilityUser } from '@/core/types';
+import type { ObservabilityPlugin, ObservabilityServerPlugin } from '#/core/plugin';
+import type { Breadcrumb, LogLevel, ObservabilityContext, ObservabilityUser } from '#/core/types';
 import { expect, vi } from 'vitest';
 
 // ============================================================================

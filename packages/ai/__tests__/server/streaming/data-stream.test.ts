@@ -4,7 +4,7 @@
  * Following official AI SDK v5 data stream protocol testing
  */
 
-import { createDataStreamHelper, DataStreamHelper } from '@/shared/streaming/data-stream';
+import { createDataStreamHelper, DataStreamHelper } from '#/shared/streaming/data-stream';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 // Mock AI SDK v5 with v5 simulateReadableStream pattern

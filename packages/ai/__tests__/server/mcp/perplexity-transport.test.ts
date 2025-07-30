@@ -1,5 +1,5 @@
-import type { MCPClientConfig } from '@/server/mcp/client';
-import { mcpTransports } from '@/server/mcp/transports';
+import type { MCPClientConfig } from '#/server/mcp/client';
+import { mcpTransports } from '#/server/mcp/transports';
 import { describe, expect, test } from 'vitest';
 
 describe('perplexity MCP Transport', () => {

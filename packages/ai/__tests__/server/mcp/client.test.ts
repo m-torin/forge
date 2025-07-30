@@ -83,7 +83,7 @@ describe('mCP Client', () => {
 
   describe('client Creation', () => {
     test('should create MCP client with stdio transport', async () => {
-      const { createMCPClient } = await import('@/server/mcp/client');
+      const { createMCPClient } = await import('#/server/mcp/client');
 
       const config = {
         name: 'filesystem',
@@ -118,7 +118,7 @@ describe('mCP Client', () => {
     });
 
     test('should create MCP client with SSE transport', async () => {
-      const { createMCPClient } = await import('@/server/mcp/client');
+      const { createMCPClient } = await import('#/server/mcp/client');
 
       const config = {
         name: 'perplexity',
@@ -152,7 +152,7 @@ describe('mCP Client', () => {
     });
 
     test('should create MCP client with HTTP transport', async () => {
-      const { createMCPClient } = await import('@/server/mcp/client');
+      const { createMCPClient } = await import('#/server/mcp/client');
 
       const config = {
         name: 'custom-server',
@@ -179,7 +179,7 @@ describe('mCP Client', () => {
     });
 
     test('should handle client creation errors', async () => {
-      const { createMCPClient } = await import('@/server/mcp/client');
+      const { createMCPClient } = await import('#/server/mcp/client');
 
       const config = {
         name: 'failing-client',
@@ -196,7 +196,7 @@ describe('mCP Client', () => {
     });
 
     test('should validate transport configuration', async () => {
-      const { createMCPClient } = await import('@/server/mcp/client');
+      const { createMCPClient } = await import('#/server/mcp/client');
 
       const invalidConfig = {
         name: 'invalid',
@@ -214,7 +214,7 @@ describe('mCP Client', () => {
 
   describe('tool Discovery', () => {
     test('should discover and return available tools', async () => {
-      const { createMCPClient } = await import('@/server/mcp/client');
+      const { createMCPClient } = await import('#/server/mcp/client');
 
       const config = {
         name: 'filesystem',
@@ -234,7 +234,7 @@ describe('mCP Client', () => {
     });
 
     test('should handle empty tool list', async () => {
-      const { createMCPClient } = await import('@/server/mcp/client');
+      const { createMCPClient } = await import('#/server/mcp/client');
 
       mockMCPClient.tools.mockResolvedValue({});
 
@@ -253,7 +253,7 @@ describe('mCP Client', () => {
     });
 
     test('should handle tool discovery errors', async () => {
-      const { createMCPClient } = await import('@/server/mcp/client');
+      const { createMCPClient } = await import('#/server/mcp/client');
 
       const error = new Error('Tool discovery failed');
       mockMCPClient.tools.mockRejectedValue(error);
@@ -272,7 +272,7 @@ describe('mCP Client', () => {
     });
 
     test('should merge tools from multiple sources', async () => {
-      const { mergeMCPTools } = await import('@/server/mcp/client');
+      const { mergeMCPTools } = await import('#/server/mcp/client');
 
       const tools1 = {
         filesystem_read: mockTools.filesystem_read,
@@ -302,7 +302,7 @@ describe('mCP Client', () => {
     });
 
     test('should handle tool name conflicts', async () => {
-      const { mergeMCPTools } = await import('@/server/mcp/client');
+      const { mergeMCPTools } = await import('#/server/mcp/client');
 
       const tools1 = {
         search: {
@@ -339,7 +339,7 @@ describe('mCP Client', () => {
 
   describe('tool Execution', () => {
     test('should execute tools with parameters', async () => {
-      const { createMCPClient } = await import('@/server/mcp/client');
+      const { createMCPClient } = await import('#/server/mcp/client');
 
       const expectedResult = {
         success: true,
@@ -369,7 +369,7 @@ describe('mCP Client', () => {
     });
 
     test('should handle tool execution errors', async () => {
-      const { createMCPClient } = await import('@/server/mcp/client');
+      const { createMCPClient } = await import('#/server/mcp/client');
 
       const error = new Error('File not found');
       mockMCPClient.invoke.mockRejectedValue(error);
@@ -392,7 +392,7 @@ describe('mCP Client', () => {
     });
 
     test('should validate tool parameters', async () => {
-      const { createMCPClient } = await import('@/server/mcp/client');
+      const { createMCPClient } = await import('#/server/mcp/client');
 
       const config = {
         name: 'filesystem',
@@ -420,7 +420,7 @@ describe('mCP Client', () => {
 
   describe('connection Management', () => {
     test('should properly close client connections', async () => {
-      const { createMCPClient } = await import('@/server/mcp/client');
+      const { createMCPClient } = await import('#/server/mcp/client');
 
       const config = {
         name: 'filesystem',
@@ -437,7 +437,7 @@ describe('mCP Client', () => {
     });
 
     test('should handle connection close errors gracefully', async () => {
-      const { createMCPClient } = await import('@/server/mcp/client');
+      const { createMCPClient } = await import('#/server/mcp/client');
 
       const error = new Error('Connection already closed');
       mockMCPClient.close.mockRejectedValue(error);
@@ -457,7 +457,7 @@ describe('mCP Client', () => {
     });
 
     test('should implement connection timeout', async () => {
-      const { createMCPClient } = await import('@/server/mcp/client');
+      const { createMCPClient } = await import('#/server/mcp/client');
 
       // Mock slow connection establishment
       mockCreateMCPClient.mockImplementation(
@@ -477,7 +477,7 @@ describe('mCP Client', () => {
     });
 
     test('should implement connection retry logic', async () => {
-      const { createMCPClientWithRetry } = await import('@/server/mcp/client');
+      const { createMCPClientWithRetry } = await import('#/server/mcp/client');
 
       // Fail first two attempts, succeed on third
       mockCreateMCPClient
@@ -505,7 +505,7 @@ describe('mCP Client', () => {
 
   describe('environment Variable Handling', () => {
     test('should pass environment variables to stdio transport', async () => {
-      const { createMCPClient } = await import('@/server/mcp/client');
+      const { createMCPClient } = await import('#/server/mcp/client');
 
       const config = {
         name: 'env-aware',
@@ -531,7 +531,7 @@ describe('mCP Client', () => {
     });
 
     test('should merge with process environment', async () => {
-      const { createMCPClient } = await import('@/server/mcp/client');
+      const { createMCPClient } = await import('#/server/mcp/client');
 
       const originalEnv = process.env.NODE_ENV;
       process.env.NODE_ENV = 'test';
@@ -564,7 +564,7 @@ describe('mCP Client', () => {
 
   describe('error Recovery', () => {
     test('should implement graceful degradation', async () => {
-      const { ResilientMCPClient } = await import('@/server/mcp/client');
+      const { ResilientMCPClient } = await import('#/server/mcp/client');
 
       const config = {
         name: 'unreliable',
@@ -594,7 +594,7 @@ describe('mCP Client', () => {
     });
 
     test('should implement circuit breaker pattern', async () => {
-      const { CircuitBreakerMCPClient } = await import('@/server/mcp/client');
+      const { CircuitBreakerMCPClient } = await import('#/server/mcp/client');
 
       const config = {
         name: 'circuit-test',
@@ -624,7 +624,7 @@ describe('mCP Client', () => {
 
   describe('performance and Monitoring', () => {
     test('should track tool execution metrics', async () => {
-      const { MetricsMCPClient } = await import('@/server/mcp/client');
+      const { MetricsMCPClient } = await import('#/server/mcp/client');
 
       const config = {
         name: 'metrics-test',
@@ -649,7 +649,7 @@ describe('mCP Client', () => {
     });
 
     test('should measure tool execution latency', async () => {
-      const { MetricsMCPClient } = await import('@/server/mcp/client');
+      const { MetricsMCPClient } = await import('#/server/mcp/client');
 
       const config = {
         name: 'latency-test',
@@ -673,7 +673,7 @@ describe('mCP Client', () => {
     });
 
     test('should track error rates', async () => {
-      const { MetricsMCPClient } = await import('@/server/mcp/client');
+      const { MetricsMCPClient } = await import('#/server/mcp/client');
 
       const config = {
         name: 'error-tracking',
@@ -709,7 +709,7 @@ describe('mCP Client', () => {
       const originalGlobal = global;
       Object.defineProperty(global, 'EdgeRuntime', { value: '1.0' });
 
-      const { createMCPClient } = await import('@/server/mcp/client');
+      const { createMCPClient } = await import('#/server/mcp/client');
 
       const config = {
         name: 'edge-compatible',
@@ -731,7 +731,7 @@ describe('mCP Client', () => {
       // Mock Edge Runtime environment
       Object.defineProperty(global, 'EdgeRuntime', { value: '1.0' });
 
-      const { createMCPClient } = await import('@/server/mcp/client');
+      const { createMCPClient } = await import('#/server/mcp/client');
 
       const config = {
         name: 'edge-invalid',

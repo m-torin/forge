@@ -18,7 +18,11 @@
   "scripts": {
     "circular": "madge --circular --extensions ts,tsx,js,jsx .",
     "knip": "knip --fix --reporter json",
-    "prettier": "cd ../.. && pnpm exec prettier --log-level=error \"**/*.{ts,tsx,js,jsx,json,md,mdx,css,scss,yaml,yml,graphql,gql}\" --ignore-path packages/config/.prettierignore --config packages/config/src/prettier/index.mjs --write",
+    "prettier": "turbo run prettier:apps prettier:labs prettier:packages prettier:monorepo --filter=@repo/config",
+    "prettier:apps": "prettier --write '../../apps/**/*.{ts,tsx,js,jsx,json,md,mdx,css,scss,yaml,yml}' --config ./src/prettier/index.mjs --ignore-path ./.prettierignore",
+    "prettier:labs": "prettier --write '../../labs/**/*.{ts,tsx,js,jsx,json,md,mdx,css,scss,yaml,yml}' --config ./src/prettier/index.mjs --ignore-path ./.prettierignore",
+    "prettier:monorepo": "prettier --write '../../*.{ts,tsx,js,jsx,json,md,mdx,css,scss,yaml,yml}' '../../scripts/**/*' --config ./src/prettier/index.mjs --ignore-path ./.prettierignore",
+    "prettier:packages": "prettier --write '../../packages/**/*.{ts,tsx,js,jsx,json,md,mdx,css,scss,yaml,yml}' --config ./src/prettier/index.mjs --ignore-path ./.prettierignore",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {

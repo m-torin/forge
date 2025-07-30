@@ -1,7 +1,7 @@
-import Home from '@/src/app/page';
+import Home from '#/app/page';
 import { MantineProvider, createTheme } from '@mantine/core';
 import { render, screen } from '@testing-library/react';
-import { describe, expect } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 const theme = createTheme({});
 
@@ -13,9 +13,12 @@ describe('home Page', () => {
   test('renders welcome message', () => {
     renderWithMantine(<Home />);
 
-    expect(screen.getByText(/Welcome to/)).toBeInTheDocument();
-    expect(screen.getByText(/Mantine/)).toBeInTheDocument();
-    expect(screen.getByText(/Tailwind/)).toBeInTheDocument();
+    expect(
+      screen.getByText((content, element) => {
+        return element?.textContent === 'Welcome to Mantine + Tailwind';
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Mantine + Tailwind')).toBeInTheDocument();
   });
 
   test('renders app title in header', () => {

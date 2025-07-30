@@ -4,7 +4,7 @@
  */
 
 import { FlowMethod } from '@prisma/client';
-import { DEMO_FLOW_ID, DEMO_INSTANCE_ID } from './demoMode';
+import { DEMO_CONSTANTS } from '#/root/env';
 import { logInfo, logWarn } from '@repo/observability';
 
 export const sampleNodes: any[] = [
@@ -132,8 +132,8 @@ export const sampleEdges: any[] = [
 ];
 
 export const sampleFlowData = {
-  flowId: DEMO_FLOW_ID,
-  instanceId: DEMO_INSTANCE_ID,
+  flowId: DEMO_CONSTANTS.FLOW_ID,
+  instanceId: DEMO_CONSTANTS.INSTANCE_ID,
   flowData: {
     nodes: sampleNodes,
     edges: sampleEdges,
@@ -153,12 +153,12 @@ export const sampleFlowData = {
 
 export const sampleFlowMetadata = {
   flow: {
-    id: DEMO_FLOW_ID,
+    id: DEMO_CONSTANTS.FLOW_ID,
     name: 'Demo Workflow',
     method: FlowMethod.observable,
     isEnabled: true,
     metadata: sampleFlowData.updatedFlow.metadata,
-    instanceId: DEMO_INSTANCE_ID,
+    instanceId: DEMO_CONSTANTS.INSTANCE_ID,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     deleted: false,
@@ -167,7 +167,7 @@ export const sampleFlowMetadata = {
   },
   nodes: sampleNodes.map(node => ({
     id: node.id,
-    flowId: DEMO_FLOW_ID,
+    flowId: DEMO_CONSTANTS.FLOW_ID,
     type: node.type,
     name: node.data.name,
     position: node.position,
@@ -181,7 +181,7 @@ export const sampleFlowMetadata = {
   })),
   edges: sampleEdges.map(edge => ({
     id: edge.id,
-    flowId: DEMO_FLOW_ID,
+    flowId: DEMO_CONSTANTS.FLOW_ID,
     sourceNodeId: edge.source,
     targetNodeId: edge.target,
     type: edge.type || 'default',
@@ -202,13 +202,13 @@ export const initializeDemoData = () => {
   try {
     // Save main flow data
     localStorage.setItem(
-      `flows-demo-data-flow-${DEMO_FLOW_ID}`,
+      `${DEMO_CONSTANTS.STORAGE_KEY}-flow-${DEMO_CONSTANTS.FLOW_ID}`,
       JSON.stringify(sampleFlowData)
     );
     
     // Save flow metadata in format expected by the app
     localStorage.setItem(
-      DEMO_FLOW_ID,
+      DEMO_CONSTANTS.FLOW_ID,
       JSON.stringify({
         nodes: sampleNodes,
         edges: sampleEdges,
@@ -219,10 +219,10 @@ export const initializeDemoData = () => {
     
     // Save additional demo metadata
     localStorage.setItem(
-      'flows-demo-data-metadata',
+      `${DEMO_CONSTANTS.STORAGE_KEY}-metadata`,
       JSON.stringify({
         initialized: true,
-        flows: [DEMO_FLOW_ID],
+        flows: [DEMO_CONSTANTS.FLOW_ID],
         createdAt: new Date().toISOString()
       })
     );

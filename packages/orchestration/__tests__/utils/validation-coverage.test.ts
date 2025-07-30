@@ -3,7 +3,16 @@
  * Tests configuration validation functions and schemas
  */
 
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, vi } from 'vitest';
+
+// Import after mocking
+import {
+  validateProviderConfig,
+  validateRetryConfig,
+  validateScheduleConfig,
+  validateWorkflowDefinition,
+  validateWorkflowStep,
+} from '../../src/shared/utils/validation';
 
 // Mock dependencies
 vi.mock('../../../src/shared/utils/errors', () => ({
@@ -23,18 +32,9 @@ vi.mock('../../../src/shared/utils/errors', () => ({
   }),
 }));
 
-// Import after mocking
-import {
-  validateProviderConfig,
-  validateRetryConfig,
-  validateScheduleConfig,
-  validateWorkflowDefinition,
-  validateWorkflowStep,
-} from '../../src/shared/utils/validation';
-
-describe('Validation Utilities', () => {
+describe('validation Utilities', () => {
   describe('validateRetryConfig', () => {
-    it('should validate valid retry config', () => {
+    test('should validate valid retry config', () => {
       const validConfig = {
         maxAttempts: 3,
         delay: 1000,
@@ -44,7 +44,7 @@ describe('Validation Utilities', () => {
       expect(() => validateRetryConfig(validConfig)).not.toThrow();
     });
 
-    it('should validate retry config with all options', () => {
+    test('should validate retry config with all options', () => {
       const validConfig = {
         maxAttempts: 5,
         delay: 500,
@@ -56,7 +56,7 @@ describe('Validation Utilities', () => {
       expect(() => validateRetryConfig(validConfig)).not.toThrow();
     });
 
-    it('should throw ConfigurationError for invalid maxAttempts', () => {
+    test('should throw ConfigurationError for invalid maxAttempts', () => {
       const invalidConfig = {
         maxAttempts: 0,
         delay: 1000,
@@ -66,7 +66,7 @@ describe('Validation Utilities', () => {
       expect(() => validateRetryConfig(invalidConfig)).toThrow();
     });
 
-    it('should throw ConfigurationError for invalid delay', () => {
+    test('should throw ConfigurationError for invalid delay', () => {
       const invalidConfig = {
         maxAttempts: 3,
         delay: -1000,
@@ -76,7 +76,7 @@ describe('Validation Utilities', () => {
       expect(() => validateRetryConfig(invalidConfig)).toThrow();
     });
 
-    it('should throw ConfigurationError for invalid backoff', () => {
+    test('should throw ConfigurationError for invalid backoff', () => {
       const invalidConfig = {
         maxAttempts: 3,
         delay: 1000,
@@ -86,7 +86,7 @@ describe('Validation Utilities', () => {
       expect(() => validateRetryConfig(invalidConfig)).toThrow();
     });
 
-    it('should handle maxAttempts exceeding limit', () => {
+    test('should handle maxAttempts exceeding limit', () => {
       const invalidConfig = {
         maxAttempts: 15,
         delay: 1000,
@@ -98,7 +98,7 @@ describe('Validation Utilities', () => {
   });
 
   describe('validateScheduleConfig', () => {
-    it('should validate valid schedule config', () => {
+    test('should validate valid schedule config', () => {
       const validConfig = {
         workflowId: 'test-workflow',
         enabled: true,
@@ -107,7 +107,7 @@ describe('Validation Utilities', () => {
       expect(() => validateScheduleConfig(validConfig)).not.toThrow();
     });
 
-    it('should validate schedule config with all options', () => {
+    test('should validate schedule config with all options', () => {
       const validConfig = {
         workflowId: 'test-workflow',
         cron: '0 0 * * *',
@@ -125,7 +125,7 @@ describe('Validation Utilities', () => {
       expect(() => validateScheduleConfig(validConfig)).not.toThrow();
     });
 
-    it('should throw ConfigurationError for missing workflowId', () => {
+    test('should throw ConfigurationError for missing workflowId', () => {
       const invalidConfig = {
         enabled: true,
       } as any;
@@ -133,7 +133,7 @@ describe('Validation Utilities', () => {
       expect(() => validateScheduleConfig(invalidConfig)).toThrow();
     });
 
-    it('should throw ConfigurationError for empty workflowId', () => {
+    test('should throw ConfigurationError for empty workflowId', () => {
       const invalidConfig = {
         workflowId: '',
         enabled: true,
@@ -142,7 +142,7 @@ describe('Validation Utilities', () => {
       expect(() => validateScheduleConfig(invalidConfig)).toThrow();
     });
 
-    it('should handle dates correctly', () => {
+    test('should handle dates correctly', () => {
       const validConfig = {
         workflowId: 'test-workflow',
         startDate: new Date(),
@@ -155,7 +155,7 @@ describe('Validation Utilities', () => {
   });
 
   describe('validateProviderConfig', () => {
-    it('should validate upstash workflow provider config', () => {
+    test('should validate upstash workflow provider config', () => {
       const validConfig = {
         type: 'upstash-workflow' as const,
         baseUrl: 'https://test.upstash.io',
@@ -167,7 +167,7 @@ describe('Validation Utilities', () => {
       expect(() => validateProviderConfig(validConfig)).not.toThrow();
     });
 
-    it('should validate rate limit provider config', () => {
+    test('should validate rate limit provider config', () => {
       const validConfig = {
         type: 'rate-limit' as const,
         maxRequests: 100,
@@ -177,7 +177,7 @@ describe('Validation Utilities', () => {
       expect(() => validateProviderConfig(validConfig)).not.toThrow();
     });
 
-    it('should throw ConfigurationError for unknown provider type', () => {
+    test('should throw ConfigurationError for unknown provider type', () => {
       const invalidConfig = {
         type: 'unknown-provider' as any,
       };
@@ -185,7 +185,7 @@ describe('Validation Utilities', () => {
       expect(() => validateProviderConfig(invalidConfig)).toThrow();
     });
 
-    it('should throw ConfigurationError for invalid upstash config', () => {
+    test('should throw ConfigurationError for invalid upstash config', () => {
       const invalidConfig = {
         type: 'upstash-workflow' as const,
         baseUrl: '',
@@ -197,7 +197,7 @@ describe('Validation Utilities', () => {
       expect(() => validateProviderConfig(invalidConfig)).toThrow();
     });
 
-    it('should throw ConfigurationError for invalid rate limit config', () => {
+    test('should throw ConfigurationError for invalid rate limit config', () => {
       const invalidConfig = {
         type: 'rate-limit' as const,
         maxRequests: 0,
@@ -209,7 +209,7 @@ describe('Validation Utilities', () => {
   });
 
   describe('validateWorkflowDefinition', () => {
-    it('should validate valid workflow definition', () => {
+    test('should validate valid workflow definition', () => {
       const validDefinition = {
         id: 'test-workflow',
         name: 'Test Workflow',
@@ -229,7 +229,7 @@ describe('Validation Utilities', () => {
       expect(result).toEqual(validDefinition);
     });
 
-    it('should validate workflow with minimal required fields', () => {
+    test('should validate workflow with minimal required fields', () => {
       const validDefinition = {
         id: 'minimal-workflow',
         name: 'Minimal Workflow',
@@ -241,7 +241,7 @@ describe('Validation Utilities', () => {
       expect(result).toEqual(validDefinition);
     });
 
-    it('should validate workflow with complex steps', () => {
+    test('should validate workflow with complex steps', () => {
       const validDefinition = {
         id: 'complex-workflow',
         name: 'Complex Workflow',
@@ -278,7 +278,7 @@ describe('Validation Utilities', () => {
       expect(result).toEqual(validDefinition);
     });
 
-    it('should throw WorkflowValidationError for missing id', () => {
+    test('should throw WorkflowValidationError for missing id', () => {
       const invalidDefinition = {
         name: 'No ID Workflow',
         steps: [],
@@ -287,7 +287,7 @@ describe('Validation Utilities', () => {
       expect(() => validateWorkflowDefinition(invalidDefinition)).toThrow();
     });
 
-    it('should throw WorkflowValidationError for missing name', () => {
+    test('should throw WorkflowValidationError for missing name', () => {
       const invalidDefinition = {
         id: 'no-name-workflow',
         steps: [],
@@ -296,7 +296,7 @@ describe('Validation Utilities', () => {
       expect(() => validateWorkflowDefinition(invalidDefinition)).toThrow();
     });
 
-    it('should throw WorkflowValidationError for invalid steps', () => {
+    test('should throw WorkflowValidationError for invalid steps', () => {
       const invalidDefinition = {
         id: 'invalid-steps-workflow',
         name: 'Invalid Steps Workflow',
@@ -306,7 +306,7 @@ describe('Validation Utilities', () => {
       expect(() => validateWorkflowDefinition(invalidDefinition)).toThrow();
     });
 
-    it('should handle workflow with schedule', () => {
+    test('should handle workflow with schedule', () => {
       const validDefinition = {
         id: 'scheduled-workflow',
         name: 'Scheduled Workflow',
@@ -325,7 +325,7 @@ describe('Validation Utilities', () => {
   });
 
   describe('validateWorkflowStep', () => {
-    it('should validate valid workflow step', () => {
+    test('should validate valid workflow step', () => {
       const validStep = {
         id: 'test-step',
         name: 'Test Step',
@@ -338,7 +338,7 @@ describe('Validation Utilities', () => {
       expect(result).toEqual(validStep);
     });
 
-    it('should validate HTTP step', () => {
+    test('should validate HTTP step', () => {
       const validStep = {
         id: 'http-step',
         name: 'HTTP Step',
@@ -358,7 +358,7 @@ describe('Validation Utilities', () => {
       expect(result).toEqual(validStep);
     });
 
-    it('should validate step with retry configuration', () => {
+    test('should validate step with retry configuration', () => {
       const validStep = {
         id: 'retry-step',
         name: 'Retry Step',
@@ -376,7 +376,7 @@ describe('Validation Utilities', () => {
       expect(result).toEqual(validStep);
     });
 
-    it('should validate step with condition', () => {
+    test('should validate step with condition', () => {
       const validStep = {
         id: 'conditional-step',
         name: 'Conditional Step',
@@ -390,7 +390,7 @@ describe('Validation Utilities', () => {
       expect(result).toEqual(validStep);
     });
 
-    it('should throw WorkflowValidationError for missing id', () => {
+    test('should throw WorkflowValidationError for missing id', () => {
       const invalidStep = {
         name: 'No ID Step',
         type: 'function',
@@ -400,7 +400,7 @@ describe('Validation Utilities', () => {
       expect(() => validateWorkflowStep(invalidStep)).toThrow();
     });
 
-    it('should throw WorkflowValidationError for missing name', () => {
+    test('should throw WorkflowValidationError for missing name', () => {
       const invalidStep = {
         id: 'no-name-step',
         type: 'function',
@@ -410,7 +410,7 @@ describe('Validation Utilities', () => {
       expect(() => validateWorkflowStep(invalidStep)).toThrow();
     });
 
-    it('should throw WorkflowValidationError for missing type', () => {
+    test('should throw WorkflowValidationError for missing type', () => {
       const invalidStep = {
         id: 'no-type-step',
         name: 'No Type Step',
@@ -420,7 +420,7 @@ describe('Validation Utilities', () => {
       expect(() => validateWorkflowStep(invalidStep)).toThrow();
     });
 
-    it('should throw WorkflowValidationError for invalid HTTP step', () => {
+    test('should throw WorkflowValidationError for invalid HTTP step', () => {
       const invalidStep = {
         id: 'invalid-http-step',
         name: 'Invalid HTTP Step',
@@ -432,7 +432,7 @@ describe('Validation Utilities', () => {
       expect(() => validateWorkflowStep(invalidStep)).toThrow();
     });
 
-    it('should handle step with timeout', () => {
+    test('should handle step with timeout', () => {
       const validStep = {
         id: 'timeout-step',
         name: 'Timeout Step',
@@ -446,7 +446,7 @@ describe('Validation Utilities', () => {
       expect(result).toEqual(validStep);
     });
 
-    it('should handle step with dependencies', () => {
+    test('should handle step with dependencies', () => {
       const validStep = {
         id: 'dependent-step',
         name: 'Dependent Step',
@@ -461,8 +461,8 @@ describe('Validation Utilities', () => {
     });
   });
 
-  describe('Edge Cases and Error Handling', () => {
-    it('should handle null and undefined inputs gracefully', () => {
+  describe('edge Cases and Error Handling', () => {
+    test('should handle null and undefined inputs gracefully', () => {
       expect(() => validateRetryConfig(null as any)).toThrow();
       expect(() => validateRetryConfig(undefined as any)).toThrow();
       expect(() => validateScheduleConfig(null as any)).toThrow();
@@ -475,7 +475,7 @@ describe('Validation Utilities', () => {
       expect(() => validateWorkflowStep(undefined as any)).toThrow();
     });
 
-    it('should handle empty objects', () => {
+    test('should handle empty objects', () => {
       expect(() => validateRetryConfig({} as any)).toThrow();
       expect(() => validateScheduleConfig({} as any)).toThrow();
       expect(() => validateProviderConfig({} as any)).toThrow();
@@ -483,7 +483,7 @@ describe('Validation Utilities', () => {
       expect(() => validateWorkflowStep({} as any)).toThrow();
     });
 
-    it('should validate JSON values correctly', () => {
+    test('should validate JSON values correctly', () => {
       const validDefinition = {
         id: 'json-workflow',
         name: 'JSON Workflow',
@@ -503,7 +503,7 @@ describe('Validation Utilities', () => {
       expect(result).toEqual(validDefinition);
     });
 
-    it('should handle complex nested structures', () => {
+    test('should handle complex nested structures', () => {
       const complexDefinition = {
         id: 'complex-workflow',
         name: 'Complex Workflow',

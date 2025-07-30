@@ -1001,3 +1001,13 @@ export async function updateUserAction(
     };
   }
 }
+
+// Export aliases for backwards compatibility with tests
+export const promoteToAdmin = setUserRoleAction;
+export const revokeAdminAccess = async (userId: string) => {
+  return setUserRoleAction(userId, 'support'); // Default to support role
+};
+export async function isUserAdmin(userId: string): Promise<boolean> {
+  const result = await getUserByIdAction(userId);
+  return result.data?.role === 'admin' || result.data?.role === 'super-admin' || false;
+}

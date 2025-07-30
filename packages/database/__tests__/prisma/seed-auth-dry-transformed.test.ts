@@ -9,14 +9,14 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 // Import centralized DRY utilities
-import { compositeGenerators } from '@/tests/database-data-generators';
+import { compositeGenerators } from '#/tests/database-data-generators';
 import {
   assertSeedOperation,
   createSeedTestSuite,
   testModuleImport,
-} from '@/tests/database-test-factory';
-import { DatabaseTestManager } from '@/tests/database-test-setup';
-import { DatabaseTestUtils } from '@/tests/database-test-utils';
+} from '#/tests/database-test-factory';
+import { DatabaseTestManager } from '#/tests/database-test-setup';
+import { DatabaseTestUtils } from '#/tests/database-test-utils';
 
 describe('Seed Auth - DRY Transformed Tests', () => {
   let testManager: DatabaseTestManager;
@@ -34,7 +34,7 @@ describe('Seed Auth - DRY Transformed Tests', () => {
 
     // Import seed function after mocks are configured
     const module = await testModuleImport(
-      () => import('@/prisma/src/seed/seed-auth'),
+      () => import('#/prisma/src/seed/seed-auth'),
       ['seedAuth'],
     );
     seedAuth = module.seedAuth;

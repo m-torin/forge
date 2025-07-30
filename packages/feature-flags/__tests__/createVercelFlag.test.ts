@@ -213,7 +213,7 @@ describe('createVercelFlag', () => {
     });
 
     // TODO: Fix time-based scheduling test - Date mocking issue
-    test.skip('should handle time-based scheduling correctly', async () => {
+    test.todo('should handle time-based scheduling correctly', async () => {
       // Mock Date to return a specific time (Sunday 3 AM UTC)
       const mockDate = new Date('2024-01-07T03:00:00.000Z'); // Sunday
       vi.useFakeTimers();

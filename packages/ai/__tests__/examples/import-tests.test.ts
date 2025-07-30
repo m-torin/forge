@@ -14,7 +14,7 @@ vi.mock('@upstash/vector', () => ({
 
 describe('examples Module Imports', () => {
   test('should import example files', async () => {
-    const modules = [() => import('@/examples/upstash-rag-examples')];
+    const modules = [() => import('#/examples/upstash-rag-examples')];
 
     for (const importModule of modules) {
       const module = await importModule();

@@ -10,8 +10,8 @@ import type {
   CartProperties,
   CouponProperties,
   OrderProperties,
-} from '@/shared/emitters/ecommerce/types';
-import type { EmitterOptions } from '@/shared/emitters/emitter-types';
+} from '#/shared/emitters/ecommerce/types';
+import type { EmitterOptions } from '#/shared/emitters/emitter-types';
 
 // ============================================================================
 // MOCK UTILITIES

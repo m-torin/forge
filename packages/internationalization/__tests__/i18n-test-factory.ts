@@ -5,7 +5,7 @@
  * This factory provides common test scenarios and data generators for internationalization.
  */
 
-import type { Locale } from '@/shared/dictionary-loader';
+import type { Locale } from '#/shared/dictionary-loader';
 import { render, screen } from '@testing-library/react';
 import { createElement } from 'react';
 import { describe, expect, test, vi } from 'vitest';

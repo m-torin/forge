@@ -539,7 +539,7 @@ export async function deleteFeature(id: string, userId: string) {
 ```typescript
 // __tests__/components/Component.test.tsx
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { Component } from "@/components/Component";
+import { Component } from "#/components/Component";
 
 describe("Component", () => {
   it("renders correctly", () => {
@@ -585,7 +585,7 @@ describe("Component", () => {
 ```typescript
 // __tests__/actions/feature.test.ts
 import { testAction } from "@repo/qa/server-actions";
-import { createFeature } from "@/app/actions/feature";
+import { createFeature } from "#/app/actions/feature";
 
 describe("createFeature", () => {
   it("creates a feature successfully", async () => {
@@ -845,8 +845,8 @@ export async function GET(request: NextRequest) {
 import { auth } from "@repo/auth/server/next";
 import { redirect } from "next/navigation";
 import { db } from "@repo/database";
-import { FeatureList } from "@/components/FeatureList";
-import { CreateFeatureButton } from "@/components/CreateFeatureButton";
+import { FeatureList } from "#/components/FeatureList";
+import { CreateFeatureButton } from "#/components/CreateFeatureButton";
 
 export default async function FeaturesPage() {
   const session = await auth();
@@ -889,8 +889,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { MantineProvider } from "@mantine/core";
 import { Notifications } from "@repo/notifications/mantine-notifications";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
+import { Header } from "#/components/Header";
+import { Footer } from "#/components/Footer";
 
 const inter = Inter({ subsets: ["latin"] });
 

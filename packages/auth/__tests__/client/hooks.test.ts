@@ -21,7 +21,7 @@ const mockAuthContext = {
 };
 
 // Mock the auth provider
-vi.mock('@/client/auth-provider', () => ({
+vi.mock('#/client/auth-provider', () => ({
   useAuthContext: vi.fn(() => mockAuthContext),
 }));
 
@@ -30,7 +30,7 @@ const mockAuthClient = {
   useSession: vi.fn(),
 };
 
-vi.mock('@/client/client', () => ({
+vi.mock('#/client/client', () => ({
   authClient: mockAuthClient,
 }));
 
@@ -44,21 +44,21 @@ Object.defineProperty(window, 'location', {
 
 describe('client hooks', () => {
   test('should export useAuth as alias for useAuthContext', async () => {
-    const hooksModule = await import('@/client/hooks');
-    const { useAuthContext } = await import('@/client/auth-provider');
+    const hooksModule = await import('#/client/hooks');
+    const { useAuthContext } = await import('#/client/auth-provider');
 
     expect(hooksModule.useAuth).toBe(useAuthContext);
   });
 
   test('should export useSession from authClient', async () => {
-    const hooksModule = await import('@/client/hooks');
+    const hooksModule = await import('#/client/hooks');
 
     expect(hooksModule.useSession).toBe(mockAuthClient.useSession);
   });
 
   describe('useUser', () => {
     test('should return user from auth context', async () => {
-      const hooksModule = await import('@/client/hooks');
+      const hooksModule = await import('#/client/hooks');
 
       const { result } = renderHook(() => hooksModule.useUser());
 
@@ -68,7 +68,7 @@ describe('client hooks', () => {
 
   describe('useIsAuthenticated', () => {
     test('should return isAuthenticated from auth context', async () => {
-      const hooksModule = await import('@/client/hooks');
+      const hooksModule = await import('#/client/hooks');
 
       const { result } = renderHook(() => hooksModule.useIsAuthenticated());
 
@@ -78,7 +78,7 @@ describe('client hooks', () => {
 
   describe('useRequireAuth', () => {
     test('should return requireAuth function from auth context', async () => {
-      const hooksModule = await import('@/client/hooks');
+      const hooksModule = await import('#/client/hooks');
 
       const { result } = renderHook(() => hooksModule.useRequireAuth());
 
@@ -88,7 +88,7 @@ describe('client hooks', () => {
 
   describe('useAuthGuard', () => {
     test('should return auth state when authenticated', async () => {
-      const hooksModule = await import('@/client/hooks');
+      const hooksModule = await import('#/client/hooks');
 
       const { result } = renderHook(() => hooksModule.useAuthGuard());
 
@@ -99,10 +99,10 @@ describe('client hooks', () => {
     });
 
     test('should redirect when not authenticated and redirectTo is provided', async () => {
-      const hooksModule = await import('@/client/hooks');
+      const hooksModule = await import('#/client/hooks');
 
       // Mock unauthenticated state
-      vi.mocked(await import('@/client/auth-provider')).useAuthContext.mockReturnValue({
+      vi.mocked(await import('#/client/auth-provider')).useAuthContext.mockReturnValue({
         ...mockAuthContext,
         isAuthenticated: false,
         isLoading: false,
@@ -121,10 +121,10 @@ describe('client hooks', () => {
     });
 
     test('should not redirect when loading', async () => {
-      const hooksModule = await import('@/client/hooks');
+      const hooksModule = await import('#/client/hooks');
 
       // Mock loading state
-      vi.mocked(await import('@/client/auth-provider')).useAuthContext.mockReturnValue({
+      vi.mocked(await import('#/client/auth-provider')).useAuthContext.mockReturnValue({
         ...mockAuthContext,
         isAuthenticated: false,
         isLoading: true,
@@ -143,10 +143,10 @@ describe('client hooks', () => {
     });
 
     test('should not redirect when no redirectTo is provided', async () => {
-      const hooksModule = await import('@/client/hooks');
+      const hooksModule = await import('#/client/hooks');
 
       // Mock unauthenticated state
-      vi.mocked(await import('@/client/auth-provider')).useAuthContext.mockReturnValue({
+      vi.mocked(await import('#/client/auth-provider')).useAuthContext.mockReturnValue({
         ...mockAuthContext,
         isAuthenticated: false,
         isLoading: false,
@@ -165,7 +165,7 @@ describe('client hooks', () => {
     });
 
     test('should not redirect when authenticated', async () => {
-      const hooksModule = await import('@/client/hooks');
+      const hooksModule = await import('#/client/hooks');
 
       // Test the normal authenticated flow
       const { result } = renderHook(() => hooksModule.useAuthGuard('/login'));

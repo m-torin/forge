@@ -179,7 +179,7 @@ package:
 
 ```typescript
 // apps/your-app/next.config.ts
-import { env } from "@/env";
+import { env } from "#/env";
 import { withSentry } from "@repo/observability/server/next";
 import { logWarn } from "@repo/observability/server/next";
 
@@ -227,7 +227,7 @@ layout:
 ```typescript
 // apps/your-app/app/layout.tsx
 import { ObservabilityProvider } from '@repo/observability/client/next';
-import { env } from '@/env';
+import { env } from '#/env';
 
 export default function RootLayout({ children }) {
   return (

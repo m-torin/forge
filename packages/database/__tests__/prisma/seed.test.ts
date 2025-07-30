@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock sub-seed modules
-vi.mock('@/prisma/src/seed/seed-auth', () => ({
+vi.mock('#/prisma/src/seed/seed-auth', () => ({
   seedAuth: vi.fn().mockResolvedValue(undefined),
 }));
 
 // Mock PrismaClient
-vi.mock('@/prisma-generated/client', () => {
+vi.mock('#/prisma-generated/client', () => {
   return {
     PrismaClient: vi.fn(() => ({
       user: {
@@ -21,10 +21,10 @@ vi.mock('@/prisma-generated/client', () => {
 });
 
 // Import after mocks
-import * as seedAuthModule from '@/prisma/src/seed/seed-auth';
+import * as seedAuthModule from '#/prisma/src/seed/seed-auth';
 
 // Import the main function from seed.ts
-import { main as seedMain } from '@/prisma/src/seed/seed';
+import { main as seedMain } from '#/prisma/src/seed/seed';
 
 const getMockPrismaClient = () => {
   const { PrismaClient } = require('../../../../prisma-generated/client');

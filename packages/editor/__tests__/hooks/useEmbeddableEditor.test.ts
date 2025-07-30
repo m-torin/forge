@@ -1,6 +1,6 @@
+import { useEmbeddableEditor } from '#/components/EmbeddableNotionEditor/EmbeddableNotionEditor';
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { useEmbeddableEditor } from '../../src/components/EmbeddableNotionEditor/EmbeddableNotionEditor';
 
 describe('useEmbeddableEditor Hook', () => {
   let mockEditor: any;

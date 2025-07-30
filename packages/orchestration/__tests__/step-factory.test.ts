@@ -15,7 +15,7 @@ import { z } from 'zod/v4';
 import { workflowGenerators } from './test-data-generators';
 import { AssertionUtils } from './test-utils';
 
-import { StepMetadata, WorkflowStepDefinition } from '@/shared/factories';
+import { StepMetadata, WorkflowStepDefinition } from '#/shared/factories';
 import {
   createWorkflowStep,
   defaultStepFactory,

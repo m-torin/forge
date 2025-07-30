@@ -65,8 +65,11 @@ interface PathProviderProps {
 
 function PathProviderContent({ children }: PathProviderProps) {
   const pathName = usePathname() ?? '';
-  const params = useParams() ?? {};
-  const searchParams = useSearchParams() ?? new URLSearchParams();
+  const rawParams = useParams();
+  const rawSearchParams = useSearchParams();
+  
+  const params = useMemo(() => rawParams ?? {}, [rawParams]);
+  const searchParams = useMemo(() => rawSearchParams ?? new URLSearchParams(), [rawSearchParams]);
 
   const allSegments = useMemo(
     () => pathName.split('/').filter(Boolean),

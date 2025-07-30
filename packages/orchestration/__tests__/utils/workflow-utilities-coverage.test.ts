@@ -3,21 +3,7 @@
  * Tests batch processing, progress reporting, error handling, and utility functions
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-
-// Mock dependencies
-vi.mock('@repo/observability/server/next', () => ({
-  createServerObservability: vi.fn().mockResolvedValue({
-    log: vi.fn(),
-  }),
-  logInfo: vi.fn(),
-}));
-
-vi.mock('./rate-limit', () => ({
-  createRateLimiter: vi.fn().mockReturnValue({
-    limit: vi.fn().mockResolvedValue({ success: true }),
-  }),
-}));
+import { beforeEach, describe, expect, vi } from 'vitest';
 
 // Import after mocking
 import {
@@ -48,27 +34,41 @@ import {
   withFallback,
 } from '../../src/shared/utils/workflow-utilities';
 
-describe('Workflow Utilities', () => {
+// Mock dependencies
+vi.mock('@repo/observability/server/next', () => ({
+  createServerObservability: vi.fn().mockResolvedValue({
+    log: vi.fn(),
+  }),
+  logInfo: vi.fn(),
+}));
+
+vi.mock('./rate-limit', () => ({
+  createRateLimiter: vi.fn().mockReturnValue({
+    limit: vi.fn().mockResolvedValue({ success: true }),
+  }),
+}));
+
+describe('workflow Utilities', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('Circuit Breaker Configurations', () => {
-    it('should export all circuit breaker configurations', () => {
+  describe('circuit Breaker Configurations', () => {
+    test('should export all circuit breaker configurations', () => {
       expect(CIRCUIT_BREAKER_CONFIGS.EXTERNAL_API).toBeDefined();
       expect(CIRCUIT_BREAKER_CONFIGS.DATABASE).toBeDefined();
       expect(CIRCUIT_BREAKER_CONFIGS.CRITICAL).toBeDefined();
       expect(CIRCUIT_BREAKER_CONFIGS.RESILIENT).toBeDefined();
     });
 
-    it('should have proper configuration values', () => {
+    test('should have proper configuration values', () => {
       expect(CIRCUIT_BREAKER_CONFIGS.EXTERNAL_API.failureThreshold).toBe(5);
       expect(CIRCUIT_BREAKER_CONFIGS.DATABASE.failureThreshold).toBe(3);
       expect(CIRCUIT_BREAKER_CONFIGS.CRITICAL.failureThreshold).toBe(1);
       expect(CIRCUIT_BREAKER_CONFIGS.RESILIENT.failureThreshold).toBe(10);
     });
 
-    it('should have different timeout configurations', () => {
+    test('should have different timeout configurations', () => {
       expect(CIRCUIT_BREAKER_CONFIGS.CRITICAL.resetTimeout).toBeLessThan(
         CIRCUIT_BREAKER_CONFIGS.DATABASE.resetTimeout,
       );
@@ -78,8 +78,8 @@ describe('Workflow Utilities', () => {
     });
   });
 
-  describe('Rate Limiter Configurations', () => {
-    it('should export all rate limiter configurations', () => {
+  describe('rate Limiter Configurations', () => {
+    test('should export all rate limiter configurations', () => {
       expect(RATE_LIMITER_CONFIGS.EXTERNAL_API_STRICT).toBeDefined();
       expect(RATE_LIMITER_CONFIGS.EXTERNAL_API_MODERATE).toBeDefined();
       expect(RATE_LIMITER_CONFIGS.INTERNAL_API).toBeDefined();
@@ -87,22 +87,22 @@ describe('Workflow Utilities', () => {
       expect(RATE_LIMITER_CONFIGS.DATABASE_WRITE).toBeDefined();
     });
 
-    it('should have different rate limits', () => {
+    test('should have different rate limits', () => {
       expect(RATE_LIMITER_CONFIGS.EXTERNAL_API_STRICT.maxRequests).toBe(60);
       expect(RATE_LIMITER_CONFIGS.EXTERNAL_API_MODERATE.maxRequests).toBe(300);
       expect(RATE_LIMITER_CONFIGS.INTERNAL_API.maxRequests).toBe(1000);
     });
 
-    it('should have unique prefixes', () => {
+    test('should have unique prefixes', () => {
       const prefixes = Object.values(RATE_LIMITER_CONFIGS).map(config => config.prefix);
       const uniquePrefixes = [...new Set(prefixes)];
       expect(prefixes).toEqual(uniquePrefixes);
     });
   });
 
-  describe('Batch Processing', () => {
+  describe('batch Processing', () => {
     describe('processBatch', () => {
-      it('should process items in batches', async () => {
+      test('should process items in batches', async () => {
         const items = [1, 2, 3, 4, 5];
         const processor = vi.fn().mockImplementation(async (item: number) => item * 2);
 
@@ -116,7 +116,7 @@ describe('Workflow Utilities', () => {
         expect(processor).toHaveBeenCalledTimes(5);
       });
 
-      it('should handle processing errors', async () => {
+      test('should handle processing errors', async () => {
         const items = [1, 2, 3];
         const processor = vi.fn().mockImplementation(async (item: number) => {
           if (item === 2) throw new Error('Processing failed');
@@ -133,7 +133,7 @@ describe('Workflow Utilities', () => {
         expect(result.errors[0].error.message).toBe('Processing failed');
       });
 
-      it('should call progress callback', async () => {
+      test('should call progress callback', async () => {
         const items = [1, 2, 3];
         const processor = vi.fn().mockImplementation(async (item: number) => item * 2);
         const onProgress = vi.fn();
@@ -145,7 +145,7 @@ describe('Workflow Utilities', () => {
         expect(onProgress).toHaveBeenCalledWith(3, 3);
       });
 
-      it('should preserve order when configured', async () => {
+      test('should preserve order when configured', async () => {
         const items = [1, 2, 3, 4, 5];
         const processor = vi.fn().mockImplementation(async (item: number) => {
           // Simulate variable processing time
@@ -161,7 +161,7 @@ describe('Workflow Utilities', () => {
         expect(result.results).toEqual([2, 4, 6, 8, 10]);
       });
 
-      it('should handle timeout', async () => {
+      test('should handle timeout', async () => {
         const items = [1, 2];
         const processor = vi.fn().mockImplementation(async (item: number) => {
           if (item === 2) {
@@ -181,7 +181,7 @@ describe('Workflow Utilities', () => {
     });
 
     describe('streamProcess', () => {
-      it('should process items as a stream', async () => {
+      test('should process items as a stream', async () => {
         const items = [1, 2, 3];
         const processor = vi.fn().mockImplementation(async (item: number) => item * 2);
         const results: number[] = [];
@@ -195,7 +195,7 @@ describe('Workflow Utilities', () => {
         expect(results).toEqual([2, 4, 6]);
       });
 
-      it('should handle stream processing errors', async () => {
+      test('should handle stream processing errors', async () => {
         const items = [1, 2, 3];
         const processor = vi.fn().mockImplementation(async (item: number) => {
           if (item === 2) throw new Error('Stream error');
@@ -216,7 +216,7 @@ describe('Workflow Utilities', () => {
     });
 
     describe('createMemoryEfficientProcessor', () => {
-      it('should create a memory efficient processor', async () => {
+      test('should create a memory efficient processor', async () => {
         const processor = vi.fn().mockImplementation(async (item: number) => item * 2);
         const memoryProcessor = createMemoryEfficientProcessor(processor, {
           batchSize: 2,
@@ -229,7 +229,7 @@ describe('Workflow Utilities', () => {
         expect(processor).toHaveBeenCalledTimes(4);
       });
 
-      it('should handle memory processing errors', async () => {
+      test('should handle memory processing errors', async () => {
         const processor = vi.fn().mockImplementation(async (item: number) => {
           if (item === 2) throw new Error('Memory error');
           return item * 2;
@@ -241,8 +241,8 @@ describe('Workflow Utilities', () => {
     });
   });
 
-  describe('Progress Reporting', () => {
-    it('should create progress reporter', () => {
+  describe('progress Reporting', () => {
+    test('should create progress reporter', () => {
       const reporter = new ProgressReporter('test-operation');
 
       expect(reporter).toBeDefined();
@@ -251,29 +251,29 @@ describe('Workflow Utilities', () => {
       expect(typeof reporter.fail).toBe('function');
     });
 
-    it('should report progress', async () => {
+    test('should report progress', async () => {
       const reporter = new ProgressReporter('test-operation');
 
       await reporter.report(50, 100, { stage: 'processing' });
       await reporter.complete({ processed: 100 });
 
       // Should not throw
-      expect(true).toBe(true);
+      expect(true).toBeTruthy();
     });
 
-    it('should report failures', async () => {
+    test('should report failures', async () => {
       const reporter = new ProgressReporter('test-operation');
       const error = new Error('Test error');
 
       await reporter.fail(error, { context: 'test' });
 
       // Should not throw
-      expect(true).toBe(true);
+      expect(true).toBeTruthy();
     });
   });
 
-  describe('Error Accumulator', () => {
-    it('should create error accumulator', () => {
+  describe('error Accumulator', () => {
+    test('should create error accumulator', () => {
       const accumulator = createErrorAccumulator();
 
       expect(accumulator.errors).toEqual([]);
@@ -282,7 +282,7 @@ describe('Workflow Utilities', () => {
       expect(accumulator.failedResults).toEqual([]);
     });
 
-    it('should add errors', () => {
+    test('should add errors', () => {
       const accumulator = createErrorAccumulator();
       const error = new Error('Test error');
 
@@ -293,7 +293,7 @@ describe('Workflow Utilities', () => {
       expect(accumulator.errors[0].context).toBe('Test context');
     });
 
-    it('should add warnings', () => {
+    test('should add warnings', () => {
       const accumulator = createErrorAccumulator();
 
       addWarning(accumulator, 'Test warning', 'Warning context');
@@ -303,7 +303,7 @@ describe('Workflow Utilities', () => {
       expect(accumulator.warnings[0].context).toBe('Warning context');
     });
 
-    it('should add successful results', () => {
+    test('should add successful results', () => {
       const accumulator = createErrorAccumulator();
       const result = { success: true, data: 'test' };
 
@@ -313,7 +313,7 @@ describe('Workflow Utilities', () => {
       expect(accumulator.successfulResults[0].result).toBe(result);
     });
 
-    it('should add failed results', () => {
+    test('should add failed results', () => {
       const accumulator = createErrorAccumulator();
       const error = new Error('Failed');
 
@@ -323,27 +323,27 @@ describe('Workflow Utilities', () => {
       expect(accumulator.failedResults[0].error).toBe(error);
     });
 
-    it('should check for errors', () => {
+    test('should check for errors', () => {
       const accumulator = createErrorAccumulator();
 
-      expect(hasErrors(accumulator)).toBe(false);
+      expect(hasErrors(accumulator)).toBeFalsy();
 
       addError(accumulator, new Error('Test'), 'context');
 
-      expect(hasErrors(accumulator)).toBe(true);
+      expect(hasErrors(accumulator)).toBeTruthy();
     });
 
-    it('should check for critical errors', () => {
+    test('should check for critical errors', () => {
       const accumulator = createErrorAccumulator();
 
-      expect(hasCriticalErrors(accumulator)).toBe(false);
+      expect(hasCriticalErrors(accumulator)).toBeFalsy();
 
       addError(accumulator, new Error('Critical'), 'context', true);
 
-      expect(hasCriticalErrors(accumulator)).toBe(true);
+      expect(hasCriticalErrors(accumulator)).toBeTruthy();
     });
 
-    it('should get error summary', () => {
+    test('should get error summary', () => {
       const accumulator = createErrorAccumulator();
       addError(accumulator, new Error('Error 1'), 'context');
       addWarning(accumulator, 'Warning 1', 'context');
@@ -352,25 +352,25 @@ describe('Workflow Utilities', () => {
 
       expect(summary.totalErrors).toBe(1);
       expect(summary.totalWarnings).toBe(1);
-      expect(summary.hasCriticalErrors).toBe(false);
+      expect(summary.hasCriticalErrors).toBeFalsy();
     });
   });
 
-  describe('Partial Success Handling', () => {
-    it('should create partial success result', () => {
+  describe('partial Success Handling', () => {
+    test('should create partial success result', () => {
       const successfulResults = [{ data: 'success1' }, { data: 'success2' }];
       const failedResults = [new Error('Failed 1')];
 
       const result = createPartialSuccessResult(successfulResults, failedResults);
 
-      expect(result.success).toBe(true);
-      expect(result.partial).toBe(true);
+      expect(result.success).toBeTruthy();
+      expect(result.partial).toBeTruthy();
       expect(result.successfulResults).toBe(successfulResults);
       expect(result.failedResults).toBe(failedResults);
       expect(result.successRate).toBe(2 / 3);
     });
 
-    it('should update success rate', () => {
+    test('should update success rate', () => {
       const result = createPartialSuccessResult([1, 2], [new Error('failed')]);
 
       updateSuccessRate(result, 4, 1);
@@ -379,37 +379,37 @@ describe('Workflow Utilities', () => {
     });
   });
 
-  describe('Fallback Mechanisms', () => {
-    it('should execute with fallback on success', async () => {
+  describe('fallback Mechanisms', () => {
+    test('should execute with fallback on success', async () => {
       const primaryFn = vi.fn().mockResolvedValue('primary-result');
       const fallbackFn = vi.fn().mockResolvedValue('fallback-result');
 
       const result = await withFallback(primaryFn, fallbackFn)();
 
       expect(result).toBe('primary-result');
-      expect(primaryFn).toHaveBeenCalled();
+      expect(primaryFn).toHaveBeenCalledWith();
       expect(fallbackFn).not.toHaveBeenCalled();
     });
 
-    it('should execute fallback on primary failure', async () => {
+    test('should execute fallback on primary failure', async () => {
       const primaryFn = vi.fn().mockRejectedValue(new Error('Primary failed'));
       const fallbackFn = vi.fn().mockResolvedValue('fallback-result');
 
       const result = await withFallback(primaryFn, fallbackFn)();
 
       expect(result).toBe('fallback-result');
-      expect(primaryFn).toHaveBeenCalled();
-      expect(fallbackFn).toHaveBeenCalled();
+      expect(primaryFn).toHaveBeenCalledWith();
+      expect(fallbackFn).toHaveBeenCalledWith();
     });
 
-    it('should throw if both primary and fallback fail', async () => {
+    test('should throw if both primary and fallback fail', async () => {
       const primaryFn = vi.fn().mockRejectedValue(new Error('Primary failed'));
       const fallbackFn = vi.fn().mockRejectedValue(new Error('Fallback failed'));
 
       await expect(withFallback(primaryFn, fallbackFn)()).rejects.toThrow('Primary failed');
     });
 
-    it('should respect retry configuration', async () => {
+    test('should respect retry configuration', async () => {
       const primaryFn = vi
         .fn()
         .mockRejectedValueOnce(new Error('Attempt 1'))
@@ -427,15 +427,15 @@ describe('Workflow Utilities', () => {
     });
   });
 
-  describe('Utility Functions', () => {
+  describe('utility Functions', () => {
     describe('createTimestamp', () => {
-      it('should create ISO timestamp', () => {
+      test('should create ISO timestamp', () => {
         const timestamp = createTimestamp();
 
         expect(timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
       });
 
-      it('should create timestamp with custom date', () => {
+      test('should create timestamp with custom date', () => {
         const date = new Date('2024-01-01T00:00:00.000Z');
         const timestamp = createTimestamp(date);
 
@@ -444,58 +444,58 @@ describe('Workflow Utilities', () => {
     });
 
     describe('formatDuration', () => {
-      it('should format duration in milliseconds', () => {
+      test('should format duration in milliseconds', () => {
         expect(formatDuration(500)).toBe('500ms');
         expect(formatDuration(1500)).toBe('1.5s');
         expect(formatDuration(65000)).toBe('1m 5s');
         expect(formatDuration(3665000)).toBe('1h 1m 5s');
       });
 
-      it('should handle zero duration', () => {
+      test('should handle zero duration', () => {
         expect(formatDuration(0)).toBe('0ms');
       });
 
-      it('should handle negative duration', () => {
+      test('should handle negative duration', () => {
         expect(formatDuration(-1000)).toBe('0ms');
       });
     });
 
     describe('sanitizeIdentifier', () => {
-      it('should sanitize identifiers', () => {
+      test('should sanitize identifiers', () => {
         expect(sanitizeIdentifier('test-id')).toBe('test-id');
         expect(sanitizeIdentifier('test id')).toBe('test-id');
         expect(sanitizeIdentifier('test@id#123')).toBe('test-id-123');
         expect(sanitizeIdentifier('Test_ID')).toBe('test-id');
       });
 
-      it('should handle empty string', () => {
+      test('should handle empty string', () => {
         expect(sanitizeIdentifier('')).toBe('');
       });
 
-      it('should handle special characters', () => {
+      test('should handle special characters', () => {
         expect(sanitizeIdentifier('!@#$%^&*()')).toBe('');
       });
     });
 
     describe('isValidIdentifier', () => {
-      it('should validate identifiers', () => {
-        expect(isValidIdentifier('valid-id')).toBe(true);
-        expect(isValidIdentifier('valid_id')).toBe(true);
-        expect(isValidIdentifier('valid123')).toBe(true);
-        expect(isValidIdentifier('invalid id')).toBe(false);
-        expect(isValidIdentifier('invalid@id')).toBe(false);
-        expect(isValidIdentifier('')).toBe(false);
+      test('should validate identifiers', () => {
+        expect(isValidIdentifier('valid-id')).toBeTruthy();
+        expect(isValidIdentifier('valid_id')).toBeTruthy();
+        expect(isValidIdentifier('valid123')).toBeTruthy();
+        expect(isValidIdentifier('invalid id')).toBeFalsy();
+        expect(isValidIdentifier('invalid@id')).toBeFalsy();
+        expect(isValidIdentifier('')).toBeFalsy();
       });
     });
 
     describe('createStepIdentifier', () => {
-      it('should create step identifier', () => {
+      test('should create step identifier', () => {
         const id = createStepIdentifier('workflow-123', 'step-456');
 
         expect(id).toBe('workflow-123:step-456');
       });
 
-      it('should sanitize components', () => {
+      test('should sanitize components', () => {
         const id = createStepIdentifier('workflow 123', 'step@456');
 
         expect(id).toBe('workflow-123:step-456');
@@ -503,8 +503,8 @@ describe('Workflow Utilities', () => {
     });
   });
 
-  describe('Common Schemas', () => {
-    it('should export common schemas', () => {
+  describe('common Schemas', () => {
+    test('should export common schemas', () => {
       expect(CommonSchemas).toBeDefined();
       expect(CommonSchemas.positiveInteger).toBeDefined();
       expect(CommonSchemas.nonEmptyString).toBeDefined();
@@ -512,30 +512,30 @@ describe('Workflow Utilities', () => {
       expect(CommonSchemas.email).toBeDefined();
     });
 
-    it('should validate positive integers', () => {
-      expect(CommonSchemas.positiveInteger.safeParse(5).success).toBe(true);
-      expect(CommonSchemas.positiveInteger.safeParse(0).success).toBe(false);
-      expect(CommonSchemas.positiveInteger.safeParse(-1).success).toBe(false);
+    test('should validate positive integers', () => {
+      expect(CommonSchemas.positiveInteger.safeParse(5).success).toBeTruthy();
+      expect(CommonSchemas.positiveInteger.safeParse(0).success).toBeFalsy();
+      expect(CommonSchemas.positiveInteger.safeParse(-1).success).toBeFalsy();
     });
 
-    it('should validate non-empty strings', () => {
-      expect(CommonSchemas.nonEmptyString.safeParse('test').success).toBe(true);
-      expect(CommonSchemas.nonEmptyString.safeParse('').success).toBe(false);
+    test('should validate non-empty strings', () => {
+      expect(CommonSchemas.nonEmptyString.safeParse('test').success).toBeTruthy();
+      expect(CommonSchemas.nonEmptyString.safeParse('').success).toBeFalsy();
     });
 
-    it('should validate URLs', () => {
-      expect(CommonSchemas.url.safeParse('https://example.com').success).toBe(true);
-      expect(CommonSchemas.url.safeParse('invalid-url').success).toBe(false);
+    test('should validate URLs', () => {
+      expect(CommonSchemas.url.safeParse('https://example.com').success).toBeTruthy();
+      expect(CommonSchemas.url.safeParse('invalid-url').success).toBeFalsy();
     });
 
-    it('should validate emails', () => {
-      expect(CommonSchemas.email.safeParse('test@example.com').success).toBe(true);
-      expect(CommonSchemas.email.safeParse('invalid-email').success).toBe(false);
+    test('should validate emails', () => {
+      expect(CommonSchemas.email.safeParse('test@example.com').success).toBeTruthy();
+      expect(CommonSchemas.email.safeParse('invalid-email').success).toBeFalsy();
     });
   });
 
-  describe('Retry Strategies', () => {
-    it('should export retry strategies', () => {
+  describe('retry Strategies', () => {
+    test('should export retry strategies', () => {
       expect(RETRY_STRATEGIES).toBeDefined();
       expect(RETRY_STRATEGIES.IMMEDIATE).toBeDefined();
       expect(RETRY_STRATEGIES.LINEAR).toBeDefined();
@@ -543,7 +543,7 @@ describe('Workflow Utilities', () => {
       expect(RETRY_STRATEGIES.AGGRESSIVE).toBeDefined();
     });
 
-    it('should have different retry configurations', () => {
+    test('should have different retry configurations', () => {
       expect(RETRY_STRATEGIES.IMMEDIATE.delay).toBe(0);
       expect(RETRY_STRATEGIES.LINEAR.backoff).toBe('linear');
       expect(RETRY_STRATEGIES.EXPONENTIAL.backoff).toBe('exponential');
@@ -551,8 +551,8 @@ describe('Workflow Utilities', () => {
     });
   });
 
-  describe('Workflow Rate Limiter', () => {
-    it('should create workflow rate limiter', () => {
+  describe('workflow Rate Limiter', () => {
+    test('should create workflow rate limiter', () => {
       const rateLimiter = createWorkflowRateLimiter({
         maxRequests: 100,
         windowMs: 60000,
@@ -563,15 +563,15 @@ describe('Workflow Utilities', () => {
       expect(typeof rateLimiter.limit).toBe('function');
     });
 
-    it('should create rate limiter with default config', () => {
+    test('should create rate limiter with default config', () => {
       const rateLimiter = createWorkflowRateLimiter();
 
       expect(rateLimiter).toBeDefined();
     });
   });
 
-  describe('Integration Tests', () => {
-    it('should handle complex batch processing with error accumulation', async () => {
+  describe('integration Tests', () => {
+    test('should handle complex batch processing with error accumulation', async () => {
       const items = [1, 2, 3, 4, 5];
       const processor = vi.fn().mockImplementation(async (item: number) => {
         if (item === 3) throw new Error('Processing failed');
@@ -607,7 +607,7 @@ describe('Workflow Utilities', () => {
       expect(summary.totalWarnings).toBe(0);
     });
 
-    it('should combine fallback with progress reporting', async () => {
+    test('should combine fallback with progress reporting', async () => {
       const reporter = new ProgressReporter('test-operation');
       const primaryFn = vi.fn().mockRejectedValue(new Error('Primary failed'));
       const fallbackFn = vi.fn().mockResolvedValue('fallback-success');
@@ -626,8 +626,8 @@ describe('Workflow Utilities', () => {
       )();
 
       expect(result).toBe('fallback-success');
-      expect(primaryFn).toHaveBeenCalled();
-      expect(fallbackFn).toHaveBeenCalled();
+      expect(primaryFn).toHaveBeenCalledWith();
+      expect(fallbackFn).toHaveBeenCalledWith();
     });
   });
 });

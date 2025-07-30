@@ -62,7 +62,7 @@ export const FlowAside: React.FC = () => {
         ),
       }))
       .filter((group) => group.items.length > 0); // Remove groups with no items
-  }, [debouncedFilterText, groups]);
+  }, [debouncedFilterText]);
 
   const renderItem = useCallback(
     (group: GroupData) => {

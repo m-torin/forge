@@ -11,6 +11,12 @@ import {
   convertToPrismaEdgeType,
 } from './typeUtils';
 
+// Import generated schemas only for validation
+import {
+  NodeTypeSchema,
+  EdgeTypeSchema,
+} from '#/lib/prisma/generated/schemas';
+
 type SerializedData = {
   nodes: FbNode[];
   edges: FbEdge[];
@@ -127,4 +133,28 @@ export function sanitizeFlowData(flow: SerializedData): SerializedData {
  */
 export function safeClone<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj)) as T;
+}
+
+/**
+ * Validate node type using generated schema
+ */
+export function isValidNodeType(type: unknown): boolean {
+  try {
+    NodeTypeSchema.parse(type);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Validate edge type using generated schema
+ */
+export function isValidEdgeType(type: unknown): boolean {
+  try {
+    EdgeTypeSchema.parse(type);
+    return true;
+  } catch {
+    return false;
+  }
 }

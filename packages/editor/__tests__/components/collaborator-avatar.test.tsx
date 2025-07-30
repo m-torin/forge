@@ -1,7 +1,7 @@
+import { CollaboratorAvatar } from '#/components/CollaboratorAvatar';
 import { describe, expect, it } from 'vitest';
-import { CollaboratorAvatar } from '../../src/components/CollaboratorAvatar';
-import { createMockCollaborator } from '../../src/testing/factories.js';
-import { renderWithCollaboration, screen } from '../../src/testing/test-utils.js';
+import { createMockCollaborator } from '../testing/factories.js';
+import { renderWithCollaboration, screen } from '../testing/test-utils.js';
 
 describe('CollaboratorAvatar', () => {
   it('renders collaborator name initials when no avatar provided', () => {

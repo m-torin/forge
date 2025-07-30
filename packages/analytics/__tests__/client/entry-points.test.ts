@@ -7,7 +7,7 @@ import { describe, expect, vi } from 'vitest';
 describe('client Entry Points', () => {
   describe('client.ts exports', () => {
     test('should export main client functions', async () => {
-      const clientModule = await import('@/client');
+      const clientModule = await import('#/client');
 
       expect(clientModule).toHaveProperty('createClientAnalytics');
       expect(clientModule).toHaveProperty('createClientAnalyticsUninitialized');
@@ -30,7 +30,7 @@ describe('client Entry Points', () => {
         safeEnv: () => mockEnv,
       }));
 
-      const clientNextModule = await import('@/client-next');
+      const clientNextModule = await import('#/client-next');
 
       expect(clientNextModule).toHaveProperty('createNextJSClientAnalytics');
       expect(clientNextModule).toHaveProperty('createNextJSClientAnalyticsUninitialized');
@@ -39,7 +39,7 @@ describe('client Entry Points', () => {
 
   describe('server.ts exports', () => {
     test('should export server functions', async () => {
-      const serverModule = await import('@/server');
+      const serverModule = await import('#/server');
 
       expect(serverModule).toHaveProperty('createServerAnalytics');
       expect(serverModule).toHaveProperty('createServerAnalyticsUninitialized');
@@ -48,7 +48,7 @@ describe('client Entry Points', () => {
 
   describe('server-next.ts exports', () => {
     test('should export Next.js server functions', async () => {
-      const serverNextModule = await import('@/server-next');
+      const serverNextModule = await import('#/server-next');
 
       expect(serverNextModule).toHaveProperty('createServerAnalytics');
       expect(serverNextModule).toHaveProperty('createServerAnalyticsUninitialized');
@@ -57,14 +57,14 @@ describe('client Entry Points', () => {
 
   describe('shared.ts exports', () => {
     test('should export environment-agnostic functions', async () => {
-      const sharedModule = await import('@/shared');
+      const sharedModule = await import('#/shared');
 
       expect(sharedModule).toHaveProperty('createAnalytics');
       expect(sharedModule).toHaveProperty('environmentInfo');
     });
 
     test('should provide environment information', async () => {
-      const { environmentInfo } = await import('@/shared');
+      const { environmentInfo } = await import('#/shared');
 
       expect(environmentInfo).toHaveProperty('isServer');
       expect(environmentInfo).toHaveProperty('isNextJS');

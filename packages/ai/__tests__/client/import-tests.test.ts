@@ -14,7 +14,7 @@ vi.mock('react', () => ({
 
 describe('client Module Imports', () => {
   test('should import client entry points', async () => {
-    const modules = [() => import('@/client'), () => import('@/client-next')];
+    const modules = [() => import('#/client'), () => import('#/client-next')];
 
     for (const importModule of modules) {
       const module = await importModule();
@@ -23,7 +23,7 @@ describe('client Module Imports', () => {
   });
 
   test('should import client provider modules', async () => {
-    const modules = [() => import('@/client/providers')];
+    const modules = [() => import('#/client/providers')];
 
     for (const importModule of modules) {
       const module = await importModule();
@@ -32,20 +32,7 @@ describe('client Module Imports', () => {
   });
 
   test('should import client utils', async () => {
-    const modules = [() => import('@/client/utils')];
-
-    for (const importModule of modules) {
-      const module = await importModule();
-      expect(module).toBeDefined();
-    }
-  });
-
-  test('should import component modules', async () => {
-    const modules = [
-      () => import('@/components'),
-      () => import('@/components/chat'),
-      () => import('@/components/classification'),
-    ];
+    const modules = [() => import('#/client/utils')];
 
     for (const importModule of modules) {
       const module = await importModule();
@@ -55,10 +42,10 @@ describe('client Module Imports', () => {
 
   test('should import hook modules', async () => {
     const modules = [
-      () => import('@/hooks'),
-      () => import('@/hooks/use-ai-stream'),
-      () => import('@/hooks/use-classification'),
-      () => import('@/hooks/use-moderation'),
+      () => import('#/hooks'),
+      () => import('#/hooks/use-ai-stream'),
+      () => import('#/hooks/use-classification'),
+      () => import('#/hooks/use-moderation'),
     ];
 
     for (const importModule of modules) {

@@ -7,7 +7,7 @@ import { describe, expect } from 'vitest';
 describe('validation Basic Tests', () => {
   describe('validateAnalyticsConfig', () => {
     test('should validate a basic valid config', async () => {
-      const { validateAnalyticsConfig } = await import('@/shared/utils/validation');
+      const { validateAnalyticsConfig } = await import('#/shared/utils/validation');
 
       const config = {
         providers: {
@@ -25,7 +25,7 @@ describe('validation Basic Tests', () => {
     });
 
     test('should validate config with console enabled', async () => {
-      const { validateAnalyticsConfig } = await import('@/shared/utils/validation');
+      const { validateAnalyticsConfig } = await import('#/shared/utils/validation');
 
       const config = {
         providers: {
@@ -40,7 +40,7 @@ describe('validation Basic Tests', () => {
     });
 
     test('should validate client analytics config', async () => {
-      const { validateAnalyticsConfig } = await import('@/shared/utils/validation-client');
+      const { validateAnalyticsConfig } = await import('#/shared/utils/validation-client');
 
       const config = {
         providers: {
@@ -58,7 +58,7 @@ describe('validation Basic Tests', () => {
 
   describe('validateProvider', () => {
     test('should validate console provider', async () => {
-      const { validateProvider } = await import('@/shared/utils/validation');
+      const { validateProvider } = await import('#/shared/utils/validation');
 
       const config = {};
       const result = validateProvider('console', config);
@@ -68,7 +68,7 @@ describe('validation Basic Tests', () => {
     });
 
     test('should validate unknown providers without errors', async () => {
-      const { validateProvider } = await import('@/shared/utils/validation');
+      const { validateProvider } = await import('#/shared/utils/validation');
 
       const config = {};
 
@@ -78,7 +78,7 @@ describe('validation Basic Tests', () => {
     });
 
     test('should validate client provider', async () => {
-      const { validateProvider } = await import('@/shared/utils/validation-client');
+      const { validateProvider } = await import('#/shared/utils/validation-client');
 
       const config = {};
       const result = validateProvider('console', config);
@@ -89,7 +89,7 @@ describe('validation Basic Tests', () => {
 
   describe('validateEnvironmentVariables', () => {
     test('should validate environment variables', async () => {
-      const { validateEnvironmentVariables } = await import('@/shared/utils/validation');
+      const { validateEnvironmentVariables } = await import('#/shared/utils/validation');
 
       const result = validateEnvironmentVariables();
 
@@ -103,7 +103,7 @@ describe('validation Basic Tests', () => {
 
   describe('validateConfigOrThrow', () => {
     test('should not throw for valid config', async () => {
-      const { validateConfigOrThrow } = await import('@/shared/utils/validation');
+      const { validateConfigOrThrow } = await import('#/shared/utils/validation');
 
       const config = {
         providers: {
@@ -115,7 +115,7 @@ describe('validation Basic Tests', () => {
     });
 
     test('should throw for completely invalid config', async () => {
-      const { validateConfigOrThrow } = await import('@/shared/utils/validation');
+      const { validateConfigOrThrow } = await import('#/shared/utils/validation');
 
       const config = {} as any; // Invalid config
 
@@ -127,7 +127,7 @@ describe('validation Basic Tests', () => {
 
   describe('validateConfig from validation-client', () => {
     test('should validate config from client validation', async () => {
-      const { validateConfig } = await import('@/shared/utils/validation-client');
+      const { validateConfig } = await import('#/shared/utils/validation-client');
 
       const config = {
         providers: {
@@ -145,7 +145,7 @@ describe('validation Basic Tests', () => {
 
   describe('error structure validation', () => {
     test('should return validation result with correct structure', async () => {
-      const { validateAnalyticsConfig } = await import('@/shared/utils/validation');
+      const { validateAnalyticsConfig } = await import('#/shared/utils/validation');
 
       const config = {
         providers: {

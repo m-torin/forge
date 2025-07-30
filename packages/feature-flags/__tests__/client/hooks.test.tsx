@@ -10,7 +10,7 @@ import {
   useFeatureFlags,
   useFlag,
   type FeatureFlagAdapter,
-} from '@/client/hooks';
+} from '#/client/hooks';
 
 import { featureFlagTestData } from '../test-data-generators';
 import { assertionHelpers, createMockFeatureFlagAdapter } from '../test-utils';

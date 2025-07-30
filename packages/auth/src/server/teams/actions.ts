@@ -448,3 +448,8 @@ export const transferTeamOwnershipAction = updateTeamMemberAction; // TODO: Impl
 export const archiveTeamAction = deleteTeamAction; // TODO: Implement proper archive
 export const restoreTeamAction = updateTeamAction; // TODO: Implement proper restore
 export const getTeamStatisticsAction = getTeamStatsAction;
+
+// Export aliases for backwards compatibility with tests
+export const createTeam = createTeamAction;
+export const addTeamMember = addTeamMemberAction;
+export const removeTeamMember = removeTeamMemberAction;

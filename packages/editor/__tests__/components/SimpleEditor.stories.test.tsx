@@ -7,12 +7,12 @@ describe('SimpleEditor Stories', () => {
   it('should import stories without throwing', async () => {
     // Test that the story file can be imported without syntax errors
     expect(async () => {
-      await import('../../src/components/SimpleEditor/SimpleEditor.stories');
+      await import('#/components/SimpleEditor/SimpleEditor.stories');
     }).not.toThrow();
   });
 
   it('should have required story exports', async () => {
-    const stories = await import('../../src/components/SimpleEditor/SimpleEditor.stories');
+    const stories = await import('#/components/SimpleEditor/SimpleEditor.stories');
 
     // Check that the required exports exist
     expect(stories.default).toBeDefined(); // Meta export
@@ -23,7 +23,7 @@ describe('SimpleEditor Stories', () => {
   });
 
   it('should have proper story structure', async () => {
-    const stories = await import('../../src/components/SimpleEditor/SimpleEditor.stories');
+    const stories = await import('#/components/SimpleEditor/SimpleEditor.stories');
 
     // Verify meta structure
     const meta = stories.default;

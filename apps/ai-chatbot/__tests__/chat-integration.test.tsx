@@ -1,25 +1,25 @@
-import { Chat } from '@/components/chat';
+import { Chat } from '#/components/chat';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 // Mock dependencies
-vi.mock('@/hooks/use-chat-visibility', () => ({
+vi.mock('#/hooks/use-chat-visibility', () => ({
   useChatVisibility: () => ({
     visibilityType: 'private',
   }),
 }));
 
-vi.mock('@/hooks/use-artifact', () => ({
+vi.mock('#/hooks/use-artifact', () => ({
   useArtifactSelector: () => ({
     isVisible: false,
   }),
 }));
 
-vi.mock('@/hooks/use-auto-resume', () => ({
+vi.mock('#/hooks/use-auto-resume', () => ({
   useAutoResume: vi.fn(),
 }));
 
-vi.mock('@/components/data-stream-provider', () => ({
+vi.mock('#/components/data-stream-provider', () => ({
   useDataStream: () => ({
     setDataStream: vi.fn(),
   }),
@@ -50,7 +50,7 @@ vi.mock('next/navigation', () => ({
   }),
 }));
 
-vi.mock('@/components/chat-header', () => ({
+vi.mock('#/components/chat-header', () => ({
   ChatHeader: ({ onModelSelect }: { onModelSelect?: (model: string) => void }) => (
     <div data-testid="chat-header">
       <button onClick={() => onModelSelect?.('gpt-4o')}>Change Model</button>
@@ -58,15 +58,15 @@ vi.mock('@/components/chat-header', () => ({
   ),
 }));
 
-vi.mock('@/components/messages', () => ({
+vi.mock('#/components/messages', () => ({
   Messages: () => <div data-testid="messages">Messages</div>,
 }));
 
-vi.mock('@/components/multimodal-input', () => ({
+vi.mock('#/components/multimodal-input', () => ({
   MultimodalInput: () => <div data-testid="multimodal-input">Input</div>,
 }));
 
-vi.mock('@/components/artifact', () => ({
+vi.mock('#/components/artifact', () => ({
   Artifact: () => <div data-testid="artifact">Artifact</div>,
 }));
 

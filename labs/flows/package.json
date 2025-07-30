@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "circular": "madge --circular --extensions ts,tsx,js,jsx .",
+    "circular": "madge --circular --extensions ts,tsx,js,jsx --exclude 'src/lib/prisma/generated' .",
     "dev": "next dev --port 3000",
     "knip": "knip --fix --reporter json",
     "lint": "eslint . --fix",
@@ -12,6 +12,8 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:ui": "playwright test --ui",
     "test:ui": "vitest --ui",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
@@ -21,7 +23,7 @@
     "prisma:db:pull": "prisma db pull",
     "prisma:db:push": "prisma db push",
     "prisma:format": "prisma format",
-    "prisma:generate": "prisma format && prisma generate --schema=./src/lib/prisma/schema.prisma",
+    "prisma:generate": "prisma format && prisma generate --schema=./src/lib/prisma/schema.prisma && node scripts/add-ts-nocheck.mjs",
     "prisma:introspect": "prisma introspect",
     "prisma:migrate:dev": "prisma validate && prisma migrate dev --schema=./src/lib/prisma/schema.prisma",
     "prisma:migrate:resolve": "prisma migrate resolve",
@@ -61,8 +63,8 @@
     "@mantine/modals": "catalog:",
     "@mantine/notifications": "catalog:",
     "@neondatabase/serverless": "^0.10.4",
-    "@prisma/adapter-neon": "^6.0.0",
-    "@prisma/client": "^6.0.0",
+    "@prisma/adapter-neon": "^6.12.0",
+    "@prisma/client": "^6.12.0",
     "@radix-ui/react-avatar": "^1.1.1",
     "@radix-ui/react-collapsible": "^1.1.1",
     "@radix-ui/react-dropdown-menu": "^2.1.2",
@@ -105,7 +107,7 @@
     "tailwindcss-animate": "^1.0.7",
     "unstorage": "^1.13.1",
     "zod": "catalog:",
-    "zod-prisma-types": "^3.2.4"
+    "prisma-zod-generator": "^1.1.1"
   },
   "devDependencies": {
     "@aws-sdk/types": "^3.709.0",
@@ -120,6 +122,7 @@
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "@vitest/coverage-v8": "catalog:",
+    "@vitest/ui": "catalog:",
     "autoprefixer": "^10.4.20",
     "eslint": "catalog:",
     "jsdom": "catalog:",
@@ -128,10 +131,11 @@
     "postcss": "catalog:",
     "postcss-preset-mantine": "catalog:",
     "postcss-simple-vars": "catalog:",
-    "prisma": "^6.0.0",
+    "prisma": "^6.12.0",
     "sass": "catalog:",
     "tailwindcss": "catalog:",
     "typescript": "catalog:",
+    "vite-tsconfig-paths": "catalog:",
     "vitest": "catalog:"
   }
 }
