@@ -1,0 +1,55 @@
+{
+  "buildCommand": "turbo build",
+  "outputDirectory": ".next",
+  "installCommand": "pnpm install",
+  "framework": "nextjs",
+  "env": {
+    "VERCEL_ENV": "@vercel-env",
+    "VERCEL_URL": "@vercel-url",
+    "VERCEL_BRANCH_URL": "@vercel-branch-url",
+    "VERCEL_GIT_COMMIT_REF": "@vercel-git-commit-ref"
+  },
+  "build": {
+    "env": {
+      "NODE_ENV": "production",
+      "NEXT_PUBLIC_VERCEL_ENV": "@vercel-env",
+      "NEXT_PUBLIC_VERCEL_URL": "@vercel-url",
+      "NEXT_PUBLIC_VERCEL_BRANCH_URL": "@vercel-branch-url",
+      "NEXT_PUBLIC_VERCEL_GIT_COMMIT_REF": "@vercel-git-commit-ref",
+      "POSTGRES_URL": "@postgres-url",
+      "UPSTASH_VECTOR_URL": "@upstash-vector-url",
+      "UPSTASH_VECTOR_TOKEN": "@upstash-vector-token",
+      "ANTHROPIC_API_KEY": "@anthropic-api-key",
+      "OPENAI_API_KEY": "@openai-api-key",
+      "XAI_API_KEY": "@xai-api-key"
+    }
+  },
+  "functions": {
+    "app/**": {
+      "maxDuration": 60
+    }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    }
+  ]
+}
