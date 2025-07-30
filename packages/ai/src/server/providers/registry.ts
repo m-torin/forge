@@ -46,6 +46,13 @@ import {
   wrapLanguageModel,
 } from 'ai';
 import { safeEnv } from '../../../env';
+import {
+  MODEL_REGISTRY,
+  getModelsByProvider,
+  getModelConfig,
+  getModelReasoningConfig,
+  getBestModelForTask,
+} from '../../shared/models';
 
 // Get environment configuration
 const env = safeEnv();
@@ -131,25 +138,25 @@ const openaiProvider = customProvider({
 });
 
 /**
- * Anthropic Provider with model aliases
+ * Anthropic Provider with centralized model configuration
  *
- * Provides access to Anthropic's Claude models with convenient aliases
- * and reasoning-enabled configurations. Includes support for Claude's
- * thinking mode and extended context capabilities.
+ * Dynamically builds Anthropic provider configuration using the centralized
+ * model registry. Automatically includes all available Anthropic models with
+ * their proper reasoning configurations and capabilities.
  *
  * @remarks
- * - Uses friendly aliases (opus, sonnet, haiku) for easier model selection
- * - Includes reasoning configurations with thinking mode enabled
- * - Supports extended context lengths up to 8000 tokens
- * - Provides budget token management for reasoning tasks
+ * - Uses centralized MODEL_REGISTRY for consistent model definitions
+ * - Automatically applies reasoning configurations where supported
+ * - Includes all Claude models with proper versioning
+ * - Supports dynamic model addition without code changes
  *
  * @example
  * ```typescript
- * // Use model aliases
- * const claude = registry.languageModel('anthropic:sonnet');
- * const reasoning = registry.languageModel('anthropic:sonnet-reasoning');
+ * // Access Claude 4 models
+ * const claude4 = registry.languageModel('anthropic:claude-4-sonnet-20250514');
+ * const reasoning = registry.languageModel('anthropic:claude-4-opus-20250514');
  *
- * // Generate with thinking enabled
+ * // Generate with automatic reasoning support
  * const result = await generateText({
  *   model: reasoning,
  *   prompt: 'Complex analysis task',
@@ -157,35 +164,54 @@ const openaiProvider = customProvider({
  * ```
  */
 const anthropicProvider = customProvider({
-  languageModels: {
-    // Model aliases for easier updates
-    opus: anthropic('claude-3-opus-20240229'),
-    sonnet: anthropic('claude-3-5-sonnet-20240620'),
-    haiku: anthropic('claude-3-haiku-20240307'),
+  languageModels: (() => {
+    const models: Record<string, any> = {};
+    const anthropicModels = getModelsByProvider('anthropic');
 
-    // Latest models
-    'claude-3-opus': anthropic('claude-3-opus-20240229'),
-    'claude-3-sonnet': anthropic('claude-3-5-sonnet-20240620'),
-    'claude-3-haiku': anthropic('claude-3-haiku-20240307'),
-
-    // Reasoning-enabled configuration
-    'sonnet-reasoning': wrapLanguageModel({
-      model: anthropic('claude-3-5-sonnet-20240620'),
-      middleware: defaultSettingsMiddleware({
-        settings: {
-          maxOutputTokens: 8000,
-          providerOptions: {
-            anthropic: {
-              thinking: {
-                type: 'enabled',
-                budgetTokens: 15000,
-              },
+    // Build language models from registry
+    anthropicModels.forEach(modelConfig => {
+      const { id, actualModelId, metadata } = modelConfig;
+      
+      // Create base model
+      const baseModel = anthropic(actualModelId);
+      
+      // Apply reasoning configuration if supported
+      if (metadata.reasoning?.supported) {
+        models[id] = wrapLanguageModel({
+          model: baseModel,
+          middleware: defaultSettingsMiddleware({
+            settings: {
+              maxOutputTokens: metadata.outputLimit || 100000,
+              ...(metadata.reasoning.headers && { 
+                headers: metadata.reasoning.headers 
+              }),
+              ...(metadata.reasoning.budgetTokens && {
+                providerOptions: {
+                  anthropic: {
+                    thinking: {
+                      type: 'enabled',
+                      budgetTokens: metadata.reasoning.budgetTokens,
+                    },
+                  },
+                },
+              }),
             },
-          },
-        },
-      }),
-    }),
-  },
+          }),
+        });
+      } else {
+        // Standard model without reasoning
+        models[id] = baseModel;
+      }
+    });
+
+    // Add convenient aliases for backward compatibility
+    models.opus = models['claude-4-opus-20250514'] || models['claude-3-opus-20240229'];
+    models.sonnet = models['claude-4-sonnet-20250514'] || models['claude-3-5-sonnet-20241022'];
+    models.haiku = models['claude-3-5-haiku-20241022'] || models['claude-3-haiku-20240307'];
+    models['sonnet-reasoning'] = models['claude-4-sonnet-20250514'] || models['claude-3-7-sonnet-20250219'];
+
+    return models;
+  })(),
 
   fallbackProvider: anthropic,
 });
@@ -363,8 +389,8 @@ export const registry = createProviderRegistry(
  * Helper functions for common model access patterns
  *
  * Provides convenient shortcuts for accessing frequently used models
- * without needing to remember specific provider:model combinations.
- * Organized by model type and use case.
+ * using the centralized model registry. Models are automatically selected
+ * based on capabilities and performance characteristics.
  *
  * @namespace models
  *
@@ -397,19 +423,45 @@ export const registry = createProviderRegistry(
  * ```
  */
 export const models = {
-  // Language models
+  // Language models - using centralized registry for selection
   language: {
     // Most capable models
-    best: () => registry.languageModel('openai:gpt-4o'),
-    reasoning: () => registry.languageModel('openai:gpt-4o-reasoning'),
-    creative: () => registry.languageModel('openai:gpt-4o-creative'),
+    best: () => {
+      const bestModel = getBestModelForTask('chat');
+      return registry.languageModel(`anthropic:${bestModel}` as any);
+    },
+    
+    reasoning: () => {
+      const reasoningModel = getBestModelForTask('reasoning');
+      const config = getModelConfig(reasoningModel);
+      const provider = config?.provider || 'anthropic';
+      return registry.languageModel(`${provider}:${reasoningModel}` as any);
+    },
+    
+    creative: () => registry.languageModel('anthropic:claude-4-sonnet-20250514'),
 
     // Fast models
-    fast: () => registry.languageModel('openai:gpt-4o-mini'),
+    fast: () => registry.languageModel('anthropic:claude-3-5-haiku-20241022'),
 
-    // Anthropic models
-    claude: () => registry.languageModel('anthropic:sonnet'),
-    claudeReasoning: () => registry.languageModel('anthropic:sonnet-reasoning'),
+    // Anthropic models - using latest available
+    claude: () => registry.languageModel('anthropic:claude-4-sonnet-20250514'),
+    claudeReasoning: () => registry.languageModel('anthropic:claude-4-opus-20250514'),
+    
+    // Vision models
+    vision: () => {
+      const visionModel = getBestModelForTask('vision');
+      const config = getModelConfig(visionModel);
+      const provider = config?.provider || 'anthropic';
+      return registry.languageModel(`${provider}:${visionModel}` as any);
+    },
+    
+    // Code models
+    code: () => {
+      const codeModel = getBestModelForTask('code');
+      const config = getModelConfig(codeModel);
+      const provider = config?.provider || 'anthropic';
+      return registry.languageModel(`${provider}:${codeModel}` as any);
+    },
 
     // Google models (if available)
     gemini: () =>

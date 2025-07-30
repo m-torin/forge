@@ -7,6 +7,7 @@ import { systemPrompt, type RequestHints } from '@/lib/ai/prompts';
 import { myProvider } from '@/lib/ai/providers';
 import { createDocument } from '@/lib/ai/tools/document/create-document';
 import { updateDocument } from '@/lib/ai/tools/document/update-document';
+import { createBashTool, createComputerTool, createTextEditorTool } from '@repo/ai/server';
 // MCP tools now handled by feature flag system
 import { generateTitleFromUserMessage } from '@/app/(chat)/actions';
 import { postRequestBodySchema, type PostRequestBody } from '@/app/(chat)/api/chat/schema';
@@ -366,6 +367,17 @@ export async function POST(request: Request) {
             // Use base model for now
             const wrappedModel = myProvider.languageModel(selectedChatModel);
 
+            // Check if model supports reasoning (includes all Claude 4 models which have built-in reasoning)
+            const isAnthropicReasoningModel = selectedChatModel.includes('reasoning') || 
+              selectedChatModel.includes('claude-sonnet-reasoning') || 
+              selectedChatModel.includes('anthropic:sonnet-reasoning') ||
+              selectedChatModel.includes('claude-4-opus') ||
+              selectedChatModel.includes('claude-4-sonnet') ||
+              selectedChatModel.includes('claude-3-7-sonnet') ||
+              selectedChatModel.includes('anthropic:claude-4-opus') ||
+              selectedChatModel.includes('anthropic:claude-4-sonnet') ||
+              selectedChatModel.includes('anthropic:claude-3-7-sonnet');
+
             // Create comprehensive AI SDK v5 error handling and lifecycle management
             const streamTextConfig = {
               model: wrappedModel,
@@ -373,6 +385,18 @@ export async function POST(request: Request) {
               messages: convertToModelMessages(uiMessages),
               maxSteps: 5,
               experimental_transform: defaultStreamTransform,
+              
+              // Add reasoning headers for Anthropic models
+              ...(isAnthropicReasoningModel && {
+                headers: {
+                  'anthropic-beta': 'interleaved-thinking-2025-05-14',
+                },
+                providerOptions: {
+                  anthropic: {
+                    thinking: { type: 'enabled' as const, budgetTokens: 15000 },
+                  },
+                },
+              }),
 
               // AI SDK v5 Error Handling with Stream Lifecycle Integration
               onError: (event: { error: unknown }) => {
@@ -469,7 +493,7 @@ export async function POST(request: Request) {
                 }
               },
 
-              // Add tools only for non-reasoning models
+              // Add tools only for non-reasoning models, but include computer tools for enhanced models
               ...(selectedChatModel !== 'chat-model-reasoning' && {
                 tools: {
                   // Core tools
@@ -489,6 +513,40 @@ export async function POST(request: Request) {
                   ...ragTools,
                   // Add MCP tools with feature flag awareness
                   ...mcpTools,
+                  
+                  // Add Anthropic computer tools for enhanced user types and Anthropic models
+                  ...(userType !== 'guest' && (selectedChatModel.includes('claude') || selectedChatModel.includes('anthropic:')) && {
+                    bash: createBashTool(async ({ command }) => {
+                      // Simulated bash execution for security
+                      return `[Simulated] Executed: ${command}`;
+                    }),
+                    str_replace_editor: createTextEditorTool(async ({ command, path, file_text }) => {
+                      // Simulated text editor for security
+                      if (command === 'create') {
+                        return `[Simulated] Created file: ${path}`;
+                      }
+                      return `[Simulated] Executed ${command} on ${path}`;
+                    }),
+                    computer: createComputerTool({
+                      displayWidthPx: 1920,
+                      displayHeightPx: 1080,
+                      execute: async ({ action, coordinate, text }) => {
+                        // Simulated computer actions for security
+                        if (action === 'screenshot') {
+                          return {
+                            type: 'image' as const,
+                            data: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+                          };
+                        }
+                        return `[Simulated] Executed ${action} action`;
+                      },
+                      experimental_toToolResultContent: (result) => {
+                        return typeof result === 'string'
+                          ? [{ type: 'text', text: result }]
+                          : [{ type: 'image', data: result.data, mediaType: 'image/png' }];
+                      },
+                    }),
+                  }),
                 },
               }),
             };
@@ -503,6 +561,8 @@ export async function POST(request: Request) {
 
             // Use AI SDK v5 merging pattern with dataStream and enhanced message handling
             const uiMessageStream = result.toUIMessageStream({
+              // Enable reasoning display for Anthropic reasoning models
+              sendReasoning: isAnthropicReasoningModel,
               onFinish: async ({ messages }: { messages: any[] }) => {
                 try {
                   logInfo('Saving messages with MCP context', {

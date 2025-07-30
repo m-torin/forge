@@ -1,87 +1,177 @@
 /**
- * Model metadata for UI and configuration
+ * Comprehensive model metadata for UI and configuration
  * Safe for both client and server usage
+ * Includes capabilities, reasoning config, and provider information
  */
 
-export const ANTHROPIC_MODEL_METADATA = {
+// Model capability types
+export type ModelCapability = 
+  | 'reasoning' 
+  | 'vision' 
+  | 'tools' 
+  | 'computer-use' 
+  | 'pdf-support' 
+  | 'search' 
+  | 'code' 
+  | 'multimodal';
+
+// Reasoning configuration interface
+export interface ReasoningConfig {
+  supported: boolean;
+  budgetTokens?: number;
+  headers?: Record<string, string>;
+}
+
+// Complete model metadata interface
+export interface ModelMetadata {
+  id: string;
+  name: string;
+  description: string;
+  provider?: string;
+  capabilities?: ModelCapability[];
+  contextWindow?: number;
+  outputLimit?: number;
+  reasoning?: ReasoningConfig;
+  deprecated?: boolean;
+}
+
+export const ANTHROPIC_MODEL_METADATA: Record<string, ModelMetadata> = {
   // Legacy aliases for backward compatibility
   'claude-chat': {
     id: 'claude-chat',
     name: 'Claude 4 Sonnet',
     description: 'Anthropic Claude 4 - excellent reasoning and conversation',
+    provider: 'anthropic',
+    capabilities: ['reasoning', 'vision', 'tools', 'multimodal'],
+    reasoning: {
+      supported: true,
+      budgetTokens: 12000,
+      headers: { 'anthropic-beta': 'interleaved-thinking-2025-05-14' }
+    },
+    deprecated: true
   },
   'claude-reasoning': {
     id: 'claude-reasoning',
     name: 'Claude 4 Sonnet (Reasoning)',
     description: 'Claude 4 with enhanced reasoning capabilities',
+    provider: 'anthropic',
+    capabilities: ['reasoning', 'vision', 'tools', 'multimodal'],
+    reasoning: {
+      supported: true,
+      budgetTokens: 15000,
+      headers: { 'anthropic-beta': 'interleaved-thinking-2025-05-14' }
+    },
+    deprecated: true
   },
   'claude-artifacts': {
     id: 'claude-artifacts',
     name: 'Claude 3.5 Sonnet',
     description: 'Claude 3.5 optimized for code and artifacts',
+    provider: 'anthropic',
+    capabilities: ['tools', 'computer-use', 'vision', 'code'],
+    deprecated: true
   },
   'claude-title': {
     id: 'claude-title',
     name: 'Claude 3.5 Haiku',
     description: 'Fast and efficient Claude model for titles',
+    provider: 'anthropic',
+    capabilities: ['tools', 'vision'],
+    deprecated: true
   },
   // Claude 4 models (latest) - as per official docs
   'claude-4-opus-20250514': {
     id: 'claude-4-opus-20250514',
-    name: 'Claude 4 Opus (Latest)',
-    description:
-      "Anthropic's most powerful model with reasoning, image input, object generation, and tool usage",
+    name: 'Claude 4 Opus',
+    description: "Anthropic's most powerful model with built-in reasoning capabilities",
+    provider: 'anthropic',
+    capabilities: ['reasoning', 'vision', 'tools', 'computer-use', 'multimodal'],
+    contextWindow: 200000,
+    reasoning: {
+      supported: true,
+      budgetTokens: 15000,
+      headers: { 'anthropic-beta': 'interleaved-thinking-2025-05-14' }
+    }
   },
   'claude-4-sonnet-20250514': {
     id: 'claude-4-sonnet-20250514',
-    name: 'Claude 4 Sonnet (Latest)',
-    description:
-      "Anthropic's balanced model with reasoning, image input, object generation, and tool usage",
+    name: 'Claude 4 Sonnet',
+    description: "Anthropic's balanced model with built-in reasoning capabilities",
+    provider: 'anthropic',
+    capabilities: ['reasoning', 'vision', 'tools', 'computer-use', 'multimodal'],
+    contextWindow: 200000,
+    reasoning: {
+      supported: true,
+      budgetTokens: 12000,
+      headers: { 'anthropic-beta': 'interleaved-thinking-2025-05-14' }
+    }
   },
   // Claude 3.7 models - as per official docs
   'claude-3-7-sonnet-20250219': {
     id: 'claude-3-7-sonnet-20250219',
     name: 'Claude 3.7 Sonnet',
-    description:
-      "Anthropic's Claude 3.7 model with reasoning, image input, object generation, and tool usage",
+    description: "Enhanced Claude model with reasoning capabilities",
+    provider: 'anthropic',
+    capabilities: ['reasoning', 'vision', 'tools', 'multimodal'],
+    contextWindow: 200000,
+    reasoning: {
+      supported: true,
+      budgetTokens: 12000,
+      headers: { 'anthropic-beta': 'interleaved-thinking-2025-05-14' }
+    }
   },
   // Claude 3.5 models - as per official docs
   'claude-3-5-sonnet-20241022': {
     id: 'claude-3-5-sonnet-20241022',
     name: 'Claude 3.5 Sonnet (Latest)',
-    description:
-      "Anthropic's Claude 3.5 model with PDF support, computer tools, image input, object generation, and tool usage",
+    description: "Balanced Claude model with computer tools and PDF support",
+    provider: 'anthropic',
+    capabilities: ['tools', 'computer-use', 'vision', 'pdf-support', 'multimodal'],
+    contextWindow: 200000
   },
   'claude-3-5-sonnet-20240620': {
     id: 'claude-3-5-sonnet-20240620',
     name: 'Claude 3.5 Sonnet',
-    description:
-      "Anthropic's Claude 3.5 model with PDF support, image input, object generation, and tool usage",
+    description: "Balanced Claude model with vision and tool capabilities",
+    provider: 'anthropic',
+    capabilities: ['tools', 'vision', 'pdf-support', 'multimodal'],
+    contextWindow: 200000
   },
   'claude-3-5-haiku-20241022': {
     id: 'claude-3-5-haiku-20241022',
-    name: 'Claude 3.5 Haiku (Latest)',
-    description:
-      "Anthropic's fastest Claude 3.5 model with image input, object generation, and tool usage",
+    name: 'Claude 3.5 Haiku',
+    description: "Fast and efficient Claude model",
+    provider: 'anthropic',
+    capabilities: ['tools', 'vision', 'multimodal'],
+    contextWindow: 200000
   },
   // Claude 3 models (legacy) - as per official docs
   'claude-3-opus-20240229': {
     id: 'claude-3-opus-20240229',
     name: 'Claude 3 Opus',
-    description:
-      "Anthropic's Claude 3 Opus model with image input, object generation, and tool usage",
+    description: "Legacy Claude 3 model with vision and tool capabilities",
+    provider: 'anthropic',
+    capabilities: ['tools', 'vision', 'multimodal'],
+    contextWindow: 200000,
+    deprecated: true
   },
   'claude-3-sonnet-20240229': {
     id: 'claude-3-sonnet-20240229',
     name: 'Claude 3 Sonnet',
-    description:
-      "Anthropic's Claude 3 Sonnet model with image input, object generation, and tool usage",
+    description: "Legacy Claude 3 model with vision and tool capabilities",
+    provider: 'anthropic',
+    capabilities: ['tools', 'vision', 'multimodal'],
+    contextWindow: 200000,
+    deprecated: true
   },
   'claude-3-haiku-20240307': {
     id: 'claude-3-haiku-20240307',
     name: 'Claude 3 Haiku',
-    description:
-      "Anthropic's Claude 3 Haiku model with image input, object generation, and tool usage",
+    description: "Legacy fast Claude 3 model",
+    provider: 'anthropic',
+    capabilities: ['tools', 'vision', 'multimodal'],
+    contextWindow: 200000,
+    deprecated: true
   },
 } as const;
 

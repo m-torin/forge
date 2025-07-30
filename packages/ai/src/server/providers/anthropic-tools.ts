@@ -32,7 +32,7 @@ export function createAnthropicReasoningOptions(
 
 // Bash Tool for running commands
 export const createAnthropicBashTool = () => {
-  return anthropic.tools.bash_20250124({
+  return anthropic.tools.bash_20241022({
     execute: async ({ command, restart }) => {
       if (restart) {
         return 'Bash tool restarted successfully.';
@@ -84,7 +84,7 @@ export const createAnthropicBashTool = () => {
 
 // Text Editor Tool for file operations
 export const createAnthropicTextEditorTool = () => {
-  return anthropic.tools.textEditor_20250124({
+  return anthropic.tools.textEditor_20241022({
     execute: async ({
       command,
       path,
@@ -135,7 +135,7 @@ export const createAnthropicTextEditorTool = () => {
 
 // Computer Tool for system control
 export const createAnthropicComputerTool = () => {
-  return anthropic.tools.computer_20250124({
+  return anthropic.tools.computer_20241022({
     displayWidthPx: 1920,
     displayHeightPx: 1080,
     displayNumber: 0,
@@ -194,7 +194,7 @@ export const createAnthropicComputerTool = () => {
       if (typeof result === 'string') {
         return [{ type: 'text', text: result }];
       }
-      return [{ type: 'image', data: result.data, mimeType: 'image/png' }];
+      return [{ type: 'image', data: result.data, mediaType: 'image/png' }];
     },
   });
 };

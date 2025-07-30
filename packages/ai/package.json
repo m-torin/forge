@@ -38,6 +38,10 @@
     "./server/rag": {
       "types": "./src/server/rag/index.ts",
       "default": "./src/server/rag/index.ts"
+    },
+    "./models": {
+      "types": "./src/shared/models/index.ts",
+      "default": "./src/shared/models/index.ts"
     }
   },
   "scripts": {

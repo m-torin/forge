@@ -45,7 +45,7 @@ class AnimationPerformanceMonitor {
 
     this.isMonitoring = true;
     let lastTime = performance.now();
-    let _frameCount = 0;
+    let frameCount = 0;
 
     const measureFrame = () => {
       const currentTime = performance.now();
@@ -58,7 +58,7 @@ class AnimationPerformanceMonitor {
         if (fps < 50) metrics.dropped++;
       }
 
-      _frameCount++;
+      frameCount++;
       lastTime = currentTime;
 
       if (this.isMonitoring) {

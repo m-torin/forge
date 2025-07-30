@@ -104,14 +104,63 @@ export const providerRegistry = createProviderRegistry(
           ],
         }),
 
-        // Extended reasoning configuration
+        // Claude 4 models with full reasoning support
+        'claude-4-opus-20250514': wrapLanguageModel({
+          model: anthropic('claude-4-opus-20250514'),
+          middleware: [
+            retryMiddleware,
+            defaultSettingsMiddleware({
+              settings: {
+                headers: {
+                  'anthropic-beta': 'interleaved-thinking-2025-05-14',
+                },
+                maxOutputTokens: 100000,
+                providerOptions: {
+                  anthropic: {
+                    thinking: { type: 'enabled', budgetTokens: 15000 },
+                  },
+                },
+              },
+            }),
+          ],
+        }),
+
+        'claude-4-sonnet-20250514': wrapLanguageModel({
+          model: anthropic('claude-4-sonnet-20250514'),
+          middleware: [
+            retryMiddleware,
+            defaultSettingsMiddleware({
+              settings: {
+                headers: {
+                  'anthropic-beta': 'interleaved-thinking-2025-05-14',
+                },
+                maxOutputTokens: 50000,
+                providerOptions: {
+                  anthropic: {
+                    thinking: { type: 'enabled', budgetTokens: 12000 },
+                  },
+                },
+              },
+            }),
+          ],
+        }),
+
+        // Extended reasoning configuration (Claude 3.7)
         reasoning: wrapLanguageModel({
           model: anthropic('claude-3-7-sonnet-20250219'),
           middleware: [
             retryMiddleware,
             defaultSettingsMiddleware({
               settings: {
+                headers: {
+                  'anthropic-beta': 'interleaved-thinking-2025-05-14',
+                },
                 maxOutputTokens: 100000,
+                providerOptions: {
+                  anthropic: {
+                    thinking: { type: 'enabled', budgetTokens: 12000 },
+                  },
+                },
               },
             }),
           ],

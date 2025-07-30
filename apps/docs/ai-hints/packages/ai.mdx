@@ -1,0 +1,306 @@
+---
+title: "AI Package - AI Hints"
+description: "Claude-specific guidance for working with the centralized AI package and model registry"
+icon: "brain"
+---
+
+# AI Package Integration Guide
+
+## 🎯 Primary Usage Patterns
+
+### Centralized Model Configuration
+
+**✅ ALWAYS use the centralized model registry:**
+
+```typescript
+// ✅ Correct - Use centralized model registry
+import { 
+  getBestModelForTask,
+  selectModel,
+  getModelConfig,
+  MODEL_REGISTRY 
+} from '@repo/ai/models';
+
+// Get best model for task
+const chatModel = getBestModelForTask('chat');
+const reasoningModel = getBestModelForTask('reasoning');
+
+// Strategic model selection
+const selectedModel = selectModel({
+  strategy: 'reasoning',
+  userTier: 'pro',
+  fallbackEnabled: true,
+  excludeDeprecated: true,
+});
+```
+
+```typescript
+// ❌ Wrong - Hardcoded model names
+const modelId = 'claude-3-5-sonnet-20241022'; // Will become outdated
+const modelName = 'gpt-4o'; // No reasoning configuration
+```
+
+### Provider Registry Integration
+
+**✅ Use the enhanced provider registry:**
+
+```typescript
+// ✅ Correct - Use centralized provider registry
+import { registry, models } from '@repo/ai/server';
+
+// Models automatically configured with reasoning
+const claudeReasoning = registry.languageModel('anthropic:claude-4-opus-20250514');
+const bestChat = models.language.best();
+const fastModel = models.language.fast();
+
+// Automatic reasoning configuration applied
+const result = await generateText({
+  model: claudeReasoning,
+  prompt: 'Complex reasoning task...',
+  // Headers and reasoning config applied automatically
+});
+```
+
+## 🔧 Model Selection Strategies
+
+### Task-Based Selection
+
+```typescript
+// ✅ Use task-based model selection
+import { getBestModelForTask, getModelRecommendations } from '@repo/ai/models';
+
+// For different use cases
+const codeModel = getBestModelForTask('code');
+const visionModel = getBestModelForTask('vision'); 
+const reasoningModel = getBestModelForTask('reasoning');
+
+// Get multiple recommendations
+const recommendations = getModelRecommendations('coding', 'pro');
+console.log(recommendations); // ['claude-3-5-sonnet-20241022', 'claude-4-sonnet-20250514', ...]
+```
+
+### Capability-Based Filtering
+
+```typescript
+// ✅ Filter models by capabilities
+import { 
+  getModelsByCapability,
+  modelHasCapability,
+  modelSupportsReasoning 
+} from '@repo/ai/models';
+
+// Get models with specific capabilities
+const reasoningModels = getModelsByCapability('reasoning');
+const visionModels = getModelsByCapability('vision');
+const computerUseModels = getModelsByCapability('computer-use');
+
+// Check if model supports features
+if (modelSupportsReasoning('claude-4-opus-20250514')) {
+  // Use reasoning-enabled flow
+}
+
+if (modelHasCapability('claude-3-5-sonnet-20241022', 'computer-use')) {
+  // Enable computer tools
+}
+```
+
+## 🚀 Application Integration
+
+### AI-Chatbot Integration
+
+```typescript
+// ✅ Use centralized configuration in chatbot
+import { myProvider } from '@/lib/ai/providers';
+import { getModelConfig, isModelAvailable } from '@repo/ai/models';
+
+// Dynamic model loading
+const modelConfig = getModelConfig(selectedModel);
+const isAvailable = isModelAvailable(selectedModel);
+
+if (isAvailable && modelConfig?.reasoning?.supported) {
+  // Enable reasoning UI features
+  setReasoningEnabled(true);
+}
+
+// Use provider with centralized aliases
+const model = myProvider.languageModel('chat-model'); // Resolves dynamically
+```
+
+### Environment-Based Configuration
+
+```typescript
+// ✅ Respect environment configuration
+import { env } from '@repo/ai';
+import { validateModelForUseCase } from '@repo/ai/models';
+
+// Check API key availability
+if (env.ANTHROPIC_API_KEY) {
+  const validation = validateModelForUseCase('claude-4-opus-20250514', 'reasoning', 'pro');
+  
+  if (validation.valid) {
+    // Use Claude 4 for reasoning
+  } else {
+    console.warn('Model validation issues:', validation.issues);
+    // Use fallback from suggestions
+    const fallback = validation.suggestions[0];
+  }
+}
+```
+
+## 📋 Common Patterns
+
+### Model Comparison and Selection
+
+```typescript
+// ✅ Compare models systematically
+import { 
+  compareModels,
+  getModelFeatureMatrix,
+  canUserAccessModel 
+} from '@repo/ai/models';
+
+// Compare multiple models
+const comparison = compareModels([
+  'claude-4-opus-20250514',
+  'claude-4-sonnet-20250514',
+  'claude-3-5-sonnet-20241022'
+]);
+
+// Get feature matrix for UI
+const features = getModelFeatureMatrix([
+  'claude-4-opus-20250514',
+  'gpt-4o'
+]);
+
+// Check user access
+const userTier = getUserTier(); // 'free' | 'pro' | 'enterprise'
+const canAccess = canUserAccessModel(userTier, 'high', true);
+```
+
+### Usage Tracking
+
+```typescript
+// ✅ Track model usage
+import { 
+  trackModelUsage,
+  getModelUsageStats,
+  getAllUsageStats 
+} from '@repo/ai/models';
+
+// Track usage after generation
+trackModelUsage('claude-4-opus-20250514', inputTokens, outputTokens);
+
+// Get statistics
+const stats = getModelUsageStats('claude-4-opus-20250514');
+const allStats = getAllUsageStats();
+
+// Log for monitoring
+logInfo('Model usage statistics', { stats: allStats });
+```
+
+## ⚠️ Critical Guidelines
+
+### Model Updates
+
+**✅ Add new models in centralized registry:**
+
+```typescript
+// ✅ Update packages/ai/src/shared/models/metadata.ts
+export const ANTHROPIC_MODEL_METADATA = {
+  // Add new model here
+  'claude-5-sonnet-20250601': {
+    id: 'claude-5-sonnet-20250601',
+    name: 'Claude 5 Sonnet',
+    description: 'Next generation Claude model',
+    provider: 'anthropic',
+    capabilities: ['reasoning', 'vision', 'tools', 'multimodal'],
+    reasoning: {
+      supported: true,
+      budgetTokens: 20000,
+      headers: { 'anthropic-beta': 'interleaved-thinking-2025-06-01' }
+    }
+  }
+};
+```
+
+**❌ Never hardcode model names in applications:**
+
+```typescript
+// ❌ Wrong - Will break when models update
+const model = registry.languageModel('anthropic:claude-3-5-sonnet-20241022');
+
+// ✅ Right - Use centralized selection
+const model = models.language.best();
+const reasoning = models.language.reasoning();
+```
+
+### Reasoning Configuration
+
+**✅ Let the registry handle reasoning configuration:**
+
+```typescript
+// ✅ Automatic reasoning configuration
+const reasoningModel = getBestModelForTask('reasoning');
+const model = registry.languageModel(`anthropic:${reasoningModel}`);
+// Headers and budget tokens automatically applied
+
+// ✅ Check reasoning support
+if (modelSupportsReasoning(selectedModel)) {
+  // Enable reasoning UI
+  const config = getModelReasoningConfig(selectedModel);
+  setBudgetTokens(config?.budgetTokens || 10000);
+}
+```
+
+**❌ Never manually configure reasoning headers:**
+
+```typescript
+// ❌ Wrong - Manual reasoning configuration
+const model = anthropic('claude-4-opus-20250514', {
+  headers: { 'anthropic-beta': 'interleaved-thinking-2025-05-14' }
+});
+
+// ❌ Wrong - Hardcoded reasoning settings
+const options = {
+  providerOptions: {
+    anthropic: {
+      thinking: { type: 'enabled', budgetTokens: 15000 }
+    }
+  }
+};
+```
+
+## 🎯 Integration Checklist
+
+When working with the AI package:
+
+- [ ] Import from `@repo/ai/models` for model operations
+- [ ] Use `getBestModelForTask()` instead of hardcoded model names
+- [ ] Check model capabilities with `modelHasCapability()`
+- [ ] Validate user access with `canUserAccessModel()`
+- [ ] Track usage with `trackModelUsage()`
+- [ ] Use centralized provider registry from `@repo/ai/server`
+- [ ] Let the registry handle reasoning configuration automatically
+- [ ] Check `isModelAvailable()` for API key validation
+- [ ] Use `getModelRecommendations()` for user-facing model selection
+
+## 📚 Key Exports Reference
+
+### Model Selection
+- `getBestModelForTask(task)` - Get optimal model for specific task
+- `selectModel(config)` - Strategic model selection with user tiers
+- `getModelRecommendations(useCase, userTier)` - Multiple recommendations
+
+### Model Information  
+- `getModelConfig(modelId)` - Complete model metadata
+- `modelSupportsReasoning(modelId)` - Check reasoning support
+- `getModelsByCapability(capability)` - Filter by capability
+- `isValidModelId(modelId)` - Validate model ID
+
+### Utility Functions
+- `canUserAccessModel(userTier, costTier, reasoning)` - Access control
+- `validateModelForUseCase(modelId, useCase, userTier)` - Comprehensive validation
+- `trackModelUsage(modelId, input, output)` - Usage tracking
+- `compareModels(modelIds)` - Model comparison
+
+This centralized approach ensures all applications stay in sync and automatically benefit from model updates and new reasoning capabilities.

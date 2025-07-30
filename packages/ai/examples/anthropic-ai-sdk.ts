@@ -42,8 +42,11 @@ export async function reasoningExample() {
 
   // Pure AI SDK pattern for reasoning
   const { text, reasoning, reasoningDetails } = await generateText({
-    model: createAnthropicModel({ model: 'claude-4-opus-20250514' }),
+    model: createAnthropicModel({ model: 'claude-4-sonnet-20250514' }),
     prompt: 'How many people will live in the world in 2040?',
+    headers: {
+      'anthropic-beta': 'interleaved-thinking-2025-05-14',
+    },
     providerOptions: {
       anthropic: {
         thinking: { type: 'enabled', budgetTokens: 12000 },

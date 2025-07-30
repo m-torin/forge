@@ -69,7 +69,7 @@ export function createAnthropicProvider(config?: AnthropicProviderConfig) {
 
 /**
  * Create Anthropic model with reasoning support
- * Pure AI SDK pattern - reasoning via providerOptions
+ * Pure AI SDK pattern - reasoning via providerOptions with headers
  */
 export function createAnthropicWithReasoning(
   modelName: string = 'claude-3-5-sonnet-20241022',
@@ -85,6 +85,10 @@ export function createAnthropicWithReasoning(
         model,
         prompt,
         ...options,
+        headers: {
+          'anthropic-beta': 'interleaved-thinking-2025-05-14',
+          ...options?.headers,
+        },
         providerOptions: {
           ...options?.providerOptions,
           anthropic: {
@@ -116,7 +120,7 @@ export function createAnthropicWithCaching(modelName: string = 'claude-3-5-sonne
 export function createBashTool(
   execute: (params: { command?: string; restart?: boolean }) => Promise<string>,
 ) {
-  return anthropic.tools.bash_20250124({ execute });
+  return anthropic.tools.bash_20241022({ execute });
 }
 
 /**
@@ -134,7 +138,7 @@ export function createTextEditorTool(
     view_range?: number[];
   }) => Promise<string>,
 ) {
-  return anthropic.tools.textEditor_20250124({ execute });
+  return anthropic.tools.textEditor_20241022({ execute });
 }
 
 /**
@@ -167,7 +171,17 @@ export function createComputerTool(config: {
   }) => Promise<string | { type: 'image'; data: string }>;
   experimental_toToolResultContent?: (result: any) => any[];
 }) {
-  return anthropic.tools.computer_20250124(config);
+  // Add default experimental handler if not provided
+  const configWithHandler = {
+    ...config,
+    experimental_toToolResultContent: config.experimental_toToolResultContent || ((result: any) => {
+      return typeof result === 'string'
+        ? [{ type: 'text', text: result }]
+        : [{ type: 'image', data: result.data, mediaType: 'image/png' }];
+    }),
+  };
+  
+  return anthropic.tools.computer_20241022(configWithHandler);
 }
 
 /**
@@ -370,8 +384,11 @@ export const examples = {
   // Reasoning (AI SDK pattern)
   async reasoning(): Promise<{ text: string; reasoningText: string | undefined; reasoning: any }> {
     const { text, reasoningText, reasoning } = await generateText({
-      model: anthropic('claude-4-opus-20250514'),
+      model: anthropic('claude-4-sonnet-20250514'),
       prompt: 'How many people will live in the world in 2040?',
+      headers: {
+        'anthropic-beta': 'interleaved-thinking-2025-05-14',
+      },
       providerOptions: {
         anthropic: {
           thinking: { type: 'enabled', budgetTokens: 12000 },
@@ -416,6 +433,24 @@ export const examples = {
 
   // Computer tools (AI SDK pattern)
   async computerUse(): Promise<any> {
+    const computerTool = createComputerTool({
+      displayWidthPx: 1920,
+      displayHeightPx: 1080,
+      execute: async ({ action, coordinate, text }) => {
+        switch (action) {
+          case 'screenshot': {
+            return {
+              type: 'image',
+              data: 'base64-screenshot-data',
+            };
+          }
+          default: {
+            return `Executed ${action} action`;
+          }
+        }
+      },
+    });
+
     const bashTool = createBashTool(async ({ command }) => {
       return `Executed: ${command}`;
     });
@@ -430,8 +465,9 @@ export const examples = {
     return await generateText({
       model: anthropic('claude-3-5-sonnet-20241022'),
       prompt:
-        "Create a new file called example.txt, write 'Hello World' to it, and run 'cat example.txt' in the terminal",
+        "Move the cursor to the center of the screen, take a screenshot, create a new file called example.txt, write 'Hello World' to it, and run 'cat example.txt' in the terminal",
       tools: {
+        computer: computerTool,
         bash: bashTool,
         str_replace_editor: textEditorTool, // Note: specific name required
       },
