@@ -111,7 +111,7 @@ import {
  * Default configuration for object operations
  * Includes retry logic and circuit breaking for object reliability
  */
-const OBJECT_OPERATION_DEFAULTS: S3CommandOptions = {
+const _OBJECT_OPERATION_DEFAULTS: S3CommandOptions = {
   timeout: 30_000, // 30 seconds
   retries: 3,
   validation: {
@@ -137,7 +137,7 @@ const OBJECT_OPERATION_DEFAULTS: S3CommandOptions = {
  * Default configuration for bucket operations
  * Conservative timeouts and circuit breaking for administrative tasks
  */
-const BUCKET_OPERATION_DEFAULTS: S3CommandOptions = {
+const _BUCKET_OPERATION_DEFAULTS: S3CommandOptions = {
   timeout: 45_000, // 45 seconds
   retries: 2,
   validation: {
@@ -162,7 +162,7 @@ const BUCKET_OPERATION_DEFAULTS: S3CommandOptions = {
  * Default configuration for multipart upload operations
  * Extended timeouts and retries for handling multiple parts
  */
-const MULTIPART_OPERATION_DEFAULTS: S3CommandOptions = {
+const _MULTIPART_OPERATION_DEFAULTS: S3CommandOptions = {
   timeout: 3600_000, // 1 hour
   retries: 5,
   multipart: {
@@ -191,7 +191,7 @@ const MULTIPART_OPERATION_DEFAULTS: S3CommandOptions = {
  * Default configuration for security operations
  * Ensures encryption and access controls are consistently applied
  */
-const SECURITY_OPERATION_DEFAULTS: S3CommandOptions = {
+const _SECURITY_OPERATION_DEFAULTS: S3CommandOptions = {
   timeout: 12_000, // 12 seconds
   retries: 3,
   telemetry: {

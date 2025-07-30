@@ -21,10 +21,10 @@ import { NodeTypesEnum } from './nodes';
 const NODE_TYPES = [...Object.values(NodeTypesEnum)] as [string, ...string[]];
 
 // 2. Define NodeTypeEnum using the single source of truth
-const NodeTypeEnum = z.enum(NODE_TYPES);
+const _NodeTypeEnum = z.enum(NODE_TYPES);
 
 // 3. Infer NodeType from NodeTypeEnum for type safety
-type NodeType = z.infer<typeof NodeTypeEnum>;
+type NodeType = z.infer<typeof _NodeTypeEnum>;
 
 // 4. Define ReactFlowNodeSchema using NodeTypeEnum consistently
 const ReactFlowNodeSchema = z.object({

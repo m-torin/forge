@@ -435,7 +435,7 @@ const validateAclInput = (input: any, options?: S3ValidationOptions['acl']) => {
  * @param body - The body of the object.
  * @returns The calculated checksum as a string.
  */
-const calculateChecksum = (body: any): string => {
+const calculateChecksum = (_body: any): string => {
   // Implement actual checksum calculation (e.g., MD5, SHA256)
   // For demonstration purposes, return a dummy checksum
   return 'dummy-checksum';
@@ -447,7 +447,7 @@ const calculateChecksum = (body: any): string => {
  * @param bucketName - The name of the bucket.
  * @returns The region of the bucket.
  */
-const getBucketRegion = (bucketName: string): string => {
+const getBucketRegion = (_bucketName: string): string => {
   // Implement actual logic to retrieve bucket region
   // For demonstration purposes, return a default region
   return 'us-east-1';
@@ -459,7 +459,7 @@ const getBucketRegion = (bucketName: string): string => {
  * @param bucketName - The name of the bucket.
  * @returns Boolean indicating if the bucket is encrypted.
  */
-const isBucketEncrypted = (bucketName: string): boolean => {
+const isBucketEncrypted = (_bucketName: string): boolean => {
   // Implement actual logic to check bucket encryption
   // For demonstration purposes, return true
   return true;

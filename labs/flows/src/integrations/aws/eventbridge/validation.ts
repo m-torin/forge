@@ -436,7 +436,7 @@ export const validateRuleInput = (
  */
 export const validateTargetInput = (
   input: any,
-  options: EventBridgeValidationOptions['target'] = DEFAULT_VALIDATION_OPTIONS.target,
+  _options: EventBridgeValidationOptions['target'] = DEFAULT_VALIDATION_OPTIONS.target,
 ): void => {
   if (!input.Rule || typeof input.Rule !== 'string') {
     throw createEventBridgeValidationError(
@@ -448,7 +448,7 @@ export const validateTargetInput = (
   }
 
   if (input.Targets) {
-    input.Targets.forEach((target: any, index: number) => {
+    input.Targets.forEach((target: any, _index: number) => {
       validateTargetConfiguration(target);
       // Add more validations for target properties as needed
     });

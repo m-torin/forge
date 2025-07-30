@@ -341,7 +341,7 @@ export const validateSNSInput = (
   input: any,
   operationName: string,
   options: SNSValidationOptions = DEFAULT_VALIDATION_OPTIONS,
-  context?: OperationContext,
+  _context?: OperationContext,
 ): ValidationResult => {
   const result: ValidationResult = {
     valid: true,

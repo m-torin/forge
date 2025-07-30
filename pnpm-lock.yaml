@@ -382,7 +382,7 @@ importers:
         version: 16.6.1
       drizzle-orm:
         specifier: ^0.34.0
-        version: 0.34.1(@cloudflare/workers-types@4.20250726.0)(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@prisma/client@6.13.0(prisma@6.13.0(magicast@0.3.5)(typescript@5.8.3))(typescript@5.8.3))(@types/pg@8.15.5)(@types/react@19.1.9)(@vercel/postgres@0.10.0)(better-sqlite3@11.10.0)(kysely@0.28.3)(pg@8.16.3)(postgres@3.4.7)(prisma@6.13.0(magicast@0.3.5)(typescript@5.8.3))(react@19.1.1)
+        version: 0.34.1(@cloudflare/workers-types@4.20250730.0)(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@prisma/client@6.13.0(prisma@6.13.0(magicast@0.3.5)(typescript@5.8.3))(typescript@5.8.3))(@types/pg@8.15.5)(@types/react@19.1.9)(@vercel/postgres@0.10.0)(better-sqlite3@11.10.0)(kysely@0.28.3)(pg@8.16.3)(postgres@3.4.7)(prisma@6.13.0(magicast@0.3.5)(typescript@5.8.3))(react@19.1.1)
       fast-deep-equal:
         specifier: ^3.1.3
         version: 3.1.3
@@ -575,7 +575,7 @@ importers:
         version: link:../../packages/observability
       mintlify:
         specifier: ^4.2.33
-        version: 4.2.36(@types/node@24.1.0)(@types/react@19.1.9)(bufferutil@4.0.9)(react-dom@19.1.1(react@18.3.1))(typescript@5.8.3)
+        version: 4.2.37(@types/node@24.1.0)(@types/react@19.1.9)(bufferutil@4.0.9)(react-dom@19.1.1(react@18.3.1))(typescript@5.8.3)
     devDependencies:
       '@repo/qa':
         specifier: workspace:*
@@ -972,7 +972,7 @@ importers:
         version: 1.1.10(@types/react-dom@19.1.7(@types/react@19.1.9))(@types/react@19.1.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@radix-ui/react-collapsible':
         specifier: ^1.1.1
-        version: 1.1.7(@types/react-dom@19.1.7(@types/react@19.1.9))(@types/react@19.1.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 1.1.11(@types/react-dom@19.1.7(@types/react@19.1.9))(@types/react@19.1.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@radix-ui/react-dropdown-menu':
         specifier: ^2.1.2
         version: 2.1.15(@types/react-dom@19.1.7(@types/react@19.1.9))(@types/react@19.1.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -1033,6 +1033,9 @@ importers:
       date-fns:
         specifier: 'catalog:'
         version: 4.1.0
+      dayjs:
+        specifier: ^1.11.13
+        version: 1.11.13
       framer-motion:
         specifier: ^11.11.17
         version: 11.18.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -1316,7 +1319,7 @@ importers:
         version: 5.0.0-canary.24(zod@4.0.13)
       exa-js:
         specifier: ^1.8.23
-        version: 1.8.24(ws@8.18.3(bufferutil@4.0.9))
+        version: 1.8.25(ws@8.18.3(bufferutil@4.0.9))
       next:
         specifier: 'catalog:'
         version: 15.4.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(sass@1.89.2)
@@ -2225,7 +2228,7 @@ importers:
         version: link:../observability
       '@stripe/agent-toolkit':
         specifier: ^0.7.10
-        version: 0.7.10(@langchain/core@0.3.66(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(openai@5.10.2(ws@8.18.3(bufferutil@4.0.9))(zod@4.0.13)))(@modelcontextprotocol/sdk@1.17.0)(agents@0.0.84(@cloudflare/workers-types@4.20250726.0)(react@19.1.1))(ai@5.0.0-canary.24(zod@4.0.13))(openai@5.10.2(ws@8.18.3(bufferutil@4.0.9))(zod@4.0.13))
+        version: 0.7.10(@langchain/core@0.3.66(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(openai@5.10.2(ws@8.18.3(bufferutil@4.0.9))(zod@4.0.13)))(@modelcontextprotocol/sdk@1.17.0)(agents@0.0.84(@cloudflare/workers-types@4.20250730.0)(react@19.1.1))(ai@5.0.0-canary.24(zod@4.0.13))(openai@5.10.2(ws@8.18.3(bufferutil@4.0.9))(zod@4.0.13))
       '@t3-oss/env-nextjs':
         specifier: 'catalog:'
         version: 0.13.8(typescript@5.8.3)(zod@4.0.13)
@@ -3895,8 +3898,8 @@ packages:
     peerDependencies:
       storybook: ^0.0.0-0 || ^9.0.0 || ^9.1.0-0
 
-  '@cloudflare/workers-types@4.20250726.0':
-    resolution: {integrity: sha512-NtM1yVBKJFX4LgSoZkVU0EDhWWvSb1vt6REO+uMYZRgx1HAfQz9GDN6bBB0B+fm2ZIxzt6FzlDbmrXpGJ2M/4Q==}
+  '@cloudflare/workers-types@4.20250730.0':
+    resolution: {integrity: sha512-hn0KhTnHxmkpNiHn6IGo9ffOqYqmJvrMApE2OT1b+2rp1AYCvFxMf7Xzgfb+1liylmpeyHQjKODhfXrxxIPXsg==}
 
   '@codemirror/autocomplete@6.18.6':
     resolution: {integrity: sha512-PHHBXFomUs5DF+9tCOM/UoW6XQ4R44lLNNhRaW9PKPTU0D7lIjRg3ElxaJnTwsl/oHiR93WSXDBrekhoUGCPtg==}
@@ -5302,16 +5305,16 @@ packages:
       '@types/react': '>=16'
       react: '>=16'
 
-  '@mintlify/cli@4.0.640':
-    resolution: {integrity: sha512-en5850NV/iqa1dy1R4IgZWMtf16fOoFhO0qmlxmH5xPRLWdWe6GqBHPuDsDzx53db+0W63WuSn1UkgJnFYZ8kw==}
+  '@mintlify/cli@4.0.641':
+    resolution: {integrity: sha512-jbsulDMz2JIInw5KLpSc+jTqAPSbYVzJlyd6h+6aG6BnIsN7Rj5Vaw2uBscsA4c3ZFstB4mGJmFjfv4aNX+hww==}
     engines: {node: '>=18.0.0'}
     hasBin: true
 
-  '@mintlify/common@1.0.462':
-    resolution: {integrity: sha512-NUJAKkc3pelhUwxXigmq8r8AlFg7CQz4M5/2unjcURGmzzgVzWt2gdYLLXbZSB0i1YfqWuUOBTMVmX3LfH2bPA==}
+  '@mintlify/common@1.0.463':
+    resolution: {integrity: sha512-t89is8zrWBro8wceYHObSy23+STwRNSwEqlN8q6goXlr1dmamvO4fBsGDhzBJbDInrHjz1VoXLwNE12D6lJgWA==}
 
-  '@mintlify/link-rot@3.0.588':
-    resolution: {integrity: sha512-IK1+dF4SZ1xjTTZ7Mz8STO+XAPioRjxSLb7yp55MzF0HtW4WQ9HFB7rLed9P7rvrlYD7Vwbi2728z+E/XQIUEw==}
+  '@mintlify/link-rot@3.0.589':
+    resolution: {integrity: sha512-rZrOYQE3Xv9KDo1ZJ2rg7meZPcIsNYy7z/f0YqXuYxXRayC8l59Jzq7kG4ucMsnE3jd9YNiV9G3h5IweDgDXtQ==}
     engines: {node: '>=18.0.0'}
 
   '@mintlify/mdx@2.0.3':
@@ -5328,20 +5331,20 @@ packages:
     resolution: {integrity: sha512-3ecbkzPbsnkKVZJypVL0H5pCTR7a4iLv4cP7zbffzAwy+vpH70JmPxNVpPPP62yLrdZlfNcMxu5xKeT7fllgMg==}
     engines: {node: '>=18'}
 
-  '@mintlify/prebuild@1.0.580':
-    resolution: {integrity: sha512-agFN0cutOBwaZ8Wz6I+y45YmIWRI4kPMJ+je5jkWGGReJZ1hyouOm6u5VRaHvF0TyZslw+/nmqGnqlD4m2plJA==}
+  '@mintlify/prebuild@1.0.581':
+    resolution: {integrity: sha512-WjHKoFxT+wSz4ISFUX3oG3N4u3UTILE67jOdnanhsc8ergMNPXUTphK+LXdJGnTbfSmv8EMvp9rdE8szlDJqzg==}
 
-  '@mintlify/previewing@4.0.625':
-    resolution: {integrity: sha512-HLtLf0S/QFIslcb0BCceoTR6W7837BdxwSxiFPRxczJfQBzKUokGUcSyofH9i8vTxbwPvlDldE5xXmGXlE9WZg==}
+  '@mintlify/previewing@4.0.626':
+    resolution: {integrity: sha512-TesE5vlz7r7cqx8nfI0iXEUOuo/lRH4sT712re1OVS4CYqqo+uHLwLcMzztRZgL/ltl4t0a587H9BkCTYYciCg==}
     engines: {node: '>=18.0.0'}
 
-  '@mintlify/scraping@4.0.318':
-    resolution: {integrity: sha512-hKfQbrHwd6biKgB6Jw3do+ln5R6sR1jquvADVzMt1LKPrlQLjM0PklFLpXgl9wGmedtSNprQqMPkOEf0Z85yVg==}
+  '@mintlify/scraping@4.0.319':
+    resolution: {integrity: sha512-67Zo79Tfp74WZpm8QjURUbXCbwkgTGiP48LR+lXO3sm8zI1HLAcA/svPjJCH5fNAElGdSn+26a/PcNbwyUERdg==}
     engines: {node: '>=18.0.0'}
     hasBin: true
 
-  '@mintlify/validation@0.1.424':
-    resolution: {integrity: sha512-mA9MoYT78KtVf34jXh01j/eqbj5agYplUYt+YYVPzGXnWM/lISlNMvQVwXekZYOPbcxATIy68Rn/Zk9ARgMWcQ==}
+  '@mintlify/validation@0.1.425':
+    resolution: {integrity: sha512-KEPARSVhUc22qzNpzCRAcBsPdE/bdn/R9UqJRo6x8FcKLEGizAlJoV/EP68YWCGYsBDOF3N6kx+2/vDO+CBK1A==}
 
   '@modelcontextprotocol/sdk@1.17.0':
     resolution: {integrity: sha512-qFfbWFA7r1Sd8D697L7GkTd36yqDuTkvz0KfOGkgXR8EUhQn3/EDNIR/qUdQNMT8IjmasBvHWuXeisxtXTQT2g==}
@@ -6088,6 +6091,19 @@ packages:
 
   '@radix-ui/react-avatar@1.1.10':
     resolution: {integrity: sha512-V8piFfWapM5OmNCXTzVQY+E1rDa53zY+MQ4Y7356v4fFz6vqCyUtIz2rUD44ZEdwg78/jKmMJHj07+C/Z/rcog==}
+    peerDependencies:
+      '@types/react': '*'
+      '@types/react-dom': '*'
+      react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+      react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      '@types/react-dom':
+        optional: true
+
+  '@radix-ui/react-collapsible@1.1.11':
+    resolution: {integrity: sha512-2qrRsVGSCYasSz1RFOorXwl0H7g7J1frQtgpQgYrt+MOidtPAINHn9CPovQXb83r8ahapdx3Tu0fa/pdFFSdPg==}
     peerDependencies:
       '@types/react': '*'
       '@types/react-dom': '*'
@@ -11828,8 +11844,8 @@ packages:
   evp_bytestokey@1.0.3:
     resolution: {integrity: sha512-/f2Go4TognH/KvCISP7OUsHn85hT9nUkxxA9BEWxFn+Oj9o8ZNLm/40hdlgSLyuOimsrTKLUMEorQexp/aPQeA==}
 
-  exa-js@1.8.24:
-    resolution: {integrity: sha512-MBDWerGBGlAgO6nmSMS9XGEF8546J1EUnEptEFIqLUQDQRXD26I0FpuRdfcg8SNDLN2nWzWLo3BicrcSzYDtBg==}
+  exa-js@1.8.25:
+    resolution: {integrity: sha512-p2sEscnnaFkWdmQmApHzBU59u/aVSvvxXPgu/AKhzDIJ5kcMsxedak5XAyJuyoMrxiZjgBq0E/1Tquzz0LNHVg==}
 
   execa@5.1.1:
     resolution: {integrity: sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==}
@@ -14358,8 +14374,8 @@ packages:
     resolution: {integrity: sha512-oG62iEk+CYt5Xj2YqI5Xi9xWUeZhDI8jjQmC5oThVH5JGCTgIjr7ciJDzC7MBzYd//WvR1OTmP5Q38Q8ShQtVA==}
     engines: {node: '>= 18'}
 
-  mintlify@4.2.36:
-    resolution: {integrity: sha512-n1u56Sw8lKzKYpwxvz6SAuAYgIqEZoeagN6BjOVNAd/UXsqnx2M/iMAPYzdSF/aylYC+WPW8Q1UDr7TKNUsgQQ==}
+  mintlify@4.2.37:
+    resolution: {integrity: sha512-h2zblVO0cKnoKj9CheAjqW3v2r13TvaH3MSXI5GhctCskz9Oe3o27ETDxxV/u6dhi1nyTODhAJZ/xNAmsHjg0Q==}
     engines: {node: '>=18.0.0'}
     hasBin: true
 
@@ -16809,6 +16825,7 @@ packages:
   source-map@0.8.0-beta.0:
     resolution: {integrity: sha512-2ymg6oRBpebeZi9UUNsgQ89bhx01TcTkmNTGnNO88imTmbSgy4nfujrgVEFKWpMTEGA11EDkTt7mqObTPdigIA==}
     engines: {node: '>= 8'}
+    deprecated: The work that was done in this beta branch won't be included in future versions
 
   space-separated-tokens@2.0.2:
     resolution: {integrity: sha512-PEGlAwrG8yXGXRjW32fGbg66JAlOAwbObuqVoJpv/mRgoWDQfgH1wDPvtzWyUSNAXBGSk8h755YDbbcEy3SH2Q==}
@@ -20802,7 +20819,7 @@ snapshots:
       - '@chromatic-com/cypress'
       - '@chromatic-com/playwright'
 
-  '@cloudflare/workers-types@4.20250726.0': {}
+  '@cloudflare/workers-types@4.20250730.0': {}
 
   '@codemirror/autocomplete@6.18.6':
     dependencies:
@@ -22275,14 +22292,14 @@ snapshots:
       '@types/react': 19.1.9
       react: 19.1.1
 
-  '@mintlify/cli@4.0.640(@types/node@24.1.0)(@types/react@19.1.9)(bufferutil@4.0.9)(react-dom@19.1.1(react@18.3.1))(typescript@5.8.3)':
+  '@mintlify/cli@4.0.641(@types/node@24.1.0)(@types/react@19.1.9)(bufferutil@4.0.9)(react-dom@19.1.1(react@18.3.1))(typescript@5.8.3)':
     dependencies:
-      '@mintlify/common': 1.0.462(@types/react@19.1.9)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)
-      '@mintlify/link-rot': 3.0.588(@types/react@19.1.9)(bufferutil@4.0.9)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3)
+      '@mintlify/common': 1.0.463(@types/react@19.1.9)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)
+      '@mintlify/link-rot': 3.0.589(@types/react@19.1.9)(bufferutil@4.0.9)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3)
       '@mintlify/models': 0.0.213
-      '@mintlify/prebuild': 1.0.580(@types/react@19.1.9)(bufferutil@4.0.9)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3)
-      '@mintlify/previewing': 4.0.625(@types/react@19.1.9)(bufferutil@4.0.9)(react-dom@19.1.1(react@18.3.1))(typescript@5.8.3)
-      '@mintlify/validation': 0.1.424
+      '@mintlify/prebuild': 1.0.581(@types/react@19.1.9)(bufferutil@4.0.9)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3)
+      '@mintlify/previewing': 4.0.626(@types/react@19.1.9)(bufferutil@4.0.9)(react-dom@19.1.1(react@18.3.1))(typescript@5.8.3)
+      '@mintlify/validation': 0.1.425
       chalk: 5.4.1
       detect-port: 1.6.1
       fs-extra: 11.3.0
@@ -22305,13 +22322,13 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@mintlify/common@1.0.462(@types/react@19.1.9)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)':
+  '@mintlify/common@1.0.463(@types/react@19.1.9)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@asyncapi/parser': 3.4.0
       '@mintlify/mdx': 2.0.3(@types/react@19.1.9)(acorn@8.15.0)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)
       '@mintlify/models': 0.0.213
       '@mintlify/openapi-parser': 0.0.7
-      '@mintlify/validation': 0.1.424
+      '@mintlify/validation': 0.1.425
       '@sindresorhus/slugify': 2.2.1
       acorn: 8.15.0
       acorn-jsx: 5.3.2(acorn@8.15.0)
@@ -22351,12 +22368,12 @@ snapshots:
       - react-dom
       - supports-color
 
-  '@mintlify/link-rot@3.0.588(@types/react@19.1.9)(bufferutil@4.0.9)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3)':
+  '@mintlify/link-rot@3.0.589(@types/react@19.1.9)(bufferutil@4.0.9)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3)':
     dependencies:
-      '@mintlify/common': 1.0.462(@types/react@19.1.9)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)
-      '@mintlify/prebuild': 1.0.580(@types/react@19.1.9)(bufferutil@4.0.9)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3)
-      '@mintlify/previewing': 4.0.625(@types/react@19.1.9)(bufferutil@4.0.9)(react-dom@19.1.1(react@18.3.1))(typescript@5.8.3)
-      '@mintlify/validation': 0.1.424
+      '@mintlify/common': 1.0.463(@types/react@19.1.9)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)
+      '@mintlify/prebuild': 1.0.581(@types/react@19.1.9)(bufferutil@4.0.9)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3)
+      '@mintlify/previewing': 4.0.626(@types/react@19.1.9)(bufferutil@4.0.9)(react-dom@19.1.1(react@18.3.1))(typescript@5.8.3)
+      '@mintlify/validation': 0.1.425
       fs-extra: 11.3.0
       unist-util-visit: 4.1.2
     transitivePeerDependencies:
@@ -22408,12 +22425,12 @@ snapshots:
       leven: 4.0.0
       yaml: 2.8.0
 
-  '@mintlify/prebuild@1.0.580(@types/react@19.1.9)(bufferutil@4.0.9)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3)':
+  '@mintlify/prebuild@1.0.581(@types/react@19.1.9)(bufferutil@4.0.9)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3)':
     dependencies:
-      '@mintlify/common': 1.0.462(@types/react@19.1.9)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)
+      '@mintlify/common': 1.0.463(@types/react@19.1.9)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)
       '@mintlify/openapi-parser': 0.0.7
-      '@mintlify/scraping': 4.0.318(@types/react@19.1.9)(bufferutil@4.0.9)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3)
-      '@mintlify/validation': 0.1.424
+      '@mintlify/scraping': 4.0.319(@types/react@19.1.9)(bufferutil@4.0.9)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3)
+      '@mintlify/validation': 0.1.425
       chalk: 5.4.1
       favicons: 7.2.0
       fs-extra: 11.3.0
@@ -22434,11 +22451,11 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@mintlify/previewing@4.0.625(@types/react@19.1.9)(bufferutil@4.0.9)(react-dom@19.1.1(react@18.3.1))(typescript@5.8.3)':
+  '@mintlify/previewing@4.0.626(@types/react@19.1.9)(bufferutil@4.0.9)(react-dom@19.1.1(react@18.3.1))(typescript@5.8.3)':
     dependencies:
-      '@mintlify/common': 1.0.462(@types/react@19.1.9)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)
-      '@mintlify/prebuild': 1.0.580(@types/react@19.1.9)(bufferutil@4.0.9)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3)
-      '@mintlify/validation': 0.1.424
+      '@mintlify/common': 1.0.463(@types/react@19.1.9)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)
+      '@mintlify/prebuild': 1.0.581(@types/react@19.1.9)(bufferutil@4.0.9)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3)
+      '@mintlify/validation': 0.1.425
       better-opn: 3.0.2
       chalk: 5.4.1
       chokidar: 3.6.0
@@ -22469,9 +22486,9 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@mintlify/scraping@4.0.318(@types/react@19.1.9)(bufferutil@4.0.9)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3)':
+  '@mintlify/scraping@4.0.319(@types/react@19.1.9)(bufferutil@4.0.9)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3)':
     dependencies:
-      '@mintlify/common': 1.0.462(@types/react@19.1.9)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)
+      '@mintlify/common': 1.0.463(@types/react@19.1.9)(react-dom@19.1.1(react@18.3.1))(react@18.3.1)
       '@mintlify/openapi-parser': 0.0.7
       fs-extra: 11.3.0
       hast-util-to-mdast: 10.1.2
@@ -22500,7 +22517,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@mintlify/validation@0.1.424':
+  '@mintlify/validation@0.1.425':
     dependencies:
       '@mintlify/models': 0.0.213
       lcm: 0.0.3
@@ -23278,6 +23295,22 @@ snapshots:
       '@types/react': 19.1.9
       '@types/react-dom': 19.1.7(@types/react@19.1.9)
 
+  '@radix-ui/react-collapsible@1.1.11(@types/react-dom@19.1.7(@types/react@19.1.9))(@types/react@19.1.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
+    dependencies:
+      '@radix-ui/primitive': 1.1.2
+      '@radix-ui/react-compose-refs': 1.1.2(@types/react@19.1.9)(react@19.1.1)
+      '@radix-ui/react-context': 1.1.2(@types/react@19.1.9)(react@19.1.1)
+      '@radix-ui/react-id': 1.1.1(@types/react@19.1.9)(react@19.1.1)
+      '@radix-ui/react-presence': 1.1.4(@types/react-dom@19.1.7(@types/react@19.1.9))(@types/react@19.1.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      '@radix-ui/react-primitive': 2.1.3(@types/react-dom@19.1.7(@types/react@19.1.9))(@types/react@19.1.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      '@radix-ui/react-use-controllable-state': 1.2.2(@types/react@19.1.9)(react@19.1.1)
+      '@radix-ui/react-use-layout-effect': 1.1.1(@types/react@19.1.9)(react@19.1.1)
+      react: 19.1.1
+      react-dom: 19.1.1(react@19.1.1)
+    optionalDependencies:
+      '@types/react': 19.1.9
+      '@types/react-dom': 19.1.7(@types/react@19.1.9)
+
   '@radix-ui/react-collapsible@1.1.7(@types/react-dom@19.0.4(@types/react@19.0.10))(@types/react@19.0.10)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
     dependencies:
       '@radix-ui/primitive': 1.1.2
@@ -23293,22 +23326,6 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.0.10
       '@types/react-dom': 19.0.4(@types/react@19.0.10)
-
-  '@radix-ui/react-collapsible@1.1.7(@types/react-dom@19.1.7(@types/react@19.1.9))(@types/react@19.1.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
-    dependencies:
-      '@radix-ui/primitive': 1.1.2
-      '@radix-ui/react-compose-refs': 1.1.2(@types/react@19.1.9)(react@19.1.1)
-      '@radix-ui/react-context': 1.1.2(@types/react@19.1.9)(react@19.1.1)
-      '@radix-ui/react-id': 1.1.1(@types/react@19.1.9)(react@19.1.1)
-      '@radix-ui/react-presence': 1.1.3(@types/react-dom@19.1.7(@types/react@19.1.9))(@types/react@19.1.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      '@radix-ui/react-primitive': 2.1.0(@types/react-dom@19.1.7(@types/react@19.1.9))(@types/react@19.1.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      '@radix-ui/react-use-controllable-state': 1.2.2(@types/react@19.1.9)(react@19.1.1)
-      '@radix-ui/react-use-layout-effect': 1.1.1(@types/react@19.1.9)(react@19.1.1)
-      react: 19.1.1
-      react-dom: 19.1.1(react@19.1.1)
-    optionalDependencies:
-      '@types/react': 19.1.9
-      '@types/react-dom': 19.1.7(@types/react@19.1.9)
 
   '@radix-ui/react-collection@1.1.4(@types/react-dom@19.0.4(@types/react@19.0.10))(@types/react@19.0.10)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
     dependencies:
@@ -23672,16 +23689,6 @@ snapshots:
       '@types/react': 19.0.10
       '@types/react-dom': 19.0.4(@types/react@19.0.10)
 
-  '@radix-ui/react-presence@1.1.3(@types/react-dom@19.1.7(@types/react@19.1.9))(@types/react@19.1.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
-    dependencies:
-      '@radix-ui/react-compose-refs': 1.1.2(@types/react@19.1.9)(react@19.1.1)
-      '@radix-ui/react-use-layout-effect': 1.1.1(@types/react@19.1.9)(react@19.1.1)
-      react: 19.1.1
-      react-dom: 19.1.1(react@19.1.1)
-    optionalDependencies:
-      '@types/react': 19.1.9
-      '@types/react-dom': 19.1.7(@types/react@19.1.9)
-
   '@radix-ui/react-presence@1.1.4(@types/react-dom@19.1.7(@types/react@19.1.9))(@types/react@19.1.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
     dependencies:
       '@radix-ui/react-compose-refs': 1.1.2(@types/react@19.1.9)(react@19.1.1)
@@ -23700,15 +23707,6 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.0.10
       '@types/react-dom': 19.0.4(@types/react@19.0.10)
-
-  '@radix-ui/react-primitive@2.1.0(@types/react-dom@19.1.7(@types/react@19.1.9))(@types/react@19.1.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
-    dependencies:
-      '@radix-ui/react-slot': 1.2.0(@types/react@19.1.9)(react@19.1.1)
-      react: 19.1.1
-      react-dom: 19.1.1(react@19.1.1)
-    optionalDependencies:
-      '@types/react': 19.1.9
-      '@types/react-dom': 19.1.7(@types/react@19.1.9)
 
   '@radix-ui/react-primitive@2.1.3(@types/react-dom@19.1.7(@types/react@19.1.9))(@types/react@19.1.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
     dependencies:
@@ -23807,13 +23805,6 @@ snapshots:
       react: 19.0.0
     optionalDependencies:
       '@types/react': 19.0.10
-
-  '@radix-ui/react-slot@1.2.0(@types/react@19.1.9)(react@19.1.1)':
-    dependencies:
-      '@radix-ui/react-compose-refs': 1.1.2(@types/react@19.1.9)(react@19.1.1)
-      react: 19.1.1
-    optionalDependencies:
-      '@types/react': 19.1.9
 
   '@radix-ui/react-slot@1.2.3(@types/react@19.1.9)(react@19.1.1)':
     dependencies:
@@ -24221,7 +24212,7 @@ snapshots:
       json5: 2.2.3
       log-symbols: 4.1.0
       module-punycode: punycode@2.3.1
-      next: 15.4.1(@babel/core@7.26.10)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(sass@1.89.2)
+      next: 15.4.1(@babel/core@7.26.10)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.1)(react-dom@19.0.0(react@19.1.1))(react@19.0.0)(sass@1.89.2)
       node-html-parser: 7.0.1
       ora: 5.4.1
       pretty-bytes: 6.1.1
@@ -25674,11 +25665,11 @@ snapshots:
       - supports-color
       - ts-node
 
-  '@stripe/agent-toolkit@0.7.10(@langchain/core@0.3.66(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(openai@5.10.2(ws@8.18.3(bufferutil@4.0.9))(zod@4.0.13)))(@modelcontextprotocol/sdk@1.17.0)(agents@0.0.84(@cloudflare/workers-types@4.20250726.0)(react@19.1.1))(ai@5.0.0-canary.24(zod@4.0.13))(openai@5.10.2(ws@8.18.3(bufferutil@4.0.9))(zod@4.0.13))':
+  '@stripe/agent-toolkit@0.7.10(@langchain/core@0.3.66(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(openai@5.10.2(ws@8.18.3(bufferutil@4.0.9))(zod@4.0.13)))(@modelcontextprotocol/sdk@1.17.0)(agents@0.0.84(@cloudflare/workers-types@4.20250730.0)(react@19.1.1))(ai@5.0.0-canary.24(zod@4.0.13))(openai@5.10.2(ws@8.18.3(bufferutil@4.0.9))(zod@4.0.13))':
     dependencies:
       '@langchain/core': 0.3.66(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(openai@5.10.2(ws@8.18.3(bufferutil@4.0.9))(zod@4.0.13))
       '@modelcontextprotocol/sdk': 1.17.0
-      agents: 0.0.84(@cloudflare/workers-types@4.20250726.0)(react@19.1.1)
+      agents: 0.0.84(@cloudflare/workers-types@4.20250730.0)(react@19.1.1)
       ai: 5.0.0-canary.24(zod@4.0.13)
       openai: 5.10.2(ws@8.18.3(bufferutil@4.0.9))(zod@4.0.13)
       stripe: 17.7.0
@@ -26521,7 +26512,7 @@ snapshots:
   '@types/body-parser@1.19.6':
     dependencies:
       '@types/connect': 3.4.38
-      '@types/node': 24.1.0
+      '@types/node': 22.17.0
 
   '@types/cacheable-request@6.0.3':
     dependencies:
@@ -26628,7 +26619,7 @@ snapshots:
 
   '@types/express-serve-static-core@4.19.6':
     dependencies:
-      '@types/node': 24.1.0
+      '@types/node': 22.17.0
       '@types/qs': 6.14.0
       '@types/range-parser': 1.2.7
       '@types/send': 0.17.5
@@ -26680,7 +26671,7 @@ snapshots:
   '@types/jsonwebtoken@9.0.10':
     dependencies:
       '@types/ms': 2.1.0
-      '@types/node': 24.1.0
+      '@types/node': 22.17.0
 
   '@types/katex@0.16.7': {}
 
@@ -26825,7 +26816,7 @@ snapshots:
   '@types/request@2.48.13':
     dependencies:
       '@types/caseless': 0.12.5
-      '@types/node': 24.1.0
+      '@types/node': 22.17.0
       '@types/tough-cookie': 4.0.5
       form-data: 2.5.5
     optional: true
@@ -26845,12 +26836,12 @@ snapshots:
   '@types/send@0.17.5':
     dependencies:
       '@types/mime': 1.3.5
-      '@types/node': 24.1.0
+      '@types/node': 22.17.0
 
   '@types/serve-static@1.15.8':
     dependencies:
       '@types/http-errors': 2.0.5
-      '@types/node': 24.1.0
+      '@types/node': 22.17.0
       '@types/send': 0.17.5
 
   '@types/shimmer@1.2.0': {}
@@ -26894,7 +26885,7 @@ snapshots:
 
   '@types/webpack@5.28.5':
     dependencies:
-      '@types/node': 24.1.0
+      '@types/node': 22.14.1
       tapable: 2.2.2
       webpack: 5.101.0
     transitivePeerDependencies:
@@ -26906,7 +26897,7 @@ snapshots:
 
   '@types/webpack@5.28.5(@swc/core@1.13.3(@swc/helpers@0.5.17))(esbuild@0.25.8)':
     dependencies:
-      '@types/node': 24.1.0
+      '@types/node': 22.14.1
       tapable: 2.2.2
       webpack: 5.101.0(@swc/core@1.13.3(@swc/helpers@0.5.17))(esbuild@0.25.8)
     transitivePeerDependencies:
@@ -26918,7 +26909,7 @@ snapshots:
 
   '@types/webpack@5.28.5(esbuild@0.25.0)':
     dependencies:
-      '@types/node': 24.1.0
+      '@types/node': 22.14.1
       tapable: 2.2.2
       webpack: 5.101.0(esbuild@0.25.0)
     transitivePeerDependencies:
@@ -26931,7 +26922,7 @@ snapshots:
 
   '@types/ws@8.18.1':
     dependencies:
-      '@types/node': 24.1.0
+      '@types/node': 20.19.9
 
   '@types/yargs-parser@21.0.3': {}
 
@@ -27830,13 +27821,13 @@ snapshots:
 
   agent-base@7.1.4: {}
 
-  agents@0.0.84(@cloudflare/workers-types@4.20250726.0)(react@19.1.1):
+  agents@0.0.84(@cloudflare/workers-types@4.20250730.0)(react@19.1.1):
     dependencies:
       '@modelcontextprotocol/sdk': 1.17.0
       ai: 4.3.19(react@19.1.1)(zod@3.25.76)
       cron-schedule: 5.0.4
       nanoid: 5.1.5
-      partyserver: 0.0.71(@cloudflare/workers-types@4.20250726.0)
+      partyserver: 0.0.71(@cloudflare/workers-types@4.20250730.0)
       partysocket: 1.1.4
       react: 19.1.1
       zod: 3.25.76
@@ -29615,9 +29606,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.34.1(@cloudflare/workers-types@4.20250726.0)(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@prisma/client@6.13.0(prisma@6.13.0(magicast@0.3.5)(typescript@5.8.3))(typescript@5.8.3))(@types/pg@8.15.5)(@types/react@19.1.9)(@vercel/postgres@0.10.0)(better-sqlite3@11.10.0)(kysely@0.28.3)(pg@8.16.3)(postgres@3.4.7)(prisma@6.13.0(magicast@0.3.5)(typescript@5.8.3))(react@19.1.1):
+  drizzle-orm@0.34.1(@cloudflare/workers-types@4.20250730.0)(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0)(@prisma/client@6.13.0(prisma@6.13.0(magicast@0.3.5)(typescript@5.8.3))(typescript@5.8.3))(@types/pg@8.15.5)(@types/react@19.1.9)(@vercel/postgres@0.10.0)(better-sqlite3@11.10.0)(kysely@0.28.3)(pg@8.16.3)(postgres@3.4.7)(prisma@6.13.0(magicast@0.3.5)(typescript@5.8.3))(react@19.1.1):
     optionalDependencies:
-      '@cloudflare/workers-types': 4.20250726.0
+      '@cloudflare/workers-types': 4.20250730.0
       '@neondatabase/serverless': 0.10.4
       '@opentelemetry/api': 1.9.0
       '@prisma/client': 6.13.0(prisma@6.13.0(magicast@0.3.5)(typescript@5.8.3))(typescript@5.8.3)
@@ -30379,7 +30370,7 @@ snapshots:
       md5.js: 1.3.5
       safe-buffer: 5.2.1
 
-  exa-js@1.8.24(ws@8.18.3(bufferutil@4.0.9)):
+  exa-js@1.8.25(ws@8.18.3(bufferutil@4.0.9)):
     dependencies:
       cross-fetch: 4.1.0
       dotenv: 16.4.7
@@ -33750,9 +33741,9 @@ snapshots:
     dependencies:
       minipass: 7.1.2
 
-  mintlify@4.2.36(@types/node@24.1.0)(@types/react@19.1.9)(bufferutil@4.0.9)(react-dom@19.1.1(react@18.3.1))(typescript@5.8.3):
+  mintlify@4.2.37(@types/node@24.1.0)(@types/react@19.1.9)(bufferutil@4.0.9)(react-dom@19.1.1(react@18.3.1))(typescript@5.8.3):
     dependencies:
-      '@mintlify/cli': 4.0.640(@types/node@24.1.0)(@types/react@19.1.9)(bufferutil@4.0.9)(react-dom@19.1.1(react@18.3.1))(typescript@5.8.3)
+      '@mintlify/cli': 4.0.641(@types/node@24.1.0)(@types/react@19.1.9)(bufferutil@4.0.9)(react-dom@19.1.1(react@18.3.1))(typescript@5.8.3)
     transitivePeerDependencies:
       - '@types/node'
       - '@types/react'
@@ -33928,7 +33919,7 @@ snapshots:
       react: 19.1.1
       react-dom: 19.1.1(react@19.1.1)
 
-  next@15.4.1(@babel/core@7.26.10)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(sass@1.89.2):
+  next@15.4.1(@babel/core@7.26.10)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.1)(react-dom@19.0.0(react@19.1.1))(react@19.0.0)(sass@1.89.2):
     dependencies:
       '@next/env': 15.4.1
       '@swc/helpers': 0.5.15
@@ -34584,9 +34575,9 @@ snapshots:
 
   parseurl@1.3.3: {}
 
-  partyserver@0.0.71(@cloudflare/workers-types@4.20250726.0):
+  partyserver@0.0.71(@cloudflare/workers-types@4.20250730.0):
     dependencies:
-      '@cloudflare/workers-types': 4.20250726.0
+      '@cloudflare/workers-types': 4.20250730.0
       nanoid: 5.1.5
 
   partysocket@1.1.4:
@@ -35211,7 +35202,7 @@ snapshots:
       '@protobufjs/path': 1.1.2
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.0
-      '@types/node': 24.1.0
+      '@types/node': 22.17.0
       long: 5.3.2
     optional: true
 
