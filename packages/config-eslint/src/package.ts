@@ -1,3 +1,8 @@
+/**
+ * ESLint configuration for generic TypeScript packages
+ * Provides base configuration without React or Next.js specific rules
+ */
+
 import type { Linter } from 'eslint';
 
 import baseConfig from './index';

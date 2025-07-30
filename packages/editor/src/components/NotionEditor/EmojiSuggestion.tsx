@@ -9,7 +9,7 @@ import { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from 'r
 const EMOJI_LIST = [...emojis, ...gitHubEmojis];
 
 // Group emojis by category for better organization
-const EMOJI_CATEGORIES = {
+const _EMOJI_CATEGORIES = {
   'Smileys & People': [
     '😀',
     '😃',
@@ -203,7 +203,7 @@ export interface EmojiSuggestionRef {
 interface EmojiSuggestionProps extends SuggestionProps<EmojiItem> {}
 
 const EmojiSuggestion = forwardRef<EmojiSuggestionRef, EmojiSuggestionProps>(
-  ({ items, command, editor, range, query }, ref) => {
+  ({ items, command, query }, ref) => {
     const [selectedIndex, setSelectedIndex] = useState(0);
 
     const filteredItems = useMemo(() => {
@@ -275,20 +275,20 @@ const EmojiSuggestion = forwardRef<EmojiSuggestionRef, EmojiSuggestionProps>(
 
     return (
       <div className="emoji-suggestion-dropdown max-h-64 max-w-sm overflow-y-auto rounded-lg border border-gray-200 bg-white p-1 shadow-lg">
-        {filteredItems.map((item, index) => (
+        {filteredItems.map(item => (
           <button
-            key={`${item.name}-${index}`}
-            onClick={() => selectItem(index)}
-            onMouseEnter={() => setSelectedIndex(index)}
+            key={item.emoji || item.name}
+            onClick={() => selectItem(filteredItems.indexOf(item))}
+            onMouseEnter={() => setSelectedIndex(filteredItems.indexOf(item))}
             className={clsx(
               'flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors',
-              index === selectedIndex
+              filteredItems.indexOf(item) === selectedIndex
                 ? 'bg-blue-100 text-blue-900'
                 : 'text-gray-700 hover:bg-gray-50',
             )}
             data-testid={`emoji-suggestion-${item.name}`}
             role="menuitem"
-            aria-selected={index === selectedIndex}
+            aria-selected={filteredItems.indexOf(item) === selectedIndex}
           >
             <span className="text-lg">{item.emoji}</span>
             <div className="flex min-w-0 flex-1 flex-col">

@@ -27,7 +27,7 @@ export function useRealtimeSync(options: RealtimeSyncOptions) {
   });
 
   const [localChanges, setLocalChanges] = useState<Record<string, any>>({});
-  const [remoteChanges, setRemoteChanges] = useState<Record<string, any>>({});
+  const [remoteChanges, _setRemoteChanges] = useState<Record<string, any>>({});
   const syncTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const syncData = useCallback(
@@ -63,7 +63,7 @@ export function useRealtimeSync(options: RealtimeSyncOptions) {
             autoClose: 2000,
           });
         }
-      } catch (error) {
+      } catch (_error) {
         setSyncState(prev => ({ ...prev, isLoading: false }));
         notifications.show({
           title: 'Sync Failed',
@@ -188,7 +188,7 @@ export function useRealtimeSync(options: RealtimeSyncOptions) {
   return {
     syncState,
     localChanges,
-    remoteChanges,
+    remoteChanges: remoteChanges,
     queueChange,
     forcSync,
     discardLocalChanges,

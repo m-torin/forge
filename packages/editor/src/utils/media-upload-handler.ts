@@ -128,7 +128,7 @@ async function uploadWithStoragePackage(
       const storageModule = await import('@repo/storage/server');
       multiStorage = storageModule.multiStorage;
       storage = storageModule.storage;
-    } catch (importError) {
+    } catch (_importError) {
       throw new Error(
         'Storage package not available. Please install @repo/storage or use a custom upload handler.',
       );
@@ -170,9 +170,9 @@ async function uploadWithStoragePackage(
     }
 
     return result.url;
-  } catch (error) {
-    if (error instanceof Error) {
-      throw error;
+  } catch (_error) {
+    if (_error instanceof Error) {
+      throw _error;
     }
     throw new Error('Failed to upload image');
   }

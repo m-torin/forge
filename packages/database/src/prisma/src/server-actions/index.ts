@@ -1,118 +1,85 @@
 // Barrel exports for database actions
 
-// Cart & Orders
-export * from './addressesActions';
-export * from './cartActions';
-export * from './cartItemActions';
-export * from './inventoryActions';
-export * from './inventoryTransactionActions';
-export * from './orderActions';
-export * from './orderItemActions';
-export * from './transactionActions';
-
-// E-commerce Product Model Actions
-export * from './brandActions';
-export * from './collectionActions';
-export * from './mediaActions';
-export * from './productActions';
-export * from './productCategoryActions';
-export * from './taxonomyActions';
-
-// PDP Model Actions
-export * from './pdpActions';
-
-// Content Model Actions
-export * from './articleActions';
-export * from './castActions';
-export * from './fandomActions';
-export * from './locationActions';
-export * from './seriesActions';
-export * from './storyActions';
-
-// Registry Actions
-export * from './registryActions';
-
-// Workflow Actions
-export * from './workflowActions';
-
-// JollyRoger Model Actions
-export * from './jollyRogerActions';
-
-// Business Logic Actions (migrated from deprecated files)
-export * from './analyticsActions';
-export * from './bulkOperationsActions';
-export * from './categoryActions';
-export * from './guestActions';
-export * from './hierarchyActions';
-export * from './relationshipActions';
-export * from './softDeleteActions';
+// Auth & User Management Actions
 export * from './userActions';
-export * from './validationActions';
 
 //==============================================================================
-// TYPE MAPPINGS FOR JSON FIELDS
+// AUTH TYPES
 //==============================================================================
 
-// Product with description mapped from copy field
-export interface ProductWithRelations {
+// User with auth context
+export interface UserWithAuthContext {
+  id: string;
+  name: string;
+  email: string;
+  emailVerified: boolean;
+  image?: string;
+  phoneNumber?: string;
+  role: string;
+  banned: boolean;
+  banReason?: string;
+  banExpires?: Date;
+  deletedAt?: Date;
+  bio?: string;
+  expertise: string[];
+  isVerifiedAuthor: boolean;
+  authorSince?: Date;
+  preferences?: any;
+  isSuspended: boolean;
+  suspensionDetails?: any;
+  createdAt: Date;
+  updatedAt: Date;
+  // Auth relationships
+  accounts: any[];
+  sessions: any[];
+  apiKeys: any[];
+  twoFactor?: {
+    id: string;
+    enabled: boolean;
+    verified: boolean;
+    backupCodes: any[];
+  };
+  passkeys: any[];
+}
+
+// Organization with members
+export interface OrganizationWithMembers {
   id: string;
   name: string;
   slug: string;
-  copy: any;
-  // Computed properties from copy field
+  logo?: string;
   description?: string;
-  [key: string]: any;
-}
-
-// Media with computed properties from copy field
-export interface MediaWithProduct {
-  id: string;
-  url: string;
-  altText?: string;
-  type: string;
-  copy: any;
-  // Computed properties from copy field
-  alt?: string;
-  filename?: string;
-  description?: string;
-  size?: number;
-  sortOrder?: number;
-  product?: {
+  metadata?: any;
+  createdAt: Date;
+  updatedAt?: Date;
+  members: Array<{
+    id: string;
+    role: string;
+    createdAt: Date;
+    updatedAt?: Date;
+    user: {
+      id: string;
+      name: string;
+      email: string;
+      image?: string;
+    };
+  }>;
+  teams: Array<{
     id: string;
     name: string;
-  } | null;
-  [key: string]: any;
+    description?: string;
+    teamMembers: Array<{
+      id: string;
+      role: string;
+      createdAt: Date;
+      updatedAt: Date;
+      user: {
+        id: string;
+        name: string;
+        email: string;
+        image?: string;
+      };
+    }>;
+  }>;
+  invitations: any[];
 }
-
-// ProductAsset type alias
-export interface ProductAssetWithProduct extends MediaWithProduct {
-  // Legacy compatibility
-  barcode?: string;
-}
-
-// ScanHistory type placeholders
-export interface ScanHistory {
-  id: string;
-  barcode?: string;
-  platform?: string;
-  success?: boolean;
-  scannedAt?: Date;
-  [key: string]: any;
-}
-
-export interface ScanHistoryWithRelations extends ScanHistory {
-  user?: {
-    name: string;
-    email: string;
-  };
-}
-
-// AssetType enum
-export enum AssetType {
-  IMAGE = 'IMAGE',
-  VIDEO = 'VIDEO',
-  DOCUMENT = 'DOCUMENT',
-  OTHER = 'OTHER',
-}
-
-// Legacy deprecated files removed - functionality covered by individual action files

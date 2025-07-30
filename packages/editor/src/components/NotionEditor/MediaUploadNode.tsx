@@ -350,7 +350,7 @@ const MediaUploadComponent = forwardRef<any, MediaUploadProps>(
     const descriptionId = useId();
 
     // Focus trap for confirmation dialog
-    const focusTrapRef = useFocusTrap(confirmDelete);
+    const _focusTrapRef = useFocusTrap(confirmDelete);
 
     // Keyboard shortcuts for accessibility
     useHotkeys([

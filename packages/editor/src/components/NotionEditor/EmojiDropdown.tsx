@@ -256,14 +256,16 @@ export function EmojiDropdown({ editor, isOpen, onClose, position, query }: Emoj
         {filteredEmojis.length > 0 ? (
           <div className="grid grid-cols-8 gap-1">
             {filteredEmojis.map((emoji, index) => (
-              <button
-                key={`${emoji}-${index}`}
-                className="flex h-8 w-8 items-center justify-center rounded text-lg transition-colors hover:bg-gray-100"
-                onClick={() => insertEmoji(emoji)}
-                title={emoji}
-              >
-                {emoji}
-              </button>
+              <div key={emoji.unicode || emoji.name}>
+                <button
+                  key={`${emoji}-${index}`}
+                  className="flex h-8 w-8 items-center justify-center rounded text-lg transition-colors hover:bg-gray-100"
+                  onClick={() => insertEmoji(emoji)}
+                  title={emoji}
+                >
+                  {emoji}
+                </button>
+              </div>
             ))}
           </div>
         ) : (

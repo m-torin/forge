@@ -1,3 +1,8 @@
+/**
+ * ESLint configuration for Next.js applications
+ * Extends React configuration with Next.js-specific rules for App Router and performance
+ */
+
 import { FlatCompat } from '@eslint/eslintrc';
 import type { Linter } from 'eslint';
 import globals from 'globals';

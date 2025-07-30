@@ -1,3 +1,8 @@
+/**
+ * Email service with React Email templates and Resend integration
+ * Provides type-safe email sending functions with fallback behavior
+ */
+
 import { render } from '@react-email/render';
 import { Resend } from 'resend';
 
@@ -83,7 +88,11 @@ export const resend = new Proxy({ emails: {} } as Resend, {
   },
 });
 
-// Email sending functions
+/**
+ * Send a magic link email for passwordless authentication
+ * @param data - Email data including recipient and magic link
+ * @returns Resend API response
+ */
 export const sendMagicLinkEmail = async (data: {
   email: string;
   expiresIn?: string;
@@ -117,6 +126,11 @@ export const sendMagicLinkEmail = async (data: {
   }
 };
 
+/**
+ * Send an email verification link
+ * @param data - Email data including recipient and verification link
+ * @returns Resend API response
+ */
 export const sendVerificationEmail = async (data: {
   email: string;
   name?: null | string;
@@ -148,6 +162,11 @@ export const sendVerificationEmail = async (data: {
   }
 };
 
+/**
+ * Send a one-time password (OTP) email
+ * @param data - Email data including recipient and OTP code
+ * @returns Resend API response
+ */
 export const sendOTPEmail = async (data: {
   email: string;
   name?: null | string;
@@ -208,6 +227,11 @@ export const sendOTPEmail = async (data: {
   }
 };
 
+/**
+ * Send a password reset email with reset link
+ * @param data - Email data including recipient and reset link
+ * @returns Resend API response
+ */
 export const sendPasswordResetEmail = async (data: {
   email: string;
   name?: null | string;
@@ -239,6 +263,11 @@ export const sendPasswordResetEmail = async (data: {
   }
 };
 
+/**
+ * Send a contact form submission email
+ * @param data - Contact form data including sender info and message
+ * @returns Resend API response
+ */
 export const sendContactEmail = async (data: {
   email: string;
   message: string;
@@ -271,6 +300,11 @@ export const sendContactEmail = async (data: {
   }
 };
 
+/**
+ * Send an organization invitation email
+ * @param data - Invitation data including inviter info and invite link
+ * @returns Resend API response
+ */
 export const sendOrganizationInvitationEmail = async (data: {
   email: string;
   expiresIn?: string;
@@ -308,6 +342,11 @@ export const sendOrganizationInvitationEmail = async (data: {
   }
 };
 
+/**
+ * Send a welcome email to new users
+ * @param data - Welcome data including user info and dashboard link
+ * @returns Resend API response
+ */
 export const sendWelcomeEmail = async (data: {
   dashboardUrl?: string;
   email: string;
@@ -341,6 +380,11 @@ export const sendWelcomeEmail = async (data: {
   }
 };
 
+/**
+ * Send notification email when API key is created
+ * @param data - API key data including key info and dashboard link
+ * @returns Resend API response
+ */
 export const sendApiKeyCreatedEmail = async (data: {
   apiKeyId: string;
   apiKeyName: string;

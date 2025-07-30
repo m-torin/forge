@@ -1,0 +1,250 @@
+---
+title: "Next App Mantine Tailwind Template"
+description: "Minimal template for Next.js with Mantine v7 and Tailwind CSS v4"
+icon: "template"
+---
+
+# Next App Mantine Tailwind Template
+
+A minimal starter template that combines Next.js with Mantine UI components and
+Tailwind CSS for rapid application development.
+
+## Overview
+
+- **Type**: Template/Starter Project
+- **Purpose**: Minimal template for Next.js with Mantine v7 and Tailwind CSS v4
+- **Architecture**: Modern React application with integrated design systems
+
+## Features
+
+- ⚡ **Next.js App Router** - Latest Next.js features with app directory
+- 🎨 **Mantine v7** - Modern React components library
+- 🎯 **Tailwind CSS v4** - Utility-first CSS framework
+- 🌈 **Color Scheme Switching** - Built-in dark/light mode toggle
+- 📱 **Responsive Design** - Mobile-first responsive layouts
+- ⚙️ **TypeScript** - Full TypeScript support
+- 🔧 **Minimal Configuration** - Ready-to-use setup
+
+## Technology Stack
+
+### Core Technologies
+
+- **Next.js** - React framework with App Router
+- **React** - Component-based UI library
+- **TypeScript** - Type-safe development
+
+### UI & Styling
+
+- **Mantine Core** - Comprehensive component library
+- **Mantine Hooks** - Utility hooks for common patterns
+- **Tailwind CSS** - Utility-first CSS framework
+- **tailwind-preset-mantine** - Mantine-Tailwind integration preset
+
+## Quick Start
+
+### Installation
+
+```bash
+# Clone or copy the template
+cp -r apps/next-app-mantine-tailwind-template-main my-new-app
+
+# Navigate to the project
+cd my-new-app
+
+# Install dependencies
+pnpm install
+
+# Start development server
+pnpm dev
+```
+
+### Development
+
+```bash
+# Development server
+pnpm dev # Starts on default port (3000)
+
+# Production build
+pnpm build # Creates optimized production build
+
+# Start production server
+pnpm start # Serves the built application
+```
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── favicon.ico        # App favicon
+│   ├── globals.css        # Global styles
+│   ├── layout.tsx         # Root layout component
+│   ├── page.tsx          # Home page
+│   ├── theme.css         # Mantine theme styles
+│   └── theme.ts          # Mantine theme configuration
+└── components/
+    └── color-schemes-switcher.tsx  # Dark/light mode toggle
+```
+
+## Configuration Files
+
+### Next.js Configuration
+
+- **next.config.mjs** - Next.js configuration with Mantine integration
+- **tsconfig.json** - TypeScript configuration
+- **package.json** - Dependencies and scripts
+
+### Styling Configuration
+
+- **postcss.config.mjs** - PostCSS with Tailwind CSS
+- **globals.css** - Global styles and Tailwind imports
+- **theme.css** - Mantine-specific theme variables
+- **theme.ts** - Mantine theme object configuration
+
+## Key Components
+
+### Layout System
+
+- **Root Layout** (`app/layout.tsx`) - Main application wrapper
+- **Mantine Provider** - Theme and component context
+- **Color Scheme Provider** - Dark/light mode management
+
+### Theme Management
+
+- **Color Scheme Switcher** - Toggle between light and dark themes
+- **Mantine Theme** - Customizable theme configuration
+- **CSS Variables** - Dynamic theme variables
+
+## Integration Features
+
+### Mantine + Tailwind Harmony
+
+- **tailwind-preset-mantine** - Seamless integration preset
+- **Consistent Spacing** - Unified spacing scale
+- **Color Coordination** - Shared color palette
+- **Typography Alignment** - Consistent font and text styles
+
+### Built-in Features
+
+- **Responsive Breakpoints** - Mobile-first responsive design
+- **Theme Persistence** - Remembers user's theme preference
+- **Server-Side Rendering** - Full SSR support with theme
+- **TypeScript Integration** - Complete type safety
+
+## Customization
+
+### Theme Configuration
+
+```typescript
+// src/app/theme.ts
+export const theme = createTheme({
+  colors: {
+    // Custom color palette
+  },
+  components: {
+    // Component customizations
+  }
+  // Other theme options
+});
+```
+
+### Tailwind Integration
+
+```css
+/* src/app/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Mantine-Tailwind integration styles */
+```
+
+## Dependencies
+
+### Production Dependencies
+
+- **@mantine/core** - Core Mantine components
+- **@mantine/hooks** - Utility hooks collection
+- **next** - Next.js framework
+- **react** - React library
+- **react-dom** - React DOM renderer
+- **tailwind-preset-mantine** - Integration preset
+
+### Development Dependencies
+
+- **@tailwindcss/postcss** - Tailwind PostCSS plugin
+- **TypeScript** - Type definitions and compiler
+- **PostCSS** - CSS processing
+- **Tailwind CSS** - Utility framework
+
+## Use Cases
+
+### Perfect For
+
+- **Rapid Prototyping** - Quick setup for new projects
+- **Component Libraries** - Building design systems
+- **Admin Dashboards** - Business application interfaces
+- **Landing Pages** - Marketing and promotional sites
+- **SaaS Applications** - Software-as-a-service interfaces
+
+### Template Benefits
+
+- **Zero Configuration** - Works out of the box
+- **Best Practices** - Follows modern React patterns
+- **Performance Optimized** - Built-in Next.js optimizations
+- **Developer Experience** - TypeScript, hot reload, fast refresh
+
+## Extending the Template
+
+### Adding New Components
+
+1. Create components in `src/components/`
+2. Use Mantine components with Tailwind utilities
+3. Leverage the integrated theme system
+
+### Adding New Pages
+
+1. Create pages in `src/app/` directory
+2. Follow Next.js App Router patterns
+3. Maintain consistent styling approach
+
+### Customizing Styles
+
+1. Modify `theme.ts` for Mantine customizations
+2. Update `globals.css` for global styles
+3. Use Tailwind utilities for component-specific styling
+
+## Deployment
+
+The template is ready for deployment on any Next.js-compatible platform:
+
+- **Vercel** - Zero-configuration deployment
+- **Netlify** - Static site hosting
+- **AWS** - Various deployment options
+- **Self-hosted** - Docker or traditional hosting
+
+## Related Documentation
+
+- [Mantine Documentation](https://mantine.dev/) - Component library docs
+- [Tailwind CSS](https://tailwindcss.com/) - Utility framework docs
+- [Next.js](https://nextjs.org/) - Framework documentation
+
+## Migration Guide
+
+### From Create Next App
+
+1. Install Mantine dependencies
+2. Copy theme configuration
+3. Update layout with providers
+4. Configure Tailwind with Mantine preset
+
+### From Existing Mantine Project
+
+1. Install Tailwind CSS
+2. Add tailwind-preset-mantine
+3. Configure PostCSS
+4. Update styles for integration
+
+This template provides the perfect starting point for projects that want to
+combine the power of Mantine's component library with the flexibility of
+Tailwind CSS, all built on Next.js's robust foundation.

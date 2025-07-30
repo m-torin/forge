@@ -1,0 +1,95 @@
+// AuditTable.module.scss
+.header {
+  padding: var(--mantine-spacing-md);
+  margin-bottom: var(--mantine-spacing-sm);
+  background-color: var(--mantine-color-body);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.controls {
+  display: flex;
+  gap: var(--mantine-spacing-md);
+  align-items: center;
+}
+
+.tableHeader {
+  background-color: light-dark(
+    var(--mantine-color-gray-0),
+    var(--mantine-color-dark-6)
+  );
+}
+
+.row {
+  &:hover {
+    background-color: light-dark(
+      var(--mantine-color-gray-0),
+      var(--mantine-color-dark-6)
+    );
+    transition: background-color 150ms ease;
+  }
+}
+
+.expandedRow {
+  background-color: light-dark(
+    var(--mantine-color-gray-0),
+    var(--mantine-color-dark-7)
+  );
+}
+
+.actionBadge {
+  text-transform: none;
+}
+
+.dateGroup {
+  background-color: light-dark(
+    var(--mantine-color-gray-1),
+    var(--mantine-color-dark-8)
+  );
+  padding: calc(var(--mantine-spacing-xs)) var(--mantine-spacing-md);
+}
+
+.timelineItem {
+  &:hover {
+    background-color: light-dark(
+      var(--mantine-color-gray-0),
+      var(--mantine-color-dark-6)
+    );
+    transition: background-color 150ms ease;
+  }
+
+  padding: var(--mantine-spacing-xs);
+  border-radius: var(--mantine-radius-sm);
+}
+
+// Dark mode toggle styles
+.darkModeToggle {
+  position: relative;
+}
+
+.icon {
+  width: rem(22px);
+  height: rem(22px);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition: opacity 150ms ease;
+}
+
+.light {
+  opacity: var(--light-opacity, 1);
+
+  [data-mantine-color-scheme='dark'] & {
+    opacity: 0;
+  }
+}
+
+.dark {
+  opacity: 0;
+
+  [data-mantine-color-scheme='dark'] & {
+    opacity: 1;
+  }
+}

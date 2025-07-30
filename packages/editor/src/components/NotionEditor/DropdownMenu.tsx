@@ -101,7 +101,7 @@ interface DropdownMenuContentProps {
 }
 
 export const DropdownMenuContent = forwardRef<HTMLDivElement, DropdownMenuContentProps>(
-  ({ children, side = 'bottom', align = 'start', portal = false, className, ...props }, ref) => {
+  ({ children, side = 'bottom', align = 'start', className, ...props }, ref) => {
     const context = React.useContext(DropdownMenuContext);
     const contentRef = useRef<HTMLDivElement>(null);
 
@@ -127,7 +127,7 @@ export const DropdownMenuContent = forwardRef<HTMLDivElement, DropdownMenuConten
         document.removeEventListener('mousedown', handleClickOutside);
         document.removeEventListener('keydown', handleEscape);
       };
-    }, [context.open, context.onOpenChange]);
+    }, [context.open]);
 
     if (!context.open) return null;
 

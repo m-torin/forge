@@ -3,6 +3,7 @@ packages:
   - functions/*
   - infrastructure/*
   - packages/*
+  - labs/*
 
 catalog:
   '@ai-sdk/anthropic': 2.0.0-canary.19

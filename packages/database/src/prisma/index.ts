@@ -63,21 +63,6 @@ export * from './src/orm';
 export * from './src/utils/transaction';
 
 // ============================================================================
-// SPECIALIZED UTILITIES
-// ============================================================================
-
-// Export review-specific utilities
-export * from './src/utils/reviewUtils';
-
-// Export registry-specific utilities
-export {
-  getMonthlyRegistryActivity,
-  getRegistryPurchaseActivity,
-  getRegistryUserEngagement,
-  getTopRegistryProducts,
-} from './src/utils/registryUtils';
-
-// ============================================================================
 // VALIDATION UTILITIES
 // ============================================================================
 

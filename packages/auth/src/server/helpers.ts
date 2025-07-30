@@ -6,11 +6,19 @@ import { NextResponse } from 'next/server';
 import 'server-only';
 import { auth } from '../shared/auth';
 
+/**
+ * Configuration options for authentication helpers
+ */
 interface AuthHelpersConfig {
   serviceEmail?: string;
   serviceName?: string;
 }
 
+/**
+ * Creates authentication helper functions for server-side use
+ * @param config - Configuration options for the helpers
+ * @returns Object containing requireAuth and getOptionalAuth functions
+ */
 export function createAuthHelpers(config: AuthHelpersConfig = {}) {
   const { serviceEmail = 'service@system', serviceName = 'Service Account' } = config;
 

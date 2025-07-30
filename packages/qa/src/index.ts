@@ -1,5 +1,7 @@
-// Main QA package exports
-// This is the default entry point for @repo/qa
+/**
+ * QA package with centralized testing utilities and mocks
+ * Provides Vitest configurations, mocks, and test patterns for the monorepo
+ */
 
 // Re-export vitest mocks and utilities for easy access
 export * from './vitest/mocks/index';

@@ -1,3 +1,8 @@
+/**
+ * Internationalization package for server-side translations
+ * Provides dictionary loading and locale management utilities
+ */
+
 import 'server-only';
 
 import { createDictionaryLoader } from './shared/dictionary-loader';

@@ -52,13 +52,13 @@ export class YjsProviderFactory implements ProviderFactory {
     });
 
     // Add error handling
-    (provider as any).on('connection-error', (error: Error, provider: WebsocketProvider) => {
+    (provider as any).on('connection-error', (error: Error, _provider: WebsocketProvider) => {
       logError('WebSocket connection error:', error);
     });
 
     (provider as any).on(
       'connection-close',
-      (event: CloseEvent | null, provider: WebsocketProvider) => {
+      (event: CloseEvent | null, _provider: WebsocketProvider) => {
         if (event && event.code !== 1000) {
           logWarn('WebSocket connection closed unexpectedly:', {
             code: event.code,

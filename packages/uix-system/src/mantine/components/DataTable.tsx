@@ -183,8 +183,8 @@ export function DataTable<T extends { id: string }>({
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            {[...Array(skeletonRows)].map((_, index) => (
-              <Table.Tr key={`skeleton-row-${index}`}>
+            {[...Array(skeletonRows)].map(() => (
+              <Table.Tr key={`skeleton-${crypto.randomUUID()}`}>
                 {selectable && (
                   <Table.Td>
                     <Box h={20} bg="gray.1" style={{ borderRadius: 4 }} />

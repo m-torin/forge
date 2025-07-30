@@ -9,6 +9,10 @@ import { headers } from 'next/headers';
 import { auth } from './shared/auth';
 
 // User Management Actions
+/**
+ * Gets the current authenticated user from session
+ * @returns Current user object or null if not authenticated
+ */
 export async function getCurrentUserAction() {
   'use server';
   const session = await auth.api.getSession({
@@ -17,6 +21,11 @@ export async function getCurrentUserAction() {
   return session?.user || null;
 }
 
+/**
+ * Updates the current user's profile data
+ * @param data - User data to update
+ * @returns Updated user object
+ */
 export async function updateUserAction(data: any) {
   'use server';
   const session = await auth.api.getSession({
@@ -33,6 +42,10 @@ export async function updateUserAction(data: any) {
   });
 }
 
+/**
+ * Deletes the current authenticated user account
+ * @returns Deletion result
+ */
 export async function deleteUserAction() {
   'use server';
   const session = await auth.api.getSession({
@@ -46,6 +59,11 @@ export async function deleteUserAction() {
 }
 
 // Password Management
+/**
+ * Changes the current user's password
+ * @param data - Password change data including current and new password
+ * @returns Password change result
+ */
 export async function changePasswordAction(data: {
   currentPassword: string;
   newPassword: string;
@@ -58,6 +76,11 @@ export async function changePasswordAction(data: {
   });
 }
 
+/**
+ * Sets a password for accounts without existing passwords
+ * @param newPassword - New password to set
+ * @returns Password set result
+ */
 export async function setPasswordAction(newPassword: string) {
   'use server';
   return auth.api.setPassword({
@@ -67,6 +90,10 @@ export async function setPasswordAction(newPassword: string) {
 }
 
 // Session Management
+/**
+ * Gets the current user session
+ * @returns Current session data
+ */
 export async function getSessionAction() {
   'use server';
   return auth.api.getSession({
@@ -313,7 +340,11 @@ export async function deletePasskeyAction(passkeyId: string) {
   });
 }
 
-// Admin Actions
+/**
+ * Ban a user (admin only)
+ * @param userId - ID of user to ban
+ * @returns Ban result
+ */
 export async function banUserAction(userId: string) {
   'use server';
   return auth.api.admin.banUser({
@@ -322,6 +353,11 @@ export async function banUserAction(userId: string) {
   });
 }
 
+/**
+ * Unban a previously banned user (admin only)
+ * @param userId - ID of user to unban
+ * @returns Unban result
+ */
 export async function unbanUserAction(userId: string) {
   'use server';
   return auth.api.admin.unbanUser({
@@ -330,6 +366,11 @@ export async function unbanUserAction(userId: string) {
   });
 }
 
+/**
+ * List all users with optional filtering (admin only)
+ * @param query - Query parameters for filtering and pagination
+ * @returns Array of users matching criteria
+ */
 export async function listUsersAction(query?: {
   limit?: number;
   offset?: number;

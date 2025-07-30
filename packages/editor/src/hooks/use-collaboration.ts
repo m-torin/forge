@@ -1,3 +1,8 @@
+/**
+ * React hook for real-time collaboration features
+ * Manages WebSocket connections, presence, and collaborative editing
+ */
+
 'use client';
 
 import { notifications } from '@mantine/notifications';
@@ -11,6 +16,11 @@ import {
   Collaborator,
 } from '../types/index';
 
+/**
+ * Hook for managing collaboration features in a document editor
+ * @param options - Configuration options for collaboration
+ * @returns Object with collaboration state and methods
+ */
 export function useCollaboration(options: CollaborationOptions): CollaborationHookResult {
   const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
   const [isConnected, setIsConnected] = useState(false);

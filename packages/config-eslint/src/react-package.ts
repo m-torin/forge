@@ -1,3 +1,8 @@
+/**
+ * ESLint configuration for React packages and libraries
+ * Includes React hooks, accessibility, and testing library rules
+ */
+
 import type { Linter } from 'eslint';
 import jestDomPlugin from 'eslint-plugin-jest-dom';
 import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';

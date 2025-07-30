@@ -67,9 +67,9 @@ export function KeyboardShortcutsHelp({ isOpen, onClose }: KeyboardShortcutsHelp
             <div className="p-6">
               <h3 className="mb-4 text-lg font-medium text-gray-900">{selectedCategory}</h3>
               <div className="space-y-3">
-                {getShortcutByCategory(selectedCategory).map((shortcut, index) => (
+                {getShortcutByCategory(selectedCategory).map(shortcut => (
                   <div
-                    key={index}
+                    key={shortcut.shortcut + shortcut.description}
                     className="flex items-center justify-between rounded-md bg-gray-50 px-3 py-2"
                   >
                     <span className="text-gray-700">{shortcut.description}</span>

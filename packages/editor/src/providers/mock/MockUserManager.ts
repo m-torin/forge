@@ -226,7 +226,7 @@ export class MockUserManager {
 
       if (formatLength > 0) {
         const formats = ['bold', 'italic', 'underline'];
-        const format = formats[Math.floor(Math.random() * formats.length)];
+        const _format = formats[Math.floor(Math.random() * formats.length)];
 
         // Note: This would work with actual rich text, but for plain text we'll skip
         // In a real implementation, this would format the text

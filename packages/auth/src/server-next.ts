@@ -4,16 +4,25 @@
 
 import 'server-only';
 
-// Export core auth instance for Next.js
+/**
+ * Core auth instance configured for Next.js server environments
+ */
 export { auth } from './shared/auth';
 
-// Export Next.js handler for API routes
+/**
+ * Next.js API route handler for Better Auth
+ * @returns Handler function for Next.js API routes
+ */
 export { toNextJsHandler } from 'better-auth/next-js';
 
-// Export essential server utilities
+/**
+ * Essential server utilities for Next.js server components
+ */
 export { getCurrentUser, getSession, requireAuth } from './server/session';
 
-// Export server actions (grouped by feature)
+/**
+ * Server actions grouped by feature for Next.js server components
+ */
 export {
   adminDeleteUserAction,
   // Admin actions (when enabled)

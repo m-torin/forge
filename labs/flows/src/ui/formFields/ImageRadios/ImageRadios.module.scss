@@ -1,0 +1,61 @@
+.radioBox {
+  max-width: rem(300px);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    border-color 0.3s ease,
+    background-color 0.3s ease;
+  border-radius: var(--mantine-radius-sm);
+  padding: var(--mantine-spacing-sm);
+  border: rem(1px) solid
+    light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-8));
+  background-color: light-dark(
+    var(--mantine-color-white),
+    var(--mantine-color-dark-8)
+  );
+
+  &:hover,
+  &:focus {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-color: var(--mantine-color-cyan-4);
+  }
+
+  &[data-checked] {
+    border-color: var(--mantine-color-cyan-4);
+    background-color: var(--mantine-color-cyan-0);
+  }
+}
+
+.helperText {
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+  opacity: 0;
+  transform: translateY(-10px);
+
+  &[data-checked='true'] {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.radioBoxIcon {
+  transition:
+    stroke 0.3s ease,
+    fill 0.3s ease;
+  stroke: var(--mantine-color-gray-4);
+
+  &[data-checked='true'] {
+    stroke: var(--mantine-color-cyan-6);
+    fill: var(--mantine-color-cyan-6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .radioBox,
+  .helperText,
+  .radioBoxIcon {
+    transition: none;
+  }
+}

@@ -4,6 +4,11 @@ import { logError, logWarn } from '@repo/observability';
 import type { Adapter } from 'flags';
 import { safeEnv } from '../../env';
 
+/**
+ * Configuration options for Edge Config adapter
+ * @param connectionString - Edge Config connection string or client instance
+ * @param options - Additional options for Edge Config adapter
+ */
 export interface EdgeConfigAdapterOptions {
   connectionString?: string | EdgeConfigClient;
   options?: {
@@ -14,11 +19,11 @@ export interface EdgeConfigAdapterOptions {
 
 /**
  * Create an Edge Config adapter for feature flags
- *
  * The adapter assumes your Edge Config contains a `flags` object (or custom key)
- * with each flag key corresponding to a flag you define in code.
- *
- * Example Edge Config structure:
+ * with each flag key corresponding to a flag you define in code
+ * @param options - Configuration options for the adapter
+ * @returns Edge Config adapter function
+ * @example
  * ```json
  * {
  *   "flags": {
@@ -124,16 +129,15 @@ export function createEdgeConfigAdapter(options: EdgeConfigAdapterOptions = {}) 
 
 /**
  * Default Edge Config adapter using environment variables
- * This will be a no-op adapter if EDGE_CONFIG is not configured
- *
- * Expects:
- * - EDGE_CONFIG environment variable with connection string
- * - Edge Config contains a `flags` object with flag values
+ * Automatically configured from EDGE_CONFIG environment variable
+ * Falls back to offline mode if not configured
  */
 export const edgeConfigAdapter = createEdgeConfigAdapter();
 
 /**
  * Get all flags from Edge Config for discovery endpoint
+ * @param options - Configuration options for Edge Config connection
+ * @returns Promise with provider data and flags array
  */
 export async function getEdgeConfigProviderData(options: EdgeConfigAdapterOptions = {}) {
   const env = safeEnv();

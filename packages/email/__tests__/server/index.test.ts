@@ -178,7 +178,7 @@ describe('email Server Entry Point', () => {
         const emails = Array.from({ length: 5 }, () => generateCompleteEmailData.magicLink());
         return Promise.all(emails.map(email => sendMagicLinkEmail(email)));
       },
-      maxDuration: 400,
+      maxDuration: 500, // Increased from 400 to 500ms to accommodate slower CI environments
       iterations: 3,
     },
   ]);

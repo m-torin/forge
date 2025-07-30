@@ -322,19 +322,8 @@ export const setupCommonMocks = () => {
  */
 export const setupEnvironmentMocks = () => {
   // Set up test environment
-  if (!process.env.NODE_ENV) {
-    Object.defineProperty(process.env, 'NODE_ENV', {
-      value: 'test',
-      writable: true,
-      configurable: true,
-    });
-  } else {
-    Object.defineProperty(process.env, 'NODE_ENV', {
-      value: 'test',
-      writable: true,
-      configurable: true,
-    });
-  }
+  // Set NODE_ENV directly without defineProperty
+  process.env.NODE_ENV = 'test';
   process.env.CI = 'true';
   process.env.SKIP_ENV_VALIDATION = 'true';
 

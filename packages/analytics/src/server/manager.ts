@@ -21,6 +21,8 @@ const SERVER_PROVIDERS: ProviderRegistry = {
 /**
  * Create and initialize a server analytics instance
  * This is the primary way to create analytics for server-side applications
+ * @param config - Analytics configuration including providers and settings
+ * @returns Promise resolving to initialized analytics manager
  */
 export async function createServerAnalytics(config: AnalyticsConfig): Promise<AnalyticsManager> {
   const manager = createAnalyticsManager(config, SERVER_PROVIDERS);
@@ -31,6 +33,8 @@ export async function createServerAnalytics(config: AnalyticsConfig): Promise<An
 /**
  * Create a server analytics instance without initializing
  * Useful when you need to control initialization timing
+ * @param config - Analytics configuration including providers and settings
+ * @returns Uninitialized analytics manager instance
  */
 export function createServerAnalyticsUninitialized(config: AnalyticsConfig): AnalyticsManager {
   return createAnalyticsManager(config, SERVER_PROVIDERS);

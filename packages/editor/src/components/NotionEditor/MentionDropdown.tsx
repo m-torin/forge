@@ -122,17 +122,17 @@ export function MentionDropdown({
       }}
     >
       <div className="max-h-64 overflow-y-auto">
-        {filteredUsers.map((user, index) => (
+        {filteredUsers.map(user => (
           <button
             key={user.id}
             className={clsx(
               'flex w-full items-center gap-3 px-4 py-3 text-left transition-colors',
-              index === selectedIndex
+              user.id === filteredUsers[selectedIndex]?.id
                 ? 'bg-blue-50 text-blue-900'
                 : 'text-gray-700 hover:bg-gray-50',
             )}
             onClick={() => selectUser(user)}
-            onMouseEnter={() => setSelectedIndex(index)}
+            onMouseEnter={() => setSelectedIndex(filteredUsers.indexOf(user))}
           >
             {/* Avatar */}
             <div className="flex-shrink-0">

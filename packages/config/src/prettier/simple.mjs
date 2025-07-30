@@ -1,4 +1,6 @@
 /**
+ * Simple Prettier configuration without plugins
+ * Minimal setup for projects that don't need advanced formatting
  * @type {import("prettier").Config}
  */
 const config = {

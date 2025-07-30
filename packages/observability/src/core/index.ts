@@ -1,5 +1,6 @@
 /**
- * Core exports for the observability package
+ * Core observability package exports
+ * Provides types and interfaces for logging, monitoring, and telemetry
  */
 
 export type {

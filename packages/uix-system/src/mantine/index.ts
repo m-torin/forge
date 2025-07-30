@@ -4,7 +4,6 @@
  * Mantine v8 design system utilities, constants, types, and components
  */
 
-export * from './backstage';
 export * from './components';
 export * from './constants';
 export * from './types';

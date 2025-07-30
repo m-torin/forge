@@ -26,17 +26,22 @@ function validateData<T extends string>(model: T, operation: 'create' | 'update'
   }
 }
 
-// List of models that have validation rules
+// List of models that have validation rules (auth-related only)
 type ValidatedModels =
-  | 'review'
-  | 'cartItem'
-  | 'orderItem'
-  | 'product'
-  | 'registryItem'
-  | 'registryPurchaseJoin'
-  | 'media'
-  | 'productIdentifiers'
-  | 'favoriteJoin';
+  | 'user'
+  | 'session'
+  | 'account'
+  | 'verification'
+  | 'organization'
+  | 'member'
+  | 'team'
+  | 'teamMember'
+  | 'invitation'
+  | 'apiKey'
+  | 'twoFactor'
+  | 'backupCode'
+  | 'passkey'
+  | 'auditLog';
 
 // Helper type to check if a model has validation rules
 function hasValidationRules(model: string): model is ValidatedModels {

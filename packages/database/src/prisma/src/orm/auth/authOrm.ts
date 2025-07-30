@@ -2,7 +2,6 @@
 
 import type { Prisma } from '../../../../../prisma-generated/client';
 import { prisma } from '../../../clients/standard';
-import { handlePrismaError } from '../validation';
 
 //==============================================================================
 // USER CRUD OPERATIONS
@@ -912,39 +911,35 @@ export async function createUserWithOrganizationOrm(
     };
   }>
 > {
-  try {
-    return await prisma.$transaction(async tx => {
-      // Create the user
-      const user = await tx.user.create({
-        data: userData,
-      });
+  return await prisma.$transaction(async tx => {
+    // Create the user
+    const user = await tx.user.create({
+      data: userData,
+    });
 
-      // Create organization membership
-      await tx.member.create({
-        data: {
-          id: crypto.randomUUID(),
-          userId: user.id,
-          organizationId,
-          role,
-          createdAt: new Date(),
-        },
-      });
+    // Create organization membership
+    await tx.member.create({
+      data: {
+        id: crypto.randomUUID(),
+        userId: user.id,
+        organizationId,
+        role,
+        createdAt: new Date(),
+      },
+    });
 
-      // Return user with members
-      return await tx.user.findUniqueOrThrow({
-        where: { id: user.id },
-        include: {
-          members: {
-            include: {
-              organization: true,
-            },
+    // Return user with members
+    return await tx.user.findUniqueOrThrow({
+      where: { id: user.id },
+      include: {
+        members: {
+          include: {
+            organization: true,
           },
         },
-      });
+      },
     });
-  } catch (error) {
-    handlePrismaError(error);
-  }
+  });
 }
 
 //==============================================================================

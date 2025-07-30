@@ -1,3 +1,8 @@
+/**
+ * Document export utilities for various formats
+ * Supports Markdown, HTML, JSON exports with metadata
+ */
+
 'use client';
 
 import { logError } from '@repo/observability';
@@ -18,6 +23,9 @@ export interface ExportResult {
 
 /**
  * Export editor content to Markdown format
+ * @param editor - TipTap editor instance
+ * @param options - Export configuration options
+ * @returns Export result with content, filename, and MIME type
  */
 export function exportToMarkdown(editor: Editor, options: ExportOptions = {}): ExportResult {
   const {
@@ -59,6 +67,9 @@ export function exportToMarkdown(editor: Editor, options: ExportOptions = {}): E
 
 /**
  * Export editor content to HTML format
+ * @param editor - TipTap editor instance
+ * @param options - Export configuration options
+ * @returns Export result with styled HTML document
  */
 export function exportToHTML(editor: Editor, options: ExportOptions = {}): ExportResult {
   const {
@@ -188,6 +199,9 @@ export function exportToHTML(editor: Editor, options: ExportOptions = {}): Expor
 
 /**
  * Export editor content to JSON format
+ * @param editor - TipTap editor instance
+ * @param options - Export configuration options
+ * @returns Export result with structured JSON content
  */
 export function exportToJSON(editor: Editor, options: ExportOptions = {}): ExportResult {
   const {
@@ -222,6 +236,9 @@ export function exportToJSON(editor: Editor, options: ExportOptions = {}): Expor
 
 /**
  * Create a backup of the editor content with full metadata
+ * @param editor - TipTap editor instance
+ * @param options - Export configuration options
+ * @returns Complete backup with HTML, JSON, and text content
  */
 export function createBackup(editor: Editor, options: ExportOptions = {}): ExportResult {
   const { title = 'Document Backup', author, timestamp = new Date() } = options;
@@ -256,6 +273,7 @@ export function createBackup(editor: Editor, options: ExportOptions = {}): Expor
 
 /**
  * Download content as a file
+ * @param exportResult - Export result to download
  */
 export function downloadFile(exportResult: ExportResult): void {
   const blob = new Blob([exportResult.content], { type: exportResult.mimeType });
@@ -274,6 +292,9 @@ export function downloadFile(exportResult: ExportResult): void {
 
 /**
  * Restore editor content from backup
+ * @param editor - TipTap editor instance
+ * @param backupContent - JSON backup content
+ * @returns True if restore was successful
  */
 export function restoreFromBackup(editor: Editor, backupContent: string): boolean {
   try {

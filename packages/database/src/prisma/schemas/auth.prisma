@@ -42,42 +42,9 @@ model User {
   twoFactor TwoFactor?
   passkeys  Passkey[]
 
-  // E-commerce relationships
-  articles          Article[]
-  collections       Collection[]
-  media             Media[]
-  favorites         FavoriteJoin[]
-  reviews           Review[]
-  createdRegistries Registry[]             @relation("CreatedRegistries")
-  registries        RegistryUserJoin[]
-  purchases         RegistryPurchaseJoin[] @relation("UserPurchases")
-  reviewVotes       ReviewVoteJoin[]
-
-  // Cart and Order relationships
-  addresses Address[]
-  carts     Cart[]
-  orders    Order[]
-
   // Invitation relationships
   invitationsSent Invitation[] @relation("InvitedBy")
   teamMemberships TeamMember[] @relation("TeamMemberships")
-
-  // Deletion relationships
-  deletedArticles          Article[]         @relation("DeletedArticles")
-  deletedBrands            Brand[]           @relation("DeletedBrands")
-  deletedCollections       Collection[]      @relation("DeletedCollections")
-  deletedProducts          Product[]         @relation("DeletedProducts")
-  deletedTaxonomies        Taxonomy[]        @relation("DeletedTaxonomies")
-  deletedReviews           Review[]          @relation("DeletedReviews")
-  deletedRegistries        Registry[]        @relation("DeletedRegistries")
-  deletedRegistryItems     RegistryItem[]    @relation("DeletedRegistryItems")
-  deletedMedia             Media[]           @relation("DeletedMedia")
-  deletedProductCategories ProductCategory[] @relation("DeletedProductCategories")
-  deletedLocations         Location[]        @relation("DeletedLocations")
-  deletedCasts             Cast[]            @relation("DeletedCasts")
-  deletedFandoms           Fandom[]          @relation("DeletedFandoms")
-  deletedSeries            Series[]          @relation("DeletedSeries")
-  deletedStories           Story[]           @relation("DeletedStories")
 
   @@unique([email])
   @@index([email])

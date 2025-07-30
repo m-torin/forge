@@ -8,6 +8,9 @@ import { createContext, useCallback, useContext, useMemo, type ReactNode } from 
 import type { Session, User } from '../types';
 import { authClient } from './client';
 
+/**
+ * Authentication context value interface
+ */
 interface AuthContextValue {
   user: User | null;
   session: Session | null;
@@ -28,6 +31,11 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+/**
+ * Authentication provider component for React applications
+ * @param children - Child components to wrap with auth context
+ * @returns Auth provider with context value
+ */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { data: sessionData, error, isPending } = authClient.useSession();
 
@@ -102,6 +110,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
+/**
+ * Hook to access authentication context
+ * @returns Authentication context value
+ * @throws Error if used outside AuthProvider
+ */
 export function useAuthContext() {
   const context = useContext(AuthContext);
   if (!context) {

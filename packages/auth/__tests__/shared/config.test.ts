@@ -6,34 +6,22 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { createAuthConfig } from '@/shared/config';
 
-// Mock the env module
+// Mock the env module to return actual values based on process.env
 vi.mock('../../env', () => {
-  let mockEnv = {
-    BETTER_AUTH_SECRET: 'test-secret',
-    AUTH_SECRET: undefined,
-    DATABASE_URL: 'postgresql://localhost:5432/test',
-    BETTER_AUTH_URL: undefined,
-    TRUSTED_ORIGINS: 'http://localhost:3000',
-    GITHUB_CLIENT_ID: '',
-    GITHUB_CLIENT_SECRET: '',
-    GOOGLE_CLIENT_ID: '',
-    GOOGLE_CLIENT_SECRET: '',
-    AUTH_FEATURES_ADMIN: 'true',
-    AUTH_FEATURES_API_KEYS: 'true',
-    AUTH_FEATURES_ORGANIZATIONS: 'true',
-    AUTH_FEATURES_MAGIC_LINKS: 'true',
-    AUTH_FEATURES_TWO_FACTOR: 'true',
-    NEXT_PUBLIC_APP_URL: 'http://localhost:3000',
-    NEXT_PUBLIC_APP_NAME: 'Test App',
-  };
-
   return {
-    env: mockEnv,
-    envError: null,
-    safeEnv: () => mockEnv,
-    setMockEnv: (newEnv: any) => {
-      mockEnv = { ...mockEnv, ...newEnv };
-    },
+    safeServerEnv: () => ({
+      BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
+      AUTH_SECRET: process.env.AUTH_SECRET,
+      DATABASE_URL: process.env.DATABASE_URL,
+      GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
+      GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
+      GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+      GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+    }),
+    safeClientEnv: () => ({
+      NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+      NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
+    }),
   };
 });
 
@@ -55,6 +43,21 @@ describe('auth Configuration', () => {
   });
 
   describe('createAuthConfig', () => {
+    test('should return build-time config during build phase', () => {
+      process.env.NEXT_PHASE = 'phase-production-build';
+
+      const config = createAuthConfig();
+
+      expect(config.secret).toBe('build-time-secret');
+      expect(config.appUrl).toBe('http://localhost:3000');
+      expect(config.databaseUrl).toBe('postgresql://localhost:5432/dev');
+      expect(config.features.admin).toBe(true);
+      expect(config.features.organizations).toBe(true);
+
+      // Clean up
+      delete process.env.NEXT_PHASE;
+    });
+
     test('should create default configuration with minimal environment', async () => {
       // Set minimal required environment
       (process.env as any).NODE_ENV = 'development';

@@ -1,0 +1,1 @@
+import "@repo/qa/vitest/setup/next-app";

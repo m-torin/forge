@@ -27,7 +27,11 @@ export { CloudflareR2Provider } from '../providers/cloudflare-r2';
 export * from '../types';
 export { MultiStorageManager } from './multi-storage';
 
-// Factory function to create storage provider
+/**
+ * Factory function to create storage provider
+ * @param config - Storage configuration object
+ * @returns Configured storage provider instance
+ */
 export function createStorageProvider(config: StorageConfig): StorageProvider {
   switch (config.provider) {
     case 'cloudflare-r2':
@@ -66,7 +70,10 @@ let storageInstance: MultiStorageManager | null | StorageProvider = null;
 let hasLoggedWarning = false;
 let multiStorageInstance: MultiStorageManager | null = null;
 
-// Test helper to reset singleton state
+/**
+ * Test helper to reset singleton state
+ * @internal For testing purposes only
+ */
 export function resetStorageState(): void {
   storageInstance = null;
   multiStorageInstance = null;
@@ -122,7 +129,10 @@ class MockStorageProvider implements StorageProvider {
   }
 }
 
-// Get storage instance (lazy initialization)
+/**
+ * Get storage instance with lazy initialization
+ * @returns Configured storage provider or mock provider if not configured
+ */
 export function getStorage(): StorageProvider {
   if (!storageInstance) {
     return initializeStorage();
@@ -130,7 +140,10 @@ export function getStorage(): StorageProvider {
   return storageInstance;
 }
 
-// Initialize storage with environment variables
+/**
+ * Initialize storage provider with environment variables
+ * @returns Configured storage provider instance
+ */
 export function initializeStorage(): StorageProvider {
   if (storageInstance) {
     return storageInstance;
@@ -187,7 +200,10 @@ export function initializeStorage(): StorageProvider {
   return storageInstance;
 }
 
-// Initialize multi-storage with environment variables
+/**
+ * Initialize multi-storage manager with environment variables
+ * @returns Configured multi-storage manager instance
+ */
 export function initializeMultiStorage(): MultiStorageManager {
   if (multiStorageInstance) {
     return multiStorageInstance;
@@ -281,7 +297,10 @@ export function initializeMultiStorage(): MultiStorageManager {
   return multiStorageInstance;
 }
 
-// Get multi-storage instance
+/**
+ * Get multi-storage manager instance with lazy initialization
+ * @returns Multi-storage manager instance
+ */
 export function getMultiStorage(): MultiStorageManager {
   if (!multiStorageInstance) {
     return initializeMultiStorage();
@@ -289,7 +308,10 @@ export function getMultiStorage(): MultiStorageManager {
   return multiStorageInstance;
 }
 
-// Helper functions for common operations
+/**
+ * Helper functions for common storage operations
+ * Provides direct access to the primary storage provider methods
+ */
 export const storage = {
   delete: (key: string) => getStorage().delete(key),
   download: (key: string) => getStorage().download(key),
@@ -300,7 +322,10 @@ export const storage = {
   upload: (key: string, data: any, options?: any) => getStorage().upload(key, data, options),
 };
 
-// Multi-storage helper functions
+/**
+ * Multi-storage helper functions
+ * Provides access to multi-storage manager methods with automatic routing
+ */
 export const multiStorage = {
   delete: (key: string) => getMultiStorage().delete(key),
   download: (key: string) => getMultiStorage().download(key),

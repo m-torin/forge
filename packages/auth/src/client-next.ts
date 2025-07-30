@@ -8,8 +8,14 @@
 // Import and re-export the specific methods we need
 import { authClient } from './client/client-next';
 
-// Export Next.js specific features
+/**
+ * Next.js specific authentication provider and context
+ */
 export { AuthProvider, useAuthContext } from './client/auth-provider';
+
+/**
+ * Authentication hooks optimized for Next.js
+ */
 export {
   useAuth,
   useAuthGuard,
@@ -19,25 +25,61 @@ export {
   useUser,
 } from './client/hooks';
 
-// Export auth client for direct access (Next.js specific)
+/**
+ * Next.js optimized auth client instance
+ */
 export { authClient } from './client/client-next';
 
-// Export key client methods - use safe property access for plugin methods
+/**
+ * Session management hook from auth client
+ */
 export const { useSession } = authClient;
 
-// Export plugin methods safely with fallbacks
+/**
+ * Organization management methods with fallback for plugin availability
+ */
 export const organization = (authClient as any).organization || {};
+
+/**
+ * Hook for listing user organizations in Next.js
+ * @returns React hook for fetching organization list
+ */
 export const useListOrganizations = (authClient as any).useListOrganizations;
+
+/**
+ * Hook for managing active organization in Next.js
+ * @returns React hook for active organization state
+ */
 export const useActiveOrganization = (authClient as any).useActiveOrganization;
+
+/**
+ * Two-factor authentication methods with fallback
+ */
 export const twoFactor = (authClient as any).twoFactor || {};
+
+/**
+ * Admin management methods with fallback
+ */
 export const admin = (authClient as any).admin || {};
+
+/**
+ * API key management methods with fallback
+ */
 export const apiKey = (authClient as any).apiKey || {};
+
+/**
+ * Passkey authentication methods with fallback
+ */
 export const passkey = (authClient as any).passkey || {};
 
-// Export navigation helpers
+/**
+ * Navigation utilities for authenticated routes
+ */
 export { useAuthRedirect } from './client/navigation';
 
-// Export safe client methods only - these don't import server actions
+/**
+ * Client-side authentication methods safe for Next.js
+ */
 export {
   acceptInvitation,
   addPasskey,

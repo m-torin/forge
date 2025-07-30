@@ -1,3 +1,8 @@
+/**
+ * Stripe payment integration for server-side operations
+ * Provides proxy-based Stripe client with fallback behavior when API key is missing
+ */
+
 import 'server-only';
 import Stripe from 'stripe';
 
@@ -56,7 +61,14 @@ export const stripe = new Proxy({} as Stripe, {
   },
 });
 
-// Webhook utilities
+/**
+ * Construct and verify a Stripe webhook event
+ * @param payload - Raw request payload from Stripe
+ * @param signature - Stripe signature header value
+ * @param secret - Optional webhook secret (uses env var if not provided)
+ * @returns Verified Stripe event object
+ * @throws Error if webhook secret is missing or verification fails
+ */
 export const constructEvent = (
   payload: string | Buffer,
   signature: string | Buffer | Array<string>,

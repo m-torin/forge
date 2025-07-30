@@ -4,6 +4,11 @@ import { logError, logWarn } from '@repo/observability';
 import type { Adapter } from 'flags';
 import { safeEnv } from '../../env';
 
+/**
+ * Configuration options for PostHog server adapter
+ * @param postHogKey - PostHog API key
+ * @param postHogOptions - Additional PostHog client options
+ */
 export interface PostHogServerAdapterOptions {
   postHogKey?: string;
   postHogOptions?: {
@@ -12,6 +17,12 @@ export interface PostHogServerAdapterOptions {
   };
 }
 
+/**
+ * PostHog server adapter interface for Node.js environments
+ * @param featureFlagPayload - Get feature flag payload with optional transformation
+ * @param featureFlagValue - Get feature flag value (boolean or string)
+ * @param isFeatureEnabled - Check if feature flag is enabled
+ */
 export interface PostHogServerAdapter {
   featureFlagPayload<T = any, E = any>(transform?: (value: any) => T): Adapter<T, E>;
   featureFlagValue<E = any>(): Adapter<boolean | string, E>;
@@ -21,6 +32,12 @@ export interface PostHogServerAdapter {
 // Server-side PostHog client (singleton)
 let serverPostHogClient: PostHog | null = null;
 
+/**
+ * Get or create singleton PostHog server client
+ * @param apiKey - PostHog API key
+ * @param host - PostHog host URL
+ * @returns PostHog client instance
+ */
 function getServerPostHogClient(apiKey: string, host: string): PostHog {
   if (!serverPostHogClient) {
     serverPostHogClient = new PostHog(apiKey, { host });
@@ -31,6 +48,8 @@ function getServerPostHogClient(apiKey: string, host: string): PostHog {
 /**
  * Create a server-side PostHog adapter for feature flags
  * Only works in Node.js/server environments with posthog-node
+ * @param options - Configuration options for the adapter
+ * @returns PostHog server adapter instance
  */
 export function createPostHogServerAdapter(
   options: PostHogServerAdapterOptions = {},
@@ -180,12 +199,15 @@ export function createPostHogServerAdapter(
 
 /**
  * Default server-side PostHog adapter using environment variables
- * This will be a no-op adapter if POSTHOG_KEY is not configured
+ * Automatically configured from POSTHOG_KEY environment variable
+ * Falls back to offline mode if not configured
  */
 export const postHogServerAdapter = createPostHogServerAdapter();
 
 /**
  * Get provider data for flags discovery endpoint
+ * @param options - Configuration options with personal API key and project ID
+ * @returns Promise with provider data and flags array
  */
 export async function getProviderData(options: { personalApiKey?: string; projectId?: string }) {
   const env = safeEnv();

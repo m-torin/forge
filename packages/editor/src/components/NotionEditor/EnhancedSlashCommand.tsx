@@ -252,7 +252,7 @@ const SlashSuggestion = forwardRef<SlashSuggestionRef, SlashSuggestionProps>(
                 {category}
               </div>
             )}
-            {commands.map((item, categoryIndex) => {
+            {commands.map((item, _categoryIndex) => {
               const itemIndex = currentIndex++;
               return (
                 <button

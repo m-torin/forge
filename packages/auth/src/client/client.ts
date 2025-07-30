@@ -21,6 +21,9 @@ import type { AuthInstance } from '../shared/auth';
 /**
  * Base Auth client configuration for non-Next.js environments
  * Uses static plugin configuration for proper TypeScript inference
+ *
+ * @description Creates a Better Auth client with all necessary plugins for complete authentication functionality
+ * @returns {AuthClient} Configured authentication client with all plugins enabled
  */
 export const authClient = createAuthClient({
   baseURL: typeof window !== 'undefined' ? window.location.origin : '',

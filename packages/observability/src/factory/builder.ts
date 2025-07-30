@@ -19,6 +19,8 @@ export class ObservabilityBuilder {
 
   /**
    * Add a plugin to the observability stack
+   * @param plugin - Observability plugin to add
+   * @returns Builder instance for chaining
    */
   withPlugin(plugin: ObservabilityPlugin | ObservabilityServerPlugin): this {
     if (plugin) {
@@ -29,6 +31,8 @@ export class ObservabilityBuilder {
 
   /**
    * Add multiple plugins at once
+   * @param plugins - Array of observability plugins to add
+   * @returns Builder instance for chaining
    */
   withPlugins(plugins: (ObservabilityPlugin | ObservabilityServerPlugin)[]): this {
     if (plugins && Array.isArray(plugins)) {
@@ -39,7 +43,9 @@ export class ObservabilityBuilder {
   }
 
   /**
-   * Set lifecycle callbacks
+   * Set lifecycle callbacks for plugin management
+   * @param lifecycle - Lifecycle callback configuration
+   * @returns Builder instance for chaining
    */
   withLifecycle(lifecycle: PluginLifecycle): this {
     this.lifecycle = { ...this.lifecycle, ...lifecycle };
@@ -56,6 +62,7 @@ export class ObservabilityBuilder {
 
   /**
    * Build the ObservabilityManager instance
+   * @returns Configured ObservabilityManager instance
    */
   build(): ObservabilityManager {
     const manager = new ObservabilityManager(this.lifecycle);
@@ -81,6 +88,7 @@ export class ObservabilityBuilder {
 
   /**
    * Build and initialize the ObservabilityManager instance
+   * @returns Promise resolving to initialized ObservabilityManager
    */
   async buildWithAutoInit(): Promise<ObservabilityManager> {
     const manager = new ObservabilityManager(this.lifecycle);
@@ -96,6 +104,7 @@ export class ObservabilityBuilder {
 
   /**
    * Create a new builder instance
+   * @returns New ObservabilityBuilder instance
    */
   static create(): ObservabilityBuilder {
     return new ObservabilityBuilder();

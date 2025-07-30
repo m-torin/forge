@@ -44,7 +44,7 @@ export function DocumentManager({
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'modified' | 'created' | 'title' | 'wordCount'>('modified');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [_viewMode, _setViewMode] = useState<'list' | 'grid'>('list');
   const [useAdvancedSearch, setUseAdvancedSearch] = useState(false);
 
   // Favorites stored in localStorage

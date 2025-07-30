@@ -1,3 +1,8 @@
+/**
+ * Comprehensive Prettier configuration for monorepo
+ * Includes language-specific formatting and plugin support
+ */
+
 import { createRequire } from 'module';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
@@ -6,7 +11,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const require = createRequire(import.meta.url);
 
-// Resolve plugin paths relative to this config file
+/**
+ * Resolve plugin paths relative to this config file
+ * @param {string} pluginName - Name of the Prettier plugin
+ * @returns {string} Resolved plugin path or fallback name
+ */
 const resolvePlugin = (pluginName) => {
   try {
     return require.resolve(pluginName);

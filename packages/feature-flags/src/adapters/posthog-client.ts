@@ -3,6 +3,11 @@ import posthog from 'posthog-js';
 import type { Adapter } from 'flags';
 import { safeEnv } from '../../env';
 
+/**
+ * Configuration options for PostHog client adapter
+ * @param postHogKey - PostHog API key
+ * @param postHogOptions - Additional PostHog initialization options
+ */
 export interface PostHogClientAdapterOptions {
   postHogKey?: string;
   postHogOptions?: {
@@ -11,6 +16,12 @@ export interface PostHogClientAdapterOptions {
   };
 }
 
+/**
+ * PostHog client adapter interface for browser environments
+ * @param featureFlagPayload - Get feature flag payload with optional transformation
+ * @param featureFlagValue - Get feature flag value (boolean or string)
+ * @param isFeatureEnabled - Check if feature flag is enabled
+ */
 export interface PostHogClientAdapter {
   featureFlagPayload<T = any, E = any>(transform?: (value: any) => T): Adapter<T, E>;
   featureFlagValue<E = any>(): Adapter<boolean | string, E>;
@@ -20,6 +31,8 @@ export interface PostHogClientAdapter {
 /**
  * Create a client-side PostHog adapter for feature flags
  * Only works in browser environments with posthog-js
+ * @param options - Configuration options for the adapter
+ * @returns PostHog client adapter instance
  */
 export function createPostHogClientAdapter(
   options: PostHogClientAdapterOptions = {},
@@ -133,5 +146,6 @@ export function createPostHogClientAdapter(
 
 /**
  * Default client-side PostHog adapter using environment variables
+ * Automatically configured from NEXT_PUBLIC_POSTHOG_KEY environment variable
  */
 export const postHogClientAdapter = createPostHogClientAdapter();

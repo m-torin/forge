@@ -1,3 +1,8 @@
+/**
+ * Comprehensive ESLint configuration for the monorepo
+ * Provides rules for TypeScript, React, testing, and code quality
+ */
+
 /// <reference path="./types/eslint-plugins.d.ts" />
 
 import js from '@eslint/js';

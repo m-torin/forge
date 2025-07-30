@@ -112,17 +112,15 @@ export function DocumentSearch({
 
         // Search in title
         if (filters.searchIn.includes('title') || filters.searchIn.includes('both')) {
-          const titleLower = document.title.toLowerCase();
+          const _titleLower = document.title.toLowerCase();
           const titleWords = document.title.split(/(\s+)/);
 
-          let titleMatchFound = false;
           titleWords.forEach(word => {
             const wordLower = word.toLowerCase();
             const isMatch = searchTerms.some(term => wordLower.includes(term));
             titleMatches.push({ text: word, isMatch });
 
             if (isMatch) {
-              titleMatchFound = true;
               matchCount++;
               // Title matches get higher relevance score
               relevanceScore += searchTerms.reduce((score, term) => {
@@ -196,14 +194,10 @@ export function DocumentSearch({
   // Memoized search results
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return [];
-
-    setIsSearching(true);
     const results = performSearch(searchQuery, documents);
-
     // Sort results
     results.sort((a, b) => {
       let comparison = 0;
-
       switch (filters.sortBy) {
         case 'relevance':
           comparison = a.relevanceScore - b.relevanceScore;
@@ -223,13 +217,14 @@ export function DocumentSearch({
           comparison = a.document.wordCount - b.document.wordCount;
           break;
       }
-
-      const result = filters.sortOrder === 'asc' ? comparison : -comparison;
-      setIsSearching(false);
-      return result;
+      return filters.sortOrder === 'asc' ? comparison : -comparison;
     });
-
     return results.slice(0, maxResults);
+  }, [searchQuery, documents, filters, performSearch, maxResults]);
+
+  // Set isSearching state when searchQuery or dependencies change
+  useEffect(() => {
+    setIsSearching(!!searchQuery.trim());
   }, [searchQuery, documents, filters, performSearch, maxResults]);
 
   // Format date for display
@@ -252,7 +247,7 @@ export function DocumentSearch({
   const highlightText = (parts: Array<{ text: string; isMatch: boolean }>) => {
     return parts.map((part, index) => (
       <span
-        key={index}
+        key={part.text + index}
         className={clsx(
           part.isMatch && highlightMatches && 'bg-yellow-200 font-medium text-yellow-900',
         )}
@@ -519,8 +514,8 @@ export function DocumentSearch({
                   {/* Content Matches */}
                   {result.contentMatches.length > 0 && (
                     <div className="space-y-2">
-                      {result.contentMatches.map((match, index) => (
-                        <div key={index} className="rounded bg-gray-50 p-2 text-sm text-gray-600">
+                      {result.contentMatches.map(match => (
+                        <div key={match.text + match.position}>
                           <span className="mb-1 block text-xs text-gray-500">
                             Match in content:
                           </span>

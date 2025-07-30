@@ -1,0 +1,249 @@
+---
+title: "Webapp"
+description: "E-commerce application with comprehensive testing suite"
+icon: "store"
+---
+
+# Webapp
+
+A comprehensive e-commerce application built with Next.js, featuring a modern UI
+design and extensive testing infrastructure.
+
+## Overview
+
+- **Type**: Next.js Application
+- **Port**: 3200
+- **Purpose**: E-commerce application with comprehensive testing suite
+- **Architecture**: Modern React application with server-side rendering
+
+## Features
+
+- 🛒 **E-commerce Components** - Product cards, cart, checkout flow
+- 🎨 **Modern UI Design** - Headless UI components with Tailwind CSS
+- 🎠 **Interactive Carousels** - Embla carousel integration for product displays
+- 📱 **Responsive Design** - Mobile-first approach with swipe gestures
+- 🧪 **Comprehensive Testing** - Unit tests, integration tests, and E2E testing
+- 📊 **Observability** - Integrated monitoring and error tracking
+- 🔧 **Development Tools** - Hot reload, type checking, and linting
+
+## Technology Stack
+
+### Core Technologies
+
+- **Next.js** - React framework with SSR/SSG capabilities
+- **React** - Component-based UI library
+- **TypeScript** - Type-safe development
+- **Tailwind CSS** - Utility-first CSS framework
+
+### UI Components
+
+- **Headless UI** - Unstyled, accessible UI components
+- **Heroicons** - SVG icon library
+- **Huge Icons** - Additional icon collection
+- **RC Slider** - Range slider components
+
+### Interactions & Animation
+
+- **Embla Carousel** - Smooth carousel components with autoplay
+- **React Swipeable** - Touch gesture handling
+- **React Hot Toast** - Toast notifications
+- **React Use** - Collection of useful React hooks
+
+### Development & Testing
+
+- **Vitest** - Fast unit testing framework
+- **Playwright** - End-to-end testing
+- **Testing Library** - Component testing utilities
+- **ESLint** - Code linting and formatting
+
+## Environment Setup
+
+### Local Development
+
+```bash
+# Start the webapp
+pnpm dev # Runs on port 3200
+
+# Or using the specific script
+pnpm --filter webapp dev
+```
+
+### Environment Variables
+
+```env
+# Database
+POSTGRES_URL="postgresql://..."
+POSTGRES_PRISMA_URL="postgresql://..."
+
+# Monitoring
+SENTRY_DSN="your-sentry-dsn"
+
+# Environment
+NODE_ENV="development"
+NEXT_PUBLIC_APP_URL="http://localhost:3200"
+```
+
+## Project Structure
+
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── GlobalClient.tsx   # Client-side global components
+│   ├── actions.ts         # Server actions
+│   ├── layout.tsx         # Root layout
+│   └── not-found.tsx      # 404 page
+├── components/            # Reusable UI components
+│   ├── ProductCard.tsx    # Product display components
+│   ├── SectionPromo*.tsx  # Promotional sections
+│   ├── aside-*.tsx        # Sidebar components
+│   └── shared/            # Shared components
+├── data/                  # Static data and types
+├── hooks/                 # Custom React hooks
+├── images/                # Static images
+└── lib/                   # Utility functions
+```
+
+## Core Components
+
+### Product Components
+
+- **ProductCard** - Individual product display
+- **ProductCardLarge** - Featured product display
+- **ProductQuickView** - Modal product preview
+- **ProductStatus** - Stock and availability indicators
+
+### E-commerce Features
+
+- **AddToCardButton** - Add to cart functionality
+- **PriceRangeSlider** - Price filtering
+- **FilterSortByMenu** - Product sorting options
+- **FiltersMenu** - Category and attribute filters
+
+### Layout Components
+
+- **SectionCollectionSlider** - Product collection carousels
+- **SectionPromo1/2/3** - Promotional sections
+- **SectionSliderLargeProduct** - Hero product displays
+- **Footer** - Site footer with links and info
+
+### Interactive Elements
+
+- **NcInputNumber** - Quantity input component
+- **StarReview** - Rating display
+- **LikeButton** - Wishlist functionality
+- **BagIcon** - Shopping cart icon
+
+## Development Scripts
+
+```bash
+# Development
+pnpm dev   # Start on port 3200
+pnpm build # Production build
+pnpm start # Start production server
+
+# Testing
+pnpm test          # Run unit tests
+pnpm test:coverage # Run tests with coverage
+pnpm test:e2e      # Run end-to-end tests
+pnpm test:ui       # Interactive test UI
+
+# Quality Assurance
+pnpm typecheck # TypeScript type checking
+pnpm lint      # ESLint with auto-fix
+pnpm circular  # Check for circular dependencies
+
+# Utilities
+pnpm doppler:pull # Pull environment variables
+```
+
+## Testing Strategy
+
+### Unit Testing
+
+- **Framework**: Vitest with React Testing Library
+- **Coverage**: Component logic, hooks, utilities
+- **Location**: `__tests__/` directory
+
+### Integration Testing
+
+- **Focus**: Component interactions, data flow
+- **Mock Strategy**: Uses `@repo/qa` centralized mocks
+
+### End-to-End Testing
+
+- **Framework**: Playwright
+- **Scenarios**: User journeys, checkout flow, product browsing
+- **Configuration**: Cross-browser testing
+
+### Test Structure
+
+```
+__tests__/
+├── app/                # App Router components
+├── components/         # UI component tests
+├── hooks/             # Custom hook tests
+├── shared/            # Shared component tests
+└── utils/             # Utility function tests
+```
+
+## Key Dependencies
+
+### Production Dependencies
+
+- **@headlessui/react** - Accessible UI components
+- **@heroicons/react** - SVG icons
+- **@repo/database** - Database integration
+- **@repo/observability** - Monitoring and analytics
+- **embla-carousel** - Carousel functionality
+- **react-hot-toast** - Toast notifications
+
+### Development Dependencies
+
+- **@repo/qa** - Centralized testing utilities
+- **@playwright/test** - E2E testing framework
+- **@vitest/coverage-v8** - Code coverage reporting
+
+## Performance Features
+
+- **Next.js Optimizations** - Automatic code splitting and optimization
+- **Image Optimization** - Built-in Next.js image optimization
+- **Lazy Loading** - Component and route-based lazy loading
+- **Server Components** - Efficient server-side rendering
+
+## Deployment
+
+The webapp is designed for deployment on Vercel with:
+
+1. **Automatic Builds** - CI/CD integration
+2. **Environment Variables** - Secure configuration management
+3. **Performance Monitoring** - Built-in analytics and observability
+4. **Error Tracking** - Sentry integration for error monitoring
+
+## Related Documentation
+
+- [Database Package](../packages/database/overview) - Data persistence layer
+- [Observability Package](../packages/observability/overview) - Monitoring setup
+- [QA Package](../packages/qa/overview) - Testing utilities
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Port Conflicts** - Ensure port 3200 is available
+2. **Database Connection** - Verify POSTGRES_URL configuration
+3. **Carousel Issues** - Check Embla carousel peer dependencies
+4. **Test Failures** - Ensure all test dependencies are installed
+
+### Debug Mode
+
+```bash
+# Enable debug logging
+DEBUG=webapp:* pnpm dev
+
+# Run tests in debug mode
+pnpm test:e2e:debug
+```
+
+This e-commerce webapp serves as a comprehensive example of modern Next.js
+development with extensive testing, making it ideal for both production use and
+as a reference implementation.

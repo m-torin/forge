@@ -3,6 +3,13 @@
  * These work with server-side APIs to enable client uploads without exposing credentials
  */
 
+/**
+ * Presigned upload URL configuration
+ * @param url - The presigned URL for upload
+ * @param fields - Additional form fields required for upload
+ * @param key - Storage key for the uploaded file
+ * @param expiresAt - URL expiration timestamp
+ */
 export interface PresignedUploadUrl {
   url: string;
   fields?: Record<string, string>;
@@ -10,6 +17,12 @@ export interface PresignedUploadUrl {
   expiresAt: Date;
 }
 
+/**
+ * Upload progress information
+ * @param loaded - Bytes uploaded so far
+ * @param total - Total bytes to upload
+ * @param percent - Upload progress percentage
+ */
 export interface UploadProgress {
   loaded: number;
   total: number;

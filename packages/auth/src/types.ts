@@ -6,35 +6,74 @@
 import type { authClient } from './client/client';
 import type { auth } from './shared/auth';
 
-// Server-inferred types (source of truth)
+/**
+ * Server-side session type inferred from Better Auth configuration
+ */
 export type Session = typeof auth.$Infer.Session;
-export type User = any; // TODO: Fix Better Auth type inference - typeof auth.$Infer.User;
+
+/**
+ * Server-side user type inferred from Better Auth configuration
+ * TODO: Fix Better Auth type inference - typeof auth.$Infer.User;
+ */
+export type User = any;
+
+/**
+ * Organization type inferred from Better Auth configuration
+ */
 export type Organization = typeof auth.$Infer.Organization;
+
+/**
+ * API key type inferred from Better Auth configuration
+ */
 export type ApiKey = typeof auth.$Infer.ApiKey;
 
-// Client types should match server
+/**
+ * Client-side session type matching server session
+ */
 export type ClientSession = typeof authClient.$Infer.Session;
-export type ClientUser = any; // TODO: Fix Better Auth type inference - typeof authClient.$Infer.User;
 
-// Extended types for backward compatibility
+/**
+ * Client-side user type matching server user
+ * TODO: Fix Better Auth type inference - typeof authClient.$Infer.User;
+ */
+export type ClientUser = any;
+
+/**
+ * Extended authentication session interface for backward compatibility
+ */
 export interface AuthSession {
   user: User;
   session: Session['session'];
   activeOrganizationId?: string;
 }
 
+/**
+ * Standard API response wrapper interface
+ */
 export interface AuthResponse<T = any> {
   data: T | null;
   error?: string;
   success: boolean;
 }
 
-// Role types
+/**
+ * User role levels for system-wide permissions
+ */
 export type UserRole = 'user' | 'admin' | 'super-admin';
+
+/**
+ * Organization role levels for organization-specific permissions
+ */
 export type OrganizationRole = 'owner' | 'admin' | 'member' | 'guest';
+
+/**
+ * Team role levels for team-specific permissions
+ */
 export type TeamRole = 'owner' | 'admin' | 'member';
 
-// Account types
+/**
+ * OAuth account linking information
+ */
 export interface Account {
   id: string;
   accountId: string;
@@ -51,7 +90,9 @@ export interface Account {
   updatedAt: Date;
 }
 
-// Additional types for user management
+/**
+ * Data structure for updating user profile information
+ */
 export interface UpdateUserData {
   name?: string;
   image?: string;
@@ -60,17 +101,26 @@ export interface UpdateUserData {
   timezone?: string;
 }
 
+/**
+ * Data structure for changing user email address
+ */
 export interface ChangeEmailData {
   newEmail: string;
   callbackURL?: string;
 }
 
+/**
+ * Data structure for changing user password with verification
+ */
 export interface ChangePasswordData {
   currentPassword: string;
   newPassword: string;
   revokeOtherSessions?: boolean;
 }
 
+/**
+ * Data structure for setting new password (without current password)
+ */
 export interface SetPasswordData {
   newPassword: string;
 }
@@ -92,7 +142,9 @@ export interface UnlinkAccountData {
   accountId?: string;
 }
 
-// Middleware and configuration types
+/**
+ * Configuration options for authentication middleware
+ */
 export interface MiddlewareOptions {
   enabled?: boolean;
   skipPaths?: string[];
@@ -104,6 +156,9 @@ export interface MiddlewareOptions {
   [key: string]: any; // Allow additional properties for flexibility
 }
 
+/**
+ * Main authentication configuration interface
+ */
 export interface AuthConfig {
   baseURL?: string;
   secret?: string;
@@ -152,7 +207,9 @@ export interface ValidateConfig<_T = any> {
   [key: string]: any;
 }
 
-// Team and Member types
+/**
+ * Organization member information
+ */
 export interface Member {
   id: string;
   userId: string;
@@ -162,6 +219,9 @@ export interface Member {
   updatedAt: Date;
 }
 
+/**
+ * Team information within an organization
+ */
 export interface Team {
   id: string;
   name: string;

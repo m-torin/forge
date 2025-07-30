@@ -6,36 +6,14 @@ import { vi } from 'vitest';
 vi.mock('server-only', () => ({}));
 
 // Import generated Prisma enums to avoid manual duplication
-import {
-  BrandType,
-  ContentStatus,
-  MediaType,
-  OrderStatus,
-  PaymentStatus,
-  ProductStatus,
-  ProductType,
-  RegistryType,
-  RegistryUserRole,
-  TransactionStatus,
-  TransactionType,
-  VoteType,
-} from '../prisma-generated/client';
+import { ContentStatus, PaymentStatus, VoteType } from '../prisma-generated/client';
 
 // Set up comprehensive Prisma mocking with real enum re-export
 // This handles all import paths and preserves type safety
 export const mockClient = setupPrismaWithEnums({
   enums: {
-    BrandType,
     ContentStatus,
-    MediaType,
-    OrderStatus,
     PaymentStatus,
-    ProductType,
-    ProductStatus,
-    RegistryType,
-    RegistryUserRole,
-    TransactionStatus,
-    TransactionType,
     VoteType,
   },
   importPaths: [
@@ -49,11 +27,11 @@ export const mockClient = setupPrismaWithEnums({
 
 // Create a mock ORM for backward compatibility with existing tests
 const createMockPrismaOrm = () => ({
-  findUniqueBrandOrm: vi.fn(),
-  findManyBrandsOrm: vi.fn(),
-  createBrandOrm: vi.fn(),
-  updateBrandOrm: vi.fn(),
-  countBrandsOrm: vi.fn(),
+  findUniqueUserOrm: vi.fn(),
+  findManyUsersOrm: vi.fn(),
+  createUserOrm: vi.fn(),
+  updateUserOrm: vi.fn(),
+  countUsersOrm: vi.fn(),
   executeTransaction: vi.fn(),
 });
 

@@ -4,8 +4,6 @@ import { PrismaClient } from '../../../../prisma-generated/client';
 
 import { logError, logInfo, logWarn } from '@repo/observability';
 import { seedAuth } from './seed-auth';
-import { seedEcommerce } from './seed-ecommerce';
-import { seedProducts } from './seed-products';
 
 // Load environment variables - prioritize .env.local, fallback to .env
 if (existsSync('.env.local')) {
@@ -27,24 +25,15 @@ async function main() {
 
     // Try to show current database state if DATABASE_URL is available
     let userCount = 0;
-    let productCount = 0;
     let organizationCount = 0;
-    let categoryCount = 0;
-    let collectionCount = 0;
 
     try {
       userCount = await prisma.user.count();
-      productCount = await prisma.product.count();
       organizationCount = await prisma.organization.count();
-      categoryCount = await prisma.productCategory.count();
-      collectionCount = await prisma.collection.count();
 
       logInfo('📊 Current Database State:');
       logInfo(`   Users: ${userCount}`);
-      logInfo(`   Products: ${productCount}`);
       logInfo(`   Organizations: ${organizationCount}`);
-      logInfo(`   Categories: ${categoryCount}`);
-      logInfo(`   Collections: ${collectionCount}`);
 
       const databaseUrl = process.env.DATABASE_URL;
       if (databaseUrl) {
@@ -72,18 +61,6 @@ async function main() {
     logInfo('🎯 What would be seeded:');
     logInfo('   ✓ Auth data (users, organizations, API keys)');
 
-    if (productCount === 0) {
-      logInfo('   ✓ Products (sample product data)');
-      logInfo('   ✓ E-commerce data (categories, collections)');
-
-      if (process.env.SEED_EXTENDED === 'true') {
-        logInfo('   ✓ Extended faker data (additional test data)');
-      }
-    } else {
-      logInfo(`   ⏭️  Products (${productCount} existing - would be skipped)`);
-      logInfo('   ⏭️  E-commerce data (would be skipped)');
-    }
-
     logInfo('');
     logInfo('💡 To actually seed: pnpm prisma:seed');
     logInfo('💡 To reset first: pnpm prisma:migrate:reset');
@@ -94,42 +71,11 @@ async function main() {
 
   logInfo('');
 
-  logInfo('This seed script creates basic data structure.');
+  logInfo('This seed script creates basic auth data structure.');
 
   logInfo('');
   // Run auth seeding (organizations and API keys)
   await seedAuth();
-
-  // Always run full seeding if no products exist
-  const productCount = await prisma.product.count();
-  if (productCount === 0) {
-    logInfo('');
-
-    logInfo('📦 No products found. Running full seeding...');
-
-    // Run products
-    await seedProducts();
-
-    // Run e-commerce data
-
-    console.log('');
-    await seedEcommerce();
-
-    // Optionally run faker extended data
-    if (process.env.SEED_EXTENDED === 'true') {
-      logInfo('');
-
-      logInfo('🎲 Running extended faker data generation...');
-      const { seedFakerExtended } = await import('./seed-faker-extended');
-      await seedFakerExtended();
-    }
-  } else {
-    logInfo('');
-
-    logInfo(`ℹ️  Found ${productCount} existing products. Skipping product seeding.`);
-
-    logInfo('   To re-seed, run: pnpm prisma:migrate:reset');
-  }
 
   logInfo('');
 

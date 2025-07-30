@@ -6,7 +6,10 @@ import { env } from '../env';
 import { ObservabilityBuilder } from './factory/builder';
 import { createConsolePlugin } from './plugins/console';
 
-// Auto-configured observability for browser
+/**
+ * Auto-configured observability for browser environments
+ * Automatically sets up console logging based on environment variables
+ */
 const builder = ObservabilityBuilder.create();
 
 // Console logging control (browser uses NEXT_PUBLIC vars only)
@@ -27,6 +30,10 @@ builder.withPlugin(
 // Note: Sentry and Better Stack would typically be configured by the app
 // This is just a fallback for non-Next.js browser usage
 
+/**
+ * Pre-configured observability instance for browser environments
+ * Includes console logging with automatic environment-based configuration
+ */
 export const observability = builder.build();
 
 // Export types and utilities
@@ -34,7 +41,16 @@ export * from './core/types';
 export { createObservability } from './factory';
 export { ObservabilityBuilder } from './factory/builder';
 
-// Logger functions - use these instead of deprecated standalone functions
+/**
+ * Logger functions exported from the observability instance
+ * Use these instead of deprecated standalone functions
+ * @example
+ * ```typescript
+ * import { logInfo, logError } from '@repo/observability/client';
+ * logInfo('User logged in', { userId: '123' });
+ * logError('Failed to save data', { error: err });
+ * ```
+ */
 export const { logDebug, logInfo, logWarn, logError } = observability;
 
 // Legacy function for backward compatibility (no-op)

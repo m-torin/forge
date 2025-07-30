@@ -1,108 +1,119 @@
-/**
- * Enhanced setup file for database package tests
- *
- * This demonstrates the new DRY approach using:
- * - Enhanced QA package utilities
- * - Smart enum re-export pattern
- * - Centralized mock management
- * - Reduced boilerplate
- */
+// Enhanced database test setup with comprehensive mocking
+import { createMockPrismaClient, setupPrismaWithEnums } from '@repo/qa';
+import { vi } from 'vitest';
 
-// Import QA package database setup first
-import { setupPrismaWithEnums } from '@repo/qa/src/vitest/mocks/internal/prisma-with-enums';
-import '@repo/qa/vitest/setup/database';
+// Mock server-only to allow imports in test environment
+vi.mock('server-only', () => ({}));
 
 // Import generated Prisma enums to avoid manual duplication
-import {
-  BrandType,
-  ContentStatus,
-  MediaType,
-  OrderStatus,
-  PaymentStatus,
-  ProductStatus,
-  ProductType,
-  RegistryType,
-  RegistryUserRole,
-  TransactionStatus,
-  TransactionType,
-  VoteType,
-} from '../prisma-generated/client';
+import { ContentStatus, PaymentStatus, VoteType } from '../prisma-generated/client';
 
-/**
- * Setup comprehensive Prisma mocks with real enum re-export
- *
- * This replaces the manual mock setup with an automated approach
- * that preserves type safety while providing complete mocking coverage.
- */
+// Enhanced test configuration
+export interface EnhancedTestConfig {
+  includeTransactions: boolean;
+  includeAuditLogs: boolean;
+  includeSoftDeletes: boolean;
+  mockExternalServices: boolean;
+}
+
+// Default configuration
+export const defaultTestConfig: EnhancedTestConfig = {
+  includeTransactions: true,
+  includeAuditLogs: true,
+  includeSoftDeletes: true,
+  mockExternalServices: true,
+};
+
+// Set up comprehensive Prisma mocking with real enum re-export
 export const mockClient = setupPrismaWithEnums({
   enums: {
-    BrandType,
     ContentStatus,
-    MediaType,
-    OrderStatus,
     PaymentStatus,
-    ProductType,
-    ProductStatus,
-    RegistryType,
-    RegistryUserRole,
-    TransactionStatus,
-    TransactionType,
     VoteType,
   },
   importPaths: [
-    // Standard paths for comprehensive coverage
+    '@/prisma-generated/client',
     '../prisma-generated/client',
     '../../../../prisma-generated/client',
-    '@/prisma-generated/client',
     '@prisma/client',
   ],
   includeErrorClasses: true,
-  mockOptions: {
-    // Use all standard models plus any custom ones
-    includeTransactions: true,
-    defaults: {
-      findUnique: null,
-      findFirst: null,
-      findMany: [],
-      count: 0,
-    },
-  },
+});
+
+// Enhanced mock ORM with auth models
+const createEnhancedMockPrismaOrm = (config: EnhancedTestConfig = defaultTestConfig) => ({
+  // User operations
+  findUniqueUserOrm: vi.fn(),
+  findManyUsersOrm: vi.fn(),
+  createUserOrm: vi.fn(),
+  updateUserOrm: vi.fn(),
+  countUsersOrm: vi.fn(),
+
+  // Session operations
+  findUniqueSessionOrm: vi.fn(),
+  createSessionOrm: vi.fn(),
+  updateSessionOrm: vi.fn(),
+
+  // Organization operations
+  findUniqueOrganizationOrm: vi.fn(),
+  createOrganizationOrm: vi.fn(),
+  updateOrganizationOrm: vi.fn(),
+
+  // Member operations
+  findManyMembersOrm: vi.fn(),
+  createMemberOrm: vi.fn(),
+  updateMemberOrm: vi.fn(),
+
+  // API Key operations
+  findUniqueApiKeyOrm: vi.fn(),
+  createApiKeyOrm: vi.fn(),
+  updateApiKeyOrm: vi.fn(),
+
+  // Transaction utilities
+  executeTransaction: vi.fn(),
+
+  // Conditional mocks based on config
+  ...(config.includeAuditLogs && {
+    createAuditLogOrm: vi.fn(),
+  }),
 });
 
 /**
- * Enhanced test utilities available globally
- *
- * These provide common patterns and reduce boilerplate in test files.
+ * Enhanced setup function for comprehensive testing
  */
-export { mockClient as enhancedMockClient };
+export const setupEnhancedPrismaTestMocks = (config: EnhancedTestConfig = defaultTestConfig) => {
+  const mockPrismaClient = createMockPrismaClient();
+  const mockPrismaOrm = createEnhancedMockPrismaOrm(config);
 
-// Export the enum types for use in tests
-export {
-  BrandType,
-  ContentStatus,
-  MediaType,
-  OrderStatus,
-  PaymentStatus,
-  ProductStatus,
-  ProductType,
-  RegistryType,
-  RegistryUserRole,
-  TransactionStatus,
-  TransactionType,
-  VoteType,
+  return { mockPrismaClient, mockPrismaOrm, config };
 };
 
 /**
- * Re-export enhanced utilities for convenience
+ * Enhanced reset function for comprehensive testing
  */
-export {
-  createDatabaseTestSuite,
-  databaseAssertions,
-  describeSeedFunction,
-  environmentUtils,
-  mockScenarios,
-  seedExpectations,
-  setupEnhancedPrismaTest,
-  testCasePatterns,
-  testDataGenerators,
-} from '@repo/qa/src/vitest';
+export const resetEnhancedPrismaTestMocks = (
+  mockPrismaClient: any,
+  mockPrismaOrm: any,
+  config: EnhancedTestConfig = defaultTestConfig,
+) => {
+  vi.clearAllMocks();
+
+  // Reset all model mocks to default state
+  Object.keys(mockPrismaClient).forEach(model => {
+    if (mockPrismaClient[model]?.findUnique) {
+      mockPrismaClient[model].findUnique.mockResolvedValue(null);
+      mockPrismaClient[model].findFirst.mockResolvedValue(null);
+      mockPrismaClient[model].findMany.mockResolvedValue([]);
+      mockPrismaClient[model].create.mockResolvedValue({ id: `${model}-id` });
+      mockPrismaClient[model].update.mockResolvedValue({ id: `${model}-id` });
+      mockPrismaClient[model].createMany?.mockResolvedValue({});
+    }
+  });
+
+  // Reset ORM mocks
+  Object.keys(mockPrismaOrm).forEach(key => {
+    if (typeof mockPrismaOrm[key] === 'function' && mockPrismaOrm[key].mockClear) {
+      mockPrismaOrm[key].mockClear();
+    }
+  });
+};

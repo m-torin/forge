@@ -147,7 +147,7 @@ export function SelfHostedNotionEditor({
         setSaveStatus('error');
         setTimeout(() => setSaveStatus(null), 3000);
       }
-    } catch (error) {
+    } catch (_error) {
       setSaveStatus('error');
       setTimeout(() => setSaveStatus(null), 3000);
     }

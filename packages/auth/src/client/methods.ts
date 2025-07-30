@@ -10,6 +10,11 @@ import { logger } from './utils/logger';
 import type { AuthClientMethods } from '../shared/types';
 
 // Basic authentication methods
+/**
+ * Signs in a user with email and password
+ * @param credentials - Email and password credentials
+ * @returns Promise with success status and optional error message
+ */
 export const signIn: AuthClientMethods['signIn'] = async credentials => {
   try {
     const response = await authClient.signIn.email(credentials);
@@ -31,10 +36,18 @@ export const signIn: AuthClientMethods['signIn'] = async credentials => {
   }
 };
 
+/**
+ * Signs out the current user
+ */
 export const signOut = async () => {
   await authClient.signOut();
 };
 
+/**
+ * Creates a new user account
+ * @param data - User registration data including email, password, and optional name
+ * @returns Promise with success status and optional error message
+ */
 export const signUp: AuthClientMethods['signUp'] = async data => {
   try {
     const response = await authClient.signUp.email({
@@ -218,6 +231,11 @@ export const verifyMagicLink = async (token: string) => {
 };
 
 // Organization methods - proper wrapper functions for better error handling
+/**
+ * Creates a new organization
+ * @param data - Organization data including name, optional slug and logo
+ * @returns Promise with organization creation result
+ */
 export const createOrganization = async (data: { name: string; slug?: string; logo?: string }) => {
   try {
     return await (authClient as any).organization.create({
@@ -281,6 +299,11 @@ export const checkSlug = async (slug: string) => {
   }
 };
 
+/**
+ * Invites a new member to an organization
+ * @param data - Invitation data including email, role, and optional organizationId
+ * @returns Promise with invitation result
+ */
 export const inviteMember = async (data: {
   email: string;
   role: 'member' | 'admin' | 'owner';
@@ -548,6 +571,10 @@ export const hasAdminPermission = (authClient as any).admin?.hasPermission;
 export const checkRolePermission = (authClient as any).admin?.checkRolePermission;
 
 // Two-factor authentication - Type-safe wrapper functions
+/**
+ * Enables two-factor authentication for the current user
+ * @returns Promise with two-factor setup result
+ */
 export const enableTwoFactor = async () => {
   try {
     if ('twoFactor' in authClient && authClient.twoFactor) {
@@ -563,6 +590,10 @@ export const enableTwoFactor = async () => {
   }
 };
 
+/**
+ * Disables two-factor authentication for the current user
+ * @returns Promise with two-factor disable result
+ */
 export const disableTwoFactor = async () => {
   try {
     if ('twoFactor' in authClient && authClient.twoFactor) {
@@ -685,6 +716,11 @@ export const verifyTwoFactorOTP = async (code: string) => {
 };
 
 // Passkey authentication - Type-safe wrapper functions
+/**
+ * Adds a new passkey for the current user
+ * @param data - Optional passkey configuration including name
+ * @returns Promise with passkey creation result
+ */
 export const addPasskey = async (data?: { name?: string }) => {
   try {
     return await (authClient as any).passkey?.addPasskey(data || {});
@@ -718,6 +754,11 @@ export const deletePasskey = async (passkeyId: string) => {
   }
 };
 
+/**
+ * Signs in using passkey authentication
+ * @param options - Optional signin options including autoFill and email
+ * @returns Promise with passkey signin result
+ */
 export const signInWithPasskey = async (options?: { autoFill?: boolean; email?: string }) => {
   try {
     return await (authClient as any).signIn?.passkey(options);

@@ -83,15 +83,15 @@ export function useExportManager(editor: Editor | null) {
         includeMetadata: true,
       },
       customStyles: `
-        body { 
-          font-family: Georgia, serif; 
-          line-height: 1.8; 
-          max-width: 700px; 
+        body {
+          font-family: Georgia, serif;
+          line-height: 1.8;
+          max-width: 700px;
         }
-        h1 { 
-          color: #2c3e50; 
-          border-bottom: 3px solid #3498db; 
-          padding-bottom: 10px; 
+        h1 {
+          color: #2c3e50;
+          border-bottom: 3px solid #3498db;
+          padding-bottom: 10px;
         }
       `,
     },
@@ -113,20 +113,20 @@ export function useExportManager(editor: Editor | null) {
         includeMetadata: true,
       },
       customStyles: `
-        body { 
-          font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
-          color: #333; 
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+          color: #333;
         }
-        h2 { 
-          background: #f8f9fa; 
-          padding: 8px 12px; 
-          margin-top: 24px; 
+        h2 {
+          background: #f8f9fa;
+          padding: 8px 12px;
+          margin-top: 24px;
         }
       `,
     },
   };
 
-  const [defaultTemplates, setDefaultTemplates] = useLocalStorage<Record<string, ExportTemplate>>({
+  const [defaultTemplates, _setDefaultTemplates] = useLocalStorage<Record<string, ExportTemplate>>({
     key: 'notion-editor-default-templates',
     defaultValue: defaultTemplatesValue,
     serialize: JSON.stringify,

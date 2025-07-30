@@ -33,8 +33,8 @@ export function ContextMenu({ editor, children }: ContextMenuProps) {
 
       // Get the position relative to the viewport
       const rect = container.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
+      const _x = event.clientX - rect.left;
+      const _y = event.clientY - rect.top;
 
       setContextMenu({
         isOpen: true,
@@ -249,9 +249,9 @@ export function ContextMenu({ editor, children }: ContextMenuProps) {
               }}
             />
 
-            {contextMenuItems.map((item, index) => {
+            {contextMenuItems.map(item => {
               if (item.type === 'separator') {
-                return <div key={`separator-${index}`} className="my-1 h-px bg-gray-200" />;
+                return <div key={`separator-${item.label}`} className="my-1 h-px bg-gray-200" />;
               }
 
               if (item.submenu) {
@@ -329,9 +329,11 @@ function SubmenuItem({ label, icon, items, onItemClick }: SubmenuItemProps) {
             animation: 'context-menu-fade-in 0.1s ease-out',
           }}
         >
-          {items.map((item, index) => {
+          {items.map(item => {
             if (item.type === 'separator') {
-              return <div key={`submenu-separator-${index}`} className="my-1 h-px bg-gray-200" />;
+              return (
+                <div key={`submenu-separator-${item.label}`} className="my-1 h-px bg-gray-200" />
+              );
             }
 
             return (

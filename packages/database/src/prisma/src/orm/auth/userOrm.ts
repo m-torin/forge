@@ -10,10 +10,7 @@
  * const user = await createUserOrm({
  *   data: {
  *     email: 'user@example.com',
- *     name: 'John Doe',
- *     profile: {
- *       create: { bio: 'Hello world' }
- *     }
+ *     name: 'John Doe'
  *   }
  * });
  *
@@ -21,8 +18,8 @@
  * const userWithProfile = await findUniqueUserOrm({
  *   where: { id: user.id },
  *   include: {
- *     profile: true,
- *     orders: { take: 5 }
+ *     accounts: true,
+ *     sessions: true
  *   }
  * });
  * ```
@@ -32,7 +29,6 @@
 
 import type { Prisma } from '../../../../../prisma-generated/client';
 import { prisma } from '../../../clients/standard';
-import { handlePrismaError, isNotFoundError } from '../validation';
 
 // ============================================================================
 // USER CRUD OPERATIONS
@@ -45,11 +41,7 @@ import { handlePrismaError, isNotFoundError } from '../validation';
 export async function createUserOrm(
   args: Prisma.UserCreateArgs,
 ): Promise<Prisma.UserGetPayload<typeof args>> {
-  try {
-    return await prisma.user.create(args);
-  } catch (error) {
-    handlePrismaError(error);
-  }
+  return await prisma.user.create(args);
 }
 
 // READ OPERATIONS
@@ -77,14 +69,7 @@ export async function findUniqueUserOrm(
 export async function findUniqueUserOrmOrThrow(
   args: Prisma.UserFindUniqueOrThrowArgs,
 ): Promise<Prisma.UserGetPayload<typeof args>> {
-  try {
-    return await prisma.user.findUniqueOrThrow(args);
-  } catch (error) {
-    if (isNotFoundError(error)) {
-      throw new Error(`User not found with criteria: ${JSON.stringify(args.where)}`);
-    }
-    handlePrismaError(error);
-  }
+  return await prisma.user.findUniqueOrThrow(args);
 }
 
 /**
@@ -98,23 +83,16 @@ export async function findManyUsersOrm(
 
 // UPDATE OPERATIONS
 /**
- * Update a single user by ID or unique field
+ * Update a user by ID or unique field
  */
 export async function updateUserOrm(
   args: Prisma.UserUpdateArgs,
 ): Promise<Prisma.UserGetPayload<typeof args>> {
-  try {
-    return await prisma.user.update(args);
-  } catch (error) {
-    if (isNotFoundError(error)) {
-      throw new Error(`User not found for update: ${JSON.stringify(args.where)}`);
-    }
-    handlePrismaError(error);
-  }
+  return await prisma.user.update(args);
 }
 
 /**
- * Update multiple users matching the criteria
+ * Update multiple users matching criteria
  */
 export async function updateManyUsersOrm(
   args: Prisma.UserUpdateManyArgs,
@@ -122,39 +100,27 @@ export async function updateManyUsersOrm(
   return await prisma.user.updateMany(args);
 }
 
-// UPSERT OPERATIONS
 /**
- * Create or update a user (insert if not exists, update if exists)
+ * Upsert a user (create if not exists, update if exists)
  */
 export async function upsertUserOrm(
   args: Prisma.UserUpsertArgs,
 ): Promise<Prisma.UserGetPayload<typeof args>> {
-  try {
-    return await prisma.user.upsert(args);
-  } catch (error) {
-    handlePrismaError(error);
-  }
+  return await prisma.user.upsert(args);
 }
 
 // DELETE OPERATIONS
 /**
- * Delete a single user by ID or unique field
+ * Delete a user by ID or unique field
  */
 export async function deleteUserOrm(
   args: Prisma.UserDeleteArgs,
 ): Promise<Prisma.UserGetPayload<typeof args>> {
-  try {
-    return await prisma.user.delete(args);
-  } catch (error) {
-    if (isNotFoundError(error)) {
-      throw new Error(`User not found for deletion: ${JSON.stringify(args.where)}`);
-    }
-    handlePrismaError(error);
-  }
+  return await prisma.user.delete(args);
 }
 
 /**
- * Delete multiple users matching the criteria
+ * Delete multiple users matching criteria
  */
 export async function deleteManyUsersOrm(
   args?: Prisma.UserDeleteManyArgs,
@@ -215,8 +181,6 @@ export async function findUserWithAllRelationsOrm(
   include: {
     accounts: true;
     sessions: true;
-    addresses: true;
-    orders: true;
     apiKeys: true;
     members: true;
   };
@@ -226,8 +190,6 @@ export async function findUserWithAllRelationsOrm(
     include: {
       accounts: true,
       sessions: true,
-      addresses: true,
-      orders: true,
       apiKeys: true,
       members: true,
     },
@@ -251,8 +213,6 @@ export type UserWithAllRelations = Prisma.UserGetPayload<{
   include: {
     accounts: true;
     sessions: true;
-    addresses: true;
-    orders: true;
     apiKeys: true;
     members: true;
   };

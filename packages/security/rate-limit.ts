@@ -17,6 +17,8 @@ let hasLoggedMissingRedisWarning = false;
 
 /**
  * Create a rate limiter using the shared Redis instance
+ * @param props - Rate limiter configuration excluding Redis instance
+ * @returns Configured Ratelimit instance or no-op limiter if Redis unavailable
  */
 export const createRateLimiter = (props: Omit<RatelimitConfig, 'redis'>): Ratelimit => {
   const env = safeEnv();
@@ -109,6 +111,9 @@ export type RateLimitResult = {
 
 /**
  * Apply rate limiting to a request
+ * @param identifier - Unique identifier for the request (e.g., IP address, user ID)
+ * @param type - Type of rate limiter to use
+ * @returns Rate limit result with success status and limit info
  */
 export const applyRateLimit = async (
   identifier: string,
@@ -128,6 +133,9 @@ export const applyRateLimit = async (
 
 /**
  * Check if a request is rate limited
+ * @param identifier - Unique identifier for the request
+ * @param type - Type of rate limiter to check
+ * @returns True if request should be blocked due to rate limiting
  */
 export const isRateLimited = async (
   identifier: string,
@@ -139,6 +147,9 @@ export const isRateLimited = async (
 
 /**
  * Get rate limit info without applying limits
+ * @param identifier - Unique identifier for the request
+ * @param type - Type of rate limiter to query
+ * @returns Rate limit information excluding success status
  */
 export const getRateLimitInfo = async (
   identifier: string,

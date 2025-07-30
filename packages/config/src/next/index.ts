@@ -1,3 +1,8 @@
+/**
+ * Optimized Next.js configuration for monorepo apps
+ * Includes Prisma plugin, bundle optimization, and PostHog analytics setup
+ */
+
 /// <reference path="./prisma-plugin.d.ts" />
 import withBundleAnalyzer from '@next/bundle-analyzer';
 import { PrismaPlugin } from '@prisma/nextjs-monorepo-workaround-plugin';
@@ -54,6 +59,9 @@ const EXTERNAL_PACKAGES = {
 
 /**
  * Webpack configuration handler
+ * @param config - Webpack configuration object
+ * @param options - Next.js context options
+ * @returns Modified webpack configuration
  */
 const webpackConfig = (config: any, { isServer }: { isServer: boolean }) => {
   const isEdgeRuntime = config.target === 'webworker' || config.name === 'edge-runtime';
@@ -105,6 +113,7 @@ const webpackConfig = (config: any, { isServer }: { isServer: boolean }) => {
 
 /**
  * Creates a handler for webpack externals
+ * @returns External handler function for webpack
  */
 const createExternalsHandler = () => {
   const patterns = [
@@ -149,6 +158,7 @@ const createExternalsHandler = () => {
 
 /**
  * Configure webpack resolve options
+ * @param config - Webpack configuration object
  */
 const configureResolve = (config: any) => {
   config.resolve ??= {};
@@ -160,6 +170,7 @@ const configureResolve = (config: any) => {
 
 /**
  * Configure webpack logging
+ * @param config - Webpack configuration object
  */
 const configureLogging = (config: any) => {
   config.infrastructureLogging = {
@@ -170,6 +181,7 @@ const configureLogging = (config: any) => {
 
 /**
  * Configure webpack cache
+ * @param config - Webpack configuration object
  */
 const configureCache = (config: any) => {
   if (config.cache?.type === 'filesystem') {
@@ -241,6 +253,8 @@ export const config: NextConfig = {
 
 /**
  * Higher-order function to add bundle analyzer
+ * @param sourceConfig - Base Next.js configuration
+ * @returns Configuration with bundle analyzer enabled
  */
 export const withAnalyzer = (sourceConfig: NextConfig): NextConfig =>
   withBundleAnalyzer({
@@ -249,6 +263,9 @@ export const withAnalyzer = (sourceConfig: NextConfig): NextConfig =>
 
 /**
  * Helper function to merge configs
+ * @param base - Base configuration
+ * @param configs - Additional configurations to merge
+ * @returns Merged Next.js configuration
  */
 export const mergeConfig = (base: NextConfig, ...configs: Partial<NextConfig>[]): NextConfig => {
   return configs.reduce((acc, config) => {

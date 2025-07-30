@@ -1,6 +1,0 @@
-{
-  "extends": ["@repo/config/knip"],
-  "entry": ["src/hotelbeds/index.ts"],
-  "project": ["**/*.{ts,tsx}"],
-  "ignoreDependencies": ["@repo/observability", "@repo/security"]
-}

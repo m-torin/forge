@@ -1,0 +1,87 @@
+@function calc-sizes($size) {
+  $circle-size: $size;
+  $image-size: $size * 0.84;
+  $image-border: $size * 0.06;
+  @return (
+    circle-size: $circle-size,
+    image-size: $image-size,
+    image-border: $image-border
+  );
+}
+
+@mixin circle-styles($size) {
+  $sizes: calc-sizes($size);
+
+  @keyframes rotate-gradient {
+    0% {
+      transform: rotate(0deg);
+    }
+
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  .group {
+    &:hover .circle::before {
+      animation: rotate-gradient 2s linear infinite;
+      opacity: 1;
+    }
+
+    &:hover .circle {
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  .circle {
+    position: relative;
+    width: map-get($sizes, circle-size);
+    height: map-get($sizes, circle-size);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    transition:
+      transform 0.3s ease,
+      box-shadow 0.3s ease;
+    overflow: hidden;
+
+    &:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: conic-gradient(
+        from 220deg,
+        var(--mantine-color-orange-4) 5deg,
+        var(--mantine-color-orange-3) 45deg,
+        var(--mantine-color-orange-2) 90deg,
+        var(--mantine-color-pink-4) 135deg,
+        var(--mantine-color-pink-7) 210deg,
+        var(--mantine-color-grape-7) 240deg,
+        var(--mantine-color-grape-6) 275deg,
+        var(--mantine-color-orange-4) 360deg
+      );
+      border-radius: inherit;
+      opacity: 0;
+      z-index: 0;
+      transition: opacity 0.3s ease;
+      cursor: pointer;
+    }
+  }
+
+  .image {
+    border-radius: 50%;
+    border: map-get($sizes, image-border) solid var(--mantine-color-white);
+    width: map-get($sizes, image-size);
+    height: map-get($sizes, image-size);
+    background-size: cover;
+    background-position: center;
+    z-index: 1;
+  }
+}
+
+@include circle-styles(45px);

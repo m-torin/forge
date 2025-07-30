@@ -19,6 +19,10 @@ const knock = apiKey ? new Knock({ apiKey }) : null;
 
 let hasLoggedWarning = false;
 
+/**
+ * Get the Knock client instance with lazy initialization
+ * @returns Knock client instance or null if not configured
+ */
 const getKnock = () => {
   if (!apiKey) {
     if (!hasLoggedWarning) {
@@ -31,7 +35,10 @@ const getKnock = () => {
   return knock;
 };
 
-// Export a proxy that lazily initializes Knock
+/**
+ * Proxy for Knock client that lazily initializes when accessed
+ * Returns undefined for all properties when Knock is not configured
+ */
 export const notifications = new Proxy({} as Knock, {
   get(target, prop) {
     const knockClient = getKnock();

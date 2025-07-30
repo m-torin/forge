@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "context7": {
+      "type": "sse",
+      "url": "https://mcp.context7.com/sse"
+    },
+    "git": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-git"]
+    },
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"]
+    },
+    "prisma": {
+      "command": "npx",
+      "args": ["-y", "prisma-mcp"]
+    },
+    "vercel-ai-docs": {
+      "command": "npx",
+      "args": ["-y", "vercel-ai-docs-mcp"]
+    }
+  }
+}

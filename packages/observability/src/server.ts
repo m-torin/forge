@@ -6,7 +6,10 @@ import { env } from '../env';
 import { ObservabilityBuilder } from './factory/builder';
 import { createConsoleServerPlugin } from './plugins/console';
 
-// Auto-configured observability for Node.js
+/**
+ * Auto-configured observability for Node.js server environments
+ * Automatically sets up console logging based on environment variables
+ */
 const builder = ObservabilityBuilder.create();
 
 // Console logging control
@@ -28,6 +31,10 @@ builder.withPlugin(
 // Note: Production providers would typically be configured by the app
 // This is just a fallback for non-Next.js server usage
 
+/**
+ * Pre-configured observability instance for Node.js server environments
+ * Includes console logging with automatic environment-based configuration
+ */
 export const observability = builder.build();
 
 // Export types and utilities
@@ -35,7 +42,16 @@ export * from './core/types';
 export { createObservability } from './factory';
 export { ObservabilityBuilder } from './factory/builder';
 
-// Logger functions - use these instead of deprecated standalone functions
+/**
+ * Logger functions exported from the observability instance
+ * Use these instead of deprecated standalone functions
+ * @example
+ * ```typescript
+ * import { logInfo, logError } from '@repo/observability/server';
+ * logInfo('Server started', { port: 3000 });
+ * logError('Database connection failed', { error: err });
+ * ```
+ */
 export const { logDebug, logInfo, logWarn, logError } = observability;
 
 // Legacy function for backward compatibility (no-op)

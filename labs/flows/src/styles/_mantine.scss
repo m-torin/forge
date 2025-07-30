@@ -1,0 +1,135 @@
+@use 'sass:math';
+
+/*
+Mantine SCSS Features Reference:
+1. Color Functions:
+   - lighten($color, $amount): Lightens a color
+   - darken($color, $amount): Darkens a color
+   - rgba($color, $alpha): Adds transparency to a color
+   - mix($color1, $color2, $weight): Mixes two colors
+   - shade($color, $percentage): Mixes a color with black
+   - tint($color, $percentage): Mixes a color with white
+
+2. Theme Functions:
+   - theme-color($key): Retrieves a color from the theme
+   - theme-shadow($key): Retrieves a shadow value from the theme
+   - theme-spacing($key): Retrieves a spacing value from the theme
+   - theme-radius($key): Retrieves a border radius value from the theme
+   - theme-font-size($key): Retrieves a font size value from the theme
+
+3. Responsive Mixins:
+   - mantine-smaller-than($breakpoint): Styles for screens smaller than breakpoint
+   - mantine-larger-than($breakpoint): Styles for screens larger than breakpoint
+   - mantine-between($min, $max): Styles for screens between two breakpoints
+
+4. Typography Mixins:
+   - mantine-font-family($type): Applies the specified font family
+   - mantine-typography($variant): Applies predefined typography styles
+
+5. Focus Styles:
+   - mantine-focus-ring: Applies a focus ring style
+
+6. Transition Mixins:
+   - mantine-transition($property): Applies a transition to the specified property
+
+7. Z-index Functions:
+   - mantine-z-index($key): Retrieves a z-index value from the theme
+
+8. Gradient Functions:
+   - mantine-gradient($gradient): Creates a gradient based on theme colors
+
+9. RTL Support:
+   - mantine-rtl: Applies styles for right-to-left languages
+
+10. Dark Mode:
+    - mantine-dark: Applies dark mode styles
+
+11. Hover and Active States:
+    - mantine-hover: Applies styles on hover
+    - mantine-active: Applies styles on active state
+
+12. Accessibility:
+    - mantine-visually-hidden: Hides content visually while keeping it accessible to screen readers
+
+13. Additional Mixins and Functions:
+    - rem($value): Converts pixel values to rem
+    - light: Applies styles for light color scheme
+    - dark: Applies styles for dark color scheme
+    - hover: Applies styles on hover (with touch device support)
+    - smaller-than($breakpoint): Applies styles for screens smaller than the breakpoint
+    - larger-than($breakpoint): Applies styles for screens larger than the breakpoint
+    - rtl: Applies styles for right-to-left direction
+    - ltr: Applies styles for left-to-right direction
+
+Breakpoint variables:
+$mantine-breakpoint-xs: '36em'
+$mantine-breakpoint-sm: '48em'
+$mantine-breakpoint-md: '62em'
+$mantine-breakpoint-lg: '75em'
+$mantine-breakpoint-xl: '88em'
+
+Use these features to enhance ReactFlow styling and improve integration with Mantine.
+*/
+
+// Define variables for your breakpoints,
+// values must be the same as in your theme
+$mantine-breakpoint-xs: '36em';
+$mantine-breakpoint-sm: '48em';
+$mantine-breakpoint-md: '62em';
+$mantine-breakpoint-lg: '75em';
+$mantine-breakpoint-xl: '88em';
+
+@function rem($value) {
+  @return #{math.div(math.div($value, $value * 0 + 1), 16)}rem;
+}
+
+@mixin light {
+  [data-mantine-color-scheme='light'] & {
+    @content;
+  }
+}
+
+@mixin dark {
+  [data-mantine-color-scheme='dark'] & {
+    @content;
+  }
+}
+
+@mixin hover {
+  @media (hover: hover) {
+    &:hover {
+      @content;
+    }
+  }
+
+  @media (hover: none) {
+    &:active {
+      @content;
+    }
+  }
+}
+
+@mixin smaller-than($breakpoint) {
+  @media (max-width: $breakpoint) {
+    @content;
+  }
+}
+
+@mixin larger-than($breakpoint) {
+  @media (min-width: $breakpoint) {
+    @content;
+  }
+}
+
+// Add direction mixins if you need rtl support
+@mixin rtl {
+  [dir='rtl'] & {
+    @content;
+  }
+}
+
+@mixin ltr {
+  [dir='ltr'] & {
+    @content;
+  }
+}

@@ -6,12 +6,8 @@ import '@testing-library/jest-dom';
 import React from 'react';
 import { vi } from 'vitest';
 
-// Setup test environment manually instead of using @repo/qa import due to resolution issues
-Object.defineProperty(process.env, 'NODE_ENV', {
-  value: 'test',
-  writable: true,
-  configurable: true,
-});
+// Set test environment
+process.env.NODE_ENV = 'test';
 process.env.CI = 'true';
 process.env.SKIP_ENV_VALIDATION = 'true';
 

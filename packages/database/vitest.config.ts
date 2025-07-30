@@ -41,7 +41,6 @@ export default createDatabasePackageConfig({
         '__tests__/prisma/seed/**',
         '__tests__/prisma/seed-auth/**',
         '__tests__/prisma/seed-ecommerce/**',
-        '__tests__/prisma/seed-products/**',
         // Exclude tests with import issues and seed tests that need real database
         '__tests__/prisma/seed-*.test.ts',
         '__tests__/prisma/seed.test.ts',

@@ -33,7 +33,8 @@ describe('storybook Configuration', () => {
       expect(mainConfig.stories).toStrictEqual(
         expect.arrayContaining([
           '../stories/**/*.stories.@(js|jsx|mjs|ts|tsx)',
-          '../../../packages/design-system/src/**/*.stories.@(js|jsx|mjs|ts|tsx)',
+          '../../../packages/uix-system/src/mantine/components/**/*.stories.@(js|jsx|mjs|ts|tsx)',
+          '../../../packages/editor/src/**/*.stories.@(js|jsx|mjs|ts|tsx)',
         ]),
       );
     });
