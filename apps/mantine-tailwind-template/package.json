@@ -32,6 +32,7 @@
     "@mantine/core": "catalog:",
     "@mantine/form": "catalog:",
     "@mantine/hooks": "catalog:",
+    "@repo/internationalization": "workspace:*",
     "@repo/observability": "workspace:*",
     "@repo/uix-system": "workspace:*",
     "@t3-oss/env-nextjs": "catalog:",
