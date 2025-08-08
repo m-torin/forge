@@ -6,7 +6,7 @@
 // Define middleware types locally since they may not be exported in current AI SDK v5 build
 import { logInfo, logWarn } from '@repo/observability';
 import { createHash } from 'crypto';
-interface LanguageModelV2Middleware {
+interface LanguageModelMiddleware {
   wrapGenerate?: (args: { doGenerate: any; params: any }) => Promise<any>;
   wrapStream?: (args: { doStream: any; params: any }) => Promise<any>;
 }
@@ -24,9 +24,9 @@ export interface CacheEntry {
 
 export interface CachingOptions {
   enabled?: boolean;
-  ttl?: number; // Time to live in milliseconds
-  maxSize?: number; // Maximum number of entries
-  skipStreaming?: boolean; // Skip caching for streaming requests
+  ttl?: number;
+  maxSize?: number;
+  skipStreaming?: boolean;
   keyGenerator?: (params: any) => string;
   shouldCache?: (params: any, result?: any) => boolean;
   onHit?: (key: string, entry: CacheEntry) => void;
@@ -166,7 +166,7 @@ class InMemoryCache {
 /**
  * Create caching middleware for AI model interactions
  */
-export function createCachingMiddleware(options: CachingOptions = {}): LanguageModelV2Middleware {
+export function createCachingMiddleware(options: CachingOptions = {}): LanguageModelMiddleware {
   const opts = { ...defaultOptions, ...options };
 
   if (!opts.enabled) {
@@ -228,8 +228,8 @@ export function createCachingMiddleware(options: CachingOptions = {}): LanguageM
           const transformedStream = streamResult.stream.pipeThrough(
             new TransformStream({
               transform(chunk, controller) {
-                if (chunk.type === 'text-delta' && chunk.textDelta) {
-                  accumulatedText += chunk.textDelta;
+                if (chunk.type === 'text-delta' && chunk.delta) {
+                  accumulatedText += chunk.delta;
                 } else if (chunk.type === 'finish') {
                   finalResult = chunk;
                 }
@@ -264,7 +264,7 @@ export function createCachingMiddleware(options: CachingOptions = {}): LanguageM
 
           return {
             stream: transformedStream,
-            warnings: streamResult.warnings,
+            warnings: await streamResult.warnings,
           };
         },
   };

@@ -21,7 +21,7 @@ const mockAuth = {
     getSession: vi.fn(),
   },
 };
-vi.mock('#/shared/auth', () => ({
+vi.mock('../../src/shared/auth', () => ({
   auth: mockAuth,
 }));
 
@@ -33,7 +33,7 @@ describe('server helpers functionality', () => {
 
   describe('createAuthHelpers', () => {
     test('should create helpers with default config', async () => {
-      const helpersModule = await import('#/server/helpers');
+      const helpersModule = await import('../../src/server/helpers');
 
       const helpers = helpersModule.createAuthHelpers();
 
@@ -44,7 +44,7 @@ describe('server helpers functionality', () => {
     });
 
     test('should create helpers with custom config', async () => {
-      const helpersModule = await import('#/server/helpers');
+      const helpersModule = await import('../../src/server/helpers');
 
       const config = {
         serviceEmail: 'custom@service.com',
@@ -57,7 +57,7 @@ describe('server helpers functionality', () => {
     });
 
     test('should create helpers with partial config', async () => {
-      const helpersModule = await import('#/server/helpers');
+      const helpersModule = await import('../../src/server/helpers');
 
       const helpers = helpersModule.createAuthHelpers({
         serviceName: 'Test Service',
@@ -69,7 +69,7 @@ describe('server helpers functionality', () => {
 
   describe('requireAuth', () => {
     test('should authenticate with valid service API key', async () => {
-      const helpersModule = await import('#/server/helpers');
+      const helpersModule = await import('../../src/server/helpers');
 
       process.env.SERVICE_API_KEY = 'valid-service-key';
 
@@ -101,7 +101,7 @@ describe('server helpers functionality', () => {
     });
 
     test('should not authenticate with invalid service API key', async () => {
-      const helpersModule = await import('#/server/helpers');
+      const helpersModule = await import('../../src/server/helpers');
 
       process.env.SERVICE_API_KEY = 'valid-service-key';
 
@@ -132,7 +132,7 @@ describe('server helpers functionality', () => {
     });
 
     test('should authenticate with valid user session', async () => {
-      const helpersModule = await import('#/server/helpers');
+      const helpersModule = await import('../../src/server/helpers');
 
       const helpers = helpersModule.createAuthHelpers();
 
@@ -158,7 +158,7 @@ describe('server helpers functionality', () => {
     });
 
     test('should return 401 when no authentication provided', async () => {
-      const helpersModule = await import('#/server/helpers');
+      const helpersModule = await import('../../src/server/helpers');
 
       const helpers = helpersModule.createAuthHelpers();
 
@@ -187,7 +187,7 @@ describe('server helpers functionality', () => {
     });
 
     test('should skip service auth when SERVICE_API_KEY not set', async () => {
-      const helpersModule = await import('#/server/helpers');
+      const helpersModule = await import('../../src/server/helpers');
 
       // No SERVICE_API_KEY env var
       const helpers = helpersModule.createAuthHelpers();
@@ -213,7 +213,7 @@ describe('server helpers functionality', () => {
 
   describe('getOptionalAuth', () => {
     test('should return service auth with valid service API key', async () => {
-      const helpersModule = await import('#/server/helpers');
+      const helpersModule = await import('../../src/server/helpers');
 
       process.env.SERVICE_API_KEY = 'valid-service-key';
 
@@ -245,7 +245,7 @@ describe('server helpers functionality', () => {
     });
 
     test('should return user session when available', async () => {
-      const helpersModule = await import('#/server/helpers');
+      const helpersModule = await import('../../src/server/helpers');
 
       const helpers = helpersModule.createAuthHelpers();
 
@@ -268,7 +268,7 @@ describe('server helpers functionality', () => {
     });
 
     test('should return null when no authentication available', async () => {
-      const helpersModule = await import('#/server/helpers');
+      const helpersModule = await import('../../src/server/helpers');
 
       const helpers = helpersModule.createAuthHelpers();
 
@@ -286,7 +286,7 @@ describe('server helpers functionality', () => {
     });
 
     test('should not authenticate with invalid service API key', async () => {
-      const helpersModule = await import('#/server/helpers');
+      const helpersModule = await import('../../src/server/helpers');
 
       process.env.SERVICE_API_KEY = 'valid-service-key';
 
@@ -306,7 +306,7 @@ describe('server helpers functionality', () => {
     });
 
     test('should use default service config when not provided', async () => {
-      const helpersModule = await import('#/server/helpers');
+      const helpersModule = await import('../../src/server/helpers');
 
       process.env.SERVICE_API_KEY = 'valid-service-key';
 
@@ -327,7 +327,7 @@ describe('server helpers functionality', () => {
 
   describe('edge cases', () => {
     test('should handle headers.get returning null', async () => {
-      const helpersModule = await import('#/server/helpers');
+      const helpersModule = await import('../../src/server/helpers');
 
       const helpers = helpersModule.createAuthHelpers();
 
@@ -345,7 +345,7 @@ describe('server helpers functionality', () => {
     });
 
     test('should handle auth.api.getSession throwing error', async () => {
-      const helpersModule = await import('#/server/helpers');
+      const helpersModule = await import('../../src/server/helpers');
 
       const helpers = helpersModule.createAuthHelpers();
 
@@ -361,7 +361,7 @@ describe('server helpers functionality', () => {
     });
 
     test('should handle empty config object', async () => {
-      const helpersModule = await import('#/server/helpers');
+      const helpersModule = await import('../../src/server/helpers');
 
       const helpers = helpersModule.createAuthHelpers({});
 
@@ -370,7 +370,7 @@ describe('server helpers functionality', () => {
     });
 
     test('should handle missing SERVICE_API_KEY with API key provided', async () => {
-      const helpersModule = await import('#/server/helpers');
+      const helpersModule = await import('../../src/server/helpers');
 
       // Ensure SERVICE_API_KEY is not set
       delete process.env.SERVICE_API_KEY;

@@ -115,7 +115,7 @@ export async function processAliasPayload(
     context: options.context,
   };
 
-  await analytics.alias(userId, previousId || '', trackingOptions);
+  await analytics.alias(userId, previousId ?? '', trackingOptions);
 }
 
 /**

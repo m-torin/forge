@@ -52,6 +52,40 @@ export {
   type ModelConfig as NextServerModelConfig,
 } from './server';
 
+// AI SDK v5 Provider Registry (required by chatbot-example)
+export {
+  getDefaultModel,
+  getEmbeddingModel,
+  getLanguageModel,
+  getLegacyModel,
+  getModel,
+  models,
+  registry,
+} from './server/providers/registry';
+
+// Export model metadata utilities for UI dropdowns and configuration
+export {
+  CODE_MODELS,
+  COMPUTER_USE_MODELS,
+  MODEL_ALIASES,
+  MODEL_REGISTRY,
+  REASONING_MODELS,
+  VISION_MODELS,
+  getAllModelIds,
+  getBestModelForTask,
+  getChatModels,
+  getModelConfig,
+  getModelProvider,
+  getModelReasoningConfig,
+  getModelsByCapability,
+  getModelsByProvider,
+  getProviderModelId,
+  isDeprecatedModel,
+  isValidModelId,
+  modelHasCapability,
+  modelSupportsReasoning,
+} from './shared/models/registry';
+
 // Standard Chat Provider (required by ai-chatbot)
 export {
   createStandardChatProvider,
@@ -150,8 +184,7 @@ export {
 } from './shared/tools';
 export type { SafeToolsConfig, SecurityConfig } from './shared/tools';
 
-// Shared utilities
-export * from './shared/streaming/data-stream';
+// Shared utilities - data-stream removed, use AI SDK v5 createUIMessageStream()
 export * from './shared/utils/messages';
 export * from './shared/utils/perplexity-config';
 export * from './shared/utils/schema-generation';
@@ -197,6 +230,23 @@ export * from './shared/models/xai';
 
 // Shared middleware
 export * from './shared/middleware/reasoning';
+
+// ChatbotRAG service for chatbot applications
+export {
+  createChatbotRAG,
+  createChatbotRAGFromEnv,
+  defaultChatbotRAGConfig,
+  validateChatbotRAGConfig,
+  type ChatbotRAGConfig,
+  type ChatbotRAGService,
+} from './server/rag/chatbot-service';
+
+// Hybrid search functionality
+export {
+  createHybridSearch,
+  type HybridSearchConfig,
+  type HybridSearchResult,
+} from './server/rag/hybrid-search';
 
 /**
  * Next.js Server for AI Package with Vector Support

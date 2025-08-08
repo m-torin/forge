@@ -1,0 +1,118 @@
+/* Modern CSS Grid and Container Queries */
+
+@supports (container-type: inline-size) {
+  .responsive-container {
+    container-type: inline-size;
+    container-name: sidebar;
+  }
+
+  /* Container query for sidebar content */
+  @container sidebar (max-width: 280px) {
+    .sidebar-content {
+      padding: 0.75rem;
+    }
+
+    .sidebar-title {
+      font-size: 0.875rem;
+    }
+  }
+
+  @container sidebar (min-width: 320px) {
+    .sidebar-content {
+      padding: 1.5rem;
+    }
+
+    .sidebar-title {
+      font-size: 1rem;
+    }
+  }
+}
+
+/* Modern CSS Grid Layout */
+.layout-grid {
+  display: grid;
+  grid-template-areas:
+    "sidebar main"
+    "sidebar main";
+  grid-template-columns: var(--sidebar-width, 0) 1fr;
+  grid-template-rows: 1fr;
+  min-height: 100vh;
+  transition: grid-template-columns 300ms ease-out;
+}
+
+.layout-grid.sidebar-open {
+  --sidebar-width: min(320px, 25vw);
+}
+
+.layout-grid.sidebar-closed {
+  --sidebar-width: 0px;
+}
+
+/* Logical properties for international support */
+.modern-sidebar {
+  inset-inline-start: 0;
+  border-inline-end: 1px solid rgb(229 231 235);
+}
+
+.modern-main {
+  margin-inline-start: var(--sidebar-offset, 0);
+  transition: margin-inline-start 300ms ease-out;
+}
+
+/* Advanced selectors */
+.sidebar-button:is(:hover, :focus-visible) {
+  transform: scale(1.02);
+  background-color: color-mix(in srgb, currentColor 10%, transparent);
+}
+
+/* Modern color functions */
+.backdrop-modern {
+  background-color: color-mix(in srgb, black 40%, transparent);
+  backdrop-filter: blur(12px) saturate(1.8);
+}
+
+/* CSS Nesting support */
+.navigation-item {
+  transition: all 200ms ease-out;
+
+  &:hover {
+    transform: translateX(4px);
+    background-color: color-mix(in srgb, currentColor 8%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid color-mix(in srgb, currentColor 50%, transparent);
+    outline-offset: 2px;
+  }
+}
+
+/* Modern viewport units */
+.full-height {
+  min-height: 100dvh; /* Dynamic viewport height */
+}
+
+/* Cascade layers for better CSS organization */
+@layer base, components, utilities;
+
+@layer base {
+  :root {
+    --sidebar-transition: margin-inline-start 300ms ease-out, grid-template-columns 300ms ease-out;
+  }
+}
+
+@layer components {
+  .modern-card {
+    background: color-mix(in srgb, white 95%, transparent);
+    backdrop-filter: blur(10px);
+    border: 1px solid color-mix(in srgb, white 20%, transparent);
+  }
+}
+
+/* Subgrid support for better alignment */
+@supports (grid-template-rows: subgrid) {
+  .sidebar-grid {
+    display: grid;
+    grid-template-rows: subgrid;
+    gap: inherit;
+  }
+}

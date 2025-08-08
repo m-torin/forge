@@ -22,10 +22,10 @@ export type StandardMessageMetadata = z.infer<typeof messageMetadataSchema>;
 
 /**
  * Standard UI data types for streaming
- * Covers common streaming data patterns
+ * Covers common streaming data patterns (AI SDK v5)
  */
 export type StandardUIDataTypes = {
-  textDelta: string;
+  delta: string; // AI SDK v5: text-delta chunks use 'delta' property
   imageDelta: string;
   sheetDelta: string;
   codeDelta: string;
@@ -39,16 +39,18 @@ export type StandardUIDataTypes = {
 };
 
 /**
- * Standardized chat message type using AI SDK v5 generics
+ * Standardized chat message type using AI SDK v5
  * This is the primary message type for chat applications
  */
-export type StandardChatMessage = UIMessage<StandardMessageMetadata, StandardUIDataTypes>;
+export type StandardChatMessage = UIMessage & {
+  metadata?: StandardMessageMetadata;
+};
 
 /**
- * Standard useChat helpers type with proper generics
+ * Standard useChat helpers type
  * Avoids circular type references
  */
-export type StandardUseChatHelpers = UseChatHelpers<StandardMessageMetadata, StandardUIDataTypes>;
+export type StandardUseChatHelpers = UseChatHelpers<any>;
 
 /**
  * Helper type for components that accept chat helpers
@@ -57,8 +59,8 @@ export type StandardUseChatHelpers = UseChatHelpers<StandardMessageMetadata, Sta
 export interface ChatHelperProps {
   messages: StandardChatMessage[];
   setMessages: StandardUseChatHelpers['setMessages'];
-  append: StandardUseChatHelpers['append'];
-  reload: StandardUseChatHelpers['reload'];
+  sendMessage?: StandardUseChatHelpers['sendMessage'];
+  regenerate?: StandardUseChatHelpers['regenerate'];
   stop: StandardUseChatHelpers['stop'];
   status: StandardUseChatHelpers['status'];
   error?: StandardUseChatHelpers['error'];

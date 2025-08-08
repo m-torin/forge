@@ -43,9 +43,15 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 // Mock handlers
-const mockRefresh = () => console.log('Refresh clicked');
-const mockPrimaryAction = () => console.log('Primary action clicked');
-const mockSecondaryAction = () => console.log('Secondary action clicked');
+const mockRefresh = () => {
+  // console.log('Refresh clicked');
+};
+const mockPrimaryAction = () => {
+  // console.log('Primary action clicked');
+};
+const mockSecondaryAction = () => {
+  // console.log('Secondary action clicked');
+};
 
 export const Basic: Story = {
   args: {

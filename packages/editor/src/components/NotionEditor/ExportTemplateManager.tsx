@@ -145,7 +145,6 @@ export function ExportTemplateManager({
   // Templates view
   const renderTemplatesView = () => (
     <div className="space-y-6">
-      {/* Quick Actions */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
@@ -167,7 +166,6 @@ export function ExportTemplateManager({
         </button>
       </div>
 
-      {/* User Templates */}
       {userTemplates.length > 0 && (
         <div>
           <h3 className="mb-3 flex items-center gap-2 text-lg font-semibold text-gray-900">
@@ -195,7 +193,6 @@ export function ExportTemplateManager({
         </div>
       )}
 
-      {/* System Templates */}
       <div>
         <h3 className="mb-3 flex items-center gap-2 text-lg font-semibold text-gray-900">
           <IconSettings size={20} />
@@ -229,12 +226,10 @@ export function ExportTemplateManager({
 
   return (
     <div className={clsx('export-template-manager flex h-full flex-col', className)}>
-      {/* Header */}
       <div className="flex items-center justify-between border-b border-gray-200 p-4">
         <h2 className="text-lg font-semibold text-gray-900">Export Manager</h2>
       </div>
 
-      {/* View Mode Tabs */}
       <div className="flex items-center gap-1 border-b border-gray-200 bg-gray-50 p-2">
         {[
           { key: 'templates', label: 'Templates', icon: IconTemplate },
@@ -257,7 +252,6 @@ export function ExportTemplateManager({
         ))}
       </div>
 
-      {/* Content */}
       <div className="flex-1 overflow-auto p-4">
         {viewMode === 'templates' && renderTemplatesView()}
         {viewMode === 'preferences' && (
@@ -266,7 +260,6 @@ export function ExportTemplateManager({
         {viewMode === 'history' && <HistoryView history={exportHistory} />}
       </div>
 
-      {/* Template Creation/Edit Dialog */}
       {showCreateDialog && (
         <TemplateDialog
           template={editingTemplate}
@@ -282,7 +275,6 @@ export function ExportTemplateManager({
         />
       )}
 
-      {/* Template Preview Dialog */}
       {previewTemplate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="max-h-[80vh] w-full max-w-2xl overflow-auto rounded-lg bg-white p-6 shadow-xl">
@@ -347,7 +339,6 @@ function TemplateCard({
           </div>
         </div>
 
-        {/* Actions */}
         <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
           <button
             onClick={onExport}

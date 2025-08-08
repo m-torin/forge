@@ -12,7 +12,7 @@ import { logInfo, logWarn } from '@repo/observability';
 import { tool, type Tool } from 'ai';
 import { readFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 import { mcpClient } from '../mcp-client';
 
 // Input schema for word removal
@@ -548,43 +548,46 @@ export const wordRemovalTool = tool({
     }
   },
 
-  // Multi-modal result content
-  experimental_toToolResultContent: (result: WordRemovalResult) => [
-    {
-      type: 'text',
-      text:
-        `🧹 Word Removal ${result.preview ? 'Preview' : 'Complete'}!\\n` +
-        `🎯 Target Words: ${result.targetWords.join(', ')}\\n` +
-        `📁 Files Renamed: ${result.filesRenamed.length}\\n` +
-        `🔤 Identifiers Changed: ${result.identifiersChanged.length}\\n` +
-        `🔗 References Updated: ${result.referencesUpdated.length}\\n` +
-        `⚠️ Errors: ${result.errors.length}\\n` +
-        `📊 Total Changes: ${result.summary.totalChanges}\\n` +
-        `📄 Files Affected: ${result.summary.filesAffected}\\n` +
-        `${
-          !result.preview
-            ? `✅ Compilation: ${result.summary.compilationValid ? 'Valid' : 'Failed'}\\n` +
-              `🧪 Tests: ${result.summary.testsPass ? 'Pass' : 'Fail'}\\n`
-            : ''
-        }` +
-        `${
-          result.filesRenamed.length > 0
-            ? `\\n📁 Sample Renames:\\n${result.filesRenamed
-                .slice(0, 3)
-                .map(r => `• ${r.oldName} → ${r.newName}${r.reason ? ` (${r.reason})` : ''}`)
-                .join('\\n')}`
-            : ''
-        }` +
-        `${
-          result.identifiersChanged.length > 0
-            ? `\\n🔤 Sample Changes:\\n${result.identifiersChanged
-                .slice(0, 3)
-                .map(c => `• ${c.from} → ${c.to} (${c.file}:${c.line})`)
-                .join('\\n')}`
-            : ''
-        }`,
-    },
-  ],
+  // AI SDK v5: toModelOutput with proper content shapes
+  toModelOutput: (result: WordRemovalResult) => ({
+    type: 'content',
+    value: [
+      {
+        type: 'text',
+        text:
+          `🧹 Word Removal ${result.preview ? 'Preview' : 'Complete'}!\n` +
+          `🎯 Target Words: ${result.targetWords.join(', ')}\n` +
+          `📁 Files Renamed: ${result.filesRenamed.length}\n` +
+          `🔤 Identifiers Changed: ${result.identifiersChanged.length}\n` +
+          `🔗 References Updated: ${result.referencesUpdated.length}\n` +
+          `⚠️ Errors: ${result.errors.length}\n` +
+          `📊 Total Changes: ${result.summary.totalChanges}\n` +
+          `📄 Files Affected: ${result.summary.filesAffected}\n` +
+          `${
+            !result.preview
+              ? `✅ Compilation: ${result.summary.compilationValid ? 'Valid' : 'Failed'}\n` +
+                `🧪 Tests: ${result.summary.testsPass ? 'Pass' : 'Fail'}\n`
+              : ''
+          }` +
+          `${
+            result.filesRenamed.length > 0
+              ? `\n📁 Sample Renames:\n${result.filesRenamed
+                  .slice(0, 3)
+                  .map(r => `• ${r.oldName} → ${r.newName}${r.reason ? ` (${r.reason})` : ''}`)
+                  .join('\n')}`
+              : ''
+          }` +
+          `${
+            result.identifiersChanged.length > 0
+              ? `\n🔤 Sample Changes:\n${result.identifiersChanged
+                  .slice(0, 3)
+                  .map(c => `• ${c.from} → ${c.to} (${c.file}:${c.line})`)
+                  .join('\n')}`
+              : ''
+          }`,
+      },
+    ],
+  }),
 } as any) as Tool;
 
 export type { FileRename, IdentifierChange, ReferenceUpdate, WordRemovalResult };

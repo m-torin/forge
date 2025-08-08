@@ -789,7 +789,6 @@ function NotionEditorCore({
             />
           )}
 
-          {/* Mobile Selection Overlay */}
           <MobileSelectionOverlay
             editor={editor}
             onShowToolbar={() => setIsMobileToolbarVisible(true)}
@@ -817,12 +816,10 @@ function NotionEditorCore({
         />
       )}
 
-      {/* Floating Toolbar */}
       {showFloatingToolbar && !shouldUseMobileOptimizations && (
         <FloatingToolbar editor={editor} showDropdowns={true} />
       )}
 
-      {/* Mobile Toolbar */}
       {shouldUseMobileOptimizations && (
         <MobileFloatingToolbar
           editor={editor}
@@ -830,8 +827,6 @@ function NotionEditorCore({
           onClose={() => setIsMobileToolbarVisible(false)}
         />
       )}
-
-      {/* All suggestion dropdowns (slash, emoji, mention) are now handled by Tiptap extensions */}
     </div>
   );
 }

@@ -14,7 +14,8 @@ import {
 } from '../test-data-generators';
 
 // Import centralized mocks from @repo/qa
-import '@repo/qa/vitest/setup/node-package';
+// Note: Setup file import commented out due to path resolution issues
+// import '@repo/qa/vitest/setup/node-package';
 
 /**
  * Storage provider mock scenarios
@@ -565,7 +566,7 @@ export const storageAssertions = {
   expectActionSuccess: (result: any, expectedData?: any) => {
     expect(result.success).toBeTruthy();
     if (expectedData !== undefined) {
-      expect(result.data).toEqual(expectedData);
+      expect(result.data).toStrictEqual(expectedData);
     } else {
       expect(result.data).toBeDefined();
     }

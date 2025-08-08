@@ -56,10 +56,11 @@ const config = {
     })(),
   appName: env.NEXT_PUBLIC_APP_NAME || 'Forge',
   trustedOrigins: env.TRUSTED_ORIGINS?.split(',') || [
-    'http://localhost:3300', // main backstage
-    'http://localhost:3301', // cms
-    'http://localhost:3302', // authmgmt
-    'http://localhost:3303', // workflows
+    'http://localhost:3200', // webapp
+    'http://localhost:3100', // ai-chatbot
+    'http://localhost:3500', // email
+    'http://localhost:3700', // storybook
+    'http://localhost:3800', // docs
   ],
   providers: {
     github:

@@ -1,19 +1,75 @@
-# Multi-Zone Next.js Applications
+# @labs/with-zones-app - Multi-Zone Next.js
 
-This is an example that demonstrates how to serve multiple Next.js applications from a single domain, called [Multi Zones](https://nextjs.org/docs/advanced-features/multi-zones).
+- _Can build:_ **YES** (Multiple Next.js Apps)
 
-Multi Zones are an approach to micro-frontends that separate a single large application on a domain into smaller applications that each serve a set of paths.
-This is useful when there are collections of pages unrelated to the other pages in the application. By moving those pages to a separate zone, you can reduce the size of the application which improves build times and removes code that is only necessary for one of the zones.
+- _AI Hints:_
 
-Multi-Zone applications work by having one of the applications route requests for some paths to the other pages using the [`rewrites` feature](https://nextjs.org/docs/pages/api-reference/config/next-config-js/rewrites) of `next.config.js`. All URL paths should be unique across all the zones for the domain. For example:
+  ```typescript
+  // Primary: Multi-zone Next.js architecture - micro-frontends with domain routing
+  // Home: runs on :3000, serves root paths and routes /blog/* to blog app
+  // Blog: runs on :4000, serves /blog/* with basePath configuration
+  // Config: rewrites in home/next.config.js route requests to blog app
+  // ❌ NEVER: Use overlapping paths between zones or skip basePath setup
+  ```
 
-- There are two zones in this application: `home` and `blog`.
-- The `home` app is the main app and therefore it includes the rewrites that map to the `blog` app in [next.config.js](home/next.config.js)
-- `home` will serve all paths that are not specifically routed to `blog`.
-- `blog` will serve the `/blog` and `/blog/*` paths.
-- The `blog` app sets [`basePath`](https://nextjs.org/docs/app/api-reference/config/next-config-js/basePath) to `/blog` so that generated pages, Next.js assets and public assets are unique to the `blog` zone and won't conflict with anything from the other zones.
+- _Key Features:_
+  - **Multi-Zone Architecture**: Separate Next.js apps serving different paths from single domain
+  - **Micro-Frontend Pattern**: Independent deployment and development of home and blog zones
+  - **Smart Routing**: Home app routes /blog/* requests to blog app via rewrites
+  - **Asset Isolation**: BasePath configuration prevents asset conflicts between zones
+  - **Independent Development**: Each zone has its own dependencies and build process
 
-NOTE: A `basePath` will prefix all pages in the application with the `basePath` automatically, including relative links. If you have many pages that don't share the same path prefix (for example, `/home` and `/blog` live in the same zone), you can use [`assetPrefix`](https://nextjs.org/docs/app/api-reference/config/next-config-js/assetPrefix) to add a unique prefix for Next.js assets without affecting the other pages.
+- _Zone Configuration:_
+  - **Home Zone**: Main app serving root paths (/, /about), includes routing to blog
+  - **Blog Zone**: Secondary app with basePath '/blog' serving blog content
+  - **Routing**: Home app rewrites /blog/* requests to blog app on different port
+  - **Assets**: Each zone has isolated Next.js assets and public files
+
+Multi-Zone Next.js demonstration - serving multiple Next.js applications from a single domain using [Multi Zones](https://nextjs.org/docs/advanced-features/multi-zones) architecture.
+
+- _Environment Variables:_
+  ```bash
+  # Blog app URL for production deployment
+  BLOG_URL=https://with-zones-blog.vercel.app
+  
+  # Development ports
+  HOME_PORT=3000  # Home zone development server
+  BLOG_PORT=4000  # Blog zone development server
+  ```
+
+- _Quick Setup:_
+  ```bash
+  # Start home zone (terminal 1)
+  cd home
+  pnpm install && pnpm dev
+  # Runs on http://localhost:3000
+  
+  # Start blog zone (terminal 2)  
+  cd blog
+  pnpm install && pnpm dev
+  # Runs on http://localhost:4000/blog
+  
+  # Access complete app
+  # Visit http://localhost:3000 for home
+  # Visit http://localhost:3000/blog for blog (routed via home)
+  ```
+
+- _Architecture Details:_
+  - **Home Zone**: Main application with rewrites configuration routing /blog/* to blog app
+  - **Blog Zone**: Secondary app with basePath '/blog' for asset isolation
+  - **Path Routing**: Home serves /, /about; Blog serves /blog, /blog/post/[id]
+  - **Asset Isolation**: BasePath prevents conflicts between zones' Next.js assets
+  - **Independent Builds**: Each zone builds and deploys separately
+
+- _Deployment Strategy:_
+  - Deploy blog zone first to get domain URL
+  - Configure BLOG_URL environment variable in home zone
+  - Deploy home zone with rewrites pointing to blog domain
+  - Both zones run independently but appear as single domain
+
+## Architecture Overview
+
+Multi-Zone applications work by having one application route requests for specific paths to other applications using the [`rewrites` feature](https://nextjs.org/docs/pages/api-reference/config/next-config-js/rewrites). All URL paths must be unique across zones:
 
 ## How to use
 

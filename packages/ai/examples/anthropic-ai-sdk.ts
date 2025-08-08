@@ -41,7 +41,11 @@ export async function reasoningExample() {
   console.log('🧠 Reasoning Example');
 
   // Pure AI SDK pattern for reasoning
-  const { text, reasoning, reasoningDetails } = await generateText({
+  const {
+    text,
+    reasoningText,
+    reasoningText: reasoning,
+  } = await generateText({
     model: createAnthropicModel({ model: 'claude-4-sonnet-20250514' }),
     prompt: 'How many people will live in the world in 2040?',
     headers: {
@@ -58,7 +62,7 @@ export async function reasoningExample() {
   console.log('🧠 Reasoning:', reasoning);
   console.log('📊 Reasoning Details:', reasoningDetails);
 
-  return { text, reasoning, reasoningDetails };
+  return { text, reasoningText, reasoningText };
 }
 
 /**
@@ -74,7 +78,8 @@ export async function cacheControlExample() {
     messages: [
       {
         role: 'user',
-        content: [
+
+        parts: [
           { type: 'text', text: 'You are a JavaScript expert.' },
           {
             type: 'text',
@@ -90,7 +95,7 @@ export async function cacheControlExample() {
   });
 
   console.log('📝 Response:', result.text);
-  console.log('💾 Cache Metadata:', result.providerMetadata?.anthropic);
+  console.log('💾 Cache Metadata:', result.providerOptions?.anthropic);
 
   return result;
 }
@@ -200,7 +205,7 @@ export async function streamingWithReasoningExample() {
 
   // Get final result with reasoning
   const finalResult = await stream;
-  console.log('\n🧠 Final Reasoning:', finalResult.reasoning);
+  console.log('\n🧠 Final Reasoning:', finalResult.reasoningText);
 
   return finalResult;
 }
@@ -219,7 +224,7 @@ export async function reasoningHelperExample() {
   );
 
   console.log('📝 Response:', result.text);
-  console.log('🧠 Reasoning:', result.reasoning);
+  console.log('🧠 Reasoning:', result.reasoningText);
 
   return result;
 }
@@ -259,7 +264,7 @@ export async function runAllAnthropicExamples() {
 // Export examples for testing
 export const examples = {
   basic: basicAnthropicExample,
-  reasoning: reasoningExample,
+  reasoningText: reasoningExample,
   cacheControl: cacheControlExample,
   computerTools: computerToolsExample,
   structuredOutput: structuredOutputExample,

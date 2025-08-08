@@ -1,7 +1,7 @@
+import { createMockBrowser } from '#/__tests__/scraping-mocks';
+import { createTestData } from '#/__tests__/scraping-test-data';
+import { createUtilityTestSuite } from '#/__tests__/scraping-test-factory';
 import { describe, expect, vi } from 'vitest';
-import { createMockBrowser } from '../../scraping-mocks';
-import { createTestData } from '../../scraping-test-data';
-import { createUtilityTestSuite } from '../../scraping-test-factory';
 
 // Mock the scraper factory
 vi.mock('#/shared/factories/scraper-factory', () => ({
@@ -27,7 +27,7 @@ describe('browser-utils', () => {
       {
         name: 'launch browser with default options',
         args: ['playwright'],
-        assertion: result => {
+        assertion: (result: any) => {
           expect(result).toBeDefined();
           expect(result.provider).toBe('playwright');
         },
@@ -35,7 +35,7 @@ describe('browser-utils', () => {
       {
         name: 'launch browser with custom options',
         args: ['playwright', createTestData.browserOptions({ headless: false, devtools: true })],
-        assertion: result => {
+        assertion: (result: any) => {
           expect(result).toBeDefined();
           expect(result.options).toMatchObject({ headless: false, devtools: true });
         },
@@ -69,7 +69,7 @@ describe('browser-utils', () => {
       {
         name: 'create browser pool with default settings',
         args: ['playwright'],
-        assertion: result => {
+        assertion: (result: any) => {
           expect(result).toBeDefined();
           expect(typeof result.acquire).toBe('function');
           expect(typeof result.release).toBe('function');
@@ -78,7 +78,7 @@ describe('browser-utils', () => {
       {
         name: 'create browser pool with custom settings',
         args: ['playwright', { max: 5, min: 1, idleTimeoutMillis: 30000 }],
-        assertion: result => {
+        assertion: (result: any) => {
           expect(result).toBeDefined();
           expect(result.options).toMatchObject({ max: 5, min: 1, idleTimeoutMillis: 30000 });
         },
@@ -87,6 +87,7 @@ describe('browser-utils', () => {
         name: 'handle pool creation errors',
         args: ['playwright', { max: -1 }],
         shouldThrow: true,
+        errorMessage: 'Max pool size must be greater than 0',
         assertion: () => {}, // Not called for throw scenarios
       },
     ],
@@ -105,7 +106,7 @@ describe('browser-utils', () => {
       {
         name: 'return capabilities for known providers',
         args: ['playwright'],
-        assertion: result => {
+        assertion: (result: any) => {
           expect(result).toBeDefined();
           expect(typeof result).toBe('object');
         },
@@ -113,7 +114,7 @@ describe('browser-utils', () => {
       {
         name: 'return empty object for unknown providers',
         args: ['unknown-provider'],
-        assertion: result => {
+        assertion: (result: any) => {
           expect(result).toBeDefined();
           expect(typeof result).toBe('object');
         },
@@ -134,7 +135,7 @@ describe('browser-utils', () => {
       {
         name: 'optimize browser performance',
         args: [createMockBrowser()],
-        assertion: result => {
+        assertion: (result: any) => {
           expect(result).toBeDefined();
         },
       },
@@ -142,6 +143,7 @@ describe('browser-utils', () => {
         name: 'handle optimization errors',
         args: [null],
         shouldThrow: true,
+        errorMessage: 'Options must be a valid object',
         assertion: () => {}, // Not called for throw scenarios
       },
     ],

@@ -1,49 +1,93 @@
-# Flowbuilder
+# @labs/flows - Flowbuilder
+
+- _Can build:_ **YES** (Next.js App)
+
+- _AI Hints:_
+
+  ```typescript
+  // Primary: Visual workflow automation platform with AWS, AI, GitHub integrations
+  // Flow: import { ReactFlow, saveFlowAction } from "@/flows"
+  // AWS: import { awsClients, lambdaHandler } from "@/integrations/aws"
+  // AI: import { openaiNode, anthropicNode } from "@/flows/nodes/gpt"
+  // ❌ NEVER: Run workflows without proper authentication or bypass encryption
+  ```
+
+- _Key Features:_
+  - **Visual Flow Builder**: Drag-and-drop interface with React Flow for complex workflow creation
+  - **AWS Integration**: Complete SDK integration for Lambda, S3, SNS, SQS, EventBridge, IAM
+  - **AI Services**: OpenAI GPT and Anthropic Claude nodes with custom prompting
+  - **GitHub Integration**: Webhook receivers and event processing for CI/CD workflows
+  - **Real-time Execution**: Flow orchestration with error handling and retry logic
+  - **Authentication**: NextAuth.js with GitHub OAuth and WebAuthn passkey support
+
+- _Integrations:_
+  - **AWS Services**: Lambda functions, S3 storage, SNS/SQS messaging, EventBridge events
+  - **AI Providers**: OpenAI (GPT-4, GPT-3.5), Anthropic (Claude), custom prompts
+  - **Version Control**: GitHub webhooks, repository events, CI/CD triggers
+  - **Database**: PostgreSQL with Prisma ORM, Redis caching
+  - **Monitoring**: Sentry error tracking, Vercel analytics
 
 Business Logic Engine at-scale - A visual programming platform for creating complex workflows and integrations.
 
-## Overview
+- _Environment Variables:_
+  ```bash
+  # Database
+  PRISMA_DB_URL=postgresql://user:pass@localhost:5432/flows
+  
+  # Authentication
+  AUTH_SECRET=your-auth-secret
+  GITHUB_ID=your-github-oauth-id
+  GITHUB_SECRET=your-github-oauth-secret
+  
+  # AWS Integration
+  AWS_ACCESS_KEY_ID=your-aws-access-key
+  AWS_SECRET_ACCESS_KEY=your-aws-secret-key
+  AWS_REGION=us-east-1
+  
+  # AI Services
+  OPENAI_API_KEY=sk-your-openai-key
+  ANTHROPIC_API_KEY=your-anthropic-key
+  
+  # Cache & Storage
+  REDIS_URL=redis://localhost:6379
+  ENCRYPTION_SECRET=your-encryption-secret
+  
+  # Vercel (optional)
+  VERCEL_AUTH_BEARER_TOKEN=your-vercel-token
+  VERCEL_PROJECT_ID=your-project-id
+  ```
 
-Flowbuilder is a powerful workflow automation platform that enables visual programming for complex business logic. It provides a drag-and-drop interface for creating flows that integrate with:
+- _Quick Setup:_
+  ```bash
+  # Install dependencies
+  pnpm install
+  
+  # Set up environment
+  cp env.example .env.local
+  # Edit .env.local with your values
+  
+  # Set up database
+  pnpm prisma:generate
+  pnpm prisma:migrate:dev
+  
+  # Start development server
+  pnpm dev
+  ```
 
-- AWS services (Lambda, S3, SNS, SQS, EventBridge)
-- GitHub webhooks and events
-- AI services (OpenAI, Anthropic)
-- Custom webhooks and APIs
+- _Flow Node Types:_
+  - **Triggers**: Webhook, Cron, GitHub events
+  - **AWS**: Lambda, S3, SNS, SQS, EventBridge
+  - **AI**: OpenAI GPT, Anthropic Claude
+  - **Logic**: If/Then/Else, JavaScript/Python editors
+  - **Data**: Transform, filter, aggregate operations
+
+- _Architecture:_
+  - **Frontend**: Next.js 15 with React Flow for visual editor
+  - **Backend**: Prisma ORM with PostgreSQL, Redis caching
+  - **Security**: NextAuth.js, data encryption, rate limiting
+  - **Deployment**: Vercel with edge functions and database
 
 ## Getting Started
-
-### 1. Clone the repository and install dependencies
-
-```
-git clone https://github.com/nextauthjs/next-auth-example.git
-cd next-auth-example
-pnpm install
-```
-
-### 2. Configure your local environment
-
-Copy the env.example file in this directory to .env.local (which will be ignored by Git):
-
-```
-cp env.example .env.local
-```
-
-**⚠️ IMPORTANT: This application requires several environment variables to function properly. Please review the `env.example` file and configure all required variables.**
-
-#### Required Environment Variables
-
-This application integrates with multiple services and requires the following environment variables:
-
-- **Database**: `PRISMA_DB_URL` - PostgreSQL connection string
-- **Authentication**: `AUTH_SECRET`, `GITHUB_ID`, `GITHUB_SECRET` - NextAuth.js and GitHub OAuth
-- **AWS Integration**: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION` - For S3, SNS, SQS, EventBridge, Lambda
-- **Vercel Integration**: `VERCEL_AUTH_BEARER_TOKEN`, `VERCEL_PROJECT_ID` - For domain management
-- **OpenAI Integration**: `OPENAI_API_KEY` - For GPT functionality
-- **Encryption**: `ENCRYPTION_SECRET` - For data encryption
-- **Cache**: `REDIS_URL`, `CACHE_STORE` - For caching and rate limiting
-
-See `env.example` for a complete list with descriptions.
 
 #### Database
 

@@ -16,8 +16,6 @@ import { createAnthropicWithReasoning } from '../../providers/anthropic';
 export interface AIRouteConfig {
   model?: LanguageModel;
   maxOutputTokens?: number;
-  /** @deprecated Use maxOutputTokens instead */
-  maxTokens?: number;
   temperature?: number;
   allowedOrigins?: string[];
   enableStreaming?: boolean;
@@ -33,14 +31,7 @@ export function createChatRoute(config: AIRouteConfig = {}) {
   return async function POST(req: NextRequest) {
     try {
       const body = await req.json();
-      const {
-        messages,
-        model: requestModel,
-        maxTokens,
-        maxOutputTokens,
-        temperature,
-        stream = true,
-      } = body;
+      const { messages, model: requestModel, maxOutputTokens, temperature, stream = true } = body;
 
       if (!messages || !Array.isArray(messages)) {
         return NextResponse.json({ error: 'Messages array is required' }, { status: 400 });
@@ -52,8 +43,7 @@ export function createChatRoute(config: AIRouteConfig = {}) {
       const options = {
         model,
         messages: messages as ModelMessage[],
-        maxOutputTokens:
-          maxOutputTokens || maxTokens || config.maxOutputTokens || config.maxTokens || 1000,
+        maxOutputTokens: maxOutputTokens || config.maxOutputTokens || 1000,
         temperature: temperature || config.temperature || 0.7,
       };
 
@@ -92,7 +82,7 @@ export function createGenerateRoute(
   return async function POST(req: NextRequest) {
     try {
       const body = await req.json();
-      const { prompt, system, model: requestModel, maxTokens, maxOutputTokens, temperature } = body;
+      const { prompt, system, model: requestModel, maxOutputTokens, temperature } = body;
 
       if (!prompt) {
         return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
@@ -104,8 +94,7 @@ export function createGenerateRoute(
         model,
         prompt,
         system,
-        maxOutputTokens:
-          maxOutputTokens || maxTokens || config.maxOutputTokens || config.maxTokens || 1000,
+        maxOutputTokens: maxOutputTokens || config.maxOutputTokens || 1000,
         temperature: temperature || config.temperature || 0.7,
       });
 
@@ -135,7 +124,6 @@ export function createObjectRoute(config: AIRouteConfig = {}) {
         prompt,
         schema,
         model: requestModel,
-        maxTokens,
         maxOutputTokens,
         temperature,
         stream = false,
@@ -151,8 +139,7 @@ export function createObjectRoute(config: AIRouteConfig = {}) {
         model,
         prompt,
         schema,
-        maxOutputTokens:
-          maxOutputTokens || maxTokens || config.maxOutputTokens || config.maxTokens || 1000,
+        maxOutputTokens: maxOutputTokens || config.maxOutputTokens || 1000,
         temperature: temperature || config.temperature || 0.7,
       };
 
@@ -184,14 +171,7 @@ export function createStreamRoute(config: AIRouteConfig = {}) {
   return async function POST(req: NextRequest) {
     try {
       const body = await req.json();
-      const {
-        messages,
-        model: requestModel,
-        maxTokens,
-        maxOutputTokens,
-        temperature,
-        tools,
-      } = body;
+      const { messages, model: requestModel, maxOutputTokens, temperature, tools } = body;
 
       if (!messages || !Array.isArray(messages)) {
         return NextResponse.json({ error: 'Messages array is required' }, { status: 400 });
@@ -202,8 +182,7 @@ export function createStreamRoute(config: AIRouteConfig = {}) {
       const result = streamText({
         model,
         messages: messages as ModelMessage[],
-        maxOutputTokens:
-          maxOutputTokens || maxTokens || config.maxOutputTokens || config.maxTokens || 1000,
+        maxOutputTokens: maxOutputTokens || config.maxOutputTokens || 1000,
         temperature: temperature || config.temperature || 0.7,
         tools: config.enableTools ? tools : undefined,
       });
@@ -263,7 +242,6 @@ export function createVectorChatRoute(
         vectorContext: providedContext,
         enableVectorSearch = true,
         model: requestModel,
-        maxTokens,
         maxOutputTokens,
         temperature,
       } = body;
@@ -291,7 +269,7 @@ export function createVectorChatRoute(
       }
 
       // Enhance system message with vector context
-      let enhancedMessages = [...messages];
+      let processedMessages = [...messages];
       if (vectorContext.length > 0) {
         const contextString = vectorContext.map(
           (item: any) => `${item.content || item.text || JSON.stringify(item)}`,
@@ -309,16 +287,16 @@ Use this information to provide accurate and helpful responses when relevant.`,
         };
 
         // Add or prepend system message
-        const hasSystemMessage = enhancedMessages[0]?.role === 'system';
+        const hasSystemMessage = processedMessages[0]?.role === 'system';
         if (hasSystemMessage) {
-          enhancedMessages[0] = {
-            ...enhancedMessages[0],
-            content: `${enhancedMessages[0].content}
+          processedMessages[0] = {
+            ...processedMessages[0],
+            content: `${processedMessages[0].content}
 
 ${systemMessage.content}`,
           };
         } else {
-          enhancedMessages = [systemMessage, ...enhancedMessages];
+          processedMessages = [systemMessage, ...processedMessages];
         }
       }
 
@@ -326,9 +304,8 @@ ${systemMessage.content}`,
 
       const result = streamText({
         model,
-        messages: enhancedMessages as ModelMessage[],
-        maxOutputTokens:
-          maxOutputTokens || maxTokens || config.maxOutputTokens || config.maxTokens || 1000,
+        messages: processedMessages as ModelMessage[],
+        maxOutputTokens: maxOutputTokens || config.maxOutputTokens || 1000,
         temperature: temperature || config.temperature || 0.7,
       });
 

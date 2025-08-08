@@ -70,7 +70,7 @@ const webpackConfig = (config: any, { isServer }: { isServer: boolean }) => {
   // This warning occurs because OpenTelemetry instrumentation packages use dynamic
   // requires that webpack cannot statically analyze. This is safe to suppress as
   // these warnings don't affect runtime functionality.
-  // 
+  //
   // Context: When using @sentry/nextjs or other observability tools, they often
   // include OpenTelemetry instrumentation that uses the 'require-in-the-middle'
   // package for dynamic patching. Webpack shows warnings about not being able
@@ -83,7 +83,12 @@ const webpackConfig = (config: any, { isServer }: { isServer: boolean }) => {
     ...(config.ignoreWarnings || []),
     {
       module: /require-in-the-middle/,
-      message: /Critical dependency: require function is used in a way in which dependencies cannot be statically extracted/,
+      message:
+        /Critical dependency: require function is used in a way in which dependencies cannot be statically extracted/,
+    },
+    {
+      module: /@opentelemetry\/instrumentation/,
+      message: /Critical dependency: the request of a dependency is an expression/,
     },
   ];
 

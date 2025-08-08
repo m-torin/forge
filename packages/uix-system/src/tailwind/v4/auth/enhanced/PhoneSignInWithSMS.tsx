@@ -25,7 +25,7 @@ interface PhoneSignInWithSMSProps extends BaseProps {
   onCodeSent?: (phoneNumber: string) => void;
 }
 
-const initialState: FormState = { success: false };
+const _initialState: FormState = { success: false };
 
 // Common country codes
 const COUNTRY_CODES = [
@@ -100,7 +100,7 @@ async function requestSMSSignInAction(prevState: any, formData: FormData): Promi
       };
     }
   } catch (error: any) {
-    console.error('SMS sign-in request error:', error);
+    // console.error('SMS sign-in request error:', error);
 
     if (error?.message?.includes('not found')) {
       return {
@@ -163,9 +163,9 @@ async function verifySMSSignInAction(prevState: any, formData: FormData): Promis
     }
 
     // Import Better Auth server action
-    const { verifySMSSignInCodeAction } = await import('@repo/auth/server-actions');
+    const { verifySMSCodeAction } = await import('@repo/auth/server-actions');
 
-    const result = await verifySMSSignInCodeAction(prevState, formData);
+    const result = await verifySMSCodeAction(prevState, formData);
 
     if (result.success) {
       return {
@@ -180,7 +180,7 @@ async function verifySMSSignInAction(prevState: any, formData: FormData): Promis
       };
     }
   } catch (error: any) {
-    console.error('SMS sign-in verification error:', error);
+    // console.error('SMS sign-in verification error:', error);
 
     if (error?.message?.includes('invalid code')) {
       return {
@@ -332,7 +332,6 @@ export function PhoneSignInWithSMS({
       </CardHeader>
 
       <CardContent>
-        {/* Success State */}
         {verifyState?.success && (
           <div className="space-y-4">
             <Alert variant="success">{verifyState.message}</Alert>
@@ -364,13 +363,10 @@ export function PhoneSignInWithSMS({
           </div>
         )}
 
-        {/* Phone Number Step */}
         {step === 'phone' && !verifyState?.success && (
           <form action={requestAction} className="space-y-4">
-            {/* Error Message */}
             {requestState?.error && <Alert variant="destructive">{requestState.error}</Alert>}
 
-            {/* Country Code Selection */}
             <div className="space-y-2">
               <label
                 className={cn('block text-sm font-medium text-gray-700', 'dark:text-gray-300')}
@@ -402,7 +398,6 @@ export function PhoneSignInWithSMS({
               )}
             </div>
 
-            {/* Phone Number Input */}
             <Input
               name="phoneNumber"
               type="tel"
@@ -425,16 +420,12 @@ export function PhoneSignInWithSMS({
           </form>
         )}
 
-        {/* Verification Step */}
         {step === 'verification' && !verifyState?.success && (
           <div className="space-y-4">
-            {/* Success message from phone step */}
             {requestState?.success && <Alert variant="success">{requestState.message}</Alert>}
 
-            {/* Error Messages */}
             {verifyState?.error && <Alert variant="destructive">{verifyState.error}</Alert>}
 
-            {/* Phone Number Display */}
             <div className={cn('rounded-lg bg-gray-50 p-4', 'dark:bg-gray-800')}>
               <div className="text-center">
                 <p className={cn('text-sm font-medium text-gray-700', 'dark:text-gray-300')}>
@@ -446,7 +437,6 @@ export function PhoneSignInWithSMS({
               </div>
             </div>
 
-            {/* Code Input */}
             <form action={verifyAction} className="space-y-4">
               <input
                 type="hidden"
@@ -506,7 +496,6 @@ export function PhoneSignInWithSMS({
               </Button>
             </form>
 
-            {/* Resend Code */}
             <div className="text-center">
               <p className={cn('mb-2 text-sm text-gray-600', 'dark:text-gray-400')}>
                 Didn't receive the code?
@@ -533,7 +522,6 @@ export function PhoneSignInWithSMS({
               </form>
             </div>
 
-            {/* Change Phone Number */}
             <div className="text-center">
               <button
                 type="button"
@@ -552,7 +540,6 @@ export function PhoneSignInWithSMS({
           </div>
         )}
 
-        {/* Help Information */}
         {!verifyState?.success && (
           <div className={cn('mt-6 rounded-lg bg-gray-50 p-4', 'dark:bg-gray-800')}>
             <h4 className={cn('mb-2 text-sm font-medium text-gray-900', 'dark:text-gray-100')}>
@@ -578,7 +565,6 @@ export function PhoneSignInWithSMS({
           </div>
         )}
 
-        {/* Alternative Sign-in */}
         {!verifyState?.success && (
           <div className="mt-6 text-center">
             <p className={cn('text-sm text-gray-600', 'dark:text-gray-400')}>

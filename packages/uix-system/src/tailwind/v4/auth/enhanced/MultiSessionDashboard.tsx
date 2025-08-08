@@ -69,7 +69,7 @@ export function MultiSessionDashboard({
   showLocationInfo = true,
   className = '',
 }: MultiSessionDashboardProps) {
-  const [isPending, startTransition] = useTransition();
+  const [isPending, _startTransition] = useTransition();
   const [selectedSessions, setSelectedSessions] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy] = useState<'lastActive' | 'created' | 'location' | 'device'>(
     'lastActive',
@@ -233,7 +233,6 @@ export function MultiSessionDashboard({
 
   return (
     <div className={`space-y-6 ${className}`}>
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold text-gray-900">Session Management</h2>
@@ -258,7 +257,6 @@ export function MultiSessionDashboard({
         </div>
       </div>
 
-      {/* Status Messages */}
       {(revokeState.error || revokeAllState.error || refreshState.error) && (
         <Alert variant="destructive">
           {revokeState.error || revokeAllState.error || refreshState.error}
@@ -273,7 +271,6 @@ export function MultiSessionDashboard({
         </Alert>
       )}
 
-      {/* Summary Stats */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <Card>
           <CardContent className="p-4">
@@ -328,7 +325,6 @@ export function MultiSessionDashboard({
         </Card>
       </div>
 
-      {/* Filters and Controls */}
       <Card>
         <CardContent className="p-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
@@ -388,7 +384,6 @@ export function MultiSessionDashboard({
         </CardContent>
       </Card>
 
-      {/* Sessions List */}
       <div className="space-y-4">
         {filteredAndSortedSessions.length === 0 ? (
           <Card>
@@ -427,7 +422,6 @@ export function MultiSessionDashboard({
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex flex-1 items-start space-x-4">
-                    {/* Selection Checkbox */}
                     {allowBulkActions && !session.activity.isCurrentSession && (
                       <div className="pt-1">
                         <input
@@ -439,10 +433,8 @@ export function MultiSessionDashboard({
                       </div>
                     )}
 
-                    {/* Device Icon */}
                     <div className="text-3xl">{getDeviceIcon(session.deviceInfo.type)}</div>
 
-                    {/* Session Details */}
                     <div className="min-w-0 flex-1">
                       <div className="mb-2 flex items-center space-x-2">
                         <h3 className="truncate text-lg font-medium text-gray-900">
@@ -468,7 +460,6 @@ export function MultiSessionDashboard({
                       </div>
 
                       <div className="grid grid-cols-1 gap-4 text-sm text-gray-600 md:grid-cols-3">
-                        {/* Device Info */}
                         <div>
                           <div className="mb-1 font-medium text-gray-700">Device</div>
                           <div>
@@ -479,7 +470,6 @@ export function MultiSessionDashboard({
                           )}
                         </div>
 
-                        {/* Location Info */}
                         {showLocationInfo && (
                           <div>
                             <div className="mb-1 font-medium text-gray-700">Location</div>
@@ -492,7 +482,6 @@ export function MultiSessionDashboard({
                           </div>
                         )}
 
-                        {/* Activity Info */}
                         <div>
                           <div className="mb-1 font-medium text-gray-700">Activity</div>
                           <div>Last active: {formatDuration(session.activity.lastActiveAt)}</div>
@@ -502,7 +491,6 @@ export function MultiSessionDashboard({
                         </div>
                       </div>
 
-                      {/* Security Details */}
                       {showSecurityDetails && (
                         <div className="mt-3 border-t border-gray-200 pt-3">
                           <div className="flex items-center space-x-4 text-sm">
@@ -531,10 +519,9 @@ export function MultiSessionDashboard({
                     </div>
                   </div>
 
-                  {/* Actions */}
                   <div className="ml-4 flex space-x-2">
-                    {!session.activity.isCurrentSession && (
-                      showRevokeConfirm === session.id ? (
+                    {!session.activity.isCurrentSession &&
+                      (showRevokeConfirm === session.id ? (
                         <div className="flex space-x-2">
                           <Button
                             size="sm"
@@ -561,8 +548,7 @@ export function MultiSessionDashboard({
                         >
                           Revoke
                         </Button>
-                      )
-                    )}
+                      ))}
                   </div>
                 </div>
               </CardContent>
@@ -571,7 +557,6 @@ export function MultiSessionDashboard({
         )}
       </div>
 
-      {/* Security Notice */}
       <Card className="border-blue-200 bg-blue-50">
         <CardContent className="p-4">
           <div className="flex items-start">

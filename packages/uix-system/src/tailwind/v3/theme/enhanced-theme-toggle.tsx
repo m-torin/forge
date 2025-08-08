@@ -110,7 +110,6 @@ export function EnhancedThemeToggle({ className }: { className?: string }) {
             )}
           </AnimatePresence>
 
-          {/* Animated background */}
           <motion.div
             className="absolute inset-0 rounded-full"
             animate={{
@@ -218,7 +217,6 @@ export function ThemeSelector({ className }: { className?: string }) {
               </div>
             </motion.div>
 
-            {/* Backdrop */}
             <button
               className="fixed inset-0 z-40"
               onClick={() => setIsOpen(false)}

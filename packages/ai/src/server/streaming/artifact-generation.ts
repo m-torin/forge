@@ -1,12 +1,12 @@
-import type { LanguageModelV2 } from '@ai-sdk/provider';
-import { smoothStream, streamText, type UIMessageStreamWriter } from 'ai';
+import type { LanguageModel, UIMessageStreamWriter } from 'ai';
+import { smoothStream, streamText } from 'ai';
 
 /**
  * Configuration for artifact generation
  */
 export interface ArtifactGenerationConfig {
   /** Model to use for generation */
-  model: LanguageModelV2;
+  model: LanguageModel;
   /** System prompt for the generation */
   systemPrompt: string;
   /** User prompt/input */
@@ -42,6 +42,7 @@ export async function streamArtifactGeneration(
     system: systemPrompt,
     experimental_transform: smoothStream({ chunking }),
     prompt,
+    experimental_telemetry: { isEnabled: true },
   };
 
   // Add prediction metadata if enabled and existing content provided
@@ -61,13 +62,14 @@ export async function streamArtifactGeneration(
   for await (const delta of fullStream) {
     const { type } = delta;
 
-    if (type === 'text') {
-      const { text } = delta;
-      fullContent += text;
+    if (type === 'text-delta') {
+      const { text: textDelta } = delta;
+      fullContent += textDelta;
 
       dataStream.write({
-        type: 'text' as any,
-        text: text,
+        type: 'text-delta',
+        id: `delta_${Date.now()}_${Math.random().toString(36).substring(2)}`,
+        delta: textDelta,
       });
     }
   }
@@ -87,7 +89,7 @@ export function createArtifactGenerator(
      * Generate new artifact content
      */
     async create(
-      model: LanguageModelV2,
+      model: LanguageModel,
       title: string,
       dataStream: UIMessageStreamWriter,
       options?: {
@@ -110,7 +112,7 @@ export function createArtifactGenerator(
      * Update existing artifact content
      */
     async update(
-      model: LanguageModelV2,
+      model: LanguageModel,
       existingContent: string,
       description: string,
       dataStream: UIMessageStreamWriter,

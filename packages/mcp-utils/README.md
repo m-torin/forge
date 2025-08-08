@@ -1,4 +1,18 @@
-# MCP Utils
+# @repo/mcp-utils
+
+- _Can build:_ **NO**
+
+- _Exports:_
+  - **Core**: MCP server providing utilities for Claude Code agents
+  - **Tools**: `safe_stringify`, `bounded_cache`, `async_logger`
+
+- _AI Hints:_
+  ```typescript
+  // Primary: MCP protocol utilities for Claude agents - reduces code duplication
+  // Use: mcp__claude_utils__safe_stringify({ obj, maxLength })
+  // Cache: mcp__claude_utils__create_bounded_cache({ name, maxSize })
+  // ❌ NEVER: Duplicate utility functions - use MCP tools instead
+  ```
 
 A centralized MCP (Model Context Protocol) server providing common utilities for
 Claude Code agents. This package eliminates code duplication across agent files

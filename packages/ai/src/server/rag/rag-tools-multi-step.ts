@@ -38,14 +38,14 @@ export const SourceSchema = z.object({
 export function createKnowledgeSearchTool(config: RAGToolConfig) {
   return tool({
     description: 'Search knowledge base with advanced filtering and source tracking',
-    parameters: z.object({
+    inputSchema: z.object({
       question: z.string().describe('The question or query to search for'),
       topK: z.number().min(1).max(20).default(5).describe('Number of results to return'),
       threshold: z.number().min(0).max(1).default(0.7).describe('Minimum similarity threshold'),
       includeMetadata: z.boolean().default(true).describe('Include source metadata'),
       contextWindow: z.number().optional().describe('Maximum context length per result'),
     }),
-    execute: async ({ question, topK, threshold, includeMetadata, contextWindow }, context) => {
+    execute: async ({ question, topK, threshold, includeMetadata, contextWindow }, _context) => {
       const startTime = Date.now();
 
       try {
@@ -115,7 +115,7 @@ export function createKnowledgeSearchTool(config: RAGToolConfig) {
 export function createBatchDocumentTool(config: RAGToolConfig) {
   return tool({
     description: 'Process multiple documents in batch for efficient knowledge base updates',
-    parameters: z.object({
+    inputSchema: z.object({
       documents: z
         .array(
           z.object({
@@ -130,7 +130,7 @@ export function createBatchDocumentTool(config: RAGToolConfig) {
     }),
     execute: async (
       { documents, chunkSize, generateEmbeddings: shouldGenerateEmbeddings },
-      context,
+      _context,
     ) => {
       if (!config.enableBatchProcessing) {
         throw new Error('Batch processing not enabled for this tool configuration');
@@ -202,7 +202,7 @@ export function createBatchDocumentTool(config: RAGToolConfig) {
 export function createMultiStepReasoningTool(config: RAGToolConfig) {
   return tool({
     description: 'Perform multi-step reasoning by accumulating context from multiple searches',
-    parameters: z.object({
+    inputSchema: z.object({
       mainQuestion: z.string().describe('The main question to answer'),
       subQueries: z.array(z.string()).min(1).max(5).describe('Sub-queries to explore'),
       synthesizeResults: z.boolean().default(true).describe('Synthesize results from all queries'),
@@ -274,9 +274,11 @@ export function createMultiStepReasoningTool(config: RAGToolConfig) {
 
             const contentKey = result.content.substring(0, 100); // Use first 100 chars as key
             if (contentMap.has(contentKey)) {
-              const existing = contentMap.get(contentKey)!;
-              existing.score = Math.max(existing.score, result.score);
-              existing.queries.push(query);
+              const existing = contentMap.get(contentKey);
+              if (existing) {
+                existing.score = Math.max(existing.score, result.score);
+                existing.queries.push(query);
+              }
             } else {
               contentMap.set(contentKey, {
                 score: result.score,
@@ -324,7 +326,7 @@ export function createMultiStepReasoningTool(config: RAGToolConfig) {
 export function createContextSummarizationTool(config: RAGToolConfig) {
   return tool({
     description: 'Summarize content based on retrieved context with source attribution',
-    parameters: z.object({
+    inputSchema: z.object({
       topic: z.string().describe('Topic to summarize'),
       focusAreas: z.array(z.string()).optional().describe('Specific areas to focus on'),
       maxSources: z.number().default(10).describe('Maximum number of sources to use'),
@@ -366,7 +368,7 @@ export function createContextSummarizationTool(config: RAGToolConfig) {
               query,
             });
           });
-        } catch (error) {
+        } catch (_error) {
           // Continue with other queries if one fails
         }
       }
@@ -418,7 +420,7 @@ export function createContextSummarizationTool(config: RAGToolConfig) {
  */
 export function createRAGToolset(config: RAGToolConfig) {
   return {
-    enhancedKnowledgeSearch: createKnowledgeSearchTool(config),
+    contextualKnowledgeSearch: createKnowledgeSearchTool(config),
     batchDocumentProcessor: createBatchDocumentTool(config),
     multiStepReasoning: createMultiStepReasoningTool(config),
     contextSummarization: createContextSummarizationTool(config),
@@ -429,7 +431,7 @@ export function createRAGToolset(config: RAGToolConfig) {
  * Type-safe tool result types for AI SDK v5
  */
 export type RAGToolResults = {
-  enhancedKnowledgeSearch: Array<{
+  contextualKnowledgeSearch: Array<{
     content: string;
     score: number;
     metadata?: any;

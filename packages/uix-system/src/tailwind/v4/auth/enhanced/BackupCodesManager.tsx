@@ -33,22 +33,22 @@ interface BackupCodesManagerProps extends BaseProps {
   onCodeUsed?: (codeId: string) => void;
 }
 
-const initialState: FormState = { success: false };
+const _initialState: FormState = { success: false };
 
 export function BackupCodesManager({
   backupCodes,
   twoFactorEnabled,
   title = 'Backup Codes',
   subtitle = 'Manage your two-factor authentication backup codes',
-  onCodesGenerated,
-  onCodeUsed,
+  onCodesGenerated: _onCodesGenerated,
+  onCodeUsed: _onCodeUsed,
   className = '',
 }: BackupCodesManagerProps) {
   const [generateState, generateAction] = useFormState(
     generateBackupCodesAction,
     createInitialActionState(),
   );
-  const [downloadState, downloadAction] = useFormState(
+  const [downloadState, _downloadAction] = useFormState(
     downloadBackupCodesAction,
     createInitialActionState(),
   );
@@ -135,7 +135,6 @@ export function BackupCodesManager({
 
   return (
     <div className={`space-y-6 ${className}`}>
-      {/* Header */}
       <div className="text-center">
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-yellow-100">
           <svg
@@ -156,7 +155,6 @@ export function BackupCodesManager({
         {subtitle && <p className="mt-2 text-sm text-gray-600">{subtitle}</p>}
       </div>
 
-      {/* Error/Success Messages */}
       {(generateState?.error || downloadState?.error || revokeState?.error) && (
         <Alert variant="destructive">
           {generateState?.error || downloadState?.error || revokeState?.error}
@@ -169,7 +167,6 @@ export function BackupCodesManager({
         </Alert>
       )}
 
-      {/* Backup Codes Status */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -204,7 +201,6 @@ export function BackupCodesManager({
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex flex-wrap gap-3">
             <form action={generateAction} className="inline">
               <div className="mb-2 flex items-center space-x-2">
@@ -251,10 +247,8 @@ export function BackupCodesManager({
         </CardContent>
       </Card>
 
-      {/* Backup Codes Display */}
       {backupCodes.length > 0 && (
         <div className="grid gap-6 md:grid-cols-2">
-          {/* Unused Codes */}
           {unusedCodes.length > 0 && (
             <Card>
               <CardHeader>
@@ -301,7 +295,6 @@ export function BackupCodesManager({
             </Card>
           )}
 
-          {/* Used Codes */}
           {usedCodes.length > 0 && (
             <Card>
               <CardHeader>
@@ -336,7 +329,6 @@ export function BackupCodesManager({
         </div>
       )}
 
-      {/* Information */}
       <Card className="border-blue-200 bg-blue-50">
         <CardContent className="p-4">
           <div className="flex items-start">

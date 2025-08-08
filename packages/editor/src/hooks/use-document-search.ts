@@ -43,9 +43,9 @@ export interface UseDocumentSearchOptions {
   enableHistory?: boolean;
   contextLength?: number;
   maxContentMatches?: number;
-  debounceMs?: number; // Debounce delay for search queries
-  pageSize?: number; // Number of results per page
-  enablePagination?: boolean; // Enable pagination for results
+  debounceMs?: number;
+  pageSize?: number;
+  enablePagination?: boolean;
 }
 
 export function useDocumentSearch(

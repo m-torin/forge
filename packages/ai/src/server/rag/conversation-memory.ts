@@ -62,8 +62,8 @@ export interface ConversationMemoryConfig {
 
   // Conversation management
   maxMessagesInMemory?: number;
-  maxConversationAge?: number; // milliseconds
-  summaryInterval?: number; // messages
+  maxConversationAge?: number;
+  summaryInterval?: number;
 
   // Context retrieval
   contextTopK?: number;
@@ -85,11 +85,13 @@ export interface ConversationMemoryConfig {
 export class ConversationMemoryManager {
   private conversations = new Map<string, ConversationThread>();
   private summaries = new Map<string, ContextSummary[]>();
-  private config: Required<ConversationMemoryConfig>;
+  private config: Required<Omit<ConversationMemoryConfig, 'vectorStore'>> & {
+    vectorStore: RAGDatabaseBridge | null;
+  };
 
   constructor(config: ConversationMemoryConfig = {}) {
     this.config = {
-      vectorStore: config.vectorStore!,
+      vectorStore: config.vectorStore || null,
       maxMessagesInMemory: 100,
       maxConversationAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       summaryInterval: 10,
@@ -113,7 +115,9 @@ export class ConversationMemoryManager {
     metadata?: Record<string, any>,
   ): Promise<ConversationThread> {
     if (this.conversations.has(conversationId)) {
-      return this.conversations.get(conversationId)!;
+      const existing = this.conversations.get(conversationId);
+      if (existing) return existing;
+      throw new Error(`Conversation ${conversationId} not found`);
     }
 
     // Try to load from persistent storage
@@ -369,7 +373,7 @@ export class ConversationMemoryManager {
         .filter(summary => summary.embedding)
         .map(summary => ({
           summary,
-          score: this.cosineSimilarity(queryEmbedding, summary.embedding!),
+          score: this.cosineSimilarity(queryEmbedding, summary.embedding || []),
         }))
         .filter(item => item.score >= this.config.contextThreshold)
         .sort((a, b) => b.score - a.score)
@@ -389,8 +393,8 @@ export class ConversationMemoryManager {
    * Get related conversation context from other conversations
    */
   private async getRelatedConversationContext(
-    conversationId: string,
-    query: string,
+    _conversationId: string,
+    _query: string,
   ): Promise<ConversationMessage[]> {
     // This is a simplified implementation
     // In production, you might use vector search across all conversations
@@ -582,16 +586,16 @@ export class ConversationMemoryManager {
   /**
    * Persistent storage methods (placeholder implementations)
    */
-  private async loadConversation(conversationId: string): Promise<ConversationThread | null> {
+  private async loadConversation(_conversationId: string): Promise<ConversationThread | null> {
     // Implementation depends on your storage backend
     return null;
   }
 
-  private async saveConversation(conversation: ConversationThread): Promise<void> {
+  private async saveConversation(_conversation: ConversationThread): Promise<void> {
     // Implementation depends on your storage backend
   }
 
-  private async saveSummary(summary: ContextSummary): Promise<void> {
+  private async saveSummary(_summary: ContextSummary): Promise<void> {
     // Implementation depends on your storage backend
   }
 

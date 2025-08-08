@@ -20,8 +20,12 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 // Mock handlers
-const mockSubmit = (values: any) => console.log('Form submitted:', values);
-const mockBackToLogin = () => console.log('Back to login clicked');
+const mockSubmit = (values: any) => {
+  // console.log('Form submitted:', values);
+};
+const mockBackToLogin = () => {
+  // console.log('Back to login clicked');
+};
 
 export const Default: Story = {
   args: {

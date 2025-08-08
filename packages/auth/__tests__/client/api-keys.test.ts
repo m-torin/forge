@@ -19,7 +19,7 @@ const mockRevokeApiKeyAction = vi.fn();
 const mockUpdateApiKeyAction = vi.fn();
 const mockValidateApiKeyAction = vi.fn();
 
-vi.mock('#/server/actions', () => ({
+vi.mock('../../src/server/actions', () => ({
   createApiKeyAction: mockCreateApiKeyAction,
   listApiKeysAction: mockListApiKeysAction,
   revokeApiKeyAction: mockRevokeApiKeyAction,
@@ -28,7 +28,7 @@ vi.mock('#/server/actions', () => ({
 }));
 
 // Mock shared utilities
-vi.mock('#/shared/utils/api-keys', () => ({
+vi.mock('../../src/shared/utils/api-keys', () => ({
   formatPermissionsForDisplay: vi.fn(),
   generateApiKeyName: vi.fn(),
   getTimeUntilExpiration: vi.fn(),

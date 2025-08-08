@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useFormState } from 'react-dom';
 import type { BaseProps, FormState } from '../types';
 import { createInitialActionState } from '../types';
@@ -25,7 +25,7 @@ interface PasskeySignInInterfaceProps extends BaseProps {
   onFallback?: () => void;
 }
 
-const initialState: FormState = { success: false };
+const _initialState: FormState = { success: false };
 
 // Server action for initiating passkey authentication
 async function initiatePasskeyAuthAction(prevState: any, formData: FormData): Promise<FormState> {
@@ -55,7 +55,7 @@ async function initiatePasskeyAuthAction(prevState: any, formData: FormData): Pr
       };
     }
   } catch (error: any) {
-    console.error('Passkey authentication initiation error:', error);
+    // console.error('Passkey authentication initiation error:', error);
 
     if (error?.message?.includes('no passkeys')) {
       return {
@@ -118,7 +118,7 @@ async function completePasskeyAuthAction(prevState: any, formData: FormData): Pr
       };
     }
   } catch (error: any) {
-    console.error('Passkey authentication completion error:', error);
+    // console.error('Passkey authentication completion error:', error);
 
     if (error?.message?.includes('invalid credential')) {
       return {
@@ -158,7 +158,7 @@ export function PasskeySignInInterface({
   className = '',
 }: PasskeySignInInterfaceProps) {
   const [step, setStep] = useState<SignInStep>('check-support');
-  const [isWebAuthnSupported, setIsWebAuthnSupported] = useState(false);
+  const [_isWebAuthnSupported, setIsWebAuthnSupported] = useState(false);
   const [authData, setAuthData] = useState<any>(null);
 
   const [initiateState, initiateAction] = useFormState(
@@ -168,6 +168,84 @@ export function PasskeySignInInterface({
   const [completeState, completeAction] = useFormState(
     completePasskeyAuthAction,
     createInitialActionState(),
+  );
+
+  // WebAuthn authentication process
+  const startWebAuthnAuthentication = useCallback(
+    async (options: any) => {
+      try {
+        // Convert challenge from base64
+        const decodedOptions = {
+          ...options,
+          challenge: Uint8Array.from(atob(options.challenge), c => c.charCodeAt(0)),
+          allowCredentials: options.allowCredentials?.map((cred: any) => ({
+            ...cred,
+            id: Uint8Array.from(atob(cred.id), c => c.charCodeAt(0)),
+          })),
+        };
+
+        // Get credential
+        const credential = (await navigator.credentials.get({
+          publicKey: decodedOptions,
+        })) as PublicKeyCredential;
+
+        if (!credential) {
+          throw new Error('No credential received');
+        }
+
+        // Prepare credential data for server
+        const credentialData = {
+          id: credential.id,
+          rawId: Array.from(new Uint8Array(credential.rawId)),
+          response: {
+            authenticatorData: Array.from(
+              new Uint8Array(
+                (credential.response as AuthenticatorAssertionResponse).authenticatorData,
+              ),
+            ),
+            clientDataJSON: Array.from(new Uint8Array(credential.response.clientDataJSON)),
+            signature: Array.from(
+              new Uint8Array((credential.response as AuthenticatorAssertionResponse).signature),
+            ),
+            userHandle: (() => {
+              const userHandle = (credential.response as AuthenticatorAssertionResponse).userHandle;
+              return userHandle ? Array.from(new Uint8Array(userHandle)) : null;
+            })(),
+          },
+          type: credential.type,
+        };
+
+        // Submit to server
+        const form = new FormData();
+        form.append('challenge', authData.challenge);
+        form.append('credential', JSON.stringify(credentialData));
+        form.append('redirectTo', redirectTo || '');
+
+        completeAction(form);
+      } catch (error: any) {
+        // console.error('WebAuthn authentication error:', error);
+
+        let errorMessage = 'Failed to authenticate with passkey. ';
+
+        if (error.name === 'NotSupportedError') {
+          errorMessage += "Your device or browser doesn't support this authentication method.";
+        } else if (error.name === 'SecurityError') {
+          errorMessage += "Security error occurred. Please ensure you're on a secure connection.";
+        } else if (error.name === 'NotAllowedError') {
+          errorMessage += 'Authentication was cancelled or not allowed.';
+        } else if (error.name === 'InvalidStateError') {
+          errorMessage += 'No matching passkey found on this device.';
+        } else if (error.name === 'UnknownError') {
+          errorMessage += 'An unknown error occurred during authentication.';
+        } else {
+          errorMessage += 'Please try again or use a different sign-in method.';
+        }
+
+        setStep('error');
+        if (onError) onError(errorMessage);
+      }
+    },
+    [authData, completeAction, redirectTo, onError],
   );
 
   // Check WebAuthn support on component mount
@@ -199,7 +277,7 @@ export function PasskeySignInInterface({
       setStep('error');
       if (onError) onError(initiateState.error);
     }
-  }, [initiateState, onError]);
+  }, [initiateState, onError, startWebAuthnAuthentication]);
 
   // Handle authentication completion
   useEffect(() => {
@@ -223,82 +301,6 @@ export function PasskeySignInInterface({
       if (onError) onError(completeState.error);
     }
   }, [completeState, onSuccess, onError]);
-
-  // WebAuthn authentication process
-  const startWebAuthnAuthentication = async (options: any) => {
-    try {
-      // Convert challenge from base64
-      const decodedOptions = {
-        ...options,
-        challenge: Uint8Array.from(atob(options.challenge), c => c.charCodeAt(0)),
-        allowCredentials: options.allowCredentials?.map((cred: any) => ({
-          ...cred,
-          id: Uint8Array.from(atob(cred.id), c => c.charCodeAt(0)),
-        })),
-      };
-
-      // Get credential
-      const credential = (await navigator.credentials.get({
-        publicKey: decodedOptions,
-      })) as PublicKeyCredential;
-
-      if (!credential) {
-        throw new Error('No credential received');
-      }
-
-      // Prepare credential data for server
-      const credentialData = {
-        id: credential.id,
-        rawId: Array.from(new Uint8Array(credential.rawId)),
-        response: {
-          authenticatorData: Array.from(
-            new Uint8Array(
-              (credential.response as AuthenticatorAssertionResponse).authenticatorData,
-            ),
-          ),
-          clientDataJSON: Array.from(new Uint8Array(credential.response.clientDataJSON)),
-          signature: Array.from(
-            new Uint8Array((credential.response as AuthenticatorAssertionResponse).signature),
-          ),
-          userHandle: (credential.response as AuthenticatorAssertionResponse).userHandle
-            ? Array.from(
-                new Uint8Array((credential.response as AuthenticatorAssertionResponse).userHandle!),
-              )
-            : null,
-        },
-        type: credential.type,
-      };
-
-      // Submit to server
-      const form = new FormData();
-      form.append('challenge', authData.challenge);
-      form.append('credential', JSON.stringify(credentialData));
-      form.append('redirectTo', redirectTo || '');
-
-      completeAction(form);
-    } catch (error: any) {
-      console.error('WebAuthn authentication error:', error);
-
-      let errorMessage = 'Failed to authenticate with passkey. ';
-
-      if (error.name === 'NotSupportedError') {
-        errorMessage += "Your device or browser doesn't support this authentication method.";
-      } else if (error.name === 'SecurityError') {
-        errorMessage += "Security error occurred. Please ensure you're on a secure connection.";
-      } else if (error.name === 'NotAllowedError') {
-        errorMessage += 'Authentication was cancelled or not allowed.';
-      } else if (error.name === 'InvalidStateError') {
-        errorMessage += 'No matching passkey found on this device.';
-      } else if (error.name === 'UnknownError') {
-        errorMessage += 'An unknown error occurred during authentication.';
-      } else {
-        errorMessage += 'Please try again or use a different sign-in method.';
-      }
-
-      setStep('error');
-      if (onError) onError(errorMessage);
-    }
-  };
 
   const getStepIcon = () => {
     switch (step) {
@@ -419,7 +421,6 @@ export function PasskeySignInInterface({
       </CardHeader>
 
       <CardContent>
-        {/* Step Progress */}
         <div className="mb-6">
           <div className="mb-4 flex items-center justify-center space-x-2">
             {['check-support', 'authenticate', 'success'].map((stepName, index) => (
@@ -470,9 +471,7 @@ export function PasskeySignInInterface({
           </div>
         </div>
 
-        {/* Step Content */}
         <div className="space-y-4">
-          {/* Check Support Step */}
           {step === 'check-support' && (
             <div className="py-8 text-center">
               <div className={cn('text-sm text-gray-600', 'dark:text-gray-400')}>
@@ -481,7 +480,6 @@ export function PasskeySignInInterface({
             </div>
           )}
 
-          {/* Authenticate Step */}
           {step === 'authenticate' && (
             <div className="space-y-4 py-8 text-center">
               <div
@@ -520,7 +518,6 @@ export function PasskeySignInInterface({
             </div>
           )}
 
-          {/* Success Step */}
           {step === 'success' && (
             <div className="space-y-4">
               <Alert variant="success">{completeState?.message}</Alert>
@@ -567,7 +564,6 @@ export function PasskeySignInInterface({
             </div>
           )}
 
-          {/* Error Step */}
           {step === 'error' && (
             <div className="space-y-4">
               <Alert variant="destructive">
@@ -636,7 +632,6 @@ export function PasskeySignInInterface({
           )}
         </div>
 
-        {/* Alternative Sign-in */}
         {step !== 'success' && step !== 'error' && (
           <div className="mt-6 text-center">
             <button
@@ -655,7 +650,6 @@ export function PasskeySignInInterface({
           </div>
         )}
 
-        {/* Browser Support Information */}
         <div className={cn('mt-6 rounded-lg bg-gray-50 p-4', 'dark:bg-gray-800')}>
           <h4 className={cn('mb-2 text-sm font-medium text-gray-900', 'dark:text-gray-100')}>
             Passkey Requirements

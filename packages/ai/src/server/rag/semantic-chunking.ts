@@ -53,9 +53,9 @@ export interface ChunkResult {
 }
 
 /**
- * Advanced document chunker with multiple strategies
+ * Semantic document chunker with multiple strategies
  */
-export class AdvancedDocumentChunker {
+export class SemanticDocumentChunker {
   constructor(private config: ChunkingConfig) {}
 
   /**
@@ -451,8 +451,8 @@ export class AdvancedDocumentChunker {
    */
   private getOverlapInfo(
     chunks: ChunkResult[],
-    currentIndex: number,
-    currentContent: string,
+    _currentIndex: number,
+    _currentContent: string,
   ): { previous?: string; next?: string } | undefined {
     if (!this.config.chunkOverlap) return undefined;
 
@@ -523,8 +523,8 @@ export class AdvancedDocumentChunker {
 /**
  * Factory function for creating chunkers with different strategies
  */
-export function createDocumentChunker(config: ChunkingConfig): AdvancedDocumentChunker {
-  return new AdvancedDocumentChunker(config);
+export function createDocumentChunker(config: ChunkingConfig): SemanticDocumentChunker {
+  return new SemanticDocumentChunker(config);
 }
 
 /**

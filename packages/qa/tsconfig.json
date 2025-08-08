@@ -6,6 +6,8 @@
     "types": ["vitest/globals", "node"],
     "baseUrl": ".",
     "paths": {
+      "#/__tests__/*": ["./__tests__/*"],
+      "#/root/*": ["./*"],
       "#/*": ["./src/*"]
     }
   },

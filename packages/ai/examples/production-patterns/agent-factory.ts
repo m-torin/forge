@@ -10,12 +10,6 @@ import { openai } from '@ai-sdk/openai';
 
 // Import all advanced agent features
 import {
-  AdvancedToolManager,
-  advancedToolUtils,
-  globalAdvancedToolManager,
-  type AdvancedToolManagerConfig,
-} from '../../src/server/agents/advanced-tool-management';
-import {
   AgentCommunicationManager,
   communicationUtils,
   createCommunicationAwareAgent,
@@ -40,6 +34,7 @@ import {
   globalObservabilityManager,
   type AgentMonitoringConfig,
 } from '../../src/server/agents/agent-observability';
+import { dynamicToolUtils } from '../../src/server/agents/tool-management-dynamic';
 
 /**
  * Production Agent Factory Configuration
@@ -224,7 +219,7 @@ export class ProductionAgentFactory {
 
       // Initialize built-in tools
       if (config.features?.enableAdvancedTools !== false) {
-        advancedToolUtils.initializeBuiltInTools(toolManager);
+        dynamicToolUtils.initializeBuiltInTools(toolManager);
       }
 
       // Create production instance
@@ -333,7 +328,7 @@ export class ProductionAgentFactory {
       return [...currentInstances, ...newInstances];
     } else if (targetInstances < currentInstances.length) {
       // Scale down
-      const instancesToRemove = currentInstances.length - targetInstances;
+      const _instancesToRemove = currentInstances.length - targetInstances;
       const instancesToKeep = currentInstances.slice(0, targetInstances);
       const instancesToShutdown = currentInstances.slice(targetInstances);
 
@@ -683,7 +678,7 @@ export class ProductionAgentFactory {
           timestamp: Date.now(),
           metrics: {
             executionTime: instance.metrics.averageResponseTime,
-            tokenUsage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+            tokenUsage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 },
             stepCount: 0,
             toolCallCount: 0,
             successRate:

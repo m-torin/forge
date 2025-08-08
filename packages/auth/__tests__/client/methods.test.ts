@@ -2,13 +2,13 @@
  * Tests for client-side authentication methods - converted to use DRY utilities
  */
 
+import { createMockAuthClient } from '@repo/qa/vitest/mocks/internal/auth-factories';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import {
   createClientFeatureTestSuite,
   createClientMethodsTestSuite,
   createClientMethodTestSuite,
 } from '../test-helpers/client-builders';
-import { createMockAuthClient } from '../test-helpers/factories';
 import { setupClientMocks } from '../test-helpers/mocks';
 
 // Set up client-side mocks

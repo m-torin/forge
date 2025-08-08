@@ -1,0 +1,1174 @@
+'use server';
+
+import type { Prisma, PrismaClient } from '../../../../../prisma-generated/client';
+import { prisma as defaultPrisma } from '../../../clients/standard';
+
+// Transaction-compatible Prisma client type
+type PrismaTransaction = PrismaClient | Prisma.TransactionClient;
+
+//==============================================================================
+// USER CRUD OPERATIONS
+//==============================================================================
+
+// CREATE
+export async function createUserOrm(args: Prisma.UserCreateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.user.create(args);
+}
+
+export async function createManyUsersOrm(args: Prisma.UserCreateManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.user.createMany(args);
+}
+
+// READ
+export async function findFirstUserOrm(args?: Prisma.UserFindFirstArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.user.findFirst(args);
+}
+
+export async function findUniqueUserOrm(args: Prisma.UserFindUniqueArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.user.findUnique(args);
+}
+
+export async function findUniqueUserOrmOrThrow(args: Prisma.UserFindUniqueOrThrowArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.user.findUniqueOrThrow(args);
+}
+
+export async function findFirstUserOrmOrThrow(args: Prisma.UserFindFirstOrThrowArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.user.findFirstOrThrow(args);
+}
+
+export async function findManyUsersOrm(args?: Prisma.UserFindManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.user.findMany(args);
+}
+
+// UPDATE
+export async function updateUserOrm(args: Prisma.UserUpdateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.user.update(args);
+}
+
+export async function updateManyUsersOrm(args: Prisma.UserUpdateManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.user.updateMany(args);
+}
+
+// UPSERT
+export async function upsertUserOrm(args: Prisma.UserUpsertArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.user.upsert(args);
+}
+
+// DELETE
+export async function deleteUserOrm(args: Prisma.UserDeleteArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.user.delete(args);
+}
+
+export async function deleteManyUsersOrm(args?: Prisma.UserDeleteManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.user.deleteMany(args);
+}
+
+// AGGREGATE
+export async function aggregateUsersOrm(args?: Prisma.UserAggregateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.user.aggregate(args ?? {});
+}
+
+export async function countUsersOrm(args?: Prisma.UserCountArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.user.count(args);
+}
+
+export async function groupByUsersOrm(args: Prisma.UserGroupByArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.user.groupBy(args);
+}
+
+//==============================================================================
+// SESSION CRUD OPERATIONS
+//==============================================================================
+
+// CREATE
+export async function createSessionOrm(args: Prisma.SessionCreateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.session.create(args);
+}
+
+export async function createManySessionsOrm(args: Prisma.SessionCreateManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.session.createMany(args);
+}
+
+// READ
+export async function findFirstSessionOrm(args?: Prisma.SessionFindFirstArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.session.findFirst(args);
+}
+
+export async function findUniqueSessionOrm(args: Prisma.SessionFindUniqueArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.session.findUnique(args);
+}
+
+export async function findUniqueSessionOrmOrThrow(args: Prisma.SessionFindUniqueOrThrowArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.session.findUniqueOrThrow(args);
+}
+
+export async function findFirstSessionOrmOrThrow(args: Prisma.SessionFindFirstOrThrowArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.session.findFirstOrThrow(args);
+}
+
+export async function findManySessionsOrm(args?: Prisma.SessionFindManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.session.findMany(args);
+}
+
+// UPDATE
+export async function updateSessionOrm(args: Prisma.SessionUpdateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.session.update(args);
+}
+
+export async function updateManySessionsOrm(args: Prisma.SessionUpdateManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.session.updateMany(args);
+}
+
+// UPSERT
+export async function upsertSessionOrm(args: Prisma.SessionUpsertArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.session.upsert(args);
+}
+
+// DELETE
+export async function deleteSessionOrm(args: Prisma.SessionDeleteArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.session.delete(args);
+}
+
+export async function deleteManySessionsOrm(args?: Prisma.SessionDeleteManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.session.deleteMany(args);
+}
+
+// AGGREGATE
+export async function aggregateSessionsOrm(args?: Prisma.SessionAggregateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.session.aggregate(args ?? {});
+}
+
+export async function countSessionsOrm(args?: Prisma.SessionCountArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.session.count(args);
+}
+
+export async function groupBySessionsOrm(args: Prisma.SessionGroupByArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.session.groupBy(args);
+}
+
+//==============================================================================
+// ACCOUNT CRUD OPERATIONS
+//==============================================================================
+
+// CREATE
+export async function createAccountOrm(args: Prisma.AccountCreateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.account.create(args);
+}
+
+export async function createManyAccountsOrm(args: Prisma.AccountCreateManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.account.createMany(args);
+}
+
+// READ
+export async function findFirstAccountOrm(args?: Prisma.AccountFindFirstArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.account.findFirst(args);
+}
+
+export async function findUniqueAccountOrm(args: Prisma.AccountFindUniqueArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.account.findUnique(args);
+}
+
+export async function findUniqueAccountOrmOrThrow(args: Prisma.AccountFindUniqueOrThrowArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.account.findUniqueOrThrow(args);
+}
+
+export async function findFirstAccountOrmOrThrow(args: Prisma.AccountFindFirstOrThrowArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.account.findFirstOrThrow(args);
+}
+
+export async function findManyAccountsOrm(args?: Prisma.AccountFindManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.account.findMany(args);
+}
+
+// UPDATE
+export async function updateAccountOrm(args: Prisma.AccountUpdateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.account.update(args);
+}
+
+export async function updateManyAccountsOrm(args: Prisma.AccountUpdateManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.account.updateMany(args);
+}
+
+// UPSERT
+export async function upsertAccountOrm(args: Prisma.AccountUpsertArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.account.upsert(args);
+}
+
+// DELETE
+export async function deleteAccountOrm(args: Prisma.AccountDeleteArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.account.delete(args);
+}
+
+export async function deleteManyAccountsOrm(args?: Prisma.AccountDeleteManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.account.deleteMany(args);
+}
+
+// AGGREGATE
+export async function aggregateAccountsOrm(args?: Prisma.AccountAggregateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.account.aggregate(args ?? {});
+}
+
+export async function countAccountsOrm(args?: Prisma.AccountCountArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.account.count(args);
+}
+
+export async function groupByAccountsOrm(args: Prisma.AccountGroupByArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.account.groupBy(args);
+}
+
+//==============================================================================
+// VERIFICATION CRUD OPERATIONS
+//==============================================================================
+
+// CREATE
+export async function createVerificationOrm(args: Prisma.VerificationCreateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.verification.create(args);
+}
+
+export async function createManyVerificationsOrm(args: Prisma.VerificationCreateManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.verification.createMany(args);
+}
+
+// READ
+export async function findFirstVerificationOrm(args?: Prisma.VerificationFindFirstArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.verification.findFirst(args);
+}
+
+export async function findUniqueVerificationOrm(args: Prisma.VerificationFindUniqueArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.verification.findUnique(args);
+}
+
+export async function findUniqueVerificationOrmOrThrow(args: Prisma.VerificationFindUniqueOrThrowArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.verification.findUniqueOrThrow(args);
+}
+
+export async function findFirstVerificationOrmOrThrow(args: Prisma.VerificationFindFirstOrThrowArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.verification.findFirstOrThrow(args);
+}
+
+export async function findManyVerificationsOrm(args?: Prisma.VerificationFindManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.verification.findMany(args);
+}
+
+// UPDATE
+export async function updateVerificationOrm(args: Prisma.VerificationUpdateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.verification.update(args);
+}
+
+export async function updateManyVerificationsOrm(args: Prisma.VerificationUpdateManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.verification.updateMany(args);
+}
+
+// UPSERT
+export async function upsertVerificationOrm(args: Prisma.VerificationUpsertArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.verification.upsert(args);
+}
+
+// DELETE
+export async function deleteVerificationOrm(args: Prisma.VerificationDeleteArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.verification.delete(args);
+}
+
+export async function deleteManyVerificationsOrm(args?: Prisma.VerificationDeleteManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.verification.deleteMany(args);
+}
+
+// AGGREGATE
+export async function aggregateVerificationsOrm(args?: Prisma.VerificationAggregateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.verification.aggregate(args ?? {});
+}
+
+export async function countVerificationsOrm(args?: Prisma.VerificationCountArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.verification.count(args);
+}
+
+export async function groupByVerificationsOrm(args: Prisma.VerificationGroupByArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.verification.groupBy(args);
+}
+
+//==============================================================================
+// ORGANIZATION CRUD OPERATIONS
+//==============================================================================
+
+// CREATE
+export async function createOrganizationOrm(args: Prisma.OrganizationCreateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.organization.create(args);
+}
+
+export async function createManyOrganizationsOrm(args: Prisma.OrganizationCreateManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.organization.createMany(args);
+}
+
+// READ
+export async function findFirstOrganizationOrm(args?: Prisma.OrganizationFindFirstArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.organization.findFirst(args);
+}
+
+export async function findUniqueOrganizationOrm(args: Prisma.OrganizationFindUniqueArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.organization.findUnique(args);
+}
+
+export async function findUniqueOrganizationOrmOrThrow(args: Prisma.OrganizationFindUniqueOrThrowArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.organization.findUniqueOrThrow(args);
+}
+
+export async function findFirstOrganizationOrmOrThrow(args: Prisma.OrganizationFindFirstOrThrowArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.organization.findFirstOrThrow(args);
+}
+
+export async function findManyOrganizationsOrm(args?: Prisma.OrganizationFindManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.organization.findMany(args);
+}
+
+// UPDATE
+export async function updateOrganizationOrm(args: Prisma.OrganizationUpdateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.organization.update(args);
+}
+
+export async function updateManyOrganizationsOrm(args: Prisma.OrganizationUpdateManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.organization.updateMany(args);
+}
+
+// UPSERT
+export async function upsertOrganizationOrm(args: Prisma.OrganizationUpsertArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.organization.upsert(args);
+}
+
+// DELETE
+export async function deleteOrganizationOrm(args: Prisma.OrganizationDeleteArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.organization.delete(args);
+}
+
+export async function deleteManyOrganizationsOrm(args?: Prisma.OrganizationDeleteManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.organization.deleteMany(args);
+}
+
+// AGGREGATE
+export async function aggregateOrganizationsOrm(args?: Prisma.OrganizationAggregateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.organization.aggregate(args ?? {});
+}
+
+export async function countOrganizationsOrm(args?: Prisma.OrganizationCountArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.organization.count(args);
+}
+
+export async function groupByOrganizationsOrm(args: Prisma.OrganizationGroupByArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.organization.groupBy(args);
+}
+
+//==============================================================================
+// MEMBER CRUD OPERATIONS
+//==============================================================================
+
+// CREATE
+export async function createMemberOrm(args: Prisma.MemberCreateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.member.create(args);
+}
+
+export async function createManyMembersOrm(args: Prisma.MemberCreateManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.member.createMany(args);
+}
+
+// READ
+export async function findFirstMemberOrm(args?: Prisma.MemberFindFirstArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.member.findFirst(args);
+}
+
+export async function findUniqueMemberOrm(args: Prisma.MemberFindUniqueArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.member.findUnique(args);
+}
+
+export async function findUniqueMemberOrmOrThrow(args: Prisma.MemberFindUniqueOrThrowArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.member.findUniqueOrThrow(args);
+}
+
+export async function findFirstMemberOrmOrThrow(args: Prisma.MemberFindFirstOrThrowArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.member.findFirstOrThrow(args);
+}
+
+export async function findManyMembersOrm(args?: Prisma.MemberFindManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.member.findMany(args);
+}
+
+// UPDATE
+export async function updateMemberOrm(args: Prisma.MemberUpdateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.member.update(args);
+}
+
+export async function updateManyMembersOrm(args: Prisma.MemberUpdateManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.member.updateMany(args);
+}
+
+// UPSERT
+export async function upsertMemberOrm(args: Prisma.MemberUpsertArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.member.upsert(args);
+}
+
+// DELETE
+export async function deleteMemberOrm(args: Prisma.MemberDeleteArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.member.delete(args);
+}
+
+export async function deleteManyMembersOrm(args?: Prisma.MemberDeleteManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.member.deleteMany(args);
+}
+
+// AGGREGATE
+export async function aggregateMembersOrm(args?: Prisma.MemberAggregateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.member.aggregate(args ?? {});
+}
+
+export async function countMembersOrm(args?: Prisma.MemberCountArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.member.count(args);
+}
+
+export async function groupByMembersOrm(args: Prisma.MemberGroupByArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.member.groupBy(args);
+}
+
+//==============================================================================
+// TEAM CRUD OPERATIONS
+//==============================================================================
+
+// CREATE
+export async function createTeamOrm(args: Prisma.TeamCreateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.team.create(args);
+}
+
+export async function createManyTeamsOrm(args: Prisma.TeamCreateManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.team.createMany(args);
+}
+
+// READ
+export async function findFirstTeamOrm(args?: Prisma.TeamFindFirstArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.team.findFirst(args);
+}
+
+export async function findUniqueTeamOrm(args: Prisma.TeamFindUniqueArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.team.findUnique(args);
+}
+
+export async function findUniqueTeamOrmOrThrow(args: Prisma.TeamFindUniqueOrThrowArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.team.findUniqueOrThrow(args);
+}
+
+export async function findFirstTeamOrmOrThrow(args: Prisma.TeamFindFirstOrThrowArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.team.findFirstOrThrow(args);
+}
+
+export async function findManyTeamsOrm(args?: Prisma.TeamFindManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.team.findMany(args);
+}
+
+// UPDATE
+export async function updateTeamOrm(args: Prisma.TeamUpdateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.team.update(args);
+}
+
+export async function updateManyTeamsOrm(args: Prisma.TeamUpdateManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.team.updateMany(args);
+}
+
+// UPSERT
+export async function upsertTeamOrm(args: Prisma.TeamUpsertArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.team.upsert(args);
+}
+
+// DELETE
+export async function deleteTeamOrm(args: Prisma.TeamDeleteArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.team.delete(args);
+}
+
+export async function deleteManyTeamsOrm(args?: Prisma.TeamDeleteManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.team.deleteMany(args);
+}
+
+// AGGREGATE
+export async function aggregateTeamsOrm(args?: Prisma.TeamAggregateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.team.aggregate(args ?? {});
+}
+
+export async function countTeamsOrm(args?: Prisma.TeamCountArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.team.count(args);
+}
+
+export async function groupByTeamsOrm(args: Prisma.TeamGroupByArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.team.groupBy(args);
+}
+
+//==============================================================================
+// TEAMMEMBER CRUD OPERATIONS
+//==============================================================================
+
+// CREATE
+export async function createTeamMemberOrm(args: Prisma.TeamMemberCreateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.teamMember.create(args);
+}
+
+export async function createManyTeamMembersOrm(args: Prisma.TeamMemberCreateManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.teamMember.createMany(args);
+}
+
+// READ
+export async function findFirstTeamMemberOrm(args?: Prisma.TeamMemberFindFirstArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.teamMember.findFirst(args);
+}
+
+export async function findUniqueTeamMemberOrm(args: Prisma.TeamMemberFindUniqueArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.teamMember.findUnique(args);
+}
+
+export async function findUniqueTeamMemberOrmOrThrow(args: Prisma.TeamMemberFindUniqueOrThrowArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.teamMember.findUniqueOrThrow(args);
+}
+
+export async function findFirstTeamMemberOrmOrThrow(args: Prisma.TeamMemberFindFirstOrThrowArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.teamMember.findFirstOrThrow(args);
+}
+
+export async function findManyTeamMembersOrm(args?: Prisma.TeamMemberFindManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.teamMember.findMany(args);
+}
+
+// UPDATE
+export async function updateTeamMemberOrm(args: Prisma.TeamMemberUpdateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.teamMember.update(args);
+}
+
+export async function updateManyTeamMembersOrm(args: Prisma.TeamMemberUpdateManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.teamMember.updateMany(args);
+}
+
+// UPSERT
+export async function upsertTeamMemberOrm(args: Prisma.TeamMemberUpsertArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.teamMember.upsert(args);
+}
+
+// DELETE
+export async function deleteTeamMemberOrm(args: Prisma.TeamMemberDeleteArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.teamMember.delete(args);
+}
+
+export async function deleteManyTeamMembersOrm(args?: Prisma.TeamMemberDeleteManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.teamMember.deleteMany(args);
+}
+
+// AGGREGATE
+export async function aggregateTeamMembersOrm(args?: Prisma.TeamMemberAggregateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.teamMember.aggregate(args ?? {});
+}
+
+export async function countTeamMembersOrm(args?: Prisma.TeamMemberCountArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.teamMember.count(args);
+}
+
+export async function groupByTeamMembersOrm(args: Prisma.TeamMemberGroupByArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.teamMember.groupBy(args);
+}
+
+//==============================================================================
+// INVITATION CRUD OPERATIONS
+//==============================================================================
+
+// CREATE
+export async function createInvitationOrm(args: Prisma.InvitationCreateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.invitation.create(args);
+}
+
+export async function createManyInvitationsOrm(args: Prisma.InvitationCreateManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.invitation.createMany(args);
+}
+
+// READ
+export async function findFirstInvitationOrm(args?: Prisma.InvitationFindFirstArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.invitation.findFirst(args);
+}
+
+export async function findUniqueInvitationOrm(args: Prisma.InvitationFindUniqueArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.invitation.findUnique(args);
+}
+
+export async function findUniqueInvitationOrmOrThrow(args: Prisma.InvitationFindUniqueOrThrowArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.invitation.findUniqueOrThrow(args);
+}
+
+export async function findFirstInvitationOrmOrThrow(args: Prisma.InvitationFindFirstOrThrowArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.invitation.findFirstOrThrow(args);
+}
+
+export async function findManyInvitationsOrm(args?: Prisma.InvitationFindManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.invitation.findMany(args);
+}
+
+// UPDATE
+export async function updateInvitationOrm(args: Prisma.InvitationUpdateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.invitation.update(args);
+}
+
+export async function updateManyInvitationsOrm(args: Prisma.InvitationUpdateManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.invitation.updateMany(args);
+}
+
+// UPSERT
+export async function upsertInvitationOrm(args: Prisma.InvitationUpsertArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.invitation.upsert(args);
+}
+
+// DELETE
+export async function deleteInvitationOrm(args: Prisma.InvitationDeleteArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.invitation.delete(args);
+}
+
+export async function deleteManyInvitationsOrm(args?: Prisma.InvitationDeleteManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.invitation.deleteMany(args);
+}
+
+// AGGREGATE
+export async function aggregateInvitationsOrm(args?: Prisma.InvitationAggregateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.invitation.aggregate(args ?? {});
+}
+
+export async function countInvitationsOrm(args?: Prisma.InvitationCountArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.invitation.count(args);
+}
+
+export async function groupByInvitationsOrm(args: Prisma.InvitationGroupByArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.invitation.groupBy(args);
+}
+
+//==============================================================================
+// APIKEY CRUD OPERATIONS
+//==============================================================================
+
+// CREATE
+export async function createApiKeyOrm(args: Prisma.ApiKeyCreateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.apiKey.create(args);
+}
+
+export async function createManyApiKeysOrm(args: Prisma.ApiKeyCreateManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.apiKey.createMany(args);
+}
+
+// READ
+export async function findFirstApiKeyOrm(args?: Prisma.ApiKeyFindFirstArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.apiKey.findFirst(args);
+}
+
+export async function findUniqueApiKeyOrm(args: Prisma.ApiKeyFindUniqueArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.apiKey.findUnique(args);
+}
+
+export async function findUniqueApiKeyOrmOrThrow(args: Prisma.ApiKeyFindUniqueOrThrowArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.apiKey.findUniqueOrThrow(args);
+}
+
+export async function findFirstApiKeyOrmOrThrow(args: Prisma.ApiKeyFindFirstOrThrowArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.apiKey.findFirstOrThrow(args);
+}
+
+export async function findManyApiKeysOrm(args?: Prisma.ApiKeyFindManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.apiKey.findMany(args);
+}
+
+// UPDATE
+export async function updateApiKeyOrm(args: Prisma.ApiKeyUpdateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.apiKey.update(args);
+}
+
+export async function updateManyApiKeysOrm(args: Prisma.ApiKeyUpdateManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.apiKey.updateMany(args);
+}
+
+// UPSERT
+export async function upsertApiKeyOrm(args: Prisma.ApiKeyUpsertArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.apiKey.upsert(args);
+}
+
+// DELETE
+export async function deleteApiKeyOrm(args: Prisma.ApiKeyDeleteArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.apiKey.delete(args);
+}
+
+export async function deleteManyApiKeysOrm(args?: Prisma.ApiKeyDeleteManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.apiKey.deleteMany(args);
+}
+
+// AGGREGATE
+export async function aggregateApiKeysOrm(args?: Prisma.ApiKeyAggregateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.apiKey.aggregate(args ?? {});
+}
+
+export async function countApiKeysOrm(args?: Prisma.ApiKeyCountArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.apiKey.count(args);
+}
+
+export async function groupByApiKeysOrm(args: Prisma.ApiKeyGroupByArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.apiKey.groupBy(args);
+}
+
+//==============================================================================
+// TWOFACTOR CRUD OPERATIONS
+//==============================================================================
+
+// CREATE
+export async function createTwoFactorOrm(args: Prisma.TwoFactorCreateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.twoFactor.create(args);
+}
+
+export async function createManyTwoFactorsOrm(args: Prisma.TwoFactorCreateManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.twoFactor.createMany(args);
+}
+
+// READ
+export async function findFirstTwoFactorOrm(args?: Prisma.TwoFactorFindFirstArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.twoFactor.findFirst(args);
+}
+
+export async function findUniqueTwoFactorOrm(args: Prisma.TwoFactorFindUniqueArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.twoFactor.findUnique(args);
+}
+
+export async function findUniqueTwoFactorOrmOrThrow(args: Prisma.TwoFactorFindUniqueOrThrowArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.twoFactor.findUniqueOrThrow(args);
+}
+
+export async function findFirstTwoFactorOrmOrThrow(args: Prisma.TwoFactorFindFirstOrThrowArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.twoFactor.findFirstOrThrow(args);
+}
+
+export async function findManyTwoFactorsOrm(args?: Prisma.TwoFactorFindManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.twoFactor.findMany(args);
+}
+
+// UPDATE
+export async function updateTwoFactorOrm(args: Prisma.TwoFactorUpdateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.twoFactor.update(args);
+}
+
+export async function updateManyTwoFactorsOrm(args: Prisma.TwoFactorUpdateManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.twoFactor.updateMany(args);
+}
+
+// UPSERT
+export async function upsertTwoFactorOrm(args: Prisma.TwoFactorUpsertArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.twoFactor.upsert(args);
+}
+
+// DELETE
+export async function deleteTwoFactorOrm(args: Prisma.TwoFactorDeleteArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.twoFactor.delete(args);
+}
+
+export async function deleteManyTwoFactorsOrm(args?: Prisma.TwoFactorDeleteManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.twoFactor.deleteMany(args);
+}
+
+// AGGREGATE
+export async function aggregateTwoFactorsOrm(args?: Prisma.TwoFactorAggregateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.twoFactor.aggregate(args ?? {});
+}
+
+export async function countTwoFactorsOrm(args?: Prisma.TwoFactorCountArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.twoFactor.count(args);
+}
+
+export async function groupByTwoFactorsOrm(args: Prisma.TwoFactorGroupByArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.twoFactor.groupBy(args);
+}
+
+//==============================================================================
+// BACKUPCODE CRUD OPERATIONS
+//==============================================================================
+
+// CREATE
+export async function createBackupCodeOrm(args: Prisma.BackupCodeCreateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.backupCode.create(args);
+}
+
+export async function createManyBackupCodesOrm(args: Prisma.BackupCodeCreateManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.backupCode.createMany(args);
+}
+
+// READ
+export async function findFirstBackupCodeOrm(args?: Prisma.BackupCodeFindFirstArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.backupCode.findFirst(args);
+}
+
+export async function findUniqueBackupCodeOrm(args: Prisma.BackupCodeFindUniqueArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.backupCode.findUnique(args);
+}
+
+export async function findUniqueBackupCodeOrmOrThrow(args: Prisma.BackupCodeFindUniqueOrThrowArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.backupCode.findUniqueOrThrow(args);
+}
+
+export async function findFirstBackupCodeOrmOrThrow(args: Prisma.BackupCodeFindFirstOrThrowArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.backupCode.findFirstOrThrow(args);
+}
+
+export async function findManyBackupCodesOrm(args?: Prisma.BackupCodeFindManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.backupCode.findMany(args);
+}
+
+// UPDATE
+export async function updateBackupCodeOrm(args: Prisma.BackupCodeUpdateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.backupCode.update(args);
+}
+
+export async function updateManyBackupCodesOrm(args: Prisma.BackupCodeUpdateManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.backupCode.updateMany(args);
+}
+
+// UPSERT
+export async function upsertBackupCodeOrm(args: Prisma.BackupCodeUpsertArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.backupCode.upsert(args);
+}
+
+// DELETE
+export async function deleteBackupCodeOrm(args: Prisma.BackupCodeDeleteArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.backupCode.delete(args);
+}
+
+export async function deleteManyBackupCodesOrm(args?: Prisma.BackupCodeDeleteManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.backupCode.deleteMany(args);
+}
+
+// AGGREGATE
+export async function aggregateBackupCodesOrm(args?: Prisma.BackupCodeAggregateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.backupCode.aggregate(args ?? {});
+}
+
+export async function countBackupCodesOrm(args?: Prisma.BackupCodeCountArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.backupCode.count(args);
+}
+
+export async function groupByBackupCodesOrm(args: Prisma.BackupCodeGroupByArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.backupCode.groupBy(args);
+}
+
+//==============================================================================
+// PASSKEY CRUD OPERATIONS
+//==============================================================================
+
+// CREATE
+export async function createPasskeyOrm(args: Prisma.PasskeyCreateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.passkey.create(args);
+}
+
+export async function createManyPasskeysOrm(args: Prisma.PasskeyCreateManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.passkey.createMany(args);
+}
+
+// READ
+export async function findFirstPasskeyOrm(args?: Prisma.PasskeyFindFirstArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.passkey.findFirst(args);
+}
+
+export async function findUniquePasskeyOrm(args: Prisma.PasskeyFindUniqueArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.passkey.findUnique(args);
+}
+
+export async function findUniquePasskeyOrmOrThrow(args: Prisma.PasskeyFindUniqueOrThrowArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.passkey.findUniqueOrThrow(args);
+}
+
+export async function findFirstPasskeyOrmOrThrow(args: Prisma.PasskeyFindFirstOrThrowArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.passkey.findFirstOrThrow(args);
+}
+
+export async function findManyPasskeysOrm(args?: Prisma.PasskeyFindManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.passkey.findMany(args);
+}
+
+// UPDATE
+export async function updatePasskeyOrm(args: Prisma.PasskeyUpdateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.passkey.update(args);
+}
+
+export async function updateManyPasskeysOrm(args: Prisma.PasskeyUpdateManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.passkey.updateMany(args);
+}
+
+// UPSERT
+export async function upsertPasskeyOrm(args: Prisma.PasskeyUpsertArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.passkey.upsert(args);
+}
+
+// DELETE
+export async function deletePasskeyOrm(args: Prisma.PasskeyDeleteArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.passkey.delete(args);
+}
+
+export async function deleteManyPasskeysOrm(args?: Prisma.PasskeyDeleteManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.passkey.deleteMany(args);
+}
+
+// AGGREGATE
+export async function aggregatePasskeysOrm(args?: Prisma.PasskeyAggregateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.passkey.aggregate(args ?? {});
+}
+
+export async function countPasskeysOrm(args?: Prisma.PasskeyCountArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.passkey.count(args);
+}
+
+export async function groupByPasskeysOrm(args: Prisma.PasskeyGroupByArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.passkey.groupBy(args);
+}
+
+//==============================================================================
+// AUDITLOG CRUD OPERATIONS
+//==============================================================================
+
+// CREATE
+export async function createAuditLogOrm(args: Prisma.AuditLogCreateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.auditLog.create(args);
+}
+
+export async function createManyAuditLogsOrm(args: Prisma.AuditLogCreateManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.auditLog.createMany(args);
+}
+
+// READ
+export async function findFirstAuditLogOrm(args?: Prisma.AuditLogFindFirstArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.auditLog.findFirst(args);
+}
+
+export async function findUniqueAuditLogOrm(args: Prisma.AuditLogFindUniqueArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.auditLog.findUnique(args);
+}
+
+export async function findUniqueAuditLogOrmOrThrow(args: Prisma.AuditLogFindUniqueOrThrowArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.auditLog.findUniqueOrThrow(args);
+}
+
+export async function findFirstAuditLogOrmOrThrow(args: Prisma.AuditLogFindFirstOrThrowArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.auditLog.findFirstOrThrow(args);
+}
+
+export async function findManyAuditLogsOrm(args?: Prisma.AuditLogFindManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.auditLog.findMany(args);
+}
+
+// UPDATE
+export async function updateAuditLogOrm(args: Prisma.AuditLogUpdateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.auditLog.update(args);
+}
+
+export async function updateManyAuditLogsOrm(args: Prisma.AuditLogUpdateManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.auditLog.updateMany(args);
+}
+
+// UPSERT
+export async function upsertAuditLogOrm(args: Prisma.AuditLogUpsertArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.auditLog.upsert(args);
+}
+
+// DELETE
+export async function deleteAuditLogOrm(args: Prisma.AuditLogDeleteArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.auditLog.delete(args);
+}
+
+export async function deleteManyAuditLogsOrm(args?: Prisma.AuditLogDeleteManyArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.auditLog.deleteMany(args);
+}
+
+// AGGREGATE
+export async function aggregateAuditLogsOrm(args?: Prisma.AuditLogAggregateArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.auditLog.aggregate(args ?? {});
+}
+
+export async function countAuditLogsOrm(args?: Prisma.AuditLogCountArgs, prisma: PrismaClient = defaultPrisma) {
+  return prisma.auditLog.count(args);
+}
+
+export async function groupByAuditLogsOrm(args: Prisma.AuditLogGroupByArgs, prisma: PrismaClient = defaultPrisma) {
+  return await prisma.auditLog.groupBy(args);
+}
+
+//==============================================================================
+// ENHANCED MULTI-MODEL AUTH OPERATIONS
+//==============================================================================
+
+/**
+ * Find user with complete authentication context
+ */
+export async function findUserWithAuthContextOrm(
+  where: Prisma.UserWhereUniqueInput,
+  prisma: PrismaClient = defaultPrisma,
+): Promise<Prisma.UserGetPayload<{
+  include: {
+    accounts: true;
+    sessions: true;
+    apiKeys: true;
+    twoFactor: {
+      include: {
+        backupCodes: true;
+      };
+    };
+    passkeys: true;
+  };
+}> | null> {
+  return await prisma.user.findUnique({
+    where,
+    include: {
+      accounts: true,
+      sessions: true,
+      apiKeys: true,
+      twoFactor: {
+        include: {
+          backupCodes: true,
+        },
+      },
+      passkeys: true,
+    },
+  });
+}
+
+/**
+ * Find organization with all members and teams
+ */
+export async function findOrganizationWithMembersOrm(where: Prisma.OrganizationWhereUniqueInput, prismaClient: PrismaClient = defaultPrisma) {
+  return await prismaClient.organization.findUnique({
+    where,
+    include: {
+      members: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+            },
+          },
+        },
+      },
+      teams: {
+        include: {
+          teamMembers: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  image: true,
+                },
+              },
+            },
+          },
+        },
+      },
+      invitations: true,
+    },
+  });
+}
+
+/**
+ * Create user with organization membership in a transaction
+ */
+export async function createUserWithOrganizationOrm(
+  userData: Prisma.UserCreateInput,
+  organizationId: string,
+  role: 'OWNER' | 'ADMIN' | 'MEMBER' = 'MEMBER',
+  prismaClient: PrismaClient = defaultPrisma,
+): Promise<
+  Prisma.UserGetPayload<{
+    include: {
+      members: {
+        include: {
+          organization: true;
+        };
+      };
+    };
+  }>
+> {
+  return await prismaClient.$transaction(async tx => {
+    // Create the user
+    const user = await tx.user.create({
+      data: userData,
+    });
+
+    // Create organization membership
+    await tx.member.create({
+      data: {
+        id: crypto.randomUUID(),
+        userId: user.id,
+        organizationId,
+        role,
+        createdAt: new Date(),
+      },
+    });
+
+    // Return user with members
+    return await tx.user.findUniqueOrThrow({
+      where: { id: user.id },
+      include: {
+        members: {
+          include: {
+            organization: true,
+          },
+        },
+      },
+    });
+  });
+}
+
+//==============================================================================
+// TYPE DEFINITIONS FOR AUTH PAYLOADS
+//==============================================================================
+
+/**
+ * User with complete authentication context
+ */
+export type UserWithAuthContext = Prisma.UserGetPayload<{
+  include: {
+    accounts: true;
+    sessions: true;
+    apiKeys: true;
+    twoFactor: {
+      include: {
+        backupCodes: true;
+      };
+    };
+    passkeys: true;
+  };
+}>;
+
+/**
+ * Organization with members and teams
+ */
+export type OrganizationWithMembers = Prisma.OrganizationGetPayload<{
+  include: {
+    members: {
+      include: {
+        user: {
+          select: {
+            id: true;
+            name: true;
+            email: true;
+            image: true;
+          };
+        };
+      };
+    };
+    teams: {
+      include: {
+        teamMembers: {
+          include: {
+            user: {
+              select: {
+                id: true;
+                name: true;
+                email: true;
+                image: true;
+              };
+            };
+          };
+        };
+      };
+    };
+    invitations: true;
+  };
+}>;

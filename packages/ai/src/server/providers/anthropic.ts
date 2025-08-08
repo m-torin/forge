@@ -36,10 +36,9 @@ export interface AnthropicProviderMetadata {
  */
 export interface AnthropicGenerateResult {
   text: string;
-  reasoningText?: string;
-  reasoning?: any;
+  reasoning?: string;
   usage: any;
-  providerMetadata?: {
+  providerOptions?: {
     anthropic?: AnthropicProviderMetadata;
   };
 }
@@ -85,6 +84,7 @@ export function createAnthropicWithReasoning(
         model,
         prompt,
         ...options,
+        experimental_telemetry: { isEnabled: true },
         headers: {
           'anthropic-beta': 'interleaved-thinking-2025-05-14',
           ...options?.headers,
@@ -169,17 +169,20 @@ export function createComputerTool(config: {
     coordinate?: number[];
     text?: string;
   }) => Promise<string | { type: 'image'; data: string }>;
-  experimental_toToolResultContent?: (result: any) => any[];
+  toModelOutput?: (result: any) => any;
 }) {
-  // Add default experimental handler if not provided
+  // Add default toModelOutput handler if not provided
   const configWithHandler = {
     ...config,
-    experimental_toToolResultContent:
-      config.experimental_toToolResultContent ||
+    toModelOutput:
+      config.toModelOutput ||
       ((result: any) => {
         return typeof result === 'string'
-          ? [{ type: 'text', text: result }]
-          : [{ type: 'image', data: result.data, mediaType: 'image/png' }];
+          ? { type: 'content', value: [{ type: 'text', text: result }] }
+          : {
+              type: 'content',
+              value: [{ type: 'media', mediaType: 'image/png', data: result.data }],
+            };
       }),
   };
 
@@ -201,10 +204,11 @@ export async function analyzeSentiment(
   const schema = z.object({
     sentiment: z.enum(['positive', 'negative', 'neutral']),
     confidence: z.number().min(0).max(1),
-    reasoning: z.string(),
+    reasoningText: z.string(),
   });
 
   const result = await generateObject({
+    experimental_telemetry: { isEnabled: true },
     model,
     prompt: `Analyze the sentiment of this text:
 
@@ -239,10 +243,11 @@ export async function moderateContent(
       selfHarm: z.number().min(0).max(1),
       hateSpeech: z.number().min(0).max(1),
     }),
-    reasoning: z.string(),
+    reasoningText: z.string(),
   });
 
   const result = await generateObject({
+    experimental_telemetry: { isEnabled: true },
     model,
     prompt: `Analyze this text for content moderation. Be thorough but fair:
 
@@ -271,6 +276,7 @@ export async function extractEntities(
   );
 
   const result = await generateObject({
+    experimental_telemetry: { isEnabled: true },
     model,
     prompt: `Extract all entities (people, places, organizations, dates, etc.) from this text:
 
@@ -309,14 +315,14 @@ export async function createCachedMessage(
   };
 
   if (options?.validateTokens !== false) {
-    const minTokens = options?.minTokens || getMinTokensForModel(options?.modelName);
+    const minTokens = options?.minTokens ?? getMinTokensForModel(options?.modelName);
     // Rough token estimation (1 token ≈ 4 characters for English text)
     const estimatedTokens = Math.ceil(content.length / 4);
 
     if (estimatedTokens < minTokens) {
       await import('@repo/observability/server/next');
       logWarn(
-        `Cache control: content has ~${estimatedTokens} tokens, below minimum ${minTokens} tokens for effective caching with ${options?.modelName || 'this model'}. Shorter prompts cannot be cached even if marked with cacheControl.`,
+        `Cache control: content has ~${estimatedTokens} tokens, below minimum ${minTokens} tokens for effective caching with ${options?.modelName ?? 'this model'}. Shorter prompts cannot be cached even if marked with cacheControl.`,
         {
           operation: 'cache_control',
           provider: 'anthropic',
@@ -362,10 +368,9 @@ export function validateCacheControl(
 export function extractReasoning(result: any): AnthropicGenerateResult {
   return {
     text: result.text,
-    reasoningText: result.reasoningText,
-    reasoning: result.reasoning,
+    reasoning: result.reasoningText,
     usage: result.usage,
-    providerMetadata: result.providerMetadata,
+    providerOptions: result.providerOptions,
   };
 }
 
@@ -373,7 +378,7 @@ export function extractReasoning(result: any): AnthropicGenerateResult {
  * Helper to extract cache metadata from Anthropic results
  */
 export function extractCacheMetadata(result: any): AnthropicProviderMetadata | undefined {
-  return result.providerMetadata?.anthropic;
+  return result.providerOptions?.anthropic;
 }
 
 /**
@@ -384,14 +389,16 @@ export const examples = {
   async basic(): Promise<any> {
     const model = anthropic('claude-3-haiku-20240307');
     return await generateText({
+      experimental_telemetry: { isEnabled: true },
       model,
       prompt: 'Write a vegetarian lasagna recipe for 4 people.',
     });
   },
 
   // Reasoning (AI SDK pattern)
-  async reasoning(): Promise<{ text: string; reasoningText: string | undefined; reasoning: any }> {
-    const { text, reasoningText, reasoning } = await generateText({
+  async reasoning(): Promise<{ text: string; reasoningText: string | undefined }> {
+    const { text, reasoningText } = await generateText({
+      experimental_telemetry: { isEnabled: true },
       model: anthropic('claude-4-sonnet-20250514'),
       prompt: 'How many people will live in the world in 2040?',
       headers: {
@@ -404,7 +411,7 @@ export const examples = {
       },
     });
 
-    return { text, reasoningText, reasoning };
+    return { text, reasoningText };
   },
 
   // Cache control (AI SDK pattern)
@@ -412,28 +419,23 @@ export const examples = {
     const errorMessage = '... long error message ...';
 
     const result = await generateText({
+      experimental_telemetry: { isEnabled: true },
       model: anthropic('claude-3-5-sonnet-20240620'),
       messages: [
         {
           role: 'user',
-          content: [
-            { type: 'text', text: 'You are a JavaScript expert.' },
-            {
-              type: 'text',
-              text: `Error message: ${errorMessage}`,
-              providerOptions: {
-                anthropic: { cacheControl: { type: 'ephemeral' } },
-              },
-            },
-            { type: 'text', text: 'Explain the error message.' },
-          ],
+
+          content: `You are a JavaScript expert.\n\nError message: ${errorMessage}\n\nExplain the error message.`,
+          providerOptions: {
+            anthropic: { cacheControl: { type: 'ephemeral' } },
+          },
         },
       ],
     });
 
     logInfo('Anthropic cache control result', {
       textLength: result.text.length,
-      providerMetadata: result.providerMetadata?.anthropic,
+      providerOptions: (result as any).providerOptions?.anthropic,
       operation: 'caching',
     });
     return result;
@@ -441,43 +443,19 @@ export const examples = {
 
   // Computer tools (AI SDK pattern)
   async computerUse(): Promise<any> {
-    const computerTool = createComputerTool({
-      displayWidthPx: 1920,
-      displayHeightPx: 1080,
-      execute: async ({ action, coordinate: _coordinate, text: _text }) => {
-        switch (action) {
-          case 'screenshot': {
-            return {
-              type: 'image',
-              data: 'base64-screenshot-data',
-            };
-          }
-          default: {
-            return `Executed ${action} action`;
-          }
-        }
-      },
-    });
-
-    const bashTool = createBashTool(async ({ command }) => {
-      return `Executed: ${command}`;
-    });
-
-    const textEditorTool = createTextEditorTool(async ({ command, path, file_text }) => {
-      if (command === 'create') {
-        return `Created file ${path} with content: ${file_text}`;
-      }
-      return `Executed ${command} on ${path}`;
-    });
+    // Import the pre-built tools from anthropic-tools module
+    const { createAnthropicComputerTools } = await import('./anthropic-tools');
+    const tools = createAnthropicComputerTools();
 
     return await generateText({
+      experimental_telemetry: { isEnabled: true },
       model: anthropic('claude-3-5-sonnet-20241022'),
       prompt:
         "Move the cursor to the center of the screen, take a screenshot, create a new file called example.txt, write 'Hello World' to it, and run 'cat example.txt' in the terminal",
       tools: {
-        computer: computerTool,
-        bash: bashTool,
-        str_replace_editor: textEditorTool, // Note: specific name required
+        computer: tools.computer as any,
+        bash: tools.bash as any,
+        str_replace_editor: tools.str_replace_editor as any, // Note: specific name required
       },
     });
   },

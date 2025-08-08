@@ -4,7 +4,7 @@
  * Prevents cascading failures and enables graceful degradation
  */
 
-import { logError, logInfo, logWarn } from '@repo/observability/server/next';
+import { logDebug, logError, logInfo, logWarn } from '@repo/observability/server/next';
 
 /**
  * Circuit breaker states
@@ -88,7 +88,7 @@ export class RAGCircuitBreaker {
       consecutiveSuccesses: 0,
     };
 
-    logInfo('RAG Circuit Breaker initialized', {
+    logDebug('RAG Circuit Breaker initialized', {
       operation: 'rag_circuit_breaker_init',
       operationName: this.operationName,
       config: this.config,

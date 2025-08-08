@@ -3,8 +3,8 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 // Import test setup
 import '../setup';
 
-import * as permissions from '#/server/organizations/permissions';
-import { auth } from '#/shared/auth';
+import * as permissions from '../../src/server/organizations/permissions';
+import { auth } from '../../src/shared/auth';
 
 // Import after mocking
 import {
@@ -14,7 +14,7 @@ import {
   regenerateServiceAccountTokenAction,
   revokeServiceAccountAction,
   updateServiceAccountAction,
-} from '#/server/organizations/service-accounts';
+} from '../../src/server/organizations/service-accounts';
 
 // Mock server-only
 vi.mock('server-only', () => ({}));

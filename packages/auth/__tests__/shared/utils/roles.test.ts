@@ -7,7 +7,7 @@ import { describe, expect } from 'vitest';
 describe('role utilities', () => {
   describe('hasRolePermission', () => {
     test('should allow same role', async () => {
-      const rolesModule = await import('#/shared/utils/roles');
+      const rolesModule = await import('../../src/shared/utils/roles');
 
       const hierarchy = ['admin', 'user'];
       const result = rolesModule.hasRolePermission('admin', 'admin', hierarchy);
@@ -16,7 +16,7 @@ describe('role utilities', () => {
     });
 
     test('should allow higher role to access lower role permissions', async () => {
-      const rolesModule = await import('#/shared/utils/roles');
+      const rolesModule = await import('../../src/shared/utils/roles');
 
       const hierarchy = ['admin', 'user'];
       const result = rolesModule.hasRolePermission('admin', 'user', hierarchy);
@@ -25,7 +25,7 @@ describe('role utilities', () => {
     });
 
     test('should deny lower role access to higher role permissions', async () => {
-      const rolesModule = await import('#/shared/utils/roles');
+      const rolesModule = await import('../../src/shared/utils/roles');
 
       const hierarchy = ['admin', 'user'];
       const result = rolesModule.hasRolePermission('user', 'admin', hierarchy);
@@ -34,7 +34,7 @@ describe('role utilities', () => {
     });
 
     test('should deny unknown user role', async () => {
-      const rolesModule = await import('#/shared/utils/roles');
+      const rolesModule = await import('../../src/shared/utils/roles');
 
       const hierarchy = ['admin', 'user'];
       const result = rolesModule.hasRolePermission('unknown', 'user', hierarchy);
@@ -43,7 +43,7 @@ describe('role utilities', () => {
     });
 
     test('should deny unknown required role', async () => {
-      const rolesModule = await import('#/shared/utils/roles');
+      const rolesModule = await import('../../src/shared/utils/roles');
 
       const hierarchy = ['admin', 'user'];
       const result = rolesModule.hasRolePermission('admin', 'unknown', hierarchy);
@@ -52,7 +52,7 @@ describe('role utilities', () => {
     });
 
     test('should work with complex hierarchy', async () => {
-      const rolesModule = await import('#/shared/utils/roles');
+      const rolesModule = await import('../../src/shared/utils/roles');
 
       const hierarchy = ['super-admin', 'admin', 'moderator', 'user', 'guest'];
 
@@ -65,7 +65,7 @@ describe('role utilities', () => {
 
   describe('hasOrganizationPermission', () => {
     test('should allow owner all permissions', async () => {
-      const rolesModule = await import('#/shared/utils/roles');
+      const rolesModule = await import('../../src/shared/utils/roles');
 
       expect(rolesModule.hasOrganizationPermission('owner', 'admin')).toBeTruthy();
       expect(rolesModule.hasOrganizationPermission('owner', 'member')).toBeTruthy();
@@ -73,7 +73,7 @@ describe('role utilities', () => {
     });
 
     test('should allow admin appropriate permissions', async () => {
-      const rolesModule = await import('#/shared/utils/roles');
+      const rolesModule = await import('../../src/shared/utils/roles');
 
       expect(rolesModule.hasOrganizationPermission('admin', 'owner')).toBeFalsy();
       expect(rolesModule.hasOrganizationPermission('admin', 'admin')).toBeTruthy();
@@ -82,7 +82,7 @@ describe('role utilities', () => {
     });
 
     test('should limit member permissions', async () => {
-      const rolesModule = await import('#/shared/utils/roles');
+      const rolesModule = await import('../../src/shared/utils/roles');
 
       expect(rolesModule.hasOrganizationPermission('member', 'owner')).toBeFalsy();
       expect(rolesModule.hasOrganizationPermission('member', 'admin')).toBeFalsy();
@@ -91,7 +91,7 @@ describe('role utilities', () => {
     });
 
     test('should limit guest permissions', async () => {
-      const rolesModule = await import('#/shared/utils/roles');
+      const rolesModule = await import('../../src/shared/utils/roles');
 
       expect(rolesModule.hasOrganizationPermission('guest', 'owner')).toBeFalsy();
       expect(rolesModule.hasOrganizationPermission('guest', 'admin')).toBeFalsy();
@@ -102,14 +102,14 @@ describe('role utilities', () => {
 
   describe('hasTeamPermission', () => {
     test('should allow team owner all permissions', async () => {
-      const rolesModule = await import('#/shared/utils/roles');
+      const rolesModule = await import('../../src/shared/utils/roles');
 
       expect(rolesModule.hasTeamPermission('owner', 'admin')).toBeTruthy();
       expect(rolesModule.hasTeamPermission('owner', 'member')).toBeTruthy();
     });
 
     test('should allow team admin appropriate permissions', async () => {
-      const rolesModule = await import('#/shared/utils/roles');
+      const rolesModule = await import('../../src/shared/utils/roles');
 
       expect(rolesModule.hasTeamPermission('admin', 'owner')).toBeFalsy();
       expect(rolesModule.hasTeamPermission('admin', 'admin')).toBeTruthy();
@@ -117,7 +117,7 @@ describe('role utilities', () => {
     });
 
     test('should limit team member permissions', async () => {
-      const rolesModule = await import('#/shared/utils/roles');
+      const rolesModule = await import('../../src/shared/utils/roles');
 
       expect(rolesModule.hasTeamPermission('member', 'owner')).toBeFalsy();
       expect(rolesModule.hasTeamPermission('member', 'admin')).toBeFalsy();
@@ -127,14 +127,14 @@ describe('role utilities', () => {
 
   describe('hasUserPermission', () => {
     test('should allow super-admin all permissions', async () => {
-      const rolesModule = await import('#/shared/utils/roles');
+      const rolesModule = await import('../../src/shared/utils/roles');
 
       expect(rolesModule.hasUserPermission('super-admin', 'admin')).toBeTruthy();
       expect(rolesModule.hasUserPermission('super-admin', 'user')).toBeTruthy();
     });
 
     test('should allow admin appropriate permissions', async () => {
-      const rolesModule = await import('#/shared/utils/roles');
+      const rolesModule = await import('../../src/shared/utils/roles');
 
       expect(rolesModule.hasUserPermission('admin', 'super-admin')).toBeFalsy();
       expect(rolesModule.hasUserPermission('admin', 'admin')).toBeTruthy();
@@ -142,7 +142,7 @@ describe('role utilities', () => {
     });
 
     test('should limit user permissions', async () => {
-      const rolesModule = await import('#/shared/utils/roles');
+      const rolesModule = await import('../../src/shared/utils/roles');
 
       expect(rolesModule.hasUserPermission('user', 'super-admin')).toBeFalsy();
       expect(rolesModule.hasUserPermission('user', 'admin')).toBeFalsy();
@@ -152,7 +152,7 @@ describe('role utilities', () => {
 
   describe('convenience functions', () => {
     test('should check organization owner correctly', async () => {
-      const rolesModule = await import('#/shared/utils/roles');
+      const rolesModule = await import('../../src/shared/utils/roles');
 
       expect(rolesModule.isOrganizationOwner('owner')).toBeTruthy();
       expect(rolesModule.isOrganizationOwner('admin')).toBeFalsy();
@@ -161,7 +161,7 @@ describe('role utilities', () => {
     });
 
     test('should check organization admin correctly', async () => {
-      const rolesModule = await import('#/shared/utils/roles');
+      const rolesModule = await import('../../src/shared/utils/roles');
 
       expect(rolesModule.isOrganizationAdmin('owner')).toBeTruthy();
       expect(rolesModule.isOrganizationAdmin('admin')).toBeTruthy();
@@ -170,7 +170,7 @@ describe('role utilities', () => {
     });
 
     test('should check team owner correctly', async () => {
-      const rolesModule = await import('#/shared/utils/roles');
+      const rolesModule = await import('../../src/shared/utils/roles');
 
       expect(rolesModule.isTeamOwner('owner')).toBeTruthy();
       expect(rolesModule.isTeamOwner('admin')).toBeFalsy();
@@ -178,7 +178,7 @@ describe('role utilities', () => {
     });
 
     test('should check team admin correctly', async () => {
-      const rolesModule = await import('#/shared/utils/roles');
+      const rolesModule = await import('../../src/shared/utils/roles');
 
       expect(rolesModule.isTeamAdmin('owner')).toBeTruthy();
       expect(rolesModule.isTeamAdmin('admin')).toBeTruthy();
@@ -186,7 +186,7 @@ describe('role utilities', () => {
     });
 
     test('should check super admin correctly', async () => {
-      const rolesModule = await import('#/shared/utils/roles');
+      const rolesModule = await import('../../src/shared/utils/roles');
 
       expect(rolesModule.isSuperAdmin('super-admin')).toBeTruthy();
       expect(rolesModule.isSuperAdmin('admin')).toBeFalsy();
@@ -194,7 +194,7 @@ describe('role utilities', () => {
     });
 
     test('should check admin correctly', async () => {
-      const rolesModule = await import('#/shared/utils/roles');
+      const rolesModule = await import('../../src/shared/utils/roles');
 
       expect(rolesModule.isAdmin('super-admin')).toBeTruthy();
       expect(rolesModule.isAdmin('admin')).toBeTruthy();

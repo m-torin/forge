@@ -108,7 +108,7 @@ class MockMCPClient {
         description: 'Execute SQL query',
         inputSchema: z.object({
           sql: z.string().describe('SQL query to execute'),
-          parameters: z.array(z.any()).optional(),
+          inputSchema: z.array(z.any()).optional(),
         }),
         serverName: 'database',
       },
@@ -259,8 +259,54 @@ class MockMCPClient {
       case 'listDirectory':
         return {
           files: [
-            { name: 'file1.txt', type: 'file', size: 1024 },
-            { name: 'file2.js', type: 'file', size: 2048 },
+            {
+              type: 'file',
+
+              file: {
+                file: {
+                  file: {
+                    file: {
+                      file: {
+                        file: {
+                          file: {
+                            file: {
+                              file: {
+                                name: 'file1.txt',
+                                size: 1024,
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            {
+              type: 'file',
+
+              file: {
+                file: {
+                  file: {
+                    file: {
+                      file: {
+                        file: {
+                          file: {
+                            file: {
+                              file: {
+                                name: 'file2.js',
+                                size: 2048,
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
             { name: 'subdirectory', type: 'directory' },
           ],
           path: input.path,
@@ -451,7 +497,7 @@ export class MCPToolManager {
 
         const toolInstance = aiTool({
           description: `[${serverName}] ${toolDef.description}`,
-          parameters: toolDef.inputSchema,
+          inputSchema: toolDef.inputSchema,
           execute: async (input: any, _options: any) => {
             try {
               const result = await mcpClient.executeServerTool(serverName, toolDef.name, input);
@@ -608,7 +654,7 @@ export async function createServerToolset(serverName: string): Promise<Record<st
  */
 export const mcpHealthTool = aiTool({
   description: 'Check MCP server health and connection status',
-  parameters: z.object({
+  inputSchema: z.object({
     serverName: z.string().optional().describe('Specific server to check'),
     detailed: z.boolean().default(false).describe('Include detailed information'),
   }),

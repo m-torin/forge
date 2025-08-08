@@ -10,7 +10,7 @@ import type { VectorDB } from './shared/types/vector';
 
 // Edge-compatible exports (no server-only imports)
 export * from './shared/middleware';
-export * from './shared/streaming/data-stream';
+// data-stream removed, use AI SDK v5 createUIMessageStream()
 export * from './shared/utils/messages';
 
 // Tool factory (edge-compatible)

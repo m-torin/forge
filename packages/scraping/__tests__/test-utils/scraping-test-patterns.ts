@@ -457,20 +457,18 @@ export const createTestScenarios = {
   performanceScenarios: () => [
     {
       name: 'large page (1MB)',
-      htmlGenerator: () => '<html><body>' + '<p>Content</p>'.repeat(10000) + '</body></html>',
+      htmlGenerator: () => `<html><body>${'<p>Content</p>'.repeat(10000)}</body></html>`,
       maxDuration: 2000,
     },
     {
       name: 'deeply nested structure',
-      htmlGenerator: () => '<div>'.repeat(100) + 'Content' + '</div>'.repeat(100),
+      htmlGenerator: () => `${'<div>'.repeat(100)}Content${'</div>'.repeat(100)}`,
       maxDuration: 1000,
     },
     {
       name: 'many elements (10k)',
       htmlGenerator: () =>
-        '<html><body>' +
-        Array.from({ length: 10000 }, (_, i) => `<span id="item-${i}">Item ${i}</span>`).join('') +
-        '</body></html>',
+        `<html><body>${Array.from({ length: 10000 }, (_, i) => `<span id="item-${i}">Item ${i}</span>`).join('')}</body></html>`,
       maxDuration: 3000,
     },
   ],

@@ -9,7 +9,7 @@
 import { tool, type Tool } from 'ai';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 import { mcpClient } from '../mcp-client';
 
 // Input schema for Vercel optimization analysis
@@ -416,7 +416,7 @@ export const vercelOptimizationTool = tool({
   },
 
   // Multi-modal result content
-  experimental_toToolResultContent: (result: VercelOptimizationResult) => [
+  toModelOutput: (result: VercelOptimizationResult) => [
     {
       type: 'text',
       text:

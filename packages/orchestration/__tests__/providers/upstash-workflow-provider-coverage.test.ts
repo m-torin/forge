@@ -19,34 +19,9 @@ vi.mock('@repo/observability/server/next', () => ({
   logInfo: vi.fn(),
 }));
 
-vi.mock('@upstash/qstash', () => {
-  const mockClient = vi.fn().mockImplementation(() => ({
-    publishJSON: vi.fn().mockResolvedValue({ messageId: 'mock-message-id' }),
-    schedules: {
-      create: vi.fn().mockResolvedValue({ scheduleId: 'mock-schedule-id' }),
-      delete: vi.fn().mockResolvedValue(true),
-    },
-  }));
-
-  return {
-    Client: mockClient,
-  };
-});
-
-vi.mock('@upstash/workflow/nextjs', () => ({
-  serve: vi.fn().mockImplementation(handler => ({
-    GET: vi.fn().mockResolvedValue(new Response('{"status":"ok"}', { status: 200 })),
-    POST: vi.fn().mockImplementation(async request => {
-      try {
-        const body = await request.json();
-        await handler({ requestPayload: body });
-        return new Response('{"success":true,"executionId":"test-execution"}', { status: 200 });
-      } catch (error) {
-        return new Response('{"error":"Workflow execution failed"}', { status: 500 });
-      }
-    }),
-  })),
-}));
+// Use centralized QA mocks for Upstash QStash and Workflow
+import '@repo/qa/vitest/mocks/providers/upstash/qstash';
+import '@repo/qa/vitest/mocks/providers/upstash/workflow';
 
 describe('upstashWorkflowProvider', () => {
   let provider: UpstashWorkflowProvider;
@@ -177,7 +152,7 @@ describe('upstashWorkflowProvider', () => {
       expect(execution.id).toBe('test-execution-id');
       expect(execution.workflowId).toBe('test-workflow');
       expect(execution.status).toBe('running');
-      expect(execution.input).toEqual(input);
+      expect(execution.input).toStrictEqual(input);
       expect(execution.steps).toHaveLength(2);
 
       // Verify Redis operations
@@ -263,7 +238,7 @@ describe('upstashWorkflowProvider', () => {
 
       const result = await provider.getExecution('execution-123');
 
-      expect(result).toEqual(executionData);
+      expect(result).toStrictEqual(executionData);
       expect(mockRedisClient.get).toHaveBeenCalledWith('workflow:execution:execution-123');
     });
 
@@ -306,7 +281,7 @@ describe('upstashWorkflowProvider', () => {
 
       const result = await provider.getWorkflowExecution('execution-123');
 
-      expect(result).toEqual(executionData);
+      expect(result).toStrictEqual(executionData);
     });
   });
 
@@ -473,7 +448,7 @@ describe('upstashWorkflowProvider', () => {
 
       const result = await provider.listExecutions('workflow-123');
 
-      expect(result).toEqual([]);
+      expect(result).toStrictEqual([]);
     });
 
     test('should throw error when Redis not configured', async () => {
@@ -871,7 +846,7 @@ describe('upstashWorkflowProvider', () => {
 
       const result = await provider.listExecutions('workflow-123');
 
-      expect(result).toEqual([]);
+      expect(result).toStrictEqual([]);
     });
   });
 });

@@ -19,12 +19,12 @@ const AddPasskeyModalWrapper = (props: any) => {
       throw new Error('Simulated error: Failed to add passkey');
     }
 
-    console.log('Passkey added:', values);
+    // console.log('Passkey added:', values);
     setLoading(false);
   };
 
   const handleSuccess = () => {
-    console.log('Passkey added successfully');
+    // console.log('Passkey added successfully');
   };
 
   return (

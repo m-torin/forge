@@ -1,48 +1,44 @@
 /**
  * MCP Utils - Agent Utility Tools
  * Common utilities for Claude Code quality agents
+ * Enhanced with Node.js 22+ error handling, context tracking, and abort support
  */
 
-import { 
-  MCPEntity, 
-  EntityType, 
-  AgentRequest, 
-  ValidationResult,
-  AgentResponse,
-  extractObservation as extractObservationUtil,
+import type { MCPToolResponse } from '../types/mcp';
+import { AbortableToolArgs, throwIfAborted } from '../utils/abort-support';
+import {
+  AgentRequest,
   createEntityName as createEntityNameUtil,
+  EntityType,
+  extractObservation as extractObservationUtil,
+  formatAgentResponse as formatAgentResponseUtil,
+  MCPEntity,
   validateAgentRequest as validateAgentRequestUtil,
-  formatAgentResponse as formatAgentResponseUtil
 } from '../utils/agent-helpers';
+import { runWithContext } from '../utils/context';
+import { ok, runTool } from '../utils/tool-helpers';
+import { validateSessionId } from '../utils/validation';
 
-export interface MCPToolResponse {
-  content: Array<{
-    type: string;
-    text: string;
-  }>;
-  isError?: boolean;
-}
-
-export interface ExtractObservationArgs {
+export interface ExtractObservationArgs extends AbortableToolArgs {
   entity: MCPEntity;
   key: string;
 }
 
-export interface CreateEntityNameArgs {
+export interface CreateEntityNameArgs extends AbortableToolArgs {
   entityType: EntityType;
   sessionId: string;
   additionalIds?: string[];
 }
 
-export interface ValidateAgentRequestArgs {
+export interface ValidateAgentRequestArgs extends AbortableToolArgs {
   request: AgentRequest;
   requiredFields: string[];
   version?: string;
 }
 
-export interface FormatAgentResponseArgs {
+export interface FormatAgentResponseArgs extends AbortableToolArgs {
   success: boolean;
-  data?: any;
+  data?: Record<string, unknown> | string | number | boolean | null;
   error?: string;
 }
 
@@ -61,27 +57,37 @@ export const extractObservationTool = {
         properties: {
           observations: {
             type: 'array',
-            items: { type: 'string' }
-          }
-        }
+            items: { type: 'string' },
+          },
+        },
       },
       key: {
         type: 'string',
-        description: 'The key to extract from observations'
-      }
+        description: 'The key to extract from observations',
+      },
+      signal: {
+        description: 'AbortSignal for cancelling the operation',
+      },
     },
-    required: ['entity', 'key']
+    required: ['entity', 'key'],
   },
-  execute: async ({ entity, key }: ExtractObservationArgs): Promise<MCPToolResponse> => {
-    const value = extractObservationUtil(entity, key);
-    
-    return {
-      content: [{
-        type: 'text',
-        text: JSON.stringify({ value })
-      }]
-    };
-  }
+  execute: async ({ entity, key, signal }: ExtractObservationArgs): Promise<MCPToolResponse> => {
+    return runTool('extract_observation', 'extract', async () => {
+      // Check for abort signal at start
+      throwIfAborted(signal);
+
+      return runWithContext(
+        {
+          toolName: 'extract_observation',
+          metadata: { key, entityType: (entity as any)?.entityType },
+        },
+        async () => {
+          const value = extractObservationUtil(entity, key);
+          return ok({ value });
+        },
+      );
+    });
+  },
 };
 
 /**
@@ -105,31 +111,52 @@ export const createEntityNameTool = {
           'VercelOptimization',
           'MockAnalysis',
           'UtilizationAnalysis',
-          'WordRemoval'
-        ]
+          'WordRemoval',
+        ],
       },
       sessionId: {
         type: 'string',
-        description: 'Session ID for the entity'
+        description: 'Session ID for the entity',
       },
       additionalIds: {
         type: 'array',
         items: { type: 'string' },
-        description: 'Additional IDs to append (e.g., file path)'
-      }
+        description: 'Additional IDs to append (e.g., file path)',
+      },
+      signal: {
+        description: 'AbortSignal for cancelling the operation',
+      },
     },
-    required: ['entityType', 'sessionId']
+    required: ['entityType', 'sessionId'],
   },
-  execute: async ({ entityType, sessionId, additionalIds = [] }: CreateEntityNameArgs): Promise<MCPToolResponse> => {
-    const name = createEntityNameUtil(entityType, sessionId, additionalIds);
+  execute: async ({
+    entityType,
+    sessionId,
+    additionalIds = [],
+    signal,
+  }: CreateEntityNameArgs): Promise<MCPToolResponse> => {
+    return runTool('create_entity_name', 'create', async () => {
+      // Check for abort signal at start
+      throwIfAborted(signal);
 
-    return {
-      content: [{
-        type: 'text',
-        text: JSON.stringify({ name })
-      }]
-    };
-  }
+      // Validate session ID
+      const sessionValidation = validateSessionId(sessionId);
+      if (!sessionValidation.isValid) {
+        throw new Error(`Invalid session ID: ${sessionValidation.error}`);
+      }
+
+      return runWithContext(
+        {
+          toolName: 'create_entity_name',
+          metadata: { entityType, sessionId, additionalIdsCount: additionalIds.length },
+        },
+        async () => {
+          const name = createEntityNameUtil(entityType, sessionId, additionalIds);
+          return ok({ name });
+        },
+      );
+    });
+  },
 };
 
 /**
@@ -143,31 +170,46 @@ export const validateAgentRequestTool = {
     properties: {
       request: {
         type: 'object',
-        description: 'The request object to validate'
+        description: 'The request object to validate',
       },
       requiredFields: {
         type: 'array',
         items: { type: 'string' },
-        description: 'List of required fields'
+        description: 'List of required fields',
       },
       version: {
         type: 'string',
         description: 'Expected protocol version',
-        default: '1.0'
-      }
+        default: '1.0',
+      },
+      signal: {
+        description: 'AbortSignal for cancelling the operation',
+      },
     },
-    required: ['request', 'requiredFields']
+    required: ['request', 'requiredFields'],
   },
-  execute: async ({ request, requiredFields, version = '1.0' }: ValidateAgentRequestArgs): Promise<MCPToolResponse> => {
-    const result = validateAgentRequestUtil(request, requiredFields, version);
+  execute: async ({
+    request,
+    requiredFields,
+    version = '1.0',
+    signal,
+  }: ValidateAgentRequestArgs): Promise<MCPToolResponse> => {
+    return runTool('validate_agent_request', 'validate', async () => {
+      // Check for abort signal at start
+      throwIfAborted(signal);
 
-    return {
-      content: [{
-        type: 'text',
-        text: JSON.stringify(result)
-      }]
-    };
-  }
+      return runWithContext(
+        {
+          toolName: 'validate_agent_request',
+          metadata: { requiredFieldsCount: requiredFields.length, version },
+        },
+        async () => {
+          const result = validateAgentRequestUtil(request, requiredFields, version);
+          return ok(result);
+        },
+      );
+    });
+  },
 };
 
 /**
@@ -181,26 +223,41 @@ export const formatAgentResponseTool = {
     properties: {
       success: {
         type: 'boolean',
-        description: 'Whether the operation succeeded'
+        description: 'Whether the operation succeeded',
       },
       data: {
-        description: 'Response data (optional)'
+        description: 'Response data (optional)',
       },
       error: {
         type: 'string',
-        description: 'Error message (optional)'
-      }
+        description: 'Error message (optional)',
+      },
+      signal: {
+        description: 'AbortSignal for cancelling the operation',
+      },
     },
-    required: ['success']
+    required: ['success'],
   },
-  execute: async ({ success, data, error }: FormatAgentResponseArgs): Promise<MCPToolResponse> => {
-    const response = formatAgentResponseUtil(success, data, error);
+  execute: async ({
+    success,
+    data,
+    error,
+    signal,
+  }: FormatAgentResponseArgs): Promise<MCPToolResponse> => {
+    return runTool('format_agent_response', 'format', async () => {
+      // Check for abort signal at start
+      throwIfAborted(signal);
 
-    return {
-      content: [{
-        type: 'text',
-        text: JSON.stringify(response)
-      }]
-    };
-  }
+      return runWithContext(
+        {
+          toolName: 'format_agent_response',
+          metadata: { success, hasData: !!data, hasError: !!error },
+        },
+        async () => {
+          const response = formatAgentResponseUtil(success, data, error);
+          return ok(response);
+        },
+      );
+    });
+  },
 };

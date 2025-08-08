@@ -11,11 +11,11 @@ import { Card, CardContent, CardHeader } from '../ui/Card';
 import { Input } from '../ui/Input';
 
 // Placeholder server actions - these would be implemented in the actions file
-const createAnonymousSessionAction = async (prevState: any, formData: FormData) => {
+const createAnonymousSessionAction = async (__prevState: any, formData: FormData) => {
   const sessionName = formData.get('sessionName') as string;
-  const allowDataCollection = formData.get('allowDataCollection') === 'true';
+  const _allowDataCollection = formData.get('allowDataCollection') === 'true';
 
-  console.log('Creating anonymous session:', { sessionName, allowDataCollection });
+  // console.log('Creating anonymous session:', { sessionName, allowDataCollection });
 
   // Simulate API call
   await new Promise(resolve => setTimeout(resolve, 1000));
@@ -41,11 +41,11 @@ interface AnonymousSessionCreatorProps {
 const initialFormState = { success: false, error: '' };
 
 export function AnonymousSessionCreator({
-  onSessionCreated,
+  onSessionCreated: _onSessionCreated,
   onCancel,
   allowCustomization = true,
   showDataOptions = true,
-  autoRedirect = true,
+  autoRedirect: _autoRedirect = true,
   className = '',
 }: AnonymousSessionCreatorProps) {
   const [isPending, startTransition] = useTransition();
@@ -111,10 +111,8 @@ export function AnonymousSessionCreator({
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Error Messages */}
           {createState.error && <Alert variant="destructive">{createState.error}</Alert>}
 
-          {/* Success Message */}
           {createState.success && (
             <Alert variant="default">
               <div className="flex items-center">
@@ -127,7 +125,6 @@ export function AnonymousSessionCreator({
             </Alert>
           )}
 
-          {/* Terms Agreement */}
           <div className="space-y-3">
             <div className="flex items-start space-x-3">
               <input
@@ -150,7 +147,6 @@ export function AnonymousSessionCreator({
             </div>
           </div>
 
-          {/* Quick Start Option */}
           <div className="space-y-4">
             <Button
               onClick={handleQuickStart}
@@ -173,7 +169,6 @@ export function AnonymousSessionCreator({
             )}
           </div>
 
-          {/* Customization Options */}
           {customizeSession && (
             <form onSubmit={handleCreateSession} className="space-y-4">
               <div>
@@ -219,7 +214,6 @@ export function AnonymousSessionCreator({
             </form>
           )}
 
-          {/* Information Panel */}
           <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
             <div className="flex items-start">
               <span className="mr-3 text-lg text-blue-600">ℹ️</span>
@@ -236,7 +230,6 @@ export function AnonymousSessionCreator({
             </div>
           </div>
 
-          {/* Limitations Notice */}
           <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
             <div className="flex items-start">
               <span className="mr-2 text-lg text-yellow-600">⚠️</span>
@@ -253,7 +246,6 @@ export function AnonymousSessionCreator({
             </div>
           </div>
 
-          {/* Account Creation Alternative */}
           <div className="space-y-3 text-center">
             <div className="border-t border-gray-200 pt-4">
               <p className="mb-3 text-sm text-gray-600">Want the full experience?</p>
@@ -268,7 +260,6 @@ export function AnonymousSessionCreator({
             </div>
           </div>
 
-          {/* Cancel Option */}
           {onCancel && (
             <div className="border-t border-gray-200 pt-4 text-center">
               <button
@@ -283,7 +274,6 @@ export function AnonymousSessionCreator({
         </CardContent>
       </Card>
 
-      {/* Privacy Notice */}
       <div className="mt-4 text-center">
         <p className="text-xs text-gray-500">🔒 Anonymous sessions are secure and temporary</p>
       </div>

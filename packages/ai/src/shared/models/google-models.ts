@@ -1,9 +1,9 @@
 /**
- * Enhanced Google Gemini model configurations
- * These configurations are used with the enhanced Google provider
+ * Google Gemini model configurations with safety and caching
+ * These configurations are used with the Google provider
  */
 
-export interface EnhancedGoogleConfig {
+export interface GoogleConfigWithSafety {
   safetySettings?: Array<{
     category:
       | 'HARM_CATEGORY_UNSPECIFIED'
@@ -26,7 +26,7 @@ export interface EnhancedGoogleConfig {
   };
 }
 
-// Default safety settings for enhanced models
+// Default safety settings for Google models
 export const DEFAULT_SAFETY_SETTINGS = [
   {
     category: 'HARM_CATEGORY_HATE_SPEECH' as const,
@@ -46,7 +46,7 @@ export const DEFAULT_SAFETY_SETTINGS = [
   },
 ];
 
-// Enhanced model configurations
+// Google model configurations with safety and features
 export const GOOGLE_ENHANCED_CONFIGS = {
   // Standard models with safety settings
   'gemini-1.5-pro-latest': {

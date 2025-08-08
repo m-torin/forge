@@ -93,7 +93,7 @@ export function AdminDashboard({
   onNavigateToSecurity,
   className = '',
 }: AdminDashboardProps) {
-  const [isPending, startTransition] = useTransition();
+  const [isPending, _startTransition] = useTransition();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTimeframe, setSelectedTimeframe] = useState('7d');
 
@@ -155,7 +155,6 @@ export function AdminDashboard({
 
   return (
     <div className={`space-y-6 ${className}`}>
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
@@ -178,7 +177,6 @@ export function AdminDashboard({
         </div>
       </div>
 
-      {/* Critical Alerts */}
       {criticalAlerts.length > 0 && (
         <Alert variant="destructive">
           <div className="flex items-center justify-between">
@@ -196,7 +194,6 @@ export function AdminDashboard({
         </Alert>
       )}
 
-      {/* Quick Search */}
       <Card>
         <CardContent className="p-4">
           <form onSubmit={handleQuickSearch} className="flex gap-3">
@@ -214,9 +211,7 @@ export function AdminDashboard({
         </CardContent>
       </Card>
 
-      {/* Stats Overview */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {/* Users Stats */}
         <Card
           className="cursor-pointer transition-shadow hover:shadow-md"
           onClick={onNavigateToUsers}
@@ -260,7 +255,6 @@ export function AdminDashboard({
           </CardContent>
         </Card>
 
-        {/* Sessions Stats */}
         <Card>
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
@@ -301,7 +295,6 @@ export function AdminDashboard({
           </CardContent>
         </Card>
 
-        {/* Organizations Stats */}
         <Card
           className="cursor-pointer transition-shadow hover:shadow-md"
           onClick={onNavigateToOrganizations}
@@ -341,7 +334,6 @@ export function AdminDashboard({
           </CardContent>
         </Card>
 
-        {/* Security Stats */}
         <Card
           className="cursor-pointer transition-shadow hover:shadow-md"
           onClick={onNavigateToSecurity}
@@ -381,7 +373,6 @@ export function AdminDashboard({
         </Card>
       </div>
 
-      {/* API Keys Stats */}
       <Card
         className="cursor-pointer transition-shadow hover:shadow-md"
         onClick={onNavigateToApiKeys}
@@ -416,9 +407,7 @@ export function AdminDashboard({
         </CardContent>
       </Card>
 
-      {/* Main Content Grid */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Recent Activity */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -470,7 +459,6 @@ export function AdminDashboard({
           </CardContent>
         </Card>
 
-        {/* System Alerts */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -523,7 +511,6 @@ export function AdminDashboard({
         </Card>
       </div>
 
-      {/* Quick Actions */}
       <Card>
         <CardHeader>
           <h3 className="text-lg font-medium text-gray-900">Quick Actions</h3>

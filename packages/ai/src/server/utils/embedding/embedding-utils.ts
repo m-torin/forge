@@ -7,7 +7,7 @@ import { openai } from '@ai-sdk/openai';
 import type { EmbeddingModel } from 'ai';
 import { cosineSimilarity, embed, embedMany } from 'ai';
 
-export interface EnhancedEmbeddingOptions {
+export interface CachedEmbeddingOptions {
   model?: EmbeddingModel<string>;
   maxParallelCalls?: number;
   dimensions?: number;
@@ -16,9 +16,9 @@ export interface EnhancedEmbeddingOptions {
 }
 
 /**
- * Enhanced embedding manager with v5 features
+ * Embedding manager with caching and optimization features
  */
-export class EnhancedEmbeddingManager {
+export class CachedEmbeddingManager {
   private defaultModel: EmbeddingModel<string>;
 
   constructor(modelName?: string) {
@@ -28,7 +28,7 @@ export class EnhancedEmbeddingManager {
   /**
    * Single embedding with v5 options
    */
-  async embed(text: string, options?: EnhancedEmbeddingOptions): Promise<number[]> {
+  async embed(text: string, options?: CachedEmbeddingOptions): Promise<number[]> {
     const result = await embed({
       model: options?.model ?? this.defaultModel,
       value: text,
@@ -48,7 +48,7 @@ export class EnhancedEmbeddingManager {
   /**
    * Batch embedding with parallel control
    */
-  async embedBatch(texts: string[], options?: EnhancedEmbeddingOptions): Promise<number[][]> {
+  async embedBatch(texts: string[], options?: CachedEmbeddingOptions): Promise<number[][]> {
     const result = await embedMany({
       model: options?.model ?? this.defaultModel,
       values: texts,
@@ -71,7 +71,7 @@ export class EnhancedEmbeddingManager {
    */
   async embedWithChunking(
     texts: string[],
-    options?: EnhancedEmbeddingOptions & {
+    options?: CachedEmbeddingOptions & {
       chunkSize?: number;
       overlap?: number;
     },
@@ -203,7 +203,7 @@ export class EnhancedEmbeddingManager {
   async semanticSearch(
     query: string,
     documents: string[],
-    options?: EnhancedEmbeddingOptions & {
+    options?: CachedEmbeddingOptions & {
       topK?: number;
       threshold?: number;
       rerank?: boolean;
@@ -273,11 +273,11 @@ export const embeddingUtils = {
     options?: {
       topK?: number;
       threshold?: number;
-      model?: EmbeddingModel<string>;
       maxParallelCalls?: number;
+      model?: EmbeddingModel<string>;
     },
   ): Promise<Array<{ document: string; similarity: number; index: number }>> {
-    const manager = new EnhancedEmbeddingManager();
+    const manager = new CachedEmbeddingManager();
     const results = await manager.semanticSearch(query, documents, options);
     return results.map(({ document, similarity, index }) => ({ document, similarity, index }));
   },
@@ -289,8 +289,8 @@ export const embeddingUtils = {
     documents: string[],
     options?: {
       threshold?: number;
-      model?: EmbeddingModel<string>;
       maxParallelCalls?: number;
+      model?: EmbeddingModel<string>;
     },
   ): Promise<
     Array<{
@@ -298,7 +298,7 @@ export const embeddingUtils = {
       documents: Array<{ index: number; text: string; similarity?: number }>;
     }>
   > {
-    const manager = new EnhancedEmbeddingManager();
+    const manager = new CachedEmbeddingManager();
     const embeddings = await manager.embedBatch(documents, options);
     const clusters = manager.findClusters(embeddings, options?.threshold ?? 0.8);
 
@@ -318,11 +318,11 @@ export const embeddingUtils = {
     documents: string[],
     options?: {
       threshold?: number;
-      model?: EmbeddingModel<string>;
       maxParallelCalls?: number;
+      model?: EmbeddingModel<string>;
     },
   ): Promise<Array<{ original: number; duplicate: number; similarity: number }>> {
-    const manager = new EnhancedEmbeddingManager();
+    const manager = new CachedEmbeddingManager();
     const embeddings = await manager.embedBatch(documents, options);
     const threshold = options?.threshold ?? 0.95;
     const duplicates = [];
@@ -348,11 +348,11 @@ export const embeddingUtils = {
     options?: {
       topK?: number;
       excludeOriginal?: boolean;
-      model?: EmbeddingModel<string>;
       maxParallelCalls?: number;
+      model?: EmbeddingModel<string>;
     },
   ): Promise<Array<{ text: string; similarity: number; index: number }>> {
-    const manager = new EnhancedEmbeddingManager();
+    const manager = new CachedEmbeddingManager();
     const allTexts = [sourceText, ...candidateTexts];
     const embeddings = await manager.embedBatch(allTexts, options);
 
@@ -378,10 +378,10 @@ export const embeddingUtils = {
   async batchProcess(
     documents: string[],
     batchSize: number = 100,
-    options?: EnhancedEmbeddingOptions,
+    options?: CachedEmbeddingOptions,
     onProgress?: (processed: number, total: number) => void,
   ): Promise<number[][]> {
-    const manager = new EnhancedEmbeddingManager();
+    const manager = new CachedEmbeddingManager();
     const allEmbeddings: number[][] = [];
 
     for (let i = 0; i < documents.length; i += batchSize) {
@@ -401,6 +401,6 @@ export const embeddingUtils = {
 /**
  * Factory function
  */
-export function createEnhancedEmbeddingManager(modelName?: string): EnhancedEmbeddingManager {
-  return new EnhancedEmbeddingManager(modelName);
+export function createCachedEmbeddingManager(modelName?: string): CachedEmbeddingManager {
+  return new CachedEmbeddingManager(modelName);
 }

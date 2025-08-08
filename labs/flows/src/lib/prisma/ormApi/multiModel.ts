@@ -25,6 +25,6 @@ export const getTagsWithTagGroups = async (instanceId: string): Promise<TagWithG
     return tags;
   } catch (error) {
     logError('Database error in getTagsWithTagGroups', { error });
-    throw error; // Propagate the error to be handled by the caller
+    return []; // Return empty array instead of throwing
   }
 };

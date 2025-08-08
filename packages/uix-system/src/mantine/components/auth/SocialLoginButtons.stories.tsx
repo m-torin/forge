@@ -34,7 +34,9 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 // Mock handler
-const mockProviderClick = (provider: string) => console.log('Provider clicked:', provider);
+const mockProviderClick = (provider: string) => {
+  // console.log('Provider clicked:', provider);
+};
 
 export const Default: Story = {
   args: {

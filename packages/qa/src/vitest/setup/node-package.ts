@@ -10,6 +10,9 @@ import './common';
 // Import AI mocks for packages that need them
 import '../mocks/providers/ai';
 
+// Import centralized provider mocks
+import './providers';
+
 // Set test environment
 process.env.NODE_ENV = 'test';
 

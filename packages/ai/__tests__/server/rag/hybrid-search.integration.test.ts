@@ -127,7 +127,6 @@ describe('hybrid Search Integration Tests', () => {
   });
 
   afterAll(async () => {
-    // Cleanup test data
     try {
       for (const doc of testDocuments) {
         await vectorStore.deleteDocument(doc.id);
@@ -258,7 +257,9 @@ describe('hybrid Search Integration Tests', () => {
             new Date(b.metadata!.timestamp).getTime() - new Date(a.metadata!.timestamp).getTime(),
         );
 
-      if (sortedByTimestamp.length > 1) {
+      const hasMultipleTimestamps = sortedByTimestamp.length > 1;
+
+      if (hasMultipleTimestamps) {
         // Recent document should have competitive score
         expect(sortedByTimestamp[0].hybridScore).toBeGreaterThan(0);
       }
@@ -271,10 +272,13 @@ describe('hybrid Search Integration Tests', () => {
         filters: { category: 'education' },
       });
 
-      if (results.length > 0) {
+      const hasResults = results.length > 0;
+
+      if (hasResults) {
         // All results should match the filter
         results.forEach(result => {
-          if (result.metadata?.category) {
+          const hasCategory = result.metadata?.category !== undefined;
+          if (hasCategory) {
             expect(result.metadata.category).toBe('education');
           }
         });
@@ -302,8 +306,9 @@ describe('hybrid Search Integration Tests', () => {
       const boostedDoc = results.find(
         r => r.metadata?.title?.includes('Machine Learning') || r.metadata?.tags?.includes('ML'),
       );
+      const hasBoostedDoc = boostedDoc !== undefined;
 
-      if (boostedDoc) {
+      if (hasBoostedDoc) {
         expect(boostedDoc.hybridScore).toBeGreaterThan(0);
       }
     });
@@ -377,7 +382,9 @@ describe('hybrid Search Integration Tests', () => {
       expect(rrfResults.length).toBeGreaterThan(0);
 
       // Results should be different due to different fusion methods
-      if (weightedResults.length > 0 && rrfResults.length > 0) {
+      const hasBothResultTypes = weightedResults.length > 0 && rrfResults.length > 0;
+
+      if (hasBothResultTypes) {
         const topWeighted = weightedResults[0];
         const topRRF = rrfResults[0];
 
@@ -537,7 +544,9 @@ describe('hybrid Search Integration Tests', () => {
 
       const resultsWithKeywordMatches = results.filter(r => r.keywordMatches.length > 0);
 
-      if (resultsWithKeywordMatches.length > 0) {
+      const hasKeywordResults = resultsWithKeywordMatches.length > 0;
+
+      if (hasKeywordResults) {
         const result = resultsWithKeywordMatches[0];
 
         // Should contain relevant keyword matches
@@ -556,8 +565,9 @@ describe('hybrid Search Integration Tests', () => {
       const results = await hybridSearch.search('machine learning');
 
       const resultWithMetadata = results.find(r => r.metadata);
+      const hasMetadataResult = resultWithMetadata !== undefined;
 
-      if (resultWithMetadata) {
+      if (hasMetadataResult) {
         expect(resultWithMetadata.metadata).toHaveProperty('title');
         expect(resultWithMetadata.metadata).toHaveProperty('category');
         expect(resultWithMetadata.metadata.title).toBeTruthy();

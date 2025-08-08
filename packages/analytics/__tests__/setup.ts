@@ -1,9 +1,7 @@
 import '@testing-library/jest-dom';
 import { beforeEach, vi } from 'vitest';
 
-// Import centralized mocks from @repo/qa (when available)
-// TODO: Re-enable when @repo/qa exports are built
-// import '@repo/qa/vitest/mocks/providers/vercel-analytics';
+// Centralized mocks from @repo/qa are automatically loaded via createReactPackageConfig setup files
 
 // Mock console methods for cleaner test output
 const originalConsole = console;

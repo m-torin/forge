@@ -130,7 +130,7 @@ export function createResumableDataStream(
 
   // Create the base data stream
   const dataStream = createUIMessageStream({
-    execute,
+    execute: ({ writer }) => execute(writer),
     onError: config?.onError || (() => 'An error occurred while streaming.'),
   });
 
@@ -157,7 +157,7 @@ export function createEmptyDataStream(): ReadableStream {
  */
 export function createRestoredDataStream(message: any): ReadableStream {
   return createUIMessageStream({
-    execute: buffer => {
+    execute: ({ writer: buffer }) => {
       buffer.write({
         type: 'data-append-message',
         data: JSON.stringify(message),

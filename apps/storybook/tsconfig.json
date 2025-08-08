@@ -5,6 +5,7 @@
     "skipLibCheck": true,
     "noEmit": true,
     "paths": {
+      "#/__tests__/*": ["./__tests__/*"],
       "#/root/*": ["./*"],
       "#/*": ["./src/*"]
     }

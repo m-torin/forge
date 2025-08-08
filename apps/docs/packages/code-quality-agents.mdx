@@ -1,0 +1,737 @@
+---
+title: Code Quality Agents
+description:
+  Comprehensive code quality analysis system with main agent orchestration and
+  specialized subagents featuring advanced branch strategy options
+icon: "code"
+---
+
+# Code Quality Agents
+
+A sophisticated code quality analysis system featuring a main orchestrator agent
+and 11 specialized subagents, each with advanced branch strategy options for
+safe, flexible operation.
+
+## Overview
+
+The code quality system uses a **two-tier architecture**:
+
+- **Main Agent**: `code-quality` - Orchestrates comprehensive analysis with
+  absolute worktree isolation
+- **Subagents**: 11 specialized agents for specific tasks with flexible branch
+  strategies
+
+<CardGroup cols={2}>
+  <Card title="Main Agent" icon="tree" color="purple">
+    **Absolute Safety**: Always uses worktree isolation for comprehensive
+    analysis with zero risk to user's working directory
+  </Card>
+  <Card title="Subagents" icon="puzzle" color="blue">
+    **Flexible Operation**: Can work in worktrees (default) or directly in
+    user's branch when called directly and explicitly requested
+  </Card>
+</CardGroup>
+
+## Branch Strategy Options
+
+### 🌳 **Worktree Mode (Default & Recommended)**
+
+**How it works:**
+
+- Creates isolated Git worktree from existing branch
+- All analysis and changes happen in separate directory
+- Proposes changes back via pull request
+- **Zero impact** on user's working directory
+
+**When to use:**
+
+- ✅ Default for all comprehensive analysis
+- ✅ When making code modifications
+- ✅ For maximum safety and rollback capability
+- ✅ When unsure about impact scope
+
+### 🔄 **In-Branch Mode (Optional)**
+
+**How it works:**
+
+- Operates directly in user's current branch
+- Creates automatic backup branches for safety
+- Applies changes with validation and rollback
+- **Requires explicit user confirmation**
+
+**When to use:**
+
+- ⚠️ Only when called directly via Task tool
+- ⚠️ User explicitly requests in-branch operation
+- ⚠️ Comfortable with risk level of specific agent
+- ⚠️ Need immediate changes without PR workflow
+
+<Warning>
+  In-branch mode requires careful consideration of risk levels and is only
+  available for subagents when called directly.
+</Warning>
+
+## Risk Assessment Matrix
+
+Each subagent has a defined risk level for in-branch operations:
+
+<CardGroup cols={4}>
+  <Card title="LOW Risk" icon="check" color="green">
+    - Documentation updates - Report generation - Read-only analysis - Badge
+    updates
+  </Card>
+  <Card title="MEDIUM Risk" icon="exclamation-triangle" color="yellow">
+    - Configuration changes - Dependency analysis - Non-critical file updates -
+    Build script modifications
+  </Card>
+  <Card title="HIGH Risk" icon="warning" color="orange">
+    - Source code transformation - Mock centralization - ES2023 modernization -
+    Multi-file refactoring
+  </Card>
+  <Card title="CRITICAL Risk" icon="ban" color="red">
+    - Dependency updates - Build system changes - Core architecture
+    modifications - Security-critical changes
+  </Card>
+</CardGroup>
+
+## Usage Patterns
+
+### Main Agent Usage
+
+```bash
+# Always uses worktree isolation - no exceptions
+Task code-quality: "Analyze and improve code quality"
+```
+
+**What happens:**
+
+1. Creates worktree from existing branch
+2. Orchestrates all 11 subagents for comprehensive analysis
+3. Applies all improvements in isolation
+4. Proposes changes via pull request
+5. User reviews and merges when ready
+
+### Direct Subagent Usage
+
+```bash
+# Worktree mode (default)
+Task code-quality--security: "Scan for vulnerabilities"
+
+# In-branch mode (explicit request)
+Task code-quality--security: "Scan for secrets in my current branch"
+```
+
+**What happens (in-branch mode):**
+
+1. Confirms risk level and user acknowledgment
+2. Creates automatic backup branch
+3. Performs requested operation directly
+4. Validates results and offers rollback if needed
+
+---
+
+# Agent Reference
+
+## Main Agent
+
+### `code-quality` - Main Orchestrator
+
+**Purpose**: Comprehensive code quality analysis with full workflow
+orchestration  
+**Branch Strategy**: Worktree-only (absolute isolation policy)  
+**Risk Level**: SAFE (isolated environment)
+
+<Accordion title="Capabilities & Usage">
+
+**Key Features:**
+
+- Orchestrates all 11 subagents for complete analysis
+- Creates isolated worktree environment
+- Comprehensive vulnerability detection and code improvement
+- Automated testing and validation
+- Pull request creation with detailed analysis
+
+**MCP Tools Used:**
+
+- `mcp__claude_utils__workflow_orchestrator` - Core workflow management
+- `mcp__claude_utils__worktree_manager` - Git worktree isolation
+- All subagent MCP tools for comprehensive coverage
+
+**Usage:**
+
+```bash
+Task code-quality: "Analyze and modernize my TypeScript package"
+Task code-quality: "Full security and quality audit"
+Task code-quality: "Comprehensive code review and improvements"
+```
+
+**Safety Features:**
+
+- ✅ Complete isolation from user's working directory
+- ✅ All changes happen in separate worktree
+- ✅ Changes proposed via pull request for review
+- ✅ Zero risk to main development environment
+- ✅ Rollback capability through Git history
+
+</Accordion>
+
+---
+
+## Subagents
+
+### `code-quality--security` - Security Scanning
+
+**Purpose**: Vulnerability detection, secret scanning, and security analysis  
+**Branch Strategy**: Worktree (default) | In-branch (read-only scanning)  
+**Risk Level**: LOW-MEDIUM (read-only operations)
+
+<Accordion title="Capabilities & Usage">
+
+**Key Features:**
+
+- API key, password, and token detection
+- SQL injection and XSS vulnerability scanning
+- Dependency vulnerability analysis
+- Security pattern detection
+- Comprehensive security reporting
+
+**MCP Tools Used:**
+
+- `mcp__claude_utils__security_scanner` - All security operations
+- `mcp__claude_utils__pattern_analyzer` - Security pattern detection
+
+**In-Branch Mode Requirements:**
+
+- ✅ Read-only scanning operations only
+- ✅ User explicit confirmation
+- ⚠️ Caution: May access sensitive configuration files
+
+**Usage:**
+
+```bash
+# Worktree mode (default)
+Task code-quality--security: "Scan for security vulnerabilities"
+
+# In-branch mode (direct scanning)
+Task code-quality--security: "Scan for secrets in my current branch"
+Task code-quality--security: "Quick security scan without worktree"
+```
+
+**Safety Features:**
+
+- ✅ Read-only operations (no code modifications)
+- ✅ Secure handling of detected secrets
+- ✅ Comprehensive vulnerability database integration
+
+</Accordion>
+
+### `code-quality--testing` - Testing & Validation
+
+**Purpose**: Browser automation, E2E testing, and comprehensive test coverage
+analysis  
+**Branch Strategy**: Worktree (default) | In-branch (test execution)  
+**Risk Level**: LOW-MEDIUM (test execution, potential configuration changes)
+
+<Accordion title="Capabilities & Usage">
+
+**Key Features:**
+
+- End-to-end test execution
+- Test coverage analysis
+- Browser automation with Playwright
+- Accessibility compliance testing
+- Performance benchmark testing
+- Visual regression testing
+
+**MCP Tools Used:**
+
+- `mcp__claude_utils__test_runner` - All testing operations
+- Browser automation tools for E2E testing
+
+**In-Branch Mode Requirements:**
+
+- ✅ Test execution and coverage analysis
+- ⚠️ May create test artifacts and reports
+- ✅ Generally safe for test-only operations
+
+**Usage:**
+
+```bash
+# Worktree mode (default)
+Task code-quality--testing: "Run comprehensive test suite"
+
+# In-branch mode (direct testing)
+Task code-quality--testing: "Run E2E tests in my current branch"
+Task code-quality--testing: "Check test coverage without worktree"
+```
+
+**Safety Features:**
+
+- ✅ Isolated browser automation
+- ✅ Comprehensive test reporting
+- ✅ Performance metrics collection
+
+</Accordion>
+
+### `code-quality--reporting` - Report Generation
+
+**Purpose**: Quality reports, pull request creation, and documentation
+generation  
+**Branch Strategy**: Worktree (default) | In-branch (documentation updates)  
+**Risk Level**: LOW (documentation and reporting only)
+
+<Accordion title="Capabilities & Usage">
+
+**Key Features:**
+
+- Comprehensive quality report generation
+- Pull request creation with analysis
+- Documentation updates (README, CHANGELOG)
+- Quality badge updates
+- API documentation generation
+
+**MCP Tools Used:**
+
+- `mcp__claude_utils__report_generator` - All reporting operations
+- `mcp__claude_utils__code_analysis` - Quality metrics
+
+**In-Branch Mode Requirements:**
+
+- ✅ Safe documentation updates
+- ✅ Non-functional changes only
+- ✅ Backup branch created before changes
+
+**Usage:**
+
+```bash
+# Worktree mode (default)
+Task code-quality--reporting: "Generate comprehensive quality report"
+
+# In-branch mode (direct updates)
+Task code-quality--reporting: "Update documentation in my current branch"
+Task code-quality--reporting: "Generate quality report directly"
+```
+
+**Safety Features:**
+
+- ✅ Only updates documentation files
+- ✅ Non-breaking changes to README/badges
+- ✅ Automatic backup before modifications
+
+</Accordion>
+
+### `code-quality--transformation` - Code Transformation
+
+**Purpose**: Safe automated code improvements, refactoring, and modernization  
+**Branch Strategy**: Worktree (STRONGLY RECOMMENDED) | In-branch (HIGH RISK)  
+**Risk Level**: HIGH (source code modifications)
+
+<Accordion title="Capabilities & Usage">
+
+**Key Features:**
+
+- ES2023 syntax modernization
+- Word removal and identifier updates
+- Mock centralization and refactoring
+- Batch code transformations
+- Compilation validation
+
+**MCP Tools Used:**
+
+- `mcp__claude_utils__code_transformation` - All transformation operations
+- `mcp__claude_utils__pattern_analyzer` - Code pattern detection
+
+**In-Branch Mode Requirements:**
+
+- ⚠️ **HIGH RISK** - Modifies source code
+- ⚠️ User must explicitly acknowledge risks
+- ⚠️ Mandatory backup branch creation
+- ⚠️ Compilation validation required after changes
+- ⚠️ Individual confirmation for each transformation
+
+**Usage:**
+
+```bash
+# Worktree mode (STRONGLY RECOMMENDED)
+Task code-quality--transformation: "Modernize ES2023 syntax"
+
+# In-branch mode (HIGH RISK - use with caution)
+Task code-quality--transformation: "I understand the risks, modernize ES2023 syntax in my current branch"
+```
+
+**Safety Features:**
+
+- ✅ Mandatory backup branch creation
+- ✅ Compilation validation after each change
+- ✅ Rollback capability on failure
+- ✅ Individual transformation confirmation
+
+</Accordion>
+
+### `code-quality--dependency-management` - Dependency Analysis
+
+**Purpose**: Dependency vulnerability scanning, version checking, and
+modernization recommendations  
+**Branch Strategy**: Worktree (default) | In-branch (analysis only)  
+**Risk Level**: MEDIUM (dependency analysis, potential package.json updates)
+
+<Accordion title="Capabilities & Usage">
+
+**Key Features:**
+
+- Dependency vulnerability scanning
+- Version compatibility checking
+- License compliance analysis
+- Unused dependency detection
+- Update recommendations
+
+**MCP Tools Used:**
+
+- `mcp__claude_utils__dependency_analyzer` - All dependency operations
+
+**In-Branch Mode Requirements:**
+
+- ⚠️ Analysis operations typically safe
+- ⚠️ May suggest package.json modifications
+- ✅ Backup branch created before any changes
+
+**Usage:**
+
+```bash
+# Worktree mode (default)
+Task code-quality--dependency-management: "Analyze dependencies for vulnerabilities"
+
+# In-branch mode (analysis)
+Task code-quality--dependency-management: "Check dependency versions in current branch"
+```
+
+**Safety Features:**
+
+- ✅ Read-only analysis by default
+- ✅ Clear separation of analysis vs modifications
+- ✅ Vulnerability database integration
+
+</Accordion>
+
+### `code-quality--discovery-analysis` - File Discovery
+
+**Purpose**: Intelligent file discovery and project structure analysis  
+**Branch Strategy**: Worktree (default) | In-branch (read-only discovery)  
+**Risk Level**: LOW (read-only file system analysis)
+
+<Accordion title="Capabilities & Usage">
+
+**Key Features:**
+
+- Large codebase file discovery (10k+ files)
+- Intelligent file prioritization
+- Project structure analysis
+- File type categorization
+- Pattern detection
+
+**Usage:**
+
+```bash
+# Worktree mode (default)
+Task code-quality--discovery-analysis: "Analyze project structure"
+
+# In-branch mode (read-only)
+Task code-quality--discovery-analysis: "Discover files in current branch"
+```
+
+**Safety Features:**
+
+- ✅ Read-only file system operations
+- ✅ No modifications to project structure
+- ✅ Efficient handling of large codebases
+
+</Accordion>
+
+### `code-quality--optimization` - Performance Optimization
+
+**Purpose**: Performance analysis, bundle optimization, and deployment
+recommendations  
+**Branch Strategy**: Worktree (default) | In-branch (analysis only)  
+**Risk Level**: MEDIUM (performance analysis, potential configuration changes)
+
+<Accordion title="Capabilities & Usage">
+
+**Key Features:**
+
+- Bundle size analysis and optimization
+- Performance bottleneck detection
+- Core Web Vitals measurement
+- Platform-specific optimization
+- Deployment recommendations
+
+**MCP Tools Used:**
+
+- `mcp__claude_utils__optimization_engine` - All optimization operations
+
+**Usage:**
+
+```bash
+# Worktree mode (default)
+Task code-quality--optimization: "Analyze and optimize performance"
+
+# In-branch mode (analysis)
+Task code-quality--optimization: "Check performance metrics in current branch"
+```
+
+**Safety Features:**
+
+- ✅ Comprehensive performance profiling
+- ✅ Non-destructive analysis
+- ✅ Clear optimization recommendations
+
+</Accordion>
+
+### `code-quality--analysis` - Advanced Code Analysis
+
+**Purpose**: Advanced code quality analysis with intelligent batching for large
+codebases  
+**Branch Strategy**: Worktree (default) | In-branch (read-only analysis)  
+**Risk Level**: LOW (read-only code analysis)
+
+<Accordion title="Capabilities & Usage">
+
+**Key Features:**
+
+- Large codebase analysis (intelligent batching)
+- ESLint integration
+- Code complexity analysis
+- Issue detection and categorization
+- Quality metrics calculation
+
+**MCP Tools Used:**
+
+- `mcp__claude_utils__code_analysis` - Advanced analysis operations
+
+**Usage:**
+
+```bash
+# Worktree mode (default)
+Task code-quality--analysis: "Analyze code quality comprehensively"
+
+# In-branch mode (read-only)
+Task code-quality--analysis: "Analyze code quality in current branch"
+```
+
+**Safety Features:**
+
+- ✅ Read-only code analysis
+- ✅ Intelligent batching for performance
+- ✅ Comprehensive quality metrics
+
+</Accordion>
+
+### `code-quality--context-session` - Context Detection
+
+**Purpose**: Project context detection and session management  
+**Branch Strategy**: Worktree (default) | In-branch (context detection)  
+**Risk Level**: LOW (read-only context analysis)
+
+<Accordion title="Capabilities & Usage">
+
+**Key Features:**
+
+- Framework and technology stack detection
+- Project structure analysis
+- Package manager identification
+- Configuration file analysis
+- Session management
+
+**MCP Tools Used:**
+
+- `mcp__claude_utils__context_session_manager` - Context and session operations
+
+**Usage:**
+
+```bash
+# Worktree mode (default)
+Task code-quality--context-session: "Detect project context and setup session"
+
+# In-branch mode (context detection)
+Task code-quality--context-session: "Quick context scan in current branch"
+```
+
+**Safety Features:**
+
+- ✅ Read-only project analysis
+- ✅ Efficient context detection
+- ✅ Session state management
+
+</Accordion>
+
+### `code-quality--worktree` - Worktree Management
+
+**Purpose**: Git worktree creation and management for isolated analysis  
+**Branch Strategy**: Worktree-focused (creates and manages worktrees)  
+**Risk Level**: LOW (Git worktree operations)
+
+<Accordion title="Capabilities & Usage">
+
+**Key Features:**
+
+- Isolated Git worktree creation
+- Essential file copying
+- Dependency installation
+- Worktree cleanup and management
+
+**MCP Tools Used:**
+
+- `mcp__claude_utils__worktree_manager` - Worktree operations
+
+**Usage:**
+
+```bash
+Task code-quality--worktree: "Create isolated worktree for analysis"
+Task code-quality--worktree: "Setup worktree with dependencies"
+```
+
+**Safety Features:**
+
+- ✅ Complete isolation from main working directory
+- ✅ Automatic cleanup capabilities
+- ✅ Essential file and dependency management
+
+</Accordion>
+
+### `code-quality--code-patterns` - Pattern Analysis
+
+**Purpose**: Architectural pattern detection and code organization analysis  
+**Branch Strategy**: Worktree (default) | In-branch (read-only analysis)  
+**Risk Level**: LOW (read-only pattern analysis)
+
+<Accordion title="Capabilities & Usage">
+
+**Key Features:**
+
+- Architectural pattern detection
+- Mock pattern analysis
+- Code organization assessment
+- Anti-pattern identification
+- Structural recommendations
+
+**MCP Tools Used:**
+
+- `mcp__claude_utils__pattern_analyzer` - Pattern analysis operations
+
+**Usage:**
+
+```bash
+# Worktree mode (default)
+Task code-quality--code-patterns: "Analyze architectural patterns"
+
+# In-branch mode (read-only)
+Task code-quality--code-patterns: "Detect patterns in current branch"
+```
+
+**Safety Features:**
+
+- ✅ Read-only pattern detection
+- ✅ No code modifications
+- ✅ Comprehensive architectural analysis
+
+</Accordion>
+
+---
+
+## Safety Mechanisms
+
+### Automatic Backup Creation
+
+For all in-branch operations that modify code:
+
+1. **Pre-operation backup branch** created automatically
+2. **Timestamp-based naming** for easy identification
+3. **Full commit history** preserved
+4. **One-click rollback** capability
+
+### Risk-Based Validation
+
+Each agent implements validation based on risk level:
+
+- **LOW Risk**: Automatic approval for safe operations
+- **MEDIUM Risk**: User confirmation with backup creation
+- **HIGH Risk**: Explicit risk acknowledgment required
+- **CRITICAL Risk**: Forces worktree mode (no in-branch option)
+
+### Compilation Validation
+
+For code transformation agents:
+
+1. **Pre-change validation** confirms compilable state
+2. **Post-change validation** ensures changes don't break build
+3. **Automatic rollback** if compilation fails
+4. **Step-by-step validation** for multi-file changes
+
+---
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="🔒 Safety First" icon="shield">
+    - Use main agent for comprehensive analysis - Prefer worktree mode for all
+    modifications - Only use in-branch mode when absolutely necessary - Always
+    review backup branches before cleanup
+  </Card>
+  <Card title="🎯 Efficiency" icon="zap">
+    - Use direct subagent calls for specific tasks - Leverage read-only
+    in-branch mode for analysis - Combine multiple agents for complex workflows
+    - Monitor risk levels and adjust accordingly
+  </Card>
+</CardGroup>
+
+### When to Use Main Agent vs Subagents
+
+**Use Main Agent (`code-quality`) when:**
+
+- ✅ You want comprehensive analysis and improvements
+- ✅ You're unsure which specific areas need attention
+- ✅ You want maximum safety with worktree isolation
+- ✅ You prefer a complete workflow with PR creation
+
+**Use Subagents directly when:**
+
+- ✅ You have specific analysis needs (security, testing, etc.)
+- ✅ You want faster execution for targeted tasks
+- ✅ You're comfortable with the specific agent's risk level
+- ✅ You need in-branch operations for immediate results
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Agent Not Working in Branch">
+    **Problem**: Subagent refuses to work in current branch
+    
+    **Solution**: 
+    - Ensure you're calling the agent directly via `Task agent-name:`
+    - Add explicit in-branch request to your prompt
+    - Check agent's risk level and requirements
+    - Confirm you're not calling through main agent
+  </Accordion>
+
+<Accordion title="High-Risk Operation Blocked">
+  **Problem**: Code transformation agent won't work in-branch **Solution**: -
+  Add explicit risk acknowledgment: "I understand the risks..." - Ensure backup
+  branch creation is enabled - Use worktree mode for maximum safety - Consider
+  if the risk is worth the convenience
+</Accordion>
+
+  <Accordion title="MCP Tool Failures">
+    **Problem**: Agent reports MCP tool errors
+    
+    **Solution**:
+    - Check MCP server status and configuration
+    - Verify all required tools are available
+    - Restart Claude Code if necessary
+    - Check package build status (`pnpm build` in mcp-utils)
+  </Accordion>
+</AccordionGroup>
+
+This sophisticated agent architecture provides maximum flexibility while
+maintaining safety through intelligent risk assessment and comprehensive backup
+mechanisms.

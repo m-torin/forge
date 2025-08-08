@@ -117,177 +117,121 @@ export function createStreamableUIWithHooks(
 }
 
 /**
- * Streamable UI patterns
+ * Core streamable UI utilities (non-UI-specific patterns)
+ *
+ * Note: UI-specific patterns have been moved to application layer.
+ * This module now provides only core abstractions and utilities.
  */
-export const streamableUIPatterns: any = {
+export const streamableUIUtilities = {
   /**
-   * Progress indicator pattern
+   * Create a generic state manager for streamable UI
    */
-  createProgressIndicator: (totalSteps: number) => {
-    const ui = createStreamableUI(
-      <div className="progress-indicator">
-        <div className="progress-bar" style={{ width: '0%' }} />
-        <span>0 / {totalSteps}</span>
-      </div>,
-    );
+  createStateManager: <T extends unknown>(initialState: T) => {
+    let currentState = initialState;
+    const listeners: Array<(state: T) => void> = [];
 
     return {
-      ui,
-      updateProgress: (currentStep: number) => {
-        const percentage = (currentStep / totalSteps) * 100;
-        ui.update(
-          <div className="progress-indicator">
-            <div className="progress-bar" style={{ width: `${percentage}%` }} />
-            <span>
-              {currentStep} / {totalSteps}
-            </span>
-          </div>,
-        );
+      getState: () => currentState,
+      setState: (newState: T | ((prevState: T) => T)) => {
+        currentState =
+          typeof newState === 'function'
+            ? (newState as (prevState: T) => T)(currentState)
+            : newState;
+        listeners.forEach(listener => listener(currentState));
       },
-      complete: () => {
-        ui.done(
-          <div className="progress-indicator complete">
-            <div className="progress-bar" style={{ width: '100%' }} />
-            <span>Complete!</span>
-          </div>,
-        );
+      subscribe: (listener: (state: T) => void) => {
+        listeners.push(listener);
+        return () => {
+          const index = listeners.indexOf(listener);
+          if (index > -1) listeners.splice(index, 1);
+        };
       },
     };
   },
 
   /**
-   * List builder pattern
+   * Create a generic data collector pattern
    */
-  createListBuilder: <T,>(renderItem: (item: T, index: number) => ReactNode) => {
+  createDataCollector: <T extends unknown>() => {
     const items: T[] = [];
-    const ui = createStreamableUI(<ul />);
+    const listeners: Array<(items: T[]) => void> = [];
 
     return {
-      ui,
-      addItem: (item: T) => {
+      add: (item: T) => {
         items.push(item);
-        ui.update(
-          <ul>
-            {items.map((item, index) => (
-              <li key={index}>{renderItem(item, index)}</li>
-            ))}
-          </ul>,
-        );
+        listeners.forEach(listener => listener([...items]));
       },
-      removeItem: (index: number) => {
+      addMany: (newItems: T[]) => {
+        items.push(...newItems);
+        listeners.forEach(listener => listener([...items]));
+      },
+      remove: (index: number) => {
         items.splice(index, 1);
-        ui.update(
-          <ul>
-            {items.map((item, index) => (
-              <li key={index}>{renderItem(item, index)}</li>
-            ))}
-          </ul>,
-        );
-      },
-      complete: () => {
-        ui.done();
-      },
-    };
-  },
-
-  /**
-   * Form builder pattern
-   */
-  createFormBuilder: () => {
-    const fields: Record<string, any> = {};
-    const ui = createStreamableUI(<form />);
-
-    const updateForm = () => {
-      ui.update(
-        <form>
-          {Object.entries(fields).map(([name, config]) => (
-            <div key={name} className="form-field">
-              <label>{config.label}</label>
-              <input
-                type={config.type || 'text'}
-                name={name}
-                value={config.value || ''}
-                placeholder={config.placeholder}
-              />
-              {config.error && <span className="error">{config.error}</span>}
-            </div>
-          ))}
-        </form>,
-      );
-    };
-
-    return {
-      ui,
-      addField: (name: string, config: any) => {
-        fields[name] = config;
-        updateForm();
-      },
-      updateField: (name: string, updates: any) => {
-        fields[name] = { ...fields[name], ...updates };
-        updateForm();
-      },
-      setError: (name: string, error: string) => {
-        if (fields[name]) {
-          fields[name].error = error;
-          updateForm();
-        }
-      },
-      submit: (onSubmit: (data: Record<string, any>) => void) => {
-        const data = Object.entries(fields).reduce(
-          (acc, [name, config]) => ({
-            ...acc,
-            [name]: config.value,
-          }),
-          {},
-        );
-        onSubmit(data);
-        ui.done(<div className="form-submitted">Form submitted successfully!</div>);
-      },
-    };
-  },
-
-  /**
-   * Notification system pattern
-   */
-  createNotificationSystem: () => {
-    const notifications: Array<{
-      id: string;
-      type: 'info' | 'success' | 'warning' | 'error';
-      message: string;
-    }> = [];
-    const ui = createStreamableUI(<div className="notifications" />);
-
-    const updateNotifications = () => {
-      ui.update(
-        <div className="notifications">
-          {notifications.map(notif => (
-            <div key={notif.id} className={`notification ${notif.type}`}>
-              {notif.message}
-            </div>
-          ))}
-        </div>,
-      );
-    };
-
-    return {
-      ui,
-      notify: (type: 'info' | 'success' | 'warning' | 'error', message: string) => {
-        const id = Date.now().toString();
-        notifications.push({ id, type, message });
-        updateNotifications();
-
-        // Auto-remove after 5 seconds
-        setTimeout(() => {
-          const index = notifications.findIndex(n => n.id === id);
-          if (index !== -1) {
-            notifications.splice(index, 1);
-            updateNotifications();
-          }
-        }, 5000);
+        listeners.forEach(listener => listener([...items]));
       },
       clear: () => {
-        notifications.length = 0;
-        updateNotifications();
+        items.length = 0;
+        listeners.forEach(listener => listener([]));
+      },
+      getItems: () => [...items],
+      subscribe: (listener: (items: T[]) => void) => {
+        listeners.push(listener);
+        return () => {
+          const index = listeners.indexOf(listener);
+          if (index > -1) listeners.splice(index, 1);
+        };
+      },
+    };
+  },
+
+  /**
+   * Create a step-based progress tracker (UI-agnostic)
+   */
+  createProgressTracker: (totalSteps: number) => {
+    let currentStep = 0;
+    const listeners: Array<
+      (progress: { current: number; total: number; percentage: number }) => void
+    > = [];
+
+    const notifyListeners = () => {
+      const percentage = Math.round((currentStep / totalSteps) * 100);
+      listeners.forEach(listener =>
+        listener({
+          current: currentStep,
+          total: totalSteps,
+          percentage,
+        }),
+      );
+    };
+
+    return {
+      nextStep: () => {
+        if (currentStep < totalSteps) {
+          currentStep++;
+          notifyListeners();
+        }
+      },
+      setStep: (step: number) => {
+        currentStep = Math.min(Math.max(0, step), totalSteps);
+        notifyListeners();
+      },
+      complete: () => {
+        currentStep = totalSteps;
+        notifyListeners();
+      },
+      getProgress: () => ({
+        current: currentStep,
+        total: totalSteps,
+        percentage: Math.round((currentStep / totalSteps) * 100),
+      }),
+      subscribe: (
+        listener: (progress: { current: number; total: number; percentage: number }) => void,
+      ) => {
+        listeners.push(listener);
+        return () => {
+          const index = listeners.indexOf(listener);
+          if (index > -1) listeners.splice(index, 1);
+        };
       },
     };
   },

@@ -5,6 +5,7 @@
 
 import { logInfo } from '@repo/observability/server/next';
 import { z } from 'zod/v4';
+import type { PromptTemplateEngine } from '../types/agent-core';
 
 /**
  * Prompt template configuration
@@ -30,7 +31,7 @@ export interface PromptTemplate<TVariables = any> {
 /**
  * Prompt template registry
  */
-export class PromptTemplateRegistry {
+export class PromptTemplateRegistry implements PromptTemplateEngine {
   private templates: Map<string, PromptTemplate> = new Map();
 
   /**
@@ -94,10 +95,15 @@ export class PromptTemplateRegistry {
 
     // Replace variables in the template
     Object.entries(validated as any).forEach(([key, value]) => {
+      // Escape the key for regex safety
+      const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const patterns = [
-        new RegExp(`{{\\s*${key}\\s*}}`, 'g'),
-        new RegExp(`\\$\\{${key}\\}`, 'g'),
-        new RegExp(`<${key}>`, 'g'),
+        // eslint-disable-next-line security/detect-non-literal-regexp
+        new RegExp(`{{\\s*${escapedKey}\\s*}}`, 'g'),
+        // eslint-disable-next-line security/detect-non-literal-regexp
+        new RegExp(`\\$\\{${escapedKey}\\}`, 'g'),
+        // eslint-disable-next-line security/detect-non-literal-regexp
+        new RegExp(`<${escapedKey}>`, 'g'),
       ];
 
       patterns.forEach(pattern => {
@@ -106,6 +112,82 @@ export class PromptTemplateRegistry {
     });
 
     return rendered;
+  }
+
+  // PromptTemplateEngine interface implementation
+  compile(template: string, variables?: Record<string, any>): string {
+    if (!variables) return template;
+
+    let compiled = template;
+    Object.entries(variables).forEach(([key, value]) => {
+      const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const patterns = [
+        // eslint-disable-next-line security/detect-non-literal-regexp
+        new RegExp(`{{\\s*${escapedKey}\\s*}}`, 'g'),
+        // eslint-disable-next-line security/detect-non-literal-regexp
+        new RegExp(`\\$\\{${escapedKey}\\}`, 'g'),
+        // eslint-disable-next-line security/detect-non-literal-regexp
+        new RegExp(`<${escapedKey}>`, 'g'),
+      ];
+      patterns.forEach(pattern => {
+        compiled = compiled.replace(pattern, String(value));
+      });
+    });
+    return compiled;
+  }
+
+  validate(template: string): { valid: boolean; errors: string[] } {
+    const errors: string[] = [];
+    try {
+      // Basic validation - check for unclosed variables
+      const variablePattern = /{{[^}]*}}|\$\{[^}]*\}|<[^>]*>/g;
+      const matches = template.match(variablePattern);
+      if (matches) {
+        matches.forEach(match => {
+          if (match.includes('{{') && !match.endsWith('}}')) {
+            errors.push(`Unclosed variable: ${match}`);
+          }
+          if (match.includes('${') && !match.endsWith('}')) {
+            errors.push(`Unclosed variable: ${match}`);
+          }
+          if (match.includes('<') && !match.endsWith('>')) {
+            errors.push(`Unclosed variable: ${match}`);
+          }
+        });
+      }
+    } catch (error) {
+      errors.push(`Template validation error: ${error}`);
+    }
+    return { valid: errors.length === 0, errors };
+  }
+
+  getVariables(template: string): string[] {
+    const variables = new Set<string>();
+    const patterns = [/{{([^}]+)}}/g, /\$\{([^}]+)\}/g, /<([^>]+)>/g];
+
+    patterns.forEach(pattern => {
+      let match;
+      while ((match = pattern.exec(template)) !== null) {
+        variables.add(match[1].trim());
+      }
+    });
+
+    return Array.from(variables);
+  }
+
+  registerHelper(name: string, fn: (...args: any[]) => any): void {
+    // Simple implementation - could be enhanced
+    logInfo('Template helper registered', { name });
+  }
+
+  registerTemplate(name: string, template: string): void {
+    const templateObj: PromptTemplate = {
+      id: name,
+      name,
+      template,
+      variables: z.object({}), // Default empty schema
+    };
+    this.register(templateObj);
   }
 }
 

@@ -339,7 +339,7 @@ export const assertionHelpers = {
     });
 
     if (expectedData !== undefined) {
-      expect(result.data).toEqual(expectedData);
+      expect(result.data).toStrictEqual(expectedData);
     } else {
       expect(result.data).toBeDefined();
     }

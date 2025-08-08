@@ -1,0 +1,473 @@
+---
+title: UIX System Overview
+sidebarTitle: "UI/X System"
+description:
+  Comprehensive UI component system with Mantine, Tailwind, Algolia, and TipTap
+icon: "palette"
+---
+
+# UIX System
+
+A comprehensive UI component system providing production-ready components for
+authentication, data display, search, animations, and rich text editing. Built
+with Mantine, Tailwind CSS, Algolia Search, and TipTap Editor.
+
+## Overview
+
+The UIX System package provides a complete suite of UI components organized into
+specialized categories:
+
+- **Mantine Components** - Authentication flows, data tables, stats cards
+- **Tailwind v3/v4** - Advanced animations, mobile optimizations, themes
+- **Algolia Search** - Complete search implementation with SSR
+- **TipTap Editor** - Rich text editing with collaboration
+- **Shared Utilities** - Internationalization and common utilities
+
+<Info>
+  This package follows a modular approach where you import only what you need,
+  keeping bundle sizes optimized.
+</Info>
+
+## Component Categories
+
+<CardGroup cols={2}>
+  <Card title="Mantine Auth" icon="shield-check">
+    Complete authentication UI with Better Auth integration
+  </Card>
+  <Card title="Data Display" icon="table">
+    Advanced data tables, stats cards, and page headers
+  </Card>
+  <Card title="Tailwind Animations" icon="sparkles">
+    Advanced animations and mobile-first optimizations
+  </Card>
+  <Card title="Algolia Search" icon="magnifying-glass">
+    Production-ready search with autocomplete and refinements
+  </Card>
+</CardGroup>
+
+## Quick Start
+
+### Installation
+
+The UIX System is already configured as a workspace package. Install peer
+dependencies as needed:
+
+```bash
+# Required dependencies (if not already installed)
+pnpm add @mantine/core @mantine/form @mantine/hooks react react-dom
+
+# Optional dependencies
+pnpm add @mantine/modals @mantine/notifications @tiptap/core @tiptap/react yjs
+```
+
+### Basic Usage
+
+#### Mantine Auth Components
+
+```typescript
+import { SignInForm, AuthGuard } from "@repo/uix-system/mantine";
+
+function AuthPage() {
+  return (
+    <AuthGuard fallback={<SignInForm />}>
+      <Dashboard />
+    </AuthGuard>
+  );
+}
+```
+
+#### Algolia Search Integration
+
+```typescript
+import { SearchProvider, SearchBox, SearchResults } from "@repo/uix-system/algolia";
+
+function SearchPage() {
+  return (
+    <SearchProvider indexName="products">
+      <SearchBox placeholder="Search products..." />
+      <SearchResults />
+    </SearchProvider>
+  );
+}
+```
+
+#### Tailwind Animations
+
+```typescript
+import { AdvancedAnimations, TypingAnimation } from "@repo/uix-system/tailwind/v3";
+
+function HomePage() {
+  return (
+    <div>
+      <TypingAnimation text="Welcome to our platform" />
+      <AdvancedAnimations.FadeInUp>
+        <h1>Animated Content</h1>
+      </AdvancedAnimations.FadeInUp>
+    </div>
+  );
+}
+```
+
+## Component Documentation
+
+### Mantine Components
+
+#### Authentication Components
+
+<AccordionGroup>
+  <Accordion title="SignInForm">
+    Complete sign-in form with email/password, social login, and passkey
+    support. ```typescript import {SignInForm} from "@repo/uix-system/mantine";
+    <SignInForm
+      onSuccess={() => router.push("/dashboard")}
+      enablePasskeys={true}
+      socialProviders={["google", "github"]}
+    />
+    ```
+  </Accordion>
+
+<Accordion title="AuthGuard">
+  Route protection component that redirects unauthenticated users. ```typescript
+  import {AuthGuard} from "@repo/uix-system/mantine";
+  <AuthGuard fallback={<SignInForm />} redirectTo="/login">
+    <ProtectedContent />
+  </AuthGuard>
+  ```
+</Accordion>
+
+  <Accordion title="SessionManagement">
+    User session management with logout, profile access, and organization
+    switching. ```typescript import {SessionManagement} from
+    "@repo/uix-system/mantine";
+    <SessionManagement
+      showOrganizations={true}
+      onLogout={() => router.push("/")}
+    />
+    ```
+  </Accordion>
+</AccordionGroup>
+
+#### Data Components
+
+<AccordionGroup>
+  <Accordion title="DataTable">
+    Advanced data table with sorting, filtering, pagination, and row selection.
+    ```typescript import {DataTable} from "@repo/uix-system/mantine";
+    <DataTable
+      data={users}
+      columns={[
+        { accessor: "name", title: "Name", sortable: true },
+        { accessor: "email", title: "Email", filterable: true },
+        { accessor: "role", title: "Role" }
+      ]}
+      withPagination
+      withBorder
+    />
+    ```
+  </Accordion>
+
+<Accordion title="StatsCard">
+  Statistical display cards with trends and comparisons. ```typescript import{" "}
+  {StatsCard} from "@repo/uix-system/mantine";
+  <StatsCard
+    title="Total Users"
+    value="1,234"
+    diff={12}
+    period="vs last month"
+    icon="users"
+  />
+  ```
+</Accordion>
+
+  <Accordion title="PageHeader">
+    Consistent page headers with breadcrumbs and actions. ```typescript import{" "}
+    {PageHeader} from "@repo/uix-system/mantine";
+    <PageHeader
+      title="User Management"
+      breadcrumbs={[
+        { title: "Dashboard", href: "/dashboard" },
+        { title: "Users", href: "/users" }
+      ]}
+      actions={<Button>Add User</Button>}
+    />
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Tailwind Components
+
+#### v3 Components (Advanced Animations)
+
+```typescript
+import {
+  AdvancedAnimations,
+  TypingAnimation,
+  ParallaxEffect,
+  KeyboardShortcuts
+} from "@repo/uix-system/tailwind/v3";
+
+// Typing animation
+<TypingAnimation
+  text="Welcome to our platform"
+  speed={50}
+  cursor={true}
+/>
+
+// Advanced animations
+<AdvancedAnimations.FadeInUp delay={200}>
+  <Card>Content here</Card>
+</AdvancedAnimations.FadeInUp>
+
+// Parallax effects
+<ParallaxEffect speed={0.5}>
+  <div>Background content</div>
+</ParallaxEffect>
+
+// Keyboard shortcuts
+<KeyboardShortcuts shortcuts={[
+  { key: 'k', ctrlKey: true, action: openSearch },
+  { key: 'n', ctrlKey: true, action: createNew }
+]} />
+```
+
+#### v4 Components (Enhanced Features)
+
+```typescript
+import {
+  EnhancedAuthComponents,
+  ThemeToggle,
+  ValidationDisplay
+} from "@repo/uix-system/tailwind/v4";
+
+// Enhanced auth with v4 styling
+<EnhancedAuthComponents.SignInForm
+  darkMode={true}
+  validation="enhanced"
+/>
+
+// Theme toggle
+<ThemeToggle
+  defaultTheme="system"
+  enableTransitions={true}
+/>
+```
+
+### Algolia Search Components
+
+#### Complete Search Implementation
+
+```typescript
+import {
+  SearchProvider,
+  SearchBox,
+  SearchResults,
+  SearchRefinements,
+  SearchPagination
+} from "@repo/uix-system/algolia";
+
+function SearchPage() {
+  return (
+    <SearchProvider
+      indexName="products"
+      searchClient={searchClient}
+      initialState={{
+        query: '',
+        refinements: {}
+      }}
+    >
+      <div className="search-layout">
+        <aside>
+          <SearchRefinements
+            attributes={['category', 'brand', 'price']}
+          />
+        </aside>
+
+        <main>
+          <SearchBox
+            placeholder="Search products..."
+            autocomplete={true}
+            showSubmit={true}
+          />
+
+          <SearchResults
+            hitComponent={ProductHit}
+            hitsPerPage={20}
+          />
+
+          <SearchPagination showFirst showLast />
+        </main>
+      </div>
+    </SearchProvider>
+  );
+}
+```
+
+#### Server-Side Rendering
+
+```typescript
+// pages/search.tsx
+import { GetServerSideProps } from 'next';
+import { getServerState } from 'react-instantsearch-hooks-server';
+
+export const getServerSideProps: GetServerSideProps = async ({ query }) => {
+  const serverState = await getServerState(<SearchPage />, {
+    renderToString,
+  });
+
+  return {
+    props: {
+      serverState,
+      query: query.q || '',
+    },
+  };
+};
+```
+
+### TipTap Editor Components
+
+#### Rich Text Editor
+
+```typescript
+import {
+  TipTapEditor,
+  CollaborativeEditor,
+  EditorMenuBar
+} from "@repo/uix-system/editor";
+
+// Basic editor
+<TipTapEditor
+  content={initialContent}
+  onChange={handleContentChange}
+  extensions={[Bold, Italic, Link]}
+/>
+
+// Collaborative editor with Yjs
+<CollaborativeEditor
+  documentId="doc-123"
+  websocketUrl={process.env.NEXT_PUBLIC_YJS_WEBSOCKET_URL}
+  user={{ id: userId, name: userName }}
+/>
+```
+
+## Environment Configuration
+
+### Required Variables
+
+```bash
+# For Algolia search functionality
+NEXT_PUBLIC_ALGOLIA_APPLICATION_ID=your-app-id
+NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY=your-search-key
+ALGOLIA_ADMIN_API_KEY=your-admin-key
+
+# For collaborative editing (optional)
+NEXT_PUBLIC_COLLABORATION_ENDPOINT=wss://your-collab-server.com
+NEXT_PUBLIC_YJS_WEBSOCKET_URL=wss://your-yjs-server.com
+```
+
+### Environment Setup
+
+Add these to your app's `env.ts` file:
+
+```typescript
+export const env = createEnv({
+  client: {
+    NEXT_PUBLIC_ALGOLIA_APPLICATION_ID: z.string().optional(),
+    NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY: z.string().optional(),
+    NEXT_PUBLIC_COLLABORATION_ENDPOINT: z.string().optional(),
+    NEXT_PUBLIC_YJS_WEBSOCKET_URL: z.string().optional()
+  }
+  // ... other config
+});
+```
+
+## Export Structure
+
+The package provides modular exports for optimal tree-shaking:
+
+```typescript
+// Core exports
+import { ... } from "@repo/uix-system";
+
+// Mantine components
+import { ... } from "@repo/uix-system/mantine";
+
+// Algolia search
+import { ... } from "@repo/uix-system/algolia";
+
+// Tailwind components
+import { ... } from "@repo/uix-system/tailwind/v3";
+import { ... } from "@repo/uix-system/tailwind/v4";
+import { ... } from "@repo/uix-system/tailwind/v3/components";
+import { ... } from "@repo/uix-system/tailwind/v3/collaboration";
+
+// Shared utilities
+import { ... } from "@repo/uix-system/shared/i18n";
+```
+
+## Development
+
+### Testing
+
+```bash
+cd packages/uix-system
+pnpm test
+pnpm test:coverage
+pnpm test:ui # Interactive testing
+```
+
+### Storybook
+
+All components include comprehensive Storybook stories:
+
+```bash
+pnpm storybook
+```
+
+Visit the stories to see:
+
+- Interactive component examples
+- Configuration options
+- Implementation patterns
+- Best practices
+
+### Component Development
+
+When creating new components:
+
+1. **Follow existing patterns** in component structure
+2. **Include TypeScript types** for all props
+3. **Add Storybook stories** for documentation
+4. **Write comprehensive tests** with Vitest
+5. **Export from appropriate modules** for tree-shaking
+
+## Architecture
+
+### Design Principles
+
+- **Modular**: Import only what you need
+- **Composable**: Components work together seamlessly
+- **Consistent**: Unified design language across all components
+- **Accessible**: WCAG 2.1 AA compliance built-in
+- **Performant**: Optimized for production use
+
+### Technology Stack
+
+- **Mantine v7** - Core component library
+- **Tailwind CSS v3/v4** - Utility-first styling
+- **Algolia InstantSearch** - Search functionality
+- **TipTap Editor** - Rich text editing
+- **Yjs** - Real-time collaboration
+- **React 18** - Component framework
+- **TypeScript** - Type safety
+
+### Bundle Optimization
+
+The package is optimized for minimal bundle impact:
+
+- **Tree-shaking** - Only imported components are bundled
+- **Code splitting** - Large components support dynamic imports
+- **Peer dependencies** - Core libraries are shared
+- **CSS optimization** - Unused styles are purged
+
+This UI system provides everything needed for building modern, accessible, and
+performant web applications with consistent design patterns.

@@ -13,7 +13,7 @@ import { join } from 'node:path';
 import { z } from 'zod/v4';
 import { mcpClient } from '../mcp-client';
 // glob module placeholder - not available
-const glob = async (pattern: string, options?: { cwd?: string; ignore?: string[] }) => [];
+const glob = async (_pattern: string, _options?: { cwd?: string; ignore?: string[] }) => [];
 
 // Input schema for file discovery
 const fileDiscoveryInputSchema = z.object({
@@ -112,7 +112,7 @@ async function getChangedFiles(packagePath: string): Promise<string[]> {
       );
 
     return changedFiles;
-  } catch (error) {
+  } catch (_error) {
     logInfo('Git status not available, will analyze all files');
     return [];
   }
@@ -135,7 +135,7 @@ async function getCachedAnalysis(filePath: string, sessionId: string): Promise<a
       const isValid = Date.now() - cachedResult.timestamp < cacheValidDuration;
       return isValid ? cachedResult : null;
     }
-  } catch (error) {
+  } catch (_error) {
     // Ignore cache errors
   }
 
@@ -239,17 +239,14 @@ export const fileDiscoveryTool = tool({
   description:
     'Discover and prioritize files for code quality analysis. Handles file filtering, Git change detection, batch creation, and caching of already-analyzed files.',
 
-  parameters: fileDiscoveryInputSchema,
+  inputSchema: fileDiscoveryInputSchema,
 
-  execute: async (
-    {
-      sessionId,
-      packagePath,
-      excludePatterns = [],
-      options = { includeTests: false, batchSize: 3000, cacheEnabled: true },
-    },
-    _toolOptions = { toolCallId: 'file-discovery', messages: [] },
-  ) => {
+  execute: async ({
+    sessionId,
+    packagePath,
+    excludePatterns = [],
+    options = { includeTests: false, batchSize: 3000, cacheEnabled: true },
+  }: any) => {
     try {
       // Step 1: Discover all source files
       const allFiles = await discoverSourceFiles(
@@ -324,7 +321,7 @@ export const fileDiscoveryTool = tool({
   },
 
   // Multi-modal result content
-  experimental_toToolResultContent: (result: FileDiscoveryResult) => [
+  toModelOutput: (result: FileDiscoveryResult) => [
     {
       type: 'text' as const,
       text:
@@ -337,6 +334,6 @@ export const fileDiscoveryTool = tool({
         `${result.summary.changedFiles > 0 ? '🎯 Prioritized changed files for analysis' : '📋 Ready for full analysis'}`,
     },
   ],
-});
+} as any);
 
 export type { FileDiscoveryResult };

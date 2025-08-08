@@ -4,12 +4,15 @@
  * Server component that handles SEO and passes data to client login form
  */
 
-import { getAuthContext } from '#/lib/auth';
+// Force dynamic rendering since this page checks authentication state
+import { getAuthContext } from '#/lib/auth-context';
 import { getDictionary, type Locale } from '#/lib/i18n';
 import { createAuthMetadata } from '#/lib/seo';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import LoginPageUi from './LoginPageUi';
+
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
   params,

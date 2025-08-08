@@ -219,8 +219,8 @@ describe('agent Observability and Debugging', () => {
         metrics: {
           executionTime: 5000,
           tokenUsage: {
-            promptTokens: 100,
-            completionTokens: 200,
+            inputTokens: 100,
+            outputTokens: 200,
             totalTokens: 300,
           },
           stepCount: 5,
@@ -255,7 +255,7 @@ describe('agent Observability and Debugging', () => {
         timestamp: Date.now(),
         metrics: {
           executionTime: 0,
-          tokenUsage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+          tokenUsage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 },
           stepCount: 0,
           toolCallCount: 0,
           successRate: 0,
@@ -363,8 +363,8 @@ describe('agent Observability and Debugging', () => {
         metrics: {
           executionTime: 120000, // Exceeds threshold of 60000
           tokenUsage: {
-            promptTokens: 5000,
-            completionTokens: 10000,
+            inputTokens: 5000,
+            outputTokens: 10000,
             totalTokens: 15000, // Exceeds threshold of 10000
           },
           stepCount: 10,
@@ -504,7 +504,7 @@ describe('agent Observability and Debugging', () => {
         timestamp: Date.now(),
         metrics: {
           executionTime: 2000,
-          tokenUsage: { promptTokens: 50, completionTokens: 100, totalTokens: 150 },
+          tokenUsage: { inputTokens: 50, outputTokens: 100, totalTokens: 150 },
           stepCount: 3,
           toolCallCount: 2,
           successRate: 0.9,
@@ -685,7 +685,7 @@ describe('agent Observability and Debugging', () => {
           timestamp: Date.now(),
           metrics: {
             executionTime: 5000,
-            tokenUsage: { promptTokens: 100, completionTokens: 200, totalTokens: 300 },
+            tokenUsage: { inputTokens: 100, outputTokens: 200, totalTokens: 300 },
             stepCount: 3,
             toolCallCount: 2,
             successRate: 0.9,
@@ -791,7 +791,7 @@ describe('agent Observability and Debugging', () => {
           timestamp: Date.now() - 3600000,
           metrics: {
             executionTime: 10000,
-            tokenUsage: { promptTokens: 100, completionTokens: 200, totalTokens: 300 },
+            tokenUsage: { inputTokens: 100, outputTokens: 200, totalTokens: 300 },
             successRate: 0.7,
           } as any,
           resourceUsage: {} as any,
@@ -802,7 +802,7 @@ describe('agent Observability and Debugging', () => {
           timestamp: Date.now() - 3000000,
           metrics: {
             executionTime: 12000,
-            tokenUsage: { promptTokens: 120, completionTokens: 240, totalTokens: 360 },
+            tokenUsage: { inputTokens: 120, outputTokens: 240, totalTokens: 360 },
             successRate: 0.6,
           } as any,
           resourceUsage: {} as any,
@@ -816,7 +816,7 @@ describe('agent Observability and Debugging', () => {
           timestamp: Date.now() - 1800000,
           metrics: {
             executionTime: 8000,
-            tokenUsage: { promptTokens: 80, completionTokens: 160, totalTokens: 240 },
+            tokenUsage: { inputTokens: 80, outputTokens: 160, totalTokens: 240 },
             successRate: 0.9,
           } as any,
           resourceUsage: {} as any,
@@ -827,7 +827,7 @@ describe('agent Observability and Debugging', () => {
           timestamp: Date.now() - 600000,
           metrics: {
             executionTime: 7000,
-            tokenUsage: { promptTokens: 70, completionTokens: 140, totalTokens: 210 },
+            tokenUsage: { inputTokens: 70, outputTokens: 140, totalTokens: 210 },
             successRate: 0.95,
           } as any,
           resourceUsage: {} as any,
@@ -852,7 +852,7 @@ describe('agent Observability and Debugging', () => {
           timestamp: Date.now(),
           metrics: {
             executionTime: 5000,
-            tokenUsage: { promptTokens: 50, completionTokens: 100, totalTokens: 150 },
+            tokenUsage: { inputTokens: 50, outputTokens: 100, totalTokens: 150 },
             successRate: 0.8,
           } as any,
           resourceUsage: {} as any,

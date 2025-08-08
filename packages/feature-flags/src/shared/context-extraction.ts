@@ -137,8 +137,8 @@ export function getTimeBasedFlag(
     start?: Date | string;
     end?: Date | string;
     timezone?: string;
-    days?: number[]; // 0-6, Sunday = 0
-    hours?: number[]; // 0-23
+    days?: number[];
+    hours?: number[];
   },
 ): boolean {
   const now = new Date();

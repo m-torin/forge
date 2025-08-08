@@ -1,5 +1,5 @@
-declare module "eslint-plugin-pnpm" {
-  import { ESLint, Linter } from "eslint";
+declare module 'eslint-plugin-pnpm' {
+  import { ESLint, Linter } from 'eslint';
 
   const plugin: ESLint.Plugin & {
     rules: Record<string, any>;

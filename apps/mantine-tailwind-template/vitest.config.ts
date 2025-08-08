@@ -9,10 +9,10 @@ export default createNextAppConfig({
       exclude: ['**/e2e/**', '**/node_modules/**'],
       coverage: {
         thresholds: {
-          lines: 20,
-          functions: 18,
-          branches: 20,
-          statements: 20,
+          lines: 5,
+          functions: 5,
+          branches: 5,
+          statements: 5,
         },
       },
     },

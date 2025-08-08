@@ -101,7 +101,7 @@ export class MockLanguageModel {
       answer: 'Mock response for testing',
       confidence: 0.8,
       sources: [],
-      reasoning: 'This is a mock response generated for testing purposes',
+      reasoningText: 'This is a mock response generated for testing purposes',
     };
 
     this.callHistory.push({ prompt, response: defaultResponse, timestamp });

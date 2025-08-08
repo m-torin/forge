@@ -24,7 +24,7 @@ export function createNamespaceTools(config: NamespaceToolsConfig) {
   return {
     createNamespace: tool({
       description: 'Create or switch to a vector namespace for multi-tenant applications',
-      parameters: z.object({
+      inputSchema: z.object({
         namespace: z.string().describe('Namespace name to create or use'),
         description: z.string().optional().describe('Optional description for the namespace'),
         metadata: z.record(z.string(), z.any()).optional().describe('Optional namespace metadata'),
@@ -85,7 +85,7 @@ export function createNamespaceTools(config: NamespaceToolsConfig) {
 
     listNamespaces: tool({
       description: 'List all available namespaces in the vector database',
-      parameters: z.object({
+      inputSchema: z.object({
         includeStats: z
           .boolean()
           .default(false)
@@ -141,7 +141,7 @@ export function createNamespaceTools(config: NamespaceToolsConfig) {
 
     switchNamespace: tool({
       description: 'Switch the current working namespace context',
-      parameters: z.object({
+      inputSchema: z.object({
         namespace: z.string().describe('Namespace to switch to'),
         createIfMissing: z
           .boolean()
@@ -194,7 +194,7 @@ export function createNamespaceTools(config: NamespaceToolsConfig) {
 
     deleteNamespace: tool({
       description: 'Delete an entire namespace and all its vectors (DANGEROUS)',
-      parameters: z.object({
+      inputSchema: z.object({
         namespace: z.string().describe('Namespace to delete'),
         confirm: z.boolean().describe('Confirmation flag to prevent accidental deletion'),
         backup: z.boolean().default(false).describe('Create backup before deletion'),
@@ -277,7 +277,7 @@ export function createNamespaceTools(config: NamespaceToolsConfig) {
 
     getNamespaceInfo: tool({
       description: 'Get detailed information about a specific namespace',
-      parameters: z.object({
+      inputSchema: z.object({
         namespace: z.string().describe('Namespace to get information about'),
       }),
       execute: async ({ namespace }: { namespace: string }) => {
@@ -314,7 +314,7 @@ export function createNamespaceTools(config: NamespaceToolsConfig) {
 
     migrateNamespace: tool({
       description: 'Migrate vectors from one namespace to another',
-      parameters: z.object({
+      inputSchema: z.object({
         sourceNamespace: z.string().describe('Source namespace to migrate from'),
         targetNamespace: z.string().describe('Target namespace to migrate to'),
         batchSize: z.number().default(100).describe('Number of vectors to migrate per batch'),

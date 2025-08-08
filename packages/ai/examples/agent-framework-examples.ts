@@ -168,7 +168,7 @@ export async function basicMultiStepAgentExample() {
 /**
  * Example 2: Advanced Agent with prepareStep controls
  */
-export async function advancedAgentControlsExample() {
+export async function dynamicAgentControlsExample() {
   console.log('🚀 Example 2: Advanced Agent Controls');
 
   // Create a prepareStep that switches strategies per phase
@@ -581,7 +581,7 @@ export async function runAllExamples() {
     console.log('\n' + '='.repeat(60) + '\n');
 
     // Example 2: Advanced agent controls
-    await advancedAgentControlsExample();
+    await dynamicAgentControlsExample();
     console.log('\n' + '='.repeat(60) + '\n');
 
     // Example 3: Parallel agents
@@ -612,11 +612,11 @@ export async function runAllExamples() {
 
 // Export individual examples for selective execution
 export {
-  advancedAgentControlsExample,
   agentOrchestratorExample,
   agentPatternsExample,
   agentValidationExample,
   basicMultiStepAgentExample,
+  dynamicAgentControlsExample,
   parallelAgentsExample,
   sequentialAgentPipelineExample,
 };

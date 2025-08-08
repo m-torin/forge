@@ -1,9 +1,32 @@
 /**
- * Upstash Vector AI SDK Integration
- * Integration between Upstash Vector and Vercel AI SDK v5
+ * @fileoverview Core Upstash Vector Integration for RAG Operations
+ *
+ * **Primary Use**: Production RAG implementation with basic vector operations
+ *
+ * **Key Features**:
+ * - Basic UpstashAIVector class for core vector operations
+ * - Simple embedding generation with AI SDK v5
+ * - Text chunking utilities for document processing
+ * - Graceful config handling with environment fallbacks
+ *
+ * **Usage Pattern**:
+ * Actively imported by RAG modules (ai-sdk-rag.ts, message-processing.ts,
+ * middleware.ts, structured-rag.ts) for production vector operations.
+ *
+ * **Architecture**: Basic implementation focused on core functionality,
+ * minimal dependencies, suitable for direct RAG system integration.
+ *
+ * @example
+ * ```typescript
+ * import { UpstashAIVector, createUpstashVectorTools } from '../vector/ai-sdk-integration';
+ *
+ * const vectorStore = new UpstashAIVector(config);
+ * const tools = createUpstashVectorTools(config);
+ * ```
  */
 
 import { openai } from '@ai-sdk/openai';
+import { logWarn } from '@repo/observability';
 import { Index } from '@upstash/vector';
 import type { EmbeddingModel } from 'ai';
 import { embed, embedMany } from 'ai';
@@ -47,14 +70,24 @@ export interface QueryOptions {
  * Upstash Vector AI Integration Class
  */
 export class UpstashAIVector {
-  private index: Index;
+  private index: Index | null = null;
   private embeddingModel: EmbeddingModel<string>;
+  private hasWarnedAboutMissingConfig = false;
 
   constructor(config: UpstashAIConfig = {}) {
-    this.index = new Index({
-      url: config.vectorUrl || config.url || process.env.UPSTASH_VECTOR_REST_URL || '',
-      token: config.vectorToken || config.token || process.env.UPSTASH_VECTOR_REST_TOKEN || '',
-    });
+    const url = config.vectorUrl || config.url || process.env.UPSTASH_VECTOR_REST_URL || '';
+    const token = config.vectorToken || config.token || process.env.UPSTASH_VECTOR_REST_TOKEN || '';
+
+    // Gracefully handle missing or empty credentials - silent during build
+    if (!url || !token) {
+      // Silently handle missing config during build time
+      this.index = null;
+    } else {
+      this.index = new Index({
+        url,
+        token,
+      });
+    }
 
     this.embeddingModel = config.embeddingModel || openai.embedding('text-embedding-ada-002');
   }
@@ -86,6 +119,10 @@ export class UpstashAIVector {
    * Upsert single vector with custom embedding
    */
   async upsertVector(record: VectorRecord, options?: { namespace?: string }): Promise<void> {
+    if (!this.index) {
+      this.warnAboutMissingConfig();
+      throw new Error('Vector index not initialized - credentials missing or invalid');
+    }
     // Ensure data is provided for upsert
     const upsertRecord = { ...record, data: record.data || '' };
     await this.index.upsert(upsertRecord, options);
@@ -95,6 +132,10 @@ export class UpstashAIVector {
    * Upsert multiple vectors with custom embeddings
    */
   async upsertVectors(records: VectorRecord[], options?: { namespace?: string }): Promise<void> {
+    if (!this.index) {
+      this.warnAboutMissingConfig();
+      throw new Error('Vector index not initialized - credentials missing or invalid');
+    }
     // Ensure data is provided for each record
     const upsertRecords = records.map(record => ({ ...record, data: record.data || '' }));
     await this.index.upsert(upsertRecords, options);
@@ -109,6 +150,10 @@ export class UpstashAIVector {
     metadata?: Record<string, any>,
     options?: { namespace?: string },
   ): Promise<void> {
+    if (!this.index) {
+      this.warnAboutMissingConfig();
+      throw new Error('Vector index not initialized - credentials missing or invalid');
+    }
     await this.index.upsert(
       {
         id,
@@ -126,6 +171,10 @@ export class UpstashAIVector {
     entries: Array<{ id: string; data: string; metadata?: Record<string, any> }>,
     options?: { namespace?: string },
   ): Promise<void> {
+    if (!this.index) {
+      this.warnAboutMissingConfig();
+      throw new Error('Vector index not initialized - credentials missing or invalid');
+    }
     await this.index.upsert(entries, options);
   }
 
@@ -133,6 +182,10 @@ export class UpstashAIVector {
    * Query vectors using custom embedding
    */
   async queryVector(vector: number[], queryOptions: QueryOptions = {}): Promise<VectorRecord[]> {
+    if (!this.index) {
+      this.warnAboutMissingConfig();
+      throw new Error('Vector index not initialized - credentials missing or invalid');
+    }
     const {
       topK = 4,
       includeMetadata = true,
@@ -164,6 +217,10 @@ export class UpstashAIVector {
    * Query using data string (automatic embedding generation)
    */
   async queryData(data: string, queryOptions: QueryOptions = {}): Promise<VectorRecord[]> {
+    if (!this.index) {
+      this.warnAboutMissingConfig();
+      throw new Error('Vector index not initialized - credentials missing or invalid');
+    }
     const {
       topK = 4,
       includeMetadata = true,
@@ -198,6 +255,10 @@ export class UpstashAIVector {
    * Fetch vectors by IDs
    */
   async fetch(ids: string[], options?: { namespace?: string }): Promise<VectorRecord[]> {
+    if (!this.index) {
+      this.warnAboutMissingConfig();
+      throw new Error('Vector index not initialized - credentials missing or invalid');
+    }
     const results = await this.index.fetch(ids, options);
     return results
       .map(result =>
@@ -220,6 +281,10 @@ export class UpstashAIVector {
     ids: string | string[],
     options?: { namespace?: string },
   ): Promise<{ deleted: number }> {
+    if (!this.index) {
+      this.warnAboutMissingConfig();
+      throw new Error('Vector index not initialized - credentials missing or invalid');
+    }
     return await this.index.delete(ids, options);
   }
 
@@ -227,6 +292,10 @@ export class UpstashAIVector {
    * Get index information
    */
   async info(): Promise<any> {
+    if (!this.index) {
+      this.warnAboutMissingConfig();
+      throw new Error('Vector index not initialized - credentials missing or invalid');
+    }
     return await this.index.info();
   }
 
@@ -234,6 +303,10 @@ export class UpstashAIVector {
    * Reset namespace (clear all vectors)
    */
   async reset(options?: { namespace?: string }): Promise<string> {
+    if (!this.index) {
+      this.warnAboutMissingConfig();
+      throw new Error('Vector index not initialized - credentials missing or invalid');
+    }
     return await this.index.reset(options);
   }
 
@@ -248,8 +321,25 @@ export class UpstashAIVector {
     prefix?: string;
     namespace?: string;
   }): Promise<{ nextCursor: string; vectors: VectorRecord[] }> {
+    if (!this.index) {
+      this.warnAboutMissingConfig();
+      throw new Error('Vector index not initialized - credentials missing or invalid');
+    }
     const { namespace, ...rangeOptions } = options;
     return await this.index.range(rangeOptions, namespace ? { namespace } : undefined);
+  }
+
+  /**
+   * Warn once about missing configuration at runtime
+   */
+  private warnAboutMissingConfig(): void {
+    if (!this.hasWarnedAboutMissingConfig) {
+      logWarn('[UpstashAIVector] Client not configured: Vector operations will be disabled.', {
+        message:
+          'Please set UPSTASH_VECTOR_REST_URL and UPSTASH_VECTOR_REST_TOKEN environment variables.',
+      });
+      this.hasWarnedAboutMissingConfig = true;
+    }
   }
 }
 

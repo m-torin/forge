@@ -7,12 +7,20 @@
  * documentation to identify modernization opportunities.
  */
 
+import { BoundedCache } from '@repo/mcp-utils';
 import { logError, logInfo, logWarn } from '@repo/observability';
 import { tool } from 'ai';
 import { readFile, readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { z } from 'zod/v4';
 import { mcpClient } from '../mcp-client';
+
+// Create cache for dependency analysis results
+const dependencyCache = new BoundedCache({
+  maxSize: 100,
+  ttl: 3600000, // 1 hour
+  enableAnalytics: true,
+});
 
 /**
  * Find source files recursively
@@ -36,7 +44,7 @@ async function findSourceFiles(dir: string, files: string[] = []): Promise<strin
         files.push(fullPath);
       }
     }
-  } catch (error) {
+  } catch (_error) {
     // Skip directories we can't read
   }
 
@@ -118,7 +126,7 @@ interface DependencyAnalysisResult {
 // Extract dependencies from file content
 async function extractDependenciesFromFile(
   content: string,
-  filePath: string,
+  _filePath: string,
 ): Promise<
   Map<
     string,
@@ -309,7 +317,6 @@ async function buildDependencyIndex(packagePath: string): Promise<DependencyInde
       entry.files = [...new Set(entry.files)];
       entry.patterns = [...new Set(entry.patterns)];
 
-      // Clean up function patterns
       for (const func in entry.functions) {
         entry.functions[func] = [...new Set(entry.functions[func])];
       }
@@ -550,7 +557,7 @@ function extractConstantsFromDocs(content: string): string[] {
 }
 
 // Generate utilization recommendation
-function getUtilizationRecommendation(percentage: number, unusedCount: number): string {
+function getUtilizationRecommendation(percentage: number, _unusedCount: number): string {
   if (percentage === 100) return '✅ Fully utilized';
   if (percentage >= 75) return '✅ Well utilized';
   if (percentage >= 50) return '📊 Moderately utilized';
@@ -630,12 +637,18 @@ export const dependencyAnalysisTool = tool({
   description:
     'Analyze package dependencies and their utilization. Builds dependency indexes, analyzes package usage, and identifies optimization opportunities.',
 
-  parameters: dependencyAnalysisInputSchema,
+  inputSchema: dependencyAnalysisInputSchema,
 
-  execute: async (
-    { sessionId, packagePath, options = {} },
-    _toolOptions = { toolCallId: 'dependency-analysis', messages: [] },
-  ) => {
+  execute: async ({
+    sessionId,
+    packagePath,
+    options = {
+      includeDevDependencies: true,
+      fetchDocs: false,
+      analyzeUsage: true,
+      maxConcurrency: 3,
+    },
+  }: any) => {
     try {
       logInfo(`📦 Building dependency index for ${packagePath}...`);
 
@@ -715,32 +728,35 @@ export const dependencyAnalysisTool = tool({
     }
   },
 
-  // Multi-modal result content
-  experimental_toToolResultContent: (result: DependencyAnalysisResult) => [
-    {
-      type: 'text' as const,
-      text:
-        `📦 Dependency Analysis Complete!\n` +
-        `📊 Total Dependencies: ${result.summary.totalDependencies}\n` +
-        `🏗️ Production: ${result.summary.productionDependencies} | 🛠️ Development: ${result.summary.devDependencies}\n` +
-        `${
-          result.utilizationReport
-            ? `✅ Fully Utilized: ${result.summary.fullyUtilized}\n` +
-              `⚠️ Underutilized: ${result.summary.underutilized}\n` +
-              `🚨 Deprecated Usage: ${result.summary.deprecated}\n`
-            : '📋 Usage analysis skipped\n'
-        }` +
-        `💡 Recommendations: ${result.recommendations.length}\n` +
-        `${
-          result.recommendations.length > 0
-            ? `\nTop Recommendations:\n${result.recommendations
-                .slice(0, 3)
-                .map((rec: any) => `• ${rec.type.toUpperCase()}: ${rec.package} - ${rec.reason}`)
-                .join('\n')}`
-            : '✅ No optimization recommendations at this time'
-        }`,
-    },
-  ],
-});
+  // AI SDK v5: toModelOutput with proper content shapes
+  toModelOutput: (result: DependencyAnalysisResult) => ({
+    type: 'content',
+    value: [
+      {
+        type: 'text',
+        text:
+          `📦 Dependency Analysis Complete!\n` +
+          `📊 Total Dependencies: ${result.summary.totalDependencies}\n` +
+          `🏗️ Production: ${result.summary.productionDependencies} | 🛠️ Development: ${result.summary.devDependencies}\n` +
+          `${
+            result.utilizationReport
+              ? `✅ Fully Utilized: ${result.summary.fullyUtilized}\n` +
+                `⚠️ Underutilized: ${result.summary.underutilized}\n` +
+                `🚨 Deprecated Usage: ${result.summary.deprecated}\n`
+              : '📋 Usage analysis skipped\n'
+          }` +
+          `💡 Recommendations: ${result.recommendations.length}\n` +
+          `${
+            result.recommendations.length > 0
+              ? `\nTop Recommendations:\n${result.recommendations
+                  .slice(0, 3)
+                  .map((rec: any) => `• ${rec.type.toUpperCase()}: ${rec.package} - ${rec.reason}`)
+                  .join('\n')}`
+              : '✅ No optimization recommendations at this time'
+          }`,
+      },
+    ],
+  }),
+} as any);
 
 export type { DependencyAnalysisResult, DependencyIndex, UtilizationReport };

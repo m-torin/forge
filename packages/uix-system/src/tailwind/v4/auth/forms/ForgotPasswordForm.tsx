@@ -19,7 +19,7 @@ interface ForgotPasswordFormProps extends BaseProps {
   showSignInLink?: boolean;
 }
 
-const initialState: FormState = { success: false };
+const _initialState: FormState = { success: false };
 
 export function ForgotPasswordForm({
   className = '',

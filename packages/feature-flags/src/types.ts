@@ -184,7 +184,7 @@ export interface ExperimentConfig {
   key: string;
   prerequisites?: ExperimentPrerequisite[];
   segments?: string[];
-  traffic?: number; // 0-1, percentage of users to include
+  traffic?: number;
   variants: ExperimentVariant[];
 }
 

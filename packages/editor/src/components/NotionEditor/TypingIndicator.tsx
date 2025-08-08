@@ -215,8 +215,8 @@ export interface UseTypingIndicatorOptions {
   editor: any; // Tiptap Editor
   provider: any; // Y.js provider
   userId: string;
-  typingTimeout?: number; // How long to show typing after last keystroke
-  updateInterval?: number; // How often to broadcast typing state
+  typingTimeout?: number;
+  updateInterval?: number;
 }
 
 export function useTypingIndicator({

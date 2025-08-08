@@ -118,7 +118,7 @@ describe('auth configuration', () => {
     mockPasskey.mockReturnValue({});
 
     // Reset process.env
-    Object.defineProperty(process.env, 'NODE_ENV', { value: 'test', writable: true });
+    process.env.NODE_ENV = 'test';
   });
 
   test('should create better auth instance with correct configuration', async () => {
@@ -278,7 +278,7 @@ describe('auth configuration', () => {
   });
 
   test('should handle production environment correctly', async () => {
-    Object.defineProperty(process.env, 'NODE_ENV', { value: 'production', writable: true });
+    process.env.NODE_ENV = 'production';
 
     // Re-import to trigger reconfiguration
     vi.resetModules();
@@ -663,7 +663,7 @@ describe('auth configuration', () => {
   describe('request hooks', () => {
     test('should log requests in development mode', async () => {
       const originalEnv = process.env.NODE_ENV;
-      Object.defineProperty(process.env, 'NODE_ENV', { value: 'development', writable: true });
+      process.env.NODE_ENV = 'development';
 
       vi.resetModules();
       await import('../../src/shared/auth');
@@ -677,11 +677,11 @@ describe('auth configuration', () => {
 
       expect(mockLogInfo).toHaveBeenCalledWith('Auth Request: POST /auth/signin');
 
-      Object.defineProperty(process.env, 'NODE_ENV', { value: originalEnv, writable: true });
+      process.env.NODE_ENV = originalEnv;
     });
 
     test('should not log requests in non-development mode', async () => {
-      Object.defineProperty(process.env, 'NODE_ENV', { value: 'production', writable: true });
+      process.env.NODE_ENV = 'production';
 
       vi.resetModules();
       await import('../../src/shared/auth');

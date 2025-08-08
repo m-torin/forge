@@ -42,7 +42,7 @@ describe('aPI middleware', () => {
 
   describe('createApiMiddleware', () => {
     test('should create middleware function', async () => {
-      const apiModule = await import('#/server/middleware/api');
+      const apiModule = await import('../../src/server/middleware/api');
 
       const middleware = apiModule.createApiMiddleware();
 
@@ -50,7 +50,7 @@ describe('aPI middleware', () => {
     });
 
     test('should allow public API routes', async () => {
-      const apiModule = await import('#/server/middleware/api');
+      const apiModule = await import('../../src/server/middleware/api');
 
       const middleware = apiModule.createApiMiddleware();
       const request = new NextRequest('https://example.com/api/health', {
@@ -63,7 +63,7 @@ describe('aPI middleware', () => {
     });
 
     test('should allow default public API routes', async () => {
-      const apiModule = await import('#/server/middleware/api');
+      const apiModule = await import('../../src/server/middleware/api');
 
       const middleware = apiModule.createApiMiddleware();
 
@@ -81,7 +81,7 @@ describe('aPI middleware', () => {
     });
 
     test('should allow custom public API routes', async () => {
-      const apiModule = await import('#/server/middleware/api');
+      const apiModule = await import('../../src/server/middleware/api');
 
       const middleware = apiModule.createApiMiddleware({
         publicApiRoutes: ['/api/custom'],
@@ -97,7 +97,7 @@ describe('aPI middleware', () => {
     });
 
     test('should detect API key in x-api-key header', async () => {
-      const apiModule = await import('#/server/middleware/api');
+      const apiModule = await import('../../src/server/middleware/api');
 
       const middleware = apiModule.createApiMiddleware();
       const request = new NextRequest('https://example.com/api/protected', {
@@ -113,7 +113,7 @@ describe('aPI middleware', () => {
     });
 
     test('should detect Bearer token in authorization header', async () => {
-      const apiModule = await import('#/server/middleware/api');
+      const apiModule = await import('../../src/server/middleware/api');
 
       const middleware = apiModule.createApiMiddleware();
       const request = new NextRequest('https://example.com/api/protected', {
@@ -129,7 +129,7 @@ describe('aPI middleware', () => {
     });
 
     test('should handle authorization header without Bearer prefix', async () => {
-      const apiModule = await import('#/server/middleware/api');
+      const apiModule = await import('../../src/server/middleware/api');
 
       const middleware = apiModule.createApiMiddleware();
       const request = new NextRequest('https://example.com/api/protected', {
@@ -145,7 +145,7 @@ describe('aPI middleware', () => {
     });
 
     test('should respect custom allowed headers', async () => {
-      const apiModule = await import('#/server/middleware/api');
+      const apiModule = await import('../../src/server/middleware/api');
 
       const middleware = apiModule.createApiMiddleware({
         allowedHeaders: ['x-custom-key'],
@@ -164,7 +164,7 @@ describe('aPI middleware', () => {
     });
 
     test('should check session when no API key provided', async () => {
-      const apiModule = await import('#/server/middleware/api');
+      const apiModule = await import('../../src/server/middleware/api');
 
       mockGetSessionCookie.mockReturnValue({ sessionId: 'test-session' });
 
@@ -180,7 +180,7 @@ describe('aPI middleware', () => {
     });
 
     test('should return 401 when no authentication provided and auth required', async () => {
-      const apiModule = await import('#/server/middleware/api');
+      const apiModule = await import('../../src/server/middleware/api');
 
       mockGetSessionCookie.mockReturnValue(null);
 
@@ -204,7 +204,7 @@ describe('aPI middleware', () => {
     });
 
     test('should allow unauthenticated access when auth not required', async () => {
-      const apiModule = await import('#/server/middleware/api');
+      const apiModule = await import('../../src/server/middleware/api');
 
       mockGetSessionCookie.mockReturnValue(null);
 
@@ -222,7 +222,7 @@ describe('aPI middleware', () => {
     });
 
     test('should set auth method header for API key', async () => {
-      const apiModule = await import('#/server/middleware/api');
+      const apiModule = await import('../../src/server/middleware/api');
 
       const mockResponse = {
         headers: new Map(),
@@ -244,7 +244,7 @@ describe('aPI middleware', () => {
     });
 
     test('should set auth method header for session', async () => {
-      const apiModule = await import('#/server/middleware/api');
+      const apiModule = await import('../../src/server/middleware/api');
 
       mockGetSessionCookie.mockReturnValue({ sessionId: 'test-session' });
 
@@ -265,7 +265,7 @@ describe('aPI middleware', () => {
     });
 
     test('should set rate limit headers when enabled', async () => {
-      const apiModule = await import('#/server/middleware/api');
+      const apiModule = await import('../../src/server/middleware/api');
 
       const mockResponse = {
         headers: new Map(),
@@ -290,7 +290,7 @@ describe('aPI middleware', () => {
     });
 
     test('should handle multiple allowed headers and use first found', async () => {
-      const apiModule = await import('#/server/middleware/api');
+      const apiModule = await import('../../src/server/middleware/api');
 
       const middleware = apiModule.createApiMiddleware({
         allowedHeaders: ['x-first-key', 'x-second-key'],
@@ -310,7 +310,7 @@ describe('aPI middleware', () => {
     });
 
     test('should properly extract Bearer token from authorization header', async () => {
-      const apiModule = await import('#/server/middleware/api');
+      const apiModule = await import('../../src/server/middleware/api');
 
       const middleware = apiModule.createApiMiddleware();
       const request = new NextRequest('https://example.com/api/protected', {
@@ -326,7 +326,7 @@ describe('aPI middleware', () => {
     });
 
     test('should include supported auth methods in 401 response', async () => {
-      const apiModule = await import('#/server/middleware/api');
+      const apiModule = await import('../../src/server/middleware/api');
 
       mockGetSessionCookie.mockReturnValue(null);
 
@@ -355,14 +355,14 @@ describe('aPI middleware', () => {
 
   describe('default middleware', () => {
     test('should export default apiMiddleware', async () => {
-      const apiModule = await import('#/server/middleware/api');
+      const apiModule = await import('../../src/server/middleware/api');
 
       expect(apiModule.apiMiddleware).toBeDefined();
       expect(typeof apiModule.apiMiddleware).toBe('function');
     });
 
     test('should work with default settings', async () => {
-      const apiModule = await import('#/server/middleware/api');
+      const apiModule = await import('../../src/server/middleware/api');
 
       const request = new NextRequest('https://example.com/api/health', {
         method: 'GET',
@@ -376,7 +376,7 @@ describe('aPI middleware', () => {
 
   describe('publicPaths handling', () => {
     test('should combine publicPaths and publicApiRoutes', async () => {
-      const apiModule = await import('#/server/middleware/api');
+      const apiModule = await import('../../src/server/middleware/api');
 
       const middleware = apiModule.createApiMiddleware({
         publicPaths: ['/api/custom'],
@@ -399,7 +399,7 @@ describe('aPI middleware', () => {
     });
 
     test('should handle route prefixes correctly', async () => {
-      const apiModule = await import('#/server/middleware/api');
+      const apiModule = await import('../../src/server/middleware/api');
 
       const middleware = apiModule.createApiMiddleware({
         publicApiRoutes: ['/api/v1'],
@@ -417,7 +417,7 @@ describe('aPI middleware', () => {
 
   describe('edge cases', () => {
     test('should handle empty header values', async () => {
-      const apiModule = await import('#/server/middleware/api');
+      const apiModule = await import('../../src/server/middleware/api');
 
       mockGetSessionCookie.mockReturnValue(null);
 
@@ -440,7 +440,7 @@ describe('aPI middleware', () => {
     });
 
     test('should handle malformed Bearer token', async () => {
-      const apiModule = await import('#/server/middleware/api');
+      const apiModule = await import('../../src/server/middleware/api');
 
       const middleware = apiModule.createApiMiddleware();
       const request = new NextRequest('https://example.com/api/protected', {
@@ -456,7 +456,7 @@ describe('aPI middleware', () => {
     });
 
     test('should handle missing headers gracefully', async () => {
-      const apiModule = await import('#/server/middleware/api');
+      const apiModule = await import('../../src/server/middleware/api');
 
       mockGetSessionCookie.mockReturnValue(null);
 
@@ -474,7 +474,7 @@ describe('aPI middleware', () => {
     });
 
     test('should handle case-insensitive header matching', async () => {
-      const apiModule = await import('#/server/middleware/api');
+      const apiModule = await import('../../src/server/middleware/api');
 
       const middleware = apiModule.createApiMiddleware();
       const request = new NextRequest('https://example.com/api/protected', {

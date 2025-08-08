@@ -96,7 +96,7 @@ describe('workflow Utilities', () => {
     test('should have unique prefixes', () => {
       const prefixes = Object.values(RATE_LIMITER_CONFIGS).map(config => config.prefix);
       const uniquePrefixes = [...new Set(prefixes)];
-      expect(prefixes).toEqual(uniquePrefixes);
+      expect(prefixes).toStrictEqual(uniquePrefixes);
     });
   });
 
@@ -111,8 +111,8 @@ describe('workflow Utilities', () => {
           concurrency: 1,
         });
 
-        expect(result.results).toEqual([2, 4, 6, 8, 10]);
-        expect(result.errors).toEqual([]);
+        expect(result.results).toStrictEqual([2, 4, 6, 8, 10]);
+        expect(result.errors).toStrictEqual([]);
         expect(processor).toHaveBeenCalledTimes(5);
       });
 
@@ -127,7 +127,7 @@ describe('workflow Utilities', () => {
           continueOnError: true,
         });
 
-        expect(result.results).toEqual([2, 6]);
+        expect(result.results).toStrictEqual([2, 6]);
         expect(result.errors).toHaveLength(1);
         expect(result.errors[0].item).toBe(2);
         expect(result.errors[0].error.message).toBe('Processing failed');
@@ -158,7 +158,7 @@ describe('workflow Utilities', () => {
           concurrency: 3,
         });
 
-        expect(result.results).toEqual([2, 4, 6, 8, 10]);
+        expect(result.results).toStrictEqual([2, 4, 6, 8, 10]);
       });
 
       test('should handle timeout', async () => {
@@ -175,7 +175,7 @@ describe('workflow Utilities', () => {
           continueOnError: true,
         });
 
-        expect(result.results).toEqual([2]);
+        expect(result.results).toStrictEqual([2]);
         expect(result.errors).toHaveLength(1);
       });
     });
@@ -192,7 +192,7 @@ describe('workflow Utilities', () => {
           },
         });
 
-        expect(results).toEqual([2, 4, 6]);
+        expect(results).toStrictEqual([2, 4, 6]);
       });
 
       test('should handle stream processing errors', async () => {
@@ -225,7 +225,7 @@ describe('workflow Utilities', () => {
 
         const result = await memoryProcessor([1, 2, 3, 4]);
 
-        expect(result).toEqual([2, 4, 6, 8]);
+        expect(result).toStrictEqual([2, 4, 6, 8]);
         expect(processor).toHaveBeenCalledTimes(4);
       });
 
@@ -276,10 +276,10 @@ describe('workflow Utilities', () => {
     test('should create error accumulator', () => {
       const accumulator = createErrorAccumulator();
 
-      expect(accumulator.errors).toEqual([]);
-      expect(accumulator.warnings).toEqual([]);
-      expect(accumulator.successfulResults).toEqual([]);
-      expect(accumulator.failedResults).toEqual([]);
+      expect(accumulator.errors).toStrictEqual([]);
+      expect(accumulator.warnings).toStrictEqual([]);
+      expect(accumulator.successfulResults).toStrictEqual([]);
+      expect(accumulator.failedResults).toStrictEqual([]);
     });
 
     test('should add errors', () => {
@@ -597,7 +597,7 @@ describe('workflow Utilities', () => {
         },
       );
 
-      expect(result.results).toEqual([2, 4, 8, 10]);
+      expect(result.results).toStrictEqual([2, 4, 8, 10]);
       expect(result.errors).toHaveLength(1);
       expect(accumulator.successfulResults).toHaveLength(4);
       expect(accumulator.errors).toHaveLength(1);

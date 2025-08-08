@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "Node.js",
+  "extends": "./base.json",
+  "compilerOptions": {
+    "lib": ["es2024", "es2022.error"],
+    "types": ["node"],
+    "moduleResolution": "bundler",
+    "target": "ES2022",
+    "downlevelIteration": true
+  }
+}

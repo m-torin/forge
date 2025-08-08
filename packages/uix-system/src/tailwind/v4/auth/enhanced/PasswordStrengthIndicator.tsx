@@ -190,7 +190,7 @@ function analyzePassword(password: string, rules: PasswordRule[]): PasswordStren
 function generateSuggestions(
   password: string,
   failedRules: string[],
-  rules: PasswordRule[],
+  _rules: PasswordRule[],
 ): string[] {
   const suggestions: string[] = [];
 
@@ -309,7 +309,6 @@ export function PasswordStrengthIndicator({
 
   return (
     <div className={`space-y-4 ${className}`}>
-      {/* Strength Bar and Score */}
       <div>
         <div className="mb-2 flex items-center justify-between">
           <span className={cn('text-sm font-medium text-gray-700', 'dark:text-gray-300')}>
@@ -335,7 +334,6 @@ export function PasswordStrengthIndicator({
         </div>
       </div>
 
-      {/* Requirements Checklist */}
       {showRequirements && (
         <div>
           <h4 className="mb-2 text-sm font-medium text-gray-700">Requirements</h4>
@@ -385,13 +383,12 @@ export function PasswordStrengthIndicator({
         </div>
       )}
 
-      {/* Suggestions */}
       {showSuggestions && strength.suggestions.length > 0 && (
         <div>
           <h4 className="mb-2 text-sm font-medium text-gray-700">Suggestions</h4>
           <div className="space-y-1">
-            {strength.suggestions.map((suggestion, index) => (
-              <div key={index} className="flex items-start space-x-2">
+            {strength.suggestions.map(suggestion => (
+              <div key={suggestion} className="flex items-start space-x-2">
                 <svg
                   className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-500"
                   fill="currentColor"
@@ -410,7 +407,6 @@ export function PasswordStrengthIndicator({
         </div>
       )}
 
-      {/* Security Tips */}
       {strength.level === 'strong' && (
         <div className="rounded-lg border border-green-200 bg-green-50 p-3">
           <div className="flex items-start">

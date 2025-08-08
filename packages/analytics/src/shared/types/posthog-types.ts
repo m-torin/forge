@@ -10,22 +10,22 @@ export interface PostHogConfig {
     ui_host?: string;
     autocapture?: boolean;
     capture_pageview?: boolean;
-    capture_pageleave?: boolean; // NEW: Critical for engagement tracking
+    capture_pageleave?: boolean;
     disable_session_recording?: boolean;
     cross_subdomain_cookie?: boolean;
-    persistence?: 'localStorage' | 'cookie' | 'memory' | 'localStorage+cookie'; // EXPANDED
+    persistence?: 'localStorage' | 'cookie' | 'memory' | 'localStorage+cookie';
     persistence_name?: string;
     loaded?: (posthog: any) => void;
 
     // Privacy & GDPR compliance (NEW SECTION)
-    person_profiles?: 'always' | 'never' | 'identified_only'; // Critical for GDPR
-    opt_in_site_apps?: boolean; // Control over PostHog apps
-    respect_dnt?: boolean; // Do Not Track header respect
+    person_profiles?: 'always' | 'never' | 'identified_only';
+    opt_in_site_apps?: boolean;
+    respect_dnt?: boolean;
 
     // Performance optimizations (NEW)
-    uuid_version?: 'v4' | 'v7'; // UUID version for better performance
-    request_batching?: boolean; // Batch requests for better performance
-    batch_flush_interval_ms?: number; // Control batching timing
+    uuid_version?: 'v4' | 'v7';
+    request_batching?: boolean;
+    batch_flush_interval_ms?: number;
 
     // Session recording configuration (NEW SECTION)
     session_recording?: {
@@ -57,12 +57,12 @@ export interface PostHogConfig {
     };
 
     // Event processing hooks (NEW)
-    before_send?: (event: any) => any | null; // Event preprocessing
-    sanitize_properties?: (properties: any, event: string) => any; // Property sanitization
+    before_send?: (event: any) => any | null;
+    sanitize_properties?: (properties: any, event: string) => any;
 
     // Debug and development (NEW)
     debug?: boolean;
-    advanced_disable_decide?: boolean; // Disable feature flag requests
+    advanced_disable_decide?: boolean;
 
     // Server-side specific options
     flushAt?: number;

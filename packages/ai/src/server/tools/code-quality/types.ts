@@ -76,16 +76,13 @@ export interface ProgressUpdate {
   timestamp: number;
 }
 
-// Re-export types from tools
-export type { CodeAnalysisResult } from './tools/analysis';
-export type { FileDiscoveryResult } from './tools/file-discovery';
-export type { PatternDetectionResult } from './tools/pattern-detection';
-export type { PRCreationResult } from './tools/pr-creation';
-export type { QualityReport } from './tools/report-generation';
-export type {
-  OptimizationRecommendation,
-  VercelOptimizationResult,
-} from './tools/vercel-optimization';
+// Note: Removed re-exports to avoid circular dependencies
+// Import types directly from their source files when needed
 
-// Re-export workflow types
-export type { CodeQualityWorkflowConfig } from './workflows/full-analysis';
+export interface ToolExecutionContext {
+  mcp: {
+    createEntities: (params: {
+      entities: Array<{ name: string; entityType: string; observations: string[] }>;
+    }) => Promise<any>;
+  };
+}

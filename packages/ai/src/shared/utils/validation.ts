@@ -6,13 +6,6 @@ export function validateMaxOutputTokens(maxOutputTokens?: number): void {
   }
 }
 
-/**
- * @deprecated Use validateMaxOutputTokens instead - maxTokens renamed to maxOutputTokens in AI SDK v5
- */
-export function validateMaxTokens(maxTokens?: number): void {
-  return validateMaxOutputTokens(maxTokens);
-}
-
 export function validatePrompt(prompt: string): void {
   if (!prompt || typeof prompt !== 'string') {
     throw new Error('Prompt is required and must be a string');

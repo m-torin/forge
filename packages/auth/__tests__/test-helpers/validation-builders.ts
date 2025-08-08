@@ -8,7 +8,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { createMockHeaders } from './factories';
 
 // Mock auth for validation builders
-vi.mock('#/shared/auth', () => ({
+vi.mock('../../src/shared/auth', () => ({
   auth: {
     api: {
       verifyApiKey: vi.fn(),
@@ -49,7 +49,7 @@ export const createApiKeyValidationTestSuite = (config: ApiKeyValidationTestConf
       const headers = createMockHeaders();
       headers.set('x-api-key', 'test-api-key');
 
-      const { auth } = await import('#/shared/auth');
+      const { auth } = await import('../../src/shared/auth');
       vi.mocked(auth.api.verifyApiKey).mockResolvedValue({
         valid: true,
         error: null,
@@ -73,7 +73,7 @@ export const createApiKeyValidationTestSuite = (config: ApiKeyValidationTestConf
       const headers = createMockHeaders();
       headers.set('authorization', 'Bearer test-bearer-token');
 
-      const { auth } = await import('#/shared/auth');
+      const { auth } = await import('../../src/shared/auth');
       vi.mocked(auth.api.verifyApiKey).mockResolvedValue({
         valid: true,
         error: null,
@@ -101,7 +101,7 @@ export const createApiKeyValidationTestSuite = (config: ApiKeyValidationTestConf
       expect(result.isValid).toBeFalsy();
       expect(result.error).toBe('No API key provided');
 
-      const { auth } = await import('#/shared/auth');
+      const { auth } = await import('../../src/shared/auth');
       expect(auth.api.verifyApiKey).not.toHaveBeenCalled();
     });
 
@@ -109,7 +109,7 @@ export const createApiKeyValidationTestSuite = (config: ApiKeyValidationTestConf
       const headers = createMockHeaders();
       headers.set('x-api-key', 'invalid-key');
 
-      const { auth } = await import('#/shared/auth');
+      const { auth } = await import('../../src/shared/auth');
       vi.mocked(auth.api.verifyApiKey).mockResolvedValue({
         valid: false,
         error: { message: 'Key not found' },
@@ -126,7 +126,7 @@ export const createApiKeyValidationTestSuite = (config: ApiKeyValidationTestConf
       const headers = createMockHeaders();
       headers.set('x-api-key', 'test-key');
 
-      const { auth } = await import('#/shared/auth');
+      const { auth } = await import('../../src/shared/auth');
       vi.mocked(auth.api.verifyApiKey).mockRejectedValue(new Error('Database error'));
 
       const result = await validationFn(headers);
@@ -139,7 +139,7 @@ export const createApiKeyValidationTestSuite = (config: ApiKeyValidationTestConf
       const request = new NextRequest('http://localhost:3000/api/test');
       request.headers.set('x-api-key', 'test-key');
 
-      const { auth } = await import('#/shared/auth');
+      const { auth } = await import('../../src/shared/auth');
       vi.mocked(auth.api.verifyApiKey).mockResolvedValue({
         valid: true,
         error: null,
@@ -162,7 +162,7 @@ export const createApiKeyValidationTestSuite = (config: ApiKeyValidationTestConf
         headers.set('x-api-key', 'test-key');
         const permissions = { users: ['read'] };
 
-        const { auth } = await import('#/shared/auth');
+        const { auth } = await import('../../src/shared/auth');
         vi.mocked(auth.api.verifyApiKey).mockResolvedValue({
           valid: true,
           error: null,
@@ -187,7 +187,7 @@ export const createApiKeyValidationTestSuite = (config: ApiKeyValidationTestConf
         headers.set('x-api-key', 'test-key');
         const permissions = { users: ['write'] };
 
-        const { auth } = await import('#/shared/auth');
+        const { auth } = await import('../../src/shared/auth');
         vi.mocked(auth.api.verifyApiKey).mockResolvedValue({
           valid: true,
           error: null,
@@ -301,7 +301,7 @@ export const createPermissionCheckTestSuite = (
       const request = new NextRequest('http://localhost:3000/api/test');
       request.headers.set('x-api-key', 'valid-key');
 
-      const { auth } = await import('#/shared/auth');
+      const { auth } = await import('../../src/shared/auth');
       vi.mocked(auth.api.verifyApiKey).mockResolvedValue({
         valid: true,
         error: null,
@@ -322,7 +322,7 @@ export const createPermissionCheckTestSuite = (
       const request = new NextRequest('http://localhost:3000/api/test');
       request.headers.set('x-api-key', 'invalid-key');
 
-      const { auth } = await import('#/shared/auth');
+      const { auth } = await import('../../src/shared/auth');
       vi.mocked(auth.api.verifyApiKey).mockResolvedValue({
         valid: false,
         error: { message: 'Invalid key' },
@@ -339,7 +339,7 @@ export const createPermissionCheckTestSuite = (
     test('should return true for valid session', async () => {
       const request = new NextRequest('http://localhost:3000/api/test');
 
-      const { auth } = await import('#/shared/auth');
+      const { auth } = await import('../../src/shared/auth');
       vi.mocked(auth.api.verifyApiKey).mockResolvedValue({
         valid: false,
         error: { message: 'No API key' },
@@ -361,7 +361,7 @@ export const createPermissionCheckTestSuite = (
     test('should return false when no authentication', async () => {
       const request = new NextRequest('http://localhost:3000/api/test');
 
-      const { auth } = await import('#/shared/auth');
+      const { auth } = await import('../../src/shared/auth');
       vi.mocked(auth.api.verifyApiKey).mockResolvedValue({
         valid: false,
         error: { message: 'No API key' },
@@ -390,7 +390,7 @@ export const createAuthRequirementTestSuite = (requireAuthFn: (request: any) => 
       const request = new NextRequest('http://localhost:3000/api/test');
       request.headers.set('x-api-key', 'valid-key');
 
-      const { auth } = await import('#/shared/auth');
+      const { auth } = await import('../../src/shared/auth');
       vi.mocked(auth.api.verifyApiKey).mockResolvedValue({
         valid: true,
         error: null,
@@ -413,7 +413,7 @@ export const createAuthRequirementTestSuite = (requireAuthFn: (request: any) => 
       const request = new NextRequest('http://localhost:3000/api/test');
       request.headers.set('x-api-key', 'invalid-key');
 
-      const { auth } = await import('#/shared/auth');
+      const { auth } = await import('../../src/shared/auth');
       vi.mocked(auth.api.verifyApiKey).mockResolvedValue({
         valid: false,
         error: { message: 'Invalid key' },
@@ -435,7 +435,7 @@ export const createAuthRequirementTestSuite = (requireAuthFn: (request: any) => 
         user: { id: 'user-1', email: 'test@example.com' },
       };
 
-      const { auth } = await import('#/shared/auth');
+      const { auth } = await import('../../src/shared/auth');
       vi.mocked(auth.api.getSession).mockResolvedValue(mockSession);
 
       const result = await requireAuthFn(request);
@@ -446,7 +446,7 @@ export const createAuthRequirementTestSuite = (requireAuthFn: (request: any) => 
     test('should handle session errors gracefully', async () => {
       const request = new NextRequest('http://localhost:3000/api/test');
 
-      const { auth } = await import('#/shared/auth');
+      const { auth } = await import('../../src/shared/auth');
       vi.mocked(auth.api.getSession).mockRejectedValue(new Error('Session error'));
 
       const result = await requireAuthFn(request);
@@ -469,7 +469,7 @@ export const createRateLimitTestSuite = (rateLimitFn: (headers: any) => Promise<
       const headers = createMockHeaders();
       headers.set('x-api-key', 'valid-key');
 
-      const { auth } = await import('#/shared/auth');
+      const { auth } = await import('../../src/shared/auth');
       vi.mocked(auth.api.verifyApiKey).mockResolvedValue({
         valid: true,
         error: null,
@@ -497,7 +497,7 @@ export const createRateLimitTestSuite = (rateLimitFn: (headers: any) => Promise<
       const headers = createMockHeaders();
       headers.set('x-api-key', 'invalid-key');
 
-      const { auth } = await import('#/shared/auth');
+      const { auth } = await import('../../src/shared/auth');
       vi.mocked(auth.api.verifyApiKey).mockResolvedValue({
         valid: false,
         error: { message: 'Invalid key' },
@@ -514,7 +514,7 @@ export const createRateLimitTestSuite = (rateLimitFn: (headers: any) => Promise<
       const headers = createMockHeaders();
       headers.set('x-api-key', 'rate-limited-key');
 
-      const { auth } = await import('#/shared/auth');
+      const { auth } = await import('../../src/shared/auth');
       vi.mocked(auth.api.verifyApiKey).mockResolvedValue({
         valid: true,
         error: null,

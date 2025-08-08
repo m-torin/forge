@@ -502,7 +502,7 @@ export function testEmailSendingAcrossScenarios<T>(
   scenarios.forEach(scenario => {
     test(`should ${scenario.name}`, async () => {
       const result = await emailFunction(scenario.data);
-      expect(result).toEqual(scenario.expectedResult);
+      expect(result).toStrictEqual(scenario.expectedResult);
     });
   });
 }
@@ -543,7 +543,7 @@ export function createEmailSendingTestUtils() {
     },
 
     expectEmailToReturnResult: (result: any, expectedResult: any) => {
-      expect(result).toEqual(expectedResult);
+      expect(result).toStrictEqual(expectedResult);
     },
   };
 }

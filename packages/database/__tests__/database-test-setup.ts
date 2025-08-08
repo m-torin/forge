@@ -26,7 +26,7 @@ import {
   TransactionStatus,
   TransactionType,
   VoteType,
-} from '../prisma-generated/client';
+} from '#/prisma-generated/client';
 
 /**
  * Centralized Prisma client mock factory

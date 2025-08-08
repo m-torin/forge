@@ -189,7 +189,6 @@ export function AdminUserDetail({ user, onRefresh, onBack, className = '' }: Adm
 
   return (
     <div className={`space-y-6 ${className}`}>
-      {/* Header with Back Button */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="outline" onClick={onBack}>
@@ -215,7 +214,6 @@ export function AdminUserDetail({ user, onRefresh, onBack, className = '' }: Adm
         </div>
       </div>
 
-      {/* Error/Success Messages */}
       {(banState.error ||
         unbanState.error ||
         roleState.error ||
@@ -238,7 +236,6 @@ export function AdminUserDetail({ user, onRefresh, onBack, className = '' }: Adm
         impersonateState.success ||
         updateState.success) && <Alert variant="default">Action completed successfully!</Alert>}
 
-      {/* User Overview Card */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -334,7 +331,6 @@ export function AdminUserDetail({ user, onRefresh, onBack, className = '' }: Adm
         )}
       </Card>
 
-      {/* User Statistics */}
       <div className="grid grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
@@ -364,7 +360,6 @@ export function AdminUserDetail({ user, onRefresh, onBack, className = '' }: Adm
         </Card>
       </div>
 
-      {/* Navigation Tabs */}
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
           {tabs.map(tab => (
@@ -388,7 +383,6 @@ export function AdminUserDetail({ user, onRefresh, onBack, className = '' }: Adm
         </nav>
       </div>
 
-      {/* Tab Content */}
       {activeTab === 'overview' && (
         <div className="grid grid-cols-2 gap-6">
           <Card>
@@ -611,7 +605,6 @@ export function AdminUserDetail({ user, onRefresh, onBack, className = '' }: Adm
         </Card>
       )}
 
-      {/* Danger Zone */}
       <Card className="border-red-200">
         <CardHeader className="bg-red-50">
           <h4 className="text-lg font-medium text-red-900">Danger Zone</h4>

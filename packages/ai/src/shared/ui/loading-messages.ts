@@ -44,9 +44,9 @@ export interface LoadingMessageConfig {
   };
   // Duration thresholds
   thresholds?: {
-    short?: number; // Default: 1000ms
-    medium?: number; // Default: 3000ms
-    long?: number; // Default: 5000ms
+    short?: number;
+    medium?: number;
+    long?: number;
   };
   // Custom analyzer function
   analyzer?: (message: string) => Partial<LoadingContext>;

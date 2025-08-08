@@ -245,7 +245,7 @@ async function detectIfInWorktree(): Promise<WorktreeInfo> {
           };
         }
       }
-    } catch (gitError) {
+    } catch (_gitError) {
       // Not in a git repository or git not available
       return { isWorktree: false };
     }
@@ -304,15 +304,18 @@ async function detectFrameworkStack(packagePath: string): Promise<Record<string,
 
 // Main context detection tool
 export const contextDetectionTool = tool({
-  description:
-    'Detect project context and configuration including package scope, monorepo structure, framework detection, and worktree status.',
-
-  parameters: contextDetectionInputSchema,
-
-  execute: async (
-    { sessionId, path, options = {} },
-    _toolOptions = { toolCallId: 'context-detection', messages: [] },
-  ) => {
+  description: 'Detect project context and configuration',
+  inputSchema: contextDetectionInputSchema,
+  execute: async ({
+    sessionId,
+    path,
+    options = {
+      includeFrameworks: true,
+      detectVercel: true,
+      skipWorktreeDetection: false,
+      detectMonorepo: true,
+    },
+  }: any) => {
     try {
       // Detect package scope
       const packageInfo = await detectPackageScope(path);
@@ -389,28 +392,31 @@ export const contextDetectionTool = tool({
     }
   },
 
-  // Multi-modal result content
-  experimental_toToolResultContent: (result: ContextDetectionResult) => [
-    {
-      type: 'text' as const,
-      text:
-        `🔍 Project Context Detected!\n` +
-        `📁 Type: ${result.context.type.toUpperCase()}\n` +
-        `📦 Package: ${result.context.packageName}\n` +
-        `📂 Path: ${result.context.packagePath}\n` +
-        `${result.context.isMonorepo ? `🏢 Monorepo: ${result.context.monorepoType}` : '📦 Single Package'}\n` +
-        `${result.context.isVercelProject ? '▲ Vercel Project: Yes' : '🌐 Vercel Project: No'}\n` +
-        `${result.context.isWorktree ? `🌿 Git Worktree: ${result.context.worktreeInfo?.branch || 'Unknown'}` : '📋 Git: Main Repository'}\n` +
-        `🛠️ Stack: ${
-          Object.keys(result.context.stack).length > 0
-            ? Object.entries(result.context.stack)
-                .map(([name, version]) => `${name}@${version}`)
-                .join(', ')
-            : 'No frameworks detected'
-        }\n` +
-        `${result.context.workspaces ? `📋 Workspaces: ${result.context.workspaces.length} configured` : ''}`,
-    },
-  ],
-});
+  // AI SDK v5: toModelOutput with proper content shapes
+  toModelOutput: (result: ContextDetectionResult) => ({
+    type: 'content',
+    value: [
+      {
+        type: 'text',
+        text:
+          `🔍 Project Context Detected!\n` +
+          `📁 Type: ${result.context.type.toUpperCase()}\n` +
+          `📦 Package: ${result.context.packageName}\n` +
+          `📂 Path: ${result.context.packagePath}\n` +
+          `${result.context.isMonorepo ? `🏢 Monorepo: ${result.context.monorepoType}` : '📦 Single Package'}\n` +
+          `${result.context.isVercelProject ? '▲ Vercel Project: Yes' : '🌐 Vercel Project: No'}\n` +
+          `${result.context.isWorktree ? `🌿 Git Worktree: ${result.context.worktreeInfo?.branch || 'Unknown'}` : '📋 Git: Main Repository'}\n` +
+          `🛠️ Stack: ${
+            Object.keys(result.context.stack).length > 0
+              ? Object.entries(result.context.stack)
+                  .map(([name, version]) => `${name}@${version}`)
+                  .join(', ')
+              : 'No frameworks detected'
+          }\n` +
+          `${result.context.workspaces ? `📋 Workspaces: ${result.context.workspaces.length} configured` : ''}`,
+      },
+    ],
+  }),
+} as any);
 
 export type { ContextDetectionResult, WorktreeInfo };

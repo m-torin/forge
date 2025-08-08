@@ -7,15 +7,18 @@
  */
 
 import { AnalyticsDemo } from '#/components/analytics-demo';
+import { AnimatedMenuIcon } from '#/components/AnimatedMenuIcon';
 import { UserDropdown } from '#/components/auth/UserDropdown';
 import { ColorSchemesSwitcher } from '#/components/color-schemes-switcher';
 import { LanguageSwitcher } from '#/components/language-switcher';
+import { useSidebar } from '#/components/SidebarProvider';
 import { AnalyticsEvents, trackEvent, trackPageView } from '#/lib/analytics';
-import { Button, Card } from '@mantine/core';
+import { ActionIcon, Button, Card } from '@mantine/core';
+import { useAuth } from '@repo/auth/client/next';
 import { logInfo, logWarn } from '@repo/observability';
 import { IconBrandNextjs, IconBrandTailwind, IconLogin, IconUserPlus } from '@tabler/icons-react';
-import Link from 'next/link';
 import type { Route } from 'next';
+import Link from 'next/link';
 import { useEffect } from 'react';
 // Moved shouldShowPremiumFeatures to avoid next/headers import issue
 import {
@@ -23,7 +26,7 @@ import {
   trackPremiumFeaturePreviewAction,
   trackRoleBasedFeatureAction,
 } from '#/app/actions/auth';
-import type { AuthContext } from '#/lib/auth';
+import type { AuthContext } from '#/lib/auth-context';
 import type { Locale } from '#/lib/i18n';
 
 interface PageUiProps {
@@ -55,7 +58,12 @@ interface PageUiProps {
   authContext: AuthContext;
 }
 
-export default function PageUi({ locale, dict, flagResults, authContext }: PageUiProps) {
+export default function PageUi({
+  locale,
+  dict,
+  flagResults,
+  authContext: _authContext,
+}: PageUiProps) {
   const {
     showLangSwitcher,
     welcomeVariant,
@@ -67,8 +75,11 @@ export default function PageUi({ locale, dict, flagResults, authContext }: PageU
     premiumFeaturePreview,
   } = flagResults;
 
+  const sidebar = useSidebar();
+  const clientAuth = useAuth(); // Use client-side auth state for reactive updates
+
   // Helper function to check if user should see premium features
-  const shouldShowPremiumFeatures = (premiumPreview: string, userRole?: string): boolean => {
+  const shouldShowPremiumFeatures = (premiumPreview: string, userRole?: string | null): boolean => {
     if (!userRole) return false;
 
     switch (premiumPreview) {
@@ -91,8 +102,8 @@ export default function PageUi({ locale, dict, flagResults, authContext }: PageU
         await trackPageView('Home', {
           locale,
           feature_flags: flagResults,
-          user_authenticated: authContext.isAuthenticated,
-          user_role: authContext.user?.role,
+          user_authenticated: clientAuth.isAuthenticated,
+          user_role: clientAuth.user?.role,
           timestamp: new Date().toISOString(),
         });
 
@@ -112,8 +123,8 @@ export default function PageUi({ locale, dict, flagResults, authContext }: PageU
           await trackEvent(AnalyticsEvents.FEATURE_FLAG_EVALUATED, {
             flag_name: flag,
             flag_result: result,
-            user_segment: authContext.isAuthenticated ? 'authenticated' : 'anonymous',
-            user_role: authContext.user?.role,
+            user_segment: clientAuth.isAuthenticated ? 'authenticated' : 'anonymous',
+            user_role: clientAuth.user?.role,
             locale,
           });
         }
@@ -121,7 +132,7 @@ export default function PageUi({ locale, dict, flagResults, authContext }: PageU
         logInfo('[Page UI] Page view and flag evaluations tracked', {
           locale,
           flagCount: Object.keys(flagResults).length,
-          userAuthenticated: authContext.isAuthenticated,
+          userAuthenticated: clientAuth.isAuthenticated,
         });
       } catch (error) {
         logWarn('Analytics tracking failed', {
@@ -135,7 +146,8 @@ export default function PageUi({ locale, dict, flagResults, authContext }: PageU
     locale,
     dict,
     flagResults,
-    authContext,
+    clientAuth.isAuthenticated,
+    clientAuth.user,
     showLangSwitcher,
     welcomeVariant,
     enhancedCards,
@@ -148,31 +160,27 @@ export default function PageUi({ locale, dict, flagResults, authContext }: PageU
 
   // Track personalized content views
   useEffect(() => {
-    if (authContext.isAuthenticated && personalizedExperience) {
+    if (clientAuth.isAuthenticated && personalizedExperience) {
       trackPersonalizedContentAction('homepage_experience', 'personalized_homepage');
     }
-  }, [authContext.isAuthenticated, personalizedExperience]);
+  }, [clientAuth.isAuthenticated, personalizedExperience]);
 
   // Track premium feature preview views
   useEffect(() => {
     if (
-      authContext.isAuthenticated &&
-      shouldShowPremiumFeatures(premiumFeaturePreview, authContext.user?.role)
+      clientAuth.isAuthenticated &&
+      shouldShowPremiumFeatures(premiumFeaturePreview, clientAuth.user?.role)
     ) {
       trackPremiumFeaturePreviewAction('homepage_preview', premiumFeaturePreview);
     }
-  }, [authContext.isAuthenticated, premiumFeaturePreview, authContext.user?.role]);
+  }, [clientAuth.isAuthenticated, premiumFeaturePreview, clientAuth.user?.role]);
 
   // Track admin dashboard feature usage
   useEffect(() => {
-    if (
-      authContext.isAuthenticated &&
-      authContext.user?.role === 'admin' &&
-      adminDashboardFeatures
-    ) {
+    if (clientAuth.isAuthenticated && clientAuth.user?.role === 'admin' && adminDashboardFeatures) {
       trackRoleBasedFeatureAction('admin_dashboard', 'homepage_view');
     }
-  }, [authContext.isAuthenticated, authContext.user?.role, adminDashboardFeatures]);
+  }, [clientAuth.isAuthenticated, clientAuth.user?.role, adminDashboardFeatures]);
 
   // Track feature card interactions
   const handleFeatureCardClick = async (feature: string) => {
@@ -180,15 +188,15 @@ export default function PageUi({ locale, dict, flagResults, authContext }: PageU
       await trackEvent(AnalyticsEvents.FEATURE_CARD_CLICKED, {
         feature_name: feature,
         enhanced_mode: enhancedCards,
-        user_authenticated: authContext.isAuthenticated,
-        user_role: authContext.user?.role,
+        user_authenticated: clientAuth.isAuthenticated,
+        user_role: clientAuth.user?.role,
         locale,
         timestamp: new Date().toISOString(),
       });
       logInfo('[Page UI] Feature card clicked', {
         feature,
         enhancedMode: enhancedCards,
-        userAuth: authContext.isAuthenticated,
+        userAuth: clientAuth.isAuthenticated,
       });
     } catch (error) {
       logWarn('Feature card click tracking failed', {
@@ -202,8 +210,8 @@ export default function PageUi({ locale, dict, flagResults, authContext }: PageU
       await trackEvent(AnalyticsEvents.FEATURE_CARD_HOVERED, {
         feature_name: feature,
         enhanced_mode: enhancedCards,
-        user_authenticated: authContext.isAuthenticated,
-        user_role: authContext.user?.role,
+        user_authenticated: clientAuth.isAuthenticated,
+        user_role: clientAuth.user?.role,
         locale,
       });
     } catch (error) {
@@ -215,9 +223,9 @@ export default function PageUi({ locale, dict, flagResults, authContext }: PageU
 
   // Get welcome message based on variant and auth state
   const getWelcomeMessage = () => {
-    if (authContext.isAuthenticated && authContext.user) {
-      const greeting = authContext.user.role === 'admin' ? 'Administrator' : 'Welcome back';
-      return `${greeting}, ${authContext.user.name.split(' ')[0]}!`;
+    if (clientAuth.isAuthenticated && clientAuth.user) {
+      const greeting = clientAuth.user.role === 'admin' ? 'Administrator' : 'Welcome back';
+      return `${greeting}, ${clientAuth.user.name.split(' ')[0]}!`;
     }
 
     switch (welcomeVariant) {
@@ -234,45 +242,63 @@ export default function PageUi({ locale, dict, flagResults, authContext }: PageU
 
   return (
     <div className="harmony-bg-background min-h-screen">
-      {/* Header */}
-      <header className="harmony-bg-surface harmony-shadow-sm harmony-border">
+      {/* Header - Fixed and responsive */}
+      <header className="harmony-bg-surface harmony-shadow-sm harmony-border sticky top-0 z-30">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            {/* Logo and Title */}
+            {/* Toggle Button and Logo */}
             <div className="flex items-center space-x-3">
-              <IconBrandNextjs size={32} className="harmony-text-primary" />
-              <h1 className="harmony-text-primary text-lg font-bold">{dict.header.title}</h1>
+              <ActionIcon
+                variant="subtle"
+                size="lg"
+                onClick={sidebar.toggle}
+                aria-label={sidebar.isOpen ? 'Close navigation' : 'Open navigation'}
+                className="harmony-text-primary hover:harmony-bg-surface transition-all duration-200 active:scale-95 lg:hover:scale-105"
+              >
+                <AnimatedMenuIcon isOpen={sidebar.isOpen} size={20} />
+              </ActionIcon>
+              <div className="flex items-center space-x-2">
+                <IconBrandNextjs size={32} className="harmony-text-primary" />
+                <h1 className="harmony-text-primary hidden text-lg font-bold sm:block lg:text-xl">
+                  {dict.header.title}
+                </h1>
+                <h1 className="harmony-text-primary text-base font-bold sm:hidden">
+                  {dict.header.title.split(' ')[0]} {/* Show first word only on mobile */}
+                </h1>
+              </div>
             </div>
 
             {/* Auth and Controls */}
-            <div className="flex items-center space-x-4">
-              {authContext.isAuthenticated && authContext.user ? (
-                <UserDropdown user={authContext.user} locale={locale} />
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              {clientAuth.isAuthenticated && clientAuth.user ? (
+                <UserDropdown user={clientAuth.user as any} locale={locale} />
               ) : (
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1 sm:space-x-2">
                   <Link href={`/${locale}/login` as Route}>
                     <Button
                       variant="outline"
                       size="sm"
-                      leftSection={<IconLogin size={16} />}
-                      className="harmony-transition"
+                      leftSection={<IconLogin size={16} className="hidden sm:block" />}
+                      className="harmony-transition text-xs sm:text-sm"
                     >
-                      Sign In
+                      <span className="hidden sm:inline">Sign In</span>
+                      <span className="sm:hidden">In</span>
                     </Button>
                   </Link>
                   <Link href={`/${locale}/signup` as Route}>
                     <Button
                       variant="filled"
                       size="sm"
-                      leftSection={<IconUserPlus size={16} />}
-                      className="harmony-transition"
+                      leftSection={<IconUserPlus size={16} className="hidden sm:block" />}
+                      className="harmony-transition text-xs sm:text-sm"
                     >
-                      Sign Up
+                      <span className="hidden sm:inline">Sign Up</span>
+                      <span className="sm:hidden">Up</span>
                     </Button>
                   </Link>
                 </div>
               )}
-              {showLangSwitcher && <LanguageSwitcher currentLocale={locale} />}
+              {showLangSwitcher && <LanguageSwitcher />}
               <ColorSchemesSwitcher />
             </div>
           </div>
@@ -293,7 +319,7 @@ export default function PageUi({ locale, dict, flagResults, authContext }: PageU
           <div>
             <h1 className="harmony-text-primary mb-4 text-4xl font-bold sm:text-5xl lg:text-6xl">
               {getWelcomeMessage()}{' '}
-              {!authContext.isAuthenticated && (
+              {!clientAuth.isAuthenticated && (
                 <>
                   <span className="bg-gradient-to-r from-pink-500 to-yellow-500 bg-clip-text text-transparent">
                     Mantine
@@ -422,14 +448,14 @@ export default function PageUi({ locale, dict, flagResults, authContext }: PageU
           </div>
 
           {/* Personalized Experience Section */}
-          {authContext.isAuthenticated && personalizedExperience && (
+          {clientAuth.isAuthenticated && personalizedExperience && (
             <div className="mx-auto mt-16 max-w-2xl">
               <div className="rounded-lg border border-green-200 bg-gradient-to-r from-green-50 to-blue-50 p-6">
                 <h2 className="mb-4 text-center text-2xl font-bold text-green-900">
                   ✨ Personalized for You
                 </h2>
                 <p className="mb-6 text-center text-sm text-green-700">
-                  Welcome back, {authContext.user?.name}! Here are features tailored to your
+                  Welcome back, {clientAuth.user?.name}! Here are features tailored to your
                   preferences.
                 </p>
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -451,16 +477,15 @@ export default function PageUi({ locale, dict, flagResults, authContext }: PageU
           )}
 
           {/* Premium Features Preview */}
-          {authContext.isAuthenticated &&
-            shouldShowPremiumFeatures(premiumFeaturePreview, authContext.user?.role) && (
+          {clientAuth.isAuthenticated &&
+            shouldShowPremiumFeatures(premiumFeaturePreview, clientAuth.user?.role) && (
               <div className="mx-auto mt-16 max-w-2xl">
                 <div className="rounded-lg border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-6">
                   <h2 className="mb-4 text-center text-2xl font-bold text-amber-900">
                     🎯 Premium Features Preview
                   </h2>
                   <p className="mb-6 text-center text-sm text-amber-700">
-                    You're seeing a preview of premium features! ({premiumFeaturePreview}{' '}
-                    level)
+                    You're seeing a preview of premium features! ({premiumFeaturePreview} level)
                   </p>
                   <div className="space-y-3">
                     <div className="flex items-center space-x-3 rounded-lg border border-amber-100 bg-white p-3">
@@ -489,8 +514,8 @@ export default function PageUi({ locale, dict, flagResults, authContext }: PageU
             )}
 
           {/* Admin Features Section */}
-          {authContext.isAuthenticated &&
-            authContext.user?.role === 'admin' &&
+          {clientAuth.isAuthenticated &&
+            clientAuth.user?.role === 'admin' &&
             adminDashboardFeatures && (
               <div className="mx-auto mt-16 max-w-2xl">
                 <div className="rounded-lg border border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 p-6">

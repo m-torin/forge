@@ -46,7 +46,7 @@ describe('User Actions', () => {
       expect(mockPrisma.user.create).toHaveBeenCalledWith({
         data: userData,
       });
-      expect(result).toEqual(expectedUser);
+      expect(result).toStrictEqual(expectedUser);
     });
 
     it('should handle user creation errors', async () => {
@@ -83,7 +83,7 @@ describe('User Actions', () => {
       expect(mockPrisma.user.findUnique).toHaveBeenCalledWith({
         where: { id: userId },
       });
-      expect(result).toEqual(expectedUser);
+      expect(result).toStrictEqual(expectedUser);
     });
 
     it('should return null for non-existent user', async () => {
@@ -126,7 +126,7 @@ describe('User Actions', () => {
         where: { id: userId },
         data: updateData,
       });
-      expect(result).toEqual(updatedUser);
+      expect(result).toStrictEqual(updatedUser);
     });
 
     it('should handle update validation errors', async () => {
@@ -153,7 +153,7 @@ describe('User Actions', () => {
       expect(mockPrisma.user.delete).toHaveBeenCalledWith({
         where: { id: userId },
       });
-      expect(result).toEqual(deletedUser);
+      expect(result).toStrictEqual(deletedUser);
     });
 
     it('should handle deletion of non-existent user', async () => {
@@ -183,7 +183,7 @@ describe('User Actions', () => {
         skip: 0,
         orderBy: { createdAt: 'desc' },
       });
-      expect(result).toEqual(users);
+      expect(result).toStrictEqual(users);
     });
 
     it('should support custom pagination', async () => {
@@ -201,7 +201,7 @@ describe('User Actions', () => {
         skip: 5,
         orderBy: { createdAt: 'desc' },
       });
-      expect(result).toEqual(users);
+      expect(result).toStrictEqual(users);
     });
 
     it('should support filtering and search', async () => {
@@ -226,7 +226,7 @@ describe('User Actions', () => {
         skip: 0,
         orderBy: { createdAt: 'desc' },
       });
-      expect(result).toEqual(users);
+      expect(result).toStrictEqual(users);
     });
   });
 
@@ -274,7 +274,7 @@ describe('User Actions', () => {
       const result = await bulkCreateUsers(usersData);
 
       expect(mockPrisma.$transaction).toHaveBeenCalled();
-      expect(result).toEqual(createdUsers);
+      expect(result).toStrictEqual(createdUsers);
     });
 
     it('should rollback transaction on error', async () => {
@@ -297,7 +297,7 @@ describe('User Actions', () => {
 
       const result = await listUsers();
 
-      expect(result).toEqual([]);
+      expect(result).toStrictEqual([]);
     });
 
     it('should validate pagination limits', async () => {
@@ -349,7 +349,7 @@ describe('User Actions', () => {
           },
         },
       });
-      expect(result).toEqual(userWithProfile);
+      expect(result).toStrictEqual(userWithProfile);
     });
 
     it('should use efficient indexing for large datasets', async () => {
@@ -372,7 +372,7 @@ describe('User Actions', () => {
         },
         take: 1,
       });
-      expect(result).toEqual(users);
+      expect(result).toStrictEqual(users);
     });
   });
 });

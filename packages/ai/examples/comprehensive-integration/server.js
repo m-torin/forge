@@ -489,7 +489,7 @@ app.use((req, res) => {
 });
 
 // Error handler
-app.use((error, req, res, next) => {
+app.use((error, req, res, _next) => {
   console.error('Unhandled error:', error);
   res.status(500).json({
     error: 'Internal Server Error',
@@ -538,9 +538,13 @@ app.listen(PORT, () => {
   console.log(`📋 Status: http://localhost:${PORT}/api/status`);
 
   // Initialize platform in background
-  initializePlatform().catch(error => {
-    console.error('Failed to initialize platform on startup:', error);
-  });
+  (async () => {
+    try {
+      await initializePlatform();
+    } catch (error) {
+      console.error('Failed to initialize platform on startup:', error);
+    }
+  })();
 });
 
 module.exports = app;

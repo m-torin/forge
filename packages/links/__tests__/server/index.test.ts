@@ -19,7 +19,7 @@ import {
 describe('server Links Module', () => {
   // Test module exports
   test('should export all required server functions', async () => {
-    const serverModule = await import('#/server');
+    const serverModule = await import('../../src/server');
 
     expect(serverModule).toHaveProperty('createServerLinkManager');
     expect(serverModule).toHaveProperty('bulkCreateShortLinks');
@@ -95,7 +95,7 @@ describe('server Links Module', () => {
           expect(result.url).toBe('https://example.com/server');
           expect(result.title).toBe('Server Link');
           expect(result.description).toBe('A server-side link');
-          expect(result.tags).toEqual(['server', 'test']);
+          expect(result.tags).toStrictEqual(['server', 'test']);
         },
       },
       ...createScenarios.linkCreation(),
@@ -108,7 +108,7 @@ describe('server Links Module', () => {
   // Test bulk operations
   describe('bulk operations', () => {
     test('should handle bulk create with validation', async () => {
-      const { bulkCreateShortLinks, createServerLinkManager } = await import('#/server');
+      const { bulkCreateShortLinks, createServerLinkManager } = await import('../../src/server');
 
       try {
         const manager = await createServerLinkManager({
@@ -139,7 +139,7 @@ describe('server Links Module', () => {
     });
 
     test('should handle bulk create with different chunk sizes', async () => {
-      const { bulkCreateShortLinks, createServerLinkManager } = await import('#/server');
+      const { bulkCreateShortLinks, createServerLinkManager } = await import('../../src/server');
 
       try {
         const manager = await createServerLinkManager({
@@ -171,7 +171,7 @@ describe('server Links Module', () => {
     // Performance test for bulk operations
     createPerformanceTest(
       async () => {
-        const { bulkCreateShortLinks, createServerLinkManager } = await import('#/server');
+        const { bulkCreateShortLinks, createServerLinkManager } = await import('../../src/server');
 
         try {
           const manager = await createServerLinkManager({
@@ -204,7 +204,7 @@ describe('server Links Module', () => {
   // Test server-side analytics tracking
   describe('server analytics tracking', () => {
     test('should track server click with request context', async () => {
-      const { trackServerClick, createServerLinkManager } = await import('#/server');
+      const { trackServerClick, createServerLinkManager } = await import('../../src/server');
 
       // eslint-disable-next-line unused-imports/no-unused-vars
       const mockRequest = {
@@ -240,7 +240,7 @@ describe('server Links Module', () => {
     });
 
     test('should extract context from request headers', async () => {
-      const { trackServerClick, createServerLinkManager } = await import('#/server');
+      const { trackServerClick, createServerLinkManager } = await import('../../src/server');
 
       // eslint-disable-next-line unused-imports/no-unused-vars
       const mockRequest = {
@@ -282,7 +282,7 @@ describe('server Links Module', () => {
   // Test redirect handling
   describe('redirect handling', () => {
     test('should create redirect handler function', async () => {
-      const { createRedirectHandler, createServerLinkManager } = await import('#/server');
+      const { createRedirectHandler, createServerLinkManager } = await import('../../src/server');
 
       const manager = await createServerLinkManager({
         providers: {
@@ -296,7 +296,7 @@ describe('server Links Module', () => {
     });
 
     test('should handle redirect for existing link', async () => {
-      const { createRedirectHandler, createServerLinkManager } = await import('#/server');
+      const { createRedirectHandler, createServerLinkManager } = await import('../../src/server');
 
       try {
         const manager = await createServerLinkManager({
@@ -329,7 +329,7 @@ describe('server Links Module', () => {
     });
 
     test('should handle redirect for non-existent link', async () => {
-      const { createRedirectHandler, createServerLinkManager } = await import('#/server');
+      const { createRedirectHandler, createServerLinkManager } = await import('../../src/server');
 
       try {
         const manager = await createServerLinkManager({
@@ -361,7 +361,7 @@ describe('server Links Module', () => {
   // Test metrics caching
   describe('metrics caching', () => {
     test('should get link metrics with cache', async () => {
-      const { getLinkMetricsWithCache, createServerLinkManager } = await import('#/server');
+      const { getLinkMetricsWithCache, createServerLinkManager } = await import('../../src/server');
 
       try {
         const manager = await createServerLinkManager({
@@ -385,7 +385,7 @@ describe('server Links Module', () => {
     });
 
     test('should handle cache miss and populate cache', async () => {
-      const { getLinkMetricsWithCache, createServerLinkManager } = await import('#/server');
+      const { getLinkMetricsWithCache, createServerLinkManager } = await import('../../src/server');
 
       try {
         const manager = await createServerLinkManager({
@@ -414,7 +414,7 @@ describe('server Links Module', () => {
   // Test error handling
   describe('error handling', () => {
     test('should handle authentication errors', async () => {
-      const { createServerLinkManager } = await import('#/server');
+      const { createServerLinkManager } = await import('../../src/server');
 
       try {
         const manager = await createServerLinkManager({
@@ -438,7 +438,7 @@ describe('server Links Module', () => {
     });
 
     test('should handle rate limiting', async () => {
-      const { createServerLinkManager } = await import('#/server');
+      const { createServerLinkManager } = await import('../../src/server');
 
       try {
         const manager = await createServerLinkManager({
@@ -462,7 +462,7 @@ describe('server Links Module', () => {
     });
 
     test('should handle server errors gracefully', async () => {
-      const { createServerLinkManager } = await import('#/server');
+      const { createServerLinkManager } = await import('../../src/server');
 
       try {
         const manager = await createServerLinkManager({

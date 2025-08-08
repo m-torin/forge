@@ -5,7 +5,7 @@
 
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import type { ThemeContextType } from '../utils/dark-mode';
 
 interface ThemeProviderProps {
@@ -29,6 +29,34 @@ export function ThemeProvider({
 }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<'light' | 'dark' | 'system'>(defaultTheme);
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
+
+  const updateDOM = useCallback(
+    (resolvedTheme: 'light' | 'dark') => {
+      const root = document.documentElement;
+
+      if (disableTransitionOnChange) {
+        const css = document.createElement('style');
+        css.appendChild(
+          document.createTextNode(
+            `*,*::before,*::after{-webkit-transition:none!important;-moz-transition:none!important;-o-transition:none!important;-ms-transition:none!important;transition:none!important}`,
+          ),
+        );
+        document.head.appendChild(css);
+
+        requestAnimationFrame(() => {
+          document.head.removeChild(css);
+        });
+      }
+
+      if (attribute === 'class') {
+        root.classList.remove('light', 'dark');
+        root.classList.add(resolvedTheme);
+      } else {
+        root.setAttribute(attribute, resolvedTheme);
+      }
+    },
+    [disableTransitionOnChange, attribute],
+  );
 
   // Initialize theme from storage
   useEffect(() => {
@@ -56,7 +84,7 @@ export function ThemeProvider({
     handleChange(); // Initial check
 
     return () => mediaQuery.removeEventListener('change', handleChange);
-  }, [theme, enableSystem]);
+  }, [theme, enableSystem, updateDOM]);
 
   // Update resolved theme when theme changes
   useEffect(() => {
@@ -70,32 +98,7 @@ export function ThemeProvider({
 
     setResolvedTheme(resolved);
     updateDOM(resolved);
-  }, [theme, enableSystem]);
-
-  const updateDOM = (resolvedTheme: 'light' | 'dark') => {
-    const root = document.documentElement;
-
-    if (disableTransitionOnChange) {
-      const css = document.createElement('style');
-      css.appendChild(
-        document.createTextNode(
-          `*,*::before,*::after{-webkit-transition:none!important;-moz-transition:none!important;-o-transition:none!important;-ms-transition:none!important;transition:none!important}`,
-        ),
-      );
-      document.head.appendChild(css);
-
-      requestAnimationFrame(() => {
-        document.head.removeChild(css);
-      });
-    }
-
-    if (attribute === 'class') {
-      root.classList.remove('light', 'dark');
-      root.classList.add(resolvedTheme);
-    } else {
-      root.setAttribute(attribute, resolvedTheme);
-    }
-  };
+  }, [theme, enableSystem, updateDOM]);
 
   const setTheme = (newTheme: 'light' | 'dark' | 'system') => {
     localStorage.setItem(storageKey, newTheme);

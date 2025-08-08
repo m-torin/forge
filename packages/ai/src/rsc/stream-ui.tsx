@@ -3,9 +3,9 @@
  * Stream React components from server to client
  */
 
+import { type LanguageModelV2 } from '@ai-sdk/provider';
 import { streamUI as aiStreamUI } from '@ai-sdk/rsc';
 import { logError, logInfo } from '@repo/observability/server/next';
-import { type LanguageModel } from 'ai';
 import { type ReactNode } from 'react';
 
 /**
@@ -59,7 +59,7 @@ export async function streamUIWithErrorBoundary(
       return {
         component: onError(err),
         finishReason: 'error' as const,
-        usage: { totalTokens: 0, promptTokens: 0, completionTokens: 0 },
+        usage: { totalTokens: 0, inputTokens: 0, outputTokens: 0 },
       };
     }
 
@@ -67,7 +67,7 @@ export async function streamUIWithErrorBoundary(
       return {
         component: fallback,
         finishReason: 'error' as const,
-        usage: { totalTokens: 0, promptTokens: 0, completionTokens: 0 },
+        usage: { totalTokens: 0, inputTokens: 0, outputTokens: 0 },
       };
     }
 
@@ -190,7 +190,7 @@ export const streamingUIExamples = {
   /**
    * Basic chat interface
    */
-  basicChat: (model: LanguageModel, prompt: string) =>
+  basicChat: (model: LanguageModelV2, prompt: string) =>
     streamUI({
       model,
       prompt,
@@ -200,7 +200,7 @@ export const streamingUIExamples = {
   /**
    * Chat with loading state
    */
-  chatWithLoading: (model: LanguageModel, prompt: string) =>
+  chatWithLoading: (model: LanguageModelV2, prompt: string) =>
     streamUIPatterns.withLoadingState(<div>Loading your response...</div>, {
       model,
       prompt,

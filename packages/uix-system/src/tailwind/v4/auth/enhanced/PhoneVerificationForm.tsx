@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader } from '../ui/Card';
 import { Input } from '../ui/Input';
 
 // Real server actions for phone verification
-const sendPhoneOTPAction = async (prevState: any, formData: FormData) => {
+const sendPhoneOTPAction = async (__prevState: any, formData: FormData) => {
   'use server';
 
   try {
@@ -42,7 +42,7 @@ const sendPhoneOTPAction = async (prevState: any, formData: FormData) => {
     // 3. Send SMS via service like Twilio, AWS SNS, etc.
     // 4. Return success response
 
-    console.log('Sending phone OTP to:', phoneNumber);
+    // console.log('Sending phone OTP to:', phoneNumber);
 
     // Simulate SMS sending
     await new Promise(resolve => setTimeout(resolve, 1500));
@@ -60,7 +60,7 @@ const sendPhoneOTPAction = async (prevState: any, formData: FormData) => {
   }
 };
 
-const verifyPhoneOTPAction = async (prevState: any, formData: FormData) => {
+const verifyPhoneOTPAction = async (__prevState: any, formData: FormData) => {
   'use server';
 
   try {
@@ -90,7 +90,7 @@ const verifyPhoneOTPAction = async (prevState: any, formData: FormData) => {
     // 4. If verified, update user's phone verification status
     // 5. Clean up the temporary OTP storage
 
-    console.log('Verifying phone OTP:', { phoneNumber, code });
+    // console.log('Verifying phone OTP:', { phoneNumber, code });
 
     // Simulate verification process
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -117,7 +117,7 @@ interface PhoneVerificationFormProps extends BasePropsType {
   onStepChange?: (step: 'phone' | 'verify') => void;
 }
 
-const initialState: FormStateType = { success: false };
+const _initialState: FormStateType = { success: false };
 
 export function PhoneVerificationForm({
   step = 'phone',

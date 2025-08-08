@@ -43,7 +43,7 @@ const OrganizationInvitationWrapper = (props: any) => {
   const [error, setError] = useState<string | null>(null);
 
   const handleLoadInvitation = async (invitationId: string): Promise<Invitation> => {
-    console.log('Loading invitation:', invitationId);
+    // console.log('Loading invitation:', invitationId);
     setLoading(true);
 
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -57,7 +57,7 @@ const OrganizationInvitationWrapper = (props: any) => {
   };
 
   const handleAccept = async (invitation: Invitation) => {
-    console.log('Accepting invitation:', invitation.id);
+    // console.log('Accepting invitation:', invitation.id);
     setLoading(true);
     setError(null);
 
@@ -72,7 +72,7 @@ const OrganizationInvitationWrapper = (props: any) => {
   };
 
   const handleReject = async (invitation: Invitation) => {
-    console.log('Rejecting invitation:', invitation.id);
+    // console.log('Rejecting invitation:', invitation.id);
     setLoading(true);
     setError(null);
 
@@ -87,12 +87,12 @@ const OrganizationInvitationWrapper = (props: any) => {
   };
 
   const handleError = (error: Error) => {
-    console.error('Invitation error:', error.message);
+    // console.error('Invitation error:', error.message);
     setError(error.message);
   };
 
   const handleNavigate = (path: string) => {
-    console.log('Navigating to:', path);
+    // console.log('Navigating to:', path);
   };
 
   return (
@@ -257,11 +257,11 @@ const AlertWrapper = (props: any) => {
   const [alerts, setAlerts] = useState<InvitationAlert[]>(props.invitations || []);
 
   const handleViewInvitation = (invitationId: string) => {
-    console.log('Viewing invitation:', invitationId);
+    // console.log('Viewing invitation:', invitationId);
   };
 
   const handleDismiss = (invitationId: string) => {
-    console.log('Dismissing invitation:', invitationId);
+    // console.log('Dismissing invitation:', invitationId);
     setAlerts(prev => prev.filter(alert => alert.id !== invitationId));
   };
 
@@ -294,7 +294,9 @@ export const AlertWithoutDismiss: Story = {
   render: () => (
     <OrganizationInvitationAlert
       invitations={mockAlerts}
-      onViewInvitation={id => console.log('View:', id)}
+      onViewInvitation={id => {
+        // console.log('View:', id);
+      }}
     />
   ),
 };
@@ -303,8 +305,12 @@ export const EmptyAlerts: Story = {
   render: () => (
     <OrganizationInvitationAlert
       invitations={[]}
-      onViewInvitation={id => console.log('View:', id)}
-      onDismiss={id => console.log('Dismiss:', id)}
+      onViewInvitation={id => {
+        // console.log('View:', id);
+      }}
+      onDismiss={id => {
+        // console.log('Dismiss:', id);
+      }}
     />
   ),
 };

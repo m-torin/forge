@@ -35,34 +35,118 @@ features.
 
 ## Quick Start
 
-```typescript
-import { prisma } from "@repo/database/prisma";
+<CodeGroup>
+```typescript Next.js Server Components/Actions
+import { prisma } from "@repo/database/prisma/server/next";
 import { logInfo } from "@repo/observability/server/next";
 
-// Basic user query
-const users = await prisma.user.findMany({
-  include: {
-    organizations: true,
-    sessions: true
-  }
+// Basic user query const users = await prisma.user.findMany({ include: {
+members: { include: { organization: true } }, accounts: true, sessions: true }
 });
 
-// Create a new organization
-const org = await prisma.organization.create({
-  data: {
-    name: "Acme Corp",
-    slug: "acme-corp",
-    members: {
-      create: {
-        userId: userId,
-        role: "owner"
-      }
-    }
+logInfo("Users retrieved", { count: users.length });
+
+````
+
+```typescript Edge Runtime
+import { prisma } from "@repo/database/prisma/server/edge";
+
+// Edge-compatible queries
+const user = await prisma.user.findUnique({
+  where: { id: userId },
+  select: {
+    id: true,
+    name: true,
+    email: true,
+    image: true
   }
 });
+````
+
+```typescript Raw Queries
+import { prisma } from "@repo/database/prisma/server/next";
+
+// Raw SQL for complex queries
+const result = await prisma.$queryRaw`
+  SELECT u.*, o.name as org_name
+  FROM users u
+  LEFT JOIN members m ON u.id = m.user_id
+  LEFT JOIN organizations o ON m.organization_id = o.id
+  WHERE u.created_at > ${new Date("2024-01-01")}
+`;
 ```
 
-## Schema Overview
+</CodeGroup>
+
+## Configuration
+
+### Environment Variables
+
+<AccordionGroup>
+  <Accordion title="Database Connection" icon="database">
+    ```bash
+    # PostgreSQL connection string
+    DATABASE_URL="postgresql://user:password@localhost:5432/database_name"
+
+    # Optional: Direct connection for serverless
+    DIRECT_URL="postgresql://user:password@localhost:5432/database_name"
+
+    # Optional: Shadow database for migrations
+    SHADOW_DATABASE_URL="postgresql://user:password@localhost:5432/shadow_db"
+    ```
+
+  </Accordion>
+
+  <Accordion title="Connection Pooling" icon="network">
+    ```bash
+    # Connection pool settings
+    DATABASE_POOL_SIZE=10
+    DATABASE_POOL_TIMEOUT=20000
+    DATABASE_POOL_IDLE_TIMEOUT=300000
+
+    # For serverless environments
+    DATABASE_CONNECTION_LIMIT=1
+    ```
+
+  </Accordion>
+</AccordionGroup>
+
+### Schema Management
+
+<AccordionGroup>
+  <Accordion title="Migrations" icon="git-branch">
+    ```bash
+    # Generate migration
+    pnpm --filter @repo/database generate:migration
+
+    # Apply migrations
+    pnpm --filter @repo/database migrate
+
+    # Reset database (development only)
+    pnpm --filter @repo/database migrate:reset
+
+    # Deploy to production
+    pnpm --filter @repo/database migrate:deploy
+    ```
+
+  </Accordion>
+
+  <Accordion title="Schema Generation" icon="code">
+    ```bash
+    # Generate Prisma client
+    pnpm --filter @repo/database generate
+
+    # Validate schema
+    pnpm --filter @repo/database validate
+
+    # Format schema
+    pnpm --filter @repo/database format
+    ```
+
+  </Accordion>
+</AccordionGroup>
+
+## Core Models
 
 ### Authentication & User Management
 
@@ -72,40 +156,26 @@ const org = await prisma.organization.create({
     // Create user with Better Auth integration
     const user = await prisma.user.create({
       data: {
-        id: 'user_123',
-        name: 'John Doe',
-        email: 'john@example.com',
-        emailVerified: true,
-        role: 'user',
-        preferences: {
-          theme: 'dark',
-          notifications: true
-        }
-      },
+        name: "John Doe",
+        email: "john@example.com",
+        emailVerified: new Date(),
+        image: "https://example.com/avatar.jpg"
+      }
     });
 
-    // User with organization membership
-    const userWithOrgs = await prisma.user.findUnique({
-      where: { id: userId },
-      include: {
-        accounts: true,
-        sessions: true,
-        members: {
-          include: {
-            organization: true,
-          },
-        },
-        apiKeys: true,
-        twoFactor: true,
-        passkeys: true
-      },
-    });
-
-    // Soft delete user
-    await prisma.user.update({
+    // Update user profile
+    const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: {
-        deletedAt: new Date(),
+        name: "John Smith",
+        image: "https://example.com/new-avatar.jpg"
+      }
+    });
+
+    // Soft delete user (preserve audit trail)
+    const deletedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
         email: `deleted_${Date.now()}@example.com` // Ensure unique constraint
       }
     });
@@ -118,39 +188,22 @@ const org = await prisma.organization.create({
     // Create user session
     const session = await prisma.session.create({
       data: {
-        id: 'session_123',
+        sessionToken: "unique-session-token",
         userId: user.id,
-        token: 'secure_session_token',
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
-        ipAddress: '192.168.1.1',
-        userAgent: 'Mozilla/5.0...',
-        activeOrganizationId: organization.id
+        expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
       }
     });
 
-    // Get active sessions for user
-    const activeSessions = await prisma.session.findMany({
+    // Validate session
+    const activeSession = await prisma.session.findUnique({
+      where: { sessionToken: "session-token" },
+      include: { user: true }
+    });
+
+    // Clean expired sessions
+    await prisma.session.deleteMany({
       where: {
-        userId: user.id,
-        expiresAt: {
-          gt: new Date()
-        }
-      },
-      include: {
-        user: {
-          select: {
-            name: true,
-            email: true
-          }
-        }
-      }
-    });
-
-    // Admin impersonation
-    await prisma.session.update({
-      where: { id: sessionId },
-      data: {
-        impersonatedBy: adminUserId
+        expires: { lt: new Date() }
       }
     });
     ```
@@ -162,26 +215,27 @@ const org = await prisma.organization.create({
     // Link social account to user
     const account = await prisma.account.create({
       data: {
-        id: 'account_123',
-        accountId: 'google_12345',
-        providerId: 'google',
         userId: user.id,
-        accessToken: 'oauth_access_token',
-        refreshToken: 'oauth_refresh_token',
-        scope: 'email profile',
-        accessTokenExpiresAt: new Date(Date.now() + 3600 * 1000)
+        type: "oauth",
+        provider: "google",
+        providerAccountId: "google-user-id",
+        access_token: "access-token",
+        refresh_token: "refresh-token",
+        expires_at: Math.floor(Date.now() / 1000) + 3600
       }
     });
 
-    // Get all linked accounts for user
-    const userAccounts = await prisma.account.findMany({
-      where: { userId: user.id },
-      select: {
-        providerId: true,
-        accountId: true,
-        scope: true,
-        accessTokenExpiresAt: true
-      }
+    // Find user by provider account
+    const userWithAccount = await prisma.user.findFirst({
+      where: {
+        accounts: {
+          some: {
+            provider: "google",
+            providerAccountId: "google-user-id"
+          }
+        }
+      },
+      include: { accounts: true }
     });
     ```
 
@@ -196,55 +250,45 @@ const org = await prisma.organization.create({
     // Create organization with initial member
     const organization = await prisma.organization.create({
       data: {
-        id: 'org_123',
-        name: 'Tech Startup Inc',
-        slug: 'tech-startup',
-        description: 'A cutting-edge tech company',
-        metadata: {
-          plan: 'enterprise',
-          features: ['advanced-analytics', 'custom-branding'],
-          billingEmail: 'billing@techstartup.com'
-        },
+        name: "Acme Corp",
+        slug: "acme-corp",
+        logo: "https://example.com/logo.png",
         members: {
           create: {
-            id: 'member_123',
             userId: ownerId,
-            role: 'owner',
-          },
-        },
+            role: "owner"
+          }
+        }
       },
+      include: {
+        members: {
+          include: { user: true }
+        }
+      }
     });
 
-    // Add team members
-    await prisma.member.create({
+    // Update organization settings
+    const updatedOrg = await prisma.organization.update({
+      where: { id: orgId },
       data: {
-        id: 'member_456',
-        organizationId: organization.id,
-        userId: newUserId,
-        role: 'admin',
-      },
+        name: "Acme Corporation",
+        metadata: {
+          industry: "Technology",
+          size: "50-100",
+          website: "https://acme.com"
+        }
+      }
     });
 
-    // Organization analytics
-    const orgStats = await prisma.organization.findUnique({
-      where: { id: organizationId },
+    // Get organization with member count
+    const orgWithStats = await prisma.organization.findUnique({
+      where: { id: orgId },
       include: {
         _count: {
           select: {
             members: true,
-            teams: true,
+            apiKeys: true,
             invitations: true
-          }
-        },
-        members: {
-          include: {
-            user: {
-              select: {
-                name: true,
-                email: true,
-                createdAt: true
-              }
-            }
           }
         }
       }
@@ -258,55 +302,56 @@ const org = await prisma.organization.create({
     // Create team within organization
     const team = await prisma.team.create({
       data: {
-        id: 'team_123',
-        name: 'Engineering Team',
-        description: 'Core product development team',
-        organizationId: organization.id,
-        teamMembers: {
+        name: "Engineering",
+        slug: "engineering",
+        organizationId: orgId,
+        members: {
           create: [
-            {
-              userId: leaderId,
-              role: 'lead'
-            },
-            {
-              userId: developerId,
-              role: 'member'
-            }
+            { userId: leadId, role: "lead" },
+            { userId: memberId, role: "member" }
           ]
         }
       }
     });
 
     // Add member to team
-    await prisma.teamMember.create({
+    const teamMember = await prisma.teamMember.create({
       data: {
-        userId: newMemberId,
         teamId: team.id,
-        role: 'member'
+        userId: newMemberId,
+        role: "member"
       }
     });
 
-    // Get team with members
+    // Get team with members and their roles
     const teamWithMembers = await prisma.team.findUnique({
-      where: { id: team.id },
+      where: { id: teamId },
       include: {
-        teamMembers: {
+        members: {
           include: {
             user: {
               select: {
+                id: true,
                 name: true,
-                email: true
+                email: true,
+                image: true
               }
             }
           }
         },
-        organization: {
-          select: {
-            name: true,
-            slug: true
-          }
-        }
+        organization: true
       }
+    });
+
+    // Update team member role
+    const updatedMember = await prisma.teamMember.update({
+      where: {
+        teamId_userId: {
+          teamId: teamId,
+          userId: memberId
+        }
+      },
+      data: { role: "lead" }
     });
     ```
 
@@ -317,52 +362,49 @@ const org = await prisma.organization.create({
     // Send organization invitation
     const invitation = await prisma.invitation.create({
       data: {
-        id: 'inv_123',
-        email: 'newuser@example.com',
-        organizationId: organization.id,
-        invitedById: currentUserId,
-        role: 'member',
-        teamId: team.id, // Optional: invite to specific team
-        status: 'pending',
+        email: "newmember@example.com",
+        organizationId: orgId,
+        invitedById: inviterId,
+        role: "member",
+        token: "unique-invitation-token",
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
       }
     });
 
     // Accept invitation
-    await prisma.$transaction([
-      // Create organization membership
-      prisma.member.create({
+    const acceptedInvitation = await prisma.$transaction(async (tx) => {
+      // Create organization member
+      const member = await tx.member.create({
         data: {
-          id: 'member_789',
           userId: acceptingUserId,
           organizationId: invitation.organizationId,
           role: invitation.role
         }
-      }),
-      // Create team membership if specified
-      ...(invitation.teamId ? [
-        prisma.teamMember.create({
-          data: {
-            userId: acceptingUserId,
-            teamId: invitation.teamId,
-            role: 'member'
-          }
-        })
-      ] : []),
-      // Mark invitation as accepted
-      prisma.invitation.update({
-        where: { id: invitation.id },
-        data: { status: 'accepted' }
-      })
-    ]);
+      });
 
-    // Clean up expired invitations
-    await prisma.invitation.deleteMany({
+      // Mark invitation as accepted
+      await tx.invitation.update({
+        where: { id: invitation.id },
+        data: {
+          status: "accepted",
+          acceptedAt: new Date()
+        }
+      });
+
+      return member;
+    });
+
+    // Get pending invitations for organization
+    const pendingInvitations = await prisma.invitation.findMany({
       where: {
-        expiresAt: {
-          lt: new Date()
-        },
-        status: 'pending'
+        organizationId: orgId,
+        status: "pending",
+        expiresAt: { gt: new Date() }
+      },
+      include: {
+        invitedBy: {
+          select: { name: true, email: true }
+        }
       }
     });
     ```
@@ -378,55 +420,49 @@ const org = await prisma.organization.create({
     // Create API key for organization
     const apiKey = await prisma.apiKey.create({
       data: {
-        id: 'key_123',
-        name: 'Production API Key',
-        key: 'ak_' + generateSecureKey(),
-        keyHash: hashKey('ak_' + generateSecureKey()),
-        prefix: 'ak_',
-        start: 'ak_1234',
-        userId: userId,
-        organizationId: organization.id,
-        permissions: JSON.stringify(['read:products', 'write:products']),
-        rateLimitEnabled: true,
-        rateLimitMax: 1000,
-        rateLimitTimeWindow: 3600, // 1 hour
+        name: "Production API Key",
+        organizationId: orgId,
+        keyHash: "hashed-key-value",
+        permissions: ["read:users", "write:data"],
         expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
-      },
+        metadata: {
+          environment: "production",
+          createdBy: userId
+        }
+      }
     });
 
-    // Validate and use API key
+    // Validate API key
     const validKey = await prisma.apiKey.findFirst({
       where: {
-        key: providedKey,
-        enabled: true,
-        expiresAt: {
-          gt: new Date(),
-        },
+        keyHash: hashedKey,
+        expiresAt: { gt: new Date() },
+        revokedAt: null
       },
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
+        organization: {
+          select: { id: true, name: true, slug: true }
         }
-      },
+      }
     });
 
-    // Update usage statistics
-    if (validKey) {
-      await prisma.apiKey.update({
-        where: { id: validKey.id },
-        data: {
-          lastUsedAt: new Date(),
-          requestCount: {
-            increment: 1
-          },
-          lastRequest: new Date()
-        }
-      });
-    }
+    // Revoke API key
+    const revokedKey = await prisma.apiKey.update({
+      where: { id: keyId },
+      data: {
+        revokedAt: new Date(),
+        revokedBy: revokingUserId
+      }
+    });
+
+    // Update API key permissions
+    const updatedKey = await prisma.apiKey.update({
+      where: { id: keyId },
+      data: {
+        permissions: ["read:users", "read:organizations"],
+        lastUsedAt: new Date()
+      }
+    });
     ```
 
   </Accordion>
@@ -436,47 +472,38 @@ const org = await prisma.organization.create({
     // Setup 2FA for user
     const twoFactor = await prisma.twoFactor.create({
       data: {
-        id: '2fa_123',
-        userId: user.id,
-        secret: encryptedSecret,
-        secretHash: hashSecret(secret),
-        enabled: false, // User must verify first
-        verified: false,
-        backupCodes: {
-          create: generateBackupCodes().map(code => ({
-            id: `backup_${Math.random()}`,
-            code: encryptCode(code),
-            codeHash: hashCode(code),
-            userId: user.id
-          }))
-        }
+        userId: userId,
+        secret: "encrypted-totp-secret",
+        backupCodes: [
+          "encrypted-backup-code-1",
+          "encrypted-backup-code-2",
+          // ... more backup codes
+        ]
       }
     });
 
     // Verify 2FA setup
-    await prisma.twoFactor.update({
-      where: { id: twoFactor.id },
+    const verifiedTwoFactor = await prisma.twoFactor.update({
+      where: { userId: userId },
       data: {
-        verified: true,
-        enabled: true
+        verifiedAt: new Date(),
+        isActive: true
       }
     });
 
     // Use backup code
-    const backupCode = await prisma.backupCode.findFirst({
-      where: {
-        codeHash: hashCode(providedCode),
-        userId: user.id,
-        used: false
-      }
+    const twoFactorRecord = await prisma.twoFactor.findUnique({
+      where: { userId: userId }
     });
 
-    if (backupCode) {
-      await prisma.backupCode.update({
-        where: { id: backupCode.id },
+    if (twoFactorRecord?.backupCodes.includes(hashedBackupCode)) {
+      await prisma.twoFactor.update({
+        where: { userId: userId },
         data: {
-          used: true,
-          usedAt: new Date()
+          backupCodes: twoFactorRecord.backupCodes.filter(
+            code => code !== hashedBackupCode
+          ),
+          lastUsedAt: new Date()
         }
       });
     }
@@ -489,55 +516,44 @@ const org = await prisma.organization.create({
     // Register new passkey
     const passkey = await prisma.passkey.create({
       data: {
-        id: 'passkey_123',
-        name: 'iPhone TouchID',
-        userId: user.id,
-        credentialId: 'credential_unique_id',
-        publicKey: base64PublicKey,
+        userId: userId,
+        credentialId: "base64-credential-id",
+        publicKey: "base64-public-key",
         counter: 0,
-        deviceType: 'platform',
-        backedUp: true,
-        transports: ['internal']
-      }
-    });
-
-    // Authenticate with passkey
-    const existingPasskey = await prisma.passkey.findUnique({
-      where: { credentialId: providedCredentialId },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
+        name: "iPhone Face ID",
+        transports: ["internal", "hybrid"],
+        metadata: {
+          aaguid: "device-aaguid",
+          userAgent: request.headers["user-agent"]
         }
       }
     });
 
-    if (existingPasskey && verifySignature(existingPasskey.publicKey, signature)) {
-      await prisma.passkey.update({
-        where: { id: existingPasskey.id },
-        data: {
-          counter: newCounter,
-          lastUsedAt: new Date()
-        }
-      });
-    }
+    // Update passkey counter after use
+    const updatedPasskey = await prisma.passkey.update({
+      where: { credentialId: credentialId },
+      data: {
+        counter: newCounter,
+        lastUsedAt: new Date()
+      }
+    });
 
-    // List user's passkeys
+    // Get user's passkeys
     const userPasskeys = await prisma.passkey.findMany({
-      where: { userId: user.id },
+      where: { userId: userId },
       select: {
         id: true,
         name: true,
-        deviceType: true,
         createdAt: true,
-        lastUsedAt: true
+        lastUsedAt: true,
+        transports: true
       },
-      orderBy: {
-        lastUsedAt: 'desc'
-      }
+      orderBy: { lastUsedAt: "desc" }
+    });
+
+    // Remove passkey
+    await prisma.passkey.delete({
+      where: { id: passkeyId }
     });
     ```
 
@@ -550,65 +566,68 @@ const org = await prisma.organization.create({
   <Accordion title="Security Audit Trail" icon="list-check">
     ```typescript
     // Log authentication events
-    await prisma.auditLog.create({
+    const auditLog = await prisma.auditLog.create({
       data: {
-        type: 'auth.sign_in',
-        action: 'user_login_success',
-        userId: user.id,
-        email: user.email,
+        action: "user.login",
+        userId: userId,
+        organizationId: orgId,
         ipAddress: request.ip,
-        userAgent: request.headers['user-agent'],
-        success: true,
+        userAgent: request.headers["user-agent"],
         metadata: {
-          method: '2fa',
-          sessionId: session.id
+          method: "passkey",
+          success: true,
+          timestamp: new Date().toISOString()
         }
       }
     });
 
-    // Log failed login attempt
-    await prisma.auditLog.create({
+    // Log sensitive operations
+    const sensitiveAction = await prisma.auditLog.create({
       data: {
-        type: 'auth.sign_in',
-        action: 'user_login_failed',
-        email: attemptedEmail,
-        ipAddress: request.ip,
-        userAgent: request.headers['user-agent'],
-        success: false,
-        errorMessage: 'Invalid credentials',
+        action: "apikey.created",
+        userId: creatorId,
+        organizationId: orgId,
+        resourceId: apiKey.id,
+        resourceType: "apikey",
         metadata: {
-          attempts: failedAttempts + 1
+          keyName: apiKey.name,
+          permissions: apiKey.permissions,
+          expiresAt: apiKey.expiresAt?.toISOString()
         }
       }
     });
 
-    // Query audit logs for user
-    const userAuditLogs = await prisma.auditLog.findMany({
+    // Query audit logs with filters
+    const recentLogs = await prisma.auditLog.findMany({
       where: {
-        userId: user.id,
-        timestamp: {
+        organizationId: orgId,
+        createdAt: {
           gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
+        },
+        action: {
+          in: ["user.login", "user.logout", "apikey.created", "apikey.revoked"]
         }
       },
-      orderBy: {
-        timestamp: 'desc'
+      include: {
+        user: {
+          select: { name: true, email: true }
+        }
       },
+      orderBy: { createdAt: "desc" },
       take: 100
     });
 
-    // Security monitoring - detect suspicious activity
-    const suspiciousActivity = await prisma.auditLog.findMany({
+    // Aggregate audit statistics
+    const auditStats = await prisma.auditLog.groupBy({
+      by: ["action"],
       where: {
-        type: 'auth.sign_in',
-        success: false,
-        timestamp: {
-          gte: new Date(Date.now() - 60 * 60 * 1000) // Last hour
+        organizationId: orgId,
+        createdAt: {
+          gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // Last 7 days
         }
       },
-      select: {
-        email: true,
-        ipAddress: true
-      }
+      _count: { action: true },
+      orderBy: { _count: { action: "desc" } }
     });
     ```
 
@@ -624,55 +643,56 @@ const org = await prisma.organization.create({
     ```typescript
     // User engagement analytics
     const userStats = await prisma.user.findMany({
+      where: {
+        members: {
+          some: {
+            organizationId: orgId
+          }
+        }
+      },
       include: {
         _count: {
           select: {
-            sessions: true,
-            apiKeys: true,
-            members: true
-          },
+            sessions: {
+              where: {
+                createdAt: {
+                  gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+                }
+              }
+            },
+            accounts: true
+          }
         },
         sessions: {
           where: {
             createdAt: {
-              gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Last 30 days
-            },
+              gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+            }
           },
-          select: {
-            createdAt: true,
-            ipAddress: true
-          },
-        },
-      },
+          orderBy: { createdAt: "desc" },
+          take: 1,
+          select: { createdAt: true }
+        }
+      }
     });
 
-    // Organization membership analytics
-    const orgAnalytics = await prisma.organization.findUnique({
-      where: { id: organizationId },
+    // Organization growth metrics
+    const growthMetrics = await prisma.organization.findUnique({
+      where: { id: orgId },
       include: {
         _count: {
           select: {
             members: true,
             teams: true,
-            invitations: true
-          },
-        },
-        members: {
-          include: {
-            user: {
-              select: {
-                name: true,
-                email: true,
-                createdAt: true
-              }
+            apiKeys: {
+              where: { revokedAt: null }
+            },
+            invitations: {
+              where: { status: "pending" }
             }
-          },
-          orderBy: {
-            createdAt: 'desc'
-          },
-          take: 10 // Most recent members
-        },
-      },
+          }
+        }
+      }
     });
     ```
 
@@ -681,55 +701,69 @@ const org = await prisma.organization.create({
   <Accordion title="Performance Optimization" icon="gauge">
     ```typescript
     // Optimized queries with proper indexing
-    const recentActivity = await prisma.$queryRaw`
-      SELECT
-        u.id,
-        u.name,
-        u.email,
-        COUNT(s.id) as session_count,
-        MAX(s.created_at) as last_login
-      FROM "user" u
-      LEFT JOIN session s ON u.id = s.user_id
-      WHERE s.created_at >= NOW() - INTERVAL '7 days'
-      GROUP BY u.id, u.name, u.email
-      ORDER BY session_count DESC
-      LIMIT 20
-    `;
-
-    // Batch operations for better performance
-    const batchUpdate = await prisma.$transaction([
-      // Clean up expired sessions
-      prisma.session.deleteMany({
-        where: {
-          expiresAt: {
-            lt: new Date()
-          }
-        }
-      }),
-      // Clean up old audit logs
-      prisma.auditLog.deleteMany({
-        where: {
-          timestamp: {
-            lt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) // 90 days
-          }
-        }
-      }),
-      // Update user last activity
-      prisma.user.updateMany({
-        where: {
-          sessions: {
-            some: {
-              createdAt: {
-                gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // Last 24 hours
+    const optimizedUserQuery = await prisma.user.findMany({
+      where: {
+        AND: [
+          { emailVerified: { not: null } },
+          {
+            members: {
+              some: {
+                organizationId: orgId,
+                role: { in: ["owner", "admin", "member"] }
               }
             }
           }
-        },
-        data: {
-          updatedAt: new Date()
+        ]
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+        createdAt: true,
+        members: {
+          where: { organizationId: orgId },
+          select: {
+            role: true,
+            createdAt: true,
+            organization: {
+              select: { name: true, slug: true }
+            }
+          }
         }
-      })
-    ]);
+      },
+      orderBy: { createdAt: "desc" },
+      take: 50
+    });
+
+    // Batch operations for better performance
+    const batchUpdateMembers = await prisma.member.updateMany({
+      where: {
+        organizationId: orgId,
+        role: "member",
+        createdAt: {
+          lt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) // 90 days ago
+        }
+      },
+      data: {
+        metadata: {
+          veteranMember: true,
+          badgeEarned: new Date()
+        }
+      }
+    });
+
+    // Connection counting for pagination
+    const usersWithPagination = await prisma.user.findMany({
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      where: { /* filters */ },
+      orderBy: { createdAt: "desc" }
+    });
+
+    const totalUsers = await prisma.user.count({
+      where: { /* same filters */ }
+    });
     ```
 
   </Accordion>
@@ -737,151 +771,240 @@ const org = await prisma.organization.create({
 
 ## Database Operations
 
-### Migrations and Schema
+### Migrations and Schema Updates
 
-<CodeGroup>
-```bash Migration Commands
-# Create a new migration
-npx prisma migrate dev --name add_user_preferences
+<AccordionGroup>
+  <Accordion title="Migration Best Practices" icon="git-merge">
+    ```bash
+    # Create descriptive migration
+    pnpm --filter @repo/database generate:migration --name add_user_preferences
 
-# Apply migrations in production
+    # Preview migration changes
+    pnpm --filter @repo/database migrate:diff --preview-feature
 
-npx prisma migrate deploy
+    # Apply migration with rollback plan
+    pnpm --filter @repo/database migrate:deploy
 
-# Reset database (development only)
+    # Reset development database
+    pnpm --filter @repo/database migrate:reset --force
+    ```
 
-npx prisma migrate reset
+  </Accordion>
 
-# Check migration status
+  <Accordion title="Data Seeding" icon="seedling">
+    ```typescript
+    // Development seed data
+    import { PrismaClient } from "@prisma/client";
 
-npx prisma migrate status
+    const prisma = new PrismaClient();
 
-````
+    async function seed() {
+      // Create test organization
+      const org = await prisma.organization.create({
+        data: {
+          name: "Test Organization",
+          slug: "test-org",
+          members: {
+            create: {
+              role: "owner",
+              user: {
+                create: {
+                  name: "Admin User",
+                  email: "admin@test.com",
+                  emailVerified: new Date()
+                }
+              }
+            }
+          }
+        }
+      });
 
-```bash Schema Management
-# Generate Prisma client
-npx prisma generate
-
-# Format schema file
-npx prisma format
-
-# Validate schema
-npx prisma validate
-
-# View database in browser
-npx prisma studio
-````
-
-</CodeGroup>
-
-### Data Seeding
-
-```typescript
-// prisma/seed.ts
-import { prisma } from "../src/prisma";
-import { logInfo, logError } from "@repo/observability/server/next";
-
-async function main() {
-  // Create sample organization
-  const org = await prisma.organization.upsert({
-    where: { slug: "demo-org" },
-    update: {},
-    create: {
-      id: "org_demo",
-      name: "Demo Organization",
-      slug: "demo-org",
-      description: "A demo organization for testing"
+      console.log("Seed data created:", org);
     }
-  });
 
-  // Create sample user
-  const user = await prisma.user.upsert({
-    where: { email: "admin@demo.com" },
-    update: {},
-    create: {
-      id: "user_admin",
-      name: "Admin User",
-      email: "admin@demo.com",
-      emailVerified: true,
-      role: "admin",
-      members: {
-        create: {
-          id: "member_admin",
-          organizationId: org.id,
-          role: "owner"
+    seed().catch(console.error).finally(() => prisma.$disconnect());
+    ```
+
+  </Accordion>
+</AccordionGroup>
+
+## Error Handling
+
+<AccordionGroup>
+  <Accordion title="Common Error Patterns" icon="exclamation-triangle">
+    ```typescript
+    import { Prisma } from "@prisma/client";
+
+    try {
+      const user = await prisma.user.create({
+        data: { email: "existing@example.com" }
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === "P2002") {
+          // Unique constraint violation
+          throw new Error("Email already exists");
+        }
+        if (error.code === "P2025") {
+          // Record not found
+          throw new Error("User not found");
+        }
+      }
+      throw error; // Re-throw unexpected errors
+    }
+    ```
+
+  </Accordion>
+
+  <Accordion title="Transaction Error Handling" icon="refresh">
+    ```typescript
+    try {
+      const result = await prisma.$transaction(async (tx) => {
+        const user = await tx.user.create({
+          data: { name: "John", email: "john@example.com" }
+        });
+
+        const org = await tx.organization.create({
+          data: {
+            name: "John's Org",
+            slug: "johns-org",
+            members: {
+              create: { userId: user.id, role: "owner" }
+            }
+          }
+        });
+
+        return { user, org };
+      });
+
+      return result;
+    } catch (error) {
+      // Transaction automatically rolled back
+      console.error("Transaction failed:", error);
+      throw new Error("Failed to create user and organization");
+    }
+    ```
+
+  </Accordion>
+</AccordionGroup>
+
+## Performance & Monitoring
+
+<AccordionGroup>
+  <Accordion title="Query Optimization" icon="zap">
+    ```typescript
+    // Use proper indexes and select only needed fields
+    const optimizedQuery = await prisma.user.findMany({
+      where: {
+        members: {
+          some: { organizationId: orgId }
+        }
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        // Don't select unnecessary fields
+      },
+      take: 20 // Limit results
+    });
+
+    // Use explain to analyze query performance
+    const queryPlan = await prisma.$queryRaw`
+      EXPLAIN ANALYZE
+      SELECT * FROM users
+      WHERE email = ${"user@example.com"}
+    `;
+    ```
+
+  </Accordion>
+
+  <Accordion title="Connection Management" icon="network">
+    ```typescript
+    // Proper connection handling
+    import { PrismaClient } from "@prisma/client";
+
+    // Global instance with connection pooling
+    const globalForPrisma = globalThis as unknown as {
+      prisma: PrismaClient | undefined;
+    };
+
+    const prisma = globalForPrisma.prisma ?? new PrismaClient({
+      log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"]
+    });
+
+    if (process.env.NODE_ENV !== "production") {
+      globalForPrisma.prisma = prisma;
+    }
+
+    // Graceful shutdown
+    process.on("SIGINT", async () => {
+      await prisma.$disconnect();
+      process.exit(0);
+    });
+    ```
+
+  </Accordion>
+</AccordionGroup>
+
+## Testing
+
+<AccordionGroup>
+  <Accordion title="Test Database Setup" icon="flask">
+    ```typescript
+    // Test utilities with database cleanup
+    import { PrismaClient } from "@prisma/client";
+
+    const testPrisma = new PrismaClient({
+      datasources: {
+        db: { url: process.env.TEST_DATABASE_URL }
+      }
+    });
+
+    export async function cleanupDatabase() {
+      const tablenames = await testPrisma.$queryRaw<Array<{ tablename: string }>>`
+        SELECT tablename FROM pg_tables WHERE schemaname='public'
+      `;
+
+      for (const { tablename } of tablenames) {
+        if (tablename !== "_prisma_migrations") {
+          await testPrisma.$executeRawUnsafe(`TRUNCATE TABLE "public"."${tablename}" CASCADE;`);
         }
       }
     }
-  });
 
-  // Create sample API key
-  await prisma.apiKey.create({
-    data: {
-      id: "key_demo",
-      name: "Demo API Key",
-      key: "ak_demo_key_123",
-      keyHash: "hashed_demo_key",
-      prefix: "ak_",
-      start: "ak_demo",
-      userId: user.id,
-      organizationId: org.id,
-      permissions: JSON.stringify(["read:users", "write:users"])
+    export { testPrisma };
+    ```
+
+  </Accordion>
+
+  <Accordion title="Test Factories" icon="wrench">
+    ```typescript
+    // User factory for consistent test data
+    export async function createTestUser(overrides: Partial<User> = {}) {
+      return await testPrisma.user.create({
+        data: {
+          name: "Test User",
+          email: `test-${Date.now()}@example.com`,
+          emailVerified: new Date(),
+          ...overrides
+        }
+      });
     }
-  });
 
-  logInfo("Database seeding completed", {
-    status: "success",
-    timestamp: new Date().toISOString()
-  });
-}
+    export async function createTestOrganization(ownerId: string, overrides: Partial<Organization> = {}) {
+      return await testPrisma.organization.create({
+        data: {
+          name: "Test Organization",
+          slug: `test-org-${Date.now()}`,
+          members: {
+            create: { userId: ownerId, role: "owner" }
+          },
+          ...overrides
+        }
+      });
+    }
+    ```
 
-main()
-  .catch((e) => {
-    logError("Database seeding failed", {
-      error: e.message,
-      stack: e.stack,
-      timestamp: new Date().toISOString()
-    });
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
-```
-
-## Best Practices
-
-<Warning>
-  **Production Guidelines:** - Always use transactions for related operations -
-  Implement proper error handling and logging - Use connection pooling for
-  better performance - Regular backups and monitoring of database health -
-  Secure API keys and session tokens properly
-</Warning>
-
-### Recommended Patterns
-
-1. **Transaction Usage**
-   - Use `$transaction` for related operations that must succeed or fail
-     together
-   - Keep transactions short to avoid blocking other operations
-   - Handle transaction failures gracefully
-
-2. **Query Optimization**
-   - Use `select` to fetch only needed fields
-   - Implement proper indexing for frequently queried fields
-   - Use `include` judiciously to avoid N+1 query problems
-
-3. **Security**
-   - Hash sensitive data (API keys, 2FA secrets)
-   - Implement proper audit logging for security events
-   - Use soft deletes for user data to maintain referential integrity
-
-4. **Performance**
-   - Use batch operations for bulk inserts/updates
-   - Implement proper pagination for large datasets
-   - Monitor slow queries and optimize them
-   - Clean up expired sessions and audit logs regularly
-
-The Prisma integration provides a robust, type-safe foundation for
-authentication and user management in the Forge platform, ensuring data
-integrity, security, and developer productivity.
+  </Accordion>
+</AccordionGroup>

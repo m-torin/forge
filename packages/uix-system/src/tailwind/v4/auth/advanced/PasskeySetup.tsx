@@ -20,7 +20,7 @@ interface PasskeySetupProps extends BaseProps {
   }>;
 }
 
-const initialState: FormState = { success: false };
+const _initialState: FormState = { success: false };
 
 type CreatePasskeyState =
   | { success: false; errors: { name: string[] } }
@@ -71,7 +71,6 @@ export function PasskeySetup({ className = '', existingPasskeys = [] }: PasskeyS
 
       <CardContent>
         <div className="space-y-6">
-          {/* Info Section */}
           <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
             <div className="flex">
               <div className="flex-shrink-0">
@@ -96,7 +95,6 @@ export function PasskeySetup({ className = '', existingPasskeys = [] }: PasskeyS
             </div>
           </div>
 
-          {/* Alerts */}
           {createState?.error && <Alert type="error">{createState.error}</Alert>}
 
           {createState?.success && (
@@ -109,7 +107,6 @@ export function PasskeySetup({ className = '', existingPasskeys = [] }: PasskeyS
 
           {deleteState?.success && <Alert type="success">Passkey deleted successfully.</Alert>}
 
-          {/* Create New Passkey */}
           <div>
             <h4 className="mb-3 text-sm font-medium text-gray-900">Create New Passkey</h4>
             <form action={createAction} className="space-y-4">
@@ -129,7 +126,6 @@ export function PasskeySetup({ className = '', existingPasskeys = [] }: PasskeyS
             </form>
           </div>
 
-          {/* Existing Passkeys */}
           {existingPasskeys.length > 0 && (
             <div>
               <h4 className="mb-3 text-sm font-medium text-gray-900">

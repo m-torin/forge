@@ -2,13 +2,13 @@
  * Auth client tests - converted to use DRY utilities
  */
 
+import { createMockAuthClient, createMockEnvironment } from '@repo/qa';
 import { beforeEach, describe, expect, vi } from 'vitest';
 import {
   createAuthClientTestSuite,
   createFeatureToggleTestSuite,
   createPluginConfigurationTestSuite,
 } from '../test-helpers/client-builders';
-import { createMockAuthClient, createMockEnvironment } from '../test-helpers/factories';
 import { setupClientMocks } from '../test-helpers/mocks';
 
 // Set up client-side mocks

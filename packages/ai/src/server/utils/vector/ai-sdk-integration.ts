@@ -1,6 +1,35 @@
 /**
- * Enhanced Upstash Vector integration with AI SDK tools
- * Implements the patterns from Vercel AI SDK documentation
+ * @fileoverview Enterprise-Grade Upstash Vector Integration with Advanced Features
+ *
+ * **Primary Use**: Enhanced vector toolkit with observability, telemetry, and factory patterns
+ *
+ * **Key Features**:
+ * - Enhanced UpstashAIVector class with comprehensive error handling
+ * - Advanced telemetry integration (trackRAGOperation, 7 tracking points)
+ * - Enterprise observability with structured logging (logWarn)
+ * - Factory pattern functions for different initialization scenarios
+ * - AI SDK tool generation with sophisticated configurations
+ * - Registry pattern support for provider management
+ *
+ * **Usage Pattern**:
+ * Exported through main package index for external consumption. Not directly
+ * imported by internal modules - serves as enhanced toolkit for advanced use cases.
+ *
+ * **Architecture**: Enterprise-focused with observability, telemetry, and
+ * registry patterns. Higher abstraction level than basic vector integration.
+ *
+ * **Factory Functions**:
+ * - createUpstashVectorTools() - AI SDK tool generation
+ * - createUpstashAIVectorFromEnv() - Environment-based initialization
+ * - createUpstashAIVectorWithRegistry() - Registry pattern support
+ *
+ * @example
+ * ```typescript
+ * import { createUpstashAIVectorFromEnv, createUpstashVectorTools } from '@repo/ai/server';
+ *
+ * const vectorStore = createUpstashAIVectorFromEnv(config);
+ * const tools = createUpstashVectorTools(enhancedConfig);
+ * ```
  */
 
 import { openai } from '@ai-sdk/openai';
@@ -361,7 +390,7 @@ export function createUpstashVectorTools(
     addResource: tool({
       description: `add a resource to your knowledge base.
         If the user provides a random piece of knowledge unprompted, use this tool without asking for confirmation.`,
-      parameters: z.object({
+      inputSchema: z.object({
         content: z.string().describe('the content or resource to add to the knowledge base'),
         metadata: z
           .record(z.string(), z.any())
@@ -389,7 +418,7 @@ export function createUpstashVectorTools(
 
     addDocument: tool({
       description: 'Add a large document to the knowledge base with automatic chunking',
-      parameters: z.object({
+      inputSchema: z.object({
         content: z.string().describe('The document content to add'),
         title: z.string().optional().describe('Document title'),
         metadata: z
@@ -425,7 +454,7 @@ export function createUpstashVectorTools(
 
     getInformation: tool({
       description: `get information from your knowledge base to answer questions.`,
-      parameters: z.object({
+      inputSchema: z.object({
         question: z.string().describe('the users question'),
         topK: z.number().optional().describe('Number of results to return (default: 5)'),
       }),

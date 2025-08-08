@@ -105,13 +105,13 @@ export class SentimentAnalyzer {
    */
   async analyzeSentiment(text: string): Promise<{
     confidence: number;
-    reasoning: string;
+    reasoningText: string;
     sentiment: 'negative' | 'neutral' | 'positive';
   }> {
     const result = await this.analyze(text);
     return {
       confidence: result.confidence,
-      reasoning: `Sentiment analysis result: ${result.sentiment}`,
+      reasoningText: `Sentiment analysis result: ${result.sentiment}`,
       sentiment: result.sentiment,
     };
   }
@@ -119,7 +119,7 @@ export class SentimentAnalyzer {
   async batchAnalyzeSentiment(texts: string[]): Promise<
     {
       confidence: number;
-      reasoning: string;
+      reasoningText: string;
       sentiment: 'negative' | 'neutral' | 'positive';
       text: string;
     }[]
@@ -127,7 +127,7 @@ export class SentimentAnalyzer {
     const results = await this.analyzeBatch(texts);
     return results.map((result, index) => ({
       confidence: result.confidence,
-      reasoning: `Sentiment analysis result: ${result.sentiment}`,
+      reasoningText: `Sentiment analysis result: ${result.sentiment}`,
       sentiment: result.sentiment,
       text: texts[index],
     }));

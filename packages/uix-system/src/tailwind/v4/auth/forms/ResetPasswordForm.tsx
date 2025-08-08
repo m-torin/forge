@@ -19,7 +19,7 @@ interface ResetPasswordFormProps extends BaseProps {
   signInHref?: string;
 }
 
-const initialState: FormState = { success: false };
+const _initialState: FormState = { success: false };
 
 export function ResetPasswordForm({
   token,

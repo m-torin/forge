@@ -4,7 +4,8 @@
  * Following official AI SDK v5 tool testing patterns
  */
 
-import { generateText, MockLanguageModelV2, tool } from 'ai';
+import { generateText, tool } from 'ai';
+import { MockLanguageModelV2 } from 'ai/test';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { z } from 'zod/v4';
 
@@ -81,100 +82,252 @@ describe('tool Calling - v5 Patterns', () => {
 
     const mockGenerateText = vi.mocked(generateText);
     mockGenerateText.mockImplementation(async options => {
-      // Simulate multi-step tool workflow
+      // Simulate multi-step tool workflow following v5 structure
       const steps = [
         // Step 1: Get user location
         {
-          stepType: 'initial' as const,
-          text: '',
-          toolCalls: [
+          content: [
             {
+              type: 'tool-call' as const,
               toolCallId: 'call_1',
               toolName: 'location',
-              args: {},
+              input: {},
             },
           ],
+          text: '',
+          reasoning: [],
+          reasoningText: undefined,
+          files: [],
+          sources: [],
+          toolCalls: [
+            { type: 'tool-call' as const, toolCallId: 'call_1', toolName: 'location', input: {} },
+          ],
           toolResults: [],
+          staticToolCalls: [],
+          dynamicToolCalls: [
+            {
+              type: 'tool-call' as const,
+              toolCallId: 'call_1',
+              toolName: 'location',
+              input: {},
+              dynamic: true as const,
+            },
+          ],
+          staticToolResults: [],
+          dynamicToolResults: [],
           finishReason: 'tool-calls' as const,
-          usage: { inputTokens: 15, outputTokens: 5 },
+          usage: { inputTokens: 10, outputTokens: 5, totalTokens: 15 },
           warnings: [],
           logprobs: undefined,
           request: { body: '' },
-          response: { messages: [], timestamp: new Date() },
+          response: {
+            id: 'step-1-response',
+            modelId: 'test-tool-model',
+            messages: [],
+            timestamp: new Date(),
+          },
           providerMetadata: undefined,
         },
         // Step 2: Get weather for that location
         {
-          stepType: 'tool-result' as const,
-          text: '',
-          toolCalls: [
+          content: [
             {
+              type: 'tool-call' as const,
               toolCallId: 'call_2',
               toolName: 'weather',
-              args: { location: 'San Francisco, CA' },
+              input: { location: 'San Francisco, CA' },
             },
-          ],
-          toolResults: [
             {
+              type: 'tool-result' as const,
               toolCallId: 'call_1',
               toolName: 'location',
-              result: {
+              input: {},
+              output: {
                 location: 'San Francisco, CA',
                 coordinates: { lat: 37.7749, lng: -122.4194 },
               },
             },
           ],
+          text: '',
+          reasoning: [],
+          reasoningText: undefined,
+          files: [],
+          sources: [],
+          toolCalls: [
+            {
+              type: 'tool-call' as const,
+              toolCallId: 'call_2',
+              toolName: 'weather',
+              input: { location: 'San Francisco, CA' },
+            },
+          ],
+          toolResults: [
+            {
+              type: 'tool-result' as const,
+              toolCallId: 'call_1',
+              toolName: 'location',
+              input: {},
+              output: {
+                location: 'San Francisco, CA',
+                coordinates: { lat: 37.7749, lng: -122.4194 },
+              },
+            },
+          ],
+          staticToolCalls: [],
+          dynamicToolCalls: [
+            {
+              type: 'tool-call' as const,
+              toolCallId: 'call_2',
+              toolName: 'weather',
+              input: { location: 'San Francisco, CA' },
+              dynamic: true as const,
+            },
+          ],
+          staticToolResults: [],
+          dynamicToolResults: [
+            {
+              type: 'tool-result' as const,
+              toolCallId: 'call_1',
+              toolName: 'location',
+              input: {},
+              output: {
+                location: 'San Francisco, CA',
+                coordinates: { lat: 37.7749, lng: -122.4194 },
+              },
+              dynamic: true as const,
+            },
+          ],
           finishReason: 'tool-calls' as const,
-          usage: { inputTokens: 25, outputTokens: 10 },
+          usage: { inputTokens: 15, outputTokens: 10, totalTokens: 25 },
           warnings: [],
           logprobs: undefined,
           request: { body: '' },
-          response: { messages: [], timestamp: new Date() },
+          response: {
+            id: 'step-2-response',
+            modelId: 'test-tool-model',
+            messages: [],
+            timestamp: new Date(),
+          },
           providerMetadata: undefined,
         },
         // Step 3: Final response
         {
-          stepType: 'tool-result' as const,
+          content: [
+            {
+              type: 'text' as const,
+              text: 'The weather in San Francisco, CA is sunny with a temperature of 75°F.',
+            },
+            {
+              type: 'tool-result' as const,
+              toolCallId: 'call_2',
+              toolName: 'weather',
+              input: { location: 'San Francisco, CA' },
+              output: { location: 'San Francisco, CA', temperature: 75, condition: 'sunny' },
+            },
+          ],
           text: 'The weather in San Francisco, CA is sunny with a temperature of 75°F.',
+          reasoning: [],
+          reasoningText: undefined,
+          files: [],
+          sources: [],
           toolCalls: [],
           toolResults: [
             {
+              type: 'tool-result' as const,
               toolCallId: 'call_2',
               toolName: 'weather',
-              result: { location: 'San Francisco, CA', temperature: 75, condition: 'sunny' },
+              input: { location: 'San Francisco, CA' },
+              output: { location: 'San Francisco, CA', temperature: 75, condition: 'sunny' },
+            },
+          ],
+          staticToolCalls: [],
+          dynamicToolCalls: [],
+          staticToolResults: [],
+          dynamicToolResults: [
+            {
+              type: 'tool-result' as const,
+              toolCallId: 'call_2',
+              toolName: 'weather',
+              input: { location: 'San Francisco, CA' },
+              output: { location: 'San Francisco, CA', temperature: 75, condition: 'sunny' },
+              dynamic: true as const,
             },
           ],
           finishReason: 'stop' as const,
-          usage: { inputTokens: 35, outputTokens: 20 },
+          usage: { inputTokens: 20, outputTokens: 15, totalTokens: 35 },
           warnings: [],
           logprobs: undefined,
           request: { body: '' },
-          response: { messages: [], timestamp: new Date() },
+          response: {
+            id: 'step-3-response',
+            modelId: 'test-tool-model',
+            messages: [],
+            timestamp: new Date(),
+          },
           providerMetadata: undefined,
         },
       ];
 
+      // Extract tool calls and results from all steps for v5 compatibility
+      const allToolCalls = steps.flatMap(step =>
+        step.content
+          .filter(part => part.type === 'tool-call')
+          .map(part => ({
+            type: 'tool-call' as const,
+            toolCallId: part.toolCallId,
+            toolName: part.toolName,
+            input: part.input,
+            dynamic: true as const,
+          })),
+      );
+
+      const allToolResults = steps.flatMap(step =>
+        step.content
+          .filter(part => part.type === 'tool-result')
+          .map(part => ({
+            type: 'tool-result' as const,
+            toolCallId: part.toolCallId,
+            toolName: part.toolName,
+            input: part.input,
+            output: part.output,
+            dynamic: true as const,
+          })),
+      );
+
       return {
+        // v5 required fields
+        content: steps[steps.length - 1].content,
         text: 'The weather in San Francisco, CA is sunny with a temperature of 75°F.',
-        usage: { inputTokens: 75, outputTokens: 35 },
-        finishReason: 'stop',
+        reasoning: [],
+        reasoningText: undefined,
+        files: [],
+        sources: [],
+        toolCalls: allToolCalls,
+        toolResults: allToolResults,
+        staticToolCalls: [],
+        dynamicToolCalls: allToolCalls,
+        staticToolResults: [],
+        dynamicToolResults: allToolResults,
+        finishReason: 'stop' as const,
+        usage: { inputTokens: 75, outputTokens: 35, totalTokens: 110 },
+        totalUsage: { inputTokens: 75, outputTokens: 35, totalTokens: 110 },
         warnings: [],
-        rawCall: { rawPrompt: options.prompt, rawSettings: {} },
-        rawResponse: { headers: {}, response: {} },
         request: { body: JSON.stringify(options) },
-        response: { messages: [], timestamp: new Date() },
-        toolCalls: steps.flatMap(step => step.toolCalls),
-        toolResults: steps.flatMap(step => step.toolResults),
-        logprobs: undefined,
+        response: {
+          id: 'test-response-id',
+          modelId: 'test-tool-model',
+          timestamp: new Date(),
+          messages: [],
+        },
         providerMetadata: undefined,
         steps,
+        experimental_output: undefined,
         experimental_telemetry: options.experimental_telemetry,
       };
     });
 
     const result = await generateText({
       model: mockModel,
-      maxSteps: 5,
       tools: {
         weather: weatherTool,
         location: locationTool,
@@ -186,25 +339,23 @@ describe('tool Calling - v5 Patterns', () => {
     expect(result.text).toContain('San Francisco');
     expect(result.steps).toHaveLength(3);
 
-    // Extract all tool calls from steps (v5 pattern)
-    const allToolCalls = result.steps.flatMap(step => step.toolCalls);
-    expect(allToolCalls).toHaveLength(2);
+    // v5 pattern: Verify tool calls are available at result level
+    expect(result.toolCalls).toHaveLength(2);
 
-    // Verify tool sequence
-    expect(allToolCalls[0]).toMatchObject({
+    // Verify tool sequence (using 'input' instead of 'args' for v5)
+    expect(result.toolCalls[0]).toMatchObject({
       toolName: 'location',
-      args: {},
+      input: {},
     });
-    expect(allToolCalls[1]).toMatchObject({
+    expect(result.toolCalls[1]).toMatchObject({
       toolName: 'weather',
-      args: { location: 'San Francisco, CA' },
+      input: { location: 'San Francisco, CA' },
     });
 
     // Verify tool results
-    const allToolResults = result.steps.flatMap(step => step.toolResults);
-    expect(allToolResults).toHaveLength(2);
-    expect(allToolResults[0].toolName).toBe('location');
-    expect(allToolResults[1].toolName).toBe('weather');
+    expect(result.toolResults).toHaveLength(2);
+    expect(result.toolResults[0].toolName).toBe('location');
+    expect(result.toolResults[1].toolName).toBe('weather');
   });
 
   test('should test tool choice and active tools (v5 pattern)', async () => {
@@ -241,49 +392,150 @@ describe('tool Calling - v5 Patterns', () => {
 
     const mockGenerateText = vi.mocked(generateText);
     mockGenerateText.mockImplementation(async options => {
-      // Simulate forced tool choice
+      // Simulate forced tool choice with v5 structure
       const steps = [
         {
-          stepType: 'tool-result' as const,
-          text: 'The result of 5 + 3 is 8.',
-          toolCalls: [
+          content: [
             {
+              type: 'tool-call' as const,
               toolCallId: 'calc_1',
               toolName: 'calculator',
-              args: { operation: 'add', a: 5, b: 3 },
+              input: { operation: 'add', a: 5, b: 3 },
+            },
+            {
+              type: 'tool-result' as const,
+              toolCallId: 'calc_1',
+              toolName: 'calculator',
+              input: { operation: 'add', a: 5, b: 3 },
+              output: { result: 8 },
+            },
+            {
+              type: 'text' as const,
+              text: 'The result of 5 + 3 is 8.',
+            },
+          ],
+          text: 'The result of 5 + 3 is 8.',
+          reasoning: [],
+          reasoningText: undefined,
+          files: [],
+          sources: [],
+          toolCalls: [
+            {
+              type: 'tool-call' as const,
+              toolCallId: 'calc_1',
+              toolName: 'calculator',
+              input: { operation: 'add', a: 5, b: 3 },
             },
           ],
           toolResults: [
             {
+              type: 'tool-result' as const,
               toolCallId: 'calc_1',
               toolName: 'calculator',
-              result: { result: 8 },
+              input: { operation: 'add', a: 5, b: 3 },
+              output: { result: 8 },
+              dynamic: true as const,
+            },
+          ],
+          staticToolCalls: [],
+          dynamicToolCalls: [
+            {
+              type: 'tool-call' as const,
+              toolCallId: 'calc_1',
+              toolName: 'calculator',
+              input: { operation: 'add', a: 5, b: 3 },
+              dynamic: true as const,
+            },
+          ],
+          staticToolResults: [],
+          dynamicToolResults: [
+            {
+              type: 'tool-result' as const,
+              toolCallId: 'calc_1',
+              toolName: 'calculator',
+              input: { operation: 'add', a: 5, b: 3 },
+              output: { result: 8 },
+              dynamic: true as const,
             },
           ],
           finishReason: 'stop' as const,
-          usage: { inputTokens: 20, outputTokens: 15 },
+          usage: { inputTokens: 20, outputTokens: 15, totalTokens: 35 },
+          totalUsage: { inputTokens: 20, outputTokens: 15, totalTokens: 35 },
           warnings: [],
-          logprobs: undefined,
-          request: { body: '' },
-          response: { messages: [], timestamp: new Date() },
+          request: { body: JSON.stringify(options) },
+          response: {
+            id: 'calc-response-id',
+            modelId: 'mock-model',
+            timestamp: new Date(),
+            messages: [],
+          },
           providerMetadata: undefined,
+          experimental_output: undefined,
+          experimental_telemetry: options.experimental_telemetry,
         },
       ];
 
       return {
+        // v5 required fields
+        content: steps[0].content,
         text: 'The result of 5 + 3 is 8.',
-        usage: { inputTokens: 20, outputTokens: 15 },
-        finishReason: 'stop',
+        reasoning: [],
+        reasoningText: undefined,
+        files: [],
+        sources: [],
+        toolCalls: [
+          {
+            type: 'tool-call' as const,
+            toolCallId: 'calc_1',
+            toolName: 'calculator',
+            input: { operation: 'add', a: 5, b: 3 },
+          },
+        ],
+        toolResults: [
+          {
+            type: 'tool-result' as const,
+            toolCallId: 'calc_1',
+            toolName: 'calculator',
+            input: { operation: 'add', a: 5, b: 3 },
+            output: { result: 8 },
+            dynamic: true as const,
+          },
+        ],
+        staticToolCalls: [],
+        dynamicToolCalls: [
+          {
+            type: 'tool-call' as const,
+            toolCallId: 'calc_1',
+            toolName: 'calculator',
+            input: { operation: 'add', a: 5, b: 3 },
+            dynamic: true as const,
+          },
+        ],
+        staticToolResults: [],
+        dynamicToolResults: [
+          {
+            type: 'tool-result' as const,
+            toolCallId: 'calc_1',
+            toolName: 'calculator',
+            input: { operation: 'add', a: 5, b: 3 },
+            output: { result: 8 },
+            dynamic: true as const,
+          },
+        ],
+        finishReason: 'stop' as const,
+        usage: { inputTokens: 20, outputTokens: 15, totalTokens: 35 },
+        totalUsage: { inputTokens: 20, outputTokens: 15, totalTokens: 35 },
         warnings: [],
-        rawCall: { rawPrompt: options.prompt, rawSettings: {} },
-        rawResponse: { headers: {}, response: {} },
         request: { body: JSON.stringify(options) },
-        response: { messages: [], timestamp: new Date() },
-        toolCalls: steps.flatMap(step => step.toolCalls),
-        toolResults: steps.flatMap(step => step.toolResults),
-        logprobs: undefined,
+        response: {
+          id: 'calc-response-id',
+          modelId: 'mock-model',
+          timestamp: new Date(),
+          messages: [],
+        },
         providerMetadata: undefined,
         steps,
+        experimental_output: undefined,
         experimental_telemetry: options.experimental_telemetry,
       };
     });
@@ -300,7 +552,7 @@ describe('tool Calling - v5 Patterns', () => {
     expect(result.text).toContain('8');
     expect(result.toolCalls).toHaveLength(1);
     expect(result.toolCalls[0].toolName).toBe('calculator');
-    expect(result.toolCalls[0].args).toStrictEqual({ operation: 'add', a: 5, b: 3 });
+    expect(result.toolCalls[0].input).toStrictEqual({ operation: 'add', a: 5, b: 3 });
   });
 
   test('should test experimental_prepareStep callback (v5 pattern)', async () => {
@@ -322,67 +574,166 @@ describe('tool Calling - v5 Patterns', () => {
 
     const mockGenerateText = vi.mocked(generateText);
     mockGenerateText.mockImplementation(async options => {
-      // Simulate dynamic step configuration
+      // Simulate dynamic step configuration with v5 structure
       const steps = [
         {
-          stepType: 'tool-result' as const,
-          text: 'Based on the detailed analysis, the data shows strong patterns.',
-          toolCalls: [
+          content: [
             {
+              type: 'tool-call' as const,
               toolCallId: 'analysis_1',
               toolName: 'analysis',
-              args: { data: 'test data', depth: 'detailed' },
+              input: { data: 'test data', depth: 'detailed' },
+            },
+            {
+              type: 'tool-result' as const,
+              toolCallId: 'analysis_1',
+              toolName: 'analysis',
+              input: { data: 'test data', depth: 'detailed' },
+              output: { analysis: 'detailed analysis of: test data', confidence: 0.95 },
+            },
+            {
+              type: 'text' as const,
+              text: 'Based on the detailed analysis, the data shows strong patterns.',
+            },
+          ],
+          text: 'Based on the detailed analysis, the data shows strong patterns.',
+          reasoning: [],
+          reasoningText: undefined,
+          files: [],
+          sources: [],
+          toolCalls: [
+            {
+              type: 'tool-call' as const,
+              toolCallId: 'analysis_1',
+              toolName: 'analysis',
+              input: { data: 'test data', depth: 'detailed' },
             },
           ],
           toolResults: [
             {
+              type: 'tool-result' as const,
               toolCallId: 'analysis_1',
               toolName: 'analysis',
-              result: { analysis: 'detailed analysis of: test data', confidence: 0.95 },
+              input: { data: 'test data', depth: 'detailed' },
+              output: { analysis: 'detailed analysis of: test data', confidence: 0.95 },
+              dynamic: true as const,
+            },
+          ],
+          staticToolCalls: [],
+          dynamicToolCalls: [
+            {
+              type: 'tool-call' as const,
+              toolCallId: 'analysis_1',
+              toolName: 'analysis',
+              input: { data: 'test data', depth: 'detailed' },
+              dynamic: true as const,
+            },
+          ],
+          staticToolResults: [],
+          dynamicToolResults: [
+            {
+              type: 'tool-result' as const,
+              toolCallId: 'analysis_1',
+              toolName: 'analysis',
+              input: { data: 'test data', depth: 'detailed' },
+              output: { analysis: 'detailed analysis of: test data', confidence: 0.95 },
+              dynamic: true as const,
             },
           ],
           finishReason: 'stop' as const,
-          usage: { inputTokens: 25, outputTokens: 20 },
+          usage: { inputTokens: 25, outputTokens: 20, totalTokens: 45 },
+          totalUsage: { inputTokens: 25, outputTokens: 20, totalTokens: 45 },
           warnings: [],
-          logprobs: undefined,
-          request: { body: '' },
-          response: { messages: [], timestamp: new Date() },
+          request: { body: JSON.stringify(options) },
+          response: {
+            id: 'analysis-response-id',
+            modelId: 'analysis-model',
+            timestamp: new Date(),
+            messages: [],
+          },
           providerMetadata: undefined,
+          experimental_output: undefined,
+          experimental_telemetry: options.experimental_telemetry,
         },
       ];
 
       return {
+        // v5 required fields
+        content: steps[0].content,
         text: 'Based on the detailed analysis, the data shows strong patterns.',
-        usage: { inputTokens: 25, outputTokens: 20 },
-        finishReason: 'stop',
+        reasoning: [],
+        reasoningText: undefined,
+        files: [],
+        sources: [],
+        toolCalls: [
+          {
+            type: 'tool-call' as const,
+            toolCallId: 'analysis_1',
+            toolName: 'analysis',
+            input: { data: 'test data', depth: 'detailed' },
+          },
+        ],
+        toolResults: [
+          {
+            type: 'tool-result' as const,
+            toolCallId: 'analysis_1',
+            toolName: 'analysis',
+            input: { data: 'test data', depth: 'detailed' },
+            output: { analysis: 'detailed analysis of: test data', confidence: 0.95 },
+            dynamic: true as const,
+          },
+        ],
+        staticToolCalls: [],
+        dynamicToolCalls: [
+          {
+            type: 'tool-call' as const,
+            toolCallId: 'analysis_1',
+            toolName: 'analysis',
+            input: { data: 'test data', depth: 'detailed' },
+            dynamic: true as const,
+          },
+        ],
+        staticToolResults: [],
+        dynamicToolResults: [
+          {
+            type: 'tool-result' as const,
+            toolCallId: 'analysis_1',
+            toolName: 'analysis',
+            input: { data: 'test data', depth: 'detailed' },
+            output: { analysis: 'detailed analysis of: test data', confidence: 0.95 },
+            dynamic: true as const,
+          },
+        ],
+        finishReason: 'stop' as const,
+        usage: { inputTokens: 25, outputTokens: 20, totalTokens: 45 },
+        totalUsage: { inputTokens: 25, outputTokens: 20, totalTokens: 45 },
         warnings: [],
-        rawCall: { rawPrompt: options.prompt, rawSettings: {} },
-        rawResponse: { headers: {}, response: {} },
         request: { body: JSON.stringify(options) },
-        response: { messages: [], timestamp: new Date() },
-        toolCalls: steps.flatMap(step => step.toolCalls),
-        toolResults: steps.flatMap(step => step.toolResults),
-        logprobs: undefined,
+        response: {
+          id: 'analysis-response-id',
+          modelId: 'analysis-model',
+          timestamp: new Date(),
+          messages: [],
+        },
         providerMetadata: undefined,
         steps,
+        experimental_output: undefined,
         experimental_telemetry: options.experimental_telemetry,
-        experimental_prepareStep: options.experimental_prepareStep,
       };
     });
 
-    const prepareStepCallback = vi.fn(async ({ stepNumber, maxSteps, steps }) => {
+    const prepareStepCallback = vi.fn(async ({ stepNumber, steps }) => {
       if (stepNumber === 0) {
         return {
-          toolChoice: { type: 'tool', toolName: 'analysis' },
-          experimental_activeTools: ['analysis'],
+          toolChoice: { type: 'tool' as const, toolName: 'analysis' as const },
+          activeTools: ['analysis' as const],
         };
       }
-      return undefined;
+      return {};
     });
 
     const result = await generateText({
       model: mockModel,
-      maxSteps: 3,
       tools: {
         analysis: analysisTool,
       },
@@ -391,13 +742,12 @@ describe('tool Calling - v5 Patterns', () => {
     });
 
     expect(result.text).toContain('detailed analysis');
-    expect(prepareStepCallback).toHaveBeenCalledWith({
-      model: mockModel,
-      stepNumber: 0,
-      maxSteps: 3,
-      steps: [],
-    });
-    expect(result.experimental_prepareStep).toBeDefined();
+    expect(prepareStepCallback).toHaveBeenCalledWith(
+      expect.objectContaining({
+        stepNumber: 0,
+      }),
+    );
+    // experimental_prepareStep is not returned in v5 result structure
   });
 
   test('should test tool error handling and repair (v5 pattern)', async () => {
@@ -425,49 +775,150 @@ describe('tool Calling - v5 Patterns', () => {
 
     const mockGenerateText = vi.mocked(generateText);
     mockGenerateText.mockImplementation(async options => {
-      // Simulate tool error and repair
+      // Simulate tool error and repair with v5 structure
       const steps = [
         {
-          stepType: 'tool-result' as const,
-          text: 'After validation, the input is properly formatted JSON.',
-          toolCalls: [
+          content: [
             {
+              type: 'tool-call' as const,
               toolCallId: 'validate_1',
               toolName: 'validate',
-              args: { input: '{"test": "data"}', format: 'json' },
+              input: { input: '{"test": "data"}', format: 'json' },
+            },
+            {
+              type: 'tool-result' as const,
+              toolCallId: 'validate_1',
+              toolName: 'validate',
+              input: { input: '{"test": "data"}', format: 'json' },
+              output: { isValid: true, format: 'json', length: 16 },
+            },
+            {
+              type: 'text' as const,
+              text: 'After validation, the input is properly formatted JSON.',
+            },
+          ],
+          text: 'After validation, the input is properly formatted JSON.',
+          reasoning: [],
+          reasoningText: undefined,
+          files: [],
+          sources: [],
+          toolCalls: [
+            {
+              type: 'tool-call' as const,
+              toolCallId: 'validate_1',
+              toolName: 'validate',
+              input: { input: '{"test": "data"}', format: 'json' },
             },
           ],
           toolResults: [
             {
+              type: 'tool-result' as const,
               toolCallId: 'validate_1',
               toolName: 'validate',
-              result: { isValid: true, format: 'json', length: 16 },
+              input: { input: '{"test": "data"}', format: 'json' },
+              output: { isValid: true, format: 'json', length: 16 },
+              dynamic: true as const,
+            },
+          ],
+          staticToolCalls: [],
+          dynamicToolCalls: [
+            {
+              type: 'tool-call' as const,
+              toolCallId: 'validate_1',
+              toolName: 'validate',
+              input: { input: '{"test": "data"}', format: 'json' },
+              dynamic: true as const,
+            },
+          ],
+          staticToolResults: [],
+          dynamicToolResults: [
+            {
+              type: 'tool-result' as const,
+              toolCallId: 'validate_1',
+              toolName: 'validate',
+              input: { input: '{"test": "data"}', format: 'json' },
+              output: { isValid: true, format: 'json', length: 16 },
+              dynamic: true as const,
             },
           ],
           finishReason: 'stop' as const,
-          usage: { inputTokens: 30, outputTokens: 25 },
+          usage: { inputTokens: 30, outputTokens: 25, totalTokens: 55 },
+          totalUsage: { inputTokens: 30, outputTokens: 25, totalTokens: 55 },
           warnings: [],
-          logprobs: undefined,
-          request: { body: '' },
-          response: { messages: [], timestamp: new Date() },
+          request: { body: JSON.stringify(options) },
+          response: {
+            id: 'validation-response-id',
+            modelId: 'validation-model',
+            timestamp: new Date(),
+            messages: [],
+          },
           providerMetadata: undefined,
+          experimental_output: undefined,
+          experimental_telemetry: options.experimental_telemetry,
         },
       ];
 
       return {
+        // v5 required fields
+        content: steps[0].content,
         text: 'After validation, the input is properly formatted JSON.',
-        usage: { inputTokens: 30, outputTokens: 25 },
-        finishReason: 'stop',
+        reasoning: [],
+        reasoningText: undefined,
+        files: [],
+        sources: [],
+        toolCalls: [
+          {
+            type: 'tool-call' as const,
+            toolCallId: 'validate_1',
+            toolName: 'validate',
+            input: { input: '{"test": "data"}', format: 'json' },
+          },
+        ],
+        toolResults: [
+          {
+            type: 'tool-result' as const,
+            toolCallId: 'validate_1',
+            toolName: 'validate',
+            input: { input: '{"test": "data"}', format: 'json' },
+            output: { isValid: true, format: 'json', length: 16 },
+            dynamic: true as const,
+          },
+        ],
+        staticToolCalls: [],
+        dynamicToolCalls: [
+          {
+            type: 'tool-call' as const,
+            toolCallId: 'validate_1',
+            toolName: 'validate',
+            input: { input: '{"test": "data"}', format: 'json' },
+            dynamic: true as const,
+          },
+        ],
+        staticToolResults: [],
+        dynamicToolResults: [
+          {
+            type: 'tool-result' as const,
+            toolCallId: 'validate_1',
+            toolName: 'validate',
+            input: { input: '{"test": "data"}', format: 'json' },
+            output: { isValid: true, format: 'json', length: 16 },
+            dynamic: true as const,
+          },
+        ],
+        finishReason: 'stop' as const,
+        usage: { inputTokens: 30, outputTokens: 25, totalTokens: 55 },
+        totalUsage: { inputTokens: 30, outputTokens: 25, totalTokens: 55 },
         warnings: [],
-        rawCall: { rawPrompt: options.prompt, rawSettings: {} },
-        rawResponse: { headers: {}, response: {} },
         request: { body: JSON.stringify(options) },
-        response: { messages: [], timestamp: new Date() },
-        toolCalls: steps.flatMap(step => step.toolCalls),
-        toolResults: steps.flatMap(step => step.toolResults),
-        logprobs: undefined,
+        response: {
+          id: 'validation-response-id',
+          modelId: 'validation-model',
+          timestamp: new Date(),
+          messages: [],
+        },
         providerMetadata: undefined,
         steps,
+        experimental_output: undefined,
         experimental_telemetry: options.experimental_telemetry,
       };
     });
@@ -482,7 +933,7 @@ describe('tool Calling - v5 Patterns', () => {
 
     expect(result.text).toContain('validation');
     expect(result.toolResults).toHaveLength(1);
-    expect(result.toolResults[0].result).toMatchObject({
+    expect(result.toolResults[0].output).toMatchObject({
       isValid: true,
       format: 'json',
       length: 16,

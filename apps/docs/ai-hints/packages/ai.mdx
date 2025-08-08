@@ -20,9 +20,14 @@ import {
   getBestModelForTask,
   selectModel,
   getModelConfig,
-  isModelAvailable,
+  getModelReasoningConfig,
   MODEL_REGISTRY
 } from "@repo/ai/models";
+import {
+  hasAnthropicConfig,
+  hasOpenAIConfig,
+  hasGoogleAIConfig
+} from "@repo/ai/env";
 
 // Get best model for task
 const chatModel = getBestModelForTask("chat");
@@ -37,9 +42,9 @@ const selectedModel = selectModel({
   excludeDeprecated: true
 });
 
-// Check availability before use
-if (isModelAvailable(selectedModel)) {
-  // Model is available with configured API key
+// Check provider availability
+if (hasAnthropicConfig() || hasOpenAIConfig() || hasGoogleAIConfig()) {
+  // Provider API key available
 }
 ```
 
@@ -66,7 +71,7 @@ const claudeReasoning = registry.languageModel(`anthropic:${reasoningModelId}`);
 // Use helper functions for common patterns
 const bestChat = models.language.best();
 const fastModel = models.language.fast();
-const reasoningModel = models.language.reasoning();
+const reasoningModel = models.language.reasoningText();
 
 // Automatic reasoning configuration applied
 const result = await generateText({
@@ -153,12 +158,15 @@ const selectedModel = selectModel({
 
 // Check availability and features
 const modelConfig = getModelConfig(selectedModel);
-const isAvailable = isModelAvailable(selectedModel);
+const isAvailable =
+  hasAnthropicConfig() || hasOpenAIConfig() || hasGoogleAIConfig();
 
-if (isAvailable && modelConfig?.reasoning?.supported) {
+if (isAvailable && getModelReasoningConfig(selectedModel)?.supported) {
   // Enable reasoning UI features
   setReasoningEnabled(true);
-  setBudgetTokens(modelConfig.reasoning.budgetTokens || 10000);
+  setBudgetTokens(
+    getModelReasoningConfig(selectedModel)?.budgetTokens ?? 10000
+  );
 }
 
 // Use provider with dynamic model
@@ -171,7 +179,12 @@ const model = registry.languageModel(
 
 ```typescript
 // ✅ Respect environment configuration
-import { env } from "@repo/ai";
+import {
+  env,
+  hasAnthropicConfig,
+  hasOpenAIConfig,
+  hasGoogleAIConfig
+} from "@repo/ai/env";
 import { validateModelForUseCase } from "@repo/ai/models";
 
 // Check API key availability
@@ -275,7 +288,7 @@ const hardcoded = "claude-4-opus-20250514"; // Never do this
 
 // ✅ Right - Use centralized selection
 const model = models.language.best();
-const reasoning = models.language.reasoning();
+const reasoning = models.language.reasoningText();
 const chatModel = getBestModelForTask("chat");
 const dynamicModel = registry.languageModel(
   `anthropic:${getBestModelForTask("reasoning")}`
@@ -331,7 +344,8 @@ When working with the AI package:
 - [ ] Track usage with `trackModelUsage()`
 - [ ] Use centralized provider registry from `@repo/ai/server`
 - [ ] Let the registry handle reasoning configuration automatically
-- [ ] Check `isModelAvailable()` for API key validation
+- [ ] Check provider availability with `hasAnthropicConfig()`,
+      `hasOpenAIConfig()`, etc.
 - [ ] Use `getModelRecommendations()` for user-facing model selection
 - [ ] Use `selectModel()` for strategic model selection with fallbacks
 - [ ] Never hardcode model IDs - always use selection functions
@@ -405,7 +419,8 @@ When working with the AI package:
 - `modelSupportsReasoning(modelId)` - Check reasoning support
 - `getModelsByCapability(capability)` - Filter by capability
 - `isValidModelId(modelId)` - Validate model ID
-- `isModelAvailable(modelId)` - Check if API key is configured
+- Provider availability functions (`hasAnthropicConfig()`, `hasOpenAIConfig()`,
+  etc.) - Check if API keys are configured
 - `getModelReasoningConfig(modelId)` - Get reasoning-specific config
 
 ### Utility Functions
@@ -423,9 +438,9 @@ When working with the AI package:
 - `registry.languageModel(providerModel)` - Get configured model
 - `models.language.best()` - Best available model
 - `models.language.fast()` - Fast, cost-effective model
-- `models.language.reasoning()` - Best reasoning model
+- `models.language.reasoningText()` - Best reasoning model
 - `models.language.claude()` - Best Claude model
-- `models.language.openai()` - Best OpenAI model
+- `models.language.claudeReasoning()` - Best Claude reasoning model
 
 ### AI SDK v5 Advanced Exports
 

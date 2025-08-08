@@ -1,0 +1,319 @@
+---
+title: "Flows Lab"
+description: "Visual workflow automation platform with AWS, AI, and GitHub integrations"
+icon: "diagram-project"
+---
+
+# Flows Lab
+
+A visual programming platform for creating complex workflows and integrations. This lab explores business logic engines at scale using a drag-and-drop interface built with React Flow.
+
+## Overview
+
+The Flows lab is a complete workflow automation platform that enables users to create visual workflows with support for AWS services, AI providers, GitHub integration, and custom business logic.
+
+<CardGroup cols={2}>
+  <Card title="Visual Flow Builder" icon="sitemap">
+    Drag-and-drop interface with React Flow for complex workflow creation
+  </Card>
+  <Card title="AWS Integration" icon="aws">
+    Complete SDK integration for Lambda, S3, SNS, SQS, EventBridge, IAM
+  </Card>
+  <Card title="AI Services" icon="brain">
+    OpenAI GPT and Anthropic Claude nodes with custom prompting
+  </Card>
+  <Card title="GitHub Integration" icon="github">
+    Webhook receivers and event processing for CI/CD workflows
+  </Card>
+</CardGroup>
+
+## Key Features
+
+### Visual Workflow Editor
+- **React Flow Integration** - Advanced drag-and-drop interface
+- **Real-time Execution** - Flow orchestration with error handling and retry logic
+- **Node Types** - Triggers, AWS services, AI providers, logic operations
+- **Connection Management** - Visual node linking with validation
+
+### Integrations
+
+#### AWS Services
+- **Lambda Functions** - Serverless compute execution
+- **S3 Storage** - File upload, download, and management
+- **SNS/SQS Messaging** - Queue and notification handling
+- **EventBridge** - Event-driven architecture support
+- **IAM Integration** - Role and permission management
+
+#### AI Providers
+- **OpenAI GPT** - GPT-4, GPT-3.5 with custom prompting
+- **Anthropic Claude** - Advanced reasoning and analysis
+- **Custom Prompts** - Template system for AI interactions
+
+#### Development Tools
+- **GitHub Webhooks** - Repository event processing
+- **CI/CD Triggers** - Automated deployment workflows
+- **Version Control** - Flow versioning and history
+
+## Node Types
+
+<AccordionGroup>
+  <Accordion title="Trigger Nodes" icon="play">
+    - **Webhook Triggers** - HTTP endpoint activation
+    - **Cron Schedulers** - Time-based execution
+    - **GitHub Events** - Repository event handling
+    - **Manual Triggers** - User-initiated execution
+  </Accordion>
+  
+  <Accordion title="AWS Nodes" icon="aws">
+    - **Lambda** - Function execution with custom code
+    - **S3** - File operations and bucket management
+    - **SNS** - Simple Notification Service integration
+    - **SQS** - Simple Queue Service handling
+    - **EventBridge** - Event routing and processing
+  </Accordion>
+  
+  <Accordion title="AI Nodes" icon="brain">
+    - **OpenAI GPT** - Text generation and analysis
+    - **Anthropic Claude** - Advanced reasoning tasks
+    - **Custom Prompts** - Template-based AI interactions
+    - **Response Processing** - AI output transformation
+  </Accordion>
+  
+  <Accordion title="Logic Nodes" icon="code">
+    - **If/Then/Else** - Conditional flow control
+    - **JavaScript Editor** - Custom script execution
+    - **Python Editor** - Data processing and analysis
+    - **Data Transform** - JSON/object manipulation
+  </Accordion>
+</AccordionGroup>
+
+## Architecture
+
+### Frontend
+- **Next.js 15** - React framework with App Router
+- **React Flow** - Visual workflow editor
+- **TypeScript** - Type-safe development
+- **SCSS Modules** - Component styling
+
+### Backend
+- **Prisma ORM** - Database schema and migrations
+- **PostgreSQL** - Primary data storage
+- **Redis** - Caching and session management
+- **NextAuth.js** - Authentication with OAuth
+
+### Security
+- **Data Encryption** - Sensitive data protection
+- **Rate Limiting** - API abuse prevention
+- **WebAuthn Passkeys** - Passwordless authentication
+- **GitHub OAuth** - Secure social login
+
+## Environment Configuration
+
+### Required Variables
+
+```bash
+# Database
+PRISMA_DB_URL=postgresql://user:pass@localhost:5432/flows
+
+# Authentication
+AUTH_SECRET=your-auth-secret
+GITHUB_ID=your-github-oauth-id
+GITHUB_SECRET=your-github-oauth-secret
+
+# AWS Integration
+AWS_ACCESS_KEY_ID=your-aws-access-key
+AWS_SECRET_ACCESS_KEY=your-aws-secret-key
+AWS_REGION=us-east-1
+
+# AI Services
+OPENAI_API_KEY=sk-your-openai-key
+ANTHROPIC_API_KEY=your-anthropic-key
+
+# Cache & Storage
+REDIS_URL=redis://localhost:6379
+ENCRYPTION_SECRET=your-encryption-secret
+```
+
+### Optional Variables
+
+```bash
+# Vercel Deployment
+VERCEL_AUTH_BEARER_TOKEN=your-vercel-token
+VERCEL_PROJECT_ID=your-project-id
+
+# Monitoring
+SENTRY_DSN=your-sentry-dsn
+```
+
+## Quick Start
+
+### 1. Setup Environment
+
+```bash
+# Clone and install
+pnpm install
+
+# Set up environment
+cp env.example .env.local
+# Edit .env.local with your values
+```
+
+### 2. Database Setup
+
+```bash
+# Generate Prisma client
+pnpm prisma:generate
+
+# Run migrations
+pnpm prisma:migrate:dev
+
+# (Optional) Seed data
+pnpm prisma:seed
+```
+
+### 3. Start Development
+
+```bash
+# Start development server
+pnpm dev
+
+# Open http://localhost:3000
+```
+
+## Usage Examples
+
+### Creating a Simple Workflow
+
+1. **Add Trigger Node** - Start with a webhook or cron trigger
+2. **Add Processing Node** - Use AI or logic nodes for data processing
+3. **Add Output Node** - Send results via AWS SNS or store in S3
+4. **Connect Nodes** - Link nodes with visual connections
+5. **Test Workflow** - Use the built-in testing interface
+
+### AWS Lambda Integration
+
+```typescript
+// Example Lambda node configuration
+{
+  "nodeType": "aws-lambda",
+  "config": {
+    "functionName": "processUserData",
+    "payload": "{{ previousNode.output }}",
+    "async": true
+  }
+}
+```
+
+### AI Processing Node
+
+```typescript
+// Example OpenAI node configuration
+{
+  "nodeType": "openai-gpt",
+  "config": {
+    "model": "gpt-4",
+    "prompt": "Analyze the following data: {{ input.data }}",
+    "temperature": 0.7,
+    "maxTokens": 1000
+  }
+}
+```
+
+## Development
+
+### Testing
+
+```bash
+# Run unit tests
+pnpm test
+
+# Run E2E tests
+pnpm test:e2e
+
+# Coverage report
+pnpm test:coverage
+```
+
+### Code Quality
+
+```bash
+# Type checking
+pnpm typecheck
+
+# Linting
+pnpm lint
+
+# Format code
+pnpm format
+```
+
+## Deployment
+
+### Vercel Platform
+
+The flows lab is optimized for Vercel deployment:
+
+```bash
+# Deploy to Vercel
+vercel --prod
+
+# Configure environment variables in Vercel dashboard
+# Set up database connection
+# Configure AWS credentials
+```
+
+### Docker Deployment
+
+```dockerfile
+# Available Docker configuration
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN pnpm install
+COPY . .
+RUN pnpm build
+EXPOSE 3000
+CMD ["pnpm", "start"]
+```
+
+## Monitoring
+
+### Built-in Analytics
+- **Flow Execution Metrics** - Success/failure rates, execution times
+- **Node Performance** - Individual node performance tracking
+- **Error Tracking** - Comprehensive error logging and reporting
+- **Usage Statistics** - User activity and workflow popularity
+
+### Integration Monitoring
+- **AWS CloudWatch** - Infrastructure monitoring
+- **Sentry Error Tracking** - Application error reporting
+- **Vercel Analytics** - Performance and usage insights
+
+## Troubleshooting
+
+### Common Issues
+
+<AccordionGroup>
+  <Accordion title="Database Connection Issues">
+    - Verify PostgreSQL is running
+    - Check PRISMA_DB_URL format
+    - Ensure database exists and is accessible
+    - Run `pnpm prisma:migrate:deploy` for production
+  </Accordion>
+  
+  <Accordion title="AWS Integration Problems">
+    - Verify AWS credentials are correct
+    - Check IAM permissions for required services
+    - Ensure AWS region is properly configured
+    - Test AWS connections in isolation
+  </Accordion>
+  
+  <Accordion title="Flow Execution Failures">
+    - Check node configurations for required fields
+    - Verify API keys for external services
+    - Review execution logs in the admin panel
+    - Test individual nodes before full workflow
+  </Accordion>
+</AccordionGroup>
+
+This lab demonstrates advanced workflow automation concepts and serves as a foundation for building scalable business process automation platforms.

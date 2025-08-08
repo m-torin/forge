@@ -5,9 +5,9 @@ import { defineConfig } from 'vitest/config';
 
 const baseConfig = createDatabasePackageConfig({
   aliases: {
-    '#/': './src/',
-    '#/tests/': './__tests__/',
-    '#/prisma-generated/': './prisma-generated/',
+    '#/': resolve(process.cwd(), './src/'),
+    '#/tests/': resolve(process.cwd(), './__tests__/'),
+    '#/prisma-generated/': resolve(process.cwd(), './prisma-generated/'),
   },
   env: {
     DATABASE_PROVIDER: 'prisma',

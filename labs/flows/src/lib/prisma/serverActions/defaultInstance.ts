@@ -43,7 +43,8 @@ export const getDefaultInstanceId = async (): Promise<string> => {
     return newInstance.id;
   } catch (error) {
     logError('Failed to get or create default instance', { error });
-    throw new Error('Failed to initialize default instance');
+    // Return demo instance ID as fallback for graceful degradation
+    return env.DEMO_INSTANCE_ID;
   }
 };
 

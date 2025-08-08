@@ -39,9 +39,12 @@ export interface ComputerToolConfig {
     coordinate?: number[];
     text?: string;
   }) => Promise<string | { type: 'image'; data: string }>;
-  experimental_toToolResultContent?: (
-    result: string | { type: 'image'; data: string },
-  ) => Array<{ type: 'text'; text: string } | { type: 'image'; data: string; mimeType?: string }>;
+  toModelOutput?: (result: string | { type: 'image'; data: string }) => {
+    type: 'content';
+    value: Array<
+      { type: 'text'; text: string } | { type: 'media'; mediaType: string; data: string }
+    >;
+  };
 }
 
 export interface ToolResult {
@@ -53,14 +56,14 @@ export interface ToolResult {
 
 // Security configuration types
 export interface SecurityConfig {
-  workspacePath?: string; // Restrict operations to this directory
-  allowedCommands?: string[]; // Whitelist of allowed bash commands
-  blockedCommands?: string[]; // Blacklist of dangerous commands
-  allowedFileExtensions?: string[]; // Whitelist of allowed file extensions
-  blockedFileExtensions?: string[]; // Blacklist of dangerous file extensions
-  requireUserConfirmation?: boolean; // Require user approval for operations
-  maxFileSize?: number; // Maximum file size in bytes
-  maxCommandOutput?: number; // Maximum command output size in bytes
+  workspacePath?: string;
+  allowedCommands?: string[];
+  blockedCommands?: string[];
+  allowedFileExtensions?: string[];
+  blockedFileExtensions?: string[];
+  requireUserConfirmation?: boolean;
+  maxFileSize?: number;
+  maxCommandOutput?: number;
 }
 
 export interface SafeToolsConfig {

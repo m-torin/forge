@@ -4,7 +4,8 @@
  */
 
 import { logInfo, logWarn } from '@repo/observability/server/next';
-import { streamObject, streamText, type LanguageModel } from 'ai';
+import type { LanguageModel } from 'ai';
+import { streamObject, streamText } from 'ai';
 import { z } from 'zod/v4';
 import type { RAGDatabaseBridge } from './database-bridge';
 import { recordRAGOperation } from './health-monitoring';
@@ -20,7 +21,7 @@ export interface StreamingRAGConfig {
   threshold?: number;
   enableProgressiveContext?: boolean;
   enableRealTimeSearch?: boolean;
-  contextRefreshInterval?: number; // ms
+  contextRefreshInterval?: number;
   maxContextLength?: number;
 }
 
@@ -241,7 +242,7 @@ export async function createStreamingRAG(
   options?: {
     systemPrompt?: string;
     temperature?: number;
-    maxTokens?: number;
+    maxOutputTokens?: number;
     onContextUpdate?: (context: StreamingContextResult[]) => void;
   },
 ) {
@@ -272,7 +273,7 @@ export async function createStreamingRAG(
         },
       ],
       temperature: options?.temperature ?? 0.1,
-      maxOutputTokens: options?.maxTokens,
+      maxOutputTokens: options?.maxOutputTokens,
     });
   }
 
@@ -323,9 +324,8 @@ ${contextText}`;
       },
     ],
     temperature: options?.temperature ?? 0.1,
-    maxOutputTokens: options?.maxTokens,
+    maxOutputTokens: options?.maxOutputTokens,
     onFinish: () => {
-      // Cleanup
       if (refreshInterval) {
         clearInterval(refreshInterval);
       }
@@ -382,18 +382,11 @@ ${contextText}`;
   const streamResponse = streamObject({
     model: config.languageModel,
     schema,
-    messages: [
-      {
-        role: 'system',
-        content: systemPrompt,
-      },
-      {
-        role: 'user',
-        content: query,
-      },
-    ],
+    system: systemPrompt,
+    prompt: query,
     temperature: options?.temperature ?? 0.1,
-  });
+    experimental_telemetry: { isEnabled: true },
+  } as any);
 
   logInfo('Streaming structured RAG response initiated', {
     operation: 'streaming_structured_rag_started',
@@ -414,7 +407,7 @@ export async function streamRAGWithSources(
   options?: {
     systemPrompt?: string;
     temperature?: number;
-    maxTokens?: number;
+    maxOutputTokens?: number;
     onSourcesUpdate?: (sources: Array<{ url?: string; title?: string; provider?: string }>) => void;
   },
 ): Promise<any> {
@@ -468,7 +461,7 @@ ${contextText}`;
       },
     ],
     temperature: options?.temperature ?? 0.1,
-    maxOutputTokens: options?.maxTokens,
+    maxOutputTokens: options?.maxOutputTokens,
     onFinish: result => {
       logInfo('Streaming RAG with sources completed', {
         operation: 'streaming_rag_with_sources_finished',
@@ -550,7 +543,7 @@ ${contextText}`;
       },
     ],
     tools: config.tools || {},
-    maxSteps: config.maxSteps || 3,
+    stopWhen: [({ steps }: { steps: any[] }) => steps.length >= (config.maxSteps || 3)],
     temperature: options?.temperature ?? 0.1,
     onStepFinish: step => {
       stepCount++;
@@ -591,7 +584,7 @@ export class RealTimeRAGConversation {
   async addMessage(
     message: string,
     options?: {
-      contextQuery?: string; // Use different query for context than the message
+      contextQuery?: string;
       onContextUpdate?: (context: StreamingContextResult[]) => void;
       temperature?: number;
     },

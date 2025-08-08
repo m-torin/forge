@@ -75,7 +75,6 @@ export const OrganizationInvitationTemplate = ({
                 If you're having trouble clicking the button, copy and paste this URL into your
                 browser: {inviteLink}
               </Text>
-              {/* Debug/Info section to show all fields */}
               <Section className="mt-8 rounded-md bg-gray-100 p-4">
                 <Text className="m-0 mb-2 text-xs font-bold text-gray-500">
                   [Debug Info: All Fields]

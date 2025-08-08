@@ -11,7 +11,7 @@ import { Card, CardContent } from '../ui/Card';
 import { Input } from '../ui/Input';
 
 // Real server actions for security event management
-const acknowledgeEventAction = async (prevState: any, formData: FormData) => {
+const acknowledgeEventAction = async (__prevState: any, formData: FormData) => {
   'use server';
 
   try {
@@ -19,7 +19,7 @@ const acknowledgeEventAction = async (prevState: any, formData: FormData) => {
 
     // In a real implementation, this would update the security event status
     // in the database to 'acknowledged' with timestamp and user info
-    console.log('Acknowledging security event:', eventId);
+    // console.log('Acknowledging security event:', eventId);
 
     // For now, simulate the database update
     await new Promise(resolve => setTimeout(resolve, 800));
@@ -33,7 +33,7 @@ const acknowledgeEventAction = async (prevState: any, formData: FormData) => {
   }
 };
 
-const dismissEventAction = async (prevState: any, formData: FormData) => {
+const dismissEventAction = async (__prevState: any, formData: FormData) => {
   'use server';
 
   try {
@@ -41,7 +41,7 @@ const dismissEventAction = async (prevState: any, formData: FormData) => {
 
     // In a real implementation, this would update the security event status
     // in the database to 'dismissed' with timestamp and user info
-    console.log('Dismissing security event:', eventId);
+    // console.log('Dismissing security event:', eventId);
 
     // For now, simulate the database update
     await new Promise(resolve => setTimeout(resolve, 800));
@@ -55,7 +55,7 @@ const dismissEventAction = async (prevState: any, formData: FormData) => {
   }
 };
 
-const refreshEventsAction = async (prevState: any, formData: FormData) => {
+const refreshEventsAction = async (__prevState: any, _formData: FormData) => {
   'use server';
 
   try {
@@ -64,7 +64,7 @@ const refreshEventsAction = async (prevState: any, formData: FormData) => {
     // 2. Fetch recent events with proper filtering
     // 3. Return updated events list
 
-    console.log('Refreshing security events');
+    // console.log('Refreshing security events');
 
     // For now, simulate the refresh
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -349,7 +349,6 @@ export function SecurityEventLog({
 
   return (
     <div className={`space-y-6 ${className}`}>
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold text-gray-900">Security Event Log</h2>
@@ -362,7 +361,6 @@ export function SecurityEventLog({
         </Button>
       </div>
 
-      {/* Critical Alerts */}
       {criticalEvents.length > 0 && (
         <Alert variant="destructive">
           <div className="flex items-center justify-between">
@@ -384,7 +382,6 @@ export function SecurityEventLog({
         </Alert>
       )}
 
-      {/* Status Messages */}
       {(acknowledgeState.error || dismissState.error || refreshState.error) && (
         <Alert variant="destructive">
           {acknowledgeState.error || dismissState.error || refreshState.error}
@@ -399,7 +396,6 @@ export function SecurityEventLog({
         </Alert>
       )}
 
-      {/* Summary Stats */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <Card>
           <CardContent className="p-4">
@@ -452,7 +448,6 @@ export function SecurityEventLog({
         </Card>
       </div>
 
-      {/* Filters and Search */}
       <Card>
         <CardContent className="p-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
@@ -536,7 +531,6 @@ export function SecurityEventLog({
         </CardContent>
       </Card>
 
-      {/* Events List */}
       <div className="space-y-4">
         {filteredAndSortedEvents.length === 0 ? (
           <Card>
@@ -581,7 +575,6 @@ export function SecurityEventLog({
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex flex-1 items-start space-x-4">
-                    {/* Selection Checkbox */}
                     {allowBulkActions && (
                       <div className="pt-1">
                         <input
@@ -593,10 +586,8 @@ export function SecurityEventLog({
                       </div>
                     )}
 
-                    {/* Event Icon */}
                     <div className="text-2xl">{getEventIcon(event.type)}</div>
 
-                    {/* Event Details */}
                     <div className="min-w-0 flex-1">
                       <div className="mb-2 flex items-center space-x-2">
                         <h3 className="text-lg font-medium text-gray-900">{event.title}</h3>
@@ -652,7 +643,6 @@ export function SecurityEventLog({
                         </div>
                       </div>
 
-                      {/* Expandable Technical Details */}
                       {showTechnicalDetails && (
                         <div>
                           <button
@@ -695,7 +685,6 @@ export function SecurityEventLog({
                     </div>
                   </div>
 
-                  {/* Actions */}
                   <div className="ml-4 flex space-x-2">
                     {event.status === 'new' && (
                       <>
@@ -724,7 +713,6 @@ export function SecurityEventLog({
         )}
       </div>
 
-      {/* Security Notice */}
       <Card className="border-blue-200 bg-blue-50">
         <CardContent className="p-4">
           <div className="flex items-start">

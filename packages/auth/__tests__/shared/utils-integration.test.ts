@@ -7,7 +7,7 @@ import { describe, expect, test } from 'vitest';
 describe('shared Utilities Integration', () => {
   describe('aPI Key Utilities', () => {
     test('should mask API keys correctly in various formats', async () => {
-      const { maskApiKey } = await import('#/shared/utils/api-keys');
+      const { maskApiKey } = await import('../../src/shared/utils/api-keys');
 
       // Test different API key formats - actual maskApiKey masks with 8 start + middle * + 4 end
       // For 'sk-1234567890abcdef1234567890abcdef' (32 chars): first 8 + (32-12) * + last 4 = 'sk-12345' + 23 * + 'cdef'
@@ -21,7 +21,7 @@ describe('shared Utilities Integration', () => {
     });
 
     test('should generate valid API key names', async () => {
-      const { generateApiKeyName } = await import('#/shared/utils/api-keys');
+      const { generateApiKeyName } = await import('../../src/shared/utils/api-keys');
 
       for (let i = 0; i < 10; i++) {
         const name = generateApiKeyName();
@@ -32,7 +32,9 @@ describe('shared Utilities Integration', () => {
     });
 
     test('should validate API key expiration correctly', async () => {
-      const { isApiKeyExpired, getTimeUntilExpiration } = await import('#/shared/utils/api-keys');
+      const { isApiKeyExpired, getTimeUntilExpiration } = await import(
+        '../../src/shared/utils/api-keys'
+      );
 
       const now = new Date();
       const future = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24 hours from now
@@ -55,7 +57,7 @@ describe('shared Utilities Integration', () => {
 
     test('should format permissions for display', async () => {
       const { formatPermissionsForDisplay, groupPermissionsByResource } = await import(
-        '#/shared/utils/api-keys'
+        '../../src/shared/utils/api-keys'
       );
 
       const permissions = ['user:read', 'user:write', 'admin:read', 'billing:manage'];
@@ -68,13 +70,13 @@ describe('shared Utilities Integration', () => {
       expect(grouped).toHaveProperty('user');
       expect(grouped).toHaveProperty('admin');
       expect(grouped).toHaveProperty('billing');
-      expect(grouped.user).toEqual(['read', 'write']);
-      expect(grouped.admin).toEqual(['read']);
-      expect(grouped.billing).toEqual(['manage']);
+      expect(grouped.user).toStrictEqual(['read', 'write']);
+      expect(grouped.admin).toStrictEqual(['read']);
+      expect(grouped.billing).toStrictEqual(['manage']);
     });
 
     test('should validate API key format', async () => {
-      const { isValidApiKeyFormat } = await import('#/shared/utils/api-keys');
+      const { isValidApiKeyFormat } = await import('../../src/shared/utils/api-keys');
 
       // Valid formats
       expect(isValidApiKeyFormat('sk-1234567890abcdef1234567890abcdef')).toBeTruthy();
@@ -92,7 +94,7 @@ describe('shared Utilities Integration', () => {
     test('should handle auth error functions', async () => {
       // Check if the error utilities module exists and what it exports
       try {
-        const errorModule = await import('#/shared/utils/errors');
+        const errorModule = await import('../../src/shared/utils/errors');
         expect(errorModule).toBeDefined();
 
         // Test any actual exports that exist
@@ -108,7 +110,7 @@ describe('shared Utilities Integration', () => {
   describe('header Utilities', () => {
     test('should test header utility functions if they exist', async () => {
       try {
-        const headerModule = await import('#/shared/utils/headers');
+        const headerModule = await import('../../src/shared/utils/headers');
         expect(headerModule).toBeDefined();
 
         // Test any actual exports that exist
@@ -124,7 +126,7 @@ describe('shared Utilities Integration', () => {
   describe('role Utilities', () => {
     test('should test role utility functions if they exist', async () => {
       try {
-        const roleModule = await import('#/shared/utils/roles');
+        const roleModule = await import('../../src/shared/utils/roles');
         expect(roleModule).toBeDefined();
 
         // Test any actual exports that exist
@@ -139,7 +141,7 @@ describe('shared Utilities Integration', () => {
 
   describe('integration between utilities', () => {
     test('should work together for complete auth workflows', async () => {
-      const { maskApiKey, isValidApiKeyFormat } = await import('#/shared/utils/api-keys');
+      const { maskApiKey, isValidApiKeyFormat } = await import('../../src/shared/utils/api-keys');
 
       // Simulate API key validation workflow
       const apiKey = 'sk-1234567890abcdef1234567890abcdef';

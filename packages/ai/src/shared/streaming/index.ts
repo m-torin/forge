@@ -1,1 +1,1 @@
-export * from './data-stream';
+// AI SDK v5 data streaming - use createUIMessageStream() instead

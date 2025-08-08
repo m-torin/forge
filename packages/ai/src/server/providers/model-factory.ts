@@ -1,8 +1,8 @@
 import type { LanguageModel } from 'ai';
 import { defaultStreamTransform, type streamTransformPresets } from '../streaming/stream-defaults';
-// telemetry module placeholder - not available
+// AI SDK v5 telemetry configuration
 function createTelemetrySettings() {
-  return {};
+  return { isEnabled: true };
 }
 
 export interface ModelWithDefaultsOptions {
@@ -33,10 +33,10 @@ export function createModelWithDefaults(
   options: ModelWithDefaultsOptions = {},
 ): ModelStreamOptions {
   const {
-    isProduction = process.env.NODE_ENV === 'production',
-    functionId = 'stream-text',
+    isProduction: _isProduction = process.env.NODE_ENV === 'production',
+    functionId: _functionId = 'stream-text',
     transform = defaultStreamTransform,
-    telemetryMetadata,
+    telemetryMetadata: _telemetryMetadata,
   } = options;
 
   return {

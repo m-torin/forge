@@ -5,11 +5,11 @@
 
 export interface RateLimiterOptions {
   enabled?: boolean;
-  windowMs?: number; // Time window in milliseconds
-  maxAttempts?: number; // Maximum attempts per window
-  skipSuccessfulRequests?: boolean; // Don't count successful auth attempts
-  keyGenerator?: (request: Request) => string; // Custom key generator
-  message?: string; // Error message when rate limited
+  windowMs?: number;
+  maxAttempts?: number;
+  skipSuccessfulRequests?: boolean;
+  keyGenerator?: (request: Request) => string;
+  message?: string;
 }
 
 const DEFAULT_OPTIONS: RateLimiterOptions = {

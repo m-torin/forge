@@ -28,7 +28,7 @@ interface ProfileFormProps extends BaseProps {
   canEdit?: boolean;
 }
 
-const initialState: FormState = { success: false };
+const _initialState: FormState = { success: false };
 
 export function ProfileForm({ profile, canEdit = true, className = '' }: ProfileFormProps) {
   const [formState, formAction] = useFormState(updateProfileAction, createInitialActionState());

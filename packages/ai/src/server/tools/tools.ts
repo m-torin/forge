@@ -8,7 +8,7 @@ import { tool as aiTool, type Tool } from 'ai';
 import { z } from 'zod';
 import {
   ToolRegistry,
-  createAdvancedToolRegistry,
+  createDynamicToolRegistry,
   createSimpleToolRegistry,
   createStandardToolRegistry,
   type ToolContext,
@@ -70,7 +70,7 @@ export function createTools(
 
   if (options.dynamic || (options.cache && options.cache !== true)) {
     // Advanced features need their own registry
-    registry = createAdvancedToolRegistry();
+    registry = createDynamicToolRegistry();
     isTemporary = true;
   } else if (!options.track && !options.cache) {
     // Simple case - create temporary registry
@@ -119,12 +119,12 @@ export const createTool = {
    */
   simple<TParams extends z.ZodTypeAny, TResult>(config: {
     description: string;
-    parameters: TParams;
+    inputSchema: TParams;
     execute: (args: z.infer<TParams>) => Promise<TResult> | TResult;
   }): Tool {
     return aiTool({
       description: config.description,
-      inputSchema: config.parameters,
+      inputSchema: config.inputSchema,
       execute: async (args: any, _options: any) => config.execute(args),
     } as any) as Tool;
   },
@@ -148,14 +148,14 @@ export const createTool = {
   withContext<TParams extends z.ZodTypeAny, TResult>(
     config: {
       description: string;
-      parameters: TParams;
+      inputSchema: TParams;
       execute: (args: z.infer<TParams>, context: ToolContext) => Promise<TResult> | TResult;
     },
     context: ToolContext,
   ): Tool {
     return aiTool({
       description: config.description,
-      inputSchema: config.parameters,
+      inputSchema: config.inputSchema,
       execute: async (args: any, _options: any) => config.execute(args, context),
     } as any) as Tool;
   },
@@ -227,7 +227,7 @@ export const toolsets = {
       'weather',
       createTool.simple({
         description: 'Get weather information',
-        parameters: z.object({
+        inputSchema: z.object({
           location: schemas.location,
           units: z.enum(['celsius', 'fahrenheit']).optional().default('celsius'),
         }),
@@ -248,7 +248,7 @@ export const toolsets = {
       'search',
       createTool.simple({
         description: 'Search for information',
-        parameters: z.object({
+        inputSchema: z.object({
           query: schemas.query,
           limit: schemas.limit,
         }),
@@ -270,7 +270,7 @@ export const toolsets = {
       'calculator',
       createTool.simple({
         description: 'Perform calculations',
-        parameters: z.object({
+        inputSchema: z.object({
           expression: z.string().describe('Mathematical expression'),
         }),
         execute: async args => {
@@ -310,7 +310,7 @@ export const toolsets = {
       createTool.withContext(
         {
           description: 'Add knowledge to vector store',
-          parameters: z.object({
+          inputSchema: z.object({
             content: schemas.content,
             metadata: schemas.metadata,
           }),
@@ -335,7 +335,7 @@ export const toolsets = {
       createTool.withContext(
         {
           description: 'Search knowledge base',
-          parameters: z.object({
+          inputSchema: z.object({
             query: schemas.query,
             limit: schemas.limit,
           }),
@@ -359,7 +359,7 @@ export const toolsets = {
       createTool.withContext(
         {
           description: 'Update existing knowledge',
-          parameters: z.object({
+          inputSchema: z.object({
             id: schemas.id,
             content: schemas.content,
             metadata: schemas.metadata,
@@ -397,7 +397,7 @@ export const toolsets = {
       'createDocument',
       createTool.simple({
         description: 'Create a new document',
-        parameters: z.object({
+        inputSchema: z.object({
           title: z.string(),
           content: schemas.content,
           format: z.enum(['markdown', 'text', 'html']).optional().default('markdown'),
@@ -419,7 +419,7 @@ export const toolsets = {
       'summarizeDocument',
       createTool.simple({
         description: 'Summarize document content',
-        parameters: z.object({
+        inputSchema: z.object({
           content: schemas.content,
           maxLength: z.number().optional().default(200),
         }),

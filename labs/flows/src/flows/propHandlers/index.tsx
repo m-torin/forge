@@ -9,6 +9,7 @@ import {
   useReactFlow,
   Connection,
   addEdge,
+  type IsValidConnection,
 } from '@xyflow/react';
 import { logWarn, logError } from '@repo/observability';
 import { FbNode, FbEdge, FbNodeData } from '../types';
@@ -153,12 +154,60 @@ export const useReactFlowSetup = (
   const [nodes, setNodes, onNodesChange] = useNodesState<FbNode>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<FbEdge>(initialEdges);
 
+  // Modern connection validation
+  const isValidConnection: IsValidConnection = useCallback((connection) => {
+    if (!connection.source || !connection.target) return false;
+    
+    // Prevent self-connections
+    if (connection.source === connection.target) return false;
+    
+    // Check for existing connections to prevent duplicates
+    const existingConnection = edges.find(
+      (edge) =>
+        edge.source === connection.source &&
+        edge.target === connection.target &&
+        edge.sourceHandle === connection.sourceHandle &&
+        edge.targetHandle === connection.targetHandle
+    );
+    
+    if (existingConnection) return false;
+    
+    // Add custom validation logic based on node types
+    const sourceNode = nodes.find((node) => node.id === connection.source);
+    const targetNode = nodes.find((node) => node.id === connection.target);
+    
+    if (!sourceNode || !targetNode) return false;
+    
+    // Example: Prevent connections between incompatible node types
+    const incompatibleTypes = [
+      ['source', 'source'],
+      ['destination', 'destination'],
+    ];
+    
+    const sourceType = sourceNode.type || 'default';
+    const targetType = targetNode.type || 'default';
+    
+    const isIncompatible = incompatibleTypes.some(
+      ([type1, type2]) =>
+        (sourceType.includes(type1) && targetType.includes(type2)) ||
+        (sourceType.includes(type2) && targetType.includes(type1))
+    );
+    
+    return !isIncompatible;
+  }, [edges, nodes]);
+
   const onConnect = useCallback(
     (connection: Connection) => {
+      if (!isValidConnection(connection)) return;
+      
       const edgeId = getEdgeId(); // New edges get edge_xxx id
-      setEdges((eds) => addEdge({ ...connection, id: edgeId }, eds));
+      setEdges((eds) => addEdge({ 
+        ...connection, 
+        id: edgeId,
+        animated: true, // Make new connections animated by default
+      }, eds));
     },
-    [setEdges],
+    [setEdges, isValidConnection],
   );
 
   const onDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
@@ -233,6 +282,7 @@ export const useReactFlowSetup = (
     defaultEdgeOptions: {
       type: 'custom',
       markerEnd: 'edge-marker',
+      animated: true,
     },
     nodeTypes,
     onNodesChange,
@@ -240,9 +290,18 @@ export const useReactFlowSetup = (
     onConnect,
     onDragOver,
     onDrop,
+    isValidConnection,
     nodeDragThreshold: 1,
     edgesReconnectable: true,
     defaultViewport: flowData?.flow?.viewport || { x: 0, y: 0, zoom: 1 },
+    // Modern accessibility and interaction options
+    nodesFocusable: true,
+    edgesFocusable: true,
+    disableKeyboardA11y: false,
+    // Auto-panning configuration
+    autoPanOnConnect: true,
+    autoPanOnNodeDrag: true,
+    connectionRadius: 20,
   };
 
   return {

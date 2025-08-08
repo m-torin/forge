@@ -28,8 +28,12 @@ storybook-static
 out/
 build
 dist
-prisma-generated
+**/prisma/generated/
+**/prisma-generated/
 *.tsbuildinfo
+
+# React Email
+.react-email/
 
 # Debug
 .log*

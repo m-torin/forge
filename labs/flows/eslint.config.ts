@@ -40,5 +40,22 @@ export default [
     rules: {
       "no-console": "off"
     }
+  },
+  {
+    // Relax E2E test rules for Playwright testing patterns
+    files: ["**/__tests__/e2e/**/*.spec.ts", "**/__tests__/e2e/**/*.test.ts"],
+    rules: {
+      "playwright/no-conditional-expect": "off",
+      "playwright/no-conditional-in-test": "off",
+      "playwright/no-networkidle": "off",
+      "playwright/no-wait-for-selector": "off"
+    }
+  },
+  {
+    // Allow accessibility exceptions for test components
+    files: ["**/__tests__/**/*.tsx", "**/__tests__/**/*.test.tsx"],
+    rules: {
+      "jsx-a11y/no-static-element-interactions": "off"
+    }
   }
 ];

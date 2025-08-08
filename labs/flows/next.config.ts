@@ -3,7 +3,8 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   sassOptions: {
-    prependData: `@import "./src/styles/_mantine.scss";`,
+    additionalData: `@use "./src/styles/_mantine" as *;`,
+    implementation: 'sass-embedded',
   },
   images: {
     domains: [

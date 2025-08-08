@@ -415,7 +415,7 @@ export function createRepairableTool<_TParams, TResult>(
 ): Tool {
   return aiTool({
     description: baseTool.description,
-    parameters: (baseTool as any).parameters,
+    inputSchema: (baseTool as any).inputSchema || (baseTool as any).parameters,
     execute: async (input: any, options: any) => {
       try {
         // Try original execution first

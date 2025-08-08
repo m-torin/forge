@@ -770,7 +770,7 @@ export async function createMCPToolsForRequest(configs: MCPClientConfig[]): Prom
  *   ...toolSetThree, // note: this approach causes subsequent tool sets to override tools with the same name
  * };
  *
- * const response = await streamText({
+ * const response = streamText({
  *   model: openai('gpt-4o'),
  *   tools,
  *   prompt,

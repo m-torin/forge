@@ -1,5 +1,5 @@
 import { logError, logInfo } from '@repo/observability';
-// Note: LanguageModelV2Middleware may not be exported in some AI SDK versions
+// Note: LanguageModelMiddleware may not be exported in some AI SDK versions
 // Using 'any' type for compatibility while maintaining functionality
 
 /**
@@ -181,7 +181,7 @@ export const telemetryMiddleware: any = {
  */
 export interface TelemetryConfig {
   isEnabled: boolean;
-  tracer?: any; // OpenTelemetry tracer
+  tracer?: any;
   functionId?: string;
   metadata?: Record<string, string | number | boolean>;
   collectUsage?: boolean;
@@ -257,7 +257,7 @@ export const telemetryConfigs = {
  *
  * @param config - Telemetry configuration options (defaults to telemetryConfigs.default)
  *
- * @returns Configured LanguageModelV2Middleware instance
+ * @returns Configured LanguageModelMiddleware instance
  *
  * @example Basic Custom Configuration
  * ```typescript

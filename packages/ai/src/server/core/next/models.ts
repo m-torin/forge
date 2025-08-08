@@ -1,4 +1,4 @@
-import type { LanguageModelV2 } from '@ai-sdk/provider';
+import type { LanguageModel } from 'ai';
 
 /**
  * Standard model configuration interface for AI providers
@@ -14,7 +14,8 @@ export interface ModelConfig {
 /**
  * Language model interface with role identification
  */
-export interface NamedLanguageModel extends LanguageModelV2 {
+export interface NamedLanguageModel {
+  model: LanguageModel;
   modelId: string;
   provider: string;
 }
@@ -23,14 +24,15 @@ export interface NamedLanguageModel extends LanguageModelV2 {
  * Creates a language model wrapper with metadata
  */
 export function createNamedModel(
-  model: LanguageModelV2,
+  model: LanguageModel,
   modelId: string,
   provider: string,
 ): NamedLanguageModel {
-  return Object.assign(model, {
+  return {
+    model,
     modelId,
     provider,
-  });
+  };
 }
 
 /**

@@ -11,7 +11,7 @@ export interface ProductClassificationResult {
   readonly categoryId: string;
   readonly confidence: number;
   readonly path: readonly string[];
-  readonly reasoning?: string;
+  readonly reasoningText?: string;
 }
 
 export interface ProductData {

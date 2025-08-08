@@ -16,7 +16,7 @@ export interface PromptCacheEntry {
   metadata: {
     model?: string;
     temperature?: number;
-    maxTokens?: number;
+    maxOutputTokens?: number;
     timestamp: number;
     hits: number;
     lastAccessed: number;
@@ -59,7 +59,7 @@ export class PromptCache {
     params?: {
       model?: string;
       temperature?: number;
-      maxTokens?: number;
+      maxOutputTokens?: number;
       [key: string]: any;
     },
   ): string {

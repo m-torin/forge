@@ -381,10 +381,10 @@ describe('agent Configuration Templates', () => {
 
     test('should get templates by complexity', () => {
       const simpleTemplates = registry.getTemplatesByComplexity('simple');
-      const advancedTemplates = registry.getTemplatesByComplexity('advanced');
+      const expertTemplates = registry.getTemplatesByComplexity('expert');
 
       expect(simpleTemplates.every(t => t.complexity === 'simple')).toBeTruthy();
-      expect(advancedTemplates.every(t => t.complexity === 'advanced')).toBeTruthy();
+      expect(expertTemplates.every(t => t.complexity === 'expert')).toBeTruthy();
     });
 
     test('should search templates by tags', () => {

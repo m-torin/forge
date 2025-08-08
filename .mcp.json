@@ -21,8 +21,29 @@
       "args": ["./packages/mcp-utils/bin/mcp-server.mjs"],
       "env": {
         "NODE_ENV": "production",
-        "LOG_LEVEL": "info",
-        "PROJECT_ROOT": "${PROJECT_ROOT}"
+        "LOG_LEVEL": "info"
+      }
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest",
+        "--headless",
+        "--caps",
+        "vision,pdf",
+        "--browser",
+        "chromium",
+        "--output-dir",
+        "./test-results",
+        "--save-trace",
+        "--ignore-https-errors"
+      ]
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": ""
       }
     }
   }

@@ -37,10 +37,32 @@ export const createUtilityTestSuite = (suite: UtilityTestSuite) => {
     scenarios.forEach(scenario => {
       test('should ' + scenario.name, async () => {
         if (scenario.shouldThrow) {
-          await expect(utilityFunction(...scenario.args)).rejects.toThrow(scenario.errorMessage);
+          try {
+            const result = utilityFunction(...scenario.args);
+            // Check if it's a promise
+            if (result && typeof result.then === 'function') {
+              await expect(result).rejects.toThrow(scenario.errorMessage);
+            } else {
+              // It should have thrown synchronously, but didn't
+              expect.fail('Expected function to throw, but it returned a value');
+            }
+          } catch (error) {
+            // Synchronous throw
+            if (scenario.errorMessage) {
+              expect((error as Error).message).toBe(scenario.errorMessage);
+            } else {
+              expect(error).toBeDefined();
+            }
+          }
         } else {
-          const result = await utilityFunction(...scenario.args);
-          scenario.assertion(result);
+          const result = utilityFunction(...scenario.args);
+          // Check if it's a promise
+          if (result && typeof result.then === 'function') {
+            const resolvedResult = await result;
+            scenario.assertion(resolvedResult);
+          } else {
+            scenario.assertion(result);
+          }
         }
       });
     });

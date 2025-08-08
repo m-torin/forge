@@ -22,8 +22,13 @@
   "dependencies": {
     "@repo/observability": "workspace:*",
     "@t3-oss/env-nextjs": "catalog:",
+    "@vercel/og": "^0.8.5",
+    "cheerio": "^1.0.0",
     "dub": "^0.64.2",
     "next": "catalog:",
+    "node-fetch": "^3.3.2",
+    "puppeteer": "^23.6.0",
+    "qrcode": "^1.5.4",
     "react": "catalog:",
     "zod": "catalog:"
   },

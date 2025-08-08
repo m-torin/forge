@@ -15,7 +15,7 @@ async function example1_presetTools() {
   // Get standard tools with one line
   const standardTools = toolsets.standard();
 
-  const result = await streamText({
+  const result = streamText({
     model: openai('gpt-4'),
     tools: standardTools,
     prompt: "What's the weather in San Francisco?",
@@ -33,7 +33,7 @@ async function example2_customTools() {
   // Create a custom tool
   const customTool = createTool.simple({
     description: 'Get user information',
-    parameters: tools.schemas.id,
+    inputSchema: tools.schemas.id,
     execute: async ({ id }) => {
       return {
         id,
@@ -49,7 +49,7 @@ async function example2_customTools() {
     ...toolsets.standard(),
   });
 
-  const result = await streamText({
+  const result = streamText({
     model: openai('gpt-4'),
     tools: myTools,
     prompt: 'Get user info for user123 and then check the weather',
@@ -74,7 +74,7 @@ async function example3_withTracking() {
   );
 
   // Use the tools
-  const result = await streamText({
+  const result = streamText({
     model: openai('gpt-4'),
     tools: trackedTools,
     prompt: 'Create a document about AI and then search for related content',
@@ -92,7 +92,7 @@ async function example4_ragTools() {
   // Mock vector store for example
   const mockVectorStore = {
     upsert: async (data: any) => console.log('Upserting:', data),
-    query: async (params: any) => ({
+    query: async (_params: any) => ({
       matches: [{ id: '1', score: 0.9, data: 'AI is transformative' }],
     }),
     update: async (data: any) => console.log('Updating:', data),
@@ -103,7 +103,7 @@ async function example4_ragTools() {
     vectorStore: mockVectorStore,
   });
 
-  const result = await streamText({
+  const result = streamText({
     model: openai('gpt-4'),
     tools: ragTools,
     prompt: 'Add this to knowledge base: AI SDK v5 is powerful. Then search for AI information.',
@@ -120,14 +120,14 @@ async function example5_withContext() {
 
   // Mock database
   const db = {
-    query: async (sql: string) => ({ rows: [{ id: 1, name: 'Test' }] }),
+    query: async (_sql: string) => ({ rows: [{ id: 1, name: 'Test' }] }),
   };
 
   // Create tool with context
   const dbTool = createTool.withContext(
     {
       description: 'Query database',
-      parameters: tools.schemas.query,
+      inputSchema: tools.schemas.query,
       execute: async ({ query }, context) => {
         return await context.db.query(query);
       },
@@ -141,7 +141,7 @@ async function example5_withContext() {
     ...toolsets.standard(),
   });
 
-  const result = await streamText({
+  const result = streamText({
     model: openai('gpt-4'),
     tools: contextTools,
     prompt: 'Query the database for users and check the weather',
@@ -160,12 +160,12 @@ async function example6_combineToolsets() {
   const allTools = toolsets.combine(toolsets.standard(), toolsets.documents(), {
     customTool: createTool.simple({
       description: 'Custom business logic',
-      parameters: tools.schemas.content,
+      inputSchema: tools.schemas.content,
       execute: async ({ content }) => ({ processed: content.toUpperCase() }),
     }),
   });
 
-  const result = await streamText({
+  const result = streamText({
     model: openai('gpt-4'),
     tools: allTools,
     prompt: 'Create a document, process some text, and calculate 2+2',
@@ -176,12 +176,12 @@ async function example6_combineToolsets() {
   }
 }
 
-// Example 7: Advanced features (all options)
-async function example7_advancedFeatures() {
-  console.log('Example 7: Advanced features');
+// Example 7: Comprehensive features (all options)
+async function example7_comprehensiveFeatures() {
+  console.log('Example 7: Comprehensive features');
 
   // Create tools with all features
-  const advancedTools = createTools(
+  const comprehensiveTools = createTools(
     {
       ...toolsets.standard(),
     },
@@ -201,9 +201,9 @@ async function example7_advancedFeatures() {
     },
   );
 
-  const result = await streamText({
+  const result = streamText({
     model: openai('gpt-4'),
-    tools: advancedTools,
+    tools: comprehensiveTools,
     prompt: 'Use various tools to demonstrate capabilities',
   });
 
@@ -222,7 +222,7 @@ async function main() {
   // await example4_ragTools();
   // await example5_withContext();
   // await example6_combineToolsets();
-  // await example7_advancedFeatures();
+  // await example7_comprehensiveFeatures();
 
   // Or run all examples
   for (const example of [
@@ -232,7 +232,7 @@ async function main() {
     example4_ragTools,
     example5_withContext,
     example6_combineToolsets,
-    example7_advancedFeatures,
+    example7_comprehensiveFeatures,
   ]) {
     await example();
     console.log(`
@@ -243,7 +243,13 @@ async function main() {
 
 // Only run if executed directly
 if (require.main === module) {
-  main().catch(console.error);
+  (async () => {
+    try {
+      await main();
+    } catch (error) {
+      console.error(error);
+    }
+  })();
 }
 
 // Export for use in other examples

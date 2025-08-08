@@ -48,10 +48,10 @@ async function demoStructuredGeneration() {
 }
 
 /**
- * Demo 2: Enhanced Embeddings with Parallel Processing
+ * Demo 2: Cached Embeddings with Parallel Processing
  */
-async function demoEnhancedEmbeddings() {
-  console.log('🧠 Demo 2: Enhanced Embeddings');
+async function demoCachedEmbeddings() {
+  console.log('🧠 Demo 2: Cached Embeddings');
 
   const documents = [
     'The quick brown fox jumps over the lazy dog',
@@ -61,10 +61,9 @@ async function demoEnhancedEmbeddings() {
     'Deep learning uses neural networks with multiple layers',
   ];
 
-  // Semantic search with parallel processing
+  // Semantic search
   const searchResults = await enhancedEmbedding.search('AI and machine learning', documents, {
     topK: 3,
-    maxParallelCalls: 3, // Process embeddings in parallel
   });
 
   console.log('Search Results:');
@@ -89,15 +88,15 @@ Document Clusters:`);
 }
 
 /**
- * Demo 3: Advanced Middleware (Logging + Caching)
+ * Demo 3: Middleware Chaining (Logging + Caching)
  */
-async function demoAdvancedMiddleware() {
-  console.log('🛠️ Demo 3: Advanced Middleware');
+async function demoMiddlewareChaining() {
+  console.log('🛠️ Demo 3: Middleware Chaining');
 
   const { wrapLanguageModel } = await import('ai');
 
   // Create a model with logging and caching middleware
-  const enhancedModel = wrapLanguageModel({
+  const instrumentedModel = wrapLanguageModel({
     model: openai('gpt-4o-mini'),
     middleware: [
       createLoggingMiddleware({
@@ -115,7 +114,7 @@ async function demoAdvancedMiddleware() {
 
   // First call (will be cached)
   console.log('Making first API call (will be cached)...');
-  const result1 = await enhancedModel.doGenerate({
+  const result1 = await instrumentedModel.doGenerate({
     inputFormat: 'prompt',
     mode: { type: 'regular' },
     prompt: 'Explain quantum computing in one sentence.',
@@ -125,7 +124,7 @@ async function demoAdvancedMiddleware() {
 
   // Second call with same prompt (should hit cache)
   console.log('Making second API call (should hit cache)...');
-  const result2 = await enhancedModel.doGenerate({
+  const result2 = await instrumentedModel.doGenerate({
     inputFormat: 'prompt',
     mode: { type: 'regular' },
     prompt: 'Explain quantum computing in one sentence.',
@@ -234,10 +233,10 @@ async function runAllDemos() {
     await demoStructuredGeneration();
     console.log('\n' + '='.repeat(50));
 
-    await demoEnhancedEmbeddings();
+    await demoCachedEmbeddings();
     console.log('\n' + '='.repeat(50));
 
-    await demoAdvancedMiddleware();
+    await demoMiddlewareChaining();
     console.log('\n' + '='.repeat(50));
 
     await demoV5Tools();
@@ -254,8 +253,8 @@ async function runAllDemos() {
 
 // Export for external usage
 export {
-  demoAdvancedMiddleware,
-  demoEnhancedEmbeddings,
+  demoCachedEmbeddings,
+  demoMiddlewareChaining,
   demoProviderRegistry,
   demoStructuredGeneration,
   demoV5Tools,

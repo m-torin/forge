@@ -1,5 +1,5 @@
+import { createMockAuthSession, createMockTeam } from '@repo/qa';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { createMockSession, createMockTeam } from '../../test-helpers/factories';
 import { mockBetterAuthApi, setupAllMocks } from '../../test-helpers/mocks';
 
 // Import after mocking
@@ -9,7 +9,7 @@ import {
   getTeamAction,
   getTeamStatsAction,
   updateTeamAction,
-} from '#/server/teams/actions';
+} from '../../src/server/teams/actions';
 
 // Set up all mocks
 setupAllMocks();
@@ -26,7 +26,7 @@ describe('team Actions', () => {
     vi.clearAllMocks();
 
     // Set up default session
-    vi.mocked(mockBetterAuthApi.getSession).mockResolvedValue(createMockSession());
+    vi.mocked(mockBetterAuthApi.getSession).mockResolvedValue(createMockAuthSession());
   });
 
   describe('createTeam', () => {

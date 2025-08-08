@@ -1,10 +1,10 @@
-declare module "eslint-plugin-perfectionist" {
-  import { ESLint, Linter } from "eslint";
+declare module 'eslint-plugin-perfectionist' {
+  import { ESLint, Linter } from 'eslint';
 
   interface PerfectionistPlugin extends ESLint.Plugin {
     configs: {
       [key: string]: Linter.FlatConfig;
-      "recommended-natural": Linter.FlatConfig;
+      'recommended-natural': Linter.FlatConfig;
     };
   }
 

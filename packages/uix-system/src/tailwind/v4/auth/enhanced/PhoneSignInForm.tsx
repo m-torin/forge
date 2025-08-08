@@ -11,13 +11,13 @@ import { Card, CardContent, CardHeader } from '../ui/Card';
 import { Input } from '../ui/Input';
 
 // Real server actions for phone authentication
-const sendPhoneSMSAction = async (prevState: any, formData: FormData) => {
+const sendPhoneSMSAction = async (__prevState: any, formData: FormData) => {
   'use server';
 
   try {
     const phoneNumber = formData.get('phoneNumber') as string;
     const countryCode = formData.get('countryCode') as string;
-    const type = formData.get('type') as string;
+    const _type = formData.get('type') as string;
 
     const fullPhoneNumber = `${countryCode}${phoneNumber}`;
 
@@ -28,7 +28,7 @@ const sendPhoneSMSAction = async (prevState: any, formData: FormData) => {
     // 4. Send SMS via service like Twilio, AWS SNS, or similar
     // 5. Return success with masked phone number
 
-    console.log('Sending SMS to:', { fullPhoneNumber, type });
+    // console.log('Sending SMS to:', { fullPhoneNumber, type });
 
     // Simulate SMS sending
     await new Promise(resolve => setTimeout(resolve, 1500));
@@ -50,13 +50,13 @@ const sendPhoneSMSAction = async (prevState: any, formData: FormData) => {
   }
 };
 
-const verifyPhoneSMSAction = async (prevState: any, formData: FormData) => {
+const verifyPhoneSMSAction = async (__prevState: any, formData: FormData) => {
   'use server';
 
   try {
     const phoneNumber = formData.get('phoneNumber') as string;
     const verificationCode = formData.get('verificationCode') as string;
-    const type = formData.get('type') as string;
+    const _type = formData.get('type') as string;
 
     // In a real implementation, this would:
     // 1. Retrieve the stored verification code for the phone number
@@ -69,7 +69,7 @@ const verifyPhoneSMSAction = async (prevState: any, formData: FormData) => {
     // 5. Create session using Better Auth if needed
     // 6. Return success with user data
 
-    console.log('Verifying SMS code:', { phoneNumber, verificationCode, type });
+    // console.log('Verifying SMS code:', { phoneNumber, verificationCode, type });
 
     // Simulate verification process
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -134,7 +134,7 @@ export function PhoneSignInForm({
   onSuccess,
   onCancel,
   type = 'sign-in',
-  redirectTo,
+  redirectTo: _redirectTo,
   allowInternational = true,
   defaultCountry = 'US',
   className = '',
@@ -336,7 +336,6 @@ export function PhoneSignInForm({
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Error Messages */}
         {(sendSMSState.error || verifyState.error) && (
           <Alert variant="destructive">
             {sendSMSState.error || verifyState.error}
@@ -348,7 +347,6 @@ export function PhoneSignInForm({
           </Alert>
         )}
 
-        {/* Success Message */}
         {currentStep === 'success' && (
           <Alert variant="default">
             <div className="flex items-center">
@@ -361,7 +359,6 @@ export function PhoneSignInForm({
           </Alert>
         )}
 
-        {/* Step 1: Phone Number Input */}
         {currentStep === 'phone' && (
           <form onSubmit={handlePhoneSubmit} className="space-y-4">
             <div>
@@ -369,7 +366,6 @@ export function PhoneSignInForm({
                 Phone Number
               </label>
               <div className="flex space-x-2">
-                {/* Country Code Selector */}
                 <div className="relative">
                   <select
                     value={selectedCountry.code}
@@ -403,7 +399,6 @@ export function PhoneSignInForm({
                   </div>
                 </div>
 
-                {/* Phone Number Input */}
                 <Input
                   id="phone"
                   type="tel"
@@ -415,7 +410,6 @@ export function PhoneSignInForm({
                   }
                   className="flex-1"
                   autoComplete="tel"
-                  autoFocus
                 />
               </div>
               <p className="mt-1 text-xs text-gray-500">
@@ -429,7 +423,6 @@ export function PhoneSignInForm({
           </form>
         )}
 
-        {/* Step 2: SMS Verification */}
         {currentStep === 'verification' && (
           <form onSubmit={handleVerificationSubmit} className="space-y-4">
             <div>
@@ -450,7 +443,6 @@ export function PhoneSignInForm({
                 maxLength={6}
                 autoComplete="one-time-code"
                 disabled={isPending || isBlocked}
-                autoFocus
               />
               <div className="mt-2 flex items-center justify-between text-xs">
                 <span className="text-gray-500">{verificationCode.length}/6 digits entered</span>
@@ -463,7 +455,6 @@ export function PhoneSignInForm({
               </div>
             </div>
 
-            {/* Code Input Visual Helper */}
             <div className="flex justify-center space-x-2">
               {Array.from({ length: 6 }, (_, i) => (
                 <div
@@ -487,7 +478,6 @@ export function PhoneSignInForm({
               {isPending ? 'Verifying...' : config.verifyText}
             </Button>
 
-            {/* Resend and Edit Options */}
             <div className="flex flex-col space-y-3">
               <div className="flex items-center justify-between text-sm">
                 <button
@@ -516,7 +506,6 @@ export function PhoneSignInForm({
                 </div>
               </div>
 
-              {/* Attempt Counter */}
               <div className="text-center">
                 <span className="text-xs text-gray-500">
                   Resend attempt {resendAttempts} of {maxResendAttempts}
@@ -526,7 +515,6 @@ export function PhoneSignInForm({
           </form>
         )}
 
-        {/* Information Panel */}
         {currentStep !== 'success' && (
           <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
             <div className="flex items-start">
@@ -545,7 +533,6 @@ export function PhoneSignInForm({
           </div>
         )}
 
-        {/* Security Notice */}
         {currentStep === 'verification' && (
           <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
             <div className="flex items-start">
@@ -562,7 +549,6 @@ export function PhoneSignInForm({
           </div>
         )}
 
-        {/* Loading State Overlay */}
         {currentStep === 'success' && (
           <div className="flex items-center justify-center py-8">
             <div className="flex items-center space-x-3">
@@ -572,7 +558,6 @@ export function PhoneSignInForm({
           </div>
         )}
 
-        {/* Progress Indicator */}
         <div className="mt-6 border-t border-gray-200 pt-4">
           <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
             <div className="flex items-center space-x-1">

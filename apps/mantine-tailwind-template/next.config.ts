@@ -1,5 +1,8 @@
 import { config, mergeConfig } from '@repo/config/next';
 import type { NextConfig } from 'next';
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: NextConfig = mergeConfig(config, {
   // App-specific configurations can be added here
@@ -7,4 +10,4 @@ const nextConfig: NextConfig = mergeConfig(config, {
   // Prisma plugin, bundle optimization, and other monorepo optimizations
 });
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

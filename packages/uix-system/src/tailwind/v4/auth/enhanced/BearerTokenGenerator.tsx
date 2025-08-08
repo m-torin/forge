@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader } from '../ui/Card';
 import { Input } from '../ui/Input';
 
 // Real server actions from the auth package
-const generateTokenAction = async (prevState: any, formData: FormData) => {
+const generateTokenAction = async (__prevState: any, formData: FormData) => {
   'use server';
 
   try {
@@ -64,7 +64,7 @@ const generateTokenAction = async (prevState: any, formData: FormData) => {
   }
 };
 
-const revokeTokenAction = async (prevState: any, formData: FormData) => {
+const revokeTokenAction = async (__prevState: any, formData: FormData) => {
   'use server';
 
   try {
@@ -85,7 +85,7 @@ const revokeTokenAction = async (prevState: any, formData: FormData) => {
   }
 };
 
-const regenerateTokenAction = async (prevState: any, formData: FormData) => {
+const regenerateTokenAction = async (__prevState: any, formData: FormData) => {
   'use server';
 
   try {
@@ -102,7 +102,7 @@ const regenerateTokenAction = async (prevState: any, formData: FormData) => {
     const createFormData = new FormData();
     createFormData.append('name', 'Regenerated Token');
     createFormData.append('expiresIn', '30');
-    const newKey = await createAPIKeyAction({ success: false, error: '' }, createFormData);
+    const _newKey = await createAPIKeyAction({ success: false, error: '' }, createFormData);
 
     return {
       success: true,
@@ -222,9 +222,9 @@ const EXPIRY_OPTIONS = [
 export function BearerTokenGenerator({
   existingTokens,
   availableScopes = DEFAULT_SCOPES,
-  onTokenGenerated,
-  onTokenRevoked,
-  onTokenRegenerated,
+  onTokenGenerated: _onTokenGenerated,
+  onTokenRevoked: _onTokenRevoked,
+  onTokenRegenerated: _onTokenRegenerated,
   maxTokens = 10,
   allowCustomExpiry = true,
   requireScopes = true,
@@ -237,7 +237,7 @@ export function BearerTokenGenerator({
   const [selectedScopes, setSelectedScopes] = useState<Set<string>>(new Set());
   const [expiresIn, setExpiresIn] = useState('30');
   const [customExpiry, setCustomExpiry] = useState('');
-  const [generatedToken, setGeneratedToken] = useState<BearerToken | null>(null);
+  const [generatedToken, _setGeneratedToken] = useState<BearerToken | null>(null);
   const [showToken, setShowToken] = useState(false);
   const [copiedToken, setCopiedToken] = useState('');
   const [filterCategory, setFilterCategory] = useState<'all' | 'read' | 'write' | 'admin'>('all');
@@ -304,8 +304,8 @@ export function BearerTokenGenerator({
       await navigator.clipboard.writeText(token);
       setCopiedToken(token);
       setTimeout(() => setCopiedToken(''), 2000);
-    } catch (err) {
-      console.error('Failed to copy token:', err);
+    } catch (_err) {
+      // console.error('Failed to copy token:', err);
     }
   };
 
@@ -348,7 +348,6 @@ export function BearerTokenGenerator({
 
   return (
     <div className={`space-y-6 ${className}`}>
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold text-gray-900">API Bearer Tokens</h2>
@@ -361,7 +360,6 @@ export function BearerTokenGenerator({
         </Button>
       </div>
 
-      {/* Status Messages */}
       {(generateState.error || revokeState.error || regenerateState.error) && (
         <Alert variant="destructive">
           {generateState.error || revokeState.error || regenerateState.error}
@@ -376,7 +374,6 @@ export function BearerTokenGenerator({
         </Alert>
       )}
 
-      {/* Generated Token Display */}
       {showToken && generatedToken && (
         <Alert variant="default">
           <div className="space-y-4">
@@ -422,7 +419,6 @@ export function BearerTokenGenerator({
         </Alert>
       )}
 
-      {/* Token Statistics */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <Card>
           <CardContent className="p-4">
@@ -477,7 +473,6 @@ export function BearerTokenGenerator({
         </Card>
       </div>
 
-      {/* Token Generator Modal */}
       {showGenerator && (
         <Card className="border-blue-200 bg-blue-50">
           <CardHeader>
@@ -572,7 +567,6 @@ export function BearerTokenGenerator({
                 />
               </div>
 
-              {/* Scope Selection */}
               <div>
                 <div className="mb-3 flex items-center justify-between">
                   <label className="text-sm font-medium text-gray-700">
@@ -673,7 +667,6 @@ export function BearerTokenGenerator({
         </Card>
       )}
 
-      {/* Existing Tokens List */}
       <Card>
         <CardHeader>
           <h3 className="text-lg font-medium text-gray-900">
@@ -815,7 +808,6 @@ export function BearerTokenGenerator({
         </CardContent>
       </Card>
 
-      {/* API Usage Documentation */}
       <Card className="border-blue-200 bg-blue-50">
         <CardContent className="p-4">
           <div className="flex items-start">

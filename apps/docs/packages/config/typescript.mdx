@@ -24,8 +24,8 @@ compilation, and development experience across the entire codebase.
   <Card title="React Library Configuration" icon="cube">
     Perfect for React component libraries and shared packages
   </Card>
-  <Card title="Node.js Configuration" icon="server">
-    Configured for Node.js applications and API services
+  <Card title="Cloudflare Workers Configuration" icon="cloud">
+    Optimized for Cloudflare Workers and edge runtime environments
   </Card>
   <Card title="Base Configuration" icon="foundation">
     Core settings shared across all project types
@@ -86,18 +86,14 @@ pnpm add -D @repo/config
 
   </Tab>
 
-  <Tab title="Node.js Services">
-    For Node.js applications and API services:
+  <Tab title="Cloudflare Workers">
+    For Cloudflare Workers and edge runtime applications:
 
     ```json
     // tsconfig.json
     {
-      "extends": "@repo/config/typescript/base.json",
+      "extends": "@repo/config/typescript/cloudflare.json",
       "compilerOptions": {
-        "target": "ES2022",
-        "module": "ESNext",
-        "moduleResolution": "bundler",
-        "allowSyntheticDefaultImports": true,
         "baseUrl": ".",
         "paths": {
           "#/*": ["./src/*"]
@@ -144,34 +140,35 @@ pnpm add -D @repo/config
 
 ## Configuration Features
 
-### Strict Type Checking
+### Configuration Reference
 
 <CodeGroup>
-```json Strict Mode Settings
+```json Base Configuration Settings
 {
   "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "lib": ["es2024", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleDetection": "force",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
     "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "strictBindCallApply": true,
-    "strictPropertyInitialization": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true
+    "target": "ES2022"
   }
 }
 ```
 
-```json Additional Checks
+```json Available Configurations
 {
-  "compilerOptions": {
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "exactOptionalPropertyTypes": true,
-    "noImplicitOverride": true,
-    "noPropertyAccessFromIndexSignature": true
-  }
+  "nextjs.json": "Next.js applications with App Router support",
+  "react-library.json": "React component libraries and packages",
+  "cloudflare.json": "Cloudflare Workers and edge runtime",
+  "base.json": "Foundation for all TypeScript projects"
 }
 ```
 

@@ -9,21 +9,24 @@ function renderWithMantine(ui: React.ReactElement) {
   return render(<MantineProvider theme={theme}>{ui}</MantineProvider>);
 }
 
-// Mock Next.js router hooks
-vi.mock('next/navigation', () => ({
+// Mock internationalization hooks
+vi.mock('@repo/internationalization/client/next', () => ({
   useRouter: () => ({ push: vi.fn() }),
   usePathname: () => '/en',
+  useLocale: () => 'en' as const,
+  useChangeLocale: () => vi.fn(),
+  useCurrentLocale: () => 'en' as const,
 }));
 
 describe('languageSwitcher', () => {
   test('renders language switcher menu', () => {
-    renderWithMantine(<LanguageSwitcher currentLocale="en" />);
+    renderWithMantine(<LanguageSwitcher />);
 
     expect(screen.getByTestId('mantine-menu')).toBeInTheDocument();
   });
 
   test('displays available languages', () => {
-    renderWithMantine(<LanguageSwitcher currentLocale="en" />);
+    renderWithMantine(<LanguageSwitcher />);
 
     expect(screen.getByText('🇺🇸 English')).toBeInTheDocument();
     expect(screen.getByText('🇪🇸 Español')).toBeInTheDocument();
@@ -33,7 +36,7 @@ describe('languageSwitcher', () => {
   });
 
   test('has menu label', () => {
-    renderWithMantine(<LanguageSwitcher currentLocale="en" />);
+    renderWithMantine(<LanguageSwitcher />);
 
     expect(screen.getByText('Select Language')).toBeInTheDocument();
   });

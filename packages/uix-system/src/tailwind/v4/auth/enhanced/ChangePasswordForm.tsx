@@ -21,7 +21,7 @@ interface ChangePasswordFormProps extends BaseProps {
   onError?: (error: string) => void;
 }
 
-const initialState: FormState = { success: false };
+const _initialState: FormState = { success: false };
 
 // Password strength checker
 function getPasswordStrength(password: string): {
@@ -54,7 +54,7 @@ function getPasswordStrength(password: string): {
 }
 
 // Server action for changing password
-async function changePasswordAction(prevState: any, formData: FormData): Promise<FormState> {
+async function changePasswordAction(__prevState: any, formData: FormData): Promise<FormState> {
   'use server';
 
   try {
@@ -101,10 +101,10 @@ async function changePasswordAction(prevState: any, formData: FormData): Promise
     // Note: changePasswordAction not implemented in local actions
 
     // TODO: Implement actual password change logic
-    console.log('Changing password:', {
-      currentPassword: requireCurrentPassword ? '[REDACTED]' : undefined,
-      newPassword: '[REDACTED]',
-    });
+    // console.log('Changing password:', {
+    //   currentPassword: requireCurrentPassword ? '[REDACTED]' : undefined,
+    //   newPassword: '[REDACTED]',
+    // });
 
     // Simulate successful password change
     const result = { success: true, error: undefined };
@@ -121,7 +121,7 @@ async function changePasswordAction(prevState: any, formData: FormData): Promise
       };
     }
   } catch (error: any) {
-    console.error('Change password error:', error);
+    // console.error('Change password error:', error);
 
     if (error?.message?.includes('incorrect password')) {
       return {
@@ -232,7 +232,6 @@ export function ChangePasswordForm({
       </CardHeader>
 
       <CardContent>
-        {/* Success State */}
         {state?.success && (
           <div className="space-y-4">
             <Alert variant="success">{state.message}</Alert>
@@ -291,13 +290,10 @@ export function ChangePasswordForm({
           </div>
         )}
 
-        {/* Form State */}
         {!state?.success && (
           <form action={action} className="space-y-4">
-            {/* Error Message */}
             {state?.error && <Alert variant="destructive">{state.error}</Alert>}
 
-            {/* Current Password */}
             {requireCurrentPassword && (
               <Input
                 name="currentPassword"
@@ -311,7 +307,6 @@ export function ChangePasswordForm({
               />
             )}
 
-            {/* New Password */}
             <div className="space-y-2">
               <Input
                 name="newPassword"
@@ -324,7 +319,6 @@ export function ChangePasswordForm({
                 description="Choose a strong password with at least 8 characters"
               />
 
-              {/* Password Strength Indicator */}
               {showPasswordStrength && passwordStrength && newPassword && (
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
@@ -367,8 +361,8 @@ export function ChangePasswordForm({
                     <div className={cn('text-xs text-gray-600', 'dark:text-gray-400')}>
                       <p className="mb-1 font-medium">Password should include:</p>
                       <ul className="list-inside list-disc space-y-0.5">
-                        {passwordStrength.feedback.map((item, index) => (
-                          <li key={index}>{item}</li>
+                        {passwordStrength.feedback.map(item => (
+                          <li key={item}>{item}</li>
                         ))}
                       </ul>
                     </div>
@@ -377,7 +371,6 @@ export function ChangePasswordForm({
               )}
             </div>
 
-            {/* Confirm Password */}
             <Input
               name="confirmPassword"
               type="password"
@@ -389,7 +382,6 @@ export function ChangePasswordForm({
               description="Re-enter your new password to confirm"
             />
 
-            {/* Hidden Fields */}
             <input
               type="hidden"
               name="requireCurrentPassword"
@@ -407,7 +399,6 @@ export function ChangePasswordForm({
           </form>
         )}
 
-        {/* Security Information */}
         <div
           className={cn(
             'mt-6 rounded-lg border border-blue-200 bg-blue-50 p-4',
@@ -438,7 +429,6 @@ export function ChangePasswordForm({
           </div>
         </div>
 
-        {/* Additional Actions */}
         <div className="mt-6 space-y-3">
           <div className="text-center">
             <a

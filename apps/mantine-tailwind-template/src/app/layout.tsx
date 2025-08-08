@@ -6,6 +6,7 @@ import './unified-theme.css';
 // import { viewport as seoViewport } from '@repo/seo/server/next';
 import { createOrganizationStructuredData } from '#/lib/seo';
 import { env } from '#/root/env';
+import Providers from './providers';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -108,7 +109,9 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased">
-        <MantineProvider theme={theme}>{children}</MantineProvider>
+        <MantineProvider theme={theme}>
+          <Providers>{children}</Providers>
+        </MantineProvider>
       </body>
     </html>
   );

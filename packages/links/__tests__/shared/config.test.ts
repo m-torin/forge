@@ -71,11 +71,11 @@ describe('configuration Management', () => {
       expect(config.providers.dub).toHaveProperty('defaultDomain', 'custom.link');
       expect(config.providers.dub).toHaveProperty('defaultExpiration', '2024-12-31T23:59:59Z');
       expect(config.providers.dub).toHaveProperty('defaultTags');
-      expect(config.providers.dub.defaultTags).toEqual(['production', 'marketing']);
+      expect(config.providers.dub.defaultTags).toStrictEqual(['production', 'marketing']);
 
       expect(config.analytics).toHaveProperty('enabled', true);
       expect(config.analytics).toHaveProperty('events');
-      expect(config.analytics.events).toEqual([
+      expect(config.analytics.events).toStrictEqual([
         'link_created',
         'link_clicked',
         'link_updated',
@@ -151,7 +151,7 @@ describe('configuration Management', () => {
       expect(dubConfig).toHaveProperty('defaultExpiration');
       expect(dubConfig).toHaveProperty('defaultTags');
       expect(Array.isArray(dubConfig.defaultTags)).toBeTruthy();
-      expect(dubConfig.defaultTags).toEqual(['test', 'development']);
+      expect(dubConfig.defaultTags).toStrictEqual(['test', 'development']);
     });
 
     test('should handle provider configuration variants', () => {
@@ -240,7 +240,7 @@ describe('configuration Management', () => {
       expect(analyticsConfig).toHaveProperty('enabled', true);
       expect(analyticsConfig).toHaveProperty('events');
       expect(Array.isArray(analyticsConfig.events)).toBeTruthy();
-      expect(analyticsConfig.events).toEqual([
+      expect(analyticsConfig.events).toStrictEqual([
         'link_created',
         'link_clicked',
         'link_updated',
@@ -290,7 +290,7 @@ describe('configuration Management', () => {
         expect(config).toHaveProperty('enabled', true);
         expect(config).toHaveProperty('events');
         expect(Array.isArray(config.events)).toBeTruthy();
-        expect(config.events).toEqual(events);
+        expect(config.events).toStrictEqual(events);
         expect(config).toHaveProperty('sampling', 1.0);
       });
     });

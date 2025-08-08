@@ -402,7 +402,15 @@ export const audioUtils = {
    * Create audio blob for browser playback
    */
   createAudioBlob(audioData: Uint8Array, mimeType: string): Blob {
-    return new Blob([audioData], { type: mimeType });
+    return new Blob(
+      [
+        audioData.buffer.slice(
+          audioData.byteOffset,
+          audioData.byteOffset + audioData.byteLength,
+        ) as ArrayBuffer,
+      ],
+      { type: mimeType },
+    );
   },
 
   /**

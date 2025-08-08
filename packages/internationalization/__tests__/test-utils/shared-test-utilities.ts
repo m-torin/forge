@@ -3,9 +3,9 @@
  * Reduces code duplication and provides consistent test patterns
  */
 
-import type { Dictionary, Locale } from '#/shared/dictionary-loader';
 import { render, screen } from '@testing-library/react';
 import { expect, vi } from 'vitest';
+import type { Dictionary, Locale } from '../../src/shared/dictionary-loader';
 
 // ============================================================================
 // MOCK UTILITIES

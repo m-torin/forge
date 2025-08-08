@@ -3,14 +3,14 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
 
 const baseConfig = createReactPackageConfig({
-  setupFiles: ['./test-setup.ts'],
+  setupFiles: ['@repo/qa/vitest/setup/next', './test-setup.ts'],
   overrides: {
     test: {
       include: ['**/*.{test,spec}.{ts,tsx}'],
       coverage: {
         enabled: true,
         provider: 'v8',
-        reporter: ['text', 'json', 'html', 'lcov'],
+        reporter: process.env.CI ? ['text', 'json', 'lcov'] : ['text', 'json', 'html', 'lcov'],
         exclude: [
           '**/node_modules/**',
           '**/dist/**',

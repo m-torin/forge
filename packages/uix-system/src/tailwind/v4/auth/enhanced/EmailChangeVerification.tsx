@@ -27,7 +27,7 @@ interface EmailChangeVerificationProps extends BaseProps {
   onVerificationComplete?: (newEmail: string) => void;
 }
 
-const initialState: FormState = { success: false };
+const _initialState: FormState = { success: false };
 
 export function EmailChangeVerification({
   currentEmail,
@@ -36,7 +36,7 @@ export function EmailChangeVerification({
   subtitle = 'Update your account email address with verification',
   showCancelButton = true,
   onCancel,
-  onVerificationComplete,
+  onVerificationComplete: _onVerificationComplete,
   className = '',
 }: EmailChangeVerificationProps) {
   const [initiateState, initiateAction] = useFormState(
@@ -77,7 +77,6 @@ export function EmailChangeVerification({
       </CardHeader>
 
       <CardContent>
-        {/* Current Email Display */}
         <div className="mb-6 rounded-lg bg-gray-50 p-4">
           <div className="flex items-center justify-between">
             <div>
@@ -90,7 +89,6 @@ export function EmailChangeVerification({
           </div>
         </div>
 
-        {/* Pending Email Change Status */}
         {pendingEmail && (
           <div className="mb-6 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
             <div className="flex items-start">
@@ -116,7 +114,6 @@ export function EmailChangeVerification({
               </div>
             </div>
 
-            {/* Cancel Pending Change */}
             <div className="mt-4 flex gap-2">
               <form action={cancelAction} className="inline">
                 <Button
@@ -132,7 +129,6 @@ export function EmailChangeVerification({
           </div>
         )}
 
-        {/* Error/Success Messages */}
         {(initiateState?.error || confirmState?.error || cancelState?.error) && (
           <Alert variant="destructive" className="mb-4">
             {initiateState?.error || confirmState?.error || cancelState?.error}
@@ -145,7 +141,6 @@ export function EmailChangeVerification({
           </Alert>
         )}
 
-        {/* Email Change Form */}
         {!pendingEmail && (
           <form action={initiateAction} className="space-y-4">
             <Input
@@ -212,7 +207,6 @@ export function EmailChangeVerification({
           </form>
         )}
 
-        {/* Manual Token Entry (for cases where user has token) */}
         {pendingEmail && (
           <div>
             <div className="mt-4 border-t border-gray-200 pt-4">
@@ -242,7 +236,6 @@ export function EmailChangeVerification({
           </div>
         )}
 
-        {/* Help Information */}
         <div className="mt-6 rounded-lg bg-gray-50 p-4">
           <h4 className="mb-2 text-sm font-medium text-gray-900">Need Help?</h4>
           <div className="space-y-1 text-xs text-gray-600">

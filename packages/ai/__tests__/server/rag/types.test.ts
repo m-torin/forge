@@ -229,8 +229,8 @@ describe('rAG Types', () => {
         text: 'AI is a field of computer science that aims to create intelligent machines.',
         finishReason: 'stop',
         usage: {
-          promptTokens: 50,
-          completionTokens: 25,
+          inputTokens: 50,
+          outputTokens: 25,
           totalTokens: 75,
         },
         context: {
@@ -266,8 +266,8 @@ describe('rAG Types', () => {
         text: 'Basic response',
         finishReason: 'stop',
         usage: {
-          promptTokens: 10,
-          completionTokens: 5,
+          inputTokens: 10,
+          outputTokens: 5,
           totalTokens: 15,
         },
         context: {
@@ -306,7 +306,7 @@ describe('rAG Types', () => {
             id: 'test-response',
             text: 'Test response',
             finishReason: 'stop',
-            usage: { promptTokens: 10, completionTokens: 5, totalTokens: 15 },
+            usage: { inputTokens: 10, outputTokens: 5, totalTokens: 15 },
             context: {
               query,
               retrievedChunks: [],
@@ -351,7 +351,7 @@ describe('rAG Types', () => {
             id: 'pipeline-response',
             text: `Response to: ${query}`,
             finishReason: 'stop',
-            usage: { promptTokens: 20, completionTokens: 10, totalTokens: 30 },
+            usage: { inputTokens: 20, outputTokens: 10, totalTokens: 30 },
             context: {
               query,
               retrievedChunks: [],

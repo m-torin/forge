@@ -2,12 +2,12 @@
  * API key validation tests - converted to use DRY utilities
  */
 
-import { beforeEach, describe, expect, test, vi } from 'vitest';
 import {
   createMockApiKey,
   createMockHeaders,
   createMockSession,
-} from '../../test-helpers/factories';
+} from '@repo/qa/vitest/mocks/internal/auth-factories';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { setupAllMocks } from '../../test-helpers/mocks';
 import {
   createApiKeyValidationTestSuite,
@@ -24,15 +24,15 @@ import {
   requireAuth,
   validateApiKey,
   validateApiKeyWithRateLimit,
-} from '#/server/api-keys/validation';
-import type { PermissionCheck } from '#/shared/api-keys';
-import { auth } from '#/shared/auth';
+} from '../../src/server/api-keys/validation';
+import type { PermissionCheck } from '../../src/shared/api-keys';
+import { auth } from '../../src/shared/auth';
 
 // Set up all mocks
 setupAllMocks();
 
 // Mock the auth module directly for this test
-vi.mock('#/shared/auth', () => ({
+vi.mock('../../src/shared/auth', () => ({
   auth: {
     api: {
       verifyApiKey: vi.fn(),

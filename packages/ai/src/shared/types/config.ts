@@ -32,7 +32,7 @@ export interface AIConfig {
 export interface AnthropicConfig {
   apiKey: string;
   baseUrl?: string;
-  maxTokens?: number;
+  maxOutputTokens?: number;
   model?: string;
   temperature?: number;
   timeout?: number;
@@ -44,14 +44,14 @@ export type DirectOpenAIConfig = OpenAIConfig;
 
 export interface GoogleConfig {
   apiKey: string;
-  maxTokens?: number;
+  maxOutputTokens?: number;
   model?: string;
   temperature?: number;
 }
 export interface OpenAIConfig {
   apiKey: string;
   baseUrl?: string;
-  maxTokens?: number;
+  maxOutputTokens?: number;
   model?: string;
   organization?: string;
   temperature?: number;

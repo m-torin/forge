@@ -4,7 +4,8 @@
  */
 
 import { logInfo } from '@repo/observability/server/next';
-import { generateObject, streamObject, streamText, type LanguageModel } from 'ai';
+import type { LanguageModel } from 'ai';
+import { generateObject, streamObject, streamText } from 'ai';
 import { z } from 'zod/v4';
 import {
   RAGDatabaseBridge,
@@ -50,7 +51,7 @@ export const baseRAGResponseSchema = z.object({
       }),
     )
     .describe('Sources used to generate the answer'),
-  reasoning: z.string().optional().describe('Explanation of how the answer was derived'),
+  reasoningText: z.string().optional().describe('Explanation of how the answer was derived'),
 });
 
 export type BaseRAGResponse = z.infer<typeof baseRAGResponseSchema>;
@@ -195,7 +196,7 @@ ${contextText}
 
 User Question: ${query}`,
         temperature: options?.temperature ?? 0.1,
-      });
+      } as any);
 
       logInfo('Structured RAG generation completed', {
         operation: 'structured_rag_generate',
@@ -248,7 +249,8 @@ ${contextText}
 
 User Question: ${query}`,
         temperature: options?.temperature ?? 0.1,
-      });
+        experimental_telemetry: { isEnabled: true },
+      } as any);
 
       return result;
     });
@@ -339,10 +341,10 @@ User Question: ${query}`,
       // Generate structured response using the enhanced messages
       const result = await generateObject({
         model: this.config.languageModel,
-        messages: processedResult.messages,
         schema,
+        messages: processedResult.messages,
         temperature: options?.temperature ?? 0.1,
-      });
+      } as any);
 
       logInfo('Structured RAG from messages completed', {
         operation: 'structured_rag_from_messages',
@@ -388,10 +390,11 @@ User Question: ${query}`,
       // Stream structured response using the enhanced messages
       const result = streamObject({
         model: this.config.languageModel,
-        messages: processedResult.messages,
         schema,
+        messages: processedResult.messages,
         temperature: options?.temperature ?? 0.1,
-      });
+        experimental_telemetry: { isEnabled: true },
+      } as any);
 
       return result;
     });
@@ -406,7 +409,7 @@ User Question: ${query}`,
       systemPrompt?: string;
       preserveSystemMessages?: boolean;
       temperature?: number;
-      maxTokens?: number;
+      maxOutputTokens?: number;
       onFinish?: (result: any) => void;
     },
   ) {
@@ -428,7 +431,6 @@ User Question: ${query}`,
         model: this.config.languageModel,
         messages: processedResult.messages,
         temperature: options?.temperature ?? 0.1,
-        maxSteps: 1,
       });
 
       return result;
@@ -680,7 +682,7 @@ const textStream = await ragService.streamTextWithRAG(
   [{ role: 'user', content: 'Explain the benefits and drawbacks of microservices' }],
   {
     temperature: 0.1,
-    maxTokens: 1000,
+    maxOutputTokens: 1000,
     onFinish: (result) => {
       console.log('Streaming finished:', result.usage);
     }

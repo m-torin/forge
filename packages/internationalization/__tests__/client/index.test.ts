@@ -12,7 +12,7 @@ import { createMockImplementations, i18nTestPatterns } from '../i18n-test-factor
 // CLIENT MODULE EXPORTS
 // ================================================================================================
 
-i18nTestPatterns.testModuleExports('client', '#/client', [
+i18nTestPatterns.testModuleExports('client', '../../src/client', [
   // No exports expected - Link moved to uix-system, other components don't exist yet
 ]);
 
@@ -20,7 +20,7 @@ i18nTestPatterns.testModuleExports('client', '#/client', [
 // CLIENT-NEXT MODULE EXPORTS
 // ================================================================================================
 
-i18nTestPatterns.testModuleExports('client-next', '#/client-next', [
+i18nTestPatterns.testModuleExports('client-next', '../../src/client-next', [
   // No exports expected - Link moved to uix-system, other components don't exist yet
 ]);
 
@@ -30,8 +30,8 @@ i18nTestPatterns.testModuleExports('client-next', '#/client-next', [
 
 describe('client I18n Functionality', () => {
   test('should not export Link component from client modules', async () => {
-    const clientModule = await import('#/client');
-    const clientNextModule = await import('#/client-next');
+    const clientModule = await import('../../src/client');
+    const clientNextModule = await import('../../src/client-next');
 
     // Link should no longer be exported from these modules
     expect(clientModule.Link).toBeUndefined();

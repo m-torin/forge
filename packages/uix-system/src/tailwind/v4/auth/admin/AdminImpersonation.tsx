@@ -3,6 +3,7 @@
  * Allows administrators to impersonate users for support and debugging
  */
 
+import { logError } from '@repo/observability';
 import { useState, useTransition } from 'react';
 import { useFormState } from 'react-dom';
 import { impersonateUserAction, listUsersAction, stopImpersonatingAction } from '../actions';
@@ -65,8 +66,8 @@ export function AdminImpersonation({
   const [showConfirmation, setShowConfirmation] = useState(false);
 
   // Form state
-  const [impersonateState, setImpersonateState] = useState(initialFormState);
-  const [stopState, stopAction] = useFormState(stopImpersonatingAction, initialFormState);
+  const [impersonateState, _setImpersonateState] = useState(initialFormState);
+  const [stopState, _stopAction] = useFormState(stopImpersonatingAction, initialFormState);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,7 +83,7 @@ export function AdminImpersonation({
           setSearchResults(results.data.filter((user: any) => !user.banned) as unknown as User[]);
         }
       } catch (error) {
-        console.error('Search failed:', error);
+        logError('Search failed:', error);
       }
     });
   };
@@ -124,7 +125,7 @@ export function AdminImpersonation({
           setSearchResults([]);
         }
       } catch (error) {
-        console.error('Impersonation failed:', error);
+        logError('Impersonation failed:', error);
       }
     });
   };
@@ -166,7 +167,6 @@ export function AdminImpersonation({
 
   return (
     <div className={`space-y-6 ${className}`}>
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold text-gray-900">User Impersonation</h2>
@@ -181,7 +181,6 @@ export function AdminImpersonation({
         )}
       </div>
 
-      {/* Current Impersonation Status */}
       {currentImpersonation ? (
         <Alert>
           <div className="flex items-center justify-between">
@@ -226,7 +225,6 @@ export function AdminImpersonation({
         </Alert>
       )}
 
-      {/* Error/Success Messages */}
       {(impersonateState.error || stopState.error) && (
         <Alert variant="destructive">{impersonateState.error || stopState.error}</Alert>
       )}
@@ -239,7 +237,6 @@ export function AdminImpersonation({
         </Alert>
       )}
 
-      {/* User Search */}
       {!currentImpersonation && (
         <Card>
           <CardHeader>
@@ -261,7 +258,6 @@ export function AdminImpersonation({
               </div>
             </form>
 
-            {/* Search Results */}
             {searchResults.length > 0 && (
               <div className="mt-6">
                 <h4 className="mb-3 text-sm font-medium text-gray-700">Search Results</h4>
@@ -354,7 +350,6 @@ export function AdminImpersonation({
         </Card>
       )}
 
-      {/* Impersonation Confirmation */}
       {showConfirmation && selectedUser && (
         <Card className="border-blue-200">
           <CardHeader className="bg-blue-50">
@@ -440,7 +435,6 @@ export function AdminImpersonation({
         </Card>
       )}
 
-      {/* Recent Impersonations */}
       <Card>
         <CardHeader>
           <h3 className="text-lg font-medium text-gray-900">Recent Impersonations</h3>
@@ -500,7 +494,6 @@ export function AdminImpersonation({
         </CardContent>
       </Card>
 
-      {/* Security Notice */}
       <Card className="border-red-200 bg-red-50">
         <CardContent className="p-4">
           <div className="flex items-start">

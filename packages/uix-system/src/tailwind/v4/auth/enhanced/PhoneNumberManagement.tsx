@@ -30,7 +30,7 @@ interface PhoneNumberManagementProps extends BaseProps {
   onError?: (error: string) => void;
 }
 
-const initialState: FormState = { success: false };
+const _initialState: FormState = { success: false };
 
 // Server action for removing phone number
 async function removePhoneNumberAction(prevState: any, formData: FormData): Promise<FormState> {
@@ -63,7 +63,7 @@ async function removePhoneNumberAction(prevState: any, formData: FormData): Prom
       };
     }
   } catch (error: any) {
-    console.error('Remove phone number error:', error);
+    // console.error('Remove phone number error:', error);
 
     if (error?.message?.includes('primary phone')) {
       return {
@@ -126,7 +126,7 @@ async function setPrimaryPhoneAction(prevState: any, formData: FormData): Promis
       };
     }
   } catch (error: any) {
-    console.error('Set primary phone error:', error);
+    // console.error('Set primary phone error:', error);
 
     if (error?.message?.includes('not verified')) {
       return {
@@ -180,7 +180,7 @@ async function resendVerificationAction(prevState: any, formData: FormData): Pro
       };
     }
   } catch (error: any) {
-    console.error('Resend verification error:', error);
+    // console.error('Resend verification error:', error);
 
     if (error?.message?.includes('rate limit')) {
       return {
@@ -278,7 +278,6 @@ export function PhoneNumberManagement({
       </CardHeader>
 
       <CardContent>
-        {/* Success/Error Messages */}
         {removeState?.success && (
           <Alert variant="success" className="mb-4">
             {removeState.message}
@@ -315,7 +314,6 @@ export function PhoneNumberManagement({
           </Alert>
         )}
 
-        {/* Phone Numbers List */}
         {phoneNumbers.length === 0 ? (
           <div className={cn('rounded-lg bg-gray-50 py-8 text-center', 'dark:bg-gray-800')}>
             <svg
@@ -366,7 +364,6 @@ export function PhoneNumberManagement({
                         {formatPhoneNumber(phone.phoneNumber)}
                       </p>
 
-                      {/* Status Badges */}
                       <div className="flex items-center space-x-2">
                         {phone.isPrimary && (
                           <span
@@ -398,9 +395,7 @@ export function PhoneNumberManagement({
                     </div>
                   </div>
 
-                  {/* Actions */}
                   <div className="ml-4 flex items-center space-x-2">
-                    {/* Verify Button */}
                     {!phone.isVerified && (
                       <form action={verifyAction}>
                         <input type="hidden" name="phoneNumber" value={phone.phoneNumber} />
@@ -415,7 +410,6 @@ export function PhoneNumberManagement({
                       </form>
                     )}
 
-                    {/* Set Primary Button */}
                     {phone.isVerified && !phone.isPrimary && (
                       <form action={primaryAction}>
                         <input type="hidden" name="phoneNumberId" value={phone.id} />
@@ -430,11 +424,10 @@ export function PhoneNumberManagement({
                       </form>
                     )}
 
-                    {/* Remove Button */}
                     {(!phone.isPrimary || phoneNumbers.length > 1) && (
-                      <form 
+                      <form
                         action={removeAction}
-                        onSubmit={(e) => {
+                        onSubmit={e => {
                           if (!confirm('Are you sure you want to remove this phone number?')) {
                             e.preventDefault();
                           }
@@ -454,7 +447,6 @@ export function PhoneNumberManagement({
                   </div>
                 </div>
 
-                {/* Usage Information */}
                 {phone.isVerified && (
                   <div className={cn('mt-3 border-t border-gray-200 pt-3', 'dark:border-gray-700')}>
                     <div className={cn('space-y-1 text-xs text-gray-600', 'dark:text-gray-400')}>
@@ -498,7 +490,6 @@ export function PhoneNumberManagement({
           </div>
         )}
 
-        {/* Information Panel */}
         <div
           className={cn(
             'mt-6 rounded-lg border border-blue-200 bg-blue-50 p-4',
@@ -532,7 +523,6 @@ export function PhoneNumberManagement({
           </div>
         </div>
 
-        {/* Additional Actions */}
         <div className="mt-6 flex items-center justify-between">
           <a
             href="/account/settings"

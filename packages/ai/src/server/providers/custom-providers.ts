@@ -1,16 +1,11 @@
-import {
-  customProvider,
-  extractReasoningMiddleware,
-  wrapLanguageModel,
-  type LanguageModel,
-  type Provider,
-} from 'ai';
+import type { LanguageModel, Provider } from 'ai';
+import { customProvider, extractReasoningMiddleware, wrapLanguageModel } from 'ai';
 
 export interface CustomProviderConfig {
   languageModels?: Record<string, LanguageModel>;
   imageModels?: Record<string, any>;
   middlewares?: {
-    reasoning?: {
+    reasoningText?: {
       model: string;
       tagName?: string;
     };
@@ -24,18 +19,18 @@ export function createCustomProvider(config: CustomProviderConfig): Provider {
   const { languageModels = {}, imageModels = {}, middlewares } = config;
 
   // Apply reasoning middleware if configured
-  if (middlewares?.reasoning && languageModels[middlewares.reasoning.model]) {
-    const reasoningModel = languageModels[middlewares.reasoning.model];
-    languageModels[middlewares.reasoning.model] = wrapLanguageModel({
-      model: reasoningModel,
+  if (middlewares?.reasoningText && languageModels[middlewares.reasoningText.model]) {
+    const reasoningModel = languageModels[middlewares.reasoningText.model];
+    languageModels[middlewares.reasoningText.model] = wrapLanguageModel({
+      model: reasoningModel as any,
       middleware: extractReasoningMiddleware({
-        tagName: middlewares.reasoning.tagName || 'think',
+        tagName: middlewares.reasoningText.tagName || 'think',
       }),
-    });
+    }) as LanguageModel;
   }
 
   return customProvider({
-    languageModels,
+    languageModels: languageModels as any,
     ...(Object.keys(imageModels).length > 0 && { imageModels }),
   });
 }
@@ -45,18 +40,19 @@ export function createCustomProvider(config: CustomProviderConfig): Provider {
  */
 export function createTestProvider(models: Record<string, LanguageModel>): Provider {
   return customProvider({
-    languageModels: models,
+    languageModels: models as any,
   });
 }
 
 /**
  * Wraps a language model with reasoning extraction middleware
  */
+export function withReasoningMiddleware(model: LanguageModel, tagName?: string): LanguageModel;
 export function withReasoningMiddleware(model: LanguageModel, tagName = 'think'): LanguageModel {
   return wrapLanguageModel({
-    model,
+    model: model as any,
     middleware: extractReasoningMiddleware({ tagName }),
-  });
+  }) as LanguageModel;
 }
 
 /**
@@ -100,7 +96,7 @@ export function createEnvironmentProvider(
  */
 export interface ProviderModelRegistry {
   chat: string;
-  reasoning?: string;
+  reasoningText?: string;
   title?: string;
   artifact?: string;
   image?: string;
@@ -128,15 +124,15 @@ export function createRegistryProvider(
   });
 
   // Apply reasoning middleware if enabled and reasoning model exists
-  if (options?.enableReasoning && registry.reasoning && models[registry.reasoning]) {
+  if (options?.enableReasoning && registry.reasoningText && models[registry.reasoningText]) {
     languageModels['reasoning-model'] = withReasoningMiddleware(
-      models[registry.reasoning],
+      models[registry.reasoningText],
       options.reasoningTagName,
-    );
+    ) as LanguageModel;
   }
 
   return customProvider({
-    languageModels,
+    languageModels: languageModels as any,
     ...(options?.imageModels && { imageModels: options.imageModels }),
   });
 }

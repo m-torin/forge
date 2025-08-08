@@ -85,9 +85,10 @@ const deriveKey = async (
   secret: string,
   salt: Uint8Array,
 ): Promise<CryptoKey> => {
+  const secretBytes = stringToUint8Array(secret);
   const keyMaterial = await cryptoObj.importKey(
     'raw',
-    stringToUint8Array(secret),
+    secretBytes.buffer.slice(secretBytes.byteOffset, secretBytes.byteOffset + secretBytes.byteLength) as ArrayBuffer,
     { name: 'PBKDF2' },
     false,
     ['deriveKey'],
@@ -96,7 +97,7 @@ const deriveKey = async (
   return await cryptoObj.deriveKey(
     {
       name: 'PBKDF2',
-      salt: salt,
+      salt: salt.buffer.slice(salt.byteOffset, salt.byteOffset + salt.byteLength) as ArrayBuffer,
       iterations: CONFIG.PBKDF2_ITERATIONS,
       hash: CONFIG.PBKDF2_HASH,
     },
@@ -146,10 +147,11 @@ export const encrypt = async (text: string): Promise<string> => {
     const key = await deriveKey(secret, salt);
     const iv = generateIV();
 
+    const textBytes = stringToUint8Array(text);
     const encryptedBuffer = await cryptoObj.encrypt(
-      { name: CONFIG.ALGORITHM_NAME, iv },
+      { name: CONFIG.ALGORITHM_NAME, iv: iv.buffer.slice(iv.byteOffset, iv.byteOffset + iv.byteLength) as ArrayBuffer },
       key,
-      stringToUint8Array(text),
+      textBytes.buffer.slice(textBytes.byteOffset, textBytes.byteOffset + textBytes.byteLength) as ArrayBuffer,
     );
 
     // Format: "salt:iv:encryptedData"
@@ -205,9 +207,9 @@ export const decrypt = async (data: string): Promise<string> => {
     const key = await deriveKey(secret, saltBytes);
 
     const decryptedBuffer = await cryptoObj.decrypt(
-      { name: CONFIG.ALGORITHM_NAME, iv: ivBytes },
+      { name: CONFIG.ALGORITHM_NAME, iv: ivBytes.buffer.slice(ivBytes.byteOffset, ivBytes.byteOffset + ivBytes.byteLength) as ArrayBuffer },
       key,
-      encryptedBytes,
+      encryptedBytes.buffer.slice(encryptedBytes.byteOffset, encryptedBytes.byteOffset + encryptedBytes.byteLength) as ArrayBuffer,
     );
 
     return new TextDecoder().decode(decryptedBuffer);

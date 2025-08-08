@@ -56,7 +56,7 @@ vi.mock('@arcjet/next', () => ({
   shield: vi.fn(),
 }));
 
-vi.mock('../env', () => ({
+vi.mock('../../env', () => ({
   safeEnv: vi.fn(() => ({
     ARCJET_KEY: 'ajkey_test_key',
   })),
@@ -68,7 +68,11 @@ describe('secure', () => {
 
     // Set up default behavior
     mockProtect.mockResolvedValue({
-      isDenied: vi.fn(() => false),
+      isDenied: () => false,
+      reason: {
+        isBot: () => false,
+        isRateLimit: () => false,
+      },
     });
     mockWithRule.mockReturnValue({
       protect: mockProtect,
@@ -89,13 +93,13 @@ describe('secure', () => {
   });
 
   test('should not initialize arcjet if no key is provided', async () => {
-    vi.mocked(safeEnv).mockReturnValue({
+    (vi.mocked(safeEnv) as any).mockReturnValue({
       ARCJET_KEY: undefined,
-    } as any);
+    });
 
     // The key is read at module load time, so we need to re-import
     vi.resetModules();
-    vi.doMock('../env', () => ({
+    vi.doMock('../../env', () => ({
       safeEnv: vi.fn(() => ({
         ARCJET_KEY: undefined,
       })),
@@ -148,10 +152,10 @@ describe('secure', () => {
 
   test('should throw error if bot is detected', async () => {
     mockProtect.mockResolvedValue({
-      isDenied: vi.fn(() => true),
+      isDenied: () => true,
       reason: {
-        isBot: vi.fn(() => true),
-        isRateLimit: vi.fn(() => false),
+        isBot: () => true,
+        isRateLimit: () => false,
       },
     });
 
@@ -160,10 +164,10 @@ describe('secure', () => {
 
   test('should throw error if rate limit is exceeded', async () => {
     mockProtect.mockResolvedValue({
-      isDenied: vi.fn(() => true),
+      isDenied: () => true,
       reason: {
-        isBot: vi.fn(() => false),
-        isRateLimit: vi.fn(() => true),
+        isBot: () => false,
+        isRateLimit: () => true,
       },
     });
 
@@ -172,10 +176,10 @@ describe('secure', () => {
 
   test('should throw generic error for other denials', async () => {
     mockProtect.mockResolvedValue({
-      isDenied: vi.fn(() => true),
+      isDenied: () => true,
       reason: {
-        isBot: vi.fn(() => false),
-        isRateLimit: vi.fn(() => false),
+        isBot: () => false,
+        isRateLimit: () => false,
       },
     });
 
@@ -186,10 +190,10 @@ describe('secure', () => {
     const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     mockProtect.mockResolvedValue({
-      isDenied: vi.fn(() => true),
+      isDenied: () => true,
       reason: {
-        isBot: vi.fn(() => false),
-        isRateLimit: vi.fn(() => false),
+        isBot: () => false,
+        isRateLimit: () => false,
       },
     });
 

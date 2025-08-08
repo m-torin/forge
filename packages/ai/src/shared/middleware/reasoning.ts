@@ -1,4 +1,4 @@
-import type { LanguageModelV2 } from '@ai-sdk/provider';
+import type { LanguageModel } from 'ai';
 import { withReasoningMiddleware } from '../../server/providers/custom-providers';
 
 /**
@@ -6,12 +6,12 @@ import { withReasoningMiddleware } from '../../server/providers/custom-providers
  * Following Vercel AI SDK patterns for reasoning model setup
  */
 export function applyReasoningMiddleware(
-  models: Record<string, LanguageModelV2>,
+  models: Record<string, LanguageModel>,
   config: {
     reasoningModels: string[];
     tagName?: string;
   },
-): Record<string, LanguageModelV2> {
+): Record<string, LanguageModel> {
   const result = { ...models };
 
   config.reasoningModels.forEach(modelKey => {
@@ -26,7 +26,7 @@ export function applyReasoningMiddleware(
 /**
  * Helper to create reasoning models with default configuration
  */
-export function createReasoningModels(baseModels: Record<string, LanguageModelV2>) {
+export function createReasoningModels(baseModels: Record<string, LanguageModel>) {
   return applyReasoningMiddleware(baseModels, {
     reasoningModels: ['chat-model-reasoning'],
     tagName: 'think',

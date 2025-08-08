@@ -6,8 +6,8 @@ import '@testing-library/jest-dom';
 import { render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, vi } from 'vitest';
 
-import { AuthProvider } from '#/client/auth-provider';
-import { useAuth } from '#/client/hooks';
+import { AuthProvider } from '../../src/client/auth-provider';
+import { useAuth } from '../../src/client/hooks';
 
 // Mock better-auth client
 vi.mock('better-auth/react', () => ({

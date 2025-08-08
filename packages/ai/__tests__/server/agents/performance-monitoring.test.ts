@@ -3,7 +3,6 @@
  * Testing performance tracking, metrics collection, and optimization recommendations
  */
 
-import '@repo/qa/vitest/setup/next-app';
 import { afterEach, beforeEach, describe, expect } from 'vitest';
 import {
   AgentPerformanceMonitor,

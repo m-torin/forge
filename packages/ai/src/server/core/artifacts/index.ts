@@ -1,9 +1,12 @@
-import type { UIMessageStreamWriter } from 'ai';
+// Note: UIMessageStreamWriter not available in AI SDK v5 canary
+// TODO: Update to proper streaming API when available
+type UIMessageStreamWriter = any;
 
 // AI SDK v5 compatibility adapter
-interface DataStreamWriter extends UIMessageStreamWriter {
+interface DataStreamWriter {
   writeData(data: any): void;
   writeMessageAnnotation?(data: any): void;
+  write?(data: any): void;
 }
 
 // Create adapter that adds missing methods to UIMessageStreamWriter
@@ -276,7 +279,7 @@ export const textArtifactHandler = createArtifactHandler({
   name: 'Text Document',
   validate: (content: string) => typeof content === 'string',
   streamCreation: async (dataStream, metadata) => {
-    dataStream.write({
+    dataStream?.write?.({
       type: 'data-artifact' as any,
       data: {
         kind: 'text',
@@ -308,7 +311,7 @@ ${content.code}
 \`\`\``;
   },
   streamCreation: async (dataStream, metadata) => {
-    dataStream.write({
+    dataStream?.write?.({
       type: 'data-artifact' as any,
       data: {
         kind: 'code',
@@ -329,7 +332,7 @@ export const imageArtifactHandler = createArtifactHandler<
     return Boolean(content.url || content.base64);
   },
   streamCreation: async (dataStream, metadata) => {
-    dataStream.write({
+    dataStream?.write?.({
       type: 'data-artifact' as any,
       data: {
         kind: 'image',
@@ -364,7 +367,7 @@ export const dataArtifactHandler = createArtifactHandler<'data', { format: strin
     return JSON.stringify(content.data, null, 2);
   },
   streamCreation: async (dataStream, metadata) => {
-    dataStream.write({
+    dataStream?.write?.({
       type: 'data-artifact' as any,
       data: {
         kind: 'data',

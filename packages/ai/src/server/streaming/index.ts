@@ -17,11 +17,11 @@ export interface StreamConfig {
  * Creates a data stream with standard error handling
  */
 export function createStandardDataStream(
-  execute: (dataStream: UIMessageStreamWriter) => void | Promise<void>,
+  execute: (options: { writer: UIMessageStreamWriter }) => void | Promise<void>,
   config?: StreamConfig,
 ) {
   return createUIMessageStream({
-    execute,
+    execute: ({ writer }) => execute({ writer }),
     onError:
       config?.onError ||
       ((error: unknown) => {
@@ -76,3 +76,12 @@ export * from './resumable';
 export * from './stream-defaults';
 export * from './ui-patterns';
 export * from './vector-context';
+
+// Streaming control and optimization
+export * from './backpressure';
+export * from './buffer-optimization';
+export * from './flow-control';
+export * from './stream-interruption';
+
+// Core AI SDK v5 streaming utilities
+export * from '../core/streaming';

@@ -161,12 +161,12 @@ export class ProductionMonitoringManager {
     );
     this.recordMetric(
       'agent.token_usage.prompt',
-      snapshot.metrics.tokenUsage.promptTokens,
+      snapshot.metrics.tokenUsage.inputTokens,
       baseTagsL,
     );
     this.recordMetric(
       'agent.token_usage.completion',
-      snapshot.metrics.tokenUsage.completionTokens,
+      snapshot.metrics.tokenUsage.outputTokens,
       baseTagsL,
     );
     this.recordMetric('agent.step_count', snapshot.metrics.stepCount, baseTagsL);
@@ -637,7 +637,7 @@ export class ProductionMonitoringManager {
     console.log(`📝 Log entry:`, JSON.stringify(logEntry));
   }
 
-  private aggregateMetrics(timeRange: { start: number; end: number }): any {
+  private aggregateMetrics(_timeRange: { start: number; end: number }): any {
     // Implement metrics aggregation logic
     return {
       agent: {},
@@ -651,12 +651,12 @@ export class ProductionMonitoringManager {
     return [];
   }
 
-  private calculateSystemHealth(metrics: any): 'healthy' | 'degraded' | 'critical' {
+  private calculateSystemHealth(_metrics: any): 'healthy' | 'degraded' | 'critical' {
     // Implement system health calculation logic
     return 'healthy';
   }
 
-  private calculateAvailabilityScore(metrics: any): number {
+  private calculateAvailabilityScore(_metrics: any): number {
     // Implement availability score calculation
     return 0.999;
   }

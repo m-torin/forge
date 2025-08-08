@@ -16,3 +16,12 @@ export type { Env } from './env';
 
 // Export types
 export type { ObservabilityPlugin, ObservabilityServerPlugin } from '../../core/plugin';
+export type {
+  Hub,
+  Scope,
+  Span,
+  SpanContext,
+  SpanStatus,
+  Transaction,
+  TransactionContext,
+} from './types';

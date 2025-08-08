@@ -15,3 +15,6 @@ export type { Dictionary, Locale } from './shared/dictionary-loader';
 export const locales = dictionaryLoader.getLocales();
 export const getDictionary = dictionaryLoader.getDictionary;
 export const isLocaleSupported = dictionaryLoader.isLocaleSupported;
+
+// Re-export type augmentation support
+export type { DomainConfig, LocalePrefix, LocalePrefixConfig, RoutingConfig } from './types';

@@ -3,12 +3,12 @@
  * Enhanced object and array generation with schema validation
  */
 
-import type { LanguageModelV2 } from '@ai-sdk/provider';
+import type { LanguageModel } from 'ai';
 import { generateObject, streamObject } from 'ai';
 import { z } from 'zod/v4';
 
 export interface StructuredGenerationConfig {
-  model: LanguageModelV2;
+  model: LanguageModel;
   maxRetries?: number;
   temperature?: number;
   maxOutputTokens?: number;
@@ -39,7 +39,7 @@ export class StructuredDataGenerator {
     mode?: 'auto' | 'tool' | 'json';
   }) {
     return generateObject({
-      model: this.config.model,
+      model: this.config.model as any,
       schema,
       prompt,
       system,
@@ -47,7 +47,7 @@ export class StructuredDataGenerator {
       maxRetries: this.config.maxRetries ?? 2,
       temperature: this.config.temperature,
       maxOutputTokens: this.config.maxOutputTokens,
-    });
+    } as any);
   }
 
   /**
@@ -65,7 +65,7 @@ export class StructuredDataGenerator {
     mode?: 'auto' | 'tool' | 'json';
   }) {
     return streamObject({
-      model: this.config.model,
+      model: this.config.model as any,
       schema,
       prompt,
       system,
@@ -73,7 +73,7 @@ export class StructuredDataGenerator {
       maxRetries: this.config.maxRetries ?? 2,
       temperature: this.config.temperature,
       maxOutputTokens: this.config.maxOutputTokens,
-    });
+    } as any);
   }
 
   /**
@@ -90,7 +90,7 @@ export class StructuredDataGenerator {
     system?: string;
     count?: number;
   }) {
-    const enhancedPrompt = count
+    const contextualPrompt = count
       ? `${prompt}
 
 Generate exactly ${count} items.`
@@ -98,7 +98,7 @@ Generate exactly ${count} items.`
 
     return this.generateObject({
       schema,
-      prompt: enhancedPrompt,
+      prompt: contextualPrompt,
       system,
       mode: 'auto',
     });
@@ -119,13 +119,14 @@ Generate exactly ${count} items.`
     repairAttempts?: number;
   }) {
     return generateObject({
-      model: this.config.model,
+      model: this.config.model as any,
       schema,
       prompt,
       system,
       maxRetries: this.config.maxRetries ?? 2,
       temperature: this.config.temperature,
-      experimental_repairText: async ({ text, error }) => {
+      maxOutputTokens: this.config.maxOutputTokens,
+      experimental_repairText: async ({ text, error }: { text: string; error: any }) => {
         // Simple repair strategy: try to fix common JSON issues
         if (error.name === 'JSONParseError') {
           // Add missing closing braces/brackets
@@ -149,7 +150,7 @@ Generate exactly ${count} items.`
         }
         return null; // Can't repair
       },
-    });
+    } as any);
   }
 }
 
@@ -206,7 +207,7 @@ export const CommonSchemas = {
     category: z.string().describe('Primary category'),
     subcategory: z.string().optional().describe('Subcategory'),
     confidence: z.number().min(0).max(1),
-    reasoning: z.string().describe('Classification reasoning'),
+    reasoningText: z.string().describe('Classification reasoning'),
     alternativeCategories: z
       .array(
         z.object({
@@ -306,7 +307,7 @@ export const quickGenerate = {
   /**
    * Generate a summary of text content
    */
-  async summary(text: string, model: LanguageModelV2) {
+  async summary(text: string, model: LanguageModel) {
     const generator = new StructuredDataGenerator({ model });
     return generator.generateObject({
       schema: CommonSchemas.summary,
@@ -320,7 +321,7 @@ ${text}`,
   /**
    * Classify content into categories
    */
-  async classify(text: string, categories: string[], model: LanguageModelV2) {
+  async classify(text: string, categories: string[], model: LanguageModel) {
     const generator = new StructuredDataGenerator({ model });
     return generator.generateObject({
       schema: CommonSchemas.classification,
@@ -338,7 +339,7 @@ Text: ${text}`,
     text: string,
     schema: z.ZodSchema<T>,
     description: string,
-    model: LanguageModelV2,
+    model: LanguageModel,
   ) {
     const generator = new StructuredDataGenerator({ model });
     return generator.generateObject({

@@ -11,8 +11,8 @@ const logWarn = (_message: string, _context?: any) => {
 
 export interface AccountSecurityOptions {
   maxFailedAttempts?: number;
-  lockoutDuration?: number; // in minutes
-  resetFailedAttemptsAfter?: number; // in minutes
+  lockoutDuration?: number;
+  resetFailedAttemptsAfter?: number;
   detectSuspiciousLogin?: boolean;
   notifySuspiciousLogin?: boolean;
 }

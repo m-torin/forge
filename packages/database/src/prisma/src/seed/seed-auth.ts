@@ -60,7 +60,7 @@ async function createUsers() {
       }
 
       // Try to create through Better Auth API if available
-      const betterAuthUrl = process.env.BETTER_AUTH_URL || 'http://localhost:3300';
+      const betterAuthUrl = process.env.BETTER_AUTH_URL || 'http://localhost:3100';
       let userCreated = false;
 
       if (process.env.BETTER_AUTH_URL || process.env.NODE_ENV !== 'production') {

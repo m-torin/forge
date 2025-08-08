@@ -372,7 +372,7 @@ export const versioningPatterns = {
     return {
       selectVersion,
 
-      getPrompt: (variables?: T): string => {
+      getPrompt: (_variables?: T): string => {
         const version = selectVersion();
         const promptVersion = versionManager?.getVersion?.(promptId, version);
         return promptVersion?.content || '';

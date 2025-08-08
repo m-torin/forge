@@ -165,14 +165,14 @@ describe('code Quality Analysis Integration', () => {
       expect(tool.inputSchema).toBeDefined();
       expect(tool.execute).toBeDefined();
 
-      // Check that experimental_toToolResultContent is present for better UX
-      expect(tool.experimental_toToolResultContent).toBeDefined();
+      // Check that toModelOutput is present for better UX
+      expect(tool.toModelOutput).toBeDefined();
     });
   });
 
   // Note: Full end-to-end test would require actual AI model and file system
   // This is a placeholder for integration testing structure
-  test.skip('should execute full workflow end-to-end', async () => {
+  test.todo('should execute full workflow end-to-end', async () => {
     const workflow = createCodeQualityWorkflow(workflowPresets.quick);
 
     // This would be the actual integration test with a real model

@@ -3,9 +3,6 @@
  * Testing the streaming utilities for Next.js integration
  */
 
-import type { LanguageModel } from 'ai';
-import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { z } from 'zod/v4';
 import {
   createStreamingDocumentHandler,
   streamObjectGeneration,
@@ -13,18 +10,25 @@ import {
   streamTextGeneration,
   type StreamObjectConfig,
   type StreamTextConfig,
-} from '../../../src/server/next/streaming-transformations';
+} from '#/server/core/next/streaming-transformations';
+import type { LanguageModel } from 'ai';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { z } from 'zod/v4';
 
-// Mock DataStreamWriter
+// Mock DataStreamWriter - matches UIMessageStreamWriter interface
 class MockDataStreamWriter {
   private data: any[] = [];
 
-  writeData(data: any) {
+  write(data: any) {
     this.data.push(data);
   }
 
   getData() {
     return this.data;
+  }
+
+  clear() {
+    this.data = [];
   }
 }
 
@@ -58,8 +62,8 @@ describe('next.js Streaming Transformations', () => {
       expect(result).toBe('Mock streamed text');
       expect(mockDataStream.getData()).toHaveLength(3); // Mock, streamed, text
       expect(mockDataStream.getData()[0]).toStrictEqual({
-        type: 'text',
-        content: 'Mock ',
+        type: 'text-delta',
+        delta: 'Mock ',
       });
     });
 
@@ -163,9 +167,13 @@ describe('next.js Streaming Transformations', () => {
 
       const result = await streamObjectGeneration(config, mockDataStream as any);
 
-      // The mock returns key: 'value' by default, not text
-      expect(result).toBe('');
-      expect(mockDataStream.getData()).toHaveLength(0);
+      // The updated mock now returns an object with 'text' field that should be captured
+      expect(result).toBe('Hello JSON');
+      expect(mockDataStream.getData()).toHaveLength(1);
+      expect(mockDataStream.getData()[0]).toStrictEqual({
+        type: 'text-delta',
+        delta: 'Hello JSON',
+      });
     });
 
     test('should handle object delta callbacks', async () => {
@@ -185,10 +193,9 @@ describe('next.js Streaming Transformations', () => {
 
       expect(onObjectDelta).toHaveBeenCalledWith({
         key: 'value',
-        sentiment: 'positive',
-        confidence: 0.9,
+        text: 'Hello JSON',
       });
-      expect(onComplete).toHaveBeenCalledWith('');
+      expect(onComplete).toHaveBeenCalledWith('Hello JSON');
     });
   });
 
@@ -206,8 +213,8 @@ describe('next.js Streaming Transformations', () => {
       expect(processor.getContent()).toBe('Hello world!');
       expect(mockDataStream.getData()).toHaveLength(2);
       expect(mockDataStream.getData()[0]).toStrictEqual({
-        type: 'text',
-        content: 'Hello ',
+        type: 'text-delta',
+        delta: 'Hello ',
       });
     });
 
@@ -216,8 +223,8 @@ describe('next.js Streaming Transformations', () => {
 
       expect(processor.getContent()).toBe('const x = 42;');
       expect(mockDataStream.getData()[0]).toStrictEqual({
-        type: 'code-delta',
-        content: 'const x = 42;',
+        type: 'data-code-delta',
+        data: 'const x = 42;',
       });
     });
 

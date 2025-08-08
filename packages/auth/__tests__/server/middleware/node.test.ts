@@ -17,13 +17,13 @@ const mockAuth = {
     getSession: vi.fn(),
   },
 };
-vi.mock('#/shared/auth', () => ({
+vi.mock('../../src/shared/auth', () => ({
   auth: mockAuth,
 }));
 
 // Mock get-headers
 const mockGetAuthHeaders = vi.fn();
-vi.mock('#/server/get-headers', () => ({
+vi.mock('../../src/server/get-headers', () => ({
   getAuthHeaders: mockGetAuthHeaders,
 }));
 
@@ -54,7 +54,7 @@ describe('node.js middleware', () => {
 
   describe('createNodeMiddleware', () => {
     test('should create middleware function', async () => {
-      const nodeModule = await import('#/server/middleware/node');
+      const nodeModule = await import('../../src/server/middleware/node');
 
       const middleware = nodeModule.createNodeMiddleware();
 
@@ -62,7 +62,7 @@ describe('node.js middleware', () => {
     });
 
     test('should allow public routes', async () => {
-      const nodeModule = await import('#/server/middleware/node');
+      const nodeModule = await import('../../src/server/middleware/node');
 
       const middleware = nodeModule.createNodeMiddleware();
 
@@ -89,7 +89,7 @@ describe('node.js middleware', () => {
     });
 
     test('should allow home page as public route', async () => {
-      const nodeModule = await import('#/server/middleware/node');
+      const nodeModule = await import('../../src/server/middleware/node');
 
       const middleware = nodeModule.createNodeMiddleware();
       const request = new NextRequest('https://example.com/', {
@@ -102,7 +102,7 @@ describe('node.js middleware', () => {
     });
 
     test('should allow custom public paths', async () => {
-      const nodeModule = await import('#/server/middleware/node');
+      const nodeModule = await import('../../src/server/middleware/node');
 
       const middleware = nodeModule.createNodeMiddleware({
         publicPaths: ['/custom-public'],
@@ -118,7 +118,7 @@ describe('node.js middleware', () => {
     });
 
     test('should skip auth when requireAuth is false', async () => {
-      const nodeModule = await import('#/server/middleware/node');
+      const nodeModule = await import('../../src/server/middleware/node');
 
       const middleware = nodeModule.createNodeMiddleware({
         requireAuth: false,
@@ -135,7 +135,7 @@ describe('node.js middleware', () => {
     });
 
     test('should check session for protected routes', async () => {
-      const nodeModule = await import('#/server/middleware/node');
+      const nodeModule = await import('../../src/server/middleware/node');
 
       const mockSession = {
         user: { id: 'user-1' },
@@ -157,7 +157,7 @@ describe('node.js middleware', () => {
     });
 
     test('should redirect to sign-in when no session', async () => {
-      const nodeModule = await import('#/server/middleware/node');
+      const nodeModule = await import('../../src/server/middleware/node');
 
       mockAuth.api.getSession.mockResolvedValue(null);
 
@@ -176,7 +176,7 @@ describe('node.js middleware', () => {
     });
 
     test('should use custom redirect URL', async () => {
-      const nodeModule = await import('#/server/middleware/node');
+      const nodeModule = await import('../../src/server/middleware/node');
 
       mockAuth.api.getSession.mockResolvedValue(null);
 
@@ -198,7 +198,7 @@ describe('node.js middleware', () => {
     });
 
     test('should set session cache headers when enabled', async () => {
-      const nodeModule = await import('#/server/middleware/node');
+      const nodeModule = await import('../../src/server/middleware/node');
 
       const mockSession = {
         user: { id: 'user-1' },
@@ -228,7 +228,7 @@ describe('node.js middleware', () => {
     });
 
     test('should not set organization header when no active organization', async () => {
-      const nodeModule = await import('#/server/middleware/node');
+      const nodeModule = await import('../../src/server/middleware/node');
 
       const mockSession = {
         user: { id: 'user-1' },
@@ -258,7 +258,7 @@ describe('node.js middleware', () => {
     });
 
     test('should not set cache headers when disabled', async () => {
-      const nodeModule = await import('#/server/middleware/node');
+      const nodeModule = await import('../../src/server/middleware/node');
 
       const mockSession = {
         user: { id: 'user-1' },
@@ -286,7 +286,7 @@ describe('node.js middleware', () => {
     });
 
     test('should handle session errors gracefully', async () => {
-      const nodeModule = await import('#/server/middleware/node');
+      const nodeModule = await import('../../src/server/middleware/node');
 
       const sessionError = new Error('Session validation failed');
       mockAuth.api.getSession.mockRejectedValue(sessionError);
@@ -307,7 +307,7 @@ describe('node.js middleware', () => {
     });
 
     test('should handle non-Error exceptions', async () => {
-      const nodeModule = await import('#/server/middleware/node');
+      const nodeModule = await import('../../src/server/middleware/node');
 
       mockAuth.api.getSession.mockRejectedValue('string error');
 
@@ -322,7 +322,7 @@ describe('node.js middleware', () => {
     });
 
     test('should pass auth headers to session check', async () => {
-      const nodeModule = await import('#/server/middleware/node');
+      const nodeModule = await import('../../src/server/middleware/node');
 
       const authHeaders = {
         'x-api-key': 'test-key',
@@ -347,7 +347,7 @@ describe('node.js middleware', () => {
     });
 
     test('should handle route prefixes correctly', async () => {
-      const nodeModule = await import('#/server/middleware/node');
+      const nodeModule = await import('../../src/server/middleware/node');
 
       const middleware = nodeModule.createNodeMiddleware();
 
@@ -365,14 +365,14 @@ describe('node.js middleware', () => {
 
   describe('default middleware', () => {
     test('should export default nodeMiddleware', async () => {
-      const nodeModule = await import('#/server/middleware/node');
+      const nodeModule = await import('../../src/server/middleware/node');
 
       expect(nodeModule.nodeMiddleware).toBeDefined();
       expect(typeof nodeModule.nodeMiddleware).toBe('function');
     });
 
     test('should work with default settings', async () => {
-      const nodeModule = await import('#/server/middleware/node');
+      const nodeModule = await import('../../src/server/middleware/node');
 
       const request = new NextRequest('https://example.com/sign-in', {
         method: 'GET',
@@ -386,7 +386,7 @@ describe('node.js middleware', () => {
 
   describe('edge cases', () => {
     test('should handle complex nested routes', async () => {
-      const nodeModule = await import('#/server/middleware/node');
+      const nodeModule = await import('../../src/server/middleware/node');
 
       const middleware = nodeModule.createNodeMiddleware({
         publicPaths: ['/docs'],
@@ -402,7 +402,7 @@ describe('node.js middleware', () => {
     });
 
     test('should handle empty public paths array', async () => {
-      const nodeModule = await import('#/server/middleware/node');
+      const nodeModule = await import('../../src/server/middleware/node');
 
       const middleware = nodeModule.createNodeMiddleware({
         publicPaths: [],
@@ -418,7 +418,7 @@ describe('node.js middleware', () => {
     });
 
     test('should handle malformed URLs gracefully', async () => {
-      const nodeModule = await import('#/server/middleware/node');
+      const nodeModule = await import('../../src/server/middleware/node');
 
       mockAuth.api.getSession.mockResolvedValue(null);
 
@@ -433,7 +433,7 @@ describe('node.js middleware', () => {
     });
 
     test('should preserve query parameters in callback URL', async () => {
-      const nodeModule = await import('#/server/middleware/node');
+      const nodeModule = await import('../../src/server/middleware/node');
 
       mockAuth.api.getSession.mockResolvedValue(null);
 

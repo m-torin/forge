@@ -59,7 +59,7 @@ describe('agenticTool', () => {
 
     const tool = agenticTool({
       description: 'Test tool',
-      parameters: z.object({
+      inputSchema: z.object({
         input: z.string(),
       }),
       execute: mockExecute,
@@ -78,7 +78,7 @@ describe('agenticTool', () => {
 
     const tool = agenticTool({
       description: 'Test tool',
-      parameters: z.object({
+      inputSchema: z.object({
         input: z.string(),
       }),
       execute: mockExecute,
@@ -111,7 +111,7 @@ describe('agenticTool', () => {
 
     const tool = agenticTool({
       description: 'Test tool',
-      parameters: z.object({
+      inputSchema: z.object({
         input: z.string(),
       }),
       execute: mockExecute,
@@ -128,7 +128,7 @@ describe('agenticTool', () => {
   test('should track history when enabled', async () => {
     const tool = agenticTool({
       description: 'Test tool',
-      parameters: z.object({
+      inputSchema: z.object({
         input: z.string(),
       }),
       execute: async () => ({ result: 'success' }),
@@ -145,18 +145,18 @@ describe('agenticTool', () => {
   test('should support multi-modal results', () => {
     const tool = agenticTool({
       description: 'Test tool',
-      parameters: z.object({
+      inputSchema: z.object({
         input: z.string(),
       }),
       execute: async () => ({ image: 'base64data' }),
-      experimental_toToolResultContent: result => ({
+      toModelOutput: result => ({
         type: 'image',
         data: result.image,
         mediaType: 'image/png',
       }),
     });
 
-    expect(tool.experimental_toToolResultContent).toBeDefined();
+    expect(tool.toModelOutput).toBeDefined();
   });
 });
 
@@ -172,7 +172,7 @@ describe('stoppingConditions', () => {
   });
 
   test('should create maxTokens condition', () => {
-    const condition = StoppingConditions.maxTokens(1000);
+    const condition = StoppingConditions.maxOutputTokens(1000);
     expect(condition).toBeDefined();
 
     // Test evaluation
@@ -209,7 +209,7 @@ describe('createAgentWorkflow', () => {
       tools: {
         test: agenticTool({
           description: 'Test',
-          parameters: z.object({}),
+          inputSchema: z.object({}),
           execute: async () => ({}),
         }),
       },
@@ -301,12 +301,12 @@ describe('agenticPatterns', () => {
       const tools = [
         agenticTool({
           description: 'Step 1',
-          parameters: z.object({}),
+          inputSchema: z.object({}),
           execute: async () => ({ step: 1 }),
         }),
         agenticTool({
           description: 'Step 2',
-          parameters: z.object({}),
+          inputSchema: z.object({}),
           execute: async () => ({ step: 2 }),
         }),
       ];
@@ -323,7 +323,7 @@ describe('agenticPatterns', () => {
       const tools = [
         agenticTool({
           description: 'Step 1',
-          parameters: z.object({}),
+          inputSchema: z.object({}),
           execute: async () => ({ step: 1 }),
         }),
       ];
@@ -349,14 +349,14 @@ describe('agenticPatterns', () => {
     test('should create conditional workflow', () => {
       const evaluator = agenticTool({
         description: 'Evaluate',
-        parameters: z.object({ input: z.string() }),
+        inputSchema: z.object({ input: z.string() }),
         execute: async () => ({ branch: 'option1' }),
       });
 
       const branches = {
         option1: agenticTool({
           description: 'Option 1',
-          parameters: z.object({}),
+          inputSchema: z.object({}),
           execute: async () => ({ result: 'option1' }),
         }),
       };
@@ -376,13 +376,13 @@ describe('agenticPatterns', () => {
     test('should create retry workflow', () => {
       const tool = agenticTool({
         description: 'Main tool',
-        parameters: z.object({}),
+        inputSchema: z.object({}),
         execute: async () => ({ success: false }),
       });
 
       const validator = agenticTool({
         description: 'Validator',
-        parameters: z.object({ result: z.any() }),
+        inputSchema: z.object({ result: z.any() }),
         execute: async () => ({ valid: false }),
       });
 
@@ -480,10 +480,10 @@ describe('commonAgenticTools', () => {
 
   test('should support multi-modal results in refinementTool', () => {
     const tool = commonAgenticTools.refinementTool;
-    expect(tool.experimental_toToolResultContent).toBeDefined();
+    expect(tool.toModelOutput).toBeDefined();
 
     const result = { refined: true, data: 'test' };
-    const content = tool.experimental_toToolResultContent!(result);
+    const content = tool.toModelOutput!(result);
 
     expect(content).toStrictEqual({
       type: 'text',

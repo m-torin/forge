@@ -3,7 +3,7 @@
  * Comprehensive tests for the agent memory and state management system
  */
 
-import type { CoreMessage } from 'ai';
+import type { ModelMessage } from 'ai';
 import { afterEach, beforeEach, describe, expect, vi } from 'vitest';
 import {
   AgentMemoryManager,
@@ -111,12 +111,12 @@ describe('agent Memory Management', () => {
 
   describe('conversation History Management', () => {
     test('should add and retrieve conversation messages', () => {
-      const message1: CoreMessage = {
+      const message1: ModelMessage = {
         role: 'user',
         content: 'Hello, can you help me with React?',
       };
 
-      const message2: CoreMessage = {
+      const message2: ModelMessage = {
         role: 'assistant',
         content: 'Of course! I can help you with React development.',
       };
@@ -149,7 +149,7 @@ describe('agent Memory Management', () => {
 
     test('should include memorized conversations when requested', () => {
       // Add some messages that will be memorized
-      const importantMessage: CoreMessage = {
+      const importantMessage: ModelMessage = {
         role: 'user',
         content: 'This is a very important system configuration: use strict mode and TypeScript.',
       };

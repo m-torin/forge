@@ -184,13 +184,13 @@ describe('circuit Breaker', () => {
         const allStats = manager.getAllStats();
 
         expect(allStats).toHaveLength(2);
-        expect(allStats.map(s => s.name)).toEqual(['breaker-1', 'breaker-2']);
+        expect(allStats.map(s => s.name)).toStrictEqual(['breaker-1', 'breaker-2']);
       });
 
       test('should return empty array when no breakers exist', () => {
         const allStats = manager.getAllStats();
 
-        expect(allStats).toEqual([]);
+        expect(allStats).toStrictEqual([]);
       });
     });
 
@@ -662,7 +662,7 @@ describe('circuit Breaker', () => {
       ]);
 
       expect(result.success).toBeTruthy();
-      expect(result.data).toEqual({
+      expect(result.data).toStrictEqual({
         num: 42,
         str: 'test',
         obj: { key: 'value' },

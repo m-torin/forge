@@ -3,7 +3,7 @@
  * Implements fallback strategies and degraded operation modes for RAG system resilience
  */
 
-import { logInfo, logWarn } from '@repo/observability/server/next';
+import { logDebug, logInfo, logWarn } from '@repo/observability/server/next';
 import type { RAGDatabaseBridge } from './database-bridge';
 import { recordRAGOperation } from './health-monitoring';
 
@@ -170,7 +170,7 @@ export class RAGDegradationManager {
     this.fallbackCache = new FallbackCache(this.config.fallbackCache.maxSize);
     this.commonResponses = this.initializeCommonResponses();
 
-    logInfo('RAG Degradation Manager initialized', {
+    logDebug('RAG Degradation Manager initialized', {
       operation: 'rag_degradation_manager_init',
       enabled: this.config.enabled,
       strategies: this.config.strategies,

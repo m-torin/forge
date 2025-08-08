@@ -72,7 +72,7 @@ export async function basicErrorHandlingExample() {
         // Your built-in tools
         builtInTool: {
           description: 'A built-in tool for demonstration',
-          parameters: { query: { type: 'string' } },
+          inputSchema: { query: { type: 'string' } },
           execute: async ({ query }) => `Built-in result for: ${query}`,
         },
         // MCP tools with error handling
@@ -91,7 +91,7 @@ export async function basicErrorHandlingExample() {
         await onFinish();
       },
 
-      onError: error => {
+      onError: async error => {
         console.error('❌ Stream error occurred:', {
           name: error.name,
           message: error.message,
@@ -134,11 +134,11 @@ export async function basicErrorHandlingExample() {
 /**
  * Example 2: Advanced Error Handling with Recovery
  */
-export async function advancedErrorHandlingExample() {
+export async function comprehensiveErrorHandlingExample() {
   console.log('🚀 Starting advanced error handling example...');
 
   // Enhanced config with recovery settings
-  const enhancedConfigs: MCPClientConfig[] = mcpConfigs.map(config => ({
+  const resilientConfigs: MCPClientConfig[] = mcpConfigs.map(config => ({
     ...config,
     retry: {
       ...config.retry,
@@ -156,13 +156,13 @@ export async function advancedErrorHandlingExample() {
 
   try {
     const { tools, closeAllClients, onUncaughtError, onFinish } =
-      await createMCPToolsForStreamText(enhancedConfigs);
+      await createMCPToolsForStreamText(resilientConfigs);
 
     let recoveryAttempts = 0;
     const maxRecoveryAttempts = 3;
 
     const performStreamWithRecovery = async (): Promise<void> => {
-      return new Promise((resolve, reject) => {
+      return new Promise(async (resolve, reject) => {
         const result = streamText({
           model: openai('gpt-4o'),
           tools,
@@ -213,8 +213,7 @@ export async function advancedErrorHandlingExample() {
 
         // Process stream
         try {
-          const stream = await result.textStream;
-          for await (const part of stream) {
+          for await (const part of result.textStream) {
             process.stdout.write(part);
           }
         } catch (error) {
@@ -320,7 +319,7 @@ if (require.main === module) {
       await basicErrorHandlingExample();
       console.log('='.repeat(50));
 
-      await advancedErrorHandlingExample();
+      await comprehensiveErrorHandlingExample();
       console.log('='.repeat(50));
 
       await errorMonitoringExample();

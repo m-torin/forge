@@ -1,12 +1,12 @@
-import type { Linter } from "eslint";
+import type { Linter } from 'eslint';
 
 /**
  * ESLint rule severity levels
  */
 export const SEVERITY = {
-  OFF: "off",
-  WARN: "warn",
-  ERROR: "error",
+  OFF: 'off',
+  WARN: 'warn',
+  ERROR: 'error',
 } as const;
 
 export type Severity = (typeof SEVERITY)[keyof typeof SEVERITY];
@@ -21,67 +21,67 @@ export type RulesRecord = Record<string, any>;
  */
 export const FILE_PATTERNS = {
   // JavaScript/TypeScript patterns
-  ALL_JS_TS: "**/*.{js,jsx,ts,tsx,mjs,cjs,mts,cts}",
-  REACT_FILES: ["**/*.{jsx,tsx}"],
+  ALL_JS_TS: '**/*.{js,jsx,ts,tsx,mjs,cjs,mts,cts}',
+  REACT_FILES: ['**/*.{jsx,tsx}'],
   TEST_FILES: [
-    "**/__tests__/**/*",
-    "**/*.test.*",
-    "**/*.spec.*",
-    "**/test/**/*",
-    "**/*.setup.*",
-    "**/vitest.config.*",
-    "**/jest.config.*",
-    "**/playwright.config.*",
+    '**/__tests__/**/*',
+    '**/*.test.*',
+    '**/*.spec.*',
+    '**/test/**/*',
+    '**/*.setup.*',
+    '**/vitest.config.*',
+    '**/jest.config.*',
+    '**/playwright.config.*',
     '**/e2e/**/*',
-    "**/*.stories.*",
-    "**/stories/**/*",
-    "**/storybook/**/*",
-    "**/.storybook/**/*",
-    "**/playwright/**/*",
-    "**/vitest/**/*",
+    '**/*.stories.*',
+    '**/stories/**/*',
+    '**/storybook/**/*',
+    '**/.storybook/**/*',
+    '**/playwright/**/*',
+    '**/vitest/**/*',
   ],
   E2E_FILES: [
-    "**/e2e/**/*.{js,jsx,ts,tsx}",
-    "**/tests/e2e/**/*.{js,jsx,ts,tsx}",
-    "**/*.e2e.{js,jsx,ts,tsx}",
-    "**/playwright/**/*.{js,jsx,ts,tsx}",
-    "**/playwright.config.*",
+    '**/e2e/**/*.{js,jsx,ts,tsx}',
+    '**/tests/e2e/**/*.{js,jsx,ts,tsx}',
+    '**/*.e2e.{js,jsx,ts,tsx}',
+    '**/playwright/**/*.{js,jsx,ts,tsx}',
+    '**/playwright.config.*',
   ],
-  CONFIG_FILES: ["*.config.*", ".*rc.*", "*.setup.*"],
+  CONFIG_FILES: ['*.config.*', '.*rc.*', '*.setup.*'],
   SCRIPT_FILES: [
-    "**/scripts/**/*",
-    "**/seed/**/*",
-    "**/enhance-*.js",
-    "**/migrate-*.js",
-    "**/generate-*.js",
+    '**/scripts/**/*',
+    '**/seed/**/*',
+    '**/enhance-*.js',
+    '**/migrate-*.js',
+    '**/generate-*.js',
   ],
-  COMMONJS_FILES: ["**/*.cjs"],
-  TYPE_DEFINITION_FILES: ["**/*.d.ts"],
-  MJS_FILES: ["**/*.mjs"],
-  EXAMPLES_FILES: ["**/examples/**/*"],
+  COMMONJS_FILES: ['**/*.cjs'],
+  TYPE_DEFINITION_FILES: ['**/*.d.ts'],
+  MJS_FILES: ['**/*.mjs'],
+  EXAMPLES_FILES: ['**/examples/**/*'],
 };
 
 /**
  * Common ignore patterns
  */
 export const IGNORE_PATTERNS = [
-  "**/node_modules/**",
-  "**/dist/**",
-  "**/build/**",
-  "**/.cache/**",
-  "**/coverage/**",
-  "**/.vitest-ui/coverage/**",
-  "**/html/coverage/**",
-  "**/coverage-browser/**",
-  "**/*.min.js",
-  "**/.turbo/**",
-  "**/generated/**",
+  '**/node_modules/**',
+  '**/dist/**',
+  '**/build/**',
+  '**/.cache/**',
+  '**/coverage/**',
+  '**/.vitest-ui/coverage/**',
+  '**/html/coverage/**',
+  '**/coverage-browser/**',
+  '**/*.min.js',
+  '**/.turbo/**',
+  '**/generated/**',
   '**/.next/**',
-  "**/.vercel/**",
+  '**/.vercel/**',
   '**/*.md',
   '**/*.mdx',
-  "labs/**",
-  "services/**",
+  'labs/**',
+  'services/**',
 ];
 
 /**

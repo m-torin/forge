@@ -172,7 +172,10 @@ export class CloudflareImagesProvider implements StorageProvider {
     } else if (data instanceof ArrayBuffer) {
       file = new Blob([data], { type: options?.contentType || 'application/octet-stream' });
     } else if (data instanceof Buffer) {
-      file = new Blob([data], { type: options?.contentType || 'application/octet-stream' });
+      file = new Blob(
+        [data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer],
+        { type: options?.contentType || 'application/octet-stream' },
+      );
     } else if (data instanceof ReadableStream) {
       // Convert ReadableStream to Blob
       const reader = data.getReader();
@@ -191,7 +194,16 @@ export class CloudflareImagesProvider implements StorageProvider {
         reader.releaseLock();
       }
 
-      file = new Blob(chunks, { type: options?.contentType || 'application/octet-stream' });
+      file = new Blob(
+        chunks.map(
+          chunk =>
+            chunk.buffer.slice(
+              chunk.byteOffset,
+              chunk.byteOffset + chunk.byteLength,
+            ) as ArrayBuffer,
+        ),
+        { type: options?.contentType || 'application/octet-stream' },
+      );
     } else {
       throw new Error('Unsupported data type for upload');
     }

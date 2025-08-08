@@ -37,7 +37,7 @@ export const deduplicateEdges = (edges?: Edge[]): Edge[] => {
   const deduplicatedEdges: Edge[] = [];
 
   edges.forEach((edge) => {
-    const sortedIds = [edge.sourceNodeId, edge.targetNodeId].sort();
+    const sortedIds = [edge.sourceNodeId, edge.targetNodeId].toSorted();
     const edgeKey = `${sortedIds[0]}-${sortedIds[1]}`;
 
     if (!uniqueEdgesSet.has(edgeKey)) {
@@ -77,7 +77,7 @@ export const deduplicateSecrets = (secrets?: Secret[]): Secret[] => {
   const uniqueSecretsMap = new Map<string, Secret>();
 
   secrets.forEach((secret) => {
-    const instanceIdentifier = secret.flowId || secret.nodeId || 'default';
+    const instanceIdentifier = secret.flowId ?? secret.nodeId ?? 'default';
     const key = `${secret.id}-${instanceIdentifier}`;
 
     if (!uniqueSecretsMap.has(key)) {

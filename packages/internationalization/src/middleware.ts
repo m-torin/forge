@@ -1,37 +1,21 @@
-import { match as matchLocale } from '@formatjs/intl-localematcher';
-import Negotiator from 'negotiator';
-import { createI18nMiddleware } from 'next-international/middleware';
+/**
+ * Internationalization middleware for Next.js
+ * Handles locale detection and routing using next-intl
+ */
 
-import languine from '../languine.json';
+import createMiddleware from 'next-intl/middleware';
+import type { NextRequest, NextResponse } from 'next/server';
+import { routing } from './routing';
 
-import type { NextRequest } from 'next/server';
+// Create the internationalization middleware with our routing configuration
+// The middleware may return undefined when no locale redirect is needed
+export const internationalizationMiddleware: (request: NextRequest) => NextResponse | undefined =
+  createMiddleware(routing);
 
-const locales = [languine.locale.source, ...languine.locale.targets];
-
-const I18nMiddleware = createI18nMiddleware({
-  urlMappingStrategy: 'rewriteDefault',
-  defaultLocale: 'en',
-  locales,
-  resolveLocaleFromRequest: (request: any) => {
-    const headers = Object.fromEntries(request.headers.entries());
-    const negotiator = new Negotiator({ headers });
-    const acceptedLanguages = negotiator.languages();
-
-    const matchedLocale = matchLocale(acceptedLanguages, locales, 'en');
-
-    return matchedLocale;
-  },
-});
-
-export function internationalizationMiddleware(request: NextRequest): any {
-  return I18nMiddleware(request as any);
-}
-
+// Export the middleware configuration for Next.js
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+  // Match all pathnames except for
+  // - … if they start with `/api`, `/trpc`, `/_next` or `/_vercel`
+  // - … the ones containing a dot (e.g. `favicon.ico`)
+  matcher: ['/((?!api|trpc|_next|_vercel|.*\\..*).*)', '/'],
 };
-
-//https://nextjs.org/docs/app/building-your-application/routing/internationalization
-//https://github.com/vercel/next.js/tree/canary/examples/i18n-routing
-//https://github.com/QuiiBz/next-international
-//https://next-international.vercel.app/docs/app-middleware-configuration

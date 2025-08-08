@@ -7,7 +7,7 @@ import { describe, expect } from 'vitest';
 describe('aPI key utilities', () => {
   describe('maskApiKey', () => {
     test('should mask a normal API key', async () => {
-      const apiKeysModule = await import('#/shared/utils/api-keys');
+      const apiKeysModule = await import('../../src/shared/utils/api-keys');
 
       const apiKey = 'ak_live_1234567890abcdef1234567890abcdef';
       const masked = apiKeysModule.maskApiKey(apiKey);
@@ -19,7 +19,7 @@ describe('aPI key utilities', () => {
     });
 
     test('should handle short API keys', async () => {
-      const apiKeysModule = await import('#/shared/utils/api-keys');
+      const apiKeysModule = await import('../../src/shared/utils/api-keys');
 
       const shortKey = 'short';
       const masked = apiKeysModule.maskApiKey(shortKey);
@@ -28,7 +28,7 @@ describe('aPI key utilities', () => {
     });
 
     test('should handle empty API key', async () => {
-      const apiKeysModule = await import('#/shared/utils/api-keys');
+      const apiKeysModule = await import('../../src/shared/utils/api-keys');
 
       const masked = apiKeysModule.maskApiKey('');
 
@@ -36,7 +36,7 @@ describe('aPI key utilities', () => {
     });
 
     test('should handle API key with exactly 12 characters', async () => {
-      const apiKeysModule = await import('#/shared/utils/api-keys');
+      const apiKeysModule = await import('../../src/shared/utils/api-keys');
 
       const key12 = '123456789012';
       const masked = apiKeysModule.maskApiKey(key12);
@@ -46,7 +46,7 @@ describe('aPI key utilities', () => {
     });
 
     test('should handle API key with 13 characters', async () => {
-      const apiKeysModule = await import('#/shared/utils/api-keys');
+      const apiKeysModule = await import('../../src/shared/utils/api-keys');
 
       const key13 = '1234567890123';
       const masked = apiKeysModule.maskApiKey(key13);
@@ -56,7 +56,7 @@ describe('aPI key utilities', () => {
     });
 
     test('should handle very long API key', async () => {
-      const apiKeysModule = await import('#/shared/utils/api-keys');
+      const apiKeysModule = await import('../../src/shared/utils/api-keys');
 
       const longKey = 'ak_live_' + 'a'.repeat(50) + '1234';
       const masked = apiKeysModule.maskApiKey(longKey);
@@ -68,7 +68,7 @@ describe('aPI key utilities', () => {
     });
 
     test('should preserve original API key structure', async () => {
-      const apiKeysModule = await import('#/shared/utils/api-keys');
+      const apiKeysModule = await import('../../src/shared/utils/api-keys');
 
       const apiKey = 'sk_test_1234567890abcdef';
       const masked = apiKeysModule.maskApiKey(apiKey);
@@ -80,7 +80,7 @@ describe('aPI key utilities', () => {
 
   describe('generateApiKeyName', () => {
     test('should generate a valid API key name', async () => {
-      const apiKeysModule = await import('#/shared/utils/api-keys');
+      const apiKeysModule = await import('../../src/shared/utils/api-keys');
 
       const name = apiKeysModule.generateApiKeyName();
 
@@ -90,7 +90,7 @@ describe('aPI key utilities', () => {
     });
 
     test('should generate different names on multiple calls', async () => {
-      const apiKeysModule = await import('#/shared/utils/api-keys');
+      const apiKeysModule = await import('../../src/shared/utils/api-keys');
 
       const names = new Set();
       for (let i = 0; i < 50; i++) {
@@ -102,7 +102,7 @@ describe('aPI key utilities', () => {
     });
 
     test('should follow expected format', async () => {
-      const apiKeysModule = await import('#/shared/utils/api-keys');
+      const apiKeysModule = await import('../../src/shared/utils/api-keys');
 
       const name = apiKeysModule.generateApiKeyName();
       const parts = name.split(' ');
@@ -114,7 +114,7 @@ describe('aPI key utilities', () => {
     });
 
     test('should use predefined word lists', async () => {
-      const apiKeysModule = await import('#/shared/utils/api-keys');
+      const apiKeysModule = await import('../../src/shared/utils/api-keys');
 
       const validAdjectives = ['Quick', 'Secure', 'Fast', 'Smart', 'Auto', 'Main', 'Test', 'Dev'];
       const validNouns = ['Access', 'Key', 'Token', 'Auth', 'API', 'Service', 'Client', 'App'];
@@ -129,7 +129,7 @@ describe('aPI key utilities', () => {
     });
 
     test('should generate names with different suffixes', async () => {
-      const apiKeysModule = await import('#/shared/utils/api-keys');
+      const apiKeysModule = await import('../../src/shared/utils/api-keys');
 
       const suffixes = new Set();
       for (let i = 0; i < 20; i++) {
@@ -145,7 +145,7 @@ describe('aPI key utilities', () => {
 
   describe('isApiKeyExpired', () => {
     test('should return false for undefined expiration', async () => {
-      const apiKeysModule = await import('#/shared/utils/api-keys');
+      const apiKeysModule = await import('../../src/shared/utils/api-keys');
 
       const isExpired = apiKeysModule.isApiKeyExpired(undefined);
 
@@ -153,7 +153,7 @@ describe('aPI key utilities', () => {
     });
 
     test('should return false for future expiration date', async () => {
-      const apiKeysModule = await import('#/shared/utils/api-keys');
+      const apiKeysModule = await import('../../src/shared/utils/api-keys');
 
       const futureDate = new Date(Date.now() + 24 * 60 * 60 * 1000); // Tomorrow
       const isExpired = apiKeysModule.isApiKeyExpired(futureDate);
@@ -162,7 +162,7 @@ describe('aPI key utilities', () => {
     });
 
     test('should return true for past expiration date', async () => {
-      const apiKeysModule = await import('#/shared/utils/api-keys');
+      const apiKeysModule = await import('../../src/shared/utils/api-keys');
 
       const pastDate = new Date(Date.now() - 24 * 60 * 60 * 1000); // Yesterday
       const isExpired = apiKeysModule.isApiKeyExpired(pastDate);
@@ -171,7 +171,7 @@ describe('aPI key utilities', () => {
     });
 
     test('should return true for current time or past', async () => {
-      const apiKeysModule = await import('#/shared/utils/api-keys');
+      const apiKeysModule = await import('../../src/shared/utils/api-keys');
 
       const pastDate = new Date(Date.now() - 1000); // 1 second ago
       const isExpired = apiKeysModule.isApiKeyExpired(pastDate);
@@ -180,7 +180,7 @@ describe('aPI key utilities', () => {
     });
 
     test('should handle very old dates', async () => {
-      const apiKeysModule = await import('#/shared/utils/api-keys');
+      const apiKeysModule = await import('../../src/shared/utils/api-keys');
 
       const veryOldDate = new Date('2020-01-01');
       const isExpired = apiKeysModule.isApiKeyExpired(veryOldDate);
@@ -189,7 +189,7 @@ describe('aPI key utilities', () => {
     });
 
     test('should handle far future dates', async () => {
-      const apiKeysModule = await import('#/shared/utils/api-keys');
+      const apiKeysModule = await import('../../src/shared/utils/api-keys');
 
       const farFutureDate = new Date('2030-12-31');
       const isExpired = apiKeysModule.isApiKeyExpired(farFutureDate);
@@ -198,7 +198,7 @@ describe('aPI key utilities', () => {
     });
 
     test('should work with Date objects vs timestamps', async () => {
-      const apiKeysModule = await import('#/shared/utils/api-keys');
+      const apiKeysModule = await import('../../src/shared/utils/api-keys');
 
       const pastTimestamp = Date.now() - 1000; // 1 second ago
       const pastDate = new Date(pastTimestamp);
@@ -210,7 +210,7 @@ describe('aPI key utilities', () => {
 
   describe('getTimeUntilExpiration', () => {
     test('should return expired false for undefined expiration', async () => {
-      const apiKeysModule = await import('#/shared/utils/api-keys');
+      const apiKeysModule = await import('../../src/shared/utils/api-keys');
 
       const result = apiKeysModule.getTimeUntilExpiration(undefined);
 
@@ -218,7 +218,7 @@ describe('aPI key utilities', () => {
     });
 
     test('should return expired true for past date', async () => {
-      const apiKeysModule = await import('#/shared/utils/api-keys');
+      const apiKeysModule = await import('../../src/shared/utils/api-keys');
 
       const pastDate = new Date(Date.now() - 24 * 60 * 60 * 1000);
       const result = apiKeysModule.getTimeUntilExpiration(pastDate);
@@ -228,7 +228,7 @@ describe('aPI key utilities', () => {
     });
 
     test('should calculate time until expiration for future date', async () => {
-      const apiKeysModule = await import('#/shared/utils/api-keys');
+      const apiKeysModule = await import('../../src/shared/utils/api-keys');
 
       const futureDate = new Date(Date.now() + 25 * 60 * 60 * 1000); // ~1 day
       const result = apiKeysModule.getTimeUntilExpiration(futureDate);
@@ -242,7 +242,7 @@ describe('aPI key utilities', () => {
 
   describe('formatPermissionsForDisplay', () => {
     test('should format permissions correctly', async () => {
-      const apiKeysModule = await import('#/shared/utils/api-keys');
+      const apiKeysModule = await import('../../src/shared/utils/api-keys');
 
       const permissions = ['users:read', 'posts:write', 'admin:delete'];
       const formatted = apiKeysModule.formatPermissionsForDisplay(permissions);
@@ -251,7 +251,7 @@ describe('aPI key utilities', () => {
     });
 
     test('should handle empty permissions array', async () => {
-      const apiKeysModule = await import('#/shared/utils/api-keys');
+      const apiKeysModule = await import('../../src/shared/utils/api-keys');
 
       const formatted = apiKeysModule.formatPermissionsForDisplay([]);
 
@@ -261,7 +261,7 @@ describe('aPI key utilities', () => {
 
   describe('groupPermissionsByResource', () => {
     test('should group permissions by resource', async () => {
-      const apiKeysModule = await import('#/shared/utils/api-keys');
+      const apiKeysModule = await import('../../src/shared/utils/api-keys');
 
       const permissions = ['users:read', 'users:write', 'posts:read', 'admin:delete'];
       const grouped = apiKeysModule.groupPermissionsByResource(permissions);
@@ -274,7 +274,7 @@ describe('aPI key utilities', () => {
     });
 
     test('should handle empty permissions array', async () => {
-      const apiKeysModule = await import('#/shared/utils/api-keys');
+      const apiKeysModule = await import('../../src/shared/utils/api-keys');
 
       const grouped = apiKeysModule.groupPermissionsByResource([]);
 
@@ -284,7 +284,7 @@ describe('aPI key utilities', () => {
 
   describe('isValidApiKeyFormat', () => {
     test('should validate correct API key format', async () => {
-      const apiKeysModule = await import('#/shared/utils/api-keys');
+      const apiKeysModule = await import('../../src/shared/utils/api-keys');
 
       const validKey = 'ak_live_1234567890abcdef1234567890abcdef';
       const isValid = apiKeysModule.isValidApiKeyFormat(validKey);
@@ -293,7 +293,7 @@ describe('aPI key utilities', () => {
     });
 
     test('should reject short API keys', async () => {
-      const apiKeysModule = await import('#/shared/utils/api-keys');
+      const apiKeysModule = await import('../../src/shared/utils/api-keys');
 
       const shortKey = 'short';
       const isValid = apiKeysModule.isValidApiKeyFormat(shortKey);
@@ -302,7 +302,7 @@ describe('aPI key utilities', () => {
     });
 
     test('should reject empty or null values', async () => {
-      const apiKeysModule = await import('#/shared/utils/api-keys');
+      const apiKeysModule = await import('../../src/shared/utils/api-keys');
 
       expect(apiKeysModule.isValidApiKeyFormat('')).toBeFalsy();
       // @ts-expect-error - testing null input
@@ -312,7 +312,7 @@ describe('aPI key utilities', () => {
     });
 
     test('should reject keys with invalid characters', async () => {
-      const apiKeysModule = await import('#/shared/utils/api-keys');
+      const apiKeysModule = await import('../../src/shared/utils/api-keys');
 
       const invalidKey = 'ak_live_1234567890abcdef@#$%^&*()';
       const isValid = apiKeysModule.isValidApiKeyFormat(invalidKey);
@@ -321,7 +321,7 @@ describe('aPI key utilities', () => {
     });
 
     test('should accept keys with underscores and hyphens', async () => {
-      const apiKeysModule = await import('#/shared/utils/api-keys');
+      const apiKeysModule = await import('../../src/shared/utils/api-keys');
 
       const validKey = 'ak_live-1234567890_abcdef-1234567890';
       const isValid = apiKeysModule.isValidApiKeyFormat(validKey);

@@ -26,7 +26,7 @@ interface OrganizationCreationProps extends BaseProps {
   }>;
 }
 
-const initialState: FormState = { success: false };
+const _initialState: FormState = { success: false };
 
 export function OrganizationCreation({
   title = 'Create Organization',
@@ -139,8 +139,8 @@ export function OrganizationCreation({
                       </div>
                       <p className="mt-1 text-sm text-gray-500">{plan.description}</p>
                       <ul className="mt-2 space-y-1 text-xs text-gray-500">
-                        {plan.features.map((feature, index) => (
-                          <li key={index}>• {feature}</li>
+                        {plan.features.map(feature => (
+                          <li key={`${plan.id}-${feature}`}>• {feature}</li>
                         ))}
                       </ul>
                     </div>

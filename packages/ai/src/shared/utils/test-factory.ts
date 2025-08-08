@@ -1,19 +1,19 @@
-import type { LanguageModelV2 } from '@ai-sdk/provider';
+import type { LanguageModel } from 'ai';
 import { simulateReadableStream } from 'ai';
 
 /**
  * AI SDK v5 Test Factory (v5 Pattern)
- * Uses official MockLanguageModelV2 for standardized testing
+ * Uses official MockLanguageModel for standardized testing
  * Following v5 validated testing patterns
  */
 
 /**
  * Mock language model using official AI SDK v5 test utilities
- * Uses MockLanguageModelV2 from 'ai/test' for v5 compliance
+ * Uses MockLanguageModel from 'ai/test' for v5 compliance
  *
  * @param modelId - Identifier for the mock model
  * @param options - Optional configuration for mock behavior
- * @returns Configured MockLanguageModelV2 instance
+ * @returns Configured MockLanguageModel instance
  *
  * @example v5 Pattern
  * ```typescript
@@ -42,7 +42,7 @@ export function createMockLanguageModel(
     >;
   } = {},
 ): any {
-  // This will be replaced with actual MockLanguageModelV2 in implementation
+  // This will be replaced with actual MockLanguageModel in implementation
   // Using any type temporarily for migration compatibility
   const {
     responses = ['Mock response'],
@@ -60,7 +60,7 @@ export function createMockLanguageModel(
     provider: 'mock',
     specificationVersion: 'v2',
     supportedUrls: {},
-    // v5 MockLanguageModelV2 pattern
+    // v5 MockLanguageModel pattern
     doGenerate: async () => ({
       content: [{ type: 'text', text: responses[0] || 'Mock response' }],
       finishReason,
@@ -72,7 +72,7 @@ export function createMockLanguageModel(
         chunks: streamChunks,
       }),
     }),
-  } as LanguageModelV2;
+  } as LanguageModel;
 }
 
 /**
@@ -80,10 +80,10 @@ export function createMockLanguageModel(
  * Provides consistent model names and behaviors for testing
  */
 export interface TestModelRegistry {
-  chat: LanguageModelV2;
-  reasoning: LanguageModelV2;
-  title: LanguageModelV2;
-  artifact: LanguageModelV2;
+  chat: LanguageModel;
+  reasoningText: LanguageModel;
+  title: LanguageModel;
+  artifact: LanguageModel;
 }
 
 /**
@@ -93,7 +93,7 @@ export interface TestModelRegistry {
 export function createTestModelRegistry(): TestModelRegistry {
   return {
     chat: createMockLanguageModel('test-chat-model'),
-    reasoning: createMockLanguageModel('test-reasoning-model'),
+    reasoningText: createMockLanguageModel('test-reasoning-model'),
     title: createMockLanguageModel('test-title-model'),
     artifact: createMockLanguageModel('test-artifact-model'),
   };
@@ -108,14 +108,14 @@ export function createCustomTestModels(
 ): TestModelRegistry {
   const defaults = {
     chat: 'test-chat-model',
-    reasoning: 'test-reasoning-model',
+    reasoningText: 'test-reasoning-model',
     title: 'test-title-model',
     artifact: 'test-artifact-model',
   };
 
   return {
     chat: createMockLanguageModel(modelIds.chat ?? defaults.chat),
-    reasoning: createMockLanguageModel(modelIds.reasoning ?? defaults.reasoning),
+    reasoningText: createMockLanguageModel(modelIds.reasoningText ?? defaults.reasoningText),
     title: createMockLanguageModel(modelIds.title ?? defaults.title),
     artifact: createMockLanguageModel(modelIds.artifact ?? defaults.artifact),
   };
@@ -125,10 +125,10 @@ export function createCustomTestModels(
  * Convert test model registry to model map for provider configuration
  * Follows AI SDK patterns for provider setup
  */
-export function testModelsToMap(registry: TestModelRegistry): Record<string, LanguageModelV2> {
+export function testModelsToMap(registry: TestModelRegistry): Record<string, LanguageModel> {
   return {
     'chat-model': registry.chat,
-    'chat-model-reasoning': registry.reasoning,
+    'chat-model-reasoning': registry.reasoningText,
     'title-model': registry.title,
     'artifact-model': registry.artifact,
   };

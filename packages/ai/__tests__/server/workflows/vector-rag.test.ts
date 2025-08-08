@@ -1,8 +1,12 @@
-import { beforeEach, describe, expect, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 // Import AI SDK V5 testing utilities
-import type { RAGContext, RAGResponse, RAGWorkflowConfig } from '#/server/workflows/vector-rag';
 import { MockLanguageModelV2 } from 'ai/test';
+import type {
+  RAGContext,
+  RAGResponse,
+  RAGWorkflowConfig,
+} from '../../../src/server/core/workflows/vector-rag';
 
 // Mock the AI SDK functions directly in the test file
 vi.mock('@ai-sdk/anthropic', () => ({
@@ -10,16 +14,54 @@ vi.mock('@ai-sdk/anthropic', () => ({
 }));
 
 vi.mock('@ai-sdk/openai', () => ({
-  openai: {
-    embedding: vi.fn(),
-  },
+  openai: Object.assign(
+    vi.fn(() => ({
+      modelId: 'gpt-4o',
+      provider: 'openai',
+      doGenerate: vi.fn().mockResolvedValue({
+        text: 'Mock OpenAI response',
+        usage: { inputTokens: 10, outputTokens: 20 },
+        finishReason: 'stop',
+      }),
+    })),
+    {
+      embedding: vi.fn(() => ({
+        modelId: 'text-embedding-3-small',
+        provider: 'openai',
+        embed: vi.fn().mockResolvedValue({
+          embedding: [0.1, 0.2, 0.3],
+          usage: { inputTokens: 5, outputTokens: 0 },
+        }),
+      })),
+    },
+  ),
 }));
 
 vi.mock('ai', () => ({
-  embed: vi.fn(),
-  embedMany: vi.fn(),
-  generateText: vi.fn(),
-  streamText: vi.fn(),
+  embed: vi.fn().mockResolvedValue({
+    embedding: [0.1, 0.2, 0.3],
+    usage: { inputTokens: 5, outputTokens: 0 },
+  }),
+  embedMany: vi.fn().mockResolvedValue({
+    embeddings: [
+      [0.1, 0.2, 0.3],
+      [0.4, 0.5, 0.6],
+    ],
+    usage: { inputTokens: 10, outputTokens: 0 },
+  }),
+  generateText: vi.fn().mockResolvedValue({
+    text: 'Mock response',
+    usage: { inputTokens: 10, outputTokens: 5, totalTokens: 15 },
+    finishReason: 'stop',
+  }),
+  streamText: vi.fn().mockReturnValue({
+    textStream: {
+      [Symbol.asyncIterator]: async function* () {
+        yield 'Mock ';
+        yield 'response';
+      },
+    },
+  }),
 }));
 
 // Mock observability
@@ -27,31 +69,18 @@ vi.mock('@repo/observability/server/next', () => ({
   logError: vi.fn(),
 }));
 
-// Mock server-only to prevent import issues in tests
-vi.mock('server-only', () => ({}));
-
-describe('vector RAG Workflows', () => {
-  let mockVectorDB: any;
-  let mockChatModel: MockLanguageModelV2;
+describe('vector RAG Workflow', () => {
   let mockEmbeddingModel: MockLanguageModelV2;
+  let mockVectorDB: any;
 
   beforeEach(() => {
     vi.clearAllMocks();
-
-    // Create mock models using AI SDK V5 testing utilities
-    mockChatModel = new MockLanguageModelV2({
-      doGenerate: vi.fn().mockResolvedValue({
-        finishReason: 'stop',
-        text: 'Mock response',
-        usage: { promptTokens: 10, completionTokens: 5 },
-      }),
-    });
 
     mockEmbeddingModel = new MockLanguageModelV2({
       doGenerate: vi.fn().mockResolvedValue({
         finishReason: 'stop',
         text: 'Mock embedding',
-        usage: { promptTokens: 5, completionTokens: 0 },
+        usage: { inputTokens: 5, outputTokens: 0 },
       }),
     });
 
@@ -80,22 +109,18 @@ describe('vector RAG Workflows', () => {
 
   // Helper function to create workflow with mock models
   const createMockWorkflow = async (config: any = {}) => {
-    const { VectorRAGWorkflow } = await import('#/server/workflows/vector-rag');
+    const { VectorRAGWorkflow } = await import('../../../src/server/core/workflows/vector-rag');
 
     const workflow = new VectorRAGWorkflow({
       vectorDB: mockVectorDB,
       ...config,
     });
 
-    // Override the models with our mocks
-    (workflow as any).embeddingModel = mockEmbeddingModel;
-    (workflow as any).chatModel = mockChatModel;
-
     return workflow;
   };
 
   test('should import vector RAG workflow successfully', async () => {
-    const vectorRag = await import('#/server/workflows/vector-rag');
+    const vectorRag = await import('../../../src/server/core/workflows/vector-rag');
     expect(vectorRag).toBeDefined();
     expect(vectorRag.VectorRAGWorkflow).toBeDefined();
     expect(vectorRag.createRAGWorkflow).toBeTypeOf('function');
@@ -385,7 +410,7 @@ describe('vector RAG Workflows', () => {
   });
 
   test('should test interface types', async () => {
-    const vectorRag = await import('#/server/workflows/vector-rag');
+    const vectorRag = await import('../../../src/server/core/workflows/vector-rag');
 
     // Test that interfaces are properly exported by using them in type annotations
     const config: RAGWorkflowConfig = {

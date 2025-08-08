@@ -41,7 +41,7 @@ export function testEmailSendingFunction<T>(
         const result = await emailFunction(testData);
 
         if (scenario.expectedResult) {
-          expect(result).toEqual(scenario.expectedResult);
+          expect(result).toStrictEqual(scenario.expectedResult);
         }
 
         if (scenario.customAssertions) {
@@ -243,7 +243,7 @@ export function validateEmailServiceResponse(
   result: any,
   expectedResponse: any = { data: { id: 'email_123' }, error: null },
 ) {
-  expect(result).toEqual(expectedResponse);
+  expect(result).toStrictEqual(expectedResponse);
 }
 
 /**
@@ -555,7 +555,7 @@ export function testEmailSendingFunctions(
     functionConfigs.forEach(config => {
       test(`should have ${config.functionName} function`, async () => {
         const module = await import('../../src/index');
-        expect(typeof module[config.functionName]).toBe('function');
+        expect(typeof (module as any)[config.functionName]).toBe('function');
       });
     });
   });
@@ -678,7 +678,7 @@ export function testEmailWorkflowIntegration<T>(
   test(`should execute ${workflowName} workflow correctly`, async () => {
     const result = await emailFunction(emailData);
 
-    expect(result).toEqual(expectedWorkflow.result);
+    expect(result).toStrictEqual(expectedWorkflow.result);
   });
 }
 

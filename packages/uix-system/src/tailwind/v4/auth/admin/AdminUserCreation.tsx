@@ -114,7 +114,7 @@ export function AdminUserCreation({
 
     startTransition(async () => {
       try {
-        const result = await bulkInviteUsersAction({
+        const _result = await bulkInviteUsersAction({
           emails,
           role: bulkRole,
           organizationId: bulkOrganization || undefined,
@@ -151,7 +151,6 @@ export function AdminUserCreation({
 
   return (
     <div className={`space-y-6 ${className}`}>
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold text-gray-900">Create New Users</h2>
@@ -164,7 +163,6 @@ export function AdminUserCreation({
         </Button>
       </div>
 
-      {/* Mode Selection */}
       <Card>
         <CardContent className="p-4">
           <div className="flex items-center space-x-4">
@@ -195,7 +193,6 @@ export function AdminUserCreation({
         </CardContent>
       </Card>
 
-      {/* Error/Success Messages */}
       {(createState.error || bulkState.error) && (
         <Alert variant="destructive">{createState.error || bulkState.error}</Alert>
       )}
@@ -206,7 +203,6 @@ export function AdminUserCreation({
         </Alert>
       )}
 
-      {/* Single User Creation */}
       {mode === 'single' && (
         <Card>
           <CardHeader>
@@ -214,7 +210,6 @@ export function AdminUserCreation({
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSingleUserSubmit} className="space-y-6">
-              {/* Basic Information */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="mb-2 block text-sm font-medium text-gray-700">
@@ -239,7 +234,6 @@ export function AdminUserCreation({
                 </div>
               </div>
 
-              {/* Role Selection */}
               <div>
                 <label className="mb-2 block text-sm font-medium text-gray-700">User Role</label>
                 <select
@@ -260,7 +254,6 @@ export function AdminUserCreation({
                 </p>
               </div>
 
-              {/* Password Settings */}
               <div className="space-y-4">
                 <div className="flex items-center space-x-3">
                   <input
@@ -299,7 +292,6 @@ export function AdminUserCreation({
                 )}
               </div>
 
-              {/* Additional Options */}
               <div className="space-y-3">
                 <div className="flex items-center space-x-3">
                   <input
@@ -330,7 +322,6 @@ export function AdminUserCreation({
                 </div>
               </div>
 
-              {/* Submit Button */}
               <div className="flex space-x-3">
                 <Button type="submit" disabled={isPending}>
                   {isPending ? 'Creating User...' : 'Create User'}
@@ -344,7 +335,6 @@ export function AdminUserCreation({
         </Card>
       )}
 
-      {/* Bulk User Invitation */}
       {mode === 'bulk' && (
         <Card>
           <CardHeader>
@@ -352,7 +342,6 @@ export function AdminUserCreation({
           </CardHeader>
           <CardContent>
             <form onSubmit={handleBulkInviteSubmit} className="space-y-6">
-              {/* Email List */}
               <div>
                 <label className="mb-2 block text-sm font-medium text-gray-700">
                   Email Addresses *
@@ -372,7 +361,6 @@ export function AdminUserCreation({
                 </p>
               </div>
 
-              {/* Bulk Settings */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="mb-2 block text-sm font-medium text-gray-700">
@@ -401,7 +389,6 @@ export function AdminUserCreation({
                 </div>
               </div>
 
-              {/* Bulk Options */}
               <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
                 <h4 className="mb-2 text-sm font-medium text-blue-900">Bulk Invitation Process</h4>
                 <ul className="space-y-1 text-sm text-blue-800">
@@ -412,7 +399,6 @@ export function AdminUserCreation({
                 </ul>
               </div>
 
-              {/* Preview */}
               {emailCount > 0 && (
                 <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
                   <h4 className="mb-2 text-sm font-medium text-gray-900">Invitation Preview</h4>
@@ -430,7 +416,6 @@ export function AdminUserCreation({
                 </div>
               )}
 
-              {/* Submit Button */}
               <div className="flex space-x-3">
                 <Button type="submit" disabled={isPending || emailCount === 0}>
                   {isPending
@@ -446,7 +431,6 @@ export function AdminUserCreation({
         </Card>
       )}
 
-      {/* Help Information */}
       <Card>
         <CardHeader>
           <h3 className="text-lg font-medium text-gray-900">User Creation Guidelines</h3>

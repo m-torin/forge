@@ -14,7 +14,7 @@ vi.mock('react', () => ({
 
 describe('client Module Imports', () => {
   test('should import client entry points', async () => {
-    const modules = [() => import('#/client'), () => import('#/client-next')];
+    const modules = [() => import('@repo/ai/client'), () => import('@repo/ai/client/next')];
 
     for (const importModule of modules) {
       const module = await importModule();

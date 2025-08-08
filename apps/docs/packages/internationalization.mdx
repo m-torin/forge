@@ -7,24 +7,25 @@ icon: "globe"
 # Internationalization Package
 
 Multi-language support and localization system for Next.js applications using
-App Router and automated translation management.
+next-intl v4, App Router, and automated translation management.
 
 ## Overview
 
-The internationalization package provides a foundational i18n system with:
+The internationalization package provides a comprehensive i18n system powered by
+next-intl v4:
 
 <CardGroup cols={2}>
-  <Card title="Next.js App Router" icon="next-js">
-    Built for Next.js App Router with locale detection middleware
+  <Card title="next-intl v4" icon="globe">
+    Full compatibility with next-intl v4 features and best practices
   </Card>
-  <Card title="Dictionary System" icon="book">
-    Type-safe dictionary loading with automatic fallbacks
+  <Card title="Static Rendering" icon="lightning">
+    Support for static rendering with generateStaticParams and setRequestLocale
   </Card>
-  <Card title="Automated Translation" icon="robot">
-    AI-powered translation generation with Languine
+  <Card title="Type-Safe Routing" icon="shield">
+    Centralized routing configuration with full TypeScript support
   </Card>
-  <Card title="Locale-Aware Components" icon="globe">
-    Link component with automatic locale prefix handling
+  <Card title="SEO Optimized" icon="search">
+    Automatic alternate links generation for better search engine visibility
   </Card>
 </CardGroup>
 
@@ -38,64 +39,182 @@ The package supports 5 primary languages:
 - **German (de)**: German
 - **Portuguese (pt)**: Portuguese
 
+Language configuration is managed through the `languine.json` file and
+automatically extracted for routing configuration.
+
 ## Installation
 
-The internationalization package is included in the monorepo. No additional
-installation needed.
+The internationalization package is included in the monorepo workspace:
+
+```bash
+# Already available as @repo/internationalization
+# No additional installation needed
+```
+
+For environment setup, see the
+[Environment Configuration](#environment-configuration) section.
 
 ## Quick Start
 
-### 1. Setup Middleware
+### 1. Create Routing Configuration
+
+```typescript
+// src/i18n/routing.ts
+export {
+  routing,
+  locales,
+  type Locale
+} from "@repo/internationalization/routing";
+```
+
+### 2. Create Request Configuration
+
+```typescript
+// src/i18n/request.ts
+export { getRequestConfig } from "@repo/internationalization/request";
+```
+
+### 3. Create Navigation Configuration
+
+```typescript
+// src/i18n/navigation.ts
+export {
+  Link,
+  redirect,
+  usePathname,
+  useRouter
+} from "@repo/internationalization/navigation";
+```
+
+### 4. Configure Next.js with Plugin
+
+```typescript
+// next.config.ts
+import createNextIntlPlugin from "next-intl/plugin";
+
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
+
+export default withNextIntl({
+  // Your Next.js config
+});
+```
+
+### 5. Setup Middleware
 
 ```typescript
 // middleware.ts
-import { internationalizationMiddleware } from "@repo/internationalization/server/next";
+import { internationalizationMiddleware } from "@repo/internationalization/middleware";
+import { type NextRequest, NextResponse } from "next/server";
 
-export function middleware(request: NextRequest) {
-  return internationalizationMiddleware(request);
+export async function middleware(request: NextRequest) {
+  // Handle internationalization
+  const i18nResponse = internationalizationMiddleware(request);
+
+  if (i18nResponse) {
+    return i18nResponse;
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"]
+  matcher: ["/((?!api|trpc|_next|_vercel|.*\\..*).*)", "/"]
 };
 ```
 
-### 2. Use in Server Components
+### 6. Configure Layout with Static Rendering
+
+```tsx
+// app/[locale]/layout.tsx
+import {
+  setRequestLocale,
+  hasLocale
+} from "@repo/internationalization/server/next";
+import { routing } from "#/i18n/routing";
+import { notFound } from "next/navigation";
+import { NextIntlClientProvider } from "@repo/internationalization/client/next";
+import { getMessages } from "@repo/internationalization/server/next";
+
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
+}
+
+export default async function LocaleLayout({
+  params,
+  children
+}: {
+  params: Promise<{ locale: string }>;
+  children: React.ReactNode;
+}) {
+  const { locale } = await params;
+
+  // Validate locale
+  if (!hasLocale(routing.locales, locale)) {
+    notFound();
+  }
+
+  // Enable static rendering
+  setRequestLocale(locale);
+
+  // Get messages for client components
+  const messages = await getMessages();
+
+  return (
+    <html lang={locale}>
+      <body>
+        <NextIntlClientProvider messages={messages}>
+          {children}
+        </NextIntlClientProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+### 7. Use in Server Components
 
 ```tsx
 // app/[locale]/page.tsx
-import { getDictionary } from "@repo/internationalization/server/next";
+import { getTranslations } from "@repo/internationalization/server/next";
 
-export default async function Page({
-  params: { locale }
-}: {
-  params: { locale: string };
-}) {
-  const dict = await getDictionary(locale);
+export default async function HomePage() {
+  const t = await getTranslations("HomePage");
 
   return (
     <div>
-      <h1>{dict.web.home.meta.title}</h1>
-      <p>{dict.web.home.meta.description}</p>
+      <h1>{t("title")}</h1>
+      <p>{t("description")}</p>
     </div>
   );
 }
 ```
 
-### 3. Check Available Locales
+### 8. Use in Client Components
 
-```typescript
+```tsx
+"use client";
+
+import { useTranslations } from "@repo/internationalization/client/next";
 import {
-  locales,
-  isLocaleSupported
-} from "@repo/internationalization/server/next";
+  Link,
+  useRouter,
+  usePathname
+} from "@repo/internationalization/client/next";
 
-// Available locales: ['en', 'es', 'fr', 'de', 'pt']
-console.log("Supported locales:", locales);
+export default function Navigation() {
+  const t = useTranslations("Navigation");
+  const router = useRouter();
+  const pathname = usePathname();
 
-// Check if a locale is supported
-const isValid = isLocaleSupported("es"); // true
-const isInvalid = isLocaleSupported("zh"); // false
+  return (
+    <nav>
+      <Link href="/about">{t("about")}</Link>
+      <button onClick={() => router.replace(pathname, { locale: "es" })}>
+        Español
+      </button>
+    </nav>
+  );
+}
 ```
 
 ## Dictionary Structure
@@ -171,31 +290,63 @@ if (isLocaleSupported(locale)) {
 ### Locale-Aware Navigation
 
 ```tsx
-import { Link } from '@repo/internationalization/client/next';
+import { Link } from "@repo/internationalization/client/next";
+import { useRouter, usePathname } from "@repo/internationalization/client/next";
 
 // Automatic locale prefix handling
-<Link href="/products">
-  Products
-</Link>
+<Link href="/products">Products</Link>;
 // Renders as /es/products when locale is 'es'
 
-// External links are handled normally
-<Link href="https://external.com">
-  External Site
-</Link>
+// Programmatic navigation
+const router = useRouter();
+const pathname = usePathname();
+
+// Navigate to a different page
+router.push("/about");
+
+// Change locale while staying on the same page
+router.replace(pathname, { locale: "es" });
+
+// Redirect server-side
+import { redirect } from "@repo/internationalization/server/next";
+redirect("/dashboard"); // Automatically includes locale prefix
 ```
 
-### Extending Dictionaries
+### Advanced Routing Features
 
 ```typescript
-import { createDictionary } from "@repo/internationalization/server/next";
+// Enable pathnames configuration in routing.ts
+import { defineRouting } from "next-intl/routing";
 
-// Extend base dictionary with custom translations
-const customDict = createDictionary({
-  custom: {
-    greeting: "Hello, custom world!",
-    farewell: "Goodbye!"
-  }
+export const routing = defineRouting({
+  locales: ["en", "es", "de", "fr", "pt"],
+  defaultLocale: "en",
+
+  // Define localized pathnames
+  pathnames: {
+    "/": "/",
+    "/about": {
+      en: "/about",
+      es: "/acerca",
+      de: "/uber-uns",
+      fr: "/a-propos",
+      pt: "/sobre"
+    }
+  },
+
+  // Configure domain-based routing
+  domains: [
+    {
+      domain: "example.com",
+      defaultLocale: "en",
+      locales: ["en"]
+    },
+    {
+      domain: "example.es",
+      defaultLocale: "es",
+      locales: ["es"]
+    }
+  ]
 });
 ```
 
@@ -212,26 +363,47 @@ NODE_ENV="development"             # or "production"
 NEXT_PUBLIC_NODE_ENV="development" # or "production"
 ```
 
-### Environment Helper
+### Environment Helper Functions
+
+The package provides helper functions for environment management:
 
 ```typescript
 import {
   safeEnv,
   isProduction,
   isDevelopment
-} from "@repo/internationalization/env";
+} from "@repo/internationalization";
 
-// Safely access environment variables
+// Safely access environment variables with fallbacks
 const env = safeEnv();
 console.log("DeepSeek API Key:", env.DEEPSEEK_API_KEY);
 
 // Environment checks
 if (isProduction()) {
-  // Production-specific logic
+  // Production-specific logic (optimized dictionary loading)
 }
 
 if (isDevelopment()) {
-  // Development-specific logic
+  // Development-specific logic (debug logging)
+}
+```
+
+### Dictionary Loading Configuration
+
+The package automatically handles dictionary loading with fallbacks:
+
+```typescript
+import {
+  getDictionary,
+  isLocaleSupported
+} from "@repo/internationalization/server/next";
+
+// Automatic fallback to English for unsupported locales
+const dict = await getDictionary("unsupported-locale"); // Returns English dictionary
+
+// Check locale support before loading
+if (isLocaleSupported(locale)) {
+  const dict = await getDictionary(locale);
 }
 ```
 
@@ -289,15 +461,20 @@ pnpm test
 
 ## Middleware Features
 
-The middleware provides automatic locale detection:
+The internationalization middleware provides automatic locale detection and
+routing:
 
 ```typescript
-// Automatically detects locale from:
-// 1. URL path segment (/es/page)
-// 2. Accept-Language header
-// 3. Falls back to default locale (en)
+import { internationalizationMiddleware } from "@repo/internationalization/middleware";
 
-export function middleware(request: NextRequest) {
+// The middleware automatically handles:
+// 1. Locale detection from URL, cookies, and Accept-Language header
+// 2. Redirects to add locale prefix when needed (as-needed strategy)
+// 3. Rewrites for localized pathnames
+// 4. Domain-based routing if configured
+// 5. Proper return type (NextResponse | undefined) for integration
+
+export async function middleware(request: NextRequest) {
   return internationalizationMiddleware(request);
 }
 ```
@@ -349,45 +526,144 @@ pnpm test:ui
 
 ## API Reference
 
-### Core Functions
+### Server Functions (`@repo/internationalization/server/next`)
 
 ```typescript
-// Dictionary loading
+// Translation functions
+export function getTranslations(namespace?: string): Promise<TFunction>;
+export function getFormatter(): Promise<Formatter>;
+export function getMessages(): Promise<Messages>;
+export function getLocale(): Promise<string>;
+export function getNow(): Promise<Date>;
+export function getTimeZone(): Promise<string>;
+
+// Static rendering
+export function setRequestLocale(locale: string): void;
+
+// Locale validation
+export function hasLocale(locales: readonly string[], locale: string): boolean;
+
+// Navigation
+export function redirect(pathname: string): never;
+export function permanentRedirect(pathname: string): never;
+export function getPathname(props?: {
+  pathname: string;
+  params?: Record<string, string>;
+}): string;
+
+// Dictionary functions (backward compatibility)
 export function getDictionary(locale: string): Promise<Dictionary>;
 export function isLocaleSupported(locale: string): boolean;
-export const locales: readonly string[];
 
-// Dictionary extension
-export function createDictionary(extensions: Record<string, any>): Dictionary;
-
-// Types
-export interface Dictionary {
-  common: {
-    locale: string;
-    language: string;
-  };
-  web: {
-    // ... web content structure
-  };
-}
-
-export type Locale = "en" | "es" | "fr" | "de" | "pt";
+// Dictionary extension utility
+export function createDictionary<T extends Record<string, any>>(
+  getBaseDictionary: (locale: string) => Promise<Dictionary>,
+  getAppDictionary: (locale: string) => Promise<T>
+): (locale: string) => Promise<ExtendedDictionary<T>>;
 ```
 
-### Environment-Specific Imports
+### Client Functions (`@repo/internationalization/client/next`)
 
 ```typescript
-// For Next.js server components and API routes
-import { getDictionary } from "@repo/internationalization/server/next";
+// Hooks
+export function useTranslations(namespace?: string): TFunction;
+export function useI18n(namespace?: string): TFunction; // Alias
+export function useFormatter(): Formatter;
+export function useLocale(): string;
+export function useCurrentLocale(): string; // Alias
+export function useMessages(): Messages;
+export function useNow(): Date;
+export function useTimeZone(): string;
 
-// For Next.js client components
-import { Link } from "@repo/internationalization/client/next";
+// Navigation hooks
+export function useRouter(): Router;
+export function useChangeLocale(): Router; // Alias for locale switching
+export function usePathname(): string;
 
-// For non-Next.js server environments (rarely used)
-import { getDictionary } from "@repo/internationalization/server";
+// Components
+export const Link: React.FC<LinkProps>;
+export const NextIntlClientProvider: React.FC<ProviderProps>;
 
-// For non-Next.js client environments (rarely used)
-import { Link } from "@repo/internationalization/client";
+// Navigation functions
+export function redirect(pathname: string): never;
+export function permanentRedirect(pathname: string): never;
+```
+
+### Types
+
+```typescript
+export type Locale = "en" | "es" | "fr" | "de" | "pt";
+
+export interface RoutingConfig {
+  locales: readonly string[];
+  defaultLocale: string;
+  localePrefix?: "always" | "as-needed" | "never" | LocalePrefixConfig;
+  localeDetection?: boolean;
+  alternateLinks?: boolean;
+  pathnames?: Record<string, string | Record<string, string>>;
+  domains?: DomainConfig[];
+}
+
+export interface DomainConfig {
+  domain: string;
+  defaultLocale: string;
+  locales?: string[];
+}
+
+// Type augmentation for next-intl v4
+declare module "next-intl" {
+  interface AppConfig {
+    Locale: (typeof routing.locales)[number];
+  }
+}
+```
+
+### Available Exports
+
+The package provides multiple export paths for different use cases:
+
+```typescript
+// Routing configuration
+import {
+  routing,
+  locales,
+  type Locale
+} from "@repo/internationalization/routing";
+
+// Request configuration for Next.js plugin
+import { getRequestConfig } from "@repo/internationalization/request";
+
+// Navigation utilities
+import {
+  Link,
+  redirect,
+  usePathname,
+  useRouter
+} from "@repo/internationalization/navigation";
+
+// Middleware
+import { internationalizationMiddleware } from "@repo/internationalization/middleware";
+
+// Server-side functionality (Next.js)
+import {
+  getTranslations,
+  setRequestLocale,
+  getDictionary
+} from "@repo/internationalization/server/next";
+
+// Client-side functionality (Next.js)
+import {
+  useTranslations,
+  useLocale,
+  NextIntlClientProvider
+} from "@repo/internationalization/client/next";
+
+// Generic server/client exports (non-Next.js)
+import {} from /* server functions */ "@repo/internationalization/server";
+import {} from /* client functions */ "@repo/internationalization/client";
+
+// Types
+import type { Locale } from "@repo/internationalization/types";
 ```
 
 ## Best Practices
@@ -395,60 +671,97 @@ import { Link } from "@repo/internationalization/client";
 ### 1. Dictionary Organization
 
 - Keep translations organized in logical namespaces (`common`, `web`)
-- Use nested objects for related content
+- Use nested objects for related content (`web.header.product.title`)
 - Maintain consistent key naming across languages
+- Follow semantic naming conventions
 
 ### 2. Fallback Strategy
 
 - Always handle missing translations gracefully
 - The system automatically falls back to English for unsupported locales
+- Use `isLocaleSupported()` for validation before loading dictionaries
 - Test with various locale combinations
 
-### 3. Performance
+### 3. Performance Optimization
 
-- Dictionaries are loaded server-side only
-- Use static generation when possible for better performance
-- Cache dictionary loading in production
+- Dictionaries are loaded server-side only for better performance
+- Use static generation with `generateStaticParams()` when possible
+- Enable caching in production environments
+- Use `setRequestLocale()` for static rendering optimization
 
 ### 4. Content Management
 
 - Use semantic keys rather than English text as keys
 - Plan for text expansion/contraction in different languages
 - Consider cultural context beyond just language translation
+- Use the automated translation workflow with Languine
 
-## Limitations & Roadmap
+### 5. Development Workflow
 
-<Warning>
-  **Current Status**: This package provides basic internationalization with
-  dictionary loading and automated translation. Advanced formatting features are
-  planned but not yet implemented.
-</Warning>
+- Use the provided TypeScript types for better DX
+- Leverage environment helpers for development vs production logic
+- Test translations locally before deployment
+- Use the comprehensive middleware for automatic locale handling
 
-### ✅ Currently Available
+## Features & Capabilities
 
-- Dictionary loading with locale fallback
-- Next.js App Router middleware integration
-- Locale-aware Link component
-- Automated translation with Languine
-- Basic environment configuration
-- Comprehensive testing infrastructure
+<Success>
+  **Current Status**: This package provides comprehensive internationalization
+  powered by next-intl v4, with full support for modern Next.js features and
+  best practices.
+</Success>
 
-### 📋 Planned Features
+### ✅ Available Features
 
-- Date/time formatting utilities
-- Number and currency formatting
-- Pluralization helpers
-- Translation interpolation
-- React hooks for client-side i18n
-- Advanced locale detection
-- Translation management CLI tools
+- **Core i18n**: Full next-intl v4 integration with all features
+- **Static Rendering**: Support for generateStaticParams and setRequestLocale
+- **Type Safety**: Full TypeScript support with type-safe routing and AppConfig
+  augmentation
+- **Navigation**: Locale-aware Link, redirect, and router utilities with
+  createNavigation
+- **Formatting**: Date, time, number, and currency formatting via useFormatter
+- **Messages**: Translation loading with namespace support and getMessages
+- **Middleware**: Automatic locale detection and routing with proper return
+  types
+- **SEO**: Automatic alternate links generation
+- **Advanced Routing**: Support for localized pathnames and domain-based routing
+- **Client/Server**: Separate imports for client and server components
+- **Performance**: Optimized for static rendering and minimal bundle size
+- **Testing**: Comprehensive test infrastructure
+- **Request Config**: Centralized request configuration with getRequestConfig
+- **Type Augmentation**: Extended next-intl types for better type inference
 
-## Migration from Pages Router
+### 🚀 Advanced Capabilities
+
+- **Pluralization**: Built-in support via ICU MessageFormat
+- **Interpolation**: Variable substitution in translations
+- **Rich formatting**: Support for dates, numbers, lists, and more
+- **Time zones**: Consistent time zone handling across server/client
+- **Locale negotiation**: Smart locale detection from multiple sources
+- **Type augmentation**: Extend types for custom use cases
+
+## Migration Notes
+
+### From next-international to next-intl v4
+
+The package has been migrated from next-international to next-intl v4. Key
+changes:
+
+1. **Import Paths**: All imports now use `@repo/internationalization/*` exports
+2. **Middleware**: Use the package's middleware export instead of creating
+   directly
+3. **Type Safety**: Full TypeScript support with AppConfig augmentation
+4. **Static Rendering**: Built-in support for generateStaticParams and
+   setRequestLocale
+5. **Navigation**: Use the package's Link and router exports for locale-aware
+   navigation
+
+### From Pages Router
 
 If migrating from Next.js Pages Router:
 
 1. **Update Middleware**: Use the App Router middleware pattern
-2. **Use Server Components**: Load dictionaries in server components instead of
+2. **Use Server Components**: Load translations in server components instead of
    `getServerSideProps`
 3. **Update Routing**: Use `[locale]` dynamic segments in your app directory
    structure
@@ -456,13 +769,15 @@ If migrating from Next.js Pages Router:
 ```typescript
 // Before (Pages Router)
 export async function getServerSideProps({ locale }) {
-  return { props: { locale } };
+  return { props: { messages: await getMessages(locale) } };
 }
 
 // After (App Router)
-export default async function Page({ params: { locale } }) {
-  const dict = await getDictionary(locale);
-  return <div>{dict.web.home.meta.title}</div>;
+import { getTranslations } from '@repo/internationalization/server/next';
+
+export default async function Page() {
+  const t = await getTranslations('HomePage');
+  return <div>{t('title')}</div>;
 }
 ```
 

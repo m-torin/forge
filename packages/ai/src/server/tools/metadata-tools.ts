@@ -23,7 +23,7 @@ export function createMetadataTools(config: MetadataToolsConfig) {
   return {
     updateMetadata: tool({
       description: 'Update metadata for specific vectors without changing embeddings',
-      parameters: z.object({
+      inputSchema: z.object({
         vectorId: z.string().describe('Vector ID to update'),
         metadata: z.record(z.string(), z.any()).describe('New metadata to set'),
         mergeMode: z
@@ -95,7 +95,7 @@ export function createMetadataTools(config: MetadataToolsConfig) {
 
     bulkUpdateMetadata: tool({
       description: 'Update metadata for multiple vectors efficiently',
-      parameters: z.object({
+      inputSchema: z.object({
         updates: z
           .array(
             z.object({
@@ -199,7 +199,7 @@ export function createMetadataTools(config: MetadataToolsConfig) {
 
     queryByMetadata: tool({
       description: 'Query vectors based on metadata filters without semantic search',
-      parameters: z.object({
+      inputSchema: z.object({
         filter: z.record(z.string(), z.any()).describe('Metadata filter criteria'),
         limit: z.number().default(10).describe('Maximum number of results'),
         includeVectors: z.boolean().default(false).describe('Include vector values'),
@@ -330,7 +330,7 @@ export function createMetadataTools(config: MetadataToolsConfig) {
 
     getMetadataStats: tool({
       description: 'Get statistics about metadata fields across all vectors',
-      parameters: z.object({
+      inputSchema: z.object({
         namespace: z.string().optional().describe('Target namespace'),
         sampleSize: z.number().default(1000).describe('Number of vectors to sample for stats'),
         fields: z
@@ -434,7 +434,7 @@ export function createMetadataTools(config: MetadataToolsConfig) {
 
     cleanupMetadata: tool({
       description: 'Clean up and optimize metadata across vectors',
-      parameters: z.object({
+      inputSchema: z.object({
         operations: z
           .array(z.enum(['remove_null', 'remove_empty', 'normalize_types', 'deduplicate_arrays']))
           .describe('Cleanup operations to perform'),

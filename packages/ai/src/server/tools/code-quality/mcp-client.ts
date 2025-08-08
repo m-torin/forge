@@ -3,42 +3,68 @@
  * Provides memory persistence and session management
  */
 
-import { logError, logInfo } from '@repo/observability';
+import { createEntityName } from '@repo/mcp-utils';
+import { logError } from '@repo/observability';
 import type { AnalysisResult, CodeQualitySession } from './types';
+
+// Import MCP memory tools
+declare global {
+  const mcp__memory__create_entities: (params: {
+    entities: Array<{ name: string; entityType: string; observations: string[] }>;
+  }) => Promise<any>;
+  const mcp__memory__add_observations: (params: {
+    observations: Array<{ entityName: string; contents: string[] }>;
+  }) => Promise<any>;
+  const mcp__memory__search_nodes: (params: { query: string }) => Promise<{ entities?: any[] }>;
+  const mcp__memory__delete_entities: (params: { entityNames: string[] }) => Promise<any>;
+}
 
 export class CodeQualityMCPClient {
   /**
    * Create a new analysis session entity in memory
    */
   async createSession(session: CodeQualitySession): Promise<void> {
-    // This would integrate with the actual MCP memory tools
-    // For now, we'll use a placeholder that matches the existing pattern
-    const entityName = `CodeQualitySession:${session.sessionId}`;
+    const entityName = createEntityName('CodeQualitySession', session.sessionId);
 
-    // Using the MCP memory tools that already exist
-    await this.createEntity(entityName, 'CodeQualitySession', [
-      `sessionId:${session.sessionId}`,
-      `workingDirectory:${session.workingDirectory}`,
-      `worktreePath:${session.worktreePath || ''}`,
-      `status:${session.status}`,
-      `createdAt:${session.createdAt.toISOString()}`,
-    ]);
+    await mcp__memory__create_entities({
+      entities: [
+        {
+          name: entityName,
+          entityType: 'CodeQualitySession',
+          observations: [
+            `sessionId:${session.sessionId}`,
+            `workingDirectory:${session.workingDirectory}`,
+            `worktreePath:${session.worktreePath || ''}`,
+            `status:${session.status}`,
+            `createdAt:${session.createdAt.toISOString()}`,
+          ],
+        },
+      ],
+    });
   }
 
   /**
    * Store analysis result in memory
    */
   async storeResult(result: AnalysisResult): Promise<void> {
-    const entityName = `${result.toolName}Result:${result.sessionId}`;
+    const entityName = createEntityName(`${result.toolName}Result`, result.sessionId);
 
-    await this.createEntity(entityName, 'AnalysisResult', [
-      `sessionId:${result.sessionId}`,
-      `toolName:${result.toolName}`,
-      `timestamp:${result.timestamp}`,
-      `success:${result.success}`,
-      `data:${JSON.stringify(result.data)}`,
-      ...(result.error ? [`error:${result.error}`] : []),
-    ]);
+    await mcp__memory__create_entities({
+      entities: [
+        {
+          name: entityName,
+          entityType: 'AnalysisResult',
+          observations: [
+            `sessionId:${result.sessionId}`,
+            `toolName:${result.toolName}`,
+            `timestamp:${result.timestamp}`,
+            `success:${result.success}`,
+            `data:${JSON.stringify(result.data)}`,
+            ...(result.error ? [`error:${result.error}`] : []),
+          ],
+        },
+      ],
+    });
   }
 
   /**
@@ -48,23 +74,29 @@ export class CodeQualityMCPClient {
     sessionId: string,
     status: CodeQualitySession['status'],
   ): Promise<void> {
-    const entityName = `CodeQualitySession:${sessionId}`;
+    const entityName = createEntityName('CodeQualitySession', sessionId);
 
-    await this.addObservation(entityName, `status:${status}`);
-    await this.addObservation(entityName, `updatedAt:${new Date().toISOString()}`);
+    await mcp__memory__add_observations({
+      observations: [
+        {
+          entityName,
+          contents: [`status:${status}`, `updatedAt:${new Date().toISOString()}`],
+        },
+      ],
+    });
   }
 
   /**
    * Retrieve session information
    */
   async getSession(sessionId: string): Promise<CodeQualitySession | null> {
-    const entityName = `CodeQualitySession:${sessionId}`;
+    const entityName = createEntityName('CodeQualitySession', sessionId);
 
     try {
-      const entities = await this.searchEntities(entityName);
-      if (entities.length === 0) return null;
+      const result = await mcp__memory__search_nodes({ query: entityName });
+      if (!result.entities || result.entities.length === 0) return null;
 
-      const entity = entities[0];
+      const entity = result.entities[0];
       return this.parseSessionFromEntity(entity);
     } catch (error) {
       logError('Error retrieving session', { error });
@@ -77,8 +109,10 @@ export class CodeQualityMCPClient {
    */
   async getSessionResults(sessionId: string): Promise<AnalysisResult[]> {
     try {
-      const entities = await this.searchEntities(`*Result:${sessionId}`);
-      return entities.map(entity => this.parseResultFromEntity(entity));
+      const result = await mcp__memory__search_nodes({ query: `*Result:${sessionId}` });
+      if (!result.entities) return [];
+
+      return result.entities.map(entity => this.parseResultFromEntity(entity));
     } catch (error) {
       logError('Error retrieving session results', { error });
       return [];
@@ -91,60 +125,19 @@ export class CodeQualityMCPClient {
   async cleanupSession(sessionId: string): Promise<void> {
     try {
       // Find all entities related to this session
-      const sessionEntities = await this.searchEntities(`*:${sessionId}`);
+      const result = await mcp__memory__search_nodes({ query: `*:${sessionId}` });
 
       // Delete all related entities
-      const entityNames = sessionEntities.map(entity => entity.name);
-      if (entityNames.length > 0) {
-        await this.deleteEntities(entityNames);
+      if (result.entities && result.entities.length > 0) {
+        const entityNames = result.entities.map(entity => entity.name);
+        await mcp__memory__delete_entities({ entityNames });
       }
     } catch (error) {
       logError('Error cleaning up session', { error });
     }
   }
 
-  // Private helper methods that would integrate with actual MCP tools
-  private async createEntity(
-    name: string,
-    entityType: string,
-    observations: string[],
-  ): Promise<void> {
-    // This would call the actual MCP memory creation tool
-    // For now, using logInfo as placeholder
-    logInfo(`Creating entity: ${name} (${entityType})`, { observations });
-
-    // TODO: Integrate with actual MCP client
-    // await mcpMemoryClient.createEntities([{
-    //   name,
-    //   entityType,
-    //   observations
-    // }]);
-  }
-
-  private async addObservation(entityName: string, observation: string): Promise<void> {
-    logInfo(`Adding observation to ${entityName}: ${observation}`);
-
-    // TODO: Integrate with actual MCP client
-    // await mcpMemoryClient.addObservations([{
-    //   entityName,
-    //   contents: [observation]
-    // }]);
-  }
-
-  private async searchEntities(query: string): Promise<any[]> {
-    logInfo(`Searching entities: ${query}`);
-
-    // TODO: Integrate with actual MCP client
-    // return await mcpMemoryClient.searchNodes(query);
-    return [];
-  }
-
-  private async deleteEntities(entityNames: string[]): Promise<void> {
-    logInfo(`Deleting entities`, { entityNames });
-
-    // TODO: Integrate with actual MCP client
-    // await mcpMemoryClient.deleteEntities(entityNames);
-  }
+  // Private helper methods for parsing entity data
 
   private parseSessionFromEntity(entity: any): CodeQualitySession {
     const observations = entity.observations || [];
@@ -182,3 +175,15 @@ export class CodeQualityMCPClient {
 
 // Export singleton instance
 export const mcpClient = new CodeQualityMCPClient();
+
+// Export utility functions for tools
+export { createEntityName, safeStringify } from '@repo/mcp-utils';
+
+// Export async logger creator
+export function createAsyncLogger(name: string) {
+  return async (message: string, data?: any) => {
+    // Use observability logging instead of console
+    const { logInfo } = await import('@repo/observability');
+    logInfo(`[${name}] ${message}`, { data });
+  };
+}

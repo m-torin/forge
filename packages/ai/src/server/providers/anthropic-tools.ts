@@ -191,14 +191,6 @@ export const createAnthropicComputerTool = () => {
           return `[Simulated] Executed action: ${action}`;
       }
     },
-
-    // Map tool results for LLM consumption
-    experimental_toToolResultContent(result) {
-      if (typeof result === 'string') {
-        return [{ type: 'text', text: result }];
-      }
-      return [{ type: 'image', data: result.data, mediaType: 'image/png' }];
-    },
   });
 };
 

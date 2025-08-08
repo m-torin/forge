@@ -1,44 +1,50 @@
 ---
 title: "Authentication Package"
+sidebarTitle: "Auth"
 description:
   "Enterprise-grade authentication built on Better Auth with organizations and
   API keys"
+icon: "shield-check"
 ---
 
 # Authentication Package
 
-Enterprise-grade authentication built on Better Auth v1.2.12 with organizations,
-API keys, admin features, and multi-tenant support.
+Enterprise-grade authentication built on Better Auth v1.3.3 with organizations,
+API keys, admin features, multi-tenant support, and advanced middleware.
 
 ## Overview
 
 The auth package provides comprehensive authentication infrastructure with
 Better Auth, including organization management, API key systems, role-based
-permissions, and admin tools. Designed for production-scale applications with
-enterprise requirements.
+permissions, admin tools, impersonation, passkeys, and advanced security
+features. Designed for production-scale applications with enterprise
+requirements.
 
 ## Key Features
 
 <CardGroup cols={2}>
   <Card title="Complete Auth Methods" icon="key">
     Email/password, magic links, social OAuth (Google, GitHub), two-factor auth,
-    passkeys
+    passkeys, SMS verification
   </Card>
   <Card title="Organization System" icon="users">
-    Multi-tenant organizations with teams, roles, and member management
+    Multi-tenant organizations with teams, roles, invitations, and member
+    management
   </Card>
   <Card title="API Key Management" icon="code">
-    Production-ready API authentication with rate limiting and permissions
+    Production-ready API authentication with rate limiting, permissions, and
+    service-to-service auth
   </Card>
   <Card title="Admin Panel" icon="shield-check">
-    User management, impersonation, session control, and ban/unban functionality
+    User management, impersonation, session control, ban/unban functionality,
+    and audit logging
   </Card>
-  <Card title="Role-Based Access Control" icon="user-shield">
-    Organization roles (owner, admin, member) and admin roles (super-admin,
-    moderator, support)
+  <Card title="Advanced Security" icon="user-shield">
+    Role-based access control, rate limiting, session caching, password
+    policies, security headers
   </Card>
-  <Card title="Email Integration" icon="envelope">
-    Welcome emails, password reset, verification, and notifications
+  <Card title="Enterprise Features" icon="building">
+    Memory adapters, testing utilities, analytics integration, and observability
   </Card>
 </CardGroup>
 
@@ -51,7 +57,7 @@ pnpm add @repo/auth
 ## Environment Variables
 
 ```bash
-# Better Auth
+# Better Auth Core
 BETTER_AUTH_SECRET=your-secret-key-here
 BETTER_AUTH_URL=http://localhost:3000 # Your app URL
 
@@ -68,8 +74,23 @@ GITHUB_CLIENT_SECRET=...
 RESEND_API_KEY=...
 EMAIL_FROM=noreply@yourdomain.com
 
-# Analytics (via @repo/analytics)
-NEXT_PUBLIC_POSTHOG_KEY=...
+# Redis for Rate Limiting (Optional)
+UPSTASH_REDIS_REST_URL=...
+UPSTASH_REDIS_REST_TOKEN=...
+
+# Feature Flags
+AUTH_ENABLE_ORGANIZATIONS=true
+AUTH_ENABLE_API_KEYS=true
+AUTH_ENABLE_ADMIN=true
+AUTH_ENABLE_IMPERSONATION=true
+AUTH_ENABLE_PASSKEYS=true
+AUTH_ENABLE_MAGIC_LINK=true
+
+# Security Configuration
+AUTH_RATE_LIMIT_REQUESTS_PER_MINUTE=100
+AUTH_API_KEY_EXPIRATION_DAYS=90
+AUTH_SESSION_CACHE_TTL=3600
+AUTH_PASSWORD_MIN_LENGTH=8
 ```
 
 ## Quick Setup
@@ -78,7 +99,7 @@ NEXT_PUBLIC_POSTHOG_KEY=...
   <Accordion title="API Route Handler" icon="code">
     ```typescript
     // app/api/auth/[...all]/route.ts
-    import { auth } from '@repo/auth/server';
+    import { auth } from '@repo/auth/server/next';
     import { toNextJsHandler } from 'better-auth/next-js';
 
     export const { GET, POST } = toNextJsHandler(auth);
@@ -89,19 +110,42 @@ NEXT_PUBLIC_POSTHOG_KEY=...
   <Accordion title="React Provider" icon="react">
     ```tsx
     // app/providers.tsx
-    import { AuthProvider } from '@repo/auth/components';
+    'use client';
+    
+    import { AuthProvider } from '@repo/auth/client/next';
 
     export function Providers({ children }: { children: React.ReactNode }) {
-      return <AuthProvider>{children}</AuthProvider>;
+      return (
+        <AuthProvider
+          config={{
+            apiUrl: '/api/auth',
+            enableOrganizations: true,
+            enablePasskeys: true
+          }}
+        >
+          {children}
+        </AuthProvider>
+      );
     }
     ```
 
   </Accordion>
 
-  <Accordion title="Middleware Protection" icon="shield">
+  <Accordion title="Advanced Middleware Protection" icon="shield">
     ```typescript
     // middleware.ts
-    import { authMiddleware } from '@repo/auth/middleware';
+    import { createAuthMiddleware } from '@repo/auth/server/next';
+
+    const authMiddleware = createAuthMiddleware({
+      publicPaths: ['/sign-in', '/sign-up', '/forgot-password'],
+      redirectTo: '/sign-in',
+      enableRateLimit: true,
+      enableSessionCache: true,
+      requireAuth: true,
+      enableApiMiddleware: true,
+      adminPaths: ['/admin'],
+      organizationPaths: ['/org']
+    });
 
     export default authMiddleware;
 
@@ -118,97 +162,168 @@ NEXT_PUBLIC_POSTHOG_KEY=...
 ### Email/Password Authentication
 
 ```typescript
-import { signIn, signUp } from "@repo/auth/client";
+import { authClient } from "@repo/auth/client/next";
 
-// Sign up
-const result = await signUp.email({
+// Sign up with enhanced validation
+const result = await authClient.signUp.email({
   email: "user@example.com",
-  password: "secure-password",
-  name: "John Doe"
+  password: "secure-password-123!",
+  name: "John Doe",
+  // Optional organization creation
+  organizationName: "My Company",
+  sendWelcomeEmail: true
 });
 
-// Sign in
-const session = await signIn.email({
+if (result.error) {
+  console.error("Sign up failed:", result.error.message);
+} else {
+  console.log("User created:", result.data.user);
+}
+
+// Sign in with analytics tracking
+const session = await authClient.signIn.email({
   email: "user@example.com",
-  password: "secure-password"
+  password: "secure-password-123!",
+  rememberMe: true
 });
 ```
 
 ### Magic Links
 
 ```typescript
-import { sendMagicLink } from "@repo/auth/client";
+import { authClient } from "@repo/auth/client/next";
 
-// Send magic link (20-minute expiration)
-await sendMagicLink({
+// Send magic link with custom expiration (20-minute default)
+await authClient.signIn.magicLink({
   email: "user@example.com",
-  callbackURL: "/dashboard"
+  callbackURL: "/dashboard",
+  expiresIn: 1200, // 20 minutes
+  data: {
+    // Custom data passed to the callback
+    invitationId: "inv-123",
+    source: "email-campaign"
+  }
 });
 ```
 
 ### Social Authentication
 
 ```typescript
-import { signIn } from "@repo/auth/client";
+import { authClient } from "@repo/auth/client/next";
 
-// Google OAuth
-await signIn.social({
+// Google OAuth with organization creation
+await authClient.signIn.social({
   provider: "google",
-  callbackURL: "/dashboard"
+  callbackURL: "/dashboard",
+  data: {
+    createOrganization: true,
+    organizationName: "My Company"
+  }
 });
 
 // GitHub OAuth
-await signIn.social({
+await authClient.signIn.social({
   provider: "github",
   callbackURL: "/dashboard"
 });
 ```
 
+### Passkey Authentication
+
+```typescript
+import { authClient } from "@repo/auth/client/next";
+
+// Register passkey
+const passkeyResult = await authClient.passkey.register({
+  name: "My MacBook Pro"
+});
+
+// Sign in with passkey
+const session = await authClient.passkey.signIn();
+```
+
 ## Session Management
 
-### Client-Side Session
+### Client-Side Session with Enhanced Hooks
 
 ```tsx
-import { useSession } from "@repo/auth";
+import { useSession, useAuth, useAuthGuard } from "@repo/auth/client/next";
 
 function MyComponent() {
-  const { data: session, isPending } = useSession();
+  const { data: session, isPending, error } = useSession();
+  const { user, organizations, activeOrganization } = useAuth();
+
+  // Auth guard with redirect
+  useAuthGuard({
+    redirectTo: "/sign-in",
+    requireOrganization: true
+  });
 
   if (isPending) return <Loading />;
+  if (error) return <ErrorMessage error={error} />;
   if (!session) return <SignInButton />;
 
   return (
     <div>
       <p>Welcome, {session.user.name}!</p>
+      <p>Email: {session.user.email}</p>
       <p>Organization: {session.activeOrganization?.name}</p>
+      <p>Role: {session.activeOrganization?.role}</p>
+      {session.user.isAdmin && <AdminPanel />}
     </div>
   );
 }
 ```
 
-### Server-Side Session
+### Server-Side Session with Advanced Features
 
 ```typescript
-import { auth } from '@repo/auth/server';
+import { auth } from '@repo/auth/server/next';
+import { redirect } from 'next/navigation';
 
-// API route
+// API route with role checking
 export async function GET(request: Request) {
   const session = await auth.api.getSession({
     headers: request.headers,
+    checkBan: true,
+    refreshSession: true
   });
 
   if (!session) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  return Response.json({ user: session.user });
+  // Check organization permissions
+  if (!session.activeOrganization || session.activeOrganization.role !== 'owner') {
+    return new Response('Forbidden', { status: 403 });
+  }
+
+  return Response.json({
+    user: session.user,
+    organization: session.activeOrganization
+  });
 }
 
-// Server component
+// Server component with impersonation support
 async function ServerComponent() {
-  const session = await auth.api.getSession();
+  const session = await auth.api.getSession({
+    enableImpersonation: true
+  });
 
   if (!session) redirect('/sign-in');
+
+  // Check if being impersonated
+  if (session.impersonator) {
+    return (
+      <div>
+        <ImpersonationBanner
+          impersonator={session.impersonator}
+          target={session.user}
+        />
+        <Dashboard user={session.user} />
+      </div>
+    );
+  }
 
   return <Dashboard user={session.user} />;
 }
@@ -216,90 +331,400 @@ async function ServerComponent() {
 
 ## Organization Management
 
-### Creating Organizations
+### Creating and Managing Organizations
 
 ```typescript
-import { organization } from "@repo/auth/client";
+import { authClient } from "@repo/auth/client/next";
 
-// Create organization (limit: 5 per user)
-const newOrg = await organization.create({
+// Create organization with limits (5 per user default)
+const newOrg = await authClient.organization.create({
   name: "My Company",
-  slug: "my-company"
+  slug: "my-company",
+  description: "A great company",
+  metadata: {
+    industry: "technology",
+    size: "startup"
+  }
 });
 
 // Switch active organization
-await organization.setActive({
-  organizationId: newOrg.id
+await authClient.organization.setActive(newOrg.id);
+
+// List user organizations
+const organizations = await authClient.organization.list();
+
+// Update organization
+await authClient.organization.update(newOrg.id, {
+  name: "My Updated Company",
+  description: "An even better company"
 });
 ```
 
-### Managing Members
+### Managing Members and Invitations
 
 ```typescript
-// Invite member (limit: 100 invitations per org)
-await organization.inviteMember({
+// Invite member with role and custom data (100 invitations per org limit)
+const invitation = await authClient.organization.inviteMember({
   email: "member@example.com",
   role: "admin", // owner, admin, member
-  organizationId: "org-id"
+  organizationId: "org-id",
+  expiresIn: 604800, // 7 days
+  customMessage: "Welcome to our team!",
+  metadata: {
+    department: "engineering",
+    startDate: "2024-01-15"
+  }
 });
 
-// Accept invitation
-await organization.acceptInvitation({
-  invitationId: "invitation-id"
+// Accept invitation with validation
+await authClient.organization.acceptInvitation({
+  invitationId: "invitation-id",
+  verifyEmail: true
 });
 
-// Update member role
-await organization.updateMemberRole({
+// Update member role with permission checks
+await authClient.organization.updateMemberRole({
   userId: "user-id",
   role: "member",
   organizationId: "org-id"
 });
+
+// Remove member
+await authClient.organization.removeMember({
+  userId: "user-id",
+  organizationId: "org-id"
+});
+
+// List organization members
+const members = await authClient.organization.listMembers("org-id");
 ```
 
 ## API Key Management
 
 ```typescript
-import { apiKey } from "@repo/auth/client";
+import { authClient } from "@repo/auth/client/next";
 
-// Create API key
-const key = await apiKey.create({
+// Create API key with advanced options
+const apiKey = await authClient.apiKey.create({
   name: "Production API",
+  description: "API key for production services",
   expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
-  permissions: ["read:users", "write:posts"],
-  metadata: { environment: "production" }
+  permissions: ["read:users", "write:posts", "delete:comments"],
+  metadata: {
+    environment: "production",
+    service: "backend-api",
+    version: "1.0"
+  },
+  rateLimiting: {
+    requestsPerMinute: 1000,
+    burstLimit: 100
+  },
+  ipWhitelist: ["192.168.1.0/24", "10.0.0.0/8"]
 });
 
-// API key authentication
-const response = await fetch("/api/data", {
-  headers: {
-    Authorization: `Bearer ${apiKey}`
+// Store the key securely - it's only shown once
+console.log("API Key:", apiKey.key);
+
+// List API keys
+const apiKeys = await authClient.apiKey.list();
+
+// Revoke API key
+await authClient.apiKey.revoke(apiKey.id);
+
+// Update API key permissions
+await authClient.apiKey.update(apiKey.id, {
+  permissions: ["read:users", "read:posts"],
+  rateLimiting: {
+    requestsPerMinute: 500
   }
 });
+```
+
+### Using API Keys for Authentication
+
+```typescript
+// Server-side API key validation
+import { validateApiKey } from "@repo/auth/server/next";
+
+export async function GET(request: Request) {
+  const authHeader = request.headers.get("authorization");
+
+  if (!authHeader?.startsWith("Bearer ")) {
+    return new Response("Missing API key", { status: 401 });
+  }
+
+  const apiKey = authHeader.substring(7);
+  const validation = await validateApiKey(apiKey, {
+    requiredPermissions: ["read:users"],
+    checkRateLimit: true,
+    checkIpWhitelist: true
+  });
+
+  if (!validation.isValid) {
+    return new Response(validation.error, { status: 401 });
+  }
+
+  // Use validation.user, validation.organization, validation.permissions
+  return Response.json({
+    message: "Success",
+    user: validation.user,
+    permissions: validation.permissions
+  });
+}
 ```
 
 ## Role-Based Access Control
 
 <CardGroup cols={2}>
   <Card title="Organization Roles" icon="users">
-    - **Owner**: Full control including billing - **Admin**: Manage members and settings -
-    **Member**: Basic access and participation
+    - **Owner**: Full control including billing, member management, org deletion
+    - **Admin**: Manage members, settings, API keys, and integrations  
+    - **Member**: Basic access, content creation, and collaboration
   </Card>
 
-  <Card title="System Roles" icon="shield">
-    - **Super Admin**: Platform-wide administration - **Moderator**: Content and user moderation -
-    **Support**: User assistance and basic management
+  <Card title="System Admin Roles" icon="shield">
+    - **Super Admin**: Platform-wide administration and system configuration
+    - **Moderator**: Content moderation, user management, and community oversight
+    - **Support**: User assistance, account recovery, and basic troubleshooting
   </Card>
 </CardGroup>
 
-## Security Features
+### Permission Checking
 
-- **Rate Limiting**: Built-in protection against brute force attacks
-- **Session Security**: Automatic session rotation and secure cookies
-- **CSRF Protection**: Built-in CSRF token validation
-- **Email Verification**: Required for account activation
-- **Password Requirements**: Configurable strength requirements
-- **Account Lockout**: Automatic lockout after failed attempts
+```typescript
+import { hasPermission, requireRole } from "@repo/auth/server/next";
+
+// Check permissions in API routes
+export async function DELETE(request: Request) {
+  const session = await auth.api.getSession({ headers: request.headers });
+
+  if (!hasPermission(session, "delete:posts")) {
+    return new Response("Insufficient permissions", { status: 403 });
+  }
+
+  // Proceed with deletion
+}
+
+// Require specific role
+export async function POST(request: Request) {
+  const session = await requireRole(request.headers, ["admin", "owner"]);
+
+  // Only admins and owners can access this endpoint
+}
+```
+
+## Admin Features
+
+### User Management
+
+```typescript
+import { adminClient } from "@repo/auth/server/next";
+
+// Admin operations (requires super-admin role)
+const admin = adminClient();
+
+// List all users with filtering
+const users = await admin.users.list({
+  page: 1,
+  limit: 50,
+  filter: {
+    role: "user",
+    verified: true,
+    banned: false
+  },
+  sort: { createdAt: "desc" }
+});
+
+// Ban user
+await admin.users.ban({
+  userId: "user-id",
+  reason: "Terms of service violation",
+  duration: "7d" // 7 days, or 'permanent'
+});
+
+// Unban user
+await admin.users.unban("user-id");
+
+// Impersonate user (with audit logging)
+const impersonationToken = await admin.users.impersonate({
+  targetUserId: "user-id",
+  adminUserId: "admin-user-id",
+  reason: "Customer support",
+  expiresIn: 3600 // 1 hour
+});
+```
+
+### Organization Management
+
+```typescript
+// Admin organization operations
+await admin.organizations.suspend({
+  organizationId: "org-id",
+  reason: "Payment overdue"
+});
+
+await admin.organizations.delete({
+  organizationId: "org-id",
+  reason: "User request"
+});
+
+// Transfer organization ownership
+await admin.organizations.transferOwnership({
+  organizationId: "org-id",
+  newOwnerId: "user-id"
+});
+```
+
+## Advanced Security Features
+
+### Rate Limiting
+
+```typescript
+// Custom rate limiting configuration
+import { createRateLimiter } from "@repo/auth/server/next";
+
+const authRateLimit = createRateLimiter({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // 5 attempts per window
+  message: "Too many authentication attempts",
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+// Apply to specific routes
+export async function POST(request: Request) {
+  await authRateLimit(request);
+
+  // Proceed with authentication
+}
+```
+
+### Password Policies
+
+```typescript
+// Configure password requirements
+const passwordPolicy = {
+  minLength: 8,
+  requireUppercase: true,
+  requireLowercase: true,
+  requireNumbers: true,
+  requireSpecialChars: true,
+  preventCommonPasswords: true,
+  preventUserInfoInPassword: true
+};
+```
+
+### Session Security
+
+```typescript
+// Advanced session configuration
+const sessionConfig = {
+  expiresIn: 24 * 60 * 60, // 24 hours
+  updateAge: 60 * 60, // Update session every hour
+  sessionCookie: {
+    name: "auth-session",
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax"
+  },
+  csrfProtection: true,
+  enableSessionCache: true,
+  cachePrefix: "auth:session:"
+};
+```
+
+## Testing Utilities
+
+The package includes comprehensive testing utilities:
+
+```typescript
+import {
+  createTestUser,
+  createTestOrganization,
+  mockAuthSession,
+  AuthTestBuilder
+} from "@repo/auth/testing";
+
+// Create test user
+const testUser = await createTestUser({
+  email: "test@example.com",
+  name: "Test User",
+  verified: true
+});
+
+// Create test organization
+const testOrg = await createTestOrganization({
+  name: "Test Org",
+  ownerId: testUser.id
+});
+
+// Mock auth session for testing
+const mockSession = mockAuthSession({
+  user: testUser,
+  activeOrganization: testOrg
+});
+
+// Advanced test builder pattern
+const authTest = new AuthTestBuilder()
+  .withUser({ role: "admin" })
+  .withOrganization({ memberCount: 5 })
+  .withApiKeys(["read:users", "write:posts"])
+  .build();
+```
+
+## Memory Adapter
+
+For testing and development, the package includes a memory adapter:
+
+```typescript
+import { MemoryAdapter } from "@repo/auth/adapters/memory";
+
+// Use in tests or development
+const memoryAdapter = new MemoryAdapter({
+  persistToFile: false,
+  clearOnRestart: true
+});
+
+// Configure in auth setup
+const auth = betterAuth({
+  database: memoryAdapter
+  // ... other config
+});
+```
+
+## Package Structure & Exports
+
+### Export Patterns
+
+- `@repo/auth/client` - Browser client utilities
+- `@repo/auth/server` - Node.js server utilities
+- `@repo/auth/client/next` - Next.js client components and hooks
+- `@repo/auth/server/next` - Next.js server utilities and middleware
+- `@repo/auth/server/edge` - Edge runtime compatible functions
+- `@repo/auth/actions` - Server actions for form handling
+- `@repo/auth/components` - React components and providers
+- `@repo/auth/testing` - Testing utilities and mocks
+- `@repo/auth/adapters/memory` - Memory adapter for testing
+- `@repo/auth/types` - TypeScript type definitions
+
+### Integration Features
+
+- **Analytics Integration**: Automatic user event tracking via `@repo/analytics`
+- **Observability**: Request logging and error tracking via
+  `@repo/observability`
+- **Email Integration**: Welcome emails, password reset, notifications via
+  `@repo/email`
+- **Security Package**: Rate limiting and security headers via `@repo/security`
+- **Database Integration**: Prisma ORM integration via `@repo/database`
+
+## Performance Considerations
+
+- **Session Caching**: Redis-based session caching for high-traffic applications
+- **Rate Limiting**: Distributed rate limiting with Redis backend
+- **API Key Caching**: In-memory caching of API key validations
+- **Lazy Loading**: Components and providers loaded on demand
+- **Bundle Optimization**: Tree-shakeable exports for minimal client bundles
 
 The authentication package provides enterprise-grade security and user
 management features built on Better Auth, designed for scalable multi-tenant
-applications.
+applications with comprehensive admin tooling and advanced security features.

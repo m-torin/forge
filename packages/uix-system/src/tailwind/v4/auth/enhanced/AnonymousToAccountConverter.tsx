@@ -10,8 +10,22 @@ import { Button } from '../ui/Button';
 import { Card, CardContent, CardHeader } from '../ui/Card';
 import { Input } from '../ui/Input';
 
+// Constant-time string comparison to prevent timing attacks
+function constantTimeEquals(a: string, b: string): boolean {
+  if (a.length !== b.length) {
+    return false;
+  }
+
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+
+  return result === 0;
+}
+
 // Real server actions from the auth package
-const convertAnonymousToAccountAction = async (prevState: any, formData: FormData) => {
+const convertAnonymousToAccountAction = async (__prevState: any, formData: FormData) => {
   'use server';
 
   try {
@@ -22,8 +36,8 @@ const convertAnonymousToAccountAction = async (prevState: any, formData: FormDat
     const password = formData.get('password') as string;
     const name = formData.get('name') as string;
     const preserveData = formData.get('preserveData') === 'true';
-    const marketingConsent = formData.get('marketingConsent') === 'true';
-    const sessionId = formData.get('sessionId') as string;
+    const _marketingConsent = formData.get('marketingConsent') === 'true';
+    const _sessionId = formData.get('sessionId') as string;
 
     // Create the new user account
     const user = await createUserAction({
@@ -39,14 +53,14 @@ const convertAnonymousToAccountAction = async (prevState: any, formData: FormDat
       // 2. Update user preferences for marketing consent
       // 3. Handle any additional session cleanup
 
-      console.log('Converting anonymous account:', {
-        userId: user.user.id,
-        email,
-        name,
-        preserveData,
-        marketingConsent,
-        sessionId,
-      });
+      // console.log('Converting anonymous account:', {
+      //   userId: user.user.id,
+      //   email,
+      //   name,
+      //   preserveData,
+      //   marketingConsent,
+      //   sessionId,
+      // });
 
       return {
         success: true,
@@ -67,7 +81,7 @@ const convertAnonymousToAccountAction = async (prevState: any, formData: FormDat
   }
 };
 
-const sendVerificationEmailAction = async (prevState: any, formData: FormData) => {
+const sendVerificationEmailAction = async (__prevState: any, formData: FormData) => {
   'use server';
 
   try {
@@ -75,7 +89,7 @@ const sendVerificationEmailAction = async (prevState: any, formData: FormData) =
     // using the Better Auth API or email service
     const email = formData.get('email') as string;
 
-    console.log('Sending verification email to:', email);
+    // console.log('Sending verification email to:', email);
 
     // Simulate sending verification email
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -114,9 +128,9 @@ const initialFormState = { success: false, error: '' };
 
 export function AnonymousToAccountConverter({
   currentSession,
-  onConversionSuccess,
+  onConversionSuccess: _onConversionSuccess,
   onCancel,
-  requireEmailVerification = true,
+  requireEmailVerification: _requireEmailVerification = true,
   allowDataPreservation = true,
   showBenefits = true,
   className = '',
@@ -144,7 +158,9 @@ export function AnonymousToAccountConverter({
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (password !== confirmPassword) {
+    // Constant-time comparison to prevent timing attacks
+    const passwordsMatch = constantTimeEquals(password, confirmPassword);
+    if (!passwordsMatch) {
       alert('Passwords do not match');
       return;
     }
@@ -255,12 +271,10 @@ export function AnonymousToAccountConverter({
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Error Messages */}
           {(convertState.error || verifyState.error) && (
             <Alert variant="destructive">{convertState.error || verifyState.error}</Alert>
           )}
 
-          {/* Success Messages */}
           {(convertState.success || verifyState.success) && currentStep !== 'success' && (
             <Alert variant="default">
               {currentStep === 'verification' && verifyState.success && 'Verification email sent!'}
@@ -268,10 +282,8 @@ export function AnonymousToAccountConverter({
             </Alert>
           )}
 
-          {/* Step 1: Information & Benefits */}
           {currentStep === 'info' && (
             <div className="space-y-6">
-              {/* Current Session Info */}
               <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
                 <div className="flex items-start">
                   <span className="mr-3 text-lg text-blue-600">👤</span>
@@ -304,7 +316,6 @@ export function AnonymousToAccountConverter({
                 </div>
               </div>
 
-              {/* Benefits */}
               {showBenefits && (
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="rounded-lg border border-green-200 bg-green-50 p-4">
@@ -343,7 +354,6 @@ export function AnonymousToAccountConverter({
                 </div>
               )}
 
-              {/* Data Preservation Option */}
               {allowDataPreservation && (
                 <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
                   <div className="flex items-start">
@@ -360,7 +370,6 @@ export function AnonymousToAccountConverter({
                 </div>
               )}
 
-              {/* Action Buttons */}
               <div className="space-y-3">
                 <Button onClick={handleStartConversion} className="w-full" size="lg">
                   Create My Account
@@ -390,7 +399,6 @@ export function AnonymousToAccountConverter({
             </div>
           )}
 
-          {/* Step 2: Account Creation Form */}
           {currentStep === 'form' && (
             <form onSubmit={handleFormSubmit} className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
@@ -486,7 +494,6 @@ export function AnonymousToAccountConverter({
                 )}
               </div>
 
-              {/* Data Preservation Option */}
               {allowDataPreservation && (
                 <div className="space-y-3">
                   <div className="flex items-start space-x-3">
@@ -504,7 +511,6 @@ export function AnonymousToAccountConverter({
                 </div>
               )}
 
-              {/* Marketing Consent */}
               <div className="space-y-3">
                 <div className="flex items-start space-x-3">
                   <input
@@ -520,7 +526,6 @@ export function AnonymousToAccountConverter({
                 </div>
               </div>
 
-              {/* Terms Agreement */}
               <div className="space-y-3">
                 <div className="flex items-start space-x-3">
                   <input
@@ -570,7 +575,6 @@ export function AnonymousToAccountConverter({
             </form>
           )}
 
-          {/* Step 3: Email Verification */}
           {currentStep === 'verification' && (
             <div className="space-y-6 text-center">
               <div className="mb-4 text-6xl">📧</div>
@@ -617,7 +621,6 @@ export function AnonymousToAccountConverter({
             </div>
           )}
 
-          {/* Step 4: Success */}
           {currentStep === 'success' && (
             <div className="space-y-6 text-center">
               <div className="mb-4 text-6xl">🎉</div>
@@ -651,7 +654,6 @@ export function AnonymousToAccountConverter({
             </div>
           )}
 
-          {/* Progress Indicator */}
           <div className="mt-6 border-t border-gray-200 pt-4">
             <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
               <div className="flex items-center space-x-1">
@@ -724,7 +726,6 @@ export function AnonymousToAccountConverter({
         </CardContent>
       </Card>
 
-      {/* Security Notice */}
       <div className="mt-4 text-center">
         <p className="text-xs text-gray-500">
           🔒 Your data is encrypted and secure throughout the conversion process

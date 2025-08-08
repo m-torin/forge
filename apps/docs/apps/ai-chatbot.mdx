@@ -87,8 +87,8 @@ POSTGRES_URL="postgresql://username:password@localhost:5432/ai_chatbot"
 POSTGRES_PRISMA_URL="postgresql://username:password@localhost:5432/ai_chatbot?pgbouncer=true"
 POSTGRES_URL_NON_POOLING="postgresql://username:password@localhost:5432/ai_chatbot"
 
-# Auth
-AUTH_SECRET="your-auth-secret-here"
+# Auth (Better Auth)
+BETTER_AUTH_SECRET="your-auth-secret-here"
 AUTH_GITHUB_ID="your-github-client-id"
 AUTH_GITHUB_SECRET="your-github-client-secret"
 AUTH_GOOGLE_ID="your-google-client-id"
@@ -104,9 +104,31 @@ PERPLEXITY_API_KEY="your-perplexity-api-key" # Perplexity - Alternative
 # Storage
 BLOB_READ_WRITE_TOKEN="your-blob-read-write-token"
 
-# Redis (for resumable streams)
+# Redis (for resumable streams) - Upstash Redis
 REDIS_URL="redis://localhost:6379"
 REDIS_TOKEN="your-redis-token"
+UPSTASH_REDIS_REST_URL="your-upstash-redis-url"
+
+# Vector Database (for RAG features)
+UPSTASH_VECTOR_REST_URL="your-upstash-vector-url"
+UPSTASH_VECTOR_REST_TOKEN="your-upstash-vector-token"
+UPSTASH_VECTOR_NAMESPACE="your-namespace"
+
+# Feature Flags (Optional)
+FLAGS_SECRET="your-flags-secret"
+POSTHOG_KEY="your-posthog-key"
+POSTHOG_HOST="https://app.posthog.com"
+EDGE_CONFIG="your-edge-config-url"
+
+# Real Feature Implementation (Production Features)
+ENABLE_REAL_IMAGE_GENERATION="false"
+ENABLE_REAL_DOCUMENT_PROCESSING="false"
+ENABLE_REAL_RAG_FEATURES="false"
+ENABLE_REAL_CONTENT_CLASSIFICATION="false"
+ENABLE_REAL_STREAMABLE_UI="false"
+
+# MCP Configuration (JSON)
+MCP_CONFIG='{"servers":{"context7":{"enabled":true}}}'
 
 # Monitoring
 SENTRY_DSN="your-sentry-dsn"
@@ -114,9 +136,17 @@ SENTRY_DSN="your-sentry-dsn"
 # Environment
 NODE_ENV="development"
 
-# Client
-NEXT_PUBLIC_VERCEL_URL="http://localhost:3000"
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
+# Client Configuration
+NEXT_PUBLIC_VERCEL_URL="http://localhost:3100"
+NEXT_PUBLIC_APP_URL="http://localhost:3100"
+NEXT_PUBLIC_PROTOTYPE_MODE="false"
+
+# Client Feature Flags
+NEXT_PUBLIC_MCP_CONFIG='{"servers":{"context7":{"enabled":true}}}'
+NEXT_PUBLIC_POSTHOG_KEY="your-posthog-key"
+NEXT_PUBLIC_POSTHOG_HOST="https://app.posthog.com"
+NEXT_PUBLIC_VERCEL_ENV="development"
+NEXT_PUBLIC_FORCE_DEMO_MODE="false"
 ```
 
 ### Provider Priority
@@ -131,12 +161,17 @@ best available model based on:
 4. **Cost Optimization** - Balances performance with cost efficiency
 
 ```typescript
-import { getBestModelForTask, isModelAvailable } from "@repo/ai/models";
+import { getBestModelForTask } from "@repo/ai/models";
+import {
+  hasAnthropicConfig,
+  hasOpenAIConfig,
+  hasGoogleAIConfig
+} from "@repo/ai/env";
 
 // Automatic model selection
 const chatModel = getBestModelForTask("chat");
-if (isModelAvailable(chatModel)) {
-  // Use the model
+if (hasAnthropicConfig() || hasOpenAIConfig() || hasGoogleAIConfig()) {
+  // Provider API key available - use the model
 }
 ```
 
@@ -180,7 +215,7 @@ const reasoningModels = getModelsByCapability("reasoning").filter((modelId) =>
 2. Install dependencies: `pnpm install`
 3. Set up your environment variables (see above)
 4. Run the development server: `pnpm dev`
-5. Open [http://localhost:3000](http://localhost:3000)
+5. Open [http://localhost:3100](http://localhost:3100)
 
 ## Development
 

@@ -76,7 +76,7 @@ export function createBashTool(config: BashToolConfig = {}) {
 
   return tool({
     description: 'Execute bash commands and return output',
-    parameters: BashToolInputSchema,
+    inputSchema: BashToolInputSchema,
     execute: async (input, _options) => {
       const { command, workingDirectory, timeout = defaultTimeout, env } = input;
 

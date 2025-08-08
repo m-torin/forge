@@ -11,7 +11,7 @@ describe('account security plugin', () => {
 
   describe('accountSecurityPlugin', () => {
     test('should create plugin with default options', async () => {
-      const accountSecurityModule = await import('#/server/plugins/account-security');
+      const accountSecurityModule = await import('../../src/server/plugins/account-security');
 
       const plugin = accountSecurityModule.accountSecurityPlugin();
 
@@ -20,7 +20,7 @@ describe('account security plugin', () => {
     });
 
     test('should create plugin with custom options', async () => {
-      const accountSecurityModule = await import('#/server/plugins/account-security');
+      const accountSecurityModule = await import('../../src/server/plugins/account-security');
 
       const customOptions = {
         maxFailedAttempts: 3,
@@ -37,7 +37,7 @@ describe('account security plugin', () => {
     });
 
     test('should create plugin with partial options', async () => {
-      const accountSecurityModule = await import('#/server/plugins/account-security');
+      const accountSecurityModule = await import('../../src/server/plugins/account-security');
 
       const partialOptions = {
         maxFailedAttempts: 10,
@@ -51,7 +51,7 @@ describe('account security plugin', () => {
     });
 
     test('should handle empty options object', async () => {
-      const accountSecurityModule = await import('#/server/plugins/account-security');
+      const accountSecurityModule = await import('../../src/server/plugins/account-security');
 
       const plugin = accountSecurityModule.accountSecurityPlugin({});
 
@@ -60,7 +60,7 @@ describe('account security plugin', () => {
     });
 
     test('should create plugin with extreme values', async () => {
-      const accountSecurityModule = await import('#/server/plugins/account-security');
+      const accountSecurityModule = await import('../../src/server/plugins/account-security');
 
       const extremeOptions = {
         maxFailedAttempts: 100,
@@ -77,7 +77,7 @@ describe('account security plugin', () => {
     });
 
     test('should handle zero values', async () => {
-      const accountSecurityModule = await import('#/server/plugins/account-security');
+      const accountSecurityModule = await import('../../src/server/plugins/account-security');
 
       const zeroOptions = {
         maxFailedAttempts: 0,
@@ -92,7 +92,7 @@ describe('account security plugin', () => {
     });
 
     test('should handle negative values', async () => {
-      const accountSecurityModule = await import('#/server/plugins/account-security');
+      const accountSecurityModule = await import('../../src/server/plugins/account-security');
 
       const negativeOptions = {
         maxFailedAttempts: -1,
@@ -107,7 +107,7 @@ describe('account security plugin', () => {
     });
 
     test('should work with only lockout settings', async () => {
-      const accountSecurityModule = await import('#/server/plugins/account-security');
+      const accountSecurityModule = await import('../../src/server/plugins/account-security');
 
       const lockoutOptions = {
         maxFailedAttempts: 3,
@@ -123,7 +123,7 @@ describe('account security plugin', () => {
     });
 
     test('should work with only suspicious login detection', async () => {
-      const accountSecurityModule = await import('#/server/plugins/account-security');
+      const accountSecurityModule = await import('../../src/server/plugins/account-security');
 
       const suspiciousOptions = {
         maxFailedAttempts: 999,
@@ -138,7 +138,7 @@ describe('account security plugin', () => {
     });
 
     test('should handle boolean combinations', async () => {
-      const accountSecurityModule = await import('#/server/plugins/account-security');
+      const accountSecurityModule = await import('../../src/server/plugins/account-security');
 
       const booleanOptions = {
         detectSuspiciousLogin: true,
@@ -152,7 +152,7 @@ describe('account security plugin', () => {
     });
 
     test('should handle undefined input', async () => {
-      const accountSecurityModule = await import('#/server/plugins/account-security');
+      const accountSecurityModule = await import('../../src/server/plugins/account-security');
 
       const plugin = accountSecurityModule.accountSecurityPlugin(undefined);
 
@@ -163,7 +163,7 @@ describe('account security plugin', () => {
 
   describe('plugin configuration edge cases', () => {
     test('should handle very small lockout duration', async () => {
-      const accountSecurityModule = await import('#/server/plugins/account-security');
+      const accountSecurityModule = await import('../../src/server/plugins/account-security');
 
       const plugin = accountSecurityModule.accountSecurityPlugin({
         lockoutDuration: 0.1, // 6 seconds
@@ -173,7 +173,7 @@ describe('account security plugin', () => {
     });
 
     test('should handle very large attempt counts', async () => {
-      const accountSecurityModule = await import('#/server/plugins/account-security');
+      const accountSecurityModule = await import('../../src/server/plugins/account-security');
 
       const plugin = accountSecurityModule.accountSecurityPlugin({
         maxFailedAttempts: Number.MAX_SAFE_INTEGER,
@@ -183,7 +183,7 @@ describe('account security plugin', () => {
     });
 
     test('should handle decimal values', async () => {
-      const accountSecurityModule = await import('#/server/plugins/account-security');
+      const accountSecurityModule = await import('../../src/server/plugins/account-security');
 
       const plugin = accountSecurityModule.accountSecurityPlugin({
         maxFailedAttempts: 5.5,
@@ -195,7 +195,7 @@ describe('account security plugin', () => {
     });
 
     test('should work with minimal security settings', async () => {
-      const accountSecurityModule = await import('#/server/plugins/account-security');
+      const accountSecurityModule = await import('../../src/server/plugins/account-security');
 
       const minimalOptions = {
         maxFailedAttempts: 1,
@@ -211,7 +211,7 @@ describe('account security plugin', () => {
     });
 
     test('should work with maximum security settings', async () => {
-      const accountSecurityModule = await import('#/server/plugins/account-security');
+      const accountSecurityModule = await import('../../src/server/plugins/account-security');
 
       const maxSecurityOptions = {
         maxFailedAttempts: 1,
@@ -229,7 +229,7 @@ describe('account security plugin', () => {
 
   describe('integration scenarios', () => {
     test('should create plugin for high-security environment', async () => {
-      const accountSecurityModule = await import('#/server/plugins/account-security');
+      const accountSecurityModule = await import('../../src/server/plugins/account-security');
 
       const highSecurityOptions = {
         maxFailedAttempts: 2,
@@ -245,7 +245,7 @@ describe('account security plugin', () => {
     });
 
     test('should create plugin for development environment', async () => {
-      const accountSecurityModule = await import('#/server/plugins/account-security');
+      const accountSecurityModule = await import('../../src/server/plugins/account-security');
 
       const devOptions = {
         maxFailedAttempts: 100,
@@ -261,7 +261,7 @@ describe('account security plugin', () => {
     });
 
     test('should create plugin for testing environment', async () => {
-      const accountSecurityModule = await import('#/server/plugins/account-security');
+      const accountSecurityModule = await import('../../src/server/plugins/account-security');
 
       const testOptions = {
         maxFailedAttempts: 999,
@@ -277,7 +277,7 @@ describe('account security plugin', () => {
     });
 
     test('should handle production-like configuration', async () => {
-      const accountSecurityModule = await import('#/server/plugins/account-security');
+      const accountSecurityModule = await import('../../src/server/plugins/account-security');
 
       const productionOptions = {
         maxFailedAttempts: 5,
@@ -295,7 +295,7 @@ describe('account security plugin', () => {
 
   describe('default behavior verification', () => {
     test('should use default values when not specified', async () => {
-      const accountSecurityModule = await import('#/server/plugins/account-security');
+      const accountSecurityModule = await import('../../src/server/plugins/account-security');
 
       const plugin = accountSecurityModule.accountSecurityPlugin({});
 
@@ -304,7 +304,7 @@ describe('account security plugin', () => {
     });
 
     test('should maintain plugin structure', async () => {
-      const accountSecurityModule = await import('#/server/plugins/account-security');
+      const accountSecurityModule = await import('../../src/server/plugins/account-security');
 
       const plugin = accountSecurityModule.accountSecurityPlugin();
 

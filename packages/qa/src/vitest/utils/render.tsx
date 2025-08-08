@@ -15,11 +15,12 @@ interface TestProviderProps {
 
 // Base providers wrapper
 export function TestProviders({ children, colorScheme = 'light', theme = {} }: TestProviderProps) {
-  return (
-    <MantineProvider defaultColorScheme={colorScheme} theme={theme}>
-      {children}
-    </MantineProvider>
-  );
+  const testTheme = {
+    ...theme,
+    forceColorScheme: colorScheme as 'light' | 'dark',
+  };
+
+  return <MantineProvider theme={testTheme}>{children}</MantineProvider>;
 }
 
 // Custom render options

@@ -1,5 +1,5 @@
-declare module "eslint-plugin-import" {
-  import { Linter, Rule } from "eslint";
+declare module 'eslint-plugin-import' {
+  import { Linter, Rule } from 'eslint';
 
   interface ImportPlugin {
     configs: {
@@ -13,8 +13,8 @@ declare module "eslint-plugin-import" {
   export default plugin;
 }
 
-declare module "eslint-plugin-promise" {
-  import { Linter, Rule } from "eslint";
+declare module 'eslint-plugin-promise' {
+  import { Linter, Rule } from 'eslint';
 
   interface PromisePlugin {
     configs: {
@@ -27,8 +27,8 @@ declare module "eslint-plugin-promise" {
   export default plugin;
 }
 
-declare module "eslint-plugin-security" {
-  import { Linter, Rule } from "eslint";
+declare module 'eslint-plugin-security' {
+  import { Linter, Rule } from 'eslint';
 
   interface SecurityPlugin {
     configs: {
@@ -41,8 +41,8 @@ declare module "eslint-plugin-security" {
   export default plugin;
 }
 
-declare module "eslint-plugin-perfectionist" {
-  import { Linter, Rule } from "eslint";
+declare module 'eslint-plugin-perfectionist' {
+  import { Linter, Rule } from 'eslint';
 
   interface PerfectionistPlugin {
     configs: {
@@ -55,8 +55,8 @@ declare module "eslint-plugin-perfectionist" {
   export default plugin;
 }
 
-declare module "eslint-plugin-unused-imports" {
-  import { Rule } from "eslint";
+declare module 'eslint-plugin-unused-imports' {
+  import { Rule } from 'eslint';
 
   interface UnusedImportsPlugin {
     rules: Record<string, Rule.RuleModule>;
@@ -66,8 +66,8 @@ declare module "eslint-plugin-unused-imports" {
   export default plugin;
 }
 
-declare module "eslint-plugin-jsx-a11y" {
-  import { Rule } from "eslint";
+declare module 'eslint-plugin-jsx-a11y' {
+  import { Rule } from 'eslint';
 
   interface JsxA11yPlugin {
     rules: Record<string, Rule.RuleModule>;

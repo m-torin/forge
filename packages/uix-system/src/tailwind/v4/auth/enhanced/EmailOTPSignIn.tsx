@@ -23,9 +23,9 @@ type AuthStep = 'email' | 'otp' | 'success';
 const initialFormState = { success: false, error: '' };
 
 export function EmailOTPSignIn({
-  onSuccess,
+  onSuccess: _onSuccess,
   onCancel,
-  redirectTo,
+  redirectTo: _redirectTo,
   className = '',
 }: EmailOTPSignInProps) {
   const [isPending, startTransition] = useTransition();
@@ -33,7 +33,7 @@ export function EmailOTPSignIn({
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [countdown, setCountdown] = useState(0);
-  const [resendAttempts, setResendAttempts] = useState(0);
+  const [resendAttempts, _setResendAttempts] = useState(0);
 
   // Form states
   const [sendOtpState, sendOtpAction] = useFormState(sendEmailOTP, initialFormState);
@@ -128,12 +128,10 @@ export function EmailOTPSignIn({
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Error Messages */}
         {(sendOtpState.error || verifyState.error) && (
           <Alert variant="destructive">{sendOtpState.error || verifyState.error}</Alert>
         )}
 
-        {/* Success Message */}
         {currentStep === 'success' && (
           <Alert variant="default">
             <div className="flex items-center">
@@ -146,7 +144,6 @@ export function EmailOTPSignIn({
           </Alert>
         )}
 
-        {/* Step 1: Email Input */}
         {currentStep === 'email' && (
           <form onSubmit={handleEmailSubmit} className="space-y-4">
             <div>
@@ -162,7 +159,6 @@ export function EmailOTPSignIn({
                 placeholder="Enter your email address"
                 className="w-full"
                 autoComplete="email"
-                autoFocus
               />
               <p className="mt-1 text-xs text-gray-500">
                 We'll send a verification code to this email address
@@ -175,7 +171,6 @@ export function EmailOTPSignIn({
           </form>
         )}
 
-        {/* Step 2: OTP Verification */}
         {currentStep === 'otp' && (
           <form onSubmit={handleOtpSubmit} className="space-y-4">
             <div>
@@ -192,14 +187,12 @@ export function EmailOTPSignIn({
                 className="w-full text-center font-mono text-2xl tracking-widest"
                 maxLength={6}
                 autoComplete="one-time-code"
-                autoFocus
               />
               <p className="mt-1 text-xs text-gray-500">
                 Enter the 6-digit code sent to your email
               </p>
             </div>
 
-            {/* OTP Input Visual Helper */}
             <div className="flex justify-center space-x-2">
               {Array.from({ length: 6 }, (_, i) => (
                 <div
@@ -219,7 +212,6 @@ export function EmailOTPSignIn({
               {isPending ? 'Verifying...' : 'Verify & Sign In'}
             </Button>
 
-            {/* Resend and Edit Options */}
             <div className="flex flex-col space-y-3">
               <div className="flex items-center justify-between text-sm">
                 <button
@@ -248,7 +240,6 @@ export function EmailOTPSignIn({
                 </div>
               </div>
 
-              {/* Attempt Counter */}
               <div className="text-center">
                 <span className="text-xs text-gray-500">Attempt {resendAttempts} of 3</span>
               </div>
@@ -256,7 +247,6 @@ export function EmailOTPSignIn({
           </form>
         )}
 
-        {/* Information Panel */}
         {currentStep !== 'success' && (
           <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
             <div className="flex items-start">
@@ -277,7 +267,6 @@ export function EmailOTPSignIn({
           </div>
         )}
 
-        {/* Security Notice */}
         {currentStep === 'otp' && (
           <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
             <div className="flex items-start">
@@ -294,7 +283,6 @@ export function EmailOTPSignIn({
           </div>
         )}
 
-        {/* Loading State Overlay */}
         {currentStep === 'success' && (
           <div className="flex items-center justify-center py-8">
             <div className="flex items-center space-x-3">

@@ -15,4 +15,8 @@ export * from './vercel-analytics';
 // Observability providers
 export * from './logtail';
 export * from './logtape';
+export * from './logtape-cloudwatch-stub';
 export * from './sentry';
+
+// AI providers and factories
+export * from './ai-factories';

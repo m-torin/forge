@@ -282,10 +282,8 @@ export function RealTimeEditor({
         </div>
       )}
 
-      {/* Toolbar */}
       <div className="border-b p-3">
         <div className="flex flex-wrap items-center gap-2">
-          {/* Text formatting */}
           <div className="flex gap-1">
             <ToolbarButton
               onClick={() => editor.chain().focus().toggleBold().run()}
@@ -319,7 +317,6 @@ export function RealTimeEditor({
 
           <div className="mx-1 h-6 w-px bg-gray-300" />
 
-          {/* Headings */}
           <div className="flex gap-1">
             <ToolbarButton
               onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
@@ -346,7 +343,6 @@ export function RealTimeEditor({
 
           <div className="mx-1 h-6 w-px bg-gray-300" />
 
-          {/* Lists */}
           <div className="flex gap-1">
             <ToolbarButton
               onClick={() => editor.chain().focus().toggleBulletList().run()}
@@ -366,7 +362,6 @@ export function RealTimeEditor({
 
           <div className="mx-1 h-6 w-px bg-gray-300" />
 
-          {/* Block elements */}
           <div className="flex gap-1">
             <ToolbarButton
               onClick={() => editor.chain().focus().toggleBlockquote().run()}
@@ -379,7 +374,6 @@ export function RealTimeEditor({
 
           <div className="mx-1 h-6 w-px bg-gray-300" />
 
-          {/* History */}
           <div className="flex gap-1">
             <ToolbarButton
               onClick={() => editor.chain().focus().undo().run()}
@@ -399,7 +393,6 @@ export function RealTimeEditor({
         </div>
       </div>
 
-      {/* Editor content */}
       <div className="prose max-w-none p-4">
         <EditorContent editor={editor} className="min-h-[300px] outline-none" />
       </div>

@@ -30,18 +30,16 @@ const mockClient = {
   profilesIntegration: vi.fn(() => ({})),
 };
 
-// Mock scenarios for testing
+// Import centralized scenarios from QA setup
+// Sentry mocks are now available through centralized setup in @repo/qa
+
+// Scenarios are now available through centralized mock setup in @repo/qa
 const scenarios = {
-  captureError: async () => {
-    const { captureException } = await import('@sentry/node');
-    (captureException as any).mockImplementation(() => {
-      throw new Error('Sentry error');
-    });
-  },
-  flushError: async () => {
-    const { flush } = await import('@sentry/node');
-    (flush as any).mockRejectedValue(new Error('Flush failed'));
-  },
+  success: vi.fn(),
+  initError: vi.fn(),
+  captureError: vi.fn(),
+  flushError: vi.fn(),
+  reset: vi.fn(),
 };
 
 const resetMocks = () => {
@@ -296,7 +294,7 @@ describe('sentry-specific features', () => {
       const plugin = createSentryTestPlugin();
       await plugin.initialize();
 
-      await scenarios.captureError();
+      scenarios.captureError();
 
       expect(() => {
         plugin.captureException(new Error('Test'));

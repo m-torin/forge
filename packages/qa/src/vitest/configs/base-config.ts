@@ -50,14 +50,13 @@ export const baseTestConfig: VitestTestConfig = {
   // Global setup
   globals: true,
 
-  // UI safety - prevent browser opening in CI
-  ui: false,
-
   // Coverage configuration with performance optimizations
   coverage: {
     enabled: false,
     provider: 'v8',
-    reporter: ['text', 'json', 'json-summary', 'html', 'lcov'],
+    reporter: process.env.CI
+      ? ['text', 'json', 'json-summary', 'lcov']
+      : ['text', 'json', 'json-summary', 'html', 'lcov'],
     reportOnFailure: true,
     // Performance: Reduce memory usage during coverage collection
     cleanOnRerun: false,
@@ -274,7 +273,7 @@ export function createBaseConfig(options: BaseConfigOptions = {}): UserConfig {
             ...baseTestConfig?.coverage,
             enabled: true,
             provider: 'v8',
-            reporter: ['text', 'json', 'html'],
+            reporter: process.env.CI ? ['text', 'json'] : ['text', 'json', 'html'],
           }
         : {
             ...baseTestConfig?.coverage,

@@ -27,8 +27,8 @@ export interface AgentExecutionOptions {
 export interface AgentMetrics {
   executionTime: number;
   tokenUsage: {
-    promptTokens: number;
-    completionTokens: number;
+    inputTokens: number;
+    outputTokens: number;
     totalTokens: number;
   };
   stepCount: number;
@@ -223,19 +223,21 @@ export class AgentExecutor {
       maxOutputTokens: config.maxOutputTokens,
       ...(config.stopWhen && { stopWhen: config.stopWhen }),
       ...(config.prepareStep && { prepareStep: config.prepareStep }),
-      onStepFinish: async stepResult => {
-        steps.push(stepResult);
-        context.steps.push(stepResult);
-        totalTokensUsed += stepResult.usage?.totalTokens || 0;
+      onStepFinish: async (stepResult: any) => {
+        const { text, toolCalls, toolResults, finishReason, usage } = stepResult;
+        const normalizedStep = { text, toolCalls, toolResults, finishReason, usage };
+        steps.push(normalizedStep);
+        context.steps.push(normalizedStep);
+        totalTokensUsed += usage?.totalTokens || 0;
 
         if (trackMetrics) {
-          this.updateStepMetrics(context, stepResult);
+          this.updateStepMetrics(context, normalizedStep);
         }
 
         // Call original callback if provided
         if (config.onStepFinish) {
           try {
-            await config.onStepFinish(stepResult);
+            await config.onStepFinish(normalizedStep);
           } catch (error) {
             const warning = `Step finish callback failed: ${error}`;
             context.warnings.push(warning);
@@ -246,7 +248,7 @@ export class AgentExecutor {
           }
         }
       },
-    });
+    } as any);
 
     const executionTime = Date.now() - startTime;
 
@@ -273,15 +275,15 @@ export class AgentExecutor {
   private updateStepMetrics(context: AgentExecutionContext, stepResult: any): void {
     if (!context.metrics.tokenUsage) {
       context.metrics.tokenUsage = {
-        promptTokens: 0,
-        completionTokens: 0,
+        inputTokens: 0,
+        outputTokens: 0,
         totalTokens: 0,
       };
     }
 
     if (stepResult.usage) {
-      context.metrics.tokenUsage.promptTokens += stepResult.usage.promptTokens || 0;
-      context.metrics.tokenUsage.completionTokens += stepResult.usage.completionTokens || 0;
+      context.metrics.tokenUsage.inputTokens += stepResult.usage.inputTokens || 0;
+      context.metrics.tokenUsage.outputTokens += stepResult.usage.outputTokens || 0;
       context.metrics.tokenUsage.totalTokens += stepResult.usage.totalTokens || 0;
     }
 

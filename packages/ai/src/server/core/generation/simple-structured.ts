@@ -96,12 +96,13 @@ export class StructuredUtils {
    */
   static async extractKeyInfo(model: any, text: string) {
     return generateObject({
+      experimental_telemetry: { isEnabled: true },
       model,
       schema: CommonSchemas.keyInformation,
       prompt: `Extract key information from the following text:
 
 ${text}`,
-    });
+    } as any);
   }
 
   /**
@@ -109,10 +110,11 @@ ${text}`,
    */
   static async generateArticle(model: any, topic: string, targetLength = 'medium') {
     return generateObject({
+      experimental_telemetry: { isEnabled: true },
       model,
       schema: CommonSchemas.article,
       prompt: `Write a ${targetLength} article about: ${topic}. Include an introduction, several sections with headings, and a conclusion.`,
-    });
+    } as any);
   }
 
   /**
@@ -120,6 +122,7 @@ ${text}`,
    */
   static async createTaskList(model: any, projectDescription: string) {
     return generateObject({
+      experimental_telemetry: { isEnabled: true },
       model,
       schema: CommonSchemas.taskList,
       prompt: `Create a detailed task list for the following project:
@@ -127,7 +130,7 @@ ${text}`,
 ${projectDescription}
 
 Break it down into actionable tasks with priorities and time estimates.`,
-    });
+    } as any);
   }
 
   /**
@@ -135,12 +138,13 @@ Break it down into actionable tasks with priorities and time estimates.`,
    */
   static async extractContactInfo(model: any, text: string) {
     return generateObject({
+      experimental_telemetry: { isEnabled: true },
       model,
       schema: CommonSchemas.contactInfo,
       prompt: `Extract any contact information from the following text:
 
 ${text}`,
-    });
+    } as any);
   }
 
   /**
@@ -148,12 +152,13 @@ ${text}`,
    */
   static async structureMeetingNotes(model: any, rawNotes: string) {
     return generateObject({
+      experimental_telemetry: { isEnabled: true },
       model,
       schema: CommonSchemas.meetingNotes,
       prompt: `Structure the following raw meeting notes into a well-organized format:
 
 ${rawNotes}`,
-    });
+    } as any);
   }
 }
 
@@ -171,13 +176,14 @@ export function quickGenerate<T>(
   } = {},
 ) {
   return generateObject({
+    experimental_telemetry: { isEnabled: true },
     model,
     schema,
     prompt,
     system: options.system,
     temperature: options.temperature,
     maxRetries: options.maxRetries ?? 2,
-  });
+  } as any);
 }
 
 /**
@@ -198,5 +204,6 @@ export function quickStreamGenerate<T>(
     prompt,
     system: options.system,
     temperature: options.temperature,
-  });
+    experimental_telemetry: { isEnabled: true },
+  } as any);
 }

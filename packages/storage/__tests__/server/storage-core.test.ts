@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 // Mock external modules
 const mockSafeEnv = vi.fn();
-vi.mock('../env', () => ({
+vi.mock('../../env', () => ({
   safeEnv: mockSafeEnv,
 }));
 

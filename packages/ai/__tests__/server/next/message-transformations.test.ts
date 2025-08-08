@@ -5,6 +5,8 @@
 
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import {
+  convertToModelMessages,
+  convertToUIMessages,
   convertUIMessageToStorageFormat,
   dedupeParts,
   getMessageRank,
@@ -15,7 +17,7 @@ import {
   transformConversationSection,
   type MessageContentPart,
   type MessageRankingConfig,
-} from '../../../src/server/next/message-transformations';
+} from '../../../src/server/core/next/message-transformations';
 
 // Mock appendResponseMessages from AI SDK
 vi.mock('ai', () => ({
@@ -135,16 +137,16 @@ describe('next.js Message Transformations', () => {
     test('should remove reasoning parts with undefined content', () => {
       const parts: MessageContentPart[] = [
         { type: 'text', content: 'Keep this' },
-        { type: 'reasoning', reasoning: 'undefined' },
-        { type: 'reasoning', reasoning: 'Valid reasoning' },
-        { type: 'reasoning', reasoning: 'undefined' },
+        { type: 'reasoning', reasoningText: 'undefined' },
+        { type: 'reasoning', reasoningText: 'Valid reasoning' },
+        { type: 'reasoning', reasoningText: 'undefined' },
       ];
 
       const result = sanitizeParts(parts);
 
       expect(result).toHaveLength(2);
       expect(result[0]).toStrictEqual({ type: 'text', content: 'Keep this' });
-      expect(result[1]).toStrictEqual({ type: 'reasoning', reasoning: 'Valid reasoning' });
+      expect(result[1]).toStrictEqual({ type: 'reasoning', reasoningText: 'Valid reasoning' });
     });
 
     test('should keep all parts if none match filter criteria', () => {
@@ -258,7 +260,7 @@ describe('next.js Message Transformations', () => {
       const parts: MessageContentPart[] = [
         { type: 'text', content: 'Hello' },
         { type: 'text', content: 'Hello' },
-        { type: 'reasoning', reasoning: 'undefined' },
+        { type: 'reasoning', reasoningText: 'undefined' },
         { type: 'text', content: 'World' },
       ];
 
@@ -277,7 +279,7 @@ describe('next.js Message Transformations', () => {
     test('should skip sanitization when disabled', () => {
       const parts: MessageContentPart[] = [
         { type: 'text', content: 'Hello' },
-        { type: 'reasoning', reasoning: 'undefined' },
+        { type: 'reasoning', reasoningText: 'undefined' },
       ];
 
       const result = processMessageParts(parts, { enableSanitization: false });
@@ -412,7 +414,7 @@ describe('next.js Message Transformations', () => {
         parts: [
           { type: 'text', content: 'Hello' },
           { type: 'text', content: 'Hello' }, // Duplicate
-          { type: 'reasoning', reasoning: 'undefined' }, // Should be filtered
+          { type: 'reasoning', reasoningText: 'undefined' }, // Should be filtered
         ],
       };
 
@@ -449,6 +451,197 @@ describe('next.js Message Transformations', () => {
 
       expect(result?.createdAt.getTime()).toBeGreaterThanOrEqual(beforeTime.getTime());
       expect(result?.createdAt.getTime()).toBeLessThanOrEqual(afterTime.getTime());
+    });
+  });
+
+  describe('convertToUIMessages', () => {
+    test('should convert ModelMessage array to UIMessage array', () => {
+      const modelMessages = [
+        { role: 'user', content: 'Hello' },
+        { role: 'assistant', content: 'Hi there!' },
+        { role: 'user', content: [{ type: 'text', text: 'How are you?' }] },
+      ];
+
+      const result = convertToUIMessages(modelMessages as any);
+
+      expect(result).toHaveLength(3);
+      expect(result[0]).toMatchObject({
+        role: 'user',
+        content: 'Hello',
+        id: expect.stringMatching(/^msg-\d+-[a-z0-9]+$/),
+        createdAt: expect.any(Date),
+      });
+      expect(result[1]).toMatchObject({
+        role: 'assistant',
+        content: 'Hi there!',
+        id: expect.stringMatching(/^msg-\d+-[a-z0-9]+$/),
+        createdAt: expect.any(Date),
+      });
+      expect(result[2]).toMatchObject({
+        role: 'user',
+        content: [{ type: 'text', text: 'How are you?' }],
+        id: expect.stringMatching(/^msg-\d+-[a-z0-9]+$/),
+        createdAt: expect.any(Date),
+      });
+    });
+
+    test('should generate unique IDs for each message', () => {
+      const modelMessages = [
+        { role: 'user', content: 'Message 1' },
+        { role: 'user', content: 'Message 2' },
+      ];
+
+      const result = convertToUIMessages(modelMessages as any);
+
+      expect(result[0].id).not.toBe(result[1].id);
+    });
+
+    test('should handle empty array', () => {
+      const result = convertToUIMessages([]);
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('convertToModelMessages', () => {
+    test('should convert UIMessage array to ModelMessage array', () => {
+      const uiMessages = [
+        {
+          id: 'ui-1',
+          role: 'user',
+          content: 'Hello',
+          createdAt: new Date(),
+        },
+        {
+          id: 'ui-2',
+          role: 'assistant',
+          content: [{ type: 'text', text: 'Hi there!' }],
+          createdAt: new Date(),
+          parts: [{ type: 'text', text: 'Hi there!' }],
+        },
+      ];
+
+      const result = convertToModelMessages(uiMessages as any);
+
+      expect(result).toHaveLength(2);
+      expect(result[0]).toStrictEqual({
+        role: 'user',
+        content: 'Hello',
+      });
+      expect(result[1]).toStrictEqual({
+        role: 'assistant',
+        content: [{ type: 'text', text: 'Hi there!' }],
+      });
+
+      // Should not include UIMessage-specific properties
+      expect(result[0]).not.toHaveProperty('id');
+      expect(result[0]).not.toHaveProperty('createdAt');
+      expect(result[1]).not.toHaveProperty('parts');
+    });
+
+    test('should handle empty array', () => {
+      const result = convertToModelMessages([]);
+      expect(result).toEqual([]);
+    });
+
+    test('should preserve content types', () => {
+      const uiMessages = [
+        {
+          id: 'ui-1',
+          role: 'user',
+          content: 'String content',
+          createdAt: new Date(),
+        },
+        {
+          id: 'ui-2',
+          role: 'assistant',
+          content: [
+            { type: 'text', text: 'Array content' },
+            { type: 'tool-call', toolName: 'search', args: { query: 'test' } },
+          ],
+          createdAt: new Date(),
+        },
+      ];
+
+      const result = convertToModelMessages(uiMessages as any);
+
+      expect(typeof result[0].content).toBe('string');
+      expect(Array.isArray(result[1].content)).toBeTruthy();
+    });
+  });
+
+  describe('edge cases and error handling', () => {
+    test('should handle messages with string content in getMessageRank', () => {
+      const message = {
+        role: 'assistant',
+        content: 'Simple string content',
+      };
+
+      const rank = getMessageRank(message);
+
+      expect(rank).toBe(2); // Assistant rank
+    });
+
+    test('should handle mixed content types in processMessageParts', () => {
+      const parts: MessageContentPart[] = [
+        { type: 'text', text: 'Text part', content: 'fallback' },
+        { type: 'image', image: 'base64data', content: 'image-content' },
+        { type: 'tool-call', content: { toolName: 'search' } },
+      ];
+
+      const result = processMessageParts(parts);
+
+      expect(result).toHaveLength(3);
+      expect(result[0]).toHaveProperty('text');
+      expect(result[1]).toHaveProperty('image');
+      expect(result[2]).toHaveProperty('content');
+    });
+
+    test('should handle convertUIMessageToStorageFormat with array content for user', () => {
+      const message = {
+        id: 'msg-multimodal',
+        role: 'user',
+        content: [
+          { type: 'text', text: 'Hello' },
+          { type: 'image', image: 'base64data' },
+        ],
+        createdAt: new Date(),
+      };
+
+      const result = convertUIMessageToStorageFormat(message as any, 'chat-1');
+
+      expect(result?.parts).toHaveLength(2);
+      expect(result?.parts[0]).toMatchObject({
+        type: 'text',
+        text: 'Hello',
+      });
+      expect(result?.parts[1]).toMatchObject({
+        type: 'image',
+        image: 'base64data',
+      });
+    });
+
+    test('should handle convertUIMessageToStorageFormat with array content for assistant', () => {
+      const message = {
+        id: 'msg-assistant-multimodal',
+        role: 'assistant',
+        content: [
+          { type: 'text', text: 'Here is the answer' },
+          { type: 'reasoning', reasoningText: 'Let me think...' },
+        ],
+        createdAt: new Date(),
+      };
+
+      const result = convertUIMessageToStorageFormat(message as any, 'chat-1');
+
+      expect(result?.parts).toHaveLength(2);
+      expect(result?.parts[0]).toMatchObject({
+        type: 'text',
+        text: 'Here is the answer',
+      });
+      expect(result?.parts[1]).toMatchObject({
+        type: 'reasoning',
+        reasoningText: 'Let me think...',
+      });
     });
   });
 });

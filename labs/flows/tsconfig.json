@@ -7,6 +7,7 @@
     "exactOptionalPropertyTypes": false,
     "baseUrl": ".",
     "paths": {
+      "#/__tests__/*": ["./__tests__/*"],
       "#/root/*": ["./*"],
       "#/app/*": ["./app/*"],
       "#/auth-components/*": ["./auth-components/*"],

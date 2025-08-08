@@ -2,8 +2,8 @@
  * Tests for better-auth-harmony integration
  */
 
-import { harmonyConfig, harmonyUtils } from '#/shared/harmony';
 import { describe, expect } from 'vitest';
+import { harmonyConfig, harmonyUtils } from '../../src/shared/harmony';
 
 describe('better-auth-harmony integration', () => {
   describe('harmonyUtils', () => {

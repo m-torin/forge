@@ -8,19 +8,40 @@ enhanced type safety and performance optimizations.
 - _Node:_ **22+**
 - _Package Manager:_ **pnpm**
 
-## Features
+- _AI Hints:_
+  ```typescript
+  // Primary: Testing utilities and centralized mocks - use @repo/qa mocks
+  import { createReactConfig } from "@repo/qa/vitest/configs";
+  import { setupVitestUpstashMocks } from "@repo/qa/vitest/mocks";
+  // ❌ NEVER: Create custom mocks when @repo/qa versions exist
+  ```
 
-- **🧪 Comprehensive Mock Library**: Pre-built mocks for Upstash Redis,
-  Better-Auth, AI SDK, Stripe, and more
-- **⚙️ Flexible Vitest Configurations**: Environment-specific configs for React,
-  Next.js, Node.js, and Edge runtime
-- **🎭 Enhanced Test Patterns**: Reusable test patterns with strong type safety
+## Key Features
+
+- **🧪 Centralized Mocks**: Pre-built mocks for Upstash (Redis, QStash, Rate
+  Limiting), Better-Auth, AI SDK, Stripe, Sentry, Next.js
+- **⚙️ Vitest Configurations**: `createReactConfig()`, `createNextAppConfig()`,
+  `createNodePackageConfig()`, `createDatabaseTestConfig()`,
+  `createEdgeRuntimeConfig()`
+- **🎭 Test Patterns**: Reusable test patterns with strong type safety and
+  database assertions
 - **📊 Performance Monitoring**: Built-in performance tracking and memory
   management
 - **🔍 Mock Management**: Advanced mock lifecycle management with debugging
   capabilities
-- **📚 Rich TypeScript Support**: Comprehensive type definitions for better
+- **📚 TypeScript Support**: Comprehensive type definitions for enhanced
   developer experience
+
+## Essential Commands
+
+```bash
+# Use centralized configs in vitest.config.ts
+import { createReactConfig } from "@repo/qa/vitest/configs";
+export default createReactConfig({ setupFiles: ["./test-setup.ts"] });
+
+# Import setup in test-setup.ts
+import "@repo/qa/vitest/setup/react-package";
+```
 
 ## Exports
 

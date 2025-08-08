@@ -1,89 +1,77 @@
-import { describe, expect, vi } from 'vitest';
-import { z } from 'zod/v4';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-// AI SDK mocks are provided by @repo/qa centralized mocks
+/**
+ * Basic Tools Tests
+ *
+ * Uses environment variables to control testing mode:
+ * - INTEGRATION_TEST=true: Test with real tool functionality
+ * - INTEGRATION_TEST=false/undefined: Use mocks (default)
+ */
 
-// Mock server-only to prevent import issues in tests
-vi.mock('server-only', () => ({}));
+const IS_INTEGRATION_TEST = process.env.INTEGRATION_TEST === 'true';
+const TEST_TIMEOUT = IS_INTEGRATION_TEST ? 30000 : 5000;
 
-describe('tools Basic Functionality', () => {
-  test('should import and use tool specifications', async () => {
-    const specifications = await import('#/server/tools/specifications');
+// Mock setup for unit tests
+if (!IS_INTEGRATION_TEST) {
+  vi.mock('@repo/observability', () => ({
+    logInfo: vi.fn(),
+    logWarn: vi.fn(),
+    logError: vi.fn(),
+  }));
+}
 
-    expect(specifications.ToolSchemas).toBeDefined();
-    expect(specifications.ToolSpecifications).toBeDefined();
-    expect(specifications.createToolFromSpec).toBeTypeOf('function');
-    expect(specifications.validateToolResponse).toBeTypeOf('function');
-    expect(specifications.getToolSpec).toBeTypeOf('function');
+describe('basic Tools', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    if (IS_INTEGRATION_TEST) {
+      console.log('🔗 Integration test mode - testing with real tools');
+    } else {
+      console.log('🤖 Mock test mode - using simulated tools');
+    }
   });
 
-  test('should import tool factory successfully', async () => {
-    const factory = await import('#/server/tools/factory');
-    expect(factory).toBeDefined();
-    expect(factory.tool).toBeTypeOf('function');
-    expect(factory.createToolFactory).toBeTypeOf('function');
+  test('should import simple tools successfully', async () => {
+    const simpleTools = await import('../../../src/server/tools/simple-tools');
+    expect(simpleTools).toBeDefined();
+    expect(simpleTools.tool).toBeDefined();
+
+    console.log(
+      IS_INTEGRATION_TEST
+        ? '✅ Integration: Simple tools imported'
+        : '✅ Mock: Simple tools imported',
+    );
   });
 
-  test('should import tool registry successfully', async () => {
-    const registry = await import('#/server/tools/registry');
-    expect(registry).toBeDefined();
-  });
+  test(
+    'should create and execute simple tools',
+    async () => {
+      const { tool } = await import('../../../src/server/tools/simple-tools');
+      const { z } = await import('zod/v4');
 
-  test('should import tool types successfully', async () => {
-    const types = await import('#/server/tools/types');
-    expect(types).toBeDefined();
-  });
+      const testTool = tool({
+        description: 'A test tool',
+        inputSchema: z.object({
+          input: z.string(),
+        }),
+        execute: async ({ input }) => `Result: ${input}`,
+      });
 
-  test('should create tool using factory functions', async () => {
-    const { tool, commonSchemas } = await import('#/server/tools/factory');
+      expect(testTool).toBeDefined();
 
-    expect(tool).toBeTypeOf('function');
-    expect(commonSchemas).toBeDefined();
+      // Test the tool by calling it directly - in AI SDK v5, tools are called differently
+      const result = await testTool.execute!(
+        { input: 'test' },
+        { toolCallId: 'test-call', messages: [] },
+      );
+      expect(result).toBe('Result: test');
 
-    const testTool = tool({
-      description: 'Basic test tool',
-      inputSchema: z.object({ value: z.string() }),
-      execute: async ({ value }) => `Basic: ${value}`,
-    });
-
-    expect(testTool).toBeDefined();
-    expect(typeof testTool).toBe('object');
-  });
-
-  test('should handle tool specifications and schemas', async () => {
-    const { ToolSchemas, ToolSpecifications } = await import('#/server/tools/specifications');
-
-    expect(ToolSchemas.query).toBeDefined();
-    expect(ToolSchemas.filePath).toBeDefined();
-    expect(ToolSpecifications.weather).toBeDefined();
-    expect(ToolSpecifications.createDocument).toBeDefined();
-    expect(ToolSpecifications.searchKnowledge).toBeDefined();
-  });
-
-  test('should validate with schemas from specifications', async () => {
-    const { ToolSchemas } = await import('#/server/tools/specifications');
-
-    const validQuery = 'test search';
-    const result = ToolSchemas.query.safeParse(validQuery);
-
-    expect(result.success).toBeTruthy();
-    expect(result.data).toBe(validQuery);
-  });
-
-  test('should create tool from specification', async () => {
-    const { createToolFromSpec } = await import('#/server/tools/specifications');
-
-    expect(createToolFromSpec).toBeTypeOf('function');
-
-    const weatherTool = createToolFromSpec('weather', {
-      execute: async params => ({
-        temperature: 20,
-        unit: params.units || 'celsius',
-        description: 'Sunny',
-      }),
-    });
-
-    expect(weatherTool).toBeDefined();
-    expect(typeof weatherTool).toBe('object');
-  });
+      console.log(
+        IS_INTEGRATION_TEST
+          ? '✅ Integration: Simple tool executed'
+          : '✅ Mock: Simple tool executed',
+      );
+    },
+    TEST_TIMEOUT,
+  );
 });

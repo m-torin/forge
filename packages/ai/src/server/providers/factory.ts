@@ -19,7 +19,7 @@ export interface ProviderFactoryOptions {
   apiKey: string;
   baseURL?: string;
   defaultHeaders?: Record<string, string>;
-  providerClient?: any; // For providers with custom SDK clients
+  providerClient?: any;
 }
 
 /**
@@ -46,7 +46,7 @@ function applyReasoningConfig(options: ModelWrapperOptions): LanguageModel {
   const { model, config } = options;
   const { metadata } = config;
 
-  if (!metadata.reasoning?.supported) {
+  if (!metadata.reasoningText?.supported) {
     return model;
   }
 
@@ -56,11 +56,11 @@ function applyReasoningConfig(options: ModelWrapperOptions): LanguageModel {
   };
 
   // Add provider-specific reasoning settings
-  if (metadata.reasoning.headers) {
-    settings.headers = metadata.reasoning.headers;
+  if (metadata.reasoningText.headers) {
+    settings.headers = metadata.reasoningText.headers;
   }
 
-  if (metadata.reasoning.budgetTokens) {
+  if (metadata.reasoningText.budgetTokens) {
     // Provider-specific reasoning configuration
     const providerName = config.provider;
     settings.providerOptions = {
@@ -69,14 +69,14 @@ function applyReasoningConfig(options: ModelWrapperOptions): LanguageModel {
         ...(providerName === 'anthropic' && {
           thinking: {
             type: 'enabled',
-            budgetTokens: metadata.reasoning.budgetTokens,
+            budgetTokens: metadata.reasoningText.budgetTokens,
           },
         }),
         // Generic reasoning pattern for other providers
         ...(providerName !== 'anthropic' && {
-          reasoning: {
+          reasoningText: {
             enabled: true,
-            budgetTokens: metadata.reasoning.budgetTokens,
+            budgetTokens: metadata.reasoningText.budgetTokens,
           },
         }),
       },
@@ -84,9 +84,9 @@ function applyReasoningConfig(options: ModelWrapperOptions): LanguageModel {
   }
 
   return wrapLanguageModel({
-    model,
+    model: model as any,
     middleware: defaultSettingsMiddleware({ settings }),
-  });
+  }) as LanguageModel;
 }
 
 /**
@@ -113,10 +113,10 @@ export function createOpenAICompatibleProvider(
     const { id, actualModelId, metadata } = modelConfig;
 
     // Create base model
-    let model: LanguageModel = client(actualModelId);
+    let model: LanguageModel = client(actualModelId) as LanguageModel;
 
     // Apply reasoning configuration if supported
-    if (metadata.reasoning?.supported) {
+    if (metadata.reasoningText?.supported) {
       model = applyReasoningConfig({ model, config: modelConfig });
     }
 
@@ -125,7 +125,7 @@ export function createOpenAICompatibleProvider(
 
   // Create provider
   const provider = customProvider({
-    languageModels: models,
+    languageModels: models as any,
     fallbackProvider: client,
   });
 
@@ -155,10 +155,10 @@ export function createCustomSDKProvider(
     const { id, actualModelId, metadata } = modelConfig;
 
     // Create base model using provider's SDK
-    let model: LanguageModel = client(actualModelId);
+    let model: LanguageModel = client(actualModelId) as LanguageModel;
 
     // Apply reasoning configuration if supported
-    if (metadata.reasoning?.supported) {
+    if (metadata.reasoningText?.supported) {
       model = applyReasoningConfig({ model, config: modelConfig });
     }
 
@@ -166,16 +166,16 @@ export function createCustomSDKProvider(
   });
 
   // Add common aliases based on model capabilities
-  const reasoningModels = providerModels.filter(m => m.metadata.reasoning?.supported);
+  const reasoningModels = providerModels.filter(m => m.metadata.reasoningText?.supported);
   const visionModels = providerModels.filter(m => m.metadata.capabilities?.includes('vision'));
   const codeModels = providerModels.filter(m => m.metadata.capabilities?.includes('code'));
 
   const aliasModels: Record<string, LanguageModel> = {};
   if (reasoningModels.length > 0) {
     const reasoningModelId = reasoningModels[0].id;
-    aliases.reasoning = reasoningModelId;
+    aliases.reasoningText = reasoningModelId;
     if (models[reasoningModelId]) {
-      aliasModels.reasoning = models[reasoningModelId];
+      aliasModels.reasoningText = models[reasoningModelId];
     }
   }
   if (visionModels.length > 0) {
@@ -195,7 +195,7 @@ export function createCustomSDKProvider(
 
   // Create provider
   const provider = customProvider({
-    languageModels: { ...models, ...aliasModels },
+    languageModels: { ...models, ...aliasModels } as any,
     fallbackProvider: client,
   });
 
@@ -277,7 +277,7 @@ export function createOllamaProvider(
 /**
  * Create Perplexity provider using official SDK
  */
-export function createPerplexityProvider(apiKey: string): ProviderFactoryResult {
+export function createPerplexityProvider(_apiKey: string): ProviderFactoryResult {
   const models: Record<string, any> = {};
   const aliases: Record<string, string> = {};
   const providerModels = getModelsByProvider('perplexity');
@@ -290,7 +290,7 @@ export function createPerplexityProvider(apiKey: string): ProviderFactoryResult 
     let model: any = perplexity(actualModelId);
 
     // Apply reasoning configuration if supported
-    if (metadata.reasoning?.supported) {
+    if (metadata.reasoningText?.supported) {
       model = applyReasoningConfig({ model, config: modelConfig });
     }
 
@@ -299,13 +299,13 @@ export function createPerplexityProvider(apiKey: string): ProviderFactoryResult 
 
   // Add convenient aliases based on model capabilities
   const searchModels = providerModels.filter(m => m.metadata.capabilities?.includes('search'));
-  const reasoningModels = providerModels.filter(m => m.metadata.reasoning?.supported);
+  const reasoningModels = providerModels.filter(m => m.metadata.reasoningText?.supported);
 
   if (searchModels.length > 0) {
     aliases.search = searchModels[0].id;
   }
   if (reasoningModels.length > 0) {
-    aliases.reasoning = reasoningModels[0].id;
+    aliases.reasoningText = reasoningModels[0].id;
   }
 
   // Create provider using official SDK

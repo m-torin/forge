@@ -1,0 +1,435 @@
+---
+title: "Monaco Editor Lab"
+description: "Monaco Editor integration with Mantine - multi-language code editor component"
+icon: "code"
+---
+
+# Monaco Editor Lab
+
+A comprehensive integration of Microsoft's Monaco Editor with Mantine UI components, providing a powerful multi-language code editor for web applications.
+
+## Overview
+
+The Monaco Editor lab explores advanced code editing capabilities in web applications, featuring syntax highlighting, IntelliSense, code validation, and custom themes for multiple programming languages.
+
+<CardGroup cols={2}>
+  <Card title="Multi-Language Support" icon="globe">
+    JavaScript, TypeScript, Python, R, SQL, JSON with syntax highlighting
+  </Card>
+  <Card title="Language Services" icon="wrench">
+    Built-in validators, formatters, and IntelliSense for supported languages
+  </Card>
+  <Card title="Custom Themes" icon="palette">
+    Dracula theme plus VS Code light/dark themes
+  </Card>
+  <Card title="Mantine Integration" icon="cube">
+    Seamless integration with Mantine Box wrapper and design system
+  </Card>
+</CardGroup>
+
+## Key Features
+
+### Editor Capabilities
+- **Full Monaco Editor** - Complete Microsoft Monaco Editor functionality
+- **Mantine Wrapper** - Integrated with Mantine Box component
+- **Web Workers** - Proper web worker setup for language services
+- **Custom Themes** - Multiple theme options including custom Dracula theme
+
+### Language Support
+
+<AccordionGroup>
+  <Accordion title="JavaScript/TypeScript" icon="js">
+    - **Syntax Highlighting** - Full ES6+ and TypeScript support
+    - **IntelliSense** - Autocompletion and type checking
+    - **Error Detection** - Real-time syntax and type error reporting
+    - **Code Formatting** - Automatic code formatting and linting
+  </Accordion>
+  
+  <Accordion title="Python" icon="python">
+    - **Syntax Highlighting** - Python 3.x syntax support
+    - **Format Validation** - PEP 8 style checking
+    - **Error Markers** - Visual error indicators
+    - **Code Formatting** - Automatic indentation and formatting
+  </Accordion>
+  
+  <Accordion title="SQL" icon="database">
+    - **SQL Formatting** - Using sql-formatter library
+    - **Dialect Support** - MySQL, PostgreSQL, SQLite dialects
+    - **Query Validation** - Basic SQL syntax validation
+    - **Keyword Highlighting** - SQL keywords and functions
+  </Accordion>
+  
+  <Accordion title="R Language" icon="chart-line">
+    - **Statistical Computing** - R language syntax support
+    - **Package Recognition** - Common R package highlighting
+    - **Function Validation** - R function syntax checking
+    - **Data Analysis** - Specialized highlighting for data operations
+  </Accordion>
+</AccordionGroup>
+
+## Installation & Setup
+
+### Package Installation
+
+```bash
+# Install the lab package
+pnpm add @labs/monaco-editor
+
+# Required peer dependencies
+pnpm add @mantine/core @mantine/hooks react react-dom
+
+# Language processing dependencies
+pnpm add monaco-editor sql-formatter lodash
+```
+
+### Worker Configuration
+
+The Monaco Editor requires web workers for language services:
+
+```bash
+# Copy workers to public directory
+cp -r node_modules/monaco-editor/min/vs/base/worker/workerMain.js public/monaco-workers/
+cp -r node_modules/monaco-editor/min/vs/language/*/worker.js public/monaco-workers/
+```
+
+Or use the provided copy script:
+
+```bash
+pnpm run copy:workers
+```
+
+## Usage Examples
+
+### Basic Editor
+
+```typescript
+import { MonacoEditor } from "@labs/monaco-editor";
+import { useState } from "react";
+
+function CodeEditor() {
+  const [code, setCode] = useState('console.log("Hello World");');
+  
+  return (
+    <MonacoEditor
+      defaultValue={code}
+      onChange={setCode}
+      language="javascript"
+      theme="dracula"
+      height={400}
+      readOnly={false}
+      onMount={(editor) => {
+        console.log('Editor mounted:', editor);
+      }}
+    />
+  );
+}
+```
+
+### Multi-Language Editor
+
+```typescript
+import { MonacoEditor } from "@labs/monaco-editor";
+import { Select } from "@mantine/core";
+
+function MultiLanguageEditor() {
+  const [language, setLanguage] = useState("javascript");
+  const [code, setCode] = useState(getDefaultCode(language));
+  
+  const languages = [
+    { value: "javascript", label: "JavaScript" },
+    { value: "typescript", label: "TypeScript" },
+    { value: "python", label: "Python" },
+    { value: "sql", label: "SQL" },
+    { value: "r", label: "R" },
+    { value: "json", label: "JSON" }
+  ];
+  
+  return (
+    <div>
+      <Select
+        data={languages}
+        value={language}
+        onChange={setLanguage}
+        mb="md"
+      />
+      
+      <MonacoEditor
+        defaultValue={code}
+        onChange={setCode}
+        language={language}
+        theme="vs-dark"
+        height={500}
+        options={{
+          minimap: { enabled: true },
+          fontSize: 14,
+          wordWrap: "on"
+        }}
+      />
+    </div>
+  );
+}
+```
+
+### SQL Editor with Formatting
+
+```typescript
+import { MonacoEditor } from "@labs/monaco-editor";
+import { Button } from "@mantine/core";
+
+function SQLEditor() {
+  const [sqlCode, setSqlCode] = useState(`
+    SELECT u.id, u.name, p.title
+    FROM users u
+    LEFT JOIN posts p ON u.id = p.user_id
+    WHERE u.active = true
+    ORDER BY u.created_at DESC;
+  `);
+  
+  const formatCode = () => {
+    // SQL formatting happens automatically
+    // or can be triggered manually
+  };
+  
+  return (
+    <div>
+      <Button onClick={formatCode} mb="md">
+        Format SQL
+      </Button>
+      
+      <MonacoEditor
+        defaultValue={sqlCode}
+        onChange={setSqlCode}
+        language="sql"
+        theme="dracula"
+        height={400}
+        options={{
+          formatOnPaste: true,
+          formatOnType: true
+        }}
+      />
+    </div>
+  );
+}
+```
+
+## Configuration Options
+
+### Editor Props
+
+```typescript
+interface MonacoEditorProps {
+  defaultValue?: string;
+  onChange?: (value: string) => void;
+  language: "javascript" | "typescript" | "python" | "r" | "sql" | "json";
+  theme?: "vs-dark" | "vs-light" | "dracula";
+  height?: number | string;
+  width?: number | string;
+  readOnly?: boolean;
+  options?: monaco.editor.IStandaloneEditorConstructionOptions;
+  onMount?: (editor: monaco.editor.IStandaloneCodeEditor) => void;
+}
+```
+
+### Language-Specific Options
+
+<CodeGroup>
+```typescript JavaScript/TypeScript Options
+{
+  // IntelliSense settings
+  suggest: {
+    showKeywords: true,
+    showSnippets: true,
+    showFunctions: true
+  },
+  
+  // Error checking
+  validate: true,
+  
+  // Formatting
+  formatOnPaste: true,
+  formatOnType: true
+}
+```
+
+```typescript Python Options
+{
+  // Python-specific validation
+  pythonValidation: {
+    enabled: true,
+    maxLineLength: 88
+  },
+  
+  // Indentation
+  tabSize: 4,
+  insertSpaces: true
+}
+```
+
+```typescript SQL Options
+{
+  // SQL formatting
+  sqlFormatter: {
+    dialect: "postgresql", // mysql, postgresql, sqlite
+    keywordCase: "upper"
+  },
+  
+  // Query validation
+  validateQueries: true
+}
+```
+
+</CodeGroup>
+
+## Themes
+
+### Available Themes
+
+<Tabs>
+  <Tab title="Dracula Theme">
+    ```typescript
+    <MonacoEditor
+      theme="dracula"
+      // Custom Dracula theme with purple accents
+      // Optimized for long coding sessions
+    />
+    ```
+  </Tab>
+  
+  <Tab title="VS Dark">
+    ```typescript
+    <MonacoEditor
+      theme="vs-dark"
+      // Classic VS Code dark theme
+      // High contrast for accessibility
+    />
+    ```
+  </Tab>
+  
+  <Tab title="VS Light">
+    ```typescript
+    <MonacoEditor
+      theme="vs-light"
+      // Clean light theme
+      // Suitable for documentation
+    />
+    ```
+  </Tab>
+</Tabs>
+
+### Custom Theme Creation
+
+```typescript
+import { registerCustomTheme } from "@labs/monaco-editor";
+
+// Register custom theme
+registerCustomTheme("my-theme", {
+  base: "vs-dark",
+  inherit: true,
+  rules: [
+    { token: "comment", foreground: "6A9955" },
+    { token: "keyword", foreground: "569CD6" },
+    { token: "string", foreground: "CE9178" }
+  ],
+  colors: {
+    "editor.background": "#1E1E1E",
+    "editor.foreground": "#D4D4D4"
+  }
+});
+```
+
+## Environment Variables
+
+### Optional Configuration
+
+```bash
+# Custom worker paths
+NEXT_PUBLIC_MONACO_WORKER_PATH=/monaco-workers
+
+# Default theme preference
+NEXT_PUBLIC_DEFAULT_THEME=dracula
+
+# Enable language-specific features
+NEXT_PUBLIC_ENABLE_SQL_FORMATTER=true
+NEXT_PUBLIC_ENABLE_PYTHON_VALIDATION=true
+```
+
+## Development
+
+### Testing
+
+```bash
+# Run tests
+pnpm test
+
+# Test with coverage
+pnpm test:coverage
+
+# Interactive testing
+pnpm test:ui
+```
+
+### Storybook
+
+```bash
+# Start Storybook
+pnpm storybook
+
+# Build Storybook
+pnpm build-storybook
+```
+
+### Building
+
+```bash
+# Build package
+pnpm build
+
+# Type checking
+pnpm type-check
+
+# Lint code
+pnpm lint
+```
+
+## Performance Optimization
+
+### Bundle Optimization
+- **Tree Shaking** - Only used languages are bundled
+- **Code Splitting** - Language workers loaded on demand  
+- **External Dependencies** - React/Mantine externalized
+- **ESM Format** - Modern module format for better optimization
+
+### Runtime Performance
+- **Web Workers** - Language processing in background threads
+- **Lazy Loading** - Language modes loaded when needed
+- **Memory Management** - Proper cleanup of editor instances
+- **Debounced Updates** - Optimized change handling
+
+## Troubleshooting
+
+### Common Issues
+
+<AccordionGroup>
+  <Accordion title="Worker Loading Errors">
+    - Ensure workers are copied to public/monaco-workers/
+    - Check NEXT_PUBLIC_MONACO_WORKER_PATH configuration
+    - Verify worker files have correct permissions
+    - Test worker loading in browser dev tools
+  </Accordion>
+  
+  <Accordion title="Language Services Not Working">
+    - Verify language registration is complete
+    - Check console for worker initialization errors
+    - Ensure proper import statements for language modules
+    - Test with different languages to isolate issues
+  </Accordion>
+  
+  <Accordion title="Theme Not Applied">
+    - Check theme name spelling and case sensitivity
+    - Verify custom themes are properly registered
+    - Test with default themes first
+    - Check CSS conflicts with parent components
+  </Accordion>
+</AccordionGroup>
+
+This lab demonstrates advanced code editor integration patterns and serves as a foundation for building sophisticated code editing experiences in web applications.

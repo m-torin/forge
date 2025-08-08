@@ -22,7 +22,6 @@
 
 // Core agent framework
 // Convenience factories and utilities
-import { AdvancedToolManager, advancedToolUtils } from './advanced-tool-management';
 import {
   AgentCommunicationManager,
   communicationUtils,
@@ -44,6 +43,7 @@ import {
   productionUtils,
   type ProductionLifecycleConfig,
 } from './production-patterns';
+import { DynamicToolManager, dynamicToolUtils } from './tool-management-dynamic';
 
 export * from './agent-controls';
 export * from './agent-orchestrator';
@@ -57,29 +57,29 @@ export * from './optimized-conditions';
 export * from './performance-monitoring';
 
 // Advanced agent capabilities
-export * from './advanced-tool-management';
 export * from './agent-communication';
 export * from './agent-configuration-templates';
 export * from './agent-memory';
 export * from './agent-observability';
+export * from './tool-management-dynamic';
 
 // Production patterns and monitoring
 export * from './production-patterns';
 
 /**
- * Advanced Agent Factory - One-stop creation of fully-featured agents
+ * Configurable Agent Factory - One-stop creation of fully-featured agents
  */
-export class AdvancedAgentFactory {
-  private static instance: AdvancedAgentFactory;
+export class ConfigurableAgentFactory {
+  private static instance: ConfigurableAgentFactory;
   private lifecycleManager?: ProductionAgentLifecycleManager;
 
   private constructor() {}
 
-  static getInstance(): AdvancedAgentFactory {
-    if (!AdvancedAgentFactory.instance) {
-      AdvancedAgentFactory.instance = new AdvancedAgentFactory();
+  static getInstance(): ConfigurableAgentFactory {
+    if (!ConfigurableAgentFactory.instance) {
+      ConfigurableAgentFactory.instance = new ConfigurableAgentFactory();
     }
-    return AdvancedAgentFactory.instance;
+    return ConfigurableAgentFactory.instance;
   }
 
   /**
@@ -151,7 +151,7 @@ export class AdvancedAgentFactory {
     // Initialize components
     const memory = new AgentMemoryManager(id, customizedTemplate.memoryConfig);
     const communication = new AgentCommunicationManager();
-    const tools = new AdvancedToolManager({
+    const tools = new DynamicToolManager({
       cacheEnabled: true,
       cacheTtl: 3600000,
       maxCacheSize: 100,
@@ -164,7 +164,7 @@ export class AdvancedAgentFactory {
     communication.registerAgent(id, capabilities);
 
     // Initialize built-in tools
-    advancedToolUtils.initializeBuiltInTools(tools);
+    dynamicToolUtils.initializeBuiltInTools(tools);
 
     // Add custom tools if provided
     if (customization?.tools) {
@@ -336,7 +336,7 @@ export const agentFrameworkUtils = {
   createQuickAgent: async (
     type: 'support' | 'research' | 'development' | 'content' | 'analysis',
   ) => {
-    const factory = AdvancedAgentFactory.getInstance();
+    const factory = ConfigurableAgentFactory.getInstance();
     const templateMap = {
       support: 'customer_support_agent',
       research: 'research_assistant_agent',
@@ -403,8 +403,8 @@ export const agentFrameworkUtils = {
   },
 
   // Built-in tool management
-  initializeBuiltInTools: (toolManager: AdvancedToolManager) => {
-    return advancedToolUtils.initializeBuiltInTools(toolManager);
+  initializeBuiltInTools: (toolManager: DynamicToolManager) => {
+    return dynamicToolUtils.initializeBuiltInTools(toolManager);
   },
 
   // Communication setup
@@ -427,10 +427,10 @@ export const agentFrameworkUtils = {
 export class GlobalAgentRegistry {
   private static instance: GlobalAgentRegistry;
   private agents = new Map<string, any>();
-  private factory: AdvancedAgentFactory;
+  private factory: ConfigurableAgentFactory;
 
   private constructor() {
-    this.factory = AdvancedAgentFactory.getInstance();
+    this.factory = ConfigurableAgentFactory.getInstance();
   }
 
   static getInstance(): GlobalAgentRegistry {
@@ -478,7 +478,7 @@ export class GlobalAgentRegistry {
 }
 
 // Export convenience instances
-export const agentFactory = AdvancedAgentFactory.getInstance();
+export const agentFactory = ConfigurableAgentFactory.getInstance();
 export const globalAgentRegistry = GlobalAgentRegistry.getInstance();
 
 // Export built-in templates for easy access

@@ -386,7 +386,9 @@ describe('hybridSearchEngine', () => {
 
       // Documents with boosted fields should have adjusted scores
       const boostedResult = results.find(r => r.metadata?.title?.includes('ML'));
-      if (boostedResult) {
+      const hasBoostedResult = boostedResult !== undefined;
+
+      if (hasBoostedResult) {
         expect(boostedResult.hybridScore).toBeGreaterThan(0);
       }
     });
@@ -433,7 +435,9 @@ describe('hybridSearchEngine', () => {
       const results = await hybridSearch.search('machine learning');
 
       const resultWithMetadata = results.find(r => r.metadata);
-      if (resultWithMetadata) {
+      const hasMetadataResult = resultWithMetadata !== undefined;
+
+      if (hasMetadataResult) {
         expect(resultWithMetadata.metadata).toBeDefined();
         expect(resultWithMetadata.metadata).toHaveProperty('title');
       }
@@ -443,7 +447,9 @@ describe('hybridSearchEngine', () => {
       const results = await hybridSearch.search('machine learning algorithms');
 
       const result = results.find(r => r.keywordScore > 0);
-      if (result) {
+      const hasKeywordResult = result !== undefined;
+
+      if (hasKeywordResult) {
         expect(result.keywordMatches).toBeInstanceOf(Array);
         expect(result.keywordMatches.length).toBeGreaterThan(0);
       }

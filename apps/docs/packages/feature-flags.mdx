@@ -1,16 +1,16 @@
 ---
 title: "Feature Flags"
 description:
-  "Comprehensive feature flag system with Vercel Flags SDK, PostHog, and Edge
-  Config integration"
+  "Comprehensive feature flag system with Flags SDK v4, PostHog, and Edge Config
+  integration"
 icon: "flag"
 ---
 
 # Feature Flags
 
-Comprehensive feature flag management using Vercel Flags SDK with support for
-static precomputation, edge middleware evaluation, PostHog integration, and
-Vercel Edge Config for ultra-low latency.
+Comprehensive feature flag management using Flags SDK v4 with support for static
+precomputation, edge middleware evaluation, PostHog integration, and Vercel Edge
+Config for ultra-low latency.
 
 ## Overview
 
@@ -19,8 +19,8 @@ management with multiple provider options, static optimization, and seamless
 Vercel Toolbar integration.
 
 <CardGroup cols={2}>
-  <Card title="Vercel Flags SDK" icon="vercel">
-    Full Vercel Flags implementation with static precomputation and edge
+  <Card title="Flags SDK v4" icon="vercel">
+    Full Flags SDK v4 implementation with static precomputation and edge
     middleware support
   </Card>
   <Card title="PostHog Integration" icon="chart-line">
@@ -36,11 +36,22 @@ Vercel Toolbar integration.
   </Card>
 </CardGroup>
 
+## Installation
+
+The feature flags package is included in the monorepo workspace:
+
+```bash
+# Already available as @repo/feature-flags
+# No additional installation needed
+```
+
+For environment setup, see the [Environment Setup](#environment-setup) section.
+
 ## Quick Start
 
 <CodeGroup>
 ```typescript Basic Flag Definition
-import { flag } from '@vercel/flags/next';
+import { flag } from '@repo/feature-flags/server/next';
 
 export const showFeature = flag<boolean>({
   key: 'show-feature',
@@ -96,7 +107,7 @@ export function ClientComponent() {
 ### Required Environment Variables
 
 <CodeGroup>
-```bash Flags SDK
+```bash Flags SDK v4
 # Required for precomputation and static optimization
 FLAGS_SECRET=your-generated-secret
 
@@ -107,7 +118,11 @@ node -e "console.log(crypto.randomBytes(32).toString('base64url'))"
 ````
 
 ```bash PostHog Integration
-# For flag evaluation
+# For flag evaluation (server-side)
+POSTHOG_KEY=your-project-api-key
+POSTHOG_HOST=https://app.posthog.com
+
+# For client-side evaluation
 NEXT_PUBLIC_POSTHOG_KEY=your-project-api-key
 NEXT_PUBLIC_POSTHOG_HOST=https://app.posthog.com
 
@@ -121,7 +136,39 @@ POSTHOG_PROJECT_ID=your-project-id
 EDGE_CONFIG=your-edge-config-connection-string
 ```
 
+```bash Optional Environment Variables
+# Analytics and debugging
+VERCEL_ANALYTICS_DEBUG=true
+NEXT_PUBLIC_VERCEL_ENV=development
+NODE_ENV=development
+```
+
 </CodeGroup>
+
+### Environment Helper Functions
+
+The package provides helper functions for checking environment configuration:
+
+```typescript
+import {
+  safeEnv,
+  isProduction,
+  hasPostHogConfig,
+  hasEdgeConfig,
+  hasFlagsSecret,
+  isEncryptionEnabled
+} from "@repo/feature-flags";
+
+// Check if PostHog is configured
+if (hasPostHogConfig()) {
+  // Use PostHog adapter
+}
+
+// Check if encryption should be used
+if (isEncryptionEnabled()) {
+  // Encryption is enabled in production with FLAGS_SECRET
+}
+```
 
 ## Provider Options
 
@@ -130,7 +177,7 @@ EDGE_CONFIG=your-edge-config-connection-string
 Perfect for simple boolean flags and basic targeting:
 
 ```typescript
-import { flag } from "@vercel/flags/next";
+import { flag } from "@repo/feature-flags/server/next";
 
 export const maintenanceMode = flag<boolean>({
   key: "maintenance-mode",
@@ -165,7 +212,7 @@ Advanced targeting with user analytics and A/B testing:
 <Tabs>
   <Tab title="Boolean Flags">
     ```typescript
-    import { flag } from '@vercel/flags/next';
+    import { flag } from '@repo/feature-flags/server/next';
     import { postHogServerAdapter } from '@repo/feature-flags/server/next';
 
     const identify = ({ cookies, headers }) => ({
@@ -233,7 +280,7 @@ Advanced targeting with user analytics and A/B testing:
 Ultra-low latency flags with global distribution:
 
 ```typescript
-import { flag } from "@vercel/flags/next";
+import { flag } from "@repo/feature-flags/server/next";
 import { edgeConfigAdapter } from "@repo/feature-flags/server/next";
 
 export const globalFeature = flag<boolean>({
@@ -295,7 +342,7 @@ export const checkoutFlags = [
 ```typescript Middleware Precomputation
 // middleware.ts
 import { type NextRequest, NextResponse } from "next/server";
-import { precompute } from "@vercel/flags/next";
+import { precompute } from "@repo/feature-flags/server/next";
 import { marketingFlags } from "./flags";
 
 export const config = {
@@ -357,7 +404,7 @@ export default async function MarketingPage({ params }: { params: Params }) {
 
   <Tab title="Build-time Generation">
     ```typescript
-    import { generatePermutations } from '@vercel/flags/next';
+    import { generatePermutations } from '@repo/feature-flags/server/next';
     import { marketingFlags } from '../flags';
 
     export async function generateStaticParams() {
@@ -475,7 +522,7 @@ const dynamicResult = await myFlag.run({
 Prevent expensive computations from running multiple times:
 
 ```typescript
-import { dedupe } from "@vercel/flags/next";
+import { dedupe } from "@repo/feature-flags/server/next";
 
 const getUserData = dedupe(async (userId: string) => {
   return await database.user.findUnique({ where: { id: userId } });

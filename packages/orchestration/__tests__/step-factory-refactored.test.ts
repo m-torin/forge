@@ -154,7 +154,7 @@ describe('step Factory System - DRY Refactored', () => {
         // Use centralized assertions
         AssertionUtils.assertStep(step, ['metadata']);
         expect(step.metadata.category).toBe(expectedCategory);
-        expect(step.metadata.tags).toEqual(expect.arrayContaining(expectedTags));
+        expect(step.metadata.tags).toStrictEqual(expect.arrayContaining(expectedTags));
       });
     });
   });

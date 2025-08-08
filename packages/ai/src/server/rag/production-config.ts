@@ -365,7 +365,8 @@ export function validateProductionConfig(config: ProductionRAGConfig): {
   const errors: string[] = [];
 
   // Validate hybrid search weights
-  const totalWeight = config.hybridSearch.vectorWeight! + config.hybridSearch.keywordWeight!;
+  const totalWeight =
+    (config.hybridSearch.vectorWeight ?? 0.7) + (config.hybridSearch.keywordWeight ?? 0.3);
   if (Math.abs(totalWeight - 1.0) > 0.01) {
     errors.push(`Hybrid search weights must sum to 1.0, got ${totalWeight}`);
   }

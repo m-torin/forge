@@ -229,7 +229,6 @@ export function EmojiDropdown({ editor, isOpen, onClose, position, query }: Emoj
         left: position.left,
       }}
     >
-      {/* Categories */}
       {!query && (
         <div className="border-b border-gray-100 p-2">
           <div className="flex gap-1 overflow-x-auto">
@@ -251,7 +250,6 @@ export function EmojiDropdown({ editor, isOpen, onClose, position, query }: Emoj
         </div>
       )}
 
-      {/* Emoji Grid */}
       <div className="max-h-64 overflow-y-auto p-2">
         {filteredEmojis.length > 0 ? (
           <div className="grid grid-cols-8 gap-1">
@@ -272,7 +270,6 @@ export function EmojiDropdown({ editor, isOpen, onClose, position, query }: Emoj
         )}
       </div>
 
-      {/* Search hint */}
       {!query && (
         <div className="border-t border-gray-100 p-2 text-xs text-gray-500">
           Type : followed by emoji name to search

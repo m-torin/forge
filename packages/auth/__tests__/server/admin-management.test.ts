@@ -24,7 +24,7 @@ import {
   stopImpersonatingAction,
   unbanUserAction,
   updateUserAction,
-} from '#/server/admin-management';
+} from '../../src/server/admin-management';
 
 // Mock the auth module using vi.hoisted
 const {

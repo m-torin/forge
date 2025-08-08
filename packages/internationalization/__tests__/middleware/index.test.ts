@@ -13,7 +13,7 @@ import { createMockImplementations, i18nTestPatterns } from '../i18n-test-factor
 // MIDDLEWARE MODULE EXPORTS
 // ================================================================================================
 
-i18nTestPatterns.testModuleExports('middleware', '#/middleware', [
+i18nTestPatterns.testModuleExports('middleware', '../../src/middleware', [
   { name: 'createI18nMiddleware', type: 'function', required: false },
   { name: 'detectLocale', type: 'function', required: false },
   { name: 'i18nConfig', type: 'object', required: false },
@@ -74,7 +74,7 @@ describe('middleware Functionality', () => {
     });
 
     expect(mockMiddleware.config).toBeDefined();
-    expect(mockMiddleware.config.locales).toEqual(['en', 'fr', 'es', 'pt', 'de']);
+    expect(mockMiddleware.config.locales).toStrictEqual(['en', 'fr', 'es', 'pt', 'de']);
     expect(mockMiddleware.config.defaultLocale).toBe('en');
   });
 });
@@ -220,7 +220,7 @@ describe('middleware Integration', () => {
 
     const mockMiddleware = createMockImplementations.middleware(customConfig);
 
-    expect(mockMiddleware.config).toEqual(customConfig);
+    expect(mockMiddleware.config).toStrictEqual(customConfig);
 
     const middleware = mockMiddleware.createMiddleware();
     expect(middleware).toBeDefined();
@@ -304,7 +304,7 @@ describe('middleware Configuration', () => {
 
     const mockMiddleware = createMockImplementations.middleware(minimalConfig);
 
-    expect(mockMiddleware.config).toEqual(minimalConfig);
+    expect(mockMiddleware.config).toStrictEqual(minimalConfig);
 
     const middleware = mockMiddleware.createMiddleware();
     expect(middleware).toBeDefined();
@@ -329,7 +329,7 @@ describe('middleware Configuration', () => {
 
     const mockMiddleware = createMockImplementations.middleware(extendedConfig);
 
-    expect(mockMiddleware.config).toEqual(extendedConfig);
+    expect(mockMiddleware.config).toStrictEqual(extendedConfig);
     expect(mockMiddleware.config.locales).toHaveLength(7);
     expect(mockMiddleware.config.domains).toBeDefined();
   });

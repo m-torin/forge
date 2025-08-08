@@ -7,36 +7,55 @@
  * For non-Next.js applications, use '@repo/internationalization/server' instead.
  */
 
-import { match as matchLocale } from '@formatjs/intl-localematcher';
-import Negotiator from 'negotiator';
-import { createI18nMiddleware } from 'next-international/middleware';
-import { NextRequest } from 'next/server';
+// Re-export all server-side functions from next-intl
+// Import hasLocale from the main package
+import { hasLocale } from 'next-intl';
 
-import languine from '../languine.json';
+// Import shared functionality for dictionary loading
 import type { Dictionary } from './shared/dictionary-loader';
-
-// Import shared functionality instead of re-exporting from server
 import { createDictionaryLoader } from './shared/dictionary-loader';
 
-// Create dictionary loader instance
+export {
+  getFormatter,
+  getTranslations as getI18n,
+  getLocale,
+  getMessages,
+  getNow,
+  getTimeZone,
+  getTranslations,
+  setRequestLocale,
+} from 'next-intl/server';
+export { hasLocale };
+
+// Re-export routing configuration
+export { locales, routing, type Locale } from './routing';
+
+// Re-export navigation utilities
+export { getPathname, Link, permanentRedirect, redirect } from './navigation';
+
+// Re-export middleware functionality
+export { config, internationalizationMiddleware } from './middleware';
+
+// Create dictionary loader instance for compatibility
 const dictionaryLoader = createDictionaryLoader();
 
-// Re-export types and utilities from shared loader
-export type { Dictionary, Locale } from './shared/dictionary-loader';
-export const locales = dictionaryLoader.getLocales();
+// Export dictionary-related functions for backward compatibility
 export const getDictionary = dictionaryLoader.getDictionary;
 export const isLocaleSupported = dictionaryLoader.isLocaleSupported;
 
-// Re-export extend functionality
+// Re-export Dictionary type
+export type { Dictionary };
+
+// Re-export extend functionality for backward compatibility
 export type ExtendedDictionary<T extends Record<string, any>> = Dictionary & T;
 
 export function createDictionary<T extends Record<string, any>>(
-  getDictionary: (locale: string) => Promise<Dictionary>,
+  getBaseDictionary: (locale: string) => Promise<Dictionary>,
   getAppDictionary: (locale: string) => Promise<T>,
 ) {
   return async (locale: string): Promise<ExtendedDictionary<T>> => {
     const [baseDictionary, appDictionary] = await Promise.all([
-      getDictionary(locale),
+      getBaseDictionary(locale),
       getAppDictionary(locale),
     ]);
 
@@ -46,43 +65,3 @@ export function createDictionary<T extends Record<string, any>>(
     };
   };
 }
-
-// Next.js middleware functionality
-const middlewareLocales = [languine.locale.source, ...languine.locale.targets];
-
-const I18nMiddleware = createI18nMiddleware({
-  defaultLocale: 'en',
-  locales: middlewareLocales,
-  resolveLocaleFromRequest: (request: any) => {
-    const headers = Object.fromEntries(request.headers.entries());
-    const negotiator = new Negotiator({ headers });
-    const acceptedLanguages = negotiator.languages();
-
-    // Filter out invalid locale identifiers that might cause Intl.getCanonicalLocales to throw
-    const validLanguages = acceptedLanguages.filter((lang: string) => {
-      try {
-        Intl.getCanonicalLocales(lang);
-        return true;
-      } catch {
-        return false;
-      }
-    });
-
-    const matchedLocale = matchLocale(
-      validLanguages.length > 0 ? validLanguages : ['en'],
-      middlewareLocales,
-      'en',
-    );
-
-    return matchedLocale;
-  },
-  urlMappingStrategy: 'rewriteDefault',
-});
-
-export function internationalizationMiddleware(request: NextRequest): any {
-  return I18nMiddleware(request as any);
-}
-
-export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
-};

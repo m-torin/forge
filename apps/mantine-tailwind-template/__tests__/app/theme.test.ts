@@ -18,7 +18,7 @@ describe('theme', () => {
     const theme = (await import('#/app/theme')).default;
 
     expect(theme.breakpoints).toBeDefined();
-    expect(theme.breakpoints?.xs).toBe('36em');
+    expect(theme.breakpoints?.xs).toBe('30em');
     expect(theme.breakpoints?.sm).toBe('48em');
   });
 

@@ -13,7 +13,7 @@ export interface AnthropicMessage {
 export interface AnthropicModerationConfig {
   apiKey: string;
   baseUrl?: string;
-  maxTokens?: number;
+  maxOutputTokens?: number;
   model?: string;
   temperature?: number;
 }
@@ -27,7 +27,7 @@ export class AnthropicModerationService {
 
   async analyzeSentiment(text: string): Promise<{
     confidence: number;
-    reasoning: string;
+    reasoningText: string;
     sentiment: 'negative' | 'neutral' | 'positive';
   }> {
     const systemPrompt = `Analyze the sentiment of the provided text. Return a JSON object with:
@@ -47,7 +47,7 @@ export class AnthropicModerationService {
       const responseText = response.body.content?.[0]?.text ?? response.body;
       return typeof responseText === 'string' ? JSON.parse(responseText) : responseText;
     } catch {
-      return { confidence: 0.5, reasoning: 'Failed to parse response', sentiment: 'neutral' };
+      return { confidence: 0.5, reasoningText: 'Failed to parse response', sentiment: 'neutral' };
     }
   }
 
@@ -127,14 +127,14 @@ export class AnthropicModerationService {
     const {
       apiKey,
       baseUrl = 'https://api.anthropic.com',
-      maxTokens,
+      maxOutputTokens,
       model,
       temperature,
     } = this.config;
 
     const response = await fetch(`${baseUrl}/v1/messages`, {
       body: JSON.stringify({
-        max_tokens: maxTokens ?? 1000,
+        max_tokens: maxOutputTokens ?? 1000,
         messages,
         model: model ?? 'claude-3-5-sonnet-20241022',
         temperature: temperature ?? 0.1,
@@ -159,7 +159,7 @@ export class AnthropicModerationService {
   async classifyContent(
     text: string,
     categories?: string,
-  ): Promise<{ category: string; confidence: number; reasoning: string }> {
+  ): Promise<{ category: string; confidence: number; reasoningText: string }> {
     const systemPrompt =
       categories ||
       `Classify the content into one of these categories: news, entertainment, business, technology, sports, health, science, politics. Return JSON:
@@ -179,7 +179,7 @@ export class AnthropicModerationService {
       const responseText = response.body.content?.[0]?.text ?? response.body;
       return typeof responseText === 'string' ? JSON.parse(responseText) : responseText;
     } catch {
-      return { category: 'unknown', confidence: 0.5, reasoning: 'Failed to parse response' };
+      return { category: 'unknown', confidence: 0.5, reasoningText: 'Failed to parse response' };
     }
   }
 
@@ -283,8 +283,8 @@ export function createAnthropicModerationService(
   const finalConfig: AnthropicModerationConfig = {
     apiKey,
     baseUrl: config?.baseUrl ?? process.env.ANTHROPIC_BASE_URL ?? 'https://api.anthropic.com',
-    maxTokens:
-      config?.maxTokens ??
+    maxOutputTokens:
+      config?.maxOutputTokens ??
       (process.env.ANTHROPIC_MAX_TOKENS ? parseInt(process.env.ANTHROPIC_MAX_TOKENS, 10) : 1000),
     model: config?.model ?? process.env.ANTHROPIC_MODEL ?? 'claude-3-5-sonnet-20241022',
     temperature:

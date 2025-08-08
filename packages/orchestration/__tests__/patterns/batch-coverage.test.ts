@@ -128,7 +128,7 @@ describe('batch Processing Patterns', () => {
 
         const results = await promise;
 
-        expect(results).toEqual(['result1', 'result2', 'result3']);
+        expect(results).toStrictEqual(['result1', 'result2', 'result3']);
         expect(processor.processBatch).toHaveBeenCalledWith(['item1', 'item2', 'item3']);
       });
 

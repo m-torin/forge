@@ -8,13 +8,45 @@ import { openai } from '@ai-sdk/openai';
 import { generateText, tool } from 'ai';
 import * as mathjs from 'mathjs';
 import { z } from 'zod/v4';
-import {
-  AgenticPatterns,
-  agenticTool,
-  commonAgenticTools,
-  createAgentWorkflow,
-  StoppingConditions,
-} from '../src/server/tools/agentic-tools';
+// Mock implementation for example purposes
+const AgenticPatterns = {
+  conditional: (config: any) => ({ ...config, getAllToolCalls: () => [] }),
+  retryWithRefinement: (config: any) => ({ ...config, getStepHistory: () => [] }),
+};
+
+const agenticTool = (config: any) => tool(config);
+
+const commonAgenticTools = {
+  planningTool: tool({
+    description: 'Create a plan for the given task',
+    inputSchema: z.object({ task: z.string() }),
+    execute: async () => ({ steps: [] }),
+  }),
+  validationTool: tool({
+    description: 'Validate completed work',
+    inputSchema: z.object({ work: z.string() }),
+    execute: async () => ({ valid: true }),
+  }),
+};
+
+const createAgentWorkflow = (config: any) => ({
+  ...config,
+  getStepHistory: () => [],
+  getAllToolCalls: () => [],
+});
+
+const StoppingConditions = {
+  whenToolCalled: (toolName: string) => ({ type: 'tool', toolName }),
+  afterSteps: (count: number) => ({ type: 'steps', count }),
+  whenTextContains: (text: string) => ({ type: 'text', text }),
+  afterDuration: (ms: number) => ({ type: 'duration', ms }),
+};
+
+class StepHistoryTracker {
+  getStepHistory() {
+    return [];
+  }
+}
 
 /**
  * Example 1: Multi-Step Math Problem Solver
@@ -27,7 +59,7 @@ async function mathProblemSolver() {
   const tools = {
     analyze: tool({
       description: 'Analyze the math problem and identify required operations',
-      parameters: z.object({
+      inputSchema: z.object({
         problem: z.string().describe('The math problem to analyze'),
       }),
       execute: async ({ problem: _problem }) => {
@@ -50,18 +82,18 @@ async function mathProblemSolver() {
 
     calculate: tool({
       description: 'Perform mathematical calculations',
-      parameters: z.object({ expression: z.string() }),
+      inputSchema: z.object({ expression: z.string() }),
       execute: async ({ expression }) => mathjs.evaluate(expression),
     }),
 
     answer: tool({
       description: 'Provide the final answer with explanation',
-      parameters: z.object({
+      inputSchema: z.object({
         steps: z.array(
           z.object({
             calculation: z.string(),
             result: z.number(),
-            reasoning: z.string(),
+            reasoningText: z.string(),
           }),
         ),
         finalAnswer: z.number(),
@@ -102,7 +134,7 @@ async function researchAgent() {
     tools: {
       research: agenticTool({
         description: 'Research information about a topic',
-        parameters: z.object({
+        inputSchema: z.object({
           topic: z.string(),
           sources: z.array(z.string()).optional(),
         }),
@@ -122,7 +154,7 @@ async function researchAgent() {
 
       analyze: agenticTool({
         description: 'Analyze research findings',
-        parameters: z.object({
+        inputSchema: z.object({
           findings: z.array(z.string()),
           perspective: z.enum(['technical', 'business', 'user']),
         }),
@@ -141,7 +173,7 @@ async function researchAgent() {
 
       generateReport: agenticTool({
         description: 'Generate a comprehensive report',
-        parameters: z.object({
+        inputSchema: z.object({
           research: z.any(),
           analysis: z.any(),
           format: z.enum(['executive', 'technical', 'detailed']),
@@ -155,13 +187,18 @@ async function researchAgent() {
             wordCount: 1500,
           };
         },
-        experimental_toToolResultContent: result => ({
-          type: 'text',
-          text: `# ${result.title}
+        toModelOutput: result => ({
+          type: 'content',
+          value: [
+            {
+              type: 'text',
+              text: `# ${result.title}
 
 ${result.summary}
 
 Sections: ${result.sections.join(', ')}`,
+            },
+          ],
         }),
       }),
     },
@@ -199,7 +236,7 @@ async function customerServiceAgent() {
   const agent = AgenticPatterns.conditional({
     evaluator: tool({
       description: 'Evaluate customer query complexity',
-      parameters: z.object({
+      inputSchema: z.object({
         query: z.string(),
         customerHistory: z
           .object({
@@ -217,7 +254,7 @@ async function customerServiceAgent() {
     branches: {
       simple: tool({
         description: 'Handle simple customer queries',
-        parameters: z.object({ query: z.string() }),
+        inputSchema: z.object({ query: z.string() }),
         execute: async ({ query: _query }) => ({
           response: 'Here is the solution to your query...',
           resolved: true,
@@ -227,7 +264,7 @@ async function customerServiceAgent() {
 
       complex: tool({
         description: 'Escalate to human agent',
-        parameters: z.object({
+        inputSchema: z.object({
           query: z.string(),
           context: z.any(),
         }),
@@ -242,7 +279,7 @@ async function customerServiceAgent() {
 
     default: tool({
       description: 'Default response for unhandled cases',
-      parameters: z.object({ query: z.string() }),
+      inputSchema: z.object({ query: z.string() }),
       execute: async () => ({
         message: 'Thank you for contacting us. We will get back to you soon.',
         ticketCreated: true,
@@ -274,7 +311,7 @@ async function codeReviewAgent() {
   const reviewAgent = AgenticPatterns.retryWithRefinement({
     tool: agenticTool({
       description: 'Review code and suggest improvements',
-      parameters: z.object({
+      inputSchema: z.object({
         code: z.string(),
         language: z.string(),
         previousFeedback: z.string().optional(),
@@ -299,7 +336,7 @@ async function codeReviewAgent() {
 
     validator: tool({
       description: 'Validate code review results',
-      parameters: z.object({
+      inputSchema: z.object({
         review: z.any(),
         criteria: z.array(z.string()).optional(),
       }),
@@ -348,7 +385,7 @@ async function planningAgent() {
 
       executeStep: agenticTool({
         description: 'Execute a planned step',
-        parameters: z.object({
+        inputSchema: z.object({
           step: z.object({
             action: z.string(),
             description: z.string(),

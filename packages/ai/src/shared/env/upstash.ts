@@ -11,9 +11,9 @@ import { z } from 'zod/v4';
  */
 export const upstashEnv = createEnv({
   server: {
-    // Required Upstash Vector credentials
-    UPSTASH_VECTOR_REST_URL: z.string().url('Invalid Upstash Vector URL'),
-    UPSTASH_VECTOR_REST_TOKEN: z.string().min(1, 'Upstash Vector token is required'),
+    // Optional Upstash Vector credentials for graceful degradation
+    UPSTASH_VECTOR_REST_URL: z.string().url('Invalid Upstash Vector URL').optional(),
+    UPSTASH_VECTOR_REST_TOKEN: z.string().min(1, 'Upstash Vector token is required').optional(),
 
     // Optional configuration
     UPSTASH_VECTOR_NAMESPACE: z.string().optional(),

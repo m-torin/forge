@@ -1,2 +1,4 @@
 @import "tailwind-preset-mantine";
 @import "./theme.css";
+@import "../styles/view-transitions.css";
+@import "../styles/modern-layout.css";

@@ -26,7 +26,7 @@ export interface OAuthCredentials {
  */
 export interface PhoneCredentials {
   phoneNumber: string;
-  code?: string; // For verification
+  code?: string;
 }
 
 /**

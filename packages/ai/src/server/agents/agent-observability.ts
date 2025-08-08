@@ -55,8 +55,8 @@ export interface AgentPerformanceSnapshot {
   metrics: {
     executionTime: number;
     tokenUsage: {
-      promptTokens: number;
-      completionTokens: number;
+      inputTokens: number;
+      outputTokens: number;
       totalTokens: number;
     };
     stepCount: number;
@@ -277,13 +277,13 @@ export class AgentObservabilityManager {
       this.performanceSnapshots.set(snapshot.agentId, []);
     }
 
-    const snapshots = this.performanceSnapshots.get(snapshot.agentId)!;
+    const snapshots = this.performanceSnapshots.get(snapshot.agentId);
+    if (!snapshots) return;
     snapshots.push(snapshot);
 
     // Check alert thresholds
     this.checkPerformanceAlerts(snapshot);
 
-    // Cleanup old snapshots
     const cutoffTime = Date.now() - this.config.retentionDays * 24 * 60 * 60 * 1000;
     const filteredSnapshots = snapshots.filter(s => s.timestamp >= cutoffTime);
     this.performanceSnapshots.set(snapshot.agentId, filteredSnapshots);
@@ -377,7 +377,7 @@ export class AgentObservabilityManager {
     }
 
     if (options.since) {
-      filteredEvents = filteredEvents.filter(e => e.timestamp >= options.since!);
+      filteredEvents = filteredEvents.filter(e => e.timestamp >= (options.since ?? 0));
     }
 
     if (options.sessionId) {
@@ -665,7 +665,7 @@ export class AgentObservabilityManager {
       timestamp: Date.now(),
       metrics: {
         executionTime: 0,
-        tokenUsage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+        tokenUsage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 },
         stepCount: 0,
         toolCallCount: 0,
         successRate: 0,

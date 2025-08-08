@@ -59,7 +59,7 @@ export class ConsolePlugin implements ObservabilityPlugin<Console> {
 
     try {
       const contextData = this.formatContext(context);
-      console.error(this.prefix, 'Error:', error, contextData);
+      console.error(this.prefix, 'Error:', error, JSON.stringify(contextData));
     } catch (_err) {
       // Gracefully handle console errors
     }
@@ -77,7 +77,7 @@ export class ConsolePlugin implements ObservabilityPlugin<Console> {
         this.prefix,
         `${levelLabel}:`,
         message,
-        contextData,
+        JSON.stringify(contextData),
       );
     } catch (_err) {
       // Gracefully handle console errors
@@ -91,7 +91,7 @@ export class ConsolePlugin implements ObservabilityPlugin<Console> {
       if (user === null) {
         console.info(this.prefix, 'User cleared');
       } else {
-        console.info(this.prefix, 'User set:', user);
+        console.info(this.prefix, 'User set:', JSON.stringify(user));
       }
     } catch (_err) {
       // Gracefully handle console errors
@@ -106,7 +106,7 @@ export class ConsolePlugin implements ObservabilityPlugin<Console> {
         ...breadcrumb,
         timestamp: breadcrumb.timestamp || Date.now() / 1000,
       };
-      console.log(this.prefix, 'Breadcrumb:', enrichedBreadcrumb);
+      console.log(this.prefix, 'Breadcrumb:', JSON.stringify(enrichedBreadcrumb));
     } catch (_err) {
       // Gracefully handle console errors
     }
@@ -118,7 +118,7 @@ export class ConsolePlugin implements ObservabilityPlugin<Console> {
     try {
       const scope = {
         setContext: (key: string, context: unknown) => {
-          console.log(this.prefix, 'Context set:', key, context);
+          console.log(this.prefix, 'Context set:', key, JSON.stringify(context));
         },
         setUser: (user: ObservabilityUser | null) => {
           this.setUser(user);
@@ -141,9 +141,26 @@ export class ConsolePlugin implements ObservabilityPlugin<Console> {
   private formatContext(context?: ObservabilityContext): any {
     if (!context) return {};
 
+    // Handle new format with explicit extra/tags structure
+    if (context.extra !== undefined || context.tags !== undefined) {
+      return {
+        context: context.extra,
+        tags: context.tags,
+      };
+    }
+
+    // Handle AI package format with operation/metadata structure
+    if ('operation' in context || 'metadata' in context) {
+      return {
+        context: context.metadata || {},
+        tags: { operation: context.operation },
+      };
+    }
+
+    // Handle any other context format - use as-is for context
     return {
-      context: context.extra,
-      tags: context.tags,
+      context: context,
+      tags: {},
     };
   }
 

@@ -7,7 +7,6 @@
 import { generateObject, generateText } from 'ai';
 import { z } from 'zod/v4';
 import {
-  createAnthropicModel,
   createAnthropicProvider,
   createAnthropicWithReasoning,
   createBashTool,
@@ -17,7 +16,7 @@ import {
   extractCacheMetadata,
   extractReasoning,
   validateCacheControl,
-} from '../src/server-next';
+} from '../src/server/providers/anthropic';
 
 // Import anthropic from AI SDK for compatibility
 import { anthropic } from '@ai-sdk/anthropic';
@@ -70,10 +69,9 @@ export async function sendReasoningExample() {
     sendReasoning: true,
   });
 
-  // Using our helper factory
-  const factoryModel = createAnthropicModel({
-    model: 'claude-3-haiku-20240307',
-    anthropic: { sendReasoning: false },
+  // Using direct anthropic model creation
+  const factoryModel = anthropic('claude-3-haiku-20240307', {
+    sendReasoning: false,
   });
 
   // Test with disabled reasoning model
@@ -108,7 +106,11 @@ export async function reasoningExample() {
   console.log('🤔 Reasoning Example');
 
   // Exact AI SDK pattern from documentation
-  const { text, reasoning, reasoningDetails } = await generateText({
+  const {
+    text,
+    reasoningText,
+    reasoningText: reasoning,
+  } = await generateText({
     model: anthropic('claude-4-opus-20250514'),
     prompt: 'How many people will live in the world in 2040?',
     providerOptions: {
@@ -120,7 +122,6 @@ export async function reasoningExample() {
 
   console.log('📝 Text:', text);
   console.log('🧠 Reasoning:', reasoning);
-  console.log('📊 Reasoning Details:', reasoningDetails);
 
   // Using our helper function
   const reasoningModel = createAnthropicWithReasoning('claude-4-opus-20250514', 15000);
@@ -129,7 +130,7 @@ export async function reasoningExample() {
   );
 
   console.log('✅ Full reasoning support implemented');
-  return { text, reasoning, reasoningDetails, helperResult };
+  return { text, reasoningText, helperResult };
 }
 
 /**
@@ -147,7 +148,8 @@ export async function cacheControlExample() {
     messages: [
       {
         role: 'user',
-        content: [
+
+        parts: [
           { type: 'text', text: 'You are a JavaScript expert.' },
           {
             type: 'text',
@@ -163,7 +165,7 @@ export async function cacheControlExample() {
   });
 
   console.log('📝 Response:', result.text);
-  console.log('💾 Cache Metadata:', result.providerMetadata?.anthropic);
+  console.log('💾 Cache Metadata:', result.providerOptions?.anthropic);
 
   // System message cache control (AI SDK pattern from documentation)
   const systemCacheResult = await generateText({
@@ -171,19 +173,37 @@ export async function cacheControlExample() {
     messages: [
       {
         role: 'system',
-        content:
-          'You are an expert React developer with extensive knowledge of TypeScript, modern React patterns, and performance optimization.',
+
+        parts: [
+          {
+            type: 'text',
+            text: 'You are an expert React developer with extensive knowledge of TypeScript, modern React patterns, and performance optimization.',
+          },
+        ],
+
         providerOptions: {
           anthropic: { cacheControl: { type: 'ephemeral' } },
         },
       },
       {
         role: 'system',
-        content: 'Please provide concise, actionable advice.',
+
+        parts: [
+          {
+            type: 'text',
+            text: 'Please provide concise, actionable advice.',
+          },
+        ],
       },
       {
         role: 'user',
-        content: 'How can I optimize this React component for performance?',
+
+        parts: [
+          {
+            type: 'text',
+            text: 'How can I optimize this React component for performance?',
+          },
+        ],
       },
     ],
   });
@@ -270,10 +290,13 @@ export async function computerUseExample() {
       }
     },
 
-    experimental_toToolResultContent(result) {
+    toModelOutput(result) {
       return typeof result === 'string'
-        ? [{ type: 'text', text: result }]
-        : [{ type: 'image', data: result.data, mimeType: 'image/png' }];
+        ? { type: 'content', value: [{ type: 'text', text: result }] }
+        : {
+            type: 'content',
+            value: [{ type: 'media', mediaType: 'image/png', data: result.data }],
+          };
     },
   });
 
@@ -320,7 +343,7 @@ export async function modelCapabilitiesExample() {
     const result = await generateText({
       model,
       prompt: 'What is AI?',
-      maxTokens: 100,
+      maxOutputTokens: 100,
     });
 
     // Test cache validation for this model
@@ -400,8 +423,13 @@ export async function completeFeatureExample() {
       systemMessage,
       {
         role: 'user',
-        content:
-          'Help me create a TypeScript function that validates user input and show me how to test it.',
+
+        parts: [
+          {
+            type: 'text',
+            text: 'Help me create a TypeScript function that validates user input and show me how to test it.',
+          },
+        ],
       },
     ],
     tools: {
@@ -413,7 +441,7 @@ export async function completeFeatureExample() {
         thinking: { type: 'enabled', budgetTokens: 8000 },
       },
     },
-    maxTokens: 2000,
+    maxOutputTokens: 2000,
     temperature: 0.7,
   });
 
@@ -422,14 +450,14 @@ export async function completeFeatureExample() {
   const cacheMetadata = extractCacheMetadata(result);
 
   console.log('📝 Response:', result.text.substring(0, 200) + '...');
-  console.log('🧠 Has Reasoning:', !!reasoning.reasoning);
+  console.log('🧠 Has Reasoning:', !!reasoning.reasoningText);
   console.log('💾 Cache Metadata:', cacheMetadata);
   console.log('🔧 Tool Calls:', result.toolCalls?.length || 0);
   console.log('✅ ALL AI SDK features integrated successfully');
 
   return {
     response: result.text,
-    reasoning: reasoning.reasoning,
+    reasoningText: reasoning.reasoningText,
     cacheMetadata,
     toolCallCount: result.toolCalls?.length || 0,
   };
@@ -479,7 +507,7 @@ export async function runCompleteComplianceTest() {
 export const complianceTests = {
   providerInstance: providerInstanceExample,
   sendReasoning: sendReasoningExample,
-  reasoning: reasoningExample,
+  reasoningText: reasoningExample,
   cacheControl: cacheControlExample,
   computerUse: computerUseExample,
   modelCapabilities: modelCapabilitiesExample,

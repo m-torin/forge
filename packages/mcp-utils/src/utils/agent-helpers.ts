@@ -26,16 +26,21 @@ export interface ValidationResult {
   request: AgentRequest;
 }
 
-export type EntityType = 
+export type EntityType =
   | 'AnalysisSession'
+  | 'CodeQualitySession'
+  | 'AnalysisResult'
   | 'FileAnalysis'
   | 'GitWorktree'
+  | 'Worktree'
   | 'PullRequest'
   | 'ArchitecturalPattern'
   | 'VercelOptimization'
   | 'MockAnalysis'
   | 'UtilizationAnalysis'
-  | 'WordRemoval';
+  | 'WordRemoval'
+  | 'Session'
+  | string; // Allow custom entity types
 
 /**
  * Extract observation value from MCP entity
@@ -55,9 +60,13 @@ export function extractObservation(entity: MCPEntity, key: string): string | nul
 /**
  * Create standardized entity name for MCP memory
  */
-export function createEntityName(entityType: EntityType, sessionId: string, additionalIds: string[] = []): string {
+export function createEntityName(
+  entityType: EntityType,
+  sessionId: string,
+  additionalIds: string[] = [],
+): string {
   let name = `${entityType}_${sessionId}`;
-  
+
   if (additionalIds.length > 0) {
     name += '_' + additionalIds.join('_');
   }
@@ -68,7 +77,11 @@ export function createEntityName(entityType: EntityType, sessionId: string, addi
 /**
  * Validate agent request format
  */
-export function validateAgentRequest(request: AgentRequest | null | undefined, requiredFields: string[], version = '1.0'): ValidationResult {
+export function validateAgentRequest(
+  request: any,
+  requiredFields: string[],
+  version = '1.0',
+): ValidationResult {
   const errors: string[] = [];
 
   // Check if request exists
@@ -77,7 +90,17 @@ export function validateAgentRequest(request: AgentRequest | null | undefined, r
     return {
       valid: false,
       errors: errors,
-      request: null as any
+      request: null as any,
+    };
+  }
+
+  // Check if request is an object
+  if (typeof request !== 'object' || Array.isArray(request)) {
+    errors.push('Request must be an object');
+    return {
+      valid: false,
+      errors: errors,
+      request: request as any,
     };
   }
 
@@ -98,7 +121,7 @@ export function validateAgentRequest(request: AgentRequest | null | undefined, r
   return {
     valid: errors.length === 0,
     errors: errors,
-    request: request
+    request: request,
   };
 }
 
@@ -108,7 +131,7 @@ export function validateAgentRequest(request: AgentRequest | null | undefined, r
 export function formatAgentResponse(success: boolean, data?: any, error?: string): AgentResponse {
   const response: AgentResponse = {
     success,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   };
 
   if (data !== undefined) {

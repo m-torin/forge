@@ -25,7 +25,7 @@ interface SignUpFormProps extends BaseProps {
   privacyHref?: string;
 }
 
-const initialState: FormState = { success: false };
+const _initialState: FormState = { success: false };
 
 export function SignUpForm({
   className = '',

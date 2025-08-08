@@ -59,7 +59,7 @@ all projects in the monorepo.
     Foundation configuration for all TypeScript projects:
     ```typescript
     // eslint.config.ts
-    import baseConfig from '@repo/config-eslint';
+    import baseConfig from '@repo/eslint-config';
     export default baseConfig;
     ```
     **Features:**
@@ -73,7 +73,7 @@ all projects in the monorepo.
 
 <Tab title="React Package">
   For React component libraries and packages: ```typescript // eslint.config.ts
-  import reactConfig from '@repo/config-eslint/react-package'; export default
+  import reactConfig from '@repo/eslint-config/react-package'; export default
   reactConfig; ``` **Extends base with:** - JSX support and React-specific rules
   - React Hooks validation - Component patterns and best practices -
   Accessibility (a11y) compliance - Testing Library rules for test files - Jest
@@ -82,7 +82,7 @@ all projects in the monorepo.
 
 <Tab title="Next.js Applications">
   For Next.js applications with full App Router support: ```typescript //
-  eslint.config.ts import nextConfig from '@repo/config-eslint/next'; export
+  eslint.config.ts import nextConfig from '@repo/eslint-config/next'; export
   default nextConfig; ``` **Extends React with:** - Next.js 15 and React 19
   optimization - App Router patterns and Server Components - Server Action
   validation - Performance rules (Image, Font, Script optimization) -
@@ -91,7 +91,7 @@ all projects in the monorepo.
 
 <Tab title="Server Packages">
   For Node.js applications and server-side packages: ```typescript //
-  eslint.config.ts import serverConfig from '@repo/config-eslint/server'; export
+  eslint.config.ts import serverConfig from '@repo/eslint-config/server'; export
   default serverConfig; ``` **Extends base with:** - Node.js environment and
   best practices - Advanced server-side security checks - Stricter TypeScript
   rules - Promise error handling - Test file configurations
@@ -101,7 +101,7 @@ all projects in the monorepo.
     For fullstack Remix applications:
     ```typescript
     // eslint.config.ts
-    import remixConfig from '@repo/config-eslint/remix';
+    import remixConfig from '@repo/eslint-config/remix';
     export default remixConfig;
     ```
     **Combines React and Server:**
@@ -600,7 +600,7 @@ async function testFunction() {
 
 <CodeGroup>
 ```typescript Next.js with Custom Rules
-import nextConfig from '@repo/config-eslint/next';
+import nextConfig from '@repo/eslint-config/next';
 
 export default [
   ...nextConfig,
@@ -624,7 +624,7 @@ export default [
 ```
 
 ```typescript React Library with Storybook
-import reactConfig from "@repo/config-eslint/react-package";
+import reactConfig from "@repo/eslint-config/react-package";
 
 export default [
   ...reactConfig,
@@ -641,7 +641,7 @@ export default [
 ```
 
 ```typescript Monorepo Package Configuration
-import baseConfig from "@repo/config-eslint";
+import baseConfig from "@repo/eslint-config";
 
 export default [
   ...baseConfig,
@@ -698,7 +698,7 @@ npx eslint --cache-location .eslintcache src/
     **Old (.eslintrc.js):**
     ```javascript
     module.exports = {
-      extends: ['@repo/config-eslint'],
+      extends: ['@repo/eslint-config'],
       parserOptions: {
         project: './tsconfig.json',
       },
@@ -707,7 +707,7 @@ npx eslint --cache-location .eslintcache src/
 
     **New (eslint.config.ts):**
     ```typescript
-    import config from '@repo/config-eslint';
+    import config from '@repo/eslint-config';
     export default config;
     ```
 

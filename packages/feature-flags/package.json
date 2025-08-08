@@ -22,7 +22,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:coverage:json": "vitest run --coverage --reporter=json",
-    "test:ui": "vitest --ui",
+    "test:ui": "[ \"$CI\" = \"true\" ] && vitest run || vitest --ui --no-open",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },

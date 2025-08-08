@@ -1,15 +1,7 @@
 /**
- * Unified mock setup for auth package tests
- * Provides consistent mocking across all test files
+ * Auth package test constants and utilities
+ * Mock setup is now centralized in vitest.setup.ts using @repo/qa mocks
  */
-
-import { vi } from 'vitest';
-import {
-  createMockBetterAuthApi,
-  createMockHeaders,
-  createMockPrisma,
-  createMockSession,
-} from './factories';
 
 /**
  * Standard environment variables for tests
@@ -42,11 +34,17 @@ export const TEST_ENV = {
 };
 
 /**
- * Creates a standardized mock setup for auth tests
+ * DEPRECATED: Mock setup is now handled automatically by vitest.setup.ts
+ *
+ * All common mocks (Better Auth, Next.js, Prisma, Observability) are now
+ * centralized using @repo/qa mocks. Individual tests should only mock
+ * package-specific behavior that isn't covered by the centralized setup.
+ *
+ * @deprecated Use centralized mocks in vitest.setup.ts instead
  */
 export const createUnifiedMockSetup = (
   options: {
-    /** Mock the auth module */
+    /** DEPRECATED: Mock the auth module */
     mockAuth?: boolean;
     /** Mock the database */
     mockDatabase?: boolean;
@@ -81,7 +79,7 @@ export const createUnifiedMockSetup = (
 
   // Apply mocks based on options
   if (mockAuth) {
-    vi.mock('#/shared/auth', () => ({
+    vi.mock('../../src/shared/auth', () => ({
       auth: {
         api: mockObjects.auth,
       },

@@ -19,12 +19,12 @@ const ChangePasswordModalWrapper = (props: any) => {
       throw new Error('Current password is incorrect');
     }
 
-    console.log('Password changed:', values);
+    // console.log('Password changed:', values);
     setLoading(false);
   };
 
   const handleSuccess = () => {
-    console.log('Password changed successfully');
+    // console.log('Password changed successfully');
   };
 
   return (

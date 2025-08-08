@@ -98,8 +98,8 @@ export class AIResponseGenerators {
       },
       openai: {
         systemFingerprint: `fp_${Math.random().toString(36).substring(2, 12)}`,
-        promptTokens: Math.floor(Math.random() * 100),
-        completionTokens: Math.floor(Math.random() * 150),
+        inputTokens: Math.floor(Math.random() * 100),
+        outputTokens: Math.floor(Math.random() * 150),
       },
       google: {
         safetyRatings: [

@@ -4,8 +4,7 @@ import { readdir, readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 
 const GENERATED_DIR = 'src/lib/prisma/generated/schemas';
-const TS_NOCHECK_COMMENT = '// @ts-nocheck
-';
+const TS_NOCHECK_COMMENT = '// @ts-nocheck\n';
 
 async function addTsNoCheckToFiles(dir) {
   try {
@@ -38,8 +37,7 @@ async function main() {
 
   try {
     await addTsNoCheckToFiles(GENERATED_DIR);
-    console.log('
-✅ Successfully added @ts-nocheck to all generated schema files!');
+    console.log('✅ Successfully added @ts-nocheck to all generated schema files!');
   } catch (error) {
     console.error('❌ Error:', error);
     process.exit(1);

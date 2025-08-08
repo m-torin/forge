@@ -29,7 +29,7 @@ describe('useCollaboration', () => {
   it('initializes with empty collaborators and disconnected state', () => {
     const { result } = renderHook(() => useCollaboration(defaultOptions));
 
-    expect(result.current.collaborators).toEqual([]);
+    expect(result.current.collaborators).toStrictEqual([]);
     expect(result.current.isConnected).toBe(false);
   });
 
@@ -90,7 +90,7 @@ describe('useCollaboration', () => {
 
     // Simulate receiving the event (in real implementation, this would come through WebSocket)
     // For now, we test that the hook structure is correct
-    expect(result.current.collaborators).toEqual([]);
+    expect(result.current.collaborators).toStrictEqual([]);
   });
 
   it('handles cursor events when enabled', async () => {
@@ -142,6 +142,6 @@ describe('useCollaboration', () => {
 
     // Should not throw and should handle gracefully
     expect(result.current.isConnected).toBe(false);
-    expect(result.current.collaborators).toEqual([]);
+    expect(result.current.collaborators).toStrictEqual([]);
   });
 });

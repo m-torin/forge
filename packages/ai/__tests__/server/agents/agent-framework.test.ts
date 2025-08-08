@@ -187,12 +187,12 @@ describe('agent Framework', () => {
       mockGenerateText.mockResolvedValue({
         text: 'Generated response',
         finishReason: 'stop',
-        usage: { totalTokens: 100, promptTokens: 50, completionTokens: 50 },
+        usage: { totalTokens: 100, inputTokens: 50, outputTokens: 50 },
         steps: [
           {
             text: 'Step 1 response',
             finishReason: 'tool-calls',
-            usage: { totalTokens: 50, promptTokens: 25, completionTokens: 25 },
+            usage: { totalTokens: 50, inputTokens: 25, outputTokens: 25 },
             toolCalls: [{ toolName: 'testTool', args: { query: 'test' } }],
           },
         ],
@@ -384,18 +384,18 @@ describe('agent Framework', () => {
       mockGenerateText.mockResolvedValue({
         text: 'Research completed successfully',
         finishReason: 'stop',
-        usage: { totalTokens: 200, promptTokens: 100, completionTokens: 100 },
+        usage: { totalTokens: 200, inputTokens: 100, outputTokens: 100 },
         steps: [
           {
             text: 'Step 1: Planning research',
             finishReason: 'tool-calls',
-            usage: { totalTokens: 100, promptTokens: 50, completionTokens: 50 },
+            usage: { totalTokens: 100, inputTokens: 50, outputTokens: 50 },
             toolCalls: [{ toolName: 'testTool', args: { query: 'research plan' } }],
           },
           {
             text: 'Step 2: Research completed successfully',
             finishReason: 'stop',
-            usage: { totalTokens: 100, promptTokens: 50, completionTokens: 50 },
+            usage: { totalTokens: 100, inputTokens: 50, outputTokens: 50 },
             toolCalls: [],
           },
         ],

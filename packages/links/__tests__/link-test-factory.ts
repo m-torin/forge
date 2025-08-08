@@ -479,7 +479,7 @@ export const createScenarios = {
         expect(result).toHaveProperty('tags');
         expect(result.title).toBe('Test Link');
         expect(result.description).toBe('A test link');
-        expect(result.tags).toEqual(['test']);
+        expect(result.tags).toStrictEqual(['test']);
       },
     },
   ],
@@ -620,7 +620,7 @@ export const createScenarios = {
         expect(result).toHaveProperty('tags');
         expect(result.title).toBe('Updated Title');
         expect(result.description).toBe('Updated description');
-        expect(result.tags).toEqual(['updated', 'test']);
+        expect(result.tags).toStrictEqual(['updated', 'test']);
       },
     },
   ],
@@ -893,7 +893,7 @@ export function validateLinkProperties(link: any, expectedProperties: Record<str
 
   // Expected properties
   Object.entries(expectedProperties).forEach(([key, value]) => {
-    expect(link[key]).toEqual(value);
+    expect(link[key]).toStrictEqual(value);
   });
 
   // Type validations

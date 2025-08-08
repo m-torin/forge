@@ -1,1 +1,1 @@
-declare module "eslint-plugin-jest-dom";
+declare module 'eslint-plugin-jest-dom';

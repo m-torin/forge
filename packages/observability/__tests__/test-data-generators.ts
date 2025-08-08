@@ -444,7 +444,7 @@ export const edgeCaseTestData = {
     'test&with&ampersand',
     'test|with|pipes',
     'test~with~tildes',
-    "test`with`backticks",
+    'test`with`backticks',
   ],
 
   // Large data sets

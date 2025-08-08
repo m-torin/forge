@@ -9,8 +9,8 @@ import { env as betterStackEnv } from './plugins/betterstack/env';
 import { createConsoleServerPlugin } from './plugins/console';
 import { createLogTapePlugin } from './plugins/logtape';
 import { env as logtapeEnv } from './plugins/logtape/env';
-import { createSentryPlugin } from './plugins/sentry';
-import { env as sentryEnv } from './plugins/sentry/env';
+import { createSentryNextJSPlugin } from './plugins/sentry-nextjs';
+import { env as sentryEnv } from './plugins/sentry-nextjs/env';
 
 /**
  * Create auto-configured observability for Next.js server
@@ -35,10 +35,21 @@ export async function createServerObservability() {
   );
 
   // Auto-activate Sentry if DSN is provided
+  // Use server DSN if available, fallback to public DSN
   const sentryDSN = sentryEnv.SENTRY_DSN || sentryEnv.NEXT_PUBLIC_SENTRY_DSN;
   if (sentryDSN) {
-    const sentry = createSentryPlugin({
+    const sentry = createSentryNextJSPlugin({
       dsn: sentryDSN,
+      environment: sentryEnv.SENTRY_ENVIRONMENT || sentryEnv.NEXT_PUBLIC_SENTRY_ENVIRONMENT,
+      release: sentryEnv.SENTRY_RELEASE || sentryEnv.NEXT_PUBLIC_SENTRY_RELEASE,
+      // Enable server-side features
+      enableTracing: sentryEnv.SENTRY_ENABLE_TRACING ?? true,
+      enableLogs: sentryEnv.SENTRY_ENABLE_LOGS ?? false,
+      tracesSampleRate: sentryEnv.SENTRY_TRACES_SAMPLE_RATE,
+      profilesSampleRate: sentryEnv.SENTRY_PROFILES_SAMPLE_RATE,
+      // Server-specific options
+      sendDefaultPii: true,
+      instrumentServerActions: true,
     });
     await sentry.initialize();
     builder.withPlugin(sentry);
@@ -105,6 +116,7 @@ export { ConsolePlugin } from './plugins/console';
 export { LogTapePlugin } from './plugins/logtape';
 export { SentryPlugin } from './plugins/sentry';
 export { SentryMicroFrontendPlugin } from './plugins/sentry-microfrontend';
+export { SentryNextJSPlugin } from './plugins/sentry-nextjs';
 
 // Re-export plugin-specific types with aliases to avoid conflicts
 export type { Env as BetterStackEnv, BetterStackPluginConfig } from './plugins/betterstack';
@@ -116,13 +128,7 @@ export type {
   SentryMicroFrontendConfig,
   ZoneConfig,
 } from './plugins/sentry-microfrontend';
-
-// Re-export micro frontend presets
-export {
-  createBackstageHostPreset,
-  createBackstageMicroFrontendPreset,
-  defaultBackstageZones,
-} from './factory/presets';
+export type { SentryNextJSPluginConfig } from './plugins/sentry-nextjs';
 
 // Async logger functions that handle initialization
 export const logDebug = async (message: string, context?: any) => {

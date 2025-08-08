@@ -4,7 +4,7 @@
  */
 
 // Business actions will be re-exported here when available
-// Currently moved to CMS components - see apps/backstage-cms/src/components/cms/
+// Application-specific business logic should be implemented in individual apps
 
 // Story business actions (if they exist)
 // Export when story business actions are available

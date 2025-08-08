@@ -3,9 +3,8 @@ import '@testing-library/jest-dom';
 import { beforeEach, vi } from 'vitest';
 import { createMockProvider } from './scraping-test-factory';
 
-// Import centralized mocks from @repo/qa (when available)
-// TODO: Re-enable when @repo/qa exports are built
-// import '@repo/qa/vitest/mocks/providers/playwright';
+// Import centralized mocks from @repo/qa
+import '@repo/qa/vitest/mocks/providers/playwright';
 
 // Mock console methods for cleaner test output
 const originalConsole = console;

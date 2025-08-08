@@ -19,6 +19,6 @@ export {
 // Note: These types may not be exported in current AI SDK v5 build
 // Use direct imports in individual files as needed
 // export type {
-//   LanguageModelV2Middleware,
-//   LanguageModelV2MiddlewareStack,
+//   LanguageModelMiddleware,
+//   LanguageModelMiddlewareStack,
 // } from 'ai';

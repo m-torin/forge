@@ -50,6 +50,10 @@
     "./rsc": {
       "types": "./src/rsc/index.ts",
       "default": "./src/rsc/index.ts"
+    },
+    "./env": {
+      "types": "./env.ts",
+      "default": "./env.ts"
     }
   },
   "scripts": {
@@ -64,7 +68,7 @@
     "test:integration:all": "INTEGRATION_TEST=true vitest run --grep=\"upgraded|Integration\"",
     "test:integration:mock": "vitest run --config vitest.integration.config.ts",
     "test:mock:all": "vitest run --grep=\"upgraded|Mock\"",
-    "test:ui": "vitest --ui",
+    "test:ui": "[ \"$CI\" = \"true\" ] && vitest run || vitest --ui --no-open",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
@@ -81,6 +85,8 @@
     "@ai-sdk/rsc": "catalog:",
     "@ai-sdk/xai": "catalog:",
     "@anthropic-ai/sdk": "^0.57.0",
+    "@babel/parser": "^7.28.0",
+    "@babel/traverse": "^7.28.0",
     "@mantine/core": "catalog:",
     "@modelcontextprotocol/sdk": "^1.17.0",
     "@repo/database": "workspace:*",
@@ -91,6 +97,7 @@
     "@upstash/vector": "^1.2.2",
     "ai": "catalog:",
     "exa-js": "^1.8.23",
+    "glob": "^11.0.3",
     "next": "catalog:",
     "openai": "^5.10.2",
     "react": "catalog:",
@@ -100,10 +107,16 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@amplitude/analytics-node": "^1.4.4",
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/qa": "workspace:*",
+    "@types/babel__traverse": "^7.28.0",
     "@vitest/ui": "catalog:",
+    "eslint": "catalog:",
+    "madge": "catalog:",
+    "mixpanel": "^0.18.1",
+    "posthog-node": "^5.6.0",
     "vite-tsconfig-paths": "catalog:",
     "vitest": "catalog:"
   },

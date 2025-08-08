@@ -11,7 +11,7 @@ const TwoFactorSetupWrapper = (props: any) => {
 
   const handleStepChange = (step: TwoFactorStep) => {
     setCurrentStep(step);
-    console.log('Step changed:', step);
+    // console.log('Step changed:', step);
   };
 
   const handleEnable = async () => {
@@ -35,7 +35,7 @@ const TwoFactorSetupWrapper = (props: any) => {
   };
 
   const handleComplete = () => {
-    console.log('Setup completed');
+    // console.log('Setup completed');
   };
 
   return (

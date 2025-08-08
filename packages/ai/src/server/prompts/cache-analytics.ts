@@ -58,7 +58,7 @@ export interface CacheAccessRecord {
   metadata?: {
     model?: string;
     temperature?: number;
-    maxTokens?: number;
+    maxOutputTokens?: number;
     tokens?: number;
     cost?: number;
   };
@@ -178,7 +178,7 @@ export class PromptCacheAnalytics {
    */
   private calculatePerformanceMetrics(
     records: CacheAccessRecord[],
-    cacheStats: any,
+    _cacheStats: any,
   ): CacheAnalyticsMetrics['performance'] {
     const totalRequests = records.length;
     const hits = records.filter(r => r.hit);
@@ -375,7 +375,8 @@ export class PromptCacheAnalytics {
       if (!promptAccesses.has(record.key)) {
         promptAccesses.set(record.key, []);
       }
-      promptAccesses.get(record.key)!.push(record.timestamp);
+      const accesses = promptAccesses.get(record.key);
+      if (accesses) accesses.push(record.timestamp);
     });
 
     let totalInterval = 0;

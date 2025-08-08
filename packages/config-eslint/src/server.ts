@@ -1,7 +1,7 @@
-import type { Linter } from "eslint";
+import type { Linter } from 'eslint';
 
 import baseConfig from './index';
-import { createConfig, SEVERITY, type RulesRecord } from "./types/config";
+import { createConfig, SEVERITY, type RulesRecord } from './types/config';
 
 /*
  * This is a custom ESLint configuration for use server side
@@ -16,29 +16,29 @@ import { createConfig, SEVERITY, type RulesRecord } from "./types/config";
  */
 
 // File patterns for server-side code
-const SERVER_FILE_PATTERNS = ["**/*.{js,ts,mjs,cjs,mts,cts}"];
+const SERVER_FILE_PATTERNS = ['**/*.{js,ts,mjs,cjs,mts,cts}'];
 
 // Create server-specific rules
 const createServerRules = (): RulesRecord => ({
   // Stricter console usage for server code
-  "no-console": SEVERITY.ERROR,
+  'no-console': SEVERITY.ERROR,
 
   // Server-side best practices
-  "no-process-exit": SEVERITY.ERROR,
-  "no-sync": SEVERITY.WARN,
+  'no-process-exit': SEVERITY.ERROR,
+  'no-sync': SEVERITY.WARN,
 
   // Promise handling (stricter for server code)
-  "promise/no-callback-in-promise": SEVERITY.ERROR,
-  "promise/no-nesting": SEVERITY.ERROR,
-  "promise/catch-or-return": SEVERITY.ERROR,
-  "promise/always-return": SEVERITY.ERROR,
+  'promise/no-callback-in-promise': SEVERITY.ERROR,
+  'promise/no-nesting': SEVERITY.ERROR,
+  'promise/catch-or-return': SEVERITY.ERROR,
+  'promise/always-return': SEVERITY.ERROR,
 
   // Additional security for server code
-  "security/detect-non-literal-fs-filename": SEVERITY.ERROR,
-  "security/detect-non-literal-require": SEVERITY.ERROR,
-  "security/detect-possible-timing-attacks": SEVERITY.WARN,
-  "security/detect-child-process": SEVERITY.ERROR,
-  "security/detect-eval-with-expression": SEVERITY.ERROR,
+  'security/detect-non-literal-fs-filename': SEVERITY.ERROR,
+  'security/detect-non-literal-require': SEVERITY.ERROR,
+  'security/detect-possible-timing-attacks': SEVERITY.WARN,
+  'security/detect-child-process': SEVERITY.ERROR,
+  'security/detect-eval-with-expression': SEVERITY.ERROR,
 });
 
 // Main configuration array

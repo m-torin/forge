@@ -201,7 +201,7 @@ export function createStorageActionTestSuite<TPayload = any>(
       const result = await config.actionFunction(config.validPayload);
 
       if (config.expectedResult) {
-        expect(result).toEqual(config.expectedResult);
+        expect(result).toStrictEqual(config.expectedResult);
       } else {
         expect(result).toBeDefined();
       }
@@ -236,7 +236,7 @@ export function createStorageUtilityTestSuite<TInput = any, TOutput = any>(
     config.testCases.forEach(testCase => {
       test(testCase.description, async () => {
         const result = await config.utilityFunction(testCase.input);
-        expect(result).toEqual(testCase.expected);
+        expect(result).toStrictEqual(testCase.expected);
       });
     });
 

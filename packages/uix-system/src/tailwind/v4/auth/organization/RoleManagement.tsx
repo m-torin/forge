@@ -33,7 +33,7 @@ interface RoleManagementProps extends BaseProps {
   canManageRoles?: boolean;
 }
 
-const initialState: FormState = { success: false };
+const _initialState: FormState = { success: false };
 
 const permissionCategories = {
   organization: 'Organization',

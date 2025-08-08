@@ -64,7 +64,11 @@ multiple providers with enterprise-grade features for modern applications.
     R2_ACCESS_KEY_ID=your-access-key
     R2_SECRET_ACCESS_KEY=your-secret-key
     R2_BUCKET=your-bucket-name
+
+    # For multi-provider setup via JSON
+    STORAGE_CONFIG='{"providers":{"r2-main":{"type":"r2","accountId":"...","accessKey":"...","secretKey":"...","bucket":"main"},"r2-backup":{"type":"r2","accountId":"...","bucket":"backup"},"images":{"type":"cloudflare-images","accountId":"...","apiToken":"..."}},"routing":{"images":["images"],"documents":["r2-main","r2-backup"],"default":"r2-main"}}'
     ```
+
   </Step>
 
   <Step title="Import and Use">
@@ -87,17 +91,48 @@ multiple providers with enterprise-grade features for modern applications.
 
   </Step>
 
-  <Step title="Use Multi-Storage">
+  <Step title="Initialize Multi-Provider Storage">
     ```typescript
-    import { multiStorage } from '@repo/storage/server/next';
+    import { 
+      initializeMultiStorage, 
+      MultiStorageManager,
+      createStorageProvider 
+    } from '@repo/storage/server/next';
 
-    // Automatic routing based on file type
-    await multiStorage.upload('photo.jpg', imageBuffer, {
-      contentType: 'image/jpeg',
+    // Bootstrap from environment JSON config
+    const multiStorage = initializeMultiStorage();
+
+    // Or create manually
+    const customMultiStorage = new MultiStorageManager({
+      providers: {
+        'r2-main': createStorageProvider('r2', {
+          accountId: process.env.R2_ACCOUNT_ID,
+          accessKey: process.env.R2_ACCESS_KEY_ID,
+          secretKey: process.env.R2_SECRET_ACCESS_KEY,
+          bucket: 'main-bucket'
+        }),
+        'images': createStorageProvider('cloudflare-images', {
+          accountId: process.env.CLOUDFLARE_ACCOUNT_ID,
+          apiToken: process.env.CLOUDFLARE_API_TOKEN
+        })
+      },
+      routing: {
+        images: ['images'],
+        documents: ['r2-main'],
+        default: 'r2-main'
+      }
     });
 
-    // Access specific provider
+    // Automatic routing based on file type and rules
+    await multiStorage.upload('photo.jpg', imageBuffer, {
+      contentType: 'image/jpeg', // Routes to 'images' provider
+    });
+
+    // Access specific provider directly
     const r2Provider = multiStorage.getProvider('r2-main');
+    await r2Provider.upload('document.pdf', docBuffer, {
+      contentType: 'application/pdf'
+    });
     ```
 
   </Step>

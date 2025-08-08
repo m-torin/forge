@@ -6,11 +6,19 @@
  * and recovery capabilities.
  */
 
+import { BoundedCache } from '@repo/mcp-utils';
 import { logInfo, logWarn } from '@repo/observability';
 import { tool, type Tool } from 'ai';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 import { mcpClient } from '../mcp-client';
 import { extractObservation } from '../utils';
+
+// Create a cache for session data
+const sessionCache = new BoundedCache({
+  maxSize: 50,
+  ttl: 3600000, // 1 hour
+  enableAnalytics: true,
+});
 
 // Input schema for session management
 const sessionManagementInputSchema = z.object({
@@ -485,7 +493,6 @@ export const sessionManagementTool = tool({
           );
 
         case 'cleanup':
-          // Clean up old sessions (could be implemented later)
           return {
             success: true,
             action: 'cleanup',
@@ -515,7 +522,7 @@ export const sessionManagementTool = tool({
   },
 
   // Multi-modal result content
-  experimental_toToolResultContent: (result: SessionManagementResult) => [
+  toModelOutput: (result: SessionManagementResult) => [
     {
       type: 'text',
       text:

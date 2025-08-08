@@ -140,7 +140,7 @@ describe('standardWorkflowStep', () => {
     test('should validate step definition', () => {
       const result = StandardWorkflowStep.validateDefinition(mockDefinition);
 
-      expect(result).toEqual({ valid: true, errors: [] });
+      expect(result).toStrictEqual({ valid: true, errors: [] });
     });
   });
 
@@ -338,7 +338,7 @@ describe('standardWorkflowStep', () => {
 
       const metadata = step.getMetadata();
 
-      expect(metadata).toEqual({
+      expect(metadata).toStrictEqual({
         id: 'test-step',
         name: 'Test Step',
         version: '1.0.0',

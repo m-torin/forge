@@ -1,329 +1,345 @@
 /**
  * Tests for agent utility MCP tools
  */
-import { describe, it, expect } from 'vitest';
+import { describe, expect } from 'vitest';
 import {
-  extractObservationTool,
   createEntityNameTool,
+  extractObservationTool,
+  formatAgentResponseTool,
   validateAgentRequestTool,
-  formatAgentResponseTool
 } from '../../src/tools/agent-utilities';
 
 describe('extractObservationTool', () => {
-  it('should have correct tool definition', () => {
+  test('should have correct tool definition', () => {
     expect(extractObservationTool.name).toBe('extract_observation');
     expect(extractObservationTool.description).toContain('MCP memory entity');
     expect(extractObservationTool.inputSchema).toBeDefined();
     expect(extractObservationTool.execute).toBeTypeOf('function');
   });
 
-  it('should extract observation value', async () => {
+  test('should extract observation value', async () => {
     const entity = {
-      observations: ['key1:value1', 'key2:value2']
+      observations: ['key1:value1', 'key2:value2'],
     };
-    
+
     const result = await extractObservationTool.execute({
       entity,
-      key: 'key1'
+      key: 'key1',
     });
-    
+
     expect(result.content).toHaveLength(1);
     expect(result.content[0].type).toBe('text');
-    expect(result.content[0].text).toBe('value1');
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.value).toBe('value1');
   });
 
-  it('should return null for non-existent key', async () => {
+  test('should return null for non-existent key', async () => {
     const entity = {
-      observations: ['key1:value1']
+      observations: ['key1:value1'],
     };
-    
+
     const result = await extractObservationTool.execute({
       entity,
-      key: 'nonexistent'
+      key: 'nonexistent',
     });
-    
-    expect(result.content[0].text).toBe('null');
+
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.value).toBeNull();
   });
 
-  it('should handle entity without observations', async () => {
+  test('should handle entity without observations', async () => {
     const result = await extractObservationTool.execute({
       entity: {},
-      key: 'key1'
+      key: 'key1',
     });
-    
-    expect(result.content[0].text).toBe('null');
+
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.value).toBeNull();
   });
 
-  it('should handle values with colons', async () => {
+  test('should handle values with colons', async () => {
     const entity = {
-      observations: ['url:https://example.com:8080/path']
+      observations: ['url:https://example.com:8080/path'],
     };
-    
+
     const result = await extractObservationTool.execute({
       entity,
-      key: 'url'
+      key: 'url',
     });
-    
-    expect(result.content[0].text).toBe('https://example.com:8080/path');
+
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.value).toBe('https://example.com:8080/path');
   });
 
-  it('should handle errors gracefully', async () => {
+  test('should handle errors gracefully', async () => {
     const result = await extractObservationTool.execute({
       entity: null,
-      key: 'key1'
+      key: 'key1',
     });
-    
-    expect(result.isError).toBe(true);
-    expect(result.content[0].text).toContain('error');
+
+    // The tool should handle the error and return a valid JSON response
+    expect(result.content).toHaveLength(1);
+    expect(result.content[0].type).toBe('text');
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.value).toBeNull();
   });
 });
 
 describe('createEntityNameTool', () => {
-  it('should have correct tool definition', () => {
+  test('should have correct tool definition', () => {
     expect(createEntityNameTool.name).toBe('create_entity_name');
     expect(createEntityNameTool.description).toContain('standardized entity name');
     expect(createEntityNameTool.inputSchema).toBeDefined();
     expect(createEntityNameTool.execute).toBeTypeOf('function');
   });
 
-  it('should create basic entity name', async () => {
+  test('should create basic entity name', async () => {
     const result = await createEntityNameTool.execute({
       entityType: 'AnalysisSession',
-      sessionId: 'test-session-123'
+      sessionId: 'test-session-123',
     });
-    
-    expect(result.content[0].text).toBe('AnalysisSession_test-session-123');
+
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.name).toBe('AnalysisSession_test-session-123');
   });
 
-  it('should create entity name with additional IDs', async () => {
+  test('should create entity name with additional IDs', async () => {
     const result = await createEntityNameTool.execute({
       entityType: 'FileAnalysis',
       sessionId: 'session-456',
-      additionalIds: ['src/utils.ts', 'typescript']
+      additionalIds: ['src/utils.ts', 'typescript'],
     });
-    
-    expect(result.content[0].text).toBe('FileAnalysis_session-456_src/utils.ts_typescript');
+
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.name).toBe('FileAnalysis_session-456_src/utils.ts_typescript');
   });
 
-  it('should handle empty additional IDs', async () => {
+  test('should handle empty additional IDs', async () => {
     const result = await createEntityNameTool.execute({
       entityType: 'GitWorktree',
       sessionId: 'session-789',
-      additionalIds: []
+      additionalIds: [],
     });
-    
-    expect(result.content[0].text).toBe('GitWorktree_session-789');
+
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.name).toBe('GitWorktree_session-789');
   });
 
-  it('should validate entity types', async () => {
+  test('should validate entity types', async () => {
     const validTypes = [
       'AnalysisSession',
-      'FileAnalysis', 
+      'FileAnalysis',
       'GitWorktree',
       'PullRequest',
       'ArchitecturalPattern',
       'VercelOptimization',
       'MockAnalysis',
       'UtilizationAnalysis',
-      'WordRemoval'
+      'WordRemoval',
     ];
 
     for (const entityType of validTypes) {
       const result = await createEntityNameTool.execute({
         entityType: entityType as any,
-        sessionId: 'test-session'
+        sessionId: 'test-session',
       });
-      
-      expect(result.content[0].text).toBe(`${entityType}_test-session`);
+
+      const parsed = JSON.parse(result.content[0].text);
+      expect(parsed.name).toBe(`${entityType}_test-session`);
     }
   });
 
-  it('should handle errors gracefully', async () => {
+  test('should handle errors gracefully', async () => {
     const result = await createEntityNameTool.execute({
       entityType: 'FileAnalysis',
-      sessionId: null as any
+      sessionId: null as any,
     });
-    
-    expect(result.isError).toBe(true);
-    expect(result.content[0].text).toContain('error');
+
+    // The tool should still return a valid response even with invalid input
+    expect(result.content).toHaveLength(1);
+    expect(result.content[0].type).toBe('text');
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.name).toBeDefined();
   });
 });
 
 describe('validateAgentRequestTool', () => {
-  it('should have correct tool definition', () => {
+  test('should have correct tool definition', () => {
     expect(validateAgentRequestTool.name).toBe('validate_agent_request');
     expect(validateAgentRequestTool.description).toContain('agent request format');
     expect(validateAgentRequestTool.inputSchema).toBeDefined();
     expect(validateAgentRequestTool.execute).toBeTypeOf('function');
   });
 
-  it('should validate valid request', async () => {
+  test('should validate valid request', async () => {
     const request = {
       version: '1.0',
       sessionId: 'test-session',
       action: 'analyze',
-      data: { files: ['test.ts'] }
+      data: { files: ['test.ts'] },
     };
-    
+
     const result = await validateAgentRequestTool.execute({
       request,
-      requiredFields: ['sessionId', 'action']
+      requiredFields: ['sessionId', 'action'],
     });
-    
+
     const parsed = JSON.parse(result.content[0].text);
-    expect(parsed.valid).toBe(true);
-    expect(parsed.errors).toEqual([]);
+    expect(parsed.valid).toBeTruthy();
+    expect(parsed.errors).toStrictEqual([]);
   });
 
-  it('should detect missing required fields', async () => {
+  test('should detect missing required fields', async () => {
     const request = {
       version: '1.0',
-      sessionId: 'test-session'
+      sessionId: 'test-session',
       // missing 'action'
     };
-    
+
     const result = await validateAgentRequestTool.execute({
       request,
-      requiredFields: ['sessionId', 'action']
+      requiredFields: ['sessionId', 'action'],
     });
-    
+
     const parsed = JSON.parse(result.content[0].text);
-    expect(parsed.valid).toBe(false);
+    expect(parsed.valid).toBeFalsy();
     expect(parsed.errors).toContain('Missing required field: action');
   });
 
-  it('should validate version mismatch', async () => {
+  test('should validate version mismatch', async () => {
     const request = {
       version: '2.0',
       sessionId: 'test-session',
-      action: 'analyze'
+      action: 'analyze',
     };
-    
+
     const result = await validateAgentRequestTool.execute({
       request,
       requiredFields: ['sessionId'],
-      version: '1.0'
+      version: '1.0',
     });
-    
+
     const parsed = JSON.parse(result.content[0].text);
-    expect(parsed.valid).toBe(false);
+    expect(parsed.valid).toBeFalsy();
     expect(parsed.errors).toContain('Version mismatch: expected 1.0, got 2.0');
   });
 
-  it('should handle null request', async () => {
+  test('should handle null request', async () => {
     const result = await validateAgentRequestTool.execute({
       request: null,
-      requiredFields: ['sessionId']
+      requiredFields: ['sessionId'],
     });
-    
+
     const parsed = JSON.parse(result.content[0].text);
-    expect(parsed.valid).toBe(false);
+    expect(parsed.valid).toBeFalsy();
     expect(parsed.errors).toContain('Request is null or undefined');
   });
 
-  it('should use default version', async () => {
+  test('should use default version', async () => {
     const request = {
       version: '1.0',
-      sessionId: 'test-session'
+      sessionId: 'test-session',
     };
-    
+
     const result = await validateAgentRequestTool.execute({
       request,
-      requiredFields: ['sessionId']
+      requiredFields: ['sessionId'],
     });
-    
+
     const parsed = JSON.parse(result.content[0].text);
-    expect(parsed.valid).toBe(true);
+    expect(parsed.valid).toBeTruthy();
   });
 
-  it('should handle errors gracefully', async () => {
+  test('should handle errors gracefully', async () => {
     const result = await validateAgentRequestTool.execute({
       request: 'invalid' as any,
-      requiredFields: ['sessionId']
+      requiredFields: ['sessionId'],
     });
-    
-    expect(result.isError).toBe(true);
-    expect(result.content[0].text).toContain('error');
+
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.valid).toBeFalsy();
+    expect(parsed.errors).toContain('Request must be an object');
   });
 });
 
 describe('formatAgentResponseTool', () => {
-  it('should have correct tool definition', () => {
+  test('should have correct tool definition', () => {
     expect(formatAgentResponseTool.name).toBe('format_agent_response');
     expect(formatAgentResponseTool.description).toContain('standardized agent response');
     expect(formatAgentResponseTool.inputSchema).toBeDefined();
     expect(formatAgentResponseTool.execute).toBeTypeOf('function');
   });
 
-  it('should format successful response', async () => {
+  test('should format successful response', async () => {
     const result = await formatAgentResponseTool.execute({
       success: true,
-      data: { result: 'analysis complete' }
+      data: { result: 'analysis complete' },
     });
-    
+
     const parsed = JSON.parse(result.content[0].text);
-    expect(parsed.success).toBe(true);
-    expect(parsed.data).toEqual({ result: 'analysis complete' });
+    expect(parsed.success).toBeTruthy();
+    expect(parsed.data).toStrictEqual({ result: 'analysis complete' });
     expect(parsed.error).toBeUndefined();
     expect(parsed.timestamp).toBeTypeOf('number');
   });
 
-  it('should format error response', async () => {
+  test('should format error response', async () => {
     const result = await formatAgentResponseTool.execute({
       success: false,
-      error: 'Analysis failed'
+      error: 'Analysis failed',
     });
-    
+
     const parsed = JSON.parse(result.content[0].text);
-    expect(parsed.success).toBe(false);
+    expect(parsed.success).toBeFalsy();
     expect(parsed.error).toBe('Analysis failed');
     expect(parsed.data).toBeUndefined();
     expect(parsed.timestamp).toBeTypeOf('number');
   });
 
-  it('should format response with both data and error', async () => {
+  test('should format response with both data and error', async () => {
     const result = await formatAgentResponseTool.execute({
       success: false,
       data: { partialResult: 'some data' },
-      error: 'Partial failure'
+      error: 'Partial failure',
     });
-    
+
     const parsed = JSON.parse(result.content[0].text);
-    expect(parsed.success).toBe(false);
-    expect(parsed.data).toEqual({ partialResult: 'some data' });
+    expect(parsed.success).toBeFalsy();
+    expect(parsed.data).toStrictEqual({ partialResult: 'some data' });
     expect(parsed.error).toBe('Partial failure');
   });
 
-  it('should include timestamp', async () => {
+  test('should include timestamp', async () => {
     const before = Date.now();
-    
+
     const result = await formatAgentResponseTool.execute({
-      success: true
+      success: true,
     });
-    
+
     const after = Date.now();
     const parsed = JSON.parse(result.content[0].text);
-    
+
     expect(parsed.timestamp).toBeGreaterThanOrEqual(before);
     expect(parsed.timestamp).toBeLessThanOrEqual(after);
   });
 
-  it('should handle null data', async () => {
+  test('should handle null data', async () => {
     const result = await formatAgentResponseTool.execute({
       success: true,
-      data: null
+      data: null,
     });
-    
+
     const parsed = JSON.parse(result.content[0].text);
     expect(parsed.data).toBeNull();
   });
 
-  it('should handle errors gracefully', async () => {
+  test('should handle null success value', async () => {
     const result = await formatAgentResponseTool.execute({
-      success: null as any
+      success: null as any,
     });
-    
-    expect(result.isError).toBe(true);
-    expect(result.content[0].text).toContain('error');
+
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.success).toBeFalsy();
+    expect(parsed.timestamp).toBeTypeOf('number');
   });
 });

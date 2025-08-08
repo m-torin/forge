@@ -41,8 +41,8 @@ export interface AgentMessage {
   timestamp: number;
   expiresAt?: number;
   requiresResponse?: boolean;
-  correlationId?: string; // for request/response correlation
-  parentMessageId?: string; // for threaded conversations
+  correlationId?: string;
+  parentMessageId?: string;
 }
 
 /**
@@ -78,7 +78,7 @@ export interface CoordinationTask {
   type: 'collaboration' | 'delegation' | 'negotiation' | 'synchronization';
   protocol: CoordinationProtocol;
   participants: string[]; // agent IDs
-  coordinator?: string; // coordinator agent ID
+  coordinator?: string;
   objective: string;
   constraints: Record<string, any>;
   deadline?: number;
@@ -572,7 +572,10 @@ export class AgentCommunicationManager {
     if (!this.messageQueue.has(agentId)) {
       this.messageQueue.set(agentId, []);
     }
-    this.messageQueue.get(agentId)!.push(message);
+    const queue = this.messageQueue.get(agentId);
+    if (queue) {
+      queue.push(message);
+    }
   }
 
   private generateMessageId(): string {
@@ -667,7 +670,7 @@ export const communicationUtils = {
         const taskData = JSON.parse(message.content);
         return taskData as CoordinationTask;
       }
-    } catch (error) {
+    } catch (_error) {
       logWarn('Failed to parse coordination task from message', {
         operation: 'parse_coordination_task_failed',
         metadata: { messageId: message.id },

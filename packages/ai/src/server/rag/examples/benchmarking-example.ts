@@ -214,7 +214,7 @@ export class RAGBenchmarkSuite {
     for (const query of warmupQueries) {
       try {
         await ragSystem.service.generateQA(query);
-      } catch (error) {
+      } catch (_error) {
         // Ignore warmup errors
       }
     }
@@ -252,7 +252,7 @@ export class RAGBenchmarkSuite {
 
           const responseTime = Date.now() - queryStart;
           responseTimes.push(responseTime);
-        } catch (error) {
+        } catch (_error) {
           errorCount++;
           responseTimes.push(Date.now() - queryStart); // Include failed request time
         }
@@ -445,7 +445,14 @@ export class RAGBenchmarkSuite {
     const json = JSON.stringify(resultsObject, null, 2);
 
     if (filename) {
-      require('fs').writeFileSync(filename, json);
+      // Validate filename to prevent path traversal
+      const path = require('path');
+      const sanitizedFilename = path.basename(filename);
+      if (sanitizedFilename !== filename) {
+        throw new Error('Invalid filename: path traversal not allowed');
+      }
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
+      require('fs').writeFileSync(sanitizedFilename, json);
     }
 
     return json;

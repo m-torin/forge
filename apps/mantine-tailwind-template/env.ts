@@ -11,6 +11,13 @@ export const env = createEnv({
     POSTHOG_PERSONAL_API_KEY: z.string().optional(),
     POSTHOG_PROJECT_ID: z.string().optional(),
     EDGE_CONFIG: z.string().optional(),
+
+    // Better Auth
+    BETTER_AUTH_SECRET: z.string().optional(),
+    GITHUB_CLIENT_ID: z.string().optional(),
+    GITHUB_CLIENT_SECRET: z.string().optional(),
+    GOOGLE_CLIENT_ID: z.string().optional(),
+    GOOGLE_CLIENT_SECRET: z.string().optional(),
   },
   client: {
     NEXT_PUBLIC_VERCEL_URL: z.string().url().optional(),
@@ -25,6 +32,13 @@ export const env = createEnv({
     POSTHOG_PERSONAL_API_KEY: process.env.POSTHOG_PERSONAL_API_KEY,
     POSTHOG_PROJECT_ID: process.env.POSTHOG_PROJECT_ID,
     EDGE_CONFIG: process.env.EDGE_CONFIG,
+
+    // Better Auth
+    BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
+    GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
+    GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
 
     // Client
     NEXT_PUBLIC_VERCEL_URL: process.env.NEXT_PUBLIC_VERCEL_URL,

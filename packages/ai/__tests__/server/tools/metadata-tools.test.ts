@@ -1,46 +1,6 @@
-import { beforeEach, describe, expect, vi } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
-// Mock server-only to prevent import issues in tests
-vi.mock('server-only', () => ({}));
-
-// AI SDK mocks are provided by @repo/qa centralized mocks
-
-describe.todo('metadata Tools', () => {
-  // Skipping metadata tools tests during AI SDK v5 migration
-  // These tests need to be updated to work with the new tool interface
-  let mockVectorDB: any;
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-
-    // Create a mock VectorDB
-    mockVectorDB = {
-      fetch: vi.fn().mockResolvedValue([
-        {
-          id: 'test-vector-1',
-          values: [0.1, 0.2, 0.3],
-          metadata: { title: 'Test Document', category: 'test' },
-        },
-      ]),
-      upsert: vi.fn().mockResolvedValue({ upsertedCount: 1 }),
-      range: vi.fn().mockResolvedValue({
-        vectors: [
-          {
-            id: 'test-vector-1',
-            values: [0.1, 0.2, 0.3],
-            metadata: { title: 'Test Document', category: 'test', count: 5 },
-          },
-          {
-            id: 'test-vector-2',
-            values: [0.4, 0.5, 0.6],
-            metadata: { title: 'Another Document', category: 'other', count: 10 },
-          },
-        ],
-        nextCursor: null,
-      }),
-    };
-  });
-
+describe('metadata Tools', () => {
   test('should import metadata tools successfully', async () => {
     const metadataTools = await import('#/server/tools/metadata-tools');
     expect(metadataTools).toBeDefined();
@@ -73,7 +33,7 @@ describe.todo('metadata Tools', () => {
       defaultNamespace: 'test',
     });
 
-    const result = await tools.updateMetadata.execute(
+    const result = await (tools.updateMetadata as any).execute(
       {
         vectorId: 'test-id',
         metadata: { category: 'updated', priority: 'high' },
@@ -121,7 +81,7 @@ describe.todo('metadata Tools', () => {
       },
     ];
 
-    const result = await tools.bulkUpdateMetadata.execute(
+    const result = await tools.bulkUpdateMetadata.execute!(
       {
         updates,
         batchSize: 5,
@@ -143,7 +103,7 @@ describe.todo('metadata Tools', () => {
       vectorDB: mockVectorDB,
     });
 
-    const result = await tools.queryByMetadata.execute(
+    const result = await tools.queryByMetadata.execute!(
       {
         filter: { category: 'test' },
         limit: 10,
@@ -174,7 +134,7 @@ describe.todo('metadata Tools', () => {
       vectorDB: mockVectorDB,
     });
 
-    const result = await tools.queryByMetadata.execute(
+    const result = await tools.queryByMetadata.execute!(
       {
         filter: {
           count: { $gt: 3 },
@@ -202,7 +162,7 @@ describe.todo('metadata Tools', () => {
       vectorDB: mockVectorDB,
     });
 
-    const result = await tools.getMetadataStats.execute(
+    const result = await tools.getMetadataStats.execute!(
       {
         sampleSize: 100,
         fields: ['category', 'count'],
@@ -232,7 +192,7 @@ describe.todo('metadata Tools', () => {
       maxBatchSize: 10,
     });
 
-    const result = await tools.cleanupMetadata.execute(
+    const result = await tools.cleanupMetadata.execute!(
       {
         operations: ['remove_null', 'remove_empty', 'normalize_types'],
         dryRun: true,
@@ -282,7 +242,7 @@ describe.todo('metadata Tools', () => {
       maxBatchSize: 10,
     });
 
-    const result = await tools.cleanupMetadata.execute(
+    const result = await tools.cleanupMetadata.execute!(
       {
         operations: ['remove_null', 'remove_empty', 'normalize_types'],
         dryRun: false,
@@ -310,7 +270,7 @@ describe.todo('metadata Tools', () => {
     });
 
     await expect(
-      tools.updateMetadata.execute(
+      (tools.updateMetadata as any).execute(
         {
           vectorId: 'non-existent-vector',
           metadata: { test: 'value' },
@@ -332,7 +292,7 @@ describe.todo('metadata Tools', () => {
     });
 
     await expect(
-      tools.updateMetadata.execute(
+      (tools.updateMetadata as any).execute(
         {
           vectorId: 'non-existent-vector',
           metadata: { test: 'value' },
@@ -351,7 +311,7 @@ describe.todo('metadata Tools', () => {
     });
 
     // Test replace mode
-    const replaceResult = await tools.updateMetadata.execute(
+    const replaceResult = await (tools.updateMetadata as any).execute(
       {
         vectorId: 'test-vector-1',
         metadata: { newField: 'newValue' },
@@ -364,7 +324,7 @@ describe.todo('metadata Tools', () => {
     expect(replaceResult.updated).toBeTruthy();
 
     // Test append mode
-    const appendResult = await tools.updateMetadata.execute(
+    const appendResult = await (tools.updateMetadata as any).execute(
       {
         vectorId: 'test-vector-1',
         metadata: { title: ' - Appended' },

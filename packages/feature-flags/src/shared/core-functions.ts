@@ -159,6 +159,7 @@ export function reportValue(flagName: string, value: any, context?: Record<strin
   };
 
   // Execute non-blocking analytics tracking
+  // eslint-disable-next-line promise/prefer-await-to-then
   handleAnalyticsTracking().catch(() => {
     // Silently handle any uncaught promises - this is intentional for non-blocking operation
   });

@@ -84,21 +84,21 @@ export interface EmbeddableNotionEditorProps {
    * Features to enable/disable
    */
   features?: {
-    formatting?: boolean; // Bold, italic, underline, etc.
-    lists?: boolean; // Bullet and numbered lists
-    tables?: boolean; // Table support
-    codeBlocks?: boolean; // Code blocks with syntax highlighting
-    links?: boolean; // Link support
-    tasks?: boolean; // Task list support
-    colors?: boolean; // Text and highlight colors
-    mediaUpload?: boolean; // Media upload support (images, videos, audio)
+    formatting?: boolean;
+    lists?: boolean;
+    tables?: boolean;
+    codeBlocks?: boolean;
+    links?: boolean;
+    tasks?: boolean;
+    colors?: boolean;
+    mediaUpload?: boolean;
   };
   /**
    * Media upload configuration
    */
   mediaUploadConfig?: {
-    accept?: string; // MIME types to accept
-    maxSize?: number; // Max file size in bytes
+    accept?: string;
+    maxSize?: number;
     maxSizes?: {
       image?: number;
       video?: number;
@@ -117,7 +117,7 @@ export interface EmbeddableNotionEditorProps {
    */
   autoSave?: {
     enabled: boolean;
-    delay?: number; // Delay in ms (default: 1000)
+    delay?: number;
     onSave?: (content: string) => void;
   };
 }

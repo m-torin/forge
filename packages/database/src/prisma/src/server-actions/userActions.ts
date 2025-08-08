@@ -34,21 +34,24 @@
 
 'use server';
 
-import type { Prisma } from '../../../../prisma-generated/client';
+import type { Prisma, PrismaClient } from '../../../../prisma-generated/client';
 import {
   aggregateUsersOrm,
   countUsersOrm,
+  createManyUsersOrm,
   createUserOrm,
   deleteManyUsersOrm,
   deleteUserOrm,
   findFirstUserOrm,
+  findFirstUserOrmOrThrow,
   findManyUsersOrm,
   findUniqueUserOrm,
+  findUniqueUserOrmOrThrow,
   groupByUsersOrm,
   updateManyUsersOrm,
   updateUserOrm,
   upsertUserOrm,
-} from '../orm/auth/userOrm';
+} from '../orm/auth/authOrm';
 
 // ============================================================================
 // USER SERVER ACTIONS
@@ -58,72 +61,111 @@ import {
 /**
  * Server action to create a new user
  */
-export async function createUserAction(args: Prisma.UserCreateArgs) {
+export async function createUserAction(args: Prisma.UserCreateArgs, prisma?: PrismaClient) {
   'use server';
-  return createUserOrm(args);
+  return createUserOrm(args, prisma);
+}
+
+/**
+ * Server action to create multiple users
+ */
+export async function createManyUsersAction(
+  args: Prisma.UserCreateManyArgs,
+  prisma?: PrismaClient,
+) {
+  'use server';
+  return createManyUsersOrm(args, prisma);
 }
 
 // READ ACTIONS
 /**
  * Server action to find the first user matching criteria
  */
-export async function findFirstUserAction(args?: Prisma.UserFindFirstArgs) {
+export async function findFirstUserAction(args?: Prisma.UserFindFirstArgs, prisma?: PrismaClient) {
   'use server';
-  return findFirstUserOrm(args);
+  return findFirstUserOrm(args, prisma);
+}
+
+/**
+ * Server action to find the first user matching criteria or throw if not found
+ */
+export async function findFirstUserActionOrThrow(
+  args: Prisma.UserFindFirstOrThrowArgs,
+  prisma?: PrismaClient,
+) {
+  'use server';
+  return findFirstUserOrmOrThrow(args, prisma);
 }
 
 /**
  * Server action to find a unique user by ID or unique field
  */
-export async function findUniqueUserAction(args: Prisma.UserFindUniqueArgs) {
+export async function findUniqueUserAction(args: Prisma.UserFindUniqueArgs, prisma?: PrismaClient) {
   'use server';
-  return findUniqueUserOrm(args);
+  return findUniqueUserOrm(args, prisma);
+}
+
+/**
+ * Server action to find a unique user by ID or unique field or throw if not found
+ */
+export async function findUniqueUserActionOrThrow(
+  args: Prisma.UserFindUniqueOrThrowArgs,
+  prisma?: PrismaClient,
+) {
+  'use server';
+  return findUniqueUserOrmOrThrow(args, prisma);
 }
 
 /**
  * Server action to find multiple users with filtering and pagination
  */
-export async function findManyUsersAction(args?: Prisma.UserFindManyArgs) {
+export async function findManyUsersAction(args?: Prisma.UserFindManyArgs, prisma?: PrismaClient) {
   'use server';
-  return findManyUsersOrm(args);
+  return findManyUsersOrm(args, prisma);
 }
 
-export async function updateUserAction(args: Prisma.UserUpdateArgs) {
+export async function updateUserAction(args: Prisma.UserUpdateArgs, prisma?: PrismaClient) {
   'use server';
-  return updateUserOrm(args);
+  return updateUserOrm(args, prisma);
 }
 
-export async function updateManyUsersAction(args: Prisma.UserUpdateManyArgs) {
+export async function updateManyUsersAction(
+  args: Prisma.UserUpdateManyArgs,
+  prisma?: PrismaClient,
+) {
   'use server';
-  return updateManyUsersOrm(args);
+  return updateManyUsersOrm(args, prisma);
 }
 
-export async function upsertUserAction(args: Prisma.UserUpsertArgs) {
+export async function upsertUserAction(args: Prisma.UserUpsertArgs, prisma?: PrismaClient) {
   'use server';
-  return upsertUserOrm(args);
+  return upsertUserOrm(args, prisma);
 }
 
-export async function deleteUserAction(args: Prisma.UserDeleteArgs) {
+export async function deleteUserAction(args: Prisma.UserDeleteArgs, prisma?: PrismaClient) {
   'use server';
-  return deleteUserOrm(args);
+  return deleteUserOrm(args, prisma);
 }
 
-export async function deleteManyUsersAction(args?: Prisma.UserDeleteManyArgs) {
+export async function deleteManyUsersAction(
+  args?: Prisma.UserDeleteManyArgs,
+  prisma?: PrismaClient,
+) {
   'use server';
-  return deleteManyUsersOrm(args);
+  return deleteManyUsersOrm(args, prisma);
 }
 
-export async function aggregateUsersAction(args: Prisma.UserAggregateArgs) {
+export async function aggregateUsersAction(args: Prisma.UserAggregateArgs, prisma?: PrismaClient) {
   'use server';
-  return aggregateUsersOrm(args);
+  return aggregateUsersOrm(args, prisma);
 }
 
-export async function countUsersAction(args?: Prisma.UserCountArgs) {
+export async function countUsersAction(args?: Prisma.UserCountArgs, prisma?: PrismaClient) {
   'use server';
-  return countUsersOrm(args);
+  return countUsersOrm(args, prisma);
 }
 
-export async function groupByUsersAction(args: Prisma.UserGroupByArgs) {
+export async function groupByUsersAction(args: Prisma.UserGroupByArgs, prisma?: PrismaClient) {
   'use server';
-  return groupByUsersOrm(args);
+  return groupByUsersOrm(args, prisma);
 }

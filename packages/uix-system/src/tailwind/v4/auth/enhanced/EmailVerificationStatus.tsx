@@ -22,13 +22,13 @@ type VerificationStatus = 'pending' | 'verified' | 'expired' | 'error' | 'proces
 interface EmailVerificationStatusProps extends BaseProps {
   userEmail: string;
   initialStatus?: VerificationStatus;
-  token?: string; // Verification token from URL
+  token?: string;
   onStatusChange?: (status: VerificationStatus) => void;
   onVerified?: () => void;
   allowResend?: boolean;
 }
 
-const initialState: FormState = { success: false };
+const _initialState: FormState = { success: false };
 
 export function EmailVerificationStatus({
   userEmail,

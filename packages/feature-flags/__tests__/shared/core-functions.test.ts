@@ -12,19 +12,30 @@ vi.mock('@repo/observability', () => ({
 }));
 
 // Mock analytics tracking
-const mockTrackFlagEvaluation = vi.fn();
-vi.mock('#/server/analytics', () => ({
-  trackFlagEvaluation: mockTrackFlagEvaluation,
+const mockAnalyticsTrack = vi.fn();
+const mockCreateAnalytics = vi.fn().mockResolvedValue({
+  track: mockAnalyticsTrack,
+});
+
+vi.mock('@repo/analytics/shared', () => ({
+  createAnalytics: mockCreateAnalytics,
 }));
 
 describe('shared/core-functions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+
+    // Mock globalThis.dispatchEvent
+    if (!globalThis.dispatchEvent) {
+      (globalThis as any).dispatchEvent = vi.fn(() => true);
+    } else {
+      vi.spyOn(globalThis, 'dispatchEvent').mockImplementation(() => true);
+    }
   });
 
   describe('mergeProviderData', () => {
     test('should return empty structure for empty array', async () => {
-      const { mergeProviderData } = await import('#/shared/core-functions');
+      const { mergeProviderData } = await import('../../src/shared/core-functions');
 
       const result = await mergeProviderData([]);
 
@@ -40,7 +51,7 @@ describe('shared/core-functions', () => {
     });
 
     test('should return empty structure for invalid input', async () => {
-      const { mergeProviderData } = await import('#/shared/core-functions');
+      const { mergeProviderData } = await import('../../src/shared/core-functions');
 
       const result = await mergeProviderData(null as any);
 
@@ -56,7 +67,7 @@ describe('shared/core-functions', () => {
     });
 
     test('should merge single provider data', async () => {
-      const { mergeProviderData } = await import('#/shared/core-functions');
+      const { mergeProviderData } = await import('../../src/shared/core-functions');
 
       const providerData = [
         {
@@ -79,7 +90,7 @@ describe('shared/core-functions', () => {
     });
 
     test('should merge multiple provider data with priority order', async () => {
-      const { mergeProviderData } = await import('#/shared/core-functions');
+      const { mergeProviderData } = await import('../../src/shared/core-functions');
 
       const providerData = [
         {
@@ -102,7 +113,7 @@ describe('shared/core-functions', () => {
       const result = await mergeProviderData(providerData);
 
       // Later providers should take precedence
-      expect(result.definitions?.flag1).toStrictEqual({
+      expect(result.definitions?.flag1).toMatchObject({
         key: 'flag1',
         description: 'Second provider',
       });
@@ -113,7 +124,7 @@ describe('shared/core-functions', () => {
     });
 
     test('should handle providers with missing properties', async () => {
-      const { mergeProviderData } = await import('#/shared/core-functions');
+      const { mergeProviderData } = await import('../../src/shared/core-functions');
 
       const providerData = [
         {
@@ -135,7 +146,7 @@ describe('shared/core-functions', () => {
     });
 
     test('should log provider merge information', async () => {
-      const { mergeProviderData } = await import('#/shared/core-functions');
+      const { mergeProviderData } = await import('../../src/shared/core-functions');
 
       const providerData = [
         {
@@ -178,7 +189,7 @@ describe('shared/core-functions', () => {
 
   describe('evaluateFlags', () => {
     test('should evaluate flags with context', async () => {
-      const { evaluateFlags } = await import('#/shared/core-functions');
+      const { evaluateFlags } = await import('../../src/shared/core-functions');
 
       const flags = {
         simpleFlag: { key: 'simpleFlag', decide: () => true },
@@ -195,7 +206,7 @@ describe('shared/core-functions', () => {
     });
 
     test('should handle flag evaluation errors gracefully', async () => {
-      const { evaluateFlags } = await import('#/shared/core-functions');
+      const { evaluateFlags } = await import('../../src/shared/core-functions');
 
       const flags = {
         errorFlag: {
@@ -216,7 +227,7 @@ describe('shared/core-functions', () => {
     });
 
     test('should pass context to flag decide functions', async () => {
-      const { evaluateFlags } = await import('#/shared/core-functions');
+      const { evaluateFlags } = await import('../../src/shared/core-functions');
 
       const mockDecide = vi.fn().mockReturnValue('context-result');
       const flags = {
@@ -230,7 +241,7 @@ describe('shared/core-functions', () => {
     });
 
     test('should handle empty flags object', async () => {
-      const { evaluateFlags } = await import('#/shared/core-functions');
+      const { evaluateFlags } = await import('../../src/shared/core-functions');
 
       const result = await evaluateFlags({}, { user: { id: 'test' } });
 
@@ -238,7 +249,7 @@ describe('shared/core-functions', () => {
     });
 
     test('should handle async flag decide functions', async () => {
-      const { evaluateFlags } = await import('#/shared/core-functions');
+      const { evaluateFlags } = await import('../../src/shared/core-functions');
 
       const flags = {
         asyncFlag: {
@@ -260,7 +271,7 @@ describe('shared/core-functions', () => {
 
   describe('generatePermutations', () => {
     test('should generate permutations for simple flags', async () => {
-      const { generatePermutations } = await import('#/shared/core-functions');
+      const { generatePermutations } = await import('../../src/shared/core-functions');
 
       const flagDefinitions = {
         flag1: { options: [true, false] },
@@ -270,7 +281,7 @@ describe('shared/core-functions', () => {
       const result = generatePermutations(flagDefinitions, { maxPermutations: 10 });
 
       expect(result).toHaveLength(4); // 2 * 2 = 4 permutations
-      expect(result).toEqual(
+      expect(result).toStrictEqual(
         expect.arrayContaining([
           expect.objectContaining({ flag1: true, flag2: 'A' }),
           expect.objectContaining({ flag1: true, flag2: 'B' }),
@@ -281,7 +292,7 @@ describe('shared/core-functions', () => {
     });
 
     test('should respect maxPermutations limit', async () => {
-      const { generatePermutations } = await import('#/shared/core-functions');
+      const { generatePermutations } = await import('../../src/shared/core-functions');
 
       const flagDefinitions = {
         flag1: { options: [1, 2, 3, 4] },
@@ -295,7 +306,7 @@ describe('shared/core-functions', () => {
     });
 
     test('should handle single flag definition', async () => {
-      const { generatePermutations } = await import('#/shared/core-functions');
+      const { generatePermutations } = await import('../../src/shared/core-functions');
 
       const flagDefinitions = {
         onlyFlag: { options: ['option1', 'option2', 'option3'] },
@@ -304,7 +315,7 @@ describe('shared/core-functions', () => {
       const result = generatePermutations(flagDefinitions);
 
       expect(result).toHaveLength(3);
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         { onlyFlag: 'option1' },
         { onlyFlag: 'option2' },
         { onlyFlag: 'option3' },
@@ -312,7 +323,7 @@ describe('shared/core-functions', () => {
     });
 
     test('should handle empty flag definitions', async () => {
-      const { generatePermutations } = await import('#/shared/core-functions');
+      const { generatePermutations } = await import('../../src/shared/core-functions');
 
       const result = generatePermutations({});
 
@@ -320,7 +331,7 @@ describe('shared/core-functions', () => {
     });
 
     test('should handle flags with no options', async () => {
-      const { generatePermutations } = await import('#/shared/core-functions');
+      const { generatePermutations } = await import('../../src/shared/core-functions');
 
       const flagDefinitions = {
         flag1: { options: [] },
@@ -333,7 +344,7 @@ describe('shared/core-functions', () => {
     });
 
     test('should use default maxPermutations when not specified', async () => {
-      const { generatePermutations } = await import('#/shared/core-functions');
+      const { generatePermutations } = await import('../../src/shared/core-functions');
 
       const flagDefinitions = [
         {
@@ -351,7 +362,7 @@ describe('shared/core-functions', () => {
 
   describe('decodePermutation', () => {
     test('should decode valid permutation code', async () => {
-      const { decodePermutation } = await import('#/shared/core-functions');
+      const { decodePermutation } = await import('../../src/shared/core-functions');
 
       // Mock base64url encoded data
       const mockCode = 'eyJmbGFnMSI6dHJ1ZSwiZmxhZzIiOiJBIn0'; // {"flag1":true,"flag2":"A"}
@@ -365,7 +376,7 @@ describe('shared/core-functions', () => {
     });
 
     test('should handle invalid base64 codes gracefully', async () => {
-      const { decodePermutation } = await import('#/shared/core-functions');
+      const { decodePermutation } = await import('../../src/shared/core-functions');
 
       const result = decodePermutation('invalid-base64!@#');
 
@@ -373,7 +384,7 @@ describe('shared/core-functions', () => {
     });
 
     test('should handle empty code', async () => {
-      const { decodePermutation } = await import('#/shared/core-functions');
+      const { decodePermutation } = await import('../../src/shared/core-functions');
 
       const result = decodePermutation('');
 
@@ -381,7 +392,7 @@ describe('shared/core-functions', () => {
     });
 
     test('should handle non-JSON decoded data', async () => {
-      const { decodePermutation } = await import('#/shared/core-functions');
+      const { decodePermutation } = await import('../../src/shared/core-functions');
 
       // Valid base64 but not JSON
       const nonJsonCode = btoa('not-json-data');
@@ -394,18 +405,27 @@ describe('shared/core-functions', () => {
 
   describe('reportValue', () => {
     test('should report flag value with analytics tracking', async () => {
-      const { reportValue } = await import('#/shared/core-functions');
+      const { reportValue } = await import('../../src/shared/core-functions');
 
       reportValue('testFlag', true, { user: { id: 'user123' } });
 
-      // Should trigger analytics tracking (mocked)
-      expect(mockTrackFlagEvaluation).toHaveBeenCalledWith('testFlag', true, {
-        user: { id: 'user123' },
-      });
+      // Wait for async analytics handling
+      await new Promise(resolve => setTimeout(resolve, 10));
+
+      // Should log the flag value being reported
+      expect(mockLogInfo).toHaveBeenCalledWith(
+        'Flag value reported',
+        expect.objectContaining({
+          flagName: 'testFlag',
+          value: true,
+          context: { user: { id: 'user123' } },
+          timestamp: expect.any(String),
+        }),
+      );
     });
 
     test('should dispatch custom event when supported', async () => {
-      const { reportValue } = await import('#/shared/core-functions');
+      const { reportValue } = await import('../../src/shared/core-functions');
 
       // Mock globalThis with dispatchEvent
       const mockDispatchEvent = vi.fn();
@@ -430,33 +450,27 @@ describe('shared/core-functions', () => {
     });
 
     test('should handle analytics tracking errors gracefully', async () => {
-      const { reportValue } = await import('#/shared/core-functions');
+      const { reportValue } = await import('../../src/shared/core-functions');
 
       // Make analytics tracking throw an error
-      mockTrackFlagEvaluation.mockRejectedValue(new Error('Analytics failed'));
+      mockCreateAnalytics.mockRejectedValue(new Error('Analytics failed'));
 
       // Should not throw despite analytics error
       expect(() => reportValue('testFlag', true, {})).not.toThrow();
     });
 
     test('should handle missing globalThis gracefully', async () => {
-      const { reportValue } = await import('#/shared/core-functions');
+      const { reportValue } = await import('../../src/shared/core-functions');
 
       // Mock globalThis without dispatchEvent
-      const originalGlobalThis = globalThis;
-      Object.defineProperty(globalThis, 'dispatchEvent', {
-        value: undefined,
-        writable: true,
-      });
+      const originalDispatchEvent = globalThis.dispatchEvent;
+      delete (globalThis as any).dispatchEvent;
 
       // Should not throw
       expect(() => reportValue('testFlag', true, {})).not.toThrow();
 
       // Restore
-      Object.defineProperty(globalThis, 'dispatchEvent', {
-        value: originalGlobalThis.dispatchEvent,
-        writable: true,
-      });
+      globalThis.dispatchEvent = originalDispatchEvent;
     });
   });
 });

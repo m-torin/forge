@@ -11,6 +11,7 @@ import { cleanup } from '@testing-library/react';
 import { afterEach, vi } from 'vitest';
 import '../mocks/browser';
 import '../mocks/environment';
+import './providers';
 
 // Cleanup after each test
 afterEach(() => {

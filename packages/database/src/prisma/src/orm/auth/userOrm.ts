@@ -44,6 +44,15 @@ export async function createUserOrm(
   return await prisma.user.create(args);
 }
 
+/**
+ * Create multiple users at once
+ */
+export async function createManyUsersOrm(
+  args: Prisma.UserCreateManyArgs,
+): Promise<Prisma.BatchPayload> {
+  return await prisma.user.createMany(args);
+}
+
 // READ OPERATIONS
 /**
  * Find the first user matching the criteria
@@ -52,6 +61,15 @@ export async function findFirstUserOrm(
   args?: Prisma.UserFindFirstArgs,
 ): Promise<Prisma.UserGetPayload<typeof args> | null> {
   return await prisma.user.findFirst(args);
+}
+
+/**
+ * Find the first user matching the criteria (throws if not found)
+ */
+export async function findFirstUserOrmOrThrow(
+  args: Prisma.UserFindFirstOrThrowArgs,
+): Promise<Prisma.UserGetPayload<typeof args>> {
+  return await prisma.user.findFirstOrThrow(args);
 }
 
 /**

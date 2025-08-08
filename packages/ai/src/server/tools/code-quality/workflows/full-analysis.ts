@@ -5,6 +5,7 @@
  * multi-step execution with progressive tool unlocking and stopping conditions.
  */
 
+import { BoundedCache } from '@repo/mcp-utils';
 import { logError, logInfo, logWarn } from '@repo/observability';
 import type { Tool } from 'ai';
 import { hasToolCall } from 'ai';
@@ -16,6 +17,13 @@ import { reportGenerationTool } from '../tools/report-generation';
 import { vercelOptimizationTool } from '../tools/vercel-optimization';
 import { worktreeTool } from '../tools/worktree';
 import type { CodeQualityConfig } from '../types';
+
+// Create a cache for workflow results
+const workflowCache = new BoundedCache({
+  maxSize: 20,
+  ttl: 7200000, // 2 hours
+  enableAnalytics: true,
+});
 // stepCountIs may not be available in current AI SDK version
 const _stepCountIs = (count: number) => ({ type: 'maxSteps', count });
 
@@ -182,8 +190,8 @@ export function createCodeQualityWorkflow(config: CodeQualityWorkflowConfig = {}
       case 'createWorktree':
         // For worktree creation, try with different session ID
         if (attempt < maxRetries) {
-          const newSessionId = `${toolCall.args.sessionId}-retry-${attempt}`;
-          return { ...toolCall, args: { ...toolCall.args, sessionId: newSessionId } };
+          const newSessionId = `${toolCall.input.sessionId}-retry-${attempt}`;
+          return { ...toolCall, input: { ...toolCall.input, sessionId: newSessionId } };
         }
         break;
 
@@ -191,11 +199,11 @@ export function createCodeQualityWorkflow(config: CodeQualityWorkflowConfig = {}
         // For file discovery, try with more restrictive patterns
         if (attempt < maxRetries) {
           const moreExcludes = [
-            ...(toolCall.args.excludePatterns || []),
+            ...(toolCall.input.excludePatterns || []),
             '**/*.min.js',
             '**/vendor/**',
           ];
-          return { ...toolCall, args: { ...toolCall.args, excludePatterns: moreExcludes } };
+          return { ...toolCall, input: { ...toolCall.input, excludePatterns: moreExcludes } };
         }
         break;
 
@@ -203,11 +211,11 @@ export function createCodeQualityWorkflow(config: CodeQualityWorkflowConfig = {}
         // For code analysis, try with reduced options
         if (attempt < maxRetries) {
           const reducedOptions = {
-            ...toolCall.args.options,
+            ...toolCall.input.options,
             typescript: false, // Disable TypeScript analysis if it's failing
             complexity: true, // Keep complexity analysis
           };
-          return { ...toolCall, args: { ...toolCall.args, options: reducedOptions } };
+          return { ...toolCall, input: { ...toolCall.input, options: reducedOptions } };
         }
         break;
 

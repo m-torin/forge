@@ -15,7 +15,7 @@ import { i18nTestPatterns } from '../i18n-test-factory';
 describe('client Entry Points', () => {
   // Test main client entry point
   test('should export from main client module', async () => {
-    const clientModule = await import('#/client');
+    const clientModule = await import('../../src/client');
 
     expect(clientModule).toBeDefined();
     expect(typeof clientModule).toBe('object');
@@ -29,7 +29,7 @@ describe('client Entry Points', () => {
 
   // Test client-next entry point
   test('should export from client-next module', async () => {
-    const clientNextModule = await import('#/client-next');
+    const clientNextModule = await import('../../src/client-next');
 
     expect(clientNextModule).toBeDefined();
     expect(typeof clientNextModule).toBe('object');
@@ -43,8 +43,8 @@ describe('client Entry Points', () => {
 
   // Test component exports - Link is now in uix-system, not exported from this package
   test('should not export Link component from client modules', async () => {
-    const clientModule = await import('#/client');
-    const clientNextModule = await import('#/client-next');
+    const clientModule = await import('../../src/client');
+    const clientNextModule = await import('../../src/client-next');
 
     expect(clientModule).toBeDefined();
     expect(clientNextModule).toBeDefined();
@@ -62,12 +62,12 @@ describe('client Entry Points', () => {
 const clientEntryPoints = [
   {
     name: 'client',
-    path: '#/client',
+    path: '../../src/client',
     expectedExports: [], // No exports expected - Link moved to uix-system
   },
   {
     name: 'client-next',
-    path: '#/client-next',
+    path: '../../src/client-next',
     expectedExports: [], // No exports expected - Link moved to uix-system
   },
 ] as const;
@@ -84,7 +84,7 @@ clientEntryPoints.forEach(entryPoint => {
 describe('component Entry Points', () => {
   test('should not export Link component from client modules', async () => {
     // Link component is no longer exported from client modules
-    const clientModule = await import('#/client');
+    const clientModule = await import('../../src/client');
     expect(clientModule).toBeDefined();
     expect(clientModule.Link).toBeUndefined(); // Should be undefined now
   });
@@ -102,8 +102,8 @@ describe('component Entry Points', () => {
 
 describe('export Consistency', () => {
   test('should have consistent Link exports across client modules', async () => {
-    const clientModule = await import('#/client');
-    const clientNextModule = await import('#/client-next');
+    const clientModule = await import('../../src/client');
+    const clientNextModule = await import('../../src/client-next');
 
     const clientHasLink = 'Link' in clientModule;
     const clientNextHasLink = 'Link' in clientNextModule;
@@ -121,8 +121,8 @@ describe('export Consistency', () => {
   });
 
   test('should not have conflicting exports', async () => {
-    const clientModule = await import('#/client');
-    const clientNextModule = await import('#/client-next');
+    const clientModule = await import('../../src/client');
+    const clientNextModule = await import('../../src/client-next');
 
     const clientExports = Object.keys(clientModule);
     const clientNextExports = Object.keys(clientNextModule);
@@ -146,8 +146,8 @@ describe('export Consistency', () => {
 describe('import Resolution', () => {
   test('should resolve client module imports correctly', async () => {
     const importTests = [
-      { path: '#/client', description: 'main client module' },
-      { path: '#/client-next', description: 'client-next module' },
+      { path: '../../src/client', description: 'main client module' },
+      { path: '../../src/client-next', description: 'client-next module' },
     ];
 
     for (const importTest of importTests) {
@@ -164,7 +164,7 @@ describe('import Resolution', () => {
 
   test('should handle component imports correctly', async () => {
     // Link component is now in uix-system, not exported from client modules
-    const clientModule = await import('#/client');
+    const clientModule = await import('../../src/client');
     const { I18nLink } = await import('@repo/uix-system/shared/i18n');
 
     expect(clientModule).toBeDefined();
@@ -174,7 +174,7 @@ describe('import Resolution', () => {
   });
 
   test('should verify Link is no longer exported from client modules', async () => {
-    const clientModule = await import('#/client');
+    const clientModule = await import('../../src/client');
     const { I18nLink } = await import('@repo/uix-system/shared/i18n');
 
     // Verify that Link is no longer exported from client modules
@@ -201,8 +201,8 @@ describe('i18nLink Component Tests', () => {
   });
 
   test('should confirm Link is no longer re-exported from client modules', async () => {
-    const clientModule = await import('#/client');
-    const clientNextModule = await import('#/client-next');
+    const clientModule = await import('../../src/client');
+    const clientNextModule = await import('../../src/client-next');
     const { I18nLink } = await import('@repo/uix-system/shared/i18n');
 
     // Link should no longer be exported from client modules
@@ -236,7 +236,7 @@ describe('environment Compatibility', () => {
     } as any;
 
     try {
-      const clientModule = await import('#/client');
+      const clientModule = await import('../../src/client');
       expect(clientModule).toBeDefined();
 
       // Should work with browser APIs
@@ -257,7 +257,7 @@ describe('environment Compatibility', () => {
     delete (global as any).window;
 
     try {
-      const clientModule = await import('#/client');
+      const clientModule = await import('../../src/client');
       expect(clientModule).toBeDefined();
 
       // Should work without browser APIs
@@ -272,7 +272,7 @@ describe('environment Compatibility', () => {
 
   test('should handle Next.js specific imports', async () => {
     try {
-      const clientNextModule = await import('#/client-next');
+      const clientNextModule = await import('../../src/client-next');
       expect(clientNextModule).toBeDefined();
 
       // Should work with Next.js mocks
@@ -293,8 +293,8 @@ describe('environment Compatibility', () => {
 describe('export Validation', () => {
   test('should have valid TypeScript exports', async () => {
     const modules = [
-      { name: 'client', path: '#/client' },
-      { name: 'client-next', path: '#/client-next' },
+      { name: 'client', path: '../../src/client' },
+      { name: 'client-next', path: '../../src/client-next' },
     ];
 
     for (const module of modules) {
@@ -318,8 +318,8 @@ describe('export Validation', () => {
 
   test('should not export internal implementation details', async () => {
     const modules = [
-      { name: 'client', path: '#/client' },
-      { name: 'client-next', path: '#/client-next' },
+      { name: 'client', path: '../../src/client' },
+      { name: 'client-next', path: '../../src/client-next' },
     ];
 
     const internalExports = ['_internal', '__private', 'implementation', 'helpers', 'utils'];

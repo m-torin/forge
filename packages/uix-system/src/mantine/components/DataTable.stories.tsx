@@ -214,11 +214,21 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 // Mock handlers
-const mockView = (row: any) => console.log('View:', row);
-const mockEdit = (row: any) => console.log('Edit:', row);
-const mockDelete = (row: any) => console.log('Delete:', row);
-const mockBulkAction = (rows: any[]) => console.log('Bulk action:', rows);
-const mockRowClick = (row: any) => console.log('Row clicked:', row);
+const mockView = (row: any) => {
+  // console.log('View:', row);
+};
+const mockEdit = (row: any) => {
+  // console.log('Edit:', row);
+};
+const mockDelete = (row: any) => {
+  // console.log('Delete:', row);
+};
+const mockBulkAction = (rows: any[]) => {
+  // console.log('Bulk action:', rows);
+};
+const mockRowClick = (row: any) => {
+  // console.log('Row clicked:', row);
+};
 
 export const BasicTable: Story = {
   args: {
@@ -272,7 +282,9 @@ export const ProductTable: Story = {
         {
           icon: <IconStar size={14} />,
           label: 'Feature Product',
-          onClick: (row: any) => console.log('Feature product:', row),
+          onClick: (row: any) => {
+            // console.log('Feature product:', row);
+          },
           color: 'yellow',
         },
       ],
@@ -343,7 +355,9 @@ export const FullFeatured: Story = {
         {
           icon: <IconUserCheck size={14} />,
           label: 'Verify User',
-          onClick: (row: any) => console.log('Verify user:', row),
+          onClick: (row: any) => {
+            // console.log('Verify user:', row);
+          },
           color: 'blue',
         },
       ],

@@ -4,13 +4,16 @@
  * Protected page that requires authentication
  */
 
+// Force dynamic rendering since this page requires authentication checks
 import { trackProfileViewAction } from '#/app/actions/auth';
-import { getAuthContext } from '#/lib/auth';
+import { getAuthContext } from '#/lib/auth-context';
 import { getDictionary, type Locale } from '#/lib/i18n';
 import { createAuthMetadata } from '#/lib/seo';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import ProfilePageUi from './ProfilePageUi';
+
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
   params,

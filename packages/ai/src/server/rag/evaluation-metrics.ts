@@ -393,7 +393,7 @@ export class RAGEvaluationFramework {
       const contextEmbedding = await generateEmbedding(contextText);
 
       return this.cosineSimilarity(queryEmbedding, contextEmbedding);
-    } catch (error) {
+    } catch (_error) {
       return 0;
     }
   }
@@ -409,7 +409,7 @@ export class RAGEvaluationFramework {
       ]);
 
       return this.cosineSimilarity(queryEmbedding, answerEmbedding);
-    } catch (error) {
+    } catch (_error) {
       return 0;
     }
   }

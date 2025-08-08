@@ -1,3 +1,5 @@
+@use 'sass:map';
+
 @function calc-sizes($size) {
   $circle-size: $size;
   $image-size: $size * 0.84;
@@ -36,8 +38,8 @@
 
   .circle {
     position: relative;
-    width: map-get($sizes, circle-size);
-    height: map-get($sizes, circle-size);
+    width: map.get($sizes, circle-size);
+    height: map.get($sizes, circle-size);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -75,9 +77,9 @@
 
   .image {
     border-radius: 50%;
-    border: map-get($sizes, image-border) solid var(--mantine-color-white);
-    width: map-get($sizes, image-size);
-    height: map-get($sizes, image-size);
+    border: map.get($sizes, image-border) solid var(--mantine-color-white);
+    width: map.get($sizes, image-size);
+    height: map.get($sizes, image-size);
     background-size: cover;
     background-position: center;
     z-index: 1;

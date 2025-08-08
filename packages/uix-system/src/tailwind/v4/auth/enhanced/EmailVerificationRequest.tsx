@@ -23,13 +23,13 @@ interface EmailVerificationRequestProps extends BaseProps {
   onError?: (error: string) => void;
 }
 
-const initialState: FormState = { success: false };
+const _initialState: FormState = { success: false };
 
 export function EmailVerificationRequest({
   userEmail,
   title = 'Verify Your Email',
   subtitle = 'Please verify your email address to complete your account setup',
-  autoRequest = false,
+  autoRequest: _autoRequest = false,
   onSuccess,
   onError,
   className = '',
@@ -93,7 +93,6 @@ export function EmailVerificationRequest({
       </CardHeader>
 
       <CardContent>
-        {/* Success State */}
         {state?.success && (
           <div className="space-y-4">
             <Alert variant="success">{state.message}</Alert>
@@ -129,7 +128,6 @@ export function EmailVerificationRequest({
               </div>
             </div>
 
-            {/* Request Another Link */}
             <form action={action}>
               <input type="hidden" name="email" value={userEmail} />
               <Button
@@ -144,13 +142,10 @@ export function EmailVerificationRequest({
           </div>
         )}
 
-        {/* Initial/Error State */}
         {!state?.success && (
           <div className="space-y-4">
-            {/* Error Message */}
             {state?.error && <Alert variant="destructive">{state.error}</Alert>}
 
-            {/* Current Email Display */}
             {userEmail && (
               <div className={cn('rounded-lg bg-gray-50 p-4', 'dark:bg-gray-800')}>
                 <div className="flex items-center justify-between">
@@ -172,7 +167,6 @@ export function EmailVerificationRequest({
               </div>
             )}
 
-            {/* Verification Benefits */}
             <div
               className={cn(
                 'rounded-lg border border-blue-200 bg-blue-50 p-4',
@@ -203,7 +197,6 @@ export function EmailVerificationRequest({
               </div>
             </div>
 
-            {/* Request Verification Button */}
             <form action={action}>
               <input type="hidden" name="email" value={userEmail} />
               <Button
@@ -218,9 +211,7 @@ export function EmailVerificationRequest({
           </div>
         )}
 
-        {/* Additional Actions */}
         <div className="mt-6 space-y-3">
-          {/* Change Email */}
           <div className="text-center">
             <p className={cn('text-sm text-gray-600', 'dark:text-gray-400')}>
               Need to use a different email?{' '}
@@ -236,7 +227,6 @@ export function EmailVerificationRequest({
             </p>
           </div>
 
-          {/* Skip for now */}
           <div className="text-center">
             <button
               type="button"
@@ -246,7 +236,7 @@ export function EmailVerificationRequest({
               )}
               onClick={() => {
                 // In real implementation, this might skip verification temporarily
-                console.log('Skip verification');
+                // console.log('Skip verification');
               }}
             >
               I'll verify later
@@ -254,7 +244,6 @@ export function EmailVerificationRequest({
           </div>
         </div>
 
-        {/* Help Information */}
         <div className={cn('mt-6 rounded-lg bg-gray-50 p-4', 'dark:bg-gray-800')}>
           <h4 className={cn('mb-2 text-sm font-medium text-gray-900', 'dark:text-gray-100')}>
             Having trouble?

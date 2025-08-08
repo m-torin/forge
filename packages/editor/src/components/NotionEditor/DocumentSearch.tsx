@@ -272,7 +272,6 @@ export function DocumentSearch({
 
   return (
     <div className={clsx('document-search', className)}>
-      {/* Search Input */}
       <div className="relative">
         <div className="relative">
           <IconSearch
@@ -309,7 +308,6 @@ export function DocumentSearch({
           </div>
         </div>
 
-        {/* Keyboard shortcut hint */}
         <div className="absolute right-24 top-1/2 hidden -translate-y-1/2 transform text-xs text-gray-400 sm:block">
           <kbd className="rounded border border-gray-300 bg-gray-100 px-1.5 py-0.5 text-xs font-semibold text-gray-600 shadow-sm">
             ⌘K
@@ -317,11 +315,9 @@ export function DocumentSearch({
         </div>
       </div>
 
-      {/* Advanced Filters */}
       {showFilters && (
         <div className="mt-3 space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {/* Search In */}
             <div>
               <label className="mb-2 block text-sm font-medium text-gray-700">Search In</label>
               <div className="space-y-2">
@@ -351,7 +347,6 @@ export function DocumentSearch({
               </div>
             </div>
 
-            {/* Sort By */}
             <div>
               <label className="mb-2 block text-sm font-medium text-gray-700">Sort By</label>
               <select
@@ -389,7 +384,6 @@ export function DocumentSearch({
               </button>
             </div>
 
-            {/* Date Range */}
             <div>
               <label className="mb-2 block flex items-center gap-1 text-sm font-medium text-gray-700">
                 <IconCalendar size={14} />
@@ -424,7 +418,6 @@ export function DocumentSearch({
             </div>
           </div>
 
-          {/* Clear Filters */}
           <div className="flex items-center justify-between border-t border-gray-300 pt-2">
             <button
               onClick={() =>
@@ -448,10 +441,8 @@ export function DocumentSearch({
         </div>
       )}
 
-      {/* Search Results */}
       {searchQuery && (
         <div className="mt-4">
-          {/* Results Header */}
           <div className="mb-3 flex items-center justify-between text-sm text-gray-600">
             <div className="flex items-center gap-2">
               <IconTarget size={16} />
@@ -469,7 +460,6 @@ export function DocumentSearch({
             )}
           </div>
 
-          {/* Results List */}
           <div className="max-h-96 space-y-3 overflow-y-auto">
             {searchResults.length === 0 && !isSearching ? (
               <div className="py-8 text-center text-gray-500">
@@ -491,7 +481,6 @@ export function DocumentSearch({
                   }}
                   className="group cursor-pointer rounded-lg border border-gray-200 bg-white p-4 transition-all hover:border-blue-300 hover:shadow-md"
                 >
-                  {/* Document Header */}
                   <div className="mb-2 flex items-start justify-between">
                     <div className="min-w-0 flex-1">
                       <h3 className="font-medium text-gray-900 transition-colors group-hover:text-blue-600">
@@ -518,7 +507,6 @@ export function DocumentSearch({
                     </div>
                   </div>
 
-                  {/* Content Matches */}
                   {result.contentMatches.length > 0 && (
                     <div className="space-y-2">
                       {result.contentMatches.map(match => (

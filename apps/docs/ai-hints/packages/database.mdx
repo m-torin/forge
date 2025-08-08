@@ -1,148 +1,276 @@
 ---
 title: "@repo/database"
 description: AI hints for Prisma database package
+icon: "database"
 ---
 
 # @repo/database
 
 ## Quick Facts
 
-- **Purpose**: Prisma ORM + generated types
+- **Purpose**: Multi-provider database package (Prisma, Redis, Vector,
+  Firestore)
 - **Layer**: 3 (Data)
-- **Edge Support**: ❌ No (requires Node.js)
-- **Key Pattern**: Always regenerate after schema changes
+- **Edge Support**: ✅ Partial (Prisma Edge, Upstash Redis/Vector)
+- **Key Pattern**: Always regenerate Prisma client after schema changes
+- **Providers**: PostgreSQL (Prisma), Redis (Upstash), Vector (Upstash),
+  Firestore (Google)
 
 ## Common Operations
 
-### Basic CRUD Operations
+### Prisma Operations (PostgreSQL)
 
 ```typescript
-import { db } from "@repo/database";
+// Next.js Server Components/Actions
+import { prisma } from "@repo/database/prisma/server/next";
 
-// Find unique record
-const user = await db.user.findUnique({
+// Find unique user with relations
+const user = await prisma.user.findUnique({
   where: { id: userId },
-  include: { posts: true }
-});
-
-// Create record
-const post = await db.post.create({
-  data: {
-    title: "New Post",
-    content: "Post content",
-    userId: userId
-  }
-});
-
-// Update record
-const updated = await db.user.update({
-  where: { id: userId },
-  data: { name: "New Name" }
-});
-
-// Delete record
-await db.post.delete({
-  where: { id: postId }
-});
-```
-
-### Complex Queries
-
-```typescript
-// Query with relations and filtering
-const users = await db.user.findMany({
-  where: {
-    posts: {
-      some: {
-        published: true
+  include: {
+    members: {
+      include: {
+        organization: true
+      }
+    },
+    sessions: {
+      where: {
+        expiresAt: { gt: new Date() }
       }
     }
-  },
-  include: {
-    posts: {
-      where: { published: true },
-      orderBy: { createdAt: "desc" }
+  }
+});
+
+// Create organization with member
+const org = await prisma.organization.create({
+  data: {
+    name: "Acme Corp",
+    slug: "acme-corp",
+    members: {
+      create: {
+        userId: userId,
+        role: "owner"
+      }
     }
   }
 });
 
-// Aggregation
-const stats = await db.post.aggregate({
-  _count: { id: true },
-  _avg: { views: true },
-  where: { published: true }
+// Update user preferences
+const updated = await prisma.user.update({
+  where: { id: userId },
+  data: {
+    preferences: {
+      theme: "dark",
+      notifications: true
+    }
+  }
 });
 ```
 
-## Schema Change Workflow
+### Redis Caching (Upstash)
 
-### 1. Edit Schema
+```typescript
+// Next.js Server
+import { redis } from "@repo/database/redis/server/next";
 
-```prisma
-// In /packages/database/prisma/schema.prisma
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
+// Cache user profile
+await redis.setex(
+  `user:${userId}`,
+  3600, // 1 hour
+  JSON.stringify(userProfile)
+);
 
-  posts Post[]
+// Get cached data
+const cached = await redis.get(`user:${userId}`);
+const userProfile = cached ? JSON.parse(cached) : null;
 
-  @@index([email])
+// Rate limiting
+const requests = await redis.incr(`rate_limit:${userId}`);
+if (requests === 1) {
+  await redis.expire(`rate_limit:${userId}`, 3600);
+}
+if (requests > 100) {
+  throw new Error("Rate limit exceeded");
 }
 ```
 
-### 2. Generate Migration
-
-```bash
-pnpm migrate
-```
-
-### 3. Regenerate Client
-
-```bash
-pnpm --filter @repo/database generate
-```
-
-### 4. Verify Types
-
-```bash
-pnpm typecheck
-```
-
-## Gotchas
-
-### ❌ Don't import database in client components
+### Vector Operations (Upstash)
 
 ```typescript
-// ❌ Wrong - database in client component
-"use client";
-import { db } from "@repo/database";
+// Vector database for AI/ML
+import { upstash, vectorOps } from "@repo/database/upstash/server/next";
 
-export function Component() {
-  const users = await db.user.findMany(); // Error: Server code in client
+// Store product embedding
+await upstash.upsert([
+  {
+    id: `product:${productId}`,
+    vector: embedding, // from OpenAI, etc.
+    metadata: {
+      title: product.title,
+      category: product.category,
+      price: product.price
+    }
+  }
+]);
+
+// Similarity search
+const similar = await upstash.query({
+  vector: queryEmbedding,
+  topK: 10,
+  includeMetadata: true,
+  filter: {
+    category: { $eq: "electronics" }
+  }
+});
+```
+
+### Firestore Documents
+
+```typescript
+// Document storage
+import { firestore } from "@repo/database/firestore/server/next";
+
+// Store document
+await firestore
+  .collection("documents")
+  .doc(docId)
+  .set({
+    title: "Document Title",
+    content: "Document content",
+    tags: ["tag1", "tag2"],
+    createdAt: new Date()
+  });
+
+// Query documents
+const docs = await firestore
+  .collection("documents")
+  .where("tags", "array-contains", "tag1")
+  .orderBy("createdAt", "desc")
+  .limit(10)
+  .get();
+```
+
+````
+
+## Environment Setup
+
+### Required Environment Variables
+
+```bash
+# PostgreSQL (Prisma)
+DATABASE_URL=postgresql://username:password@host:port/database
+
+# Redis (Upstash) - Required
+UPSTASH_REDIS_REST_URL=https://your-redis-url
+UPSTASH_REDIS_REST_TOKEN=your-redis-token
+
+# Vector Database (Upstash) - Optional
+UPSTASH_VECTOR_REST_URL=https://your-vector-url
+UPSTASH_VECTOR_REST_TOKEN=your-vector-token
+
+# Firestore (Google) - Optional
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_CLIENT_EMAIL=service-account@project.iam.gserviceaccount.com
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+````
+
+### Database Operations
+
+```bash
+# Run Prisma migrations
+pnpm migrate
+
+# Generate Prisma client (after schema changes)
+pnpm --filter @repo/database generate
+
+# Open Prisma Studio
+pnpm studio
+
+# Seed database
+cd packages/database && pnpm seed
+
+# Reset and seed (development only)
+cd packages/database && pnpm prisma:seed:reset
+```
+
+## Import Patterns
+
+### Prisma (PostgreSQL)
+
+```typescript
+// Next.js Server Components/Actions
+import { prisma } from "@repo/database/prisma/server/next";
+
+// Node.js Server
+import { prisma } from "@repo/database/prisma/server";
+
+// Edge Runtime (limited functionality)
+import { prisma } from "@repo/database/prisma/edge";
+
+// Types and schemas
+import type { User, Organization } from "@repo/database/prisma/generated";
+import { UserSchema } from "@repo/database/zod";
+```
+
+### Redis (Upstash)
+
+```typescript
+// Server operations
+import { redis } from "@repo/database/redis/server/next";
+import { redis } from "@repo/database/upstash/server/next";
+
+// Client types only
+import type { RedisOperations } from "@repo/database/redis/client";
+```
+
+### Vector Database (Upstash)
+
+```typescript
+// Vector operations
+import { upstash, vectorOps } from "@repo/database/upstash/server/next";
+
+// AI-enhanced operations
+import { AIVectorOperations } from "@repo/database/upstash/ai-enhanced";
+
+// Types
+import type { QueryResult, FetchResult } from "@repo/database/upstash/client";
+```
+
+## Common Gotchas
+
+### ❌ Missing Environment Variables
+
+```typescript
+// Vector operations will fail if not configured
+const result = await upstash.query(...); // Throws if UPSTASH_VECTOR_* not set
+
+// ✅ Check configuration first
+if (process.env.UPSTASH_VECTOR_REST_URL) {
+  const result = await upstash.query(...);
 }
 ```
 
-### ❌ Don't forget to regenerate after schema changes
-
-```bash
-# ❌ Wrong - schema changed but didn't regenerate
-# Edit schema.prisma
-pnpm migrate # Types are now out of sync!
-
-# ✅ Correct - always regenerate
-pnpm migrate
-pnpm --filter @repo/database generate
-```
-
-### ❌ Don't use database directly in edge runtime
+### ❌ Wrong Import Paths
 
 ```typescript
-// ❌ Wrong - in middleware.ts
-import { db } from "@repo/database";
+// ❌ These don't exist
+import { VectorOperations } from "@repo/database/vector/server";
+import { RedisOperations } from "@repo/database/redis/server";
 
-// ✅ Correct - database operations in server actions only
+// ✅ Correct paths
+import { VectorOperations } from "@repo/database/upstash/server";
+import { redis } from "@repo/database/redis/server";
+```
+
+### ❌ Forgetting JSON Serialization
+
+```typescript
+// ❌ Redis doesn't auto-serialize objects
+await redis.set("user:123", { name: "John" }); // Stores [object Object]
+
+// ✅ Manual serialization required
+await redis.set("user:123", JSON.stringify({ name: "John" }));
+const user = JSON.parse((await redis.get("user:123")) || "{}");
 ```
 
 ## Migration Best Practices
@@ -258,9 +386,68 @@ await db.post.updateMany({
 });
 ```
 
+## Provider-Specific Patterns
+
+### When to Use Each Provider
+
+- **Prisma (PostgreSQL)**: Primary data, relations, transactions, ACID
+  compliance
+- **Redis (Upstash)**: Caching, sessions, rate limiting, real-time data
+- **Vector (Upstash)**: AI/ML similarity search, embeddings, recommendations
+- **Firestore**: Document storage, real-time updates, offline sync
+
+### Data Flow Patterns
+
+```typescript
+// Typical flow: Cache-aside pattern
+async function getUser(id: string) {
+  // 1. Check Redis cache
+  const cached = await redis.get(`user:${id}`);
+  if (cached) return JSON.parse(cached);
+
+  // 2. Query Prisma database
+  const user = await prisma.user.findUnique({ where: { id } });
+
+  // 3. Cache result
+  if (user) {
+    await redis.setex(`user:${id}`, 3600, JSON.stringify(user));
+  }
+
+  return user;
+}
+
+// AI-powered search with fallback
+async function searchProducts(query: string) {
+  try {
+    // 1. Try vector similarity search
+    const embedding = await generateEmbedding(query);
+    const results = await upstash.query({
+      vector: embedding,
+      topK: 10,
+      includeMetadata: true
+    });
+
+    if (results.length > 0) return results;
+  } catch (error) {
+    // Vector DB not configured or failed
+  }
+
+  // 2. Fallback to text search in Prisma
+  return await prisma.product.findMany({
+    where: {
+      OR: [
+        { title: { contains: query, mode: "insensitive" } },
+        { description: { contains: query, mode: "insensitive" } }
+      ]
+    }
+  });
+}
+```
+
 ## See Also
 
-- Task templates:
-  [Database setup template](/ai-hints/task-templates#implementing-database-operations)
-- Command sequences:
-  [Migration recovery](/ai-hints/command-sequences#database-migration-recovery)
+- [Database Package Overview](/packages/database/overview) - Complete
+  documentation
+- [Prisma Patterns](/packages/database/prisma-patterns) - Advanced Prisma usage
+- [Redis Caching](/packages/database/redis) - Caching strategies
+- [Vector Search](/packages/database/vector) - AI/ML similarity search

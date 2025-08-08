@@ -7,7 +7,7 @@ export default defineConfig({
     setupFiles: ['./__tests__/setup.mjs'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: process.env.CI ? ['text', 'json'] : ['text', 'json', 'html'],
       exclude: [
         'node_modules/',
         'dist/',

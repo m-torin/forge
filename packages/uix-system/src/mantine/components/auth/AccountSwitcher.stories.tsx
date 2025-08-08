@@ -36,7 +36,7 @@ const AccountSwitcherWrapper = (props: any) => {
 
   const handleSwitchAccount = async (sessionId: string) => {
     setSwitchingSessionId(sessionId);
-    console.log('Switching to account:', sessionId);
+    // console.log('Switching to account:', sessionId);
 
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500));
@@ -45,25 +45,25 @@ const AccountSwitcherWrapper = (props: any) => {
       throw new Error('Failed to switch account');
     }
 
-    console.log('Account switched successfully');
+    // console.log('Account switched successfully');
     setSwitchingSessionId(null);
   };
 
   const handleAddAccount = () => {
-    console.log('Adding new account');
+    // console.log('Adding new account');
   };
 
   const handleSignOut = async () => {
-    console.log('Signing out');
+    // console.log('Signing out');
     await new Promise(resolve => setTimeout(resolve, 1000));
   };
 
   const handleManageAccounts = () => {
-    console.log('Managing accounts');
+    // console.log('Managing accounts');
   };
 
   const handleError = (error: Error) => {
-    console.error('Account switcher error:', error.message);
+    // console.error('Account switcher error:', error.message);
     setSwitchingSessionId(null);
   };
 

@@ -25,7 +25,7 @@ export interface CheerioOptions {
 
 // Node Fetch specific types
 export interface NodeFetchConfig {
-  agent?: any; // http.Agent or https.Agent
+  agent?: any;
   compress?: boolean;
   followRedirect?: boolean;
   headers?: Record<string, string>;

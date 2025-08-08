@@ -36,7 +36,7 @@ interface OrganizationSettingsProps extends BaseProps {
   canDelete?: boolean;
 }
 
-const initialState: FormState = { success: false };
+const _initialState: FormState = { success: false };
 
 export function OrganizationSettings({
   organization,

@@ -640,7 +640,7 @@ export function ExpensiveComponent() {
   <Accordion title="Database Debugging" icon="database">
     ```bash
     # Open Prisma Studio
-    pnpm studio
+    cd packages/database && pnpm dev
 
     # View database schema
     pnpm --filter @repo/database db:introspect

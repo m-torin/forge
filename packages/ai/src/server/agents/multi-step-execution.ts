@@ -4,7 +4,8 @@
  */
 
 import { logError, logInfo, logWarn } from '@repo/observability/server/next';
-import { generateText, streamText, type LanguageModel } from 'ai';
+import type { LanguageModel } from 'ai';
+import { generateText, streamText } from 'ai';
 import type { PrepareStepCallback } from './agent-controls';
 import {
   AgentPerformanceMonitor,
@@ -89,10 +90,12 @@ export async function executeMultiStepAgent(
       temperature: config.temperature,
       maxOutputTokens: config.maxOutputTokens,
       ...(config.prepareStep && { prepareStep: config.prepareStep }),
-      onStepFinish: async stepResult => {
+      onStepFinish: async (stepData: any) => {
+        const { text, toolCalls, toolResults, finishReason, usage } = stepData;
+        const stepResult = { text, toolCalls, toolResults, finishReason, usage };
         const stepNumber = steps.length;
         steps.push(stepResult);
-        totalTokensUsed += stepResult.usage?.totalTokens || 0;
+        totalTokensUsed += usage?.totalTokens || 0;
 
         // Record step performance if monitoring is enabled
         if (performanceMonitor) {
@@ -145,7 +148,7 @@ export async function executeMultiStepAgent(
           }
         }
       },
-    });
+    } as any);
 
     const executionTime = Date.now() - startTime;
     let performanceMetrics: AgentPerformanceMetrics | undefined;
@@ -165,7 +168,7 @@ export async function executeMultiStepAgent(
         averageStepTime: performanceMetrics?.stepMetrics.averageStepTime,
         tokensPerSecond: performanceMetrics?.efficiency.tokensPerSecond,
       },
-    });
+    } as any);
 
     return {
       steps,
@@ -213,7 +216,7 @@ export async function streamMultiStepAgent(
     onStep?: (step: any) => void;
   },
 ) {
-  const startTime = Date.now();
+  const _startTime = Date.now();
   let totalTokensUsed = 0;
   const steps: any[] = [];
 
@@ -236,10 +239,13 @@ export async function streamMultiStepAgent(
     system: config.system,
     temperature: config.temperature,
     maxOutputTokens: config.maxOutputTokens,
+    experimental_telemetry: { isEnabled: true },
     ...(config.prepareStep && { prepareStep: config.prepareStep }),
-    onStepFinish: async stepResult => {
+    onStepFinish: async (stepData: any) => {
+      const { text, toolCalls, toolResults, finishReason, usage } = stepData;
+      const stepResult = { text, toolCalls, toolResults, finishReason, usage };
       steps.push(stepResult);
-      totalTokensUsed += stepResult.usage?.totalTokens || 0;
+      totalTokensUsed += usage?.totalTokens || 0;
 
       logInfo('Multi-Step Agent: Streaming step completed', {
         operation: 'multi_step_agent_stream_step',
@@ -273,7 +279,7 @@ export async function streamMultiStepAgent(
         }
       }
     },
-  });
+  } as any);
 
   // Set up chunk handling if provided
   if (config.onChunk) {
@@ -344,7 +350,7 @@ export async function executeParallelAgents(
         totalExecutionTime: executionTime,
         averageExecutionTime: executionTime / configs.length,
       },
-    });
+    } as any);
 
     return Object.fromEntries(results.map(({ name, result }) => [name, result]));
   } catch (error) {
@@ -396,7 +402,7 @@ export async function executeSequentialAgents(
         totalSteps: results.reduce((sum, r) => sum + r.steps.length, 0),
         totalTokens: results.reduce((sum, r) => sum + r.totalTokensUsed, 0),
       },
-    });
+    } as any);
 
     return results;
   } catch (error) {

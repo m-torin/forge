@@ -13,6 +13,14 @@ import { join } from 'node:path';
 import { z } from 'zod/v4';
 import { mcpClient } from '../mcp-client';
 import type { FileAnalysis, Issue } from '../types';
+import { BoundedCache } from '../utils';
+
+// Create a cache for analysis results
+const analysisCache = new BoundedCache({
+  maxSize: 500,
+  ttl: 3600000, // 1 hour
+  enableAnalytics: true,
+});
 
 // Input schema for code analysis
 const analysisInputSchema = z.object({
@@ -235,7 +243,7 @@ async function analyzeFile(
         );
         const eslintIssues = parseESLintOutput(eslintResult.stdout);
         issues.push(...eslintIssues);
-      } catch (error) {
+      } catch (_error) {
         // ESLint analysis failed, might not be configured
         // Don't add this as an issue since it's optional
       }
@@ -271,16 +279,13 @@ export const analysisTool = tool({
   description:
     'Perform comprehensive code quality analysis including TypeScript checking, ESLint analysis, complexity calculation, and issue detection.',
 
-  parameters: analysisInputSchema,
+  inputSchema: analysisInputSchema,
 
-  execute: async (
-    {
-      sessionId,
-      filePaths,
-      options = { typescript: true, eslint: true, complexity: true, maxComplexity: 10 },
-    },
-    _toolOptions = { toolCallId: 'analysis', messages: [] },
-  ) => {
+  execute: async ({
+    sessionId,
+    filePaths,
+    options = { typescript: true, eslint: true, complexity: true, maxComplexity: 10 },
+  }: any) => {
     try {
       // Get package path from session
       const session = await mcpClient.getSession(sessionId);
@@ -374,22 +379,25 @@ export const analysisTool = tool({
     }
   },
 
-  // Multi-modal result content
-  experimental_toToolResultContent: (result: CodeAnalysisResult) => [
-    {
-      type: 'text' as const,
-      text:
-        `🔍 Code Analysis Results:\n` +
-        `📁 Files analyzed: ${result.summary.totalFiles}\n` +
-        `🚨 Total issues: ${result.summary.totalIssues}\n` +
-        `❌ Errors: ${result.summary.errorCount}\n` +
-        `⚠️ Warnings: ${result.summary.warningCount}\n` +
-        `ℹ️ Info: ${result.summary.infoCount}\n` +
-        `🔢 Average complexity: ${result.summary.averageComplexity}\n` +
-        `📈 High complexity files: ${result.summary.highComplexityFiles}\n` +
-        `${result.summary.errorCount === 0 ? '✅ No critical errors found' : '⚠️ Critical errors need attention'}`,
-    },
-  ],
-});
+  // AI SDK v5: toModelOutput with proper content shapes
+  toModelOutput: (result: CodeAnalysisResult) => ({
+    type: 'content',
+    value: [
+      {
+        type: 'text',
+        text:
+          `🔍 Code Analysis Results:\n` +
+          `📁 Files analyzed: ${result.summary.totalFiles}\n` +
+          `🚨 Total issues: ${result.summary.totalIssues}\n` +
+          `❌ Errors: ${result.summary.errorCount}\n` +
+          `⚠️ Warnings: ${result.summary.warningCount}\n` +
+          `ℹ️ Info: ${result.summary.infoCount}\n` +
+          `🔢 Average complexity: ${result.summary.averageComplexity}\n` +
+          `📈 High complexity files: ${result.summary.highComplexityFiles}\n` +
+          `${result.summary.errorCount === 0 ? '✅ No critical errors found' : '⚠️ Critical errors need attention'}`,
+      },
+    ],
+  }),
+} as any);
 
 export type { CodeAnalysisResult };

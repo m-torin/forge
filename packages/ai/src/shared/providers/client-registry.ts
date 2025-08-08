@@ -47,7 +47,7 @@ export const clientModels = {
   language: {
     best: () => clientRegistry.languageModel('openai:gpt-4o'),
     fast: () => clientRegistry.languageModel('openai:gpt-4o-mini'),
-    reasoning: () => clientRegistry.languageModel('openai:gpt-4o-reasoning'),
+    reasoningText: () => clientRegistry.languageModel('openai:gpt-4o-reasoning'),
   },
   embedding: {
     default: () => clientRegistry.textEmbeddingModel('openai:text-embedding-3-small'),

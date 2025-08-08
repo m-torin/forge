@@ -35,10 +35,10 @@ export function detectCurrentZone(customPatterns?: ZoneConfig[]): string | undef
     }
   }
 
-  // Default patterns for backstage
-  if (path.startsWith('/cms')) return 'cms';
-  if (path.startsWith('/workflows')) return 'workflows';
-  if (path.startsWith('/authmgmt')) return 'authmgmt';
+  // Default patterns for common microfrontend zones
+  if (path.startsWith('/admin')) return 'admin';
+  if (path.startsWith('/dashboard')) return 'dashboard';
+  if (path.startsWith('/settings')) return 'settings';
 
   // Check for zone in global object (set by host)
   if ((globalThis as any).__SENTRY_MICRO_FRONTEND_ZONE__) {

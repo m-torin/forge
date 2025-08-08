@@ -31,7 +31,7 @@ export interface ModelMetadata {
   capabilities?: ModelCapability[];
   contextWindow?: number;
   outputLimit?: number;
-  reasoning?: ReasoningConfig;
+  reasoningText?: ReasoningConfig;
   deprecated?: boolean;
 }
 
@@ -44,7 +44,7 @@ export const ANTHROPIC_MODEL_METADATA: Record<string, ModelMetadata> = {
     provider: 'anthropic',
     capabilities: ['reasoning', 'vision', 'tools', 'computer-use', 'multimodal'],
     contextWindow: 200000,
-    reasoning: {
+    reasoningText: {
       supported: true,
       budgetTokens: 15000,
       headers: { 'anthropic-beta': 'interleaved-thinking-2025-05-14' },
@@ -57,7 +57,7 @@ export const ANTHROPIC_MODEL_METADATA: Record<string, ModelMetadata> = {
     provider: 'anthropic',
     capabilities: ['reasoning', 'vision', 'tools', 'computer-use', 'multimodal'],
     contextWindow: 200000,
-    reasoning: {
+    reasoningText: {
       supported: true,
       budgetTokens: 12000,
       headers: { 'anthropic-beta': 'interleaved-thinking-2025-05-14' },
@@ -71,7 +71,7 @@ export const ANTHROPIC_MODEL_METADATA: Record<string, ModelMetadata> = {
     provider: 'anthropic',
     capabilities: ['reasoning', 'vision', 'tools', 'multimodal'],
     contextWindow: 200000,
-    reasoning: {
+    reasoningText: {
       supported: true,
       budgetTokens: 12000,
       headers: { 'anthropic-beta': 'interleaved-thinking-2025-05-14' },
@@ -134,7 +134,7 @@ export const PERPLEXITY_MODEL_METADATA: Record<string, ModelMetadata> = {
     capabilities: ['search', 'tools', 'reasoning'],
     contextWindow: 128000,
     outputLimit: 16384,
-    reasoning: {
+    reasoningText: {
       supported: true,
       // Deep research includes extensive reasoning
     },
@@ -148,7 +148,7 @@ export const PERPLEXITY_MODEL_METADATA: Record<string, ModelMetadata> = {
     capabilities: ['search', 'reasoning', 'tools'],
     contextWindow: 128000,
     outputLimit: 8192,
-    reasoning: {
+    reasoningText: {
       supported: true,
       // CoT (Chain of Thought) reasoning
     },
@@ -161,7 +161,7 @@ export const PERPLEXITY_MODEL_METADATA: Record<string, ModelMetadata> = {
     capabilities: ['search', 'reasoning', 'tools', 'code'],
     contextWindow: 128000,
     outputLimit: 16384,
-    reasoning: {
+    reasoningText: {
       supported: true,
       // Advanced CoT reasoning
     },
@@ -226,7 +226,7 @@ export const XAI_MODEL_METADATA: Record<string, ModelMetadata> = {
     capabilities: ['tools', 'code', 'reasoning'],
     contextWindow: 65536, // 64K context window
     outputLimit: 4096,
-    reasoning: {
+    reasoningText: {
       supported: true,
       // Grok 3 includes built-in reasoning
     },
@@ -239,7 +239,7 @@ export const XAI_MODEL_METADATA: Record<string, ModelMetadata> = {
     capabilities: ['tools', 'code', 'reasoning'],
     contextWindow: 65536, // 64K context window
     outputLimit: 8192,
-    reasoning: {
+    reasoningText: {
       supported: true,
       budgetTokens: 10000,
       // Enhanced reasoning mode
@@ -304,7 +304,7 @@ export const GOOGLE_MODEL_METADATA: Record<string, ModelMetadata> = {
     capabilities: ['vision', 'tools', 'code', 'multimodal', 'reasoning'],
     contextWindow: 1048576, // 1M tokens
     outputLimit: 8192,
-    reasoning: {
+    reasoningText: {
       supported: true,
       // Gemini 2.0 has built-in reasoning capabilities
     },
@@ -338,7 +338,7 @@ export const LMSTUDIO_MODEL_METADATA: Record<string, ModelMetadata> = {
     capabilities: ['tools', 'reasoning'],
     contextWindow: 8192,
     outputLimit: 4096,
-    reasoning: {
+    reasoningText: {
       supported: true,
       // Local reasoning models like DeepSeek R1
     },
@@ -381,7 +381,7 @@ export const OLLAMA_MODEL_METADATA: Record<string, ModelMetadata> = {
     capabilities: ['tools', 'reasoning'],
     contextWindow: 8192,
     outputLimit: 4096,
-    reasoning: {
+    reasoningText: {
       supported: true,
       // Local reasoning models
     },
@@ -435,7 +435,7 @@ export const DEEPSEEK_MODEL_METADATA: Record<string, ModelMetadata> = {
     capabilities: ['tools', 'reasoning', 'code'],
     contextWindow: 65536, // 64K context
     outputLimit: 16384,
-    reasoning: {
+    reasoningText: {
       supported: true,
       budgetTokens: 20000,
       // Advanced CoT reasoning
@@ -490,7 +490,7 @@ export const OPENAI_MODEL_METADATA: Record<string, ModelMetadata> = {
     capabilities: ['reasoning', 'tools', 'code'],
     contextWindow: 128000,
     outputLimit: 32768,
-    reasoning: {
+    reasoningText: {
       supported: true,
       // O1 uses internal reasoning, no external headers needed
     },
@@ -503,7 +503,7 @@ export const OPENAI_MODEL_METADATA: Record<string, ModelMetadata> = {
     capabilities: ['reasoning', 'tools', 'code'],
     contextWindow: 128000,
     outputLimit: 65536,
-    reasoning: {
+    reasoningText: {
       supported: true,
     },
   },

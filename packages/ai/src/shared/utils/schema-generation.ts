@@ -45,23 +45,6 @@ export function createChatRequestSchema(modelIdEnum: ReturnType<typeof createMod
       role: z.enum(['user']),
       content: z.string().min(1).max(2000),
       parts: z.array(messagePartSchema),
-      /** @deprecated Use parts array with file parts instead - experimental_attachments removed in AI SDK v5 */
-      experimental_attachments: z
-        .array(
-          z.object({
-            url: z.string().url(),
-            name: z.string().min(1).max(2000),
-            contentType: z.enum([
-              'image/png',
-              'image/jpg',
-              'image/jpeg',
-              'application/pdf',
-              'text/plain',
-              'text/markdown',
-            ]),
-          }),
-        )
-        .optional(),
     }),
     selectedChatModel: modelIdEnum,
     selectedVisibilityType: z.enum(['public', 'private']),

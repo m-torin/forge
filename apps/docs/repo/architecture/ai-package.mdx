@@ -874,9 +874,9 @@ graph TB
     import {
       getBestModelForTask,
       selectModel,
-      getModelRecommendations,
-      isModelAvailable
+      getModelRecommendations
     } from '@repo/ai/models';
+    import { hasAnthropicConfig, hasOpenAIConfig, hasGoogleAIConfig } from '@repo/ai/env';
 
     // Get best model for specific tasks
     const chatModel = getBestModelForTask('chat');
@@ -894,9 +894,10 @@ graph TB
     // Get recommendations for use cases
     const recommendations = getModelRecommendations('coding', 'enterprise');
 
-    // Check model availability based on API keys
-    if (isModelAvailable('claude-4-opus-20250514')) {
-      // Model is available with configured API key
+    // Check provider availability based on API keys
+    if (hasAnthropicConfig()) {
+      // Anthropic provider is available with configured API key
+      const claudeModel = registry.languageModel('anthropic:claude-4-opus-20250514');
     }
     ```
 
@@ -946,7 +947,7 @@ graph TB
     // Use helper functions for common patterns
     const bestModel = models.language.best();
     const fastModel = models.language.fast();
-    const reasoningModel = models.language.reasoning();
+    const reasoningModel = models.language.reasoningText();
 
     // Use in applications
     const result = await generateText({
@@ -1165,9 +1166,10 @@ console.log(stats);
 
 <Warning>
   **Model Configuration Guidelines:** - Never hardcode model IDs in applications
-  - use selection functions - Always check model availability before use with
-  `isModelAvailable()` - Use task-based selection (`getBestModelForTask()`) for
-  automatic optimization - Respect user tiers when selecting models with
+  - use selection functions - Always check provider availability before use with
+  provider availability functions (`hasAnthropicConfig()`, `hasOpenAIConfig()`,
+  etc.) - Use task-based selection (`getBestModelForTask()`) for automatic
+  optimization - Respect user tiers when selecting models with
   `canUserAccessModel()` - Let the registry handle reasoning configuration
   automatically - Track model usage for cost monitoring with `trackModelUsage()`
 </Warning>

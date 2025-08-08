@@ -5,7 +5,8 @@
  * Entry point for running the MCP server
  */
 
-import MCPUtilsServer from '../src/index.mjs';
+import MCPUtilsServer from '../dist/server.mjs';
+// Note: Lifecycle management is now handled by the server itself
 
 async function main() {
   try {
@@ -17,17 +18,7 @@ async function main() {
   }
 }
 
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  process.exit(1);
-});
-
-// Handle uncaught exceptions
-process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception:', error);
-  process.exit(1);
-});
+// Process lifecycle management is now centralized in the server
 
 main().catch((error) => {
   console.error('Main function error:', error);

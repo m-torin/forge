@@ -3,13 +3,12 @@
  * Testing templates, caching, versioning, and optimization
  */
 
-import '@repo/qa/vitest/setup/next-app';
 import { afterEach, beforeEach, describe, expect } from 'vitest';
-import {
-  EnhancedPromptCache,
-  cacheWarmingUtils,
-} from '../../../src/server/prompts/enhanced-prompt-cache';
 import { PromptCache, withPromptCache } from '../../../src/server/prompts/prompt-cache';
+import {
+  AnalyticsPromptCache,
+  cacheWarmingUtils,
+} from '../../../src/server/prompts/prompt-cache-analytics';
 import { PromptTemplate, PromptTemplateEngine } from '../../../src/server/prompts/prompt-templates';
 import { PromptVersionManager } from '../../../src/server/prompts/prompt-versioning';
 
@@ -213,10 +212,10 @@ describe('promptCache', () => {
 });
 
 describe('enhancedPromptCache', () => {
-  let enhancedCache: EnhancedPromptCache;
+  let enhancedCache: AnalyticsPromptCache;
 
   beforeEach(() => {
-    enhancedCache = new EnhancedPromptCache({
+    enhancedCache = new AnalyticsPromptCache({
       maxSize: 100,
       enableAutoOptimization: true,
       enableSemanticSimilarity: true,
@@ -295,7 +294,7 @@ describe('enhancedPromptCache', () => {
     });
 
     test('should respect similarity threshold', async () => {
-      const strictCache = new EnhancedPromptCache({
+      const strictCache = new AnalyticsPromptCache({
         enableSemanticSimilarity: true,
         similarityThreshold: 0.95, // Very strict
       });
@@ -338,9 +337,15 @@ describe('enhancedPromptCache', () => {
       const report = enhancedCache.generateAnalyticsReport();
       expect(report.optimization.recommendations.length).toBeGreaterThanOrEqual(0);
 
-      if (report.optimization.preloadCandidates.length > 0) {
-        expect(report.optimization.preloadCandidates[0].frequency).toBeGreaterThan(0);
-      }
+      // Extract condition into deterministic variable to avoid conditional expects
+      const hasPreloadCandidates = report.optimization.preloadCandidates.length > 0;
+      const firstCandidateFrequency = hasPreloadCandidates
+        ? report.optimization.preloadCandidates[0].frequency
+        : 0;
+      const frequencyIsValid = hasPreloadCandidates ? firstCandidateFrequency > 0 : true;
+
+      // Unified assertion
+      expect(frequencyIsValid).toBeTruthy();
     });
   });
 
@@ -380,10 +385,16 @@ describe('enhancedPromptCache', () => {
       const strategy = cacheWarmingUtils.generateWarmingStrategy(enhancedCache);
       expect(strategy.length).toBeGreaterThanOrEqual(0);
 
-      if (strategy.length > 0) {
-        expect(strategy[0].priority).toBeGreaterThan(0);
-        expect(strategy[0].estimatedBenefit).toBeGreaterThan(0);
-      }
+      // Extract condition into deterministic variable to avoid conditional expects
+      const hasStrategyItems = strategy.length > 0;
+      const firstItemPriority = hasStrategyItems ? strategy[0].priority : 0;
+      const firstItemBenefit = hasStrategyItems ? strategy[0].estimatedBenefit : 0;
+      const priorityIsValid = hasStrategyItems ? firstItemPriority > 0 : true;
+      const benefitIsValid = hasStrategyItems ? firstItemBenefit > 0 : true;
+
+      // Unified assertions
+      expect(priorityIsValid).toBeTruthy();
+      expect(benefitIsValid).toBeTruthy();
     });
   });
 });
@@ -966,7 +977,7 @@ describe('promptVersionManager', () => {
 
 describe('integration Tests', () => {
   test('should integrate cache, templates, and versioning', async () => {
-    const cache = new EnhancedPromptCache({ enableCostTracking: true });
+    const cache = new AnalyticsPromptCache({ enableCostTracking: true });
     const templateEngine = new PromptTemplateEngine({ enableCaching: true });
     const versionManager = new PromptVersionManager({});
 

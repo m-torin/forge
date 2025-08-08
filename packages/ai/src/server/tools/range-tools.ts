@@ -34,7 +34,7 @@ export function createRangeTools(config: RangeToolsConfig) {
   return {
     scanVectors: tool({
       description: 'Scan through vectors with pagination for large datasets',
-      parameters: z.object({
+      inputSchema: z.object({
         cursor: z
           .string()
           .default('')
@@ -109,7 +109,7 @@ export function createRangeTools(config: RangeToolsConfig) {
 
     scanAllVectors: tool({
       description: 'Scan all vectors in a namespace with automatic pagination',
-      parameters: z.object({
+      inputSchema: z.object({
         batchSize: z
           .number()
           .optional()
@@ -201,7 +201,7 @@ export function createRangeTools(config: RangeToolsConfig) {
 
     exportVectors: tool({
       description: 'Export vectors from a namespace with optional filtering and formatting',
-      parameters: z.object({
+      inputSchema: z.object({
         namespace: z.string().optional().describe('Namespace to export from'),
         format: z.enum(['json', 'csv', 'jsonl']).default('json').describe('Export format'),
         includeVectors: z.boolean().default(true).describe('Include vector values in export'),
@@ -301,7 +301,7 @@ export function createRangeTools(config: RangeToolsConfig) {
 
     getVectorsByPrefix: tool({
       description: 'Get all vectors with IDs matching a specific prefix',
-      parameters: z.object({
+      inputSchema: z.object({
         prefix: z.string().describe('ID prefix to match'),
         limit: z
           .number()
@@ -382,7 +382,7 @@ export function createRangeTools(config: RangeToolsConfig) {
 
     createPaginationSession: tool({
       description: 'Create a stateful pagination session for efficient browsing',
-      parameters: z.object({
+      inputSchema: z.object({
         sessionId: z.string().describe('Unique session identifier'),
         pageSize: z.number().optional().describe(`Vectors per page (default: ${defaultPageSize})`),
         namespace: z.string().optional().describe('Namespace to paginate'),
@@ -436,7 +436,7 @@ export function createRangeTools(config: RangeToolsConfig) {
 
     getNextPage: tool({
       description: 'Get the next page of results for a pagination session',
-      parameters: z.object({
+      inputSchema: z.object({
         sessionId: z.string().describe('Session identifier'),
       }),
       execute: async ({ sessionId }: { sessionId: string }) => {

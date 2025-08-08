@@ -17,7 +17,7 @@ const mockAuth = {
     signOut: vi.fn(),
   },
 };
-vi.mock('#/shared/auth', () => ({
+vi.mock('../../src/shared/auth', () => ({
   auth: mockAuth,
 }));
 
@@ -29,7 +29,7 @@ describe('basic server actions', () => {
 
   describe('getSessionAction', () => {
     test('should return session data on success', async () => {
-      const actionsModule = await import('#/server/actions/basic');
+      const actionsModule = await import('../../src/server/actions/basic');
 
       const mockSession = {
         user: { id: 'user-1', name: 'Test User', email: 'test@example.com' },
@@ -50,7 +50,7 @@ describe('basic server actions', () => {
     });
 
     test('should return null data when no session', async () => {
-      const actionsModule = await import('#/server/actions/basic');
+      const actionsModule = await import('../../src/server/actions/basic');
 
       mockAuth.api.getSession.mockResolvedValue(null);
 
@@ -63,7 +63,7 @@ describe('basic server actions', () => {
     });
 
     test('should handle errors gracefully', async () => {
-      const actionsModule = await import('#/server/actions/basic');
+      const actionsModule = await import('../../src/server/actions/basic');
 
       const error = new Error('Session fetch failed');
       mockAuth.api.getSession.mockRejectedValue(error);
@@ -78,7 +78,7 @@ describe('basic server actions', () => {
     });
 
     test('should handle non-Error exceptions', async () => {
-      const actionsModule = await import('#/server/actions/basic');
+      const actionsModule = await import('../../src/server/actions/basic');
 
       mockAuth.api.getSession.mockRejectedValue('String error');
 
@@ -92,7 +92,7 @@ describe('basic server actions', () => {
     });
 
     test('should pass headers to getSession', async () => {
-      const actionsModule = await import('#/server/actions/basic');
+      const actionsModule = await import('../../src/server/actions/basic');
 
       const mockHeadersValue = { 'x-test': 'header' };
       mockHeaders.mockResolvedValue(mockHeadersValue);
@@ -108,7 +108,7 @@ describe('basic server actions', () => {
 
   describe('deleteSessionAction', () => {
     test('should sign out successfully', async () => {
-      const actionsModule = await import('#/server/actions/basic');
+      const actionsModule = await import('../../src/server/actions/basic');
 
       mockAuth.api.signOut.mockResolvedValue(undefined);
 
@@ -124,7 +124,7 @@ describe('basic server actions', () => {
     });
 
     test('should handle sign out errors', async () => {
-      const actionsModule = await import('#/server/actions/basic');
+      const actionsModule = await import('../../src/server/actions/basic');
 
       const error = new Error('Sign out failed');
       mockAuth.api.signOut.mockRejectedValue(error);
@@ -139,7 +139,7 @@ describe('basic server actions', () => {
     });
 
     test('should handle non-Error exceptions in sign out', async () => {
-      const actionsModule = await import('#/server/actions/basic');
+      const actionsModule = await import('../../src/server/actions/basic');
 
       mockAuth.api.signOut.mockRejectedValue('String error');
 
@@ -153,7 +153,7 @@ describe('basic server actions', () => {
     });
 
     test('should pass headers to signOut', async () => {
-      const actionsModule = await import('#/server/actions/basic');
+      const actionsModule = await import('../../src/server/actions/basic');
 
       const mockHeadersValue = { authorization: 'Bearer token' };
       mockHeaders.mockResolvedValue(mockHeadersValue);
@@ -169,7 +169,7 @@ describe('basic server actions', () => {
 
   describe('getCurrentUserAction', () => {
     test('should return user data when authenticated', async () => {
-      const actionsModule = await import('#/server/actions/basic');
+      const actionsModule = await import('../../src/server/actions/basic');
 
       const mockUser = { id: 'user-1', name: 'Test User', email: 'test@example.com' };
       const mockSession = {
@@ -188,7 +188,7 @@ describe('basic server actions', () => {
     });
 
     test('should return error when not authenticated', async () => {
-      const actionsModule = await import('#/server/actions/basic');
+      const actionsModule = await import('../../src/server/actions/basic');
 
       mockAuth.api.getSession.mockResolvedValue(null);
 
@@ -202,7 +202,7 @@ describe('basic server actions', () => {
     });
 
     test('should return error when session has no user', async () => {
-      const actionsModule = await import('#/server/actions/basic');
+      const actionsModule = await import('../../src/server/actions/basic');
 
       const mockSession = {
         user: null,
@@ -221,7 +221,7 @@ describe('basic server actions', () => {
     });
 
     test('should handle session fetch errors', async () => {
-      const actionsModule = await import('#/server/actions/basic');
+      const actionsModule = await import('../../src/server/actions/basic');
 
       const error = new Error('Session error');
       mockAuth.api.getSession.mockRejectedValue(error);
@@ -236,7 +236,7 @@ describe('basic server actions', () => {
     });
 
     test('should handle undefined user in session', async () => {
-      const actionsModule = await import('#/server/actions/basic');
+      const actionsModule = await import('../../src/server/actions/basic');
 
       const mockSession = {
         user: undefined,
@@ -257,7 +257,7 @@ describe('basic server actions', () => {
 
   describe('edge cases', () => {
     test('should handle headers() throwing error', async () => {
-      const actionsModule = await import('#/server/actions/basic');
+      const actionsModule = await import('../../src/server/actions/basic');
 
       mockHeaders.mockRejectedValue(new Error('Headers error'));
 
@@ -271,7 +271,7 @@ describe('basic server actions', () => {
     });
 
     test('should handle async headers properly', async () => {
-      const actionsModule = await import('#/server/actions/basic');
+      const actionsModule = await import('../../src/server/actions/basic');
 
       const mockHeadersValue = { 'custom-header': 'value' };
       mockHeaders.mockResolvedValue(mockHeadersValue);
@@ -286,7 +286,7 @@ describe('basic server actions', () => {
     });
 
     test('should handle concurrent action calls', async () => {
-      const actionsModule = await import('#/server/actions/basic');
+      const actionsModule = await import('../../src/server/actions/basic');
 
       mockAuth.api.getSession.mockResolvedValue(null);
       mockAuth.api.signOut.mockResolvedValue(undefined);

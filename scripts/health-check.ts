@@ -2,15 +2,16 @@
 /**
  * Quick Health Check Script
  *
- * Performs a fast health check of all backstage services
+ * Performs a fast health check of all forge applications
  * Useful for CI/CD pipelines and quick status verification
  */
 
 const SERVICES = [
-  { name: 'backstage', port: 3300 },
-  { name: 'backstage-cms', port: 3301 },
-  { name: 'backstage-authmgmt', port: 3302 },
-  { name: 'backstage-workflows', port: 3303 },
+  { name: 'webapp', port: 3200 },
+  { name: 'ai-chatbot', port: 3100 },
+  { name: 'email', port: 3500 },
+  { name: 'storybook', port: 3700 },
+  { name: 'docs', port: 3800 },
 ];
 
 interface HealthResult {

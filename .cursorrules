@@ -331,7 +331,7 @@ Use `@repo/internationalization` package with concise property names (e.g., `l` 
 Standard locale codes: `en`, `fr`, `es`, `pt`, `de`. See package docs for implementation details.
 
 ## Vercel Toolbar & Feature Flags
-Available in development mode for apps with PostHog integration. Toggle feature flags in real-time via toolbar. See `/apps/backstage/app/lib/feature-flags.ts` for implementation examples.
+Available in development mode for apps with PostHog integration. Toggle feature flags in real-time via toolbar. See `/apps/ai-chatbot/src/lib/flags.ts` for implementation examples.
 
 ## Port Assignments
 

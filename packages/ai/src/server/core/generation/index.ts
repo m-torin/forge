@@ -11,7 +11,8 @@ export { generateObject, generateText, streamObject, streamText } from 'ai';
 export type {
   GenerateObjectResult,
   GenerateTextResult,
-  LanguageModel,
   StreamObjectResult,
   StreamTextResult,
 } from 'ai';
+
+export type { LanguageModel } from 'ai';

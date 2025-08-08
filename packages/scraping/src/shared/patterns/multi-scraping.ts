@@ -152,7 +152,7 @@ export async function scrapeMultipleSmart(
   options: Omit<MultiScrapeOptions, 'concurrent'> & {
     maxConcurrent?: number;
     minConcurrent?: number;
-    targetDuration?: number; // Target duration per batch in ms
+    targetDuration?: number;
   } = {},
 ): Promise<MultiScrapeResult[]> {
   const {

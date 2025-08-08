@@ -566,7 +566,7 @@ describe('generic Type Tests', () => {
 
     const result = mockGenericConfig(userConfig, defaults);
 
-    expect(result.locales).toEqual(['en', 'fr']);
+    expect(result.locales).toStrictEqual(['en', 'fr']);
     expect(result.defaultLocale).toBe('en');
     expect(result.fallbackLocale).toBe('en');
     expect(result.cache).toBeTruthy();
@@ -635,7 +635,7 @@ describe('utility Type Tests', () => {
     // Test object value
     const objectResult = mockConditionalTypes({ hello: 'world' });
     expect(objectResult.type).toBe('object');
-    expect(objectResult.keys).toEqual(['hello']);
+    expect(objectResult.keys).toStrictEqual(['hello']);
 
     // Test unknown value
     const unknownResult = mockConditionalTypes(123);

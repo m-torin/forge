@@ -7,13 +7,13 @@
 'use client';
 
 import { signOutAction } from '#/app/actions/auth';
-import type { User } from '#/lib/auth';
+import type { User } from '#/lib/auth-context';
 import type { Locale } from '#/lib/i18n';
 import { Button, Card, Group, Stack, Text, Title } from '@mantine/core';
 import { IconArrowLeft, IconCalendar, IconMail, IconShield, IconUser } from '@tabler/icons-react';
+import type { Route } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import type { Route } from 'next';
 
 interface ProfilePageUiProps {
   locale: Locale;
@@ -71,10 +71,10 @@ export default function ProfilePageUi({ locale, user }: ProfilePageUiProps) {
             <div className="flex items-center space-x-6">
               {/* Avatar */}
               <div className="flex-shrink-0">
-                {user.avatar ? (
+                {user.image ? (
                   <Image
                     className="h-20 w-20 rounded-full ring-2 ring-blue-500"
-                    src={user.avatar}
+                    src={user.image}
                     alt={user.name}
                     width={80}
                     height={80}

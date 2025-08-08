@@ -117,7 +117,6 @@ export function DocumentManager({
 
   return (
     <div className={clsx('document-manager', className)}>
-      {/* Header */}
       <div className="border-b border-gray-200 bg-white p-4">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
@@ -133,9 +132,7 @@ export function DocumentManager({
           </button>
         </div>
 
-        {/* Search and Controls */}
         <div className="space-y-4">
-          {/* Search Mode Toggle */}
           {enableAdvancedSearch && (
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -221,7 +218,6 @@ export function DocumentManager({
           )}
         </div>
 
-        {/* Stats */}
         {!useAdvancedSearch && (
           <div className="text-sm text-gray-500">
             {filteredDocuments.length} of {Object.keys(documents).length} documents
@@ -230,7 +226,6 @@ export function DocumentManager({
         )}
       </div>
 
-      {/* Recent Documents */}
       {recentDocuments.length > 0 && !searchQuery && !useAdvancedSearch && (
         <div className="border-b border-gray-200 bg-gray-50 p-4">
           <h3 className="mb-3 flex items-center gap-2 text-sm font-medium text-gray-700">
@@ -253,7 +248,6 @@ export function DocumentManager({
         </div>
       )}
 
-      {/* Document List */}
       {!useAdvancedSearch && (
         <div className="flex-1 overflow-auto">
           {filteredDocuments.length === 0 ? (
@@ -292,7 +286,6 @@ export function DocumentManager({
                     }
                   }}
                 >
-                  {/* Favorite Star */}
                   <button
                     onClick={e => {
                       e.stopPropagation();
@@ -307,12 +300,10 @@ export function DocumentManager({
                     )}
                   </button>
 
-                  {/* Document Icon */}
                   <div className="flex-shrink-0">
                     <IconFileText size={20} className="text-gray-600" />
                   </div>
 
-                  {/* Document Info */}
                   <div className="min-w-0 flex-1">
                     <h3 className="truncate font-medium text-gray-900 transition-colors group-hover:text-blue-600">
                       {doc.title}
@@ -329,7 +320,6 @@ export function DocumentManager({
                     )}
                   </div>
 
-                  {/* Actions */}
                   <div className="flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
                     <button
                       onClick={e => {

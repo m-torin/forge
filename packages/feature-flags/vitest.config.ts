@@ -5,7 +5,23 @@ import { defineConfig } from 'vitest/config';
 const baseConfig = createNodePackageConfig({
   setupFiles: ['./test-setup.ts'],
   overrides: {
-    test: {},
+    test: {
+      pool: 'threads',
+      poolOptions: {
+        threads: {
+          singleThread: true,
+        },
+      },
+      environment: 'node',
+      coverage: {
+        thresholds: {
+          lines: 25,
+          functions: 25,
+          branches: 25,
+          statements: 25,
+        },
+      },
+    },
   },
 });
 

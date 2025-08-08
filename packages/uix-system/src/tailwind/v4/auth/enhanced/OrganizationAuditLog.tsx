@@ -11,13 +11,13 @@ import { Card, CardContent, CardHeader } from '../ui/Card';
 import { Input } from '../ui/Input';
 
 // Placeholder server actions - these would be implemented in the actions file
-const exportAuditLogAction = async (prevState: any, formData: FormData) => {
-  const startDate = formData.get('startDate') as string;
-  const endDate = formData.get('endDate') as string;
-  const format = formData.get('format') as string;
-  const filters = JSON.parse((formData.get('filters') as string) || '{}');
+const exportAuditLogAction = async (__prevState: any, formData: FormData) => {
+  const _startDate = formData.get('startDate') as string;
+  const _endDate = formData.get('endDate') as string;
+  const _format = formData.get('format') as string;
+  const _filters = JSON.parse((formData.get('filters') as string) || '{}');
 
-  console.log('Exporting audit log:', { startDate, endDate, format, filters });
+  // console.log('Exporting audit log:', { startDate, endDate, format, filters });
 
   await new Promise(resolve => setTimeout(resolve, 2000));
 
@@ -29,8 +29,8 @@ const exportAuditLogAction = async (prevState: any, formData: FormData) => {
   };
 };
 
-const refreshAuditLogAction = async (prevState: any, formData: FormData) => {
-  console.log('Refreshing audit log');
+const refreshAuditLogAction = async (__prevState: any, _formData: FormData) => {
+  // console.log('Refreshing audit log');
 
   await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -96,7 +96,7 @@ const ACTION_CATEGORIES = {
   integration: { name: 'Integrations', icon: '🔌', color: 'indigo' },
 };
 
-const COMMON_ACTIONS = [
+const _COMMON_ACTIONS = [
   'user.created',
   'user.updated',
   'user.deleted',
@@ -300,7 +300,6 @@ export function OrganizationAuditLog({
 
   return (
     <div className={`space-y-6 ${className}`}>
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold text-gray-900">Organization Audit Log</h2>
@@ -318,7 +317,6 @@ export function OrganizationAuditLog({
         </div>
       </div>
 
-      {/* Status Messages */}
       {(exportState.error || refreshState.error) && (
         <Alert variant="destructive">{exportState.error || refreshState.error}</Alert>
       )}
@@ -331,7 +329,6 @@ export function OrganizationAuditLog({
         </Alert>
       )}
 
-      {/* Summary Statistics */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-6">
         <Card>
           <CardContent className="p-4">
@@ -388,7 +385,6 @@ export function OrganizationAuditLog({
         </Card>
       </div>
 
-      {/* Filters */}
       {allowFiltering && (
         <Card>
           <CardContent className="p-4">
@@ -487,7 +483,6 @@ export function OrganizationAuditLog({
         </Card>
       )}
 
-      {/* Export Modal */}
       {showExportModal && (
         <Card className="border-blue-200 bg-blue-50">
           <CardHeader>
@@ -554,7 +549,6 @@ export function OrganizationAuditLog({
         </Card>
       )}
 
-      {/* Audit Log Entries */}
       <div className="space-y-4">
         {filteredEntries.length === 0 ? (
           <Card>
@@ -600,10 +594,8 @@ export function OrganizationAuditLog({
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex flex-1 items-start space-x-4">
-                    {/* Action Icon */}
                     <div className="text-2xl">{getActionIcon(entry.action)}</div>
 
-                    {/* Entry Details */}
                     <div className="min-w-0 flex-1">
                       <div className="mb-2 flex items-center space-x-2">
                         <h3 className="text-lg font-medium text-gray-900">{entry.action}</h3>
@@ -654,13 +646,15 @@ export function OrganizationAuditLog({
                         </div>
                       </div>
 
-                      {/* Changes */}
                       {entry.changes && entry.changes.length > 0 && (
                         <div className="mb-3">
                           <div className="mb-2 text-sm font-medium text-gray-700">Changes:</div>
                           <div className="space-y-1">
-                            {entry.changes.map((change, index) => (
-                              <div key={index} className="rounded bg-gray-50 p-2 text-sm">
+                            {entry.changes.map(change => (
+                              <div
+                                key={`change-${entry.id}-${change.field}-${change.from}-${change.to}`}
+                                className="rounded bg-gray-50 p-2 text-sm"
+                              >
                                 <span className="font-medium">{change.field}:</span>{' '}
                                 <span className="text-red-600">"{String(change.from)}"</span> →{' '}
                                 <span className="text-green-600">"{String(change.to)}"</span>
@@ -670,7 +664,6 @@ export function OrganizationAuditLog({
                         </div>
                       )}
 
-                      {/* Technical Details (Expandable) */}
                       {showTechnicalDetails && (
                         <div>
                           <button
@@ -726,7 +719,6 @@ export function OrganizationAuditLog({
         )}
       </div>
 
-      {/* Compliance Notice */}
       <Card className="border-green-200 bg-green-50">
         <CardContent className="p-4">
           <div className="flex items-start">

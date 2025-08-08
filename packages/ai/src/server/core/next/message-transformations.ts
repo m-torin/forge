@@ -8,7 +8,7 @@ interface UIMessage {
   id: string;
   role: 'system' | 'user' | 'assistant' | 'tool';
   content: string | Array<any>;
-  parts?: Array<any>; // UI SDK compatibility
+  parts?: Array<any>;
   createdAt?: Date;
 }
 
@@ -17,7 +17,7 @@ export interface MessageContentPart {
   type: 'text' | 'image' | 'file' | 'reasoning' | 'tool-call' | 'tool-result' | string;
   text?: string;
   image?: string | Uint8Array | ArrayBuffer | Buffer | URL;
-  reasoning?: string;
+  reasoningText?: string;
   content?: unknown;
   [key: string]: unknown;
 }
@@ -82,7 +82,7 @@ export function dedupeParts<T extends MessageContentPart>(parts: T[]): T[] {
  * Currently filters out reasoning parts with undefined content
  */
 export function sanitizeParts<T extends MessageContentPart>(parts: T[]): T[] {
-  return parts.filter(part => !(part.type === 'reasoning' && part.reasoning === 'undefined'));
+  return parts.filter(part => !(part.type === 'reasoning' && part.reasoningText === 'undefined'));
 }
 
 /**
@@ -250,8 +250,8 @@ export function convertUIMessageToStorageFormat(
         if ('text' in part && part.text) {
           basePart.text = part.text;
         }
-        if ('reasoning' in part && typeof part.reasoning === 'string') {
-          basePart.reasoning = part.reasoning;
+        if ('reasoning' in part && typeof part.reasoningText === 'string') {
+          basePart.reasoningText = part.reasoningText;
         }
 
         return basePart;

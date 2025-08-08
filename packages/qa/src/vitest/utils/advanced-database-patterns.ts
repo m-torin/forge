@@ -253,9 +253,9 @@ export interface PerformanceTestConfig {
   testFunction: (input: any) => Promise<any> | any;
   inputGenerator: () => any;
   benchmarks: {
-    single?: number; // Expected time for single operation (ms)
-    batch?: number; // Expected time for batch operation (ms)
-    stress?: number; // Expected time under stress (ms)
+    single?: number;
+    batch?: number;
+    stress?: number;
   };
   volumes: {
     single?: number;

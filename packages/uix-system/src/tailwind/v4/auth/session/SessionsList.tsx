@@ -28,9 +28,13 @@ interface SessionsListProps extends BaseProps {
   currentSessionId?: string;
 }
 
-const initialState: FormState = { success: false };
+const _initialState: FormState = { success: false };
 
-export function SessionsList({ sessions, currentSessionId, className = '' }: SessionsListProps) {
+export function SessionsList({
+  sessions,
+  currentSessionId: _currentSessionId,
+  className = '',
+}: SessionsListProps) {
   const [formState, formAction] = useFormState(revokeSessionAction, createInitialActionState());
 
   return (

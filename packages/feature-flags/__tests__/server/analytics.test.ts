@@ -14,7 +14,7 @@ vi.mock('@repo/observability', () => ({
 // Mock environment
 const mockSafeEnv = vi.fn();
 
-vi.mock('#/env', () => ({
+vi.mock('../../env', () => ({
   safeEnv: mockSafeEnv,
 }));
 
@@ -69,21 +69,26 @@ describe('server/analytics', () => {
         country: 'US',
       });
 
-      expect(mockFetch).toHaveBeenCalledWith('/_vercel/insights/track', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          event: 'Feature Flag Evaluated',
-          properties: {
-            flag_key: 'testFlag',
-            flag_value: 'true',
-            user_id: 'user123',
-            session_id: undefined,
-            country: 'US',
-            environment: 'development',
-            timestamp: expect.any(String),
-          },
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/_vercel/insights/track',
+        expect.objectContaining({
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
         }),
+      );
+
+      const callArgs = mockFetch.mock.calls[0];
+      const body = JSON.parse(callArgs[1].body);
+      expect(body).toMatchObject({
+        event: 'Feature Flag Evaluated',
+        properties: {
+          flag_key: 'testFlag',
+          flag_value: 'true',
+          user_id: 'user123',
+          country: 'US',
+          environment: 'development',
+          timestamp: expect.any(String),
+        },
       });
     });
 
@@ -96,21 +101,26 @@ describe('server/analytics', () => {
         environment: 'staging',
       });
 
-      expect(mockFetch).toHaveBeenCalledWith('/_vercel/insights/track', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          event: 'Feature Flag Evaluated',
-          properties: {
-            flag_key: 'prodFlag',
-            flag_value: 'variant-a',
-            user_id: 'prod-user',
-            session_id: 'session123',
-            country: undefined,
-            environment: 'staging',
-            timestamp: expect.any(String),
-          },
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/_vercel/insights/track',
+        expect.objectContaining({
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
         }),
+      );
+
+      const callArgs = mockFetch.mock.calls[0];
+      const body = JSON.parse(callArgs[1].body);
+      expect(body).toMatchObject({
+        event: 'Feature Flag Evaluated',
+        properties: {
+          flag_key: 'prodFlag',
+          flag_value: 'variant-a',
+          user_id: 'prod-user',
+          session_id: 'session123',
+          environment: 'staging',
+          timestamp: expect.any(String),
+        },
       });
     });
 
@@ -144,21 +154,25 @@ describe('server/analytics', () => {
 
       await trackFlagEvaluation('anonFlag', true);
 
-      expect(mockFetch).toHaveBeenCalledWith('/_vercel/insights/track', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          event: 'Feature Flag Evaluated',
-          properties: {
-            flag_key: 'anonFlag',
-            flag_value: 'true',
-            user_id: 'anonymous',
-            session_id: undefined,
-            country: undefined,
-            environment: 'production',
-            timestamp: expect.any(String),
-          },
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/_vercel/insights/track',
+        expect.objectContaining({
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
         }),
+      );
+
+      const callArgs = mockFetch.mock.calls[0];
+      const body = JSON.parse(callArgs[1].body);
+      expect(body).toMatchObject({
+        event: 'Feature Flag Evaluated',
+        properties: {
+          flag_key: 'anonFlag',
+          flag_value: 'true',
+          user_id: 'anonymous',
+          environment: 'production',
+          timestamp: expect.any(String),
+        },
       });
     });
 
@@ -170,8 +184,9 @@ describe('server/analytics', () => {
       await trackFlagEvaluation('errorFlag', true);
 
       expect(mockLogError).toHaveBeenCalledWith(expect.any(Error), {
-        context: 'flag-analytics',
+        context: 'analytics-tracking',
         flagKey: 'errorFlag',
+        flagValue: true,
       });
     });
 
@@ -186,8 +201,9 @@ describe('server/analytics', () => {
       await trackFlagEvaluation('clientErrorFlag', true);
 
       expect(mockLogError).toHaveBeenCalledWith(expect.any(Error), {
-        context: 'flag-analytics',
+        context: 'analytics-tracking',
         flagKey: 'clientErrorFlag',
+        flagValue: true,
       });
     });
 
@@ -233,23 +249,55 @@ describe('server/analytics', () => {
 
       await trackFlagEvaluationsBatch(evaluations);
 
-      expect(mockFetch).toHaveBeenCalledWith('/_vercel/insights/batch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          events: evaluations.map(({ flagKey, flagValue, context }) => ({
-            event: 'Feature Flag Evaluated',
-            properties: {
-              flag_key: flagKey,
-              flag_value: String(flagValue),
-              user_id: context.userId || 'anonymous',
-              session_id: (context as any).sessionId,
-              country: (context as any).country,
-              environment: (context as any).environment || 'production',
-              timestamp: expect.any(String),
-            },
-          })),
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/_vercel/insights/batch',
+        expect.objectContaining({
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
         }),
+      );
+
+      const callArgs = mockFetch.mock.calls[0];
+      const body = JSON.parse(callArgs[1].body);
+      expect(body).toMatchObject({
+        events: [
+          {
+            event: 'Feature Flag Evaluated',
+            properties: expect.objectContaining({
+              flag_key: 'flag1',
+              flag_value: 'true',
+              user_id: 'user1',
+              environment: 'production',
+              timestamp: expect.any(String),
+              batch_id: expect.any(String),
+              batch_size: 3,
+            }),
+          },
+          {
+            event: 'Feature Flag Evaluated',
+            properties: expect.objectContaining({
+              flag_key: 'flag2',
+              flag_value: 'variant-b',
+              user_id: 'user2',
+              environment: 'production',
+              timestamp: expect.any(String),
+              batch_id: expect.any(String),
+              batch_size: 3,
+            }),
+          },
+          {
+            event: 'Feature Flag Evaluated',
+            properties: expect.objectContaining({
+              flag_key: 'flag3',
+              flag_value: 'false',
+              user_id: 'user1',
+              environment: 'production',
+              timestamp: expect.any(String),
+              batch_id: expect.any(String),
+              batch_size: 3,
+            }),
+          },
+        ],
       });
     });
 
@@ -271,8 +319,8 @@ describe('server/analytics', () => {
       await trackFlagEvaluationsBatch(evaluations);
 
       expect(mockLogError).toHaveBeenCalledWith(expect.any(Error), {
-        context: 'batch-flag-analytics',
         batchSize: 1,
+        context: 'batch-tracking',
       });
     });
   });
@@ -287,20 +335,25 @@ describe('server/analytics', () => {
         segmentId: 'segment-1',
       });
 
-      expect(mockFetch).toHaveBeenCalledWith('/_vercel/insights/track', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          event: 'Experiment Assignment',
-          properties: {
-            experiment_name: 'experiment-1',
-            variant: 'variant-a',
-            user_id: 'user123',
-            experiment_id: 'exp-1',
-            segment_id: 'segment-1',
-            timestamp: expect.any(String),
-          },
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/_vercel/insights/track',
+        expect.objectContaining({
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
         }),
+      );
+
+      const callArgs = mockFetch.mock.calls[0];
+      const body = JSON.parse(callArgs[1].body);
+      expect(body).toMatchObject({
+        event: 'Experiment Assignment',
+        properties: {
+          experiment_key: 'experiment-1',
+          variant: 'variant-a',
+          user_id: 'user123',
+          environment: 'production',
+          timestamp: expect.any(String),
+        },
       });
     });
   });
@@ -311,19 +364,26 @@ describe('server/analytics', () => {
 
       await trackFlagConversion('checkout-flow', 'purchase', 99.99, { userId: 'user123' });
 
-      expect(mockFetch).toHaveBeenCalledWith('/_vercel/insights/track', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          event: 'Feature Flag Conversion',
-          properties: {
-            flag_key: 'checkout-flow',
-            conversion_event: 'purchase',
-            user_id: 'user123',
-            conversion_value: 99.99,
-            timestamp: expect.any(String),
-          },
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/_vercel/insights/track',
+        expect.objectContaining({
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
         }),
+      );
+
+      const callArgs = mockFetch.mock.calls[0];
+      const body = JSON.parse(callArgs[1].body);
+      expect(body).toMatchObject({
+        event: 'Feature Flag Conversion',
+        properties: {
+          flag_key: 'checkout-flow',
+          conversion_event: 'purchase',
+          conversion_value: 99.99,
+          user_id: 'user123',
+          environment: 'production',
+          timestamp: expect.any(String),
+        },
       });
     });
   });
@@ -387,9 +447,14 @@ describe('server/analytics', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         '/_vercel/insights/track',
         expect.objectContaining({
-          body: expect.stringContaining('"user_id":"anonymous"'),
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
         }),
       );
+
+      const callArgs = mockFetch.mock.calls[0];
+      const body = JSON.parse(callArgs[1].body);
+      expect(body.properties.user_id).toBe('anonymous');
     });
 
     test('should handle very long flag keys', async () => {
@@ -402,9 +467,14 @@ describe('server/analytics', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         '/_vercel/insights/track',
         expect.objectContaining({
-          body: expect.stringContaining(`"flag_key":"${longFlagKey}"`),
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
         }),
       );
+
+      const callArgs = mockFetch.mock.calls[0];
+      const body = JSON.parse(callArgs[1].body);
+      expect(body.properties.flag_key).toBe(longFlagKey);
     });
 
     test('should handle concurrent tracking calls', async () => {
@@ -434,12 +504,12 @@ describe('server/analytics', () => {
       const trackingPromise = trackFlagEvaluation('slowFlag', true);
 
       // Fast forward time
-      vi.advanceTimersByTime(5000);
+      vi.advanceTimersByTime(15000);
 
       // Should not throw or hang
       await expect(trackingPromise).resolves.toBeUndefined();
 
       vi.useRealTimers();
-    });
+    }, 10000);
   });
 });

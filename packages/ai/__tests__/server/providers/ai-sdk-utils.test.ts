@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, vi } from 'vitest';
+import { describe, expect, vi } from 'vitest';
 
 // CRITICAL: Mock AI SDK providers BEFORE any imports that use them
 // This prevents real API calls from being made during tests
@@ -87,14 +87,7 @@ vi.mock('ai', () => ({
   CoreMessage: vi.fn(),
 }));
 
-// Mock server-only to prevent import issues in tests
-vi.mock('server-only', () => ({}));
-
 describe('aI SDK Utils', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   test('should import AI SDK utils successfully', async () => {
     const aiSDKUtils = await import('#/server/providers/ai-sdk-utils');
     expect(aiSDKUtils).toBeDefined();
@@ -145,11 +138,11 @@ describe('aI SDK Utils', () => {
     expect(models.openai).toBeDefined();
   });
 
-  test('should test enhanced generation functions', async () => {
+  test('should test generation functions with config', async () => {
     const {
-      enhancedGenerateText,
-      enhancedStreamText,
-      enhancedGenerateObject,
+      generateTextWithConfig,
+      streamTextWithConfig,
+      generateObjectWithConfig,
       createAnthropicModel,
     } = await import('#/server/providers/ai-sdk-utils');
 
@@ -162,17 +155,17 @@ describe('aI SDK Utils', () => {
       temperature: 0.7,
     };
 
-    // Test enhanced generate text
-    const textResult = await enhancedGenerateText(mockOptions);
+    // Test generate text with config
+    const textResult = await generateTextWithConfig(mockOptions);
     expect(textResult).toBeDefined();
     expect(textResult.text).toBe('Mock generated text');
 
-    // Test enhanced stream text
-    const streamResult = await enhancedStreamText(mockOptions);
+    // Test stream text with config
+    const streamResult = await streamTextWithConfig(mockOptions);
     expect(streamResult).toBeDefined();
 
-    // Test enhanced generate object
-    const objectResult = await enhancedGenerateObject({
+    // Test generate object with config
+    const objectResult = await generateObjectWithConfig({
       ...mockOptions,
       schema: { type: 'object', properties: {} },
     });

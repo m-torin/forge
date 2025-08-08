@@ -106,7 +106,7 @@ describe('email Package Configuration', () => {
         html: '<p>Test</p>',
       });
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         data: null,
         error: { message: 'API key is invalid', name: 'validation_error', statusCode: 401 },
       });
@@ -163,8 +163,8 @@ describe('email Package Configuration', () => {
       ];
 
       templates.forEach(templateName => {
-        expect(emailModule[templateName]).toBeDefined();
-        expect(typeof emailModule[templateName]).toBe('function');
+        expect((emailModule as any)[templateName]).toBeDefined();
+        expect(typeof (emailModule as any)[templateName]).toBe('function');
       });
     });
 
@@ -347,7 +347,7 @@ describe('email Package Configuration', () => {
         html: '<p>Test</p>',
       });
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         data: null,
         error: { message: 'API key is invalid', name: 'validation_error', statusCode: 401 },
       });

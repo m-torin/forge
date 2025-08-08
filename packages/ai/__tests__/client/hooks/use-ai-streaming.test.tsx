@@ -3,7 +3,6 @@
  * Testing RSC integration, streaming functionality, and client-server interaction
  */
 
-import '@repo/qa/vitest/setup/next-app';
 import { render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, vi } from 'vitest';
@@ -15,7 +14,7 @@ const mockStreamableValue = {
   error: null,
   append: vi.fn(),
   update: vi.fn(),
-  done: vi.fn(),
+  complete: vi.fn(),
 };
 
 const mockUseCompletion = vi.fn(() => ({
@@ -234,7 +233,7 @@ describe('react Server Components Integration', () => {
         error: null,
         update: vi.fn(),
         append: vi.fn(),
-        done: vi.fn(),
+        complete: vi.fn(),
       };
 
       (createStreamableValue as any).mockReturnValue(mockStreamableValue);
@@ -254,7 +253,7 @@ describe('react Server Components Integration', () => {
               setCurrentValue(prev => prev + updates[index]);
               index++;
             } else {
-              streamable.done();
+              (streamable as any).done();
               clearInterval(interval);
             }
           }, 100);
@@ -275,7 +274,7 @@ describe('react Server Components Integration', () => {
       );
 
       expect(mockStreamableValue.append).toHaveBeenCalledTimes(3);
-      expect(mockStreamableValue.done).toHaveBeenCalledWith();
+      expect(mockStreamableValue.complete).toHaveBeenCalledWith();
     });
   });
 
@@ -285,7 +284,7 @@ describe('react Server Components Integration', () => {
         messages: [
           { id: '1', role: 'user' as const, content: 'Hello' },
           { id: '2', role: 'assistant' as const, content: 'Hi there!' },
-        ],
+        ] as never[],
         input: '',
         isLoading: false,
         handleInputChange: vi.fn(),
@@ -301,7 +300,7 @@ describe('react Server Components Integration', () => {
         return (
           <div data-testid="chat-component">
             <div data-testid="messages">
-              {messages.map(message => (
+              {(messages as any[]).map((message: any) => (
                 <div key={message.id} data-testid={`message-${message.role}`}>
                   {message.content}
                 </div>

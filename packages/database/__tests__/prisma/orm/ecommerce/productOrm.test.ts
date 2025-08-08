@@ -82,7 +82,7 @@ describe('Product ORM', () => {
           images: true,
         },
       });
-      expect(result).toEqual(expectedProduct);
+      expect(result).toStrictEqual(expectedProduct);
     });
 
     it('should create product with variants', async () => {
@@ -105,7 +105,7 @@ describe('Product ORM', () => {
       const result = await createProductWithVariants(productData, variantsData);
 
       expect(mockPrisma.$transaction).toHaveBeenCalled();
-      expect(result).toEqual(expectedResult);
+      expect(result).toStrictEqual(expectedResult);
     });
 
     it('should generate unique slug for products with same name', async () => {
@@ -181,7 +181,7 @@ describe('Product ORM', () => {
           },
         },
       });
-      expect(result).toEqual(expectedProduct);
+      expect(result).toStrictEqual(expectedProduct);
     });
 
     it('should find product by slug', async () => {
@@ -198,7 +198,7 @@ describe('Product ORM', () => {
         where: { slug },
         include: expect.any(Object),
       });
-      expect(result).toEqual(expectedProduct);
+      expect(result).toStrictEqual(expectedProduct);
     });
 
     it('should search products with filters', async () => {
@@ -279,7 +279,7 @@ describe('Product ORM', () => {
         take: 20,
         skip: 0,
       });
-      expect(result).toEqual(expectedProducts);
+      expect(result).toStrictEqual(expectedProducts);
     });
   });
 
@@ -312,7 +312,7 @@ describe('Product ORM', () => {
           images: true,
         },
       });
-      expect(result).toEqual(updatedProduct);
+      expect(result).toStrictEqual(updatedProduct);
     });
 
     it('should update product categories', async () => {
@@ -343,7 +343,7 @@ describe('Product ORM', () => {
           categories: true,
         },
       });
-      expect(result).toEqual(updatedProduct);
+      expect(result).toStrictEqual(updatedProduct);
     });
 
     it('should update product inventory across variants', async () => {
@@ -386,7 +386,7 @@ describe('Product ORM', () => {
           deletedAt: expect.any(Date),
         },
       });
-      expect(result).toEqual(deletedProduct);
+      expect(result).toStrictEqual(deletedProduct);
     });
 
     it('should permanently delete product with cascade', async () => {
@@ -501,7 +501,7 @@ describe('Product ORM', () => {
         },
         take: 10,
       });
-      expect(result).toEqual(expectedProducts);
+      expect(result).toStrictEqual(expectedProducts);
     });
   });
 

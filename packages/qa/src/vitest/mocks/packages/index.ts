@@ -16,6 +16,9 @@ export * from './headlessui-react';
 export * from './hugeicons';
 export * from './tabler-icons';
 
+// Flow/Graph libraries
+export * from './xyflow-react';
+
 // Carousel and sliders
 export * from './embla';
 export * from './rc-slider';

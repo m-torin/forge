@@ -65,6 +65,7 @@
     "clean:prisma": "rm -rf prisma-generated || true",
     "coverage:collect": "vitest run --coverage --reporter=json",
     "create-users": "doppler run -- tsx src/prisma/scripts/create-users.ts",
+    "dev": "pnpm prisma:studio:local",
     "doppler:open": "doppler open",
     "doppler:pull": "doppler secrets download --no-file --format env > .env.local",
     "doppler:secrets": "doppler secrets",

@@ -64,7 +64,7 @@ export class EmbeddingManager {
       embeddings: result.embeddings,
       usage: {
         tokens: result.usage?.tokens ?? 0,
-        promptTokens: result.usage?.tokens ?? 0, // For embeddings, all tokens are input tokens
+        promptTokens: result.usage?.tokens ?? 0, // For embeddings, all tokens are prompt tokens
         completionTokens: 0, // Embeddings don't have completion tokens
         totalTokens: result.usage?.tokens ?? 0,
       },

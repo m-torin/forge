@@ -72,19 +72,19 @@ vi.mock('../src/server-actions', () => ({
 
 describe('server-next.ts entry point', () => {
   test('should export core auth instance', async () => {
-    const serverNextModule = await import('#/server-next');
+    const serverNextModule = await import('../../src/server-next');
 
     expect(serverNextModule.auth).toBeDefined();
   });
 
   test('should export Next.js handler', async () => {
-    const serverNextModule = await import('#/server-next');
+    const serverNextModule = await import('../../src/server-next');
 
     expect(serverNextModule.toNextJsHandler).toBeDefined();
   });
 
   test('should export session utilities', async () => {
-    const serverNextModule = await import('#/server-next');
+    const serverNextModule = await import('../../src/server-next');
 
     expect(serverNextModule.getCurrentUser).toBeDefined();
     expect(serverNextModule.getSession).toBeDefined();
@@ -92,7 +92,7 @@ describe('server-next.ts entry point', () => {
   });
 
   test('should export user management actions', async () => {
-    const serverNextModule = await import('#/server-next');
+    const serverNextModule = await import('../../src/server-next');
 
     expect(serverNextModule.createUserAction).toBeDefined();
     expect(serverNextModule.updateUserAction).toBeDefined();
@@ -102,7 +102,7 @@ describe('server-next.ts entry point', () => {
   });
 
   test('should export admin actions', async () => {
-    const serverNextModule = await import('#/server-next');
+    const serverNextModule = await import('../../src/server-next');
 
     expect(serverNextModule.adminDeleteUserAction).toBeDefined();
     expect(serverNextModule.banUserAction).toBeDefined();
@@ -112,7 +112,7 @@ describe('server-next.ts entry point', () => {
   });
 
   test('should export organization actions', async () => {
-    const serverNextModule = await import('#/server-next');
+    const serverNextModule = await import('../../src/server-next');
 
     expect(serverNextModule.createOrganizationAction).toBeDefined();
     expect(serverNextModule.updateOrganizationAction).toBeDefined();
@@ -125,7 +125,7 @@ describe('server-next.ts entry point', () => {
   });
 
   test('should export API key actions', async () => {
-    const serverNextModule = await import('#/server-next');
+    const serverNextModule = await import('../../src/server-next');
 
     expect(serverNextModule.createApiKeyAction).toBeDefined();
     expect(serverNextModule.updateApiKeyAction).toBeDefined();
@@ -137,7 +137,7 @@ describe('server-next.ts entry point', () => {
   });
 
   test('should export session management actions', async () => {
-    const serverNextModule = await import('#/server-next');
+    const serverNextModule = await import('../../src/server-next');
 
     expect(serverNextModule.getSessionAction).toBeDefined();
     expect(serverNextModule.deleteSessionAction).toBeDefined();
@@ -146,7 +146,7 @@ describe('server-next.ts entry point', () => {
   });
 
   test('should export two-factor authentication actions', async () => {
-    const serverNextModule = await import('#/server-next');
+    const serverNextModule = await import('../../src/server-next');
 
     expect(serverNextModule.enableTwoFactorAction).toBeDefined();
     expect(serverNextModule.disableTwoFactorAction).toBeDefined();
@@ -155,7 +155,7 @@ describe('server-next.ts entry point', () => {
   });
 
   test('should export passkey actions', async () => {
-    const serverNextModule = await import('#/server-next');
+    const serverNextModule = await import('../../src/server-next');
 
     expect(serverNextModule.generatePasskeyRegistrationOptionsAction).toBeDefined();
     expect(serverNextModule.deletePasskeyAction).toBeDefined();
@@ -163,14 +163,14 @@ describe('server-next.ts entry point', () => {
   });
 
   test('should export password management actions', async () => {
-    const serverNextModule = await import('#/server-next');
+    const serverNextModule = await import('../../src/server-next');
 
     expect(serverNextModule.changePasswordAction).toBeDefined();
     expect(serverNextModule.setPasswordAction).toBeDefined();
   });
 
   test('should export account management actions', async () => {
-    const serverNextModule = await import('#/server-next');
+    const serverNextModule = await import('../../src/server-next');
 
     expect(serverNextModule.listAccountsAction).toBeDefined();
     expect(serverNextModule.unlinkAccountAction).toBeDefined();
@@ -178,7 +178,7 @@ describe('server-next.ts entry point', () => {
   });
 
   test('should export organization-specific actions', async () => {
-    const serverNextModule = await import('#/server-next');
+    const serverNextModule = await import('../../src/server-next');
 
     expect(serverNextModule.listUserOrganizationsAction).toBeDefined();
     expect(serverNextModule.listOrganizationInvitationsAction).toBeDefined();

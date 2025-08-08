@@ -26,3 +26,31 @@ export {
   clientRegistry,
   clientRegistry as registry,
 } from './shared/providers/client-registry';
+
+// Task classification system
+export {
+  classifyTask,
+  estimateCost,
+  getModelOptimizationInfo,
+  getOptimalModelForTask,
+  getTaskTypeInfo,
+  type ModelCostInfo,
+  type ModelOptimizationInfo,
+  type TaskClassification,
+  type TaskType,
+} from './shared/features/classification/task-classifier';
+
+// Model metadata system
+export {
+  DEFAULT_CHAT_MODEL,
+  MODEL_METADATA,
+  getAvailableModelIds,
+  getModelMetadata,
+  getModelsByCapability,
+  getModelsByCost,
+  getModelsByProvider,
+  getModelsByStrength,
+  getModelsByTaskType,
+  modelSupportsFeature,
+  type ModelMetadata,
+} from './shared/metadata/model-metadata';

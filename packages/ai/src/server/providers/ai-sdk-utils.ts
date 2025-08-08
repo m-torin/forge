@@ -20,8 +20,6 @@ export interface ModelConfig {
   apiKey?: string;
   baseUrl?: string;
   maxOutputTokens?: number;
-  /** @deprecated Use maxOutputTokens instead */
-  maxTokens?: number;
   temperature?: number;
   // Provider-specific options (following AI SDK patterns)
   anthropic?: {
@@ -61,8 +59,6 @@ export interface GenerateOptions {
   prompt?: string;
   system?: string;
   maxOutputTokens?: number;
-  /** @deprecated Use maxOutputTokens instead */
-  maxTokens?: number;
   temperature?: number;
   tools?: Record<string, any>;
   providerOptions?: Record<string, any>;
@@ -208,7 +204,7 @@ export async function generateTextWithConfig(options: GenerateOptions) {
 
     const generateOptions: any = {
       model: options.model,
-      maxOutputTokens: options.maxOutputTokens || options.maxTokens,
+      maxOutputTokens: options.maxOutputTokens || options.maxOutputTokens,
       temperature: options.temperature,
       tools: options.tools,
       providerOptions: options.providerOptions,
@@ -227,7 +223,11 @@ export async function generateTextWithConfig(options: GenerateOptions) {
     const result = await generateText(generateOptions);
     return result;
   } catch (error) {
-    throw formatProviderError(error, options.model.modelId || 'unknown', 'generation');
+    throw formatProviderError(
+      error,
+      (options.model as any).modelId || 'unknown-model' || 'unknown',
+      'generation',
+    );
   }
 }
 
@@ -240,7 +240,7 @@ export async function streamTextWithConfig(options: GenerateOptions) {
 
     const streamOptions: any = {
       model: options.model,
-      maxOutputTokens: options.maxOutputTokens || options.maxTokens,
+      maxOutputTokens: options.maxOutputTokens || options.maxOutputTokens,
       temperature: options.temperature,
       tools: options.tools,
       providerOptions: options.providerOptions,
@@ -256,10 +256,17 @@ export async function streamTextWithConfig(options: GenerateOptions) {
       }
     }
 
-    const result = streamText(streamOptions);
+    const result = streamText({
+      ...streamOptions,
+      experimental_telemetry: { isEnabled: true },
+    });
     return result;
   } catch (error) {
-    throw formatProviderError(error, options.model.modelId || 'unknown', 'streaming');
+    throw formatProviderError(
+      error,
+      (options.model as any).modelId || 'unknown-model' || 'unknown',
+      'streaming',
+    );
   }
 }
 
@@ -278,7 +285,7 @@ export async function generateObjectWithConfig<T>(
       prompt: options.prompt,
       system: options.system,
       schema: options.schema,
-      maxOutputTokens: options.maxOutputTokens || options.maxTokens,
+      maxOutputTokens: options.maxOutputTokens || options.maxOutputTokens,
       temperature: options.temperature,
       output: options.output,
       providerOptions: options.providerOptions,
@@ -287,7 +294,11 @@ export async function generateObjectWithConfig<T>(
     const result = await generateObject(generateOptions);
     return result.object as T;
   } catch (error) {
-    throw formatProviderError(error, options.model.modelId || 'unknown', 'object generation');
+    throw formatProviderError(
+      error,
+      (options.model as any).modelId || 'unknown-model' || 'unknown',
+      'object generation',
+    );
   }
 }
 
@@ -385,8 +396,6 @@ export async function webSearchWithPerplexity(
     model?: 'sonar-pro' | 'sonar' | 'sonar-deep-research';
     return_images?: boolean;
     maxOutputTokens?: number;
-    /** @deprecated Use maxOutputTokens instead */
-    maxTokens?: number;
     temperature?: number;
   },
 ) {
@@ -401,7 +410,7 @@ export async function webSearchWithPerplexity(
   return await generateText({
     model,
     prompt,
-    maxOutputTokens: options?.maxOutputTokens || options?.maxTokens,
+    maxOutputTokens: options?.maxOutputTokens || options?.maxOutputTokens,
     temperature: options?.temperature,
     providerOptions: Object.keys(providerOptions).length > 0 ? providerOptions : undefined,
   });
@@ -417,8 +426,6 @@ export async function webSearchWithGemini(
     model?: string;
     useSearchGrounding?: boolean;
     maxOutputTokens?: number;
-    /** @deprecated Use maxOutputTokens instead */
-    maxTokens?: number;
     temperature?: number;
   },
 ) {
@@ -429,7 +436,7 @@ export async function webSearchWithGemini(
   return await generateText({
     model,
     prompt,
-    maxOutputTokens: options?.maxOutputTokens || options?.maxTokens,
+    maxOutputTokens: options?.maxOutputTokens || options?.maxOutputTokens,
     temperature: options?.temperature,
   });
 }

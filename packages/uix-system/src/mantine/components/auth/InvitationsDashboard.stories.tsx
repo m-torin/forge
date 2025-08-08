@@ -70,7 +70,7 @@ const InvitationsDashboardWrapper = (props: any) => {
   const [loading, setLoading] = useState(false);
 
   const handleLoadInvitations = async (organizationId?: string): Promise<Invitation[]> => {
-    console.log('Loading invitations for organization:', organizationId);
+    // console.log('Loading invitations for organization:', organizationId);
     setLoading(true);
 
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -80,7 +80,7 @@ const InvitationsDashboardWrapper = (props: any) => {
   };
 
   const handleAcceptInvitation = async (invitation: Invitation) => {
-    console.log('Accepting invitation:', invitation.id);
+    // console.log('Accepting invitation:', invitation.id);
 
     await new Promise(resolve => setTimeout(resolve, 1500));
 
@@ -88,11 +88,11 @@ const InvitationsDashboardWrapper = (props: any) => {
       throw new Error('Failed to accept invitation');
     }
 
-    console.log('Invitation accepted successfully');
+    // console.log('Invitation accepted successfully');
   };
 
   const handleRejectInvitation = async (invitation: Invitation) => {
-    console.log('Rejecting invitation:', invitation.id);
+    // console.log('Rejecting invitation:', invitation.id);
 
     await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -100,15 +100,15 @@ const InvitationsDashboardWrapper = (props: any) => {
       throw new Error('Failed to reject invitation');
     }
 
-    console.log('Invitation rejected successfully');
+    // console.log('Invitation rejected successfully');
   };
 
   const handleInvitationUpdate = () => {
-    console.log('Invitation updated, refreshing data...');
+    // console.log('Invitation updated, refreshing data...');
   };
 
   const handleError = (error: Error) => {
-    console.error('Dashboard error:', error.message);
+    // console.error('Dashboard error:', error.message);
   };
 
   return (

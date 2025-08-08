@@ -5,7 +5,7 @@
  * Reduces duplication and ensures realistic test scenarios.
  */
 
-import type { Dictionary, Locale } from '#/shared/dictionary-loader';
+import type { Dictionary, Locale } from '../../src/shared/dictionary-loader';
 
 // ================================================================================================
 // COMMON TEST DATA PATTERNS

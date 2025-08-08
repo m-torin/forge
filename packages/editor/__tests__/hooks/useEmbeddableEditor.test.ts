@@ -29,7 +29,7 @@ describe('useEmbeddableEditor Hook', () => {
     it('returns all expected methods', () => {
       const { result } = renderHook(() => useEmbeddableEditor());
 
-      expect(result.current).toEqual({
+      expect(result.current).toStrictEqual({
         getHTML: expect.any(Function),
         getJSON: expect.any(Function),
         setContent: expect.any(Function),
@@ -100,7 +100,7 @@ describe('useEmbeddableEditor Hook', () => {
       const json = result.current.getJSON(mockEditor);
 
       expect(mockEditor.getJSON).toHaveBeenCalledTimes(1);
-      expect(json).toEqual({
+      expect(json).toStrictEqual({
         type: 'doc',
         content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Mock HTML content' }] }],
       });
@@ -145,7 +145,7 @@ describe('useEmbeddableEditor Hook', () => {
 
       const json = result.current.getJSON(mockEditor);
 
-      expect(json).toEqual(complexJSON);
+      expect(json).toStrictEqual(complexJSON);
     });
 
     it('handles empty JSON content', () => {
@@ -156,7 +156,7 @@ describe('useEmbeddableEditor Hook', () => {
 
       const json = result.current.getJSON(mockEditor);
 
-      expect(json).toEqual(emptyJSON);
+      expect(json).toStrictEqual(emptyJSON);
     });
   });
 

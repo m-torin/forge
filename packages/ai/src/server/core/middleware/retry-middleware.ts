@@ -6,7 +6,7 @@
 import { logError, logInfo, logWarn } from '@repo/observability';
 
 // Define middleware types locally since they may not be exported in current AI SDK v5 build
-interface LanguageModelV2Middleware {
+interface LanguageModelMiddleware {
   wrapGenerate?: (args: { doGenerate: any; params: any }) => Promise<any>;
   wrapStream?: (args: { doStream: any; params: any }) => Promise<any>;
 }
@@ -89,7 +89,7 @@ export class RetryMiddleware {
   /**
    * Create middleware function
    */
-  create(): LanguageModelV2Middleware {
+  create(): LanguageModelMiddleware {
     return {
       wrapGenerate: async ({ doGenerate, params }) => {
         return this.retryOperation(doGenerate, params);
@@ -242,7 +242,7 @@ export class RetryMiddleware {
 /**
  * Create retry middleware
  */
-export function createRetryMiddleware(config?: RetryConfig): LanguageModelV2Middleware {
+export function createRetryMiddleware(config?: RetryConfig): LanguageModelMiddleware {
   const middleware = new RetryMiddleware(config);
   return middleware.create();
 }

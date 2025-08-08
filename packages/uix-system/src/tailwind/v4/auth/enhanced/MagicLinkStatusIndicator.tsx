@@ -25,10 +25,10 @@ interface MagicLinkStatusIndicatorProps extends BaseProps {
   onStatusChange?: (status: MagicLinkStatus) => void;
   onSuccess?: () => void;
   allowResend?: boolean;
-  expirationTime?: number; // in seconds, default 300 (5 minutes)
+  expirationTime?: number;
 }
 
-const initialState: FormState = { success: false };
+const _initialState: FormState = { success: false };
 
 export function MagicLinkStatusIndicator({
   email,
@@ -90,7 +90,7 @@ export function MagicLinkStatusIndicator({
         // This could be done via polling an endpoint or websocket
         try {
           // TODO: Replace with actual magic link status check
-          console.log('Checking magic link status for:', email);
+          // console.log('Checking magic link status for:', email);
 
           // Simulate random click detection
           const result = { clicked: Math.random() > 0.8 };
@@ -98,7 +98,7 @@ export function MagicLinkStatusIndicator({
           if (result.clicked) {
             setStatus('clicked');
           }
-        } catch (error) {
+        } catch (_error) {
           // Handle error silently for now
         }
       }, 2000);

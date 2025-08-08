@@ -14,7 +14,6 @@
     "test:e2e": "playwright test",
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:ui": "playwright test --ui",
-    "test:ui": "vitest --ui",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "analyze": "ANALYZE=true next build",
@@ -97,6 +96,7 @@
     "next": "catalog:",
     "next-auth": "5.0.0-beta.25",
     "p-limit": "^6.1.0",
+    "prisma-zod-generator": "^1.1.1",
     "react": "catalog:",
     "react-dom": "catalog:",
     "redis": "^4.7.0",
@@ -106,8 +106,7 @@
     "tailwind-preset-mantine": "catalog:",
     "tailwindcss-animate": "^1.0.7",
     "unstorage": "^1.13.1",
-    "zod": "catalog:",
-    "prisma-zod-generator": "^1.1.1"
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@aws-sdk/types": "^3.709.0",
@@ -133,6 +132,7 @@
     "postcss-simple-vars": "catalog:",
     "prisma": "^6.12.0",
     "sass": "catalog:",
+    "sass-embedded": "^1.89.2",
     "tailwindcss": "catalog:",
     "typescript": "catalog:",
     "vite-tsconfig-paths": "catalog:",

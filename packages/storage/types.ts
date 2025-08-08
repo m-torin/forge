@@ -9,17 +9,17 @@ export interface R2Credentials {
   accountId: string;
   bucket: string;
   secretAccessKey: string;
-  name?: string; // Optional name for this bucket config
+  name?: string;
 }
 
 export interface EnhancedR2Credentials extends R2Credentials {
-  customDomain?: string; // Custom domain for production use
-  defaultPartSize?: number; // Default part size for multipart uploads
-  defaultQueueSize?: number; // Default concurrent uploads
+  customDomain?: string;
+  defaultPartSize?: number;
+  defaultQueueSize?: number;
 }
 
 export interface StorageConfig {
-  cloudflareR2?: EnhancedR2Credentials | EnhancedR2Credentials[]; // Support single or multiple R2 configs
+  cloudflareR2?: EnhancedR2Credentials | EnhancedR2Credentials[];
   cloudflareImages?: {
     accountId: string;
     apiToken: string;
@@ -71,23 +71,23 @@ export interface StorageProvider {
 export type StorageProviderType = 'cloudflare-r2' | 'cloudflare-images' | 'vercel-blob' | 'multi';
 
 export interface UploadOptions {
-  cacheControl?: number; // in seconds
+  cacheControl?: number;
   contentType?: string;
   metadata?: Record<string, string>;
   public?: boolean;
   // Cloudflare Images specific options
   requireSignedURLs?: boolean;
   variants?: string[];
-  id?: string; // Custom ID for Cloudflare Images
-  fileName?: string; // Original filename for Cloudflare Images
-  expiresAfter?: string; // ISO 8601 date for Cloudflare Images expiration
+  id?: string;
+  fileName?: string;
+  expiresAfter?: string;
   // Advanced upload options
-  partSize?: number; // Size of each part for multipart uploads (default: 5MB)
-  queueSize?: number; // Number of parts to upload concurrently (default: 4)
-  leavePartsOnError?: boolean; // Whether to leave parts on S3 for manual recovery
+  partSize?: number;
+  queueSize?: number;
+  leavePartsOnError?: boolean;
   onProgress?: (progress: UploadProgress) => void;
   // Provider override
-  provider?: string; // Force specific provider in multi-storage
+  provider?: string;
 }
 
 export interface UploadProgress {
@@ -98,7 +98,7 @@ export interface UploadProgress {
 }
 
 export interface StreamUploadOptions extends UploadOptions {
-  highWaterMark?: number; // Stream buffer size
+  highWaterMark?: number;
 }
 
 export interface MultipartUploadResult extends StorageObject {

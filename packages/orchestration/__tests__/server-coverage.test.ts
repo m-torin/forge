@@ -160,7 +160,7 @@ describe('server Orchestration', () => {
 
         const result = await engine.executeWorkflow(definition, input);
 
-        expect(result).toEqual({ executionId: 'exec-123' });
+        expect(result).toStrictEqual({ executionId: 'exec-123' });
       });
 
       test('should execute workflow with provider name', async () => {
@@ -174,7 +174,7 @@ describe('server Orchestration', () => {
 
         const result = await engine.executeWorkflow(definition, input, providerName);
 
-        expect(result).toEqual({ executionId: 'exec-123' });
+        expect(result).toStrictEqual({ executionId: 'exec-123' });
       });
 
       test('should execute workflow without input', async () => {
@@ -186,7 +186,7 @@ describe('server Orchestration', () => {
 
         const result = await engine.executeWorkflow(definition);
 
-        expect(result).toEqual({ executionId: 'exec-123' });
+        expect(result).toStrictEqual({ executionId: 'exec-123' });
       });
     });
 
@@ -194,13 +194,13 @@ describe('server Orchestration', () => {
       test('should get execution by id', async () => {
         const result = await engine.getExecution('exec-123');
 
-        expect(result).toEqual({ status: 'completed' });
+        expect(result).toStrictEqual({ status: 'completed' });
       });
 
       test('should get execution with provider name', async () => {
         const result = await engine.getExecution('exec-123', 'test-provider');
 
-        expect(result).toEqual({ status: 'completed' });
+        expect(result).toStrictEqual({ status: 'completed' });
       });
     });
 
@@ -208,7 +208,7 @@ describe('server Orchestration', () => {
       test('should return engine status', () => {
         const status = engine.getStatus();
 
-        expect(status).toEqual({ initialized: true });
+        expect(status).toStrictEqual({ initialized: true });
       });
     });
 
@@ -216,7 +216,7 @@ describe('server Orchestration', () => {
       test('should perform health check', async () => {
         const result = await engine.healthCheck();
 
-        expect(result).toEqual({ healthy: true });
+        expect(result).toStrictEqual({ healthy: true });
       });
     });
 
@@ -247,21 +247,21 @@ describe('server Orchestration', () => {
       test('should list executions', async () => {
         const result = await engine.listExecutions('workflow-123');
 
-        expect(result).toEqual([]);
+        expect(result).toStrictEqual([]);
       });
 
       test('should list executions with options', async () => {
         const options = { limit: 10, offset: 0 };
         const result = await engine.listExecutions('workflow-123', options);
 
-        expect(result).toEqual([]);
+        expect(result).toStrictEqual([]);
       });
 
       test('should list executions with provider name', async () => {
         const options = { limit: 10 };
         const result = await engine.listExecutions('workflow-123', options, 'test-provider');
 
-        expect(result).toEqual([]);
+        expect(result).toStrictEqual([]);
       });
     });
 
@@ -275,7 +275,7 @@ describe('server Orchestration', () => {
 
         const result = await engine.scheduleWorkflow(definition);
 
-        expect(result).toEqual({ scheduleId: 'sched-123' });
+        expect(result).toStrictEqual({ scheduleId: 'sched-123' });
       });
 
       test('should schedule workflow with provider name', async () => {
@@ -287,7 +287,7 @@ describe('server Orchestration', () => {
 
         const result = await engine.scheduleWorkflow(definition, 'test-provider');
 
-        expect(result).toEqual({ scheduleId: 'sched-123' });
+        expect(result).toStrictEqual({ scheduleId: 'sched-123' });
       });
     });
 
@@ -418,7 +418,7 @@ describe('server Orchestration', () => {
 
       // Check health
       const health = await engine.healthCheck();
-      expect(health).toEqual({ healthy: true });
+      expect(health).toStrictEqual({ healthy: true });
 
       // Execute workflow
       const definition = {
@@ -427,23 +427,23 @@ describe('server Orchestration', () => {
         steps: [],
       };
       const execution = await engine.executeWorkflow(definition, { test: true });
-      expect(execution).toEqual({ executionId: 'exec-123' });
+      expect(execution).toStrictEqual({ executionId: 'exec-123' });
 
       // Get execution status
       const status = await engine.getExecution('exec-123');
-      expect(status).toEqual({ status: 'completed' });
+      expect(status).toStrictEqual({ status: 'completed' });
 
       // List executions
       const executions = await engine.listExecutions('integration-test');
-      expect(executions).toEqual([]);
+      expect(executions).toStrictEqual([]);
 
       // Schedule workflow
       const schedule = await engine.scheduleWorkflow(definition);
-      expect(schedule).toEqual({ scheduleId: 'sched-123' });
+      expect(schedule).toStrictEqual({ scheduleId: 'sched-123' });
 
       // Get engine status
       const engineStatus = engine.getStatus();
-      expect(engineStatus).toEqual({ initialized: true });
+      expect(engineStatus).toStrictEqual({ initialized: true });
 
       // Shutdown
       await engine.shutdown();

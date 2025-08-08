@@ -194,7 +194,7 @@ async function checkQaSetupIntegration(packagePath: string): Promise<{
       setupFiles,
       missingImports,
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       hasQaSetup: false,
       setupFiles: [],
@@ -338,12 +338,17 @@ export const mockCheckTool = tool({
   description:
     'Check for duplicate mocks across test files that should be centralized. Identifies mocks that appear in multiple locations and suggests moving them to @repo/qa for better maintainability.',
 
-  parameters: mockCheckInputSchema,
+  inputSchema: mockCheckInputSchema,
 
-  execute: async (
-    { sessionId, packagePath, options = {} },
-    _toolOptions = { toolCallId: 'mock-check', messages: [] },
-  ) => {
+  execute: async ({
+    sessionId,
+    packagePath,
+    options = {
+      includeNodeModules: false,
+      suggestCentralization: true,
+      checkQaIntegration: true,
+    },
+  }: any) => {
     try {
       logInfo(`🔍 Checking duplicate mocks in ${packagePath}...`);
 
@@ -466,36 +471,39 @@ export const mockCheckTool = tool({
     }
   },
 
-  // Multi-modal result content
-  experimental_toToolResultContent: (result: MockCheckResult) => [
-    {
-      type: 'text' as const,
-      text:
-        `🔍 Mock Check Complete!\n` +
-        `📊 Total Mocks: ${result.summary.totalMocks}\n` +
-        `🔄 Duplicates Found: ${result.summary.duplicateCount}\n` +
-        `📦 Already Centralized: ${result.summary.centralizedCount}\n` +
-        `🏠 Local Only: ${result.summary.localOnlyCount}\n` +
-        `⚠️ Warnings: ${result.summary.warningCount}\n` +
-        `${result.summary.requiresQaBuild ? '🏗️ Requires @repo/qa rebuild after changes' : ''}\n\n` +
-        `${
-          result.duplicateMocks.length > 0
-            ? `🔄 Duplicates to Centralize:\n${result.duplicateMocks
-                .slice(0, 3)
-                .map(mock => `• ${mock.module} (found in ${mock.count} files) - ${mock.reason}`)
-                .join('\n')}\n\n`
-            : ''
-        }` +
-        `${
-          result.recommendations.length > 0
-            ? `💡 Top Recommendations:\n${result.recommendations
-                .slice(0, 2)
-                .map((rec: any) => `• ${rec.priority.toUpperCase()}: ${rec.description}`)
-                .join('\n')}`
-            : '✅ No centralization needed - mocks are well organized!'
-        }`,
-    },
-  ],
-});
+  // AI SDK v5: toModelOutput with proper content shapes
+  toModelOutput: (result: MockCheckResult) => ({
+    type: 'content',
+    value: [
+      {
+        type: 'text',
+        text:
+          `🔍 Mock Check Complete!\n` +
+          `📊 Total Mocks: ${result.summary.totalMocks}\n` +
+          `🔄 Duplicates Found: ${result.summary.duplicateCount}\n` +
+          `📦 Already Centralized: ${result.summary.centralizedCount}\n` +
+          `🏠 Local Only: ${result.summary.localOnlyCount}\n` +
+          `⚠️ Warnings: ${result.summary.warningCount}\n` +
+          `${result.summary.requiresQaBuild ? '🏗️ Requires @repo/qa rebuild after changes' : ''}\n\n` +
+          `${
+            result.duplicateMocks.length > 0
+              ? `🔄 Duplicates to Centralize:\n${result.duplicateMocks
+                  .slice(0, 3)
+                  .map(mock => `• ${mock.module} (found in ${mock.count} files) - ${mock.reason}`)
+                  .join('\n')}\n\n`
+              : ''
+          }` +
+          `${
+            result.recommendations.length > 0
+              ? `💡 Top Recommendations:\n${result.recommendations
+                  .slice(0, 2)
+                  .map((rec: any) => `• ${rec.priority.toUpperCase()}: ${rec.description}`)
+                  .join('\n')}`
+              : '✅ No centralization needed - mocks are well organized!'
+          }`,
+      },
+    ],
+  }),
+} as any);
 
 export type { DuplicateMock, LocalMock, MockCheckResult, MockWarning };

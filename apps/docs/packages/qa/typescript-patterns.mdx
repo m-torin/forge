@@ -152,8 +152,8 @@ describe("Generic Function Testing", () => {
     expectTypeOf(numberArray).toEqualTypeOf<number[]>();
     expectTypeOf(booleanArray).toEqualTypeOf<boolean[]>();
 
-    expect(stringArray).toEqual(["hello", "hello", "hello"]);
-    expect(numberArray).toEqual([42, 42, 42, 42, 42]);
+    expect(stringArray).toStrictEqual(["hello", "hello", "hello"]);
+    expect(numberArray).toStrictEqual([42, 42, 42, 42, 42]);
   });
 
   test("validates object mapping types", () => {
@@ -164,8 +164,8 @@ describe("Generic Function Testing", () => {
     expectTypeOf(strings).toEqualTypeOf<Record<string, string>>();
     expectTypeOf(doubled).toEqualTypeOf<Record<string, number>>();
 
-    expect(strings).toEqual({ a: "1", b: "2", c: "3" });
-    expect(doubled).toEqual({ a: 2, b: 4, c: 6 });
+    expect(strings).toStrictEqual({ a: "1", b: "2", c: "3" });
+    expect(doubled).toStrictEqual({ a: 2, b: 4, c: 6 });
   });
 
   test("validates pick function types", () => {
@@ -183,8 +183,8 @@ describe("Generic Function Testing", () => {
     expectTypeOf(basicInfo).toEqualTypeOf<{ id: string; name: string }>();
     expectTypeOf(contactInfo).toEqualTypeOf<{ name: string; email: string }>();
 
-    expect(basicInfo).toEqual({ id: "123", name: "John Doe" });
-    expect(contactInfo).toEqual({
+    expect(basicInfo).toStrictEqual({ id: "123", name: "John Doe" });
+    expect(contactInfo).toStrictEqual({
       name: "John Doe",
       email: "john@example.com"
     });
@@ -282,7 +282,11 @@ describe("Type Guard Testing", () => {
     const unknownArray: unknown = stringArray;
     if (isArrayOf(unknownArray, isString)) {
       expectNarrowedType<string[]>(unknownArray);
-      expect(unknownArray.map((s) => s.toUpperCase())).toEqual(["A", "B", "C"]);
+      expect(unknownArray.map((s) => s.toUpperCase())).toStrictEqual([
+        "A",
+        "B",
+        "C"
+      ]);
     }
   });
 });
@@ -828,14 +832,14 @@ describe("Compilation Testing", () => {
         id: string;
         name: string;
       }
-      
+
       function createUser(name: string): User {
         return {
           id: Math.random().toString(),
           name
         };
       }
-      
+
       const user = createUser("John Doe");
     `;
 
@@ -849,7 +853,7 @@ describe("Compilation Testing", () => {
         id: string;
         name: string;
       }
-      
+
       function createUser(name: string): User {
         return {
           id: 123, // Type error: should be string

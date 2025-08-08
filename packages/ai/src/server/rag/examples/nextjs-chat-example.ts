@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Initialize RAG system
-    const { ragSystem, tools, conversationMemory } = initializeRAGSystem();
+    const { ragSystem: _ragSystem, tools, conversationMemory } = initializeRAGSystem();
 
     // Get conversation context if available
     let conversationContext = '';
@@ -90,18 +90,25 @@ export async function POST(req: NextRequest) {
       messages: [
         {
           role: 'system',
-          content: `You are a helpful AI assistant with access to a comprehensive knowledge base.
 
-Use the available tools to search for relevant information and provide accurate, well-sourced responses.
-Always cite your sources and explain your reasoning.
+          parts: [
+            {
+              type: 'text',
 
-${
-  conversationContext
-    ? `
-Conversation Context:
-${conversationContext}`
-    : ''
-}`,
+              text: `You are a helpful AI assistant with access to a comprehensive knowledge base.
+
+  Use the available tools to search for relevant information and provide accurate, well-sourced responses.
+  Always cite your sources and explain your reasoning.
+
+  ${
+    conversationContext
+      ? `
+  Conversation Context:
+  ${conversationContext}`
+      : ''
+  }`,
+            },
+          ],
         },
         ...messages,
       ],
@@ -112,7 +119,7 @@ ${conversationContext}`
         multiStepReason: tools.multiStepReasoning,
         summarizeContext: tools.contextSummarization,
       },
-      maxSteps: 5,
+      stopWhen: [({ steps }: { steps: any[] }) => steps.length >= 5],
       temperature: 0.1,
       onFinish: async result => {
         // Store conversation message for memory
@@ -151,10 +158,10 @@ export async function uploadDocuments(req: NextRequest) {
       return NextResponse.json({ error: 'Documents array is required' }, { status: 400 });
     }
 
-    const { ragSystem, tools } = initializeRAGSystem();
+    const { ragSystem: _ragSystem, tools } = initializeRAGSystem();
 
     // Process documents in batches
-    const result = await tools.batchDocumentProcessor.execute(
+    const result = await tools.batchDocumentProcessor?.execute?.(
       {
         documents: documents.map((doc, index) => ({
           id: `doc_${Date.now()}_${index}`,
@@ -173,10 +180,10 @@ export async function uploadDocuments(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      processed: result.processed,
-      failed: result.failed,
-      errors: result.errors,
-      total: result.total,
+      processed: result?.processed || 0,
+      failed: result?.failed || 0,
+      errors: result?.errors || [],
+      total: result?.total || 0,
     });
   } catch (error) {
     console.error('Document upload error:', error);
@@ -187,7 +194,7 @@ export async function uploadDocuments(req: NextRequest) {
 /**
  * Advanced search endpoint with hybrid search
  */
-export async function advancedSearch(req: NextRequest) {
+export async function hybridSearch(req: NextRequest) {
   try {
     const { query, searchType = 'hybrid', filters } = await req.json();
 
@@ -348,7 +355,7 @@ export function createRAGChatHook(conversationId?: string): UseRAGChatHook {
                 assistantMessage.content += data.choices[0].delta.content;
                 messages = [...messages.slice(0, -1), { ...assistantMessage }];
               }
-            } catch (e) {
+            } catch (_e) {
               // Ignore parse errors
             }
           }

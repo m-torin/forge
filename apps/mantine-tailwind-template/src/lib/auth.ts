@@ -77,6 +77,96 @@ function generateSessionId(): string {
   return `session_${Date.now()}_${Math.random().toString(36).substring(2)}`;
 }
 
+// Sign up function
+export async function signUp(
+  name: string,
+  email: string,
+  password: string,
+): Promise<{
+  success: boolean;
+  user?: User;
+  error?: string;
+}> {
+  try {
+    logInfo('[Auth] Sign up attempt', { email, name });
+
+    // Check if user already exists
+    if (mockUsers.has(email.toLowerCase())) {
+      logWarn('[Auth] User already exists', { email });
+      return {
+        success: false,
+        error: 'User with this email already exists',
+      };
+    }
+
+    // Create new user
+    const newUser = {
+      id: `user_${Date.now()}_${Math.random().toString(36).substring(2)}`,
+      name,
+      email: email.toLowerCase(),
+      role: 'user' as const,
+      password,
+      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}`,
+      createdAt: new Date(),
+    };
+
+    // Add to mock database
+    mockUsers.set(email.toLowerCase(), newUser);
+
+    // Create user object without password
+    const user: User = {
+      id: newUser.id,
+      name: newUser.name,
+      email: newUser.email,
+      role: newUser.role,
+      avatar: newUser.avatar,
+      createdAt: newUser.createdAt,
+    };
+
+    // Create session automatically
+    const sessionId = generateSessionId();
+    const expiresAt = new Date(Date.now() + COOKIE_MAX_AGE * 1000);
+
+    const session: AuthSession = {
+      user,
+      sessionId,
+      expiresAt,
+    };
+
+    // Store session
+    activeSessions.set(sessionId, session);
+
+    // Set cookie
+    const cookieStore = await cookies();
+    cookieStore.set(AUTH_COOKIE_NAME, sessionId, {
+      httpOnly: true,
+      secure: env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: COOKIE_MAX_AGE,
+      path: '/',
+    });
+
+    logInfo('[Auth] Sign up successful', {
+      userId: user.id,
+      userRole: user.role,
+      sessionId,
+    });
+
+    return {
+      success: true,
+      user,
+    };
+  } catch (error) {
+    logWarn('[Auth] Sign up error', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return {
+      success: false,
+      error: 'Registration failed',
+    };
+  }
+}
+
 // Sign in function
 export async function signIn(
   email: string,

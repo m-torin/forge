@@ -3,7 +3,7 @@
  * Provides base configuration without React or Next.js specific rules
  */
 
-import type { Linter } from "eslint";
+import type { Linter } from 'eslint';
 
 import baseConfig from './index';
 

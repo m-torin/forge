@@ -289,7 +289,6 @@ export async function testMCPConnectivity(configs: MCPClientConfig[]): Promise<{
         toolCount,
       });
 
-      // Clean up immediately
       await closeAllClients();
     } catch (error) {
       results.push({

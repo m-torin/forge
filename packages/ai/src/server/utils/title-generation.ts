@@ -1,5 +1,10 @@
-import { generateText, type LanguageModel, type ModelMessage, type UIMessage } from 'ai';
+import type { LanguageModel, UIMessage } from 'ai';
+import { generateText } from 'ai';
 import 'server-only';
+
+// Note: ModelMessage not available in AI SDK v5 canary, using any for compatibility
+// TODO: Update to proper CoreMessage types when available
+type ModelMessage = any;
 
 /**
  * Configuration for title generation
@@ -36,6 +41,7 @@ export async function generateTitleFromMessage(
     model,
     system: systemPrompt,
     prompt,
+    experimental_telemetry: { isEnabled: true },
   });
 
   // Ensure title doesn't exceed max length
@@ -82,6 +88,7 @@ export async function generateTitleFromConversation(
     model,
     system: systemPrompt,
     prompt: conversationContext,
+    experimental_telemetry: { isEnabled: true },
   });
 
   return title.length > maxLength ? title.substring(0, maxLength - 3) + '...' : title;

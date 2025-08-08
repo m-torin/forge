@@ -214,7 +214,7 @@ export async function precomputeWithCache<T extends readonly any[]>(
   context: any,
   options: {
     cacheKey: string;
-    cacheDuration?: number; // in milliseconds
+    cacheDuration?: number;
     enableMetrics?: boolean;
   },
 ): Promise<string> {

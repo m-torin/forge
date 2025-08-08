@@ -2,42 +2,24 @@
 
 import { useChat as useVercelChat } from '@ai-sdk/react';
 import { logWarn } from '@repo/observability';
-import type { CoreMessage } from 'ai';
+import type { ModelMessage } from 'ai';
 import { useCallback, useEffect } from 'react';
 
-// AI SDK v5 Transport Configuration
-export interface V5TransportConfig {
-  url?: string;
-  headers?: Record<string, string> | Headers;
-  body?: Record<string, unknown>;
-  credentials?: 'omit' | 'same-origin' | 'include';
-  fetch?: typeof globalThis.fetch;
-}
+import { BaseAIHookOptions, mergeTransportConfig } from '../shared/types/transport';
 
 // Import the exact types from AI SDK v5
-export interface UseAIChatOptions {
-  api?: string;
+export interface UseAIChatOptions extends BaseAIHookOptions {
   id?: string;
   initialInput?: string;
-  initialMessages?: CoreMessage[];
+  initialMessages?: ModelMessage[];
 
-  // V5 Transport-based configuration
-  transport?: V5TransportConfig;
-
-  // Legacy options for backward compatibility
-  headers?: Record<string, string> | Headers;
-  body?: Record<string, unknown>;
-  credentials?: 'omit' | 'same-origin' | 'include';
-  maxSteps?: number;
+  // Advanced options
   streamProtocol?: 'text' | 'data';
   generateId?: () => string;
-  fetch?: typeof globalThis.fetch;
 
   // Custom callback options that we implement manually
-  onRateLimit?: (retryAfter: number) => void;
   onTokenUsage?: (usage: { completion: number; prompt: number; total: number }) => void;
-  onError?: (error: Error) => void;
-  onFinish?: (message: CoreMessage, options?: Record<string, unknown>) => void;
+  onFinish?: (message: ModelMessage, options?: Record<string, unknown>) => void;
 }
 
 export function useAIChat({
@@ -45,24 +27,25 @@ export function useAIChat({
   onFinish,
   onRateLimit,
   onTokenUsage,
-  api: api = '/api/ai/chat',
+  api: apiProp,
   transport,
   ...options
 }: UseAIChatOptions = {}) {
-  // Configure transport if provided (v5 pattern)
-  const chatConfig = transport
-    ? {
-        ...options,
-        api: transport.url || api,
-        headers: transport.headers || options.headers,
-        body: transport.body || options.body,
-        credentials: transport.credentials || options.credentials,
-        fetch: transport.fetch || options.fetch,
-      }
-    : {
-        streamProtocol: 'text' as const,
-        ...options,
-      };
+  // Configure transport using shared utility
+  const { api, ...transportConfig } = mergeTransportConfig(
+    { api: apiProp, transport, ...options },
+    '/api/ai/chat',
+  );
+
+  const chatConfig = {
+    api,
+    ...transportConfig,
+    streamProtocol: options.streamProtocol || ('text' as const),
+    generateId: options.generateId,
+    initialInput: options.initialInput,
+    initialMessages: options.initialMessages,
+    id: options.id,
+  };
 
   const chat = useVercelChat(chatConfig);
 
@@ -71,7 +54,7 @@ export function useAIChat({
     if (chat.error && onError) {
       const errorMessage = chat.error?.message || chat.error?.toString() || '';
       if (errorMessage.includes('429') && onRateLimit) {
-        const match = errorMessage.match(/retry after (\\d+)/);
+        const match = errorMessage.match(/retry after (\d+)/);
         const retryAfter = match ? parseInt(match[1]) : 60;
         onRateLimit(retryAfter);
       }
@@ -94,32 +77,19 @@ export function useAIChat({
 
   // Enhanced sendMessage with retry logic (v5 pattern)
   const sendMessage = useCallback(
-    async (message: string | CoreMessage | { text: string }, retries = 3): Promise<void> => {
+    async (message: string | { text: string }, retries = 3): Promise<void> => {
       try {
-        // Temporary fix: use any to bypass type checking until dependencies are resolved
+        // AI SDK v5 sendMessage - supports string or { text: string } format
         if (typeof message === 'string') {
-          await (chat.append as any)({
-            role: 'user',
-            content: message,
-          });
-        } else if ('text' in message && message.text) {
-          await (chat.append as any)({
-            role: 'user',
-            content: message.text,
-          });
+          await chat.sendMessage({ text: message });
         } else {
-          // For CoreMessage, convert to the expected format
-          const coreMessage = message as CoreMessage;
-          await (chat.append as any)({
-            role: coreMessage.role,
-            content: coreMessage.content,
-          });
+          await chat.sendMessage({ text: message.text });
         }
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         if (retries > 0 && errorMessage.includes('429')) {
           // Wait and retry on rate limit
-          const match = errorMessage.match(/retry after (\\d+)/);
+          const match = errorMessage.match(/retry after (\d+)/);
           const retrySeconds = match ? parseInt(match[1]) : 5;
           const delay = retrySeconds * 1000;
           await new Promise(resolve => setTimeout(resolve, delay));
@@ -128,11 +98,8 @@ export function useAIChat({
         throw error;
       }
     },
-    [chat.append],
+    [chat.sendMessage],
   );
-
-  // Backward compatibility alias
-  const appendWithRetry = sendMessage;
 
   // Helper to clear messages
   const clear = useCallback(() => {
@@ -150,12 +117,11 @@ export function useAIChat({
     // Resubmit last user message
     const lastUserMessage = newMessages[newMessages.length - 1];
     if (lastUserMessage?.role === 'user') {
-      // Convert to compatible format for sendMessage
+      // Extract text content for v5 sendMessage
       const messageContent = (lastUserMessage as any).content;
-      void sendMessage({
-        role: lastUserMessage.role as 'user' | 'assistant' | 'system',
-        content: typeof messageContent === 'string' ? messageContent : String(messageContent),
-      } as CoreMessage);
+      const textContent =
+        typeof messageContent === 'string' ? messageContent : String(messageContent);
+      void sendMessage(textContent);
     }
   }, [chat.messages, chat.setMessages, sendMessage]);
 
@@ -163,8 +129,6 @@ export function useAIChat({
     ...chat,
     // V5 primary method
     sendMessage,
-    // Backward compatibility
-    appendWithRetry,
     clear,
     regenerate,
     // Backward compatibility for isLoading

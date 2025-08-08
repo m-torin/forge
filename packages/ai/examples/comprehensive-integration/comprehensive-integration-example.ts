@@ -672,10 +672,12 @@ export class ComprehensiveIntegrationExample {
 
     // Start auto-scaling checks
     if (this.config.autoScalingEnabled) {
-      setInterval(() => {
-        this.autoScale().catch(error => {
+      setInterval(async () => {
+        try {
+          await this.autoScale();
+        } catch (error) {
           console.error('Auto-scaling error:', error);
-        });
+        }
       }, 300000); // Every 5 minutes
     }
 

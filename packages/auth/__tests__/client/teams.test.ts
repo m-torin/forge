@@ -33,7 +33,7 @@ const mockAuthClient = {
   },
 };
 
-vi.mock('#/client/client', () => ({
+vi.mock('../../src/client/client', () => ({
   authClient: mockAuthClient,
 }));
 
@@ -45,7 +45,7 @@ const mockLogger = {
   debug: vi.fn(),
 };
 
-vi.mock('#/client/utils/logger', () => ({
+vi.mock('../../src/client/utils/logger', () => ({
   logger: mockLogger,
 }));
 
@@ -56,7 +56,7 @@ describe('client teams functionality', () => {
 
   describe('createTeam', () => {
     test('should create team successfully', async () => {
-      const { createTeam } = await import('#/client/teams');
+      const { createTeam } = await import('../../src/client/teams');
 
       const teamData = { id: 'team-123', name: 'Test Team' };
       mockAuthClient.organization.createTeam.mockResolvedValue(teamData);
@@ -76,7 +76,7 @@ describe('client teams functionality', () => {
     });
 
     test('should handle team creation errors', async () => {
-      const { createTeam } = await import('#/client/teams');
+      const { createTeam } = await import('../../src/client/teams');
 
       const error = new Error('Team creation failed');
       mockAuthClient.organization.createTeam.mockRejectedValue(error);
@@ -88,7 +88,7 @@ describe('client teams functionality', () => {
 
   describe('updateTeam', () => {
     test('should update team successfully', async () => {
-      const { updateTeam } = await import('#/client/teams');
+      const { updateTeam } = await import('../../src/client/teams');
 
       const teamData = { id: 'team-123', name: 'Updated Team' };
       mockAuthClient.organization.updateTeam.mockResolvedValue(teamData);
@@ -107,7 +107,7 @@ describe('client teams functionality', () => {
     });
 
     test('should handle team update errors', async () => {
-      const { updateTeam } = await import('#/client/teams');
+      const { updateTeam } = await import('../../src/client/teams');
 
       const error = new Error('Team update failed');
       mockAuthClient.organization.updateTeam.mockRejectedValue(error);
@@ -121,7 +121,7 @@ describe('client teams functionality', () => {
 
   describe('removeTeam', () => {
     test('should remove team successfully', async () => {
-      const { removeTeam } = await import('#/client/teams');
+      const { removeTeam } = await import('../../src/client/teams');
 
       mockAuthClient.organization.removeTeam.mockResolvedValue(undefined);
 
@@ -132,7 +132,7 @@ describe('client teams functionality', () => {
     });
 
     test('should handle team removal errors', async () => {
-      const { removeTeam } = await import('#/client/teams');
+      const { removeTeam } = await import('../../src/client/teams');
 
       const error = new Error('Team removal failed');
       mockAuthClient.organization.removeTeam.mockRejectedValue(error);
@@ -144,7 +144,7 @@ describe('client teams functionality', () => {
 
   describe('listTeams', () => {
     test('should list teams successfully', async () => {
-      const { listTeams } = await import('#/client/teams');
+      const { listTeams } = await import('../../src/client/teams');
 
       const teams = [{ id: 'team-1' }, { id: 'team-2' }];
       mockAuthClient.organization.listTeams.mockResolvedValue(teams);
@@ -158,7 +158,7 @@ describe('client teams functionality', () => {
     });
 
     test('should handle team listing errors', async () => {
-      const { listTeams } = await import('#/client/teams');
+      const { listTeams } = await import('../../src/client/teams');
 
       const error = new Error('List teams failed');
       mockAuthClient.organization.listTeams.mockRejectedValue(error);
@@ -170,7 +170,7 @@ describe('client teams functionality', () => {
 
   describe('addTeamMember', () => {
     test('should add team member successfully', async () => {
-      const { addTeamMember } = await import('#/client/teams');
+      const { addTeamMember } = await import('../../src/client/teams');
 
       const memberData = { id: 'member-123', userId: 'user-123' };
       mockAuthClient.organization.addTeamMember.mockResolvedValue(memberData);
@@ -190,7 +190,7 @@ describe('client teams functionality', () => {
     });
 
     test('should handle add member errors', async () => {
-      const { addTeamMember } = await import('#/client/teams');
+      const { addTeamMember } = await import('../../src/client/teams');
 
       const error = new Error('Add member failed');
       mockAuthClient.organization.addTeamMember.mockRejectedValue(error);
@@ -204,7 +204,7 @@ describe('client teams functionality', () => {
 
   describe('removeTeamMember', () => {
     test('should remove team member successfully', async () => {
-      const { removeTeamMember } = await import('#/client/teams');
+      const { removeTeamMember } = await import('../../src/client/teams');
 
       mockAuthClient.organization.removeTeamMember.mockResolvedValue(undefined);
 
@@ -221,7 +221,7 @@ describe('client teams functionality', () => {
     });
 
     test('should handle remove member errors', async () => {
-      const { removeTeamMember } = await import('#/client/teams');
+      const { removeTeamMember } = await import('../../src/client/teams');
 
       const error = new Error('Remove member failed');
       mockAuthClient.organization.removeTeamMember.mockRejectedValue(error);
@@ -235,7 +235,7 @@ describe('client teams functionality', () => {
 
   describe('updateTeamMemberRole', () => {
     test('should update team member role successfully', async () => {
-      const { updateTeamMemberRole } = await import('#/client/teams');
+      const { updateTeamMemberRole } = await import('../../src/client/teams');
 
       const memberData = { id: 'member-123', role: 'admin' };
       mockAuthClient.organization.updateTeamMemberRole.mockResolvedValue(memberData);
@@ -255,7 +255,7 @@ describe('client teams functionality', () => {
     });
 
     test('should handle update role errors', async () => {
-      const { updateTeamMemberRole } = await import('#/client/teams');
+      const { updateTeamMemberRole } = await import('../../src/client/teams');
 
       const error = new Error('Update role failed');
       mockAuthClient.organization.updateTeamMemberRole.mockRejectedValue(error);
@@ -269,7 +269,7 @@ describe('client teams functionality', () => {
 
   describe('getTeam', () => {
     test('should get team successfully', async () => {
-      const { getTeam } = await import('#/client/teams');
+      const { getTeam } = await import('../../src/client/teams');
 
       const teamData = { id: 'team-123', name: 'Test Team' };
       mockAuthClient.organization.getTeam.mockResolvedValue(teamData);
@@ -281,7 +281,7 @@ describe('client teams functionality', () => {
     });
 
     test('should handle get team errors', async () => {
-      const { getTeam } = await import('#/client/teams');
+      const { getTeam } = await import('../../src/client/teams');
 
       const error = new Error('Get team failed');
       mockAuthClient.organization.getTeam.mockRejectedValue(error);
@@ -293,7 +293,7 @@ describe('client teams functionality', () => {
 
   describe('listTeamMembers', () => {
     test('should list team members successfully', async () => {
-      const { listTeamMembers } = await import('#/client/teams');
+      const { listTeamMembers } = await import('../../src/client/teams');
 
       const members = [{ id: 'member-1' }, { id: 'member-2' }];
       mockAuthClient.organization.listTeamMembers.mockResolvedValue(members);
@@ -307,7 +307,7 @@ describe('client teams functionality', () => {
     });
 
     test('should handle list members errors', async () => {
-      const { listTeamMembers } = await import('#/client/teams');
+      const { listTeamMembers } = await import('../../src/client/teams');
 
       const error = new Error('List members failed');
       mockAuthClient.organization.listTeamMembers.mockRejectedValue(error);
@@ -319,7 +319,7 @@ describe('client teams functionality', () => {
 
   describe('team invitations', () => {
     test('should get team invitations successfully', async () => {
-      const { getTeamInvitations } = await import('#/client/teams');
+      const { getTeamInvitations } = await import('../../src/client/teams');
 
       const invitations = [{ id: 'inv-1' }, { id: 'inv-2' }];
       mockAuthClient.organization.getTeamInvitations.mockResolvedValue(invitations);
@@ -333,7 +333,7 @@ describe('client teams functionality', () => {
     });
 
     test('should invite to team successfully', async () => {
-      const { inviteToTeam } = await import('#/client/teams');
+      const { inviteToTeam } = await import('../../src/client/teams');
 
       const invitation = { id: 'inv-123', email: 'test@example.com' };
       mockAuthClient.organization.inviteToTeam.mockResolvedValue(invitation);
@@ -353,7 +353,7 @@ describe('client teams functionality', () => {
     });
 
     test('should accept team invitation successfully', async () => {
-      const { acceptTeamInvitation } = await import('#/client/teams');
+      const { acceptTeamInvitation } = await import('../../src/client/teams');
 
       const result_data = { teamId: 'team-123', accepted: true };
       mockAuthClient.organization.acceptTeamInvitation.mockResolvedValue(result_data);
@@ -367,7 +367,7 @@ describe('client teams functionality', () => {
     });
 
     test('should reject team invitation successfully', async () => {
-      const { rejectTeamInvitation } = await import('#/client/teams');
+      const { rejectTeamInvitation } = await import('../../src/client/teams');
 
       mockAuthClient.organization.rejectTeamInvitation.mockResolvedValue(undefined);
 
@@ -380,7 +380,7 @@ describe('client teams functionality', () => {
     });
 
     test('should cancel team invitation successfully', async () => {
-      const { cancelTeamInvitation } = await import('#/client/teams');
+      const { cancelTeamInvitation } = await import('../../src/client/teams');
 
       mockAuthClient.organization.cancelTeamInvitation.mockResolvedValue(undefined);
 
@@ -394,7 +394,7 @@ describe('client teams functionality', () => {
 
     test('should handle invitation errors', async () => {
       const { inviteToTeam, acceptTeamInvitation, rejectTeamInvitation, cancelTeamInvitation } =
-        await import('#/client/teams');
+        await import('../../src/client/teams');
 
       const error = new Error('Invitation failed');
 
@@ -420,7 +420,7 @@ describe('client teams functionality', () => {
 
   describe('advanced team operations', () => {
     test('should transfer team ownership successfully', async () => {
-      const { transferTeamOwnership } = await import('#/client/teams');
+      const { transferTeamOwnership } = await import('../../src/client/teams');
 
       const result_data = { success: true, newOwnerId: 'user-456' };
       mockAuthClient.organization.transferTeamOwnership.mockResolvedValue(result_data);
@@ -438,7 +438,7 @@ describe('client teams functionality', () => {
     });
 
     test('should leave team successfully', async () => {
-      const { leaveTeam } = await import('#/client/teams');
+      const { leaveTeam } = await import('../../src/client/teams');
 
       mockAuthClient.organization.leaveTeam.mockResolvedValue(undefined);
 
@@ -449,7 +449,7 @@ describe('client teams functionality', () => {
     });
 
     test('should archive team successfully', async () => {
-      const { archiveTeam } = await import('#/client/teams');
+      const { archiveTeam } = await import('../../src/client/teams');
 
       const teamData = { id: 'team-123', archived: true };
       mockAuthClient.organization.archiveTeam.mockResolvedValue(teamData);
@@ -461,7 +461,7 @@ describe('client teams functionality', () => {
     });
 
     test('should unarchive team successfully', async () => {
-      const { unarchiveTeam } = await import('#/client/teams');
+      const { unarchiveTeam } = await import('../../src/client/teams');
 
       const teamData = { id: 'team-123', archived: false };
       mockAuthClient.organization.unarchiveTeam.mockResolvedValue(teamData);
@@ -475,7 +475,7 @@ describe('client teams functionality', () => {
     });
 
     test('should duplicate team successfully', async () => {
-      const { duplicateTeam } = await import('#/client/teams');
+      const { duplicateTeam } = await import('../../src/client/teams');
 
       const newTeam = { id: 'team-456', name: 'Test Team Copy' };
       mockAuthClient.organization.duplicateTeam.mockResolvedValue(newTeam);
@@ -493,7 +493,7 @@ describe('client teams functionality', () => {
     });
 
     test('should get team stats successfully', async () => {
-      const { getTeamStats } = await import('#/client/teams');
+      const { getTeamStats } = await import('../../src/client/teams');
 
       const stats = {
         totalMembers: 10,
@@ -511,7 +511,7 @@ describe('client teams functionality', () => {
 
     test('should handle advanced operation errors', async () => {
       const { transferTeamOwnership, leaveTeam, archiveTeam, duplicateTeam, getTeamStats } =
-        await import('#/client/teams');
+        await import('../../src/client/teams');
 
       const error = new Error('Operation failed');
 
@@ -543,7 +543,7 @@ describe('client teams functionality', () => {
 
   describe('bulk operations', () => {
     test('should bulk update team members successfully', async () => {
-      const { bulkUpdateTeamMembers } = await import('#/client/teams');
+      const { bulkUpdateTeamMembers } = await import('../../src/client/teams');
 
       const results = [
         { userId: 'user-1', success: true },
@@ -570,7 +570,7 @@ describe('client teams functionality', () => {
     });
 
     test('should export team data successfully', async () => {
-      const { exportTeamData } = await import('#/client/teams');
+      const { exportTeamData } = await import('../../src/client/teams');
 
       const exportData = {
         team: { id: 'team-123', name: 'Test Team' },
@@ -594,7 +594,7 @@ describe('client teams functionality', () => {
     });
 
     test('should import team data successfully', async () => {
-      const { importTeamData } = await import('#/client/teams');
+      const { importTeamData } = await import('../../src/client/teams');
 
       const importResult = {
         success: true,
@@ -621,7 +621,7 @@ describe('client teams functionality', () => {
 
     test('should handle bulk operation errors', async () => {
       const { bulkUpdateTeamMembers, exportTeamData, importTeamData } = await import(
-        '#/client/teams'
+        '../../src/client/teams'
       );
 
       const error = new Error('Bulk operation failed');
@@ -646,7 +646,7 @@ describe('client teams functionality', () => {
 
   describe('edge cases and error handling', () => {
     test('should handle missing team management functions gracefully', async () => {
-      const { createTeam } = await import('#/client/teams');
+      const { createTeam } = await import('../../src/client/teams');
 
       // Mock organization object not existing
       (mockAuthClient as any).organization = undefined;
@@ -655,7 +655,7 @@ describe('client teams functionality', () => {
     });
 
     test('should handle non-Error exceptions', async () => {
-      const { updateTeam } = await import('#/client/teams');
+      const { updateTeam } = await import('../../src/client/teams');
 
       // Reset organization mock
       (mockAuthClient as any).organization = {
@@ -667,7 +667,7 @@ describe('client teams functionality', () => {
     });
 
     test('should handle undefined responses', async () => {
-      const { getTeam } = await import('#/client/teams');
+      const { getTeam } = await import('../../src/client/teams');
 
       mockAuthClient.organization.getTeam.mockResolvedValue(undefined);
 
@@ -677,7 +677,7 @@ describe('client teams functionality', () => {
     });
 
     test('should handle empty array responses', async () => {
-      const { listTeams } = await import('#/client/teams');
+      const { listTeams } = await import('../../src/client/teams');
 
       mockAuthClient.organization.listTeams.mockResolvedValue([]);
 

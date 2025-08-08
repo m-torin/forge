@@ -221,7 +221,7 @@ export async function getLinkMetricsWithCache(
   linkManager: LinkManager,
   linkId: string,
   cacheOptions: {
-    ttl?: number; // Time to live in seconds
+    ttl?: number;
     useRedis?: boolean;
     redisKey?: string;
   } = {},

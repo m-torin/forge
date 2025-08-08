@@ -5,9 +5,10 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useFormState } from 'react-dom';
 import type { BaseProps, FormState } from '../types';
+import { createInitialActionState } from '../types';
 import { Alert } from '../ui/Alert';
 import { Button } from '../ui/Button';
 import { Card, CardContent, CardHeader } from '../ui/Card';
@@ -24,7 +25,7 @@ interface PasskeyRegistrationWizardProps extends BaseProps {
   onCancel?: () => void;
 }
 
-const initialState: FormState = { success: false };
+const _initialState: FormState = { success: false };
 
 // Server action for initiating passkey registration
 async function initiatePasskeyRegistrationAction(
@@ -64,7 +65,8 @@ async function initiatePasskeyRegistrationAction(
         data: {
           challenge: result.data?.challenge || '',
           passkeyName,
-          registrationOptions: (result as any).data?.registrationOptions || (result as any).registrationOptions || {},
+          registrationOptions:
+            (result as any).data?.registrationOptions || (result as any).registrationOptions || {},
         },
       };
     } else {
@@ -74,7 +76,7 @@ async function initiatePasskeyRegistrationAction(
       };
     }
   } catch (error: any) {
-    console.error('Passkey registration initiation error:', error);
+    // console.error('Passkey registration initiation error:', error);
 
     if (error?.message?.includes('duplicate name')) {
       return {
@@ -139,7 +141,7 @@ async function completePasskeyRegistrationAction(
       };
     }
   } catch (error: any) {
-    console.error('Passkey registration completion error:', error);
+    // console.error('Passkey registration completion error:', error);
 
     if (error?.message?.includes('invalid credential')) {
       return {
@@ -172,16 +174,85 @@ export function PasskeyRegistrationWizard({
 }: PasskeyRegistrationWizardProps) {
   const [step, setStep] = useState<RegistrationStep>('check-support');
   const [passkeyName, setPasskeyName] = useState('');
-  const [isWebAuthnSupported, setIsWebAuthnSupported] = useState(false);
+  const [_isWebAuthnSupported, setIsWebAuthnSupported] = useState(false);
   const [registrationData, setRegistrationData] = useState<any>(null);
 
   const [initiateState, initiateAction] = useFormState(
     initiatePasskeyRegistrationAction,
-    initialState,
+    createInitialActionState(),
   );
   const [completeState, completeAction] = useFormState(
     completePasskeyRegistrationAction,
-    initialState,
+    createInitialActionState(),
+  );
+
+  // WebAuthn registration process
+  const startWebAuthnRegistration = useCallback(
+    async (options: any) => {
+      try {
+        // Convert challenge and user ID from base64
+        const decodedOptions = {
+          ...options,
+          challenge: Uint8Array.from(atob(options.challenge), c => c.charCodeAt(0)),
+          user: {
+            ...options.user,
+            id: Uint8Array.from(atob(options.user.id), c => c.charCodeAt(0)),
+          },
+        };
+
+        // Create credential
+        const credential = (await navigator.credentials.create({
+          publicKey: decodedOptions,
+        })) as PublicKeyCredential;
+
+        if (!credential) {
+          throw new Error('Failed to create credential');
+        }
+
+        // Prepare credential data for server
+        const credentialData = {
+          id: credential.id,
+          rawId: Array.from(new Uint8Array(credential.rawId)),
+          response: {
+            attestationObject: Array.from(
+              new Uint8Array(
+                (credential.response as AuthenticatorAttestationResponse).attestationObject,
+              ),
+            ),
+            clientDataJSON: Array.from(new Uint8Array(credential.response.clientDataJSON)),
+          },
+          type: credential.type,
+        };
+
+        // Submit to server
+        const form = new FormData();
+        form.append('challenge', registrationData.challenge);
+        form.append('passkeyName', registrationData.passkeyName);
+        form.append('credential', JSON.stringify(credentialData));
+
+        completeAction(form);
+      } catch (error: any) {
+        // console.error('WebAuthn registration error:', error);
+
+        let errorMessage = 'Failed to create passkey. ';
+
+        if (error.name === 'NotSupportedError') {
+          errorMessage += "Your device or browser doesn't support this type of passkey.";
+        } else if (error.name === 'SecurityError') {
+          errorMessage += "Security error occurred. Please ensure you're on a secure connection.";
+        } else if (error.name === 'NotAllowedError') {
+          errorMessage += 'Passkey creation was cancelled or not allowed.';
+        } else if (error.name === 'InvalidStateError') {
+          errorMessage += 'This passkey is already registered.';
+        } else {
+          errorMessage += 'Please try again.';
+        }
+
+        setStep('error');
+        if (onError) onError(errorMessage);
+      }
+    },
+    [registrationData, completeAction, onError],
   );
 
   // Check WebAuthn support on component mount
@@ -211,7 +282,7 @@ export function PasskeyRegistrationWizard({
       setStep('error');
       if (onError) onError(initiateState.error);
     }
-  }, [initiateState, onError]);
+  }, [initiateState, onError, startWebAuthnRegistration]);
 
   // Handle passkey registration completion
   useEffect(() => {
@@ -228,72 +299,6 @@ export function PasskeyRegistrationWizard({
       if (onError) onError(completeState.error);
     }
   }, [completeState, onSuccess, onError]);
-
-  // WebAuthn registration process
-  const startWebAuthnRegistration = async (options: any) => {
-    try {
-      // Convert challenge and user ID from base64
-      const decodedOptions = {
-        ...options,
-        challenge: Uint8Array.from(atob(options.challenge), c => c.charCodeAt(0)),
-        user: {
-          ...options.user,
-          id: Uint8Array.from(atob(options.user.id), c => c.charCodeAt(0)),
-        },
-      };
-
-      // Create credential
-      const credential = (await navigator.credentials.create({
-        publicKey: decodedOptions,
-      })) as PublicKeyCredential;
-
-      if (!credential) {
-        throw new Error('Failed to create credential');
-      }
-
-      // Prepare credential data for server
-      const credentialData = {
-        id: credential.id,
-        rawId: Array.from(new Uint8Array(credential.rawId)),
-        response: {
-          attestationObject: Array.from(
-            new Uint8Array(
-              (credential.response as AuthenticatorAttestationResponse).attestationObject,
-            ),
-          ),
-          clientDataJSON: Array.from(new Uint8Array(credential.response.clientDataJSON)),
-        },
-        type: credential.type,
-      };
-
-      // Submit to server
-      const form = new FormData();
-      form.append('challenge', registrationData.challenge);
-      form.append('passkeyName', registrationData.passkeyName);
-      form.append('credential', JSON.stringify(credentialData));
-
-      completeAction(form);
-    } catch (error: any) {
-      console.error('WebAuthn registration error:', error);
-
-      let errorMessage = 'Failed to create passkey. ';
-
-      if (error.name === 'NotSupportedError') {
-        errorMessage += "Your device or browser doesn't support this type of passkey.";
-      } else if (error.name === 'SecurityError') {
-        errorMessage += "Security error occurred. Please ensure you're on a secure connection.";
-      } else if (error.name === 'NotAllowedError') {
-        errorMessage += 'Passkey creation was cancelled or not allowed.';
-      } else if (error.name === 'InvalidStateError') {
-        errorMessage += 'This passkey is already registered.';
-      } else {
-        errorMessage += 'Please try again.';
-      }
-
-      setStep('error');
-      if (onError) onError(errorMessage);
-    }
-  };
 
   const getStepIcon = () => {
     switch (step) {
@@ -434,7 +439,6 @@ export function PasskeyRegistrationWizard({
       </CardHeader>
 
       <CardContent>
-        {/* Step Progress */}
         <div className="mb-6">
           <div className="mb-4 flex items-center justify-center space-x-2">
             {['check-support', 'name-passkey', 'create-passkey', 'success'].map(
@@ -492,9 +496,7 @@ export function PasskeyRegistrationWizard({
           </div>
         </div>
 
-        {/* Step Content */}
         <div className="space-y-4">
-          {/* Check Support Step */}
           {step === 'check-support' && (
             <div className="py-8 text-center">
               <div className={cn('text-sm text-gray-600', 'dark:text-gray-400')}>
@@ -503,7 +505,6 @@ export function PasskeyRegistrationWizard({
             </div>
           )}
 
-          {/* Name Passkey Step */}
           {step === 'name-passkey' && (
             <form action={initiateAction} className="space-y-4">
               {initiateState?.error && <Alert variant="destructive">{initiateState.error}</Alert>}
@@ -514,7 +515,7 @@ export function PasskeyRegistrationWizard({
                 label="Passkey Name"
                 placeholder="e.g., My iPhone, Work Laptop, YubiKey"
                 value={passkeyName}
-                onChange={(e) => setPasskeyName(e.target.value)}
+                onChange={e => setPasskeyName(e.target.value)}
                 required
                 maxLength={50}
                 error={initiateState?.errors?.passkeyName?.[0]}
@@ -562,7 +563,6 @@ export function PasskeyRegistrationWizard({
             </form>
           )}
 
-          {/* Create Passkey Step */}
           {step === 'create-passkey' && (
             <div className="space-y-4 py-8 text-center">
               <div
@@ -604,7 +604,6 @@ export function PasskeyRegistrationWizard({
             </div>
           )}
 
-          {/* Success Step */}
           {step === 'success' && (
             <div className="space-y-4">
               <Alert variant="success">{completeState?.message}</Alert>
@@ -665,7 +664,6 @@ export function PasskeyRegistrationWizard({
             </div>
           )}
 
-          {/* Error Step */}
           {step === 'error' && (
             <div className="space-y-4">
               <Alert variant="destructive">
@@ -732,7 +730,6 @@ export function PasskeyRegistrationWizard({
           )}
         </div>
 
-        {/* Cancel Button (except on success) */}
         {step !== 'success' && step !== 'error' && (
           <div className="mt-6 text-center">
             <button
@@ -751,7 +748,6 @@ export function PasskeyRegistrationWizard({
           </div>
         )}
 
-        {/* Browser Support Information */}
         <div className={cn('mt-6 rounded-lg bg-gray-50 p-4', 'dark:bg-gray-800')}>
           <h4 className={cn('mb-2 text-sm font-medium text-gray-900', 'dark:text-gray-100')}>
             Passkey Support

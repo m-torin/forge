@@ -5,8 +5,8 @@
  * Provides consistent testing approaches across all i18n test files.
  */
 
-import type { Dictionary, Locale } from '#/shared/dictionary-loader';
 import { expect, test, vi } from 'vitest';
+import type { Dictionary, Locale } from '../../src/shared/dictionary-loader';
 
 // ============================================================================
 // CORE I18N TEST PATTERNS
@@ -65,7 +65,7 @@ export function testMiddlewareScenarios(
       if (scenario.customAssertions) {
         scenario.customAssertions(result, scenario.request);
       } else {
-        expect(result).toEqual(scenario.expectedResult);
+        expect(result).toStrictEqual(scenario.expectedResult);
       }
     });
   });
@@ -296,7 +296,7 @@ export function assertErrorFallback(
     expect(result).toBeInstanceOf(Error);
     expect(result.message).toContain(expectedErrorType);
   } else {
-    expect(result).toEqual(expectedFallback);
+    expect(result).toStrictEqual(expectedFallback);
   }
 }
 

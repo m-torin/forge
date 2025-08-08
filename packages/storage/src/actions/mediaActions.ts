@@ -533,7 +533,16 @@ export async function importFromUrlAction(
       }
 
       // Combine chunks into a single blob
-      const blob = new Blob(chunks, { type: contentType });
+      const blob = new Blob(
+        chunks.map(
+          chunk =>
+            chunk.buffer.slice(
+              chunk.byteOffset,
+              chunk.byteOffset + chunk.byteLength,
+            ) as ArrayBuffer,
+        ),
+        { type: contentType },
+      );
 
       const storage = getStorage();
       const result = await storage.upload(key, blob, {

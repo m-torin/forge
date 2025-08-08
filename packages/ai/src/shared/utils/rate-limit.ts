@@ -148,13 +148,13 @@ class MockRedis {
 }
 
 /**
- * Advanced Redis client with Upstash integration
+ * Resilient Redis client with Upstash integration
  *
  * Provides unified interface for both real Upstash Redis and mock Redis
  * implementations. Automatically detects available configuration and
  * falls back to mock implementation for development.
  *
- * @class AdvancedRedisClient
+ * @class ResilientRedisClient
  * @private
  *
  * @remarks
@@ -165,11 +165,11 @@ class MockRedis {
  *
  * @example Direct Usage (Advanced)
  * ```typescript
- * const redis = new AdvancedRedisClient();
+ * const redis = new ResilientRedisClient();
  * const [current, retryAfter] = await redis.slidingWindow('key', 60000, 10);
  * ```
  */
-class AdvancedRedisClient {
+class ResilientRedisClient {
   private redis: any;
   private isMock: boolean;
 
@@ -359,11 +359,11 @@ export interface RateLimitConfig {
  * ```
  */
 export class AIRateLimit {
-  private redis: AdvancedRedisClient;
+  private redis: ResilientRedisClient;
   public config: RateLimitConfig;
 
   constructor(config: Partial<RateLimitConfig> = {}) {
-    this.redis = new AdvancedRedisClient();
+    this.redis = new ResilientRedisClient();
 
     this.config = {
       requests: config.requests ?? 10,

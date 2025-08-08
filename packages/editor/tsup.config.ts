@@ -18,6 +18,7 @@ export default defineConfig([
     dts: true,
     clean: true,
     sourcemap: true,
+    silent: true,
     // Use .mjs for ESM since we require Node 20+
     outExtension({ format }) {
       return {
@@ -52,6 +53,7 @@ export default defineConfig([
     format: ['esm', 'cjs'],
     dts: true,
     sourcemap: true,
+    silent: true,
     // Use .mjs for ESM since we require Node 20+
     outExtension({ format }) {
       return {
@@ -86,6 +88,7 @@ export default defineConfig([
     globalName: 'NotionEditor',
     dts: true,
     sourcemap: true,
+    silent: true,
     // Bundle everything for standalone usage
     external: [],
     target: 'es2020',
@@ -107,6 +110,7 @@ export default defineConfig([
     format: ['esm', 'cjs'],
     dts: true,
     sourcemap: true,
+    silent: true,
     // Use .mjs for ESM since we require Node 20+
     outExtension({ format }) {
       return {
@@ -138,6 +142,7 @@ export default defineConfig([
     format: ['esm', 'cjs'],
     dts: true,
     sourcemap: true,
+    silent: true,
     // Use .mjs for ESM since we require Node 20+
     outExtension({ format }) {
       return {
@@ -172,6 +177,7 @@ export default defineConfig([
     dts: {
       only: true,
     },
+    silent: true,
     // Use .mjs for ESM since we require Node 20+
     outExtension({ format }) {
       return {

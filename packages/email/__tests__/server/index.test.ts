@@ -201,7 +201,7 @@ describe('email Server Entry Point', () => {
         html: '<p>Test</p>',
       });
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         data: null,
         error: { message: 'API key is invalid', name: 'validation_error', statusCode: 401 },
       });
@@ -282,7 +282,7 @@ describe('email Server Entry Point', () => {
       const result = await sendMagicLinkEmail(testData);
 
       // Verify the workflow completed successfully with the global mock
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         data: null,
         error: { message: 'API key is invalid', name: 'validation_error', statusCode: 401 },
       });
@@ -298,7 +298,7 @@ describe('email Server Entry Point', () => {
       const result = await sendMagicLinkEmail(testData);
 
       // Verify the workflow completed successfully using defaults
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         data: null,
         error: { message: 'API key is invalid', name: 'validation_error', statusCode: 401 },
       });
@@ -316,7 +316,7 @@ describe('email Server Entry Point', () => {
       const result = await sendMagicLinkEmail(testData);
 
       // Verify the workflow handled edge cases successfully
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         data: null,
         error: { message: 'API key is invalid', name: 'validation_error', statusCode: 401 },
       });

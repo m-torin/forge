@@ -157,7 +157,7 @@ type Story = StoryObj<typeof meta>;
 
 // Mock handlers
 const mockSessionRevoke = async (session: EnhancedSession) => {
-  console.log('Revoking session:', session.id);
+  // console.log('Revoking session:', session.id);
   await new Promise(resolve => setTimeout(resolve, 1000));
   if (session.id === '2') {
     throw new Error('Failed to revoke session');
@@ -165,7 +165,7 @@ const mockSessionRevoke = async (session: EnhancedSession) => {
 };
 
 const mockBulkRevoke = async (sessionIds: string[]): Promise<BulkActionResult> => {
-  console.log('Bulk revoking sessions:', sessionIds);
+  // console.log('Bulk revoking sessions:', sessionIds);
   await new Promise(resolve => setTimeout(resolve, 2000));
 
   return {
@@ -179,7 +179,7 @@ const mockBulkRevoke = async (sessionIds: string[]): Promise<BulkActionResult> =
 };
 
 const mockRevokeAllOthers = async (): Promise<BulkActionResult> => {
-  console.log('Revoking all other sessions');
+  // console.log('Revoking all other sessions');
   await new Promise(resolve => setTimeout(resolve, 1500));
 
   return {
@@ -190,17 +190,17 @@ const mockRevokeAllOthers = async (): Promise<BulkActionResult> => {
 };
 
 const mockSessionsLoad = async (): Promise<EnhancedSession[]> => {
-  console.log('Loading sessions');
+  // console.log('Loading sessions');
   await new Promise(resolve => setTimeout(resolve, 800));
   return mockEnhancedSessions;
 };
 
 const mockSessionRevoked = () => {
-  console.log('Session revoked successfully');
+  // console.log('Session revoked successfully');
 };
 
 const mockError = (error: Error) => {
-  console.error('Enhanced sessions error:', error.message);
+  // console.error('Enhanced sessions error:', error.message);
 };
 
 export const Default: Story = {

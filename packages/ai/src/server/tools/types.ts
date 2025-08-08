@@ -5,7 +5,7 @@ import type { z } from 'zod/v4';
  */
 export interface ToolDefinition<TParameters extends z.ZodTypeAny = z.ZodTypeAny, TResult = any> {
   description: string;
-  parameters: TParameters;
+  inputSchema: TParameters;
   execute: (args: z.infer<TParameters>) => TResult | Promise<TResult>;
 }
 

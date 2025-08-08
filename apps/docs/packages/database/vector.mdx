@@ -36,27 +36,25 @@ content matching.
 
 <CodeGroup>
 ```typescript Next.js Server (Recommended)
-import { vector } from '@repo/database/upstash/server/next';
+import { upstash, vectorOps } from '@repo/database/upstash/server/next';
 import { logError, logInfo } from '@repo/observability/server/next';
 
-// Store product embedding await vector.upsert([{ id: 'product-123', vector:
+// Store product embedding await upstash.upsert([{ id: 'product-123', vector:
 [0.1, 0.2, 0.3, ...], // 1536 dimensions for OpenAI embeddings metadata: {
 title: 'iPhone 15 Pro', category: 'electronics', price: 999.99, brand: 'Apple',
 }, }]);
 
-// Find similar products const results = await vector.query({ vector:
+// Find similar products const results = await upstash.query({ vector:
 queryEmbedding, topK: 10, includeMetadata: true, filter: { category: { $eq:
 'electronics' }, price: { $lte: 1200 }, }, });
 
 ````
 
 ```typescript Node.js Server
-import { VectorOperations } from '@repo/database/upstash/server';
+import { upstash, vectorOps, VectorOperations } from '@repo/database/upstash/server';
 import { logError, logInfo } from '@repo/observability/server/next';
 
-const vectorOps = new VectorOperations();
-
-// Same operations as above
+// Using convenience functions
 await vectorOps.upsert([{
   id: 'product-123',
   vector: [0.1, 0.2, 0.3, ...],
@@ -68,22 +66,31 @@ const results = await vectorOps.query({
   topK: 10,
   includeMetadata: true
 });
+
+// Or create custom instance
+const customVectorOps = new VectorOperations();
+await customVectorOps.upsert([...]);
 ````
 
 ```typescript Types Only (Client)
-import type {
-  VectorMetadata,
-  QueryOptions
-} from "@repo/database/upstash/client";
-import { logError, logInfo } from "@repo/observability/server/next";
+import type { QueryResult, FetchResult } from "@repo/database/upstash/client";
 
 // Use for TypeScript typing in client components
-interface ProductVector extends VectorMetadata {
+interface ProductVector {
+  id: string;
   title: string;
   category: string;
   price: number;
   brand: string;
 }
+
+// Type for query results
+type ProductQueryResult = QueryResult<{
+  title: string;
+  category: string;
+  price: number;
+  brand: string;
+}>;
 ```
 
 </CodeGroup>
@@ -1294,8 +1301,14 @@ async function semanticSearch(query: string, limit = 5) {
 
 <AccordionGroup>
   <Accordion title="Environment Variables" icon="warning">
-    **Error**: `Missing Upstash Vector environment variables` **Solution**: Ensure
-    `UPSTASH_VECTOR_REST_URL` and `UPSTASH_VECTOR_REST_TOKEN` are set in your environment variables.
+    **Error**: `Upstash Vector client not available. Please configure UPSTASH_VECTOR_REST_URL and UPSTASH_VECTOR_REST_TOKEN environment variables.`
+    
+    **Solution**: 
+    1. Ensure `UPSTASH_VECTOR_REST_URL` and `UPSTASH_VECTOR_REST_TOKEN` are set in your environment variables
+    2. Create an Upstash Vector database at https://console.upstash.com/vector
+    3. Add the credentials to your `.env.local` file or Doppler configuration
+    
+    **Note**: Vector operations will fail gracefully with warnings if not configured, allowing the application to continue running.
   </Accordion>
 
 <Accordion title="Dimension Mismatch" icon="arrows-alt">

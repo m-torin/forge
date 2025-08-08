@@ -13,7 +13,7 @@ import { z } from 'zod/v4';
  */
 export interface ToolConfig<TParams = any, TResult = any> {
   description: string;
-  parameters: z.ZodSchema<TParams>;
+  inputSchema: z.ZodSchema<TParams>;
   execute: (args: TParams, context?: any) => Promise<TResult> | TResult;
   context?: any;
 }
@@ -86,7 +86,7 @@ export type ToolsInput =
  * ```typescript
  * const weatherTool = tool({
  *   description: 'Get weather information',
- *   parameters: z.object({ location: z.string() }),
+ *   inputSchema: z.object({ location: z.string() }),
  *   execute: async ({ location }) => {
  *     return { temp: 72, location };
  *   }
@@ -98,7 +98,7 @@ export function tool<TParams, TResult>(config: ToolConfig<TParams, TResult>): To
 
   return aiTool({
     description: toolConfig.description,
-    inputSchema: toolConfig.parameters,
+    inputSchema: toolConfig.inputSchema,
     execute: async (args: any) => {
       return config.execute(args as TParams, context);
     },
@@ -112,7 +112,7 @@ export function tool<TParams, TResult>(config: ToolConfig<TParams, TResult>): To
  * ```typescript
  * const apiTool = tool.api({
  *   description: 'Fetch user data',
- *   parameters: z.object({ userId: z.string() }),
+ *   inputSchema: z.object({ userId: z.string() }),
  *   url: (input) => `https://api.example.com/users/${input.userId}`,
  *   transformResponse: (data) => ({ name: data.name, email: data.email })
  * });
@@ -121,7 +121,7 @@ export function tool<TParams, TResult>(config: ToolConfig<TParams, TResult>): To
 tool.api = function <TParams, TResult>(config: APIToolConfig<TParams, TResult>): Tool {
   return aiTool({
     description: config.description,
-    inputSchema: config.parameters,
+    inputSchema: config.inputSchema,
     execute: async (input: any, _options: any) => {
       const typedInput = input as TParams;
       try {
@@ -166,7 +166,7 @@ tool.api = function <TParams, TResult>(config: APIToolConfig<TParams, TResult>):
  * ```typescript
  * const streamTool = tool.stream({
  *   description: 'Stream data',
- *   parameters: z.object({ query: z.string() }),
+ *   inputSchema: z.object({ query: z.string() }),
  *   execute: async ({ query }, context) => {
  *     // Stream implementation
  *     return { streaming: true };
@@ -188,7 +188,7 @@ tool.stream = function <TParams, TResult>(config: StreamingToolConfig<TParams, T
  * ```typescript
  * const secureTool = tool.secure({
  *   description: 'Delete resource',
- *   parameters: z.object({ id: z.string() }),
+ *   inputSchema: z.object({ id: z.string() }),
  *   requiredPermissions: ['admin', 'delete'],
  *   validator: async (input) => input.id !== 'protected',
  *   execute: async ({ id }) => {
@@ -201,7 +201,7 @@ tool.stream = function <TParams, TResult>(config: StreamingToolConfig<TParams, T
 tool.secure = function <TParams, TResult>(config: SecureToolConfig<TParams, TResult>): Tool {
   return aiTool({
     description: config.description,
-    inputSchema: config.parameters,
+    inputSchema: config.inputSchema,
     execute: async (input: any, _options: any) => {
       const typedInput = input as TParams;
 
@@ -251,7 +251,7 @@ export const schemas = {
 const standardTools = {
   weather: tool({
     description: 'Get weather information',
-    parameters: z.object({
+    inputSchema: z.object({
       location: schemas.location,
       units: z.enum(['celsius', 'fahrenheit']).optional().default('celsius'),
     }),
@@ -268,7 +268,7 @@ const standardTools = {
 
   search: tool({
     description: 'Search for information',
-    parameters: z.object({
+    inputSchema: z.object({
       query: schemas.query,
       limit: schemas.limit,
     }),
@@ -286,7 +286,7 @@ const standardTools = {
 
   calculator: tool({
     description: 'Perform calculations',
-    parameters: z.object({
+    inputSchema: z.object({
       expression: z.string().describe('Mathematical expression'),
     }),
     execute: async ({ expression }) => {
@@ -306,7 +306,7 @@ const standardTools = {
 const documentTools = {
   createDocument: tool({
     description: 'Create a new document',
-    parameters: z.object({
+    inputSchema: z.object({
       title: schemas.title,
       content: schemas.content,
       format: z.enum(['markdown', 'text', 'html']).optional().default('markdown'),
@@ -324,7 +324,7 @@ const documentTools = {
 
   summarizeDocument: tool({
     description: 'Summarize document content',
-    parameters: z.object({
+    inputSchema: z.object({
       content: schemas.content,
       maxLength: z.number().optional().default(200),
     }),
@@ -355,7 +355,7 @@ export function ragTools(vectorStore: any): Record<string, Tool> {
   return {
     addKnowledge: tool({
       description: 'Add knowledge to vector store',
-      parameters: z.object({
+      inputSchema: z.object({
         content: schemas.content,
         metadata: schemas.metadata,
       }),
@@ -369,7 +369,7 @@ export function ragTools(vectorStore: any): Record<string, Tool> {
 
     searchKnowledge: tool({
       description: 'Search knowledge base',
-      parameters: z.object({
+      inputSchema: z.object({
         query: schemas.query,
         limit: schemas.limit,
       }),

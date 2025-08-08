@@ -87,14 +87,23 @@ export function createDefaultComputerTool() {
       }
     },
 
-    experimental_toToolResultContent: result => {
-      // Following the documentation example exactly
+    toModelOutput: result => {
+      // AI SDK v5: toModelOutput with proper content shapes
       if (typeof result === 'string') {
-        return [{ type: 'text' as const, text: result }];
+        return {
+          type: 'content',
+          value: [{ type: 'text', text: result }],
+        };
       } else if (result.type === 'image') {
-        return [{ type: 'image' as const, data: result.data, mimeType: 'image/png' }];
+        return {
+          type: 'content',
+          value: [{ type: 'media', mediaType: 'image/png', data: result.data }],
+        };
       }
-      return [{ type: 'text' as const, text: 'Unknown result type' }];
+      return {
+        type: 'content',
+        value: [{ type: 'text', text: 'Unknown result type' }],
+      };
     },
   });
 }

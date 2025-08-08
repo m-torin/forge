@@ -83,7 +83,7 @@ describe('useYjsCollaboration', () => {
     });
 
     expect(result.current.ydoc).toBeDefined();
-    expect(result.current.collaborators).toEqual([]);
+    expect(result.current.collaborators).toStrictEqual([]);
     expect(result.current.error).toBeNull();
   });
 

@@ -920,16 +920,21 @@ describe('Vector Search Operations', () => {
 ### Server Action Testing
 
 <CodeGroup>
-```typescript Server Action Testing
-import { createMocks } from 'node-mocks-http';
+```typescript Server Action Testing with Utilities
+import { serverActionTestUtils } from '@repo/qa/vitest/mocks/packages/nextjs/server-actions';
 import { updateUserAction } from './actions';
 
-describe('updateUserAction', () => { it('updates user successfully', async () =>
-{ const formData = new FormData(); formData.append('userId', '123');
-formData.append('name', 'Updated Name'); formData.append('email',
-'updated@example.com');
+// Enhanced server action testing utilities const { createServerActionId,
+testServerAction, mockServerActionContext } = serverActionTestUtils;
 
-    const result = await updateUserAction(formData);
+describe('updateUserAction', () => { beforeEach(() => { // Mock server action
+environment mockServerActionContext(); });
+
+it('updates user successfully', async () => { const formData = new FormData();
+formData.append('userId', '123'); formData.append('name', 'Updated Name');
+formData.append('email', 'updated@example.com');
+
+    const result = await testServerAction(updateUserAction, formData);
 
     expect(result).toStrictEqual({
       success: true,
@@ -945,12 +950,35 @@ formData.append('name', 'Updated Name'); formData.append('email',
 it('handles validation errors', async () => { const formData = new FormData();
 formData.append('userId', '123'); formData.append('email', 'invalid-email');
 
-    const result = await updateUserAction(formData);
+    const result = await testServerAction(updateUserAction, formData);
 
     expect(result).toStrictEqual({
       success: false,
       errors: {
         email: 'Invalid email format',
+      },
+    });
+
+});
+
+it('creates proper server action ID', () => { const actionId =
+createServerActionId('updateUser', 'users', '123');
+expect(actionId).toMatch(/^action*updateUser_users_123*\d+$/); }); });
+
+// Traditional testing approach (still supported) describe('updateUserAction
+(traditional)', () => { it('updates user successfully', async () => { const
+formData = new FormData(); formData.append('userId', '123');
+formData.append('name', 'Updated Name'); formData.append('email',
+'updated@example.com');
+
+    const result = await updateUserAction(formData);
+
+    expect(result).toStrictEqual({
+      success: true,
+      user: {
+        id: '123',
+        name: 'Updated Name',
+        email: 'updated@example.com',
       },
     });
 

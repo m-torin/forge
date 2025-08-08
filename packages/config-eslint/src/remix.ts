@@ -1,9 +1,9 @@
-import type { Linter } from "eslint";
-import globals from "globals";
+import type { Linter } from 'eslint';
+import globals from 'globals';
 
-import reactPackageConfig from "./react-package";
-import serverConfig from "./server";
-import { createConfig, SEVERITY } from "./types/config";
+import reactPackageConfig from './react-package';
+import serverConfig from './server';
+import { createConfig, SEVERITY } from './types/config';
 
 /*
  * This is a custom ESLint configuration for use with
@@ -13,14 +13,14 @@ import { createConfig, SEVERITY } from "./types/config";
 
 // File patterns for Remix
 const REMIX_PATTERNS = {
-  ALL_FILES: ["**/*.{js,jsx,ts,tsx}"],
+  ALL_FILES: ['**/*.{js,jsx,ts,tsx}'],
   ROUTE_FILES: [
-    "app/routes/**/*.{js,jsx,ts,tsx}",
-    "app/root.{js,jsx,ts,tsx}",
-    "app/entry.*.{js,jsx,ts,tsx}",
+    'app/routes/**/*.{js,jsx,ts,tsx}',
+    'app/root.{js,jsx,ts,tsx}',
+    'app/entry.*.{js,jsx,ts,tsx}',
   ],
-  SERVER_FILES: ["app/server/**/*.{js,ts}", "app/models/**/*.{js,ts}", "app/services/**/*.{js,ts}"],
-  PUBLIC_IGNORE: ["public/**"],
+  SERVER_FILES: ['app/server/**/*.{js,ts}', 'app/models/**/*.{js,ts}', 'app/services/**/*.{js,ts}'],
+  PUBLIC_IGNORE: ['public/**'],
 };
 
 const config: Linter.FlatConfig[] = [
@@ -39,7 +39,7 @@ const config: Linter.FlatConfig[] = [
     },
     rules: {
       // Override any conflicting rules
-      "import/no-default-export": SEVERITY.OFF, // Remix needs default exports
+      'import/no-default-export': SEVERITY.OFF, // Remix needs default exports
     },
   }),
 
@@ -47,7 +47,7 @@ const config: Linter.FlatConfig[] = [
   createConfig({
     files: REMIX_PATTERNS.ROUTE_FILES,
     rules: {
-      "import/prefer-default-export": SEVERITY.OFF,
+      'import/prefer-default-export': SEVERITY.OFF,
     },
   }),
 
@@ -56,7 +56,7 @@ const config: Linter.FlatConfig[] = [
     files: REMIX_PATTERNS.SERVER_FILES,
     rules: {
       // Server-side specific rules already handled by serverConfig
-      "no-console": SEVERITY.ERROR,
+      'no-console': SEVERITY.ERROR,
     },
   }),
 ];

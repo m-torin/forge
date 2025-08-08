@@ -30,7 +30,7 @@ describe('dictionary Loader', () => {
     const mockDictionaryLoader = createMockImplementations.dictionaryLoader();
 
     const locales = mockDictionaryLoader.getLocales();
-    expect(locales).toEqual(['en', 'fr', 'es', 'pt', 'de']);
+    expect(locales).toStrictEqual(['en', 'fr', 'es', 'pt', 'de']);
 
     // Test loading each locale
     for (const locale of locales) {

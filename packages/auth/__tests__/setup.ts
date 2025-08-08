@@ -1,13 +1,17 @@
 /**
  * Test setup file for auth package
+ * Using centralized mocks from @repo/qa where possible
  */
 
 import '@testing-library/jest-dom';
 import React from 'react';
 import { vi } from 'vitest';
 
+// Use centralized QA setup instead of manual imports
+import '@repo/qa/vitest/setup/next-app';
+
 // Set test environment
-Object.defineProperty(process.env, 'NODE_ENV', { value: 'test', writable: true });
+process.env.NODE_ENV = 'test';
 process.env.CI = 'true';
 process.env.SKIP_ENV_VALIDATION = 'true';
 
@@ -92,8 +96,7 @@ vi.mock('../env', () => {
   };
 });
 
-// Mock server-only before any other imports that might use it
-vi.mock('server-only', () => ({}));
+// server-only mock is included in the centralized QA setup
 
 // Mock the database prisma import specifically for auth package
 // This must be hoisted before any imports that use it
@@ -176,22 +179,7 @@ vi.mock('better-auth-harmony', () => ({
 // - Email (@repo/email/server)
 // - And many more...
 
-// Mock Next.js headers for auth tests
-vi.mock('next/headers', () => ({
-  headers: vi.fn(() => {
-    const headers = new Headers();
-    headers.set('x-api-key', 'test-api-key');
-    headers.set('authorization', 'Bearer test-api-key');
-    return headers;
-  }),
-  cookies: vi.fn(() => ({
-    get: vi.fn(),
-    getAll: vi.fn(() => []),
-    has: vi.fn(),
-    set: vi.fn(),
-    delete: vi.fn(),
-  })),
-}));
+// Next.js mocks now handled by centralized QA setup
 
 // Import centralized Better-Auth mock from @repo/qa
 

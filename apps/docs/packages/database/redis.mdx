@@ -38,8 +38,9 @@ providing fast access to frequently used data and enabling real-time features.
 import { redis } from '@repo/database/redis/server/next';
 import { logInfo, logError } from '@repo/observability/server/next';
 
-// Basic operations await redis.set('user:123', { name: 'John', email:
-'john@example.com' }); const user = await redis.get('user:123');
+// Basic operations await redis.set('user:123', JSON.stringify({ name: 'John',
+email: 'john@example.com' })); const userStr = await redis.get('user:123');
+const user = userStr ? JSON.parse(userStr) : null;
 
 // With expiration await redis.setex('temp:token', 3600, 'abc123'); // 1 hour
 
@@ -50,22 +51,26 @@ redis.rpop('notifications');
 ````
 
 ```typescript Node.js Server
-import { RedisOperations } from '@repo/database/redis/server';
+import { redis } from '@repo/database/redis/server';
 import { logInfo, logError } from '@repo/observability/server/next';
-
-const redisOps = new RedisOperations();
 
 // Same operations as above
-await redisOps.set('user:123', { name: 'John', email: 'john@example.com' });
-const user = await redisOps.get('user:123');
-```
+await redis.set('user:123', JSON.stringify({ name: 'John', email: 'john@example.com' }));
+const userStr = await redis.get('user:123');
+const user = userStr ? JSON.parse(userStr) : null;
+````
 
 ```typescript Next.js Client
-import { useRedisState } from "@repo/database/redis/client/next";
-import { logInfo, logError } from '@repo/observability/server/next';
+import type { RedisOperations } from "@repo/database/redis/client";
 
-// Client-side Redis state management
-const [cachedData, setCachedData] = useRedisState("user:profile", null);
+// Client-side types for TypeScript support
+// Note: Direct Redis operations should be performed server-side
+interface CachedUserProfile {
+  id: string;
+  name: string;
+  email: string;
+  lastActive: number;
+}
 ```
 
 </CodeGroup>
@@ -80,20 +85,21 @@ const [cachedData, setCachedData] = useRedisState("user:profile", null);
 await redis.set('config:theme', 'dark');
 const theme = await redis.get('config:theme');
 
-// JSON objects (automatically serialized) await redis.set('user:profile:123', {
-name: 'John Doe', email: 'john@example.com', preferences: { notifications: true,
-theme: 'dark', }, });
+// JSON objects (manually serialized) await redis.set('user:profile:123',
+JSON.stringify({ name: 'John Doe', email: 'john@example.com', preferences: {
+notifications: true, theme: 'dark', }, }));
 
-const profile = await redis.get('user:profile:123');
+const profileStr = await redis.get('user:profile:123'); const profile =
+profileStr ? JSON.parse(profileStr) : null;
 
 // Atomic operations const views = await redis.incr('page:views:homepage');
 await redis.incrby('stats:api_calls', 5);
 
-// Multiple operations await redis.mset({ 'cache:products:count': 1500,
-'cache:categories:count': 25, 'cache:last_updated': Date.now(), });
+// Multiple operations await redis.mset({ 'cache:products:count': '1500',
+'cache:categories:count': '25', 'cache:last_updated': Date.now().toString(), });
 
-const stats = await redis.mget(['cache:products:count',
-'cache:categories:count']);
+const stats = await redis.mget([ 'cache:products:count',
+'cache:categories:count' ]);
 
 ````
 
@@ -118,7 +124,7 @@ await redis.persist("important:data");
 const tomorrow = new Date();
 tomorrow.setDate(tomorrow.getDate() + 1);
 await redis.expireat("daily:report", Math.floor(tomorrow.getTime() / 1000));
-```
+````
 
 </CodeGroup>
 
@@ -598,7 +604,7 @@ subscriber.on('pmessage', (pattern, channel, message) => {
     handleSpecificWorkflowUpdate(workflowId, data);
   }
 });
-```
+````
 
 </CodeGroup>
 
@@ -774,19 +780,12 @@ enableReadyCheck: true, maxLoadingTimeout: 1000,
 
 // Cluster configuration (if using Redis Cluster) enableOfflineQueue: false, });
 
-// Error handling redis.on('error', (error) => {
-  logError('Redis connection error', {
-    error: error.message,
-    code: error.code,
-    timestamp: new Date().toISOString()
-  });
-});
+// Error handling redis.on('error', (error) => { logError('Redis connection
+error', { error: error.message, code: error.code, timestamp: new
+Date().toISOString() }); });
 
-redis.on('ready', () => {
-  logInfo('Redis connection established', {
-    timestamp: new Date().toISOString()
-  });
-});
+redis.on('ready', () => { logInfo('Redis connection established', { timestamp:
+new Date().toISOString() }); });
 
 ````
 
@@ -832,7 +831,7 @@ async function batchGetCache(keys: string[]) {
     {} as Record<string, any>
   );
 }
-```
+````
 
 </CodeGroup>
 

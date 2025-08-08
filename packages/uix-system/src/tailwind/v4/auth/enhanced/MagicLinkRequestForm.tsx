@@ -24,7 +24,7 @@ interface MagicLinkRequestFormProps extends BaseProps {
   onError?: (error: string) => void;
 }
 
-const initialState: FormState = { success: false };
+const _initialState: FormState = { success: false };
 
 export function MagicLinkRequestForm({
   title = 'Sign in with Magic Link',
@@ -73,7 +73,6 @@ export function MagicLinkRequestForm({
       </CardHeader>
 
       <CardContent>
-        {/* Success State */}
         {state?.success && (
           <div className="space-y-4">
             <Alert variant="success">{state.message}</Alert>
@@ -110,7 +109,6 @@ export function MagicLinkRequestForm({
               </div>
             </div>
 
-            {/* Resend Button */}
             <form action={action}>
               <input type="hidden" name="email" value={state.data?.email} />
               <input type="hidden" name="redirectTo" value={redirectTo} />
@@ -128,10 +126,8 @@ export function MagicLinkRequestForm({
           </div>
         )}
 
-        {/* Form State */}
         {!state?.success && (
           <form action={action} className="space-y-4">
-            {/* Error Message */}
             {state?.error && <Alert variant="destructive">{state.error}</Alert>}
 
             <Input
@@ -145,7 +141,6 @@ export function MagicLinkRequestForm({
               description="We'll send you a secure sign-in link"
             />
 
-            {/* Hidden Fields */}
             <input type="hidden" name="redirectTo" value={redirectTo} />
 
             {allowSignUp && (
@@ -180,7 +175,6 @@ export function MagicLinkRequestForm({
           </form>
         )}
 
-        {/* Additional Information */}
         <div className={cn('mt-6 rounded-lg bg-gray-50 p-4', 'dark:bg-gray-800')}>
           <h4 className={cn('mb-2 text-sm font-medium text-gray-900', 'dark:text-gray-100')}>
             How Magic Links Work
@@ -193,7 +187,6 @@ export function MagicLinkRequestForm({
           </div>
         </div>
 
-        {/* Alternative Sign In */}
         <div className="mt-4 text-center">
           <p className={cn('text-sm text-gray-600', 'dark:text-gray-400')}>
             Prefer a different method?{' '}

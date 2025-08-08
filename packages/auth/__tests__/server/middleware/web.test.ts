@@ -42,7 +42,7 @@ describe('web middleware', () => {
 
   describe('createWebMiddleware', () => {
     test('should create middleware function', async () => {
-      const webModule = await import('#/server/middleware/web');
+      const webModule = await import('../../src/server/middleware/web');
 
       const middleware = webModule.createWebMiddleware();
 
@@ -50,7 +50,7 @@ describe('web middleware', () => {
     });
 
     test('should allow home page as public route', async () => {
-      const webModule = await import('#/server/middleware/web');
+      const webModule = await import('../../src/server/middleware/web');
 
       const middleware = webModule.createWebMiddleware();
       const request = new NextRequest('https://example.com/', {
@@ -63,7 +63,7 @@ describe('web middleware', () => {
     });
 
     test('should allow default public routes', async () => {
-      const webModule = await import('#/server/middleware/web');
+      const webModule = await import('../../src/server/middleware/web');
 
       const middleware = webModule.createWebMiddleware();
 
@@ -89,7 +89,7 @@ describe('web middleware', () => {
     });
 
     test('should allow custom public paths', async () => {
-      const webModule = await import('#/server/middleware/web');
+      const webModule = await import('../../src/server/middleware/web');
 
       const middleware = webModule.createWebMiddleware({
         publicPaths: ['/custom-public'],
@@ -106,7 +106,7 @@ describe('web middleware', () => {
 
     describe('aPI routes handling', () => {
       test('should detect API routes correctly', async () => {
-        const webModule = await import('#/server/middleware/web');
+        const webModule = await import('../../src/server/middleware/web');
 
         mockGetSessionCookie.mockReturnValue(null);
 
@@ -129,7 +129,7 @@ describe('web middleware', () => {
       });
 
       test('should allow auth API routes', async () => {
-        const webModule = await import('#/server/middleware/web');
+        const webModule = await import('../../src/server/middleware/web');
 
         const middleware = webModule.createWebMiddleware();
         const request = new NextRequest('https://example.com/api/auth/session', {
@@ -142,7 +142,7 @@ describe('web middleware', () => {
       });
 
       test('should handle API key authentication for API routes', async () => {
-        const webModule = await import('#/server/middleware/web');
+        const webModule = await import('../../src/server/middleware/web');
 
         const mockResponse = {
           headers: new Map(),
@@ -165,7 +165,7 @@ describe('web middleware', () => {
       });
 
       test('should handle Bearer token for API routes', async () => {
-        const webModule = await import('#/server/middleware/web');
+        const webModule = await import('../../src/server/middleware/web');
 
         const middleware = webModule.createWebMiddleware();
         const request = new NextRequest('https://example.com/api/users', {
@@ -181,7 +181,7 @@ describe('web middleware', () => {
       });
 
       test('should handle custom API key headers', async () => {
-        const webModule = await import('#/server/middleware/web');
+        const webModule = await import('../../src/server/middleware/web');
 
         const middleware = webModule.createWebMiddleware({
           apiKeyHeaders: ['x-custom-key'],
@@ -200,7 +200,7 @@ describe('web middleware', () => {
       });
 
       test('should handle session authentication for API routes', async () => {
-        const webModule = await import('#/server/middleware/web');
+        const webModule = await import('../../src/server/middleware/web');
 
         mockGetSessionCookie.mockReturnValue({ sessionId: 'test-session' });
 
@@ -222,7 +222,7 @@ describe('web middleware', () => {
       });
 
       test('should allow unauthenticated API access when auth not required', async () => {
-        const webModule = await import('#/server/middleware/web');
+        const webModule = await import('../../src/server/middleware/web');
 
         mockGetSessionCookie.mockReturnValue(null);
 
@@ -240,7 +240,7 @@ describe('web middleware', () => {
       });
 
       test('should include supported methods in API 401 response', async () => {
-        const webModule = await import('#/server/middleware/web');
+        const webModule = await import('../../src/server/middleware/web');
 
         mockGetSessionCookie.mockReturnValue(null);
 
@@ -269,7 +269,7 @@ describe('web middleware', () => {
 
     describe('protected routes handling', () => {
       test('should protect default protected routes', async () => {
-        const webModule = await import('#/server/middleware/web');
+        const webModule = await import('../../src/server/middleware/web');
 
         mockGetSessionCookie.mockReturnValue(null);
 
@@ -293,7 +293,7 @@ describe('web middleware', () => {
       });
 
       test('should protect custom protected paths', async () => {
-        const webModule = await import('#/server/middleware/web');
+        const webModule = await import('../../src/server/middleware/web');
 
         mockGetSessionCookie.mockReturnValue(null);
 
@@ -315,7 +315,7 @@ describe('web middleware', () => {
       });
 
       test('should allow access to protected routes with session', async () => {
-        const webModule = await import('#/server/middleware/web');
+        const webModule = await import('../../src/server/middleware/web');
 
         mockGetSessionCookie.mockReturnValue({ sessionId: 'test-session' });
 
@@ -338,7 +338,7 @@ describe('web middleware', () => {
       });
 
       test('should handle locale prefixes in protected routes', async () => {
-        const webModule = await import('#/server/middleware/web');
+        const webModule = await import('../../src/server/middleware/web');
 
         mockGetSessionCookie.mockReturnValue(null);
 
@@ -372,7 +372,7 @@ describe('web middleware', () => {
       });
 
       test('should handle nested protected routes', async () => {
-        const webModule = await import('#/server/middleware/web');
+        const webModule = await import('../../src/server/middleware/web');
 
         mockGetSessionCookie.mockReturnValue(null);
 
@@ -387,7 +387,7 @@ describe('web middleware', () => {
       });
 
       test('should use custom redirect URL', async () => {
-        const webModule = await import('#/server/middleware/web');
+        const webModule = await import('../../src/server/middleware/web');
 
         mockGetSessionCookie.mockReturnValue(null);
 
@@ -409,7 +409,7 @@ describe('web middleware', () => {
       });
 
       test('should allow unprotected routes even without session', async () => {
-        const webModule = await import('#/server/middleware/web');
+        const webModule = await import('../../src/server/middleware/web');
 
         mockGetSessionCookie.mockReturnValue(null);
 
@@ -424,7 +424,7 @@ describe('web middleware', () => {
       });
 
       test('should skip protection when requireAuth is false', async () => {
-        const webModule = await import('#/server/middleware/web');
+        const webModule = await import('../../src/server/middleware/web');
 
         mockGetSessionCookie.mockReturnValue(null);
 
@@ -445,7 +445,7 @@ describe('web middleware', () => {
 
     describe('route detection', () => {
       test('should correctly identify API routes', async () => {
-        const webModule = await import('#/server/middleware/web');
+        const webModule = await import('../../src/server/middleware/web');
 
         const middleware = webModule.createWebMiddleware();
 
@@ -469,7 +469,7 @@ describe('web middleware', () => {
       });
 
       test('should not treat auth API routes as protected', async () => {
-        const webModule = await import('#/server/middleware/web');
+        const webModule = await import('../../src/server/middleware/web');
 
         const middleware = webModule.createWebMiddleware();
 
@@ -487,7 +487,7 @@ describe('web middleware', () => {
       });
 
       test('should handle route prefix matching correctly', async () => {
-        const webModule = await import('#/server/middleware/web');
+        const webModule = await import('../../src/server/middleware/web');
 
         const middleware = webModule.createWebMiddleware({
           publicPaths: ['/docs'],
@@ -506,14 +506,14 @@ describe('web middleware', () => {
 
   describe('default middleware', () => {
     test('should export default webMiddleware', async () => {
-      const webModule = await import('#/server/middleware/web');
+      const webModule = await import('../../src/server/middleware/web');
 
       expect(webModule.webMiddleware).toBeDefined();
       expect(typeof webModule.webMiddleware).toBe('function');
     });
 
     test('should work with default settings', async () => {
-      const webModule = await import('#/server/middleware/web');
+      const webModule = await import('../../src/server/middleware/web');
 
       const request = new NextRequest('https://example.com/sign-in', {
         method: 'GET',
@@ -527,7 +527,7 @@ describe('web middleware', () => {
 
   describe('edge cases', () => {
     test('should handle empty header values for API keys', async () => {
-      const webModule = await import('#/server/middleware/web');
+      const webModule = await import('../../src/server/middleware/web');
 
       mockGetSessionCookie.mockReturnValue(null);
 
@@ -548,7 +548,7 @@ describe('web middleware', () => {
     });
 
     test('should handle malformed locale patterns', async () => {
-      const webModule = await import('#/server/middleware/web');
+      const webModule = await import('../../src/server/middleware/web');
 
       mockGetSessionCookie.mockReturnValue({ sessionId: 'test' });
 
@@ -565,7 +565,7 @@ describe('web middleware', () => {
     });
 
     test('should handle very long URLs', async () => {
-      const webModule = await import('#/server/middleware/web');
+      const webModule = await import('../../src/server/middleware/web');
 
       mockGetSessionCookie.mockReturnValue(null);
 
@@ -585,7 +585,7 @@ describe('web middleware', () => {
     });
 
     test('should handle URLs with query parameters', async () => {
-      const webModule = await import('#/server/middleware/web');
+      const webModule = await import('../../src/server/middleware/web');
 
       mockGetSessionCookie.mockReturnValue(null);
 
@@ -606,7 +606,7 @@ describe('web middleware', () => {
     });
 
     test('should handle missing headers gracefully', async () => {
-      const webModule = await import('#/server/middleware/web');
+      const webModule = await import('../../src/server/middleware/web');
 
       const middleware = webModule.createWebMiddleware();
       const request = new NextRequest('https://example.com/about', {

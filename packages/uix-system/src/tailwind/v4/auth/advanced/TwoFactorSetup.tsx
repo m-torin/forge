@@ -42,7 +42,7 @@ export function TwoFactorSetup({
   const handleEnableTwoFactor = async () => {
     startTransition(async () => {
       try {
-        const result = await enableTwoFactorAction();
+        const _result = await enableTwoFactorAction();
         setSetupState({ success: true, message: 'Two-factor authentication enabled successfully' });
       } catch (error) {
         setSetupState({
@@ -154,7 +154,6 @@ export function TwoFactorSetup({
         )}
 
         <div className="space-y-6">
-          {/* Step 1: QR Code */}
           <div>
             <h4 className="mb-3 text-sm font-medium text-gray-900">Step 1: Scan QR Code</h4>
             <div className="rounded-lg border border-gray-200 bg-white p-4 text-center">
@@ -180,7 +179,6 @@ export function TwoFactorSetup({
             )}
           </div>
 
-          {/* Step 2: Verify */}
           <div>
             <h4 className="mb-3 text-sm font-medium text-gray-900">
               Step 2: Enter Verification Code
@@ -208,7 +206,6 @@ export function TwoFactorSetup({
             </form>
           </div>
 
-          {/* Backup codes preview */}
           {backupCodes && backupCodes.length > 0 && (
             <div>
               <h4 className="mb-3 text-sm font-medium text-gray-900">Step 3: Save Backup Codes</h4>
@@ -218,8 +215,8 @@ export function TwoFactorSetup({
               </Alert>
               <div className="rounded-lg border bg-gray-50 p-4">
                 <div className="grid grid-cols-2 gap-2 font-mono text-sm">
-                  {backupCodes.map((code, index) => (
-                    <div key={index} className="rounded border bg-white p-2">
+                  {backupCodes.map(code => (
+                    <div key={code} className="rounded border bg-white p-2">
                       {code}
                     </div>
                   ))}

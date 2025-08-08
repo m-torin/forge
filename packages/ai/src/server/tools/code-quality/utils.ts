@@ -2,6 +2,7 @@
  * Shared utilities for code quality tools
  */
 
+import { BoundedCache } from '@repo/mcp-utils';
 import { logError, logInfo } from '@repo/observability';
 import { readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -9,7 +10,8 @@ import { join } from 'node:path';
 // Re-export utilities from MCP utils package
 // These are now centralized in the MCP utils package and should be used via MCP tools
 // in agents. For TypeScript code, we can import directly from the package.
-export { extractObservation, safeStringify } from '@repo/mcp-utils';
+export { createEntityName, extractObservation, safeStringify } from '@repo/mcp-utils';
+export { BoundedCache };
 
 /**
  * Check if a module is a built-in Node.js module
@@ -161,6 +163,27 @@ export async function batchProcess<T, R>(
   return results;
 }
 
+export async function processInBatches<T>(
+  items: T[],
+  processor: (item: T) => Promise<void>,
+  options: {
+    batchSize?: number;
+    delayMs?: number;
+  } = {},
+): Promise<void> {
+  const { batchSize = 20, delayMs = 10 } = options;
+
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+    await Promise.all(batch.map(processor));
+
+    // Small delay to prevent overwhelming the system
+    if (i + batchSize < items.length && delayMs > 0) {
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+    }
+  }
+}
+
 /**
  * Retry async operation with exponential backoff
  */
@@ -196,38 +219,15 @@ export async function retryWithBackoff<T>(
 
 /**
  * Create a simple in-memory cache
+ * @deprecated Use BoundedCache from @repo/mcp-utils instead for better analytics and features
  */
 export function createCache<T>(ttl: number = 5 * 60 * 1000) {
-  const cache = new Map<string, { value: T; expiry: number }>();
-
-  return {
-    get(key: string): T | undefined {
-      const item = cache.get(key);
-      if (!item) return undefined;
-
-      if (Date.now() > item.expiry) {
-        cache.delete(key);
-        return undefined;
-      }
-
-      return item.value;
-    },
-
-    set(key: string, value: T): void {
-      cache.set(key, {
-        value,
-        expiry: Date.now() + ttl,
-      });
-    },
-
-    clear(): void {
-      cache.clear();
-    },
-
-    size(): number {
-      return cache.size;
-    },
-  };
+  // Use BoundedCache for new implementations
+  return new BoundedCache({
+    maxSize: 100,
+    ttl: ttl,
+    enableAnalytics: true,
+  });
 }
 
 /**

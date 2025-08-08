@@ -59,9 +59,8 @@ export const ApiKeyCreatedTemplate = ({
               </Section>
 
               <Text className="m-0 mb-6 rounded-md bg-red-50 p-3 text-sm text-red-600">
-                ⚠️ <strong>Important:</strong> For security reasons, we don't include the
-                actual API key in this email. You can find it in your dashboard immediately after
-                creation.
+                ⚠️ <strong>Important:</strong> For security reasons, we don't include the actual API
+                key in this email. You can find it in your dashboard immediately after creation.
               </Text>
 
               <Section className="mb-6">
@@ -76,13 +75,13 @@ export const ApiKeyCreatedTemplate = ({
               <Hr className="my-4" />
 
               <Text className="m-0 mb-2 text-sm text-zinc-500">
-                <strong>Security reminder:</strong> Keep your API keys secure and don't share
-                them in public repositories or client-side code.
+                <strong>Security reminder:</strong> Keep your API keys secure and don't share them
+                in public repositories or client-side code.
               </Text>
 
               <Text className="m-0 mb-4 text-sm text-zinc-500">
-                If you didn't create this API key, please contact our support team immediately
-                and revoke any unauthorized keys.
+                If you didn't create this API key, please contact our support team immediately and
+                revoke any unauthorized keys.
               </Text>
 
               <Text className="m-0 text-sm text-zinc-500">
@@ -90,7 +89,6 @@ export const ApiKeyCreatedTemplate = ({
                 <br />
                 The Security Team
               </Text>
-              {/* Debug/Info section to show all fields */}
               <Section className="mt-8 rounded-md bg-gray-100 p-4">
                 <Text className="m-0 mb-2 text-xs font-bold text-gray-500">
                   [Debug Info: All Fields]

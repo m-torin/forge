@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { prisma, prismaClientSingleton } from '#/prisma/clients/standard';
+import { prisma, prismaClientSingleton } from '../../src/prisma/clients/standard';
 
 describe('Prisma Client', () => {
   beforeEach(() => {

@@ -11,6 +11,8 @@ export const env = createEnv({
     DEEP_INFRA_API_KEY: z.string().optional(),
     PERPLEXITY_API_KEY: z.string().optional(),
     XAI_API_KEY: z.string().optional(),
+    LM_STUDIO_BASE_URL: z.string().optional(),
+    LM_STUDIO_API_KEY: z.string().optional(),
 
     // Upstash Vector Database
     UPSTASH_VECTOR_REST_URL: z.string().url().optional(),
@@ -65,6 +67,8 @@ export const env = createEnv({
     DEEP_INFRA_API_KEY: process.env.DEEP_INFRA_API_KEY,
     PERPLEXITY_API_KEY: process.env.PERPLEXITY_API_KEY,
     XAI_API_KEY: process.env.XAI_API_KEY,
+    LM_STUDIO_BASE_URL: process.env.LM_STUDIO_BASE_URL,
+    LM_STUDIO_API_KEY: process.env.LM_STUDIO_API_KEY,
     UPSTASH_VECTOR_REST_URL: process.env.UPSTASH_VECTOR_REST_URL,
     UPSTASH_VECTOR_REST_TOKEN: process.env.UPSTASH_VECTOR_REST_TOKEN,
     UPSTASH_VECTOR_NAMESPACE: process.env.UPSTASH_VECTOR_NAMESPACE,
@@ -106,6 +110,8 @@ export function safeEnv() {
     DEEP_INFRA_API_KEY: process.env.DEEP_INFRA_API_KEY || '',
     PERPLEXITY_API_KEY: process.env.PERPLEXITY_API_KEY || '',
     XAI_API_KEY: process.env.XAI_API_KEY || '',
+    LM_STUDIO_BASE_URL: process.env.LM_STUDIO_BASE_URL || '',
+    LM_STUDIO_API_KEY: process.env.LM_STUDIO_API_KEY || '',
     UPSTASH_VECTOR_REST_URL: process.env.UPSTASH_VECTOR_REST_URL || '',
     UPSTASH_VECTOR_REST_TOKEN: process.env.UPSTASH_VECTOR_REST_TOKEN || '',
     UPSTASH_VECTOR_NAMESPACE: process.env.UPSTASH_VECTOR_NAMESPACE || '',
@@ -209,6 +215,11 @@ export function hasPerplexityConfig(): boolean {
 export function hasXAIConfig(): boolean {
   const envVars = safeEnv();
   return Boolean(envVars.XAI_API_KEY);
+}
+
+export function hasLMStudioConfig(): boolean {
+  const envVars = safeEnv();
+  return Boolean(envVars.LM_STUDIO_BASE_URL);
 }
 
 export function hasUpstashVectorConfig(): boolean {

@@ -549,7 +549,7 @@ export function createValidatedTool<_TParams, _TResult>(
 
   return aiTool({
     description: `${toolName} (validated)`,
-    parameters: validationConfig.inputSchema || (baseTool as any).parameters,
+    inputSchema: validationConfig.inputSchema || (baseTool as any).parameters,
     execute: async (input: any, options: any) => {
       const startTime = Date.now();
       let success = false;

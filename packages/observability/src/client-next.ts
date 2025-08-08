@@ -7,8 +7,8 @@ import { ObservabilityBuilder } from './factory/builder';
 import { createBetterStackPlugin } from './plugins/betterstack';
 import { env as betterStackEnv } from './plugins/betterstack/env';
 import { createConsolePlugin } from './plugins/console';
-import { createSentryPlugin } from './plugins/sentry';
-import { env as sentryEnv } from './plugins/sentry/env';
+import { createSentryNextJSPlugin } from './plugins/sentry-nextjs';
+import { env as sentryEnv } from './plugins/sentry-nextjs/env';
 import { setObservabilityInstance } from './shared';
 
 /**
@@ -35,8 +35,17 @@ export async function createClientObservability() {
   // Auto-activate Sentry if client DSN is provided
   if (sentryEnv.NEXT_PUBLIC_SENTRY_DSN) {
     builder.withPlugin(
-      createSentryPlugin({
+      createSentryNextJSPlugin({
         dsn: sentryEnv.NEXT_PUBLIC_SENTRY_DSN,
+        environment: sentryEnv.NEXT_PUBLIC_SENTRY_ENVIRONMENT,
+        release: sentryEnv.NEXT_PUBLIC_SENTRY_RELEASE,
+        // Enable client-side features based on env vars
+        enableTracing: sentryEnv.NEXT_PUBLIC_SENTRY_ENABLE_TRACING ?? true,
+        enableReplay: sentryEnv.NEXT_PUBLIC_SENTRY_ENABLE_REPLAY ?? false,
+        enableFeedback: sentryEnv.NEXT_PUBLIC_SENTRY_ENABLE_FEEDBACK ?? false,
+        tracesSampleRate: sentryEnv.SENTRY_TRACES_SAMPLE_RATE,
+        replaysSessionSampleRate: sentryEnv.SENTRY_REPLAYS_SESSION_SAMPLE_RATE,
+        replaysOnErrorSampleRate: sentryEnv.SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE,
       }),
     );
   }
@@ -87,6 +96,7 @@ export { ConsolePlugin } from './plugins/console';
 // LogTapePlugin is not available in client-side environments
 export { SentryPlugin } from './plugins/sentry';
 export { SentryMicroFrontendPlugin } from './plugins/sentry-microfrontend';
+export { SentryNextJSPlugin } from './plugins/sentry-nextjs';
 
 // Re-export plugin-specific types with aliases to avoid conflicts
 export type { Env as BetterStackEnv, BetterStackPluginConfig } from './plugins/betterstack';
@@ -99,13 +109,7 @@ export type {
   SentryMicroFrontendConfig,
   ZoneConfig,
 } from './plugins/sentry-microfrontend';
-
-// Re-export micro frontend presets
-export {
-  createBackstageHostPreset,
-  createBackstageMicroFrontendPreset,
-  defaultBackstageZones,
-} from './factory/presets';
+export type { SentryNextJSPluginConfig } from './plugins/sentry-nextjs';
 
 // Async logger functions that handle initialization
 export const logDebug = async (message: string, context?: any) => {

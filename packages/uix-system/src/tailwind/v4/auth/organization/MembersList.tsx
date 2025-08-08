@@ -32,7 +32,7 @@ interface MembersListProps extends BaseProps {
   onInviteClick?: () => void;
 }
 
-const initialState: FormState = { success: false };
+const _initialState: FormState = { success: false };
 
 const roleColors = {
   owner: 'bg-purple-100 text-purple-800',

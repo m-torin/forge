@@ -6,6 +6,17 @@
 import { createAI as aiCreateAI } from '@ai-sdk/rsc';
 import { logError, logInfo } from '@repo/observability/server/next';
 import { type ReactNode } from 'react';
+import {
+  getChatUIState,
+  getPersistedUIState,
+  goToStep,
+  nextStep,
+  previousStep,
+  setChatAIState,
+  setPersistedAIState,
+  submitForm,
+  validateField,
+} from './ai-actions';
 
 /**
  * Enhanced createAI with additional features
@@ -159,22 +170,13 @@ export const aiContextPatterns = {
       initialUIState: {
         messages: [],
       },
-      onGetUIState: async () => {
-        'use server';
-
-        // Implement UI state retrieval
-        return {
-          messages: [],
-        };
-      },
+      onGetUIState: getChatUIState,
       onSetAIState: async ({ state }: { state: any }) => {
-        'use server';
-
-        // Implement AI state persistence
         // Trim messages if exceeding limit
         if (options?.maxMessages && state.messages.length > options.maxMessages) {
           state.messages = state.messages.slice(-options.maxMessages);
         }
+        await setChatAIState({ state });
       },
     });
   },
@@ -202,47 +204,18 @@ export const aiContextPatterns = {
       isValid: boolean;
     };
 
-    const enhancedActions = {
+    const contextActions = {
       ...actions,
       validateField: async (name: string, value: any) => {
-        'use server';
-
-        if (validationRules?.[name]) {
-          const result = validationRules[name](value);
-          if (typeof result === 'string') {
-            return { valid: false, error: result };
-          }
-          return { valid: result, error: null };
-        }
-        return { valid: true, error: null };
+        return await validateField(name, value, validationRules);
       },
       submitForm: async (values: Record<string, any>) => {
-        'use server';
-
-        // Validate all fields
-        const errors: Record<string, string> = {};
-
-        if (validationRules) {
-          for (const [name, validator] of Object.entries(validationRules)) {
-            const result = validator(values[name]);
-            if (typeof result === 'string') {
-              errors[name] = result;
-            } else if (!result) {
-              errors[name] = 'Invalid value';
-            }
-          }
-        }
-
-        if (Object.keys(errors).length > 0) {
-          return { success: false, errors };
-        }
-
-        return { success: true, values };
+        return await submitForm(values, validationRules);
       },
     };
 
-    return createAI<FormAIState, FormUIState, typeof enhancedActions>({
-      actions: enhancedActions,
+    return createAI<FormAIState, FormUIState, typeof contextActions>({
+      actions: contextActions,
       initialAIState: {
         values: {},
         errors: {},
@@ -282,30 +255,15 @@ export const aiContextPatterns = {
       progress: number;
     };
 
-    const enhancedActions = {
+    const contextActions = {
       ...actions,
-      nextStep: async (_data?: any) => {
-        'use server';
-
-        // Implementation for moving to next step
-        return { success: true };
-      },
-      previousStep: async () => {
-        'use server';
-
-        // Implementation for moving to previous step
-        return { success: true };
-      },
-      goToStep: async (stepId: string) => {
-        'use server';
-
-        // Implementation for jumping to specific step
-        return { success: true };
-      },
+      nextStep,
+      previousStep,
+      goToStep,
     };
 
-    return createAI<WorkflowAIState, WorkflowUIState, typeof enhancedActions>({
-      actions: enhancedActions,
+    return createAI<WorkflowAIState, WorkflowUIState, typeof contextActions>({
+      actions: contextActions,
       initialAIState: {
         currentStep: 0,
         completedSteps: [],
@@ -342,30 +300,15 @@ export function createPersistedAI<
   return createAI({
     ...aiOptions,
     onGetUIState: async () => {
-      'use server';
-
-      // Load state from storage
-      if (storage) {
-        const savedState = await storage.get(storageKey);
-        if (savedState) {
-          return savedState;
-        }
-      }
-
-      return aiOptions.initialUIState;
+      return await getPersistedUIState(storage, storageKey, aiOptions.initialUIState);
     },
-    onSetAIState: async ({ state }: { state: any }) => {
-      'use server';
-
-      // Save state to storage
-      if (storage) {
-        await storage.set(storageKey, state);
-      }
-
-      // Call original handler if provided
-      if (aiOptions.onSetAIState) {
-        await aiOptions.onSetAIState({ state } as any);
-      }
+    onSetAIState: async ({ state, done, key }: any) => {
+      return await setPersistedAIState(
+        { state, done, key },
+        storage,
+        storageKey,
+        aiOptions.onSetAIState as any,
+      );
     },
   });
 }

@@ -472,7 +472,7 @@ export function createWorkflowScenarios() {
         input: {
           id: 'special-workflow-!@#$%^&*()',
           name: 'Workflow with émojis 🚀 and üñíçøðé',
-          steps: [{ name: "Step with \"quotes\" and 'apostrophes'", action: 'test' }],
+          steps: [{ name: 'Step with "quotes" and \'apostrophes\'', action: 'test' }],
         },
       },
     },

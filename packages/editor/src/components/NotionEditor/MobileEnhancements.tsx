@@ -102,7 +102,6 @@ export function MobileFloatingToolbar({ editor, isVisible, onClose }: MobileFloa
 
   return (
     <div className="mobile-floating-toolbar fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200 bg-white shadow-lg">
-      {/* Tab Navigation */}
       <div className="flex border-b border-gray-200">
         <button
           onClick={() => setActiveTab('format')}
@@ -131,7 +130,6 @@ export function MobileFloatingToolbar({ editor, isVisible, onClose }: MobileFloa
         </button>
       </div>
 
-      {/* Content */}
       <div className="max-h-64 overflow-y-auto p-4">
         {activeTab === 'format' && <MobileFormattingPanel editor={editor} />}
         {activeTab === 'blocks' && <MobileBlocksPanel editor={editor} />}
@@ -219,7 +217,6 @@ function MobileFormattingPanel({ editor }: MobileFormattingPanelProps) {
         ))}
       </div>
 
-      {/* Color Section */}
       <div className="space-y-2">
         <h4 className="text-sm font-medium text-gray-700">Colors</h4>
         <MobileColorPicker editor={editor} />
@@ -239,7 +236,6 @@ interface MobileBlocksPanelProps {
 function MobileBlocksPanel({ editor }: MobileBlocksPanelProps) {
   return (
     <div className="space-y-4">
-      {/* Block Type Dropdowns */}
       <div className="space-y-3">
         <TurnIntoDropdownMenu
           editor={editor}
@@ -257,7 +253,6 @@ function MobileBlocksPanel({ editor }: MobileBlocksPanelProps) {
         />
       </div>
 
-      {/* Quick Actions */}
       <div className="space-y-2">
         <h4 className="text-sm font-medium text-gray-700">Quick Actions</h4>
         <div className="grid grid-cols-2 gap-3">
@@ -343,7 +338,6 @@ function MobileColorPicker({ editor }: MobileColorPickerProps) {
 
   return (
     <div className="space-y-3">
-      {/* Text Colors */}
       <div>
         <p className="mb-2 text-xs text-gray-500">Text Color</p>
         <div className="flex flex-wrap gap-2">
@@ -359,7 +353,6 @@ function MobileColorPicker({ editor }: MobileColorPickerProps) {
         </div>
       </div>
 
-      {/* Highlights */}
       <div>
         <p className="mb-2 text-xs text-gray-500">Highlight</p>
         <div className="flex flex-wrap gap-2">

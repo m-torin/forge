@@ -699,7 +699,9 @@ export class AgentTemplateRegistry {
 
     // Filter by tags
     if (requirements.tags) {
-      candidates = candidates.filter(t => requirements.tags!.some(tag => t.tags.includes(tag)));
+      candidates = candidates.filter(t =>
+        (requirements.tags ?? []).some(tag => t.tags.includes(tag)),
+      );
     }
 
     // Sort by relevance (simple scoring)

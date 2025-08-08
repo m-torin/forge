@@ -6,7 +6,7 @@
  */
 
 // Export enhanced TypeScript definitions for better development experience
-export * from './types/testing';
+// Note: ./types/testing contains only type definitions (.d.ts)
 
 // Shared utilities - deprecated, use @repo/qa/vitest instead
 // Re-export from vitest for backward compatibility

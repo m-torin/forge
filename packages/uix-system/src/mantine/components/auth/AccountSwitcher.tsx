@@ -164,7 +164,6 @@ export function AccountSwitcher({
 
         <Menu.Dropdown>
           <Stack gap={0}>
-            {/* Current Account */}
             <Stack gap="xs" p="xs">
               <Group gap="xs">
                 {renderAvatar(currentUser, 'md')}
@@ -245,7 +244,6 @@ export function AccountSwitcher({
 
       <Menu.Dropdown>
         <Stack gap={0}>
-          {/* Current Account */}
           <Stack gap="xs" p="md">
             <Text size="sm" fw={600} c="dimmed">
               {currentAccountLabel}

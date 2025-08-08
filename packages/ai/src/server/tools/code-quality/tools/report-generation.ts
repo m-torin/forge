@@ -9,14 +9,12 @@
 import { tool, type Tool } from 'ai';
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 import { mcpClient } from '../mcp-client';
-import type {
-  CodeAnalysisResult,
-  FileDiscoveryResult,
-  PatternDetectionResult,
-  VercelOptimizationResult,
-} from '../types';
+import type { CodeAnalysisResult } from './analysis';
+import type { FileDiscoveryResult } from './file-discovery';
+import type { PatternDetectionResult } from './pattern-detection';
+import type { VercelOptimizationResult } from './vercel-optimization';
 
 // Input schema for report generation
 const reportGenerationInputSchema = z.object({
@@ -443,7 +441,7 @@ export const reportGenerationTool = tool({
   },
 
   // Multi-modal result content
-  experimental_toToolResultContent: (result: QualityReport) => [
+  toModelOutput: (result: QualityReport) => [
     {
       type: 'text' as const,
       text:

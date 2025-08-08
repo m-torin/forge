@@ -6,13 +6,15 @@
 
 'use client';
 
-import { signOutAction } from '#/app/actions/auth';
-import type { User } from '#/lib/auth';
+import type { User } from '#/lib/auth-context';
 import type { Locale } from '#/lib/i18n';
 import { ActionIcon, Avatar, Badge, Group, Menu, Text } from '@mantine/core';
+import { signOut } from '@repo/auth/client/next';
+import { logWarn } from '@repo/observability';
 import { IconChevronDown, IconLogout, IconSettings, IconUser } from '@tabler/icons-react';
-import Link from 'next/link';
 import type { Route } from 'next';
+import Link from 'next/link';
+import { useState } from 'react';
 
 interface UserDropdownProps {
   user: User;
@@ -20,8 +22,18 @@ interface UserDropdownProps {
 }
 
 export function UserDropdown({ user, locale }: UserDropdownProps) {
-  const handleSignOut = () => {
-    signOutAction();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  const handleSignOut = async () => {
+    setIsSigningOut(true);
+    try {
+      await signOut();
+      // Better Auth client handles redirect and state updates automatically
+    } catch (error) {
+      logWarn('[UserDropdown] Sign out failed', { error });
+    } finally {
+      setIsSigningOut(false);
+    }
   };
 
   return (
@@ -33,7 +45,7 @@ export function UserDropdown({ user, locale }: UserDropdownProps) {
             className="harmony-transition hover:harmony-bg-surface cursor-pointer rounded-md px-2 py-1"
           >
             <Avatar
-              src={user.avatar}
+              src={user.image}
               alt={user.name}
               size="sm"
               radius="xl"
@@ -54,7 +66,7 @@ export function UserDropdown({ user, locale }: UserDropdownProps) {
         <div className="harmony-border-b px-3 py-3">
           <Group gap="sm">
             <Avatar
-              src={user.avatar}
+              src={user.image}
               alt={user.name}
               size="md"
               radius="xl"
@@ -107,8 +119,9 @@ export function UserDropdown({ user, locale }: UserDropdownProps) {
           leftSection={<IconLogout size={16} />}
           className="harmony-transition"
           color="red"
+          disabled={isSigningOut}
         >
-          Sign out
+          {isSigningOut ? 'Signing out...' : 'Sign out'}
         </Menu.Item>
       </Menu.Dropdown>
     </Menu>

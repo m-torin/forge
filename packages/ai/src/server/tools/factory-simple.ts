@@ -1,4 +1,4 @@
-import { tool as aiTool, type ToolExecutionOptions } from 'ai';
+import { tool as aiTool } from 'ai';
 import 'server-only';
 import { z } from 'zod/v4';
 
@@ -8,9 +8,9 @@ import { z } from 'zod/v4';
  */
 
 export interface SimpleToolContext {
-  session?: any;
-  dataStream?: any;
-  [key: string]: any;
+  session?: unknown;
+  dataStream?: unknown;
+  [key: string]: unknown;
 }
 
 // Type alias for backward compatibility
@@ -22,15 +22,13 @@ export type ToolContext = SimpleToolContext;
  */
 export function createSimpleTool<TParams extends z.ZodTypeAny, TResult>(config: {
   description: string;
-  parameters: TParams;
-  execute: (args: z.infer<TParams>, options?: ToolExecutionOptions) => Promise<TResult> | TResult;
+  inputSchema: TParams;
+  execute: (args: z.infer<TParams>) => Promise<TResult> | TResult;
 }) {
   return aiTool({
     description: config.description,
-    parameters: config.parameters,
-    execute: async (args: any, options: ToolExecutionOptions) => {
-      return config.execute(args as z.infer<TParams>, options);
-    },
+    inputSchema: config.inputSchema,
+    execute: config.execute,
   } as any);
 }
 
@@ -40,20 +38,16 @@ export function createSimpleTool<TParams extends z.ZodTypeAny, TResult>(config: 
 export function createContextTool<TParams extends z.ZodTypeAny, TResult>(
   config: {
     description: string;
-    parameters: TParams;
-    execute: (
-      args: z.infer<TParams>,
-      context: SimpleToolContext,
-      options?: ToolExecutionOptions,
-    ) => Promise<TResult> | TResult;
+    inputSchema: TParams;
+    execute: (args: z.infer<TParams>, context: SimpleToolContext) => Promise<TResult> | TResult;
   },
   context: SimpleToolContext = {},
 ) {
   return aiTool({
     description: config.description,
-    parameters: config.parameters,
-    execute: async (args: any, options: ToolExecutionOptions) => {
-      return config.execute(args as z.infer<TParams>, context, options);
+    inputSchema: config.inputSchema,
+    execute: async (args: z.infer<TParams>) => {
+      return config.execute(args, context);
     },
   } as any);
 }
@@ -64,12 +58,8 @@ export function createContextTool<TParams extends z.ZodTypeAny, TResult>(
 export function createToolFactory(defaultContext: SimpleToolContext = {}) {
   return <TParams extends z.ZodTypeAny, TResult>(config: {
     description: string;
-    parameters: TParams;
-    execute: (
-      args: z.infer<TParams>,
-      context: SimpleToolContext,
-      options?: ToolExecutionOptions,
-    ) => Promise<TResult> | TResult;
+    inputSchema: TParams;
+    execute: (args: z.infer<TParams>, context: SimpleToolContext) => Promise<TResult> | TResult;
   }) => {
     return createContextTool(config, defaultContext);
   };
@@ -95,7 +85,7 @@ export const commonSchemas = {
  */
 export const exampleWeatherTool = createSimpleTool({
   description: 'Get weather information for a location',
-  parameters: z.object({
+  inputSchema: z.object({
     location: z.string().describe('The location to get weather for'),
     units: z.enum(['celsius', 'fahrenheit']).optional().default('celsius'),
   }),

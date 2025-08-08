@@ -54,7 +54,7 @@ export async function fillWebFormExample() {
 export async function codeDevelopmentExample() {
   const tools = getComputerUsePreset('development');
 
-  const result = await streamText({
+  const result = streamText({
     model: anthropic('claude-3-opus-20241022'),
     tools,
     maxSteps: 20,
@@ -189,7 +189,7 @@ export async function interactiveDebuggingExample() {
     sandbox: false, // Real execution for debugging
   });
 
-  const result = await streamText({
+  const result = streamText({
     model: anthropic('claude-3-opus-20241022'),
     tools: tools.all,
     maxSteps: 25,

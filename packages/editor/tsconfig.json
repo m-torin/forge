@@ -3,6 +3,8 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
+      "#/__tests__/*": ["./__tests__/*"],
+      "#/root/*": ["./*"],
       "#/*": ["./src/*"]
     },
     "types": ["vitest/globals", "@testing-library/jest-dom"],

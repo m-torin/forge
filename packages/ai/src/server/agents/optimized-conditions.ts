@@ -11,12 +11,12 @@ import type { StepCondition } from './step-conditions';
  * Condition optimization configuration
  */
 export interface ConditionOptimizationConfig {
-  targetExecutionTime?: number; // milliseconds
+  targetExecutionTime?: number;
   targetTokenUsage?: number;
   targetStepCount?: number;
   optimizationStrategy?: 'conservative' | 'balanced' | 'aggressive';
   adaptiveLearning?: boolean;
-  historicalDataWeight?: number; // 0-1, how much to weight historical data
+  historicalDataWeight?: number;
 }
 
 /**
@@ -106,7 +106,7 @@ export class OptimizedConditionFactory {
    * Create a time-based condition that adapts to execution patterns
    */
   private createTimeBasedCondition(): StepCondition | null {
-    const avgExecutionTime = this.getAverageExecutionTime();
+    const _avgExecutionTime = this.getAverageExecutionTime();
     const avgStepTime = this.getAverageStepTime();
 
     if (avgStepTime === 0) return null;
@@ -127,7 +127,7 @@ export class OptimizedConditionFactory {
 
     if (avgTokensPerStep === 0) return null;
 
-    const targetStepsForTokens = Math.floor(this.config.targetTokenUsage / avgTokensPerStep);
+    const _targetStepsForTokens = Math.floor(this.config.targetTokenUsage / avgTokensPerStep);
 
     return ({ usage }: any) => {
       const totalTokens = usage?.totalTokens || 0;

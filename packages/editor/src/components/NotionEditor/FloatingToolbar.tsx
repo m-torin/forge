@@ -64,7 +64,6 @@ export function FloatingToolbar({ editor, showDropdowns = true }: FloatingToolba
         role="toolbar"
         aria-label="Text formatting toolbar"
       >
-        {/* Block Type Dropdowns */}
         {showDropdowns && (
           <>
             <TurnIntoDropdownMenu
@@ -81,7 +80,6 @@ export function FloatingToolbar({ editor, showDropdowns = true }: FloatingToolba
             <div className="mx-1 h-6 w-px bg-gray-300" />
           </>
         )}
-        {/* Bold */}
         <button
           onClick={() => editor.chain().focus().toggleBold().run()}
           className={clsx(
@@ -93,7 +91,6 @@ export function FloatingToolbar({ editor, showDropdowns = true }: FloatingToolba
           <span className="text-sm font-bold">B</span>
         </button>
 
-        {/* Italic */}
         <button
           onClick={() => editor.chain().focus().toggleItalic().run()}
           className={clsx(
@@ -105,7 +102,6 @@ export function FloatingToolbar({ editor, showDropdowns = true }: FloatingToolba
           <span className="text-sm italic">I</span>
         </button>
 
-        {/* Underline */}
         <button
           onClick={() => editor.chain().focus().toggleUnderline().run()}
           className={clsx(
@@ -117,7 +113,6 @@ export function FloatingToolbar({ editor, showDropdowns = true }: FloatingToolba
           <span className="text-sm underline">U</span>
         </button>
 
-        {/* Strikethrough */}
         <button
           onClick={() => editor.chain().focus().toggleStrike().run()}
           className={clsx(
@@ -129,7 +124,6 @@ export function FloatingToolbar({ editor, showDropdowns = true }: FloatingToolba
           <span className="text-sm line-through">S</span>
         </button>
 
-        {/* Code */}
         <button
           onClick={() => editor.chain().focus().toggleCode().run()}
           className={clsx(
@@ -143,7 +137,6 @@ export function FloatingToolbar({ editor, showDropdowns = true }: FloatingToolba
 
         <div className="mx-1 h-6 w-px bg-gray-300" />
 
-        {/* Text Color */}
         <div className="relative">
           <button
             onClick={() => setIsColorPickerOpen(!isColorPickerOpen)}
@@ -174,7 +167,6 @@ export function FloatingToolbar({ editor, showDropdowns = true }: FloatingToolba
           )}
         </div>
 
-        {/* Highlight */}
         <div className="relative">
           <button
             onClick={() => setIsHighlightPickerOpen(!isHighlightPickerOpen)}
@@ -213,7 +205,6 @@ export function FloatingToolbar({ editor, showDropdowns = true }: FloatingToolba
 
         <div className="mx-1 h-6 w-px bg-gray-300" />
 
-        {/* Link */}
         <button
           onClick={() => setIsLinkEditorOpen(true)}
           className={clsx(
@@ -225,7 +216,6 @@ export function FloatingToolbar({ editor, showDropdowns = true }: FloatingToolba
           <span className="text-sm">🔗</span>
         </button>
 
-        {/* Comment */}
         <button
           onClick={() => {
             // This would integrate with a commenting system
@@ -238,7 +228,6 @@ export function FloatingToolbar({ editor, showDropdowns = true }: FloatingToolba
         </button>
       </div>
 
-      {/* Link Editor */}
       <LinkEditor
         editor={editor}
         isOpen={isLinkEditorOpen}

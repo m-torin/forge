@@ -3,9 +3,8 @@
  * Advanced output processing and transformation capabilities
  */
 
-import type { LanguageModelV2 } from '@ai-sdk/provider';
 import { logWarn } from '@repo/observability';
-import type { EmbeddingModel } from 'ai';
+import type { EmbeddingModel, LanguageModel } from 'ai';
 import { generateObject, generateText, streamText } from 'ai';
 import { z } from 'zod/v4';
 
@@ -51,12 +50,12 @@ export interface StreamingOutputProcessor {
  * Advanced output processing manager
  */
 export class OutputProcessor {
-  private model: LanguageModelV2;
+  private model: LanguageModel;
   private embeddingModel?: EmbeddingModel<string>;
   private config: OutputTransformConfig;
 
   constructor(
-    model: LanguageModelV2,
+    model: LanguageModel,
     config: OutputTransformConfig = {},
     embeddingModel?: EmbeddingModel<string>,
   ) {
@@ -236,7 +235,7 @@ export class OutputProcessor {
     processor: StreamingOutputProcessor,
     options?: Parameters<typeof streamText>[0],
   ): Promise<AsyncIterable<string>> {
-    const result = await streamText({
+    const result = streamText({
       model: this.model,
       prompt,
       ...options,
@@ -358,7 +357,7 @@ Previous error: ${error instanceof Error ? error.message : String(error)}`;
             .max(1)
             .describe('Sentiment score from -1 (negative) to 1 (positive)'),
           label: z.enum(['positive', 'negative', 'neutral']).describe('Sentiment label'),
-          reasoning: z.string().describe('Brief explanation of the sentiment'),
+          reasoningText: z.string().describe('Brief explanation of the sentiment'),
         }),
         prompt: `Analyze the sentiment of this text and provide a score from -1 (very negative) to 1 (very positive):
 
@@ -443,7 +442,7 @@ export const outputProcessors = {
   /**
    * Content creation processor with filtering and analysis
    */
-  contentCreation: (model: LanguageModelV2) =>
+  contentCreation: (model: LanguageModel) =>
     new OutputProcessor(model, {
       enableContentFiltering: true,
       enableSentimentAnalysis: true,
@@ -453,7 +452,7 @@ export const outputProcessors = {
   /**
    * Data processing with strict validation
    */
-  dataProcessing: (model: LanguageModelV2) =>
+  dataProcessing: (model: LanguageModel) =>
     new OutputProcessor(model, {
       enableJsonRepair: true,
       enableSchemaValidation: true,
@@ -462,7 +461,7 @@ export const outputProcessors = {
   /**
    * Research and analysis with entity extraction
    */
-  research: (model: LanguageModelV2, embeddingModel?: EmbeddingModel<string>) =>
+  research: (model: LanguageModel, embeddingModel?: EmbeddingModel<string>) =>
     new OutputProcessor(
       model,
       {
@@ -476,7 +475,7 @@ export const outputProcessors = {
   /**
    * Production-ready processor with minimal overhead
    */
-  production: (model: LanguageModelV2) =>
+  production: (model: LanguageModel) =>
     new OutputProcessor(model, {
       enableJsonRepair: true,
       enableSchemaValidation: true,
@@ -492,7 +491,7 @@ export const generation = {
    * Generate text with automatic enhancement
    */
   async text(
-    model: LanguageModelV2,
+    model: LanguageModel,
     prompt: string,
     options?: {
       enableAnalysis?: boolean;
@@ -513,7 +512,7 @@ export const generation = {
    * Generate object with automatic repair
    */
   async object<T>(
-    model: LanguageModelV2,
+    model: LanguageModel,
     schema: z.ZodSchema<T>,
     prompt: string,
     options?: {
@@ -542,7 +541,7 @@ export const generation = {
    * Stream with real-time processing
    */
   async stream(
-    model: LanguageModelV2,
+    model: LanguageModel,
     prompt: string,
     onChunk?: (chunk: string, accumulated: string) => void,
   ): Promise<AsyncIterable<string>> {
@@ -570,7 +569,7 @@ export const outputSchemas = {
     category: z.string().describe('Primary category'),
     subcategory: z.string().optional().describe('Subcategory if applicable'),
     confidence: z.number().min(0).max(1),
-    reasoning: z.string().describe('Explanation of classification'),
+    reasoningText: z.string().describe('Explanation of classification'),
   }),
 
   extraction: z.object({
@@ -595,7 +594,7 @@ export const outputSchemas = {
   decision: z.object({
     decision: z.boolean().describe('True/false decision'),
     confidence: z.number().min(0).max(1),
-    reasoning: z.string().describe('Explanation of decision'),
+    reasoningText: z.string().describe('Explanation of decision'),
     factors: z.array(z.string()).describe('Key decision factors'),
   }),
 } as const;

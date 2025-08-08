@@ -6,6 +6,8 @@
     "declaration": false,
     "declarationMap": false,
     "paths": {
+      "#/__tests__/*": ["./__tests__/*"],
+      "#/root/*": ["./*"],
       "#/*": ["./src/*"]
     }
   },

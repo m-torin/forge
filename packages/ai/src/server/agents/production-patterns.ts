@@ -6,7 +6,6 @@
 import { logError, logInfo, logWarn } from '@repo/observability/server/next';
 import type { ModelMessage } from 'ai';
 
-import { AdvancedToolManager } from './advanced-tool-management';
 import { AgentCommunicationManager, type AgentCapability } from './agent-communication';
 import {
   agentConfigurationTemplates,
@@ -14,6 +13,7 @@ import {
 } from './agent-configuration-templates';
 import { AgentMemoryManager } from './agent-memory';
 import { AgentObservabilityManager, type AgentMonitoringConfig } from './agent-observability';
+import { DynamicToolManager } from './tool-management-dynamic';
 
 /**
  * Production Agent Lifecycle Manager
@@ -402,7 +402,7 @@ export class ProductionAgentLifecycleManager {
  */
 export class ProductionAgent {
   private memory: AgentMemoryManager;
-  private tools: AdvancedToolManager;
+  private tools: DynamicToolManager;
   private observability: AgentObservabilityManager;
   private communication: AgentCommunicationManager;
   private isInitialized = false;
@@ -415,7 +415,7 @@ export class ProductionAgent {
     private options: ProductionAgentInternalOptions,
   ) {
     this.memory = new AgentMemoryManager(agentId, template.memoryConfig);
-    this.tools = new AdvancedToolManager({
+    this.tools = new DynamicToolManager({
       cacheEnabled: true,
       cacheTtl: 3600000,
       maxCacheSize: 100,
@@ -437,8 +437,8 @@ export class ProductionAgent {
     try {
       // Initialize built-in tools if specified
       if (this.options.initializeBuiltInTools !== false) {
-        const builtInTools = await import('./advanced-tool-management');
-        builtInTools.advancedToolUtils.initializeBuiltInTools(this.tools);
+        const builtInTools = await import('./tool-management-dynamic');
+        builtInTools.dynamicToolUtils.initializeBuiltInTools(this.tools);
       }
 
       // Setup graceful shutdown handlers
@@ -640,7 +640,7 @@ export class ProductionAgent {
   private async generateResponse(
     message: ModelMessage,
     context: unknown[],
-    sessionId: string,
+    _sessionId: string,
   ): Promise<ModelMessage> {
     // Mock response generation - in production, integrate with AI model
     const responseText = `I understand your message: "${message.content}". Based on my configuration as a ${this.template.name}, I'm processing your request with ${context.length} relevant context items.`;

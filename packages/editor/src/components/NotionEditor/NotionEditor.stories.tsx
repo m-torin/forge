@@ -59,7 +59,7 @@ import { NotionEditor } from '@repo/editor/components';
       description: 'Placeholder text when editor is empty',
       table: {
         type: { summary: 'string' },
-        defaultValue: { summary: "\"Type '/' for commands...\"" },
+        defaultValue: { summary: '"Type \'/\' for commands..."' },
       },
     },
     className: {

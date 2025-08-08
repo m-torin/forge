@@ -28,7 +28,7 @@ export interface ExportTemplate {
   name: string;
   format: ExportFormat;
   options: ExportOptions;
-  customStyles?: string; // For HTML exports
+  customStyles?: string;
 }
 
 export interface ExportHistoryItem {

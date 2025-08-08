@@ -35,7 +35,7 @@ export interface ModelCapabilities {
   systemPrompts: boolean;
 
   /** Reasoning/thinking support */
-  reasoning: boolean;
+  reasoningText: boolean;
 
   /** Computer use tools */
   computerUse: boolean;
@@ -454,7 +454,7 @@ export const ModelCapabilityDetection = {
     if (task.hasPDFs) required.push('pdfInput');
     if (task.needsTools) required.push('toolCalling');
     if (task.needsStreaming && task.needsTools) required.push('streamingTools');
-    if (task.needsReasoning) required.push('reasoning');
+    if (task.needsReasoning) required.push('reasoningText');
 
     return required;
   },

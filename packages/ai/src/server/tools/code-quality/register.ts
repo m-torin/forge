@@ -19,6 +19,12 @@ import { vercelOptimizationTool } from './tools/vercel-optimization';
 import { wordRemovalTool } from './tools/word-removal';
 import { worktreeTool } from './tools/worktree';
 
+// Import new Phase 1 & 2 tools
+import { documentationGeneratorTool } from './tools/documentation-generator';
+import { performanceProfilerTool } from './tools/performance-profiler';
+import { securityScannerTool } from './tools/security-scanner';
+import { testCoverageTool } from './tools/test-coverage';
+
 /**
  * Code quality tool metadata
  */
@@ -199,6 +205,62 @@ const codeQualityMetadata: Record<string, ToolMetadata> = {
     performance: 0.75,
     isActive: true,
   },
+  securityScanner: {
+    name: 'Security Vulnerability Scanner',
+    description: 'Comprehensive security scanning for vulnerabilities and exposed secrets',
+    category: 'code-quality',
+    tags: ['security', 'vulnerability', 'secrets', 'analysis'],
+    security: 'high',
+    version: '1.0.0',
+    complexity: 'complex',
+    reliability: 0.94,
+    performance: 0.7,
+    isActive: true,
+  },
+  testCoverage: {
+    name: 'Test Coverage & Generation',
+    description: 'Analyzes test coverage and generates missing tests',
+    category: 'code-quality',
+    tags: ['testing', 'coverage', 'generation', 'quality'],
+    security: 'low',
+    version: '1.0.0',
+    complexity: 'complex',
+    reliability: 0.91,
+    performance: 0.6,
+    dependencies: ['analysis'],
+    requirements: {
+      externalServices: ['jest', 'vitest', 'mocha'],
+    },
+    isActive: true,
+  },
+  performanceProfiler: {
+    name: 'Performance Profiler',
+    description: 'Analyzes performance bottlenecks and optimization opportunities',
+    category: 'code-quality',
+    tags: ['performance', 'profiling', 'optimization', 'bundle'],
+    security: 'low',
+    version: '1.0.0',
+    complexity: 'complex',
+    reliability: 0.89,
+    performance: 0.5,
+    dependencies: ['analysis'],
+    requirements: {
+      externalServices: ['webpack', 'rollup', 'esbuild'],
+    },
+    isActive: true,
+  },
+  documentationGenerator: {
+    name: 'Documentation Generator',
+    description: 'Generates comprehensive documentation from code analysis',
+    category: 'code-quality',
+    tags: ['documentation', 'api', 'components', 'generation'],
+    security: 'low',
+    version: '1.0.0',
+    complexity: 'moderate',
+    reliability: 0.92,
+    performance: 0.8,
+    isActive: true,
+  },
 };
 
 /**
@@ -265,6 +327,28 @@ export function registerCodeQualityTools(): void {
     wordRemovalTool,
     codeQualityMetadata.wordRemoval,
   );
+
+  // Register Phase 1 & 2 tools
+  globalToolRegistry.register(
+    'codeQuality.securityScanner',
+    securityScannerTool,
+    codeQualityMetadata.securityScanner,
+  );
+  globalToolRegistry.register(
+    'codeQuality.testCoverage',
+    testCoverageTool,
+    codeQualityMetadata.testCoverage,
+  );
+  globalToolRegistry.register(
+    'codeQuality.performanceProfiler',
+    performanceProfilerTool,
+    codeQualityMetadata.performanceProfiler,
+  );
+  globalToolRegistry.register(
+    'codeQuality.documentationGenerator',
+    documentationGeneratorTool,
+    codeQualityMetadata.documentationGenerator,
+  );
 }
 
 /**
@@ -300,11 +384,15 @@ export function getToolExecutionOrder(): string[] {
     'codeQuality.fileDiscovery',
     'codeQuality.patternDetection',
     'codeQuality.analysis',
+    'codeQuality.securityScanner',
+    'codeQuality.testCoverage',
+    'codeQuality.performanceProfiler',
     'codeQuality.dependencyAnalysis',
     'codeQuality.modernization',
     'codeQuality.mockCheck',
     'codeQuality.vercelOptimization',
     'codeQuality.wordRemoval',
+    'codeQuality.documentationGenerator',
     'codeQuality.reportGeneration',
     'codeQuality.prCreation',
   ];

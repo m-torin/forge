@@ -5,16 +5,16 @@
 
 import { afterEach, beforeEach, describe, expect, vi } from 'vitest';
 
-import type { CoreMessage } from 'ai';
+import type { ModelMessage } from 'ai';
 import { tool } from 'ai';
 import { z } from 'zod/v4';
 
 // Import all advanced agent features
-import { AdvancedToolManager } from '../../../src/server/agents/advanced-tool-management';
 import { AgentCommunicationManager } from '../../../src/server/agents/agent-communication';
 import { agentConfigurationTemplates } from '../../../src/server/agents/agent-configuration-templates';
 import { AgentMemoryManager } from '../../../src/server/agents/agent-memory';
 import { AgentObservabilityManager } from '../../../src/server/agents/agent-observability';
+import { DynamicToolManager } from '../../../src/server/agents/tool-management-dynamic';
 
 // Setup minimal test environment
 vi.stubEnv('NODE_ENV', 'test');
@@ -45,7 +45,7 @@ vi.mock('ai', () => ({
 describe('agent Integration Tests', () => {
   let memoryManager: AgentMemoryManager;
   let communicationManager: AgentCommunicationManager;
-  let toolManager: AdvancedToolManager;
+  let toolManager: DynamicToolManager;
   let observabilityManager: AgentObservabilityManager;
 
   beforeEach(() => {
@@ -58,7 +58,7 @@ describe('agent Integration Tests', () => {
 
     communicationManager = new AgentCommunicationManager();
 
-    toolManager = new AdvancedToolManager({
+    toolManager = new DynamicToolManager({
       cacheEnabled: true,
       performanceTracking: true,
       autoOptimization: true,
@@ -136,7 +136,7 @@ describe('agent Integration Tests', () => {
       const traceId = observabilityManager.startTrace(supportAgent, 'support-session-1');
 
       // Simulate customer inquiry
-      const customerMessage: CoreMessage = {
+      const customerMessage: ModelMessage = {
         role: 'user',
         content: "I'm having trouble connecting to your API. The authentication keeps failing.",
       };
@@ -208,24 +208,53 @@ describe('agent Integration Tests', () => {
       // Check escalation behavior based on difficulty
       expect(['basic', 'intermediate', 'advanced']).toContain(knowledgeResponse.difficulty);
 
-      if (knowledgeResponse.difficulty === 'advanced') {
-        const escalationTaskId = await communicationManager.createCoordinationTask({
-          type: 'escalation',
-          protocol: 'leader_follower',
-          participants: [supportAgent, escalationAgent],
-          coordinator: escalationAgent,
-          objective: 'Resolve complex API authentication issue',
-          constraints: { deadline: Date.now() + 3600000 }, // 1 hour
-          metadata: { priority: 'high', sessionId: 'support-session-1' },
-        });
+      // Get initial task count for comparison
+      const initialTaskCount = communicationManager.getActiveTaskCount();
+      expect(typeof initialTaskCount).toBe('number');
 
-        const escalationTask = await communicationManager.executeCoordinationTask(escalationTaskId);
-        expect(escalationTask.status).toBeOneOf(['active', 'completed']);
-      } else {
-        // For non-advanced issues, verify no escalation is created
-        const initialTaskCount = communicationManager.getActiveTaskCount();
-        expect(typeof initialTaskCount).toBe('number');
-      }
+      // Handle escalation based on difficulty
+      const isAdvanced = knowledgeResponse.difficulty === 'advanced';
+      let escalationResult = null;
+
+      // Prepare escalation task parameters regardless of difficulty
+      const escalationTaskConfig = {
+        type: 'escalation',
+        protocol: 'leader_follower',
+        participants: [supportAgent, escalationAgent],
+        coordinator: escalationAgent,
+        objective: 'Resolve complex API authentication issue',
+        constraints: { deadline: Date.now() + 3600000 }, // 1 hour
+        metadata: { priority: 'high', sessionId: 'support-session-1' },
+      };
+
+      // Execute escalation task only for advanced scenarios - restructure to avoid conditional
+      const escalationTaskId = isAdvanced
+        ? await communicationManager.createCoordinationTask(escalationTaskConfig)
+        : null;
+      escalationResult = escalationTaskId
+        ? await communicationManager.executeCoordinationTask(escalationTaskId)
+        : null;
+
+      // Verify escalation behavior
+      const currentTaskCount = communicationManager.getActiveTaskCount();
+
+      // Verify escalation creation aligns with difficulty level
+      const hasEscalationResult = escalationResult !== null;
+      expect(hasEscalationResult).toBe(isAdvanced);
+
+      // Verify task count behavior
+      const taskCountChanged = currentTaskCount !== initialTaskCount;
+      expect(taskCountChanged).toBe(isAdvanced);
+
+      // For advanced cases with escalation results, verify status
+      const escalationStatus = escalationResult?.status;
+      const validStatuses = ['active', 'completed'];
+
+      // Verify escalation status for advanced cases - avoid conditional expect
+      const statusIsValid = hasEscalationResult ? validStatuses.includes(escalationStatus) : true; // No status to check if no escalation
+
+      // Always verify status validity - will be true for non-escalated cases
+      expect(statusIsValid).toBeTruthy();
 
       // Record observability events
       observabilityManager.recordEvent({
@@ -249,7 +278,7 @@ describe('agent Integration Tests', () => {
       );
       expect(relevantContext.length).toBeGreaterThan(0);
 
-      const responseMessage: CoreMessage = {
+      const responseMessage: ModelMessage = {
         role: 'assistant',
         content: `I can help you with the API authentication issue. Here are the troubleshooting steps: ${knowledgeResponse.steps.join(', ')}. Let me know if you need further assistance.`,
       };
@@ -486,8 +515,8 @@ describe('agent Integration Tests', () => {
         metrics: {
           executionTime: searchResult.executionTime + analysisResult.executionTime,
           tokenUsage: {
-            promptTokens: 200,
-            completionTokens: 300,
+            inputTokens: 200,
+            outputTokens: 300,
             totalTokens: 500,
           },
           stepCount: 2,
@@ -873,8 +902,8 @@ describe('agent Integration Tests', () => {
         metrics: {
           executionTime: 15000, // 15 seconds for development
           tokenUsage: {
-            promptTokens: 800,
-            completionTokens: 1200,
+            inputTokens: 800,
+            outputTokens: 1200,
             totalTokens: 2000,
           },
           stepCount: 5,
@@ -1321,8 +1350,8 @@ describe('agent Integration Tests', () => {
         metrics: {
           executionTime: processingResult.executionTime + charts.length * 2000, // Estimated total time
           tokenUsage: {
-            promptTokens: 600,
-            completionTokens: 900,
+            inputTokens: 600,
+            outputTokens: 900,
             totalTokens: 1500,
           },
           stepCount: 4, // Analysis + 3 chart generations

@@ -77,7 +77,8 @@ const createLogFunction = (level: 'debug' | 'info' | 'warn' | 'error') => {
       observabilityInstance[methodName](message, context);
     } else {
       // Fallback to console with runtime info
-      console[level](`[Observability:${runtimeInfo.type}]`, message, context);
+      const contextStr = context ? JSON.stringify(context) : '';
+      console[level](`[Observability:${runtimeInfo.type}]`, message, contextStr);
     }
   };
 };

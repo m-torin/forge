@@ -22,7 +22,7 @@ interface PhoneNumberSetupFormProps extends BaseProps {
   onVerificationSent?: (phoneNumber: string) => void;
 }
 
-const initialState: FormState = { success: false };
+const _initialState: FormState = { success: false };
 
 // Common country codes
 const COUNTRY_CODES = [
@@ -125,7 +125,7 @@ async function setupPhoneNumberAction(prevState: any, formData: FormData): Promi
       };
     }
   } catch (error: any) {
-    console.error('Phone number setup error:', error);
+    // console.error('Phone number setup error:', error);
 
     if (error?.message?.includes('already exists')) {
       return {
@@ -235,7 +235,6 @@ export function PhoneNumberSetupForm({
       </CardHeader>
 
       <CardContent>
-        {/* Success State */}
         {state?.success && (
           <div className="space-y-4">
             <Alert variant="success">{state.message}</Alert>
@@ -333,13 +332,10 @@ export function PhoneNumberSetupForm({
           </div>
         )}
 
-        {/* Form State */}
         {!state?.success && (
           <form action={action} className="space-y-4">
-            {/* Error Message */}
             {state?.error && <Alert variant="destructive">{state.error}</Alert>}
 
-            {/* Country Code Selection */}
             <div className="space-y-2">
               <label
                 className={cn('block text-sm font-medium text-gray-700', 'dark:text-gray-300')}
@@ -371,7 +367,6 @@ export function PhoneNumberSetupForm({
               )}
             </div>
 
-            {/* Phone Number Input */}
             <Input
               name="phoneNumber"
               type="tel"
@@ -383,7 +378,6 @@ export function PhoneNumberSetupForm({
               description="Enter your phone number without the country code"
             />
 
-            {/* Verification Checkbox */}
             {requireVerification && (
               <div className="flex items-start space-x-2">
                 <input
@@ -405,7 +399,6 @@ export function PhoneNumberSetupForm({
               </div>
             )}
 
-            {/* Hidden Fields */}
             <input
               type="hidden"
               name="requireVerification"
@@ -423,7 +416,6 @@ export function PhoneNumberSetupForm({
           </form>
         )}
 
-        {/* Phone Security Information */}
         <div
           className={cn(
             'mt-6 rounded-lg border border-blue-200 bg-blue-50 p-4',
@@ -454,7 +446,6 @@ export function PhoneNumberSetupForm({
           </div>
         </div>
 
-        {/* Additional Actions */}
         <div className="mt-6 space-y-3">
           <div className="text-center">
             <a

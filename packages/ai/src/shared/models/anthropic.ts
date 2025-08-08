@@ -117,7 +117,7 @@ export function getModelCapabilities(modelId: string): {
   objectGeneration: boolean;
   toolUsage: boolean;
   computerUse: boolean;
-  reasoning: boolean;
+  reasoningText: boolean;
   pdfSupport: boolean;
 } {
   return {
@@ -125,7 +125,7 @@ export function getModelCapabilities(modelId: string): {
     objectGeneration: isObjectGenerationModel(modelId),
     toolUsage: isToolUsageModel(modelId),
     computerUse: isComputerToolsModel(modelId),
-    reasoning: isReasoningModel(modelId),
+    reasoningText: isReasoningModel(modelId),
     pdfSupport: isPDFSupportedModel(modelId),
   };
 }

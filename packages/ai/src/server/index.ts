@@ -75,7 +75,6 @@ export async function createMCPToolsForStreamTextCompat(configs: any[]): Promise
     const { createMCPToolsFromConfigs } = await import('./mcp/client');
     return createMCPToolsFromConfigs(configs, { gracefulDegradation: true });
   } catch {
-    // Fallback to tools if MCP client unavailable
     const { createMCPToolset } = await import('./tools');
     const tools = await createMCPToolset({ autoDiscover: true });
     return { tools, clients: [], closeAllClients: async () => {} };
@@ -123,10 +122,10 @@ export {
 export * from './utils/embedding';
 // v5 Enhanced embedding utilities
 export {
-  EnhancedEmbeddingManager,
-  createEnhancedEmbeddingManager,
+  CachedEmbeddingManager,
+  createCachedEmbeddingManager,
   embeddingUtils,
-  type EnhancedEmbeddingOptions,
+  type CachedEmbeddingOptions,
 } from './utils/embedding/embedding-utils';
 
 // Vector Database Support
@@ -228,7 +227,37 @@ export {
 } from './core/models';
 
 // AI SDK v5 Provider Registry
-export { getDefaultModel, getLegacyModel, getModel, models, registry } from './providers/registry';
+export {
+  getDefaultModel,
+  getLanguageModel,
+  getLegacyModel,
+  getModel,
+  models,
+  registry,
+} from './providers/registry';
+
+// Export model metadata utilities for UI dropdowns and configuration
+export {
+  CODE_MODELS,
+  COMPUTER_USE_MODELS,
+  MODEL_ALIASES,
+  MODEL_REGISTRY,
+  REASONING_MODELS,
+  VISION_MODELS,
+  getAllModelIds,
+  getBestModelForTask,
+  getChatModels,
+  getModelConfig,
+  getModelProvider,
+  getModelReasoningConfig,
+  getModelsByCapability,
+  getModelsByProvider,
+  getProviderModelId,
+  isDeprecatedModel,
+  isValidModelId,
+  modelHasCapability,
+  modelSupportsReasoning,
+} from '../shared/models/registry';
 
 // AI SDK v5 Enhanced Lifecycle Hooks
 export {
@@ -398,17 +427,17 @@ export {
 
 // Advanced Agent Features - Tool Management
 export {
-  AdvancedToolManager,
-  advancedToolUtils,
+  DynamicToolManager,
   createBuiltInTools,
-  globalAdvancedToolManager,
-  type ToolMetadata as AdvancedToolMetadata,
+  dynamicToolUtils,
+  globalDynamicToolManager,
   type DynamicToolLoader,
+  type ToolMetadata as DynamicToolMetadata,
   type ToolExecutionContext,
   type ToolExecutionResult,
   type ToolPerformanceMetrics,
   type ToolSelectionCriteria,
-} from './agents/advanced-tool-management';
+} from './agents/tool-management-dynamic';
 
 // Advanced Agent Features - Observability
 export {
@@ -487,22 +516,9 @@ export {
 } from './prompts/prompt-optimization';
 
 // Advanced Streaming
-export * from './streaming/advanced';
-export {
-  // Stream Data
-  EnhancedStreamData,
-  createStreamingResponseWithData,
-  streamDataPatterns,
-  streamDataUtils,
-} from './streaming/advanced/stream-data';
+// Advanced streaming exports are now in ./streaming/index.ts
 
-export {
-  // Stream Metadata
-  MetadataStream,
-  createMetadataTransformer,
-  metadataPatterns,
-  type StreamMetadata,
-} from './streaming/advanced/stream-metadata';
+// Stream Metadata removed - use AI SDK v5 native metadata instead
 
 export {
   ResumableStreamManager,
@@ -512,7 +528,7 @@ export {
   createInterruptibleStream,
   globalStreamManager,
   interruptionPatterns,
-} from './streaming/advanced/stream-interruption';
+} from './streaming/stream-interruption';
 
 export {
   // Backpressure
@@ -520,4 +536,4 @@ export {
   backpressurePatterns,
   createBackpressureTransform,
   type BackpressureConfig,
-} from './streaming/advanced/backpressure';
+} from './streaming/backpressure';

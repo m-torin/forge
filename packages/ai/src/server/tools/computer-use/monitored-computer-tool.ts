@@ -50,7 +50,7 @@ export function createMonitoredComputerTool(config: MonitoredComputerToolConfig 
   return tool({
     description:
       'Monitored computer interaction tool - take screenshots and simulate user input with security monitoring',
-    parameters: ComputerToolInputSchema,
+    inputSchema: ComputerToolInputSchema,
     execute: async (input: ComputerToolInput, _options: any) => {
       // Start monitoring on first use
       if (monitor && !monitoringStarted) {

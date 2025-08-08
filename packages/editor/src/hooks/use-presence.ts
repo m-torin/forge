@@ -10,7 +10,7 @@ interface PresenceOptions {
   updateInterval?: number;
   trackCursor?: boolean;
   trackSelection?: boolean;
-  idleTimeout?: number; // milliseconds, defaults to 30000 (30 seconds)
+  idleTimeout?: number;
 }
 
 export function usePresence(options: PresenceOptions): ReturnType<typeof useCollaboration> & {

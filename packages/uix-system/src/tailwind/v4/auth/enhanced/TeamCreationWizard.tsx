@@ -101,9 +101,9 @@ export function TeamCreationWizard({
   const [selectedTemplate, setSelectedTemplate] = useState<(typeof TEAM_TEMPLATES)[0] | null>(null);
   const [createdTeamId, setCreatedTeamId] = useState('');
 
-  const [createState, createAction] = useFormState(createTeamAction, initialFormState);
-  const [inviteState, inviteAction] = useFormState(inviteMembersAction, initialFormState);
-  const [uploadState, uploadAction] = useFormState(uploadTeamImageAction, initialFormState);
+  const [createState, _createAction] = useFormState(createTeamAction, initialFormState);
+  const [inviteState, _inviteAction] = useFormState(inviteMembersAction, initialFormState);
+  const [uploadState, _uploadAction] = useFormState(uploadTeamImageAction, initialFormState);
 
   const handleDetailsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -279,27 +279,24 @@ export function TeamCreationWizard({
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Error Messages */}
           {(createState.error || inviteState.error || uploadState.error) && (
             <Alert variant="destructive">
               {createState.error || inviteState.error || uploadState.error}
             </Alert>
           )}
 
-          {/* Success Messages */}
           {(createState.success || inviteState.success || uploadState.success) &&
             currentStep !== 'success' && (
               <Alert variant="default">
                 {createState.success && 'Team created successfully!'}
-                {inviteState.success && `${(inviteState as any).invitationsSent || 0} invitations sent!`}
+                {inviteState.success &&
+                  `${(inviteState as any).invitationsSent || 0} invitations sent!`}
                 {uploadState.success && 'Team image uploaded successfully!'}
               </Alert>
             )}
 
-          {/* Step 1: Team Details */}
           {currentStep === 'details' && (
             <div className="space-y-6">
-              {/* Team Templates */}
               <div>
                 <h3 className="mb-4 text-lg font-medium text-gray-900">
                   Choose a Template (Optional)
@@ -308,7 +305,15 @@ export function TeamCreationWizard({
                   {TEAM_TEMPLATES.map(template => (
                     <div
                       key={template.name}
+                      role="button"
+                      tabIndex={0}
                       onClick={() => handleTemplateSelect(template)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          handleTemplateSelect(template);
+                        }
+                      }}
                       className={`cursor-pointer rounded-lg border-2 p-4 transition-all ${
                         selectedTemplate?.name === template.name
                           ? 'border-blue-500 bg-blue-50'
@@ -407,7 +412,6 @@ export function TeamCreationWizard({
             </div>
           )}
 
-          {/* Step 2: Team Image */}
           {currentStep === 'image' && (
             <div className="space-y-6">
               <div className="text-center">
@@ -468,7 +472,6 @@ export function TeamCreationWizard({
             </div>
           )}
 
-          {/* Step 3: Invite Members */}
           {currentStep === 'members' && (
             <div className="space-y-6">
               <div>
@@ -512,14 +515,13 @@ export function TeamCreationWizard({
                 </p>
               </div>
 
-              {/* Members List */}
               {members.length > 0 && (
                 <div className="space-y-3">
                   <h4 className="font-medium text-gray-900">Team Members ({members.length})</h4>
                   <div className="space-y-2">
                     {members.map((member, index) => (
                       <div
-                        key={index}
+                        key={member.email || `member-${index}`}
                         className="flex items-center justify-between rounded-lg border border-gray-200 p-3"
                       >
                         <div className="flex items-center space-x-3">
@@ -596,7 +598,6 @@ export function TeamCreationWizard({
             </div>
           )}
 
-          {/* Step 4: Review */}
           {currentStep === 'review' && (
             <div className="space-y-6">
               <div>
@@ -654,7 +655,7 @@ export function TeamCreationWizard({
                           <div className="max-h-40 space-y-2 overflow-y-auto">
                             {members.map((member, index) => (
                               <div
-                                key={index}
+                                key={member.email || `member-${index}`}
                                 className="flex items-center justify-between rounded bg-gray-50 p-2"
                               >
                                 <span className="text-sm text-gray-900">{member.email}</span>
@@ -702,7 +703,6 @@ export function TeamCreationWizard({
             </div>
           )}
 
-          {/* Step 5: Success */}
           {currentStep === 'success' && (
             <div className="space-y-6 text-center">
               <div className="mb-4 text-6xl">🎉</div>
@@ -741,7 +741,6 @@ export function TeamCreationWizard({
             </div>
           )}
 
-          {/* Progress Indicator */}
           <div className="mt-6 border-t border-gray-200 pt-4">
             <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
               {['details', 'image', 'members', 'review', 'success'].map((step, index) => {
@@ -773,7 +772,6 @@ export function TeamCreationWizard({
         </CardContent>
       </Card>
 
-      {/* Security Notice */}
       <div className="mt-4 text-center">
         <p className="text-xs text-gray-500">🔒 Team data is encrypted and secure</p>
       </div>

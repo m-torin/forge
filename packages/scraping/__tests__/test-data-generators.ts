@@ -288,15 +288,12 @@ export const edgeCaseTestData = {
 
   // Large content
   largeContent: {
-    hugePage: '<html><body>' + '<p>Content</p>'.repeat(10000) + '</body></html>',
-    manyLinks:
-      '<html><body>' +
-      Array.from(
-        { length: 1000 },
-        (_, i) => `<a href="https://example.com/page${i}">Link ${i}</a>`,
-      ).join('') +
-      '</body></html>',
-    deepNesting: '<div>'.repeat(100) + 'Content' + '</div>'.repeat(100),
+    hugePage: `<html><body>${'<p>Content</p>'.repeat(10000)}</body></html>`,
+    manyLinks: `<html><body>${Array.from(
+      { length: 1000 },
+      (_, i) => `<a href="https://example.com/page${i}">Link ${i}</a>`,
+    ).join('')}</body></html>`,
+    deepNesting: `${'<div>'.repeat(100)}Content${'</div>'.repeat(100)}`,
   },
 
   // Special characters

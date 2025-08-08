@@ -332,7 +332,10 @@ describe('logtape-specific features', () => {
 
       await plugin.initialize();
 
-      expect(consoleSpy).toHaveBeenCalledWith('Failed to initialize LogTape:', expect.any(Error));
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Failed to initialize LogTape client:',
+        expect.any(Error),
+      );
 
       consoleSpy.mockRestore();
     });
@@ -359,7 +362,10 @@ describe('logtape-specific features', () => {
 
       await plugin.initialize();
 
-      expect(consoleSpy).toHaveBeenCalledWith('Failed to initialize LogTape:', expect.any(Error));
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Failed to initialize LogTape client:',
+        expect.any(Error),
+      );
 
       consoleSpy.mockRestore();
     });

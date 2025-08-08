@@ -138,7 +138,6 @@ export function MobileDrawer({
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
           <motion.div
             className="fixed inset-0 z-40 bg-black/50"
             initial={{ opacity: 0 }}
@@ -147,7 +146,6 @@ export function MobileDrawer({
             onClick={onClose}
           />
 
-          {/* Drawer */}
           <motion.div
             className="bg-background fixed inset-x-0 bottom-0 z-50 rounded-t-xl shadow-xl"
             style={{ y }}
@@ -161,12 +159,10 @@ export function MobileDrawer({
             dragElastic={0.1}
             onDragEnd={handleDragEnd}
           >
-            {/* Handle */}
             <div className="flex justify-center pb-2 pt-3">
               <div className="bg-muted-foreground/30 h-1 w-12 rounded-full" />
             </div>
 
-            {/* Header */}
             {title && (
               <div className="flex items-center justify-between border-b px-4 pb-2">
                 <h2 className="text-lg font-semibold">{title}</h2>
@@ -176,7 +172,6 @@ export function MobileDrawer({
               </div>
             )}
 
-            {/* Content */}
             <div className="overflow-y-auto" style={{ height: `${snapPoint * 80}vh` }}>
               {children}
             </div>
@@ -338,7 +333,6 @@ export function PullToRefresh({ onRefresh, children, threshold = 100 }: PullToRe
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Pull indicator */}
       <AnimatePresence>
         {(isPulling || isRefreshing) && (
           <motion.div

@@ -4,6 +4,7 @@
     "baseUrl": ".",
     "types": ["vitest/globals", "@testing-library/jest-dom"],
     "paths": {
+      "#/__tests__/*": ["./__tests__/*"],
       "#/root/*": ["./*"],
       "#/*": ["./src/*"]
     }

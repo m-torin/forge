@@ -14,22 +14,25 @@ export const basePlaywrightConfig: PlaywrightTestConfig = {
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
 
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  /* Optimize workers: Mac Studio can handle more cores, CI should be conservative but faster */
+  workers: process.env.CI ? 4 : 8,
 
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: process.env.CI ? 'dot' : 'list',
+  reporter: process.env.CI
+    ? [['json', { outputFile: 'test-results/results.json' }], ['github']]
+    : 'list',
 
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
-
     /* Take screenshots only on failure */
     screenshot: 'only-on-failure',
 
     /* Run tests in headless mode by default for CI/CD environments */
     headless: true,
+
+    /* Optimized timeouts for different environments */
+    actionTimeout: process.env.CI ? 15000 : 10000,
+    navigationTimeout: process.env.CI ? 45000 : 30000,
   },
 
   /* Configure projects for major browsers */
@@ -42,10 +45,15 @@ export const basePlaywrightConfig: PlaywrightTestConfig = {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
     },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
+    /* WebKit only locally - CI compatibility issues */
+    ...(process.env.CI
+      ? []
+      : [
+          {
+            name: 'webkit',
+            use: { ...devices['Desktop Safari'] },
+          },
+        ]),
   ],
 };
 

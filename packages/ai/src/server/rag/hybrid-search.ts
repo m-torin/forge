@@ -179,7 +179,7 @@ export class HybridSearchEngine {
    */
   private async performVectorSearch(
     query: string,
-    filters?: Record<string, any>,
+    _filters?: Record<string, any>,
   ): Promise<Array<{ id: string | number; content: string; score: number; metadata?: any }>> {
     try {
       const results = await ragRetry.vector(
@@ -467,7 +467,7 @@ export class HybridSearchEngine {
     const resultMap = new Map<string | number, HybridSearchResult>();
 
     // Process vector results
-    vectorResults.forEach((result, index) => {
+    vectorResults.forEach((result, _index) => {
       const id = result.id;
       const vectorScore = result.score;
       const keywordMatches: string[] = [];
@@ -487,14 +487,15 @@ export class HybridSearchEngine {
     });
 
     // Process keyword results
-    keywordResults.forEach((result, index) => {
+    keywordResults.forEach((result, _index) => {
       const id = result.id;
       const keywordScore = result.score;
       const keywordMatches = result.matches || [];
 
       if (resultMap.has(id)) {
         // Update existing result
-        const existing = resultMap.get(id)!;
+        const existing = resultMap.get(id);
+        if (!existing) return;
         existing.keywordScore = keywordScore;
         existing.keywordMatches = keywordMatches;
         existing.rankingMethod = 'hybrid';

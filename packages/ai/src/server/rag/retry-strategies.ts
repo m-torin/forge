@@ -59,9 +59,9 @@ export enum ErrorType {
 }
 
 /**
- * Enhanced retry class with multiple strategies
+ * Configurable retry class with multiple strategies
  */
-export class EnhancedRetry {
+export class ConfigurableRetry {
   public config: Required<RetryConfig>;
 
   constructor(config: Partial<RetryConfig> = {}) {
@@ -332,8 +332,8 @@ export class RAGRetryPatterns {
   /**
    * Retry pattern for embedding operations
    */
-  static embedding(): EnhancedRetry {
-    return new EnhancedRetry({
+  static embedding(): ConfigurableRetry {
+    return new ConfigurableRetry({
       maxRetries: 3,
       baseDelay: 1000,
       maxDelay: 10000,
@@ -354,8 +354,8 @@ export class RAGRetryPatterns {
   /**
    * Retry pattern for vector operations
    */
-  static vectorOperations(): EnhancedRetry {
-    return new EnhancedRetry({
+  static vectorOperations(): ConfigurableRetry {
+    return new ConfigurableRetry({
       maxRetries: 5,
       baseDelay: 2000,
       maxDelay: 20000,
@@ -376,8 +376,8 @@ export class RAGRetryPatterns {
   /**
    * Retry pattern for batch operations
    */
-  static batchOperations(): EnhancedRetry {
-    return new EnhancedRetry({
+  static batchOperations(): ConfigurableRetry {
+    return new ConfigurableRetry({
       maxRetries: 2,
       baseDelay: 5000,
       maxDelay: 30000,
@@ -386,7 +386,7 @@ export class RAGRetryPatterns {
       timeoutPerAttempt: 120000, // 2 minutes
       retryCondition: (error, _attempt) => {
         // Be more conservative with batch operations
-        const errorType = new EnhancedRetry().categorizeError(error);
+        const errorType = new ConfigurableRetry().categorizeError(error);
         return errorType === ErrorType.NETWORK || errorType === ErrorType.TIMEOUT;
       },
     });
@@ -395,8 +395,8 @@ export class RAGRetryPatterns {
   /**
    * Retry pattern for rate-limited operations
    */
-  static rateLimited(): EnhancedRetry {
-    return new EnhancedRetry({
+  static rateLimited(): ConfigurableRetry {
+    return new ConfigurableRetry({
       maxRetries: 5,
       baseDelay: 10000, // Start with 10 seconds
       maxDelay: 300000, // Max 5 minutes
@@ -422,7 +422,7 @@ export async function retryWithCircuitBreaker<T>(
   retryConfig?: Partial<RetryConfig>,
   circuitBreakerConfig?: Partial<CircuitBreakerConfig>,
 ): Promise<T> {
-  const retry = new EnhancedRetry(retryConfig);
+  const retry = new ConfigurableRetry(retryConfig);
 
   const result = await retry.execute(
     () => executeWithCircuitBreaker(operationName, operation, circuitBreakerConfig),
@@ -518,7 +518,7 @@ export function withRetry(
 /**
  * Global retry instance with default RAG configuration
  */
-export const defaultRAGRetry = new EnhancedRetry({
+export const defaultRAGRetry = new ConfigurableRetry({
   maxRetries: 3,
   baseDelay: 1000,
   maxDelay: 15000,

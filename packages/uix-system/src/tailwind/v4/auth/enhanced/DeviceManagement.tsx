@@ -37,7 +37,7 @@ interface DeviceManagementProps extends BaseProps {
   onDeviceTrusted?: (deviceId: string, trusted: boolean) => void;
 }
 
-const initialState: FormState = { success: false };
+const _initialState: FormState = { success: false };
 
 export function DeviceManagement({
   devices,
@@ -45,8 +45,8 @@ export function DeviceManagement({
   title = 'Device Management',
   subtitle = 'Manage devices that have access to your account',
   showTrustOptions = true,
-  onDeviceRevoked,
-  onDeviceTrusted,
+  onDeviceRevoked: _onDeviceRevoked,
+  onDeviceTrusted: _onDeviceTrusted,
   className = '',
 }: DeviceManagementProps) {
   const [revokeState, revokeAction] = useFormState(revokeDeviceAction, createInitialActionState());
@@ -147,7 +147,6 @@ export function DeviceManagement({
 
   return (
     <div className={`space-y-6 ${className}`}>
-      {/* Header */}
       <div className="text-center">
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
           <svg
@@ -168,7 +167,6 @@ export function DeviceManagement({
         {subtitle && <p className="mt-2 text-sm text-gray-600">{subtitle}</p>}
       </div>
 
-      {/* Error/Success Messages */}
       {(revokeState?.error || trustState?.error || revokeAllState?.error) && (
         <Alert variant="destructive">
           {revokeState?.error || trustState?.error || revokeAllState?.error}
@@ -181,7 +179,6 @@ export function DeviceManagement({
         </Alert>
       )}
 
-      {/* Current Device */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -226,7 +223,6 @@ export function DeviceManagement({
         </CardContent>
       </Card>
 
-      {/* Other Devices */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -344,7 +340,6 @@ export function DeviceManagement({
         </CardContent>
       </Card>
 
-      {/* Security Information */}
       <Card className="border-blue-200 bg-blue-50">
         <CardContent className="p-4">
           <div className="flex items-start">

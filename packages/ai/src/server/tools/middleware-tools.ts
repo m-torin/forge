@@ -156,7 +156,7 @@ export const rateLimiters = {
 
     execute: async function (context: MiddlewareContext, config: any): Promise<MiddlewareResult> {
       const key = config.keyGenerator?.(context) || 'default';
-      const maxTokens = config.maxTokens || 10;
+      const maxTokens = config.maxOutputTokens || 10;
       const refillRate = config.refillRate || 1; // tokens per second
       const now = Date.now();
 
@@ -340,7 +340,7 @@ export function createMiddlewareTool(config: {
 
   return aiTool({
     description: `${config.description} (with middleware)`,
-    parameters: (config.targetTool as any).parameters || (config.targetTool as any).inputSchema,
+    inputSchema: (config.targetTool as any).inputSchema || (config.targetTool as any).parameters,
     execute: async (input: any, options: any) => {
       const context: MiddlewareContext = {
         input,
@@ -483,7 +483,7 @@ export const middlewarePresets = {
       name: 'Rate Limiter',
       enabled: true,
       priority: 1,
-      config: { maxTokens: 100, refillRate: 10 },
+      config: { maxOutputTokens: 100, refillRate: 10 },
     },
     {
       type: 'content-filter' as MiddlewareType,

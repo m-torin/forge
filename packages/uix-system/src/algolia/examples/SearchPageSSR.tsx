@@ -65,7 +65,6 @@ export default function SearchPageSSR({ serverState, url }: SearchPageSSRProps) 
       singletonRouter={singletonRouter}
     >
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Search Header */}
         <div className="mb-8">
           <h1 className="mb-4 text-3xl font-bold text-gray-900 dark:text-white">Search</h1>
           <SearchBox className="mb-4" placeholder="Search products..." />
@@ -76,9 +75,7 @@ export default function SearchPageSSR({ serverState, url }: SearchPageSSRProps) 
           <CurrentRefinements className="mt-2" />
         </div>
 
-        {/* Main Content */}
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
-          {/* Filters Sidebar */}
           <aside className="lg:col-span-1">
             <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Filters</h2>
 
@@ -113,14 +110,9 @@ export default function SearchPageSSR({ serverState, url }: SearchPageSSRProps) 
             </div>
           </aside>
 
-          {/* Results */}
           <div className="lg:col-span-3">
-            {/* Use SearchResults for standard pagination */}
             <SearchResults hitComponent={HitComponent} />
             <Pagination className="mt-8" />
-
-            {/* Or use InfiniteHits for infinite scroll */}
-            {/* <InfiniteHits hitComponent={HitComponent} showPrevious /> */}
           </div>
         </div>
       </div>

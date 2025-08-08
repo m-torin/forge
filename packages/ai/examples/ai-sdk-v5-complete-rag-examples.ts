@@ -139,10 +139,10 @@ export async function example3_MultiStepRAG() {
 }
 
 /**
- * Example 4: Enhanced RAG Tools (AI SDK v5 Pattern)
+ * Example 4: Dynamic RAG Tools (AI SDK v5 Pattern)
  */
-export async function example4_EnhancedTools() {
-  console.log('🛠️ Example 4: Enhanced RAG Tools');
+export async function example4_DynamicTools() {
+  console.log('🛠️ Example 4: Dynamic RAG Tools');
 
   const vectorStore = createRAGDatabaseBridge({
     vectorUrl: process.env.UPSTASH_VECTOR_REST_URL || 'fallback-url',
@@ -358,7 +358,7 @@ export async function runAllExamples() {
     example1_BatchEmbeddings,
     example2_StreamingWithSources,
     example3_MultiStepRAG,
-    example4_EnhancedTools,
+    example4_DynamicTools,
     example5_MCPIntegration,
     example6_CompleteIntegration,
     example7_TypeSafeResults,
@@ -384,5 +384,11 @@ export async function runAllExamples() {
 
 // Run examples if this file is executed directly
 if (require.main === module) {
-  runAllExamples().catch(console.error);
+  (async () => {
+    try {
+      await runAllExamples();
+    } catch (error) {
+      console.error(error);
+    }
+  })();
 }

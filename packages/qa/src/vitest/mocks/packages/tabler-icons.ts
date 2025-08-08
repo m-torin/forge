@@ -35,7 +35,7 @@ const createMockIcon = (iconName: string) => {
 
 // Tabler Icons React
 vi.mock('@tabler/icons-react', () => ({
-  // Frequently used icons in backstage-cms
+  // Frequently used icons in forge apps
   IconKeyboard: createMockIcon('IconKeyboard'),
   IconDots: createMockIcon('IconDots'),
   IconFilter: createMockIcon('IconFilter'),

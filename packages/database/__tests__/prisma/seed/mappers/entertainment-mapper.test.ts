@@ -135,7 +135,7 @@ describe('entertainment-mapper', () => {
       expect((result.copy as any)?.description).toBe('A test series');
       expect((result.copy as any)?.releaseYear).toBe(2020);
       expect((result.copy as any)?.platform).toBe('Test Platform');
-      expect(result.fandom).toEqual({ connect: { id: 'test-fandom' } });
+      expect(result.fandom).toStrictEqual({ connect: { id: 'test-fandom' } });
     });
 
     it('creates series without fandom when not provided', () => {

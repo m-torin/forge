@@ -1,5 +1,16 @@
 // Environment setup for feature-flags tests using modern Vitest practices
+import { Buffer } from 'node:buffer';
 import { vi } from 'vitest';
+
+// Ensure Buffer is available globally with proper constructor
+if (!globalThis.Buffer || typeof globalThis.Buffer !== 'function') {
+  globalThis.Buffer = Buffer;
+}
+
+// Also set it on global for compatibility
+if (typeof global !== 'undefined' && (!global.Buffer || typeof global.Buffer !== 'function')) {
+  global.Buffer = Buffer;
+}
 
 // Use vi.stubEnv for environment variables (modern Vitest approach)
 vi.stubEnv('NODE_ENV', 'test');

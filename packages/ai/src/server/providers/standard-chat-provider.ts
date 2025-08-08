@@ -61,17 +61,17 @@ export function createStandardChatProvider(config: StandardChatProviderConfig = 
       Object.entries(languageModels).forEach(([modelId, model]) => {
         if (modelId.includes('reasoning')) {
           languageModels[modelId] = wrapLanguageModel({
-            model,
+            model: model as any,
             middleware: extractReasoningMiddleware({
               tagName: reasoningTagName,
             }),
-          });
+          }) as LanguageModel;
         }
       });
     }
 
     return customProvider({
-      languageModels,
+      languageModels: languageModels as any,
     });
   }
 
@@ -231,6 +231,6 @@ export function createStandardChatProvider(config: StandardChatProviderConfig = 
   }
 
   return customProvider({
-    languageModels,
+    languageModels: languageModels as any,
   });
 }

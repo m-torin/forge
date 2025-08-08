@@ -7,7 +7,7 @@ import {
 } from './package-environments';
 
 /**
- * Example: Full-stack Next.js app (like webapp/backstage)
+ * Example: Full-stack Next.js app (like webapp/ai-chatbot)
  */
 export function setupFullStackApp() {
   return setupDynamicEnvironment({
@@ -32,7 +32,7 @@ export function setupFullStackApp() {
 }
 
 /**
- * Example: Backend service (like backstage-workflows)
+ * Example: Backend service (like email service)
  */
 export function setupBackendService() {
   return setupDynamicEnvironment({

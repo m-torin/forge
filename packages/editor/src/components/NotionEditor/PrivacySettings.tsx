@@ -114,7 +114,6 @@ export function PrivacySettings({
 
   return (
     <div className={clsx('privacy-settings rounded-lg border border-gray-200 bg-white', className)}>
-      {/* Header */}
       <div className="border-b border-gray-200 p-4">
         <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
           <IconSettings size={20} />
@@ -125,7 +124,6 @@ export function PrivacySettings({
         </p>
       </div>
 
-      {/* Tabs */}
       <div className="border-b border-gray-200">
         <nav className="flex">
           {tabs.map(tab => {
@@ -150,7 +148,6 @@ export function PrivacySettings({
       </div>
 
       <div className="p-6">
-        {/* Privacy Tab */}
         {activeTab === 'privacy' && (
           <div className="space-y-6">
             <div className="rounded-lg border border-green-200 bg-green-50 p-4">
@@ -260,7 +257,6 @@ export function PrivacySettings({
           </div>
         )}
 
-        {/* Storage Tab */}
         {activeTab === 'storage' && (
           <div className="space-y-6">
             <div className="rounded-lg bg-gray-50 p-4">
@@ -355,7 +351,6 @@ export function PrivacySettings({
           </div>
         )}
 
-        {/* Export Tab */}
         {activeTab === 'export' && (
           <div className="space-y-6">
             <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">

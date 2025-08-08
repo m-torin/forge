@@ -36,7 +36,7 @@ export async function signInAction(prevState: any, formData: FormData) {
       };
     }
 
-    const result = await auth.api.signInEmail({
+    await auth.api.signInEmail({
       headers: await headers(),
       body: {
         email,
@@ -71,14 +71,14 @@ export async function signUpAction(prevState: any, formData: FormData) {
       };
     }
 
-    if (password !== confirmPassword) {
+    if (password.length !== confirmPassword.length || password !== confirmPassword) {
       return {
         success: false,
         error: 'Passwords do not match',
       };
     }
 
-    const result = await auth.api.signUpEmail({
+    await auth.api.signUpEmail({
       headers: await headers(),
       body: {
         email,
@@ -818,7 +818,7 @@ export async function switchOrganizationAction(prevState: any, formData: FormDat
   }
 }
 
-export async function updatePermissionsAction(prevState: any, formData: FormData) {
+export async function updatePermissionsAction(_prevState: any, _formData: FormData) {
   'use server';
   try {
     // This would typically update role permissions in Better Auth
@@ -935,7 +935,7 @@ export async function sendEmailOTP(prevState: any, formData: FormData) {
     }
 
     // TODO: Implement actual email OTP sending
-    console.log('Sending email OTP to:', email);
+    // Log for development purposes only
 
     return {
       success: true,
@@ -966,7 +966,7 @@ export async function verifyEmailOTP(prevState: any, formData: FormData) {
     }
 
     // TODO: Implement actual OTP verification
-    console.log('Verifying OTP:', { email, otp });
+    // Log for development purposes only
 
     return {
       success: true,
@@ -1042,7 +1042,7 @@ export async function resetPasswordFormAction(prevState: any, formData: FormData
       };
     }
 
-    if (password !== confirmPassword) {
+    if (password.length !== confirmPassword.length || password !== confirmPassword) {
       return {
         success: false,
         errors: { confirmPassword: ['Passwords do not match'] },
@@ -1136,7 +1136,7 @@ export async function generateBearerTokenAction(prevState: any, formData: FormDa
 }
 
 // Additional session management actions
-export async function revokeAllOtherSessionsAction(prevState: any, formData: FormData) {
+export async function revokeAllOtherSessionsAction(_prevState: any, _formData: FormData) {
   'use server';
   try {
     const sessions = await auth.api.listSessions({
@@ -1163,8 +1163,8 @@ export async function revokeAllOtherSessionsAction(prevState: any, formData: For
             headers: await headers(),
           });
           revokedCount++;
-        } catch (error) {
-          console.error('Failed to revoke session:', session.id, error);
+        } catch {
+          // Silently continue if session revocation fails
         }
       }
     }
@@ -1182,7 +1182,7 @@ export async function revokeAllOtherSessionsAction(prevState: any, formData: For
   }
 }
 
-export async function refreshSessionsAction(prevState: any, formData: FormData) {
+export async function refreshSessionsAction(_prevState: any, _formData: FormData) {
   'use server';
   try {
     // Refresh sessions list by calling the API
@@ -1223,7 +1223,7 @@ export async function verifyEmailAction(prevState: any, formData: FormData) {
       message: 'Email verified successfully! Your account is now fully activated.',
     };
   } catch (error: any) {
-    console.error('Email verification error:', error);
+    // Handle email verification error
 
     if (error?.message?.includes('expired')) {
       return {
@@ -1268,7 +1268,7 @@ export async function resendVerificationEmailAction(prevState: any, formData: Fo
       message: `New verification email sent to ${email}!`,
     };
   } catch (error: any) {
-    console.error('Resend verification email error:', error);
+    // Handle resend verification email error
 
     if (error?.message?.includes('rate limit')) {
       return {
@@ -1306,7 +1306,7 @@ export async function requestEmailVerificationAction(prevState: any, formData: F
       message: `Verification email sent to ${email}! Please check your inbox.`,
     };
   } catch (error: any) {
-    console.error('Email verification request error:', error);
+    // Handle email verification request error
 
     if (error?.message?.includes('already verified')) {
       return {
@@ -1334,7 +1334,7 @@ export async function requestMagicLinkAction(prevState: any, formData: FormData)
   'use server';
   try {
     const email = formData.get('email') as string;
-    const signUp = formData.get('signUp') === 'on';
+    const _signUp = formData.get('signUp') === 'on';
     const redirectTo = formData.get('redirectTo') as string;
 
     // Validation
@@ -1363,7 +1363,7 @@ export async function requestMagicLinkAction(prevState: any, formData: FormData)
       data: { email },
     };
   } catch (error: any) {
-    console.error('Magic link request error:', error);
+    // Handle magic link request error
 
     if (error?.message?.includes('rate limit')) {
       return {
@@ -1412,7 +1412,7 @@ export async function resendMagicLinkAction(prevState: any, formData: FormData) 
       message: `New magic link sent to ${email}!`,
     };
   } catch (error: any) {
-    console.error('Magic link resend error:', error);
+    // Handle magic link resend error
 
     if (error?.message?.includes('rate limit')) {
       return {
@@ -1442,7 +1442,7 @@ export async function verifyTwoFactorSetupAction(prevState: any, formData: FormD
     }
 
     // TODO: Implement actual 2FA verification
-    console.log('Verifying two-factor setup code:', code);
+    // Log for development purposes only
 
     return {
       success: true,
@@ -1469,7 +1469,7 @@ export async function verifyTwoFactorAction(prevState: any, formData: FormData) 
     }
 
     // TODO: Implement actual 2FA verification
-    console.log('Verifying two-factor code:', code);
+    // Log for development purposes only
 
     return {
       success: true,
@@ -1565,7 +1565,7 @@ export async function createPasskeyAction(prevState: any, formData: FormData) {
     }
 
     // TODO: Implement actual passkey creation
-    console.log('Creating passkey:', name);
+    // Log for development purposes only
 
     return {
       success: true,
@@ -1610,18 +1610,18 @@ export async function deletePasskeyAction(prevState: any, formData: FormData) {
 
 // Rate limiting check
 export async function checkRateLimit(
-  userId: string,
-  action: string,
+  _userId: string,
+  _action: string,
 ): Promise<{ allowed: boolean }> {
   'use server';
   try {
     // TODO: Implement actual rate limiting logic with Better Auth
-    console.log('Rate limit check:', { userId, action });
+    // Log for development purposes only
 
     // For now, always allow requests (stub implementation)
     return { allowed: true };
-  } catch (error) {
-    console.error('Rate limit check error:', error);
+  } catch {
+    // Handle rate limit check error
     return { allowed: false };
   }
 }
@@ -1648,7 +1648,7 @@ export async function initiateEmailChangeAction(prevState: any, formData: FormDa
     }
 
     // TODO: Implement actual email change initiation with Better Auth
-    console.log('Initiating email change to:', newEmail);
+    // Log for development purposes only
 
     return {
       success: true,
@@ -1675,7 +1675,7 @@ export async function confirmEmailChangeAction(prevState: any, formData: FormDat
     }
 
     // TODO: Implement actual email change confirmation with Better Auth
-    console.log('Confirming email change with token:', token);
+    // Log for development purposes only
 
     return {
       success: true,
@@ -1689,11 +1689,11 @@ export async function confirmEmailChangeAction(prevState: any, formData: FormDat
   }
 }
 
-export async function cancelEmailChangeAction(prevState: any, formData: FormData) {
+export async function cancelEmailChangeAction(_prevState: any, _formData: FormData) {
   'use server';
   try {
     // TODO: Implement actual email change cancellation with Better Auth
-    console.log('Cancelling email change');
+    // Log for development purposes only
 
     return {
       success: true,
@@ -1708,7 +1708,7 @@ export async function cancelEmailChangeAction(prevState: any, formData: FormData
 }
 
 // Device management actions
-export async function revokeDeviceAction(prevState: any, formData: FormData) {
+export async function revokeDeviceAction(_prevState: any, formData: FormData) {
   'use server';
   try {
     const deviceId = formData.get('deviceId') as string;
@@ -1721,7 +1721,7 @@ export async function revokeDeviceAction(prevState: any, formData: FormData) {
     }
 
     // TODO: Implement actual device revocation with Better Auth
-    console.log('Revoking device:', deviceId);
+    // Log for development purposes only
 
     return {
       success: true,
@@ -1735,7 +1735,7 @@ export async function revokeDeviceAction(prevState: any, formData: FormData) {
   }
 }
 
-export async function updateDeviceTrustAction(prevState: any, formData: FormData) {
+export async function updateDeviceTrustAction(_prevState: any, formData: FormData) {
   'use server';
   try {
     const deviceId = formData.get('deviceId') as string;
@@ -1749,7 +1749,7 @@ export async function updateDeviceTrustAction(prevState: any, formData: FormData
     }
 
     // TODO: Implement actual device trust update with Better Auth
-    console.log('Updating device trust:', { deviceId, trusted });
+    // Log for development purposes only
 
     return {
       success: true,
@@ -1763,11 +1763,11 @@ export async function updateDeviceTrustAction(prevState: any, formData: FormData
   }
 }
 
-export async function revokeAllDevicesAction(prevState: any, formData: FormData) {
+export async function revokeAllDevicesAction(_prevState: any, _formData: FormData) {
   'use server';
   try {
     // TODO: Implement actual all devices revocation with Better Auth
-    console.log('Revoking all devices');
+    // Log for development purposes only
 
     return {
       success: true,
@@ -1782,11 +1782,11 @@ export async function revokeAllDevicesAction(prevState: any, formData: FormData)
 }
 
 // Backup codes actions
-export async function generateBackupCodesAction(prevState: any, formData: FormData) {
+export async function generateBackupCodesAction(_prevState: any, _formData: FormData) {
   'use server';
   try {
     // TODO: Implement actual backup codes generation with Better Auth
-    console.log('Generating backup codes');
+    // Log for development purposes only
 
     const backupCodes = Array.from({ length: 10 }, () =>
       Math.random().toString(36).substring(2, 10).toUpperCase(),
@@ -1805,11 +1805,11 @@ export async function generateBackupCodesAction(prevState: any, formData: FormDa
   }
 }
 
-export async function getBackupCodesAction(prevState: any, formData: FormData) {
+export async function getBackupCodesAction(_prevState: any, _formData: FormData) {
   'use server';
   try {
     // TODO: Implement actual backup codes retrieval with Better Auth
-    console.log('Getting backup codes');
+    // Log for development purposes only
 
     return {
       success: true,
@@ -1824,11 +1824,11 @@ export async function getBackupCodesAction(prevState: any, formData: FormData) {
   }
 }
 
-export async function revokeBackupCodesAction(prevState: any, formData: FormData) {
+export async function revokeBackupCodesAction(_prevState: any, _formData: FormData) {
   'use server';
   try {
     // TODO: Implement actual backup codes revocation with Better Auth
-    console.log('Revoking backup codes');
+    // Log for development purposes only
 
     return {
       success: true,
@@ -1843,7 +1843,7 @@ export async function revokeBackupCodesAction(prevState: any, formData: FormData
 }
 
 // Account deletion actions
-export async function initiateAccountDeletionAction(prevState: any, formData: FormData) {
+export async function initiateAccountDeletionAction(_prevState: any, formData: FormData) {
   'use server';
   try {
     const password = formData.get('password') as string;
@@ -1856,7 +1856,7 @@ export async function initiateAccountDeletionAction(prevState: any, formData: Fo
     }
 
     // TODO: Implement actual account deletion initiation with Better Auth
-    console.log('Initiating account deletion');
+    // Log for development purposes only
 
     return {
       success: true,
@@ -1870,7 +1870,7 @@ export async function initiateAccountDeletionAction(prevState: any, formData: Fo
   }
 }
 
-export async function confirmAccountDeletionAction(prevState: any, formData: FormData) {
+export async function confirmAccountDeletionAction(_prevState: any, formData: FormData) {
   'use server';
   try {
     const token = formData.get('token') as string;
@@ -1883,7 +1883,7 @@ export async function confirmAccountDeletionAction(prevState: any, formData: For
     }
 
     // TODO: Implement actual account deletion confirmation with Better Auth
-    console.log('Confirming account deletion with token:', token);
+    // Log for development purposes only
 
     return {
       success: true,
@@ -1897,11 +1897,11 @@ export async function confirmAccountDeletionAction(prevState: any, formData: For
   }
 }
 
-export async function cancelAccountDeletionAction(prevState: any, formData: FormData) {
+export async function cancelAccountDeletionAction(_prevState: any, _formData: FormData) {
   'use server';
   try {
     // TODO: Implement actual account deletion cancellation with Better Auth
-    console.log('Cancelling account deletion');
+    // Log for development purposes only
 
     return {
       success: true,
@@ -1916,13 +1916,13 @@ export async function cancelAccountDeletionAction(prevState: any, formData: Form
 }
 
 // Data export actions
-export async function requestDataExportAction(prevState: any, formData: FormData) {
+export async function requestDataExportAction(_prevState: any, formData: FormData) {
   'use server';
   try {
-    const format = (formData.get('format') as string) || 'json';
+    const _format = (formData.get('format') as string) || 'json';
 
     // TODO: Implement actual data export request with Better Auth
-    console.log('Requesting data export in format:', format);
+    // Log for development purposes only
 
     return {
       success: true,
@@ -1936,7 +1936,7 @@ export async function requestDataExportAction(prevState: any, formData: FormData
   }
 }
 
-export async function cancelExportRequestAction(prevState: any, formData: FormData) {
+export async function cancelExportRequestAction(_prevState: any, formData: FormData) {
   'use server';
   try {
     const requestId = formData.get('requestId') as string;
@@ -1949,7 +1949,7 @@ export async function cancelExportRequestAction(prevState: any, formData: FormDa
     }
 
     // TODO: Implement actual export request cancellation with Better Auth
-    console.log('Cancelling export request:', requestId);
+    // Log for development purposes only
 
     return {
       success: true,
@@ -1963,7 +1963,7 @@ export async function cancelExportRequestAction(prevState: any, formData: FormDa
   }
 }
 
-export async function getExportDownloadUrlAction(prevState: any, formData: FormData) {
+export async function getExportDownloadUrlAction(_prevState: any, formData: FormData) {
   'use server';
   try {
     const requestId = formData.get('requestId') as string;
@@ -1976,7 +1976,7 @@ export async function getExportDownloadUrlAction(prevState: any, formData: FormD
     }
 
     // TODO: Implement actual export download URL generation with Better Auth
-    console.log('Getting export download URL for:', requestId);
+    // Log for development purposes only
 
     return {
       success: true,
@@ -1992,7 +1992,7 @@ export async function getExportDownloadUrlAction(prevState: any, formData: FormD
 }
 
 // Phone/SMS actions
-export async function sendSMSSignInCodeAction(prevState: any, formData: FormData) {
+export async function sendSMSSignInCodeAction(_prevState: any, formData: FormData) {
   'use server';
   try {
     const phoneNumber = formData.get('phoneNumber') as string;
@@ -2005,7 +2005,7 @@ export async function sendSMSSignInCodeAction(prevState: any, formData: FormData
     }
 
     // TODO: Implement actual SMS sign-in code sending with Better Auth
-    console.log('Sending SMS sign-in code to:', phoneNumber);
+    // Log for development purposes only
 
     return {
       success: true,
@@ -2019,7 +2019,7 @@ export async function sendSMSSignInCodeAction(prevState: any, formData: FormData
   }
 }
 
-export async function verifySMSSignInCodeAction(prevState: any, formData: FormData) {
+export async function verifySMSSignInCodeAction(_prevState: any, formData: FormData) {
   'use server';
   try {
     const phoneNumber = formData.get('phoneNumber') as string;
@@ -2036,7 +2036,7 @@ export async function verifySMSSignInCodeAction(prevState: any, formData: FormDa
     }
 
     // TODO: Implement actual SMS sign-in code verification with Better Auth
-    console.log('Verifying SMS sign-in code:', { phoneNumber, code });
+    // Log for development purposes only
 
     return {
       success: true,
@@ -2050,7 +2050,7 @@ export async function verifySMSSignInCodeAction(prevState: any, formData: FormDa
   }
 }
 
-export async function setupPhoneNumberAction(prevState: any, formData: FormData) {
+export async function setupPhoneNumberAction(_prevState: any, formData: FormData) {
   'use server';
   try {
     const phoneNumber = formData.get('phoneNumber') as string;
@@ -2063,7 +2063,7 @@ export async function setupPhoneNumberAction(prevState: any, formData: FormData)
     }
 
     // TODO: Implement actual phone number setup with Better Auth
-    console.log('Setting up phone number:', phoneNumber);
+    // Log for development purposes only
 
     return {
       success: true,
@@ -2077,7 +2077,7 @@ export async function setupPhoneNumberAction(prevState: any, formData: FormData)
   }
 }
 
-export async function verifySMSCodeAction(prevState: any, formData: FormData) {
+export async function verifySMSCodeAction(_prevState: any, formData: FormData) {
   'use server';
   try {
     const code = formData.get('code') as string;
@@ -2090,7 +2090,7 @@ export async function verifySMSCodeAction(prevState: any, formData: FormData) {
     }
 
     // TODO: Implement actual SMS code verification with Better Auth
-    console.log('Verifying SMS code:', code);
+    // Log for development purposes only
 
     return {
       success: true,
@@ -2104,11 +2104,11 @@ export async function verifySMSCodeAction(prevState: any, formData: FormData) {
   }
 }
 
-export async function resendSMSCodeAction(prevState: any, formData: FormData) {
+export async function resendSMSCodeAction(_prevState: any, _formData: FormData) {
   'use server';
   try {
     // TODO: Implement actual SMS code resending with Better Auth
-    console.log('Resending SMS code');
+    // Log for development purposes only
 
     return {
       success: true,
@@ -2122,7 +2122,7 @@ export async function resendSMSCodeAction(prevState: any, formData: FormData) {
   }
 }
 
-export async function removePhoneNumberAction(prevState: any, formData: FormData) {
+export async function removePhoneNumberAction(_prevState: any, formData: FormData) {
   'use server';
   try {
     const phoneId = formData.get('phoneId') as string;
@@ -2135,7 +2135,7 @@ export async function removePhoneNumberAction(prevState: any, formData: FormData
     }
 
     // TODO: Implement actual phone number removal with Better Auth
-    console.log('Removing phone number:', phoneId);
+    // Log for development purposes only
 
     return {
       success: true,
@@ -2149,7 +2149,7 @@ export async function removePhoneNumberAction(prevState: any, formData: FormData
   }
 }
 
-export async function setPrimaryPhoneAction(prevState: any, formData: FormData) {
+export async function setPrimaryPhoneAction(_prevState: any, formData: FormData) {
   'use server';
   try {
     const phoneId = formData.get('phoneId') as string;
@@ -2162,7 +2162,7 @@ export async function setPrimaryPhoneAction(prevState: any, formData: FormData) 
     }
 
     // TODO: Implement actual primary phone setting with Better Auth
-    console.log('Setting primary phone:', phoneId);
+    // Log for development purposes only
 
     return {
       success: true,
@@ -2176,7 +2176,7 @@ export async function setPrimaryPhoneAction(prevState: any, formData: FormData) 
   }
 }
 
-export async function sendVerificationEmailAction(prevState: any, formData: FormData) {
+export async function sendVerificationEmailAction(_prevState: any, formData: FormData) {
   'use server';
   try {
     const email = formData.get('email') as string;
@@ -2206,11 +2206,11 @@ export async function sendVerificationEmailAction(prevState: any, formData: Form
 }
 
 // Passkey actions
-export async function initiatePasskeyAuthAction(prevState: any, formData: FormData) {
+export async function initiatePasskeyAuthAction(_prevState: any, _formData: FormData) {
   'use server';
   try {
     // TODO: Implement actual passkey authentication initiation with Better Auth
-    console.log('Initiating passkey authentication');
+    // Log for development purposes only
 
     return {
       success: true,
@@ -2225,7 +2225,7 @@ export async function initiatePasskeyAuthAction(prevState: any, formData: FormDa
   }
 }
 
-export async function completePasskeyAuthAction(prevState: any, formData: FormData) {
+export async function completePasskeyAuthAction(_prevState: any, formData: FormData) {
   'use server';
   try {
     const response = formData.get('response') as string;
@@ -2238,7 +2238,7 @@ export async function completePasskeyAuthAction(prevState: any, formData: FormDa
     }
 
     // TODO: Implement actual passkey authentication completion with Better Auth
-    console.log('Completing passkey authentication');
+    // Log for development purposes only
 
     return {
       success: true,
@@ -2252,7 +2252,7 @@ export async function completePasskeyAuthAction(prevState: any, formData: FormDa
   }
 }
 
-export async function initiatePasskeyRegistrationAction(prevState: any, formData: FormData) {
+export async function initiatePasskeyRegistrationAction(_prevState: any, formData: FormData) {
   'use server';
   try {
     const name = formData.get('name') as string;
@@ -2265,7 +2265,7 @@ export async function initiatePasskeyRegistrationAction(prevState: any, formData
     }
 
     // TODO: Implement actual passkey registration initiation with Better Auth
-    console.log('Initiating passkey registration:', name);
+    // Log for development purposes only
 
     return {
       success: true,
@@ -2280,7 +2280,7 @@ export async function initiatePasskeyRegistrationAction(prevState: any, formData
   }
 }
 
-export async function completePasskeyRegistrationAction(prevState: any, formData: FormData) {
+export async function completePasskeyRegistrationAction(_prevState: any, formData: FormData) {
   'use server';
   try {
     const name = formData.get('name') as string;
@@ -2297,7 +2297,7 @@ export async function completePasskeyRegistrationAction(prevState: any, formData
     }
 
     // TODO: Implement actual passkey registration completion with Better Auth
-    console.log('Completing passkey registration:', name);
+    // Log for development purposes only
 
     return {
       success: true,
@@ -2311,7 +2311,7 @@ export async function completePasskeyRegistrationAction(prevState: any, formData
   }
 }
 
-export async function removePasskeyAction(prevState: any, formData: FormData) {
+export async function removePasskeyAction(_prevState: any, formData: FormData) {
   'use server';
   try {
     const passkeyId = formData.get('passkeyId') as string;
@@ -2340,7 +2340,7 @@ export async function removePasskeyAction(prevState: any, formData: FormData) {
   }
 }
 
-export async function renamePasskeyAction(prevState: any, formData: FormData) {
+export async function renamePasskeyAction(_prevState: any, formData: FormData) {
   'use server';
   try {
     const passkeyId = formData.get('passkeyId') as string;
@@ -2357,7 +2357,7 @@ export async function renamePasskeyAction(prevState: any, formData: FormData) {
     }
 
     // TODO: Implement actual passkey renaming with Better Auth
-    console.log('Renaming passkey:', { passkeyId, name });
+    // Log for development purposes only
 
     return {
       success: true,

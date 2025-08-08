@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, vi } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 
 // Mock AI SDK
 vi.mock('ai', () => ({
@@ -8,16 +8,9 @@ vi.mock('ai', () => ({
   streamText: vi.fn(),
 }));
 
-// Mock server-only to prevent import issues in tests
-vi.mock('server-only', () => ({}));
-
 describe('model Selection', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   test('should import model selection successfully', async () => {
-    const modelSelection = await import('@/server/models/selection');
+    const modelSelection = await import('../../../src/server/models/selection');
     expect(modelSelection).toBeDefined();
   });
 
@@ -45,7 +38,7 @@ describe('model Selection', () => {
           audioInput: false,
           structuredOutput: false,
           systemPrompts: true,
-          reasoning: false,
+          reasoningText: false,
           computerUse: false,
           embeddings: false,
           maxContextTokens: 4096,
@@ -80,7 +73,7 @@ describe('model Selection', () => {
           audioInput: false,
           structuredOutput: true,
           systemPrompts: true,
-          reasoning: true,
+          reasoningText: true,
           computerUse: false,
           embeddings: false,
           maxContextTokens: 8192,
@@ -120,7 +113,7 @@ describe('model Selection', () => {
           audioInput: false,
           structuredOutput: false,
           systemPrompts: true,
-          reasoning: false,
+          reasoningText: false,
           computerUse: false,
           embeddings: false,
           maxContextTokens: 4096,
@@ -174,7 +167,7 @@ describe('model Selection', () => {
           audioInput: false,
           structuredOutput: false,
           systemPrompts: true,
-          reasoning: false,
+          reasoningText: false,
           computerUse: false,
           embeddings: false,
           maxContextTokens: 4096,
@@ -223,7 +216,7 @@ describe('model Selection', () => {
         audioInput: false,
         structuredOutput: false,
         systemPrompts: true,
-        reasoning: false,
+        reasoningText: false,
         computerUse: false,
         embeddings: false,
         maxContextTokens: 4096,

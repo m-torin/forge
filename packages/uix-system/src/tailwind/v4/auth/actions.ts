@@ -37,8 +37,8 @@ export {
   resendMagicLinkAction,
   resendVerificationEmailAction,
   resetPasswordFormAction as resetPasswordAction,
-  revokeAllOtherSessionsAction,
   revokeAPIKeyAction,
+  revokeAllOtherSessionsAction,
   // Session management
   revokeSessionAction,
   revokeUserSessionsAction,

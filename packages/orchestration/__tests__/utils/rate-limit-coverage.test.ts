@@ -71,7 +71,7 @@ describe('rate Limiting', () => {
       const rateLimiter = createRateLimiter(config);
 
       expect(rateLimiter).toBeDefined();
-      expect(rateLimiter.config).toEqual(
+      expect(rateLimiter.config).toStrictEqual(
         expect.objectContaining({
           maxRequests: 200,
           windowMs: 120000,
@@ -463,7 +463,7 @@ describe('rate Limiting', () => {
         rateLimitedFn('test-3'),
       ]);
 
-      expect(results).toEqual(['call-1', 'call-2', 'call-3']);
+      expect(results).toStrictEqual(['call-1', 'call-2', 'call-3']);
       expect(fn).toHaveBeenCalledTimes(3);
     });
 

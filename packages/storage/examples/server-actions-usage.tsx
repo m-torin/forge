@@ -124,16 +124,12 @@ export function StorageActionsExample() {
     <div className="mx-auto max-w-2xl p-4">
       <h2 className="mb-4 text-2xl font-bold">Storage Server Actions Example</h2>
 
-      {/* Upload Section */}
       <div className="mb-6 rounded border p-4">
         <h3 className="mb-2 text-lg font-semibold">Upload File</h3>
         <input type="file" onChange={handleUpload} disabled={loading} className="mb-2" />
-        <p className="text-sm text-gray-600">
-          Files will be uploaded to the 'uploads/' prefix
-        </p>
+        <p className="text-sm text-gray-600">Files will be uploaded to the 'uploads/' prefix</p>
       </div>
 
-      {/* Actions */}
       <div className="mb-6 space-x-2">
         <button
           onClick={refreshFileList}
@@ -151,10 +147,8 @@ export function StorageActionsExample() {
         </button>
       </div>
 
-      {/* Status Message */}
       {message && <div className="mb-4 rounded bg-gray-100 p-3">{message}</div>}
 
-      {/* File List */}
       <div className="space-y-2">
         <h3 className="text-lg font-semibold">Files</h3>
         {files.length === 0 ? (

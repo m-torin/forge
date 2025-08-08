@@ -89,10 +89,32 @@ export class APITestUtils {
   /**
    * Create a mock API response
    */
-  async mockResponse(_pattern: string | RegExp, _response: any) {
-    // This would integrate with Playwright's route mocking
-    // Implementation depends on the specific test context
-    console.warn('Mock response setup - implement in test context');
+  async mockResponse(
+    page: import('@playwright/test').Page,
+    pattern: string | RegExp,
+    response: {
+      status?: number;
+      body?: any;
+      headers?: Record<string, string>;
+      delay?: number;
+    },
+  ) {
+    await page.route(pattern, async route => {
+      // Add realistic delay if specified
+      if (response.delay) {
+        await new Promise(resolve => setTimeout(resolve, response.delay));
+      }
+
+      route.fulfill({
+        status: response.status || 200,
+        headers: {
+          'Content-Type': 'application/json',
+          ...response.headers,
+        },
+        body:
+          typeof response.body === 'string' ? response.body : JSON.stringify(response.body || {}),
+      });
+    });
   }
 }
 

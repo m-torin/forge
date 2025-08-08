@@ -30,7 +30,6 @@ const packages = [
   { name: '@repo/storage', path: 'packages/storage' },
   // Apps
   { name: 'ai-chatbot', path: 'apps/ai-chatbot' },
-  { name: 'backstage', path: 'apps/backstage' },
   { name: 'docs', path: 'apps/docs' },
   { name: 'email', path: 'apps/email' },
   { name: 'mantine-tailwind-template', path: 'apps/mantine-tailwind-template' },

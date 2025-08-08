@@ -4,7 +4,7 @@
 
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { createAuthConfig } from '#/shared/config';
+import { createAuthConfig } from '../../src/shared/config';
 
 // Mock the env module to return actual values based on process.env
 vi.mock('../../env', () => {

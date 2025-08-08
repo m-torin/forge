@@ -32,7 +32,7 @@ const initialCreateAPIKeyState: CreateAPIKeyState = { success: false, error: '' 
 
 export function CreateAPIKeyForm({
   permissions,
-  maxExpirationDays = 365,
+  maxExpirationDays: _maxExpirationDays = 365,
   className = '',
 }: CreateAPIKeyFormProps) {
   const [formState, formAction] = useFormState(createAPIKeyAction, initialCreateAPIKeyState);

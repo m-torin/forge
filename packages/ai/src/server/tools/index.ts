@@ -94,7 +94,7 @@ export {
   type AgentLifecycleHooks,
   type AgentStepContext,
   type AgenticToolConfig,
-  type EnhancedWorkflowConfig,
+  type MultiStepWorkflowConfig,
 } from './agentic-tools';
 
 // Tool repair mechanisms for handling imperfect model outputs
@@ -207,7 +207,9 @@ export {
   type TextEditorInput,
 } from './computer-use';
 
-// Code Quality Analysis Tools
+// Code Quality Analysis Tools - Temporarily disabled for build issues
+// TODO: Re-enable after fixing mcp-utils bundling issues
+/*
 export {
   // Individual tools
   analysisTool,
@@ -226,3 +228,4 @@ export {
   type CodeQualitySession,
   type CodeQualityWorkflowConfig,
 } from './code-quality';
+*/

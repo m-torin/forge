@@ -124,15 +124,22 @@ export const testPatterns = {
   },
 
   htmlFixtures: {
-    withScript: '<html><body><script>alert("test")</script><h1>Title</h1></body></html>',
+    withScript:
+      '<html><body><script>alert("test")</script><div>Visible content</div></body></html>',
     complex:
-      '<html><head><title>Complex</title><meta name="description" content="Complex desc"></head><body><h1>Title</h1><article><h2>Article</h2><p>Content</p></article></body></html>',
+      '<html><head><title>Complex Page</title><meta name="description" content="Test description"><meta property="og:title" content="OG Title"></head><body><h1>Main Title</h1><nav><a href="/home">Home</a><a href="/about">About</a></nav><article><h2>Article Title</h2><p>Article content</p></article><img src="/image.jpg" alt="Test Image"></body></html>',
     withStructuredData:
-      '<html><body><script type="application/ld+json">{"@type":"Product","name":"Test Product"}</script><h1>Title</h1></body></html>',
+      '<html><body><script type="application/ld+json">{"@context":"https://schema.org","@type":"Product","name":"Test Product","price":"19.99"}</script><h1>Title</h1></body></html>',
   },
 
   textPatterns: {
-    emails: ['test@example.com', 'user@domain.org', 'contact@company.net'],
+    emails: [
+      'info@example.com',
+      'user.name@domain.co.uk',
+      'test@example.com',
+      'user@domain.org',
+      'contact@company.net',
+    ],
     phoneNumbers: ['+1-555-123-4567', '(555) 987-6543', '555.123.4567'],
     urls: ['https://example.com', 'http://test.org', 'https://demo.net/path'],
   },
@@ -150,7 +157,7 @@ export const createTestData = {
 export const edgeCases = {
   unicode: {
     content:
-      '<html><body><h1>Unicode: 你好世界 🌍</h1><p>Special chars: &amp; &lt; &gt; &quot;</p></body></html>',
+      '<html><body><h1>Unicode: 你好世界 🌍</h1><p>Cities: Tokyo, Moscow, Paris</p><p>Special chars: &amp; &lt; &gt; &quot;</p></body></html>',
   },
   empty: {
     content: '<html><body></body></html>',

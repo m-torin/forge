@@ -1,6 +1,7 @@
 ---
 title: "Get Started"
 description: "Get up and running with Forge in minutes"
+icon: "play"
 ---
 
 # Get Started
@@ -74,13 +75,77 @@ pnpm lint             # Lint and format
 ## Project Structure
 
 - `/apps/webapp` - Main webapp (Port 3200)
-- `/apps/ai-chatbot` - AI Chat interface (Port 3300)
-- `/apps/backstage` - Admin backstage (Port 3400)
+- `/apps/ai-chatbot` - AI Chat interface (Port 3100)
 - `/apps/email` - Email preview (Port 3500)
-- `/apps/studio` - Prisma Studio (Port 3600)
 - `/apps/storybook` - Component docs (Port 3700)
 - `/apps/docs` - Documentation (Port 3800)
-- `/packages/*` - Shared packages
+- `/packages/*` - Shared packages (includes database with Prisma Studio)
+
+## Deployment
+
+Forge is designed for modern deployment with Vercel, Docker, or any Node.js
+hosting platform with comprehensive secret management.
+
+### Vercel (Recommended)
+
+Vercel provides the best experience for Next.js applications:
+
+```bash
+# Install Vercel CLI
+pnpm add -g vercel
+
+# Deploy from app directory
+cd apps/webapp
+vercel --prod
+```
+
+### Docker Deployments
+
+Each app includes Docker support:
+
+```bash
+# Build image
+docker build -t forge-app .
+
+# Run container
+docker run -p 3000:3000 forge-app
+```
+
+### Required Environment Variables
+
+```bash
+# Database
+DATABASE_URL="postgresql://user:password@host:port/database"
+
+# Authentication
+BETTER_AUTH_SECRET="your-secure-random-secret-minimum-32-chars"
+
+# Email Service
+RESEND_API_KEY="re_your_resend_api_token"
+FROM_EMAIL="noreply@yourdomain.com"
+```
+
+### Secret Management with Doppler
+
+<Warning>
+  **Important**: Forge uses Doppler for centralized secret management across all
+  environments.
+</Warning>
+
+```bash
+# Install Doppler CLI
+brew install dopplerhq/cli/doppler
+
+# Authenticate and setup
+doppler login
+pnpm doppler:setup
+pnpm doppler:pull:all
+```
+
+### Build Commands
+
+- `pnpm build` - Production build with Doppler secrets
+- `pnpm build:local` - Local build with `.env.local` files
 
 ## Next Steps
 

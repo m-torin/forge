@@ -31,7 +31,7 @@ export default defineConfig({
     coverage: {
       enabled: true,
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: process.env.CI ? ['text', 'json'] : ['text', 'json', 'html'],
       exclude: [
         'coverage/**',
         'dist/**',

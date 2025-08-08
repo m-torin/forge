@@ -11,8 +11,8 @@ import type { Locale } from '#/lib/i18n';
 import { Alert, Button, Card, Checkbox, PasswordInput, Stack, TextInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { IconArrowLeft, IconBrandNextjs } from '@tabler/icons-react';
-import Link from 'next/link';
 import type { Route } from 'next';
+import Link from 'next/link';
 import { useActionState } from 'react';
 
 interface LoginPageUiProps {

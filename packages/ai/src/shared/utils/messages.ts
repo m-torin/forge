@@ -1,10 +1,5 @@
-import type {
-  CoreAssistantMessage,
-  CoreSystemMessage,
-  CoreToolMessage,
-  CoreUserMessage,
-  ModelMessage,
-} from 'ai';
+// AI SDK v5 types - use ModelMessage for all message types
+import type { ModelMessage } from 'ai';
 
 /**
  * Helper to get the last message ID from a list of messages
@@ -62,18 +57,18 @@ export function prepareMessagesForUI(messages: ModelMessage[]): Array<{
 /**
  * Type guard for message roles
  */
-export function isAssistantMessage(message: ModelMessage): message is CoreAssistantMessage {
+export function isAssistantMessage(message: ModelMessage): boolean {
   return message.role === 'assistant';
 }
 
-export function isUserMessage(message: ModelMessage): message is CoreUserMessage {
+export function isUserMessage(message: ModelMessage): boolean {
   return message.role === 'user';
 }
 
-export function isSystemMessage(message: ModelMessage): message is CoreSystemMessage {
+export function isSystemMessage(message: ModelMessage): boolean {
   return message.role === 'system';
 }
 
-export function isToolMessage(message: ModelMessage): message is CoreToolMessage {
+export function isToolMessage(message: ModelMessage): boolean {
   return message.role === 'tool';
 }

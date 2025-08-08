@@ -58,12 +58,15 @@ export function AdminBulkUserActions({
   const [showConfirmation, setShowConfirmation] = useState(false);
 
   // Form states
-  const [actionState, actionAction] = useFormState(async (prevState: any, formData: FormData) => {
-    const action = formData.get('action') as BulkAction;
-    return await executeBulkAction(action, formData);
-  }, initialFormState);
+  const [actionState, _actionAction] = useFormState(
+    async (__prevState: any, formData: FormData) => {
+      const action = formData.get('action') as BulkAction;
+      return await executeBulkAction(action, formData);
+    },
+    initialFormState,
+  );
 
-  const executeBulkAction = async (action: BulkAction, formData?: FormData) => {
+  const executeBulkAction = async (action: BulkAction, _formData?: FormData) => {
     const userIds = selectedUsers.map(user => user.id);
     let results: any = { success: 0, failed: 0, errors: [] };
 
@@ -209,7 +212,6 @@ export function AdminBulkUserActions({
 
   return (
     <div className={`space-y-6 ${className}`}>
-      {/* Header with Selection Info */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -225,7 +227,6 @@ export function AdminBulkUserActions({
           </div>
         </CardHeader>
         <CardContent>
-          {/* Selected Users Preview */}
           <div className="rounded-lg bg-gray-50 p-4">
             <h4 className="mb-3 text-sm font-medium text-gray-700">Selected Users</h4>
             <div className="max-h-32 space-y-2 overflow-y-auto">
@@ -259,7 +260,6 @@ export function AdminBulkUserActions({
         </CardContent>
       </Card>
 
-      {/* Action Selection */}
       <Card>
         <CardHeader>
           <h3 className="text-lg font-medium text-gray-900">Select Action</h3>
@@ -325,14 +325,12 @@ export function AdminBulkUserActions({
         </CardContent>
       </Card>
 
-      {/* Action Configuration */}
       {selectedAction && (
         <Card>
           <CardHeader>
             <h3 className="text-lg font-medium text-gray-900">Configure Action</h3>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Role Change Configuration */}
             {selectedAction === 'role-change' && (
               <div>
                 <label className="mb-2 block text-sm font-medium text-gray-700">New Role</label>
@@ -348,7 +346,6 @@ export function AdminBulkUserActions({
               </div>
             )}
 
-            {/* Email Configuration */}
             {selectedAction === 'send-emails' && (
               <div className="space-y-4">
                 <div>
@@ -377,7 +374,6 @@ export function AdminBulkUserActions({
               </div>
             )}
 
-            {/* Confirmation for Destructive Actions */}
             {showConfirmation && isDestructiveAction(selectedAction) && (
               <div className="rounded-lg border border-red-200 bg-red-50 p-4">
                 <div className="mb-3 flex items-center">
@@ -410,7 +406,6 @@ export function AdminBulkUserActions({
               </div>
             )}
 
-            {/* Action Summary */}
             <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
               <h4 className="mb-2 text-sm font-medium text-blue-900">Action Summary</h4>
               <p className="text-sm text-blue-800">{getActionDescription(selectedAction)}</p>
@@ -424,12 +419,10 @@ export function AdminBulkUserActions({
         </Card>
       )}
 
-      {/* Error/Success Messages */}
       {actionState.error && <Alert variant="destructive">{actionState.error}</Alert>}
 
       {actionState.success && <Alert variant="default">{actionState.message}</Alert>}
 
-      {/* Execute Action */}
       {selectedAction && (
         <Card>
           <CardContent className="p-4">

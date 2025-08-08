@@ -139,7 +139,7 @@ export class MCPRAGBridge {
 
     return tool({
       description: `${mcpTool.description} (Enhanced with RAG context)`,
-      parameters: z.object({
+      inputSchema: z.object({
         includeRAGContext: z
           .boolean()
           .default(true)
@@ -223,7 +223,7 @@ export class MCPRAGBridge {
   /**
    * Execute MCP tool (placeholder implementation)
    */
-  private async executeMCPTool(mcpTool: MCPTool, params: any, context?: any[]): Promise<any> {
+  private async executeMCPTool(mcpTool: MCPTool, params: any, _context?: any[]): Promise<any> {
     // This is a placeholder implementation
     // In a real implementation, you would call the actual MCP server
 
@@ -285,7 +285,7 @@ export class MCPRAGBridge {
   createContextSharingTool() {
     return tool({
       description: 'Share knowledge base context with MCP tools for enhanced responses',
-      parameters: z.object({
+      inputSchema: z.object({
         targetTool: z.string().describe('Name of the MCP tool to enhance'),
         contextQuery: z.string().describe('Query to retrieve relevant context'),
         toolParams: z.record(z.string(), z.any()).describe('Parameters for the target tool'),
@@ -425,7 +425,7 @@ const mcpRAG = createMCPRAGIntegration({
 await mcpRAG.initialize();
 
 // Create enhanced web search tool with RAG context
-const enhancedWebSearch = mcpRAG.createRAGEnhancedTool('webSearch');
+const contextualWebSearch = mcpRAG.createRAGEnhancedTool('webSearch');
   `,
 
   /**
@@ -439,7 +439,7 @@ const contextSharing = mcpRAG.createContextSharingTool();
 const result = streamText({
   model: openai('gpt-4o'),
   tools: {
-    enhancedWebSearch: mcpRAG.createRAGEnhancedTool('webSearch'),
+    contextualWebSearch: mcpRAG.createRAGEnhancedTool('webSearch'),
     contextSharing: contextSharing,
   },
   messages,

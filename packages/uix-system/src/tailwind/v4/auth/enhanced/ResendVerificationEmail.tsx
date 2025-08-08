@@ -20,7 +20,7 @@ interface ResendVerificationEmailProps extends BaseProps {
   onError?: (error: string) => void;
 }
 
-const initialState: FormState = { success: false };
+const _initialState: FormState = { success: false };
 
 // Server action for resending verification email
 async function resendVerificationEmailAction(
@@ -56,7 +56,7 @@ async function resendVerificationEmailAction(
       };
     }
   } catch (error: any) {
-    console.error('Resend verification email error:', error);
+    // console.error('Resend verification email error:', error);
 
     if (error?.message?.includes('already verified')) {
       return {
@@ -155,7 +155,6 @@ export function ResendVerificationEmail({
       </CardHeader>
 
       <CardContent>
-        {/* Success State */}
         {state?.success && (
           <div className="space-y-4">
             <Alert variant="success">{state.message}</Alert>
@@ -193,7 +192,6 @@ export function ResendVerificationEmail({
               </div>
             </div>
 
-            {/* Actions */}
             <div className="space-y-3">
               <Button
                 variant="primary"
@@ -218,13 +216,10 @@ export function ResendVerificationEmail({
           </div>
         )}
 
-        {/* Form State */}
         {!state?.success && (
           <div className="space-y-4">
-            {/* Error Message */}
             {state?.error && <Alert variant="destructive">{state.error}</Alert>}
 
-            {/* Current Email Display */}
             <div className={cn('rounded-lg bg-gray-50 p-4', 'dark:bg-gray-800')}>
               <div className="flex items-center justify-between">
                 <div>
@@ -244,7 +239,6 @@ export function ResendVerificationEmail({
               </div>
             </div>
 
-            {/* Rate Limit Information */}
             {showRateLimit && (
               <div
                 className={cn(
@@ -276,7 +270,6 @@ export function ResendVerificationEmail({
               </div>
             )}
 
-            {/* Resend Button */}
             <form action={action}>
               <input type="hidden" name="email" value={userEmail} />
               <Button
@@ -293,9 +286,7 @@ export function ResendVerificationEmail({
           </div>
         )}
 
-        {/* Additional Actions */}
         <div className="mt-6 space-y-3">
-          {/* Change Email */}
           <div className="text-center">
             <p className={cn('text-sm text-gray-600', 'dark:text-gray-400')}>
               Need to use a different email?{' '}
@@ -311,7 +302,6 @@ export function ResendVerificationEmail({
             </p>
           </div>
 
-          {/* Back to Sign In */}
           <div className="text-center">
             <a
               href="/auth/signin"
@@ -325,7 +315,6 @@ export function ResendVerificationEmail({
           </div>
         </div>
 
-        {/* Troubleshooting */}
         <div className={cn('mt-6 rounded-lg bg-gray-50 p-4', 'dark:bg-gray-800')}>
           <h4 className={cn('mb-2 text-sm font-medium text-gray-900', 'dark:text-gray-100')}>
             Still having trouble?

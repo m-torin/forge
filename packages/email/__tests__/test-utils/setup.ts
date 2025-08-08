@@ -172,7 +172,7 @@ export const emailAssertions = {
     result: any,
     expectedResult: any = { data: { id: expect.any(String) }, error: null },
   ) => {
-    expect(result).toEqual(expectedResult);
+    expect(result).toStrictEqual(expectedResult);
   },
 
   /**

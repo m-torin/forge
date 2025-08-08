@@ -19,7 +19,7 @@ export interface StreamStartChunk extends StreamChunk {
     model?: string;
     provider?: string;
     temperature?: number;
-    maxTokens?: number;
+    maxOutputTokens?: number;
   };
 }
 
@@ -29,7 +29,7 @@ export interface StreamDeltaChunk extends StreamChunk {
     type: 'text' | 'reasoning' | 'tool-call' | 'tool-result';
     delta?: string;
     text?: string;
-    reasoning?: string;
+    reasoningText?: string;
     toolCall?: {
       id: string;
       name: string;
@@ -146,8 +146,8 @@ export class V5StreamProcessor {
 
       case 'reasoning':
         // Handle reasoning content
-        if (content.reasoning) {
-          logInfo('Reasoning provided', { reasoning: content.reasoning.substring(0, 100) });
+        if (content.reasoningText) {
+          logInfo('Reasoning provided', { reasoningText: content.reasoningText.substring(0, 100) });
         }
         break;
 

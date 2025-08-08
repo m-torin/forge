@@ -87,7 +87,7 @@ export function createTextEditorTool(config: TextEditorConfig = {}) {
 
   return tool({
     description: 'Text editor for viewing and editing files',
-    parameters: TextEditorInputSchema,
+    inputSchema: TextEditorInputSchema,
     execute: async (input, _options) => {
       logInfo('Text Editor Tool: Executing command', {
         operation: 'text_editor_execute',
@@ -427,7 +427,8 @@ async function sandboxWriteFile(path: string, content: string): Promise<void> {
 }
 
 /**
- * Common text editor patterns
+ * Common text editor execution patterns
+ * These are now helper functions that work with the tool's execute function directly
  */
 export const textEditorPatterns = {
   /**
@@ -437,22 +438,19 @@ export const textEditorPatterns = {
     files: string[],
     oldStr: string,
     newStr: string,
-    tool: ReturnType<typeof createTextEditorTool>,
+    executeFunc: (input: TextEditorInput) => Promise<any>,
   ) => {
     const results = [];
 
     for (const file of files) {
       try {
-        const result = await tool.execute(
-          {
-            command: 'str_replace_based_edit',
-            path: file,
-            oldStr,
-            newStr,
-            caseInsensitive: false,
-          },
-          { toolCallId: 'text-editor', messages: [] },
-        );
+        const result = await executeFunc({
+          command: 'str_replace_based_edit',
+          path: file,
+          oldStr,
+          newStr,
+          caseInsensitive: false,
+        });
         results.push({ file, ...result });
       } catch (error) {
         results.push({
@@ -473,16 +471,13 @@ export const textEditorPatterns = {
     path: string,
     startMarker: string,
     endMarker: string,
-    tool: ReturnType<typeof createTextEditorTool>,
+    executeFunc: (input: TextEditorInput) => Promise<any>,
   ) => {
-    const viewResult = await tool.execute(
-      {
-        command: 'view',
-        path,
-        caseInsensitive: false,
-      },
-      { toolCallId: 'text-editor', messages: [] },
-    );
+    const viewResult = await executeFunc({
+      command: 'view',
+      path,
+      caseInsensitive: false,
+    });
 
     if (!viewResult.content) {
       throw new Error('Failed to read file');
@@ -520,17 +515,14 @@ export const textEditorPatterns = {
     path: string,
     lineNumber: number,
     content: string,
-    tool: ReturnType<typeof createTextEditorTool>,
+    executeFunc: (input: TextEditorInput) => Promise<any>,
   ) => {
     // First, read the file
-    const viewResult = await tool.execute(
-      {
-        command: 'view',
-        path,
-        caseInsensitive: false,
-      },
-      { toolCallId: 'text-editor', messages: [] },
-    );
+    const viewResult = await executeFunc({
+      command: 'view',
+      path,
+      caseInsensitive: false,
+    });
 
     if (!viewResult.content) {
       throw new Error('Failed to read file');
@@ -546,15 +538,12 @@ export const textEditorPatterns = {
     lines.splice(lineNumber - 1, 0, ...content.split('\n'));
 
     // Write back
-    return await tool.execute(
-      {
-        command: 'create',
-        path,
-        content: lines.join('\n'),
-        caseInsensitive: false,
-      },
-      { toolCallId: 'text-editor', messages: [] },
-    );
+    return await executeFunc({
+      command: 'create',
+      path,
+      content: lines.join('\n'),
+      caseInsensitive: false,
+    });
   },
 
   /**
@@ -565,16 +554,13 @@ export const textEditorPatterns = {
     startLine: number,
     endLine: number,
     commentPrefix: string,
-    tool: ReturnType<typeof createTextEditorTool>,
+    executeFunc: (input: TextEditorInput) => Promise<any>,
   ) => {
-    const viewResult = await tool.execute(
-      {
-        command: 'view',
-        path,
-        caseInsensitive: false,
-      },
-      { toolCallId: 'text-editor', messages: [] },
-    );
+    const viewResult = await executeFunc({
+      command: 'view',
+      path,
+      caseInsensitive: false,
+    });
 
     if (!viewResult.content) {
       throw new Error('Failed to read file');
@@ -599,15 +585,12 @@ export const textEditorPatterns = {
       }
     }
 
-    return await tool.execute(
-      {
-        command: 'create',
-        path,
-        content: lines.join('\n'),
-        caseInsensitive: false,
-      },
-      { toolCallId: 'text-editor', messages: [] },
-    );
+    return await executeFunc({
+      command: 'create',
+      path,
+      content: lines.join('\n'),
+      caseInsensitive: false,
+    });
   },
 } as const;
 

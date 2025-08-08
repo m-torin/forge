@@ -1,4 +1,4 @@
-import { type LanguageModel } from 'ai';
+import type { LanguageModel } from 'ai';
 
 /**
  * Model configuration interface
@@ -16,7 +16,7 @@ export interface ModelConfig {
  * Model capabilities
  */
 export interface ModelCapabilities {
-  reasoning?: boolean;
+  reasoningText?: boolean;
   vision?: boolean;
   codeGeneration?: boolean;
   maxOutputTokens?: number;
@@ -113,7 +113,7 @@ export class ModelRegistry {
 
     switch (useCase) {
       case 'reasoning':
-        return models.find(m => m.capabilities?.reasoning) || models[0];
+        return models.find(m => m.capabilities?.reasoningText) || models[0];
       case 'image':
         return models.find(m => m.capabilities?.vision) || models[0];
       case 'artifact':
@@ -211,7 +211,7 @@ export class ModelSelector {
 
     switch (useCase) {
       case 'reasoning':
-        return availableModels.find(m => m.capabilities?.reasoning) || availableModels[0];
+        return availableModels.find(m => m.capabilities?.reasoningText) || availableModels[0];
       case 'image':
         return availableModels.find(m => m.capabilities?.vision) || availableModels[0];
       case 'artifact':
@@ -255,7 +255,7 @@ export const STANDARD_MODELS: ModelConfig[] = [
     name: 'Chat Model',
     description: 'Primary model for all-purpose chat',
     capabilities: {
-      reasoning: false,
+      reasoningText: false,
       vision: false,
       codeGeneration: true,
       maxOutputTokens: 8192,
@@ -266,7 +266,7 @@ export const STANDARD_MODELS: ModelConfig[] = [
     name: 'Reasoning Model',
     description: 'Uses advanced reasoning capabilities',
     capabilities: {
-      reasoning: true,
+      reasoningText: true,
       vision: false,
       codeGeneration: true,
       maxOutputTokens: 8192,
@@ -277,7 +277,7 @@ export const STANDARD_MODELS: ModelConfig[] = [
     name: 'Title Generation Model',
     description: 'Optimized for generating concise titles',
     capabilities: {
-      reasoning: false,
+      reasoningText: false,
       vision: false,
       codeGeneration: false,
       maxOutputTokens: 256,
@@ -288,7 +288,7 @@ export const STANDARD_MODELS: ModelConfig[] = [
     name: 'Artifact Model',
     description: 'Specialized for creating documents and artifacts',
     capabilities: {
-      reasoning: false,
+      reasoningText: false,
       vision: false,
       codeGeneration: true,
       maxOutputTokens: 8192,

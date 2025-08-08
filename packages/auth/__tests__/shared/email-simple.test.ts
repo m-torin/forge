@@ -23,7 +23,7 @@ vi.mock('server-only', () => ({}));
 describe('shared email utilities', () => {
   describe('basic structure', () => {
     test('should export email functions', async () => {
-      const emailModule = await import('#/shared/email');
+      const emailModule = await import('../../src/shared/email');
 
       // Test that key functions exist
       expect(emailModule.sendVerificationEmail).toBeDefined();
@@ -33,7 +33,7 @@ describe('shared email utilities', () => {
     });
 
     test('should have proper function types', async () => {
-      const emailModule = await import('#/shared/email');
+      const emailModule = await import('../../src/shared/email');
 
       expect(typeof emailModule.sendVerificationEmail).toBe('function');
       expect(typeof emailModule.sendWelcomeEmail).toBe('function');

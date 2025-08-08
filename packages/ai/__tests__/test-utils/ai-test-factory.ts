@@ -21,7 +21,7 @@ export const createTestData = {
   /**
    * Creates a standard mock model for testing
    */
-  model: (overrides: Partial<LanguageModel> = {}): LanguageModel =>
+  model: (overrides: Record<string, any> = {}): LanguageModel =>
     ({
       specificationVersion: 'v1',
       provider: 'openai',
@@ -82,7 +82,7 @@ export const createTestData = {
   tools: {
     weather: () => ({
       description: 'Get current weather for a location',
-      parameters: {
+      inputSchema: {
         type: 'object',
         properties: {
           location: { type: 'string' },
@@ -95,7 +95,7 @@ export const createTestData = {
 
     calculator: () => ({
       description: 'Perform mathematical calculations',
-      parameters: {
+      inputSchema: {
         type: 'object',
         properties: {
           expression: { type: 'string' },
@@ -107,7 +107,7 @@ export const createTestData = {
 
     search: () => ({
       description: 'Search the web for information',
-      parameters: {
+      inputSchema: {
         type: 'object',
         properties: {
           query: { type: 'string' },
@@ -135,8 +135,8 @@ export const createTestData = {
    * Creates test usage data
    */
   usage: () => ({
-    promptTokens: 100,
-    completionTokens: 50,
+    inputTokens: 100,
+    outputTokens: 50,
     totalTokens: 150,
   }),
 
@@ -331,8 +331,8 @@ export const TestAssertions = {
     if (!toolCall) {
       throw new Error(`Tool call with name "${toolName}" not found`);
     }
-    if (!toolCall.result) {
-      throw new Error(`Tool call result for "${toolName}" is not defined`);
+    if (!toolCall.output) {
+      throw new Error(`Tool call output for "${toolName}" is not defined`);
     }
   },
 

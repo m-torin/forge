@@ -44,7 +44,7 @@ async function completeProductionAgent() {
     middlewareTools.withProductionMiddleware(
       agenticTool({
         description: 'Research information with validation and middleware',
-        parameters: z.object({
+        inputSchema: z.object({
           topic: z.string().min(1).max(200),
           depth: z.enum(['basic', 'detailed', 'comprehensive']).default('basic'),
           sources: z.array(z.string()).optional(),
@@ -76,7 +76,7 @@ async function completeProductionAgent() {
   // Streaming analysis tool for large datasets
   const analysisStream = createStreamingTool({
     description: 'Perform streaming analysis with progress tracking',
-    parameters: z.object({
+    inputSchema: z.object({
       data: z.any(),
       analysisType: z.enum(['statistical', 'semantic', 'predictive']).default('statistical'),
     }),
@@ -296,7 +296,7 @@ async function errorRecoveryDemo() {
   const unreliableTool = validatedTools.withGracefulDegradation(
     agenticTool({
       description: 'Unreliable tool for testing error recovery',
-      parameters: z.object({
+      inputSchema: z.object({
         task: z.string(),
         failureRate: z.number().min(0).max(1).default(0.3),
       }),

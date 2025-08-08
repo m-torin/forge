@@ -50,9 +50,15 @@ const mockPasskeys: Passkey[] = [
 ];
 
 // Mock handlers
-const mockAddPasskey = () => console.log('Add passkey clicked');
-const mockDeletePasskey = (passkey: Passkey) => console.log('Delete passkey:', passkey);
-const mockErrorDismiss = () => console.log('Error dismissed');
+const mockAddPasskey = () => {
+  // console.log('Add passkey clicked');
+};
+const mockDeletePasskey = (passkey: Passkey) => {
+  // console.log('Delete passkey:', passkey);
+};
+const mockErrorDismiss = () => {
+  // console.log('Error dismissed');
+};
 
 export const Default: Story = {
   args: {

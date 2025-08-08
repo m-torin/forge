@@ -283,7 +283,7 @@ export const workflowGenerators = {
       version: '1.0.0-beta.1',
       steps: [
         stepGenerators.basic({
-          name: "Step with \"quotes\" and 'apostrophes'",
+          name: 'Step with "quotes" and \'apostrophes\'',
           action: 'special-chars',
           id: 'step-with-special-chars-!@#$%',
         }),

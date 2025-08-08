@@ -53,7 +53,7 @@ export const stripe = new Proxy({} as Stripe, {
     // Initialize Stripe instance on first use
     if (!stripeInstance) {
       stripeInstance = new Stripe(STRIPE_SECRET_KEY, {
-        apiVersion: '2025-06-30.basil',
+        apiVersion: '2025-07-30.basil',
       });
     }
 

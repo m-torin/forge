@@ -53,8 +53,8 @@ export const PasswordResetTemplate = ({ email, name, resetLink }: PasswordResetT
               </Text>
 
               <Text className="m-0 text-sm text-zinc-500">
-                If you didn't request this password reset, you can safely ignore this email.
-                Your password will not be changed.
+                If you didn't request this password reset, you can safely ignore this email. Your
+                password will not be changed.
               </Text>
             </Section>
           </Section>

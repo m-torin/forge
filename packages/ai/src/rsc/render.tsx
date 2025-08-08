@@ -96,7 +96,7 @@ export const renderPatterns = {
         <div className="tool-message">
           <div className="tool-header">Tool: {message.content[0].toolName}</div>
           <div className="tool-result">
-            <pre>{JSON.stringify(message.content[0].result, null, 2)}</pre>
+            <pre>{JSON.stringify(message.content[0].output, null, 2)}</pre>
           </div>
         </div>
       );

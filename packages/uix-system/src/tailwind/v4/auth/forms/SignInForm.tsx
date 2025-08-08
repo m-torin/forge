@@ -24,7 +24,7 @@ interface SignInFormProps extends BaseProps {
   signUpHref?: string;
 }
 
-const initialState: FormState = { success: false };
+const _initialState: FormState = { success: false };
 
 export function SignInForm({
   className = '',

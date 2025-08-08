@@ -11,11 +11,11 @@ import { createProductionRAG, createRAGToolset, type RAGToolConfig } from '../in
 /**
  * Custom analysis tool that combines RAG with external APIs
  */
-export function createAdvancedAnalysisTool(config: RAGToolConfig) {
+export function createSemanticAnalysisTool(config: RAGToolConfig) {
   return tool({
     description:
       'Perform comprehensive analysis combining knowledge base search with data processing',
-    parameters: z.object({
+    inputSchema: z.object({
       topic: z.string().describe('The topic to analyze'),
       analysisType: z
         .enum(['trend', 'comparison', 'summary', 'prediction'])
@@ -85,7 +85,7 @@ export function createAdvancedAnalysisTool(config: RAGToolConfig) {
 export function createWorkflowTool(config: RAGToolConfig) {
   return tool({
     description: 'Execute complex multi-step workflows with RAG integration',
-    parameters: z.object({
+    inputSchema: z.object({
       workflowType: z
         .enum(['research', 'analysis', 'synthesis', 'evaluation'])
         .describe('Workflow type'),
@@ -93,13 +93,13 @@ export function createWorkflowTool(config: RAGToolConfig) {
         .array(
           z.object({
             action: z.string().describe('Action to perform'),
-            parameters: z.record(z.string(), z.any()).describe('Action parameters'),
+            inputSchema: z.record(z.string(), z.any()).describe('Action parameters'),
           }),
         )
         .describe('Workflow steps'),
       parallelize: z.boolean().default(false).describe('Execute steps in parallel where possible'),
     }),
-    execute: async ({ workflowType, steps, parallelize }, context) => {
+    execute: async ({ workflowType, steps, parallelize }, _context) => {
       const results = {
         workflowType,
         stepResults: [] as Array<{ step: number; action: string; result: any; duration: number }>,
@@ -170,7 +170,7 @@ export function createWorkflowTool(config: RAGToolConfig) {
 export function createCollaborationTool(config: RAGToolConfig) {
   return tool({
     description: 'Facilitate real-time collaboration with shared knowledge and context',
-    parameters: z.object({
+    inputSchema: z.object({
       sessionId: z.string().describe('Collaboration session ID'),
       action: z.enum(['join', 'share', 'sync', 'leave']).describe('Collaboration action'),
       data: z.any().optional().describe('Data to share or sync'),
@@ -224,7 +224,7 @@ export function createCollaborationTool(config: RAGToolConfig) {
 /**
  * Complete tool calling example with complex workflow
  */
-export async function demonstrateAdvancedToolCalling() {
+export async function demonstrateSemanticToolCalling() {
   // Initialize RAG system
   const ragSystem = createProductionRAG({
     languageModel: openai('gpt-4o'),
@@ -239,9 +239,9 @@ export async function demonstrateAdvancedToolCalling() {
   });
 
   // Create custom tools
-  const advancedTools = {
+  const contextualTools = {
     ...basicTools,
-    advancedAnalysis: createAdvancedAnalysisTool({
+    semanticAnalysis: createSemanticAnalysisTool({
       vectorStore: ragSystem.vectorStore,
       enableSourceTracking: true,
     }),
@@ -258,17 +258,19 @@ export async function demonstrateAdvancedToolCalling() {
   // Example 1: Complex analysis workflow
   const analysisResult = await generateText({
     model: openai('gpt-4o'),
-    tools: advancedTools,
+    tools: contextualTools,
     messages: [
       {
         role: 'system',
+
         content: `You are an advanced AI analyst with access to comprehensive tools.
-        Perform thorough analysis using multiple steps and cross-reference findings.`,
+          Perform thorough analysis using multiple steps and cross-reference findings.`,
       },
       {
         role: 'user',
+
         content: `Perform a comprehensive analysis of machine learning trends in the healthcare industry.
-        I need both current state analysis and future predictions.`,
+          I need both current state analysis and future predictions.`,
       },
     ],
   });
@@ -277,18 +279,20 @@ export async function demonstrateAdvancedToolCalling() {
   console.log('Tools Used:', analysisResult.toolCalls?.length || 0);
 
   // Example 2: Multi-step workflow with different tool combinations
-  const workflowResult = await streamText({
+  const workflowResult = streamText({
     model: openai('gpt-4o'),
-    tools: advancedTools,
+    tools: contextualTools,
     messages: [
       {
         role: 'system',
+
         content: `You are a research coordinator. Break down complex research tasks into steps and execute them systematically.`,
       },
       {
         role: 'user',
+
         content: `I need to research the impact of AI on software development productivity.
-        Create a comprehensive research plan and execute it step by step.`,
+          Create a comprehensive research plan and execute it step by step.`,
       },
     ],
     onFinish: result => {
@@ -300,7 +304,7 @@ export async function demonstrateAdvancedToolCalling() {
     analysisResult,
     workflowResult,
     ragSystem,
-    tools: advancedTools,
+    tools: contextualTools,
   };
 }
 
@@ -329,7 +333,7 @@ function generateSearchQueries(topic: string, analysisType: string, timeframe?: 
 
 function generateInsights(
   findings: Array<{ source: string; content: string; confidence: number }>,
-  analysisType: string,
+  _analysisType: string,
 ): string[] {
   // This would typically use NLP analysis on the findings
   // For demo purposes, return sample insights
@@ -342,8 +346,8 @@ function generateInsights(
 
 function generateRecommendations(
   findings: Array<{ source: string; content: string; confidence: number }>,
-  analysisType: string,
-  topic: string,
+  _analysisType: string,
+  _topic: string,
 ): string[] {
   return [
     `Focus on high-confidence findings (${findings.filter(f => f.confidence > 0.8).length} sources)`,
@@ -364,19 +368,19 @@ async function fetchExternalData(topic: string, analysisType: string) {
 }
 
 async function executeWorkflowStep(
-  step: { action: string; parameters: Record<string, any> },
+  step: { action: string; inputSchema: Record<string, any> },
   config: RAGToolConfig,
 ) {
   // Simulate step execution
   switch (step.action) {
     case 'search':
-      return await config.vectorStore.queryDocuments(step.parameters.query, {
-        topK: step.parameters.topK || 5,
+      return await config.vectorStore.queryDocuments(step.inputSchema.query, {
+        topK: step.inputSchema.topK || 5,
       });
     case 'analyze':
-      return { analysis: `Analysis result for ${step.parameters.topic}` };
+      return { analysis: `Analysis result for ${step.inputSchema.topic}` };
     case 'synthesize':
-      return { synthesis: `Synthesis of ${step.parameters.sources?.length || 0} sources` };
+      return { synthesis: `Synthesis of ${step.inputSchema.sources?.length || 0} sources` };
     default:
       return { result: `Executed ${step.action}` };
   }
@@ -399,7 +403,7 @@ async function joinCollaborationSession(sessionId: string, config: RAGToolConfig
   };
 }
 
-async function shareKnowledge(sessionId: string, data: any, config: RAGToolConfig) {
+async function shareKnowledge(sessionId: string, data: any, _config: RAGToolConfig) {
   // In a real implementation, this would store shared knowledge
   return {
     sessionId,
@@ -408,7 +412,7 @@ async function shareKnowledge(sessionId: string, data: any, config: RAGToolConfi
   };
 }
 
-async function syncCollaborationState(sessionId: string, config: RAGToolConfig) {
+async function syncCollaborationState(sessionId: string, _config: RAGToolConfig) {
   return {
     sessionId,
     synced: true,

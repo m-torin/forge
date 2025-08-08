@@ -3,15 +3,19 @@
  * Provides granular control over AI model interactions with advanced lifecycle management
  */
 
-import type { LanguageModelV2 } from '@ai-sdk/provider';
 import { logError, logInfo } from '@repo/observability';
 import type {
+  CoreToolMessage,
   GenerateObjectResult,
   GenerateTextResult,
+  LanguageModel,
   LanguageModelUsage,
   StreamTextResult,
-  ToolResult,
 } from 'ai';
+import { wrapLanguageModel } from 'ai';
+
+// Type alias for backward compatibility
+type ToolResult = CoreToolMessage;
 
 export interface LifecycleContext {
   modelId: string;
@@ -55,7 +59,7 @@ export interface ErrorHookContext extends LifecycleContext {
 export interface ToolCallHookContext extends LifecycleContext {
   toolName: string;
   toolArgs: Record<string, any>;
-  toolResult?: ToolResult<any, any, any>;
+  toolResult?: ToolResult;
 }
 
 /**
@@ -66,8 +70,8 @@ export interface LifecycleHooks {
     context: GenerationHookContext,
   ) => Promise<GenerationHookResult> | GenerationHookResult;
   onGenerationComplete?: (context: CompletionHookContext) => Promise<void> | void;
-  onGenerationError?: (context: ErrorHookContext) => Promise<boolean> | boolean; // return true to retry
-  onToolCallStart?: (context: ToolCallHookContext) => Promise<boolean> | boolean; // return false to skip
+  onGenerationError?: (context: ErrorHookContext) => Promise<boolean> | boolean;
+  onToolCallStart?: (context: ToolCallHookContext) => Promise<boolean> | boolean;
   onToolCallComplete?: (context: ToolCallHookContext) => Promise<void> | void;
   onCacheHit?: (
     context: LifecycleContext & { cacheKey: string; value: any },
@@ -324,141 +328,155 @@ export class LifecycleManager {
  * Wrapper for language models with lifecycle hooks
  */
 export function wrapModelWithLifecycle(
-  model: LanguageModelV2,
+  model: LanguageModel,
   lifecycleManager: LifecycleManager,
-): LanguageModelV2 {
-  return {
-    ...model,
-    async doGenerate(options) {
-      const startTime = Date.now();
-      const context = {
-        prompt: String(options.prompt), // Convert to string for compatibility
-        temperature: options.temperature,
-        maxOutputTokens: options.maxOutputTokens,
-      };
+): LanguageModel {
+  return wrapLanguageModel({
+    model: model as any,
+    middleware: {
+      async wrapGenerate({ doGenerate, params, model: wrappedModel }) {
+        const startTime = Date.now();
+        const context = {
+          prompt: String(params.prompt), // Convert to string for compatibility
+          temperature: params.temperature,
+          maxOutputTokens: params.maxOutputTokens,
+        };
 
-      // Execute start hooks
-      const hookResult = await lifecycleManager.executeGenerationStart(context, model.modelId);
-
-      if (!hookResult.continue) {
-        throw new Error('Generation cancelled by lifecycle hook');
-      }
-
-      if (hookResult.skipGeneration && hookResult.cachedResponse) {
-        return hookResult.cachedResponse;
-      }
-
-      // Modify options if needed
-      const modifiedOptions = hookResult.modifiedSettings
-        ? { ...options, ...hookResult.modifiedSettings }
-        : options;
-
-      if (hookResult.modifiedPrompt) {
-        // Convert string prompt to proper LanguageModelV2Prompt format
-        modifiedOptions.prompt =
-          typeof hookResult.modifiedPrompt === 'string'
-            ? (hookResult.modifiedPrompt as any)
-            : hookResult.modifiedPrompt;
-      }
-
-      try {
-        const result = await model.doGenerate(modifiedOptions);
-        const duration = Date.now() - startTime;
-
-        // Execute completion hooks with simplified result mapping
-        await lifecycleManager.executeGenerationComplete(
-          { result: result as any, duration, usage: result.usage },
-          model.modelId,
+        // Execute start hooks
+        const hookResult = await lifecycleManager.executeGenerationStart(
+          context,
+          (model as any).modelId || 'unknown-model',
         );
 
-        // Execute token usage hooks
-        if (result.usage) {
-          await lifecycleManager.executeTokenUsage(result.usage, model.modelId);
+        if (!hookResult.continue) {
+          throw new Error('Generation cancelled by lifecycle hook');
         }
+
+        if (hookResult.skipGeneration && hookResult.cachedResponse) {
+          return hookResult.cachedResponse;
+        }
+
+        // Modify params if needed
+        const modifiedParams = hookResult.modifiedSettings
+          ? { ...params, ...hookResult.modifiedSettings }
+          : params;
+
+        if (hookResult.modifiedPrompt) {
+          // Convert string prompt to proper LanguageModelPrompt format
+          modifiedParams.prompt =
+            typeof hookResult.modifiedPrompt === 'string'
+              ? (hookResult.modifiedPrompt as any)
+              : hookResult.modifiedPrompt;
+        }
+
+        try {
+          const result = await doGenerate();
+          const duration = Date.now() - startTime;
+
+          // Execute completion hooks with simplified result mapping
+          await lifecycleManager.executeGenerationComplete(
+            { result: result as any, duration, usage: result.usage },
+            (wrappedModel as any).modelId || 'unknown-model',
+          );
+
+          // Execute token usage hooks
+          if (result.usage) {
+            await lifecycleManager.executeTokenUsage(
+              result.usage,
+              (wrappedModel as any).modelId || 'unknown-model',
+            );
+          }
+
+          return result;
+        } catch (error) {
+          const shouldRetry = await lifecycleManager.executeGenerationError(
+            {
+              error: error as Error,
+              retryCount: 0,
+              maxRetries: 3,
+              canRetry: true,
+            },
+            (wrappedModel as any).modelId || 'unknown-model',
+          );
+
+          if (shouldRetry) {
+            // Implement retry logic here if needed
+            logInfo('Retry requested by error hook');
+          }
+
+          throw error;
+        }
+      },
+
+      async wrapStream({ doStream, params, model: wrappedModel }) {
+        const startTime = Date.now();
+        const context = {
+          prompt: String(params.prompt), // Convert to string for compatibility
+          temperature: params.temperature,
+          maxOutputTokens: params.maxOutputTokens,
+        };
+
+        // Execute start hooks
+        const hookResult = await lifecycleManager.executeGenerationStart(
+          context,
+          (model as any).modelId || 'unknown-model',
+        );
+
+        if (!hookResult.continue) {
+          throw new Error('Streaming cancelled by lifecycle hook');
+        }
+
+        // Modify params if needed
+        const modifiedParams = hookResult.modifiedSettings
+          ? { ...params, ...hookResult.modifiedSettings }
+          : params;
+
+        if (hookResult.modifiedPrompt) {
+          // Convert string prompt to proper LanguageModelPrompt format
+          modifiedParams.prompt =
+            typeof hookResult.modifiedPrompt === 'string'
+              ? (hookResult.modifiedPrompt as any)
+              : hookResult.modifiedPrompt;
+        }
+
+        const result = await doStream();
+
+        // Wrap the stream to capture completion
+        const originalStream = result.stream;
+        let usage: LanguageModelUsage | undefined;
+
+        result.stream = originalStream.pipeThrough(
+          new TransformStream({
+            transform(chunk, controller) {
+              if (chunk.type === 'finish' && chunk.usage) {
+                usage = chunk.usage;
+              }
+              controller.enqueue(chunk);
+            },
+            flush: async () => {
+              const duration = Date.now() - startTime;
+
+              // Execute completion hooks with simplified stream result
+              await lifecycleManager.executeGenerationComplete(
+                { result: result as any, duration, usage },
+                (wrappedModel as any).modelId || 'unknown-model',
+              );
+
+              // Execute token usage hooks
+              if (usage) {
+                await lifecycleManager.executeTokenUsage(
+                  usage,
+                  (wrappedModel as any).modelId || 'unknown-model',
+                );
+              }
+            },
+          }),
+        );
 
         return result;
-      } catch (error) {
-        const shouldRetry = await lifecycleManager.executeGenerationError(
-          {
-            error: error as Error,
-            retryCount: 0,
-            maxRetries: 3,
-            canRetry: true,
-          },
-          model.modelId,
-        );
-
-        if (shouldRetry) {
-          // Implement retry logic here if needed
-          logInfo('Retry requested by error hook');
-        }
-
-        throw error;
-      }
+      },
     },
-
-    async doStream(options) {
-      const startTime = Date.now();
-      const context = {
-        prompt: String(options.prompt), // Convert to string for compatibility
-        temperature: options.temperature,
-        maxOutputTokens: options.maxOutputTokens,
-      };
-
-      // Execute start hooks
-      const hookResult = await lifecycleManager.executeGenerationStart(context, model.modelId);
-
-      if (!hookResult.continue) {
-        throw new Error('Streaming cancelled by lifecycle hook');
-      }
-
-      // Modify options if needed
-      const modifiedOptions = hookResult.modifiedSettings
-        ? { ...options, ...hookResult.modifiedSettings }
-        : options;
-
-      if (hookResult.modifiedPrompt) {
-        // Convert string prompt to proper LanguageModelV2Prompt format
-        modifiedOptions.prompt =
-          typeof hookResult.modifiedPrompt === 'string'
-            ? (hookResult.modifiedPrompt as any)
-            : hookResult.modifiedPrompt;
-      }
-
-      const result = await model.doStream(modifiedOptions);
-
-      // Wrap the stream to capture completion
-      const originalStream = result.stream;
-      let usage: LanguageModelUsage | undefined;
-
-      result.stream = originalStream.pipeThrough(
-        new TransformStream({
-          transform(chunk, controller) {
-            if (chunk.type === 'finish' && chunk.usage) {
-              usage = chunk.usage;
-            }
-            controller.enqueue(chunk);
-          },
-          flush: async () => {
-            const duration = Date.now() - startTime;
-
-            // Execute completion hooks with simplified stream result
-            await lifecycleManager.executeGenerationComplete(
-              { result: result as any, duration, usage },
-              model.modelId,
-            );
-
-            // Execute token usage hooks
-            if (usage) {
-              await lifecycleManager.executeTokenUsage(usage, model.modelId);
-            }
-          },
-        }),
-      );
-
-      return result;
-    },
-  };
+  });
 }
 
 /**
@@ -554,9 +572,9 @@ export function createLifecycleManager(
 }
 
 export function createLifecycleWrapper(
-  model: LanguageModelV2,
+  model: LanguageModel,
   hooks?: LifecycleHooks,
-): LanguageModelV2 {
+): LanguageModel {
   const manager = new LifecycleManager(hooks);
   return wrapModelWithLifecycle(model, manager);
 }

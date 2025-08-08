@@ -16,7 +16,7 @@ export interface ClassificationService {
         categoryId: string;
         confidence: number;
         path: readonly string[];
-        reasoning?: string;
+        reasoningText?: string;
       };
     }[]
   >;
@@ -32,7 +32,7 @@ export interface ClassificationService {
     categoryId: string;
     confidence: number;
     path: readonly string[];
-    reasoning?: string;
+    reasoningText?: string;
   }>;
 }
 

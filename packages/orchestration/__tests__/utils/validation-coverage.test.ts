@@ -226,7 +226,7 @@ describe('validation Utilities', () => {
 
       const result = validateWorkflowDefinition(validDefinition);
 
-      expect(result).toEqual(validDefinition);
+      expect(result).toStrictEqual(validDefinition);
     });
 
     test('should validate workflow with minimal required fields', () => {
@@ -238,7 +238,7 @@ describe('validation Utilities', () => {
 
       const result = validateWorkflowDefinition(validDefinition);
 
-      expect(result).toEqual(validDefinition);
+      expect(result).toStrictEqual(validDefinition);
     });
 
     test('should validate workflow with complex steps', () => {
@@ -275,7 +275,7 @@ describe('validation Utilities', () => {
 
       const result = validateWorkflowDefinition(validDefinition);
 
-      expect(result).toEqual(validDefinition);
+      expect(result).toStrictEqual(validDefinition);
     });
 
     test('should throw WorkflowValidationError for missing id', () => {
@@ -320,7 +320,7 @@ describe('validation Utilities', () => {
 
       const result = validateWorkflowDefinition(validDefinition);
 
-      expect(result).toEqual(validDefinition);
+      expect(result).toStrictEqual(validDefinition);
     });
   });
 
@@ -335,7 +335,7 @@ describe('validation Utilities', () => {
 
       const result = validateWorkflowStep(validStep);
 
-      expect(result).toEqual(validStep);
+      expect(result).toStrictEqual(validStep);
     });
 
     test('should validate HTTP step', () => {
@@ -355,7 +355,7 @@ describe('validation Utilities', () => {
 
       const result = validateWorkflowStep(validStep);
 
-      expect(result).toEqual(validStep);
+      expect(result).toStrictEqual(validStep);
     });
 
     test('should validate step with retry configuration', () => {
@@ -373,7 +373,7 @@ describe('validation Utilities', () => {
 
       const result = validateWorkflowStep(validStep);
 
-      expect(result).toEqual(validStep);
+      expect(result).toStrictEqual(validStep);
     });
 
     test('should validate step with condition', () => {
@@ -387,7 +387,7 @@ describe('validation Utilities', () => {
 
       const result = validateWorkflowStep(validStep);
 
-      expect(result).toEqual(validStep);
+      expect(result).toStrictEqual(validStep);
     });
 
     test('should throw WorkflowValidationError for missing id', () => {
@@ -443,7 +443,7 @@ describe('validation Utilities', () => {
 
       const result = validateWorkflowStep(validStep);
 
-      expect(result).toEqual(validStep);
+      expect(result).toStrictEqual(validStep);
     });
 
     test('should handle step with dependencies', () => {
@@ -457,7 +457,7 @@ describe('validation Utilities', () => {
 
       const result = validateWorkflowStep(validStep);
 
-      expect(result).toEqual(validStep);
+      expect(result).toStrictEqual(validStep);
     });
   });
 
@@ -500,7 +500,7 @@ describe('validation Utilities', () => {
 
       const result = validateWorkflowDefinition(validDefinition);
 
-      expect(result).toEqual(validDefinition);
+      expect(result).toStrictEqual(validDefinition);
     });
 
     test('should handle complex nested structures', () => {
@@ -558,7 +558,7 @@ describe('validation Utilities', () => {
 
       const result = validateWorkflowDefinition(complexDefinition);
 
-      expect(result).toEqual(complexDefinition);
+      expect(result).toStrictEqual(complexDefinition);
     });
   });
 });

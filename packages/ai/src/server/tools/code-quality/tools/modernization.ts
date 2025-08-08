@@ -11,7 +11,7 @@ import { logInfo, logWarn } from '@repo/observability';
 import { tool, type Tool } from 'ai';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 import { mcpClient } from '../mcp-client';
 import type { DependencyIndex } from './dependency-analysis';
 
@@ -457,10 +457,17 @@ export const modernizationTool = tool({
 
   inputSchema: modernizationInputSchema,
 
-  execute: async (
-    { sessionId, packagePath, dependencyIndex, options: _options = {} }: any,
-    _toolOptions: any = { toolCallId: 'modernization', messages: [] },
-  ) => {
+  execute: async ({
+    sessionId,
+    packagePath,
+    dependencyIndex,
+    options: _options = {},
+  }: {
+    sessionId: string;
+    packagePath: string;
+    dependencyIndex?: any;
+    options?: any;
+  }) => {
     try {
       logInfo(`🔄 Analyzing modernization opportunities for ${packagePath}...`);
 
@@ -571,36 +578,41 @@ export const modernizationTool = tool({
     }
   },
 
-  // Multi-modal result content
-  experimental_toToolResultContent: (result: ModernizationResult) => [
-    {
-      type: 'text' as const,
-      text:
-        `🔄 Modernization Analysis Complete!\n` +
-        `📊 Total Opportunities: ${result.summary.totalOpportunities}\n` +
-        `🚨 High Priority: ${result.summary.highPriority}\n` +
-        `⚠️ Medium Priority: ${result.summary.mediumPriority}\n` +
-        `ℹ️ Low Priority: ${result.summary.lowPriority}\n` +
-        `📦 Packages Affected: ${result.summary.packagesAffected}\n` +
-        `⏱️ Estimated Effort: ${result.summary.estimatedEffort}\n` +
-        `📋 Modernization Plan: ${result.modernizationPlan.length} phases\n\n` +
-        `${
-          result.opportunities.length > 0
-            ? `Top Opportunities:\n${result.opportunities
-                .slice(0, 3)
-                .map(
-                  (opp: any) =>
-                    `• ${opp.priority.toUpperCase()}: ${opp.package}${opp.function ? `.${opp.function}` : ''} → ${opp.modernPattern}`,
-                )
-                .join('\n')}\n\n` +
-              `Next Steps:\n${result.modernizationPlan
-                .slice(0, 2)
-                .map((phase: any, i: number) => `${i + 1}. ${phase.title} (${phase.estimatedTime})`)
-                .join('\n')}`
-            : '✅ No modernization opportunities found - your dependencies are up to date!'
-        }`,
-    },
-  ],
+  // AI SDK v5: toModelOutput with proper content shapes
+  toModelOutput: (result: ModernizationResult) => ({
+    type: 'content',
+    value: [
+      {
+        type: 'text',
+        text:
+          `🔄 Modernization Analysis Complete!\n` +
+          `📊 Total Opportunities: ${result.summary.totalOpportunities}\n` +
+          `🚨 High Priority: ${result.summary.highPriority}\n` +
+          `⚠️ Medium Priority: ${result.summary.mediumPriority}\n` +
+          `ℹ️ Low Priority: ${result.summary.lowPriority}\n` +
+          `📦 Packages Affected: ${result.summary.packagesAffected}\n` +
+          `⏱️ Estimated Effort: ${result.summary.estimatedEffort}\n` +
+          `📋 Modernization Plan: ${result.modernizationPlan.length} phases\n\n` +
+          `${
+            result.opportunities.length > 0
+              ? `Top Opportunities:\n${result.opportunities
+                  .slice(0, 3)
+                  .map(
+                    (opp: any) =>
+                      `• ${opp.priority.toUpperCase()}: ${opp.package}${opp.function ? `.${opp.function}` : ''} → ${opp.modernPattern}`,
+                  )
+                  .join('\n')}\n\n` +
+                `Next Steps:\n${result.modernizationPlan
+                  .slice(0, 2)
+                  .map(
+                    (phase: any, i: number) => `${i + 1}. ${phase.title} (${phase.estimatedTime})`,
+                  )
+                  .join('\n')}`
+              : '✅ No modernization opportunities found - your dependencies are up to date!'
+          }`,
+      },
+    ],
+  }),
 } as any) as Tool;
 
 export type { ModernizationOpportunity, ModernizationResult };

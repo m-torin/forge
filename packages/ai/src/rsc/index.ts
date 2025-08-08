@@ -9,5 +9,18 @@ export * from './stream-ui';
 export * from './streamable-ui';
 export * from './streamable-value';
 
-// Re-export from AI SDK for convenience
-export { getAIState, getMutableAIState, type AIProvider } from '@ai-sdk/rsc';
+// Re-export from AI SDK for convenience - using stable API
+export {
+  createAI,
+  createStreamableUI,
+  createStreamableValue,
+  getAIState,
+  getMutableAIState,
+  readStreamableValue,
+  streamUI,
+  useAIState,
+  useActions,
+  useStreamableValue,
+  useSyncUIState,
+  useUIState,
+} from '@ai-sdk/rsc';

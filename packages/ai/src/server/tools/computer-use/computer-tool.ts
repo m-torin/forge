@@ -77,7 +77,7 @@ export function createComputerTool(config: ComputerToolConfig = {}) {
 
   return tool({
     description: 'Computer interaction tool - take screenshots and simulate user input',
-    parameters: ComputerToolInputSchema,
+    inputSchema: ComputerToolInputSchema,
     execute: async (input, _options) => {
       logInfo('Computer Tool: Executing action', {
         operation: 'computer_tool_execute',
@@ -413,31 +413,29 @@ async function defaultScrollSimulator(direction: string, amount: number): Promis
 }
 
 /**
- * Common computer tool patterns
+ * Common computer tool execution patterns
+ * These are now helper functions that work with the tool's execute function directly
  */
 export const computerToolPatterns = {
   /**
    * Take a screenshot and click on text
    */
-  screenshotAndClick: async (text: string, tool: ReturnType<typeof createComputerTool>) => {
+  screenshotAndClick: async (
+    text: string,
+    executeFunc: (input: ComputerToolInput) => Promise<any>,
+  ) => {
     // Take screenshot
-    const _screenshot = await tool.execute(
-      { action: 'screenshot' },
-      { toolCallId: 'screenshot', messages: [] },
-    );
+    const _screenshot = await executeFunc({ action: 'screenshot' });
 
     // In a real implementation, would analyze screenshot for text location
     // For now, simulate finding text at coordinates
     const mockCoordinate: [number, number] = [500, 300];
 
     // Click on the text
-    return await tool.execute(
-      {
-        action: 'click',
-        coordinate: mockCoordinate,
-      },
-      { toolCallId: 'click', messages: [] },
-    );
+    return await executeFunc({
+      action: 'click',
+      coordinate: mockCoordinate,
+    });
   },
 
   /**
@@ -446,61 +444,49 @@ export const computerToolPatterns = {
   fillField: async (
     fieldName: string,
     value: string,
-    tool: ReturnType<typeof createComputerTool>,
+    executeFunc: (input: ComputerToolInput) => Promise<any>,
   ) => {
     // Click on field (would need visual recognition in real implementation)
-    await tool.execute(
-      {
-        action: 'click',
-        coordinate: [400, 200], // Mock coordinates
-      },
-      { toolCallId: 'click-field', messages: [] },
-    );
+    await executeFunc({
+      action: 'click',
+      coordinate: [400, 200], // Mock coordinates
+    });
 
     // Clear field
-    await tool.execute(
-      {
-        action: 'key',
-        key: 'cmd+a', // Select all
-      },
-      { toolCallId: 'select-all', messages: [] },
-    );
+    await executeFunc({
+      action: 'key',
+      key: 'cmd+a', // Select all
+    });
 
     // Type new value
-    return await tool.execute(
-      {
-        action: 'type',
-        text: value,
-      },
-      { toolCallId: 'type', messages: [] },
-    );
+    return await executeFunc({
+      action: 'type',
+      text: value,
+    });
   },
 
   /**
    * Navigate menu
    */
-  navigateMenu: async (menuPath: string[], tool: ReturnType<typeof createComputerTool>) => {
+  navigateMenu: async (
+    menuPath: string[],
+    executeFunc: (input: ComputerToolInput) => Promise<any>,
+  ) => {
     for (const _menuItem of menuPath) {
       // Take screenshot to find menu item
-      await tool.execute({ action: 'screenshot' }, { toolCallId: 'menu-screenshot', messages: [] });
+      await executeFunc({ action: 'screenshot' });
 
       // Click on menu item (would need visual recognition)
-      await tool.execute(
-        {
-          action: 'click',
-          coordinate: [300, 100], // Mock coordinates
-        },
-        { toolCallId: 'menu-click', messages: [] },
-      );
+      await executeFunc({
+        action: 'click',
+        coordinate: [300, 100], // Mock coordinates
+      });
 
       // Wait for menu to open
-      await tool.execute(
-        {
-          action: 'wait',
-          amount: 0.5,
-        },
-        { toolCallId: 'wait', messages: [] },
-      );
+      await executeFunc({
+        action: 'wait',
+        amount: 0.5,
+      });
     }
   },
 } as const;

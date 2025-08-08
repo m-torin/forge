@@ -3,7 +3,7 @@
  * Standalone component for verifying email addresses using OTP codes
  */
 
-import { useEffect, useState, useTransition } from 'react';
+import { useCallback, useEffect, useState, useTransition } from 'react';
 import { useFormState } from 'react-dom';
 import { Alert } from '../ui/Alert';
 import { Button } from '../ui/Button';
@@ -11,10 +11,10 @@ import { Card, CardContent, CardHeader } from '../ui/Card';
 import { Input } from '../ui/Input';
 
 // Placeholder server actions - these would be implemented in the actions file
-const sendVerificationOTPAction = async (prevState: any, formData: FormData) => {
-  const email = formData.get('email') as string;
-  const type = formData.get('type') as string;
-  console.log('Sending verification OTP:', { email, type });
+const sendVerificationOTPAction = async (__prevState: any, formData: FormData) => {
+  const _email = formData.get('email') as string;
+  const _type = formData.get('type') as string;
+  // console.log('Sending verification OTP:', { email, type });
 
   // Simulate API call
   await new Promise(resolve => setTimeout(resolve, 1000));
@@ -22,11 +22,11 @@ const sendVerificationOTPAction = async (prevState: any, formData: FormData) => 
   return { success: true, error: '' };
 };
 
-const verifyOTPAction = async (prevState: any, formData: FormData) => {
-  const email = formData.get('email') as string;
-  const otp = formData.get('otp') as string;
-  const type = formData.get('type') as string;
-  console.log('Verifying OTP:', { email, otp, type });
+const verifyOTPAction = async (__prevState: any, formData: FormData) => {
+  const _email = formData.get('email') as string;
+  const _otp = formData.get('otp') as string;
+  const _type = formData.get('type') as string;
+  // console.log('Verifying OTP:', { email, otp, type });
 
   // Simulate API call
   await new Promise(resolve => setTimeout(resolve, 1000));
@@ -54,7 +54,7 @@ export function EmailOTPVerification({
   type = 'email-verification',
   title,
   description,
-  onSuccess,
+  onSuccess: _onSuccess,
   onCancel,
   autoSend = true,
   expirationMinutes = 10,
@@ -65,14 +65,14 @@ export function EmailOTPVerification({
   const [otp, setOtp] = useState('');
   const [timeLeft, setTimeLeft] = useState(0);
   const [canResend, setCanResend] = useState(!autoSend);
-  const [otpSent, setOtpSent] = useState(autoSend);
-  const [attempts, setAttempts] = useState(0);
+  const [otpSent, _setOtpSent] = useState(autoSend);
+  const [attempts, _setAttempts] = useState(0);
   const maxAttempts = 3;
 
   const [sendState, sendAction] = useFormState(sendVerificationOTPAction, initialFormState);
   const [verifyState, verifyAction] = useFormState(verifyOTPAction, initialFormState);
 
-  const startCountdown = () => {
+  const startCountdown = useCallback(() => {
     setCanResend(false);
     setTimeLeft(60); // 1 minute cooldown
 
@@ -86,7 +86,7 @@ export function EmailOTPVerification({
         return prev - 1;
       });
     }, 1000);
-  };
+  }, []);
 
   // Auto-send OTP on mount if enabled
   useEffect(() => {
@@ -100,7 +100,7 @@ export function EmailOTPVerification({
         startCountdown();
       });
     }
-  }, [autoSend, email, type]);
+  }, [autoSend, email, type, sendAction, startCountdown]);
 
   const handleSendOTP = async () => {
     const formData = new FormData();
@@ -195,7 +195,6 @@ export function EmailOTPVerification({
           </div>
         </CardHeader>
         <CardContent>
-          {/* Error Messages */}
           {(sendState.error || verifyState.error) && (
             <Alert variant="destructive" className="mb-4">
               {sendState.error || verifyState.error}
@@ -207,7 +206,6 @@ export function EmailOTPVerification({
             </Alert>
           )}
 
-          {/* Success Messages */}
           {sendState.success && otpSent && (
             <Alert variant="default" className="mb-4">
               Verification code sent successfully!
@@ -271,7 +269,6 @@ export function EmailOTPVerification({
                 </Button>
               </form>
 
-              {/* Resend Options */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-600">Didn't receive the code?</span>
@@ -302,7 +299,6 @@ export function EmailOTPVerification({
                 )}
               </div>
 
-              {/* Helper Information */}
               <div className="rounded-lg bg-blue-50 p-4">
                 <div className="flex items-start space-x-2">
                   <span className="text-sm text-blue-500">ℹ️</span>
@@ -318,7 +314,6 @@ export function EmailOTPVerification({
             </div>
           )}
 
-          {/* Progress Indicator */}
           {otpSent && (
             <div className="mt-6 border-t border-gray-200 pt-4">
               <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
@@ -341,7 +336,6 @@ export function EmailOTPVerification({
         </CardContent>
       </Card>
 
-      {/* Security Notice */}
       <div className="mt-4 text-center">
         <p className="text-xs text-gray-500">🔒 This verification helps keep your account secure</p>
       </div>

@@ -42,7 +42,7 @@
 
 import 'server-only';
 
-import { logWarn } from '@repo/observability';
+import { logWarn } from '@repo/observability/server';
 import { FetchResult, Index, QueryResult } from '@upstash/vector';
 
 type Dict = Record<string, unknown>;
@@ -69,11 +69,7 @@ export const upstashVectorClientSingleton = (): Index | null => {
     const UPSTASH_VECTOR_REST_TOKEN = process.env.UPSTASH_VECTOR_REST_TOKEN;
 
     if (!UPSTASH_VECTOR_REST_URL || !UPSTASH_VECTOR_REST_TOKEN) {
-      logWarn('Upstash Vector not configured: Vector operations will be disabled', {
-        missingUrl: !UPSTASH_VECTOR_REST_URL,
-        missingToken: !UPSTASH_VECTOR_REST_TOKEN,
-        component: 'upstash-vector-client',
-      });
+      // Silently return null during build time - warnings only at runtime usage
       return null;
     }
 
@@ -98,6 +94,8 @@ export const getUpstashVectorClient = (): Index | null => upstashVectorClientSin
  * Lazily initialized to allow graceful failure when env vars are missing
  */
 let upstashClient: Index | null | undefined = undefined;
+let hasWarnedAboutMissingConfig = false;
+
 export const upstash: Index = new Proxy({} as Index, {
   get(_target, prop) {
     if (upstashClient === undefined) {
@@ -105,6 +103,15 @@ export const upstash: Index = new Proxy({} as Index, {
     }
 
     if (upstashClient === null) {
+      // Warn once at runtime when actually used
+      if (!hasWarnedAboutMissingConfig) {
+        logWarn(
+          '[Upstash Vector] Client not configured: Vector operations will be disabled. ' +
+            'Please set UPSTASH_VECTOR_REST_URL and UPSTASH_VECTOR_REST_TOKEN environment variables.',
+        );
+        hasWarnedAboutMissingConfig = true;
+      }
+
       throw new Error(
         'Upstash Vector client not available. Please configure UPSTASH_VECTOR_REST_URL and UPSTASH_VECTOR_REST_TOKEN environment variables.',
       );
@@ -169,6 +176,15 @@ export class VectorOperations {
    */
   private getClient(): Index {
     if (this.client === null) {
+      // Warn once at runtime when actually used
+      if (!hasWarnedAboutMissingConfig) {
+        logWarn(
+          '[Upstash Vector] Client not configured: Vector operations will be disabled. ' +
+            'Please set UPSTASH_VECTOR_REST_URL and UPSTASH_VECTOR_REST_TOKEN environment variables.',
+        );
+        hasWarnedAboutMissingConfig = true;
+      }
+
       throw new Error(
         'Upstash Vector client not available. Please configure UPSTASH_VECTOR_REST_URL and UPSTASH_VECTOR_REST_TOKEN environment variables.',
       );

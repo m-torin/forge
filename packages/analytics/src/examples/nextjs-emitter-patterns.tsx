@@ -384,7 +384,6 @@ export function EnhancedSearchBar() {
         type="search"
         value={query}
       />
-      {/* Suggestions UI */}
     </div>
   );
 }

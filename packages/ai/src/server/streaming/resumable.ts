@@ -45,7 +45,6 @@ export async function createResumableStreamResponse(
     const stream = await streamContext.resumableStream(streamId, createStream);
     return new Response(stream);
   } else {
-    // Fallback to regular stream if resumable context not available
     return new Response(createStream());
   }
 }
@@ -68,8 +67,8 @@ export async function resumeOrEmptyStream(streamId: string): Promise<ReadableStr
   const textStream = emptyDataStream.pipeThrough(
     new TransformStream({
       transform(chunk, controller) {
-        if (typeof chunk === 'object' && chunk.type === 'text') {
-          controller.enqueue(chunk.text || '');
+        if (typeof chunk === 'object' && chunk.type === 'text-delta') {
+          controller.enqueue(chunk.delta || '');
         } else {
           controller.enqueue('');
         }

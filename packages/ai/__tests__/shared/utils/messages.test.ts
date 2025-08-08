@@ -132,10 +132,10 @@ describe('message Utilities', () => {
         content: [
           {
             type: 'tool-result' as const,
-            text: 'Tool result',
             toolCallId: 'call-123',
             toolName: 'test-tool',
             result: 'success',
+            output: 'success',
           },
         ],
         toolCallId: 'call-123',

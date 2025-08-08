@@ -4,7 +4,7 @@
  * Helper functions for evaluating feature flags based on authentication state
  */
 
-import type { AuthContext } from '#/lib/auth';
+import type { AuthContext } from '#/lib/auth-context';
 import {
   adminDashboardFeatures,
   enhancedAuthAnalytics,
@@ -69,7 +69,6 @@ export async function evaluateAuthFlags(context: AuthFlagContext) {
  * Get comprehensive flag results including auth-aware flags
  */
 export async function getAllFlagResults(authContext: AuthContext) {
-
   // Import the base flags dynamically to avoid circular dependencies
   const { showLanguageSwitcher, welcomeMessageVariant, enhancedFeatureCards, showBetaBanner } =
     await import('#/lib/flags');

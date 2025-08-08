@@ -28,7 +28,7 @@ export class HeroProvider implements ScrapingProvider {
   readonly name = 'hero';
   readonly type = 'browser' as const;
 
-  private hero?: any; // Will be Hero instance when installed
+  private hero?: any;
   private config: {
     headless?: boolean;
     viewport?: { width: number; height: number };

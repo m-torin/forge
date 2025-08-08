@@ -10,7 +10,7 @@ import { createBooleanFlag, createVariantFlag } from '@repo/feature-flags';
  */
 export const showLanguageSwitcher = createBooleanFlag('show_language_switcher', {
   description: 'Show/hide the language switcher in header',
-  percentage: 75, // 75% of users see the language switcher
+  percentage: 100, // All users see the language switcher
 });
 
 /**

@@ -23,43 +23,41 @@ if (!IS_INTEGRATION_TEST) {
     streamText: vi.fn().mockImplementation(async () => {
       const mockResult = {
         toUIMessageStream: vi.fn().mockImplementation(options => {
-          const chunks = [];
+          const chunks: any[] = [];
 
           // Add text chunk
           chunks.push({
-            type: 'message-part',
-            part: { type: 'text', text: 'Mock search response: ' },
+            type: 'text-delta',
+            textDelta: 'Mock search response: ',
           });
 
           // Add source chunks if sendSources is enabled
           if (options?.sendSources) {
             chunks.push({
-              type: 'message-part',
-              part: {
-                type: 'source',
-                url: 'https://example.com/tech-news',
-                title: 'Latest Tech Developments',
-                description: 'Recent advances in technology',
-                snippet: 'Technology continues to evolve...',
-                favicon: 'https://example.com/favicon.ico',
-              },
+              type: 'source',
+              sourceType: 'url',
+              id: 'source-1',
+              url: 'https://example.com/tech-news',
+              title: 'Latest Tech Developments',
+              description: 'Recent advances in technology',
+              snippet: 'Technology continues to evolve...',
+              favicon: 'https://example.com/favicon.ico',
             });
             chunks.push({
-              type: 'message-part',
-              part: {
-                type: 'source',
-                url: 'https://research.org/ai-study',
-                title: 'AI Research Paper',
-                description: 'Academic research on AI developments',
-                snippet: 'Our study shows significant progress...',
-              },
+              type: 'source',
+              sourceType: 'url',
+              id: 'source-2',
+              url: 'https://research.org/ai-study',
+              title: 'AI Research Paper',
+              description: 'Academic research on AI developments',
+              snippet: 'Our study shows significant progress...',
             });
           }
 
           // Add final text chunk
           chunks.push({
-            type: 'message-part',
-            part: { type: 'text', text: ' the field is advancing rapidly.' },
+            type: 'text-delta',
+            textDelta: ' the field is advancing rapidly.',
           });
 
           // Return mock readable stream
@@ -104,10 +102,10 @@ describe('perplexity Sources Integration', () => {
   test(
     'should return sources with sendSources enabled',
     async () => {
-      const result = await streamText({
+      const result = streamText({
         model: testModel,
         prompt: 'What are the latest developments in renewable energy?',
-        maxTokens: IS_INTEGRATION_TEST ? 500 : 100,
+        maxOutputTokens: IS_INTEGRATION_TEST ? 500 : 100,
       });
 
       const uiMessageStream = result.toUIMessageStream({
@@ -135,7 +133,7 @@ describe('perplexity Sources Integration', () => {
 
       // Look for source parts
       const sourceParts = chunks.filter(
-        chunk => chunk.type === 'message-part' && chunk.part && chunk.part.type === 'source',
+        chunk => chunk.type === 'source' && chunk.sourceType === 'url',
       );
 
       console.log(
@@ -151,7 +149,7 @@ describe('perplexity Sources Integration', () => {
 
       // Validate source structure
       sourceParts.forEach((sourcePart, index) => {
-        const source = sourcePart.part;
+        const source = sourcePart;
 
         expect(source.url).toBeDefined();
         expect(typeof source.url).toBe('string');
@@ -171,10 +169,10 @@ describe('perplexity Sources Integration', () => {
   test(
     'should aggregate sources for message display',
     async () => {
-      const result = await streamText({
+      const result = streamText({
         model: testModel,
         prompt: 'Current state of artificial intelligence research',
-        maxTokens: IS_INTEGRATION_TEST ? 400 : 100,
+        maxOutputTokens: IS_INTEGRATION_TEST ? 400 : 100,
       });
 
       const uiMessageStream = result.toUIMessageStream({
@@ -190,8 +188,10 @@ describe('perplexity Sources Integration', () => {
         while (!done) {
           const { value, done: readerDone } = await reader.read();
           done = readerDone;
-          if (value && value.type === 'message-part') {
-            messageParts.push(value.part);
+          if (value && value.type === 'source') {
+            messageParts.push(value);
+          } else if (value && value.type === 'text-delta') {
+            // Handle text deltas if needed
           }
         }
       } finally {
@@ -235,10 +235,10 @@ describe('perplexity Sources Integration', () => {
   test(
     'should handle mixed content with sources and text',
     async () => {
-      const result = await streamText({
+      const result = streamText({
         model: testModel,
         prompt: 'Recent advances in quantum computing applications',
-        maxTokens: IS_INTEGRATION_TEST ? 300 : 100,
+        maxOutputTokens: IS_INTEGRATION_TEST ? 300 : 100,
       });
 
       const uiMessageStream = result.toUIMessageStream({
@@ -254,12 +254,10 @@ describe('perplexity Sources Integration', () => {
         while (!done) {
           const { value, done: readerDone } = await reader.read();
           done = readerDone;
-          if (value && value.type === 'message-part') {
-            if (value.part.type === 'text') {
-              textParts.push(value.part);
-            } else if (value.part.type === 'source') {
-              sourceParts.push(value.part);
-            }
+          if (value && value.type === 'text-delta') {
+            textParts.push(value);
+          } else if (value && value.type === 'source') {
+            sourceParts.push(value);
           }
         }
       } finally {
@@ -281,7 +279,7 @@ describe('perplexity Sources Integration', () => {
       expect(sourceParts.length).toBeLessThanOrEqual(maxExpectedSources);
 
       // Validate text content
-      const fullText = textParts.map(part => part.text).join('');
+      const fullText = textParts.map(part => part.textDelta).join('');
       expect(fullText.trim().length).toBeGreaterThan(10);
 
       // Validate sources if present
@@ -297,10 +295,10 @@ describe('perplexity Sources Integration', () => {
     'should validate real API response structure',
     async () => {
       console.log('🔍 Running real API validation test...');
-      const result = await streamText({
+      const result = streamText({
         model: testModel,
         prompt: 'What are the latest climate change research findings?',
-        maxTokens: 400,
+        maxOutputTokens: 400,
       });
 
       const uiMessageStream = result.toUIMessageStream({
@@ -338,13 +336,13 @@ describe('perplexity Sources Integration', () => {
       console.log('- Chunk types:', chunkTypes);
 
       const sourceChunks = allChunks.filter(
-        chunk => chunk.type === 'message-part' && chunk.part?.type === 'source',
+        chunk => chunk.type === 'source' && chunk.sourceType === 'url',
       );
 
       console.log(`- Source chunks: ${sourceChunks.length}`);
 
       // Log sample source structure
-      const sampleSource = sourceChunks[0]?.part;
+      const sampleSource = sourceChunks[0];
       console.log('- Sample source structure:', {
         url: sampleSource?.url || 'N/A',
         hasTitle: !!sampleSource?.title,

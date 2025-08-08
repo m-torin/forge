@@ -1,0 +1,60 @@
+/* View Transitions API styles for smooth page transitions */
+
+@supports (view-transition-name: main) {
+  /* Sidebar transition */
+  .sidebar-transition {
+    view-transition-name: sidebar;
+  }
+
+  /* Main content transition */
+  .main-transition {
+    view-transition-name: main-content;
+  }
+
+  /* Header transition */
+  .header-transition {
+    view-transition-name: header;
+  }
+
+  /* Custom transition animations */
+  ::view-transition-old(sidebar),
+  ::view-transition-new(sidebar) {
+    animation-duration: 300ms;
+    animation-timing-function: ease-out;
+  }
+
+  ::view-transition-old(main-content),
+  ::view-transition-new(main-content) {
+    animation-duration: 300ms;
+    animation-timing-function: ease-out;
+  }
+
+  /* Smooth slide transition for sidebar */
+  ::view-transition-old(sidebar) {
+    animation-name: slide-out-left;
+  }
+
+  ::view-transition-new(sidebar) {
+    animation-name: slide-in-right;
+  }
+
+  @keyframes slide-out-left {
+    to {
+      transform: translateX(-100%);
+    }
+  }
+
+  @keyframes slide-in-right {
+    from {
+      transform: translateX(-100%);
+    }
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 0.01s !important;
+  }
+}

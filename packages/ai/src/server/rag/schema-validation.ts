@@ -38,8 +38,8 @@ export interface QualityMetrics {
  * Configuration for response validation
  */
 export interface ValidationConfig {
-  strictMode?: boolean; // Fail on any validation error
-  requireMinimumQuality?: number; // Minimum quality score (0-1)
+  strictMode?: boolean;
+  requireMinimumQuality?: number;
   logValidationResults?: boolean;
   customValidators?: Record<string, (value: any) => boolean>;
 }
@@ -560,7 +560,7 @@ if (validation.isValid) {
 } else {
   console.error('Validation failed:', validation.errors);
   console.warn('Warnings:', validation.warnings);
-  
+
   // Still might have partial data in non-strict mode
   if (validation.data) {
     console.log('Using partial data');
@@ -579,7 +579,7 @@ const customValidator = new RAGSchemaValidator({
   requireMinimumQuality: 0.85,
   strictMode: false,
   customValidators: {
-    hasCodeExamples: (response) => 
+    hasCodeExamples: (response) =>
       JSON.stringify(response).includes('\\\`\\\`\\\`'),
     hasSpecificFramework: (response) =>
       JSON.stringify(response).toLowerCase().includes('react'),

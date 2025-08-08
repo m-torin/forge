@@ -280,7 +280,7 @@ export const setupCommonMocks = () => {
   }));
 
   // Mock client utils
-  vi.mock('#/client/utils/logger', () => ({
+  vi.mock('../../src/client/utils/logger', () => ({
     logger: {
       info: vi.fn(),
       error: vi.fn(),
@@ -290,7 +290,7 @@ export const setupCommonMocks = () => {
   }));
 
   // Mock auth client
-  vi.mock('#/client/client', () => ({
+  vi.mock('../../src/client/client', () => ({
     authClient: {
       signIn: {
         email: vi.fn().mockResolvedValue({ success: true }),
@@ -323,7 +323,7 @@ export const setupCommonMocks = () => {
 export const setupEnvironmentMocks = () => {
   // Set up test environment
   // Set NODE_ENV directly without defineProperty
-  Object.defineProperty(process.env, 'NODE_ENV', { value: 'test', writable: true });
+  process.env.NODE_ENV = 'test';
   process.env.CI = 'true';
   process.env.SKIP_ENV_VALIDATION = 'true';
 

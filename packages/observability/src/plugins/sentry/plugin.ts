@@ -10,6 +10,7 @@ import type {
   ObservabilityUser,
 } from '../../core/types';
 import { safeEnv } from './env';
+import type { Hub, Scope, Span, SpanContext, Transaction, TransactionContext } from './types';
 
 /**
  * Minimal Sentry interface for common methods across all Sentry packages
@@ -22,6 +23,11 @@ interface SentryClient {
   addBreadcrumb(breadcrumb: any): void;
   withScope(callback: (scope: any) => void): void;
   getCurrentScope?(): any;
+  getActiveTransaction?(): any;
+  startTransaction?(context: TransactionContext, customSamplingContext?: any): any;
+  startSpan?(context: SpanContext): any;
+  configureScope?(callback: (scope: any) => void): void;
+  getCurrentHub?(): any;
   flush?(timeout?: number): Promise<boolean>;
   close?(timeout?: number): Promise<boolean>;
   browserTracingIntegration?(): any;
@@ -56,6 +62,7 @@ export interface SentryPluginConfig {
   integrations?: any[];
   beforeSend?: (event: any, hint: any) => any;
   beforeSendTransaction?: (event: any, hint: any) => any;
+  beforeBreadcrumb?: (breadcrumb: any, hint?: any) => any;
 
   // Trace propagation
   tracePropagationTargets?: (string | RegExp)[];
@@ -255,6 +262,259 @@ export class SentryPlugin<T extends SentryClient = SentryClient>
   withScope(callback: (scope: any) => void): void {
     if (!this.enabled || !this.client) return;
     this.client.withScope(callback);
+  }
+
+  /**
+   * Start a new transaction
+   */
+  startTransaction(
+    context: TransactionContext,
+    customSamplingContext?: any,
+  ): Transaction | undefined {
+    if (!this.enabled || !this.client) return undefined;
+
+    if (this.client.startTransaction) {
+      return this.client.startTransaction(context, customSamplingContext);
+    }
+
+    // Fallback for older versions
+    console.warn('startTransaction not available in this Sentry version');
+    return undefined;
+  }
+
+  /**
+   * Start a new span
+   */
+  startSpan(context: SpanContext): Span | undefined {
+    if (!this.enabled || !this.client) return undefined;
+
+    if (this.client.startSpan) {
+      return this.client.startSpan(context);
+    }
+
+    // Try to create span from active transaction
+    const transaction = this.getActiveTransaction();
+    if (transaction?.startChild) {
+      return transaction.startChild(context);
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Get the currently active transaction
+   */
+  getActiveTransaction(): Transaction | undefined {
+    if (!this.enabled || !this.client) return undefined;
+
+    if (this.client.getActiveTransaction) {
+      return this.client.getActiveTransaction();
+    }
+
+    // Try to get from current scope
+    if (this.client.getCurrentScope) {
+      const scope = this.client.getCurrentScope();
+      if (scope?.getTransaction) {
+        return scope.getTransaction();
+      }
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Configure the current scope
+   */
+  configureScope(callback: (scope: Scope) => void): void {
+    if (!this.enabled || !this.client) return;
+
+    if (this.client.configureScope) {
+      this.client.configureScope(callback);
+    } else if (this.client.withScope) {
+      // Fallback using withScope
+      this.client.withScope(callback);
+    }
+  }
+
+  /**
+   * Get the current hub instance
+   */
+  getCurrentHub(): Hub | undefined {
+    if (!this.enabled || !this.client) return undefined;
+
+    if (this.client.getCurrentHub) {
+      return this.client.getCurrentHub();
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Set a measurement on the active transaction
+   */
+  setMeasurement(name: string, value: number, unit?: string): void {
+    if (!this.enabled || !this.client) return;
+
+    const transaction = this.getActiveTransaction();
+    if (transaction?.setMeasurement) {
+      transaction.setMeasurement(name, value, unit);
+    }
+  }
+
+  /**
+   * Add performance entries as breadcrumbs and measurements
+   */
+  addPerformanceEntries(entries: PerformanceEntry[]): void {
+    if (!this.enabled || !this.client) return;
+
+    const transaction = this.getActiveTransaction();
+
+    entries.forEach(entry => {
+      // Add as breadcrumb for context
+      this.addBreadcrumb({
+        category: 'performance',
+        message: `${entry.entryType}: ${entry.name}`,
+        data: {
+          name: entry.name,
+          duration: entry.duration,
+          startTime: entry.startTime,
+          ...(entry.entryType === 'navigation' && {
+            transferSize: (entry as PerformanceNavigationTiming).transferSize,
+            encodedBodySize: (entry as PerformanceNavigationTiming).encodedBodySize,
+            decodedBodySize: (entry as PerformanceNavigationTiming).decodedBodySize,
+          }),
+          ...(entry.entryType === 'resource' && {
+            initiatorType: (entry as PerformanceResourceTiming).initiatorType,
+            transferSize: (entry as PerformanceResourceTiming).transferSize,
+          }),
+        },
+      });
+
+      // Add measurements for key metrics
+      if (transaction && entry.entryType === 'navigation') {
+        const navEntry = entry as PerformanceNavigationTiming;
+
+        // Core Web Vitals and other metrics
+        this.setMeasurement('fcp', navEntry.responseStart - navEntry.fetchStart, 'millisecond');
+        this.setMeasurement(
+          'dom_interactive',
+          navEntry.domInteractive - navEntry.fetchStart,
+          'millisecond',
+        );
+        this.setMeasurement(
+          'dom_complete',
+          navEntry.domComplete - navEntry.fetchStart,
+          'millisecond',
+        );
+        this.setMeasurement(
+          'load_event_end',
+          navEntry.loadEventEnd - navEntry.fetchStart,
+          'millisecond',
+        );
+      }
+    });
+  }
+
+  /**
+   * Record a Web Vital measurement
+   */
+  recordWebVital(
+    name: 'FCP' | 'LCP' | 'FID' | 'CLS' | 'TTFB' | 'INP' | string,
+    value: number,
+    options?: {
+      unit?: string;
+      rating?: 'good' | 'needs-improvement' | 'poor';
+    },
+  ): void {
+    if (!this.enabled || !this.client) return;
+
+    const { unit = 'millisecond', rating } = options || {};
+    const transaction = this.getActiveTransaction();
+
+    if (transaction) {
+      // Set the measurement
+      transaction.setMeasurement(name.toLowerCase(), value, unit);
+
+      // Add rating as tag if provided
+      if (rating) {
+        transaction.setTag(`webvital.${name.toLowerCase()}.rating`, rating);
+      }
+
+      // Also send as a standalone event for monitoring
+      this.client.captureMessage(`Web Vital: ${name}`, {
+        level: 'info',
+        tags: {
+          'webvital.name': name,
+          'webvital.value': value,
+          'webvital.unit': unit,
+          ...(rating && { 'webvital.rating': rating }),
+        },
+        contexts: {
+          trace: {
+            trace_id: transaction.traceId,
+            span_id: transaction.spanId,
+          },
+        },
+      });
+    }
+  }
+
+  /**
+   * Create a custom performance mark
+   */
+  mark(name: string, options?: { detail?: any }): void {
+    if (!this.enabled) return;
+
+    // Use Performance API if available
+    if (typeof performance !== 'undefined' && performance.mark) {
+      performance.mark(name, options);
+    }
+
+    // Also add as breadcrumb
+    this.addBreadcrumb({
+      category: 'performance.mark',
+      message: name,
+      data: options?.detail,
+      timestamp: Date.now() / 1000,
+    });
+  }
+
+  /**
+   * Create a custom performance measure
+   */
+  measure(
+    name: string,
+    startMarkOrOptions?: string | PerformanceMeasureOptions,
+    endMark?: string,
+  ): void {
+    if (!this.enabled) return;
+
+    // Use Performance API if available
+    if (typeof performance !== 'undefined' && performance.measure) {
+      if (typeof startMarkOrOptions === 'string') {
+        performance.measure(name, startMarkOrOptions, endMark);
+      } else {
+        performance.measure(name, startMarkOrOptions);
+      }
+
+      // Get the measure to record its duration
+      const measures = performance.getEntriesByName(name, 'measure');
+      const measure = measures[measures.length - 1];
+
+      if (measure) {
+        this.setMeasurement(name, measure.duration, 'millisecond');
+
+        this.addBreadcrumb({
+          category: 'performance.measure',
+          message: name,
+          data: {
+            duration: measure.duration,
+            startTime: measure.startTime,
+          },
+          timestamp: measure.startTime / 1000,
+        });
+      }
+    }
   }
 
   async flush(timeout?: number): Promise<boolean> {

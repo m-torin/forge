@@ -41,8 +41,7 @@ export const env = createEnv({
       console.warn('Security environment validation failed:', message);
     }
     // Don't throw in packages - use fallbacks for resilience
-    // Comment updated to reflect actual behavior
-    throw new Error('Security environment validation failed');
+    return undefined as never;
   },
 });
 

@@ -2,7 +2,7 @@
  * Auto-configuring server export for Node.js environments (non-Next.js)
  */
 
-import { env } from '../env';
+import { safeEnv } from '../env';
 import { ObservabilityBuilder } from './factory/builder';
 import { createConsoleServerPlugin } from './plugins/console';
 
@@ -13,6 +13,7 @@ import { createConsoleServerPlugin } from './plugins/console';
 const builder = ObservabilityBuilder.create();
 
 // Console logging control
+const env = safeEnv();
 const isDevelopment =
   env.NEXT_PUBLIC_NODE_ENV === 'development' || process.env.NODE_ENV === 'development';
 const enableConsole =

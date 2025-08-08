@@ -1,0 +1,41 @@
+---
+title: "Prisma Accordion Test"
+description: "Testing accordion components with Prisma database examples"
+---
+
+<AccordionGroup>
+  <Accordion title="User Management" icon="user">
+    ```typescript
+    // Create user with Better Auth integration
+    const user = await prisma.user.create({
+      data: {
+        id: 'user_123',
+        name: 'John Doe',
+        email: 'john@example.com',
+        emailVerified: true,
+        role: 'user',
+        preferences: {
+          theme: 'dark',
+          notifications: true
+        }
+      },
+    });
+    ```
+  </Accordion>
+  <Accordion title="Session Management" icon="clock">
+    ```typescript
+    // Create user session
+    const session = await prisma.session.create({
+      data: {
+        id: 'session_123',
+        userId: user.id,
+        token: 'secure_session_token',
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+        ipAddress: '192.168.1.1',
+        userAgent: 'Mozilla/5.0...',
+        activeOrganizationId: organization.id
+      }
+    });
+    ```
+  </Accordion>
+</AccordionGroup>

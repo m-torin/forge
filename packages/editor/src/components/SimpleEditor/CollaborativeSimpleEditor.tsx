@@ -73,7 +73,6 @@ export function CollaborativeSimpleEditor({
 
   return (
     <div className="collaborative-simple-editor">
-      {/* Status Bar */}
       <div className="flex items-center justify-between border-b bg-gray-50 p-2 text-xs text-gray-500">
         <div className="flex items-center gap-2">
           <div
@@ -115,7 +114,6 @@ export function CollaborativeSimpleEditor({
         )}
       </div>
 
-      {/* Simple Toolbar */}
       <div className="flex items-center gap-1 border-b border-gray-200 bg-gray-50 p-2">
         <button
           onClick={() => editor.chain().focus().toggleBold().run()}
@@ -201,7 +199,6 @@ export function CollaborativeSimpleEditor({
         </button>
       </div>
 
-      {/* Editor Content */}
       <EditorContent
         editor={editor}
         className={clsx(

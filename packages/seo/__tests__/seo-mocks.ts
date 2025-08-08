@@ -10,31 +10,7 @@ import { vi } from 'vitest';
  * Sets up all SEO-related mocks
  */
 export function setupSEOMocks() {
-  // Mock Next.js metadata APIs
-  vi.mock('next/headers', () => ({
-    headers: vi.fn(() => ({
-      get: vi.fn(),
-      set: vi.fn(),
-      has: vi.fn(),
-    })),
-    cookies: vi.fn(() => ({
-      get: vi.fn(),
-      set: vi.fn(),
-      has: vi.fn(),
-    })),
-  }));
-
-  // Mock Next.js navigation
-  vi.mock('next/navigation', () => ({
-    useRouter: vi.fn(() => ({
-      push: vi.fn(),
-      replace: vi.fn(),
-      back: vi.fn(),
-      forward: vi.fn(),
-    })),
-    usePathname: vi.fn(() => '/test-path'),
-    useSearchParams: vi.fn(() => new URLSearchParams()),
-  }));
+  // Next.js mocks are handled by the centralized setup via @repo/qa
 
   // Mock environment variables
   vi.stubGlobal('process', {

@@ -3,10 +3,9 @@
 import { AnalyticsEvents, trackEvent } from '#/lib/analytics';
 import type { Locale } from '#/lib/i18n';
 import { ActionIcon, Menu } from '@mantine/core';
-import type { Route } from 'next';
+import { useLocale, usePathname, useRouter } from '@repo/internationalization/client/next';
 import { logInfo, logWarn } from '@repo/observability';
 import { IconLanguage } from '@tabler/icons-react';
-import { usePathname, useRouter } from 'next/navigation';
 
 const languages = [
   { code: 'en', name: '🇺🇸 English' },
@@ -16,15 +15,12 @@ const languages = [
   { code: 'pt', name: '🇵🇹 Português' },
 ] as const;
 
-interface LanguageSwitcherProps {
-  currentLocale: Locale;
-}
-
-export function LanguageSwitcher({ currentLocale }: LanguageSwitcherProps) {
+export function LanguageSwitcher() {
   const router = useRouter();
   const pathname = usePathname();
+  const currentLocale = useLocale();
 
-  const handleLanguageChange = async (locale: string) => {
+  const handleLanguageChange = async (locale: Locale) => {
     try {
       // Track the language change event
       await trackEvent(AnalyticsEvents.LANGUAGE_CHANGED, {
@@ -37,24 +33,19 @@ export function LanguageSwitcher({ currentLocale }: LanguageSwitcherProps) {
         available_languages: languages.map(lang => lang.code),
       });
 
-      // Perform the navigation
-      const currentPath = pathname.split('/').slice(2).join('/');
-      const newPath = `/${locale}${currentPath ? `/${currentPath}` : ''}`;
-      router.push(newPath as Route);
+      // Use the next-intl router to change locale with the current pathname
+      router.replace(pathname, { locale });
 
       logInfo('[Language Switcher] Language changed', {
         from: currentLocale,
         to: locale,
-        newPath,
       });
     } catch (error) {
       logWarn('Language change tracking failed', {
         error: error instanceof Error ? error.message : String(error),
       });
-      // Still navigate even if tracking fails
-      const currentPath = pathname.split('/').slice(2).join('/');
-      const newPath = `/${locale}${currentPath ? `/${currentPath}` : ''}`;
-      router.push(newPath as Route);
+      // Still change locale even if tracking fails
+      router.replace(pathname, { locale });
     }
   };
 
@@ -71,7 +62,7 @@ export function LanguageSwitcher({ currentLocale }: LanguageSwitcherProps) {
         {languages.map(lang => (
           <Menu.Item
             key={lang.code}
-            onClick={() => handleLanguageChange(lang.code)}
+            onClick={() => handleLanguageChange(lang.code as Locale)}
             bg={currentLocale === lang.code ? 'var(--mantine-color-blue-light)' : undefined}
           >
             {lang.name}

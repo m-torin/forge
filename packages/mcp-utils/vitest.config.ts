@@ -6,7 +6,7 @@ export default defineConfig({
     environment: 'node',
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: process.env.CI ? ['text', 'json'] : ['text', 'json', 'html'],
       exclude: [
         'node_modules/**',
         'dist/**',
@@ -14,8 +14,8 @@ export default defineConfig({
         '**/*.d.ts',
         'vitest.config.ts',
         'scripts/**',
-        'bin/**'
-      ]
-    }
-  }
+        'bin/**',
+      ],
+    },
+  },
 });

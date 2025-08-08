@@ -239,7 +239,6 @@ export function DocumentOrganizer({
           </div>
         </div>
 
-        {/* Actions */}
         <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
           <button
             onClick={e => {
@@ -317,7 +316,6 @@ export function DocumentOrganizer({
                 )}
             </span>
 
-            {/* Folder actions */}
             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
               <button
                 onClick={e => {
@@ -349,14 +347,12 @@ export function DocumentOrganizer({
             </div>
           </div>
 
-          {/* Folder documents */}
           {isExpanded && (
             <div style={{ paddingLeft: `${(folder.depth + 1) * 16 + 8}px` }}>
               {folderDocs.map(renderDocument)}
             </div>
           )}
 
-          {/* Child folders */}
           {isExpanded && folder.children.length > 0 && renderFolderTree(folder.children)}
         </div>
       );
@@ -385,7 +381,6 @@ export function DocumentOrganizer({
                 </div>
                 <span className="text-sm text-gray-500">{tagDocs.length} docs</span>
 
-                {/* Tag actions */}
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => {
@@ -423,7 +418,6 @@ export function DocumentOrganizer({
 
   return (
     <div className={clsx('document-organizer flex h-full flex-col', className)}>
-      {/* Header */}
       <div className="flex items-center justify-between border-b border-gray-200 p-4">
         <h2 className="text-lg font-semibold text-gray-900">Organize</h2>
 
@@ -447,7 +441,6 @@ export function DocumentOrganizer({
         )}
       </div>
 
-      {/* View mode tabs */}
       <div className="flex items-center gap-1 border-b border-gray-200 bg-gray-50 p-2">
         {[
           { key: 'folders', label: 'Folders', icon: IconFolder },
@@ -473,7 +466,6 @@ export function DocumentOrganizer({
         ))}
       </div>
 
-      {/* Search */}
       <div className="border-b border-gray-200 p-3">
         <div className="relative">
           <IconSearch
@@ -498,14 +490,11 @@ export function DocumentOrganizer({
         </div>
       </div>
 
-      {/* Content */}
       <div className="flex-1 overflow-auto p-3">
         {viewMode === 'folders' && (
           <div className="space-y-1">
-            {/* Root documents */}
             <div className="space-y-1">{getDocumentsInFolder().map(renderDocument)}</div>
 
-            {/* Folder tree */}
             {renderFolderTree(folderTree)}
           </div>
         )}
@@ -520,7 +509,6 @@ export function DocumentOrganizer({
         )}
       </div>
 
-      {/* Create/Edit Folder Dialog */}
       {showFolderDialog && (
         <FolderDialog
           folder={editingFolder}
@@ -542,7 +530,6 @@ export function DocumentOrganizer({
         />
       )}
 
-      {/* Create/Edit Tag Dialog */}
       {showTagDialog && (
         <TagDialog
           tag={editingTag}

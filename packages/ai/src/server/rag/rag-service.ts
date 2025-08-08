@@ -327,14 +327,14 @@ Sources consulted: ${context.sources.join(', ')}`;
     const context = await this.searchContext(query, options);
     const ragPrompt = this.createRAGPrompt(query, context);
 
-    const enhancedPrompt = ragPrompt
+    const contextualPrompt = ragPrompt
       ? `${basePrompt}
 
 ${ragPrompt}`
       : basePrompt;
 
     return {
-      prompt: enhancedPrompt,
+      prompt: contextualPrompt,
       context,
     };
   }

@@ -3,7 +3,7 @@
  * A flexible registry that supports simple to advanced use cases
  */
 
-import { logError, logInfo } from '@repo/observability/server/next';
+import { logDebug, logError } from '@repo/observability/server/next';
 import type { Tool } from 'ai';
 
 /**
@@ -19,9 +19,9 @@ export interface ToolMetadata {
   author?: string;
   // Extended metadata for advanced features
   complexity?: 'simple' | 'moderate' | 'complex';
-  reliability?: number; // 0-1 scale
-  performance?: number; // 0-1 scale
-  cost?: number; // relative cost metric
+  reliability?: number;
+  performance?: number;
+  cost?: number;
   dependencies?: string[];
   conflicts?: string[];
   requirements?: {
@@ -95,7 +95,7 @@ export interface ToolRegistryConfig {
   // Enable caching
   cache?: {
     enabled?: boolean;
-    ttl?: number; // milliseconds
+    ttl?: number;
     maxSize?: number;
   };
   // Enable dynamic loading
@@ -137,7 +137,7 @@ export class ToolRegistry {
       this.loaders = new Map();
     }
 
-    logInfo('Tool Registry initialized', {
+    logDebug('Tool Registry initialized', {
       operation: 'tool_registry_init',
       metadata: {
         performanceTracking: config.enablePerformanceTracking,
@@ -161,7 +161,7 @@ export class ToolRegistry {
       this.initializePerformanceMetrics(name);
     }
 
-    logInfo('Tool registered', {
+    logDebug('Tool registered', {
       operation: 'tool_register',
       metadata: { name, hasMetadata: !!metadata },
     });
@@ -181,7 +181,7 @@ export class ToolRegistry {
       this.metadata.set(name, metadata);
     }
 
-    logInfo('Tool factory registered', {
+    logDebug('Tool factory registered', {
       operation: 'tool_factory_register',
       metadata: { name },
     });
@@ -199,7 +199,7 @@ export class ToolRegistry {
 
     this.loaders.set(category, loader);
 
-    logInfo('Tool loader registered', {
+    logDebug('Tool loader registered', {
       operation: 'tool_loader_register',
       metadata: { category },
     });
@@ -608,9 +608,9 @@ export function createStandardToolRegistry(): ToolRegistry {
 }
 
 /**
- * Create an advanced tool registry with all features
+ * Create a dynamic tool registry with all features
  */
-export function createAdvancedToolRegistry(): ToolRegistry {
+export function createDynamicToolRegistry(): ToolRegistry {
   return new ToolRegistry({
     enablePerformanceTracking: true,
     cache: {

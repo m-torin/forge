@@ -206,7 +206,7 @@ export class ImageGenerationManager {
       mood?: string;
     },
   ): Promise<ImageGenerationResult> {
-    let enhancedPrompt = basePrompt;
+    let refinedPrompt = basePrompt;
 
     if (options?.enhancePrompt) {
       const enhancements = [];
@@ -216,13 +216,13 @@ export class ImageGenerationManager {
       if (options.mood) enhancements.push(`${options.mood} mood`);
 
       if (enhancements.length > 0) {
-        enhancedPrompt = `${basePrompt}, ${enhancements.join(', ')}`;
+        refinedPrompt = `${basePrompt}, ${enhancements.join(', ')}`;
       }
     }
 
     return this.generateSingle({
       ...options,
-      prompt: enhancedPrompt,
+      prompt: refinedPrompt,
     });
   }
 }

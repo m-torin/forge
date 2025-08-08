@@ -1,4 +1,5 @@
-import { getAuthContext } from '#/lib/auth';
+// Force dynamic rendering since this page uses auth context, cookies, and headers
+import { getAuthContext } from '#/lib/auth-context';
 import { getAllFlagResults } from '#/lib/auth-flags';
 import {
   enhancedFeatureCards,
@@ -12,6 +13,8 @@ import type { Metadata } from 'next';
 import { cookies, headers } from 'next/headers';
 import PageUi from '../PageUi';
 
+export const dynamic = 'force-dynamic';
+
 // Generate dynamic metadata based on feature flags and auth state
 export async function generateMetadata({
   params,
@@ -19,8 +22,8 @@ export async function generateMetadata({
   params: Promise<{ locale: Locale }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const cookieStore = await cookies();
-  const headerStore = await headers();
+  const _cookieStore = await cookies();
+  const _headerStore = await headers();
 
   // Get auth context
   const authContext = await getAuthContext();

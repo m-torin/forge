@@ -3,7 +3,7 @@
  * Comprehensive monitoring, metrics, and health checks for RAG operations
  */
 
-import { logError, logInfo } from '@repo/observability/server/next';
+import { logDebug, logError, logInfo } from '@repo/observability/server/next';
 import { ragCircuitBreakerRegistry, type CircuitBreakerMetrics } from './circuit-breaker';
 import type { RAGDatabaseBridge } from './database-bridge';
 
@@ -116,7 +116,7 @@ export class RAGHealthMonitor {
     this.metrics = this.initializeMetrics();
     this.startHealthChecks();
 
-    logInfo('RAG Health Monitor initialized', {
+    logDebug('RAG Health Monitor initialized', {
       operation: 'rag_health_monitor_init',
       config: this.config,
     });

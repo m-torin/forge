@@ -30,7 +30,7 @@ vi.mock('../src/server/middleware', () => ({
 
 describe('server-edge.ts entry point', () => {
   test('should export cookie name constants', async () => {
-    const serverEdgeModule = await import('#/server-edge');
+    const serverEdgeModule = await import('../../src/server-edge');
 
     expect(serverEdgeModule.AUTH_COOKIE_NAME).toBe('better-auth.session');
     expect(serverEdgeModule.SESSION_COOKIE_NAME).toBe('better-auth.session');
@@ -38,7 +38,7 @@ describe('server-edge.ts entry point', () => {
   });
 
   test('should export cookie name getters', async () => {
-    const serverEdgeModule = await import('#/server-edge');
+    const serverEdgeModule = await import('../../src/server-edge');
 
     expect(serverEdgeModule.getAuthCookieName()).toBe('better-auth.session');
     expect(serverEdgeModule.getSessionCookieName()).toBe('better-auth.session');
@@ -46,7 +46,7 @@ describe('server-edge.ts entry point', () => {
   });
 
   test('should export error utilities', async () => {
-    const serverEdgeModule = await import('#/server-edge');
+    const serverEdgeModule = await import('../../src/server-edge');
 
     expect(serverEdgeModule.createErrorResponse).toBeDefined();
     expect(serverEdgeModule.createSuccessResponse).toBeDefined();
@@ -54,7 +54,7 @@ describe('server-edge.ts entry point', () => {
   });
 
   test('should export custom error classes', async () => {
-    const serverEdgeModule = await import('#/server-edge');
+    const serverEdgeModule = await import('../../src/server-edge');
 
     expect(serverEdgeModule.AuthError).toBeDefined();
     expect(serverEdgeModule.AuthenticationError).toBeDefined();
@@ -64,7 +64,7 @@ describe('server-edge.ts entry point', () => {
   });
 
   test('should create custom error instances correctly', async () => {
-    const serverEdgeModule = await import('#/server-edge');
+    const serverEdgeModule = await import('../../src/server-edge');
 
     const authError = new serverEdgeModule.AuthError('Test error');
     expect(authError.name).toBe('AuthError');
@@ -88,7 +88,7 @@ describe('server-edge.ts entry point', () => {
   });
 
   test('should detect auth errors correctly', async () => {
-    const serverEdgeModule = await import('#/server-edge');
+    const serverEdgeModule = await import('../../src/server-edge');
 
     const authError = new serverEdgeModule.AuthError('Test');
     const regularError = new Error('Regular error');
@@ -99,7 +99,7 @@ describe('server-edge.ts entry point', () => {
   });
 
   test('should export header utilities', async () => {
-    const serverEdgeModule = await import('#/server-edge');
+    const serverEdgeModule = await import('../../src/server-edge');
 
     expect(serverEdgeModule.createApiKeyHeaders).toBeDefined();
     expect(serverEdgeModule.createBearerHeaders).toBeDefined();
@@ -107,7 +107,7 @@ describe('server-edge.ts entry point', () => {
   });
 
   test('should export request header utilities', async () => {
-    const serverEdgeModule = await import('#/server-edge');
+    const serverEdgeModule = await import('../../src/server-edge');
 
     expect(serverEdgeModule.getRequestHeaders).toBeDefined();
     expect(serverEdgeModule.getForwardedHeaders).toBeDefined();
@@ -115,7 +115,7 @@ describe('server-edge.ts entry point', () => {
   });
 
   test('should parse request headers correctly', async () => {
-    const serverEdgeModule = await import('#/server-edge');
+    const serverEdgeModule = await import('../../src/server-edge');
 
     const headers = new Headers({
       'content-type': 'application/json',
@@ -130,7 +130,7 @@ describe('server-edge.ts entry point', () => {
   });
 
   test('should extract forwarded headers', async () => {
-    const serverEdgeModule = await import('#/server-edge');
+    const serverEdgeModule = await import('../../src/server-edge');
 
     const headers = new Headers({
       'x-forwarded-for': '192.168.1.1',
@@ -147,7 +147,7 @@ describe('server-edge.ts entry point', () => {
   });
 
   test('should extract client info', async () => {
-    const serverEdgeModule = await import('#/server-edge');
+    const serverEdgeModule = await import('../../src/server-edge');
 
     const headers = new Headers({
       'x-forwarded-for': '192.168.1.1,10.0.0.1',
@@ -162,14 +162,14 @@ describe('server-edge.ts entry point', () => {
   });
 
   test('should export middleware functions', async () => {
-    const serverEdgeModule = await import('#/server-edge');
+    const serverEdgeModule = await import('../../src/server-edge');
 
     expect(serverEdgeModule.withAuth).toBeDefined();
     expect(serverEdgeModule.withOrgAuth).toBeDefined();
   });
 
   test('should parse auth cookies', async () => {
-    const serverEdgeModule = await import('#/server-edge');
+    const serverEdgeModule = await import('../../src/server-edge');
 
     const headers = new Headers({
       cookie: 'session=abc123; csrf-token=def456; other=value',
@@ -184,7 +184,7 @@ describe('server-edge.ts entry point', () => {
   });
 
   test('should handle empty cookie header', async () => {
-    const serverEdgeModule = await import('#/server-edge');
+    const serverEdgeModule = await import('../../src/server-edge');
 
     const request = new Request('http://example.com');
     const cookies = serverEdgeModule.parseAuthCookies(request);
@@ -193,7 +193,7 @@ describe('server-edge.ts entry point', () => {
   });
 
   test('should get auth cookie value', async () => {
-    const serverEdgeModule = await import('#/server-edge');
+    const serverEdgeModule = await import('../../src/server-edge');
 
     const headers = new Headers({
       cookie: 'better-auth.session=token123',
@@ -206,7 +206,7 @@ describe('server-edge.ts entry point', () => {
   });
 
   test('should return null for missing auth cookie', async () => {
-    const serverEdgeModule = await import('#/server-edge');
+    const serverEdgeModule = await import('../../src/server-edge');
 
     const request = new Request('http://example.com');
     const cookieValue = serverEdgeModule.getAuthCookieValue(request);
@@ -215,7 +215,7 @@ describe('server-edge.ts entry point', () => {
   });
 
   test('should create auth response', async () => {
-    const serverEdgeModule = await import('#/server-edge');
+    const serverEdgeModule = await import('../../src/server-edge');
 
     const data = { success: true };
     const response = serverEdgeModule.createAuthResponse(data);
@@ -226,7 +226,7 @@ describe('server-edge.ts entry point', () => {
   });
 
   test('should create auth response with custom options', async () => {
-    const serverEdgeModule = await import('#/server-edge');
+    const serverEdgeModule = await import('../../src/server-edge');
 
     const data = { error: 'Not found' };
     const options = {

@@ -15,7 +15,7 @@ import {
   researchAssistantWorkflow,
   runAllMCPRAGExamples,
   streamingMCPRAGChat,
-  webSearchEnhancedRAG,
+  webSearchSemanticRAG,
 } from './examples/mcp-rag-integration-examples';
 
 // Load environment variables
@@ -51,7 +51,7 @@ async function main() {
     {
       name: 'Web Search Enhanced RAG',
       description: 'Combine web search with knowledge base',
-      fn: webSearchEnhancedRAG,
+      fn: webSearchSemanticRAG,
     },
     {
       name: 'Research Assistant Workflow',

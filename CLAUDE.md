@@ -46,8 +46,7 @@ minimal user intervention.
 | App                | Port | Purpose           |
 | ------------------ | ---- | ----------------- |
 | `/apps/webapp`     | 3200 | Main webapp       |
-| `/apps/ai-chatbot` | 3300 | AI Chat interface |
-| `/apps/backstage`  | 3400 | Admin backstage   |
+| `/apps/ai-chatbot` | 3100 | AI Chat interface |
 | `/apps/email`      | 3500 | Email preview     |
 | `/apps/studio`     | 3600 | Prisma Studio     |
 | `/apps/storybook`  | 3700 | Component docs    |
@@ -368,30 +367,30 @@ export async function action(data: FormData) {
 
 ### Quick Anti-Pattern Reference
 
-| Category         | ❌ Wrong               | ✅ Right                           |
-| ---------------- | ---------------------- | ---------------------------------- |
+| Category         | ❌ Wrong                   | ✅ Right                           |
+| ---------------- | -------------------------- | ---------------------------------- |
 | **Environment**  |
-|                  | `process.env.VAR`      | `import { env } from "#/root/env"` |
-|                  | `safeEnv()` in client  | `env.NEXT_PUBLIC_*` direct         |
-|                  | Throw in packages      | Return fallbacks                   |
-|                  | Duplicate vars         | `extends: [packageEnv]`            |
+|                  | `process.env.VAR`          | `import { env } from "#/root/env"` |
+|                  | `safeEnv()` in client      | `env.NEXT_PUBLIC_*` direct         |
+|                  | Throw in packages          | Return fallbacks                   |
+|                  | Duplicate vars             | `extends: [packageEnv]`            |
 | **Imports**      |
-|                  | `@repo/pkg/src/file`   | `@repo/pkg`                        |
-|                  | `/client` in Next.js   | `/client/next`                     |
-|                  | `/server/next` in edge | `/server/edge`                     |
-|                  | `@/` in package source | Relative imports                   |
+|                  | `@repo/pkg/src/file`       | `@repo/pkg`                        |
+|                  | `/client` in Next.js       | `/client/next`                     |
+|                  | `/server/next` in edge     | `/server/edge`                     |
+|                  | `@/` in package source     | Relative imports                   |
 | **Patterns**     |
-|                  | `react-hook-form`      | `@mantine/form`                    |
-|                  | `/api/route.ts`        | `/actions/*.ts`                    |
-|                  | `useEffect` + fetch    | Server components                  |
-|                  | Redux everything       | Server state first                 |
+|                  | `react-hook-form`          | `@mantine/form`                    |
+|                  | `/api/route.ts`            | `/actions/*.ts`                    |
+|                  | `useEffect` + fetch        | Server components                  |
+|                  | Redux everything           | Server state first                 |
 | **Testing**      |
-|                  | `.toEqual()` objects   | `.toStrictEqual()`                 |
-|                  | Custom mocks           | `@repo/qa` mocks                   |
-|                  | `data-cy`              | `data-testid`                      |
+|                  | `.toStrictEqual()` objects | `.toStrictEqual()`                 |
+|                  | Custom mocks               | `@repo/qa` mocks                   |
+|                  | `data-cy`                  | `data-testid`                      |
 | **Edge Runtime** |
-|                  | Node.js APIs           | Web APIs only                      |
-|                  | `fs`, `crypto`         | Edge alternatives                  |
+|                  | Node.js APIs               | Web APIs only                      |
+|                  | `fs`, `crypto`             | Edge alternatives                  |
 
 ### Common Fixes
 

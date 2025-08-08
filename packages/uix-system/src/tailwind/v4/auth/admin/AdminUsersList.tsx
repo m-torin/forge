@@ -140,8 +140,8 @@ export function AdminUsersList({
         }
         setSelectedUsers([]);
         onRefresh();
-      } catch (error) {
-        console.error('Bulk action failed:', error);
+      } catch (_error) {
+        // console.error('Bulk action failed:', error);
       }
     });
   };
@@ -187,7 +187,6 @@ export function AdminUsersList({
 
   return (
     <div className={`space-y-6 ${className}`}>
-      {/* Header with Search and Filters */}
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h2 className="text-2xl font-semibold text-gray-900">Users Management</h2>
@@ -200,7 +199,6 @@ export function AdminUsersList({
         </Button>
       </div>
 
-      {/* Search and Filters */}
       <Card>
         <CardContent className="p-4">
           <form onSubmit={handleSearchSubmit} className="flex flex-col gap-4 sm:flex-row">
@@ -240,7 +238,6 @@ export function AdminUsersList({
         </CardContent>
       </Card>
 
-      {/* Bulk Actions */}
       {selectedUsers.length > 0 && (
         <Card>
           <CardContent className="p-4">
@@ -287,7 +284,6 @@ export function AdminUsersList({
         </Card>
       )}
 
-      {/* Error/Success Messages */}
       {(banState.error ||
         unbanState.error ||
         roleState.error ||
@@ -302,7 +298,6 @@ export function AdminUsersList({
         </Alert>
       )}
 
-      {/* Users Table */}
       <Card>
         <CardHeader>
           <div className="flex items-center gap-4">
@@ -520,7 +515,6 @@ export function AdminUsersList({
         </CardContent>
       </Card>
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <div className="flex flex-1 justify-between sm:hidden">
@@ -580,7 +574,6 @@ export function AdminUsersList({
         </div>
       )}
 
-      {/* Empty State */}
       {users.length === 0 && (
         <Card>
           <CardContent className="p-12 text-center">

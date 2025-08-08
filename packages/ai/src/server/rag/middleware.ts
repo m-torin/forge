@@ -3,7 +3,6 @@
  * Follows the official pattern from Vercel AI SDK documentation
  */
 
-import type { LanguageModelV2Middleware } from '@ai-sdk/provider';
 import { logInfo } from '@repo/observability/server/next';
 import { RAGDatabaseBridge, createRAGDatabaseBridge } from './database-bridge';
 
@@ -71,7 +70,7 @@ User question: ${originalContent}`,
  * Create RAG middleware for AI SDK v5
  * Implements the recommended pattern from AI SDK documentation
  */
-export function createRAGMiddleware(config: RAGMiddlewareConfig): LanguageModelV2Middleware {
+export function createRAGMiddleware(config: RAGMiddlewareConfig): any {
   const vectorStore =
     config.vectorStore ||
     createRAGDatabaseBridge({
@@ -168,7 +167,7 @@ export function createRAGMiddlewareFromEnv(options?: {
   useUpstashEmbedding?: boolean;
   similarityThreshold?: number;
   namespace?: string;
-}): LanguageModelV2Middleware | null {
+}): any | null {
   const vectorUrl = process.env.UPSTASH_VECTOR_REST_URL;
   const vectorToken = process.env.UPSTASH_VECTOR_REST_TOKEN;
 

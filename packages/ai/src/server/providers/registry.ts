@@ -49,6 +49,7 @@ import {
 } from 'ai';
 import { safeEnv } from '../../../env';
 import { getBestModelForTask, getModelConfig, getModelsByProvider } from '../../shared/models';
+import { LMSTUDIO_MODELS } from '../../shared/models/openai-compatible';
 import { createPerplexityProvider, createXAIProvider } from './factory';
 
 // Get environment configuration
@@ -95,7 +96,7 @@ const openaiProvider = customProvider({
       const baseModel = openai(actualModelId);
 
       // Apply reasoning configuration if supported (O1 models)
-      if (metadata.reasoning?.supported) {
+      if (metadata.reasoningText?.supported) {
         models[id] = wrapLanguageModel({
           model: baseModel,
           middleware: defaultSettingsMiddleware({
@@ -201,21 +202,21 @@ const anthropicProvider = customProvider({
       const baseModel = anthropic(actualModelId);
 
       // Apply reasoning configuration if supported
-      if (metadata.reasoning?.supported) {
+      if (metadata.reasoningText?.supported) {
         models[id] = wrapLanguageModel({
           model: baseModel,
           middleware: defaultSettingsMiddleware({
             settings: {
               maxOutputTokens: metadata.outputLimit || 100000,
-              ...(metadata.reasoning.headers && {
-                headers: metadata.reasoning.headers,
+              ...(metadata.reasoningText.headers && {
+                headers: metadata.reasoningText.headers,
               }),
-              ...(metadata.reasoning.budgetTokens && {
+              ...(metadata.reasoningText.budgetTokens && {
                 providerOptions: {
                   anthropic: {
                     thinking: {
                       type: 'enabled',
-                      budgetTokens: metadata.reasoning.budgetTokens,
+                      budgetTokens: metadata.reasoningText.budgetTokens,
                     },
                   },
                 },
@@ -268,7 +269,7 @@ const anthropicProvider = customProvider({
  * }
  * ```
  */
-const googleProvider = env.GOOGLE_AI_API_KEY
+const googleProvider = safeEnv().GOOGLE_AI_API_KEY
   ? customProvider({
       languageModels: (() => {
         const models: Record<string, any> = {};
@@ -282,7 +283,7 @@ const googleProvider = env.GOOGLE_AI_API_KEY
           const baseModel = google(actualModelId);
 
           // Apply reasoning configuration if supported (Gemini 2.0)
-          if (metadata.reasoning?.supported) {
+          if (metadata.reasoningText?.supported) {
             models[id] = wrapLanguageModel({
               model: baseModel,
               middleware: defaultSettingsMiddleware({
@@ -336,19 +337,19 @@ const googleProvider = env.GOOGLE_AI_API_KEY
  * }
  * ```
  */
-const deepinfraProvider = env.DEEP_INFRA_API_KEY
+const deepinfraProvider = safeEnv().DEEP_INFRA_API_KEY
   ? customProvider({
       languageModels: {
         'llama-70b': createOpenAI({
           name: 'deepinfra',
           baseURL: 'https://api.deepinfra.com/v1/openai',
-          apiKey: env.DEEP_INFRA_API_KEY,
+          apiKey: safeEnv().DEEP_INFRA_API_KEY,
         })('meta-llama/Meta-Llama-3.1-70B-Instruct'),
 
         'llama-405b': createOpenAI({
           name: 'deepinfra',
           baseURL: 'https://api.deepinfra.com/v1/openai',
-          apiKey: env.DEEP_INFRA_API_KEY,
+          apiKey: safeEnv().DEEP_INFRA_API_KEY,
         })('meta-llama/Meta-Llama-3.1-405B-Instruct'),
       },
     })
@@ -379,7 +380,7 @@ const deepinfraProvider = env.DEEP_INFRA_API_KEY
  *   const deepResearch = registry.languageModel('perplexity:sonar-deep-research');
  *
  *   // Generate with real-time search and sources
- *   const result = await streamText({
+ *   const result = streamText({
  *     model: sonar,
  *     prompt: 'What are the latest developments in AI?',
  *   });
@@ -389,26 +390,28 @@ const deepinfraProvider = env.DEEP_INFRA_API_KEY
  * }
  * ```
  */
-const perplexityProvider = env.PERPLEXITY_API_KEY
-  ? (() => {
-      const { provider, models, aliases } = createPerplexityProvider(env.PERPLEXITY_API_KEY);
+const perplexityProvider = (() => {
+  const env = safeEnv();
+  const apiKey = env.PERPLEXITY_API_KEY;
+  if (!apiKey) return null;
 
-      // Add Perplexity-specific enhanced aliases
-      const enhancedModels: Record<string, any> = {
-        ...models,
-        search: models['sonar-pro'] || models['sonar'],
-        reasoning: models['sonar-reasoning-pro'] || models['sonar-reasoning'],
-        research: models['sonar-deep-research'],
-        offline: models['r1-1776'],
-        ...aliases,
-      };
+  const { provider, models, aliases } = createPerplexityProvider(apiKey);
 
-      return customProvider({
-        languageModels: enhancedModels,
-        fallbackProvider: provider.fallbackProvider,
-      });
-    })()
-  : undefined;
+  // Add Perplexity-specific aliased models
+  const aliasedModels: Record<string, any> = {
+    ...models,
+    search: models['sonar-pro'] || models['sonar'],
+    reasoningText: models['sonar-reasoning-pro'] || models['sonar-reasoning'],
+    research: models['sonar-deep-research'],
+    offline: models['r1-1776'],
+    ...aliases,
+  };
+
+  return customProvider({
+    languageModels: aliasedModels,
+    fallbackProvider: provider.fallbackProvider,
+  });
+})();
 
 /**
  * XAI Provider using factory pattern
@@ -434,29 +437,59 @@ const perplexityProvider = env.PERPLEXITY_API_KEY
  * }
  * ```
  */
-const xaiProvider = env.XAI_API_KEY
-  ? (() => {
-      const { provider, models, aliases } = createXAIProvider(env.XAI_API_KEY);
+const xaiProvider = (() => {
+  const env = safeEnv();
+  const apiKey = env.XAI_API_KEY;
+  if (!apiKey) return null;
 
-      // Add XAI-specific aliases
-      const enhancedModels: Record<string, any> = {
-        ...models,
-        grok: models['grok-2-1212'] || models['grok-2'],
-        'grok-vision': models['grok-2-vision-1212'],
-        'grok-reasoning': models['grok-3-mini-reasoning'] || models['grok-3-mini'],
-        ...aliases,
-      };
+  const { provider: _provider, models, aliases } = createXAIProvider(apiKey);
 
-      return customProvider({
-        languageModels: enhancedModels,
-        fallbackProvider: createOpenAI({
-          name: 'xai',
-          baseURL: 'https://api.x.ai/v1',
-          apiKey: env.XAI_API_KEY,
-        }),
-      });
-    })()
-  : undefined;
+  // Add XAI-specific aliases
+  const aliasedModels: Record<string, any> = {
+    ...models,
+    grok: models['grok-2-1212'] || models['grok-2'],
+    'grok-vision': models['grok-2-vision-1212'],
+    'grok-reasoning': models['grok-3-mini-reasoning'] || models['grok-3-mini'],
+    ...aliases,
+  };
+
+  return customProvider({
+    languageModels: aliasedModels,
+    fallbackProvider: createOpenAI({
+      name: 'xai',
+      baseURL: 'https://api.x.ai/v1',
+      apiKey,
+    }),
+  });
+})();
+
+/**
+ * LM Studio Provider for local models
+ *
+ * Provides access to locally running models via LM Studio's OpenAI-compatible API.
+ * Only available when LM_STUDIO_BASE_URL is configured (defaults to localhost:1234).
+ *
+ * @remarks
+ * - Uses OpenAI-compatible API interface
+ * - Supports custom model configuration via environment variables
+ * - Includes chat, code, and reasoning model variants
+ * - No API key required for local usage
+ *
+ * @example
+ * ```typescript
+ * // Use local models via LM Studio
+ * if (lmstudioProvider) {
+ *   const localChat = registry.languageModel('lmstudio:lmstudio-chat');
+ *   const localCode = registry.languageModel('lmstudio:lmstudio-code');
+ * }
+ * ```
+ */
+const lmstudioProvider =
+  safeEnv().LM_STUDIO_BASE_URL || process.env.NODE_ENV === 'development'
+    ? customProvider({
+        languageModels: LMSTUDIO_MODELS,
+      })
+    : undefined;
 
 /**
  * Main AI Provider Registry
@@ -502,6 +535,7 @@ export const registry = createProviderRegistry(
     ...(deepinfraProvider && { deepinfra: deepinfraProvider }),
     ...(perplexityProvider && { perplexity: perplexityProvider }),
     ...(xaiProvider && { xai: xaiProvider }),
+    ...(lmstudioProvider && { lmstudio: lmstudioProvider }),
   },
   {
     separator: ':', // default separator for model IDs
@@ -553,7 +587,7 @@ export const models = {
       return registry.languageModel(`anthropic:${bestModel}` as any);
     },
 
-    reasoning: () => {
+    reasoningText: () => {
       const reasoningModel = getBestModelForTask('reasoning');
       const config = getModelConfig(reasoningModel);
       const provider = config?.provider || 'anthropic';
@@ -665,6 +699,105 @@ export function getModel(provider: string, model: string) {
  */
 export function getDefaultModel() {
   return models.language.best();
+}
+
+/**
+ * Get language model with automatic fallback
+ *
+ * Safely retrieves a language model from the registry with automatic fallback
+ * to either a specified fallback model or the best available model.
+ * This is useful for handling cases where a specific model might not be available.
+ *
+ * @param modelId - The model identifier (e.g., 'xai:grok-2-vision-1212')
+ * @param fallback - Optional fallback model ID (defaults to best available model)
+ *
+ * @returns The requested language model or fallback
+ *
+ * @example
+ * ```typescript
+ * // Get model with automatic fallback to best model
+ * const model = getLanguageModel('xai:grok-2-vision-1212');
+ *
+ * // Get model with specific fallback
+ * const model = getLanguageModel(
+ *   'perplexity:sonar-pro',
+ *   'anthropic:claude-4-sonnet-20250514'
+ * );
+ * ```
+ */
+export function getLanguageModel(modelId: string, fallback?: string) {
+  try {
+    return registry.languageModel(modelId as any);
+  } catch (error) {
+    logInfo(`Model ${modelId} not available, using fallback`, { modelId, fallback });
+    if (fallback) {
+      try {
+        return registry.languageModel(fallback as any);
+      } catch {
+        // Fallback also failed, use best available
+        return models.language.best();
+      }
+    }
+    return models.language.best();
+  }
+}
+
+/**
+ * Get embedding model with fallback support
+ *
+ * Provides safe access to embedding models with automatic fallback handling.
+ * Used by RAG systems and vector operations that require embedding generation.
+ *
+ * @param modelId - Full model ID in format 'provider:model' (e.g., 'openai:text-embedding-3-small')
+ * @param fallback - Optional fallback model ID to try if primary fails
+ *
+ * @returns The requested embedding model or fallback model
+ *
+ * @example Basic Usage
+ * ```typescript
+ * // Get specific embedding model
+ * const embedding = getEmbeddingModel('openai:text-embedding-3-small');
+ *
+ * // With fallback for resilience
+ * const embeddingWithFallback = getEmbeddingModel(
+ *   'openai:text-embedding-3-large',
+ *   'openai:text-embedding-3-small'
+ * );
+ * ```
+ *
+ * @example RAG Integration
+ * ```typescript
+ * // Use in RAG systems
+ * const ragEmbedding = getEmbeddingModel('openai:text-embedding-3-small', 'openai:text-embedding-ada-002');
+ *
+ * // Generate embeddings
+ * const result = await embed({
+ *   model: ragEmbedding,
+ *   value: 'Document content to embed'
+ * });
+ * ```
+ */
+export function getEmbeddingModel(modelId: string, fallback?: string) {
+  try {
+    return registry.textEmbeddingModel(modelId as any);
+  } catch (error) {
+    logInfo(`Embedding model ${modelId} not available, using fallback`, {
+      modelId,
+      fallback,
+      error: error instanceof Error ? error.message : String(error),
+    });
+
+    if (fallback) {
+      try {
+        return registry.textEmbeddingModel(fallback as any);
+      } catch {
+        logInfo(`Fallback embedding model ${fallback} also failed, using default`, { fallback });
+        return models.embedding.default();
+      }
+    }
+
+    return models.embedding.default();
+  }
 }
 
 /**

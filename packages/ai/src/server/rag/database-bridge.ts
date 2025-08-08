@@ -9,7 +9,7 @@ import {
   createAIVectorFromEnv,
   type AIVectorConfig,
 } from '@repo/database/upstash/ai-enhanced';
-import { logError, logInfo } from '@repo/observability/server/next';
+import { logDebug, logError, logInfo } from '@repo/observability/server/next';
 import type { EmbeddingModel } from 'ai';
 import { ragRetry } from './retry-strategies';
 
@@ -54,7 +54,7 @@ export class RAGDatabaseBridge {
       },
     };
 
-    logInfo('RAG Database Bridge initialized', {
+    logDebug('RAG Database Bridge initialized', {
       operation: 'rag_database_bridge_init',
       namespace: this.config.namespace,
       useUpstashEmbedding: this.config.useUpstashEmbedding,

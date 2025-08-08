@@ -19,7 +19,6 @@ describe('mCP Connection Manager', () => {
   });
 
   afterEach(async () => {
-    // Cleanup any connections
     const { MCPConnectionManager } = await import('#/server/mcp/connection-manager');
     await MCPConnectionManager.getInstance().closeAll();
   });

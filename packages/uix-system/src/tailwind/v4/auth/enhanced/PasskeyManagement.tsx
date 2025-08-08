@@ -34,7 +34,7 @@ interface PasskeyManagementProps extends BaseProps {
   onError?: (error: string) => void;
 }
 
-const initialState: FormState = { success: false };
+const _initialState: FormState = { success: false };
 
 // Server action for removing passkey
 async function removePasskeyAction(prevState: any, formData: FormData): Promise<FormState> {
@@ -67,7 +67,7 @@ async function removePasskeyAction(prevState: any, formData: FormData): Promise<
       };
     }
   } catch (error: any) {
-    console.error('Remove passkey error:', error);
+    // console.error('Remove passkey error:', error);
 
     if (error?.message?.includes('not found')) {
       return {
@@ -129,7 +129,7 @@ async function renamePasskeyAction(prevState: any, formData: FormData): Promise<
       };
     }
   } catch (error: any) {
-    console.error('Rename passkey error:', error);
+    // console.error('Rename passkey error:', error);
 
     if (error?.message?.includes('not found')) {
       return {
@@ -177,7 +177,7 @@ export function PasskeyManagement({
   }
 
   // Get device icon based on type
-  const getDeviceIcon = (deviceType: Passkey['deviceType'], isBackupEligible: boolean) => {
+  const getDeviceIcon = (deviceType: Passkey['deviceType'], _isBackupEligible: boolean) => {
     if (deviceType === 'platform') {
       return (
         <svg
@@ -280,7 +280,6 @@ export function PasskeyManagement({
       </CardHeader>
 
       <CardContent>
-        {/* Success/Error Messages */}
         {removeState?.success && (
           <Alert variant="success" className="mb-4">
             {removeState.message}
@@ -305,7 +304,6 @@ export function PasskeyManagement({
           </Alert>
         )}
 
-        {/* Browser Support Check */}
         <div
           className={cn(
             'mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4',
@@ -348,7 +346,6 @@ export function PasskeyManagement({
           </div>
         </div>
 
-        {/* Passkeys List */}
         {passkeys.length === 0 ? (
           <div className={cn('rounded-lg bg-gray-50 py-8 text-center', 'dark:bg-gray-800')}>
             <svg
@@ -390,7 +387,6 @@ export function PasskeyManagement({
               >
                 <div className="flex items-start justify-between">
                   <div className="flex flex-1 items-start space-x-4">
-                    {/* Device Icon */}
                     <div
                       className={cn(
                         'flex h-12 w-12 items-center justify-center rounded-full',
@@ -404,7 +400,6 @@ export function PasskeyManagement({
                       {getDeviceIcon(passkey.deviceType, passkey.isBackupEligible)}
                     </div>
 
-                    {/* Passkey Info */}
                     <div className="min-w-0 flex-1">
                       <div className="mb-2 flex items-center space-x-3">
                         <h3
@@ -416,7 +411,6 @@ export function PasskeyManagement({
                           {passkey.name}
                         </h3>
 
-                        {/* Status Badges */}
                         <div className="flex items-center space-x-2">
                           <span
                             className={cn(
@@ -481,9 +475,7 @@ export function PasskeyManagement({
                     </div>
                   </div>
 
-                  {/* Actions */}
                   <div className="ml-4 flex items-center space-x-2">
-                    {/* Rename Button */}
                     <Button
                       variant="outline"
                       size="sm"
@@ -501,7 +493,6 @@ export function PasskeyManagement({
                       {renameState === undefined ? 'Renaming...' : 'Rename'}
                     </Button>
 
-                    {/* Remove Button */}
                     {passkeys.length > 1 && (
                       <form action={removeAction}>
                         <input type="hidden" name="passkeyId" value={passkey.id} />
@@ -527,7 +518,6 @@ export function PasskeyManagement({
           </div>
         )}
 
-        {/* Security Information */}
         <div
           className={cn(
             'mt-6 rounded-lg border border-green-200 bg-green-50 p-4',
@@ -561,7 +551,6 @@ export function PasskeyManagement({
           </div>
         </div>
 
-        {/* Additional Actions */}
         <div className="mt-6 flex items-center justify-between">
           <a
             href="/account/settings"

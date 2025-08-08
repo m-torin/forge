@@ -380,7 +380,6 @@ export class MCPConnectionPool {
                 },
                 error: error instanceof Error ? error : new Error(String(error)),
               });
-              // Cleanup completed, error logged
             }
           })(),
         );

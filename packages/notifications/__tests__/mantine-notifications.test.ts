@@ -1,26 +1,9 @@
+import '@repo/qa/vitest/mocks/packages/mantine';
 import { beforeEach, describe, expect, vi } from 'vitest';
 
-// Mock Mantine notifications
-const mockMantineNotifications = {
-  hide: vi.fn(),
-  clean: vi.fn(),
-  cleanQueue: vi.fn(),
-  show: vi.fn(),
-  update: vi.fn(),
-};
-
-vi.mock('@mantine/notifications', () => ({
-  notifications: mockMantineNotifications,
-  Notifications: vi.fn().mockImplementation(({ children }: any) => children),
-}));
-
-// Mock Tabler icons
-vi.mock('@tabler/icons-react', () => ({
-  IconAlertTriangle: vi.fn().mockImplementation(() => 'IconAlertTriangle'),
-  IconCheck: vi.fn().mockImplementation(() => 'IconCheck'),
-  IconInfoCircle: vi.fn().mockImplementation(() => 'IconInfoCircle'),
-  IconX: vi.fn().mockImplementation(() => 'IconX'),
-}));
+// Access the mocked notifications object that QA sets up
+const { notifications } = vi.mocked(await import('@mantine/notifications'));
+const mockMantineNotifications = notifications;
 
 describe('mantine Notifications', () => {
   beforeEach(() => {
@@ -248,7 +231,7 @@ describe('mantine Notifications', () => {
       // All calls should include the same default config
       expect(mockMantineNotifications.show).toHaveBeenCalledTimes(4);
 
-      const calls = mockMantineNotifications.show.mock.calls;
+      const calls = vi.mocked(mockMantineNotifications.show).mock.calls;
       calls.forEach((call: any) => {
         const config = call[0];
         expect(config).toMatchObject(expectedDefaults);
@@ -263,7 +246,7 @@ describe('mantine Notifications', () => {
       notify.info('info');
       notify.warning('warning');
 
-      const calls = mockMantineNotifications.show.mock.calls;
+      const calls = vi.mocked(mockMantineNotifications.show).mock.calls;
 
       // Success notification
       expect(calls[0][0]).toMatchObject({
@@ -305,7 +288,7 @@ describe('mantine Notifications', () => {
       notify.warning('test');
 
       // Verify that all notification calls include icon objects
-      const calls = mockMantineNotifications.show.mock.calls;
+      const calls = vi.mocked(mockMantineNotifications.show).mock.calls;
       calls.forEach((call: any) => {
         expect(call[0]).toHaveProperty('icon');
         expect(call[0].icon).toStrictEqual(expect.any(Object));

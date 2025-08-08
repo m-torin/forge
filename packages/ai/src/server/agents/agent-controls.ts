@@ -13,6 +13,7 @@ export interface PrepareStepContext {
   steps: any[];
   stepNumber: number;
   model: LanguageModel;
+  messages: any[];
 }
 
 /**
@@ -22,10 +23,10 @@ export interface PrepareStepResult {
   model?: LanguageModel;
   toolChoice?: ToolChoice<any>;
   activeTools?: string[];
-  experimental_activeTools?: string[]; // Legacy support for AI SDK compatibility
   maxOutputTokens?: number;
   temperature?: number;
   system?: string;
+  messages?: any[];
   metadata?: Record<string, any>;
 }
 

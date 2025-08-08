@@ -1,22 +1,11 @@
 // React testing setup
+import { setupBrowserMocks } from '@repo/qa/vitest/setup/browser';
 import '@testing-library/jest-dom';
 
-// Mock browser APIs
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: (query: string) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: () => {},
-    removeListener: () => {},
-    addEventListener: () => {},
-    removeEventListener: () => {},
-    dispatchEvent: () => {},
-  }),
-});
+// Setup centralized browser mocks (includes matchMedia, ResizeObserver, etc.)
+setupBrowserMocks();
 
-// Mock WebSocket for testing
+// Mock WebSocket for testing (package-specific)
 global.WebSocket = class MockWebSocket {
   readyState = 1; // OPEN
   onopen: ((event: Event) => void) | null = null;

@@ -32,16 +32,6 @@ export interface AgentLifecycleHooks {
   /** Called before each step */
   onStepStart?: (context: AgentStepContext) => void | Promise<void>;
 
-  /** Called to prepare step configuration (AI SDK v5) */
-  prepareStep?: (context: AgentStepContext) => Promise<{
-    model?: any;
-    toolChoice?: 'auto' | 'none' | 'required' | { type: 'tool'; toolName: string };
-    maxTokens?: number;
-    temperature?: number;
-    topP?: number;
-    activeTools?: string[];
-  } | void>;
-
   /** Called after each step completes */
   onStepFinish?: (params: {
     text?: string;
@@ -52,12 +42,14 @@ export interface AgentLifecycleHooks {
     stepNumber: number;
   }) => void | Promise<void>;
 
-  /** Prepare next step dynamically */
-  experimental_prepareStep?: (context: AgentStepContext) => Promise<{
+  /** Prepare next step dynamically (AI SDK v5) */
+  prepareStep?: (context: AgentStepContext) => Promise<{
     model?: any;
     toolChoice?: 'auto' | 'none' | 'required' | { type: 'tool'; toolName: string };
-    experimental_activeTools?: string[]; // Legacy support
-    activeTools?: string[]; // Stable API (AI SDK v5.0+)
+    maxOutputTokens?: number;
+    temperature?: number;
+    topP?: number;
+    activeTools?: string[];
   } | void>;
 
   /** Called when tool execution fails for repair attempts */
@@ -93,12 +85,12 @@ export interface AgenticToolConfig<TParams = any, TResult = any> {
   repairConfig?: ToolRepairConfig;
 
   /** Multi-modal result support */
-  experimental_toToolResultContent?: (
-    result: TResult,
-  ) =>
-    | { type: 'text'; text: string }
-    | { type: 'image'; data: string; mediaType?: string }
-    | Array<{ type: 'text'; text: string } | { type: 'image'; data: string; mediaType?: string }>;
+  toModelOutput?: (result: TResult) => {
+    type: 'content';
+    value: Array<
+      { type: 'text'; text: string } | { type: 'media'; mediaType: string; data: string }
+    >;
+  };
 }
 
 /**
@@ -202,7 +194,7 @@ export function agenticTool<TParams, TResult>(
               });
             }
 
-            return repairResult.result!;
+            return repairResult.result;
           }
         }
 
@@ -210,7 +202,7 @@ export function agenticTool<TParams, TResult>(
         throw error;
       }
     },
-    experimental_toToolResultContent: config.experimental_toToolResultContent,
+    toModelOutput: config.toModelOutput,
   } as any) as Tool;
 
   return Object.assign(baseTool, {
@@ -230,7 +222,7 @@ export const StoppingConditions = {
   whenToolCalled: (toolName: string) => hasToolCall(toolName),
 
   /** Stop after total tokens */
-  maxTokens:
+  maxOutputTokens:
     (tokens: number): StopCondition<any> =>
     ({ steps }: any) => {
       const totalTokens = steps.reduce(
@@ -255,7 +247,7 @@ export const StoppingConditions = {
     ({ steps }: any) => {
       return steps.some(
         (step: any) =>
-          step.reasoning && step.reasoning.toLowerCase().includes(reasoning.toLowerCase()),
+          step.reasoningText && step.reasoningText.toLowerCase().includes(reasoning.toLowerCase()),
       );
     },
 
@@ -291,9 +283,9 @@ export const StoppingConditions = {
 };
 
 /**
- * Enhanced workflow configuration with active tools support
+ * Multi-step workflow configuration with active tools support
  */
-export interface EnhancedWorkflowConfig {
+export interface MultiStepWorkflowConfig {
   tools: Record<string, Tool>;
   maxSteps?: number;
   stopWhen?: StopCondition<any> | StopCondition<any>[];
@@ -309,14 +301,12 @@ export interface EnhancedWorkflowConfig {
     maxRetries: number;
     repairStrategies: ('reformat' | 'validate' | 'fallback')[];
   };
-  /** Use stable activeTools API instead of experimental_activeTools (AI SDK v5.0+) */
-  useStableActiveTools?: boolean;
 }
 
 /**
  * Create a multi-step agent workflow with enhanced capabilities
  */
-export function createAgentWorkflow(config: EnhancedWorkflowConfig) {
+export function createAgentWorkflow(config: MultiStepWorkflowConfig) {
   const stepHistory = new StepHistoryTracker();
   const toolNames = Object.keys(config.tools);
 
@@ -344,7 +334,7 @@ export function createAgentWorkflow(config: EnhancedWorkflowConfig) {
       }
     },
 
-    experimental_prepareStep: async (context: any) => {
+    prepareStep: async (context: any) => {
       const agentContext: AgentStepContext = {
         stepNumber: context.stepNumber,
         maxSteps: context.maxSteps,
@@ -383,25 +373,16 @@ export function createAgentWorkflow(config: EnhancedWorkflowConfig) {
       }
 
       // Get user's custom preparation
-      const userPrep = config.hooks?.experimental_prepareStep
-        ? await config.hooks.experimental_prepareStep(agentContext)
+      const userPrep = config.hooks?.prepareStep
+        ? await config.hooks.prepareStep(agentContext)
         : {};
 
-      const finalActiveTools =
-        activeTools || userPrep?.experimental_activeTools || userPrep?.activeTools;
+      const finalActiveTools = activeTools || userPrep?.activeTools;
 
-      // Use stable activeTools API when available (AI SDK v5.0+)
-      if (config.useStableActiveTools !== false) {
-        return {
-          ...userPrep,
-          activeTools: finalActiveTools,
-        };
-      }
-
-      // Fallback to experimental API for older versions
+      // Always use stable activeTools API (AI SDK v5.0+)
       return {
         ...userPrep,
-        experimental_activeTools: finalActiveTools,
+        activeTools: finalActiveTools,
       };
     },
 
@@ -432,8 +413,8 @@ export const AgenticPatterns = {
   /**
    * Create a sequential processing agent with progressive tool unlocking
    */
-  sequential: (tools: Tool[], options?: { maxRetries?: number }) => {
-    let currentStep = 0;
+  sequential: (tools: Tool[], _options?: { maxRetries?: number }) => {
+    let _currentStep = 0;
     const toolsMap = tools.reduce(
       (acc, tool, idx) => ({ ...acc, [`step${idx}`]: tool }),
       {} as Record<string, Tool>,
@@ -444,7 +425,7 @@ export const AgenticPatterns = {
       stopWhen: stepCountIs(tools.length),
       activeToolsStrategy: 'progressive', // Gradually unlock tools
       hooks: {
-        experimental_prepareStep: async ({ stepNumber }) => {
+        prepareStep: async ({ stepNumber }) => {
           if (stepNumber < tools.length) {
             return {
               toolChoice: { type: 'tool', toolName: `step${stepNumber}` },
@@ -468,7 +449,7 @@ export const AgenticPatterns = {
       },
       stopWhen: [stepCountIs(2), hasToolCall('final')],
       hooks: {
-        experimental_prepareStep: async ({ stepNumber, steps }) => {
+        prepareStep: async ({ stepNumber, steps }) => {
           if (stepNumber === 0) {
             return { toolChoice: { type: 'tool', toolName: 'evaluate' } };
           }
@@ -500,7 +481,7 @@ export const AgenticPatterns = {
       },
       stopWhen: [stepCountIs(maxRetries * 2), hasToolCall('success')],
       hooks: {
-        experimental_prepareStep: async ({ stepNumber, steps }) => {
+        prepareStep: async ({ stepNumber, steps }) => {
           const isEvenStep = stepNumber % 2 === 0;
 
           if (isEvenStep) {
@@ -562,7 +543,7 @@ export const commonAgenticTools = {
       result: z.any(),
       criteria: z.array(z.string()),
     }),
-    execute: async ({ result, criteria }) => {
+    execute: async ({ result: _result, criteria }) => {
       const checks = criteria.map(criterion => ({
         criterion,
         passed: Math.random() > 0.3, // Mock validation
@@ -587,16 +568,16 @@ export const commonAgenticTools = {
       feedback: z.string(),
       iteration: z.number().optional(),
     }),
-    execute: async ({ original, feedback, iteration = 1 }) => {
+    execute: async ({ original, feedback: _feedback, iteration = 1 }) => {
       return {
         refined: { ...original, refined: true, iteration },
         improvements: ['Added clarity', 'Fixed issues', 'Enhanced quality'],
         confidence: 0.85 + iteration * 0.05,
       };
     },
-    experimental_toToolResultContent: result => ({
-      type: 'text',
-      text: JSON.stringify(result, null, 2),
+    toModelOutput: result => ({
+      type: 'content',
+      value: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
     }),
   }),
 };

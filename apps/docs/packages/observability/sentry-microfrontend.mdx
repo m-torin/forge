@@ -3,6 +3,7 @@ title: "Sentry Micro Frontend Plugin"
 description:
   "Specialized Sentry plugin for micro frontend architectures with zone-based
   error routing"
+icon: "bug"
 ---
 
 # Sentry Micro Frontend Plugin
@@ -74,21 +75,32 @@ const zones: ZoneConfig[] = [
 
 <CodeGroup>
 ```typescript Host App
-import { createBackstageHostPreset } from '@repo/observability/factory/presets';
+import { createSentryMicroFrontendPlugin } from '@repo/observability/plugins/sentry-microfrontend';
+import { ObservabilityBuilder } from '@repo/observability';
 
-// Host app const hostObservability = createBackstageHostPreset([ { name: 'cms',
-dsn: process.env.SENTRY_DSN_CMS }, { name: 'workflows', dsn:
-process.env.SENTRY_DSN_WORKFLOWS }, ]).build();
+// Host app const hostObservability = ObservabilityBuilder.create()
+.withPlugin(createSentryMicroFrontendPlugin({ isHost: true, zones: [ { name:
+'admin', dsn: process.env.SENTRY_DSN_ADMIN }, { name: 'dashboard', dsn:
+process.env.SENTRY_DSN_DASHBOARD }, ], dsn: process.env.SENTRY_DSN,
+useMultiplexedTransport: true, addZoneContext: true, })) .build();
 
 await hostObservability.initialize();
 
 ````
 
 ```typescript Child App
-import { createBackstageMicroFrontendPreset } from '@repo/observability/factory/presets';
+import { createSentryMicroFrontendPlugin } from '@repo/observability/plugins/sentry-microfrontend';
+import { ObservabilityBuilder } from '@repo/observability';
 
 // Child app
-const childObservability = createBackstageMicroFrontendPreset('cms').build();
+const childObservability = ObservabilityBuilder.create()
+  .withPlugin(createSentryMicroFrontendPlugin({
+    zone: 'admin',
+    dsn: process.env.SENTRY_DSN_ADMIN,
+    detectParent: true,
+    addZoneContext: true,
+  }))
+  .build();
 
 await childObservability.initialize();
 ````
@@ -106,12 +118,15 @@ export async function register() {
   await initializeObservability();
 }
 
-// sentry.config.ts import { createBackstageHostPreset } from
-'@repo/observability/factory/presets';
+// sentry.config.ts import { createSentryMicroFrontendPlugin } from
+'@repo/observability/plugins/sentry-microfrontend'; import {
+ObservabilityBuilder } from '@repo/observability';
 
-const observability = createBackstageHostPreset([ { name: 'cms', dsn:
-process.env.SENTRY_DSN_CMS }, { name: 'workflows', dsn:
-process.env.SENTRY_DSN_WORKFLOWS }, ]).build();
+const observability = ObservabilityBuilder.create()
+.withPlugin(createSentryMicroFrontendPlugin({ isHost: true, zones: [ { name:
+'admin', dsn: process.env.SENTRY_DSN_ADMIN }, { name: 'dashboard', dsn:
+process.env.SENTRY_DSN_DASHBOARD }, ], dsn: process.env.SENTRY_DSN,
+useMultiplexedTransport: true, addZoneContext: true, })) .build();
 
 export async function initializeObservability() {
   await observability.initialize();
@@ -133,9 +148,19 @@ export async function register() {
 }
 
 // sentry.config.ts
-import { createBackstageMicroFrontendPreset } from "@repo/observability/factory/presets";
+import { createSentryMicroFrontendPlugin } from "@repo/observability/plugins/sentry-microfrontend";
+import { ObservabilityBuilder } from "@repo/observability";
 
-const observability = createBackstageMicroFrontendPreset("cms").build();
+const observability = ObservabilityBuilder.create()
+  .withPlugin(
+    createSentryMicroFrontendPlugin({
+      zone: "admin",
+      dsn: process.env.SENTRY_DSN_ADMIN,
+      detectParent: true,
+      addZoneContext: true
+    })
+  )
+  .build();
 
 export async function initializeObservability() {
   await observability.initialize();
@@ -330,9 +355,17 @@ and `sentry.client.config.ts` files:
   <Step title="Create centralized config">
     ```typescript
     // sentry.config.ts
-    import { createBackstageMicroFrontendPreset } from '@repo/observability/factory/presets';
+    import { createSentryMicroFrontendPlugin } from '@repo/observability/plugins/sentry-microfrontend';
+    import { ObservabilityBuilder } from '@repo/observability';
     
-    export const observability = createBackstageMicroFrontendPreset('your-zone').build();
+    export const observability = ObservabilityBuilder.create()
+      .withPlugin(createSentryMicroFrontendPlugin({
+        zone: 'your-zone',
+        dsn: process.env.SENTRY_DSN,
+        detectParent: true,
+        addZoneContext: true,
+      }))
+      .build();
     ```
   </Step>
   
@@ -443,14 +476,11 @@ and `sentry.client.config.ts` files:
   SentryMicroFrontendPlugin ```
 </ResponseField>
 
-<ResponseField name="createBackstageHostPreset" type="function">
-  Creates a host preset for backstage architecture ```typescript
-  createBackstageHostPreset(zones: ZoneConfig[]): ObservabilityBuilder ```
-</ResponseField>
-
-<ResponseField name="createBackstageMicroFrontendPreset" type="function">
-  Creates a child preset for backstage micro frontends ```typescript
-  createBackstageMicroFrontendPreset(zone: string): ObservabilityBuilder ```
+<ResponseField name="ObservabilityBuilder" type="class">
+  Builder class for creating observability instances ```typescript
+  ObservabilityBuilder.create(): ObservabilityBuilder
+  builder.withPlugin(plugin): ObservabilityBuilder builder.build():
+  ObservabilityInstance ```
 </ResponseField>
 
 ## Testing

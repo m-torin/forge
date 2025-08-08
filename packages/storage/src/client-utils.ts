@@ -273,9 +273,15 @@ export async function downloadFromUrl(
     }
   }
 
-  const blob = new Blob(chunks, {
-    type: response.headers.get('content-type') || 'application/octet-stream',
-  });
+  const blob = new Blob(
+    chunks.map(
+      chunk =>
+        chunk.buffer.slice(chunk.byteOffset, chunk.byteOffset + chunk.byteLength) as ArrayBuffer,
+    ),
+    {
+      type: response.headers.get('content-type') || 'application/octet-stream',
+    },
+  );
 
   return blob;
 }

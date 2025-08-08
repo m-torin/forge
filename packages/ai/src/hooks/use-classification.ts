@@ -3,10 +3,9 @@
 import { useCallback, useState } from 'react';
 
 import { ProductClassificationResult, ProductData } from '../shared/types';
+import { BaseAIHookOptions, mergeTransportConfig } from '../shared/types/transport';
 
-export interface UseClassificationOptions {
-  api?: string;
-  onError?: (error: Error) => void;
+export interface UseClassificationOptions extends BaseAIHookOptions {
   onSuccess?: (result: ProductClassificationResult) => void;
 }
 
@@ -27,10 +26,18 @@ export interface UseClassificationReturn {
 }
 
 export function useClassification({
-  api = '/api/ai/classify',
+  api: apiProp,
+  transport,
   onError,
+  onRateLimit,
   onSuccess,
+  ...options
 }: UseClassificationOptions = {}): UseClassificationReturn {
+  // Configure transport using shared utility
+  const { api, ...transportConfig } = mergeTransportConfig(
+    { api: apiProp, transport, ...options },
+    '/api/ai/classify',
+  );
   const [result, setResult] = useState<null | ProductClassificationResult>(null);
   const [isClassifying, setIsClassifying] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -46,11 +53,16 @@ export function useClassification({
         setIsClassifying(true);
         setError(null);
 
-        const response = await fetch(api, {
-          body: JSON.stringify({ product }),
+        const response = await (transportConfig.fetch || fetch)(api, {
+          body: JSON.stringify({
+            product,
+            ...transportConfig.body,
+          }),
           headers: {
             'Content-Type': 'application/json',
+            ...(transportConfig.headers || {}),
           },
+          credentials: transportConfig.credentials,
           method: 'POST',
         });
 
@@ -66,13 +78,21 @@ export function useClassification({
       } catch (error: unknown) {
         const errorObj = error instanceof Error ? error : new Error('Classification failed');
         setError(errorObj);
+
+        // Handle rate limiting
+        if (errorObj.message.includes('429') && onRateLimit) {
+          const match = errorObj.message.match(/retry after (\d+)/);
+          const retryAfter = match ? parseInt(match[1]) : 60;
+          onRateLimit(retryAfter);
+        }
+
         onError?.(errorObj);
         return null;
       } finally {
         setIsClassifying(false);
       }
     },
-    [api, onSuccess, onError],
+    [api, transportConfig, onSuccess, onError, onRateLimit],
   );
 
   const batchClassify = useCallback(
@@ -90,11 +110,16 @@ export function useClassification({
         setIsClassifying(true);
         setError(null);
 
-        const response = await fetch(`${api}/batch`, {
-          body: JSON.stringify({ products }),
+        const response = await (transportConfig.fetch || fetch)(`${api}/batch`, {
+          body: JSON.stringify({
+            products,
+            ...transportConfig.body,
+          }),
           headers: {
             'Content-Type': 'application/json',
+            ...(transportConfig.headers || {}),
           },
+          credentials: transportConfig.credentials,
           method: 'POST',
         });
 
@@ -107,13 +132,21 @@ export function useClassification({
       } catch (error: unknown) {
         const errorObj = error instanceof Error ? error : new Error('Batch classification failed');
         setError(errorObj);
+
+        // Handle rate limiting
+        if (errorObj.message.includes('429') && onRateLimit) {
+          const match = errorObj.message.match(/retry after (\d+)/);
+          const retryAfter = match ? parseInt(match[1]) : 60;
+          onRateLimit(retryAfter);
+        }
+
         onError?.(errorObj);
         return null;
       } finally {
         setIsClassifying(false);
       }
     },
-    [api, onError],
+    [api, transportConfig, onError, onRateLimit],
   );
 
   return {

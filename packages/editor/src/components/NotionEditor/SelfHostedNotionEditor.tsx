@@ -203,10 +203,8 @@ export function SelfHostedNotionEditor({
 
   return (
     <div className={clsx('self-hosted-notion-editor flex h-screen bg-gray-50', className)}>
-      {/* Sidebar */}
       {showSidebar && (
         <>
-          {/* Sidebar Overlay (Mobile) */}
           {sidebarOpen && (
             <div
               className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
@@ -223,7 +221,6 @@ export function SelfHostedNotionEditor({
             />
           )}
 
-          {/* Sidebar Content */}
           <div
             className={clsx(
               'fixed inset-y-0 left-0 z-50 flex flex-col border-r border-gray-200 bg-white transition-transform lg:static lg:translate-x-0',
@@ -231,7 +228,6 @@ export function SelfHostedNotionEditor({
             )}
             style={{ width: uiPreferences.sidebarWidth }}
           >
-            {/* Sidebar Header */}
             <div className="flex items-center justify-between border-b border-gray-200 p-4">
               <div className="flex items-center gap-3">
                 <button
@@ -281,7 +277,6 @@ export function SelfHostedNotionEditor({
               </button>
             </div>
 
-            {/* Sidebar Content */}
             <div className="flex-1 overflow-hidden">
               {activePanel === 'documents' && enableDocumentManager && (
                 <DocumentManager
@@ -337,9 +332,7 @@ export function SelfHostedNotionEditor({
         </>
       )}
 
-      {/* Main Editor Area */}
       <div className="flex flex-1 flex-col">
-        {/* Top Bar */}
         <div className="flex items-center justify-between border-b border-gray-200 bg-white p-4">
           <div className="flex items-center gap-3">
             {showSidebar && (
@@ -361,12 +354,10 @@ export function SelfHostedNotionEditor({
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Document Stats */}
             {documentStats && uiPreferences.showWordCount && (
               <div className="text-sm text-gray-500">{documentStats.wordCount} words</div>
             )}
 
-            {/* Save Status */}
             {saveStatus && (
               <div
                 className={clsx(
@@ -384,7 +375,6 @@ export function SelfHostedNotionEditor({
               </div>
             )}
 
-            {/* Action Buttons */}
             <button
               onClick={handleSaveDocument}
               className="flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm transition-colors hover:bg-gray-50"
@@ -405,7 +395,6 @@ export function SelfHostedNotionEditor({
           </div>
         </div>
 
-        {/* Recovery Banner */}
         {hasRecoveryDraft && (
           <div className="border-b border-yellow-200 bg-yellow-50 p-3">
             <div className="flex items-center justify-between">
@@ -431,7 +420,6 @@ export function SelfHostedNotionEditor({
           </div>
         )}
 
-        {/* Editor */}
         <div className="flex-1 overflow-auto">
           <NotionEditor
             {...editorProps}

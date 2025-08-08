@@ -1,15 +1,15 @@
-import type { LanguageModelV2 } from '@ai-sdk/provider';
 import { xai } from '@ai-sdk/xai';
+import type { LanguageModel } from 'ai';
 import { createCustomProvider, withReasoningMiddleware } from './custom-providers';
 
 // Simple mock model for testing
-function createMockModel(): LanguageModelV2 {
+function createMockModel(): LanguageModel {
   return {
     id: 'mock-model',
     doGenerate: async () => ({
       text: 'Mock response',
       finishReason: 'stop',
-      usage: { promptTokens: 10, completionTokens: 10 },
+      usage: { inputTokens: 10, outputTokens: 10 },
       rawCall: { rawPrompt: '', rawSettings: {} },
     }),
     doStream: async function* () {
@@ -19,10 +19,10 @@ function createMockModel(): LanguageModelV2 {
       yield {
         type: 'finish',
         finishReason: 'stop',
-        usage: { promptTokens: 10, completionTokens: 10 },
+        usage: { inputTokens: 10, outputTokens: 10 },
       };
     },
-  } as unknown as LanguageModelV2;
+  } as unknown as LanguageModel;
 }
 
 /**
@@ -42,10 +42,10 @@ export interface XAIProviderConfig {
   };
   /** Test environment models (mock models for testing) */
   testModels?: {
-    chat?: LanguageModelV2;
-    chatReasoning?: LanguageModelV2;
-    title?: LanguageModelV2;
-    artifact?: LanguageModelV2;
+    chat?: LanguageModel;
+    chatReasoning?: LanguageModel;
+    title?: LanguageModel;
+    artifact?: LanguageModel;
   };
   /** Enable reasoning middleware for chat reasoning model */
   reasoningConfig?: {
@@ -95,7 +95,7 @@ export function createXAIProvider(config: XAIProviderConfig, isTestEnvironment =
   }
 
   // Production XAI provider configuration
-  const languageModels: Record<string, LanguageModelV2> = {
+  const languageModels: Record<string, LanguageModel> = {
     'chat-model': xai(models.chat || DEFAULT_XAI_MODELS.chat),
     'title-model': xai(models.title || DEFAULT_XAI_MODELS.title),
     'artifact-model': xai(models.artifact || DEFAULT_XAI_MODELS.artifact),

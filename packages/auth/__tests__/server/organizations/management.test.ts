@@ -1,5 +1,5 @@
+import { createMockAuthOrganization, createMockAuthSession } from '@repo/qa';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { createMockOrganization, createMockSession } from '../../test-helpers/factories';
 import { applySmartAuthBehavior, mockBetterAuthApi, setupAllMocks } from '../../test-helpers/mocks';
 import { createServerActionTestSuite } from '../../test-helpers/server-action-builder';
 
@@ -15,7 +15,7 @@ import {
   removeMemberAction,
   updateMemberRoleAction,
   updateOrganizationAction,
-} from '#/server/organizations/management';
+} from '../../src/server/organizations/management';
 
 // Set up all mocks
 setupAllMocks();
@@ -34,7 +34,7 @@ describe('organization Management', () => {
     vi.clearAllMocks();
 
     // Set up default session
-    vi.mocked(mockBetterAuthApi.getSession).mockResolvedValue(createMockSession());
+    vi.mocked(mockBetterAuthApi.getSession).mockResolvedValue(createMockAuthSession());
 
     // Set up default auth API responses
     vi.mocked(mockBetterAuthApi.updateMemberRole).mockResolvedValue({
@@ -52,7 +52,7 @@ describe('organization Management', () => {
 
   describe('createOrganization', () => {
     test('should create organization successfully', async () => {
-      const mockOrg = createMockOrganization();
+      const mockOrg = createMockAuthOrganization();
       vi.mocked(mockBetterAuthApi.createOrganization).mockResolvedValue(mockOrg);
 
       const result = await createOrganizationAction({
@@ -86,7 +86,7 @@ describe('organization Management', () => {
     });
 
     test('should generate slug from name if not provided', async () => {
-      const mockOrg = createMockOrganization();
+      const mockOrg = createMockAuthOrganization();
       vi.mocked(mockBetterAuthApi.createOrganization).mockResolvedValue(mockOrg);
 
       await createOrganizationAction({
@@ -104,7 +104,7 @@ describe('organization Management', () => {
     });
 
     test('should use provided slug if available', async () => {
-      const mockOrg = createMockOrganization();
+      const mockOrg = createMockAuthOrganization();
       vi.mocked(mockBetterAuthApi.createOrganization).mockResolvedValue(mockOrg);
 
       await createOrganizationAction({
@@ -136,13 +136,15 @@ describe('organization Management', () => {
     ],
     expectedResult: { success: true, organization: expect.any(Object) },
     setup: () => {
-      vi.mocked(mockBetterAuthApi.updateOrganization).mockResolvedValue(createMockOrganization());
+      vi.mocked(mockBetterAuthApi.updateOrganization).mockResolvedValue(
+        createMockAuthOrganization(),
+      );
     },
     customTests: [
       {
         name: 'should update only provided fields',
         test: async () => {
-          const mockOrg = createMockOrganization();
+          const mockOrg = createMockAuthOrganization();
           vi.mocked(mockBetterAuthApi.updateOrganization).mockResolvedValue(mockOrg);
 
           await updateOrganizationAction({

@@ -28,12 +28,12 @@ type Story = StoryObj<typeof meta>;
 
 // Mock handler
 const mockSubmit = async (values: ResetPasswordFormValues) => {
-  console.log('Password reset:', values);
+  // console.log('Password reset:', values);
   await new Promise(resolve => setTimeout(resolve, 1000));
 };
 
 const mockSuccess = () => {
-  console.log('Password reset successful');
+  // console.log('Password reset successful');
 };
 
 export const Default: Story = {

@@ -9,7 +9,7 @@
 import { tool, type Tool } from 'ai';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 import { mcpClient } from '../mcp-client';
 import type { Pattern } from '../types';
 
@@ -478,7 +478,7 @@ export const patternDetectionTool = tool({
   },
 
   // Multi-modal result content
-  experimental_toToolResultContent: (result: PatternDetectionResult) => [
+  toModelOutput: (result: PatternDetectionResult) => [
     {
       type: 'text' as const,
       text:

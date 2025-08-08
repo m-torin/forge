@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from 'vitest';
 
-import { createDictionary } from '#/utils/extend';
+import { createDictionary } from '../../src/utils/extend';
 
 describe('utils/extend', () => {
   test('createDictionary combines base and app dictionaries', async () => {

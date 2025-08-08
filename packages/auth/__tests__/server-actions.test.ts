@@ -612,7 +612,7 @@ describe('server actions', () => {
         headers: expect.any(Headers),
       });
 
-      expect(result).toEqual({
+      expect(result).toStrictEqual({
         success: true,
         message: 'Passkey deleted successfully',
       });

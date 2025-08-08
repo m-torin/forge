@@ -14,6 +14,7 @@ export const getTagsWithTagGroupsAction = async (instanceId: string): Promise<Ta
     return tags;
   } catch (error) {
     logError('Error in getTagsWithTagGroupsAction', { error });
-    throw new Error('Failed to fetch tags with tag groups.');
+    // Return empty array for graceful degradation during build
+    return [];
   }
 };

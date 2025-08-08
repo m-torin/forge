@@ -1,9 +1,9 @@
 import '@testing-library/jest-dom';
 import { beforeEach, vi } from 'vitest';
 
-// Import centralized mocks from @repo/qa (when available)
-// TODO: Re-enable when @repo/qa exports are built
-// import '@repo/qa/vitest/mocks/providers/nextjs';
+// Import centralized mocks from @repo/qa
+import '@repo/qa/vitest/mocks/packages/nextjs';
+import '@repo/qa/vitest/mocks/packages/server-only';
 
 // Mock console methods for cleaner test output
 const originalConsole = console;
@@ -23,9 +23,6 @@ vi.mock('next', () => ({
   generateMetadata: vi.fn(),
   generateViewport: vi.fn(),
 }));
-
-// Mock server-only module
-vi.mock('server-only', () => ({}));
 
 // Mock lodash.merge for metadata merging
 vi.mock('lodash.merge', () => ({

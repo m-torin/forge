@@ -9,6 +9,7 @@
     "./server": "./src/server.ts",
     "./remix": "./src/remix.ts",
     "./package": "./src/package.ts",
+    "./mcp-tools": "./src/mcp-tools.ts",
     "./types": "./src/types/index.d.ts"
   },
   "main": "./src/index.ts",
@@ -25,8 +26,6 @@
     "circular": "madge --circular --extensions ts,tsx,js,jsx .",
     "knip": "knip --fix --reporter json",
     "lint": "npx eslint . --fix --quiet || true",
-    "test": "vitest",
-    "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -40,12 +39,14 @@
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-jest-dom": "^5.5.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-no-secrets": "^1.0.2",
     "eslint-plugin-perfectionist": "^4.15.0",
     "eslint-plugin-playwright": "^2.2.0",
     "eslint-plugin-pnpm": "^1.1.0",
     "eslint-plugin-promise": "^7.2.1",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-regexp": "^2.7.0",
     "eslint-plugin-security": "^3.0.1",
     "eslint-plugin-sonarjs": "^3.0.4",
     "eslint-plugin-testing-library": "^7.6.1",
@@ -56,8 +57,7 @@
   },
   "devDependencies": {
     "@repo/config": "workspace:*",
-    "eslint-import-resolver-typescript": "^4.4.4",
-    "vitest": "catalog:"
+    "eslint-import-resolver-typescript": "^4.4.4"
   },
   "peerDependencies": {
     "eslint": "catalog:",

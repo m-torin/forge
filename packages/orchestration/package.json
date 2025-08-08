@@ -39,7 +39,7 @@
     "test:deduplication": "vitest run __tests__/deduplication-storage.test.ts",
     "test:dlq": "vitest run __tests__/dlq-database.test.ts",
     "test:persistence": "vitest run __tests__/workflow-data-persistence.test.ts",
-    "test:ui": "vitest --ui",
+    "test:ui": "[ \"$CI\" = \"true\" ] && vitest run || vitest --ui --no-open",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
@@ -54,6 +54,7 @@
     "date-fns": "catalog:",
     "nanoid": "catalog:",
     "next": "catalog:",
+    "node-cron": "^3.0.3",
     "opossum": "^9.0.0",
     "p-queue": "^8.1.0",
     "p-retry": "^6.2.1",

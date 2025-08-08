@@ -1,1 +1,1 @@
-declare module "eslint-plugin-testing-library";
+declare module 'eslint-plugin-testing-library';

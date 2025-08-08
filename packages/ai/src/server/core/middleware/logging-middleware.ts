@@ -6,7 +6,7 @@
 import { logInfo } from '@repo/observability';
 
 // Define middleware types locally since they may not be exported in current AI SDK v5 build
-interface LanguageModelV2Middleware {
+interface LanguageModelMiddleware {
   wrapGenerate?: (args: { doGenerate: any; params: any }) => Promise<any>;
   wrapStream?: (args: { doStream: any; params: any }) => Promise<any>;
 }
@@ -50,7 +50,7 @@ const defaultOptions: Required<LoggingOptions> = {
 /**
  * Create logging middleware for AI model interactions
  */
-export function createLoggingMiddleware(options: LoggingOptions = {}): LanguageModelV2Middleware {
+export function createLoggingMiddleware(options: LoggingOptions = {}): LanguageModelMiddleware {
   const opts = { ...defaultOptions, ...options };
 
   if (!opts.enabled) {
@@ -138,8 +138,8 @@ export function createLoggingMiddleware(options: LoggingOptions = {}): LanguageM
 
           if (opts.logMetrics && result.usage) {
             logData.usage = {
-              promptTokens: result.usage.promptTokens,
-              completionTokens: result.usage.completionTokens,
+              inputTokens: result.usage.inputTokens,
+              outputTokens: result.usage.outputTokens,
               totalTokens: result.usage.totalTokens,
             };
           }
@@ -151,8 +151,9 @@ export function createLoggingMiddleware(options: LoggingOptions = {}): LanguageM
             }));
           }
 
-          if (result.warnings && result.warnings.length > 0) {
-            logData.warnings = result.warnings;
+          const warnings = await result.warnings;
+          if (warnings && warnings.length > 0) {
+            logData.warnings = warnings;
           }
 
           logger('info', 'AI Model Response', logData);
@@ -212,9 +213,9 @@ export function createLoggingMiddleware(options: LoggingOptions = {}): LanguageM
           new TransformStream({
             transform(chunk, controller) {
               try {
-                // Track tokens for metrics
-                if (chunk.type === 'text-delta' && chunk.textDelta) {
-                  tokenCount += chunk.textDelta.split(' ').length;
+                // Track tokens for metrics (AI SDK v5 pattern)
+                if (chunk.type === 'text-delta' && chunk.delta) {
+                  tokenCount += chunk.delta.split(' ').length;
                 }
 
                 // Log tool calls
@@ -251,7 +252,7 @@ export function createLoggingMiddleware(options: LoggingOptions = {}): LanguageM
             },
           }),
         ),
-        warnings: stream.warnings,
+        warnings: await stream.warnings,
       };
     },
   };

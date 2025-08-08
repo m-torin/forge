@@ -1,7 +1,7 @@
 export interface ModerationService {
   analyzeSentiment(text: string): Promise<{
     confidence: number;
-    reasoning: string;
+    reasoningText: string;
     sentiment: 'negative' | 'neutral' | 'positive';
   }>;
 
@@ -11,7 +11,7 @@ export interface ModerationService {
   ): Promise<{
     category: string;
     confidence: number;
-    reasoning: string;
+    reasoningText: string;
   }>;
 
   extractEntities(text: string): Promise<{

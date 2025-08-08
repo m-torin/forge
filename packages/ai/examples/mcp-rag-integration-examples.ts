@@ -12,11 +12,11 @@ import { createUpstashVectorDB } from '../src/server/vector/upstash-vector';
 import { createRAGWorkflow, type RAGWorkflowConfig } from '../src/server/workflows/vector-rag';
 
 /**
- * Example 1: Web Search Enhanced RAG
+ * Example 1: Web Search Semantic RAG
  * Combines Perplexity web search with existing knowledge base
  */
-export async function webSearchEnhancedRAG() {
-  console.log('🔍 Example 1: Web Search Enhanced RAG');
+export async function webSearchSemanticRAG() {
+  console.log('🔍 Example 1: Web Search Semantic RAG');
 
   // Set up MCP client for Perplexity web search
   const mcpConfigs: MCPClientConfig[] = [
@@ -96,7 +96,6 @@ Please synthesize information from both sources, highlighting what's new from we
     console.log('✅ Combined Result:');
     console.log(finalResult.text);
 
-    // Cleanup
     await closeAllClients();
     return {
       query,
@@ -719,7 +718,7 @@ export async function runAllMCPRAGExamples() {
   try {
     // Example 1: Web Search Enhanced RAG
     console.log('='.repeat(60));
-    const result1 = await webSearchEnhancedRAG();
+    const result1 = await webSearchSemanticRAG();
     results.push({ example: 'Web Search Enhanced RAG', success: true, data: result1 });
 
     await new Promise(resolve => setTimeout(resolve, 2000)); // Brief pause between examples

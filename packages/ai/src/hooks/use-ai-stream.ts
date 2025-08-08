@@ -3,12 +3,11 @@
 import { useCallback, useRef, useState } from 'react';
 
 import { StreamChunk } from '../shared/types';
+import { BaseAIHookOptions, mergeTransportConfig } from '../shared/types/transport';
 
-export interface UseAIStreamOptions {
-  api?: string;
+export interface UseAIStreamOptions extends BaseAIHookOptions {
   onChunk?: (chunk: StreamChunk) => void;
   onComplete?: (fullText: string) => void;
-  onError?: (error: Error) => void;
 }
 
 export interface UseAIStreamReturn {
@@ -24,11 +23,19 @@ export interface UseAIStreamReturn {
 }
 
 export function useAIStream({
-  api = '/api/ai/stream',
+  api: apiProp,
+  transport,
   onChunk,
   onComplete,
   onError,
+  onRateLimit,
+  ...options
 }: UseAIStreamOptions = {}): UseAIStreamReturn {
+  // Configure transport using shared utility
+  const { api, ...transportConfig } = mergeTransportConfig(
+    { api: apiProp, transport, ...options },
+    '/api/ai/stream',
+  );
   const [text, setText] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -57,14 +64,17 @@ export function useAIStream({
         // Create new abort controller
         abortControllerRef.current = new AbortController();
 
-        const response = await fetch(api, {
+        const response = await (transportConfig.fetch || fetch)(api, {
           body: JSON.stringify({
             prompt,
             ...options,
+            ...transportConfig.body,
           }),
           headers: {
             'Content-Type': 'application/json',
+            ...(transportConfig.headers || {}),
           },
+          credentials: transportConfig.credentials,
           method: 'POST',
           signal: abortControllerRef.current.signal,
         });
@@ -121,14 +131,23 @@ export function useAIStream({
           reader.releaseLock();
         }
       } catch (error) {
-        setError(error as Error);
+        const errorObj = error as Error;
+        setError(errorObj);
         setIsStreaming(false);
-        onError?.(error as Error);
+
+        // Handle rate limiting
+        if (errorObj.message.includes('429') && onRateLimit) {
+          const match = errorObj.message.match(/retry after (\d+)/);
+          const retryAfter = match ? parseInt(match[1]) : 60;
+          onRateLimit(retryAfter);
+        }
+
+        onError?.(errorObj);
       } finally {
         abortControllerRef.current = null;
       }
     },
-    [api, onChunk, onComplete, onError],
+    [api, transportConfig, onChunk, onComplete, onError, onRateLimit],
   );
 
   return {

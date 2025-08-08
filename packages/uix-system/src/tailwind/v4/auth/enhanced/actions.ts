@@ -5,6 +5,7 @@
 
 'use server';
 
+import { logError } from '@repo/observability';
 import type { FormState } from '../types';
 
 // =============================================================================
@@ -59,7 +60,7 @@ export async function initiateEmailChangeAction(
       };
     }
   } catch (error: any) {
-    console.error('Email change initiation error:', error);
+    logError('Email change initiation error:', { error });
 
     if (error?.message?.includes('already exists')) {
       return {
@@ -119,7 +120,7 @@ export async function confirmEmailChangeAction(
       };
     }
   } catch (error: any) {
-    console.error('Email change confirmation error:', error);
+    logError('Email change confirmation error:', { error });
 
     if (error?.message?.includes('expired')) {
       return {
@@ -136,8 +137,8 @@ export async function confirmEmailChangeAction(
 }
 
 export async function cancelEmailChangeAction(
-  prevState: any,
-  formData: FormData,
+  _prevState: any,
+  _formData: FormData,
 ): Promise<FormState> {
   try {
     // Import Better Auth server action
@@ -159,7 +160,7 @@ export async function cancelEmailChangeAction(
       };
     }
   } catch (error) {
-    console.error('Email change cancellation error:', error);
+    logError('Email change cancellation error:', { error });
     return {
       success: false,
       error: 'An error occurred while cancelling the email change request.',
@@ -204,7 +205,7 @@ export async function revokeDeviceAction(prevState: any, formData: FormData): Pr
       };
     }
   } catch (error) {
-    console.error('Device revocation error:', error);
+    logError('Device revocation error:', { error });
     return {
       success: false,
       error: 'An error occurred while revoking device access. Please try again.',
@@ -251,7 +252,7 @@ export async function updateDeviceTrustAction(
       };
     }
   } catch (error) {
-    console.error('Device trust update error:', error);
+    logError('Device trust update error:', { error });
     return {
       success: false,
       error: 'An error occurred while updating device trust. Please try again.',
@@ -296,7 +297,7 @@ export async function revokeAllDevicesAction(
       };
     }
   } catch (error) {
-    console.error('Revoke all devices error:', error);
+    logError('Revoke all devices error:', { error });
     return {
       success: false,
       error: 'An error occurred while revoking device access. Please try again.',
@@ -343,7 +344,7 @@ export async function generateBackupCodesAction(
       };
     }
   } catch (error) {
-    console.error('Backup codes generation error:', error);
+    logError('Backup codes generation error:', { error });
     return {
       success: false,
       error: 'An error occurred while generating backup codes. Please try again.',
@@ -352,8 +353,8 @@ export async function generateBackupCodesAction(
 }
 
 export async function downloadBackupCodesAction(
-  prevState: any,
-  formData: FormData,
+  _prevState: any,
+  _formData: FormData,
 ): Promise<FormState> {
   try {
     // Import Better Auth server action
@@ -376,7 +377,7 @@ export async function downloadBackupCodesAction(
       };
     }
   } catch (error) {
-    console.error('Backup codes download error:', error);
+    logError('Backup codes download error:', { error });
     return {
       success: false,
       error: 'An error occurred while downloading backup codes. Please try again.',
@@ -417,7 +418,7 @@ export async function revokeBackupCodesAction(
       };
     }
   } catch (error) {
-    console.error('Backup codes revocation error:', error);
+    logError('Backup codes revocation error:', { error });
     return {
       success: false,
       error: 'An error occurred while revoking backup codes. Please try again.',
@@ -480,7 +481,7 @@ export async function initiateAccountDeletionAction(
       };
     }
   } catch (error: any) {
-    console.error('Account deletion initiation error:', error);
+    logError('Account deletion initiation error:', { error });
 
     if (error?.message?.includes('password')) {
       return {
@@ -548,7 +549,7 @@ export async function confirmAccountDeletionAction(
       };
     }
   } catch (error: any) {
-    console.error('Account deletion confirmation error:', error);
+    logError('Account deletion confirmation error:', { error });
 
     if (error?.message?.includes('expired')) {
       return {
@@ -565,8 +566,8 @@ export async function confirmAccountDeletionAction(
 }
 
 export async function cancelAccountDeletionAction(
-  prevState: any,
-  formData: FormData,
+  _prevState: any,
+  _formData: FormData,
 ): Promise<FormState> {
   try {
     // Import Better Auth server action
@@ -588,7 +589,7 @@ export async function cancelAccountDeletionAction(
       };
     }
   } catch (error) {
-    console.error('Account deletion cancellation error:', error);
+    logError('Account deletion cancellation error:', { error });
     return {
       success: false,
       error: 'An error occurred while cancelling account deletion.',
@@ -649,7 +650,7 @@ export async function requestDataExportAction(
       };
     }
   } catch (error: any) {
-    console.error('Data export request error:', error);
+    logError('Data export request error:', { error });
 
     if (error?.message?.includes('limit')) {
       return {
@@ -710,7 +711,7 @@ export async function cancelExportRequestAction(
       };
     }
   } catch (error) {
-    console.error('Export cancellation error:', error);
+    logError('Export cancellation error:', { error });
     return {
       success: false,
       error: 'An error occurred while cancelling the export request.',
@@ -751,7 +752,7 @@ export async function downloadExportAction(prevState: any, formData: FormData): 
       };
     }
   } catch (error) {
-    console.error('Export download error:', error);
+    logError('Export download error:', { error });
     return {
       success: false,
       error: 'An error occurred while generating download link.',
@@ -828,7 +829,7 @@ export async function checkRateLimit(userId: string, action: string): Promise<bo
     const result = await authCheckRateLimit(userId, action);
     return result.allowed;
   } catch (error) {
-    console.error('Rate limit check error:', error);
+    logError('Rate limit check error:', { error });
     return false;
   }
 }

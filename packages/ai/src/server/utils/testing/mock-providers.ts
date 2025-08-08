@@ -1,4 +1,5 @@
-import type { ModelMessage } from 'ai';
+// Note: ModelMessage not available in AI SDK v5 canary, using any for compatibility
+// TODO: Update to proper CoreMessage types when available
 import {
   compareMessages,
   createReasoningResponse,
@@ -7,6 +8,7 @@ import {
   createToolCallResponse,
   type TestStreamPart,
 } from './message-comparison';
+type ModelMessage = any;
 
 export interface TestPromptResponse {
   prompt: ModelMessage;

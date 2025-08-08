@@ -14,7 +14,7 @@ import { createLinkTestSuite, createScenarios, createTestData } from '../setup';
 describe('client Links Module', () => {
   // Test module exports
   test('should export all required client functions', async () => {
-    const clientModule = await import('#/client');
+    const clientModule = await import('../../src/client');
 
     expect(clientModule).toHaveProperty('createClientLinkManager');
     expect(clientModule).toHaveProperty('trackLinkClick');
@@ -78,7 +78,7 @@ describe('client Links Module', () => {
         referrer: 'https://google.com',
       });
 
-      const { trackLinkClick, createClientLinkManager } = await import('#/client');
+      const { trackLinkClick, createClientLinkManager } = await import('../../src/client');
 
       try {
         const manager = await createClientLinkManager({
@@ -102,7 +102,7 @@ describe('client Links Module', () => {
     });
 
     test('should create short link with client manager', async () => {
-      const { createShortLink, createClientLinkManager } = await import('#/client');
+      const { createShortLink, createClientLinkManager } = await import('../../src/client');
 
       try {
         const manager = await createClientLinkManager({
@@ -130,7 +130,7 @@ describe('client Links Module', () => {
         location: { href: 'https://example.com' },
       });
 
-      const { openAndTrackLink, createClientLinkManager } = await import('#/client');
+      const { openAndTrackLink, createClientLinkManager } = await import('../../src/client');
 
       try {
         const manager = await createClientLinkManager({
@@ -191,7 +191,7 @@ describe('client Links Module', () => {
   // Test error handling
   describe('error handling', () => {
     test('should handle network errors gracefully', async () => {
-      const { createClientLinkManager } = await import('#/client');
+      const { createClientLinkManager } = await import('../../src/client');
 
       try {
         const manager = await createClientLinkManager({
@@ -215,7 +215,7 @@ describe('client Links Module', () => {
     });
 
     test('should handle invalid URLs gracefully', async () => {
-      const { createClientLinkManager } = await import('#/client');
+      const { createClientLinkManager } = await import('../../src/client');
 
       try {
         const manager = await createClientLinkManager({

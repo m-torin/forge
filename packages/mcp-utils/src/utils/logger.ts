@@ -1,11 +1,10 @@
 /**
- * Advanced Async Logger with buffering, file rotation, and performance optimization.
- * Consolidates and enhances the AsyncLogger implementation from agent files.
+ * Logger utilities using @repo/observability
+ * Provides a simplified logger interface that delegates to the observability system
  */
 
-import { createWriteStream, WriteStream } from 'node:fs';
-import { mkdir, stat, unlink } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { logDebug, logError, logInfo, logWarn } from '@repo/observability/server';
+import { throwIfAborted } from './abort-support';
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
@@ -18,6 +17,8 @@ export interface LoggerOptions {
   flushInterval?: number;
   maxFileSize?: number;
   maxFiles?: number;
+  streaming?: boolean;
+  signal?: AbortSignal;
 }
 
 export interface LoggerStats {
@@ -28,129 +29,101 @@ export interface LoggerStats {
   errors: number;
 }
 
+export interface StreamingLogChunk {
+  timestamp: string;
+  sessionId: string;
+  level: LogLevel;
+  message: string;
+  metadata?: Record<string, any>;
+  bytesProcessed: number;
+  isComplete: boolean;
+}
+
+/**
+ * AsyncLogger that delegates to @repo/observability
+ * Maintains API compatibility while using centralized logging
+ * Enhanced with Node.js 22+ streaming capabilities
+ */
 export class AsyncLogger {
   private sessionId: string;
   private logLevel: LogLevel;
-  private logDir: string;
-  private logFileName: string;
-  private maxBufferSize: number;
-  private flushInterval: number;
-  private maxFileSize: number;
-  private maxFiles: number;
-  
-  private writeStream: WriteStream | null;
-  private buffer: string[];
-  private bufferSize: number;
-  private flushTimer: NodeJS.Timeout | null;
-  private isClosing: boolean;
-  private isInitialized: boolean;
-  
+  private stats: LoggerStats;
   private levels: Record<LogLevel, number>;
   private currentLevel: number;
-  private stats: LoggerStats;
+  private isInitialized: boolean = false;
+  private isClosing: boolean = false;
+  private streamingEnabled: boolean = false;
+  private logBuffer: Array<{ message: string; level: LogLevel; timestamp: string }> = [];
 
   constructor(options: LoggerOptions = {}) {
     this.sessionId = options.sessionId || 'unknown';
     this.logLevel = options.logLevel || 'info';
-    this.logDir = options.logDir || './logs';
-    this.logFileName = options.logFileName || `mcp-utils-${this.sessionId}.log`;
-    this.maxBufferSize = options.maxBufferSize || 16 * 1024; // 16KB buffer
-    this.flushInterval = options.flushInterval || 100; // ms
-    this.maxFileSize = options.maxFileSize || 10 * 1024 * 1024; // 10MB
-    this.maxFiles = options.maxFiles || 5;
-    
-    this.writeStream = null;
-    this.buffer = [];
-    this.bufferSize = 0;
-    this.flushTimer = null;
-    this.isClosing = false;
-    this.isInitialized = false;
-    
+    this.streamingEnabled = options.streaming || false;
+
     // Log levels
     this.levels = {
       debug: 0,
       info: 1,
       warn: 2,
-      error: 3
+      error: 3,
     };
-    
+
     this.currentLevel = this.levels[this.logLevel] || 1;
-    
+
     // Statistics
     this.stats = {
       messagesLogged: 0,
       bytesWritten: 0,
       flushCount: 0,
       rotationCount: 0,
-      errors: 0
+      errors: 0,
     };
   }
 
   async init(): Promise<void> {
     if (this.isInitialized) return;
-    
-    try {
-      // Ensure log directory exists
-      await mkdir(this.logDir, { recursive: true });
-      
-      const logPath = join(this.logDir, this.logFileName);
-      
-      this.writeStream = createWriteStream(logPath, {
-        flags: 'a',
-        highWaterMark: 16 * 1024 // 16KB chunks
-      });
 
-      this.writeStream.on('error', (error) => {
-        console.error(`Logger write stream error: ${error.message}`);
-        this.stats.errors++;
-      });
-
-      // Set up periodic flushing
-      this.flushTimer = setInterval(() => {
-        if (!this.isClosing) {
-          this.flush();
-        }
-      }, this.flushInterval);
-
-      // Ensure cleanup on process exit
-      process.once('beforeExit', () => this.close());
-      process.once('SIGINT', () => this.close());
-      process.once('SIGTERM', () => this.close());
-
-      this.isInitialized = true;
-      this.log('Logger initialized', 'info');
-      
-    } catch (error) {
-      console.error(`Failed to initialize logger: ${(error as Error).message}`);
-      this.stats.errors++;
-      throw error;
-    }
+    this.isInitialized = true;
+    this.log('Logger initialized', 'debug');
   }
 
   log(message: string, level: LogLevel = 'info'): void {
     if (!this.shouldLog(level)) return;
     if (this.isClosing) return;
 
-    const timestamp = new Date().toISOString();
-    const logEntry = `[${timestamp}] [${level.toUpperCase()}] ${message}\n`;
-    const entrySize = Buffer.byteLength(logEntry);
+    const contextMessage = `[${this.sessionId}] ${message}`;
+    const context = {
+      extra: { sessionId: this.sessionId, component: 'mcp-utils' },
+      tags: { logger: 'AsyncLogger', sessionId: this.sessionId },
+    };
+
+    // Add to streaming buffer if streaming is enabled
+    if (this.streamingEnabled) {
+      this.logBuffer.push({
+        message: contextMessage,
+        level,
+        timestamp: new Date().toISOString(),
+      });
+    }
 
     this.stats.messagesLogged++;
-    this.stats.bytesWritten += entrySize;
+    // Approximate bytes for stats
+    this.stats.bytesWritten += Buffer.byteLength(contextMessage);
 
-    // If single entry exceeds buffer or logger not initialized, handle specially
-    if (entrySize > this.maxBufferSize || !this.isInitialized) {
-      this.writeDirectly(logEntry);
-      return;
+    switch (level) {
+      case 'debug':
+        logDebug(contextMessage, context);
+        break;
+      case 'info':
+        logInfo(contextMessage, context);
+        break;
+      case 'warn':
+        logWarn(contextMessage, context);
+        break;
+      case 'error':
+        logError(contextMessage, context);
+        break;
     }
-
-    // Check if adding this entry would exceed buffer
-    if (this.bufferSize + entrySize > this.maxBufferSize) {
-      this.flush();
-    }
-
-    this.buffer.push(logEntry);
-    this.bufferSize += entrySize;
   }
 
   debug(message: string): void {
@@ -173,97 +146,13 @@ export class AsyncLogger {
     return this.levels[level] >= this.currentLevel;
   }
 
-  private writeDirectly(data: string): void {
-    if (this.writeStream && !this.isClosing) {
-      this.writeStream.write(data);
-    } else {
-      // Fallback to console if stream not available
-      console.log(data.trim());
-    }
-  }
-
   flush(): void {
-    if (this.buffer.length === 0 || this.isClosing) return;
-
-    const data = this.buffer.join('');
-    this.buffer = [];
-    this.bufferSize = 0;
+    // @repo/observability handles its own flushing
     this.stats.flushCount++;
 
-    if (this.writeStream) {
-      this.writeStream.write(data);
-      this.checkRotation();
-    }
-  }
-
-  private async checkRotation(): Promise<void> {
-    if (!this.writeStream) return;
-
-    try {
-      const logPath = join(this.logDir, this.logFileName);
-      const stats = await stat(logPath);
-      
-      if (stats.size > this.maxFileSize) {
-        await this.rotateLog();
-      }
-    } catch (error) {
-      // File might not exist yet, ignore error
-    }
-  }
-
-  private async rotateLog(): Promise<void> {
-    if (!this.writeStream) return;
-
-    try {
-      // Close current stream
-      this.writeStream.end();
-      
-      // Rotate existing files
-      for (let i = this.maxFiles - 1; i > 0; i--) {
-        const oldPath = join(this.logDir, `${this.logFileName}.${i}`);
-        const newPath = join(this.logDir, `${this.logFileName}.${i + 1}`);
-        
-        try {
-          await stat(oldPath);
-          if (i === this.maxFiles - 1) {
-            await unlink(oldPath); // Delete oldest
-          } else {
-            await unlink(newPath).catch(() => {}); // Remove target if exists
-            // Note: fs.rename doesn't work cross-filesystem, using copy approach would be better
-          }
-        } catch {
-          // File doesn't exist, continue
-        }
-      }
-
-      // Move current log to .1
-      const currentPath = join(this.logDir, this.logFileName);
-      const firstRotated = join(this.logDir, `${this.logFileName}.1`);
-      
-      try {
-        await unlink(firstRotated).catch(() => {});
-        // Again, would need copy + unlink for cross-filesystem
-      } catch {
-        // Ignore errors
-      }
-
-      // Create new stream
-      this.writeStream = createWriteStream(currentPath, {
-        flags: 'a',
-        highWaterMark: 16 * 1024
-      });
-
-      this.writeStream.on('error', (error) => {
-        console.error(`Logger write stream error: ${error.message}`);
-        this.stats.errors++;
-      });
-
-      this.stats.rotationCount++;
-      this.log('Log rotated', 'info');
-      
-    } catch (error) {
-      console.error(`Log rotation failed: ${(error as Error).message}`);
-      this.stats.errors++;
+    // Clear streaming buffer on flush
+    if (this.streamingEnabled) {
+      this.logBuffer = [];
     }
   }
 
@@ -271,37 +160,107 @@ export class AsyncLogger {
     return {
       ...this.stats,
       sessionId: this.sessionId,
-      currentLevel: this.logLevel
+      currentLevel: this.logLevel,
     };
   }
 
   async close(): Promise<void> {
     if (this.isClosing) return;
-    
+
     this.isClosing = true;
-    
-    // Clear timer
-    if (this.flushTimer) {
-      clearInterval(this.flushTimer);
-      this.flushTimer = null;
+    // Clear streaming buffer on close
+    this.logBuffer = [];
+    // @repo/observability handles its own cleanup
+  }
+
+  // Node.js 22+ Streaming log aggregation using AsyncGenerator
+  async *streamLogs(
+    options: {
+      chunkSize?: number;
+      signal?: AbortSignal;
+      includeBuffer?: boolean;
+    } = {},
+  ): AsyncGenerator<StreamingLogChunk, void, unknown> {
+    const { chunkSize = 10, signal, includeBuffer = true } = options;
+
+    if (!this.streamingEnabled) {
+      throw new Error('Streaming not enabled for this logger. Enable with streaming: true option.');
     }
-    
-    // Final flush
-    this.flush();
-    
-    // Close stream
-    if (this.writeStream) {
-      return new Promise((resolve) => {
-        this.writeStream!.end(() => {
-          this.writeStream = null;
-          resolve();
-        });
-      });
+
+    let bytesProcessed = 0;
+    let chunkIndex = 0;
+
+    // First, yield existing buffered logs if requested
+    if (includeBuffer && this.logBuffer.length > 0) {
+      const totalLogs = this.logBuffer.length;
+
+      for (let i = 0; i < totalLogs; i += chunkSize) {
+        throwIfAborted(signal);
+
+        const chunk = this.logBuffer.slice(i, i + chunkSize);
+
+        for (const logEntry of chunk) {
+          const logSize = Buffer.byteLength(logEntry.message, 'utf8');
+          bytesProcessed += logSize;
+
+          yield {
+            timestamp: logEntry.timestamp,
+            sessionId: this.sessionId,
+            level: logEntry.level,
+            message: logEntry.message,
+            metadata: {
+              chunkIndex: chunkIndex++,
+              bufferIndex: i + chunk.indexOf(logEntry),
+              isBuffered: true,
+            },
+            bytesProcessed,
+            isComplete: i + chunk.length >= totalLogs,
+          };
+
+          // Yield to event loop periodically
+          if (chunkIndex % 5 === 0) {
+            await new Promise(resolve => setImmediate(resolve));
+          }
+        }
+      }
     }
+
+    // Mark buffer-only streaming as complete
+    if (!includeBuffer || this.logBuffer.length === 0) {
+      yield {
+        timestamp: new Date().toISOString(),
+        sessionId: this.sessionId,
+        level: 'info',
+        message: 'Log streaming completed',
+        metadata: {
+          chunkIndex: chunkIndex++,
+          totalChunks: chunkIndex,
+          streamingComplete: true,
+        },
+        bytesProcessed,
+        isComplete: true,
+      };
+    }
+  }
+
+  // Get streaming-specific stats
+  getStreamingStats(): LoggerStats & {
+    streamingEnabled: boolean;
+    bufferSize: number;
+    sessionId: string;
+  } {
+    return {
+      ...this.stats,
+      streamingEnabled: this.streamingEnabled,
+      bufferSize: this.logBuffer.length,
+      sessionId: this.sessionId,
+    };
   }
 }
 
-// Global logger registry for managing multiple named loggers
+/**
+ * Global logger registry for managing multiple named loggers
+ */
 export class LoggerRegistry {
   private loggers: Map<string, AsyncLogger>;
 
@@ -350,7 +309,124 @@ export class LoggerRegistry {
     }
     return stats;
   }
+
+  // Node.js 22+ Stream aggregated logs from all loggers
+  async *streamAggregatedLogs(
+    options: {
+      chunkSize?: number;
+      signal?: AbortSignal;
+      levelFilter?: LogLevel[];
+      sessionFilter?: string[];
+    } = {},
+  ): AsyncGenerator<StreamingLogChunk, void, unknown> {
+    const { chunkSize = 10, signal, levelFilter, sessionFilter } = options;
+
+    const eligibleLoggers = Array.from(this.loggers.entries()).filter(([sessionId, logger]) => {
+      if (sessionFilter && !sessionFilter.includes(sessionId)) return false;
+      return logger.getStreamingStats?.().streamingEnabled || false;
+    });
+
+    if (eligibleLoggers.length === 0) {
+      yield {
+        timestamp: new Date().toISOString(),
+        sessionId: 'aggregated',
+        level: 'info',
+        message: 'No streaming-enabled loggers found',
+        bytesProcessed: 0,
+        isComplete: true,
+      };
+      return;
+    }
+
+    let totalBytesProcessed = 0;
+    let aggregatedChunkIndex = 0;
+
+    // Stream from each eligible logger
+    for (const [sessionId, logger] of eligibleLoggers) {
+      throwIfAborted(signal);
+
+      try {
+        for await (const chunk of logger.streamLogs?.({ chunkSize, signal }) || []) {
+          // Apply level filter if specified
+          if (levelFilter && !levelFilter.includes(chunk.level)) {
+            continue;
+          }
+
+          totalBytesProcessed += chunk.bytesProcessed;
+
+          yield {
+            ...chunk,
+            metadata: {
+              ...chunk.metadata,
+              aggregatedChunkIndex: aggregatedChunkIndex++,
+              sourceSessionId: chunk.sessionId,
+            },
+            bytesProcessed: totalBytesProcessed,
+            isComplete: false, // Never complete until all loggers processed
+          };
+
+          // Yield to event loop
+          if (aggregatedChunkIndex % 10 === 0) {
+            await new Promise(resolve => setImmediate(resolve));
+          }
+        }
+      } catch (error) {
+        // Log error but continue with other loggers
+        yield {
+          timestamp: new Date().toISOString(),
+          sessionId: sessionId,
+          level: 'error',
+          message: `Streaming error for logger ${sessionId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          metadata: {
+            aggregatedChunkIndex: aggregatedChunkIndex++,
+            streamingError: true,
+            sourceSessionId: sessionId,
+          },
+          bytesProcessed: totalBytesProcessed,
+          isComplete: false,
+        };
+      }
+    }
+
+    // Final completion marker
+    yield {
+      timestamp: new Date().toISOString(),
+      sessionId: 'aggregated',
+      level: 'info',
+      message: `Aggregated streaming completed for ${eligibleLoggers.length} loggers`,
+      metadata: {
+        aggregatedChunkIndex: aggregatedChunkIndex++,
+        totalLoggers: eligibleLoggers.length,
+        aggregationComplete: true,
+      },
+      bytesProcessed: totalBytesProcessed,
+      isComplete: true,
+    };
+  }
 }
 
 // Default global registry instance
 export const globalLoggerRegistry = new LoggerRegistry();
+
+// Utility function for creating streaming-enabled loggers
+export function createStreamingLogger(sessionId: string, options: LoggerOptions = {}): AsyncLogger {
+  return globalLoggerRegistry.create(sessionId, {
+    ...options,
+    streaming: true,
+  });
+}
+
+// Utility function for streaming logs from multiple sessions
+export function streamLogsFromSessions(
+  sessionIds: string[],
+  options: {
+    chunkSize?: number;
+    signal?: AbortSignal;
+    levelFilter?: LogLevel[];
+  } = {},
+): AsyncGenerator<StreamingLogChunk, void, unknown> {
+  return globalLoggerRegistry.streamAggregatedLogs({
+    ...options,
+    sessionFilter: sessionIds,
+  });
+}

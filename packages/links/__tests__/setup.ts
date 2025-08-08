@@ -1,10 +1,6 @@
 import '@testing-library/jest-dom';
 import { beforeEach, vi } from 'vitest';
 
-// Import centralized mocks from @repo/qa (when available)
-// TODO: Re-enable when @repo/qa exports are built
-// import '@repo/qa/vitest/mocks/providers/upstash';
-
 // Mock console methods for cleaner test output
 const originalConsole = console;
 global.console = {
@@ -15,55 +11,7 @@ global.console = {
   debug: vi.fn(),
 };
 
-// Mock external dependencies
-vi.mock('@repo/observability/server/next', () => ({
-  createServerObservability: vi.fn(() => ({
-    logger: {
-      info: vi.fn(),
-      warn: vi.fn(),
-      error: vi.fn(),
-      debug: vi.fn(),
-    },
-    metrics: {
-      increment: vi.fn(),
-      gauge: vi.fn(),
-      histogram: vi.fn(),
-    },
-    tracing: {
-      startSpan: vi.fn(),
-      finishSpan: vi.fn(),
-    },
-  })),
-  logDebug: vi.fn(),
-  logError: vi.fn(),
-  logInfo: vi.fn(),
-  logWarn: vi.fn(),
-}));
-
-// Mock the entire observability package to prevent env access
-vi.mock('@repo/observability/server', () => ({
-  createServerObservability: vi.fn(() => ({
-    logger: {
-      info: vi.fn(),
-      warn: vi.fn(),
-      error: vi.fn(),
-      debug: vi.fn(),
-    },
-    metrics: {
-      increment: vi.fn(),
-      gauge: vi.fn(),
-      histogram: vi.fn(),
-    },
-    tracing: {
-      startSpan: vi.fn(),
-      finishSpan: vi.fn(),
-    },
-  })),
-  logDebug: vi.fn(),
-  logError: vi.fn(),
-  logInfo: vi.fn(),
-  logWarn: vi.fn(),
-}));
+// Observability mocks are now provided automatically by centralized @repo/qa setup
 
 vi.mock('@repo/analytics/shared', () => ({
   createAnalytics: vi.fn(() => ({
@@ -105,8 +53,8 @@ vi.mock('dub', () => ({
 }));
 
 // Mock DubProvider to ensure it has the client property and all methods
-vi.mock('#/shared/providers/dub-provider', async () => {
-  const actual = await vi.importActual('#/shared/providers/dub-provider');
+vi.mock('../src/shared/providers/dub-provider', async () => {
+  const actual = await vi.importActual('../src/shared/providers/dub-provider');
 
   class MockDubProvider {
     name = 'dub';
@@ -313,12 +261,12 @@ export const createLinkTestConfig = (overrides = {}) => ({
 
 // Common link manager creation patterns
 export const createTestLinkManager = async (config = createLinkTestConfig()) => {
-  const { createLinkManager } = await import('#/shared/utils/link-manager');
+  const { createLinkManager } = await import('../src/shared/utils/link-manager');
   return createLinkManager(config);
 };
 
 export const createTestDubProvider = async (config = { enabled: true, apiKey: 'test-key' }) => {
-  const { DubProvider } = await import('#/shared/providers/dub-provider');
+  const { DubProvider } = await import('../src/shared/providers/dub-provider');
   const { createTestData } = await import('./link-test-factory');
   const provider = new DubProvider(config);
   // Add mock properties for tests
@@ -328,7 +276,7 @@ export const createTestDubProvider = async (config = { enabled: true, apiKey: 't
 };
 
 export const createTestAnalyticsIntegration = async (config = { enabled: true }) => {
-  const { createAnalyticsIntegration } = await import('#/shared/utils/analytics-integration');
+  const { createAnalyticsIntegration } = await import('../src/shared/utils/analytics-integration');
   return createAnalyticsIntegration(config);
 };
 

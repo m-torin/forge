@@ -20,8 +20,12 @@ const meta: Meta<typeof AuthLayout> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const mockSubmit = (values: any) => console.log('Form submitted:', values);
-const mockSocialLogin = (provider: string) => console.log('Social login:', provider);
+const mockSubmit = (values: any) => {
+  // console.log('Form submitted:', values);
+};
+const mockSocialLogin = (provider: string) => {
+  // console.log('Social login:', provider);
+};
 
 const SampleForm = () => (
   <SignInForm

@@ -19,7 +19,7 @@ const ClassificationSchema = z.object({
     .max(3),
   categoryId: z.string(),
   confidence: z.number().min(0).max(1),
-  reasoning: z.string(),
+  reasoningText: z.string(),
 });
 
 export class AIProductClassifier {
@@ -50,7 +50,7 @@ export class AIProductClassifier {
               categoryId: 'unknown',
               confidence: 0,
               path: [],
-              reasoning: 'Classification failed',
+              reasoningText: 'Classification failed',
             },
           };
         }
@@ -68,6 +68,7 @@ export class AIProductClassifier {
       model: openai(this.model),
       prompt: productContext,
       schema: ClassificationSchema,
+      experimental_telemetry: { isEnabled: true },
       system: `You are a product categorization expert. Analyze the product and assign it to the most appropriate category from the provided taxonomy.
 
 Category Taxonomy:
@@ -90,7 +91,7 @@ Provide confidence scores and reasoning for your classification.`,
       categoryId: classificationResult.categoryId,
       confidence: classificationResult.confidence,
       path,
-      reasoning: classificationResult.reasoning,
+      reasoningText: classificationResult.reasoningText,
     };
   }
 
@@ -99,7 +100,9 @@ Provide confidence scores and reasoning for your classification.`,
     vectorResults: ProductClassificationResult[],
   ): Promise<ProductClassificationResult> {
     const vectorContext = vectorResults
-      .map((r: any) => `${r.categoryId} (confidence: ${r.confidence.toFixed(2)}) - ${r.reasoning}`)
+      .map(
+        (r: any) => `${r.categoryId} (confidence: ${r.confidence.toFixed(2)}) - ${r.reasoningText}`,
+      )
       .join('\n');
 
     const { text } = await generateText({
@@ -125,12 +128,12 @@ Your task is to:
       categoryId: 'unknown',
       confidence: 0,
       path: [],
-      reasoning: 'No similar products found',
+      reasoningText: 'No similar products found',
     };
 
     return {
       ...bestVectorResult,
-      reasoning: `Enhanced: ${text}`,
+      reasoningText: `Enhanced: ${text}`,
     };
   }
 

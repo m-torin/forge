@@ -240,13 +240,13 @@ export class AnalyticsManager {
     const promises = Array.from(targetProviders.entries()).map(async ([providerName, provider]) => {
       if (provider.page) {
         try {
-          await provider.page(name || '', enhancedProperties, this.context);
+          await provider.page(name ?? '', enhancedProperties, this.context);
         } catch (error) {
           // Error boundary: report error but don't let it affect other providers
           if (this.config.onError) {
             this.config.onError(error, {
               provider: providerName,
-              name: name || '',
+              name: name ?? '',
               method: 'page',
             });
           }

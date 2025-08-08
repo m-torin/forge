@@ -30,7 +30,7 @@ export interface MemoryEntry {
   timestamp: number;
   importance: number; // 0-1 scale
   tags: string[];
-  associatedMessages?: string[]; // IDs of related messages
+  associatedMessages?: string[];
   expiresAt?: number;
 }
 
@@ -134,7 +134,6 @@ export class AgentMemoryManager {
 
     this.memories.set(id, entry);
 
-    // Clean up old memories if needed
     this.cleanupOldMemories();
 
     logInfo('Agent Memory Manager: Memory added', {

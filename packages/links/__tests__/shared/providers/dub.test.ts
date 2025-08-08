@@ -43,7 +43,7 @@ describe('dub Provider', () => {
   // Test provider initialization
   describe('provider Initialization', () => {
     test('should initialize with minimal configuration', async () => {
-      const { DubProvider } = await import('#/shared/providers/dub-provider');
+      const { DubProvider } = await import('../../../src/shared/providers/dub-provider');
 
       const provider = new DubProvider(
         {
@@ -59,7 +59,7 @@ describe('dub Provider', () => {
     });
 
     test('should initialize with full configuration', async () => {
-      const { DubProvider } = await import('#/shared/providers/dub-provider');
+      const { DubProvider } = await import('../../../src/shared/providers/dub-provider');
 
       const provider = new DubProvider(
         {
@@ -80,7 +80,7 @@ describe('dub Provider', () => {
     });
 
     test('should handle disabled provider', async () => {
-      const { DubProvider } = await import('#/shared/providers/dub-provider');
+      const { DubProvider } = await import('../../../src/shared/providers/dub-provider');
 
       const provider = new DubProvider(
         {
@@ -99,7 +99,7 @@ describe('dub Provider', () => {
   // Test link creation
   describe('link Creation', () => {
     test('should create link with minimal data', async () => {
-      const { DubProvider } = await import('#/shared/providers/dub-provider');
+      const { DubProvider } = await import('../../../src/shared/providers/dub-provider');
 
       const provider = new DubProvider({ enabled: true, apiKey: 'test-key' }, mockDubClient);
 
@@ -119,7 +119,7 @@ describe('dub Provider', () => {
     });
 
     test('should create link with all options', async () => {
-      const { DubProvider } = await import('#/shared/providers/dub-provider');
+      const { DubProvider } = await import('../../../src/shared/providers/dub-provider');
 
       const provider = new DubProvider({ enabled: true, apiKey: 'test-key' }, mockDubClient);
 
@@ -179,7 +179,7 @@ describe('dub Provider', () => {
     });
 
     test('should handle create errors', async () => {
-      const { DubProvider } = await import('#/shared/providers/dub-provider');
+      const { DubProvider } = await import('../../../src/shared/providers/dub-provider');
 
       const provider = new DubProvider({ enabled: true, apiKey: 'test-key' }, mockDubClient);
 
@@ -194,7 +194,7 @@ describe('dub Provider', () => {
   // Test link retrieval
   describe('link Retrieval', () => {
     test('should get link by ID', async () => {
-      const { DubProvider } = await import('#/shared/providers/dub-provider');
+      const { DubProvider } = await import('../../../src/shared/providers/dub-provider');
 
       const provider = new DubProvider({ enabled: true, apiKey: 'test-key' }, mockDubClient);
 
@@ -208,7 +208,7 @@ describe('dub Provider', () => {
     });
 
     test('should return null for non-existent link', async () => {
-      const { DubProvider } = await import('#/shared/providers/dub-provider');
+      const { DubProvider } = await import('../../../src/shared/providers/dub-provider');
 
       const provider = new DubProvider({ enabled: true, apiKey: 'test-key' }, mockDubClient);
 
@@ -221,7 +221,7 @@ describe('dub Provider', () => {
     });
 
     test('should handle non-404 errors', async () => {
-      const { DubProvider } = await import('#/shared/providers/dub-provider');
+      const { DubProvider } = await import('../../../src/shared/providers/dub-provider');
 
       const provider = new DubProvider({ enabled: true, apiKey: 'test-key' }, mockDubClient);
 
@@ -235,7 +235,7 @@ describe('dub Provider', () => {
   // Test link updates
   describe('link Updates', () => {
     test('should update link', async () => {
-      const { DubProvider } = await import('#/shared/providers/dub-provider');
+      const { DubProvider } = await import('../../../src/shared/providers/dub-provider');
 
       const provider = new DubProvider({ enabled: true, apiKey: 'test-key' }, mockDubClient);
 
@@ -254,7 +254,7 @@ describe('dub Provider', () => {
     });
 
     test('should handle update errors', async () => {
-      const { DubProvider } = await import('#/shared/providers/dub-provider');
+      const { DubProvider } = await import('../../../src/shared/providers/dub-provider');
 
       const provider = new DubProvider({ enabled: true, apiKey: 'test-key' }, mockDubClient);
 
@@ -269,7 +269,7 @@ describe('dub Provider', () => {
   // Test link deletion
   describe('link Deletion', () => {
     test('should delete link', async () => {
-      const { DubProvider } = await import('#/shared/providers/dub-provider');
+      const { DubProvider } = await import('../../../src/shared/providers/dub-provider');
 
       const provider = new DubProvider({ enabled: true, apiKey: 'test-key' }, mockDubClient);
 
@@ -279,7 +279,7 @@ describe('dub Provider', () => {
     });
 
     test('should handle delete errors', async () => {
-      const { DubProvider } = await import('#/shared/providers/dub-provider');
+      const { DubProvider } = await import('../../../src/shared/providers/dub-provider');
 
       const provider = new DubProvider({ enabled: true, apiKey: 'test-key' }, mockDubClient);
 
@@ -292,7 +292,7 @@ describe('dub Provider', () => {
   // Test analytics
   describe('analytics', () => {
     test('should get analytics data', async () => {
-      const { DubProvider } = await import('#/shared/providers/dub-provider');
+      const { DubProvider } = await import('../../../src/shared/providers/dub-provider');
 
       const provider = new DubProvider({ enabled: true, apiKey: 'test-key' }, mockDubClient);
 
@@ -307,7 +307,7 @@ describe('dub Provider', () => {
     });
 
     test('should get click events', async () => {
-      const { DubProvider } = await import('#/shared/providers/dub-provider');
+      const { DubProvider } = await import('../../../src/shared/providers/dub-provider');
 
       const provider = new DubProvider({ enabled: true, apiKey: 'test-key' }, mockDubClient);
 
@@ -325,7 +325,7 @@ describe('dub Provider', () => {
   // Test bulk operations
   describe('bulk Operations', () => {
     test('should bulk create links', async () => {
-      const { DubProvider } = await import('#/shared/providers/dub-provider');
+      const { DubProvider } = await import('../../../src/shared/providers/dub-provider');
 
       const provider = new DubProvider({ enabled: true, apiKey: 'test-key' }, mockDubClient);
 
@@ -351,7 +351,7 @@ describe('dub Provider', () => {
     });
 
     test('should handle bulk create errors', async () => {
-      const { DubProvider } = await import('#/shared/providers/dub-provider');
+      const { DubProvider } = await import('../../../src/shared/providers/dub-provider');
 
       const provider = new DubProvider({ enabled: true, apiKey: 'test-key' }, mockDubClient);
 
@@ -371,7 +371,7 @@ describe('dub Provider', () => {
   // Test configuration handling
   describe('configuration Handling', () => {
     test('should apply default configuration', async () => {
-      const { DubProvider } = await import('#/shared/providers/dub-provider');
+      const { DubProvider } = await import('../../../src/shared/providers/dub-provider');
 
       const provider = new DubProvider(
         {
@@ -394,7 +394,7 @@ describe('dub Provider', () => {
     });
 
     test('should override default configuration', async () => {
-      const { DubProvider } = await import('#/shared/providers/dub-provider');
+      const { DubProvider } = await import('../../../src/shared/providers/dub-provider');
 
       const provider = new DubProvider(
         {
@@ -424,7 +424,7 @@ describe('dub Provider', () => {
   // Test error handling scenarios
   describe('error Handling', () => {
     test('should handle authentication errors', async () => {
-      const { DubProvider } = await import('#/shared/providers/dub-provider');
+      const { DubProvider } = await import('../../../src/shared/providers/dub-provider');
 
       const provider = new DubProvider({ enabled: true, apiKey: 'invalid-key' }, mockDubClient);
 
@@ -436,7 +436,7 @@ describe('dub Provider', () => {
     });
 
     test('should handle rate limiting errors', async () => {
-      const { DubProvider } = await import('#/shared/providers/dub-provider');
+      const { DubProvider } = await import('../../../src/shared/providers/dub-provider');
 
       const provider = new DubProvider({ enabled: true, apiKey: 'test-key' }, mockDubClient);
 
@@ -448,7 +448,7 @@ describe('dub Provider', () => {
     });
 
     test('should handle validation errors', async () => {
-      const { DubProvider } = await import('#/shared/providers/dub-provider');
+      const { DubProvider } = await import('../../../src/shared/providers/dub-provider');
 
       const provider = new DubProvider({ enabled: true, apiKey: 'test-key' }, mockDubClient);
 
@@ -458,7 +458,7 @@ describe('dub Provider', () => {
     });
 
     test('should handle network errors', async () => {
-      const { DubProvider } = await import('#/shared/providers/dub-provider');
+      const { DubProvider } = await import('../../../src/shared/providers/dub-provider');
 
       const provider = new DubProvider({ enabled: true, apiKey: 'test-key' }, mockDubClient);
 
@@ -473,7 +473,7 @@ describe('dub Provider', () => {
   // Test edge cases
   describe('edge Cases', () => {
     test('should handle empty responses', async () => {
-      const { DubProvider } = await import('#/shared/providers/dub-provider');
+      const { DubProvider } = await import('../../../src/shared/providers/dub-provider');
 
       const provider = new DubProvider({ enabled: true, apiKey: 'test-key' }, mockDubClient);
 
@@ -485,7 +485,7 @@ describe('dub Provider', () => {
     });
 
     test('should handle malformed responses', async () => {
-      const { DubProvider } = await import('#/shared/providers/dub-provider');
+      const { DubProvider } = await import('../../../src/shared/providers/dub-provider');
 
       const provider = new DubProvider({ enabled: true, apiKey: 'test-key' }, mockDubClient);
 
@@ -493,11 +493,11 @@ describe('dub Provider', () => {
 
       const link = await provider.createLink({ url: 'https://example.com' });
 
-      expect(link).toEqual({ invalid: 'response' });
+      expect(link).toStrictEqual({ invalid: 'response' });
     });
 
     test('should handle large payloads', async () => {
-      const { DubProvider } = await import('#/shared/providers/dub-provider');
+      const { DubProvider } = await import('../../../src/shared/providers/dub-provider');
 
       const provider = new DubProvider({ enabled: true, apiKey: 'test-key' }, mockDubClient);
 

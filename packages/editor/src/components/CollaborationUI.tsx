@@ -34,7 +34,6 @@ export function CollaborationUI({
   return (
     <Paper p="md" shadow="sm" withBorder>
       <Stack gap="sm">
-        {/* Header */}
         <Group justify="space-between">
           <Group>
             <IconUsers size={16} />
@@ -65,7 +64,6 @@ export function CollaborationUI({
           </Group>
         </Group>
 
-        {/* Active Collaborators */}
         {activeCollaborators.length > 0 && (
           <>
             <Divider />
@@ -87,7 +85,6 @@ export function CollaborationUI({
           </>
         )}
 
-        {/* Inactive Collaborators (Expandable) */}
         {inactiveCollaborators.length > 0 && (
           <>
             <Divider />
@@ -120,7 +117,6 @@ export function CollaborationUI({
           </>
         )}
 
-        {/* No Collaborators */}
         {collaborators.length === 0 && (
           <>
             <Divider />

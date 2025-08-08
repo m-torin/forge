@@ -20,7 +20,7 @@
    - ✅ All files now pass `pnpm typecheck` without errors
 
 4. **Linting Issues** - **95% Fixed**
-   - ✅ Changed `.toEqual()` to `.toStrictEqual()` for object comparisons
+   - ✅ Changed `.toStrictEqual()` to `.toStrictEqual()` for object comparisons
    - ✅ Fixed most ESLint warnings
    - ⚠️ 1 intentional warning remaining (non-blocking promise pattern)
 

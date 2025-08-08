@@ -168,8 +168,8 @@ describe('embeddingManager', () => {
       expect(result).toStrictEqual({
         embeddings: mockEmbeddings,
         usage: {
-          completionTokens: 0,
-          promptTokens: 10,
+          outputTokens: 0,
+          inputTokens: 10,
           totalTokens: 10,
         },
       });
@@ -201,8 +201,8 @@ describe('embeddingManager', () => {
       });
       const result = await manager.embedWithProvider(options);
       expect(result.usage).toStrictEqual({
-        completionTokens: 0,
-        promptTokens: 0,
+        outputTokens: 0,
+        inputTokens: 0,
         totalTokens: 0,
       });
     });

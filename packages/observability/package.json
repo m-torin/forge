@@ -70,6 +70,14 @@
     "./plugins/sentry-microfrontend/env": {
       "types": "./src/plugins/sentry-microfrontend/env.ts",
       "import": "./src/plugins/sentry-microfrontend/env.ts"
+    },
+    "./plugins/sentry-nextjs": {
+      "types": "./src/plugins/sentry-nextjs/index.ts",
+      "import": "./src/plugins/sentry-nextjs/index.ts"
+    },
+    "./plugins/sentry-nextjs/env": {
+      "types": "./src/plugins/sentry-nextjs/env.ts",
+      "import": "./src/plugins/sentry-nextjs/env.ts"
     }
   },
   "files": [
@@ -84,6 +92,15 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
+    "@logtail/node": "^0.5.5",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/exporter-jaeger": "^1.25.5",
+    "@opentelemetry/exporter-prometheus": "^0.203.0",
+    "@opentelemetry/exporter-zipkin": "^1.25.5",
+    "@opentelemetry/instrumentation": "^0.203.0",
+    "@opentelemetry/instrumentation-fs": "^0.23.0",
+    "@opentelemetry/instrumentation-http": "^0.203.0",
+    "@opentelemetry/sdk-node": "^0.203.0",
     "@sentry/nextjs": "catalog:",
     "@sentry/node": "latest",
     "@sentry/react": "latest",
@@ -120,6 +137,8 @@
     "@logtape/cloudwatch-logs": "^1.0.4",
     "@logtape/file": "^1.0.4",
     "@logtape/logtape": "^1.0.4",
-    "@logtape/sentry": "^1.0.4"
+    "@logtape/sentry": "^1.0.4",
+    "launchdarkly-js-client-sdk": "^3.3.0",
+    "unleash-proxy-client": "^3.2.0"
   }
 }

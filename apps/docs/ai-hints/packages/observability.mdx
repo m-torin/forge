@@ -1,6 +1,7 @@
 ---
 title: "@repo/observability"
 description: AI hints for observability package
+icon: "chart-mixed"
 ---
 
 # @repo/observability
@@ -18,9 +19,9 @@ description: AI hints for observability package
 
 ```typescript
 // In Next.js server components/actions
-import { createObservability } from "@repo/observability/server/next";
+import { createServerObservability } from "@repo/observability/server/next";
 
-const observability = createObservability();
+const observability = createServerObservability();
 
 // Track errors
 try {
@@ -38,9 +39,9 @@ observability.captureMessage("User completed checkout", "info");
 
 ```typescript
 // In middleware.ts or edge functions
-import { createObservability } from "@repo/observability/server/edge";
+import { createEdgeObservability } from "@repo/observability/server/edge";
 
-const observability = createObservability();
+const observability = createEdgeObservability();
 
 export async function middleware(request: NextRequest) {
   try {
@@ -56,9 +57,9 @@ export async function middleware(request: NextRequest) {
 
 ```typescript
 // In client components
-import { createObservability } from "@repo/observability/client/next";
+import { getObservability } from "@repo/observability/client/next";
 
-const observability = createObservability();
+const observability = getObservability();
 
 export function ClientComponent() {
   const handleError = (error: Error) => {
@@ -75,27 +76,27 @@ export function ClientComponent() {
 
 ```typescript
 // ❌ Wrong - in middleware.ts
-import { createObservability } from "@repo/observability/server/next";
+import { createServerObservability } from "@repo/observability/server/next";
 
 // ✅ Correct - use edge variant
-import { createObservability } from "@repo/observability/server/edge";
+import { createEdgeObservability } from "@repo/observability/server/edge";
 ```
 
 ### ❌ Don't use edge exports in server components
 
 ```typescript
 // ❌ Wrong - in server component
-import { createObservability } from "@repo/observability/server/edge";
+import { createEdgeObservability } from "@repo/observability/server/edge";
 
 // ✅ Correct - use server/next variant
-import { createObservability } from "@repo/observability/server/next";
+import { createServerObservability } from "@repo/observability/server/next";
 ```
 
 ### ❌ Don't forget to handle errors gracefully
 
 ```typescript
 // ❌ Wrong - observability failure crashes app
-const observability = createObservability();
+const observability = createServerObservability();
 observability.captureException(error); // Could fail
 
 // ✅ Correct - wrap in try-catch
@@ -125,9 +126,9 @@ SENTRY_RELEASE=1.0.0
 ### Custom Configuration
 
 ```typescript
-import { createObservability } from "@repo/observability/server/next";
+import { createServerObservability } from "@repo/observability/server/next";
 
-const observability = createObservability({
+const observability = createServerObservability({
   dsn: process.env.SENTRY_DSN,
   environment: process.env.NODE_ENV,
   release: process.env.VERCEL_GIT_COMMIT_SHA,
@@ -143,9 +144,9 @@ const observability = createObservability({
 ### Track Performance
 
 ```typescript
-import { createObservability } from "@repo/observability/server/next";
+import { createServerObservability } from "@repo/observability/server/next";
 
-const observability = createObservability();
+const observability = createServerObservability();
 
 // Start a transaction
 const transaction = observability.startTransaction({
@@ -176,10 +177,10 @@ try {
 ### Set User Information
 
 ```typescript
-import { createObservability } from "@repo/observability/server/next";
+import { createServerObservability } from "@repo/observability/server/next";
 import { auth } from "@repo/auth/server/next";
 
-const observability = createObservability();
+const observability = createServerObservability();
 
 export async function protectedAction() {
   const session = await auth();
@@ -198,7 +199,5 @@ export async function protectedAction() {
 
 ## See Also
 
-- Task templates:
-  [Observability setup template](/ai-hints/task-templates#implementing-error-tracking)
-- Command sequences:
-  [Debugging build failures](/ai-hints/command-sequences#debugging-build-failures)
+- [Quick Reference](/ai-hints/quick-reference) - Observability setup and
+  debugging commands

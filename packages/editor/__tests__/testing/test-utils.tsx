@@ -3,21 +3,8 @@ import { CollaborationOptions } from '#/types';
 import { MantineProvider } from '@mantine/core';
 import { render, RenderOptions } from '@testing-library/react';
 import { ReactElement, ReactNode } from 'react';
-import { vi } from 'vitest';
 
-// Remove the MantineProvider mock since we want the real one
-
-vi.mock('@mantine/modals', () => ({
-  ModalsProvider: ({ children }: { children: ReactNode }) => children,
-}));
-
-vi.mock('@mantine/notifications', () => ({
-  Notifications: () => null,
-  notifications: {
-    show: vi.fn(),
-    hide: vi.fn(),
-  },
-}));
+// Mantine mocks are handled by QA centralized setup
 
 interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
   collaborationOptions?: Partial<CollaborationOptions>;

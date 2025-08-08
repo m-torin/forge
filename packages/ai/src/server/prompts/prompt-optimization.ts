@@ -14,7 +14,7 @@ function estimateTokens(text: string): number {
  */
 export interface PromptOptimizationConfig {
   model?: string;
-  maxTokens?: number;
+  maxOutputTokens?: number;
   preserveStructure?: boolean;
   optimizationLevel?: 'light' | 'moderate' | 'aggressive';
 }
@@ -40,7 +40,7 @@ export class PromptOptimizer {
   constructor(config: PromptOptimizationConfig = {}) {
     this.config = {
       model: config.model || 'gpt-4',
-      maxTokens: config.maxTokens || 4000,
+      maxOutputTokens: config.maxOutputTokens || 4000,
       preserveStructure: config.preserveStructure ?? true,
       optimizationLevel: config.optimizationLevel || 'moderate',
     };
@@ -68,8 +68,8 @@ export class PromptOptimizer {
     }
 
     // Ensure we don't exceed max tokens
-    if (this.countTokens(optimized) > this.config.maxTokens) {
-      optimized = this.truncateToTokenLimit(optimized, this.config.maxTokens);
+    if (this.countTokens(optimized) > this.config.maxOutputTokens) {
+      optimized = this.truncateToTokenLimit(optimized, this.config.maxOutputTokens);
       techniques.push('truncation');
     }
 
@@ -137,7 +137,10 @@ export class PromptOptimizer {
     };
 
     for (const [long, short] of Object.entries(compressions)) {
-      const regex = new RegExp(long, 'gi');
+      // Escape the string for regex safety
+      const escapedLong = long.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      // eslint-disable-next-line security/detect-non-literal-regexp
+      const regex = new RegExp(escapedLong, 'gi');
       if (regex.test(optimized)) {
         optimized = optimized.replace(regex, short);
       }
@@ -147,12 +150,14 @@ export class PromptOptimizer {
     // Remove filler words
     const fillers = ['very', 'really', 'quite', 'just', 'actually', 'basically'];
     for (const filler of fillers) {
-      const regex = new RegExp(`\\b${filler}\\b`, 'gi');
+      // Escape the filler word for regex safety
+      const escapedFiller = filler.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      // eslint-disable-next-line security/detect-non-literal-regexp
+      const regex = new RegExp(`\\b${escapedFiller}\\b`, 'gi');
       optimized = optimized.replace(regex, '');
     }
     techniques.push('filler_removal');
 
-    // Clean up extra spaces from removals
     optimized = optimized.replace(/\s+/g, ' ').trim();
 
     return optimized;
@@ -176,7 +181,10 @@ export class PromptOptimizer {
     };
 
     for (const [full, abbr] of Object.entries(abbreviations)) {
-      const regex = new RegExp(`\\b${full}\\b`, 'gi');
+      // Escape the full word for regex safety
+      const escapedFull = full.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      // eslint-disable-next-line security/detect-non-literal-regexp
+      const regex = new RegExp(`\\b${escapedFull}\\b`, 'gi');
       optimized = optimized.replace(regex, abbr);
     }
     techniques.push('abbreviation');
@@ -192,7 +200,6 @@ export class PromptOptimizer {
     optimized = optimized.replace(/•\s+/g, '-');
     techniques.push('list_compression');
 
-    // Clean up
     optimized = optimized.replace(/\s+/g, ' ').trim();
 
     return optimized;
@@ -201,15 +208,15 @@ export class PromptOptimizer {
   /**
    * Truncate to token limit
    */
-  private truncateToTokenLimit(text: string, maxTokens: number): string {
+  private truncateToTokenLimit(text: string, maxOutputTokens: number): string {
     const tokenCount = estimateTokens(text);
 
-    if (tokenCount <= maxTokens) {
+    if (tokenCount <= maxOutputTokens) {
       return text;
     }
 
     // Try to truncate at sentence boundary
-    const ratio = maxTokens / tokenCount;
+    const ratio = maxOutputTokens / tokenCount;
     const charLimit = Math.floor(text.length * ratio);
     let truncated = text.substring(0, charLimit);
 
@@ -230,7 +237,7 @@ export class PromptOptimizer {
       operation: 'prompt_truncate',
       metadata: {
         originalTokens: tokenCount,
-        truncatedTokens: maxTokens,
+        truncatedTokens: maxOutputTokens,
       },
     });
 
@@ -273,7 +280,7 @@ export const optimizationStrategies = {
         const aggressive = new PromptOptimizer({
           ...optimizer['config'],
           optimizationLevel: 'aggressive',
-          maxTokens: targetTokens,
+          maxOutputTokens: targetTokens,
         });
         optimized.push(aggressive.optimize(prompt).optimized);
       }
@@ -319,7 +326,7 @@ export const optimizationStrategies = {
         // Optimize to fit allocation
         const customOptimizer = new PromptOptimizer({
           ...optimizer['config'],
-          maxTokens: allocation,
+          maxOutputTokens: allocation,
         });
         results[originalIndex] = customOptimizer.optimize(section.content).optimized;
         remainingTokens -= allocation;
@@ -347,7 +354,10 @@ export const optimizationStrategies = {
       for (let i = 0; i <= words.length - len; i++) {
         const phrase = words.slice(i, i + len).join(' ');
         if (phrase.length >= 10) {
-          const count = (prompt.match(new RegExp(phrase, 'g')) || []).length;
+          // Escape phrase for regex safety
+          const escapedPhrase = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          // eslint-disable-next-line security/detect-non-literal-regexp
+          const count = (prompt.match(new RegExp(escapedPhrase, 'g')) || []).length;
           if (count >= 2) {
             phrases.set(phrase, count * phrase.length);
           }
@@ -363,7 +373,10 @@ export const optimizationStrategies = {
     // Replace with placeholders
     for (const [phrase] of sortedPhrases) {
       const placeholder = `§${counter}§`;
-      compressed = compressed.replace(new RegExp(phrase, 'g'), placeholder);
+      // Escape phrase for regex safety
+      const escapedPhrase = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      // eslint-disable-next-line security/detect-non-literal-regexp
+      compressed = compressed.replace(new RegExp(escapedPhrase, 'g'), placeholder);
       dictionary[placeholder] = phrase;
       counter++;
     }

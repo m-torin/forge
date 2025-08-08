@@ -65,7 +65,7 @@ type Story = StoryObj<typeof meta>;
 
 // Mock handler
 const mockRevoke = async (session: Session) => {
-  console.log('Revoking session:', session.id);
+  // console.log('Revoking session:', session.id);
   await new Promise(resolve => setTimeout(resolve, 1000));
   if (session.id === '2') {
     throw new Error('Failed to revoke session');
@@ -73,11 +73,11 @@ const mockRevoke = async (session: Session) => {
 };
 
 const mockRevoked = () => {
-  console.log('Session revoked successfully');
+  // console.log('Session revoked successfully');
 };
 
 const mockError = (error: Error) => {
-  console.error('Session error:', error.message);
+  // console.error('Session error:', error.message);
 };
 
 export const Default: Story = {

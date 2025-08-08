@@ -1,0 +1,1087 @@
+---
+title: "Complete Mocks Guide"
+sidebarTitle: "Mocks & Testing"
+description:
+  "Comprehensive guide to all mocking capabilities: third-party services, test
+  factories, Redis testing, and setup utilities"
+icon: "boxes"
+---
+
+# Complete Mocks & Testing Guide
+
+Comprehensive mocking system for the Forge platform covering third-party
+services, test data factories, Redis testing, and complete setup utilities for
+all testing scenarios.
+
+<CardGroup cols={3}>
+  <Card title="Third-Party Mocks" icon="plug" href="#third-party-service-mocks">
+    Centralized mocks for external services and frameworks
+  </Card>
+  <Card title="Test Factories" icon="industry" href="#test-data-factories">
+    Type-safe factories for generating consistent test data
+  </Card>
+  <Card title="Redis Testing" icon="database" href="#redis-testing-framework">
+    Complete Redis testing with mocks, SRH, and real instances
+  </Card>
+  <Card title="Setup Utilities" icon="wrench" href="#setup-utilities">
+    Environment configuration and test setup automation
+  </Card>
+  <Card title="Service Mocks" icon="server" href="#service-specific-mocks">
+    Specialized mocks for AI, analytics, and cloud services
+  </Card>
+  <Card title="Integration Testing" icon="link" href="#integration-testing">
+    End-to-end testing patterns and utilities
+  </Card>
+</CardGroup>
+
+## Quick Start
+
+### All-in-One Setup
+
+```typescript
+import { setupAllThirdPartyMocks, userFactory } from "@repo/qa";
+
+// Set up all mocks at once
+setupAllThirdPartyMocks();
+
+test("complete example", () => {
+  // Create test data with factories
+  const user = userFactory.create({ trait: "admin" });
+
+  // All external services are automatically mocked
+  expect(user.id).toBeTruthy();
+  expect(user.role).toBe("admin");
+});
+```
+
+### Targeted Setup
+
+<Tabs>
+  <Tab title="Component Testing">
+    ```typescript
+    import { setupUiMocks } from "@repo/qa";
+
+    // Perfect for React component testing
+    setupUiMocks(); // Includes Mantine, Next.js, browser APIs
+    ```
+
+  </Tab>
+
+  <Tab title="Integration Testing">
+    ```typescript
+    import { setupServiceMocks, withSRH } from "@repo/qa";
+
+    setupServiceMocks(); // External services
+
+    // Test with real Redis via SRH
+    await withSRH(async () => {
+      const redis = createRedisClient();
+      await redis.set("test", "value");
+    });
+    ```
+
+  </Tab>
+
+  <Tab title="Unit Testing">
+    ```typescript
+    import { setupEssentialMocks } from "@repo/qa";
+
+    // Minimal mocks for fast unit tests
+    setupEssentialMocks(); // Browser APIs + critical mocks only
+    ```
+
+  </Tab>
+</Tabs>
+
+## Third-Party Service Mocks
+
+Centralized mocking system for consistent behavior across all tests in the
+monorepo.
+
+### Available Mock Categories
+
+<AccordionGroup>
+  <Accordion title="UI Framework Mocks" icon="react">
+    **Mantine Ecosystem**
+    - `@mantine/hooks` - All hooks with browser API simulation
+    - `@mantine/core` - Component mocks when needed
+    - `@mantine/notifications` - Notification system
+
+    **Next.js Framework**
+    - `next/navigation` - Router, pathname, search params
+    - `next/image` - Image component mock
+    - `next/cache` - Cache functions (revalidateTag, revalidatePath)
+    - `server-only` - Server-only module mock
+
+    **Styling & Themes**
+    - `next-themes` - Theme provider and hooks
+    - `geist` - Font imports
+    - CSS imports - All CSS file types (*.css, *.scss)
+
+    ```typescript
+    import { setupUiMocks } from "@repo/qa";
+    setupUiMocks(); // Includes all UI framework mocks
+    ```
+
+  </Accordion>
+
+  <Accordion title="Browser API Mocks" icon="window">
+    **Observer APIs**
+    - `ResizeObserver` - Element resize observation
+    - `IntersectionObserver` - Element intersection observation
+    - `MutationObserver` - DOM mutation observation
+
+    **Media & Input APIs**
+    - `window.matchMedia` - Media query matching
+    - `Element.scrollIntoView` - Scroll behavior
+    - Pointer events and touch events
+
+    **Crypto & Security**
+    - `crypto.randomUUID` - UUID generation
+    - `crypto.getRandomValues` - Random value generation
+
+    ```typescript
+    import { setupBrowserApiMocks } from "@repo/qa";
+    setupBrowserApiMocks(); // All browser APIs mocked
+    ```
+
+  </Accordion>
+
+  <Accordion title="External Service Mocks" icon="cloud">
+    **Analytics Services**
+    - PostHog - Analytics and feature flags
+    - Segment - Customer data platform
+    - Vercel Analytics - Web analytics
+
+    **Communication Services**
+    - Resend - Email sending
+    - React Email - Email rendering
+    - Knock - Push notifications
+
+    **Cloud Storage**
+    - `@vercel/blob` - Vercel Blob storage
+    - AWS SDK - S3 client and commands
+
+    **AI/ML Services**
+    - `ai` - AI SDK functions
+    - `@ai-sdk/*` - All AI provider mocks
+    - `@upstash/vector` - Vector database
+
+    ```typescript
+    import { setupServiceMocks } from "@repo/qa";
+    setupServiceMocks(); // All external services mocked
+    ```
+
+  </Accordion>
+
+  <Accordion title="Infrastructure Mocks" icon="server">
+    **Queue & Workflow**
+    - `@upstash/workflow` - Workflow engine
+    - `@upstash/qstash` - Queue service
+    - `@upstash/redis` - Redis client (see Redis Testing section)
+
+    **Observability**
+    - `@sentry/nextjs` - Error tracking
+    - `@sentry/node` - Node.js error tracking
+    - `winston` - Logging framework
+
+    **Environment**
+    - `@t3-oss/env-nextjs` - Environment validation
+
+    ```typescript
+    import { setupInfrastructureMocks } from "@repo/qa";
+    setupInfrastructureMocks(); // Infrastructure services
+    ```
+
+  </Accordion>
+</AccordionGroup>
+
+### Quick Setup Functions
+
+```typescript
+// Complete coverage
+import { setupAllThirdPartyMocks } from "@repo/qa";
+setupAllThirdPartyMocks(); // Everything mocked
+
+// Targeted setups
+import {
+  setupEssentialMocks, // Browser APIs + critical mocks
+  setupUiMocks, // UI frameworks + browser APIs
+  setupServiceMocks, // External services only
+  setupInfrastructureMocks // Infrastructure services
+} from "@repo/qa";
+
+// Use the most appropriate for your test type
+setupUiMocks(); // Perfect for component tests
+```
+
+### Custom Mock Configuration
+
+```typescript
+import { vi } from "vitest";
+import { setupUiMocks } from "@repo/qa";
+
+// Set up base mocks
+setupUiMocks();
+
+// Override specific mocks for your test
+vi.mocked(someFunction).mockReturnValue(customValue);
+
+// Add app-specific mocks
+vi.mock("#/actions/app-specific", () => ({
+  myAction: vi.fn().mockResolvedValue({ success: true })
+}));
+```
+
+## Test Data Factories
+
+Type-safe factories for generating consistent, realistic test data with
+relationships and traits.
+
+### Built-in Factory System
+
+<Tabs>
+  <Tab title="User Factory">
+    ```typescript
+    import { userFactory } from "@repo/qa/vitest/factories";
+
+    // Basic user creation
+    const user = userFactory.create();
+    // Result: { id, name, email, role, createdAt, updatedAt }
+
+    // User with specific attributes
+    const adminUser = userFactory.create({
+      name: "Admin User",
+      email: "admin@company.com",
+      role: "admin"
+    });
+
+    // User traits
+    const premiumUser = userFactory.create({ trait: "premium" });
+    // Result: subscription: "premium", features: advanced features
+
+    const inactiveUser = userFactory.create({ trait: "inactive" });
+    // Result: status: "inactive", lastLoginAt: null
+
+    // Multiple users
+    const users = userFactory.createMany(10);
+    expect(users).toHaveLength(10);
+    ```
+
+  </Tab>
+
+  <Tab title="Product Factory">
+    ```typescript
+    import { productFactory } from "@repo/qa/vitest/factories";
+
+    // Basic product
+    const product = productFactory.create();
+    // Result: { id, name, description, price, sku, categoryId }
+
+    // Product traits
+    const digitalProduct = productFactory.create({ trait: "digital" });
+    // Result: type: "digital", downloadUrl: present
+
+    const outOfStockProduct = productFactory.create({ trait: "out_of_stock" });
+    // Result: stock: 0, status: "out_of_stock"
+
+    const featuredProduct = productFactory.create({ trait: "featured" });
+    // Result: featured: true, priority: high
+    ```
+
+  </Tab>
+
+  <Tab title="Organization Factory">
+    ```typescript
+    import { organizationFactory, userFactory } from "@repo/qa/vitest/factories";
+
+    // Basic organization
+    const org = organizationFactory.create();
+    // Result: { id, name, slug, plan, memberCount }
+
+    // Organization with members
+    const orgWithMembers = organizationFactory.create({
+      members: userFactory.createMany(5)
+    });
+
+    // Organization traits
+    const enterpriseOrg = organizationFactory.create({ trait: "enterprise" });
+    // Result: plan: "enterprise", memberLimit: 1000, features: all
+
+    const startupOrg = organizationFactory.create({ trait: "startup" });
+    // Result: plan: "startup", memberLimit: 10, features: basic
+    ```
+
+  </Tab>
+
+  <Tab title="Order Factory">
+    ```typescript
+    import { orderFactory } from "@repo/qa/vitest/factories";
+
+    // Basic order
+    const order = orderFactory.create();
+    // Result: { id, userId, total, status, items }
+
+    // Order with specific items
+    const orderWithItems = orderFactory.create({
+      items: [
+        { productId: "prod1", quantity: 2, price: 29.99 },
+        { productId: "prod2", quantity: 1, price: 49.99 }
+      ]
+    });
+
+    // Order traits
+    const completedOrder = orderFactory.create({ trait: "completed" });
+    // Result: status: "completed", completedAt: recent, paymentStatus: "paid"
+
+    const cancelledOrder = orderFactory.create({ trait: "cancelled" });
+    // Result: status: "cancelled", refundStatus: "refunded"
+    ```
+
+  </Tab>
+</Tabs>
+
+### Custom Factory Creation
+
+```typescript
+import { createFactory } from "@repo/qa/vitest/factories";
+
+// Define your data type
+interface BlogPost {
+  id: string;
+  title: string;
+  content: string;
+  authorId: string;
+  publishedAt: Date | null;
+  tags: string[];
+  status: "draft" | "published" | "archived";
+}
+
+// Create factory with traits
+const blogPostFactory = createFactory<BlogPost>(
+  {
+    id: () => generateId(),
+    title: (sequence) => `Blog Post ${sequence}`,
+    content: () => generateLoremIpsum(500),
+    authorId: () => userFactory.create().id,
+    publishedAt: null,
+    tags: () => ["technology", "programming"],
+    status: "draft"
+  },
+  {
+    traits: {
+      published: {
+        status: "published",
+        publishedAt: () => new Date(),
+        tags: ["featured", "published"]
+      },
+
+      popular: {
+        tags: ["popular", "trending"],
+        viewCount: () => randomNumber(1000, 10000),
+        likes: () => randomNumber(100, 1000)
+      }
+    }
+  }
+);
+
+// Use custom factory
+test("creates blog posts with traits", () => {
+  const publishedPost = blogPostFactory.create({ trait: "published" });
+  expect(publishedPost.status).toBe("published");
+  expect(publishedPost.publishedAt).toBeInstanceOf(Date);
+
+  const popularPost = blogPostFactory.create({ trait: "popular" });
+  expect(popularPost.tags).toContain("popular");
+  expect(popularPost.viewCount).toBeGreaterThan(1000);
+});
+```
+
+### Advanced Factory Patterns
+
+<AccordionGroup>
+  <Accordion title="Sequence Generation" icon="hash">
+    ```typescript
+    import { createSequence, resetSequence } from "@repo/qa/vitest/factories";
+
+    // Create custom sequences
+    const emailSequence = createSequence((n) => `user${n}@example.com`);
+    const skuSequence = createSequence((n) => `SKU-${n.toString().padStart(6, "0")}`);
+
+    const productFactory = createFactory<Product>({
+      sku: skuSequence,
+      email: emailSequence
+    });
+
+    test("generates sequential values", () => {
+      resetSequence(); // Reset to start from 1
+
+      const products = productFactory.createMany(3);
+      expect(products[0].sku).toBe("SKU-000001");
+      expect(products[1].sku).toBe("SKU-000002");
+      expect(products[2].sku).toBe("SKU-000003");
+    });
+    ```
+
+  </Accordion>
+
+  <Accordion title="Factory Relationships" icon="link">
+    ```typescript
+    // Factory with automatic relationships
+    const commentFactory = createFactory<Comment>({
+      id: () => generateId(),
+      content: (sequence) => `Comment content ${sequence}`,
+      authorId: () => userFactory.create().id, // Auto-creates user
+      postId: () => blogPostFactory.create().id, // Auto-creates post
+      createdAt: () => new Date(),
+      replies: []
+    });
+
+    // Create comment with nested replies
+    test("creates nested comments", () => {
+      const parentComment = commentFactory.create({
+        replies: commentFactory.createMany(3, {
+          postId: "same-post-id" // All replies on same post
+        })
+      });
+
+      expect(parentComment.replies).toHaveLength(3);
+      expect(parentComment.replies?.[0].postId).toBe("same-post-id");
+    });
+    ```
+
+  </Accordion>
+
+  <Accordion title="Database Integration" icon="database">
+    ```typescript
+    import { db } from "@repo/database";
+
+    // Factory that persists to database
+    const persistentUserFactory = createFactory<User>(
+      {
+        // Factory definition
+      },
+      {
+        async afterCreate(user) {
+          return await db.user.create({ data: user });
+        },
+
+        async afterCreateMany(users) {
+          return await db.user.createMany({ data: users });
+        }
+      }
+    );
+
+    test("creates users in database", async () => {
+      const user = await persistentUserFactory.create();
+
+      const dbUser = await db.user.findUnique({ where: { id: user.id } });
+      expect(dbUser).toBeTruthy();
+    });
+    ```
+
+  </Accordion>
+</AccordionGroup>
+
+## Redis Testing Framework
+
+Complete Redis testing solution supporting mocks, SRH proxy, and real Redis
+instances with automatic environment detection.
+
+### Testing Strategies
+
+| Environment           | Implementation     | Use Case               | Setup               |
+| --------------------- | ------------------ | ---------------------- | ------------------- |
+| **Unit Tests**        | In-Memory Mocks    | Fast, isolated testing | No setup required   |
+| **CI/CD Pipeline**    | SRH Proxy          | Real Redis via HTTP    | Automatic detection |
+| **Integration Tests** | Real Upstash Redis | Production behavior    | Env vars required   |
+| **Local Development** | SRH + Local Redis  | Full functionality     | SRH setup + Redis   |
+
+### Basic Redis Testing
+
+```typescript
+import { createRedisClient } from "@repo/qa/vitest/mocks/upstash-redis";
+
+describe("Redis Tests", () => {
+  let redis: ReturnType<typeof createRedisClient>;
+
+  beforeEach(() => {
+    redis = createRedisClient(); // Auto-detects environment
+  });
+
+  it("handles basic operations", async () => {
+    await redis.set("test:key", "test-value");
+    const result = await redis.get("test:key");
+    expect(result).toBe("test-value");
+  });
+
+  it("handles complex data structures", async () => {
+    // Lists
+    await redis.lpush("test:list", "item1", "item2", "item3");
+    const listItems = await redis.lrange("test:list", 0, -1);
+    expect(listItems).toStrictEqual(["item3", "item2", "item1"]);
+
+    // Sets
+    await redis.sadd("test:set", "member1", "member2");
+    const setMembers = await redis.smembers("test:set");
+    expect(setMembers).toContain("member1");
+
+    // Hashes
+    await redis.hset("test:hash", { field1: "value1", field2: "value2" });
+    const hashData = await redis.hgetall("test:hash");
+    expect(hashData).toStrictEqual({ field1: "value1", field2: "value2" });
+  });
+});
+```
+
+### SRH Integration Testing
+
+```typescript
+import { withSRH, setupSRHEnvironment } from "@repo/qa/vitest/setup/srh";
+
+describe("Redis Integration Tests", () => {
+  beforeAll(async () => {
+    await setupSRHEnvironment({
+      services: ["redis", "qstash"],
+      timeout: 30000
+    });
+  });
+
+  it("works with real Redis via SRH", async () => {
+    await withSRH(async () => {
+      const redis = createRedisClient();
+
+      // Test real Redis operations
+      await redis.set("user:123", JSON.stringify({ name: "John", age: 30 }));
+      const userData = JSON.parse((await redis.get("user:123")) || "{}");
+
+      expect(userData.name).toBe("John");
+      expect(userData.age).toBe(30);
+
+      // Test Redis transactions
+      const pipeline = redis.pipeline();
+      pipeline.set("key1", "value1");
+      pipeline.set("key2", "value2");
+      pipeline.get("key1");
+
+      const results = await pipeline.exec();
+      expect(results?.[2]).toBe("value1");
+    });
+  });
+
+  it("handles Redis pub/sub", async () => {
+    await withSRH(async () => {
+      const redis = createRedisClient();
+      const messages: string[] = [];
+
+      // Subscribe to channel
+      await redis.subscribe("test-channel", (message) => {
+        messages.push(message);
+      });
+
+      // Publish message
+      await redis.publish("test-channel", "Hello Redis!");
+
+      // Wait for message processing
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      expect(messages).toContain("Hello Redis!");
+    });
+  });
+});
+```
+
+### Redis Mock Scenarios
+
+```typescript
+import { createRatelimitScenarios, createQStashScenarios } from "@repo/qa";
+
+describe("Redis-based Services", () => {
+  it("tests rate limiting scenarios", async () => {
+    const rateLimit = createRatelimitScenarios();
+
+    // Test normal operation
+    rateLimit.allowed.mockSuccess();
+    const result1 = await myRateLimitedFunction();
+    expect(result1.success).toBe(true);
+
+    // Test rate limit exceeded
+    rateLimit.exceeded.mockLimit();
+    const result2 = await myRateLimitedFunction();
+    expect(result2.success).toBe(false);
+    expect(result2.error).toContain("rate limit");
+  });
+
+  it("tests queue scenarios", async () => {
+    const qstash = createQStashScenarios();
+
+    // Test successful queue operation
+    qstash.publish.mockSuccess();
+    const queueResult = await myQueueFunction({ data: "test" });
+    expect(queueResult.messageId).toBeTruthy();
+
+    // Test queue failure
+    qstash.publish.mockFailure();
+    await expect(myQueueFunction({ data: "test" })).rejects.toThrow();
+  });
+});
+```
+
+## Setup Utilities
+
+Comprehensive test environment setup utilities for different testing scenarios
+and automatic service configuration.
+
+### Environment Setup
+
+<Tabs>
+  <Tab title="Basic Setup">
+    ```typescript
+    import {
+      setupTestEnvironment,
+      cleanupTestEnvironment
+    } from "@repo/qa/vitest/setup/base";
+
+    beforeEach(async () => {
+      await setupTestEnvironment({
+        environment: "test",
+        services: ["database", "redis", "email"],
+        mocks: ["analytics", "payments", "storage"]
+      });
+    });
+
+    afterEach(async () => {
+      await cleanupTestEnvironment();
+    });
+    ```
+
+  </Tab>
+
+  <Tab title="Service-Specific Setup">
+    ```typescript
+    import {
+      setupQStashEnvironment,
+      setupDatabaseEnvironment,
+      setupAnalyticsEnvironment
+    } from "@repo/qa/vitest/setup";
+
+    // QStash testing environment
+    await setupQStashEnvironment({
+      mode: "mock", // or "srh" for real testing
+      scenarios: ["publish", "receive", "failure"]
+    });
+
+    // Database testing environment
+    await setupDatabaseEnvironment({
+      provider: "postgresql",
+      seedData: true,
+      migrations: "latest"
+    });
+
+    // Analytics testing environment
+    await setupAnalyticsEnvironment({
+      provider: "posthog",
+      featureFlags: true,
+      mockEvents: true
+    });
+    ```
+
+  </Tab>
+
+  <Tab title="Dynamic Environment">
+    ```typescript
+    import {
+      createDynamicEnvironment,
+      switchEnvironment
+    } from "@repo/qa/vitest/setup/dynamic";
+
+    describe("Multi-environment tests", () => {
+      const env = createDynamicEnvironment({
+        development: {
+          database: "sqlite",
+          redis: "memory",
+          services: "mock"
+        },
+        staging: {
+          database: "postgresql",
+          redis: "upstash",
+          services: "srh"
+        }
+      });
+
+      it("tests in development mode", async () => {
+        await env.switch("development");
+        // Test with development configuration
+      });
+
+      it("tests in staging mode", async () => {
+        await env.switch("staging");
+        // Test with staging configuration
+      });
+    });
+    ```
+
+  </Tab>
+</Tabs>
+
+### Package Environment Setup
+
+```typescript
+import {
+  setupPackageEnvironment,
+  configurePackageServices
+} from "@repo/qa/vitest/setup/packages";
+
+// Package-specific environment setup
+await setupPackageEnvironment("@repo/auth", {
+  providers: ["credentials", "oauth"],
+  database: true,
+  session: "memory"
+});
+
+await setupPackageEnvironment("@repo/analytics", {
+  providers: ["posthog", "segment"],
+  featureFlags: true,
+  events: "mock"
+});
+
+await setupPackageEnvironment("@repo/payments", {
+  providers: ["stripe"],
+  webhooks: "mock",
+  currency: "USD"
+});
+```
+
+## Service-Specific Mocks
+
+Specialized mocking systems for AI, analytics, and cloud services with realistic
+behavior simulation.
+
+### AI Service Mocks
+
+<AccordionGroup>
+  <Accordion title="AI SDK Mocks" icon="robot">
+    ```typescript
+    import { createAIScenarios } from "@repo/qa";
+
+    describe("AI Integration", () => {
+      it("mocks AI SDK responses", async () => {
+        const ai = createAIScenarios();
+
+        // Mock successful text generation
+        ai.generateText.mockSuccess({
+          text: "Mocked AI response",
+          usage: { promptTokens: 10, completionTokens: 20 }
+        });
+
+        const result = await myAIFunction("test prompt");
+        expect(result.text).toBe("Mocked AI response");
+
+        // Mock streaming response
+        ai.streamText.mockStream([
+          { type: "text-delta", textDelta: "Hello" },
+          { type: "text-delta", textDelta: " world" },
+          { type: "finish", usage: { totalTokens: 15 } }
+        ]);
+
+        const stream = await myStreamingAIFunction("test prompt");
+        // Test streaming behavior
+      });
+
+      it("mocks AI errors", async () => {
+        const ai = createAIScenarios();
+
+        ai.generateText.mockError({
+          type: "rate-limit-exceeded",
+          message: "Rate limit exceeded"
+        });
+
+        await expect(myAIFunction("test")).rejects.toThrow("Rate limit");
+      });
+    });
+    ```
+
+  </Accordion>
+
+  <Accordion title="Vector Database Mocks" icon="vector-square">
+    ```typescript
+    import { createVectorScenarios } from "@repo/qa";
+
+    describe("Vector Database", () => {
+      it("mocks vector operations", async () => {
+        const vector = createVectorScenarios();
+
+        // Mock successful vector search
+        vector.query.mockResults([
+          { id: "doc1", score: 0.95, metadata: { title: "Test Doc 1" } },
+          { id: "doc2", score: 0.87, metadata: { title: "Test Doc 2" } }
+        ]);
+
+        const results = await myVectorSearch("test query");
+        expect(results).toHaveLength(2);
+        expect(results[0].score).toBe(0.95);
+
+        // Mock vector upsert
+        vector.upsert.mockSuccess({ upsertedCount: 5 });
+
+        const upsertResult = await myVectorUpsert(testDocuments);
+        expect(upsertResult.upsertedCount).toBe(5);
+      });
+    });
+    ```
+
+  </Accordion>
+
+  <Accordion title="Analytics Mocks" icon="chart">
+    ```typescript
+    import { createAnalyticsScenarios } from "@repo/qa";
+
+    describe("Analytics Integration", () => {
+      it("mocks analytics events", async () => {
+        const analytics = createAnalyticsScenarios();
+
+        // Mock event tracking
+        analytics.track.mockSuccess();
+        await myTrackingFunction("page_view", { page: "/home" });
+
+        expect(analytics.track.calls).toHaveLength(1);
+        expect(analytics.track.calls[0]).toMatchObject({
+          event: "page_view",
+          properties: { page: "/home" }
+        });
+
+        // Mock feature flags
+        analytics.featureFlags.mockFlags({
+          "new-ui": true,
+          "premium-features": false
+        });
+
+        const flags = await myFeatureFlagCheck();
+        expect(flags["new-ui"]).toBe(true);
+      });
+    });
+    ```
+
+  </Accordion>
+</AccordionGroup>
+
+### Cloud Service Mocks
+
+```typescript
+import {
+  createStorageScenarios,
+  createEmailScenarios,
+  createNotificationScenarios
+} from "@repo/qa";
+
+describe("Cloud Services", () => {
+  it("mocks file storage operations", async () => {
+    const storage = createStorageScenarios();
+
+    // Mock file upload
+    storage.upload.mockSuccess({
+      url: "https://storage.example.com/file.jpg",
+      key: "uploads/file.jpg",
+      size: 1024
+    });
+
+    const uploadResult = await myFileUpload(testFile);
+    expect(uploadResult.url).toContain("storage.example.com");
+  });
+
+  it("mocks email sending", async () => {
+    const email = createEmailScenarios();
+
+    // Mock successful email send
+    email.send.mockSuccess({ messageId: "msg-123" });
+
+    const emailResult = await myEmailFunction({
+      to: "test@example.com",
+      subject: "Test Email"
+    });
+
+    expect(emailResult.messageId).toBe("msg-123");
+  });
+
+  it("mocks push notifications", async () => {
+    const notifications = createNotificationScenarios();
+
+    // Mock notification delivery
+    notifications.send.mockSuccess({ delivered: true, recipients: 1 });
+
+    const notifyResult = await myNotificationFunction({
+      userId: "user-123",
+      message: "Test notification"
+    });
+
+    expect(notifyResult.delivered).toBe(true);
+  });
+});
+```
+
+## Integration Testing
+
+End-to-end testing patterns and utilities for comprehensive system testing.
+
+### Full Integration Test Setup
+
+```typescript
+import {
+  setupIntegrationTest,
+  createTestUser,
+  seedTestDatabase,
+  setupRealServices
+} from "@repo/qa/integration";
+
+describe("Complete User Workflow", () => {
+  beforeAll(async () => {
+    // Set up real services for integration testing
+    await setupRealServices({
+      database: "postgresql",
+      redis: "upstash",
+      email: "resend",
+      storage: "vercel-blob"
+    });
+
+    // Seed test database
+    await seedTestDatabase({
+      users: 10,
+      products: 50,
+      orders: 100
+    });
+  });
+
+  it("completes full user journey", async () => {
+    // Create test user with real database
+    const user = await createTestUser({
+      email: "integration@test.com",
+      subscription: "premium"
+    });
+
+    // Test user registration flow
+    const registerResult = await testUserRegistration(user);
+    expect(registerResult.success).toBe(true);
+
+    // Test authentication flow
+    const authResult = await testUserAuthentication(user);
+    expect(authResult.token).toBeTruthy();
+
+    // Test purchasing flow
+    const products = await getTestProducts(3);
+    const purchaseResult = await testPurchaseFlow(user, products);
+    expect(purchaseResult.order.status).toBe("completed");
+
+    // Test notification delivery
+    const notifications = await getDeliveredNotifications(user.id);
+    expect(notifications).toContainEqual(
+      expect.objectContaining({
+        type: "order_confirmation",
+        delivered: true
+      })
+    );
+  });
+});
+```
+
+### Cross-Service Integration
+
+```typescript
+import { createServiceOrchestrator } from "@repo/qa/integration";
+
+describe("Multi-Service Integration", () => {
+  it("orchestrates multiple services", async () => {
+    const orchestrator = createServiceOrchestrator({
+      services: ["auth", "database", "analytics", "email", "storage"],
+      mode: "integration" // Uses real services where possible
+    });
+
+    await orchestrator.setup();
+
+    // Test complex workflow involving multiple services
+    const workflow = await orchestrator.executeWorkflow("user-onboarding", {
+      userData: {
+        email: "test@example.com",
+        plan: "premium"
+      }
+    });
+
+    // Verify each service was called correctly
+    expect(workflow.steps.auth.completed).toBe(true);
+    expect(workflow.steps.database.userCreated).toBe(true);
+    expect(workflow.steps.analytics.eventTracked).toBe(true);
+    expect(workflow.steps.email.welcomeSent).toBe(true);
+    expect(workflow.steps.storage.profileImageUploaded).toBe(true);
+
+    await orchestrator.cleanup();
+  });
+});
+```
+
+## Best Practices
+
+### Mock Organization Strategy
+
+```typescript
+// Organize by test type
+describe("Component Tests", () => {
+  beforeEach(() => {
+    setupUiMocks(); // Only UI-related mocks
+  });
+});
+
+describe("Integration Tests", () => {
+  beforeEach(() => {
+    setupServiceMocks(); // External service mocks
+    setupUiMocks(); // Plus UI mocks
+  });
+});
+
+describe("E2E Tests", () => {
+  beforeEach(async () => {
+    await setupRealServices(); // Minimal mocking
+  });
+});
+```
+
+### Performance Optimization
+
+```typescript
+// Use targeted mocks for better performance
+import { setupEssentialMocks } from "@repo/qa";
+
+// Instead of setupAllThirdPartyMocks() for simple unit tests
+setupEssentialMocks(); // Much faster startup
+
+// Cache factory data for repeated use
+const cachedUsers = userFactory.createMany(100);
+beforeEach(() => {
+  // Reuse cached data instead of regenerating
+  testUsers = [...cachedUsers];
+});
+```
+
+### Error Testing Patterns
+
+```typescript
+import { createErrorScenarios } from "@repo/qa";
+
+describe("Error Handling", () => {
+  it("handles service failures gracefully", async () => {
+    const scenarios = createErrorScenarios();
+
+    // Test different types of failures
+    scenarios.mockNetworkError();
+    await expect(myNetworkFunction()).rejects.toThrow("Network error");
+
+    scenarios.mockTimeoutError();
+    await expect(mySlowFunction()).rejects.toThrow("Timeout");
+
+    scenarios.mockRateLimitError();
+    await expect(myAPIFunction()).rejects.toThrow("Rate limit");
+
+    scenarios.reset(); // Clean up for next test
+  });
+});
+```
+
+This comprehensive mocking system provides everything needed for reliable, fast,
+and maintainable testing across the entire Forge platform.

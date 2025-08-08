@@ -12,7 +12,7 @@ export interface DocumentFolder {
   color?: string;
   created: string;
   modified: string;
-  parentId?: string; // For nested folders
+  parentId?: string;
   documentIds: string[];
 }
 

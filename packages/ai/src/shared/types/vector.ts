@@ -297,6 +297,84 @@ export class VectorSearchError extends Error {
   }
 }
 
+// ChatbotRAG configuration types
+export interface ChatbotRAGVectorStore {
+  provider: 'upstash' | 'pinecone' | 'chroma' | 'qdrant' | 'weaviate';
+  dimensions: number;
+  metric: 'cosine' | 'euclidean' | 'dot';
+}
+
+export interface ChatbotRAGEmbeddings {
+  model:
+    | 'text-embedding-ada-002'
+    | 'text-embedding-3-small'
+    | 'text-embedding-3-large'
+    | 'sentence-transformers';
+  chunkSize: number;
+  chunkOverlap: number;
+}
+
+export interface ChatbotRAGRetrieval {
+  strategy: 'similarity' | 'mmr' | 'hybrid';
+  topK: number;
+  threshold: number;
+}
+
+export interface ChatbotRAGChunking {
+  method: 'recursive' | 'token' | 'semantic' | 'markdown';
+  size: number;
+  overlap: number;
+}
+
+export interface ChatbotRAGConfiguration {
+  vectorStore: ChatbotRAGVectorStore;
+  embeddings: ChatbotRAGEmbeddings;
+  retrieval: ChatbotRAGRetrieval;
+  chunking: ChatbotRAGChunking;
+}
+
+export interface ChatbotRAGDocumentUpload {
+  success: boolean;
+  chunks: number;
+  embedded: boolean;
+  documentId: string;
+}
+
+export interface ChatbotRAGSearchResult {
+  results: Array<{
+    content: string;
+    score: number;
+    metadata?: Record<string, any>;
+  }>;
+  totalResults: number;
+}
+
+export interface ChatbotRAGAnswer {
+  answer: string;
+  sources: Array<{
+    content: string;
+    score: number;
+  }>;
+  confidence: number;
+}
+
+export interface ChatbotRAGStatus {
+  vectorStore: {
+    connected: boolean;
+    documentCount: number;
+    health: 'healthy' | 'degraded' | 'unhealthy';
+  };
+  embedding: {
+    model: string;
+    provider: string;
+  };
+  performance: {
+    avgResponseTime: number;
+    requestCount: number;
+    errorRate: number;
+  };
+}
+
 // Re-export commonly used types
 export type {
   VectorDBOperations as VectorDB,

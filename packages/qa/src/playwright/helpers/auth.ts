@@ -223,9 +223,9 @@ export class BetterAuthTestHelpers implements AuthTestHelpers {
       // Wait for either authenticated state or redirect
       await Promise.race([
         // Wait for authenticated indicators
-        await expect(
-          page.locator('[data-testid="user-menu"], button:has-text("Sign out"), .user-avatar'),
-        ).toBeVisible({ timeout: 10000 }),
+        page
+          .locator('[data-testid="user-menu"], button:has-text("Sign out"), .user-avatar')
+          .waitFor({ state: 'visible', timeout: 10000 }),
         // Or wait for redirect away from auth pages
         page.waitForURL(
           (url: URL) => !url.href.includes('/sign-in') && !url.href.includes('/sign-up'),
@@ -235,10 +235,11 @@ export class BetterAuthTestHelpers implements AuthTestHelpers {
         page.waitForURL('**/dashboard', { timeout: 10000 }),
       ]);
 
-      // Additional wait for page to stabilize
-      await expect(
-        page.locator('[data-testid="user-menu"], .dashboard, .main-content'),
-      ).toBeVisible({ timeout: 10000 });
+      // Additional wait for page to stabilize using waitFor instead of expect
+      await page
+        .locator('[data-testid="user-menu"], .dashboard, .main-content')
+        .first()
+        .waitFor({ state: 'visible', timeout: 10000 });
     } catch (error) {
       console.warn('Auth wait timeout, continuing with test: ', error);
     }

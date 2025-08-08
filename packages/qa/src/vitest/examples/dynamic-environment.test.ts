@@ -320,7 +320,7 @@ describe('dynamic Environment System', () => {
       setupDynamicEnvironment({
         environments: ['database', 'orchestration', 'storage', 'email'],
         custom: {
-          APP_NAME: 'backstage-workflows',
+          APP_NAME: 'email-service',
           WORKFLOW_TIMEOUT: '300000',
           MAX_RETRY_ATTEMPTS: '3',
         },
@@ -336,7 +336,7 @@ describe('dynamic Environment System', () => {
         },
       });
 
-      expect(process.env.APP_NAME).toBe('backstage-workflows');
+      expect(process.env.APP_NAME).toBe('email-service');
       expect(process.env.WORKFLOW_TIMEOUT).toBe('300000');
       expect(process.env.QSTASH_URL).toBe('http://localhost:8080/mock-qstash');
     });

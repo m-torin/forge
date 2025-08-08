@@ -1,7 +1,12 @@
 /**
- * Code Quality Tools for AI SDK v5
+ * Code Quality Tools for AI SDK v5 - Enhanced Edition
  *
  * Provides comprehensive code analysis capabilities including:
+ * - Intelligent agent routing and fallback mechanisms
+ * - Real-time progress tracking and error recovery
+ * - Support for large codebases (10k+ files)
+ * - Advanced edge case handling and memory management
+ * - Consolidated agents for improved reliability
  * - Git worktree management for safe isolation
  * - File discovery and prioritization
  * - Architectural pattern detection
@@ -12,6 +17,24 @@
 
 // Register all tools with the global registry on import
 import './register';
+
+// Export enhanced main components
+export {
+  AgentRouter,
+  agentRouter,
+  createTaskRequest,
+  estimateTaskTime,
+  isHighPriorityTask,
+} from './agent-router';
+export {
+  EdgeCaseHandler,
+  createTimeoutSignal,
+  edgeCaseHandler,
+  estimateProcessingTime,
+  formatFileSize,
+  isRetryableError,
+} from './edge-case-handler';
+export { MainAgent, runAnalysis } from './main-agent';
 
 // Export individual tools for direct usage
 export { analysisTool } from './tools/analysis';
@@ -27,6 +50,12 @@ export { sessionManagementTool } from './tools/session-management';
 export { vercelOptimizationTool } from './tools/vercel-optimization';
 export { wordRemovalTool } from './tools/word-removal';
 export { worktreeTool } from './tools/worktree';
+
+// Export new Phase 1 & 2 tools
+export { documentationGeneratorTool } from './tools/documentation-generator';
+export { performanceProfilerTool } from './tools/performance-profiler';
+export { securityScannerTool } from './tools/security-scanner';
+export { testCoverageTool } from './tools/test-coverage';
 
 // Export registry functions
 export {
@@ -49,4 +78,14 @@ export {
 } from './workflows/full-analysis';
 
 // Export types
-export type { CodeQualityConfig, CodeQualitySession, CodeQualityWorkflowConfig } from './types';
+export type { CodeQualityConfig, CodeQualitySession } from './types';
+export type { CodeQualityWorkflowConfig } from './workflows/full-analysis';
+
+// Export enhanced types
+export type {
+  AgentCapability,
+  AgentRouterOptions,
+  ProgressUpdate,
+  TaskRequest,
+} from './agent-router';
+export type { EdgeCaseConfig, FileValidationResult, MemoryStatus } from './edge-case-handler';

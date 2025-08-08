@@ -10,7 +10,7 @@ import { tool, type Tool } from 'ai';
 import { spawn } from 'node:child_process';
 import { basename, dirname, join, resolve } from 'node:path';
 import { Transform } from 'node:stream';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 import { mcpClient } from '../mcp-client';
 import type { CodeQualitySession, WorktreeInfo } from '../types';
 
@@ -276,14 +276,15 @@ export const worktreeTool = tool({
 
   inputSchema: worktreeInputSchema,
 
-  execute: async (
-    {
-      sessionId,
-      packagePath,
-      options = { copyEssentials: true, installDeps: true, validateSetup: true },
-    }: any,
-    { toolCallId: _toolCallId }: any,
-  ) => {
+  execute: async ({
+    sessionId,
+    packagePath,
+    options = { copyEssentials: true, installDeps: true, validateSetup: true },
+  }: {
+    sessionId: string;
+    packagePath?: string;
+    options?: { copyEssentials: boolean; installDeps: boolean; validateSetup: boolean };
+  }) => {
     const finalPackagePath = packagePath || process.cwd();
 
     // Create session in MCP memory
@@ -355,7 +356,7 @@ export const worktreeTool = tool({
   },
 
   // Multi-modal result content - return both text and structured data
-  experimental_toToolResultContent: (
+  toModelOutput: (
     result: WorktreeInfo & { sessionId: string; parentPath: string; isNewWorktree: boolean },
   ) => [
     {

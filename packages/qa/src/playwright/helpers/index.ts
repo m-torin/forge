@@ -32,3 +32,21 @@ export * from './auth';
 
 // Export common test patterns
 export * from './patterns';
+
+// Export performance testing utilities
+export * from './performance-budgets';
+
+// Export file upload utilities
+export * from './file-upload';
+
+// Export session management utilities
+export * from './session-management';
+
+// Export error handling utilities
+export * from './errors';
+
+// Export shared interfaces and types
+export * from './shared-interfaces';
+
+// Export utility factory and composite utilities
+export * from './utility-factory';

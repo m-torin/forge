@@ -57,7 +57,7 @@ interface DataExportRequestProps extends BaseProps {
   onExportDownloaded?: (exportId: string) => void;
 }
 
-const initialState: FormState = { success: false };
+const _initialState: FormState = { success: false };
 
 export function DataExportRequest({
   availableFormats,
@@ -67,7 +67,7 @@ export function DataExportRequest({
   subtitle = 'Download a copy of your personal data',
   maxConcurrentExports = 3,
   retentionDays = 7,
-  onExportRequested,
+  onExportRequested: _onExportRequested,
   onExportDownloaded,
   className = '',
 }: DataExportRequestProps) {
@@ -79,7 +79,7 @@ export function DataExportRequest({
     cancelExportRequestAction,
     createInitialActionState(),
   );
-  const [downloadState, downloadAction] = useFormState(
+  const [downloadState, _downloadAction] = useFormState(
     downloadExportAction,
     createInitialActionState(),
   );
@@ -87,7 +87,7 @@ export function DataExportRequest({
   const pendingExports = recentExports.filter(
     exp => exp.status === 'pending' || exp.status === 'processing',
   );
-  const completedExports = recentExports.filter(exp => exp.status === 'completed');
+  const _completedExports = recentExports.filter(exp => exp.status === 'completed');
 
   const getStatusColor = (status: ExportRequest['status']) => {
     switch (status) {
@@ -171,7 +171,6 @@ export function DataExportRequest({
 
   return (
     <div className={`space-y-6 ${className}`}>
-      {/* Header */}
       <div className="text-center">
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
           <svg
@@ -192,7 +191,6 @@ export function DataExportRequest({
         {subtitle && <p className="mt-2 text-sm text-gray-600">{subtitle}</p>}
       </div>
 
-      {/* Error/Success Messages */}
       {(requestState?.error || cancelState?.error || downloadState?.error) && (
         <Alert variant="destructive">
           {requestState?.error || cancelState?.error || downloadState?.error}
@@ -205,7 +203,6 @@ export function DataExportRequest({
         </Alert>
       )}
 
-      {/* Export Request Form */}
       {canRequestExport && (
         <Card>
           <CardHeader>
@@ -213,7 +210,6 @@ export function DataExportRequest({
           </CardHeader>
           <CardContent>
             <form action={requestAction} className="space-y-6">
-              {/* Export Format Selection */}
               <div>
                 <label className="mb-3 block text-sm font-medium text-gray-700">
                   Export Format
@@ -250,7 +246,6 @@ export function DataExportRequest({
                 )}
               </div>
 
-              {/* Data Categories */}
               <div>
                 <label className="mb-3 block text-sm font-medium text-gray-700">
                   Data Categories
@@ -291,7 +286,6 @@ export function DataExportRequest({
                 )}
               </div>
 
-              {/* Additional Options */}
               <div className="border-t border-gray-200 pt-4">
                 <h3 className="mb-3 text-sm font-medium text-gray-700">Additional Options</h3>
                 <div className="space-y-3">
@@ -331,7 +325,6 @@ export function DataExportRequest({
                 </div>
               </div>
 
-              {/* Information Box */}
               <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
                 <div className="flex items-start">
                   <svg
@@ -371,7 +364,6 @@ export function DataExportRequest({
         </Card>
       )}
 
-      {/* Export Limit Notice */}
       {!canRequestExport && (
         <Card className="border-yellow-200 bg-yellow-50">
           <CardContent className="p-4">
@@ -399,7 +391,6 @@ export function DataExportRequest({
         </Card>
       )}
 
-      {/* Recent Exports */}
       {recentExports.length > 0 && (
         <Card>
           <CardHeader>
@@ -479,7 +470,7 @@ export function DataExportRequest({
                         size="sm"
                         onClick={() => {
                           // Could trigger a retry action
-                          console.log('Retry export:', exportReq.id);
+                          // console.log('Retry export:', exportReq.id);
                         }}
                       >
                         Retry
@@ -493,7 +484,6 @@ export function DataExportRequest({
         </Card>
       )}
 
-      {/* Help Information */}
       <Card className="bg-gray-50">
         <CardContent className="p-4">
           <h4 className="mb-2 text-sm font-medium text-gray-900">About Data Exports</h4>

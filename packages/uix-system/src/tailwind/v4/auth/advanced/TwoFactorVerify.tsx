@@ -16,7 +16,7 @@ interface TwoFactorVerifyProps extends BaseProps {
   showBackupCodeOption?: boolean;
 }
 
-const initialState: FormState = { success: false };
+const _initialState: FormState = { success: false };
 
 type VerifyTwoFactorState =
   | { success: false; errors: { code: string[] } }

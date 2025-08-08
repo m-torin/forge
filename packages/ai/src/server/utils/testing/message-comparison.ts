@@ -1,8 +1,10 @@
-import type { ModelMessage } from 'ai';
+// Note: ModelMessage not available in AI SDK v5 canary, using any for compatibility
+// TODO: Update to proper CoreMessage types when available
+type ModelMessage = any;
 
 // AI SDK v5 compatible stream part type for testing
 export type TestStreamPart =
-  | { type: 'text-delta'; textDelta: string }
+  | { type: 'text'; textDelta: string }
   | { type: 'reasoning'; textDelta: string }
   | {
       type: 'finish';
@@ -57,7 +59,7 @@ export function compareMessages(firstMessage: ModelMessage, secondMessage: Model
  * Converts text into text delta stream parts for testing
  */
 export function textToDeltas(text: string): TestStreamPart[] {
-  return text.split(' ').map(word => ({ type: 'text-delta' as const, textDelta: `${word} ` }));
+  return text.split(' ').map(word => ({ type: 'text' as const, textDelta: `${word} ` }));
 }
 
 /**
@@ -103,7 +105,7 @@ export function createToolCallPart(
  */
 export function createTextDelta(text: string): TestStreamPart {
   return {
-    type: 'text-delta',
+    type: 'text',
     textDelta: text,
   };
 }

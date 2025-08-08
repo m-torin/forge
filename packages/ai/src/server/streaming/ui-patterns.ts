@@ -1,7 +1,7 @@
 import { createUIMessageStream, type UIMessageStreamWriter } from 'ai';
 
 export interface StandardUIMessageStreamOptions {
-  execute: (writer: UIMessageStreamWriter) => void | Promise<void>;
+  execute: (options: { writer: UIMessageStreamWriter }) => void | Promise<void>;
   onError?: (error: unknown) => string;
   enableStandardErrorHandling?: boolean;
 }
@@ -76,12 +76,12 @@ export function createRetryableUIMessageStream(
 
   return createStandardUIMessageStream({
     ...restOptions,
-    execute: async dataStream => {
+    execute: async ({ writer }) => {
       let lastError: unknown;
 
       for (let attempt = 0; attempt <= maxRetries; attempt++) {
         try {
-          return await execute(dataStream);
+          return await execute({ writer });
         } catch (error) {
           lastError = error;
 

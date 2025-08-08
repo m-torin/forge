@@ -513,8 +513,8 @@ export function OrganizationInvitationAlert({
                   </>
                 ) : (
                   <>
-                    You've been invited to join <strong>{invitation.organizationName}</strong>{' '}
-                    as a <strong>{invitation.role}</strong>.
+                    You've been invited to join <strong>{invitation.organizationName}</strong> as a{' '}
+                    <strong>{invitation.role}</strong>.
                   </>
                 )}
               </Text>

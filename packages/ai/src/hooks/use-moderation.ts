@@ -3,10 +3,9 @@
 import { useCallback, useState } from 'react';
 
 import { ModerationResult } from '../shared/types';
+import { BaseAIHookOptions, mergeTransportConfig } from '../shared/types/transport';
 
-export interface UseModerationOptions {
-  api?: string;
-  onError?: (error: Error) => void;
+export interface UseModerationOptions extends BaseAIHookOptions {
   onResult?: (result: ModerationResult) => void;
 }
 
@@ -19,10 +18,18 @@ export interface UseModerationReturn {
 }
 
 export function useModeration({
-  api = '/api/ai/moderate',
+  api: apiProp,
+  transport,
   onError,
+  onRateLimit,
   onResult,
+  ...options
 }: UseModerationOptions = {}): UseModerationReturn {
+  // Configure transport using shared utility
+  const { api, ...transportConfig } = mergeTransportConfig(
+    { api: apiProp, transport, ...options },
+    '/api/ai/moderate',
+  );
   const [result, setResult] = useState<ModerationResult | null>(null);
   const [isModerating, setIsModerating] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -38,11 +45,16 @@ export function useModeration({
         setIsModerating(true);
         setError(null);
 
-        const response = await fetch(api, {
-          body: JSON.stringify({ content }),
+        const response = await (transportConfig.fetch || fetch)(api, {
+          body: JSON.stringify({
+            content,
+            ...transportConfig.body,
+          }),
           headers: {
             'Content-Type': 'application/json',
+            ...(transportConfig.headers || {}),
           },
+          credentials: transportConfig.credentials,
           method: 'POST',
         });
 
@@ -58,13 +70,21 @@ export function useModeration({
       } catch (error: unknown) {
         const errorObj = error instanceof Error ? error : new Error('Moderation failed');
         setError(errorObj);
+
+        // Handle rate limiting
+        if (errorObj.message.includes('429') && onRateLimit) {
+          const match = errorObj.message.match(/retry after (\d+)/);
+          const retryAfter = match ? parseInt(match[1]) : 60;
+          onRateLimit(retryAfter);
+        }
+
         onError?.(errorObj);
         return null;
       } finally {
         setIsModerating(false);
       }
     },
-    [api, onResult, onError],
+    [api, transportConfig, onResult, onError, onRateLimit],
   );
 
   return {

@@ -37,7 +37,7 @@ export async function perplexityWebSearchExample() {
   const result2 = await enhancedGenerateText({
     model,
     prompt: 'What happened in San Francisco last week?',
-    maxTokens: 1000,
+    maxOutputTokens: 1000,
     // Provider options are passed here (AI SDK pattern)
     providerOptions: {
       perplexity: {
@@ -48,7 +48,7 @@ export async function perplexityWebSearchExample() {
 
   console.log('📝 Response with images:', result2.text);
   console.log('📚 Sources:', result2.sources);
-  console.log('🖼️ Provider Metadata:', result2.providerMetadata);
+  console.log('🖼️ Provider Metadata:', result2.providerOptions);
 }
 
 /**
@@ -69,7 +69,7 @@ export async function geminiWebSearchExample() {
 
   console.log('📝 Response:', result1.text);
   console.log('📚 Sources:', result1.sources);
-  console.log('🛡️ Provider Metadata:', result1.providerMetadata);
+  console.log('🛡️ Provider Metadata:', result1.providerOptions);
 
   // Method 2: Using the model factory directly (AI SDK pattern)
   const model = createWebSearchGoogleModel('gemini-1.5-pro', {
@@ -85,14 +85,14 @@ export async function geminiWebSearchExample() {
   const result2 = await enhancedGenerateText({
     model,
     prompt: 'What are the current trends in artificial intelligence?',
-    maxTokens: 1500,
+    maxOutputTokens: 1500,
   });
 
   console.log('📝 Response:', result2.text);
   console.log('📚 Sources:', result2.sources);
 
   // Access grounding metadata (following AI SDK documentation)
-  const metadata = result2.providerMetadata?.google;
+  const metadata = result2.providerOptions?.google;
   const groundingMetadata = metadata?.groundingMetadata;
   const safetyRatings = metadata?.safetyRatings;
 
@@ -141,7 +141,7 @@ export async function streamingWebSearchExample() {
   // Perplexity streaming (sources included automatically)
   const perplexityModel = createWebSearchPerplexityModel('sonar-pro');
 
-  const perplexityStream = await streamText({
+  const perplexityStream = streamText({
     model: perplexityModel,
     prompt: 'What are the top tech news stories today?',
   });
@@ -160,7 +160,7 @@ export async function streamingWebSearchExample() {
     useSearchGrounding: true,
   });
 
-  const geminiStream = await streamText({
+  const geminiStream = streamText({
     model: geminiModel,
     prompt: 'What are the latest developments in space exploration?',
   });
@@ -173,7 +173,7 @@ export async function streamingWebSearchExample() {
   // Access final result and metadata after streaming
   const geminiResult = await geminiStream;
   console.log('\n📚 Final Sources:', geminiResult.sources);
-  console.log('��️ Provider Metadata:', geminiResult.providerMetadata);
+  console.log('��️ Provider Metadata:', geminiResult.providerOptions);
 }
 
 /**

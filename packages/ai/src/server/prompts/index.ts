@@ -11,4 +11,4 @@ export * from './prompt-versioning';
 
 // Advanced caching with analytics and optimization
 export * from './cache-analytics';
-export * from './enhanced-prompt-cache';
+export * from './prompt-cache-analytics';

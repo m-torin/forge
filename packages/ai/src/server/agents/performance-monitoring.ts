@@ -312,9 +312,10 @@ export class AgentPerformanceMonitor {
    * Check for performance warnings on individual steps
    */
   private checkStepWarnings(stepData: StepPerformanceData): void {
-    const thresholds = this.config.warningThresholds!;
+    const thresholds = this.config.warningThresholds;
+    if (!thresholds) return;
 
-    if (stepData.duration > thresholds.stepTimeMs!) {
+    if (stepData.duration > (thresholds.stepTimeMs ?? Infinity)) {
       logWarn('Agent Performance Monitor: Slow step detected', {
         operation: 'agent_perf_slow_step',
         metadata: {
@@ -327,7 +328,10 @@ export class AgentPerformanceMonitor {
       });
     }
 
-    if (stepData.tokenUsage && stepData.tokenUsage.totalTokens > thresholds.tokensPerStep!) {
+    if (
+      stepData.tokenUsage &&
+      stepData.tokenUsage.totalTokens > (thresholds.tokensPerStep ?? Infinity)
+    ) {
       logWarn('Agent Performance Monitor: High token usage in step', {
         operation: 'agent_perf_high_tokens',
         metadata: {
@@ -338,7 +342,7 @@ export class AgentPerformanceMonitor {
       });
     }
 
-    if (stepData.memoryUsageMB && stepData.memoryUsageMB > thresholds.memoryUsageMB!) {
+    if (stepData.memoryUsageMB && stepData.memoryUsageMB > (thresholds.memoryUsageMB ?? Infinity)) {
       logWarn('Agent Performance Monitor: High memory usage in step', {
         operation: 'agent_perf_high_memory',
         metadata: {
@@ -428,6 +432,42 @@ export class AgentPerformanceMonitor {
       },
     };
   }
+
+  /**
+   * Clean up resources and destroy the monitor
+   */
+  destroy(): void {
+    this.stepData = [];
+    this.totalTokens = 0;
+    this.startTime = 0;
+    this.memoryBaseline = undefined;
+  }
+
+  /**
+   * Get workflow metrics for complex workflows
+   */
+  getWorkflowMetrics(workflowName?: string): {
+    totalSteps: number;
+    completedSteps: number;
+    size: number;
+    hits: number;
+    misses: number;
+    evictions: number;
+    avgHitRate: number;
+  } {
+    const totalSteps = this.stepData.length;
+    const successfulSteps = this.stepData.filter(step => !step.hasError).length;
+
+    return {
+      totalSteps,
+      completedSteps: successfulSteps,
+      size: totalSteps,
+      hits: successfulSteps,
+      misses: totalSteps - successfulSteps,
+      evictions: 0, // Not applicable for this context
+      avgHitRate: totalSteps > 0 ? successfulSteps / totalSteps : 0,
+    };
+  }
 }
 
 /**
@@ -487,10 +527,10 @@ export const performanceBenchmarks = {
   ) {
     const results: Record<string, AgentPerformanceMetrics[]> = {};
 
-    for (const { name, conditions } of conditionSets) {
+    for (const { name, conditions: _conditions } of conditionSets) {
       results[name] = [];
 
-      for (const prompt of testPrompts) {
+      for (const _prompt of testPrompts) {
         const monitor = new AgentPerformanceMonitor();
         monitor.startMonitoring();
 

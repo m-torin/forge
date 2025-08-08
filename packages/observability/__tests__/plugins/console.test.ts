@@ -70,21 +70,33 @@ createObservabilityTestSuite({
           // Set user
           const user = createTestData.user();
           plugin.setUser(user);
-          expect(mockConsole.info).toHaveBeenCalledWith('[Test]', 'User set:', user);
+          expect(mockConsole.info).toHaveBeenCalledWith(
+            '[Test]',
+            'User set:',
+            JSON.stringify(user),
+          );
 
           // Add breadcrumb
           const breadcrumb = createTestData.breadcrumb();
           plugin.addBreadcrumb(breadcrumb);
-          expect(mockConsole.log).toHaveBeenCalledWith('[Test]', 'Breadcrumb:', breadcrumb);
+          expect(mockConsole.log).toHaveBeenCalledWith(
+            '[Test]',
+            'Breadcrumb:',
+            JSON.stringify({
+              ...breadcrumb,
+              timestamp: breadcrumb.timestamp || expect.any(Number),
+            }),
+          );
 
           // Capture message
           const message = 'Integration test message';
           plugin.captureMessage(message, 'info');
-          expect(mockConsole.info).toHaveBeenCalledWith(
+          expect(mockConsole.info).toHaveBeenNthCalledWith(
+            2,
             '[Test]',
             'Info:',
             message,
-            expect.any(Object),
+            JSON.stringify({}),
           );
 
           // Capture error
@@ -94,7 +106,7 @@ createObservabilityTestSuite({
             '[Test]',
             'Error:',
             error,
-            expect.any(Object),
+            JSON.stringify({}),
           );
 
           // Flush

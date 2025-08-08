@@ -197,8 +197,10 @@ describe('agent Communication and Coordination', () => {
 
       communicationManager.subscribeToChannel('agent3', channelId);
 
-      // Verify subscription by checking if messages sent to channel reach all participants
-      // This would be tested through message routing functionality
+      // Verify subscription by checking channel existence and basic functionality
+      expect(channelId).toBeDefined();
+      expect(typeof channelId).toBe('string');
+      expect(channelId).toBe('dev-team');
     });
   });
 
@@ -431,6 +433,8 @@ describe('agent Communication and Coordination', () => {
         id: 'comm-test-agent',
         name: 'Communication Test Agent',
         description: 'Agent for testing communication features',
+        model: 'test-model' as any,
+        tools: {} as any,
       };
 
       const capabilities: AgentCapability[] = [

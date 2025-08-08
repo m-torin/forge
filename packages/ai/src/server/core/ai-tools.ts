@@ -6,6 +6,7 @@ export interface AgentOptions {
   tools: Record<string, any>;
   maxSteps?: number;
   systemPrompt?: string;
+  prompt: string;
 }
 
 export interface AgentResult {
@@ -21,10 +22,11 @@ export interface AgentResult {
 export async function createAgent(options: AgentOptions): Promise<AgentResult> {
   const result = await generateText({
     model: options.model,
+    prompt: options.prompt,
     tools: options.tools,
     maxSteps: options.maxSteps ?? 2,
     ...(options.systemPrompt && { system: options.systemPrompt }),
-    messages: [], // Will be populated by the caller
+    experimental_telemetry: { isEnabled: true },
   } as any);
 
   return {
@@ -40,7 +42,7 @@ export async function createAgent(options: AgentOptions): Promise<AgentResult> {
  */
 export async function runAgent(
   prompt: string,
-  options: Omit<AgentOptions, 'systemPrompt'> & { systemPrompt?: string },
+  options: Omit<AgentOptions, 'prompt'>,
 ): Promise<AgentResult> {
   const result = await generateText({
     model: options.model,
@@ -48,6 +50,7 @@ export async function runAgent(
     maxSteps: options.maxSteps ?? 2,
     prompt,
     ...(options.systemPrompt && { system: options.systemPrompt }),
+    experimental_telemetry: { isEnabled: true },
   } as any);
 
   return {
@@ -63,7 +66,7 @@ export async function runAgent(
  */
 export const calculatorTool = tool({
   description: 'A simple calculator for basic arithmetic operations',
-  parameters: z.object({
+  inputSchema: z.object({
     operation: z
       .enum(['add', 'subtract', 'multiply', 'divide'])
       .describe('The operation to perform'),
@@ -100,7 +103,7 @@ export const calculatorTool = tool({
  */
 export const textProcessorTool = tool({
   description: 'Process text with various operations',
-  parameters: z.object({
+  inputSchema: z.object({
     operation: z
       .enum(['uppercase', 'lowercase', 'reverse', 'wordcount'])
       .describe('The text operation'),

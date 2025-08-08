@@ -93,8 +93,8 @@ export interface ToolSecurityConfig {
 
   /** Execution constraints */
   constraints?: {
-    maxExecutionTime?: number; // ms
-    maxMemoryUsage?: number; // bytes
+    maxExecutionTime?: number;
+    maxMemoryUsage?: number;
     requiresAuth?: boolean;
   };
 }
@@ -163,8 +163,8 @@ export interface ToolDefinition<TParams extends z.ZodTypeAny = z.ZodTypeAny, TRe
   /** Tool description */
   description: string;
 
-  /** Parameter schema */
-  parameters: TParams;
+  /** Input schema (AI SDK v5) */
+  inputSchema: TParams;
 
   /** Tool metadata */
   metadata: ToolMetadata;
@@ -207,7 +207,7 @@ export class Tool<TParams extends z.ZodTypeAny = z.ZodTypeAny, TResult = any> {
   private createCoreTool(): ReturnType<typeof tool> {
     return tool({
       description: this.definition.description,
-      parameters: this.definition.parameters,
+      inputSchema: this.definition.inputSchema,
       execute: async (params: any, options: any) => {
         const context: ToolExecutionContext = {
           ...options,
@@ -474,21 +474,21 @@ export class ToolExecutionFramework {
   getToolsForExport(context?: ToolExecutionContext): Record<string, ReturnType<typeof tool>> {
     const tools: Record<string, ReturnType<typeof tool>> = {};
 
-    for (const [name, enhancedTool] of this.tools) {
+    for (const [name, managedTool] of this.tools) {
       // Skip deprecated tools unless explicitly requested
-      if (enhancedTool.metadata.deprecated && !context?.includeDeprecated) {
+      if (managedTool.metadata.deprecated && !context?.includeDeprecated) {
         continue;
       }
 
       // Check permissions if context provided
-      if (context?.user && (enhancedTool as any).definition.security?.requiredPermissions) {
-        const hasPermission = (enhancedTool as any).definition.security.requiredPermissions.every(
+      if (context?.user && (managedTool as any).definition.security?.requiredPermissions) {
+        const hasPermission = (managedTool as any).definition.security.requiredPermissions.every(
           (perm: string) => context.user?.permissions?.includes(perm),
         );
         if (!hasPermission) continue;
       }
 
-      tools[name] = enhancedTool.tool;
+      tools[name] = managedTool.tool;
     }
 
     return tools;
@@ -577,7 +577,7 @@ export const ToolPatterns = {
     return createTool({
       name: config.name,
       description: config.description,
-      parameters: z.object({
+      inputSchema: z.object({
         query: z.string().min(1).describe('Search query'),
         limit: z.number().min(1).max(100).default(10).optional(),
       }),
@@ -605,15 +605,15 @@ export const ToolPatterns = {
   transform: <TInput, TOutput>(config: {
     name: string;
     description: string;
-    parameters: z.ZodSchema<TInput>;
+    inputSchema: z.ZodSchema<TInput>;
     transform: (input: TInput) => TOutput | Promise<TOutput>;
     metadata?: Partial<ToolMetadata>;
   }) => {
     return createTool({
       name: config.name,
       description: config.description,
-      parameters: z.object({
-        input: config.parameters,
+      inputSchema: z.object({
+        input: config.inputSchema,
       }),
       metadata: {
         category: 'transform',

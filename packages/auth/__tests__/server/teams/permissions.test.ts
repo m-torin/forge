@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 // Import test setup FIRST
-import { auth } from '#/shared/auth';
+import { auth } from '../../src/shared/auth';
 import '../setup';
 
 import {
@@ -17,7 +17,7 @@ import {
   hasTeamRole,
   isTeamAdmin,
   isTeamOwner,
-} from '#/server/teams/permissions';
+} from '../../src/server/teams/permissions';
 
 // Mock server-only
 vi.mock('server-only', () => ({}));

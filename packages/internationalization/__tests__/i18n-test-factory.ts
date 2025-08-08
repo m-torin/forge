@@ -5,10 +5,10 @@
  * This factory provides common test scenarios and data generators for internationalization.
  */
 
-import type { Locale } from '#/shared/dictionary-loader';
 import { render, screen } from '@testing-library/react';
 import { createElement } from 'react';
 import { describe, expect, test, vi } from 'vitest';
+import type { Locale } from '../../src/shared/dictionary-loader';
 
 // ================================================================================================
 // CENTRALIZED MOCK SYSTEM
@@ -279,7 +279,7 @@ export const i18nTestPatterns = {
           }
 
           if (scenario.expectedResult) {
-            expect(result).toEqual(scenario.expectedResult);
+            expect(result).toStrictEqual(scenario.expectedResult);
           }
 
           if (scenario.customAssertions) {
@@ -450,9 +450,9 @@ export const i18nTestPatterns = {
               const result = mockUtility(testCase.input);
 
               if (typeof testCase.expected === 'function') {
-                expect(result).toEqual(testCase.expected(testCase.input));
+                expect(result).toStrictEqual(testCase.expected(testCase.input));
               } else {
-                expect(result).toEqual(testCase.expected);
+                expect(result).toStrictEqual(testCase.expected);
               }
             }
           });
@@ -486,7 +486,7 @@ export const i18nTestPatterns = {
             const result = scenario.operation();
 
             if (scenario.expectedFallback) {
-              expect(result).toEqual(scenario.expectedFallback);
+              expect(result).toStrictEqual(scenario.expectedFallback);
             }
 
             if (scenario.customAssertions) {

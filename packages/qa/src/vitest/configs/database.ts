@@ -78,7 +78,7 @@ export const createDatabaseTestConfig = (
           'coverage/**',
         ],
         include: ['src/**/*.{js,ts}', 'lib/**/*.{js,ts}', '**/*.{js,ts}'],
-        reporter: ['text', 'json', 'html'],
+        reporter: process.env.CI ? ['text', 'json'] : ['text', 'json', 'html'],
       },
 
       // Pool options for database tests

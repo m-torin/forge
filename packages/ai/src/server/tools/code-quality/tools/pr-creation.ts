@@ -8,7 +8,7 @@
 import { logWarn } from '@repo/observability';
 import { tool, type Tool } from 'ai';
 import { spawn } from 'node:child_process';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 import { mcpClient } from '../mcp-client';
 import type { QualityReport } from './report-generation';
 
@@ -408,7 +408,7 @@ export const prCreationTool = tool({
   },
 
   // Multi-modal result content
-  experimental_toToolResultContent: (result: PRCreationResult) => [
+  toModelOutput: (result: PRCreationResult) => [
     {
       type: 'text' as const,
       text:

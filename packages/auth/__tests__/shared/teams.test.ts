@@ -7,14 +7,14 @@ import { describe, expect } from 'vitest';
 describe('shared teams functionality', () => {
   describe('dEFAULT_TEAM_ROLES', () => {
     test('should export default team roles', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       expect(teamsModule.DEFAULT_TEAM_ROLES).toBeDefined();
       expect(typeof teamsModule.DEFAULT_TEAM_ROLES).toBe('object');
     });
 
     test('should include all expected roles', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const roles = teamsModule.DEFAULT_TEAM_ROLES;
 
@@ -26,7 +26,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should have proper role hierarchy', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const roles = teamsModule.DEFAULT_TEAM_ROLES;
 
@@ -37,7 +37,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should have valid permissions for each role', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const roles = teamsModule.DEFAULT_TEAM_ROLES;
 
@@ -52,7 +52,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should have owner with highest level permissions', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const owner = teamsModule.DEFAULT_TEAM_ROLES.owner;
 
@@ -63,7 +63,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should have guest with minimal permissions', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const guest = teamsModule.DEFAULT_TEAM_ROLES.guest;
 
@@ -74,14 +74,14 @@ describe('shared teams functionality', () => {
 
   describe('tEAM_PERMISSIONS', () => {
     test('should export team permissions', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       expect(teamsModule.TEAM_PERMISSIONS).toBeDefined();
       expect(typeof teamsModule.TEAM_PERMISSIONS).toBe('object');
     });
 
     test('should have all permission categories', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const permissions = teamsModule.TEAM_PERMISSIONS;
 
@@ -93,7 +93,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should have string values for all permissions', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const permissions = teamsModule.TEAM_PERMISSIONS;
 
@@ -106,7 +106,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should follow consistent naming convention', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const permissions = teamsModule.TEAM_PERMISSIONS;
 
@@ -120,7 +120,7 @@ describe('shared teams functionality', () => {
 
   describe('roleHasPermission', () => {
     test('should return true for role with permission', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const result = teamsModule.roleHasPermission('owner', 'team:delete');
 
@@ -128,7 +128,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should return false for role without permission', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const result = teamsModule.roleHasPermission('guest', 'team:delete');
 
@@ -136,7 +136,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should return false for unknown role', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const result = teamsModule.roleHasPermission('unknown', 'team:read');
 
@@ -144,7 +144,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should handle invalid permissions', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const result = teamsModule.roleHasPermission('owner', 'invalid:permission');
 
@@ -152,7 +152,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should be case sensitive', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const result1 = teamsModule.roleHasPermission('Owner', 'team:read');
       const result2 = teamsModule.roleHasPermission('owner', 'Team:Read');
@@ -164,7 +164,7 @@ describe('shared teams functionality', () => {
 
   describe('canActOnUser', () => {
     test('should allow owner to act on any role', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const roles = ['admin', 'manager', 'member', 'guest'];
 
@@ -175,7 +175,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should not allow lower roles to act on higher roles', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const result1 = teamsModule.canActOnUser('admin', 'owner', 'members:remove');
       const result2 = teamsModule.canActOnUser('member', 'admin', 'members:remove');
@@ -185,7 +185,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should allow same level actions based on permissions', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const result = teamsModule.canActOnUser('admin', 'admin', 'members:read');
 
@@ -193,7 +193,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should respect permission requirements', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const result = teamsModule.canActOnUser('member', 'guest', 'members:remove');
 
@@ -201,7 +201,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should handle unknown roles', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const result1 = teamsModule.canActOnUser('unknown', 'member', 'members:read');
       const result2 = teamsModule.canActOnUser('admin', 'unknown', 'members:read');
@@ -213,7 +213,7 @@ describe('shared teams functionality', () => {
 
   describe('getHighestRole', () => {
     test('should return highest role from array', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const result = teamsModule.getHighestRole(['member', 'admin', 'guest']);
 
@@ -221,7 +221,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should handle single role', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const result = teamsModule.getHighestRole(['member']);
 
@@ -229,7 +229,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should return owner as highest', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const result = teamsModule.getHighestRole(['admin', 'owner', 'member']);
 
@@ -237,7 +237,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should handle empty array', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const result = teamsModule.getHighestRole([]);
 
@@ -245,7 +245,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should handle unknown roles', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const result = teamsModule.getHighestRole(['unknown', 'invalid']);
 
@@ -253,7 +253,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should ignore unknown roles and return highest valid', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const result = teamsModule.getHighestRole(['unknown', 'admin', 'invalid']);
 
@@ -263,7 +263,7 @@ describe('shared teams functionality', () => {
 
   describe('isValidRole', () => {
     test('should return true for valid roles', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const validRoles = ['owner', 'admin', 'manager', 'member', 'guest'];
 
@@ -273,7 +273,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should return false for invalid roles', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const invalidRoles = ['unknown', 'invalid', '', 'ADMIN', 'Owner'];
 
@@ -283,7 +283,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should be case sensitive', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       expect(teamsModule.isValidRole('Admin')).toBeFalsy();
       expect(teamsModule.isValidRole('OWNER')).toBeFalsy();
@@ -292,7 +292,7 @@ describe('shared teams functionality', () => {
 
   describe('getAllRoles', () => {
     test('should return all available roles', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const roles = teamsModule.getAllRoles();
 
@@ -301,7 +301,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should return roles sorted by level descending', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const roles = teamsModule.getAllRoles();
 
@@ -311,7 +311,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should include all role properties', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const roles = teamsModule.getAllRoles();
 
@@ -332,7 +332,7 @@ describe('shared teams functionality', () => {
 
   describe('getAssignableRoles', () => {
     test('should return roles assignable by owner', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const roles = teamsModule.getAssignableRoles('owner');
 
@@ -341,7 +341,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should return roles assignable by admin', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const roles = teamsModule.getAssignableRoles('admin');
 
@@ -351,7 +351,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should return empty array for guest', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const roles = teamsModule.getAssignableRoles('guest');
 
@@ -359,7 +359,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should return empty array for unknown role', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const roles = teamsModule.getAssignableRoles('unknown');
 
@@ -367,7 +367,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should return roles in descending order by level', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const roles = teamsModule.getAssignableRoles('owner');
 
@@ -379,7 +379,7 @@ describe('shared teams functionality', () => {
 
   describe('canAssignRole', () => {
     test('should allow owner to assign any role except owner', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       expect(teamsModule.canAssignRole('owner', 'admin')).toBeTruthy();
       expect(teamsModule.canAssignRole('owner', 'manager')).toBeTruthy();
@@ -389,7 +389,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should allow admin to assign lower roles only', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       expect(teamsModule.canAssignRole('admin', 'manager')).toBeTruthy();
       expect(teamsModule.canAssignRole('admin', 'member')).toBeTruthy();
@@ -399,14 +399,14 @@ describe('shared teams functionality', () => {
     });
 
     test('should not allow lower roles to assign higher roles', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       expect(teamsModule.canAssignRole('member', 'admin')).toBeFalsy();
       expect(teamsModule.canAssignRole('guest', 'member')).toBeFalsy();
     });
 
     test('should handle unknown roles', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       expect(teamsModule.canAssignRole('unknown', 'member')).toBeFalsy();
       expect(teamsModule.canAssignRole('admin', 'unknown')).toBeFalsy();
@@ -415,7 +415,7 @@ describe('shared teams functionality', () => {
 
   describe('getDefaultTeamPermissions', () => {
     test('should return default permissions array', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const permissions = teamsModule.getDefaultTeamPermissions();
 
@@ -424,7 +424,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should return basic team permissions', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const permissions = teamsModule.getDefaultTeamPermissions();
 
@@ -433,7 +433,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should only include safe default permissions', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const permissions = teamsModule.getDefaultTeamPermissions();
 
@@ -446,7 +446,7 @@ describe('shared teams functionality', () => {
 
   describe('getPermissionsForRole', () => {
     test('should return permissions for valid roles', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const ownerPermissions = teamsModule.getPermissionsForRole('owner');
       const guestPermissions = teamsModule.getPermissionsForRole('guest');
@@ -457,7 +457,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should return empty array for unknown role', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const permissions = teamsModule.getPermissionsForRole('unknown');
 
@@ -465,7 +465,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should match DEFAULT_TEAM_ROLES permissions', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const adminPermissions = teamsModule.getPermissionsForRole('admin');
       const expectedPermissions = teamsModule.DEFAULT_TEAM_ROLES.admin.permissions;
@@ -474,7 +474,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should handle case sensitivity', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const permissions = teamsModule.getPermissionsForRole('Admin');
 
@@ -484,7 +484,7 @@ describe('shared teams functionality', () => {
 
   describe('isValidTeamPermission', () => {
     test('should return true for valid permissions', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const validPermissions = [
         'team:read',
@@ -505,7 +505,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should return false for invalid permissions', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const invalidPermissions = [
         'invalid:permission',
@@ -524,14 +524,14 @@ describe('shared teams functionality', () => {
     });
 
     test('should be case sensitive', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       expect(teamsModule.isValidTeamPermission('Team:Read')).toBeFalsy();
       expect(teamsModule.isValidTeamPermission('TEAM:READ')).toBeFalsy();
     });
 
     test('should validate permission format', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       expect(teamsModule.isValidTeamPermission('team:read:extra')).toBeFalsy();
       expect(teamsModule.isValidTeamPermission('team.read')).toBeFalsy();
@@ -541,7 +541,7 @@ describe('shared teams functionality', () => {
 
   describe('edge cases', () => {
     test('should handle null and undefined inputs', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       expect(teamsModule.roleHasPermission(null as any, 'team:read')).toBeFalsy();
       expect(teamsModule.roleHasPermission('admin', null as any)).toBeFalsy();
@@ -550,7 +550,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should handle empty strings', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       expect(teamsModule.roleHasPermission('', 'team:read')).toBeFalsy();
       expect(teamsModule.roleHasPermission('admin', '')).toBeFalsy();
@@ -559,7 +559,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should handle arrays with duplicate roles', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       const result = teamsModule.getHighestRole(['admin', 'member', 'admin', 'guest']);
 
@@ -567,7 +567,7 @@ describe('shared teams functionality', () => {
     });
 
     test('should maintain consistent permission validation', async () => {
-      const teamsModule = await import('#/shared/teams');
+      const teamsModule = await import('../../src/shared/teams');
 
       // All permissions from DEFAULT_TEAM_ROLES should be valid
       Object.values(teamsModule.DEFAULT_TEAM_ROLES).forEach(role => {

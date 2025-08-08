@@ -37,7 +37,7 @@ interface DeletionStep {
   required: boolean;
 }
 
-const initialState: FormState = { success: false };
+const _initialState: FormState = { success: false };
 
 export function AccountDeletionFlow({
   userEmail,
@@ -46,7 +46,7 @@ export function AccountDeletionFlow({
   hasActiveSubscriptions = false,
   title = 'Delete Account',
   subtitle = 'Permanently delete your account and all associated data',
-  onDeletionComplete,
+  onDeletionComplete: _onDeletionComplete,
   onCancel,
   className = '',
 }: AccountDeletionFlowProps) {
@@ -102,7 +102,6 @@ export function AccountDeletionFlow({
 
   return (
     <div className={`space-y-6 ${className}`}>
-      {/* Header */}
       <div className="text-center">
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
           <svg
@@ -123,7 +122,6 @@ export function AccountDeletionFlow({
         {subtitle && <p className="mt-2 text-sm text-gray-600">{subtitle}</p>}
       </div>
 
-      {/* Critical Warning */}
       <Card className="border-red-200 bg-red-50">
         <CardContent className="p-4">
           <div className="flex items-start">
@@ -153,7 +151,6 @@ export function AccountDeletionFlow({
         </CardContent>
       </Card>
 
-      {/* Error/Success Messages */}
       {(initiateState?.error || confirmState?.error || cancelState?.error) && (
         <Alert variant="destructive">
           {initiateState?.error || confirmState?.error || cancelState?.error}
@@ -166,7 +163,6 @@ export function AccountDeletionFlow({
         </Alert>
       )}
 
-      {/* Step 1: Pre-deletion Checklist */}
       {currentStep === 'warning' && (
         <Card>
           <CardHeader>
@@ -265,7 +261,6 @@ export function AccountDeletionFlow({
         </Card>
       )}
 
-      {/* Step 2: Confirmation Form */}
       {currentStep === 'confirmation' && (
         <Card>
           <CardHeader>
@@ -375,7 +370,6 @@ export function AccountDeletionFlow({
         </Card>
       )}
 
-      {/* Step 3: Token Confirmation */}
       {currentStep === 'token' && (
         <Card>
           <CardHeader>
@@ -430,7 +424,6 @@ export function AccountDeletionFlow({
         </Card>
       )}
 
-      {/* Help Information */}
       <Card className="bg-gray-50">
         <CardContent className="p-4">
           <h4 className="mb-2 text-sm font-medium text-gray-900">Need Help?</h4>

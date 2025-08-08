@@ -35,7 +35,7 @@ export function createVectorTools(config: VectorToolsConfig) {
   return {
     searchVectorContext: tool({
       description: 'Search vector database for relevant context to answer user questions',
-      parameters: z.object({
+      inputSchema: z.object({
         query: z.string().describe('The search query to find relevant information'),
         topK: z
           .number()
@@ -98,7 +98,7 @@ export function createVectorTools(config: VectorToolsConfig) {
 
     addToVectorStore: tool({
       description: 'Add content to the vector database with automatic embedding generation',
-      parameters: z.object({
+      inputSchema: z.object({
         content: z.string().describe('The content to embed and store'),
         id: z
           .string()
@@ -162,7 +162,7 @@ export function createVectorTools(config: VectorToolsConfig) {
 
     findSimilarContent: tool({
       description: 'Find content similar to a given text or existing content ID',
-      parameters: z.object({
+      inputSchema: z.object({
         input: z.string().describe('Text to find similar content for, or existing content ID'),
         isId: z.boolean().default(false).describe('Whether input is a content ID rather than text'),
         topK: z
@@ -227,7 +227,7 @@ export function createVectorTools(config: VectorToolsConfig) {
 
     removeFromVectorStore: tool({
       description: 'Remove content from the vector database',
-      parameters: z.object({
+      inputSchema: z.object({
         ids: z.array(z.string()).describe('IDs of content to remove'),
         pattern: z
           .string()

@@ -9,6 +9,8 @@
     "coverage:ci": "node scripts/coverage.mjs --quiet --format=summary",
     "deps:check": "pnpm outdated --recursive",
     "deps:dedupe": "pnpm dedupe",
+    "predev": "turbo build --filter=@repo/database",
+    "dev": "turbo dev --filter='!./labs/*'",
     "dev:doppler": "turbo dev:doppler",
     "doppler": "turbo doppler",
     "doppler:open": "turbo doppler:open",
@@ -22,7 +24,6 @@
     "lint": "turbo lint",
     "lint:affected": "turbo lint --filter='...[origin/main]' --only",
     "playwright:install": "pnpm exec playwright install --with-deps chromium firefox webkit",
-    "predev": "turbo build --filter=@repo/database",
     "prisma:generate": "turbo prisma:generate",
     "prisma:generate:doppler": "turbo prisma:generate:doppler",
     "prisma:migrate": "pnpm --filter @repo/database prisma:migrate",
@@ -102,7 +103,11 @@
       "unrs-resolver"
     ],
     "overrides": {
+      "@ai-sdk/provider": "2.0.0",
+      "@ai-sdk/provider-utils": "3.0.1",
+      "@ai-sdk/react": "2.0.4",
       "@pkgr/core@=0.2.8": ">=0.2.9",
+      "ai": "5.0.4",
       "cookie@<0.7.0": ">=0.7.0",
       "esbuild@<=0.24.2": ">=0.25.0",
       "napi-postinstall@=0.3.1": ">=0.3.2",

@@ -179,7 +179,7 @@ export class MockLanguageModelV2Factory {
             logprobs: undefined,
             request: { body: '' },
             response: { messages: [], timestamp: new Date() },
-            providerMetadata: undefined,
+            providerOptions: undefined,
           });
 
           currentStep++;
@@ -189,7 +189,7 @@ export class MockLanguageModelV2Factory {
           finishReason: 'stop',
           usage: { inputTokens: 30, outputTokens: 45 },
           text: 'Tool execution completed',
-          steps,
+          steps: [],
           toolCalls: steps.flatMap(step => step.toolCalls),
           toolResults: steps.flatMap(step => step.toolResults),
         };
@@ -340,29 +340,31 @@ export class AISDKMocker {
         result.content?.find((c: any) => c.type === 'text')?.text || result.text || 'Mock response';
 
       return {
-        text,
+        // v5 required fields
         content: result.content || [{ type: 'text', text }],
-        reasoning: result.reasoning,
+        text,
+        reasoning: result.reasoning || [],
         reasoningText: result.reasoningText,
         files: result.files || [],
         sources: result.sources || [],
+        toolCalls: result.toolCalls || [],
+        toolResults: result.toolResults || [],
+        staticToolCalls: result.staticToolCalls || [],
+        dynamicToolCalls: result.dynamicToolCalls || [],
+        staticToolResults: result.staticToolResults || [],
+        dynamicToolResults: result.dynamicToolResults || [],
+        finishReason: result.finishReason || 'stop',
         usage: result.usage || { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
         totalUsage: result.totalUsage || { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
-        finishReason: result.finishReason || 'stop',
         warnings: result.warnings || [],
-        rawCall: { rawPrompt: options.prompt, rawSettings: {} },
-        rawResponse: { headers: {}, response: {} },
         request: { body: JSON.stringify(options) },
         response: {
           id: 'mock-response-id',
           modelId: mockModel?.modelId || 'mock-model',
-          messages: [],
           timestamp: new Date(),
+          messages: [],
         },
-        toolCalls: result.toolCalls || [],
-        toolResults: result.toolResults || [],
-        logprobs: undefined,
-        providerMetadata: undefined,
+        providerMetadata: result.providerMetadata,
         steps: result.steps || [],
         experimental_output: result.experimental_output,
         experimental_telemetry: options.experimental_telemetry,
@@ -397,7 +399,6 @@ export class AISDKMocker {
         finishReason: 'stop',
         warnings: [],
         rawCall: { rawPrompt: options.prompt, rawSettings: {} },
-        rawResponse: { headers: {}, response: {} },
         request: { body: JSON.stringify(options) },
         response: {
           id: 'mock-response-id',
@@ -409,7 +410,7 @@ export class AISDKMocker {
         toolResults: [],
         steps: [],
         experimental_telemetry: options.experimental_telemetry,
-        providerMetadata: undefined,
+        providerOptions: undefined,
       };
     });
   }
@@ -428,7 +429,6 @@ export class AISDKMocker {
         finishReason: result.finishReason,
         warnings: [],
         rawCall: { rawPrompt: options.prompt, rawSettings: {} },
-        rawResponse: { headers: {}, response: {} },
         request: { body: JSON.stringify(options) },
         response: {
           id: 'mock-response-id',
@@ -437,7 +437,7 @@ export class AISDKMocker {
           timestamp: new Date(),
         },
         logprobs: undefined,
-        providerMetadata: undefined,
+        providerOptions: undefined,
         experimental_telemetry: options.experimental_telemetry,
       };
     });

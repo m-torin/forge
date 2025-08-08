@@ -24,7 +24,7 @@ export function createExaSearchTool(config: ExaSearchConfig) {
 
   return tool({
     description: 'Search the web for up-to-date information using Exa',
-    parameters: z.object({
+    inputSchema: z.object({
       query: z.string().min(1).max(100).describe('The search query'),
     }),
     execute: async ({ query }: { query: string }) => {
@@ -49,7 +49,7 @@ export function createExaSearchTool(config: ExaSearchConfig) {
 export function createWebSearchTool(searchFunction: (query: string) => Promise<WebSearchResult[]>) {
   return tool({
     description: 'Search the web for up-to-date information',
-    parameters: z.object({
+    inputSchema: z.object({
       query: z.string().min(1).max(100).describe('The search query'),
     }),
     execute: async ({ query }: { query: string }) => {

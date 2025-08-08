@@ -29,7 +29,7 @@ export interface RAGToolConfig {
 export function createKnowledgeSearchTool(config: RAGToolConfig) {
   return tool({
     description: 'Search the knowledge base for relevant information based on a query',
-    parameters: z.object({
+    inputSchema: z.object({
       query: z.string().describe('The search query to find relevant information'),
       topK: z
         .number()
@@ -132,7 +132,7 @@ export function createKnowledgeSearchTool(config: RAGToolConfig) {
 export function createContextualAnswerTool(config: RAGToolConfig) {
   return tool({
     description: 'Answer questions using relevant context from the knowledge base',
-    parameters: z.object({
+    inputSchema: z.object({
       question: z.string().describe('The question to answer'),
       topK: z
         .number()
@@ -258,7 +258,7 @@ ${result.content}`;
 export function createDocumentSimilarityTool(config: RAGToolConfig) {
   return tool({
     description: 'Find documents similar to a given document or content',
-    parameters: z.object({
+    inputSchema: z.object({
       content: z.string().describe('The content to find similar documents for'),
       topK: z
         .number()
@@ -349,7 +349,7 @@ export function createDocumentSimilarityTool(config: RAGToolConfig) {
 export function createKnowledgeStatssTool(config: RAGToolConfig) {
   return tool({
     description: 'Get statistics and information about the knowledge base',
-    parameters: z.object({
+    inputSchema: z.object({
       includeNamespaces: z
         .boolean()
         .optional()
@@ -507,7 +507,7 @@ const result = await generateText({
     findSimilar: customTools.documentSimilarity,
     getStats: customTools.knowledgeStats,
   },
-  maxToolRoundtrips: 3,
+  maxSteps: 3,
 });
   `,
 
@@ -537,7 +537,7 @@ export function createAddResourceTool(config: RAGToolConfig) {
   return tool({
     description:
       'Add a resource to your knowledge base. If the user provides a random piece of knowledge unprompted, use this tool without asking for confirmation.',
-    parameters: z.object({
+    inputSchema: z.object({
       content: z.string().describe('The content or resource to add to the knowledge base'),
     }),
     execute: async ({ content }) => {
@@ -561,7 +561,7 @@ export function createAddResourceTool(config: RAGToolConfig) {
 export function createGetInformationTool(config: RAGToolConfig) {
   return tool({
     description: 'Get information from your knowledge base to answer questions.',
-    parameters: z.object({
+    inputSchema: z.object({
       question: z.string().describe('The users question'),
     }),
     execute: async ({ question }) => {
@@ -580,7 +580,7 @@ export function createGetInformationTool(config: RAGToolConfig) {
 export function createBatchDocumentProcessorTool(config: RAGToolConfig) {
   return tool({
     description: 'Process multiple documents in batch for embedding and storage.',
-    parameters: z.object({
+    inputSchema: z.object({
       documents: z.array(
         z.object({
           id: z.string(),
@@ -620,7 +620,7 @@ export function createBatchDocumentProcessorTool(config: RAGToolConfig) {
 export function createMultiStepReasoningTool(config: RAGToolConfig) {
   return tool({
     description: 'Perform multi-step reasoning over the knowledge base.',
-    parameters: z.object({
+    inputSchema: z.object({
       query: z.string().describe('The complex query requiring multi-step reasoning'),
       steps: z.number().default(3).describe('Number of reasoning steps'),
     }),
@@ -659,7 +659,7 @@ export function createMultiStepReasoningTool(config: RAGToolConfig) {
 export function createContextSummarizationTool(config: RAGToolConfig) {
   return tool({
     description: 'Summarize and contextualize information from the knowledge base.',
-    parameters: z.object({
+    inputSchema: z.object({
       query: z.string().describe('The query to find and summarize context for'),
       maxLength: z.number().default(500).describe('Maximum length of summary'),
     }),

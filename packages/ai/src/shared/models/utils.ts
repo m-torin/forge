@@ -10,12 +10,12 @@ import { getModelConfig, modelSupportsReasoning, type ProviderModelConfig } from
  * Model selection strategy types
  */
 export type ModelSelectionStrategy =
-  | 'speed' // Fast, cost-effective models
-  | 'balanced' // Balance of speed and capability
-  | 'reasoning' // Advanced reasoning capabilities
-  | 'creative' // Creative writing and content
-  | 'vision' // Vision and multimodal tasks
-  | 'code' // Code generation and analysis
+  | 'speed'
+  | 'balanced'
+  | 'reasoning'
+  | 'creative'
+  | 'vision'
+  | 'code'
   | 'computer'; // Computer use capabilities;
 
 /**
@@ -304,7 +304,7 @@ export function validateModelForUseCase(
     'image-analysis': ['vision', 'multimodal'],
     coding: ['tools', 'code'],
     automation: ['computer-use', 'tools'],
-    reasoning: ['reasoning'],
+    reasoningText: ['reasoning'],
   };
 
   const requiredCapabilities = useCaseRequirements[useCase];
@@ -404,7 +404,7 @@ export function getModelFeatureMatrix(modelIds: string[]) {
         },
         {} as Record<ModelCapability, boolean>,
       ),
-      reasoning: config?.metadata.reasoning?.supported || false,
+      reasoningText: config?.metadata.reasoningText?.supported || false,
       deprecated: config?.metadata.deprecated || false,
       contextWindow: config?.metadata.contextWindow,
     };

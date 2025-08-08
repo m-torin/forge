@@ -55,7 +55,13 @@ export const getFlowAction = async (
  */
 export const getFlowsAction = async (instanceId: string): Promise<PrismaFlow[]> => {
   logInfo('getFlowsAction', { instanceId });
-  return await getFlows(instanceId);
+  try {
+    return await getFlows(instanceId);
+  } catch (error) {
+    logError('Failed to fetch flows', { error });
+    // Return empty array for graceful degradation during build
+    return [];
+  }
 };
 
 /**

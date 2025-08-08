@@ -4,7 +4,7 @@
  */
 
 import { logInfo } from '@repo/observability/server/next';
-import { convertToCoreMessages, type CoreSystemMessage, type ModelMessage } from 'ai';
+import { convertToModelMessages, type ModelMessage } from 'ai';
 import { RAGDatabaseBridge } from './database-bridge';
 import { trackRAGOperation } from './telemetry';
 
@@ -52,7 +52,7 @@ export class RAGMessageProcessor {
       const startTime = Date.now();
 
       // Convert to core messages first
-      const coreMessages = convertToCoreMessages(messages);
+      const coreMessages = convertToModelMessages(messages);
       tracker.setQuery('message_processing', 'embedding');
 
       // Extract the last user message for context retrieval
@@ -111,7 +111,7 @@ export class RAGMessageProcessor {
       }));
 
       // Inject context into messages
-      const enhancedMessages = await this.injectContext(coreMessages, contextResults, options);
+      const contextualMessages = await this.injectContext(coreMessages, contextResults, options);
 
       const averageRelevance =
         searchResults.reduce((sum, r) => sum + r.score, 0) / searchResults.length;
@@ -124,7 +124,7 @@ export class RAGMessageProcessor {
       });
 
       return {
-        messages: enhancedMessages,
+        messages: contextualMessages,
         contextUsed: true,
         contextSources: searchResults.length,
         averageRelevance,
@@ -219,7 +219,7 @@ export class RAGMessageProcessor {
   createContextualSystemMessage(
     searchResults: Array<{ content: string; score: number; metadata?: any; id?: string | number }>,
     baseSystemPrompt?: string,
-  ): CoreSystemMessage {
+  ): ModelMessage {
     const contextText = this.formatContextForSystem(searchResults);
     const basePrompt = baseSystemPrompt || this.getDefaultSystemPrompt();
 
@@ -351,15 +351,15 @@ Instructions:
     options?: { includeMetadata?: boolean },
   ): ModelMessage[] {
     const contextText = this.formatContextForUser(searchResults, options?.includeMetadata);
-    const enhancedMessages = [...messages];
+    const contextualMessages = [...messages];
 
     // Find and enhance the last user message
-    for (let i = enhancedMessages.length - 1; i >= 0; i--) {
-      if (enhancedMessages[i].role === 'user') {
-        const originalMessage = enhancedMessages[i];
+    for (let i = contextualMessages.length - 1; i >= 0; i--) {
+      if (contextualMessages[i].role === 'user') {
+        const originalMessage = contextualMessages[i];
 
         if (typeof originalMessage.content === 'string') {
-          enhancedMessages[i] = {
+          contextualMessages[i] = {
             ...originalMessage,
             content: `Context:
 ${contextText}
@@ -367,7 +367,7 @@ ${contextText}
 Question: ${originalMessage.content}`,
           } as ModelMessage;
         } else if (Array.isArray(originalMessage.content)) {
-          enhancedMessages[i] = {
+          contextualMessages[i] = {
             ...originalMessage,
             content: [
               {
@@ -385,7 +385,7 @@ Question:`,
       }
     }
 
-    return enhancedMessages;
+    return contextualMessages;
   }
 
   /**

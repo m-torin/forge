@@ -1,9 +1,9 @@
-import { createNodePackageConfig } from '@repo/qa/vitest/configs';
+import { createReactPackageConfig } from '@repo/qa/vitest/configs';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
 
-const baseConfig = createNodePackageConfig({
-  setupFiles: ['./test-setup.ts'],
+const baseConfig = createReactPackageConfig({
+  setupFiles: ['./test-setup.ts', './__tests__/setup.ts'],
   overrides: {
     test: {
       include: [

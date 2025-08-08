@@ -1,81 +1,21 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { setupVitestUpstashMocks } from '@repo/qa/vitest/mocks/providers/upstash/redis';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 // Test imports for new four-file pattern
 import { RedisOperations } from '#/redis/server';
-import type { Redis } from '@upstash/redis';
 
-// Mock the Upstash Redis module
-vi.mock('@upstash/redis', () => ({
-  Redis: vi.fn(() => mockRedisClient),
-}));
-
-// Mock Redis client
-const mockRedisClient = {
-  set: vi.fn(() => Promise.resolve('OK')),
-  get: vi.fn((key: string) => {
-    if (key === 'user:1') {
-      return Promise.resolve(
-        JSON.stringify({ id: '1', name: 'Test User', email: 'test@example.com' }),
-      );
-    }
-    return Promise.resolve(null);
-  }),
-  del: vi.fn(() => Promise.resolve(1)),
-  exists: vi.fn(() => Promise.resolve(1)),
-  expire: vi.fn(() => Promise.resolve(1)),
-  ttl: vi.fn(() => Promise.resolve(300)),
-  mget: vi.fn(() => Promise.resolve([JSON.stringify({ id: '1', name: 'Test User' })])),
-  mset: vi.fn(() => Promise.resolve('OK')),
-  incr: vi.fn(() => Promise.resolve(1)),
-  incrby: vi.fn(() => Promise.resolve(5)),
-  decr: vi.fn(() => Promise.resolve(0)),
-  decrby: vi.fn(() => Promise.resolve(-5)),
-  scan: vi.fn(() => Promise.resolve([0, ['user:1', 'user:2']])),
-  ping: vi.fn(() => Promise.resolve('PONG')),
-
-  // Hash operations
-  hset: vi.fn(() => Promise.resolve(1)),
-  hget: vi.fn(() => Promise.resolve(JSON.stringify({ field: 'value' }))),
-  hgetall: vi.fn(() => Promise.resolve({ field1: 'value1', field2: 'value2' })),
-  hdel: vi.fn(() => Promise.resolve(1)),
-
-  // List operations
-  lpush: vi.fn(() => Promise.resolve(1)),
-  rpush: vi.fn(() => Promise.resolve(1)),
-  lpop: vi.fn(() => Promise.resolve(JSON.stringify({ item: 'first' }))),
-  rpop: vi.fn(() => Promise.resolve(JSON.stringify({ item: 'last' }))),
-  lrange: vi.fn(() => Promise.resolve([JSON.stringify({ item: 1 }), JSON.stringify({ item: 2 })])),
-  llen: vi.fn(() => Promise.resolve(2)),
-
-  // Set operations
-  sadd: vi.fn(() => Promise.resolve(1)),
-  srem: vi.fn(() => Promise.resolve(1)),
-  smembers: vi.fn(() => Promise.resolve([JSON.stringify({ member: 1 })])),
-  sismember: vi.fn(() => Promise.resolve(1)),
-
-  // Sorted set operations
-  zadd: vi.fn(() => Promise.resolve(1)),
-  zrange: vi.fn(() => Promise.resolve([JSON.stringify({ member: 'value' })])),
-  zscore: vi.fn(() => Promise.resolve(1.5)),
-
-  // Pipeline
-  pipeline: vi.fn(() => ({
-    set: vi.fn(),
-    get: vi.fn(),
-    exec: vi.fn(() => Promise.resolve([])),
-  })),
-} as unknown as Redis;
+const { redis: mockRedisClient } = setupVitestUpstashMocks();
 
 describe('Redis Four-File Pattern', () => {
   let redisOps: RedisOperations;
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    mockRedisClient.reset();
     redisOps = new RedisOperations(mockRedisClient);
   });
 
   afterEach(() => {
-    vi.resetAllMocks();
+    mockRedisClient.reset();
   });
 
   describe('Basic Key-Value Operations', () => {

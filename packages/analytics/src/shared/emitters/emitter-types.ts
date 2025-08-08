@@ -34,11 +34,11 @@ export interface EmitterContext {
     advertisingId?: string;
     adTrackingEnabled?: boolean;
     manufacturer?: string;
-    model?: string; // Note: iOS model values may not match device names exactly
+    model?: string;
     name?: string;
     type?: string;
     version?: string;
-    token?: string; // Push notification token
+    token?: string;
   };
 
   // Current user's IP address
@@ -164,23 +164,23 @@ export interface EmitterBasePayload {
   // Type of message, corresponding to the API method
   type: 'identify' | 'track' | 'page' | 'screen' | 'group' | 'alias';
 
-  anonymousId?: string; // Pseudo-unique substitute for userId
+  anonymousId?: string;
   // Identity fields (at least one required)
-  userId?: string; // Unique identifier for the user in your database
+  userId?: string;
 
-  originalTimestamp?: Date | string; // Client device time when call was invoked (ISO-8601)
-  receivedAt?: Date | string; // Server time when call was received (ISO-8601)
-  sentAt?: Date | string; // Client device time when call was sent (ISO-8601)
+  originalTimestamp?: Date | string;
+  receivedAt?: Date | string;
+  sentAt?: Date | string;
   // Timestamp fields
-  timestamp?: Date | string; // When the event actually occurred (ISO-8601)
+  timestamp?: Date | string;
 
   // Context and control fields
-  context?: EmitterContext; // Extra information providing context
-  integrations?: EmitterIntegrations; // Destination enable/disable control
+  context?: EmitterContext;
+  integrations?: EmitterIntegrations;
 
   // System fields (set by Segment)
-  messageId?: string; // Unique identifier for the message (max 100 chars)
-  version?: number; // Version of the Tracking API
+  messageId?: string;
+  version?: number;
 }
 
 // Specific payload types for each method

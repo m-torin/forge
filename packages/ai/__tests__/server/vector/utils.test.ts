@@ -1,6 +1,6 @@
 // Assign mockEmbeddingManager to globalThis to avoid hoisting issues
-import type { VectorDB } from '#/server/vector/types';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
+import type { VectorDB } from '../../../src/server/utils/vector/types';
 
 (globalThis as any).mockEmbeddingManager = {
   embed: vi.fn().mockResolvedValue([0.1, 0.2, 0.3]),
@@ -23,7 +23,7 @@ describe('vectorUtils', () => {
     vi.clearAllMocks();
     (globalThis as any).mockEmbeddingManager.embed.mockClear();
     (globalThis as any).mockEmbeddingManager.embedBatch.mockClear();
-    const mod = await import('#/server/vector/utils');
+    const mod = await import('../../../src/server/utils/vector/utils');
     VectorUtils = mod.VectorUtils;
     mockDB = {
       upsert: vi.fn().mockResolvedValue(undefined),
@@ -37,6 +37,12 @@ describe('vectorUtils', () => {
         dimension: 384,
         totalVectorCount: 100,
       }),
+      range: vi.fn().mockResolvedValue({
+        nextCursor: 'cursor',
+        vectors: [],
+      }),
+      reset: vi.fn().mockResolvedValue(true),
+      info: vi.fn().mockResolvedValue({ status: 'ready' }),
     } as VectorDB;
     vectorUtils = new VectorUtils(mockDB, 'test-model');
     // Ensure the embedder is the mock
@@ -160,7 +166,7 @@ describe('vectorUtils', () => {
     });
 
     test('should throw error when describe is not supported', async () => {
-      mockDB.describe = undefined;
+      (mockDB as any).describe = undefined;
 
       await expect(vectorUtils.getStats()).rejects.toThrow(
         'Vector database does not support describe operation',
@@ -195,7 +201,7 @@ describe('vectorUtils', () => {
 
 describe('createVectorUtils', () => {
   test('should create VectorUtils instance', async () => {
-    const mod = await import('#/server/vector/utils');
+    const mod = await import('../../../src/server/utils/vector/utils');
     const mockDB = {} as VectorDB;
     const utils = mod.createVectorUtils(mockDB, 'test-model');
     expect(utils).toBeInstanceOf(mod.VectorUtils);
@@ -205,7 +211,7 @@ describe('createVectorUtils', () => {
 describe('vectorOps', () => {
   let vectorOps: any;
   beforeEach(async () => {
-    const mod = await import('#/server/vector/utils');
+    const mod = await import('../../../src/server/utils/vector/utils');
     vectorOps = mod.vectorOps;
   });
 

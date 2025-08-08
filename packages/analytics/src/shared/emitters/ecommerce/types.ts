@@ -14,13 +14,13 @@ export interface BaseProductProperties {
   commission_rate?: number;
   condition?: 'new' | 'used' | 'refurbished';
   coupon?: string;
-  gtin?: string; // Global Trade Item Number
+  gtin?: string;
   image_url?: string;
   // Marketplace/affiliate properties (optional for any product)
   merchant_id?: string;
   merchant_name?: string;
   merchant_url?: string;
-  mpn?: string; // Manufacturer Part Number
+  mpn?: string;
   name?: string;
   original_price?: number;
   position?: number;
@@ -152,7 +152,7 @@ export interface CartAbandonmentProperties {
   cart_id: string;
   cart_value: number;
   products: BaseProductProperties[];
-  time_in_cart?: number; // seconds
+  time_in_cart?: number;
 }
 
 // Properties for checkout progression

@@ -1,5 +1,6 @@
 ---
-title: "Database Package Overview"
+title: "Database Package"
+sidebarTitle: "Database"
 description:
   "Multi-provider database package with four-file export pattern for all
   database types"
@@ -63,35 +64,60 @@ multiple provider support, each optimized for specific use cases:
   </Card>
 </CardGroup>
 
-## Four-File Export Pattern
+## Export Pattern
 
-The database package implements a consistent four-file export pattern for
-optimal Next.js integration:
+The database package implements a structured export pattern optimized for
+different runtime environments:
 
 <CodeGroup>
-```typescript Client (Browser)
-// Types and client-safe utilities only
-import type { User, Product } from '@repo/database/prisma/client';
+```typescript Prisma ORM
+// Default import (standard client)
+import { prisma } from '@repo/database/prisma/server';
+
+// Next.js server components/actions import { prisma } from
+'@repo/database/prisma/server/next';
+
+// Edge runtime (middleware) import { prisma } from
+'@repo/database/prisma/edge';
+
+// Prisma Accelerate import { prisma } from '@repo/database/prisma/accelerate';
+
+// Generated types and client import type { User, Organization } from
+'@repo/database/prisma/generated';
+
+// Zod validation schemas import { UserSchema } from '@repo/database/zod';
+
+````
+
+```typescript Redis (Upstash)
+// Server operations
+import { redis } from '@repo/database/redis/server';
+import { redis } from '@repo/database/redis/server/next';
+
+// Client types and utilities
 import type { RedisKey } from '@repo/database/redis/client';
+import { useRedisState } from '@repo/database/redis/client/next';
+````
+
+```typescript Vector Database (Upstash)
+// Server operations
+import { upstash, vectorOps } from "@repo/database/upstash/server";
+import { upstash } from "@repo/database/upstash/server/next";
+
+// AI-enhanced vector operations
+import { AIVectorOperations } from "@repo/database/upstash/ai-enhanced";
+
+// Client types
+import type { VectorMetadata } from "@repo/database/upstash/client";
 ```
 
-```typescript Server (Node.js)
-// Full server operations and client instances
-import { prisma } from "@repo/database/prisma/server";
-import { RedisOperations } from "@repo/database/redis/server";
-import { FirestoreOperations } from "@repo/database/firestore/server";
-```
-
-```typescript Client/Next (Next.js Client)
-// Next.js optimized client hooks
-import { useRedisState } from "@repo/database/redis/client/next";
-import { useFirestoreDoc } from "@repo/database/firestore/client/next";
-```
-
-```typescript Server/Next (Next.js Server)
-// Next.js optimized server operations
-import { redis } from "@repo/database/redis/server/next";
+```typescript Firestore
+// Server operations
+import { firestore } from "@repo/database/firestore/server";
 import { firestore } from "@repo/database/firestore/server/next";
+
+// Client hooks
+import { useFirestoreDoc } from "@repo/database/firestore/client/next";
 ```
 
 </CodeGroup>
@@ -110,11 +136,11 @@ pnpm add @repo/database
     # Primary Database (Prisma + PostgreSQL)
     DATABASE_URL=postgresql://username:password@host:port/database
 
-    # Upstash Redis
+    # Upstash Redis (required)
     UPSTASH_REDIS_REST_URL=https://...
     UPSTASH_REDIS_REST_TOKEN=...
 
-    # Upstash Vector Database
+    # Upstash Vector Database (optional)
     UPSTASH_VECTOR_REST_URL=https://...
     UPSTASH_VECTOR_REST_TOKEN=...
 
@@ -123,7 +149,14 @@ pnpm add @repo/database
     FIREBASE_CLIENT_EMAIL=service-account@project.iam.gserviceaccount.com
     FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----
 
-... -----END PRIVATE KEY----- " ```
+... -----END PRIVATE KEY-----"
+
+    # Prisma Logging (optional)
+    PRISMA_LOG_PERFORMANCE=true
+    PRISMA_LOG_QUERIES=true
+    PRISMA_LOG_LEVEL=info
+    PRISMA_LOG_PROVIDER=console
+    ```
 
   </Tab>
 
@@ -131,10 +164,17 @@ pnpm add @repo/database
     ```bash
     # .env.local
     DATABASE_URL=postgresql://localhost:5432/forge_dev
+    UPSTASH_REDIS_REST_URL=https://your-redis-url
+    UPSTASH_REDIS_REST_TOKEN=your-redis-token
 
-    # Optional: Add Upstash for full testing
-    # UPSTASH_REDIS_REST_URL=...
-    # UPSTASH_REDIS_REST_TOKEN=...
+    # Optional: Add Upstash Vector for AI features testing
+    # UPSTASH_VECTOR_REST_URL=https://your-vector-url
+    # UPSTASH_VECTOR_REST_TOKEN=your-vector-token
+
+    # Optional: Firestore for document storage testing
+    # FIREBASE_PROJECT_ID=your-project-id
+    # FIREBASE_CLIENT_EMAIL=service-account@project.iam.gserviceaccount.com
+    # FIREBASE_PRIVATE_KEY="..."
     ```
 
   </Tab>
@@ -142,33 +182,51 @@ pnpm add @repo/database
 
 ## Database Management
 
-### Prisma Operations
+### Database Operations
 
 <CodeGroup>
 ```bash Migration Commands
-# Run migrations (with Doppler)
+# Run migrations (with Doppler) - from root
 pnpm migrate
 
-# Run migrations (local development)
+# Run migrations (from database package)
 
-pnpm migrate:local
+cd packages/database && pnpm prisma:migrate
+
+# Deploy migrations to production
+
+cd packages/database && pnpm prisma:migrate:deploy
 
 # Generate Prisma client
 
 pnpm --filter @repo/database generate
 
+# or from database package
+
+cd packages/database && pnpm prisma:generate
+
 # Open Prisma Studio
 
 pnpm studio
 
+# or from database package
+
+cd packages/database && pnpm dev
+
 ````
 
 ```bash Seeding Commands
-# Seed with sample data
-pnpm --filter @repo/database seed
+# Seed with sample data (with Doppler)
+cd packages/database && pnpm seed
+
+# Dry run seed (see what would be created)
+cd packages/database && pnpm prisma:seed:dry-run
+
+# Reset and seed
+cd packages/database && pnpm prisma:seed:reset
 
 # Create admin users
-pnpm --filter @repo/database create-users
+cd packages/database && pnpm create-users
 ````
 
 </CodeGroup>

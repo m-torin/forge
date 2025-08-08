@@ -91,7 +91,16 @@ export class CloudflareR2Provider implements StorageProvider {
         reader.releaseLock();
       }
 
-      return new Blob(chunks, { type: response.ContentType });
+      return new Blob(
+        chunks.map(
+          chunk =>
+            chunk.buffer.slice(
+              chunk.byteOffset,
+              chunk.byteOffset + chunk.byteLength,
+            ) as ArrayBuffer,
+        ),
+        { type: response.ContentType },
+      );
     }
 
     // For browser environments, use web streams
@@ -111,7 +120,13 @@ export class CloudflareR2Provider implements StorageProvider {
       reader.releaseLock();
     }
 
-    return new Blob(chunks, { type: response.ContentType });
+    return new Blob(
+      chunks.map(
+        chunk =>
+          chunk.buffer.slice(chunk.byteOffset, chunk.byteOffset + chunk.byteLength) as ArrayBuffer,
+      ),
+      { type: response.ContentType },
+    );
   }
 
   async downloadStream(key: string): Promise<ReadableStream> {

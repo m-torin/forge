@@ -134,7 +134,6 @@ export function MentionDropdown({
             onClick={() => selectUser(user)}
             onMouseEnter={() => setSelectedIndex(filteredUsers.indexOf(user))}
           >
-            {/* Avatar */}
             <div className="flex-shrink-0">
               {user.avatar ? (
                 <img
@@ -149,7 +148,6 @@ export function MentionDropdown({
               )}
             </div>
 
-            {/* User Info */}
             <div className="min-w-0 flex-1">
               <div className="truncate text-sm font-medium">{user.name}</div>
               {user.email && <div className="truncate text-xs text-gray-500">{user.email}</div>}
@@ -158,7 +156,6 @@ export function MentionDropdown({
         ))}
       </div>
 
-      {/* Footer hint */}
       <div className="border-t border-gray-100 px-4 py-2 text-xs text-gray-500">
         ↑↓ to navigate • Enter to select • Esc to cancel
       </div>

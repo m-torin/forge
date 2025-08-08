@@ -62,7 +62,7 @@ export {
 } from './circuit-breaker';
 
 export {
-  EnhancedRetry,
+  ConfigurableRetry,
   ErrorType,
   RAGRetryPatterns,
   RetryStrategy,
@@ -164,7 +164,7 @@ export {
 
 // Advanced AI SDK v5 Features
 export {
-  AdvancedDocumentChunker,
+  SemanticDocumentChunker,
   chunkDocuments,
   chunkingPresets,
   createDocumentChunker,
@@ -397,3 +397,13 @@ export function createProductionRAG(
     },
   });
 }
+
+// ChatbotRAG Service - Simplified interface for chatbot applications
+export {
+  createChatbotRAG,
+  createChatbotRAGFromEnv,
+  defaultChatbotRAGConfig,
+  validateChatbotRAGConfig,
+  type ChatbotRAGConfig,
+  type ChatbotRAGService,
+} from './chatbot-service';

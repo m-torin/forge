@@ -15,7 +15,7 @@ describe('rate limiter plugin', () => {
   });
 
   test('should create plugin with default options', async () => {
-    const rateLimiterModule = await import('#/server/plugins/rate-limiter');
+    const rateLimiterModule = await import('../../src/server/plugins/rate-limiter');
 
     const plugin = rateLimiterModule.rateLimiterPlugin();
 
@@ -24,7 +24,7 @@ describe('rate limiter plugin', () => {
   });
 
   test('should create plugin with custom options', async () => {
-    const rateLimiterModule = await import('#/server/plugins/rate-limiter');
+    const rateLimiterModule = await import('../../src/server/plugins/rate-limiter');
 
     const customOptions = {
       enabled: false,
@@ -41,7 +41,7 @@ describe('rate limiter plugin', () => {
   });
 
   test('should handle requests with default key generation', async () => {
-    const rateLimiterModule = await import('#/server/plugins/rate-limiter');
+    const rateLimiterModule = await import('../../src/server/plugins/rate-limiter');
 
     const plugin = rateLimiterModule.rateLimiterPlugin({
       maxAttempts: 2,
@@ -60,7 +60,7 @@ describe('rate limiter plugin', () => {
   });
 
   test('should handle requests with custom key generator', async () => {
-    const rateLimiterModule = await import('#/server/plugins/rate-limiter');
+    const rateLimiterModule = await import('../../src/server/plugins/rate-limiter');
 
     const customKeyGenerator = vi.fn((request: Request) => {
       return `custom-key-${new URL(request.url).pathname}`;
@@ -75,14 +75,14 @@ describe('rate limiter plugin', () => {
   });
 
   test('should export rate limiter options interface', async () => {
-    const rateLimiterModule = await import('#/server/plugins/rate-limiter');
+    const rateLimiterModule = await import('../../src/server/plugins/rate-limiter');
 
     // Test that the module exports the expected function
     expect(typeof rateLimiterModule.rateLimiterPlugin).toBe('function');
   });
 
   test('should handle disabled rate limiter', async () => {
-    const rateLimiterModule = await import('#/server/plugins/rate-limiter');
+    const rateLimiterModule = await import('../../src/server/plugins/rate-limiter');
 
     const plugin = rateLimiterModule.rateLimiterPlugin({
       enabled: false,
@@ -92,7 +92,7 @@ describe('rate limiter plugin', () => {
   });
 
   test('should create plugin with all configuration options', async () => {
-    const rateLimiterModule = await import('#/server/plugins/rate-limiter');
+    const rateLimiterModule = await import('../../src/server/plugins/rate-limiter');
 
     const fullConfig = {
       enabled: true,
@@ -113,7 +113,7 @@ describe('rate limiter plugin', () => {
   });
 
   test('should handle requests without forwarded headers', async () => {
-    const rateLimiterModule = await import('#/server/plugins/rate-limiter');
+    const rateLimiterModule = await import('../../src/server/plugins/rate-limiter');
 
     const plugin = rateLimiterModule.rateLimiterPlugin();
 
@@ -124,7 +124,7 @@ describe('rate limiter plugin', () => {
   });
 
   test('should handle requests with x-real-ip header', async () => {
-    const rateLimiterModule = await import('#/server/plugins/rate-limiter');
+    const rateLimiterModule = await import('../../src/server/plugins/rate-limiter');
 
     const plugin = rateLimiterModule.rateLimiterPlugin();
 
@@ -138,7 +138,7 @@ describe('rate limiter plugin', () => {
   });
 
   test('should handle window cleanup', async () => {
-    const rateLimiterModule = await import('#/server/plugins/rate-limiter');
+    const rateLimiterModule = await import('../../src/server/plugins/rate-limiter');
 
     const plugin = rateLimiterModule.rateLimiterPlugin({
       windowMs: 1000, // 1 second for fast test
@@ -151,7 +151,7 @@ describe('rate limiter plugin', () => {
   });
 
   test('should preserve rate limit configuration', async () => {
-    const rateLimiterModule = await import('#/server/plugins/rate-limiter');
+    const rateLimiterModule = await import('../../src/server/plugins/rate-limiter');
 
     const options = {
       enabled: true,

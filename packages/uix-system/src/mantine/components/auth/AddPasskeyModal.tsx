@@ -50,7 +50,7 @@ export function AddPasskeyModal({
   nameLabel = 'Passkey name',
   namePlaceholder = 'e.g., MacBook Pro',
   nameDescription = 'Give this passkey a name to help you identify it later',
-  infoText = "When you click \"Add passkey\", your browser will ask you to authenticate using your device's security features.",
+  infoText = 'When you click "Add passkey", your browser will ask you to authenticate using your device\'s security features.',
   size = 'md',
   icon = <IconFingerprint size={16} />,
 }: AddPasskeyModalProps) {

@@ -19,7 +19,6 @@ export function KeyboardShortcutsHelp({ isOpen, onClose }: KeyboardShortcutsHelp
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black bg-opacity-50"
         onClick={onClose}
@@ -34,9 +33,7 @@ export function KeyboardShortcutsHelp({ isOpen, onClose }: KeyboardShortcutsHelp
         aria-label="Close shortcuts help"
       />
 
-      {/* Modal */}
       <div className="relative mx-4 max-h-[80vh] w-full max-w-4xl overflow-hidden rounded-lg bg-white shadow-xl">
-        {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-200 p-6">
           <h2 className="text-2xl font-semibold text-gray-900">Keyboard Shortcuts</h2>
           <button
@@ -49,7 +46,6 @@ export function KeyboardShortcutsHelp({ isOpen, onClose }: KeyboardShortcutsHelp
         </div>
 
         <div className="flex h-full max-h-[60vh]">
-          {/* Categories Sidebar */}
           <div className="w-64 overflow-y-auto border-r border-gray-200 bg-gray-50">
             <div className="p-4">
               <h3 className="mb-3 text-sm font-medium uppercase tracking-wider text-gray-500">
@@ -74,7 +70,6 @@ export function KeyboardShortcutsHelp({ isOpen, onClose }: KeyboardShortcutsHelp
             </div>
           </div>
 
-          {/* Shortcuts Content */}
           <div className="flex-1 overflow-y-auto">
             <div className="p-6">
               <h3 className="mb-4 text-lg font-medium text-gray-900">{selectedCategory}</h3>
@@ -109,7 +104,6 @@ export function KeyboardShortcutsHelp({ isOpen, onClose }: KeyboardShortcutsHelp
           </div>
         </div>
 
-        {/* Footer */}
         <div className="border-t border-gray-200 bg-gray-50 px-6 py-4">
           <div className="flex items-center justify-between">
             <p className="text-sm text-gray-600">

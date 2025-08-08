@@ -1,48 +1,48 @@
 /**
  * Integration tests for package exports and imports
  */
-import { describe, it, expect } from 'vitest';
+import { describe, expect } from 'vitest';
 
 // Test direct imports from different export paths
-describe('Package Exports Integration', () => {
-  describe('Main exports', () => {
-    it('should import utility functions from main export', async () => {
+describe('package Exports Integration', () => {
+  describe('main exports', () => {
+    test('should import utility functions from main export', async () => {
       const { safeStringify, extractObservation } = await import('../../src/index');
-      
+
       expect(safeStringify).toBeTypeOf('function');
       expect(extractObservation).toBeTypeOf('function');
-      
+
       // Test functionality
       const result = safeStringify({ test: 'value' });
       expect(result).toBe('{"test":"value"}');
-      
+
       const entity = { observations: ['key:value'] };
       const extracted = extractObservation(entity, 'key');
       expect(extracted).toBe('value');
     });
 
-    it('should import tool definitions from main export', async () => {
+    test('should import tool definitions from main export', async () => {
       const { safeStringifyTool, extractObservationTool } = await import('../../src/index');
-      
+
       expect(safeStringifyTool).toBeDefined();
       expect(safeStringifyTool.name).toBe('safe_stringify');
       expect(safeStringifyTool.execute).toBeTypeOf('function');
-      
+
       expect(extractObservationTool).toBeDefined();
       expect(extractObservationTool.name).toBe('extract_observation');
       expect(extractObservationTool.execute).toBeTypeOf('function');
     });
 
-    it('should import registry classes from main export', async () => {
-      const { 
-        globalCacheRegistry, 
+    test('should import registry classes from main export', async () => {
+      const {
+        globalCacheRegistry,
         globalLoggerRegistry,
         BoundedCache,
         CacheRegistry,
         AsyncLogger,
-        LoggerRegistry
+        LoggerRegistry,
       } = await import('../../src/index');
-      
+
       expect(globalCacheRegistry).toBeDefined();
       expect(globalLoggerRegistry).toBeDefined();
       expect(BoundedCache).toBeTypeOf('function');
@@ -51,9 +51,9 @@ describe('Package Exports Integration', () => {
       expect(LoggerRegistry).toBeTypeOf('function');
     });
 
-    it('should import ALL_TOOLS array', async () => {
+    test('should import ALL_TOOLS array', async () => {
       const { ALL_TOOLS } = await import('../../src/index');
-      
+
       expect(ALL_TOOLS).toBeInstanceOf(Array);
       expect(ALL_TOOLS.length).toBeGreaterThan(0);
       expect(ALL_TOOLS).toContain('safeStringifyTool');
@@ -61,10 +61,10 @@ describe('Package Exports Integration', () => {
     });
   });
 
-  describe('Tools export path', () => {
-    it('should import tools from /tools export', async () => {
+  describe('tools export path', () => {
+    test('should import tools from /tools export', async () => {
       const tools = await import('../../src/tools/index');
-      
+
       expect(tools.safeStringifyTool).toBeDefined();
       expect(tools.extractObservationTool).toBeDefined();
       expect(tools.createBoundedCacheTool).toBeDefined();
@@ -72,12 +72,12 @@ describe('Package Exports Integration', () => {
       expect(tools.ALL_TOOLS).toBeDefined();
     });
 
-    it('should import specific tool modules', async () => {
+    test('should import specific tool modules', async () => {
       const { safeStringifyTool } = await import('../../src/tools/safe-stringify');
       const { extractObservationTool } = await import('../../src/tools/agent-utilities');
       const { createBoundedCacheTool } = await import('../../src/tools/bounded-cache');
       const { createAsyncLoggerTool } = await import('../../src/tools/async-logger');
-      
+
       expect(safeStringifyTool.name).toBe('safe_stringify');
       expect(extractObservationTool.name).toBe('extract_observation');
       expect(createBoundedCacheTool.name).toBe('create_bounded_cache');
@@ -85,13 +85,13 @@ describe('Package Exports Integration', () => {
     });
   });
 
-  describe('Utils export path', () => {
-    it('should import utilities from specific modules', async () => {
+  describe('utils export path', () => {
+    test('should import utilities from specific modules', async () => {
       const { safeStringify } = await import('../../src/utils/stringify');
       const { extractObservation } = await import('../../src/utils/agent-helpers');
       const { BoundedCache } = await import('../../src/utils/cache');
       const { AsyncLogger } = await import('../../src/utils/logger');
-      
+
       expect(safeStringify).toBeTypeOf('function');
       expect(extractObservation).toBeTypeOf('function');
       expect(BoundedCache).toBeTypeOf('function');
@@ -99,115 +99,116 @@ describe('Package Exports Integration', () => {
     });
   });
 
-  describe('Cross-module compatibility', () => {
-    it('should work with different import styles', async () => {
+  describe('cross-module compatibility', () => {
+    test('should work with different import styles', async () => {
       // Named imports
       const { safeStringify: named } = await import('../../src/index');
-      
+
       // Module import
       const module = await import('../../src/utils/stringify');
       const fromModule = module.safeStringify;
-      
+
       // Both should be the same function
       expect(named).toBe(fromModule);
-      
+
       // Both should work identically
       const testObj = { test: 'value' };
       expect(named(testObj)).toBe(fromModule(testObj));
     });
 
-    it('should maintain singleton registry instances', async () => {
+    test('should maintain singleton registry instances', async () => {
       const { globalCacheRegistry: global1 } = await import('../../src/index');
       const { globalCacheRegistry: global2 } = await import('../../src/utils/cache');
-      
+
       expect(global1).toBe(global2);
-      
+
       // Test functionality is shared
       global1.create('test-cache');
       expect(global2.get('test-cache')).toBeDefined();
     });
   });
 
-  describe('Type definitions', () => {
-    it('should export TypeScript types', async () => {
+  describe('type definitions', () => {
+    test('should export TypeScript types', async () => {
       const types = await import('../../src/index');
-      
+
       // Type exports don't have runtime values, but we can check the module structure
       expect(types).toBeDefined();
-      
+
       // Test that imported types can be used (would fail at compile time if types missing)
       const entity: typeof types.MCPEntity = { observations: ['test:value'] };
       expect(entity.observations).toBeDefined();
     });
   });
 
-  describe('Functional integration', () => {
-    it('should demonstrate end-to-end utility usage', async () => {
-      const { 
-        safeStringify, 
-        extractObservation, 
+  describe('functional integration', () => {
+    test('should demonstrate end-to-end utility usage', async () => {
+      const {
+        safeStringify,
+        extractObservation,
         createEntityName,
         globalCacheRegistry,
-        globalLoggerRegistry
+        globalLoggerRegistry,
       } = await import('../../src/index');
-      
+
       // Create test data
       const testData = {
         session: 'integration-test',
         results: ['success', 'pending'],
-        metadata: { timestamp: Date.now() }
+        metadata: { timestamp: Date.now() },
       };
-      
+
       // Test stringify
       const stringified = safeStringify(testData);
       expect(stringified).toContain('integration-test');
-      
+
       // Test entity handling
       const entity = { observations: ['session:integration-test', 'status:success'] };
       const sessionId = extractObservation(entity, 'session');
       expect(sessionId).toBe('integration-test');
-      
+
       // Test entity name creation
       const entityName = createEntityName('AnalysisSession', sessionId!);
       expect(entityName).toBe('AnalysisSession_integration-test');
-      
+
       // Test cache integration
       const cache = globalCacheRegistry.create('integration-cache');
       cache.set('test-data', testData);
-      expect(cache.get('test-data')).toEqual(testData);
-      
+      expect(cache.get('test-data')).toStrictEqual(testData);
+
       // Test logger integration
       const logger = globalLoggerRegistry.create('integration-session', {
         sessionId: 'integration-session',
-        logLevel: 'info'
+        logLevel: 'info',
       });
       expect(logger).toBeDefined();
-      
+
       // Cleanup
       globalCacheRegistry.delete('integration-cache');
       await globalLoggerRegistry.close('integration-session');
     });
 
-    it('should handle tool execution integration', async () => {
+    test('should handle tool execution integration', async () => {
       const { safeStringifyTool, extractObservationTool } = await import('../../src/index');
-      
+
       // Test tool execution
       const stringifyResult = await safeStringifyTool.execute({
         obj: { integration: 'test' },
-        prettify: true
+        prettify: true,
       });
-      
+
       expect(stringifyResult.content).toHaveLength(1);
       const parsed = JSON.parse(stringifyResult.content[0].text);
       expect(parsed.result).toContain('integration');
-      
+
       // Test extraction tool
       const extractResult = await extractObservationTool.execute({
         entity: { observations: ['key:value'] },
-        key: 'key'
+        key: 'key',
       });
-      
-      expect(extractResult.content[0].text).toBe('value');
+
+      const extractParsed = JSON.parse(extractResult.content[0].text);
+      expect(extractParsed.value).toBe('value');
     });
   });
 });

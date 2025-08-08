@@ -44,9 +44,11 @@ const weatherParameters = z.object({
 export function createWeatherTool(context: ToolContext = {}) {
   return tool.api({
     description: 'Get the current weather at a location',
-    parameters: weatherParameters,
-    url: (args: z.infer<typeof weatherParameters>) =>
-      `https://api.open-meteo.com/v1/forecast?latitude=${args.latitude}&longitude=${args.longitude}&current=temperature_2m&hourly=temperature_2m&daily=sunrise,sunset&timezone=auto`,
+    inputSchema: weatherParameters,
+    url: (input: unknown) => {
+      const args = weatherParameters.parse(input);
+      return `https://api.open-meteo.com/v1/forecast?latitude=${args.latitude}&longitude=${args.longitude}&current=temperature_2m&hourly=temperature_2m&daily=sunrise,sunset&timezone=auto`;
+    },
     method: 'GET',
     transformResponse: data => {
       // Validate the response structure
@@ -78,7 +80,7 @@ export function createWeatherTool(context: ToolContext = {}) {
 /**
  * Weather tool with additional options
  */
-export function createAdvancedWeatherTool(
+export function createConfigurableWeatherTool(
   config: {
     /** API key for premium weather services */
     apiKey?: string;
@@ -100,8 +102,9 @@ export function createAdvancedWeatherTool(
 
   return tool.api({
     description: 'Get detailed weather information at a location',
-    parameters: weatherSchema,
-    url: (args: z.infer<typeof weatherSchema>) => {
+    inputSchema: weatherSchema,
+    url: (input: unknown) => {
+      const args = weatherSchema.parse(input);
       const params = new URLSearchParams({
         latitude: args.latitude.toString(),
         longitude: args.longitude.toString(),
@@ -157,7 +160,7 @@ export const getWeather = createWeatherTool();
 /**
  * Advanced weather tool function with additional options
  */
-export const getAdvancedWeather = createAdvancedWeatherTool();
+export const getConfigurableWeather = createConfigurableWeatherTool();
 
 /**
  * Export types for external use

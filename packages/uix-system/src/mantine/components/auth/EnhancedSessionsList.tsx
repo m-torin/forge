@@ -340,7 +340,6 @@ export function EnhancedSessionsList({
 
   return (
     <Stack gap="md">
-      {/* Header with actions */}
       <Group justify="space-between">
         <div>
           <Title order={3}>{title}</Title>
@@ -386,7 +385,6 @@ export function EnhancedSessionsList({
         </Group>
       </Group>
 
-      {/* Bulk actions bar */}
       {showBulkActions && selectedSessions.size > 0 && (
         <Card withBorder p="sm">
           <Group justify="space-between">
@@ -410,14 +408,12 @@ export function EnhancedSessionsList({
         </Card>
       )}
 
-      {/* Error display */}
       {error && (
         <Alert icon={<IconAlertCircle size={16} />} color="red" variant="light">
           {error}
         </Alert>
       )}
 
-      {/* Sessions list */}
       <Card withBorder pos="relative">
         <LoadingOverlay visible={loading} />
 
@@ -573,7 +569,6 @@ export function EnhancedSessionsList({
         )}
       </Card>
 
-      {/* Filters Drawer */}
       <Drawer
         opened={filtersOpened}
         onClose={closeFilters}
@@ -648,7 +643,6 @@ export function EnhancedSessionsList({
         </Stack>
       </Drawer>
 
-      {/* Session Details Modal */}
       <Modal opened={detailsOpened} onClose={closeDetails} title={sessionDetailsTitle} size="lg">
         {selectedSession &&
           (renderCustomDetailsModal ? (

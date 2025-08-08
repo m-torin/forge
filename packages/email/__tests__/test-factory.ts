@@ -110,7 +110,7 @@ export function createEmailTemplateTestSuite<TProps = any>(
     if (config.renderAsText !== false) {
       test('should render as plain text', async () => {
         const { render } = await import('@react-email/render');
-        const text = render(config.templateComponent(config.validProps), { plainText: true });
+        const text = await render(config.templateComponent(config.validProps), { plainText: true });
         expect(typeof text).toBe('string');
         expect(text.length).toBeGreaterThan(0);
         // Should not contain HTML tags
@@ -156,7 +156,7 @@ export function createEmailServiceTestSuite<TPayload = any>(
       const result = await config.serviceFunction(config.validPayload);
 
       if (config.expectedResult) {
-        expect(result).toEqual(config.expectedResult);
+        expect(result).toStrictEqual(config.expectedResult);
       } else {
         expect(result).toBeDefined();
       }
@@ -209,7 +209,7 @@ export function createEmailActionTestSuite<TPayload = any>(
       const result = await config.actionFunction(config.validPayload);
 
       if (config.expectedResult) {
-        expect(result).toEqual(config.expectedResult);
+        expect(result).toStrictEqual(config.expectedResult);
       } else {
         expect(result).toBeDefined();
       }
@@ -379,7 +379,7 @@ export function createEmailFormattingTestSuite(config: {
     config.testCases.forEach(testCase => {
       test(testCase.description, () => {
         const result = config.formatterFunction(testCase.input);
-        expect(result).toEqual(testCase.expected);
+        expect(result).toStrictEqual(testCase.expected);
       });
     });
 

@@ -7,6 +7,6 @@ export default createNextAppConfig({
     '#/root': resolve(process.cwd(), '.'),
   },
   overrides: {
-    plugins: [viteTsconfigPaths({ ignoreConfigErrors: true })],
+    plugins: [viteTsconfigPaths({ ignoreConfigErrors: true }) as any],
   },
 });

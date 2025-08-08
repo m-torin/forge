@@ -195,8 +195,8 @@ describe('configuration Merging', () => {
     const merged = mockMergeConfigs(baseConfig, userConfig);
 
     expect(merged.locale.source).toBe('en');
-    expect(merged.locale.targets).toEqual(['fr', 'es', 'pt', 'de']);
-    expect(merged.ns).toEqual(['common', 'navigation']);
+    expect(merged.locale.targets).toStrictEqual(['fr', 'es', 'pt', 'de']);
+    expect(merged.ns).toStrictEqual(['common', 'navigation']);
     expect(merged.dictionary).toBe('locales');
   });
 
@@ -250,7 +250,7 @@ describe('configuration Merging', () => {
     const merged = mockDeepMerge(baseConfig, userConfig);
 
     expect(merged.locale.source).toBe('en');
-    expect(merged.locale.targets).toEqual(['fr', 'es']);
+    expect(merged.locale.targets).toStrictEqual(['fr', 'es']);
     expect(merged.options.fallback).toBeTruthy();
     expect(merged.options.cache).toBeFalsy();
     expect(merged.options.minify).toBeTruthy();
@@ -290,16 +290,16 @@ describe('configuration Merging', () => {
 
     // Test different conflict resolution strategies
     const userWins = mockResolveConflicts(baseConfig, userConfig, 'user-wins');
-    expect(userWins.locales).toEqual(['en', 'es']);
-    expect(userWins.features).toEqual(['translation', 'interpolation']);
+    expect(userWins.locales).toStrictEqual(['en', 'es']);
+    expect(userWins.features).toStrictEqual(['translation', 'interpolation']);
 
     const baseWins = mockResolveConflicts(baseConfig, userConfig, 'base-wins');
-    expect(baseWins.locales).toEqual(['en', 'fr']);
-    expect(baseWins.features).toEqual(['translation', 'pluralization']);
+    expect(baseWins.locales).toStrictEqual(['en', 'fr']);
+    expect(baseWins.features).toStrictEqual(['translation', 'pluralization']);
 
     const mergeArrays = mockResolveConflicts(baseConfig, userConfig, 'merge-arrays');
-    expect(mergeArrays.locales).toEqual(['en', 'fr', 'es']);
-    expect(mergeArrays.features).toEqual(['translation', 'pluralization', 'interpolation']);
+    expect(mergeArrays.locales).toStrictEqual(['en', 'fr', 'es']);
+    expect(mergeArrays.features).toStrictEqual(['translation', 'pluralization', 'interpolation']);
   });
 });
 
@@ -361,8 +361,8 @@ describe('configuration Loading', () => {
     const config = await mockLoadConfig(sources);
 
     expect(config.locale.source).toBe('en');
-    expect(config.locale.targets).toEqual(['fr', 'es', 'pt']);
-    expect(config.ns).toEqual(['common', 'navigation']);
+    expect(config.locale.targets).toStrictEqual(['fr', 'es', 'pt']);
+    expect(config.ns).toStrictEqual(['common', 'navigation']);
     expect(config.dictionary).toBe('i18n');
   });
 
@@ -522,8 +522,8 @@ i18nTestPatterns.testConfigurationValidation([
     expectedProperties: ['locale', 'ns', 'dictionary'],
     customAssertions: config => {
       expect(config.locale.source).toBe('en');
-      expect(config.locale.targets).toEqual(['fr']);
-      expect(config.ns).toEqual(['common']);
+      expect(config.locale.targets).toStrictEqual(['fr']);
+      expect(config.ns).toStrictEqual(['common']);
       expect(config.dictionary).toBe('locales');
     },
   },
@@ -642,7 +642,7 @@ describe('configuration Environment', () => {
     expect(prodConfig.options.minify).toBeTruthy();
 
     const testConfig = mockGetEnvConfig('test');
-    expect(testConfig.locale.targets).toEqual(['en']);
+    expect(testConfig.locale.targets).toStrictEqual(['en']);
     expect(testConfig.options.watch).toBeFalsy();
   });
 
@@ -691,7 +691,7 @@ describe('configuration Environment', () => {
 
     expect(configWithOverrides.options.cache).toBeFalsy();
     expect(configWithOverrides.options.minify).toBeTruthy();
-    expect(configWithOverrides.options.locales).toEqual(['en', 'fr', 'es', 'pt']);
+    expect(configWithOverrides.options.locales).toStrictEqual(['en', 'fr', 'es', 'pt']);
   });
 });
 

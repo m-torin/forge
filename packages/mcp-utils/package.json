@@ -2,7 +2,6 @@
   "name": "@repo/mcp-utils",
   "version": "1.0.0",
   "private": true,
-  "type": "module",
   "description": "Centralized utilities for Claude Code agents via MCP server",
   "keywords": [
     "mcp",
@@ -11,21 +10,31 @@
     "agents",
     "server"
   ],
+  "type": "module",
   "exports": {
     ".": {
+      "direct": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "default": "./dist/index.mjs"
     },
     "./tools": {
+      "direct": "./src/tools/index.ts",
       "types": "./dist/tools/index.d.ts",
       "import": "./dist/tools/index.mjs",
       "default": "./dist/tools/index.mjs"
     },
     "./utils": {
+      "direct": "./src/utils/index.ts",
       "types": "./dist/utils/index.d.ts",
       "import": "./dist/utils/index.mjs",
       "default": "./dist/utils/index.mjs"
+    },
+    "./server": {
+      "direct": "./src/server.ts",
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.mjs",
+      "default": "./dist/server.mjs"
     }
   },
   "main": "./dist/index.mjs",
@@ -38,11 +47,10 @@
     "bin"
   ],
   "scripts": {
-    "prebuild": "rm -rf dist",
-    "build": "tsc -p tsconfig.build.json",
-    "postbuild": "node ./scripts/add-extensions.mjs",
-    "build:watch": "tsc -p tsconfig.build.json --watch",
-    "dev": "node --watch src/index.mjs",
+    "build": "tsup",
+    "build:watch": "tsup --watch",
+    "circles": "madge --circular src --extensions ts,tsx",
+    "dev": "tsup --watch",
     "lint": "eslint . --fix",
     "start": "node bin/mcp-server.mjs",
     "test": "vitest run",
@@ -51,12 +59,28 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.6.0",
+    "@repo/observability": "workspace:*",
+    "acorn": "^8.11.0",
+    "lru-cache": "catalog:",
+    "p-limit": "^5.0.0",
+    "p-queue": "^7.0.0",
+    "p-retry": "^6.2.0",
+    "perfect-debounce": "^1.0.0",
+    "picomatch": "^4.0.0",
+    "shell-quote": "^1.8.1",
+    "ts-morph": "^21.0.0",
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/qa": "workspace:*",
+    "@types/madge": "^5.0.3",
     "@types/node": "catalog:",
+    "@types/picomatch": "^4.0.2",
+    "@types/shell-quote": "^1.7.5",
+    "madge": "^8.0.0",
+    "tsup": "^8.0.0",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }

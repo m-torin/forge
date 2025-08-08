@@ -221,7 +221,7 @@ export class AuthAnalytics {
     ipAddress?: string;
     duration?: number;
     error?: string;
-    provider?: string; // For OAuth
+    provider?: string;
   }): Promise<void> {
     const eventType = params.success
       ? (`auth.signin.${params.method}` as AuthEventType)
@@ -356,7 +356,7 @@ export class AuthAnalytics {
     success: boolean;
     userId?: string;
     organizationId?: string;
-    targetUserId?: string; // For invite/remove operations
+    targetUserId?: string;
     ipAddress?: string;
     error?: string;
   }): Promise<void> {

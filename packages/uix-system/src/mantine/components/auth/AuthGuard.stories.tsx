@@ -65,7 +65,9 @@ const mockSession: AuthSession = {
 };
 
 // Mock handlers
-const mockUnauthorized = () => console.log('Unauthorized access attempt');
+const mockUnauthorized = () => {
+  // console.log('Unauthorized access attempt');
+};
 
 export const AuthenticatedUser: Story = {
   args: {

@@ -7,7 +7,7 @@ import { describe, expect, vi } from 'vitest';
 describe('password policy plugin', () => {
   describe('passwordPolicyPlugin', () => {
     test('should create plugin with default options', async () => {
-      const passwordPolicyModule = await import('#/server/plugins/password-policy');
+      const passwordPolicyModule = await import('../../src/server/plugins/password-policy');
 
       const plugin = passwordPolicyModule.passwordPolicyPlugin();
 
@@ -16,7 +16,7 @@ describe('password policy plugin', () => {
     });
 
     test('should create plugin with custom options', async () => {
-      const passwordPolicyModule = await import('#/server/plugins/password-policy');
+      const passwordPolicyModule = await import('../../src/server/plugins/password-policy');
 
       const customOptions = {
         minLength: 8,
@@ -36,7 +36,7 @@ describe('password policy plugin', () => {
     });
 
     test('should create plugin with partial options', async () => {
-      const passwordPolicyModule = await import('#/server/plugins/password-policy');
+      const passwordPolicyModule = await import('../../src/server/plugins/password-policy');
 
       const partialOptions = {
         minLength: 10,
@@ -50,7 +50,7 @@ describe('password policy plugin', () => {
     });
 
     test('should create plugin with custom validator', async () => {
-      const passwordPolicyModule = await import('#/server/plugins/password-policy');
+      const passwordPolicyModule = await import('../../src/server/plugins/password-policy');
 
       const customValidator = vi.fn(() => ({ valid: true }));
       const options = {
@@ -64,7 +64,7 @@ describe('password policy plugin', () => {
     });
 
     test('should handle empty options object', async () => {
-      const passwordPolicyModule = await import('#/server/plugins/password-policy');
+      const passwordPolicyModule = await import('../../src/server/plugins/password-policy');
 
       const plugin = passwordPolicyModule.passwordPolicyPlugin({});
 
@@ -73,7 +73,7 @@ describe('password policy plugin', () => {
     });
 
     test('should create plugin with extreme values', async () => {
-      const passwordPolicyModule = await import('#/server/plugins/password-policy');
+      const passwordPolicyModule = await import('../../src/server/plugins/password-policy');
 
       const extremeOptions = {
         minLength: 1,
@@ -93,7 +93,7 @@ describe('password policy plugin', () => {
     });
 
     test('should handle boolean false values correctly', async () => {
-      const passwordPolicyModule = await import('#/server/plugins/password-policy');
+      const passwordPolicyModule = await import('../../src/server/plugins/password-policy');
 
       const allFalseOptions = {
         requireUppercase: false,
@@ -111,7 +111,7 @@ describe('password policy plugin', () => {
     });
 
     test('should work with minimal length requirements', async () => {
-      const passwordPolicyModule = await import('#/server/plugins/password-policy');
+      const passwordPolicyModule = await import('../../src/server/plugins/password-policy');
 
       const minimalOptions = {
         minLength: 1,
@@ -129,7 +129,7 @@ describe('password policy plugin', () => {
     });
 
     test('should accept custom validator that returns error', async () => {
-      const passwordPolicyModule = await import('#/server/plugins/password-policy');
+      const passwordPolicyModule = await import('../../src/server/plugins/password-policy');
 
       const customValidator = vi.fn(() => ({
         valid: false,
@@ -145,7 +145,7 @@ describe('password policy plugin', () => {
     });
 
     test('should handle custom validator with email parameter', async () => {
-      const passwordPolicyModule = await import('#/server/plugins/password-policy');
+      const passwordPolicyModule = await import('../../src/server/plugins/password-policy');
 
       const customValidator = vi.fn((password: string, email?: string) => {
         if (email && password.includes(email.split('@')[0])) {
@@ -172,7 +172,7 @@ describe('password policy plugin', () => {
 
   describe('default configuration', () => {
     test('should have sensible defaults', async () => {
-      const passwordPolicyModule = await import('#/server/plugins/password-policy');
+      const passwordPolicyModule = await import('../../src/server/plugins/password-policy');
 
       // Test that the plugin can be created without configuration
       const plugin = passwordPolicyModule.passwordPolicyPlugin();
@@ -181,7 +181,7 @@ describe('password policy plugin', () => {
     });
 
     test('should handle undefined options', async () => {
-      const passwordPolicyModule = await import('#/server/plugins/password-policy');
+      const passwordPolicyModule = await import('../../src/server/plugins/password-policy');
 
       const plugin = passwordPolicyModule.passwordPolicyPlugin(undefined);
 
@@ -191,7 +191,7 @@ describe('password policy plugin', () => {
 
   describe('plugin configuration edge cases', () => {
     test('should handle zero length requirements', async () => {
-      const passwordPolicyModule = await import('#/server/plugins/password-policy');
+      const passwordPolicyModule = await import('../../src/server/plugins/password-policy');
 
       const plugin = passwordPolicyModule.passwordPolicyPlugin({
         minLength: 0,
@@ -202,7 +202,7 @@ describe('password policy plugin', () => {
     });
 
     test('should handle negative length values', async () => {
-      const passwordPolicyModule = await import('#/server/plugins/password-policy');
+      const passwordPolicyModule = await import('../../src/server/plugins/password-policy');
 
       const plugin = passwordPolicyModule.passwordPolicyPlugin({
         minLength: -1,
@@ -213,7 +213,7 @@ describe('password policy plugin', () => {
     });
 
     test('should handle very large length values', async () => {
-      const passwordPolicyModule = await import('#/server/plugins/password-policy');
+      const passwordPolicyModule = await import('../../src/server/plugins/password-policy');
 
       const plugin = passwordPolicyModule.passwordPolicyPlugin({
         minLength: Number.MAX_SAFE_INTEGER,
@@ -224,7 +224,7 @@ describe('password policy plugin', () => {
     });
 
     test('should handle custom validator that throws', async () => {
-      const passwordPolicyModule = await import('#/server/plugins/password-policy');
+      const passwordPolicyModule = await import('../../src/server/plugins/password-policy');
 
       const throwingValidator = vi.fn(() => {
         throw new Error('Validator error');
@@ -240,7 +240,7 @@ describe('password policy plugin', () => {
 
   describe('integration scenarios', () => {
     test('should work with mixed security requirements', async () => {
-      const passwordPolicyModule = await import('#/server/plugins/password-policy');
+      const passwordPolicyModule = await import('../../src/server/plugins/password-policy');
 
       const securityOptions = {
         minLength: 16,
@@ -264,7 +264,7 @@ describe('password policy plugin', () => {
     });
 
     test('should work with lenient requirements', async () => {
-      const passwordPolicyModule = await import('#/server/plugins/password-policy');
+      const passwordPolicyModule = await import('../../src/server/plugins/password-policy');
 
       const lenientOptions = {
         minLength: 4,

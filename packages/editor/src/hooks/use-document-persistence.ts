@@ -40,9 +40,9 @@ export interface DocumentPersistenceOptions {
   title?: string;
   autoSave?: AutoSaveOptions;
   enableRecovery?: boolean;
-  enableCompression?: boolean; // Enable compression for large documents
-  storageQuotaWarning?: number; // Warn when storage usage exceeds this percentage (0-100)
-  maxStorageSize?: number; // Maximum storage size in bytes
+  enableCompression?: boolean;
+  storageQuotaWarning?: number;
+  maxStorageSize?: number;
 }
 
 export function useDocumentPersistence(

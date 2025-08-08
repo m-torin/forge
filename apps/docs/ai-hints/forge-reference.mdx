@@ -1,0 +1,657 @@
+---
+title: Forge Reference
+description: Comprehensive reference for Forge monorepo development
+icon: "book-open"
+---
+
+# Forge Reference
+
+Complete reference for development in the Forge monorepo. This consolidates all
+essential patterns, commands, and workflows.
+
+## Package Overview
+
+| Package                      | Purpose                        | Layer | Edge Support | Key Import                                               |
+| ---------------------------- | ------------------------------ | ----- | ------------ | -------------------------------------------------------- |
+| `@repo/auth`                 | Better Auth with organizations | 5     | ✅           | `auth` from `/server/next`                               |
+| `@repo/database`             | Prisma ORM + generated types   | 3     | ❌           | `import { prisma }` from `/prisma/server/next`           |
+| `@repo/analytics`            | PostHog/GA with feature flags  | 4     | ✅           | `import { analytics }`                                   |
+| `@repo/observability`        | Sentry error tracking          | 2     | ✅           | `createServerObservability` from `/server/next`          |
+| `@repo/notifications`        | Mantine notifications          | 4     | ✅           | `/mantine-notifications`                                 |
+| `@repo/email`                | Email templates and sending    | 4     | ❌           | `import { sendEmail }`                                   |
+| `@repo/storage`              | Cloudflare R2/Images           | 5.5   | ✅           | `import { initializeStorage, createStorageProvider }`    |
+| `@repo/payments`             | Stripe integration             | 5     | ❌           | `import { stripe }`                                      |
+| `@repo/ai`                   | AI/ML functionality            | 5.5   | ✅           | `import { getBestModelForTask }` from `/models`          |
+| `@repo/scraping`             | Web scraping utilities         | 5.5   | ❌           | `import { scraper }`                                     |
+| `@repo/feature-flags`        | Feature flag management        | 4     | ✅           | `import { flags }`                                       |
+| `@repo/internationalization` | i18n support                   | 5     | ✅           | `import { i18n }`                                        |
+| `@repo/seo`                  | SEO utilities                  | 5     | ✅           | `import { createStructuredData, JsonLd }`                |
+| `@repo/links`                | Link management                | 5     | ✅           | `import { createServerLinkManager }` from `/server/next` |
+| `@repo/orchestration`        | Workflow management            | 5     | ❌           | `import { workflow }`                                    |
+
+## Import Patterns & Decision Trees
+
+### Which Import Pattern Should I Use?
+
+```
+Is this a Next.js app?
+├─ YES
+│  ├─ Is this middleware or edge function?
+│  │  ├─ YES → Use /server/edge (if available)
+│  │  └─ NO
+│  │     ├─ Is this client-side code?
+│  │     │  ├─ YES → Use /client/next
+│  │     │  └─ NO → Use /server/next
+│  └─ NO
+│     ├─ Is this a Node.js worker?
+│     │  ├─ YES → Use /server
+│     │  └─ NO → Use /client
+```
+
+### Examples
+
+```typescript
+// ✅ Next.js server component
+import { auth } from "@repo/auth/server/next";
+
+// ✅ Next.js client component
+import { useAuth } from "@repo/auth/client/next";
+
+// ✅ Next.js middleware
+import { auth } from "@repo/auth/server/edge";
+
+// ✅ Node.js worker
+import { createAuth } from "@repo/auth/server";
+```
+
+### Where Does This Code Belong?
+
+```
+What type of code is this?
+├─ UI Component
+│  ├─ Reusable across apps? → /packages/design-system
+│  └─ App-specific? → /apps/[app]/components
+├─ Business Logic
+│  ├─ Authentication? → /packages/auth
+│  ├─ Database operations? → Server action in /app/actions
+│  ├─ Payment processing? → /packages/payments
+│  └─ General utility? → Consider existing packages first
+├─ Configuration
+│  ├─ TypeScript? → /packages/typescript-config
+│  ├─ ESLint? → /packages/eslint-config
+│  └─ Build-related? → /packages/next-config
+└─ New Feature
+   ├─ Needs database? → Start with schema in /packages/database
+   ├─ Needs API? → Create server action
+   └─ Just UI? → Start with component
+```
+
+## Environment Configuration
+
+### The Two Rules
+
+#### Rule 1: Next.js Apps → Direct Access
+
+```typescript
+// ✅ ALWAYS do this in Next.js apps
+import { env } from "#/root/env";
+const apiUrl = env.NEXT_PUBLIC_API_URL; // Webpack inlines this
+const dbUrl = env.DATABASE_URL; // Server-only access
+```
+
+#### Rule 2: Packages → Dual Export
+
+```typescript
+// ✅ Packages export BOTH patterns
+export const env = createEnv({...}); // For Next.js consumers
+export function safeEnv() { return env || {...}; } // For Node.js consumers
+```
+
+### Never Do This
+
+```typescript
+// ❌ Direct process.env access
+const key = process.env.API_KEY;
+
+// ❌ Using safeEnv() in Next.js apps (breaks webpack inlining)
+import { safeEnv } from "#/root/env";
+const env = safeEnv();
+
+// ❌ Accessing server vars in client components
+("use client");
+import { env } from "#/root/env";
+const secret = env.API_SECRET; // Runtime error!
+```
+
+### Required Environment Variables
+
+```bash
+# Database
+DATABASE_URL=postgresql://...
+
+# Auth
+AUTH_SECRET=your-secret-key
+AUTH_URL=http://localhost:3000
+
+# Environment
+NODE_ENV=development
+```
+
+## Task Templates
+
+### Package Creation Template
+
+```typescript
+// packages/package-name/package.json
+{
+  "name": "@repo/package-name",
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./server": "./src/server/index.ts",
+    "./server/next": "./src/server/next.ts",
+    "./server/edge": "./src/server/edge.ts",
+    "./client": "./src/client/index.ts",
+    "./client/next": "./src/client/next.ts"
+  },
+  "dependencies": {
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@repo/eslint-config": "workspace:*"
+  }
+}
+```
+
+### Environment Configuration Template
+
+```typescript
+// packages/package-name/env.ts
+import { createEnv } from "@t3-oss/env-nextjs";
+import { z } from "zod";
+
+export const env = createEnv({
+  server: {
+    PACKAGE_SECRET: z.string().min(1)
+  },
+  client: {
+    NEXT_PUBLIC_PACKAGE_KEY: z.string().optional()
+  },
+  runtimeEnv: {
+    PACKAGE_SECRET: process.env.PACKAGE_SECRET,
+    NEXT_PUBLIC_PACKAGE_KEY: process.env.NEXT_PUBLIC_PACKAGE_KEY
+  },
+  onValidationError: (error) => {
+    console.warn("Package environment validation failed:", error);
+  }
+});
+
+// Helper for non-Next.js contexts
+export function safeEnv() {
+  if (env) return env;
+  return {
+    PACKAGE_SECRET: process.env.PACKAGE_SECRET || "",
+    NEXT_PUBLIC_PACKAGE_KEY: process.env.NEXT_PUBLIC_PACKAGE_KEY || ""
+  };
+}
+```
+
+### Server Action Template
+
+```typescript
+// app/actions/feature.ts
+"use server";
+
+import { z } from "zod";
+import { auth } from "@repo/auth/server/next";
+import { prisma } from "@repo/database/prisma/server/next";
+import { revalidatePath } from "next/cache";
+
+const schema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email")
+});
+
+export async function createFeature(formData: FormData) {
+  try {
+    // Validate session
+    const session = await auth();
+    if (!session) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    // Validate input
+    const validated = schema.parse(Object.fromEntries(formData));
+
+    // Database operation
+    const result = await prisma.feature.create({
+      data: {
+        ...validated,
+        userId: session.user.id
+      }
+    });
+
+    // Revalidate cache
+    revalidatePath("/features");
+
+    return { success: true, data: result };
+  } catch (error) {
+    console.error("Feature creation failed:", error);
+    return { success: false, error: "Failed to create feature" };
+  }
+}
+```
+
+## Command Sequences
+
+### Feature Development Flow
+
+```bash
+# 1. Search for similar features in Forge codebase
+# Use Grep tool to search for existing patterns
+
+# 2. Update Prisma schema (if needed)
+# Edit packages/database/src/prisma/schemas/*.prisma files, then:
+pnpm migrate
+pnpm --filter @repo/database generate
+
+# 3. Create server action (Forge pattern)
+# Create file in /app/actions/ following Forge conventions
+
+# 4. Build UI component with Mantine
+# Create component file using Mantine UI and Forge patterns
+
+# 5. Verify everything
+pnpm typecheck
+pnpm lint
+pnpm test --filter=[app-name]
+
+# 6. Test locally (user runs this)
+# pnpm dev --filter=[app-name] (port assignments in CLAUDE.md)
+```
+
+### Debugging Build Failures
+
+```bash
+# 1. Check TypeScript
+pnpm typecheck
+
+# 2. Check for circular dependencies
+pnpm madge --circular
+
+# 3. Clean and rebuild
+pnpm clean
+pnpm install
+pnpm build
+
+# 4. Check specific app
+pnpm build --filter=[app-name]
+
+# 5. If still failing, check verbose output
+pnpm build --filter=[app-name] -- --debug
+```
+
+### Database Migration Recovery
+
+```bash
+# If migration fails:
+
+# 1. Check migration status
+pnpm --filter @repo/database db:status
+
+# 2. If needed, reset database (CAUTION: Data loss!)
+pnpm --filter @repo/database db:push --force-reset
+
+# 3. Regenerate client
+pnpm --filter @repo/database generate
+
+# 4. Run migrations again
+pnpm migrate
+```
+
+## Common Commands
+
+### Development
+
+```bash
+# Install dependencies
+pnpm install
+
+# Run development server
+pnpm dev
+
+# Type checking
+pnpm typecheck
+
+# Linting
+pnpm lint
+
+# Testing
+pnpm test
+```
+
+### Database
+
+```bash
+# Run migrations
+pnpm migrate
+
+# Generate Prisma client
+pnpm --filter @repo/database generate
+
+# Open Prisma Studio
+cd packages/database && pnpm dev
+```
+
+### Building
+
+```bash
+# Build all apps
+pnpm build
+
+# Build specific app
+pnpm build --filter=app-name
+
+# Production build with Doppler
+pnpm build:doppler
+```
+
+## Success Markers
+
+### Feature Development Checklist
+
+#### ✅ Planning Phase
+
+- [ ] **Context7 MCP Used**: Verified latest library documentation
+- [ ] **Pattern Identified**: Found similar functionality in Forge codebase
+- [ ] **Architecture Decision**: Chose correct layer and package
+- [ ] **Dependencies Mapped**: Identified all required packages
+
+#### ✅ Data Layer (if needed)
+
+- [ ] **Schema Updated**: Added/updated Prisma models
+- [ ] **Migration Generated**: `pnpm migrate` completed successfully
+- [ ] **Client Regenerated**: `pnpm --filter @repo/database generate` completed
+- [ ] **Types Validated**: `pnpm typecheck` passes
+- [ ] **Indexes Added**: Proper database indexes for performance
+
+#### ✅ Server Layer
+
+- [ ] **Server Action Created**: `/app/actions/feature.ts` implemented
+- [ ] **Zod Validation**: Input validation with proper error messages
+- [ ] **Auth Checks**: Session validation where required
+- [ ] **Error Handling**: Proper try-catch with user-friendly errors
+- [ ] **Database Operations**: Efficient queries with proper relations
+
+#### ✅ UI Layer
+
+- [ ] **Mantine Components**: Used Mantine UI components consistently
+- [ ] **Form Implementation**: Mantine form with Zod validation
+- [ ] **Data Test IDs**: All interactive elements have `data-testid`
+- [ ] **Loading States**: Proper loading indicators
+- [ ] **Error States**: User-friendly error messages
+- [ ] **Responsive Design**: Works on mobile and desktop
+
+#### ✅ Testing
+
+- [ ] **Unit Tests**: Core logic tested with Vitest
+- [ ] **Component Tests**: UI components tested with React Testing Library
+- [ ] **Integration Tests**: Server actions tested with test database
+- [ ] **E2E Tests**: Critical user flows tested with Playwright
+
+#### ✅ Code Quality
+
+- [ ] **TypeScript**: No type errors, proper types defined
+- [ ] **ESLint**: No linting errors, code follows standards
+- [ ] **Imports**: Using correct `@repo/*` imports
+- [ ] **Environment**: Proper Forge env.ts pattern implemented
+
+## Testing Patterns
+
+### Component Tests
+
+```typescript
+import { render, screen } from '@testing-library/react';
+import { Component } from './Component';
+
+test('renders component', () => {
+  render(<Component data-testid="test-component" />);
+  expect(screen.getByTestId('test-component')).toBeInTheDocument();
+});
+```
+
+### Server Action Tests
+
+```typescript
+import { testAction } from "@repo/qa/server-actions";
+
+test("creates user", async () => {
+  const result = await testAction(createUser, {
+    email: "test@example.com",
+    name: "Test User"
+  });
+
+  expect(result.success).toBe(true);
+});
+```
+
+### E2E Tests
+
+```typescript
+import { test, expect } from "@playwright/test";
+
+test("user can sign up", async ({ page }) => {
+  await page.goto("/signup");
+  await page.fill('[data-testid="email-input"]', "test@example.com");
+  await page.click('[data-testid="submit-button"]');
+  await expect(page).toHaveURL("/dashboard");
+});
+```
+
+## Form Patterns
+
+### Mantine + Zod
+
+```typescript
+import { useForm } from "@mantine/form";
+import { zodResolver } from "mantine-form-zod-resolver";
+import { z } from "zod";
+
+const schema = z.object({
+  email: z.string().email(),
+  name: z.string().min(2)
+});
+
+const form = useForm({
+  validate: zodResolver(schema),
+  initialValues: { email: "", name: "" }
+});
+```
+
+## Authentication Patterns
+
+### Protected Server Component
+
+```typescript
+import { auth } from '@repo/auth/server/next';
+import { redirect } from 'next/navigation';
+
+export default async function ProtectedPage() {
+  const session = await auth();
+  if (!session) redirect('/login');
+
+  return <div>Welcome {session.user.name}</div>;
+}
+```
+
+### Protected Server Action
+
+```typescript
+import { auth } from "@repo/auth/server/next";
+
+export async function protectedAction() {
+  const session = await auth();
+  if (!session) {
+    throw new Error("Unauthorized");
+  }
+
+  // Use session.user.id for user operations
+}
+```
+
+## Database Patterns
+
+### Basic CRUD
+
+```typescript
+import { prisma } from "@repo/database/prisma/server/next";
+
+// Create
+const user = await prisma.user.create({
+  data: { email: "test@example.com", name: "Test" }
+});
+
+// Read
+const user = await prisma.user.findUnique({
+  where: { id: userId }
+});
+
+// Update
+const updated = await prisma.user.update({
+  where: { id: userId },
+  data: { name: "New Name" }
+});
+
+// Delete
+await prisma.user.delete({
+  where: { id: userId }
+});
+```
+
+## Documentation Lookup
+
+<Warning>
+  **CRITICAL**: Always use Context7 MCP for authoritative library documentation.
+  All dependencies are kept at latest versions, so local documentation may be
+  outdated.
+</Warning>
+
+### Context7 MCP Workflow
+
+1. **Resolve Library ID**: Use `mcp__context7__resolve-library-id` first
+2. **Get Latest Docs**: Use `mcp__context7__get-library-docs` for up-to-date API
+   references
+3. **Cross-Reference**: Use local docs only for project-specific patterns
+4. **Validate**: Ensure implementation matches latest API patterns
+
+### Example Documentation Lookup
+
+```bash
+# 1. Find the library
+mcp__context7__resolve-library-id("mantine")
+
+# 2. Get specific documentation
+mcp__context7__get-library-docs("/mantinedev/mantine", topic="forms")
+
+# 3. Implement using latest patterns
+# 4. Reference local docs for Forge conventions
+```
+
+## Common Gotchas
+
+### ❌ Don't do this
+
+```typescript
+// Direct process.env access in client components
+"use client";
+const apiKey = process.env.API_KEY; // ❌
+
+// Using server imports in client
+("use client");
+import { auth } from "@repo/auth/server/next"; // ❌
+
+// Forgetting to regenerate Prisma client
+// After schema changes, always run:
+// pnpm --filter @repo/database generate
+```
+
+### ✅ Do this instead
+
+```typescript
+// Use env pattern
+"use client";
+import { env } from '#/root/env';
+const apiKey = env.NEXT_PUBLIC_API_KEY; // ✅
+
+// Use client imports in client components
+"use client";
+import { useAuth } from '@repo/auth/client/next'; // ✅
+
+// Always regenerate after schema changes
+pnpm migrate
+pnpm --filter @repo/database generate
+```
+
+## Verification Commands
+
+Always run these commands after making changes:
+
+```bash
+# Code quality
+pnpm typecheck
+pnpm lint
+pnpm format:check
+
+# Testing
+pnpm test
+pnpm test:coverage
+
+# Build verification
+pnpm build
+pnpm build --filter=your-app
+
+# Dependencies
+pnpm madge --circular
+
+# Database
+pnpm migrate
+pnpm --filter @repo/database generate
+```
+
+## File Structure Patterns
+
+### Package Structure
+
+```
+packages/package-name/
+├── package.json
+├── src/
+│   ├── index.ts          # Main exports
+│   ├── server/           # Server-side code
+│   │   ├── next.ts       # Next.js server
+│   │   └── edge.ts       # Edge runtime
+│   ├── client/           # Client-side code
+│   │   └── next.ts       # Next.js client
+│   └── shared/           # Shared utilities
+├── env.ts                # Environment validation
+└── __tests__/            # Tests
+```
+
+### App Structure
+
+```
+apps/app-name/
+├── app/                  # Next.js app directory
+│   ├── actions/          # Server actions
+│   ├── components/       # Components
+│   └── lib/              # Utilities
+├── components/           # Shared components
+├── env.ts                # Environment validation
+└── __tests__/            # Tests
+```
+
+This comprehensive reference consolidates all essential Forge monorepo patterns,
+eliminating the need to navigate between multiple files while maintaining all
+critical information in one accessible location.

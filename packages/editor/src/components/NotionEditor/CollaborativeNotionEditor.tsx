@@ -430,10 +430,8 @@ function CollaborativeNotionEditorCore({
       className="notion-collaborative-editor-container relative"
       data-testid="collaborative-notion-editor"
     >
-      {/* Enhanced Collaboration Status Bar */}
       <div className="flex items-center justify-between border-b bg-gray-50 p-3 text-sm">
         <div className="flex items-center gap-4">
-          {/* Connection Status */}
           <div className="flex items-center gap-2">
             <div className="relative">
               <div
@@ -472,7 +470,6 @@ function CollaborativeNotionEditorCore({
             </div>
           </div>
 
-          {/* Collaborators */}
           {enhancedCollaborators.length > 0 && (
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1">
@@ -510,7 +507,6 @@ function CollaborativeNotionEditorCore({
                       collaborator.name.charAt(0).toUpperCase()
                     )}
 
-                    {/* Status indicator - typing pulse or active dot */}
                     <div
                       className={clsx(
                         'absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border border-white',
@@ -532,7 +528,6 @@ function CollaborativeNotionEditorCore({
                 )}
               </div>
 
-              {/* Compact typing indicator in header */}
               {showTypingIndicators && typingIndicatorPosition === 'inline' && (
                 <CompactTypingIndicator
                   collaborators={enhancedCollaborators}
@@ -542,7 +537,6 @@ function CollaborativeNotionEditorCore({
             </div>
           )}
 
-          {/* Sync Status */}
           {isConnected && (
             <div className="flex items-center gap-1.5 text-xs text-gray-500">
               <div className="flex items-center gap-1">
@@ -566,7 +560,6 @@ function CollaborativeNotionEditorCore({
           )}
         </div>
 
-        {/* Server Info */}
         <div className="flex items-center gap-3 text-xs text-gray-500">
           <div className="flex items-center gap-1">
             <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -595,7 +588,6 @@ function CollaborativeNotionEditorCore({
         </div>
       </div>
 
-      {/* Enhanced Notion Styles */}
       <style
         dangerouslySetInnerHTML={{
           __html: `
@@ -766,14 +758,12 @@ function CollaborativeNotionEditorCore({
         }}
       />
 
-      {/* Typing Indicator - Top */}
       {showTypingIndicators && typingIndicatorPosition === 'top' && (
         <div className="px-8 pt-4">
           <TypingIndicator collaborators={enhancedCollaborators} currentUserId={userId} />
         </div>
       )}
 
-      {/* Editor Content */}
       <EditorContent
         editor={editor}
         className={clsx('notion-collaborative-editor-content', className)}
@@ -783,17 +773,14 @@ function CollaborativeNotionEditorCore({
         aria-multiline="true"
       />
 
-      {/* Typing Indicator - Bottom */}
       {showTypingIndicators && typingIndicatorPosition === 'bottom' && (
         <div className="px-8 pb-4">
           <TypingIndicator collaborators={enhancedCollaborators} currentUserId={userId} />
         </div>
       )}
 
-      {/* Floating Toolbar */}
       {showFloatingToolbar && <FloatingToolbar editor={editor} />}
 
-      {/* Emoji Dropdown */}
       {enableEmoji && (
         <EmojiDropdown
           editor={editor}
@@ -804,7 +791,6 @@ function CollaborativeNotionEditorCore({
         />
       )}
 
-      {/* Mention Dropdown */}
       {enableMentions && (
         <MentionDropdown
           editor={editor}

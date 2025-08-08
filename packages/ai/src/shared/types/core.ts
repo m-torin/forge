@@ -4,8 +4,6 @@ export interface AICoreConfig {
   capabilities: Capability[];
   defaultModel?: string;
   maxOutputTokens?: number;
-  /** @deprecated Use maxOutputTokens instead */
-  maxTokens?: number;
   temperature?: number;
   timeout?: number;
 }
@@ -26,7 +24,7 @@ export type Capability =
 export interface ClassificationResult {
   category: string;
   confidence: number;
-  reasoning: string;
+  reasoningText: string;
 }
 
 export interface ChatMessage {
@@ -36,8 +34,6 @@ export interface ChatMessage {
 
 export interface CompletionOptions {
   maxOutputTokens?: number;
-  /** @deprecated Use maxOutputTokens instead */
-  maxTokens?: number;
   messages?: ChatMessage[];
   model?: string;
   prompt?: string;
@@ -60,8 +56,7 @@ export interface CompletionResponse {
   text: string;
   usage?: LanguageModelUsage;
   // Anthropic reasoning support
-  reasoning?: string;
-  reasoningDetails?: any;
+  reasoningText?: string;
 }
 
 export interface EmbeddingResponse {
@@ -90,11 +85,8 @@ export interface ModerationResult {
   violations: string[];
 }
 
-// eslint-disable-next-line unused-imports/no-unused-vars
 export interface ObjectOptions<T = unknown> {
   maxOutputTokens?: number;
-  /** @deprecated Use maxOutputTokens instead */
-  maxTokens?: number;
   model?: string;
   output?: 'array' | 'object';
   prompt: string;
@@ -104,7 +96,7 @@ export interface ObjectOptions<T = unknown> {
 
 export interface SentimentResult {
   confidence: number;
-  reasoning: string;
+  reasoningText: string;
   sentiment: 'negative' | 'neutral' | 'positive';
 }
 
@@ -114,7 +106,7 @@ export interface StreamChunk {
   text: string;
   usage?: LanguageModelUsage;
   sources?: SearchSource[];
-  providerMetadata?: any;
+  providerOptions?: any;
 }
 
 export interface StreamOptions extends CompletionOptions {

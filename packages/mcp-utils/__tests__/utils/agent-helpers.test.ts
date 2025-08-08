@@ -1,68 +1,68 @@
 /**
  * Tests for agent helper utilities
  */
-import { describe, it, expect } from 'vitest';
+import { describe, expect } from 'vitest';
 import {
-  extractObservation,
   createEntityName,
-  validateAgentRequest,
+  extractObservation,
   formatAgentResponse,
-  type MCPEntity,
+  validateAgentRequest,
   type AgentRequest,
-  type EntityType
+  type EntityType,
+  type MCPEntity,
 } from '../../src/utils/agent-helpers';
 
 describe('extractObservation', () => {
-  it('should extract observation value by key', () => {
+  test('should extract observation value by key', () => {
     const entity: MCPEntity = {
-      observations: ['key1:value1', 'key2:value2', 'key3:value3']
+      observations: ['key1:value1', 'key2:value2', 'key3:value3'],
     };
-    
+
     expect(extractObservation(entity, 'key1')).toBe('value1');
     expect(extractObservation(entity, 'key2')).toBe('value2');
     expect(extractObservation(entity, 'key3')).toBe('value3');
   });
 
-  it('should return null for non-existent key', () => {
+  test('should return null for non-existent key', () => {
     const entity: MCPEntity = {
-      observations: ['key1:value1', 'key2:value2']
+      observations: ['key1:value1', 'key2:value2'],
     };
-    
+
     expect(extractObservation(entity, 'nonexistent')).toBeNull();
   });
 
-  it('should return null for entity without observations', () => {
+  test('should return null for entity without observations', () => {
     const entity = {};
     expect(extractObservation(entity, 'key1')).toBeNull();
   });
 
-  it('should return null for null entity', () => {
+  test('should return null for null entity', () => {
     expect(extractObservation(null, 'key1')).toBeNull();
   });
 
-  it('should handle observations with colons in values', () => {
+  test('should handle observations with colons in values', () => {
     const entity: MCPEntity = {
-      observations: ['url:https://example.com:8080/path', 'time:12:30:45']
+      observations: ['url:https://example.com:8080/path', 'time:12:30:45'],
     };
-    
+
     expect(extractObservation(entity, 'url')).toBe('https://example.com:8080/path');
     expect(extractObservation(entity, 'time')).toBe('12:30:45');
   });
 
-  it('should handle empty observation values', () => {
+  test('should handle empty observation values', () => {
     const entity: MCPEntity = {
-      observations: ['empty:', 'normal:value']
+      observations: ['empty:', 'normal:value'],
     };
-    
+
     expect(extractObservation(entity, 'empty')).toBe('');
     expect(extractObservation(entity, 'normal')).toBe('value');
   });
 
-  it('should handle observations without colons', () => {
+  test('should handle observations without colons', () => {
     const entity: MCPEntity = {
-      observations: ['key1:value1', 'invalid_observation', 'key2:value2']
+      observations: ['key1:value1', 'invalid_observation', 'key2:value2'],
     };
-    
+
     expect(extractObservation(entity, 'key1')).toBe('value1');
     expect(extractObservation(entity, 'key2')).toBe('value2');
     expect(extractObservation(entity, 'invalid_observation')).toBeNull();
@@ -70,42 +70,45 @@ describe('extractObservation', () => {
 });
 
 describe('createEntityName', () => {
-  it('should create entity name with type and session', () => {
+  test('should create entity name with type and session', () => {
     const result = createEntityName('AnalysisSession', 'test-session-123');
     expect(result).toBe('AnalysisSession_test-session-123');
   });
 
-  it('should create entity name with additional IDs', () => {
+  test('should create entity name with additional IDs', () => {
     const result = createEntityName('FileAnalysis', 'session-456', ['src/utils.ts']);
     expect(result).toBe('FileAnalysis_session-456_src/utils.ts');
   });
 
-  it('should handle multiple additional IDs', () => {
-    const result = createEntityName('GitWorktree', 'session-789', ['feature-branch', 'worktree-path']);
+  test('should handle multiple additional IDs', () => {
+    const result = createEntityName('GitWorktree', 'session-789', [
+      'feature-branch',
+      'worktree-path',
+    ]);
     expect(result).toBe('GitWorktree_session-789_feature-branch_worktree-path');
   });
 
-  it('should handle empty additional IDs', () => {
+  test('should handle empty additional IDs', () => {
     const result = createEntityName('PullRequest', 'session-101', []);
     expect(result).toBe('PullRequest_session-101');
   });
 
-  it('should sanitize special characters', () => {
+  test('should sanitize special characters', () => {
     const result = createEntityName('FileAnalysis', 'session@123', ['src/file with spaces.ts']);
     expect(result).toBe('FileAnalysis_session@123_src/file with spaces.ts');
   });
 
-  it('should work with all entity types', () => {
+  test('should work with all entity types', () => {
     const entityTypes: EntityType[] = [
       'AnalysisSession',
-      'FileAnalysis', 
+      'FileAnalysis',
       'GitWorktree',
       'PullRequest',
       'ArchitecturalPattern',
       'VercelOptimization',
       'MockAnalysis',
       'UtilizationAnalysis',
-      'WordRemoval'
+      'WordRemoval',
     ];
 
     entityTypes.forEach(type => {
@@ -116,127 +119,127 @@ describe('createEntityName', () => {
 });
 
 describe('validateAgentRequest', () => {
-  it('should validate valid request', () => {
+  test('should validate valid request', () => {
     const request: AgentRequest = {
       version: '1.0',
       sessionId: 'test-session',
       action: 'analyze',
-      data: { files: ['test.ts'] }
+      data: { files: ['test.ts'] },
     };
 
     const result = validateAgentRequest(request, ['sessionId', 'action']);
-    expect(result.valid).toBe(true);
-    expect(result.errors).toEqual([]);
+    expect(result.valid).toBeTruthy();
+    expect(result.errors).toStrictEqual([]);
   });
 
-  it('should detect missing required fields', () => {
+  test('should detect missing required fields', () => {
     const request = {
       version: '1.0',
-      sessionId: 'test-session'
+      sessionId: 'test-session',
       // missing 'action'
     };
 
     const result = validateAgentRequest(request, ['sessionId', 'action']);
-    expect(result.valid).toBe(false);
+    expect(result.valid).toBeFalsy();
     expect(result.errors).toContain('Missing required field: action');
   });
 
-  it('should detect multiple missing fields', () => {
+  test('should detect multiple missing fields', () => {
     const request = {
-      version: '1.0'
+      version: '1.0',
       // missing 'sessionId' and 'action'
     };
 
     const result = validateAgentRequest(request, ['sessionId', 'action']);
-    expect(result.valid).toBe(false);
+    expect(result.valid).toBeFalsy();
     expect(result.errors).toHaveLength(2);
     expect(result.errors).toContain('Missing required field: sessionId');
     expect(result.errors).toContain('Missing required field: action');
   });
 
-  it('should validate version mismatch', () => {
+  test('should validate version mismatch', () => {
     const request: AgentRequest = {
       version: '2.0',
       sessionId: 'test-session',
-      action: 'analyze'
+      action: 'analyze',
     };
 
     const result = validateAgentRequest(request, ['sessionId'], '1.0');
-    expect(result.valid).toBe(false);
+    expect(result.valid).toBeFalsy();
     expect(result.errors).toContain('Version mismatch: expected 1.0, got 2.0');
   });
 
-  it('should handle null/undefined request', () => {
+  test('should handle null/undefined request', () => {
     const result1 = validateAgentRequest(null, ['sessionId']);
-    expect(result1.valid).toBe(false);
+    expect(result1.valid).toBeFalsy();
     expect(result1.errors).toContain('Request is null or undefined');
 
     const result2 = validateAgentRequest(undefined, ['sessionId']);
-    expect(result2.valid).toBe(false);
+    expect(result2.valid).toBeFalsy();
     expect(result2.errors).toContain('Request is null or undefined');
   });
 
-  it('should handle empty required fields array', () => {
+  test('should handle empty required fields array', () => {
     const request: AgentRequest = {
       version: '1.0',
       sessionId: 'test-session',
-      action: 'analyze'
+      action: 'analyze',
     };
 
     const result = validateAgentRequest(request, []);
-    expect(result.valid).toBe(true);
-    expect(result.errors).toEqual([]);
+    expect(result.valid).toBeTruthy();
+    expect(result.errors).toStrictEqual([]);
   });
 
-  it('should validate with default version', () => {
+  test('should validate with default version', () => {
     const request: AgentRequest = {
       version: '1.0',
       sessionId: 'test-session',
-      action: 'analyze'
+      action: 'analyze',
     };
 
     const result = validateAgentRequest(request, ['sessionId']);
-    expect(result.valid).toBe(true);
+    expect(result.valid).toBeTruthy();
   });
 });
 
 describe('formatAgentResponse', () => {
-  it('should format successful response', () => {
+  test('should format successful response', () => {
     const response = formatAgentResponse(true, { result: 'analysis complete' });
-    
-    expect(response.success).toBe(true);
-    expect(response.data).toEqual({ result: 'analysis complete' });
+
+    expect(response.success).toBeTruthy();
+    expect(response.data).toStrictEqual({ result: 'analysis complete' });
     expect(response.error).toBeUndefined();
     expect(response.timestamp).toBeTypeOf('number');
   });
 
-  it('should format error response', () => {
+  test('should format error response', () => {
     const response = formatAgentResponse(false, undefined, 'Analysis failed');
-    
-    expect(response.success).toBe(false);
+
+    expect(response.success).toBeFalsy();
     expect(response.error).toBe('Analysis failed');
     expect(response.data).toBeUndefined();
     expect(response.timestamp).toBeTypeOf('number');
   });
 
-  it('should format response with both data and error', () => {
+  test('should format response with both data and error', () => {
     const response = formatAgentResponse(false, { partialResult: 'some data' }, 'Partial failure');
-    
-    expect(response.success).toBe(false);
-    expect(response.data).toEqual({ partialResult: 'some data' });
+
+    expect(response.success).toBeFalsy();
+    expect(response.data).toStrictEqual({ partialResult: 'some data' });
     expect(response.error).toBe('Partial failure');
   });
 
-  it('should always include timestamp', () => {
+  test('should always include timestamp', () => {
     const before = Date.now();
     const response = formatAgentResponse(true);
     const after = Date.now();
-    
+
     expect(response.timestamp).toBeGreaterThanOrEqual(before);
     expect(response.timestamp).toBeLessThanOrEqual(after);
   });
 
-  it('should handle null/undefined data', () => {
+  test('should handle null/undefined data', () => {
     const response1 = formatAgentResponse(true, null);
     expect(response1.data).toBeNull();
 
@@ -244,17 +247,17 @@ describe('formatAgentResponse', () => {
     expect(response2.data).toBeUndefined();
   });
 
-  it('should handle complex data objects', () => {
+  test('should handle complex data objects', () => {
     const complexData = {
       files: ['file1.ts', 'file2.ts'],
       metrics: {
         coverage: 85,
-        issues: 3
+        issues: 3,
       },
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     const response = formatAgentResponse(true, complexData);
-    expect(response.data).toEqual(complexData);
+    expect(response.data).toStrictEqual(complexData);
   });
 });

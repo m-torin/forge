@@ -1,333 +1,712 @@
 ---
-title: "AI Package Overview"
+title: "AI Package"
+sidebarTitle: "AI"
 description:
-  "AI SDK integrations and vector operations with multi-provider support"
+  "Comprehensive AI SDK v5 integrations with multi-step agents, computer use
+  tools, React Server Components, and advanced streaming capabilities"
 icon: "brain"
 ---
 
 # AI Package
 
-AI SDK integrations with vector operations, basic product classification, and
-multi-provider support for OpenAI, Anthropic, Google, and other AI services.
+Enterprise-grade AI capabilities built on Vercel AI SDK v5 with multi-step
+agents, computer use tools, React Server Components, vector operations, and
+production-ready streaming.
 
-## Overview
-
-The AI package provides foundational AI capabilities including provider
-integrations, vector operations with Upstash Vector, and basic classification
-features. It wraps the Vercel AI SDK with enhanced tooling and vector database
-integration.
-
-<CardGroup cols={2}>
-  <Card title="AI SDK Providers" icon="code">
-    OpenAI, Anthropic, Google, Perplexity, and xAI provider integrations
+<CardGroup cols={3}>
+  <Card title="Multi-Step Agents" icon="robot" href="#multi-step-agents">
+    Advanced agent orchestration with step conditions and workflow management
   </Card>
-  <Card title="Vector Operations" icon="vector-square">
-    Upstash Vector database integration with embeddings and search
+  <Card title="Computer Use Tools" icon="desktop" href="#computer-use-tools">
+    Anthropic computer interaction with secure sandboxed environments
   </Card>
-  <Card title="Basic Classification" icon="tags">
-    Product classification with confidence scoring
+  <Card
+    title="React Server Components"
+    icon="react"
+    href="#react-server-components"
+  >
+    Streaming UI components with AI-powered generation
   </Card>
-  <Card title="RAG Tools" icon="search">
-    Retrieval-Augmented Generation workflow scaffolding
+  <Card
+    title="Vector & RAG"
+    icon="vector-square"
+    href="#vector-operations--rag"
+  >
+    Upstash Vector integration with hybrid search and RAG workflows
+  </Card>
+  <Card title="Advanced Streaming" icon="activity" href="#advanced-streaming">
+    Rich metadata, interruption control, and backpressure handling
+  </Card>
+  <Card title="Prompt Management" icon="file-text" href="#prompt-management">
+    Enterprise templates with caching and version control
   </Card>
 </CardGroup>
 
-## Key Features
+## Quick Start
 
-- **Multi-Provider AI SDK**: OpenAI, Anthropic, Google, Perplexity, xAI, and
-  Deep Infra integrations
-- **Vector Database**: Upstash Vector integration with embedding support
-- **Classification System**: Basic product classification with confidence
-  scoring
-- **RAG Framework**: Vector-based retrieval-augmented generation tools
-- **Streaming Support**: Real-time text generation and chat streaming
-- **Tool System**: Extensible tool framework for AI function calling
-
-## Installation
+### Installation & Setup
 
 ```bash
 pnpm add @repo/ai
 ```
 
-## Environment Variables
-
-```bash
-# AI Providers (choose one or more)
-OPENAI_API_KEY=sk-...
-ANTHROPIC_API_KEY=sk-ant-...
-GOOGLE_GENERATIVE_AI_API_KEY=...
-
-# Vector Database (optional)
-UPSTASH_VECTOR_REST_URL=https://...
-UPSTASH_VECTOR_REST_TOKEN=...
-```
-
-## Quick Start
-
-### Basic AI Provider Usage
-
-```typescript
-import { openai } from "@ai-sdk/openai";
-import { generateText } from "ai";
-
-// Using OpenAI provider
-const result = await generateText({
-  model: openai("gpt-4"),
-  prompt: "What is artificial intelligence?"
-});
-
-console.log(result.text);
-```
-
-### Multi-Provider Setup
-
-```typescript
-import {
-  createAnthropicModel,
-  createOpenAIModel,
-  createGoogleModel
-} from "@repo/ai/server/next";
-
-// Create models from different providers
-const models = {
-  openai: createOpenAIModel("gpt-4"),
-  anthropic: createAnthropicModel("claude-3-5-sonnet-20241022"),
-  google: createGoogleModel("gemini-1.5-pro")
-};
-
-// Use based on requirements
-const result = await generateText({
-  model: models.anthropic,
-  prompt: "Explain quantum computing"
-});
-```
-
-### Product Classification
-
-```typescript
-import { AIProductClassifier } from "@repo/ai/server/next";
-
-const classifier = new AIProductClassifier(categories);
-
-const result = await classifier.classifyProduct({
-  title: "iPhone 15 Pro",
-  description: "Latest Apple smartphone with A17 Pro chip",
-  features: ["5G", "Face ID", "Triple Camera"]
-});
-
-console.log({
-  category: result.categoryId,
-  confidence: result.confidence,
-  alternatives: result.alternativeCategories
-});
-```
-
-## Core Capabilities
-
-### AI SDK Providers
-
 <Tabs>
-  <Tab title="OpenAI">
-    ```typescript
-    import { createOpenAIModel } from '@repo/ai/server/next';
-    import { generateText } from 'ai';
-
-    const model = createOpenAIModel('gpt-4');
-
-    const result = await generateText({
-      model,
-      prompt: 'Write a product description',
-    });
+  <Tab title="Environment Variables">
+    ```bash
+    # AI Providers (choose one or more)
+    OPENAI_API_KEY=sk-...
+    ANTHROPIC_API_KEY=sk-ant-...
+    GOOGLE_GENERATIVE_AI_API_KEY=...
+    
+    # Vector Database (optional)
+    UPSTASH_VECTOR_REST_URL=https://...
+    UPSTASH_VECTOR_REST_TOKEN=...
     ```
-
   </Tab>
-
-  <Tab title="Anthropic">
+  
+  <Tab title="Basic Usage">
     ```typescript
-    import { createAnthropicModel } from '@repo/ai/server/next';
-    import { generateText } from 'ai';
-
-    const model = createAnthropicModel('claude-3-5-sonnet-20241022');
-
+    import { createOpenAIModel, generateText } from "@repo/ai/server/next";
+    
+    const model = createOpenAIModel("gpt-4o");
     const result = await generateText({
       model,
-      prompt: 'Analyze this content',
+      prompt: "Explain artificial intelligence"
     });
     ```
-
   </Tab>
-
-  <Tab title="Google">
+  
+  <Tab title="Multi-Provider">
     ```typescript
-    import { createGoogleModel } from '@repo/ai/server/next';
-    import { generateText } from 'ai';
-
-    const model = createGoogleModel('gemini-1.5-pro');
-
+    import { createModels } from "@repo/ai/server/next";
+    
+    const models = createModels({
+      openai: createModel("openai", "gpt-4o"),
+      anthropic: createModel("anthropic", "claude-3-5-sonnet-20241022"),
+      google: createModel("google", "gemini-1.5-pro")
+    });
+    
     const result = await generateText({
-      model,
-      prompt: 'Generate creative content',
+      model: models.anthropic,
+      prompt: "Complex reasoning task"
     });
     ```
-
   </Tab>
 </Tabs>
 
-### Vector Operations
+## Core Features
+
+### AI SDK v5 Providers
+
+- **OpenAI**: `gpt-4o`, `gpt-4-turbo`, `gpt-3.5-turbo`
+- **Anthropic**: `claude-3-5-sonnet`, `claude-3-opus`, `claude-3-haiku`
+- **Google**: `gemini-1.5-pro`, `gemini-1.5-flash`
+- **Others**: Perplexity, xAI, Deep Infra
+
+### Advanced Capabilities
+
+- **Multi-Step Agent Systems** with orchestration and step conditions
+- **Computer Use Tools** for desktop automation with security controls
+- **React Server Components** with streaming UI generation
+- **Vector Operations** with Upstash Vector and RAG workflows
+- **Advanced Streaming** with metadata and flow control
+- **Prompt Management** with templates and intelligent caching
+- **MCP Integration** for external tools and system integration
+- **Error Recovery** with circuit breakers and graceful degradation
+
+## Multi-Step Agents
+
+Build sophisticated AI workflows with intelligent step control and
+orchestration.
+
+### Basic Agent Execution
+
+```typescript
+import {
+  executeMultiStepAgent,
+  stepCountAtMost,
+  createResearchAgent
+} from "@repo/ai/server/agents";
+
+// Simple multi-step execution
+const result = await executeMultiStepAgent({
+  model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+  messages: [{ role: "user", content: "Research renewable energy trends" }],
+  maxSteps: 8,
+  stopWhen: stepCountAtMost(6),
+  onStepFinish: ({ stepNumber, result }) => {
+    console.log(`Step ${stepNumber}:`, result.text);
+  }
+});
+
+// Pre-configured research agent
+const agent = createResearchAgent({
+  searchTools: true,
+  analysisTools: true,
+  citationRequired: true
+});
+
+const research = await executeMultiStepAgent({
+  ...agent,
+  messages: [{ role: "user", content: "Analyze AI market trends" }],
+  maxSteps: 10
+});
+```
+
+### Advanced Agent Patterns
 
 <AccordionGroup>
-  <Accordion title="Vector Database Setup" icon="database">
+  <Accordion title="Parallel Execution" icon="parallel">
     ```typescript
-    import { createVectorTools } from '@repo/ai/server/next';
-    import { Index } from '@upstash/vector';
-
-    const vectorDB = new Index({
-      url: process.env.UPSTASH_VECTOR_REST_URL!,
-      token: process.env.UPSTASH_VECTOR_REST_TOKEN!,
-    });
-
-    const tools = createVectorTools({
-      vectorDB,
-      embeddingModel: 'text-embedding-3-small',
-      defaultTopK: 5,
-    });
-    ```
-
-  </Accordion>
-
-  <Accordion title="Document Storage" icon="file-text">
-    ```typescript
-    // Add documents to vector database
-    await tools.addToKnowledgeBase.execute({
-      content: 'The capital of France is Paris.',
-      id: 'france-capital',
-      metadata: { country: 'France', type: 'geography' },
-    });
+    import { executeParallelAgents } from "@repo/ai/server/agents";
+    
+    const results = await executeParallelAgents([
+      {
+        id: "research",
+        agent: createResearchAgent(),
+        messages: [{ role: "user", content: "Research market trends" }],
+        maxSteps: 5
+      },
+      {
+        id: "analysis", 
+        agent: createAnalysisAgent(),
+        messages: [{ role: "user", content: "Analyze competitors" }],
+        maxSteps: 6
+      }
+    ], { timeout: 300000, concurrency: 2 });
     ```
   </Accordion>
-
-  <Accordion title="Vector Search" icon="search">
+  
+  <Accordion title="Dynamic Model Switching" icon="exchange">
     ```typescript
-    // Search knowledge base
-    const results = await tools.searchKnowledgeBase.execute({
-      query: 'What is the capital of France?',
-      topK: 3,
+    const modelSwitcher = createModelSwitchingPrepareStep({
+      conditions: [
+        {
+          when: ({ stepNumber }) => stepNumber <= 3,
+          model: "claude-3-5-sonnet-20241022" // Fast for initial steps
+        },
+        {
+          when: ({ messages }) => messages.some(m => m.content?.includes("analysis")),
+          model: "claude-4-opus-20250514" // Powerful for analysis
+        }
+      ]
     });
-
-    console.log(results);
     ```
-
+  </Accordion>
+  
+  <Accordion title="Error Recovery" icon="shield">
+    ```typescript
+    const errorRecovery = createErrorRecovery({
+      maxRetries: 3,
+      fallbackModel: "claude-3-5-sonnet-20241022",
+      gracefulDegradation: true
+    });
+    
+    const result = await executeMultiStepAgent({
+      model: createAnthropicModel("claude-4-opus-20250514"),
+      messages: [{ role: "user", content: "Complex task" }],
+      errorRecovery,
+      onError: ({ error, stepNumber, recovery }) => {
+        console.error(`Step ${stepNumber} failed:`, error.message);
+      }
+    });
+    ```
   </Accordion>
 </AccordionGroup>
+
+## Computer Use Tools
+
+Enable AI agents to interact with computer interfaces through secure, sandboxed
+environments.
+
+<Warning>
+  Computer use tools provide powerful system access. Always run in sandboxed
+  environments with proper security controls.
+</Warning>
+
+### Tool Setup
+
+```typescript
+import {
+  createComputerTool,
+  createBashTool,
+  createTextEditorTool
+} from "@repo/ai/server/tools";
+
+// Computer interaction
+const computerTool = createComputerTool({
+  display: 1,
+  security: {
+    allowedApplications: ["chrome", "vscode", "terminal"],
+    blockedRegions: [{ x: 0, y: 0, width: 100, height: 50 }]
+  }
+});
+
+// Secure bash execution
+const bashTool = createBashTool({
+  workingDirectory: "/workspace",
+  security: {
+    allowedCommands: ["ls", "cat", "grep", "find", "node"],
+    blockedCommands: ["rm -rf", "sudo"],
+    networkAccess: false
+  }
+});
+
+// File editing
+const editorTool = createTextEditorTool({
+  allowedPaths: ["/workspace/**"],
+  maxFileSize: 1024 * 1024, // 1MB
+  security: {
+    allowedExtensions: [".js", ".ts", ".md", ".json"]
+  }
+});
+
+// Use with AI models
+const result = await generateText({
+  model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+  messages: [{ role: "user", content: "Take screenshot and list files" }],
+  tools: { computer: computerTool, bash: bashTool, editor: editorTool }
+});
+```
+
+## React Server Components
+
+Create dynamic, streaming UI components with AI-powered generation.
+
+### Streaming UI
+
+```typescript
+import { streamUI, createStreamableUI } from "@repo/ai/rsc";
+
+// Basic streaming UI
+const result = await streamUI({
+  model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+  messages: [{ role: "user", content: "Create a dashboard" }],
+  text: ({ content }) => <div className="prose">{content}</div>,
+  tools: {
+    showChart: {
+      description: "Display a data visualization",
+      inputSchema: z.object({
+        type: z.enum(["bar", "line", "pie"]),
+        data: z.array(z.object({ label: z.string(), value: z.number() }))
+      }),
+      generate: ({ type, data }) => <Chart type={type} data={data} />
+    }
+  }
+});
+
+// Manual UI control
+const streamableUI = createStreamableUI(<div>Loading...</div>);
+const streamableValue = createStreamableValue(0);
+
+// Update based on progress
+streamableValue.update(50);
+streamableUI.update(<div>Progress: 50%</div>);
+
+streamableValue.done(100);
+streamableUI.done(<div>Complete!</div>);
+```
+
+### AI Context
+
+```typescript
+import { createAI } from "@repo/ai/rsc";
+
+const AI = createAI({
+  actions: {
+    analyzeData: async (data: string) => {
+      const result = await streamUI({
+        model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+        messages: [{ role: "user", content: `Analyze: ${data}` }],
+        text: ({ content }) => <AnalysisResult content={content} />,
+        tools: analysisTools
+      });
+      return result.value;
+    }
+  },
+  initialAIState: { messages: [] },
+  initialUIState: { analysis: null }
+});
+```
+
+## Vector Operations & RAG
+
+Advanced vector operations with Upstash Vector integration and production-ready
+RAG workflows.
+
+### Vector Tools
+
+```typescript
+import { createVectorTools, VectorRAGWorkflow } from "@repo/ai/server/next";
+import { Index } from "@upstash/vector";
+
+const vectorDB = new Index({
+  url: process.env.UPSTASH_VECTOR_REST_URL!,
+  token: process.env.UPSTASH_VECTOR_REST_TOKEN!
+});
+
+// Vector tools for AI SDK
+const vectorTools = createVectorTools({
+  vectorDB,
+  embeddingModel: "text-embedding-3-large",
+  defaultTopK: 10,
+  cacheEmbeddings: true
+});
+
+const result = await streamText({
+  model: openai("gpt-4o"),
+  messages,
+  tools: {
+    searchKnowledge: vectorTools.searchVectorContext,
+    addDocument: vectorTools.addToKnowledgeBase
+  }
+});
+```
 
 ### RAG Workflow
 
 ```typescript
-import { VectorRAGWorkflow } from "@repo/ai/server/next";
-
+// Production RAG workflow
 const ragWorkflow = new VectorRAGWorkflow({
   vectorDB,
-  embeddingModel: "text-embedding-3-small",
-  chatModel: "gpt-4",
+  embeddingModel: "text-embedding-3-large",
+  chatModel: "gpt-4o",
   namespace: "knowledge-base",
-  topK: 5
+  enableReranking: true,
+  enableCaching: true
 });
 
 // Add documents
 await ragWorkflow.addDocuments([
   {
-    id: "doc1",
-    content: "Machine learning is a subset of artificial intelligence.",
-    metadata: { topic: "AI" }
+    id: "ai-basics",
+    content: "Artificial intelligence overview...",
+    metadata: { topic: "AI", difficulty: "beginner" }
   }
 ]);
 
-// Query with context
-const response = await ragWorkflow.query("What is machine learning?");
-console.log(response.answer);
+// Query with streaming
+const response = await ragWorkflow.query("What is AI?", {
+  stream: true,
+  includeContext: true
+});
 ```
 
-## Tool System
-
-### Basic Tools
+### Hybrid Search
 
 ```typescript
-import { createVectorTools, createBulkTools } from "@repo/ai/server/next";
+import { createHybridSearchTools } from "@repo/ai/server/next";
 
-// Core vector operations
-const vectorTools = createVectorTools({ vectorDB });
-
-// Bulk operations for large datasets
-const bulkTools = createBulkTools({
+const hybridTools = createHybridSearchTools({
   vectorDB,
-  embeddingModel: "text-embedding-3-small",
-  defaultBatchSize: 100
+  textSearchIndex: textSearchService,
+  combineStrategy: "rrf", // Reciprocal Rank Fusion
+  vectorWeight: 0.7,
+  textWeight: 0.3
+});
+
+const results = await hybridTools.hybridSearch.execute({
+  query: "quantum computing applications",
+  finalTopK: 10
 });
 ```
 
-### Namespace Management
+## Advanced Streaming
+
+Production-ready streaming with rich metadata, interruption control, and
+backpressure handling.
+
+### Enhanced Stream Data
 
 ```typescript
-import { createNamespaceTools } from "@repo/ai/server/next";
+import {
+  EnhancedStreamData,
+  StreamInterruptionController,
+  BackpressureController
+} from "@repo/ai/server/streaming";
 
-const namespaceTools = createNamespaceTools({
-  vectorDB,
-  defaultNamespace: "main"
+// Rich metadata streaming
+const streamData = new EnhancedStreamData({
+  types: {
+    progress: { step: "string", percentage: "number" },
+    metrics: { tokens_used: "number", cost: "number" }
+  }
 });
 
-// Create isolated namespace
-await namespaceTools.createNamespace.execute({
-  namespace: "tenant-acme",
-  description: "ACME Corp knowledge base"
+const response = await createStreamingResponseWithData({
+  model: createAnthropicModel("claude-3-5-sonnet-20241022"),
+  messages: [{ role: "user", content: "Generate report" }],
+  streamData,
+  onProgress: ({ step, percentage }) => {
+    streamData.append({
+      type: "progress",
+      data: { step, percentage }
+    });
+  }
 });
 ```
 
-## Package Structure
-
-### Export Pattern
-
-The package follows the standard export pattern:
-
-- `@repo/ai/client` - Browser client utilities
-- `@repo/ai/server` - Node.js server utilities
-- `@repo/ai/client/next` - Next.js client components
-- `@repo/ai/server/next` - Next.js server utilities
-- `@repo/ai/server/edge` - Edge runtime support
-- `@repo/ai/shared-env` - Environment-agnostic utilities
-
-### Type Safety
+### Stream Control
 
 ```typescript
-import type {
-  ProductClassificationResult,
-  VectorSearchResult,
-  RAGResponse,
-  VectorToolsConfig
+// Interruption control
+const controller = new StreamInterruptionController();
+const interruptibleStream = createInterruptibleStream(
+  originalStream,
+  controller
+);
+
+controller.onInterrupt(async (reason) => {
+  console.log("Stream interrupted:", reason);
+  await cleanupResources();
+});
+
+// User controls
+document.getElementById("pause-btn").onclick = () => controller.pause();
+document.getElementById("stop-btn").onclick = () =>
+  controller.interrupt("User stop");
+
+// Backpressure handling
+const backpressureController = new BackpressureController({
+  highWaterMark: 100,
+  strategy: "throttle",
+  maxBufferSize: 1000
+});
+```
+
+## Prompt Management
+
+Enterprise-grade prompt management with templates, caching, and version control.
+
+### Template System
+
+```typescript
+import {
+  PromptTemplateRegistry,
+  PromptCache,
+  PromptVersionManager
+} from "@repo/ai/server/prompts";
+
+// Template registry
+const registry = new PromptTemplateRegistry();
+
+registry.register("analysis", {
+  template: "Analyze {{product}} focusing on {{aspects}}. Format: {{format}}",
+  variables: ["product", "aspects", "format"],
+  metadata: { category: "analysis", version: "1.0" }
+});
+
+// Use template
+const prompt = createPrompt("analysis", {
+  product: "iPhone 15 Pro",
+  aspects: "performance, battery",
+  format: "JSON"
+});
+
+// Intelligent caching
+const cache = new PromptCache({
+  strategy: "LRU",
+  maxSize: 1000,
+  ttl: 3600000 // 1 hour
+});
+
+// Version control
+const versionManager = new PromptVersionManager();
+versionManager.registerVersion("analysis", "2.0", improvedTemplate);
+versionManager.registerMigration("1.0", "2.0", migratePrompt);
+```
+
+## Model Context Protocol (MCP)
+
+Comprehensive MCP integration for external tools and RAG workflows.
+
+```typescript
+import { createMCPTools, MCPServerManager } from "@repo/ai/server/mcp";
+
+const mcpManager = new MCPServerManager();
+
+// Register MCP servers
+await mcpManager.registerServer("filesystem", {
+  command: "npx",
+  args: ["@modelcontextprotocol/server-filesystem", "/workspace"],
+  capabilities: ["resources", "tools"]
+});
+
+// Create tools from MCP servers
+const mcpTools = await createMCPTools(mcpManager, {
+  allowedServers: ["filesystem", "database"],
+  securityPolicy: "strict"
+});
+
+// MCP RAG integration
+const mcpRAG = createMCPRAGWorkflow({
+  mcpServers: {
+    knowledge: "mcp://knowledge-base",
+    documents: "mcp://document-store"
+  },
+  ragConfig: {
+    embeddingModel: "text-embedding-3-large",
+    topK: 10
+  }
+});
+```
+
+## Package Structure & Exports
+
+### Import Patterns
+
+```typescript
+// Model creation
+import {
+  createOpenAIModel,
+  createAnthropicModel,
+  createModels
 } from "@repo/ai/server/next";
+
+// Multi-step agents
+import {
+  executeMultiStepAgent,
+  createResearchAgent,
+  executeParallelAgents
+} from "@repo/ai/server/agents";
+
+// Computer use tools
+import {
+  createBashTool,
+  createTextEditorTool,
+  createComputerTool
+} from "@repo/ai/server/tools";
+
+// Vector and RAG
+import {
+  createVectorTools,
+  VectorRAGWorkflow,
+  createHybridSearchTools
+} from "@repo/ai/server/next";
+
+// Advanced streaming
+import {
+  EnhancedStreamData,
+  StreamInterruptionController,
+  BackpressureController
+} from "@repo/ai/server/streaming";
+
+// Prompt management
+import {
+  PromptTemplateRegistry,
+  PromptCache,
+  PromptVersionManager
+} from "@repo/ai/server/prompts";
+
+// RSC utilities
+import { createAI, createStreamableUI, streamUI } from "@repo/ai/rsc";
+
+// Client hooks
+import { useAIChat, useAIStream } from "@repo/ai/client/next";
 ```
 
-## Performance Considerations
+### Export Structure
 
-- **Provider Selection**: Choose models based on task complexity and cost
-  requirements
-- **Vector Operations**: Use appropriate embedding models for your use case
-- **Batch Processing**: Utilize bulk tools for large dataset operations
-- **Namespace Isolation**: Use namespaces for multi-tenant applications
+- `@repo/ai/client/next` - Next.js client components and hooks
+- `@repo/ai/server/next` - Next.js server utilities and actions
+- `@repo/ai/server/edge` - Edge runtime compatible functions
+- `@repo/ai/server/agents` - Multi-step agent system
+- `@repo/ai/server/streaming` - Advanced streaming capabilities
+- `@repo/ai/server/prompts` - Prompt management system
+- `@repo/ai/server/tools` - Computer use and other tools
+- `@repo/ai/server/mcp` - Model Context Protocol integration
+- `@repo/ai/rsc` - React Server Components utilities
+- `@repo/ai/shared` - Environment-agnostic utilities
 
-## Security
+## Production Considerations
 
-- Keep API keys secure using environment variables
-- Use namespace isolation for multi-tenant applications
-- Implement rate limiting for production deployments
-- Validate inputs before processing with AI models
+### Performance Optimization
 
-## Limitations
+- **Model Selection**: Use cheaper models for simple tasks, powerful models for
+  complex reasoning
+- **Caching**: Enable embedding and response caching for repeated queries
+- **Streaming**: Implement streaming for long-running operations
+- **Resource Monitoring**: Monitor CPU, memory, and token usage
 
-- **Image Processing**: Currently not supported
-- **Advanced RAG**: Basic implementation only
-- **Translation**: Not implemented
-- **Content Generation**: Basic capabilities only
-- **Workflow Automation**: Limited functionality
+### Security Best Practices
 
-The AI package provides foundational AI capabilities with room for expansion
-based on specific application needs.
+- **API Key Management**: Use environment variables and secure rotation
+- **Input Validation**: Validate all inputs before AI processing
+- **Computer Use Safety**: Restrict commands and directories in sandboxed
+  environments
+- **Rate Limiting**: Implement rate limiting for production deployments
+
+### Error Handling & Recovery
+
+```typescript
+import {
+  createErrorRecovery,
+  createCircuitBreaker,
+  createRetryStrategy
+} from "@repo/ai/server/next";
+
+// Circuit breaker for external APIs
+const circuitBreaker = createCircuitBreaker({
+  failureThreshold: 5,
+  resetTimeout: 30000
+});
+
+// Retry with exponential backoff
+const retryStrategy = createRetryStrategy({
+  maxRetries: 3,
+  baseDelay: 1000,
+  backoffFactor: 2,
+  jitter: true
+});
+
+// Graceful degradation
+const recovery = createErrorRecovery({
+  fallbackModel: "gpt-3.5-turbo",
+  degradedMode: {
+    disableStreaming: true,
+    reduceContextLength: true
+  }
+});
+```
+
+### Migration from AI SDK v4
+
+Key changes in v5:
+
+- **Tool Definitions**: Use `inputSchema` instead of `parameters`
+- **Enhanced Streaming**: New `onChunk` and continuation support
+- **Improved Error Handling**: Better error types and recovery patterns
+- **Provider Updates**: Latest integrations with enhanced features
+
+## Best Practices
+
+### 1. Agent Design
+
+- Keep steps focused and atomic
+- Use descriptive step conditions
+- Implement proper error handling
+- Monitor execution time and costs
+
+### 2. Streaming Optimization
+
+- Design streams to be resumable
+- Use appropriate backpressure strategies
+- Monitor performance and resource usage
+- Implement graceful degradation
+
+### 3. Security Implementation
+
+- Validate all inputs and outputs
+- Use secure connections for transport
+- Monitor for anomalous patterns
+- Implement proper authentication
+
+### 4. Performance Monitoring
+
+- Profile operations regularly
+- Use appropriate buffer sizes
+- Implement memory management
+- Monitor and optimize concurrent limits
+
+The AI package provides comprehensive AI capabilities with production-ready
+features, extensive customization options, and strong type safety throughout.

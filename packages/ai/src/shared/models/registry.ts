@@ -248,7 +248,7 @@ export function modelHasCapability(modelId: string, capability: ModelCapability)
  */
 export function modelSupportsReasoning(modelId: string): boolean {
   const config = getModelConfig(modelId);
-  return config?.metadata.reasoning?.supported || false;
+  return config?.metadata.reasoningText?.supported || false;
 }
 
 /**
@@ -256,7 +256,7 @@ export function modelSupportsReasoning(modelId: string): boolean {
  */
 export function getModelReasoningConfig(modelId: string): ReasoningConfig | null {
   const config = getModelConfig(modelId);
-  return config?.metadata.reasoning || null;
+  return config?.metadata.reasoningText || null;
 }
 
 /**
@@ -286,7 +286,7 @@ export function getChatModels(): ProviderModelConfig[] {
  */
 export function getBestModelForTask(task: 'reasoning' | 'vision' | 'code' | 'chat'): string {
   const taskToCapability: Record<string, ModelCapability> = {
-    reasoning: 'reasoning',
+    reasoningText: 'reasoning',
     vision: 'vision',
     code: 'code',
     chat: 'tools',
@@ -301,7 +301,6 @@ export function getBestModelForTask(task: 'reasoning' | 'vision' | 'code' | 'cha
     return nonDeprecated[0].id;
   }
 
-  // Fallback to any model with the capability
   return models[0]?.id || 'claude-4-sonnet-20250514';
 }
 

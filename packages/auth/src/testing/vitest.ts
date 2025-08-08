@@ -2,6 +2,7 @@
  * Vitest setup for auth package tests
  */
 
+import { setupNextMocks } from '@repo/qa/vitest/mocks/internal/next';
 import { cleanup } from '@testing-library/react';
 import { afterEach, beforeEach, vi } from 'vitest';
 
@@ -25,29 +26,8 @@ beforeEach(() => {
   vi.stubEnv('DATABASE_URL', 'postgresql://test:test@localhost:5432/test');
   vi.stubEnv('NEXT_PUBLIC_APP_URL', 'http://localhost:3000');
 
-  // Mock Next.js headers function
-  vi.mock('next/headers', () => ({
-    headers: vi.fn().mockResolvedValue(
-      new Headers({
-        'user-agent': 'test-agent',
-        'x-forwarded-for': '127.0.0.1',
-      }),
-    ),
-  }));
-
-  // Mock Next.js navigation
-  vi.mock('next/navigation', () => ({
-    usePathname: () => '/',
-    useRouter: () => ({
-      back: vi.fn(),
-      forward: vi.fn(),
-      prefetch: vi.fn(),
-      push: vi.fn(),
-      refresh: vi.fn(),
-      replace: vi.fn(),
-    }),
-    useSearchParams: () => new URLSearchParams(),
-  }));
+  // Setup centralized Next.js mocks
+  setupNextMocks();
 });
 
 afterEach(() => {

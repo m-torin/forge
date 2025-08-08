@@ -5,4 +5,5 @@ export * from './messages';
 export * from './moderation';
 export * from './provider';
 export * from './streaming';
+export * from './transport';
 export * from './vector';

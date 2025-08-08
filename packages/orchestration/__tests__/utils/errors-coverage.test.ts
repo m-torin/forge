@@ -45,7 +45,7 @@ describe('error Classes', () => {
       expect(error.message).toBe('Custom error');
       expect(error.code).toBe('CUSTOM_CODE');
       expect(error.retryable).toBeTruthy();
-      expect(error.context).toEqual(context);
+      expect(error.context).toStrictEqual(context);
     });
 
     test('should serialize to JSON', () => {
@@ -58,7 +58,7 @@ describe('error Classes', () => {
       expect(json.message).toBe('Test error');
       expect(json.code).toBe('TEST_CODE');
       expect(json.retryable).toBeTruthy();
-      expect(json.context).toEqual(context);
+      expect(json.context).toStrictEqual(context);
       expect(json.stack).toBeDefined();
     });
   });
@@ -85,7 +85,7 @@ describe('error Classes', () => {
       );
 
       expect(error.state).toBe('half-open');
-      expect(error.context).toEqual(context);
+      expect(error.context).toStrictEqual(context);
     });
   });
 
@@ -105,7 +105,7 @@ describe('error Classes', () => {
       const error = new ConfigurationError('Invalid timeout', 'app.timeout', context);
 
       expect(error.configPath).toBe('app.timeout');
-      expect(error.context).toEqual(context);
+      expect(error.context).toStrictEqual(context);
     });
   });
 
@@ -134,7 +134,7 @@ describe('error Classes', () => {
 
       expect(error.code).toBe('CUSTOM_PROVIDER_ERROR');
       expect(error.retryable).toBeFalsy();
-      expect(error.context).toEqual(context);
+      expect(error.context).toStrictEqual(context);
     });
   });
 
@@ -156,7 +156,7 @@ describe('error Classes', () => {
       const error = new RateLimitError('Rate limit hit', 50, 1800, undefined, context);
 
       expect(error.retryAfter).toBeUndefined();
-      expect(error.context).toEqual(context);
+      expect(error.context).toStrictEqual(context);
     });
   });
 
@@ -175,7 +175,7 @@ describe('error Classes', () => {
       const context = { operation: 'database-query' };
       const error = new TimeoutError('DB timeout', 10000, context);
 
-      expect(error.context).toEqual(context);
+      expect(error.context).toStrictEqual(context);
     });
   });
 
@@ -210,7 +210,7 @@ describe('error Classes', () => {
       expect(error.retryable).toBeFalsy();
       expect(error.executionId).toBe('exec-456');
       expect(error.stepId).toBe('step-789');
-      expect(error.context).toEqual(context);
+      expect(error.context).toStrictEqual(context);
     });
   });
 
@@ -226,7 +226,7 @@ describe('error Classes', () => {
       expect(error.message).toBe('Validation failed');
       expect(error.code).toBe('WORKFLOW_VALIDATION_ERROR');
       expect(error.retryable).toBeFalsy();
-      expect(error.validationErrors).toEqual(validationErrors);
+      expect(error.validationErrors).toStrictEqual(validationErrors);
     });
 
     test('should create workflow validation error with context', () => {
@@ -234,7 +234,7 @@ describe('error Classes', () => {
       const context = { source: 'api' };
       const error = new WorkflowValidationError('Validation error', validationErrors, context);
 
-      expect(error.context).toEqual(context);
+      expect(error.context).toStrictEqual(context);
     });
   });
 });
@@ -247,7 +247,7 @@ describe('error Factory Functions', () => {
       expect(error.message).toBe('Test error');
       expect(error.code).toBe(OrchestrationErrorCodes.ORCHESTRATION_ERROR);
       expect(error.retryable).toBeFalsy();
-      expect(error.context).toEqual({});
+      expect(error.context).toStrictEqual({});
     });
 
     test('should create error with all options', () => {
@@ -263,7 +263,7 @@ describe('error Factory Functions', () => {
       expect(error.code).toBe(OrchestrationErrorCodes.INITIALIZATION_ERROR);
       expect(error.retryable).toBeTruthy();
       expect(error.context.key).toBe('value');
-      expect(error.context.originalError).toEqual({
+      expect(error.context.originalError).toStrictEqual({
         message: 'Original error',
         name: 'Error',
         stack: originalError.stack,
@@ -292,7 +292,7 @@ describe('error Factory Functions', () => {
 
       expect(error.code).toBe('CONNECTION_ERROR');
       expect(error.retryable).toBeFalsy();
-      expect(error.context.originalError).toEqual({
+      expect(error.context.originalError).toStrictEqual({
         message: 'Network error',
         name: 'Error',
         stack: originalError.stack,
@@ -331,8 +331,8 @@ describe('error Factory Functions', () => {
       });
 
       expect(error.code).toBe(OrchestrationErrorCodes.WORKFLOW_VALIDATION_ERROR);
-      expect(error.context.validationErrors).toEqual(validationErrors);
-      expect(error.context.validationResult).toEqual(validationResult);
+      expect(error.context.validationErrors).toStrictEqual(validationErrors);
+      expect(error.context.validationResult).toStrictEqual(validationResult);
     });
   });
 
@@ -360,7 +360,7 @@ describe('error Factory Functions', () => {
       expect(error.executionId).toBe('exec-789');
       expect(error.stepId).toBe('step-123');
       expect(error.retryable).toBeFalsy();
-      expect(error.context.originalError).toEqual({
+      expect(error.context.originalError).toStrictEqual({
         message: 'Step error',
         name: 'Error',
         stack: originalError.stack,
@@ -403,7 +403,7 @@ describe('error Utility Functions', () => {
       expect(details.name).toBe('OrchestrationError');
       expect(details.code).toBe('CUSTOM_CODE');
       expect(details.retryable).toBeTruthy();
-      expect(details.context).toEqual(context);
+      expect(details.context).toStrictEqual(context);
     });
 
     test('should extract details from workflow execution error', () => {

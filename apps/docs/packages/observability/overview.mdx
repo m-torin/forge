@@ -50,9 +50,17 @@ Forge applications.
 
 ## Installation
 
+The observability package is typically already included in Forge workspaces. If
+you need to add it manually:
+
 ```bash
 pnpm add @repo/observability
 ```
+
+<Note>
+  This package follows the four-file export pattern for proper Next.js
+  integration. Always use the appropriate import path for your environment.
+</Note>
 
 ## Environment Variables
 
@@ -88,32 +96,58 @@ SENTRY_PROJECT_URL=https://your-project.vercel.app
 ### Next.js Application Setup
 
 <Steps>
-  <Step title="Instrumentation">
+  <Step title="Server-side Initialization">
     ```typescript
     // instrumentation.ts (in app root)
     export async function register() {
       if (process.env.NEXT_RUNTIME === 'nodejs') {
-        await import('@repo/observability/instrumentation');
+        const { getObservability } = await import('@repo/observability/server/next');
+        await getObservability();
       }
     }
     ```
   </Step>
 
-<Step title="Client Configuration">
-  ```typescript // sentry.client.config.ts (in app root) import
-  '@repo/observability/client'; ```
-</Step>
-
-  <Step title="Next.js Config Integration">
+  <Step title="Client-side Initialization">
     ```typescript
-    // next.config.ts
-    import { withSentry } from '@repo/observability/next-wrappers';
+    // app/layout.tsx
+    import { useEffect } from 'react';
+    
+    export default function RootLayout({ children }: { children: React.ReactNode }) {
+      useEffect(() => {
+        // Initialize client-side observability
+        import('@repo/observability/client/next').then(({ getObservability }) => {
+          getObservability();
+        });
+      }, []);
+      
+      return (
+        <html>
+          <body>{children}</body>
+        </html>
+      );
+    }
+    ```
+  </Step>
 
-    const config = {
-      // Your Next.js config
-    };
+  <Step title="Environment Configuration">
+    Ensure your app's `env.ts` extends the observability environment:
+    ```typescript
+    // env.ts
+    import { createEnv } from "@t3-oss/env-nextjs";
+    import { env as observabilityEnv } from "@repo/observability/env";
+    import { z } from "zod";
 
-    export default withSentry(config);
+    export const env = createEnv({
+      extends: [observabilityEnv],
+      server: {
+        // Your app-specific server variables
+      },
+      client: {
+        // Your app-specific client variables
+      },
+      // ... rest of config
+    });
     ```
 
   </Step>
@@ -123,25 +157,30 @@ SENTRY_PROJECT_URL=https://your-project.vercel.app
 
 ### Automatic Error Capture
 
-The observability package provides automatic error parsing and capture:
+The observability package provides automatic error capture through its logging
+functions:
 
 ```typescript
-// Server-side error parsing
-import { parseError } from "@repo/observability/server/next";
+// Server-side error logging
+import { logError, logInfo } from "@repo/observability/server/next";
 
-// Client-side error parsing
-import { parseError } from "@repo/observability/client/next";
+// Client-side error logging
+import { logError, logInfo } from "@repo/observability/client/next";
 
 try {
   await riskyOperation();
+  logInfo("Operation completed successfully");
 } catch (error) {
-  // Automatically captures to Sentry and returns standardized message
-  const errorMessage = parseError(error);
+  // Automatically captures to Sentry and other configured providers
   logError("Operation failed", {
-    error: errorMessage,
-    code: error.code,
-    timestamp: new Date().toISOString()
+    error: error instanceof Error ? error.message : String(error),
+    code: (error as any)?.code,
+    timestamp: new Date().toISOString(),
+    operation: "riskyOperation"
   });
+
+  // Or pass the error directly
+  logError(error, { operation: "riskyOperation" });
 }
 ```
 
@@ -149,33 +188,43 @@ try {
 
 <CodeGroup>
 ```typescript Custom Error Reporting
-import { captureException } from '@sentry/nextjs';
+import { getObservability } from '@repo/observability/server/next';
 
-// Report custom errors with context captureException(new Error('Custom error'),
-{ tags: { component: 'UserProfile', action: 'updateProfile', }, extra: { userId:
-user.id, organizationId: org.id, }, });
+// Report custom errors with context const observability = await
+getObservability(); observability.captureException(new Error('Custom error'), {
+component: 'UserProfile', action: 'updateProfile', userId: user.id,
+organizationId: org.id, });
+
+// Or use the logging functions directly import { logError } from
+'@repo/observability/server/next'; logError(new Error('Custom error'), {
+component: 'UserProfile', action: 'updateProfile', userId: user.id,
+organizationId: org.id, });
 
 ````
 
-```typescript Error Context
-import { setUser, setTag, setContext } from '@sentry/nextjs';
+```typescript Setting User Context
+import { getObservability } from '@repo/observability/server/next';
+
+const observability = await getObservability();
 
 // Set user context
-setUser({
+observability.setUser({
   id: user.id,
   email: user.email,
+  username: user.username,
   organization: org.name,
 });
 
-// Add custom tags
-setTag('feature', 'ai-classification');
-setTag('environment', process.env.NODE_ENV);
-
-// Add custom context
-setContext('workflow', {
-  workflowId: workflow.id,
-  status: workflow.status,
-  stepCount: workflow.steps.length,
+// Add breadcrumbs for debugging
+observability.addBreadcrumb({
+  message: 'User updated profile',
+  category: 'user.action',
+  level: 'info',
+  data: {
+    workflowId: workflow.id,
+    status: workflow.status,
+    stepCount: workflow.steps.length,
+  }
 });
 ````
 
@@ -235,99 +284,179 @@ logWarn("Rate limit approaching", { current: 85, limit: 100 });
 
 ```typescript
 // Next.js server components, API routes, server actions
-import { logInfo } from "@repo/observability/server/next";
+import {
+  logInfo,
+  logError,
+  logWarn,
+  logDebug
+} from "@repo/observability/server/next";
+
+// Next.js client components and client-side code
+import {
+  logInfo,
+  logError,
+  logWarn,
+  logDebug
+} from "@repo/observability/client/next";
 
 // Edge runtime (middleware, edge functions)
-import { logInfo } from "@repo/observability/server/edge";
+import {
+  logInfo,
+  logError,
+  logWarn,
+  logDebug
+} from "@repo/observability/server/edge";
 
 // Standard Node.js applications
-import { logInfo } from "@repo/observability/server";
+import {
+  logInfo,
+  logError,
+  logWarn,
+  logDebug
+} from "@repo/observability/server";
 
-// Environment-agnostic packages
-import { logInfo } from "@repo/observability";
+// Generic client-side (browser)
+import {
+  logInfo,
+  logError,
+  logWarn,
+  logDebug
+} from "@repo/observability/client";
+
+// Environment-agnostic packages (uses runtime detection)
+import { logInfo, logError, logWarn, logDebug } from "@repo/observability";
 ```
 
 ### Optional Configuration
 
-While the logger works out-of-the-box with sensible defaults, you can customize
-it:
+The observability system auto-configures based on available environment
+variables. For custom configuration:
 
 ```typescript
-import { configureLogger, logInfo } from "@repo/observability/server/next";
+import {
+  createServerObservability,
+  getObservability,
+  ObservabilityBuilder
+} from "@repo/observability/server/next";
+import {
+  createConsoleServerPlugin,
+  createSentryPlugin
+} from "@repo/observability/server/next";
 
-// Configure once at application startup
-configureLogger({
-  providers: {
-    console: {
-      enabled: true,
-      level: "debug",
-      prefix: "[MyApp]"
-    },
-    sentry: {
-      dsn: process.env.SENTRY_DSN
-    }
-  }
-});
+// Custom observability configuration
+const customObservability = ObservabilityBuilder.create()
+  .withPlugin(
+    createConsoleServerPlugin({
+      prefix: "[MyApp]",
+      enabled: true
+    })
+  )
+  .withPlugin(
+    createSentryPlugin({
+      dsn: process.env.SENTRY_DSN,
+      environment: process.env.NODE_ENV
+    })
+  )
+  .build();
 
-// Then use anywhere in your app
+await customObservability.initialize();
+
+// Use the logging functions anywhere
+import { logInfo } from "@repo/observability/server/next";
 logInfo("Application started");
 ```
 
-## Structured Logging (Legacy Pattern)
+## Available Plugins
 
-<Warning>
-  **Deprecated**: The `log()` function is deprecated. Use `logInfo()`,
-  `logError()`, etc. instead.
-</Warning>
+The observability package supports multiple plugins that can be configured based
+on your needs:
 
-### Legacy Environment-Aware Logging
-
-The legacy logging system requires await and manual logger creation:
+### Console Plugin
 
 ```typescript
-// ⚠️ DEPRECATED - Use new pattern above
-import { createLogger } from "@repo/observability/server/next";
+import { createConsolePlugin } from "@repo/observability/plugins/console";
 
-const logger = createLogger();
+const consolePlugin = createConsolePlugin({
+  prefix: "[MyApp]",
+  enabled: true // Automatically enabled in development
+});
+```
 
-// Old pattern - requires await
-await logger.info("User action completed", {
-  userId: user.id,
-  action: "profile_update"
+### Sentry Plugin
+
+```typescript
+import { createSentryPlugin } from "@repo/observability/plugins/sentry";
+
+const sentryPlugin = createSentryPlugin({
+  dsn: process.env.SENTRY_DSN,
+  environment: process.env.NODE_ENV,
+  tracesSampleRate: 0.1
+});
+```
+
+### Better Stack (Logtail) Plugin
+
+```typescript
+import { createBetterStackPlugin } from "@repo/observability/plugins/betterstack";
+
+const betterStackPlugin = createBetterStackPlugin({
+  sourceToken: process.env.BETTERSTACK_SOURCE_TOKEN
+});
+```
+
+### LogTape Plugin
+
+```typescript
+import { createLogTapePlugin } from "@repo/observability/plugins/logtape";
+
+const logTapePlugin = createLogTapePlugin({
+  sinks: {
+    console: true,
+    file: { path: "/var/log/app.log" },
+    cloudwatch: {
+      logGroup: "/aws/lambda/my-function",
+      region: "us-east-1"
+    }
+  }
 });
 ```
 
 ## Performance Monitoring
 
-### Performance Timer Hook
+### Manual Performance Tracking
 
-Track timing for async operations automatically:
+Track timing for operations using the observability manager:
 
 ```typescript
-import { usePerformanceTimer } from '@repo/observability';
+import { getObservability } from "@repo/observability/server/next";
 
-function DataComponent() {
-  const { time } = usePerformanceTimer();
+async function loadUserData(userId: string) {
+  const startTime = performance.now();
+  const observability = await getObservability();
 
-  const loadData = async () => {
-    // Automatically tracks timing and logs performance
-    const data = await time(
-      'load-user-data',
-      () => fetchUserData(userId),
-      {
-        userId,
-        organizationId: org.id,
-      }
-    );
+  try {
+    const data = await fetchUserData(userId);
+    const duration = performance.now() - startTime;
 
-    setData(data);
-  };
+    observability.logInfo("User data loaded successfully", {
+      userId,
+      duration: `${duration.toFixed(2)}ms`,
+      operation: "load-user-data"
+    });
 
-  return (
-    <button onClick={loadData}>
-      Load Data
-    </button>
-  );
+    return data;
+  } catch (error) {
+    const duration = performance.now() - startTime;
+
+    observability.logError("Failed to load user data", {
+      error,
+      userId,
+      duration: `${duration.toFixed(2)}ms`,
+      operation: "load-user-data"
+    });
+
+    throw error;
+  }
 }
 ```
 
@@ -358,35 +487,40 @@ try {
 }
 ```
 
-## React Observability Hooks
+## React Integration
 
-### General Observability Hook
+### Client-Side Logging in Components
 
-Comprehensive tracking for React components:
+Use observability in React components:
 
 <AccordionGroup>
   <Accordion title="Event Tracking" icon="mouse-pointer">
     ```typescript
-    import { useObservability } from '@repo/observability';
+    import { useEffect } from 'react';
+    import { logInfo, logError } from '@repo/observability/client/next';
 
     function ProductCard({ product }) {
-      const { trackEvent, trackError, trackPerformance } = useObservability();
-
       const handleAddToCart = async () => {
-        trackEvent('add_to_cart_clicked', {
+        logInfo('Add to cart clicked', {
           productId: product.id,
           price: product.price,
+          timestamp: Date.now()
         });
 
         try {
           const startTime = performance.now();
           await addToCart(product.id);
+          const duration = performance.now() - startTime;
 
-          trackPerformance('add_to_cart_duration', performance.now() - startTime);
-          trackEvent('add_to_cart_success', { productId: product.id });
-        } catch (error) {
-          trackError('add_to_cart_failed', error, {
+          logInfo('Add to cart successful', {
             productId: product.id,
+            duration: `${duration.toFixed(2)}ms`
+          });
+        } catch (error) {
+          logError('Add to cart failed', {
+            error,
+            productId: product.id,
+            timestamp: Date.now()
           });
         }
       };
@@ -401,44 +535,53 @@ Comprehensive tracking for React components:
 
   </Accordion>
 
-  <Accordion title="Workflow Tracking" icon="workflow">
+  <Accordion title="Component Lifecycle Tracking" icon="workflow">
     ```typescript
-    import { useWorkflowObservability } from '@repo/observability';
+    import { useEffect } from 'react';
+    import { logInfo, logError } from '@repo/observability/client/next';
 
-    function WorkflowRunner({ workflowId }) {
-      const {
-        trackWorkflowStart,
-        trackWorkflowStep,
-        trackWorkflowComplete,
-        trackWorkflowError
-      } = useWorkflowObservability();
+    function WorkflowComponent({ workflowId }) {
+      useEffect(() => {
+        logInfo('Workflow component mounted', {
+          workflowId,
+          timestamp: Date.now()
+        });
+
+        return () => {
+          logInfo('Workflow component unmounted', {
+            workflowId,
+            timestamp: Date.now()
+          });
+        };
+      }, [workflowId]);
 
       const executeWorkflow = async () => {
-        trackWorkflowStart(workflowId, {
-          triggerType: 'manual',
-          organizationId: org.id,
+        logInfo('Workflow execution started', {
+          workflowId,
+          triggerType: 'manual'
         });
 
         try {
-          for (const step of workflow.steps) {
-            trackWorkflowStep(workflowId, step.id, {
-              stepType: step.type,
-              inputSize: step.input?.length,
-            });
+          const result = await processWorkflow(workflowId);
 
-            await executeStep(step);
-          }
-
-          trackWorkflowComplete(workflowId, {
-            duration: performance.now() - startTime,
-            stepCount: workflow.steps.length,
+          logInfo('Workflow execution completed', {
+            workflowId,
+            result: result.status,
+            duration: result.duration
           });
         } catch (error) {
-          trackWorkflowError(workflowId, error, {
-            failedStep: currentStep.id,
+          logError('Workflow execution failed', {
+            error,
+            workflowId
           });
         }
       };
+
+      return (
+        <button onClick={executeWorkflow}>
+          Execute Workflow
+        </button>
+      );
     }
     ```
 
@@ -587,107 +730,197 @@ beforeSend(event, hint) {
 ```typescript
 import { vi } from "vitest";
 
-// Mock observability in tests
-vi.mock("@repo/observability/client/next", () => ({
-  parseError: vi.fn((error) => error.message),
-  useObservability: () => ({
-    trackEvent: vi.fn(),
-    trackError: vi.fn(),
-    trackPerformance: vi.fn(),
-    log: vi.fn(),
-    captureException: vi.fn()
-  })
-}));
-
+// Mock server-side observability
 vi.mock("@repo/observability/server/next", () => ({
   logInfo: vi.fn(),
   logError: vi.fn(),
   logWarn: vi.fn(),
   logDebug: vi.fn(),
-  parseError: vi.fn((error) => error.message)
+  getObservability: vi.fn(() =>
+    Promise.resolve({
+      logInfo: vi.fn(),
+      logError: vi.fn(),
+      logWarn: vi.fn(),
+      logDebug: vi.fn(),
+      captureException: vi.fn(),
+      captureMessage: vi.fn(),
+      setUser: vi.fn(),
+      addBreadcrumb: vi.fn()
+    })
+  )
+}));
+
+// Mock client-side observability
+vi.mock("@repo/observability/client/next", () => ({
+  logInfo: vi.fn(),
+  logError: vi.fn(),
+  logWarn: vi.fn(),
+  logDebug: vi.fn(),
+  getObservability: vi.fn(() =>
+    Promise.resolve({
+      logInfo: vi.fn(),
+      logError: vi.fn(),
+      logWarn: vi.fn(),
+      logDebug: vi.fn(),
+      captureException: vi.fn(),
+      captureMessage: vi.fn(),
+      setUser: vi.fn(),
+      addBreadcrumb: vi.fn()
+    })
+  )
+}));
+
+// Mock shared observability
+vi.mock("@repo/observability", () => ({
+  logInfo: vi.fn(),
+  logError: vi.fn(),
+  logWarn: vi.fn(),
+  logDebug: vi.fn(),
+  getRuntimeEnvironment: vi.fn(() => ({ type: "node", version: "22.0.0" }))
 }));
 ```
 
 ## Migration Guide
 
-### Migrating from Legacy Logger Pattern
+### Current Logging Pattern
 
-The new simplified logger functions provide better developer experience and
-performance:
+The observability package provides fire-and-forget logging functions that handle
+async initialization internally:
 
 <CodeGroup>
-```typescript Old Pattern (Deprecated)
-import { createLogger } from '@repo/observability/server/next';
-
-const logger = createLogger();
-
-export async function processUser(userId: string) {
-  await logger.debug('Starting user processing', { userId });
-
-try { const user = await fetchUser(userId); await logger.info('User fetched', {
-userId, status: user.status });
-
-    const result = await updateUser(user);
-    await logger.info('User updated', { userId, changes: result.changes });
-
-    return result;
-
-} catch (error) { await logger.error('User processing failed', error, { userId
-}); throw error; } }
-
-````
-
-```typescript New Pattern (Recommended)
+```typescript Server-Side Logging
 import { logDebug, logInfo, logError } from "@repo/observability/server/next";
 
 export async function processUser(userId: string) {
+  // Fire-and-forget - no await needed
   logDebug("Starting user processing", { userId });
 
-  try {
-    const user = await fetchUser(userId);
-    logInfo("User fetched", { userId, status: user.status });
+try { const user = await fetchUser(userId); logInfo("User fetched", { userId,
+status: user.status });
 
     const result = await updateUser(user);
     logInfo("User updated", { userId, changes: result.changes });
 
     return result;
-  } catch (error) {
-    logError("User processing failed", error, { userId });
-    throw error;
-  }
+
+} catch (error) { // Can pass Error objects directly logError(error, { userId,
+operation: 'processUser' }); // Or use error messages logError("User processing
+failed", { error: error.message, userId }); throw error; } }
+
+````
+
+```typescript Client-Side Logging
+import { logInfo, logError } from "@repo/observability/client/next";
+
+function UserProfile({ userId }: { userId: string }) {
+  const handleSave = async () => {
+    logInfo("User profile save initiated", { userId });
+
+    try {
+      await saveProfile(userId);
+      logInfo("User profile saved successfully", { userId });
+    } catch (error) {
+      logError("Failed to save user profile", { error, userId });
+    }
+  };
+
+  return <button onClick={handleSave}>Save Profile</button>;
 }
 ````
 
 </CodeGroup>
 
-### Key Migration Points
+### Key Features
 
-1. **No more await**: Logger functions are now fire-and-forget
-2. **Direct imports**: Import specific functions instead of creating logger
-   instances
-3. **Same API**: Context and error parameters work the same way
-4. **Backwards compatible**: Old pattern still works but shows deprecation
-   warnings
+1. **Fire-and-forget**: Logger functions handle async initialization internally
+2. **Environment-aware**: Automatically detects and configures for the current
+   runtime
+3. **Plugin-based**: Supports multiple providers (Console, Sentry, BetterStack,
+   LogTape)
+4. **Type-safe**: Full TypeScript support with proper context typing
+5. **Auto-configuration**: Works out-of-the-box based on environment variables
 
 ## Best Practices
 
 <Warning>
-  **Implementation Guidelines:** - Always provide relevant context with errors -
-  Use performance timer hook for async operations - Track user interactions for
-  product insights - Session replay automatically masks sensitive data - Prefer
-  new logger functions for better performance
+  **Implementation Guidelines:** - Always provide relevant context with errors
+  and logs - Use structured data for better log analysis and debugging - Include
+  user/session identifiers for request tracing - Choose appropriate log levels
+  (debug for development, info/error for production) - Use environment-specific
+  imports for optimal bundling
 </Warning>
 
 ### Recommended Patterns
 
-1. **Error Context**: Include user ID, organization ID, and action context
-2. **Performance Tracking**: Monitor critical user journeys and API calls
-3. **Analytics Integration**: Track business-relevant user interactions
-4. **Privacy First**: Leverage automatic data masking in session replay
-5. **Environment Awareness**: Package adapts automatically to dev/prod
-6. **Structured Logging**: Use structured data for better log analysis
-7. **Error Boundaries**: Implement at component level for graceful failures
-8. **Non-blocking Logs**: Use new fire-and-forget logger functions
+1. **Structured Context**: Include relevant metadata with all log entries
+
+   ```typescript
+   logInfo("User action completed", {
+     userId: user.id,
+     organizationId: org.id,
+     action: "profile_update",
+     timestamp: Date.now(),
+     userAgent: request.headers["user-agent"]
+   });
+   ```
+
+2. **Error Handling**: Provide actionable error context
+
+   ```typescript
+   try {
+     await criticalOperation();
+   } catch (error) {
+     logError(error, {
+       operation: "criticalOperation",
+       userId: user.id,
+       retryAttempt: attemptNumber,
+       duration: Date.now() - startTime
+     });
+   }
+   ```
+
+3. **Environment-Specific Imports**: Use the correct import for your runtime
+
+   ```typescript
+   // In Next.js server components/actions
+   import { logInfo } from "@repo/observability/server/next";
+
+   // In React client components
+   import { logInfo } from "@repo/observability/client/next";
+
+   // In middleware or edge functions
+   import { logInfo } from "@repo/observability/server/edge";
+   ```
+
+4. **User Context**: Set user information for better debugging
+
+   ```typescript
+   const observability = await getObservability();
+   observability.setUser({
+     id: user.id,
+     email: user.email,
+     organizationId: org.id
+   });
+   ```
+
+5. **Performance Tracking**: Monitor critical operations
+   ```typescript
+   const startTime = performance.now();
+   try {
+     const result = await expensiveOperation();
+     logInfo("Operation completed", {
+       operation: "expensiveOperation",
+       duration: `${(performance.now() - startTime).toFixed(2)}ms`,
+       resultSize: JSON.stringify(result).length
+     });
+   } catch (error) {
+     logError("Operation failed", {
+       error,
+       operation: "expensiveOperation",
+       duration: `${(performance.now() - startTime).toFixed(2)}ms`
+     });
+   }
+   ```
 
 The observability package provides comprehensive monitoring infrastructure while
 maintaining simplicity and privacy-first defaults, enabling teams to understand

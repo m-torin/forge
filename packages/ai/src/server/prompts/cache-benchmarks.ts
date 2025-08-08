@@ -4,7 +4,7 @@
  */
 
 import { logInfo, logWarn } from '@repo/observability/server/next';
-import { EnhancedPromptCache, type EnhancedCacheConfig } from './enhanced-prompt-cache';
+import { AnalyticsPromptCache, type AnalyticsCacheConfig } from './prompt-cache-analytics';
 
 /**
  * Benchmark test configuration
@@ -23,7 +23,7 @@ export interface BenchmarkConfig {
 export interface BenchmarkTestSuite {
   name: string;
   description: string;
-  cacheConfig: EnhancedCacheConfig;
+  cacheConfig: AnalyticsCacheConfig;
   testScenario: BenchmarkScenario;
   expectedMetrics?: {
     minHitRate?: number;
@@ -142,7 +142,7 @@ export class PromptCacheBenchmarkRunner {
     testSuite: BenchmarkTestSuite,
     config: BenchmarkConfig,
   ): Promise<BenchmarkResults> {
-    const cache = new EnhancedPromptCache(testSuite.cacheConfig);
+    const cache = new AnalyticsPromptCache(testSuite.cacheConfig);
     const testRequests = config.testRequests || 1000;
     const warmupRequests = config.warmupRequests || 100;
     const concurrentUsers = config.concurrentUsers || 1;
@@ -183,7 +183,6 @@ export class PromptCacheBenchmarkRunner {
       recommendations: this.generateRecommendations(responseData, cacheStats),
     };
 
-    // Cleanup
     cache.destroy();
 
     return result;
@@ -356,7 +355,7 @@ export class PromptCacheBenchmarkRunner {
    * Run warmup phase
    */
   private async runWarmup(
-    cache: EnhancedPromptCache,
+    cache: AnalyticsPromptCache,
     warmupData: Array<{ prompt: string; metadata?: any }>,
   ): Promise<void> {
     for (const { prompt, metadata } of warmupData) {
@@ -373,7 +372,7 @@ export class PromptCacheBenchmarkRunner {
    * Run main test phase
    */
   private async runTestPhase(
-    cache: EnhancedPromptCache,
+    cache: AnalyticsPromptCache,
     testData: Array<{ prompt: string; metadata?: any; expectedFromCache?: boolean }>,
     concurrentUsers: number,
   ): Promise<
@@ -504,7 +503,7 @@ export class PromptCacheBenchmarkRunner {
    */
   private calculateQualityMetrics(
     responseData: Array<{ fromCache: boolean; expectedFromCache: boolean }>,
-    cacheStats: any,
+    _cacheStats: any,
   ) {
     const semanticHits = responseData.filter(r => r.fromCache && !r.expectedFromCache).length;
     const falsePositives = responseData.filter(r => !r.fromCache && r.expectedFromCache).length;

@@ -194,7 +194,6 @@ export class MCPStreamLifecycleManager {
           this.checkMemoryUsage();
         }
 
-        // Check for abort signal
         if (this.abortController?.signal.aborted) {
           this.handleAbort();
           return;

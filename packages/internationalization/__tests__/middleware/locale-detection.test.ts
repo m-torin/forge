@@ -495,7 +495,7 @@ describe('locale Detection Integration', () => {
       });
 
       const result = mockMiddlewareWithDetection(mockRequest, config);
-      expect(result).toEqual(expected);
+      expect(result).toStrictEqual(expected);
     });
   });
 
@@ -564,7 +564,7 @@ describe('locale Detection Integration', () => {
       });
 
       const result = mockDetectLocaleFromCookie(mockRequest, config);
-      expect(result).toEqual(expected);
+      expect(result).toStrictEqual(expected);
     });
   });
 
@@ -631,7 +631,7 @@ describe('locale Detection Integration', () => {
       });
 
       const result = mockDetectLocaleFromCustomHeader(mockRequest, config);
-      expect(result).toEqual(expected);
+      expect(result).toStrictEqual(expected);
     });
   });
 });

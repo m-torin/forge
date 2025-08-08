@@ -46,7 +46,7 @@ export function createBulkTools(config: BulkToolsConfig) {
     bulkUpsert: tool({
       description:
         'Efficiently upsert large batches of vectors with automatic batching and error recovery',
-      parameters: z.object({
+      inputSchema: z.object({
         vectors: z
           .array(
             z.object({
@@ -195,7 +195,7 @@ export function createBulkTools(config: BulkToolsConfig) {
 
     bulkDelete: tool({
       description: 'Delete multiple vectors efficiently in batches with error recovery',
-      parameters: z.object({
+      inputSchema: z.object({
         ids: z.array(z.string()).describe('Vector IDs to delete'),
         batchSize: z
           .number()
@@ -306,7 +306,7 @@ export function createBulkTools(config: BulkToolsConfig) {
 
     bulkQuery: tool({
       description: 'Perform multiple vector queries in parallel with batching',
-      parameters: z.object({
+      inputSchema: z.object({
         queries: z
           .array(
             z.object({
@@ -429,7 +429,7 @@ export function createBulkTools(config: BulkToolsConfig) {
 
     bulkUpdate: tool({
       description: 'Update multiple vectors efficiently with batching',
-      parameters: z.object({
+      inputSchema: z.object({
         updates: z
           .array(
             z.object({

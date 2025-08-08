@@ -25,7 +25,7 @@ export interface BrowserViewport {
 export interface HeroConfig {
   blockedResourceTypes?: string[];
   locale?: string;
-  secretAgent?: any; // Hero uses SecretAgent under the hood
+  secretAgent?: any;
   showChrome?: boolean;
   timezoneId?: string;
   userAgent?: string;

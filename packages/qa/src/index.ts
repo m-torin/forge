@@ -21,7 +21,7 @@
  */
 
 // Export enhanced TypeScript definitions for better development experience
-export * from './shared/types/testing';
+// Note: ./shared/types/testing contains only type definitions (.d.ts)
 
 // === CORE EXPORTS ===
 // Re-export vitest mocks and utilities for easy access
@@ -34,6 +34,31 @@ export * from './vitest/mocks/internal/email';
 export * from './vitest/mocks/internal/prisma-with-enums';
 export * from './vitest/utils/prisma-test-setup';
 
+// === TEST FACTORIES ===
+// Export centralized test factories for all packages (avoiding duplicates with existing exports)
+export {
+  authTestScenarios,
+  createBulkTestData,
+  createMockApiKey,
+  // Auth factories with new names to avoid conflicts
+  createMockAuthClient,
+  createMockAuthContext,
+  createMockAuthHeaders,
+  createMockAuthOrganization,
+  createMockAuthSession,
+  createMockAuthUser,
+  createMockBetterAuthApi,
+  createMockEnvironment,
+  createMockInvitation,
+  createMockMember,
+  createMockPrisma,
+  createMockTeam,
+  createTestDataSets,
+} from './vitest/mocks/internal/auth-factories';
+
+export * from './vitest/mocks/internal/security-factories';
+export * from './vitest/mocks/providers/ai-factories';
+
 // === TEST PATTERNS & UTILITIES ===
 // Export comprehensive test patterns and utilities
 export * from './vitest/utils/database';
@@ -42,7 +67,7 @@ export * from './vitest/utils/test-patterns';
 
 // === SHARED UTILITIES ===
 // Export shared utilities for cross-framework compatibility
-export * from './shared';
+// Note: Shared utilities are deprecated, use direct imports from vitest instead
 
 // === PERFORMANCE & MONITORING ===
 // Note: Advanced features like performance monitoring are available

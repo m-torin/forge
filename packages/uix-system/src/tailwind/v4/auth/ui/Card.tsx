@@ -14,13 +14,23 @@ export function Card({ children, className = '', onClick }: CardProps) {
     .filter(Boolean)
     .join(' ');
 
+  if (!onClick) {
+    return <div className={cardStyles}>{children}</div>;
+  }
+
   return (
     <div
       className={cardStyles}
       onClick={onClick}
-      role={onClick ? 'button' : undefined}
-      tabIndex={onClick ? 0 : undefined}
-      style={{ cursor: onClick ? 'pointer' : 'default' }}
+      onKeyDown={e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      style={{ cursor: 'pointer' }}
     >
       {children}
     </div>

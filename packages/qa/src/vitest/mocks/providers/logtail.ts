@@ -172,12 +172,22 @@ export function createLogtailDynamicImportMock(config: LogtailMockConfig = {}): 
 /**
  * Setup Logtail mocks for vitest with automatic module mocking
  */
+// Create a default mock instance for static mocking
+const defaultLogTailMock = createLogtailMock();
+
+// Mock both common Logtail packages to handle dynamic imports at module level
+vi.mock('@logtail/js', () => ({
+  default: defaultLogTailMock.MockLogtailClass,
+  Logtail: defaultLogTailMock.MockLogtailClass,
+}));
+
+vi.mock('@logtail/next', () => ({
+  default: defaultLogTailMock.MockLogtailClass,
+  Logtail: defaultLogTailMock.MockLogtailClass,
+}));
+
 export function setupLogtailMocks(config: LogtailMockConfig = {}) {
   const { mockClient, MockLogtailClass, scenarios, resetMocks } = createLogtailMock(config);
-  const logtailPackage = config.package || '@logtail/js';
-
-  // Mock the module
-  // vi.mock(logtailPackage, () => MockLogtailClass);
 
   // Mock common environment variables
   vi.mock('../../src/env', () => ({

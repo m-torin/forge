@@ -1,5 +1,5 @@
 // @ts-ignore - Package may not be installed yet
-import { logWarn } from '@repo/observability/server/next';
+import { logWarn } from '@repo/observability';
 import { Index } from '@upstash/vector';
 import type { DeleteResult, UpsertResult, VectorDBStats } from '../../../shared/types/vector';
 import type {
@@ -11,10 +11,18 @@ import type {
 } from './types';
 
 export class UpstashVectorDB implements VectorDB {
-  private index: Index;
+  private index: Index | null = null;
   private namespace?: string;
 
   constructor(config: VectorDBConfig) {
+    // Gracefully handle missing or empty credentials
+    if (!config.url || !config.token || config.url === '' || config.token === '') {
+      logWarn(
+        '[UpstashVectorDB] Missing or empty credentials - Vector operations will be disabled',
+      );
+      return;
+    }
+
     this.index = new Index({
       url: config.url,
       token: config.token,
@@ -23,6 +31,9 @@ export class UpstashVectorDB implements VectorDB {
   }
 
   private getIndexWithNamespace() {
+    if (!this.index) {
+      throw new Error('Vector index not initialized - credentials missing or invalid');
+    }
     return this.namespace ? this.index.namespace(this.namespace) : this.index;
   }
 
@@ -114,6 +125,9 @@ export class UpstashVectorDB implements VectorDB {
 
   async describe(): Promise<VectorDBStats> {
     try {
+      if (!this.index) {
+        throw new Error('Vector index not initialized - credentials missing or invalid');
+      }
       const info = await this.index.info();
       return {
         dimension: info.dimension,
@@ -163,6 +177,9 @@ export class UpstashVectorDB implements VectorDB {
 
   async listNamespaces(): Promise<string[]> {
     try {
+      if (!this.index) {
+        throw new Error('Vector index not initialized - credentials missing or invalid');
+      }
       return await this.index.listNamespaces();
     } catch {
       return [];
@@ -171,6 +188,9 @@ export class UpstashVectorDB implements VectorDB {
 
   async deleteNamespace(namespace: string): Promise<boolean> {
     try {
+      if (!this.index) {
+        throw new Error('Vector index not initialized - credentials missing or invalid');
+      }
       await this.index.deleteNamespace(namespace);
       return true;
     } catch {
@@ -215,6 +235,9 @@ export class UpstashVectorDB implements VectorDB {
 
   async reset(options?: { all?: boolean }): Promise<boolean> {
     try {
+      if (!this.index) {
+        throw new Error('Vector index not initialized - credentials missing or invalid');
+      }
       if (options?.all) {
         await this.index.reset({ all: true });
       } else {

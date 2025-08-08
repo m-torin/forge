@@ -19,13 +19,13 @@ interface SMSVerificationFormProps extends BaseProps {
   title?: string;
   subtitle?: string;
   codeLength?: number;
-  resendCooldown?: number; // in seconds
+  resendCooldown?: number;
   onSuccess?: () => void;
   onError?: (error: string) => void;
   onResendSuccess?: () => void;
 }
 
-const initialState: FormState = { success: false };
+const _initialState: FormState = { success: false };
 
 // Server action for verifying SMS code
 async function verifySMSCodeAction(prevState: any, formData: FormData): Promise<FormState> {
@@ -65,7 +65,7 @@ async function verifySMSCodeAction(prevState: any, formData: FormData): Promise<
       };
     }
   } catch (error: any) {
-    console.error('SMS verification error:', error);
+    // console.error('SMS verification error:', error);
 
     if (error?.message?.includes('invalid code')) {
       return {
@@ -133,7 +133,7 @@ async function resendSMSCodeAction(prevState: any, formData: FormData): Promise<
       };
     }
   } catch (error: any) {
-    console.error('SMS resend error:', error);
+    // console.error('SMS resend error:', error);
 
     if (error?.message?.includes('rate limit')) {
       return {
@@ -366,7 +366,7 @@ export function SMSVerificationForm({
                     pattern="[0-9]*"
                     maxLength={codeLength}
                     value={code}
-                    onChange={(e) => {
+                    onChange={e => {
                       const value = e.target.value.replace(/\D/g, '');
                       setCode(value);
                     }}

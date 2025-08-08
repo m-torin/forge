@@ -58,8 +58,9 @@ export function createRAGChatHandler(config: RAGChatConfig) {
         Only respond to questions using information from tool calls.
         if no relevant information is found in the tool calls, respond, "Sorry, I don't know."`,
       tools,
-      maxSteps: config.maxSteps || 3,
-    });
+      stopWhen: [({ steps }: { steps: any[] }) => steps.length >= (config.maxSteps || 3)],
+      experimental_telemetry: { isEnabled: true },
+    } as any);
 
     return result.toTextStreamResponse();
   };
@@ -149,7 +150,7 @@ export class AISDKRag {
 
     const model = provider === 'anthropic' ? anthropic(modelName) : openai(modelName);
 
-    const result = await streamText({
+    const result = streamText({
       model,
       messages: [
         {

@@ -653,7 +653,7 @@ export const testDataUtils = {
     const variants: T[] = [];
 
     Object.entries(fieldVariations).forEach(([field, values]) => {
-      values.forEach(value => {
+      values?.forEach(value => {
         variants.push({ ...baseData, [field]: value });
       });
     });

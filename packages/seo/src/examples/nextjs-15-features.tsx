@@ -64,10 +64,8 @@ export function ProductPageWithOptimizedSEO({ product }: { product: any }) {
 
   return (
     <>
-      {/* Loads after page is interactive */}
       <OptimizedJsonLd data={structuredData} id="product-data" strategy="afterInteractive" />
 
-      {/* For critical SEO data, load immediately */}
       <OptimizedJsonLd
         data={structuredData}
         id="critical-product-data"
