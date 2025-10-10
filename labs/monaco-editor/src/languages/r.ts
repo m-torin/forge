@@ -4,7 +4,7 @@ import * as monaco from 'monaco-editor';
 // This example provides basic structure
 
 // Language Configuration
-export const rLanguageConfiguration: monaco.languages.LanguageConfiguration = {
+const rLanguageConfiguration: monaco.languages.LanguageConfiguration = {
   comments: {
     lineComment: '#',
     blockComment: ['/*', '*/'], // R typically uses only line comments, but block comments can be defined if needed
@@ -37,7 +37,7 @@ export const rLanguageConfiguration: monaco.languages.LanguageConfiguration = {
 };
 
 // Monarch Language Configuration
-export const rMonarchLanguage: monaco.languages.IMonarchLanguage = {
+const rMonarchLanguage: monaco.languages.IMonarchLanguage = {
   tokenizer: {
     root: [
       // Keywords
@@ -82,7 +82,7 @@ export const formatR = (code: string): string => {
     // For demonstration, returning code as-is
     return code;
   } catch (error) {
-    // eslint-disable-next-line no-console
+     
     console.error('R Formatting Error:', error);
     return code; // Return unformatted code on error
   }

@@ -1,0 +1,85 @@
+// PostgreSQL generator (Node.js optimized)
+generator prisma-client {
+  provider               = "prisma-client"
+  output                 = "../generated/client"
+  runtime                = "nodejs"
+  moduleFormat           = "esm"
+  generatedFileExtension = "ts"
+  importFileExtension    = "ts"
+  // Enable driverAdapters so we can pass `adapter` to PrismaClient
+  previewFeatures        = ["relationJoins", "fullTextSearchPostgres", "driverAdapters"]
+  engineType             = "library"
+}
+
+// Edge-optimized generator (Rust-free for edge runtimes)
+generator edge {
+  provider               = "prisma-client"
+  output                 = "../generated/edge"
+  runtime                = "nodejs"
+  moduleFormat           = "esm"
+  generatedFileExtension = "ts"
+  importFileExtension    = "ts"
+  // Keep parity for edge builds that also pass an adapter
+  previewFeatures        = ["relationJoins", "driverAdapters"]
+  engineType             = "binary"
+}
+
+// SQLite generator (commented out - using PostgreSQL only)
+// generator sqlite {
+//   provider               = "prisma-client"
+//   output                 = "../src/generated/client-sqlite"
+//   runtime                = "nodejs"
+//   moduleFormat           = "esm"
+//   generatedFileExtension = "ts"
+//   importFileExtension    = "ts"
+//   previewFeatures        = ["queryCompiler", "driverAdapters", "relationJoins", "prismaSchemaFolder"]
+// }
+
+// D1 generator (commented out - using PostgreSQL only)
+// generator d1 {
+//   provider               = "prisma-client"
+//   output                 = "../src/generated/client-d1"
+//   runtime                = "nodejs"
+//   moduleFormat           = "esm"
+//   generatedFileExtension = "ts"
+//   importFileExtension    = "ts"
+//   previewFeatures        = ["queryCompiler", "driverAdapters", "relationJoins", "prismaSchemaFolder"]
+// }
+
+// Zod validation schemas generator
+generator zod {
+  provider         = "prisma-zod-generator"
+  output           = "../generated/zod"
+  useMultipleFiles = true
+  config           = "./zod-generator.config.json"
+}
+
+// Primary datasource (PostgreSQL)
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// SQLite datasource (for SQLite and D1)
+// datasource sqlite_db {
+//   provider = "sqlite"
+//   url      = env("SQLITE_DATABASE_URL")
+// }
+
+// Schema includes - using prismaSchemaFolder feature
+// All models are defined in separate schema files in the schemas/ directory
+
+// Core schemas
+// - auth.prisma (User, Session, Account models)
+// - content.prisma (Post, Comment models) 
+
+// Business schemas  
+// - ecommerce.prisma (Product, Brand, Collection, Fandom, Series, Story, etc.)
+// - orders.prisma (Cart, Order, Address, CartItem, OrderItem, etc.)
+// - cms.prisma (Content management models)
+// - community.prisma (Community features)
+// - registry.prisma (Registry and wishlist models)
+// - vector.prisma (Vector database models)
+// - workflows.prisma (Workflow automation models)
+// - guestActions.prisma (Guest user actions)
+// - enums.prisma (Shared enumerations)

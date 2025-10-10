@@ -27,7 +27,7 @@ const sessions = new Map<string, ScrapingSession>();
 /**
  * Clean up expired sessions
  */
-export function cleanupSessions(maxAge = 3600000): number {
+function cleanupSessions(maxAge = 3600000): number {
   const now = Date.now();
   let cleaned = 0;
 
@@ -44,7 +44,7 @@ export function cleanupSessions(maxAge = 3600000): number {
 /**
  * Close a session and clean up resources
  */
-export async function closeSession(sessionId: string): Promise<void> {
+async function closeSession(sessionId: string): Promise<void> {
   const session = sessions.get(sessionId);
 
   if (!session) {
@@ -139,7 +139,7 @@ export async function createSession(
 /**
  * Get session information
  */
-export function getSessionInfo(sessionId: string): null | {
+function _getSessionInfo(sessionId: string): null | {
   active: boolean;
   duration: number;
   id: string;
@@ -166,7 +166,7 @@ export function getSessionInfo(sessionId: string): null | {
 /**
  * List all active sessions
  */
-export function listSessions(): {
+function _listSessions(): {
   duration: number;
   id: string;
   lastActivity: number;
@@ -185,7 +185,7 @@ export function listSessions(): {
 /**
  * Load session state from storage
  */
-export function loadSessionState(sessionId: string, key: string): any {
+function _loadSessionState(sessionId: string, key: string): any {
   const session = sessions.get(sessionId);
 
   if (!session) {
@@ -201,7 +201,7 @@ export function loadSessionState(sessionId: string, key: string): any {
 /**
  * Save session state to storage
  */
-export async function saveSessionState(sessionId: string, key: string, value: any): Promise<void> {
+async function _saveSessionState(sessionId: string, key: string, value: any): Promise<void> {
   const session = sessions.get(sessionId);
 
   if (!session) {
@@ -245,7 +245,7 @@ export async function sessionScrape(
 /**
  * Multi-step session workflow
  */
-export async function sessionWorkflow(
+async function _sessionWorkflow(
   sessionId: string,
   steps: {
     action?: 'click' | 'navigate' | 'scrape' | 'type' | 'wait';
@@ -330,7 +330,7 @@ export async function sessionWorkflow(
 /**
  * Update session cookies
  */
-export async function updateSessionCookies(sessionId: string, cookies: any[]): Promise<void> {
+async function _updateSessionCookies(sessionId: string, cookies: any[]): Promise<void> {
   return withSession(sessionId, async (_manager: any) => {
     const session = sessions.get(sessionId);
     if (!session) throw new Error(`Session ${sessionId} not found`);

@@ -379,12 +379,6 @@ const commonTypePatterns = {
 };
 
 // Export utilities for tests
-export const {
-  mockTypeOnly,
-  createTypeFactory,
-  expectTypeError,
-  expectNoTypeError,
-  createDummyValue,
-} = globalThis.typeTestUtils;
+export const {} = globalThis.typeTestUtils;
 export * from '../utils/type-testing';
 export { commonTypePatterns, typeTestingHelpers };

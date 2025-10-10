@@ -205,7 +205,9 @@ export async function precomputeFlagsBySegment() {
  * export const GET = createFlagsDiscoveryEndpoint();
  * ```
  */
-export const flagsDiscoveryEndpoint = createModernFlagsDiscoveryEndpoint(
+export const flagsDiscoveryEndpoint: (
+  request: import('next/server').NextRequest,
+) => Promise<Response> = createModernFlagsDiscoveryEndpoint(
   async () => {
     return getProviderDataWithMetadata({
       posthog: {

@@ -1,6 +1,6 @@
 import type { NextConfig } from 'next';
 
-const nextConfig: NextConfig = {
+const nextConfig = {
   reactStrictMode: true,
   sassOptions: {
     additionalData: `@use "./src/styles/_mantine" as *;`,
@@ -37,6 +37,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-};
+} as NextConfig;
 
 export default nextConfig;

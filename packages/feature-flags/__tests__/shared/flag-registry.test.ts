@@ -375,7 +375,7 @@ describe('shared/flag-registry', () => {
 
       // Create 100 flags
       for (let i = 0; i < 100; i++) {
-        flags[`flag${i}`] = vi.fn().mockResolvedValue(i % 2 === 0);
+        vi.spyOn(flags, `flag${i}`).mockResolvedValue(i % 2 === 0);
       }
 
       const result = await flagManager.evaluateFlags(flags);

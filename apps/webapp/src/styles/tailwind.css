@@ -1,0 +1,255 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@plugin "@tailwindcss/aspect-ratio";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-primary-50: rgb(240, 249, 255);
+  --color-primary-100: rgb(224, 242, 254);
+  --color-primary-200: rgb(186, 230, 253);
+  --color-primary-300: rgb(125, 211, 252);
+  --color-primary-400: rgb(56, 189, 248);
+  --color-primary-500: rgb(14, 165, 233);
+  --color-primary-600: rgb(2, 132, 199);
+  --color-primary-700: rgb(3, 105, 161);
+  --color-primary-800: rgb(7, 89, 133);
+  --color-primary-900: rgb(12, 74, 110);
+
+  --color-secondary-50: rgb(240, 253, 244);
+  --color-secondary-100: rgb(220, 252, 231);
+  --color-secondary-200: rgb(187, 247, 208);
+  --color-secondary-300: rgb(134, 239, 172);
+  --color-secondary-400: rgb(74, 222, 128);
+  --color-secondary-500: rgb(34, 197, 94);
+  --color-secondary-600: rgb(22, 163, 74);
+  --color-secondary-700: rgb(21, 128, 61);
+  --color-secondary-800: rgb(22, 101, 52);
+  --color-secondary-900: rgb(20, 83, 45);
+
+  --color-neutral-50: rgb(249, 250, 251);
+  --color-neutral-100: rgb(243, 244, 246);
+  --color-neutral-200: rgb(229, 231, 235);
+  --color-neutral-300: rgb(209, 213, 219);
+  --color-neutral-400: rgb(156, 163, 175);
+  --color-neutral-500: rgb(107, 114, 128);
+  --color-neutral-600: rgb(75, 85, 99);
+  --color-neutral-700: rgb(55, 65, 81);
+  --color-neutral-800: rgb(31, 41, 55);
+  --color-neutral-900: rgb(17, 24, 39);
+}
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    @apply border-neutral-200 dark:border-neutral-700;
+  }
+
+  [type="button"] {
+    -webkit-appearance: none !important;
+  }
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    @apply rounded-md dark:bg-neutral-500;
+  }
+}
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+  @media screen and (min-width: 640px) {
+    padding-inline: 2rem;
+  }
+}
+
+@utility hidden-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility z-max {
+  z-index: 999999;
+}
+
+@utility nc-FiveStartIconForRate {
+  svg:hover ~ svg {
+    @apply text-neutral-300;
+  }
+}
+
+@utility pl-container {
+  @apply pl-6 sm:pl-[calc((100vw-40rem+2.5rem)/2)] md:pl-[calc((100vw-48rem+4rem)/2)] lg:pl-[calc((100vw-64rem+4rem)/2)] xl:pl-[calc((100vw-80rem+4rem)/2)] 2xl:pl-[calc((100vw-96rem+4rem)/2)];
+}
+@utility pr-container {
+  @apply pr-6 sm:pr-[calc((100vw-40rem+2.5rem)/2)] md:pr-[calc((100vw-48rem+4rem)/2)] lg:pr-[calc((100vw-64rem+4rem)/2)] xl:pr-[calc((100vw-80rem+4rem)/2)] 2xl:pr-[calc((100vw-96rem+4rem)/2)];
+}
+
+@utility listingSectionSidebar__wrap {
+  @apply flex w-full flex-col gap-y-6 border-neutral-200 px-0 sm:gap-y-8 sm:rounded-2xl sm:border sm:p-4 sm:pb-10 xl:p-8 dark:border-neutral-700;
+}
+
+@utility listingSection__wrap {
+  @apply flex w-full flex-col gap-y-6 border-b border-neutral-200 pb-14 sm:gap-y-8 dark:border-neutral-700;
+}
+
+@utility nc-card-title {
+  @apply hover:text-primary-900 dark:hover:text-primary-300 transition-colors duration-75;
+}
+
+@utility menu-item {
+  @apply flex;
+
+  &:hover {
+    > .sub-menu {
+      @apply block;
+    }
+  }
+}
+
+@utility sub-menu {
+  @apply hidden;
+}
+
+@utility overflow-initial {
+  overflow: initial;
+}
+
+/* embla carousel */
+@utility embla {
+  overflow: hidden;
+}
+@utility embla-overflow-unset {
+  overflow: unset;
+}
+@utility embla__container {
+  display: flex;
+  touch-action: pan-y pinch-zoom;
+}
+@utility embla__slide {
+  flex-shrink: 0;
+  flex-grow: 0;
+  transform: translate3d(0, 0, 0);
+}
+
+@utility nc-shadow-lg {
+  @apply shadow-[2px_8px_40px_rgba(0,0,0,0.08)];
+}
+
+@utility nc-shadow-sketch {
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+}
+
+@keyframes opacityAndTranslateYDown {
+  from {
+    transform: scale(1.05) translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0px);
+    opacity: 1;
+  }
+}
+@keyframes opacityAndTranslateYUp {
+  from {
+    transform: translateX(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+@keyframes opacity0to1 {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes opacityAndWidthUp {
+  from {
+    width: 30px;
+    opacity: 0;
+  }
+  to {
+    width: 80px;
+    opacity: 1;
+  }
+}
+@utility fade--animation__dot {
+  animation-name: opacityAndWidthUp;
+  animation-duration: 150ms;
+  animation-timing-function: linear;
+}
+@utility fade--animation__image {
+  animation-name: opacityAndTranslateYDown;
+  animation-duration: 650ms;
+  animation-timing-function: ease-in-out;
+}
+@utility fade--animation__left {
+  animation-duration: 600ms;
+  animation-timing-function: ease-in-out;
+  animation-name: opacity0to1;
+}
+@utility fade--animation__button {
+  animation-name: opacityAndTranslateYUp;
+  animation-duration: 800ms;
+  animation-timing-function: ease-in-out;
+}
+@utility fade--animation__heading {
+  animation-name: opacityAndTranslateYUp;
+  animation-duration: 600ms;
+  animation-timing-function: ease-in-out;
+}
+@utility fade--animation__subheading {
+  animation-name: opacityAndTranslateYUp;
+  animation-timing-function: ease-in-out;
+  animation-duration: 400ms;
+}
+
+@media (min-aspect-ratio: 3/2) {
+  .wide\:h-full {
+    height: 100%;
+  }
+}
+
+@media (min-width: 1280px) {
+  @media (min-height: 854px) {
+    .xl\:taller-than-854\:h-auto {
+      height: auto;
+    }
+  }
+}
+
+/* MENU */
+.menuIsNew_lv1 > a::before {
+  content: "New!";
+  position: absolute;
+  top: -2px;
+  right: 0;
+  display: inline-block;
+  padding: 0 5px;
+  line-height: 15px;
+  border-radius: 4px;
+  background-color: #f35656;
+  color: #fff;
+  font-size: 10px;
+  font-weight: normal;
+}
+.menuIsNew > a::after {
+  content: "New!";
+  display: inline-block;
+  padding: 0 5px;
+  line-height: 15px;
+  border-radius: 4px;
+  background-color: #f35656;
+  color: #fff;
+  font-size: 10px;
+  margin-left: 6px;
+}

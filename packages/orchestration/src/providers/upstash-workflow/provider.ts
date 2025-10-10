@@ -3,6 +3,8 @@
  * Implements WorkflowProvider interface using Upstash QStash and Redis
  */
 
+import { randomUUID } from 'crypto';
+
 import { nanoid } from 'nanoid';
 
 import { logError, logInfo } from '@repo/observability/server/next';
@@ -32,7 +34,7 @@ export interface UpstashWorkflowProviderOptions {
     baseUrl?: string;
     token: string;
   };
-  /** Whether to enable Redis for state management (uses @repo/database/redis) */
+  /** Whether to enable Redis for state management (uses @repo/db-prisma/redis) */
   enableRedis?: boolean;
   /** Webhook URL pattern - defaults to '/api/workflows/{id}/execute' */
   webhookUrlPattern?: string;
@@ -63,12 +65,11 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
         operation: 'qstash_client_fallback',
       });
       this.qstash = {
-        publishJSON: () =>
-          Promise.resolve({ messageId: 'mock_msg_' + Math.random().toString(36).substring(7) }),
+        publishJSON: () => Promise.resolve({ messageId: 'mock_msg_' + randomUUID().slice(-7) }),
         schedules: {
           create: () =>
             Promise.resolve({
-              scheduleId: 'mock_schedule_' + Math.random().toString(36).substring(7),
+              scheduleId: 'mock_schedule_' + randomUUID().slice(-7),
             }),
           delete: () => Promise.resolve(true),
         },
@@ -89,7 +90,7 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
       qstash: {
         token: config.config.qstashToken,
       },
-      enableRedis: true, // Use shared Redis from '@repo/database
+      enableRedis: true, // Use shared Redis from '@repo/db-prisma
       webhookUrlPattern: config.config.webhookUrlPattern,
     });
   }
@@ -522,55 +523,80 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
         );
       }
 
-      // Get all execution keys using a scan operation instead of keys for better performance
+      // Stream executions to prevent memory exhaustion with large datasets
       const pattern = `workflow:execution:*`;
-      const keys: string[] = [];
-      let cursor = '0';
-      do {
-        const result = await this.redisClient.scan(cursor, { match: pattern, count: 100 });
-        cursor = result[0];
-        keys.push(...result[1]);
-      } while (cursor !== '0');
-
       const executions: WorkflowExecution[] = [];
+      const maxExecutions = 10000; // Hard limit to prevent memory issues
 
-      for (const key of keys) {
-        const data = await this.redisClient.get(key);
-        if (data) {
-          const execution = JSON.parse(data as string);
-          executions.push(execution);
+      let cursor = '0';
+      let processedCount = 0;
+      const batchSize = 100;
+
+      // Process executions in streaming batches
+      do {
+        // Scan for keys in batches
+        const scanResult = await this.redisClient.scan(cursor, {
+          match: pattern,
+          count: batchSize,
+        });
+        cursor = scanResult[0];
+        const keyBatch = scanResult[1];
+
+        if (keyBatch.length === 0) continue;
+
+        // Fetch execution data in parallel for this batch
+        const dataPromises = keyBatch.map(async (key: string) => {
+          try {
+            const data = await this.redisClient.get(key);
+            return data ? (JSON.parse(data as string) as WorkflowExecution) : null;
+          } catch (error) {
+            // Log parse errors but continue processing
+
+            console.warn(`Failed to parse execution data for key ${key}:`, error);
+            return null;
+          }
+        });
+
+        const executionBatch = (await Promise.allSettled(dataPromises))
+          .filter(
+            (result): result is PromiseFulfilledResult<WorkflowExecution> =>
+              result.status === 'fulfilled' && result.value !== null,
+          )
+          .map(result => result.value);
+
+        // Apply early filtering to reduce memory usage
+        const filteredBatch = this.applyExecutionFilters(executionBatch, options);
+        executions.push(...filteredBatch);
+
+        processedCount += keyBatch.length;
+
+        // Safety check to prevent memory exhaustion
+        if (executions.length >= maxExecutions) {
+          console.warn(`Execution list truncated at ${maxExecutions} entries for memory safety`);
+          break;
         }
+
+        // Check cursor termination condition
+      } while (cursor !== '0' && processedCount < maxExecutions * 2);
+
+      // If we hit the limit, log a warning
+      if (executions.length >= maxExecutions) {
+        console.warn(
+          `Workflow execution listing limited to ${maxExecutions} entries. Consider using pagination or filtering.`,
+        );
       }
 
-      // Apply filters
-      let filtered = executions;
-
-      if (options?.status && options.status.length > 0) {
-        filtered = filtered.filter((e: any) => options.status?.includes(e.status));
-      }
-
-      if (options?.startDate) {
-        const startDate = options.startDate;
-        filtered = filtered.filter((e: any) => new Date(e.startedAt) >= startDate);
-      }
-
-      if (options?.endDate) {
-        const endDate = options.endDate;
-        filtered = filtered.filter((e: any) => new Date(e.startedAt) <= endDate);
-      }
-
-      // Sort by start time (newest first)
-      filtered.sort(
+      // Final sort and pagination (executions already pre-filtered in streaming loop)
+      // Sort by start time (newest first) using ES2023 toSorted for immutability
+      const sortedExecutions = executions.toSorted(
         (a: any, b: any) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime(),
       );
 
       // Apply pagination
       const offset = options?.offset || 0;
-      const limit = options?.limit || 50;
+      const limit = Math.min(options?.limit || 50, 1000); // Cap limit for performance
 
-      filtered = filtered.slice(offset, offset + limit);
-
-      return filtered;
+      return sortedExecutions.slice(offset, offset + limit);
     } catch (error: any) {
       throw createProviderError(
         'Failed to list workflow executions',
@@ -825,60 +851,229 @@ export class UpstashWorkflowProvider implements WorkflowProvider {
   }
 
   /**
-   * Evaluate a step condition
-   * Only supports simple conditions for security
+   * Secure condition evaluator with strict whitelist-based parsing
+   * Prevents injection attacks by using structured parsing instead of regex
    */
   private evaluateCondition(condition: string, input?: WorkflowData): boolean {
-    // Parse simple conditions like "input.value > 10" or "input.status === 'active'"
-    // This is a basic implementation - in production you'd want a safe expression evaluator
-
     if (!input) return true;
 
-    // Check for simple equality/inequality conditions
-    const equalityMatch = condition.match(/^input\.(\w+)\s*(===?|!==?)\s*['"]?(.+?)['"]?$/);
-    if (equalityMatch) {
-      const [, field, operator, value] = equalityMatch;
-      const inputValue = input[field];
+    // Sanitize input - remove extra whitespace and validate format
+    const sanitizedCondition = condition.trim();
 
-      switch (operator) {
-        case '==':
-        case '===':
-          return String(inputValue) === value;
-        case '!=':
-        case '!==':
-          return String(inputValue) !== value;
+    // Maximum condition length to prevent DoS
+    if (sanitizedCondition.length > 200) {
+      throw new Error('Condition too long - maximum 200 characters allowed');
+    }
+
+    // Whitelist of allowed field name patterns (alphanumeric + underscore only)
+    const ALLOWED_FIELD_PATTERN = /^[a-zA-Z][a-zA-Z0-9_]*$/;
+
+    // Whitelist of allowed operators
+    const ALLOWED_OPERATORS = new Set(['===', '!==', '>', '>=', '<', '<=']);
+
+    try {
+      return this.parseSecureCondition(
+        sanitizedCondition,
+        input,
+        ALLOWED_FIELD_PATTERN,
+        ALLOWED_OPERATORS,
+      );
+    } catch (error) {
+      // Log security violations but don't expose internal details
+
+      console.warn('Condition evaluation failed:', {
+        condition: sanitizedCondition.slice(0, 50), // Truncate for logging
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+      return false; // Fail closed for security
+    }
+  }
+
+  /**
+   * Parse conditions using a secure, structured approach
+   */
+  private parseSecureCondition(
+    condition: string,
+    input: WorkflowData,
+    allowedFieldPattern: RegExp,
+    allowedOperators: Set<string>,
+  ): boolean {
+    // Structure: "input.fieldName operator value"
+    const parts = condition.split(/\s+/);
+
+    if (parts.length !== 3) {
+      throw new Error('Invalid condition format - expected "input.field operator value"');
+    }
+
+    const [fieldPart, operator, valuePart] = parts;
+
+    // Validate field reference format
+    if (!fieldPart.startsWith('input.')) {
+      throw new Error('Field reference must start with "input."');
+    }
+
+    const fieldName = fieldPart.slice(6); // Remove 'input.' prefix
+
+    // Validate field name against whitelist
+    if (!allowedFieldPattern.test(fieldName)) {
+      throw new Error('Invalid field name - only alphanumeric and underscore allowed');
+    }
+
+    // Validate operator
+    if (!allowedOperators.has(operator)) {
+      throw new Error(
+        `Invalid operator "${operator}" - only ${Array.from(allowedOperators).join(', ')} allowed`,
+      );
+    }
+
+    // Get the field value safely using Object.hasOwn (Node 22 feature)
+    if (!Object.hasOwn(input, fieldName)) {
+      return false; // Field doesn't exist
+    }
+
+    const fieldValue = input[fieldName];
+
+    // Parse and validate value based on operator type
+    return this.evaluateSecureComparison(fieldValue, operator, valuePart);
+  }
+
+  /**
+   * Safely evaluate comparisons with type coercion protection
+   */
+  private evaluateSecureComparison(
+    fieldValue: unknown,
+    operator: string,
+    valueStr: string,
+  ): boolean {
+    switch (operator) {
+      case '===':
+      case '!==': {
+        // For strict equality, parse value appropriately
+        let compareValue: unknown;
+
+        // Handle string values (quoted)
+        if (
+          (valueStr.startsWith('"') && valueStr.endsWith('"')) ||
+          (valueStr.startsWith("'") && valueStr.endsWith("'"))
+        ) {
+          compareValue = valueStr.slice(1, -1);
+        }
+        // Handle boolean values
+        else if (valueStr === 'true' || valueStr === 'false') {
+          compareValue = valueStr === 'true';
+        }
+        // Handle null/undefined
+        else if (valueStr === 'null') {
+          compareValue = null;
+        } else if (valueStr === 'undefined') {
+          compareValue = undefined;
+        }
+        // Handle numeric values (no quotes) - use safe validation
+        else if (this.isValidNumericString(valueStr)) {
+          compareValue = Number(valueStr);
+          if (!Number.isFinite(compareValue)) {
+            throw new Error('Invalid numeric value');
+          }
+        } else {
+          throw new Error(`Invalid value format: ${valueStr}`);
+        }
+
+        return operator === '===' ? fieldValue === compareValue : fieldValue !== compareValue;
+      }
+
+      case '>':
+      case '>=':
+      case '<':
+      case '<=': {
+        // Numeric comparisons only - use safe validation
+        if (!this.isValidNumericString(valueStr)) {
+          throw new Error('Numeric comparison requires numeric value');
+        }
+
+        const numericFieldValue = Number(fieldValue);
+        const numericCompareValue = Number(valueStr);
+
+        if (!Number.isFinite(numericFieldValue) || !Number.isFinite(numericCompareValue)) {
+          return false; // Invalid numeric comparison
+        }
+
+        switch (operator) {
+          case '>':
+            return numericFieldValue > numericCompareValue;
+          case '>=':
+            return numericFieldValue >= numericCompareValue;
+          case '<':
+            return numericFieldValue < numericCompareValue;
+          case '<=':
+            return numericFieldValue <= numericCompareValue;
+          default:
+            return false;
+        }
+      }
+
+      default:
+        throw new Error(`Unsupported operator: ${operator}`);
+    }
+  }
+
+  /**
+   * Safely validate numeric strings without using potentially unsafe regex
+   */
+  private isValidNumericString(value: string): boolean {
+    // Length check for DoS protection
+    if (value.length === 0 || value.length > 25) return false;
+
+    // Check for valid characters only: digits, single optional minus sign, single optional decimal point
+    let hasDecimal = false;
+    let hasNegative = false;
+
+    for (let i = 0; i < value.length; i++) {
+      const char = value[i];
+
+      if (char === '-') {
+        if (i !== 0 || hasNegative) return false; // Only at start, only once
+        hasNegative = true;
+      } else if (char === '.') {
+        if (hasDecimal) return false; // Only one decimal point
+        hasDecimal = true;
+      } else if (char < '0' || char > '9') {
+        return false; // Only digits allowed
       }
     }
 
-    // Check for simple comparison conditions
-    const comparisonMatch = condition.match(/^input\.(\w+)\s*([<>]=?)\s*(\d+)$/);
-    if (comparisonMatch) {
-      const [, field, operator, value] = comparisonMatch;
-      const inputValue = Number(input[field]);
-      const compareValue = Number(value);
+    // Must have at least one digit
+    const digitCount = value.replace(/[-.]/, '').length;
+    return digitCount > 0 && digitCount <= 15; // Reasonable numeric precision limit
+  }
 
-      if (isNaN(inputValue) || isNaN(compareValue)) return false;
+  /**
+   * Apply execution filters for streaming processing to reduce memory usage
+   */
+  private applyExecutionFilters(
+    executions: WorkflowExecution[],
+    options?: ListExecutionsOptions,
+  ): WorkflowExecution[] {
+    if (!options) return executions;
 
-      switch (operator) {
-        case '>':
-          return inputValue > compareValue;
-        case '>=':
-          return inputValue >= compareValue;
-        case '<':
-          return inputValue < compareValue;
-        case '<=':
-          return inputValue <= compareValue;
-      }
+    let filtered = executions;
+
+    // Filter by status
+    if (options.status && options.status.length > 0) {
+      filtered = filtered.filter((execution: any) => options.status?.includes(execution.status));
     }
 
-    // Check for simple boolean conditions
-    if (condition.match(/^input\.(\w+)$/)) {
-      const field = condition.replace('input.', '');
-      return Boolean(input[field]);
+    // Filter by date range
+    if (options.startDate) {
+      const startDate = options.startDate;
+      filtered = filtered.filter((execution: any) => new Date(execution.startedAt) >= startDate);
     }
 
-    // Default to true if we can't parse the condition
-    return true;
+    if (options.endDate) {
+      const endDate = options.endDate;
+      filtered = filtered.filter((execution: any) => new Date(execution.startedAt) <= endDate);
+    }
+
+    return filtered;
   }
 
   /**

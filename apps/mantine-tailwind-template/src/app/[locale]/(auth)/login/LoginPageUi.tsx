@@ -8,24 +8,12 @@
 
 import { signInAction } from '#/app/actions/auth';
 import type { Locale } from '#/lib/i18n';
-import {
-  ActionIcon,
-  Alert,
-  Button,
-  Card,
-  Checkbox,
-  CopyButton,
-  PasswordInput,
-  Stack,
-  TextInput,
-  Tooltip,
-} from '@mantine/core';
+import { Alert, Button, Card, Checkbox, PasswordInput, Stack, TextInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { useClipboard, useDebouncedValue } from '@mantine/hooks';
-import { IconArrowLeft, IconBrandNextjs, IconCheck, IconCopy } from '@tabler/icons-react';
+import { IconArrowLeft, IconBrandNextjs } from '@tabler/icons-react';
 import type { Route } from 'next';
 import Link from 'next/link';
-import React, { useActionState, useState } from 'react';
+import { useActionState } from 'react';
 
 interface LoginPageUiProps {
   locale: Locale;
@@ -52,16 +40,6 @@ export default function LoginPageUi({ locale, dict, redirectTo, error }: LoginPa
     fields: { email: '', password: '' },
   });
 
-  // Clipboard functionality for demo credentials
-  const clipboard = useClipboard({ timeout: 2000 });
-
-  // Demo accounts data
-  const demoAccounts = [
-    { label: 'User', email: 'demo@example.com', password: 'demo123' },
-    { label: 'Admin', email: 'admin@example.com', password: 'admin123' },
-    { label: 'User 2', email: 'jane@example.com', password: 'jane123' },
-  ];
-
   // Mantine form for client-side validation
   const form = useForm<LoginFormValues>({
     initialValues: {
@@ -83,26 +61,6 @@ export default function LoginPageUi({ locale, dict, redirectTo, error }: LoginPa
     },
   });
 
-  // Debounced validation for real-time feedback
-  const [debouncedEmail] = useDebouncedValue(form.values.email, 300);
-  const [_emailValidationError, setEmailValidationError] = useState<string | null>(null);
-
-  // Real-time email validation
-  React.useEffect(() => {
-    if (debouncedEmail && debouncedEmail !== form.values.email) {
-      const validation = form.validateField('email');
-      const error = validation.error;
-      setEmailValidationError(typeof error === 'string' ? error : null);
-    }
-  }, [debouncedEmail, form]);
-
-  // Helper function to copy credentials and fill form
-  const handleCopyCredentials = (account: (typeof demoAccounts)[0]) => {
-    const credentials = `${account.email} / ${account.password}`;
-    clipboard.copy(credentials);
-    form.setValues({ email: account.email, password: account.password });
-  };
-
   const handleSubmit = (values: LoginFormValues) => {
     // Create FormData for server action
     const formData = new FormData();
@@ -116,8 +74,8 @@ export default function LoginPageUi({ locale, dict, redirectTo, error }: LoginPa
   };
 
   return (
-    <div className="flex min-h-screen flex-col justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
-      <div className="mx-auto w-full max-w-md sm:max-w-md">
+    <div className="flex min-h-screen flex-col justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
         {/* Header */}
         <div className="mb-8 text-center">
           <Link
@@ -144,39 +102,17 @@ export default function LoginPageUi({ locale, dict, redirectTo, error }: LoginPa
         {/* Demo Account Info */}
         <div className="mb-6">
           <Card withBorder padding="sm" className="harmony-bg-info harmony-border">
-            <h3 className="harmony-text-primary mb-2 text-sm font-medium">
-              Demo Accounts:
-              {clipboard.copied && <span className="ml-2 text-green-600">✓ Copied!</span>}
-            </h3>
-            <div className="harmony-text-secondary space-y-2 text-xs">
-              {demoAccounts.map(account => (
-                <div key={account.email} className="flex items-center justify-between">
-                  <div>
-                    <strong>{account.label}:</strong> {account.email} / {account.password}
-                  </div>
-                  <CopyButton value={`${account.email} / ${account.password}`} timeout={2000}>
-                    {({ copied, copy }) => (
-                      <Tooltip
-                        label={copied ? 'Copied!' : 'Copy & Fill Form'}
-                        withArrow
-                        position="right"
-                      >
-                        <ActionIcon
-                          color={copied ? 'teal' : 'gray'}
-                          variant="subtle"
-                          onClick={() => {
-                            copy();
-                            handleCopyCredentials(account);
-                          }}
-                          size="sm"
-                        >
-                          {copied ? <IconCheck size={12} /> : <IconCopy size={12} />}
-                        </ActionIcon>
-                      </Tooltip>
-                    )}
-                  </CopyButton>
-                </div>
-              ))}
+            <h3 className="harmony-text-primary mb-2 text-sm font-medium">Demo Accounts:</h3>
+            <div className="harmony-text-secondary space-y-1 text-xs">
+              <div>
+                <strong>User:</strong> demo@example.com / demo123
+              </div>
+              <div>
+                <strong>Admin:</strong> admin@example.com / admin123
+              </div>
+              <div>
+                <strong>User 2:</strong> jane@example.com / jane123
+              </div>
             </div>
           </Card>
         </div>

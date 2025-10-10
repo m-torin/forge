@@ -33,9 +33,9 @@
  * ```
  */
 
-'use server';
+"use server";
 
-import type { Prisma, PrismaClient } from '../../../../prisma-generated/client';
+import type { Prisma, PrismaClient } from "../../../../prisma-generated/client";
 import {
   aggregateSessionsOrm,
   countSessionsOrm,
@@ -52,7 +52,7 @@ import {
   updateManySessionsOrm,
   updateSessionOrm,
   upsertSessionOrm,
-} from '../orm/auth/authOrm';
+} from "../orm/auth/authOrm";
 
 // ============================================================================
 // SESSION SERVER ACTIONS
@@ -62,8 +62,11 @@ import {
 /**
  * Server action to create a new session
  */
-export async function createSessionAction(args: Prisma.SessionCreateArgs, prisma?: PrismaClient) {
-  'use server';
+export async function createSessionAction(
+  args: Prisma.SessionCreateArgs,
+  prisma?: PrismaClient,
+) {
+  "use server";
   return createSessionOrm(args, prisma);
 }
 
@@ -74,7 +77,7 @@ export async function createManySessionsAction(
   args: Prisma.SessionCreateManyArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return createManySessionsOrm(args, prisma);
 }
 
@@ -86,7 +89,7 @@ export async function findFirstSessionAction(
   args?: Prisma.SessionFindFirstArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return findFirstSessionOrm(args, prisma);
 }
 
@@ -97,7 +100,7 @@ export async function findFirstSessionActionOrThrow(
   args: Prisma.SessionFindFirstOrThrowArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return findFirstSessionOrmOrThrow(args, prisma);
 }
 
@@ -108,7 +111,7 @@ export async function findUniqueSessionAction(
   args: Prisma.SessionFindUniqueArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return findUniqueSessionOrm(args, prisma);
 }
 
@@ -119,7 +122,7 @@ export async function findUniqueSessionActionOrThrow(
   args: Prisma.SessionFindUniqueOrThrowArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return findUniqueSessionOrmOrThrow(args, prisma);
 }
 
@@ -130,7 +133,7 @@ export async function findManySessionsAction(
   args?: Prisma.SessionFindManyArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return findManySessionsOrm(args, prisma);
 }
 
@@ -138,8 +141,11 @@ export async function findManySessionsAction(
 /**
  * Server action to update a session
  */
-export async function updateSessionAction(args: Prisma.SessionUpdateArgs, prisma?: PrismaClient) {
-  'use server';
+export async function updateSessionAction(
+  args: Prisma.SessionUpdateArgs,
+  prisma?: PrismaClient,
+) {
+  "use server";
   return updateSessionOrm(args, prisma);
 }
 
@@ -150,15 +156,18 @@ export async function updateManySessionsAction(
   args: Prisma.SessionUpdateManyArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return updateManySessionsOrm(args, prisma);
 }
 
 /**
  * Server action to upsert a session (update or create)
  */
-export async function upsertSessionAction(args: Prisma.SessionUpsertArgs, prisma?: PrismaClient) {
-  'use server';
+export async function upsertSessionAction(
+  args: Prisma.SessionUpsertArgs,
+  prisma?: PrismaClient,
+) {
+  "use server";
   return upsertSessionOrm(args, prisma);
 }
 
@@ -166,8 +175,11 @@ export async function upsertSessionAction(args: Prisma.SessionUpsertArgs, prisma
 /**
  * Server action to delete a session
  */
-export async function deleteSessionAction(args: Prisma.SessionDeleteArgs, prisma?: PrismaClient) {
-  'use server';
+export async function deleteSessionAction(
+  args: Prisma.SessionDeleteArgs,
+  prisma?: PrismaClient,
+) {
+  "use server";
   return deleteSessionOrm(args, prisma);
 }
 
@@ -178,7 +190,7 @@ export async function deleteManySessionsAction(
   args?: Prisma.SessionDeleteManyArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return deleteManySessionsOrm(args, prisma);
 }
 
@@ -190,15 +202,18 @@ export async function aggregateSessionsAction(
   args: Prisma.SessionAggregateArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return aggregateSessionsOrm(args, prisma);
 }
 
 /**
  * Server action to count sessions
  */
-export async function countSessionsAction(args?: Prisma.SessionCountArgs, prisma?: PrismaClient) {
-  'use server';
+export async function countSessionsAction(
+  args?: Prisma.SessionCountArgs,
+  prisma?: PrismaClient,
+) {
+  "use server";
   return countSessionsOrm(args, prisma);
 }
 
@@ -209,6 +224,6 @@ export async function groupBySessionsAction(
   args: Prisma.SessionGroupByArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return groupBySessionsOrm(args, prisma);
 }

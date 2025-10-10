@@ -165,7 +165,7 @@ import { getBestModelForTask } from "@repo/ai/models";
 import {
   hasAnthropicConfig,
   hasOpenAIConfig,
-  hasGoogleAIConfig
+  hasGoogleAIConfig,
 } from "@repo/ai/env";
 
 // Automatic model selection
@@ -184,14 +184,14 @@ available models based on configured API keys and user permissions:
 import {
   getModelRecommendations,
   getModelsByCapability,
-  canUserAccessModel
+  canUserAccessModel,
 } from "@repo/ai/models";
 
 // Get available models for the user
 const userTier = getUserTier(); // 'free' | 'pro' | 'enterprise'
 const chatModels = getModelRecommendations("chat", userTier);
 const reasoningModels = getModelsByCapability("reasoning").filter((modelId) =>
-  canUserAccessModel(userTier, getModelConfig(modelId)?.costTier, false)
+  canUserAccessModel(userTier, getModelConfig(modelId)?.costTier, false),
 );
 ```
 
@@ -253,7 +253,7 @@ import { registry } from "@repo/ai/server";
 const model = selectModel({
   strategy: "balanced",
   userTier: currentUser.tier,
-  fallbackEnabled: true
+  fallbackEnabled: true,
 });
 
 const aiModel = registry.languageModel(`${provider}:${model}`);

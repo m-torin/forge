@@ -2,18 +2,18 @@
  * Browser provider type definitions
  */
 
-export interface BrowserCookie {
+interface _BrowserCookie {
   domain?: string;
   expires?: number;
   httpOnly?: boolean;
   name: string;
   path?: string;
-  sameSite?: 'Lax' | 'None' | 'Strict';
+  sameSite?: "Lax" | "None" | "Strict";
   secure?: boolean;
   value: string;
 }
 
-export interface BrowserViewport {
+interface BrowserViewport {
   deviceScaleFactor?: number;
   hasTouch?: boolean;
   height: number;
@@ -40,8 +40,8 @@ export interface HeroOptions {
 // Playwright specific types
 export interface PlaywrightConfig {
   acceptDownloads?: boolean;
-  browser?: 'chromium' | 'firefox' | 'webkit';
-  colorScheme?: 'dark' | 'light' | 'no-preference';
+  browser?: "chromium" | "firefox" | "webkit";
+  colorScheme?: "dark" | "light" | "no-preference";
   devtools?: boolean;
   geolocation?: { latitude: number; longitude: number };
   headless?: boolean;
@@ -60,7 +60,7 @@ export interface PlaywrightOptions {
   referer?: string;
   strictSelectors?: boolean;
   timeout?: number;
-  waitUntil?: 'commit' | 'domcontentloaded' | 'load' | 'networkidle';
+  waitUntil?: "commit" | "domcontentloaded" | "load" | "networkidle";
 }
 
 // Puppeteer specific types
@@ -74,10 +74,10 @@ export interface PuppeteerConfig {
   handleSIGHUP?: boolean;
   handleSIGINT?: boolean;
   handleSIGTERM?: boolean;
-  headless?: 'new' | boolean;
+  headless?: "new" | boolean;
   ignoreDefaultArgs?: boolean | string[];
   pipe?: boolean;
-  product?: 'chrome' | 'firefox';
+  product?: "chrome" | "firefox";
   slowMo?: number;
   userDataDir?: string;
 }
@@ -85,5 +85,5 @@ export interface PuppeteerConfig {
 export interface PuppeteerOptions {
   referer?: string;
   timeout?: number;
-  waitUntil?: 'domcontentloaded' | 'load' | 'networkidle0' | 'networkidle2';
+  waitUntil?: "domcontentloaded" | "load" | "networkidle0" | "networkidle2";
 }

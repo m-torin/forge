@@ -1,4 +1,3 @@
-import '@testing-library/jest-dom';
 import { beforeEach, vi } from 'vitest';
 
 // Mock environment variables for edge runtime tests
@@ -71,74 +70,113 @@ vi.mock('../src/plugins/sentry/env', () => ({
   }),
 }));
 
-// Mock Sentry Next.js environment variables
-vi.mock('../src/plugins/sentry-nextjs/env', () => ({
-  env: {
-    SENTRY_DSN: undefined,
-    NEXT_PUBLIC_SENTRY_DSN: undefined,
-    SENTRY_ORG: undefined,
-    SENTRY_PROJECT: undefined,
-    SENTRY_ENVIRONMENT: 'test',
-    SENTRY_RELEASE: undefined,
-    NEXT_PUBLIC_SENTRY_ENVIRONMENT: 'test',
-    NEXT_PUBLIC_SENTRY_RELEASE: undefined,
-    SENTRY_ENABLE_TRACING: undefined,
-    NEXT_PUBLIC_SENTRY_ENABLE_TRACING: undefined,
-  },
-  baseSafeEnv: () => ({
-    SENTRY_DSN: '',
-    NEXT_PUBLIC_SENTRY_DSN: '',
-    SENTRY_ORG: '',
-    SENTRY_PROJECT: '',
-    SENTRY_ENVIRONMENT: 'test',
-    SENTRY_RELEASE: '',
-    NEXT_PUBLIC_SENTRY_ENVIRONMENT: 'test',
-    NEXT_PUBLIC_SENTRY_RELEASE: '',
+// Import centralized mocks from @repo/qa (when available)
+// TODO: Re-enable when @repo/qa exports are built
+// import '@repo/qa/vitest/mocks/providers/sentry';
+
+// Mock console methods for cleaner test output
+const originalConsole = console;
+global.console = {
+  ...originalConsole,
+  error: vi.fn(),
+  log: vi.fn(),
+  warn: vi.fn(),
+};
+
+// Mock external dependencies used by plugins
+vi.mock('@sentry/nextjs', () => ({
+  init: vi.fn(),
+  captureException: vi.fn(),
+  captureMessage: vi.fn(),
+  setUser: vi.fn(),
+  addBreadcrumb: vi.fn(),
+  withScope: vi.fn(callback => {
+    if (callback) {
+      callback({
+        setContext: vi.fn(),
+        setUser: vi.fn(),
+      });
+    }
   }),
-  safeEnv: () => ({
-    SENTRY_DSN: '',
-    NEXT_PUBLIC_SENTRY_DSN: '',
-    SENTRY_ORG: '',
-    SENTRY_PROJECT: '',
-    SENTRY_ENVIRONMENT: 'test',
-    SENTRY_RELEASE: '',
-    NEXT_PUBLIC_SENTRY_ENVIRONMENT: 'test',
-    NEXT_PUBLIC_SENTRY_RELEASE: '',
-    SENTRY_ENABLE_TRACING: false,
-    NEXT_PUBLIC_SENTRY_ENABLE_TRACING: false,
-    SENTRY_ENABLE_REPLAY: false,
-    NEXT_PUBLIC_SENTRY_ENABLE_REPLAY: false,
-    SENTRY_ENABLE_FEEDBACK: false,
-    NEXT_PUBLIC_SENTRY_ENABLE_FEEDBACK: false,
-    SENTRY_TRACES_SAMPLE_RATE: 0.1,
-    NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE: 0.1,
-  }),
+  flush: vi.fn().mockResolvedValue(true),
+  close: vi.fn().mockResolvedValue(true),
+  getClient: vi.fn(),
+  httpIntegration: vi.fn(() => ({})),
+  browserTracingIntegration: vi.fn(() => ({})),
+  replayIntegration: vi.fn(() => ({})),
+  profilesIntegration: vi.fn(() => ({})),
 }));
 
-// Provider mocks are now handled by centralized @repo/qa setup
-// (includes console mocking, server-only, and node:async_hooks mocking)
+vi.mock('@sentry/node', () => ({
+  init: vi.fn(),
+  captureException: vi.fn(),
+  captureMessage: vi.fn(),
+  setUser: vi.fn(),
+  addBreadcrumb: vi.fn(),
+  withScope: vi.fn(callback => {
+    if (callback) {
+      callback({
+        setContext: vi.fn(),
+        setUser: vi.fn(),
+      });
+    }
+  }),
+  flush: vi.fn().mockResolvedValue(true),
+  close: vi.fn().mockResolvedValue(true),
+  getClient: vi.fn(),
+  httpIntegration: vi.fn(() => ({})),
+}));
 
-// Mock feature flag SDKs (optional dependencies)
-vi.mock('launchdarkly-js-client-sdk', () => ({
-  initialize: vi.fn(() => ({
-    allFlags: vi.fn().mockResolvedValue({}),
-    variation: vi.fn().mockResolvedValue(false),
-    on: vi.fn(),
-    off: vi.fn(),
-    identify: vi.fn().mockResolvedValue({}),
-    close: vi.fn().mockResolvedValue({}),
+vi.mock('@sentry/react', () => ({
+  init: vi.fn(),
+  captureException: vi.fn(),
+  captureMessage: vi.fn(),
+  setUser: vi.fn(),
+  addBreadcrumb: vi.fn(),
+  withScope: vi.fn(callback => {
+    if (callback) {
+      callback({
+        setContext: vi.fn(),
+        setUser: vi.fn(),
+      });
+    }
+  }),
+  flush: vi.fn().mockResolvedValue(true),
+  close: vi.fn().mockResolvedValue(true),
+  getClient: vi.fn(),
+  browserTracingIntegration: vi.fn(() => ({})),
+  replayIntegration: vi.fn(() => ({})),
+}));
+
+vi.mock('@logtail/js', () => ({
+  default: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    log: vi.fn(),
+    flush: vi.fn().mockResolvedValue(true),
+    setContext: vi.fn(),
+    removeContext: vi.fn(),
+    setUser: vi.fn(),
+    removeUser: vi.fn(),
+  })),
+  Logtail: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    log: vi.fn(),
+    flush: vi.fn().mockResolvedValue(true),
+    setContext: vi.fn(),
+    removeContext: vi.fn(),
+    setUser: vi.fn(),
+    removeUser: vi.fn(),
   })),
 }));
 
-vi.mock('unleash-proxy-client', () => ({
-  UnleashApi: vi.fn(() => ({
-    isEnabled: vi.fn().mockReturnValue(false),
-    getVariant: vi.fn().mockReturnValue({ name: 'disabled', enabled: false }),
-    on: vi.fn(),
-    off: vi.fn(),
-    start: vi.fn().mockResolvedValue({}),
-    stop: vi.fn().mockResolvedValue({}),
-  })),
+vi.mock('node:async_hooks', () => ({
+  AsyncLocalStorage: vi.fn(),
 }));
 
 // Common observability test configuration

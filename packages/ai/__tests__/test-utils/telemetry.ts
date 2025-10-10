@@ -3,9 +3,9 @@
  * Helpers for testing experimental_telemetry functionality
  */
 
-import type { TelemetrySettings } from 'ai';
-import { expect } from 'vitest';
-import { createReasoningModel, createTelemetryModel } from './models';
+import type { TelemetrySettings } from "ai";
+import { expect } from "vitest";
+import { createReasoningModel, createTelemetryModel } from "./models";
 
 /**
  * Standard telemetry configuration for testing
@@ -16,11 +16,11 @@ export const createTelemetryConfig = (
   isEnabled: true,
   recordInputs: true,
   recordOutputs: true,
-  functionId: 'test-function',
+  functionId: "test-function",
   metadata: {
-    testId: 'telemetry-test',
-    environment: 'test',
-    version: '1.0.0',
+    testId: "telemetry-test",
+    environment: "test",
+    version: "1.0.0",
   },
   ...overrides,
 });
@@ -43,7 +43,7 @@ export const createCustomTelemetryConfig = (
   isEnabled: true,
   recordInputs: true,
   recordOutputs: true,
-  functionId: 'custom-test-function',
+  functionId: "custom-test-function",
   metadata: customMetadata,
 });
 
@@ -74,7 +74,7 @@ export function assertTelemetryMetadata(
   expect(telemetryConfig.metadata).toBeDefined();
 
   if (telemetryConfig.metadata) {
-    expectedKeys.forEach(key => {
+    expectedKeys.forEach((key) => {
       expect(telemetryConfig.metadata).toHaveProperty(key);
     });
   }
@@ -141,19 +141,19 @@ export const telemetryScenarios = {
    */
   customMetadata: () => ({
     config: createCustomTelemetryConfig({
-      testType: 'integration',
-      batchId: 'batch-123',
+      testType: "integration",
+      batchId: "batch-123",
       priority: 1,
-      features: 'tool-calling,streaming',
+      features: "tool-calling,streaming",
     }),
     model: createTelemetryModel(),
     expected: {
-      functionId: 'custom-test-function',
+      functionId: "custom-test-function",
       metadata: {
-        testType: 'integration',
-        batchId: 'batch-123',
+        testType: "integration",
+        batchId: "batch-123",
         priority: 1,
-        features: 'tool-calling,streaming',
+        features: "tool-calling,streaming",
       },
     },
   }),
@@ -163,7 +163,10 @@ export const telemetryScenarios = {
    */
   withReasoning: () => ({
     config: createTelemetryConfig(),
-    model: createReasoningModel('Analyzing the problem step by step...', 'The solution is X'),
+    model: createReasoningModel(
+      "Analyzing the problem step by step...",
+      "The solution is X",
+    ),
     expected: {
       hasReasoning: true,
       reasoningTokens: 5,
@@ -176,28 +179,28 @@ export const telemetryScenarios = {
  */
 export const telemetryFunctionTests = {
   generateText: {
-    functionId: 'ai.generateText',
-    spanName: 'ai.generateText.doGenerate',
+    functionId: "ai.generateText",
+    spanName: "ai.generateText.doGenerate",
   },
   streamText: {
-    functionId: 'ai.streamText',
-    spanName: 'ai.streamText.doStream',
+    functionId: "ai.streamText",
+    spanName: "ai.streamText.doStream",
   },
   generateObject: {
-    functionId: 'ai.generateObject',
-    spanName: 'ai.generateObject.doGenerate',
+    functionId: "ai.generateObject",
+    spanName: "ai.generateObject.doGenerate",
   },
   streamObject: {
-    functionId: 'ai.streamObject',
-    spanName: 'ai.streamObject.doStream',
+    functionId: "ai.streamObject",
+    spanName: "ai.streamObject.doStream",
   },
   embed: {
-    functionId: 'ai.embed',
-    spanName: 'ai.embed.doEmbed',
+    functionId: "ai.embed",
+    spanName: "ai.embed.doEmbed",
   },
   embedMany: {
-    functionId: 'ai.embedMany',
-    spanName: 'ai.embedMany.doEmbed',
+    functionId: "ai.embedMany",
+    spanName: "ai.embedMany.doEmbed",
   },
 };
 
@@ -241,14 +244,17 @@ export class MockTelemetryCollector {
 
   // Test helpers
   findSpanByName(spanName: string): any | undefined {
-    return this.spans.find(span => span.spanName === spanName);
+    return this.spans.find((span) => span.spanName === spanName);
   }
 
   getSpanCount(): number {
     return this.spans.length;
   }
 
-  hasSpanWithAttributes(spanName: string, expectedAttributes: Record<string, any>): boolean {
+  hasSpanWithAttributes(
+    spanName: string,
+    expectedAttributes: Record<string, any>,
+  ): boolean {
     const span = this.findSpanByName(spanName);
     if (!span) return false;
 
@@ -267,7 +273,7 @@ export function assertTelemetrySpans(
 ): void {
   expect(collector.getSpanCount()).toBe(expectedSpans.length);
 
-  expectedSpans.forEach(expected => {
+  expectedSpans.forEach((expected) => {
     const span = collector.findSpanByName(expected.name);
     expect(span).toBeDefined();
 
@@ -304,45 +310,45 @@ export function assertTelemetryPerformance(
  * Error telemetry testing
  */
 export function createTelemetryErrorScenario(
-  errorType: 'rate-limit' | 'auth' | 'model-error' | 'network',
+  errorType: "rate-limit" | "auth" | "model-error" | "network",
 ) {
   const config = createTelemetryConfig();
 
   switch (errorType) {
-    case 'rate-limit':
+    case "rate-limit":
       return {
         config,
-        expectedError: new Error('Rate limit exceeded'),
+        expectedError: new Error("Rate limit exceeded"),
         expectedAttributes: {
-          'error.type': 'rate-limit',
-          'error.recoverable': true,
+          "error.type": "rate-limit",
+          "error.recoverable": true,
         },
       };
-    case 'auth':
+    case "auth":
       return {
         config,
-        expectedError: new Error('Authentication failed'),
+        expectedError: new Error("Authentication failed"),
         expectedAttributes: {
-          'error.type': 'auth',
-          'error.recoverable': false,
+          "error.type": "auth",
+          "error.recoverable": false,
         },
       };
-    case 'model-error':
+    case "model-error":
       return {
         config,
-        expectedError: new Error('Model processing error'),
+        expectedError: new Error("Model processing error"),
         expectedAttributes: {
-          'error.type': 'model-error',
-          'error.recoverable': true,
+          "error.type": "model-error",
+          "error.recoverable": true,
         },
       };
-    case 'network':
+    case "network":
       return {
         config,
-        expectedError: new Error('Network timeout'),
+        expectedError: new Error("Network timeout"),
         expectedAttributes: {
-          'error.type': 'network',
-          'error.recoverable': true,
+          "error.type": "network",
+          "error.recoverable": true,
         },
       };
     default:
@@ -354,33 +360,33 @@ export function createTelemetryErrorScenario(
  * Validate telemetry configuration
  */
 export function validateTelemetryConfig(config: TelemetrySettings): void {
-  expect(typeof config.isEnabled).toBe('boolean');
+  expect(typeof config.isEnabled).toBe("boolean");
 
   if (config.isEnabled) {
-    expect(typeof config.recordInputs).toBe('boolean');
-    expect(typeof config.recordOutputs).toBe('boolean');
+    expect(typeof config.recordInputs).toBe("boolean");
+    expect(typeof config.recordOutputs).toBe("boolean");
   }
 
   if (config.functionId) {
-    expect(typeof config.functionId).toBe('string');
+    expect(typeof config.functionId).toBe("string");
     expect(config.functionId.length).toBeGreaterThan(0);
   }
 
   if (config.metadata) {
-    expect(typeof config.metadata).toBe('object');
+    expect(typeof config.metadata).toBe("object");
     // Validate metadata value types
-    Object.values(config.metadata).forEach(value => {
+    Object.values(config.metadata).forEach((value) => {
       const valueType = typeof value;
-      expect(['string', 'number', 'boolean', 'object']).toContain(valueType);
+      expect(["string", "number", "boolean", "object"]).toContain(valueType);
 
       if (Array.isArray(value)) {
-        value.forEach(item => {
+        value.forEach((item) => {
           expect(
             item === null ||
               item === undefined ||
-              typeof item === 'string' ||
-              typeof item === 'number' ||
-              typeof item === 'boolean',
+              typeof item === "string" ||
+              typeof item === "number" ||
+              typeof item === "boolean",
           ).toBeTruthy();
         });
       }

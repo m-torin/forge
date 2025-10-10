@@ -1,8 +1,8 @@
-import { dedupe } from 'flags/next';
-import { nanoid } from 'nanoid';
+import { dedupe } from "flags/next";
+import { nanoid } from "nanoid";
 
-import { safeEnv } from '../../env';
-import type { CookieStore, HeaderStore } from './types';
+import { safeEnv } from "../../env";
+import type { CookieStore, HeaderStore } from "./types";
 
 /**
  * Generate a visitor ID for anonymous users
@@ -15,7 +15,7 @@ export const generateVisitorId = dedupe(async () => nanoid());
 export async function getOrGenerateVisitorId(
   cookies: CookieStore,
   headers?: HeaderStore,
-  cookieName = 'visitor-id',
+  cookieName = "visitor-id",
 ): Promise<string> {
   // Check cookies first
   const cookieVisitorId = cookies.get(cookieName)?.value;
@@ -35,7 +35,7 @@ export async function getOrGenerateVisitorId(
  * Parse feature flag overrides from cookies (for Vercel Toolbar)
  */
 export function parseOverrides(cookies: CookieStore) {
-  const overrides = cookies.get('vercel-flag-overrides')?.value;
+  const overrides = cookies.get("vercel-flag-overrides")?.value;
   if (!overrides) return undefined;
 
   try {
@@ -73,8 +73,12 @@ export function getOfflineRolloutPercentage(
 /**
  * Get variant from list based on key and context for offline A/B testing
  */
-export function getOfflineVariant<T>(key: string, context: string, variants: T[]): T {
-  if (variants.length === 0) throw new Error('Variants array cannot be empty');
+export function getOfflineVariant<T>(
+  key: string,
+  context: string,
+  variants: T[],
+): T {
+  if (variants.length === 0) throw new Error("Variants array cannot be empty");
   const hash = createDeterministicHash(key + context);
   return variants[hash % variants.length];
 }
@@ -89,12 +93,15 @@ export function extractUserContext(cookies: CookieStore): {
 } {
   return {
     userId:
-      cookies.get('user-id')?.value || cookies.get('auth-token')?.value?.slice(0, 8) || 'anonymous',
+      cookies.get("user-id")?.value ||
+      cookies.get("auth-token")?.value?.slice(0, 8) ||
+      "anonymous",
     visitorId:
-      cookies.get('visitor-id')?.value ||
-      cookies.get('_ga')?.value?.slice(-8) ||
-      'visitor-' + Date.now().toString(36),
-    sessionId: cookies.get('session-id')?.value || 'session-' + Date.now().toString(36),
+      cookies.get("visitor-id")?.value ||
+      cookies.get("_ga")?.value?.slice(-8) ||
+      "visitor-" + Date.now().toString(36),
+    sessionId:
+      cookies.get("session-id")?.value || "session-" + Date.now().toString(36),
   };
 }
 
@@ -108,23 +115,27 @@ export function extractRequestContext(headers: HeaderStore): {
   deployment: string;
 } {
   return {
-    userAgent: headers.get('user-agent') || 'unknown',
-    country: headers.get('x-country') || headers.get('cf-ipcountry') || 'US',
-    environment: headers.get('x-environment') || safeEnv().NODE_ENV || 'development',
-    deployment: headers.get('x-deployment-id') || process.env.DEPLOYMENT_ID || 'local', // DEPLOYMENT_ID not in env schema
+    userAgent: headers.get("user-agent") || "unknown",
+    country: headers.get("x-country") || headers.get("cf-ipcountry") || "US",
+    environment:
+      headers.get("x-environment") || safeEnv().NODE_ENV || "development",
+    deployment:
+      headers.get("x-deployment-id") || process.env.DEPLOYMENT_ID || "local", // DEPLOYMENT_ID not in env schema
   };
 }
 
 /**
  * Check if flag should be enabled based on environment variables (offline override)
  */
-export function checkEnvironmentOverride(key: string): boolean | string | undefined {
-  const envKey = `FLAG_${key.toUpperCase().replace(/-/g, '_')}`;
+export function checkEnvironmentOverride(
+  key: string,
+): boolean | string | undefined {
+  const envKey = `FLAG_${key.toUpperCase().replace(/-/g, "_")}`;
   const value = process.env[envKey];
 
   if (value === undefined) return undefined;
-  if (value === 'true') return true;
-  if (value === 'false') return false;
+  if (value === "true") return true;
+  if (value === "false") return false;
   return value; // Return as string for non-boolean values
 }
 

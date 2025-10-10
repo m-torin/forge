@@ -4,11 +4,11 @@
  * messages and other i18n settings to Server Components
  */
 
-import { logError, logWarn } from '@repo/observability/server';
-import { hasLocale } from 'next-intl';
-import { getRequestConfig } from 'next-intl/server';
-import type { Locale } from './routing';
-import { routing } from './routing';
+import { logError, logWarn } from "@repo/observability/server";
+import { hasLocale } from "next-intl";
+import { getRequestConfig } from "next-intl/server";
+import type { Locale } from "./routing";
+import { routing } from "./routing";
 
 export default getRequestConfig(async ({ requestLocale }) => {
   // This typically corresponds to the `[locale]` segment
@@ -21,7 +21,9 @@ export default getRequestConfig(async ({ requestLocale }) => {
       : routing.defaultLocale;
 
   if (requested && requested !== locale) {
-    logWarn(`Unsupported locale "${requested}" requested, falling back to "${locale}"`);
+    logWarn(
+      `Unsupported locale "${requested}" requested, falling back to "${locale}"`,
+    );
   }
 
   try {
@@ -35,20 +37,20 @@ export default getRequestConfig(async ({ requestLocale }) => {
       formats: {
         dateTime: {
           short: {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric',
+            day: "numeric",
+            month: "short",
+            year: "numeric",
           },
         },
         number: {
           currency: {
-            style: 'currency',
-            currency: 'USD',
+            style: "currency",
+            currency: "USD",
           },
         },
       },
       // Optional: Configure default timezone
-      timeZone: 'UTC',
+      timeZone: "UTC",
       // Optional: Set the current time for consistent server/client rendering
       now: new Date(),
     };
@@ -59,18 +61,21 @@ export default getRequestConfig(async ({ requestLocale }) => {
 
     // Fallback to English messages
     try {
-      const fallbackMessages = (await import('./dictionaries/en.json')).default;
+      const fallbackMessages = (await import("./dictionaries/en.json")).default;
       return {
-        locale: 'en',
+        locale: "en",
         messages: fallbackMessages,
-        timeZone: 'UTC',
+        timeZone: "UTC",
         now: new Date(),
       };
     } catch (fallbackError) {
-      logError('Failed to load fallback messages', {
-        error: fallbackError instanceof Error ? fallbackError.message : String(fallbackError),
+      logError("Failed to load fallback messages", {
+        error:
+          fallbackError instanceof Error
+            ? fallbackError.message
+            : String(fallbackError),
       });
-      throw new Error('Unable to load any translation messages');
+      throw new Error("Unable to load any translation messages");
     }
   }
 });

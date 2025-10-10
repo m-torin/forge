@@ -3,10 +3,10 @@
  * Tracks auth events using the analytics emitters package
  */
 
-import { logError, logInfo } from '@repo/observability/server/next';
-import 'server-only';
+import { logError, logInfo } from "@repo/observability";
+import "server-only";
 
-import type { RateLimitResult } from './rate-limiter';
+import type { RateLimitResult } from "./rate-limiter";
 
 // Analytics event types
 export interface AuthAnalyticsEvent {
@@ -40,71 +40,71 @@ export interface AuthAnalyticsEvent {
 
 export type AuthEventType =
   // Authentication events
-  | 'auth.signin.email'
-  | 'auth.signin.oauth'
-  | 'auth.signin.passkey'
-  | 'auth.signin.phone'
-  | 'auth.signin.magic_link'
-  | 'auth.signin.anonymous'
-  | 'auth.signup.email'
-  | 'auth.signup.oauth'
-  | 'auth.signup.passkey'
-  | 'auth.signup.phone'
-  | 'auth.signout'
+  | "auth.signin.email"
+  | "auth.signin.oauth"
+  | "auth.signin.passkey"
+  | "auth.signin.phone"
+  | "auth.signin.magic_link"
+  | "auth.signin.anonymous"
+  | "auth.signup.email"
+  | "auth.signup.oauth"
+  | "auth.signup.passkey"
+  | "auth.signup.phone"
+  | "auth.signout"
 
   // Password operations
-  | 'auth.password.forgot'
-  | 'auth.password.reset'
-  | 'auth.password.change'
+  | "auth.password.forgot"
+  | "auth.password.reset"
+  | "auth.password.change"
 
   // Email operations
-  | 'auth.email.verify'
-  | 'auth.email.change'
-  | 'auth.magic_link.send'
-  | 'auth.magic_link.verify'
-  | 'auth.email_otp.send'
-  | 'auth.email_otp.verify'
+  | "auth.email.verify"
+  | "auth.email.change"
+  | "auth.magic_link.send"
+  | "auth.magic_link.verify"
+  | "auth.email_otp.send"
+  | "auth.email_otp.verify"
 
   // Phone operations
-  | 'auth.phone.add'
-  | 'auth.phone.verify'
-  | 'auth.sms_otp.send'
-  | 'auth.sms_otp.verify'
+  | "auth.phone.add"
+  | "auth.phone.verify"
+  | "auth.sms_otp.send"
+  | "auth.sms_otp.verify"
 
   // Two-factor authentication
-  | 'auth.2fa.enable'
-  | 'auth.2fa.disable'
-  | 'auth.2fa.verify'
-  | 'auth.2fa.backup_codes'
+  | "auth.2fa.enable"
+  | "auth.2fa.disable"
+  | "auth.2fa.verify"
+  | "auth.2fa.backup_codes"
 
   // Passkey operations
-  | 'auth.passkey.add'
-  | 'auth.passkey.delete'
-  | 'auth.passkey.list'
+  | "auth.passkey.add"
+  | "auth.passkey.delete"
+  | "auth.passkey.list"
 
   // Organization operations
-  | 'auth.org.create'
-  | 'auth.org.join'
-  | 'auth.org.leave'
-  | 'auth.org.invite'
-  | 'auth.org.remove_member'
+  | "auth.org.create"
+  | "auth.org.join"
+  | "auth.org.leave"
+  | "auth.org.invite"
+  | "auth.org.remove_member"
 
   // Session operations
-  | 'auth.session.create'
-  | 'auth.session.refresh'
-  | 'auth.session.revoke'
-  | 'auth.session.switch'
+  | "auth.session.create"
+  | "auth.session.refresh"
+  | "auth.session.revoke"
+  | "auth.session.switch"
 
   // Security events
-  | 'auth.rate_limit.exceeded'
-  | 'auth.suspicious.activity'
-  | 'auth.account.locked'
-  | 'auth.account.unlocked'
+  | "auth.rate_limit.exceeded"
+  | "auth.suspicious.activity"
+  | "auth.account.locked"
+  | "auth.account.unlocked"
 
   // API key operations
-  | 'auth.api_key.create'
-  | 'auth.api_key.revoke'
-  | 'auth.api_key.use';
+  | "auth.api_key.create"
+  | "auth.api_key.revoke"
+  | "auth.api_key.use";
 
 export interface AuthAnalyticsMetrics {
   /** Total authentication attempts */
@@ -141,28 +141,28 @@ export class AuthAnalytics {
   private enabled: boolean;
 
   constructor() {
-    this.enabled = process.env.AUTH_FEATURES_ANALYTICS !== 'false';
+    this.enabled = process.env.AUTH_FEATURES_ANALYTICS !== "false";
     this.initializeAnalytics();
   }
 
   private async initializeAnalytics() {
     if (!this.enabled) {
-      logInfo('Auth analytics disabled');
+      logInfo("Auth analytics disabled");
       return;
     }
 
     try {
       // Dynamic import to avoid bundling analytics in client
       const { track, identify, createServerAnalytics } = await import(
-        '@repo/analytics/server/next'
+        "@repo/analytics/server/next"
       );
 
       // Create analytics instance with proper configuration
       this.analyticsEmitter = createServerAnalytics({
-        debug: process.env.NODE_ENV === 'development',
+        debug: process.env.NODE_ENV === "development",
         providers: {
           console: {
-            events: 'all',
+            events: "all",
           },
         },
       });
@@ -171,10 +171,10 @@ export class AuthAnalytics {
       (this.analyticsEmitter as any).track = track;
       (this.analyticsEmitter as any).identify = identify;
 
-      logInfo('Auth analytics initialized');
+      logInfo("Auth analytics initialized");
     } catch (error) {
       logError(
-        'Failed to initialize auth analytics',
+        "Failed to initialize auth analytics",
         error instanceof Error ? error : new Error(String(error)),
       );
       this.enabled = false;
@@ -185,7 +185,10 @@ export class AuthAnalytics {
    * Track an authentication event
    */
   async trackEvent(
-    event: Partial<AuthAnalyticsEvent> & { event: AuthEventType; success: boolean },
+    event: Partial<AuthAnalyticsEvent> & {
+      event: AuthEventType;
+      success: boolean;
+    },
   ): Promise<void> {
     if (!this.enabled || !this.analyticsEmitter) {
       return;
@@ -197,13 +200,13 @@ export class AuthAnalytics {
         ...event,
       };
 
-      await this.analyticsEmitter.track('auth_event', fullEvent);
+      await this.analyticsEmitter.track("auth_event", fullEvent);
 
       // Also track metrics
       await this.updateMetrics(fullEvent);
     } catch (error) {
       logError(
-        'Failed to track auth event',
+        "Failed to track auth event",
         error instanceof Error ? error : new Error(String(error)),
       );
     }
@@ -213,7 +216,13 @@ export class AuthAnalytics {
    * Track authentication attempt
    */
   async trackAuthAttempt(params: {
-    method: 'email' | 'oauth' | 'passkey' | 'phone' | 'magic_link' | 'anonymous';
+    method:
+      | "email"
+      | "oauth"
+      | "passkey"
+      | "phone"
+      | "magic_link"
+      | "anonymous";
     success: boolean;
     userId?: string;
     sessionId?: string;
@@ -247,7 +256,7 @@ export class AuthAnalytics {
    * Track user registration
    */
   async trackRegistration(params: {
-    method: 'email' | 'oauth' | 'passkey' | 'phone';
+    method: "email" | "oauth" | "passkey" | "phone";
     success: boolean;
     userId?: string;
     userAgent?: string;
@@ -281,7 +290,7 @@ export class AuthAnalytics {
     rateLimitResult: RateLimitResult;
   }): Promise<void> {
     await this.trackEvent({
-      event: 'auth.rate_limit.exceeded',
+      event: "auth.rate_limit.exceeded",
       success: false,
       userId: params.userId,
       ipAddress: params.ipAddress,
@@ -289,7 +298,7 @@ export class AuthAnalytics {
         rateLimitKey: params.key,
         limit: params.limit,
         current: params.current,
-        algorithm: 'sliding-window', // Could be dynamic
+        algorithm: "sliding-window", // Could be dynamic
         remaining: params.rateLimitResult.remaining,
         resetTime: params.rateLimitResult.resetTime,
       },
@@ -300,7 +309,7 @@ export class AuthAnalytics {
    * Track security event
    */
   async trackSecurityEvent(params: {
-    event: 'suspicious.activity' | 'account.locked' | 'account.unlocked';
+    event: "suspicious.activity" | "account.locked" | "account.unlocked";
     userId?: string;
     ipAddress?: string;
     userAgent?: string;
@@ -322,8 +331,8 @@ export class AuthAnalytics {
    * Track OTP operations
    */
   async trackOTP(params: {
-    type: 'email' | 'sms';
-    action: 'send' | 'verify';
+    type: "email" | "sms";
+    action: "send" | "verify";
     success: boolean;
     identifier: string; // email or phone
     userId?: string;
@@ -331,7 +340,7 @@ export class AuthAnalytics {
     error?: string;
   }): Promise<void> {
     const eventType =
-      params.type === 'email'
+      params.type === "email"
         ? (`auth.email_otp.${params.action}` as AuthEventType)
         : (`auth.sms_otp.${params.action}` as AuthEventType);
 
@@ -352,7 +361,7 @@ export class AuthAnalytics {
    * Track organization operations
    */
   async trackOrganization(params: {
-    action: 'create' | 'join' | 'leave' | 'invite' | 'remove_member';
+    action: "create" | "join" | "leave" | "invite" | "remove_member";
     success: boolean;
     userId?: string;
     organizationId?: string;
@@ -379,7 +388,7 @@ export class AuthAnalytics {
   private async updateMetrics(event: AuthAnalyticsEvent): Promise<void> {
     try {
       // Use analytics emitter to update metrics
-      await this.analyticsEmitter.increment('auth_metrics', {
+      await this.analyticsEmitter.increment("auth_metrics", {
         event_type: event.event,
         success: event.success,
         timestamp: event.timestamp,
@@ -395,7 +404,7 @@ export class AuthAnalytics {
       });
     } catch (error) {
       logError(
-        'Failed to update auth metrics',
+        "Failed to update auth metrics",
         error instanceof Error ? error : new Error(String(error)),
       );
     }
@@ -416,7 +425,7 @@ export class AuthAnalytics {
 
     try {
       // Query analytics data
-      const metrics = await this.analyticsEmitter.query('auth_metrics', {
+      const metrics = await this.analyticsEmitter.query("auth_metrics", {
         start_date: params.startDate.toISOString(),
         end_date: params.endDate.toISOString(),
         user_id: params.userId,
@@ -426,7 +435,7 @@ export class AuthAnalytics {
       return this.processMetrics(metrics);
     } catch (error) {
       logError(
-        'Failed to get auth metrics',
+        "Failed to get auth metrics",
         error instanceof Error ? error : new Error(String(error)),
       );
       return null;
@@ -475,7 +484,7 @@ export class AuthAnalytics {
       const now = new Date();
       const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
 
-      const stats = await this.analyticsEmitter.query('auth_realtime', {
+      const stats = await this.analyticsEmitter.query("auth_realtime", {
         start_date: oneHourAgo.toISOString(),
         end_date: now.toISOString(),
       });
@@ -488,7 +497,7 @@ export class AuthAnalytics {
       };
     } catch (error) {
       logError(
-        'Failed to get realtime auth stats',
+        "Failed to get realtime auth stats",
         error instanceof Error ? error : new Error(String(error)),
       );
       return null;
@@ -507,7 +516,7 @@ export const AuthAnalyticsHelpers = {
    * Track successful sign-in
    */
   signInSuccess: (params: {
-    method: 'email' | 'oauth' | 'passkey' | 'phone' | 'magic_link';
+    method: "email" | "oauth" | "passkey" | "phone" | "magic_link";
     userId: string;
     sessionId: string;
     userAgent?: string;
@@ -520,7 +529,7 @@ export const AuthAnalyticsHelpers = {
    * Track failed sign-in
    */
   signInFailure: (params: {
-    method: 'email' | 'oauth' | 'passkey' | 'phone' | 'magic_link';
+    method: "email" | "oauth" | "passkey" | "phone" | "magic_link";
     userAgent?: string;
     ipAddress?: string;
     duration?: number;
@@ -532,7 +541,7 @@ export const AuthAnalyticsHelpers = {
    * Track successful registration
    */
   signUpSuccess: (params: {
-    method: 'email' | 'oauth' | 'passkey' | 'phone';
+    method: "email" | "oauth" | "passkey" | "phone";
     userId: string;
     userAgent?: string;
     ipAddress?: string;
@@ -543,7 +552,7 @@ export const AuthAnalyticsHelpers = {
    * Track failed registration
    */
   signUpFailure: (params: {
-    method: 'email' | 'oauth' | 'passkey' | 'phone';
+    method: "email" | "oauth" | "passkey" | "phone";
     userAgent?: string;
     ipAddress?: string;
     error: string;

@@ -21,12 +21,12 @@ import {
   selectModel,
   getModelConfig,
   getModelReasoningConfig,
-  MODEL_REGISTRY
+  MODEL_REGISTRY,
 } from "@repo/ai/models";
 import {
   hasAnthropicConfig,
   hasOpenAIConfig,
-  hasGoogleAIConfig
+  hasGoogleAIConfig,
 } from "@repo/ai/env";
 
 // Get best model for task
@@ -39,7 +39,7 @@ const selectedModel = selectModel({
   strategy: "reasoning",
   userTier: "pro",
   fallbackEnabled: true,
-  excludeDeprecated: true
+  excludeDeprecated: true,
 });
 
 // Check provider availability
@@ -76,7 +76,7 @@ const reasoningModel = models.language.reasoningText();
 // Automatic reasoning configuration applied
 const result = await generateText({
   model: reasoningModel,
-  prompt: "Complex reasoning task..."
+  prompt: "Complex reasoning task...",
   // Headers and reasoning config applied automatically
 });
 ```
@@ -90,7 +90,7 @@ const result = await generateText({
 import {
   getBestModelForTask,
   getModelRecommendations,
-  getModelConfig
+  getModelConfig,
 } from "@repo/ai/models";
 
 // For different use cases
@@ -116,7 +116,7 @@ console.log(config?.capabilities); // ["code", "reasoning", ...]
 import {
   getModelsByCapability,
   modelHasCapability,
-  modelSupportsReasoning
+  modelSupportsReasoning,
 } from "@repo/ai/models";
 
 // Get models with specific capabilities
@@ -145,7 +145,7 @@ import {
   getModelConfig,
   isModelAvailable,
   getBestModelForTask,
-  selectModel
+  selectModel,
 } from "@repo/ai/models";
 
 // Dynamic model selection based on user tier
@@ -153,7 +153,7 @@ const userTier = getUserTier(); // 'free' | 'pro' | 'enterprise'
 const selectedModel = selectModel({
   strategy: "balanced",
   userTier,
-  fallbackEnabled: true
+  fallbackEnabled: true,
 });
 
 // Check availability and features
@@ -165,13 +165,13 @@ if (isAvailable && getModelReasoningConfig(selectedModel)?.supported) {
   // Enable reasoning UI features
   setReasoningEnabled(true);
   setBudgetTokens(
-    getModelReasoningConfig(selectedModel)?.budgetTokens ?? 10000
+    getModelReasoningConfig(selectedModel)?.budgetTokens ?? 10000,
   );
 }
 
 // Use provider with dynamic model
 const model = registry.languageModel(
-  `${modelConfig?.provider}:${selectedModel}`
+  `${modelConfig?.provider}:${selectedModel}`,
 );
 ```
 
@@ -183,7 +183,7 @@ import {
   env,
   hasAnthropicConfig,
   hasOpenAIConfig,
-  hasGoogleAIConfig
+  hasGoogleAIConfig,
 } from "@repo/ai/env";
 import { validateModelForUseCase } from "@repo/ai/models";
 
@@ -192,7 +192,7 @@ if (env.ANTHROPIC_API_KEY) {
   const validation = validateModelForUseCase(
     "claude-4-opus-20250514",
     "reasoning",
-    "pro"
+    "pro",
   );
 
   if (validation.valid) {
@@ -214,14 +214,14 @@ if (env.ANTHROPIC_API_KEY) {
 import {
   compareModels,
   getModelFeatureMatrix,
-  canUserAccessModel
+  canUserAccessModel,
 } from "@repo/ai/models";
 
 // Compare multiple models
 const comparison = compareModels([
   "claude-4-opus-20250514",
   "claude-4-sonnet-20250514",
-  "claude-3-5-sonnet-20241022"
+  "claude-3-5-sonnet-20241022",
 ]);
 
 // Get feature matrix for UI
@@ -239,7 +239,7 @@ const canAccess = canUserAccessModel(userTier, "high", true);
 import {
   trackModelUsage,
   getModelUsageStats,
-  getAllUsageStats
+  getAllUsageStats,
 } from "@repo/ai/models";
 
 // Track usage after generation
@@ -273,9 +273,9 @@ export const ANTHROPIC_MODEL_METADATA = {
     reasoning: {
       supported: true,
       budgetTokens: 20000,
-      headers: { "anthropic-beta": "interleaved-thinking-2025-06-01" }
-    }
-  }
+      headers: { "anthropic-beta": "interleaved-thinking-2025-06-01" },
+    },
+  },
 };
 ```
 
@@ -291,7 +291,7 @@ const model = models.language.best();
 const reasoning = models.language.reasoningText();
 const chatModel = getBestModelForTask("chat");
 const dynamicModel = registry.languageModel(
-  `anthropic:${getBestModelForTask("reasoning")}`
+  `anthropic:${getBestModelForTask("reasoning")}`,
 );
 ```
 
@@ -318,16 +318,16 @@ if (modelSupportsReasoning(selectedModel)) {
 ```typescript
 // ❌ Wrong - Manual reasoning configuration
 const model = anthropic("claude-4-opus-20250514", {
-  headers: { "anthropic-beta": "interleaved-thinking-2025-05-14" }
+  headers: { "anthropic-beta": "interleaved-thinking-2025-05-14" },
 });
 
 // ❌ Wrong - Hardcoded reasoning settings
 const options = {
   providerOptions: {
     anthropic: {
-      thinking: { type: "enabled", budgetTokens: 15000 }
-    }
-  }
+      thinking: { type: "enabled", budgetTokens: 15000 },
+    },
+  },
 };
 ```
 
@@ -489,7 +489,7 @@ When working with the AI package:
 // Set up multi-step agent with proper patterns
 import {
   executeMultiStepAgent,
-  createResearchAgent
+  createResearchAgent,
 } from "@repo/ai/server/agents";
 
 const agent = createResearchAgent({ searchTools: true, analysisTools: true });
@@ -499,7 +499,7 @@ const result = await executeMultiStepAgent({
   maxSteps: 8,
   onStepFinish: ({ stepNumber, result }) => {
     logInfo(`Agent step ${stepNumber}`, { tokens: result.usage?.totalTokens });
-  }
+  },
 });
 ```
 
@@ -512,12 +512,12 @@ import { createComputerTool, createBashTool } from "@repo/ai/server/tools";
 const secureTools = {
   computer: createComputerTool({
     display: 1,
-    security: { allowedApplications: ["vscode", "chrome"] }
+    security: { allowedApplications: ["vscode", "chrome"] },
   }),
   bash: createBashTool({
     workingDirectory: "/workspace",
-    security: { allowedCommands: ["ls", "cat", "npm"], networkAccess: false }
-  })
+    security: { allowedCommands: ["ls", "cat", "npm"], networkAccess: false },
+  }),
 };
 ```
 
@@ -552,7 +552,7 @@ const cache = new PromptCache({ maxSize: 1000, ttl: 3600000 });
 registry.register("analysis", {
   template: "Analyze {{subject}} focusing on {{aspects}}",
   variables: ["subject", "aspects"],
-  metadata: { category: "analysis", version: "1.0" }
+  metadata: { category: "analysis", version: "1.0" },
 });
 ```
 
@@ -562,7 +562,7 @@ registry.register("analysis", {
 // Set up metadata tracking and flow control
 import {
   MetadataStream,
-  BackpressureController
+  BackpressureController,
 } from "@repo/ai/server/streaming";
 
 const metadata = new MetadataStream();
@@ -575,7 +575,7 @@ const stream = await streamText({
   onChunk: ({ chunk }) => {
     metadata.processChunk(chunk);
     backpressure.write(chunk);
-  }
+  },
 });
 ```
 

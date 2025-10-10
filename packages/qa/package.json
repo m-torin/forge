@@ -43,11 +43,6 @@
       "import": "./dist/vitest/mocks/*.mjs",
       "default": "./dist/vitest/mocks/*.mjs"
     },
-    "./vitest/mocks/packages/*": {
-      "types": "./dist/vitest/mocks/packages/*.d.ts",
-      "import": "./dist/vitest/mocks/packages/*.mjs",
-      "default": "./dist/vitest/mocks/packages/*.mjs"
-    },
     "./vitest/mocks/providers/*": {
       "types": "./dist/vitest/mocks/providers/*.d.ts",
       "import": "./dist/vitest/mocks/providers/*.mjs",
@@ -84,22 +79,24 @@
     "scripts"
   ],
   "scripts": {
-    "build": "tsup",
+    "prebuild": "rm -rf dist",
+    "build": "tsc -p tsconfig.build.json",
+    "postbuild": "node ./scripts/add-extensions.mjs",
     "build:apps": "echo \"No build script for apps\"",
     "build:packages": "pnpm build",
-    "build:watch": "tsup --watch",
+    "build:watch": "tsc -p tsconfig.build.json --watch",
     "circular": "madge --circular --extensions ts,tsx,js,jsx .",
-    "coverage": "node ./scripts/coverage.mjs",
     "coverage:collect": "vitest run --coverage --reporter=json",
     "coverage:generate": "cd ../.. && pnpm turbo test:coverage --concurrency=10",
     "dev:apps": "echo \"No dev script for apps\"",
     "dev:packages": "echo \"No dev script for packages\"",
-    "postinstall": "node scripts/install-playwright.mjs",
-    "knip": "knip --fix --reporter json",
-    "lint": "eslint . --fix",
+    "knip": "knip --reporter json --exclude unlisted,unresolved,exports,dependencies,files,binaries,types,duplicates",
+    "lint": "eslint . --fix --cache",
     "lint:apps": "echo \"No lint script for apps\"",
     "lint:packages": "echo \"No lint script for packages\"",
     "playwright:install": "playwright install --with-deps chromium firefox webkit",
+    "scripts:coverage": "node ./scripts/coverage.mjs",
+    "scripts:postinstall": "node scripts/install-playwright.mjs",
     "test": "vitest run",
     "test:apps": "echo \"No test script for apps\"",
     "test:coverage": "vitest run --coverage",
@@ -120,21 +117,33 @@
     "@testing-library/react": "catalog:",
     "@testing-library/user-event": "catalog:",
     "@vitejs/plugin-react": "catalog:",
-    "@vitest/browser": "catalog:",
+    "@vitest/browser": "^3.2.4",
     "@vitest/coverage-v8": "catalog:",
     "@vitest/ui": "3.2.4",
     "columnify": "^1.6.0",
-    "expect-type": "^1.2.2",
     "jsdom": "catalog:",
     "playwright": "^1.54.1",
     "react": "catalog:",
     "vite": "catalog:",
-    "vitest": "catalog:",
-    "webdriverio": "^9.18.4"
+    "vitest": "catalog:"
   },
   "devDependencies": {
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
-    "tsup": "^8.0.0"
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "eslint": "catalog:",
+    "knip": "catalog:",
+    "madge": "catalog:",
+    "turbo": "^2.5.8",
+    "typescript": "catalog:"
+  },
+  "optionalDependencies": {
+    "@knocklabs/node": "^1.7.6",
+    "@prisma/client": "^6.12.0",
+    "next": "catalog:",
+    "resend": "^4.0.3",
+    "stripe": "^17.5.0"
   }
 }

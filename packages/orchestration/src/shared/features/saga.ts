@@ -3,9 +3,11 @@
  * Distributed transaction management for complex workflows
  */
 
+import { randomUUID } from 'crypto';
+
 import { WorkflowProvider } from '../types/workflow';
 
-export interface SagaContext {
+interface SagaContext {
   /** Current step ID */
   currentStepId?: string;
   /** Event emitter for saga events */
@@ -43,7 +45,7 @@ export interface SagaContext {
   };
 }
 
-export interface SagaDefinition {
+interface SagaDefinition {
   /** Saga configuration */
   config?: {
     /** Whether to continue on compensation failure */
@@ -74,7 +76,7 @@ export interface SagaDefinition {
   timeout?: number;
 }
 
-export interface SagaExecution {
+interface SagaExecution {
   /** Execution context */
   context: SagaContext;
   /** Saga execution ID */
@@ -89,7 +91,7 @@ export interface SagaExecution {
   state: SagaExecutionState;
 }
 
-export interface SagaExecutionState {
+interface SagaExecutionState {
   /** Steps that need compensation */
   compensationQueue: string[];
   /** Execution completion time */
@@ -128,7 +130,7 @@ export interface SagaExecutionState {
   status: 'compensated' | 'compensating' | 'completed' | 'failed' | 'pending' | 'running';
 }
 
-export interface SagaStep {
+interface SagaStep {
   /** The action to execute */
   action: (context: SagaContext) => Promise<unknown>;
   /** The compensation action to execute if saga fails */
@@ -154,7 +156,7 @@ export interface SagaStep {
 /**
  * Saga builder utility for creating saga definitions
  */
-export class SagaBuilder {
+class SagaBuilder {
   private saga: Partial<SagaDefinition> = {
     steps: [],
   };
@@ -270,7 +272,7 @@ export class SagaBuilder {
   }
 }
 
-export class SagaOrchestrator {
+class SagaOrchestrator {
   private executions = new Map<string, SagaExecution>();
   private provider: WorkflowProvider;
   private sagas = new Map<string, SagaDefinition>();
@@ -503,7 +505,7 @@ export class SagaOrchestrator {
   }
 
   private generateExecutionId(): string {
-    return `saga_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `saga_${Date.now()}_${randomUUID()}`;
   }
 
   private async runSaga(execution: SagaExecution): Promise<void> {
@@ -628,21 +630,21 @@ export class SagaOrchestrator {
 /**
  * Create a new saga builder
  */
-export function createSaga(id: string, name: string): SagaBuilder {
+function createSaga(id: string, name: string): SagaBuilder {
   return new SagaBuilder(id, name);
 }
 
 /**
  * Create a saga orchestrator
  */
-export function createSagaOrchestrator(provider: WorkflowProvider): SagaOrchestrator {
+function createSagaOrchestrator(provider: WorkflowProvider): SagaOrchestrator {
   return new SagaOrchestrator(provider);
 }
 
 /**
  * Utility functions for saga patterns
  */
-export const SagaUtils = {
+const SagaUtils = {
   /**
    * Create a conditional step
    */

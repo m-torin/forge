@@ -208,7 +208,7 @@ import {
   setupEssentialMocks, // Browser APIs + critical mocks
   setupUiMocks, // UI frameworks + browser APIs
   setupServiceMocks, // External services only
-  setupInfrastructureMocks // Infrastructure services
+  setupInfrastructureMocks, // Infrastructure services
 } from "@repo/qa";
 
 // Use the most appropriate for your test type
@@ -229,7 +229,7 @@ vi.mocked(someFunction).mockReturnValue(customValue);
 
 // Add app-specific mocks
 vi.mock("#/actions/app-specific", () => ({
-  myAction: vi.fn().mockResolvedValue({ success: true })
+  myAction: vi.fn().mockResolvedValue({ success: true }),
 }));
 ```
 
@@ -366,23 +366,23 @@ const blogPostFactory = createFactory<BlogPost>(
     authorId: () => userFactory.create().id,
     publishedAt: null,
     tags: () => ["technology", "programming"],
-    status: "draft"
+    status: "draft",
   },
   {
     traits: {
       published: {
         status: "published",
         publishedAt: () => new Date(),
-        tags: ["featured", "published"]
+        tags: ["featured", "published"],
       },
 
       popular: {
         tags: ["popular", "trending"],
         viewCount: () => randomNumber(1000, 10000),
-        likes: () => randomNumber(100, 1000)
-      }
-    }
-  }
+        likes: () => randomNumber(100, 1000),
+      },
+    },
+  },
 );
 
 // Use custom factory
@@ -543,7 +543,7 @@ describe("Redis Integration Tests", () => {
   beforeAll(async () => {
     await setupSRHEnvironment({
       services: ["redis", "qstash"],
-      timeout: 30000
+      timeout: 30000,
     });
   });
 
@@ -728,26 +728,26 @@ and automatic service configuration.
 ```typescript
 import {
   setupPackageEnvironment,
-  configurePackageServices
+  configurePackageServices,
 } from "@repo/qa/vitest/setup/packages";
 
 // Package-specific environment setup
 await setupPackageEnvironment("@repo/auth", {
   providers: ["credentials", "oauth"],
   database: true,
-  session: "memory"
+  session: "memory",
 });
 
 await setupPackageEnvironment("@repo/analytics", {
   providers: ["posthog", "segment"],
   featureFlags: true,
-  events: "mock"
+  events: "mock",
 });
 
 await setupPackageEnvironment("@repo/payments", {
   providers: ["stripe"],
   webhooks: "mock",
-  currency: "USD"
+  currency: "USD",
 });
 ```
 
@@ -870,7 +870,7 @@ behavior simulation.
 import {
   createStorageScenarios,
   createEmailScenarios,
-  createNotificationScenarios
+  createNotificationScenarios,
 } from "@repo/qa";
 
 describe("Cloud Services", () => {
@@ -881,7 +881,7 @@ describe("Cloud Services", () => {
     storage.upload.mockSuccess({
       url: "https://storage.example.com/file.jpg",
       key: "uploads/file.jpg",
-      size: 1024
+      size: 1024,
     });
 
     const uploadResult = await myFileUpload(testFile);
@@ -896,7 +896,7 @@ describe("Cloud Services", () => {
 
     const emailResult = await myEmailFunction({
       to: "test@example.com",
-      subject: "Test Email"
+      subject: "Test Email",
     });
 
     expect(emailResult.messageId).toBe("msg-123");
@@ -910,7 +910,7 @@ describe("Cloud Services", () => {
 
     const notifyResult = await myNotificationFunction({
       userId: "user-123",
-      message: "Test notification"
+      message: "Test notification",
     });
 
     expect(notifyResult.delivered).toBe(true);
@@ -929,7 +929,7 @@ import {
   setupIntegrationTest,
   createTestUser,
   seedTestDatabase,
-  setupRealServices
+  setupRealServices,
 } from "@repo/qa/integration";
 
 describe("Complete User Workflow", () => {
@@ -939,14 +939,14 @@ describe("Complete User Workflow", () => {
       database: "postgresql",
       redis: "upstash",
       email: "resend",
-      storage: "vercel-blob"
+      storage: "vercel-blob",
     });
 
     // Seed test database
     await seedTestDatabase({
       users: 10,
       products: 50,
-      orders: 100
+      orders: 100,
     });
   });
 
@@ -954,7 +954,7 @@ describe("Complete User Workflow", () => {
     // Create test user with real database
     const user = await createTestUser({
       email: "integration@test.com",
-      subscription: "premium"
+      subscription: "premium",
     });
 
     // Test user registration flow
@@ -975,8 +975,8 @@ describe("Complete User Workflow", () => {
     expect(notifications).toContainEqual(
       expect.objectContaining({
         type: "order_confirmation",
-        delivered: true
-      })
+        delivered: true,
+      }),
     );
   });
 });
@@ -991,7 +991,7 @@ describe("Multi-Service Integration", () => {
   it("orchestrates multiple services", async () => {
     const orchestrator = createServiceOrchestrator({
       services: ["auth", "database", "analytics", "email", "storage"],
-      mode: "integration" // Uses real services where possible
+      mode: "integration", // Uses real services where possible
     });
 
     await orchestrator.setup();
@@ -1000,8 +1000,8 @@ describe("Multi-Service Integration", () => {
     const workflow = await orchestrator.executeWorkflow("user-onboarding", {
       userData: {
         email: "test@example.com",
-        plan: "premium"
-      }
+        plan: "premium",
+      },
     });
 
     // Verify each service was called correctly

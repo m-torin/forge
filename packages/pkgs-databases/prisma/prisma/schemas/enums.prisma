@@ -1,0 +1,42 @@
+// enums.prisma - All enums used across the schema
+
+//==============================================================================
+// CONTENT ENUMS
+//==============================================================================
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+//==============================================================================
+// CMS ENUMS
+//==============================================================================
+
+enum CompanyContentType {
+  TESTIMONIAL
+  FOUNDER_PROFILE
+  TEAM_MEMBER
+  COMPANY_INFO
+  POLICY
+  FEATURE
+  FAQ
+  ANNOUNCEMENT
+  BLOG_POST
+  PRESS_RELEASE
+  OTHER
+}
+
+enum SettingDataType {
+  STRING
+  NUMBER
+  BOOLEAN
+  JSON
+  ARRAY
+  EMAIL
+  URL
+  PHONE
+  DATE
+  DATETIME
+}

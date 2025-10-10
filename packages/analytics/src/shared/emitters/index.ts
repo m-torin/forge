@@ -37,11 +37,4 @@ export {
 // Export ecommerce emitters as a namespace
 export * as ecommerce from './ecommerce';
 
-// Re-export ecommerce types for convenience
-export type {
-  BaseProductProperties,
-  CartProperties,
-  EcommerceEventSpec,
-  ExtendedProductProperties,
-  OrderProperties,
-} from './ecommerce/types';
+// Re-export ecommerce types for convenience;

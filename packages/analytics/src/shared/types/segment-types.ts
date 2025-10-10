@@ -11,9 +11,9 @@ export interface SegmentConfig {
   writeKey: string;
 }
 
-export type SegmentTrackProperties = Record<string, any>;
+type _SegmentTrackProperties = Record<string, any>;
 
-export interface SegmentUserTraits {
+interface _SegmentUserTraits {
   [key: string]: any;
   createdAt?: Date | string;
   email?: string;
@@ -22,7 +22,7 @@ export interface SegmentUserTraits {
   name?: string;
 }
 
-export interface SegmentGroupTraits {
+interface _SegmentGroupTraits {
   [key: string]: any;
   employees?: number;
   industry?: string;
@@ -30,7 +30,7 @@ export interface SegmentGroupTraits {
   plan?: string;
 }
 
-export interface SegmentPageProperties {
+interface _SegmentPageProperties {
   [key: string]: any;
   path?: string;
   referrer?: string;

@@ -3,7 +3,7 @@
  * Testing createCustomOpenAICompatibleProvider and related helpers
  */
 
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import {
   createAnyscaleProvider,
@@ -16,13 +16,13 @@ import {
   formatOpenAIMessages,
   mapOpenAICompatibleResponse,
   validateOpenAICompatibleEndpoint,
-} from '#/shared/models/openai-compatible';
+} from "#/shared/models/openai-compatible";
 
 // Mock AI SDK OpenAI provider
-vi.mock('@ai-sdk/openai', () => ({
-  createOpenAI: vi.fn(config => (modelId: string) => ({
+vi.mock("@ai-sdk/openai", () => ({
+  createOpenAI: vi.fn((config) => (modelId: string) => ({
     modelId,
-    providerId: 'openai-compatible',
+    providerId: "openai-compatible",
     config,
     doGenerate: vi.fn(),
     doStream: vi.fn(),
@@ -30,18 +30,19 @@ vi.mock('@ai-sdk/openai', () => ({
 }));
 
 // Mock provider validation
-vi.mock('#/shared/config/providers', () => ({
-  validateOpenAICompatibleConfig: vi.fn(config => {
-    if (!config.baseURL) throw new Error('Base URL required');
-    if (!config.apiKey && !config.apiKeyProvider) throw new Error('API key required');
+vi.mock("#/shared/config/providers", () => ({
+  validateOpenAICompatibleConfig: vi.fn((config) => {
+    if (!config.baseURL) throw new Error("Base URL required");
+    if (!config.apiKey && !config.apiKeyProvider)
+      throw new Error("API key required");
     return true;
   }),
 
-  normalizeOpenAIConfig: vi.fn(config => ({
+  normalizeOpenAIConfig: vi.fn((config) => ({
     ...config,
-    baseURL: config.baseURL?.replace(/\/$/, ''), // Remove trailing slash
+    baseURL: config.baseURL?.replace(/\/$/, ""), // Remove trailing slash
     headers: {
-      'User-Agent': 'AI-Package/1.0',
+      "User-Agent": "AI-Package/1.0",
       ...config.headers,
     },
     timeout: config.timeout || 30000,
@@ -49,19 +50,35 @@ vi.mock('#/shared/config/providers', () => ({
 }));
 
 // Mock model metadata
-vi.mock('#/shared/models/metadata', () => ({
+vi.mock("#/shared/models/metadata", () => ({
   getOpenAICompatibleModels: vi.fn((providerId: string) => {
     const modelSets = {
       openai: [
-        { id: 'gpt-4', contextWindow: 8192, maxTokens: 4096 },
-        { id: 'gpt-3.5-turbo', contextWindow: 4096, maxTokens: 2048 },
+        { id: "gpt-4", contextWindow: 8192, maxTokens: 4096 },
+        { id: "gpt-3.5-turbo", contextWindow: 4096, maxTokens: 2048 },
       ],
-      xai: [{ id: 'grok-beta', contextWindow: 131072, maxTokens: 4096, reasoningSupported: true }],
+      xai: [
+        {
+          id: "grok-beta",
+          contextWindow: 131072,
+          maxTokens: 4096,
+          reasoningSupported: true,
+        },
+      ],
       perplexity: [
-        { id: 'sonar-pro', contextWindow: 28000, maxTokens: 4000, webSearchEnabled: true },
+        {
+          id: "sonar-pro",
+          contextWindow: 28000,
+          maxTokens: 4000,
+          webSearchEnabled: true,
+        },
       ],
       deepinfra: [
-        { id: 'deepseek-ai/DeepSeek-R1-Distill-Llama-70B', contextWindow: 32768, maxTokens: 8192 },
+        {
+          id: "deepseek-ai/DeepSeek-R1-Distill-Llama-70B",
+          contextWindow: 32768,
+          maxTokens: 8192,
+        },
       ],
     };
     return modelSets[providerId as keyof typeof modelSets] || [];
@@ -74,8 +91,8 @@ vi.mock('#/shared/models/metadata', () => ({
       multimodal: false,
     };
 
-    if (modelId.includes('gpt-4')) capabilities.multimodal = true;
-    if (modelId.includes('grok') || modelId.includes('deepseek'))
+    if (modelId.includes("gpt-4")) capabilities.multimodal = true;
+    if (modelId.includes("grok") || modelId.includes("deepseek"))
       capabilities.reasoningSupported = true;
     if (config.webSearchEnabled) capabilities.webSearch = true;
 
@@ -83,133 +100,143 @@ vi.mock('#/shared/models/metadata', () => ({
   }),
 }));
 
-describe('openAI Compatible Models', () => {
+describe("openAI Compatible Models", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('createCustomOpenAICompatibleProvider', () => {
-    test('should create provider with basic configuration', () => {
+  describe("createCustomOpenAICompatibleProvider", () => {
+    test("should create provider with basic configuration", () => {
       const config = {
-        providerId: 'custom-openai',
-        baseURL: 'https://api.custom.com/v1',
-        apiKey: 'custom-key',
-        models: ['custom-gpt-4', 'custom-gpt-3.5'],
+        providerId: "custom-openai",
+        baseURL: "https://api.custom.com/v1",
+        apiKey: "custom-key",
+        models: ["custom-gpt-4", "custom-gpt-3.5"],
       };
 
       const provider = createCustomOpenAICompatibleProvider(config);
 
       expect(provider).toBeDefined();
-      expect(provider.providerId).toBe('custom-openai');
-      expect(provider.models).toHaveProperty('custom-gpt-4');
-      expect(provider.models).toHaveProperty('custom-gpt-3.5');
-      expect(vi.mocked(vi.importMock('@ai-sdk/openai')).createOpenAI).toHaveBeenCalledWith({
-        baseURL: 'https://api.custom.com/v1',
-        apiKey: 'custom-key',
+      expect(provider.providerId).toBe("custom-openai");
+      expect(provider.models).toHaveProperty("custom-gpt-4");
+      expect(provider.models).toHaveProperty("custom-gpt-3.5");
+      expect(
+        vi.mocked(vi.importMock("@ai-sdk/openai")).createOpenAI,
+      ).toHaveBeenCalledWith({
+        baseURL: "https://api.custom.com/v1",
+        apiKey: "custom-key",
         headers: expect.objectContaining({
-          'User-Agent': 'AI-Package/1.0',
+          "User-Agent": "AI-Package/1.0",
         }),
         timeout: 30000,
       });
     });
 
-    test('should support environment variable API key', () => {
-      process.env.CUSTOM_API_KEY = 'env-key';
+    test("should support environment variable API key", () => {
+      process.env.CUSTOM_API_KEY = "env-key";
 
       const config = {
-        providerId: 'custom-env',
-        baseURL: 'https://api.custom.com/v1',
+        providerId: "custom-env",
+        baseURL: "https://api.custom.com/v1",
         apiKeyProvider: () => process.env.CUSTOM_API_KEY,
-        models: ['model-1'],
+        models: ["model-1"],
       };
 
       const provider = createCustomOpenAICompatibleProvider(config);
 
       expect(provider).toBeDefined();
-      expect(vi.mocked(vi.importMock('@ai-sdk/openai')).createOpenAI).toHaveBeenCalledWith(
+      expect(
+        vi.mocked(vi.importMock("@ai-sdk/openai")).createOpenAI,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
-          apiKey: 'env-key',
+          apiKey: "env-key",
         }),
       );
 
       delete process.env.CUSTOM_API_KEY;
     });
 
-    test('should support custom headers', () => {
+    test("should support custom headers", () => {
       const config = {
-        providerId: 'custom-headers',
-        baseURL: 'https://api.custom.com/v1',
-        apiKey: 'test-key',
-        models: ['model-1'],
+        providerId: "custom-headers",
+        baseURL: "https://api.custom.com/v1",
+        apiKey: "test-key",
+        models: ["model-1"],
         headers: {
-          'X-Custom-Header': 'custom-value',
-          Authorization: 'Bearer override',
+          "X-Custom-Header": "custom-value",
+          Authorization: "Bearer override",
         },
       };
 
       const provider = createCustomOpenAICompatibleProvider(config);
 
-      expect(vi.mocked(vi.importMock('@ai-sdk/openai')).createOpenAI).toHaveBeenCalledWith(
+      expect(
+        vi.mocked(vi.importMock("@ai-sdk/openai")).createOpenAI,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           headers: expect.objectContaining({
-            'X-Custom-Header': 'custom-value',
-            Authorization: 'Bearer override',
-            'User-Agent': 'AI-Package/1.0',
+            "X-Custom-Header": "custom-value",
+            Authorization: "Bearer override",
+            "User-Agent": "AI-Package/1.0",
           }),
         }),
       );
     });
 
-    test('should validate configuration', () => {
+    test("should validate configuration", () => {
       const invalidConfig = {
-        providerId: 'invalid',
+        providerId: "invalid",
         // Missing baseURL and apiKey
-        models: ['model-1'],
+        models: ["model-1"],
       };
 
       expect(() => {
         createCustomOpenAICompatibleProvider(invalidConfig as any);
-      }).toThrow('Base URL required');
+      }).toThrow("Base URL required");
     });
 
-    test('should normalize base URL', () => {
+    test("should normalize base URL", () => {
       const config = {
-        providerId: 'normalize-url',
-        baseURL: 'https://api.custom.com/v1/', // With trailing slash
-        apiKey: 'test-key',
-        models: ['model-1'],
+        providerId: "normalize-url",
+        baseURL: "https://api.custom.com/v1/", // With trailing slash
+        apiKey: "test-key",
+        models: ["model-1"],
       };
 
       const provider = createCustomOpenAICompatibleProvider(config);
 
-      expect(vi.mocked(vi.importMock('@ai-sdk/openai')).createOpenAI).toHaveBeenCalledWith(
+      expect(
+        vi.mocked(vi.importMock("@ai-sdk/openai")).createOpenAI,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
-          baseURL: 'https://api.custom.com/v1', // Without trailing slash
+          baseURL: "https://api.custom.com/v1", // Without trailing slash
         }),
       );
     });
   });
 
-  describe('specific Provider Factories', () => {
-    describe('createXAIProvider', () => {
-      test('should create XAI provider with default configuration', () => {
+  describe("specific Provider Factories", () => {
+    describe("createXAIProvider", () => {
+      test("should create XAI provider with default configuration", () => {
         const provider = createXAIProvider({
-          apiKey: 'xai-key',
+          apiKey: "xai-key",
         });
 
-        expect(provider.providerId).toBe('xai');
-        expect(provider.models).toHaveProperty('grok-beta');
-        expect(vi.mocked(vi.importMock('@ai-sdk/openai')).createOpenAI).toHaveBeenCalledWith(
+        expect(provider.providerId).toBe("xai");
+        expect(provider.models).toHaveProperty("grok-beta");
+        expect(
+          vi.mocked(vi.importMock("@ai-sdk/openai")).createOpenAI,
+        ).toHaveBeenCalledWith(
           expect.objectContaining({
-            baseURL: 'https://api.x.ai/v1',
-            apiKey: 'xai-key',
+            baseURL: "https://api.x.ai/v1",
+            apiKey: "xai-key",
           }),
         );
       });
 
-      test('should support custom XAI configuration', () => {
+      test("should support custom XAI configuration", () => {
         const provider = createXAIProvider({
-          apiKey: 'xai-key',
+          apiKey: "xai-key",
           enableReasoning: true,
           reasoningBudget: 1024,
         });
@@ -219,150 +246,158 @@ describe('openAI Compatible Models', () => {
       });
     });
 
-    describe('createPerplexityProvider', () => {
-      test('should create Perplexity provider with web search enabled', () => {
+    describe("createPerplexityProvider", () => {
+      test("should create Perplexity provider with web search enabled", () => {
         const provider = createPerplexityProvider({
-          apiKey: 'pplx-key',
+          apiKey: "pplx-key",
         });
 
-        expect(provider.providerId).toBe('perplexity');
-        expect(provider.models).toHaveProperty('sonar-pro');
+        expect(provider.providerId).toBe("perplexity");
+        expect(provider.models).toHaveProperty("sonar-pro");
         expect(provider.config.webSearchEnabled).toBeTruthy();
-        expect(vi.mocked(vi.importMock('@ai-sdk/openai')).createOpenAI).toHaveBeenCalledWith(
+        expect(
+          vi.mocked(vi.importMock("@ai-sdk/openai")).createOpenAI,
+        ).toHaveBeenCalledWith(
           expect.objectContaining({
-            baseURL: 'https://api.perplexity.ai',
-            apiKey: 'pplx-key',
+            baseURL: "https://api.perplexity.ai",
+            apiKey: "pplx-key",
           }),
         );
       });
 
-      test('should support web search configuration', () => {
+      test("should support web search configuration", () => {
         const provider = createPerplexityProvider({
-          apiKey: 'pplx-key',
+          apiKey: "pplx-key",
           webSearchEnabled: false,
-          searchDepth: 'basic',
+          searchDepth: "basic",
         });
 
         expect(provider.config.webSearchEnabled).toBeFalsy();
-        expect(provider.config.searchDepth).toBe('basic');
+        expect(provider.config.searchDepth).toBe("basic");
       });
     });
 
-    describe('createDeepInfraProvider', () => {
-      test('should create DeepInfra provider', () => {
+    describe("createDeepInfraProvider", () => {
+      test("should create DeepInfra provider", () => {
         const provider = createDeepInfraProvider({
-          apiKey: 'deepinfra-key',
+          apiKey: "deepinfra-key",
         });
 
-        expect(provider.providerId).toBe('deepinfra');
-        expect(provider.models).toHaveProperty('deepseek-ai/DeepSeek-R1-Distill-Llama-70B');
-        expect(vi.mocked(vi.importMock('@ai-sdk/openai')).createOpenAI).toHaveBeenCalledWith(
+        expect(provider.providerId).toBe("deepinfra");
+        expect(provider.models).toHaveProperty(
+          "deepseek-ai/DeepSeek-R1-Distill-Llama-70B",
+        );
+        expect(
+          vi.mocked(vi.importMock("@ai-sdk/openai")).createOpenAI,
+        ).toHaveBeenCalledWith(
           expect.objectContaining({
-            baseURL: 'https://api.deepinfra.com/v1/openai',
-            apiKey: 'deepinfra-key',
+            baseURL: "https://api.deepinfra.com/v1/openai",
+            apiKey: "deepinfra-key",
           }),
         );
       });
 
-      test('should support model selection', () => {
+      test("should support model selection", () => {
         const provider = createDeepInfraProvider({
-          apiKey: 'deepinfra-key',
-          models: ['custom-model-1', 'custom-model-2'],
+          apiKey: "deepinfra-key",
+          models: ["custom-model-1", "custom-model-2"],
         });
 
-        expect(provider.models).toHaveProperty('custom-model-1');
-        expect(provider.models).toHaveProperty('custom-model-2');
+        expect(provider.models).toHaveProperty("custom-model-1");
+        expect(provider.models).toHaveProperty("custom-model-2");
       });
     });
 
-    describe('createAnyscaleProvider', () => {
-      test('should create Anyscale provider', () => {
+    describe("createAnyscaleProvider", () => {
+      test("should create Anyscale provider", () => {
         const provider = createAnyscaleProvider({
-          apiKey: 'anyscale-key',
+          apiKey: "anyscale-key",
         });
 
-        expect(provider.providerId).toBe('anyscale');
-        expect(vi.mocked(vi.importMock('@ai-sdk/openai')).createOpenAI).toHaveBeenCalledWith(
+        expect(provider.providerId).toBe("anyscale");
+        expect(
+          vi.mocked(vi.importMock("@ai-sdk/openai")).createOpenAI,
+        ).toHaveBeenCalledWith(
           expect.objectContaining({
-            baseURL: 'https://api.endpoints.anyscale.com/v1',
-            apiKey: 'anyscale-key',
+            baseURL: "https://api.endpoints.anyscale.com/v1",
+            apiKey: "anyscale-key",
           }),
         );
       });
     });
   });
 
-  describe('utility Functions', () => {
-    describe('validateOpenAICompatibleEndpoint', () => {
-      test('should validate working endpoint', async () => {
-        vi.spyOn(global, 'fetch')
+  describe("utility Functions", () => {
+    describe("validateOpenAICompatibleEndpoint", () => {
+      test("should validate working endpoint", async () => {
+        vi.spyOn(global, "fetch")
           .mockImplementation()
           .mockResolvedValue({
             ok: true,
             json: vi.fn().mockResolvedValue({
-              data: [{ id: 'test-model' }],
+              data: [{ id: "test-model" }],
             }),
           });
 
         const isValid = await validateOpenAICompatibleEndpoint({
-          baseURL: 'https://api.test.com/v1',
-          apiKey: 'test-key',
+          baseURL: "https://api.test.com/v1",
+          apiKey: "test-key",
         });
 
         expect(isValid).toBeTruthy();
         expect(fetch).toHaveBeenCalledWith(
-          'https://api.test.com/v1/models',
+          "https://api.test.com/v1/models",
           expect.objectContaining({
             headers: expect.objectContaining({
-              Authorization: 'Bearer test-key',
+              Authorization: "Bearer test-key",
             }),
           }),
         );
       });
 
-      test('should handle endpoint failure', async () => {
-        vi.spyOn(global, 'fetch').mockImplementation().mockResolvedValue({
+      test("should handle endpoint failure", async () => {
+        vi.spyOn(global, "fetch").mockImplementation().mockResolvedValue({
           ok: false,
           status: 401,
         });
 
         const isValid = await validateOpenAICompatibleEndpoint({
-          baseURL: 'https://api.invalid.com/v1',
-          apiKey: 'invalid-key',
+          baseURL: "https://api.invalid.com/v1",
+          apiKey: "invalid-key",
         });
 
         expect(isValid).toBeFalsy();
       });
 
-      test('should handle network errors', async () => {
-        vi.spyOn(global, 'fetch')
+      test("should handle network errors", async () => {
+        vi.spyOn(global, "fetch")
           .mockImplementation()
-          .mockRejectedValue(new Error('Network error'));
+          .mockRejectedValue(new Error("Network error"));
 
         const isValid = await validateOpenAICompatibleEndpoint({
-          baseURL: 'https://api.unreachable.com/v1',
-          apiKey: 'test-key',
+          baseURL: "https://api.unreachable.com/v1",
+          apiKey: "test-key",
         });
 
         expect(isValid).toBeFalsy();
       });
     });
 
-    describe('mapOpenAICompatibleResponse', () => {
-      test('should map standard OpenAI response', () => {
+    describe("mapOpenAICompatibleResponse", () => {
+      test("should map standard OpenAI response", () => {
         const openaiResponse = {
-          id: 'chatcmpl-123',
-          object: 'chat.completion',
+          id: "chatcmpl-123",
+          object: "chat.completion",
           created: 1677652288,
-          model: 'gpt-3.5-turbo',
+          model: "gpt-3.5-turbo",
           choices: [
             {
               index: 0,
               message: {
-                role: 'assistant',
-                content: 'Hello! How can I help you?',
+                role: "assistant",
+                content: "Hello! How can I help you?",
               },
-              finish_reason: 'stop',
+              finish_reason: "stop",
             },
           ],
           usage: {
@@ -375,70 +410,72 @@ describe('openAI Compatible Models', () => {
         const mapped = mapOpenAICompatibleResponse(openaiResponse);
 
         expect(mapped).toMatchObject({
-          text: 'Hello! How can I help you?',
+          text: "Hello! How can I help you?",
           usage: {
             inputTokens: 56,
             outputTokens: 31,
             totalTokens: 87,
           },
-          finishReason: 'stop',
+          finishReason: "stop",
           response: {
-            id: 'chatcmpl-123',
-            model: 'gpt-3.5-turbo',
+            id: "chatcmpl-123",
+            model: "gpt-3.5-turbo",
           },
         });
       });
 
-      test('should handle streaming response chunks', () => {
+      test("should handle streaming response chunks", () => {
         const streamChunk = {
-          id: 'chatcmpl-123',
-          object: 'chat.completion.chunk',
+          id: "chatcmpl-123",
+          object: "chat.completion.chunk",
           created: 1677652288,
-          model: 'gpt-3.5-turbo',
+          model: "gpt-3.5-turbo",
           choices: [
             {
               index: 0,
               delta: {
-                content: 'Hello',
+                content: "Hello",
               },
               finish_reason: null,
             },
           ],
         };
 
-        const mapped = mapOpenAICompatibleResponse(streamChunk, { streaming: true });
+        const mapped = mapOpenAICompatibleResponse(streamChunk, {
+          streaming: true,
+        });
 
         expect(mapped).toMatchObject({
-          type: 'text-delta',
-          textDelta: 'Hello',
+          type: "text-delta",
+          textDelta: "Hello",
           finishReason: null,
         });
       });
 
-      test('should handle tool calls', () => {
+      test("should handle tool calls", () => {
         const toolCallResponse = {
-          id: 'chatcmpl-tool',
-          object: 'chat.completion',
+          id: "chatcmpl-tool",
+          object: "chat.completion",
           created: 1677652288,
-          model: 'gpt-4',
+          model: "gpt-4",
           choices: [
             {
               index: 0,
               message: {
-                role: 'assistant',
+                role: "assistant",
                 content: null,
                 tool_calls: [
                   {
-                    id: 'call_123',
-                    type: 'function',
+                    id: "call_123",
+                    type: "function",
                     function: {
-                      name: 'get_weather',
+                      name: "get_weather",
                       arguments: '{"location": "San Francisco"}',
                     },
                   },
                 ],
               },
-              finish_reason: 'tool_calls',
+              finish_reason: "tool_calls",
             },
           ],
           usage: {
@@ -453,30 +490,30 @@ describe('openAI Compatible Models', () => {
         expect(mapped).toMatchObject({
           toolCalls: [
             {
-              id: 'call_123',
-              type: 'function',
+              id: "call_123",
+              type: "function",
               function: {
-                name: 'get_weather',
-                arguments: { location: 'San Francisco' },
+                name: "get_weather",
+                arguments: { location: "San Francisco" },
               },
             },
           ],
-          finishReason: 'tool_calls',
+          finishReason: "tool_calls",
         });
       });
     });
 
-    describe('createOpenAICompatibleModel', () => {
-      test('should create model with inferred capabilities', () => {
+    describe("createOpenAICompatibleModel", () => {
+      test("should create model with inferred capabilities", () => {
         const model = createOpenAICompatibleModel({
-          modelId: 'gpt-4',
-          baseURL: 'https://api.openai.com/v1',
-          apiKey: 'test-key',
+          modelId: "gpt-4",
+          baseURL: "https://api.openai.com/v1",
+          apiKey: "test-key",
         });
 
         expect(model).toMatchObject({
-          modelId: 'gpt-4',
-          providerId: 'openai-compatible',
+          modelId: "gpt-4",
+          providerId: "openai-compatible",
           capabilities: expect.objectContaining({
             streaming: true,
             functionCalling: true,
@@ -485,11 +522,11 @@ describe('openAI Compatible Models', () => {
         });
       });
 
-      test('should override capabilities', () => {
+      test("should override capabilities", () => {
         const model = createOpenAICompatibleModel({
-          modelId: 'custom-model',
-          baseURL: 'https://api.custom.com/v1',
-          apiKey: 'test-key',
+          modelId: "custom-model",
+          baseURL: "https://api.custom.com/v1",
+          apiKey: "test-key",
           capabilities: {
             streaming: false,
             functionCalling: true,
@@ -507,23 +544,24 @@ describe('openAI Compatible Models', () => {
       });
     });
 
-    describe('estimateTokenCount', () => {
-      test('should estimate token count for text', () => {
-        const text = 'This is a sample text with multiple words that should be tokenized.';
+    describe("estimateTokenCount", () => {
+      test("should estimate token count for text", () => {
+        const text =
+          "This is a sample text with multiple words that should be tokenized.";
         const estimated = estimateTokenCount(text);
 
         expect(estimated).toBeGreaterThan(0);
         expect(estimated).toBeLessThan(text.length); // Should be less than character count
       });
 
-      test('should handle empty text', () => {
-        const estimated = estimateTokenCount('');
+      test("should handle empty text", () => {
+        const estimated = estimateTokenCount("");
         expect(estimated).toBe(0);
       });
 
-      test('should estimate for different languages', () => {
-        const english = estimateTokenCount('Hello world');
-        const chinese = estimateTokenCount('你好世界');
+      test("should estimate for different languages", () => {
+        const english = estimateTokenCount("Hello world");
+        const chinese = estimateTokenCount("你好世界");
         const code = estimateTokenCount('function test() { return "hello"; }');
 
         expect(english).toBeGreaterThan(0);
@@ -531,11 +569,11 @@ describe('openAI Compatible Models', () => {
         expect(code).toBeGreaterThan(0);
       });
 
-      test('should estimate for messages array', () => {
+      test("should estimate for messages array", () => {
         const messages = [
-          { role: 'system', content: 'You are a helpful assistant.' },
-          { role: 'user', content: 'What is the weather like?' },
-          { role: 'assistant', content: 'I cannot access weather data.' },
+          { role: "system", content: "You are a helpful assistant." },
+          { role: "user", content: "What is the weather like?" },
+          { role: "assistant", content: "I cannot access weather data." },
         ];
 
         const estimated = estimateTokenCount(messages);
@@ -543,30 +581,30 @@ describe('openAI Compatible Models', () => {
       });
     });
 
-    describe('formatOpenAIMessages', () => {
-      test('should format standard messages', () => {
+    describe("formatOpenAIMessages", () => {
+      test("should format standard messages", () => {
         const messages = [
-          { role: 'system', content: 'System prompt' },
-          { role: 'user', content: 'User message' },
-          { role: 'assistant', content: 'Assistant response' },
+          { role: "system", content: "System prompt" },
+          { role: "user", content: "User message" },
+          { role: "assistant", content: "Assistant response" },
         ];
 
         const formatted = formatOpenAIMessages(messages);
 
         expect(formatted).toEqual([
-          { role: 'system', content: 'System prompt' },
-          { role: 'user', content: 'User message' },
-          { role: 'assistant', content: 'Assistant response' },
+          { role: "system", content: "System prompt" },
+          { role: "user", content: "User message" },
+          { role: "assistant", content: "Assistant response" },
         ]);
       });
 
-      test('should handle multimodal messages', () => {
+      test("should handle multimodal messages", () => {
         const messages = [
           {
-            role: 'user',
+            role: "user",
             content: [
-              { type: 'text', text: 'What is in this image?' },
-              { type: 'image', url: 'data:image/jpeg;base64,/9j/4AA...' },
+              { type: "text", text: "What is in this image?" },
+              { type: "image", url: "data:image/jpeg;base64,/9j/4AA..." },
             ],
           },
         ];
@@ -574,31 +612,37 @@ describe('openAI Compatible Models', () => {
         const formatted = formatOpenAIMessages(messages);
 
         expect(formatted[0]).toMatchObject({
-          role: 'user',
+          role: "user",
           content: [
-            { type: 'text', text: 'What is in this image?' },
-            { type: 'image_url', image_url: { url: 'data:image/jpeg;base64,/9j/4AA...' } },
+            { type: "text", text: "What is in this image?" },
+            {
+              type: "image_url",
+              image_url: { url: "data:image/jpeg;base64,/9j/4AA..." },
+            },
           ],
         });
       });
 
-      test('should handle tool messages', () => {
+      test("should handle tool messages", () => {
         const messages = [
           {
-            role: 'assistant',
+            role: "assistant",
             content: null,
             tool_calls: [
               {
-                id: 'call_123',
-                type: 'function',
-                function: { name: 'get_weather', arguments: '{"location": "SF"}' },
+                id: "call_123",
+                type: "function",
+                function: {
+                  name: "get_weather",
+                  arguments: '{"location": "SF"}',
+                },
               },
             ],
           },
           {
-            role: 'tool',
-            tool_call_id: 'call_123',
-            content: 'Weather: Sunny, 72°F',
+            role: "tool",
+            tool_call_id: "call_123",
+            content: "Weather: Sunny, 72°F",
           },
         ];
 
@@ -609,23 +653,23 @@ describe('openAI Compatible Models', () => {
     });
   });
 
-  describe('error Handling', () => {
-    test('should handle invalid model configuration', () => {
+  describe("error Handling", () => {
+    test("should handle invalid model configuration", () => {
       expect(() => {
         createOpenAICompatibleModel({
-          modelId: '',
-          baseURL: '',
-          apiKey: '',
+          modelId: "",
+          baseURL: "",
+          apiKey: "",
         });
       }).toThrow();
     });
 
-    test('should handle API response errors', () => {
+    test("should handle API response errors", () => {
       const errorResponse = {
         error: {
-          message: 'Invalid API key',
-          type: 'invalid_request_error',
-          code: 'invalid_api_key',
+          message: "Invalid API key",
+          type: "invalid_request_error",
+          code: "invalid_api_key",
         },
       };
 
@@ -634,7 +678,7 @@ describe('openAI Compatible Models', () => {
       }).toThrow(/Invalid API key/);
     });
 
-    test('should handle malformed responses', () => {
+    test("should handle malformed responses", () => {
       const malformedResponse = {
         // Missing required fields
         choices: null,

@@ -1,9 +1,15 @@
-import { BetterStackPlugin, createBetterStackPlugin } from '#/plugins/betterstack';
-import { vi } from 'vitest';
+import {
+  BetterStackPlugin,
+  createBetterStackPlugin,
+} from "#/plugins/betterstack";
+import { vi } from "vitest";
 
 // Use centralized test factory and utilities
-import { createObservabilityTestSuite, createScenarios } from '../plugin-test-factory';
-import { createTestData } from '../test-data-generators';
+import {
+  createObservabilityTestSuite,
+  createScenarios,
+} from "../plugin-test-factory";
+import { createTestData } from "../test-data-generators";
 
 // Scenarios are now available through centralized mock setup in @repo/qa
 let logtailScenarios: any = {
@@ -16,11 +22,11 @@ const resetMocks = () => {
   vi.clearAllMocks();
 };
 
-vi.mock('../../src/plugins/betterstack/env', () => ({
+vi.mock("../../src/plugins/betterstack/env", () => ({
   safeEnv: () => ({
-    BETTER_STACK_SOURCE_TOKEN: 'test-token',
+    BETTER_STACK_SOURCE_TOKEN: "test-token",
     BETTERSTACK_ENABLED: true,
-    BETTER_STACK_INGESTING_URL: 'https://in.logs.betterstack.com',
+    BETTER_STACK_INGESTING_URL: "https://in.logs.betterstack.com",
   }),
 }));
 
@@ -28,7 +34,7 @@ vi.mock('../../src/plugins/betterstack/env', () => ({
 function createBetterStackTestPlugin(config?: any) {
   const plugin = new BetterStackPlugin({
     enabled: true,
-    sourceToken: 'test-token',
+    sourceToken: "test-token",
     ...config,
   });
 
@@ -38,35 +44,37 @@ function createBetterStackTestPlugin(config?: any) {
 
 // Generate standard test suite
 createObservabilityTestSuite({
-  pluginName: 'betterstack',
+  pluginName: "betterstack",
   createPlugin: createBetterStackTestPlugin,
   defaultConfig: {
     enabled: true,
-    sourceToken: 'test-token',
+    sourceToken: "test-token",
   },
   scenarios: [
     ...createScenarios.initialization([
       {
-        name: 'with source token',
-        description: 'should initialize with source token',
+        name: "with source token",
+        description: "should initialize with source token",
         test: async (plugin: any) => {
           await plugin.initialize();
           // Plugin should initialize without errors
-          expect(plugin.name).toBe('betterstack');
+          expect(plugin.name).toBe("betterstack");
         },
       },
       {
-        name: 'without source token',
-        description: 'should handle missing source token',
+        name: "without source token",
+        description: "should handle missing source token",
         test: async (plugin: any) => {
-          const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+          const consoleSpy = vi
+            .spyOn(console, "warn")
+            .mockImplementation(() => {});
 
           // Reset and override ALL mocks for this test
           vi.clearAllMocks();
           vi.resetModules();
 
           // Mock environment to return no tokens for ANY key
-          vi.doMock('../../src/plugins/betterstack/env', () => ({
+          vi.doMock("../../src/plugins/betterstack/env", () => ({
             safeEnv: () => ({
               BETTER_STACK_SOURCE_TOKEN: undefined,
               NEXT_PUBLIC_BETTER_STACK_SOURCE_TOKEN: undefined,
@@ -79,7 +87,9 @@ createObservabilityTestSuite({
           }));
 
           // Import plugin AFTER mock is set up
-          const { BetterStackPlugin } = await import('../../src/plugins/betterstack');
+          const { BetterStackPlugin } = await import(
+            "../../src/plugins/betterstack"
+          );
 
           const noTokenPlugin = new BetterStackPlugin({
             enabled: true,
@@ -88,7 +98,7 @@ createObservabilityTestSuite({
           await noTokenPlugin.initialize();
 
           expect(consoleSpy).toHaveBeenCalledWith(
-            'Better Stack plugin: No source token provided, skipping initialization',
+            "Better Stack plugin: No source token provided, skipping initialization",
           );
 
           consoleSpy.mockRestore();
@@ -97,8 +107,8 @@ createObservabilityTestSuite({
     ]),
     ...createScenarios.integration([
       {
-        name: 'betterstack integration workflow',
-        description: 'should handle complete BetterStack workflow',
+        name: "betterstack integration workflow",
+        description: "should handle complete BetterStack workflow",
         test: async (plugin: any) => {
           await plugin.initialize();
 
@@ -111,8 +121,8 @@ createObservabilityTestSuite({
           plugin.addBreadcrumb(breadcrumb);
 
           // Capture message
-          const message = 'Integration test message';
-          plugin.captureMessage(message, 'info');
+          const message = "Integration test message";
+          plugin.captureMessage(message, "info");
 
           // Capture error
           const error = createTestData.error();
@@ -131,24 +141,24 @@ createObservabilityTestSuite({
 });
 
 // Additional BetterStack-specific tests
-describe('betterstack-specific features', () => {
+describe("betterstack-specific features", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('factory functions', () => {
-    test('should create BetterStackPlugin with default config', () => {
+  describe("factory functions", () => {
+    test("should create BetterStackPlugin with default config", () => {
       const plugin = createBetterStackPlugin();
 
       expect(plugin).toBeInstanceOf(BetterStackPlugin);
-      expect(plugin.name).toBe('betterstack');
+      expect(plugin.name).toBe("betterstack");
       expect(plugin.enabled).toBeTruthy();
     });
 
-    test('should create BetterStackPlugin with custom config', () => {
+    test("should create BetterStackPlugin with custom config", () => {
       const plugin = createBetterStackPlugin({
         enabled: false,
-        logtailPackage: '@logtail/next',
+        logtailPackage: "@logtail/next",
       });
 
       expect(plugin).toBeInstanceOf(BetterStackPlugin);
@@ -156,10 +166,10 @@ describe('betterstack-specific features', () => {
     });
   });
 
-  describe('package detection', () => {
-    test('should detect Next.js runtime', () => {
+  describe("package detection", () => {
+    test("should detect Next.js runtime", () => {
       const originalEnv = process.env;
-      process.env = { ...originalEnv, NEXT_RUNTIME: 'nodejs' };
+      process.env = { ...originalEnv, NEXT_RUNTIME: "nodejs" };
 
       const nextPlugin = new BetterStackPlugin();
       expect(nextPlugin).toBeDefined();
@@ -167,9 +177,9 @@ describe('betterstack-specific features', () => {
       process.env = originalEnv;
     });
 
-    test('should detect Next.js edge runtime', () => {
+    test("should detect Next.js edge runtime", () => {
       const originalEnv = process.env;
-      process.env = { ...originalEnv, NEXT_RUNTIME: 'edge' };
+      process.env = { ...originalEnv, NEXT_RUNTIME: "edge" };
 
       const edgePlugin = new BetterStackPlugin();
       expect(edgePlugin).toBeDefined();
@@ -177,7 +187,7 @@ describe('betterstack-specific features', () => {
       process.env = originalEnv;
     });
 
-    test('should default to @logtail/js', () => {
+    test("should default to @logtail/js", () => {
       const originalEnv = process.env;
       process.env = { ...originalEnv };
       delete process.env.NEXT_RUNTIME;
@@ -189,34 +199,36 @@ describe('betterstack-specific features', () => {
     });
   });
 
-  describe('configuration', () => {
-    test('should configure with ingestion URL', async () => {
+  describe("configuration", () => {
+    test("should configure with ingestion URL", async () => {
       const plugin = createBetterStackTestPlugin({
-        ingestionUrl: 'https://custom.endpoint.com',
+        ingestionUrl: "https://custom.endpoint.com",
       });
 
       await plugin.initialize();
 
       // Plugin should initialize without errors
-      expect(plugin.name).toBe('betterstack');
+      expect(plugin.name).toBe("betterstack");
     });
 
-    test('should handle missing Logtail class', async () => {
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    test("should handle missing Logtail class", async () => {
+      const consoleSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
 
       // Test with a plugin that would fail to import
       const plugin = createBetterStackTestPlugin();
       await plugin.initialize();
 
       // Should handle gracefully without throwing
-      expect(plugin.name).toBe('betterstack');
+      expect(plugin.name).toBe("betterstack");
 
       consoleSpy.mockRestore();
     });
   });
 
-  describe('breadcrumb management', () => {
-    test('should limit breadcrumbs to 100 items', async () => {
+  describe("breadcrumb management", () => {
+    test("should limit breadcrumbs to 100 items", async () => {
       const plugin = createBetterStackTestPlugin();
       await plugin.initialize();
 
@@ -224,50 +236,50 @@ describe('betterstack-specific features', () => {
       for (let i = 0; i < 150; i++) {
         plugin.addBreadcrumb({
           message: `Breadcrumb ${i}`,
-          level: 'info',
+          level: "info",
         });
       }
 
-      plugin.captureMessage('Test message');
+      plugin.captureMessage("Test message");
 
       // Verify plugin is working (breadcrumb functionality tested through usage)
-      expect(plugin.name).toBe('betterstack');
+      expect(plugin.name).toBe("betterstack");
     });
 
-    test('should include breadcrumbs in logs', async () => {
+    test("should include breadcrumbs in logs", async () => {
       const plugin = createBetterStackTestPlugin();
       await plugin.initialize();
 
       const breadcrumb = createTestData.breadcrumb();
       plugin.addBreadcrumb(breadcrumb);
 
-      plugin.captureMessage('Test message');
+      plugin.captureMessage("Test message");
 
       // Verify breadcrumb functionality through plugin behavior
-      expect(plugin.name).toBe('betterstack');
+      expect(plugin.name).toBe("betterstack");
     });
   });
 
-  describe('environment variable priority', () => {
-    test('should prioritize new environment variables', async () => {
+  describe("environment variable priority", () => {
+    test("should prioritize new environment variables", async () => {
       // Mock environment with both old and new variables
-      vi.doMock('../../src/plugins/betterstack/env', () => ({
+      vi.doMock("../../src/plugins/betterstack/env", () => ({
         safeEnv: () => ({
-          BETTER_STACK_SOURCE_TOKEN: 'new-token',
-          LOGTAIL_SOURCE_TOKEN: 'old-token',
-          BETTERSTACK_SOURCE_TOKEN: 'old-token',
+          BETTER_STACK_SOURCE_TOKEN: "new-token",
+          LOGTAIL_SOURCE_TOKEN: "old-token",
+          BETTERSTACK_SOURCE_TOKEN: "old-token",
         }),
       }));
 
       const plugin = createBetterStackTestPlugin();
       await plugin.initialize();
 
-      expect(plugin.name).toBe('betterstack');
+      expect(plugin.name).toBe("betterstack");
     });
   });
 
-  describe('error handling', () => {
-    test('should handle Logtail client errors gracefully', async () => {
+  describe("error handling", () => {
+    test("should handle Logtail client errors gracefully", async () => {
       const plugin = createBetterStackTestPlugin();
       await plugin.initialize();
 
@@ -275,16 +287,16 @@ describe('betterstack-specific features', () => {
       scenarios.loggingError();
 
       expect(() => {
-        plugin.captureException(new Error('Test'));
+        plugin.captureException(new Error("Test"));
       }).not.toThrow();
     });
 
-    test('should handle missing Logtail methods', async () => {
+    test("should handle missing Logtail methods", async () => {
       const plugin = createBetterStackTestPlugin();
       await plugin.initialize();
 
       expect(() => {
-        plugin.captureMessage('Test');
+        plugin.captureMessage("Test");
       }).not.toThrow();
     });
   });

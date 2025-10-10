@@ -4,11 +4,15 @@
  * Uses centralized mocks from @repo/qa for consistency across the monorepo.
  */
 
-import { afterEach, beforeEach, vi } from 'vitest';
+import { afterEach, beforeEach, vi } from "vitest";
 // Temporarily import from main QA index due to deep export path issues
 // TODO: Re-enable direct path when @repo/qa deep exports are fixed
 // import { createEmailTestScenarios, createEmailTestData, resetCommunicationMocks } from '@repo/qa/vitest/mocks/internal/email';
-import { createEmailTestData, createEmailTestScenarios, resetCommunicationMocks } from '@repo/qa';
+import {
+  createEmailTestData,
+  createEmailTestScenarios,
+  resetCommunicationMocks,
+} from "@repo/qa";
 
 // ================================================================================================
 // GLOBAL TEST CONFIGURATION
@@ -25,7 +29,7 @@ beforeEach(() => {
   vi.unstubAllEnvs();
 
   // Reset email package state for testing
-  if (typeof (global as any).emailPackageReset === 'function') {
+  if (typeof (global as any).emailPackageReset === "function") {
     (global as any).emailPackageReset();
   }
 
@@ -49,7 +53,7 @@ afterEach(() => {
   vi.unstubAllEnvs();
 
   // Reset any global state
-  if (typeof (global as any).emailPackageReset === 'function') {
+  if (typeof (global as any).emailPackageReset === "function") {
     (global as any).emailPackageReset();
   }
 });
@@ -76,14 +80,15 @@ export const emailTestUtils = createEmailTestData();
  * Generates complete email data for testing
  */
 export const generateCompleteEmailData = {
-  magicLink: () => emailTestUtils.createValidMockData('magicLink'),
-  verification: () => emailTestUtils.createValidMockData('verification'),
-  passwordReset: () => emailTestUtils.createValidMockData('passwordReset'),
-  otp: () => emailTestUtils.createValidMockData('otp'),
-  contact: () => emailTestUtils.createValidMockData('contact'),
-  organizationInvitation: () => emailTestUtils.createValidMockData('organizationInvitation'),
-  welcome: () => emailTestUtils.createValidMockData('welcome'),
-  apiKeyCreated: () => emailTestUtils.createValidMockData('apiKeyCreated'),
+  magicLink: () => emailTestUtils.createValidMockData("magicLink"),
+  verification: () => emailTestUtils.createValidMockData("verification"),
+  passwordReset: () => emailTestUtils.createValidMockData("passwordReset"),
+  otp: () => emailTestUtils.createValidMockData("otp"),
+  contact: () => emailTestUtils.createValidMockData("contact"),
+  organizationInvitation: () =>
+    emailTestUtils.createValidMockData("organizationInvitation"),
+  welcome: () => emailTestUtils.createValidMockData("welcome"),
+  apiKeyCreated: () => emailTestUtils.createValidMockData("apiKeyCreated"),
 };
 
 /**
@@ -92,14 +97,14 @@ export const generateCompleteEmailData = {
 export const generateTestScenarios = {
   validationScenarios: (fields: string[]) => [
     {
-      name: 'valid data',
+      name: "valid data",
       data: fields.reduce((acc, field) => {
         switch (field) {
-          case 'email':
-            acc.email = 'test@example.com';
+          case "email":
+            acc.email = "test@example.com";
             break;
-          case 'magicLink':
-            acc.magicLink = 'https://example.com/magic?token=abc123';
+          case "magicLink":
+            acc.magicLink = "https://example.com/magic?token=abc123";
             break;
           default:
             acc[field] = `valid-${field}`;
@@ -109,14 +114,14 @@ export const generateTestScenarios = {
       expectedValid: true,
     },
     {
-      name: 'invalid email',
+      name: "invalid email",
       data: fields.reduce((acc, field) => {
         switch (field) {
-          case 'email':
-            acc.email = 'invalid-email';
+          case "email":
+            acc.email = "invalid-email";
             break;
-          case 'magicLink':
-            acc.magicLink = 'https://example.com/magic?token=abc123';
+          case "magicLink":
+            acc.magicLink = "https://example.com/magic?token=abc123";
             break;
           default:
             acc[field] = `valid-${field}`;
@@ -135,7 +140,7 @@ export const generateTestScenarios = {
 /**
  * Custom assertion helpers for email testing
  */
-export const emailAssertions = {
+const emailAssertions = {
   /**
    * Asserts email was sent with correct parameters
    */
@@ -188,7 +193,7 @@ export const emailAssertions = {
 // TEST CONFIGURATION
 // ================================================================================================
 
-export const testConfig = {
+const testConfig = {
   timeout: 10000, // 10 seconds default timeout
   retries: 2, // Retry failed tests twice
   performance: {

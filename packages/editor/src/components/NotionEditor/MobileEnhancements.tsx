@@ -1,9 +1,13 @@
-'use client';
+"use client";
 
-import { Editor } from '@tiptap/react';
-import { clsx } from 'clsx';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { HeadingDropdownMenu, ListDropdownMenu, TurnIntoDropdownMenu } from './DropdownMenu';
+import { Editor } from "@tiptap/react";
+import { clsx } from "clsx";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import {
+  HeadingDropdownMenu,
+  ListDropdownMenu,
+  TurnIntoDropdownMenu,
+} from "./DropdownMenu";
 
 // =============================================================================
 // MOBILE DETECTION HOOK
@@ -17,29 +21,32 @@ export function useIsMobile() {
       // Check for mobile using multiple methods
       const userAgent = navigator.userAgent.toLowerCase();
       const mobileKeywords = [
-        'mobile',
-        'android',
-        'iphone',
-        'ipad',
-        'ipod',
-        'blackberry',
-        'windows phone',
+        "mobile",
+        "android",
+        "iphone",
+        "ipad",
+        "ipod",
+        "blackberry",
+        "windows phone",
       ];
-      const isMobileUserAgent = mobileKeywords.some(keyword => userAgent.includes(keyword));
+      const isMobileUserAgent = mobileKeywords.some((keyword) =>
+        userAgent.includes(keyword),
+      );
 
       // Check screen size
       const isMobileScreen = window.innerWidth <= 768;
 
       // Check for touch support
-      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      const isTouchDevice =
+        "ontouchstart" in window || navigator.maxTouchPoints > 0;
 
       setIsMobile(isMobileUserAgent || (isMobileScreen && isTouchDevice));
     };
 
     checkIsMobile();
-    window.addEventListener('resize', checkIsMobile);
+    window.addEventListener("resize", checkIsMobile);
 
-    return () => window.removeEventListener('resize', checkIsMobile);
+    return () => window.removeEventListener("resize", checkIsMobile);
   }, []);
 
   return isMobile;
@@ -49,12 +56,12 @@ export function useIsMobile() {
 // TOUCH UTILITIES
 // =============================================================================
 
-export const touchUtils = {
+const _touchUtils = {
   /**
    * Check if the current device supports touch
    */
   isTouchDevice: (): boolean => {
-    return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    return "ontouchstart" in window || navigator.maxTouchPoints > 0;
   },
 
   /**
@@ -95,8 +102,12 @@ interface MobileFloatingToolbarProps {
   onClose: () => void;
 }
 
-export function MobileFloatingToolbar({ editor, isVisible, onClose }: MobileFloatingToolbarProps) {
-  const [activeTab, setActiveTab] = useState<'format' | 'blocks'>('format');
+export function MobileFloatingToolbar({
+  editor,
+  isVisible,
+  onClose,
+}: MobileFloatingToolbarProps) {
+  const [activeTab, setActiveTab] = useState<"format" | "blocks">("format");
 
   if (!isVisible) return null;
 
@@ -104,35 +115,38 @@ export function MobileFloatingToolbar({ editor, isVisible, onClose }: MobileFloa
     <div className="mobile-floating-toolbar fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200 bg-white shadow-lg">
       <div className="flex border-b border-gray-200">
         <button
-          onClick={() => setActiveTab('format')}
+          onClick={() => setActiveTab("format")}
           className={clsx(
-            'flex-1 px-4 py-3 text-sm font-medium transition-colors',
-            activeTab === 'format'
-              ? 'border-b-2 border-blue-600 bg-blue-50 text-blue-600'
-              : 'text-gray-600 hover:text-gray-800',
+            "flex-1 px-4 py-3 text-sm font-medium transition-colors",
+            activeTab === "format"
+              ? "border-b-2 border-blue-600 bg-blue-50 text-blue-600"
+              : "text-gray-600 hover:text-gray-800",
           )}
         >
           Format
         </button>
         <button
-          onClick={() => setActiveTab('blocks')}
+          onClick={() => setActiveTab("blocks")}
           className={clsx(
-            'flex-1 px-4 py-3 text-sm font-medium transition-colors',
-            activeTab === 'blocks'
-              ? 'border-b-2 border-blue-600 bg-blue-50 text-blue-600'
-              : 'text-gray-600 hover:text-gray-800',
+            "flex-1 px-4 py-3 text-sm font-medium transition-colors",
+            activeTab === "blocks"
+              ? "border-b-2 border-blue-600 bg-blue-50 text-blue-600"
+              : "text-gray-600 hover:text-gray-800",
           )}
         >
           Blocks
         </button>
-        <button onClick={onClose} className="px-4 py-3 text-gray-400 hover:text-gray-600">
+        <button
+          onClick={onClose}
+          className="px-4 py-3 text-gray-400 hover:text-gray-600"
+        >
           ✕
         </button>
       </div>
 
       <div className="max-h-64 overflow-y-auto p-4">
-        {activeTab === 'format' && <MobileFormattingPanel editor={editor} />}
-        {activeTab === 'blocks' && <MobileBlocksPanel editor={editor} />}
+        {activeTab === "format" && <MobileFormattingPanel editor={editor} />}
+        {activeTab === "blocks" && <MobileBlocksPanel editor={editor} />}
       </div>
     </div>
   );
@@ -149,66 +163,66 @@ interface MobileFormattingPanelProps {
 function MobileFormattingPanel({ editor }: MobileFormattingPanelProps) {
   const formatButtons = [
     {
-      label: 'Bold',
-      icon: 'B',
+      label: "Bold",
+      icon: "B",
       action: () => editor.chain().focus().toggleBold().run(),
-      isActive: editor.isActive('bold'),
-      shortcut: '⌘B',
+      isActive: editor.isActive("bold"),
+      shortcut: "⌘B",
     },
     {
-      label: 'Italic',
-      icon: 'I',
+      label: "Italic",
+      icon: "I",
       action: () => editor.chain().focus().toggleItalic().run(),
-      isActive: editor.isActive('italic'),
-      shortcut: '⌘I',
+      isActive: editor.isActive("italic"),
+      shortcut: "⌘I",
     },
     {
-      label: 'Underline',
-      icon: 'U',
+      label: "Underline",
+      icon: "U",
       action: () => editor.chain().focus().toggleUnderline().run(),
-      isActive: editor.isActive('underline'),
-      shortcut: '⌘U',
+      isActive: editor.isActive("underline"),
+      shortcut: "⌘U",
     },
     {
-      label: 'Strike',
-      icon: 'S',
+      label: "Strike",
+      icon: "S",
       action: () => editor.chain().focus().toggleStrike().run(),
-      isActive: editor.isActive('strike'),
-      shortcut: '',
+      isActive: editor.isActive("strike"),
+      shortcut: "",
     },
     {
-      label: 'Code',
-      icon: '</>',
+      label: "Code",
+      icon: "</>",
       action: () => editor.chain().focus().toggleCode().run(),
-      isActive: editor.isActive('code'),
-      shortcut: '⌘E',
+      isActive: editor.isActive("code"),
+      shortcut: "⌘E",
     },
     {
-      label: 'Link',
-      icon: '🔗',
+      label: "Link",
+      icon: "🔗",
       action: () => {
-        const url = window.prompt('Enter URL:');
+        const url = window.prompt("Enter URL:");
         if (url) {
           editor.chain().focus().setLink({ href: url }).run();
         }
       },
-      isActive: editor.isActive('link'),
-      shortcut: '⌘K',
+      isActive: editor.isActive("link"),
+      shortcut: "⌘K",
     },
   ];
 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-3 gap-3">
-        {formatButtons.map(button => (
+        {formatButtons.map((button) => (
           <button
             key={button.label}
             onClick={button.action}
             className={clsx(
-              'flex flex-col items-center justify-center rounded-lg border p-3 text-sm font-medium transition-colors',
+              "flex flex-col items-center justify-center rounded-lg border p-3 text-sm font-medium transition-colors",
               button.isActive
-                ? 'border-blue-200 bg-blue-100 text-blue-700'
-                : 'border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100',
+                ? "border-blue-200 bg-blue-100 text-blue-700"
+                : "border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100",
             )}
           >
             <span className="mb-1 text-lg">{button.icon}</span>
@@ -259,10 +273,10 @@ function MobileBlocksPanel({ editor }: MobileBlocksPanelProps) {
           <button
             onClick={() => editor.chain().focus().setBlockquote().run()}
             className={clsx(
-              'flex items-center justify-center rounded-lg border p-3 text-sm font-medium transition-colors',
-              editor.isActive('blockquote')
-                ? 'border-blue-200 bg-blue-100 text-blue-700'
-                : 'border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100',
+              "flex items-center justify-center rounded-lg border p-3 text-sm font-medium transition-colors",
+              editor.isActive("blockquote")
+                ? "border-blue-200 bg-blue-100 text-blue-700"
+                : "border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100",
             )}
           >
             <span className="mr-2">&quot;</span>
@@ -272,13 +286,13 @@ function MobileBlocksPanel({ editor }: MobileBlocksPanelProps) {
           <button
             onClick={() => editor.chain().focus().setCodeBlock().run()}
             className={clsx(
-              'flex items-center justify-center rounded-lg border p-3 text-sm font-medium transition-colors',
-              editor.isActive('codeBlock')
-                ? 'border-blue-200 bg-blue-100 text-blue-700'
-                : 'border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100',
+              "flex items-center justify-center rounded-lg border p-3 text-sm font-medium transition-colors",
+              editor.isActive("codeBlock")
+                ? "border-blue-200 bg-blue-100 text-blue-700"
+                : "border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100",
             )}
           >
-            <span className="mr-2">{'{}'}</span>
+            <span className="mr-2">{"{}"}</span>
             Code
           </button>
 
@@ -292,7 +306,11 @@ function MobileBlocksPanel({ editor }: MobileBlocksPanelProps) {
 
           <button
             onClick={() =>
-              editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
+              editor
+                .chain()
+                .focus()
+                .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+                .run()
             }
             className="flex items-center justify-center rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
           >
@@ -315,25 +333,25 @@ interface MobileColorPickerProps {
 
 function MobileColorPicker({ editor }: MobileColorPickerProps) {
   const colors = [
-    { name: 'Default', value: '#000000', bg: '#000000' },
-    { name: 'Red', value: '#e53e3e', bg: '#e53e3e' },
-    { name: 'Orange', value: '#dd6b20', bg: '#dd6b20' },
-    { name: 'Yellow', value: '#d69e2e', bg: '#d69e2e' },
-    { name: 'Green', value: '#38a169', bg: '#38a169' },
-    { name: 'Blue', value: '#3182ce', bg: '#3182ce' },
-    { name: 'Purple', value: '#805ad5', bg: '#805ad5' },
-    { name: 'Pink', value: '#d53f8c', bg: '#d53f8c' },
+    { name: "Default", value: "#000000", bg: "#000000" },
+    { name: "Red", value: "#e53e3e", bg: "#e53e3e" },
+    { name: "Orange", value: "#dd6b20", bg: "#dd6b20" },
+    { name: "Yellow", value: "#d69e2e", bg: "#d69e2e" },
+    { name: "Green", value: "#38a169", bg: "#38a169" },
+    { name: "Blue", value: "#3182ce", bg: "#3182ce" },
+    { name: "Purple", value: "#805ad5", bg: "#805ad5" },
+    { name: "Pink", value: "#d53f8c", bg: "#d53f8c" },
   ];
 
   const highlights = [
-    { name: 'None', value: null, bg: 'transparent' },
-    { name: 'Yellow', value: '#fef08a', bg: '#fef08a' },
-    { name: 'Green', value: '#bbf7d0', bg: '#bbf7d0' },
-    { name: 'Blue', value: '#bfdbfe', bg: '#bfdbfe' },
-    { name: 'Purple', value: '#e9d5ff', bg: '#e9d5ff' },
-    { name: 'Pink', value: '#fce7f3', bg: '#fce7f3' },
-    { name: 'Red', value: '#fecaca', bg: '#fecaca' },
-    { name: 'Orange', value: '#fed7aa', bg: '#fed7aa' },
+    { name: "None", value: null, bg: "transparent" },
+    { name: "Yellow", value: "#fef08a", bg: "#fef08a" },
+    { name: "Green", value: "#bbf7d0", bg: "#bbf7d0" },
+    { name: "Blue", value: "#bfdbfe", bg: "#bfdbfe" },
+    { name: "Purple", value: "#e9d5ff", bg: "#e9d5ff" },
+    { name: "Pink", value: "#fce7f3", bg: "#fce7f3" },
+    { name: "Red", value: "#fecaca", bg: "#fecaca" },
+    { name: "Orange", value: "#fed7aa", bg: "#fed7aa" },
   ];
 
   return (
@@ -341,7 +359,7 @@ function MobileColorPicker({ editor }: MobileColorPickerProps) {
       <div>
         <p className="mb-2 text-xs text-gray-500">Text Color</p>
         <div className="flex flex-wrap gap-2">
-          {colors.map(color => (
+          {colors.map((color) => (
             <button
               key={color.name}
               onClick={() => editor.chain().focus().setColor(color.value).run()}
@@ -356,12 +374,16 @@ function MobileColorPicker({ editor }: MobileColorPickerProps) {
       <div>
         <p className="mb-2 text-xs text-gray-500">Highlight</p>
         <div className="flex flex-wrap gap-2">
-          {highlights.map(highlight => (
+          {highlights.map((highlight) => (
             <button
               key={highlight.name}
               onClick={() => {
                 if (highlight.value) {
-                  editor.chain().focus().setHighlight({ color: highlight.value }).run();
+                  editor
+                    .chain()
+                    .focus()
+                    .setHighlight({ color: highlight.value })
+                    .run();
                 } else {
                   editor.chain().focus().unsetHighlight().run();
                 }
@@ -370,7 +392,9 @@ function MobileColorPicker({ editor }: MobileColorPickerProps) {
               style={{ backgroundColor: highlight.bg }}
               title={highlight.name}
             >
-              {!highlight.value && <span className="text-xs text-gray-400">×</span>}
+              {!highlight.value && (
+                <span className="text-xs text-gray-400">×</span>
+              )}
             </button>
           ))}
         </div>
@@ -388,7 +412,10 @@ interface MobileSelectionOverlayProps {
   onShowToolbar: () => void;
 }
 
-export function MobileSelectionOverlay({ editor, onShowToolbar }: MobileSelectionOverlayProps) {
+export function MobileSelectionOverlay({
+  editor,
+  onShowToolbar,
+}: MobileSelectionOverlayProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
@@ -405,7 +432,9 @@ export function MobileSelectionOverlay({ editor, onShowToolbar }: MobileSelectio
       selectionTimeout = setTimeout(() => {
         const selection = window.getSelection();
         const hasSelection =
-          selection && !selection.isCollapsed && selection.toString().trim().length > 0;
+          selection &&
+          !selection.isCollapsed &&
+          selection.toString().trim().length > 0;
 
         if (hasSelection && editor.isFocused) {
           const range = selection.getRangeAt(0);
@@ -422,10 +451,10 @@ export function MobileSelectionOverlay({ editor, onShowToolbar }: MobileSelectio
       }, 100);
     };
 
-    document.addEventListener('selectionchange', handleSelectionChange);
+    document.addEventListener("selectionchange", handleSelectionChange);
 
     return () => {
-      document.removeEventListener('selectionchange', handleSelectionChange);
+      document.removeEventListener("selectionchange", handleSelectionChange);
       if (selectionTimeout) {
         clearTimeout(selectionTimeout);
       }
@@ -442,7 +471,10 @@ export function MobileSelectionOverlay({ editor, onShowToolbar }: MobileSelectio
         top: Math.max(position.y, 10), // Ensure it doesn't go off-screen
       }}
     >
-      <button onClick={onShowToolbar} className="whitespace-nowrap text-sm font-medium">
+      <button
+        onClick={onShowToolbar}
+        className="whitespace-nowrap text-sm font-medium"
+      >
         Format Text
       </button>
     </div>
@@ -558,7 +590,9 @@ export function MobileGestureHandler({
   onSwipeRight,
   onLongPress,
 }: MobileGestureHandlerProps) {
-  const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
+  const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(
+    null,
+  );
   const longPressTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const handleTouchStart = useCallback(
@@ -633,7 +667,11 @@ export function MobileGestureHandler({
   );
 
   return (
-    <div onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
+    <div
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       {children}
     </div>
   );

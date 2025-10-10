@@ -25,8 +25,8 @@ export const setupPrismaTestMocks = () => {
   const mockPrismaClient = createMockPrismaClient();
   const mockPrismaOrm = createMockPrismaOrm();
 
-  // Mock the entire @repo/database/prisma module
-  vi.mock('@repo/database/prisma', () => ({
+  // Mock the entire @repo/db-prisma module
+  vi.mock('@repo/db-prisma', () => ({
     ...mockPrismaOrm,
     executeTransaction: vi.fn((fn: any) => fn(mockPrismaClient)),
     BrandType: {
@@ -84,10 +84,10 @@ export const resetPrismaTestMocks = (mockPrismaClient: any, mockPrismaOrm: any) 
  * Common test data factories for brands
  */
 export const createTestBrandData = {
-  disney: () => ({
-    id: 'disney-1',
-    name: 'Disney',
-    slug: 'disney',
+  example: () => ({
+    id: 'example-1',
+    name: 'Example Corp',
+    slug: 'example',
     type: 'LABEL' as const,
     status: 'PUBLISHED' as const,
     parentId: null,
@@ -99,15 +99,21 @@ export const createTestBrandData = {
     deletedAt: null,
   }),
 
-  dvc: () => ({
-    id: 'dvc-4',
-    name: 'Disney Vacation Club 4',
-    slug: 'disney-vacation-club-4',
+  exampleSub: () => ({
+    id: 'example-sub-4',
+    name: 'Example Subdivision 4',
+    slug: 'example-subdivision-4',
     type: 'LABEL' as const,
     status: 'PUBLISHED' as const,
-    parentId: 'disney-1',
+    parentId: 'example-1',
     children: [],
-    parent: { id: 'disney-1', name: 'Disney', slug: 'disney', type: 'LABEL', status: 'PUBLISHED' },
+    parent: {
+      id: 'example-1',
+      name: 'Example Corp',
+      slug: 'example',
+      type: 'LABEL',
+      status: 'PUBLISHED',
+    },
     _count: { children: 0, products: 0, collections: 0, media: 0 },
     createdAt: new Date('2024-01-01T00:00:00.000Z'),
     updatedAt: new Date('2024-01-01T00:00:00.000Z'),

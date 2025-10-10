@@ -2,10 +2,7 @@
  * Audit logging plugin for better-auth
  * Logs all authentication and security events
  */
-
-import { prisma } from '@repo/database/prisma/server/next';
-import { logError, logInfo } from '@repo/observability/server/next';
-
+import { logInfo } from '@repo/observability';
 export interface AuditLoggerOptions {
   enabled?: boolean;
   logSuccessfulAuth?: boolean;
@@ -109,28 +106,8 @@ export function auditLoggerPlugin(options: AuditLoggerOptions = {}) {
       return;
     }
 
-    // Default: Log to database
-    try {
-      await prisma.auditLog.create({
-        data: {
-          type: event.type,
-          action: event.action,
-          userId: event.userId,
-          email: event.email,
-          ipAddress: event.ipAddress,
-          userAgent: event.userAgent,
-          metadata: event.metadata as any,
-          success: event.success,
-          errorMessage: event.errorMessage,
-          timestamp: event.timestamp,
-        },
-      });
-    } catch (error) {
-      void logError(
-        'Failed to write audit log:',
-        error instanceof Error ? error : new Error(String(error)),
-      );
-    }
+    // Default: send to observability pipeline until dedicated audit storage exists
+    await logInfo('auth.audit.event', { event });
   };
 
   const shouldLogEvent = (eventType: string): boolean => {
@@ -278,22 +255,12 @@ export async function cleanupOldAuditLogs(retentionDays: number = 90) {
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
 
-  try {
-    const result = await prisma.auditLog.deleteMany({
-      where: {
-        timestamp: {
-          lt: cutoffDate,
-        },
-      },
-    });
-
-    void logInfo(`Cleaned up ${result.count} audit log entries older than ${retentionDays} days`);
-  } catch (error) {
-    void logError(
-      'Failed to cleanup audit logs:',
-      error instanceof Error ? error : new Error(String(error)),
-    );
-  }
+  // TODO: Cleanup old audit logs once auditLog model is available
+  // Note: AuditLog model not available in current database schema
+  await logInfo('auth.audit.cleanup.pending', {
+    retentionDays,
+    cutoffDate: cutoffDate.toISOString(),
+  });
 }
 
 // Export function for testing

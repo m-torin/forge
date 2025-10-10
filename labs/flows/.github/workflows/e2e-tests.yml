@@ -19,25 +19,30 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+        run: pnpm exec playwright install --with-deps chromium
 
       - name: Build application
-        run: npm run build
+        run: pnpm turbo build
 
       - name: Run smoke tests
-        run: npm run test:e2e:smoke
+        run: pnpm turbo test:e2e:smoke
         env:
           CI: true
 
       - name: Run CI-optimized E2E tests
-        run: npm run test:e2e:ci
+        run: pnpm turbo test:e2e:ci
         env:
           CI: true
 

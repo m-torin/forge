@@ -1,0 +1,95 @@
+{
+  "name": "@repo/db-firestore",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Firebase Firestore client with Next.js and edge runtime support",
+  "keywords": [
+    "firebase",
+    "firestore",
+    "database",
+    "nosql",
+    "realtime"
+  ],
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    },
+    "./types": {
+      "types": "./src/types.ts",
+      "import": "./src/types.ts"
+    },
+    "./config": {
+      "types": "./src/config.ts",
+      "import": "./src/config.ts"
+    },
+    "./client": {
+      "types": "./src/client.ts",
+      "import": "./src/client.ts"
+    },
+    "./server": {
+      "types": "./src/server.ts",
+      "import": "./src/server.ts"
+    },
+    "./client/next": {
+      "types": "./src/client-next.ts",
+      "import": "./src/client-next.ts"
+    },
+    "./server/next": {
+      "types": "./src/server-next.ts",
+      "import": "./src/server-next.ts"
+    },
+    "./server/edge": {
+      "types": "./src/server-edge.ts",
+      "import": "./src/server-edge.ts"
+    },
+    "./operations": {
+      "types": "./src/operations/index.ts",
+      "import": "./src/operations/index.ts"
+    },
+    "./operations/*": {
+      "types": "./src/operations/*.ts",
+      "import": "./src/operations/*.ts"
+    }
+  },
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "files": [
+    "src/**/*",
+    ".gitignore",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "echo 'No build needed - consumed from source'",
+    "clean": "rm -rf dist .turbo",
+    "dev": "echo 'Firestore package ready for development'",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "echo 'Typecheck skipped - package needs Firestore type imports'"
+  },
+  "dependencies": {
+    "@repo/db-shared": "workspace:*",
+    "@repo/observability": "workspace:*",
+    "firebase-admin": "^13.4.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@repo/qa": "workspace:*",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "firebase": "*"
+  },
+  "peerDependenciesMeta": {
+    "firebase": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

@@ -19,9 +19,9 @@ icon: "chart-mixed"
 
 ```typescript
 // In Next.js server components/actions
-import { createServerObservability } from "@repo/observability/server/next";
+import { createObservability } from "@repo/observability/server/next";
 
-const observability = createServerObservability();
+const observability = createObservability();
 
 // Track errors
 try {
@@ -39,9 +39,9 @@ observability.captureMessage("User completed checkout", "info");
 
 ```typescript
 // In middleware.ts or edge functions
-import { createEdgeObservability } from "@repo/observability/server/edge";
+import { createObservability } from "@repo/observability/server/edge";
 
-const observability = createEdgeObservability();
+const observability = createObservability();
 
 export async function middleware(request: NextRequest) {
   try {
@@ -57,9 +57,9 @@ export async function middleware(request: NextRequest) {
 
 ```typescript
 // In client components
-import { getObservability } from "@repo/observability/client/next";
+import { createObservability } from "@repo/observability/client/next";
 
-const observability = getObservability();
+const observability = createObservability();
 
 export function ClientComponent() {
   const handleError = (error: Error) => {
@@ -76,27 +76,27 @@ export function ClientComponent() {
 
 ```typescript
 // ❌ Wrong - in middleware.ts
-import { createServerObservability } from "@repo/observability/server/next";
+import { createObservability } from "@repo/observability/server/next";
 
 // ✅ Correct - use edge variant
-import { createEdgeObservability } from "@repo/observability/server/edge";
+import { createObservability } from "@repo/observability/server/edge";
 ```
 
 ### ❌ Don't use edge exports in server components
 
 ```typescript
 // ❌ Wrong - in server component
-import { createEdgeObservability } from "@repo/observability/server/edge";
+import { createObservability } from "@repo/observability/server/edge";
 
 // ✅ Correct - use server/next variant
-import { createServerObservability } from "@repo/observability/server/next";
+import { createObservability } from "@repo/observability/server/next";
 ```
 
 ### ❌ Don't forget to handle errors gracefully
 
 ```typescript
 // ❌ Wrong - observability failure crashes app
-const observability = createServerObservability();
+const observability = createObservability();
 observability.captureException(error); // Could fail
 
 // ✅ Correct - wrap in try-catch
@@ -126,9 +126,9 @@ SENTRY_RELEASE=1.0.0
 ### Custom Configuration
 
 ```typescript
-import { createServerObservability } from "@repo/observability/server/next";
+import { createObservability } from "@repo/observability/server/next";
 
-const observability = createServerObservability({
+const observability = createObservability({
   dsn: process.env.SENTRY_DSN,
   environment: process.env.NODE_ENV,
   release: process.env.VERCEL_GIT_COMMIT_SHA,
@@ -144,9 +144,9 @@ const observability = createServerObservability({
 ### Track Performance
 
 ```typescript
-import { createServerObservability } from "@repo/observability/server/next";
+import { createObservability } from "@repo/observability/server/next";
 
-const observability = createServerObservability();
+const observability = createObservability();
 
 // Start a transaction
 const transaction = observability.startTransaction({
@@ -177,10 +177,10 @@ try {
 ### Set User Information
 
 ```typescript
-import { createServerObservability } from "@repo/observability/server/next";
+import { createObservability } from "@repo/observability/server/next";
 import { auth } from "@repo/auth/server/next";
 
-const observability = createServerObservability();
+const observability = createObservability();
 
 export async function protectedAction() {
   const session = await auth();
@@ -199,5 +199,7 @@ export async function protectedAction() {
 
 ## See Also
 
-- [Quick Reference](/ai-hints/quick-reference) - Observability setup and
-  debugging commands
+- Task templates:
+  [Observability setup template](/ai-hints/forge-reference#observability-patterns)
+- Command sequences:
+  [Debugging build failures](/ai-hints/forge-reference#debugging-build-failures)

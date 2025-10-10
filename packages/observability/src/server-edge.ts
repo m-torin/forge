@@ -1,6 +1,6 @@
 /**
  * Next.js edge runtime observability export
- * Supports edge-compatible implementations including Sentry
+ * Limited to fetch-based implementations only
  */
 
 import { env } from '../env';
@@ -8,12 +8,10 @@ import { ObservabilityBuilder } from './factory/builder';
 import { createBetterStackPlugin } from './plugins/betterstack';
 import { env as betterStackEnv } from './plugins/betterstack/env';
 import { createConsolePlugin } from './plugins/console';
-import { createSentryNextJSPlugin } from './plugins/sentry-nextjs';
-import { safeEnv as safeSentryEnvironment } from './plugins/sentry-nextjs/env';
 
 /**
  * Create auto-configured observability for Next.js edge runtime
- * Modern @sentry/nextjs supports edge runtime environments
+ * Note: Sentry is not included here as it requires Node.js APIs
  */
 export async function createEdgeObservability() {
   const builder = ObservabilityBuilder.create().withAutoInitialize(false); // Manual init in edge runtime
@@ -35,17 +33,10 @@ export async function createEdgeObservability() {
   );
 
   // Auto-activate Better Stack if source token is provided (uses fetch API)
-  const safeBetterStackEnv = (() => {
-    try {
-      return betterStackEnv;
-    } catch {
-      return {} as typeof betterStackEnv;
-    }
-  })();
   const betterStackToken =
-    safeBetterStackEnv.BETTER_STACK_SOURCE_TOKEN ||
-    safeBetterStackEnv.BETTERSTACK_SOURCE_TOKEN ||
-    safeBetterStackEnv.LOGTAIL_SOURCE_TOKEN;
+    betterStackEnv.BETTER_STACK_SOURCE_TOKEN ||
+    betterStackEnv.BETTERSTACK_SOURCE_TOKEN ||
+    betterStackEnv.LOGTAIL_SOURCE_TOKEN;
 
   if (betterStackToken) {
     builder.withPlugin(
@@ -55,31 +46,8 @@ export async function createEdgeObservability() {
     );
   }
 
-  // Auto-activate Sentry if DSN is provided
-  // Modern @sentry/nextjs supports edge runtime
-  // Use safeEnv function to avoid environment access errors in edge runtime
-  const safeSentryEnv = safeSentryEnvironment();
-  const sentryDSN = safeSentryEnv.SENTRY_DSN || safeSentryEnv.NEXT_PUBLIC_SENTRY_DSN;
-  if (sentryDSN) {
-    builder.withPlugin(
-      createSentryNextJSPlugin({
-        dsn: sentryDSN,
-        // Edge-specific configuration
-        environment:
-          safeSentryEnv.SENTRY_ENVIRONMENT ||
-          safeSentryEnv.NEXT_PUBLIC_SENTRY_ENVIRONMENT ||
-          'production',
-        release: safeSentryEnv.SENTRY_RELEASE || safeSentryEnv.NEXT_PUBLIC_SENTRY_RELEASE,
-        // Limited features in edge runtime
-        enableTracing: safeSentryEnv.SENTRY_ENABLE_TRACING ?? true,
-        tracesSampleRate: safeSentryEnv.SENTRY_TRACES_SAMPLE_RATE,
-        // Note: Some features like replay and feedback may not work in edge runtime
-      }),
-    );
-  }
-
-  // Note: LogTape requires Node.js APIs and isn't available in edge runtime
-  // Sentry and Better Stack are the recommended solutions for edge runtime observability
+  // Note: Sentry requires Node.js APIs and isn't available in edge runtime
+  // Better Stack is the recommended solution for edge runtime logging
 
   return builder.build();
 }
@@ -102,11 +70,9 @@ export * from './core/types';
 export { createObservability } from './factory';
 export { ObservabilityBuilder } from './factory/builder';
 
-// Re-export edge-compatible plugins
-export { createBetterStackPlugin } from './plugins/betterstack';
-export { createConsolePlugin } from './plugins/console';
-export { createSentryPlugin, SentryPlugin } from './plugins/sentry';
-export { createSentryNextJSPlugin, SentryNextJSPlugin } from './plugins/sentry-nextjs';
+// Re-export edge-compatible plugins only
+export * from './plugins/betterstack';
+export * from './plugins/console';
 
 // Async logger functions that handle initialization
 export const logDebug = async (message: string, context?: any) => {

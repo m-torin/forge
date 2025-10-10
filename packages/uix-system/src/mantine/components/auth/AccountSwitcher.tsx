@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   ActionIcon,
@@ -11,7 +11,7 @@ import {
   Menu,
   Stack,
   Text,
-} from '@mantine/core';
+} from "@mantine/core";
 import {
   IconCheck,
   IconChevronDown,
@@ -19,7 +19,7 @@ import {
   IconPlus,
   IconSwitchHorizontal,
   IconUser,
-} from '@tabler/icons-react';
+} from "@tabler/icons-react";
 
 // Types
 export interface User {
@@ -65,14 +65,14 @@ export function AccountSwitcher({
   otherSessions = [],
   compact = false,
   showAddAccount = true,
-  addAccountLabel = 'Add another account',
-  manageAccountsLabel = 'Manage accounts',
-  signOutLabel = 'Sign out',
-  signOutAllLabel = 'Sign out all accounts',
-  switchAccountLabel = 'Switch account',
-  currentAccountLabel = 'Current account',
-  otherAccountsLabel = 'Other accounts',
-  activeLabel = 'Active',
+  addAccountLabel = "Add another account",
+  manageAccountsLabel = "Manage accounts",
+  signOutLabel = "Sign out",
+  signOutAllLabel = "Sign out all accounts",
+  switchAccountLabel = "Switch account",
+  currentAccountLabel = "Current account",
+  otherAccountsLabel = "Other accounts",
+  activeLabel = "Active",
   loading = false,
   switchingSessionId = null,
   onSwitchAccount,
@@ -87,13 +87,13 @@ export function AccountSwitcher({
   const defaultGetInitials = (name?: string, email?: string) => {
     if (name) {
       return name
-        .split(' ')
-        .map(n => n[0])
-        .join('')
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
         .toUpperCase()
         .slice(0, 2);
     }
-    return email?.charAt(0).toUpperCase() || '?';
+    return email?.charAt(0).toUpperCase() || "?";
   };
 
   const handleSwitchAccount = async (sessionId: string) => {
@@ -142,9 +142,9 @@ export function AccountSwitcher({
       return renderCustomUserInfo(user);
     }
     return (
-      <div style={{ textAlign: 'left' }}>
+      <div style={{ textAlign: "left" }}>
         <Text size="sm" fw={500}>
-          {user.name || 'User'}
+          {user.name || "User"}
         </Text>
         <Text size="xs" c="dimmed">
           {user.email}
@@ -158,7 +158,7 @@ export function AccountSwitcher({
       <Menu shadow="md" width={300} position="bottom-end" withinPortal>
         <Menu.Target>
           <ActionIcon variant="subtle" size="lg">
-            {renderAvatar(currentUser, 'sm')}
+            {renderAvatar(currentUser, "sm")}
           </ActionIcon>
         </Menu.Target>
 
@@ -166,10 +166,10 @@ export function AccountSwitcher({
           <Stack gap={0}>
             <Stack gap="xs" p="xs">
               <Group gap="xs">
-                {renderAvatar(currentUser, 'md')}
+                {renderAvatar(currentUser, "md")}
                 <div style={{ flex: 1 }}>
                   <Text size="sm" fw={500}>
-                    {currentUser.name || 'User'}
+                    {currentUser.name || "User"}
                   </Text>
                   <Text size="xs" c="dimmed">
                     {currentUser.email}
@@ -186,7 +186,7 @@ export function AccountSwitcher({
                   <Text size="xs" c="dimmed" mb="xs">
                     {switchAccountLabel}
                   </Text>
-                  {otherSessions.map(session => (
+                  {otherSessions.map((session) => (
                     <Menu.Item
                       key={session.id}
                       onClick={() => handleSwitchAccount(session.id)}
@@ -196,10 +196,10 @@ export function AccountSwitcher({
                         {switchingSessionId === session.id ? (
                           <Loader size="sm" />
                         ) : (
-                          renderAvatar(session.user, 'sm')
+                          renderAvatar(session.user, "sm")
                         )}
                         <div style={{ flex: 1 }}>
-                          <Text size="sm">{session.user.name || 'User'}</Text>
+                          <Text size="sm">{session.user.name || "User"}</Text>
                           <Text size="xs" c="dimmed">
                             {session.user.email}
                           </Text>
@@ -214,12 +214,19 @@ export function AccountSwitcher({
             <Divider />
 
             {showAddAccount && (
-              <Menu.Item leftSection={<IconPlus size={16} />} onClick={onAddAccount}>
+              <Menu.Item
+                leftSection={<IconPlus size={16} />}
+                onClick={onAddAccount}
+              >
                 {addAccountLabel}
               </Menu.Item>
             )}
 
-            <Menu.Item leftSection={<IconLogout size={16} />} onClick={handleSignOut} color="red">
+            <Menu.Item
+              leftSection={<IconLogout size={16} />}
+              onClick={handleSignOut}
+              color="red"
+            >
               {signOutLabel}
             </Menu.Item>
           </Stack>
@@ -235,7 +242,7 @@ export function AccountSwitcher({
         <Button
           variant="subtle"
           rightSection={<IconChevronDown size={16} />}
-          leftSection={renderAvatar(currentUser, 'sm')}
+          leftSection={renderAvatar(currentUser, "sm")}
           loading={loading}
         >
           {renderUserInfo(currentUser)}
@@ -249,9 +256,9 @@ export function AccountSwitcher({
               {currentAccountLabel}
             </Text>
             <Group gap="sm">
-              {renderAvatar(currentUser, 'lg')}
+              {renderAvatar(currentUser, "lg")}
               <div style={{ flex: 1 }}>
-                <Text fw={500}>{currentUser.name || 'User'}</Text>
+                <Text fw={500}>{currentUser.name || "User"}</Text>
                 <Text size="sm" c="dimmed">
                   {currentUser.email}
                 </Text>
@@ -269,7 +276,7 @@ export function AccountSwitcher({
                 <Text size="sm" fw={600} c="dimmed">
                   {otherAccountsLabel}
                 </Text>
-                {otherSessions.map(session => (
+                {otherSessions.map((session) => (
                   <Button
                     key={session.id}
                     variant="subtle"
@@ -281,13 +288,13 @@ export function AccountSwitcher({
                       switchingSessionId === session.id ? (
                         <Loader size="sm" />
                       ) : (
-                        renderAvatar(session.user, 'sm')
+                        renderAvatar(session.user, "sm")
                       )
                     }
                     rightSection={<IconSwitchHorizontal size={16} />}
                   >
-                    <div style={{ textAlign: 'left', flex: 1 }}>
-                      <Text size="sm">{session.user.name || 'User'}</Text>
+                    <div style={{ textAlign: "left", flex: 1 }}>
+                      <Text size="sm">{session.user.name || "User"}</Text>
                       <Text size="xs" c="dimmed">
                         {session.user.email}
                       </Text>
@@ -302,18 +309,28 @@ export function AccountSwitcher({
 
           <Stack gap={0}>
             {showAddAccount && (
-              <Menu.Item leftSection={<IconPlus size={16} />} onClick={onAddAccount}>
+              <Menu.Item
+                leftSection={<IconPlus size={16} />}
+                onClick={onAddAccount}
+              >
                 {addAccountLabel}
               </Menu.Item>
             )}
 
             {onManageAccounts && (
-              <Menu.Item leftSection={<IconUser size={16} />} onClick={handleManageAccounts}>
+              <Menu.Item
+                leftSection={<IconUser size={16} />}
+                onClick={handleManageAccounts}
+              >
                 {manageAccountsLabel}
               </Menu.Item>
             )}
 
-            <Menu.Item leftSection={<IconLogout size={16} />} onClick={handleSignOut} color="red">
+            <Menu.Item
+              leftSection={<IconLogout size={16} />}
+              onClick={handleSignOut}
+              color="red"
+            >
               {signOutAllLabel}
             </Menu.Item>
           </Stack>

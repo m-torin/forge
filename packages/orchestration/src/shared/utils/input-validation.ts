@@ -126,7 +126,7 @@ export const apiSchemas = {
 /**
  * Sanitize user input to prevent XSS and injection attacks
  */
-export function sanitizeInput<T>(input: T): T {
+function sanitizeInput<T>(input: T): T {
   if (typeof input === 'string') {
     // Remove potentially dangerous characters and sequences
     return input
@@ -184,7 +184,7 @@ export function validateRequestBody<T>(schema: z.ZodSchema<T>, body: unknown): T
 /**
  * Validate query parameters
  */
-export function validateQueryParams<T>(schema: z.ZodSchema<T>, params: URLSearchParams): T {
+function validateQueryParams<T>(schema: z.ZodSchema<T>, params: URLSearchParams): T {
   const obj: Record<string, unknown> = {};
 
   // Convert URLSearchParams to object
@@ -224,11 +224,7 @@ export function validatePathParams<T>(
 /**
  * Create a validated API handler
  */
-export function createValidatedHandler<
-  TBody = unknown,
-  TQuery = unknown,
-  TParams = unknown,
->(config: {
+function createValidatedHandler<TBody = unknown, TQuery = unknown, TParams = unknown>(config: {
   bodySchema?: z.ZodSchema<TBody>;
   querySchema?: z.ZodSchema<TQuery>;
   paramsSchema?: z.ZodSchema<TParams>;

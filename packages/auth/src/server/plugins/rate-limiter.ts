@@ -17,7 +17,7 @@ const DEFAULT_OPTIONS: RateLimiterOptions = {
   windowMs: 15 * 60 * 1000, // 15 minutes
   maxAttempts: 5, // 5 attempts per window
   skipSuccessfulRequests: true,
-  message: 'Too many authentication attempts. Please try again later.',
+  message: "Too many authentication attempts. Please try again later.",
 };
 
 // In-memory store for rate limiting (should be replaced with Redis in production)
@@ -40,7 +40,9 @@ export function rateLimiterPlugin(options: RateLimiterOptions = {}) {
     // Default key: IP address + path
     const headers = request.headers;
     const ipAddress =
-      headers.get('x-forwarded-for')?.split(',')[0] || headers.get('x-real-ip') || 'unknown';
+      headers.get("x-forwarded-for")?.split(",")[0] ||
+      headers.get("x-real-ip") ||
+      "unknown";
     const path = new URL(request.url).pathname;
 
     return `${ipAddress}:${path}`;
@@ -49,13 +51,18 @@ export function rateLimiterPlugin(options: RateLimiterOptions = {}) {
   const cleanupExpiredEntries = () => {
     const now = Date.now();
     for (const [key, entry] of rateLimitStore.entries()) {
-      if (now - entry.firstAttempt.getTime() > (config.windowMs ?? 15 * 60 * 1000)) {
+      if (
+        now - entry.firstAttempt.getTime() >
+        (config.windowMs ?? 15 * 60 * 1000)
+      ) {
         rateLimitStore.delete(key);
       }
     }
   };
 
-  const checkRateLimit = (key: string): { allowed: boolean; retryAfter?: number } => {
+  const checkRateLimit = (
+    key: string,
+  ): { allowed: boolean; retryAfter?: number } => {
     cleanupExpiredEntries();
 
     const entry = rateLimitStore.get(key);
@@ -102,13 +109,18 @@ export function rateLimiterPlugin(options: RateLimiterOptions = {}) {
   };
 
   return {
-    id: 'rate-limiter',
+    id: "rate-limiter",
     hooks: {
       before: [
         {
           matcher: (context: any) => {
             // Rate limit auth endpoints
-            const authPaths = ['/sign-in', '/sign-up', '/forgot-password', '/verify-2fa'];
+            const authPaths = [
+              "/sign-in",
+              "/sign-up",
+              "/forgot-password",
+              "/verify-2fa",
+            ];
             return authPaths.includes(context.path);
           },
           handler: async (context: any) => {
@@ -129,13 +141,13 @@ export function rateLimiterPlugin(options: RateLimiterOptions = {}) {
                 {
                   status: 429,
                   headers: {
-                    'Content-Type': 'application/json',
-                    'X-RateLimit-Limit': (config.maxAttempts || 5).toString(),
-                    'X-RateLimit-Remaining': '0',
-                    'X-RateLimit-Reset': new Date(
+                    "Content-Type": "application/json",
+                    "X-RateLimit-Limit": (config.maxAttempts || 5).toString(),
+                    "X-RateLimit-Remaining": "0",
+                    "X-RateLimit-Reset": new Date(
                       Date.now() + (retryAfter ?? 900) * 1000,
                     ).toISOString(),
-                    'Retry-After': (retryAfter ?? 900).toString(),
+                    "Retry-After": (retryAfter ?? 900).toString(),
                   },
                 },
               );
@@ -162,7 +174,11 @@ export function rateLimiterPlugin(options: RateLimiterOptions = {}) {
           },
           handler: async (context: any) => {
             // If request was successful and we should skip successful requests
-            if (config.skipSuccessfulRequests && !context.error && context.rateLimitKey) {
+            if (
+              config.skipSuccessfulRequests &&
+              !context.error &&
+              context.rateLimitKey
+            ) {
               const entry = rateLimitStore.get(context.rateLimitKey);
               if (entry && entry.attempts > 0) {
                 entry.attempts -= 1;
@@ -201,7 +217,7 @@ export async function checkRateLimit(data: {
 }): Promise<{ allowed: boolean; error?: string }> {
   // Basic implementation for testing
   if (!data.identifier || !data.action) {
-    return { allowed: false, error: 'Missing required parameters' };
+    return { allowed: false, error: "Missing required parameters" };
   }
   return { allowed: true };
 }

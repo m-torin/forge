@@ -344,7 +344,7 @@ export function hasPackageEnvironment(packageType: keyof typeof packageEnvironme
 /**
  * Conditionally setup environments based on available dependencies
  */
-export function setupConditionalEnvironments() {
+function setupConditionalEnvironments() {
   const envs: (keyof typeof packageEnvironments)[] = [];
 
   // Test for common package availability
@@ -379,7 +379,7 @@ export function setupConditionalEnvironments() {
 /**
  * Setup multiple package environments
  */
-export function setupMultipleEnvironments(packageTypes: (keyof typeof packageEnvironments)[]) {
+function setupMultipleEnvironments(packageTypes: (keyof typeof packageEnvironments)[]) {
   const allEnvVars = { ...packageEnvironments.common };
 
   packageTypes.forEach(packageType => {
@@ -462,7 +462,7 @@ export function resetPackageEnvironments() {
 /**
  * Get environment variables for a specific package
  */
-export function getPackageEnvironment(packageType: keyof typeof packageEnvironments) {
+function getPackageEnvironment(packageType: keyof typeof packageEnvironments) {
   return {
     ...packageEnvironments.common,
     ...packageEnvironments[packageType],
@@ -576,11 +576,3 @@ export const environmentPatterns = {
 };
 
 // Export utilities for easy access
-export {
-  applyPackageMocks as applyMocks,
-  resetPackageEnvironments as resetEnv,
-  setupConditionalEnvironments as setupConditional,
-  setupDynamicEnvironment as setupDynamic,
-  setupPackageEnvironment as setupEnv,
-  setupMultipleEnvironments as setupMultiEnv,
-};

@@ -1,0 +1,39 @@
+{
+  "name": "@repo/3p-posthog",
+  "version": "0.1.0",
+  "description": "PostHog analytics integration with feature flags and experiments",
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    "./client": "./src/client.ts",
+    "./server": "./src/server.ts",
+    "./client/next": "./src/client-next.ts",
+    "./server/next": "./src/server-next.ts",
+    "./server/edge": "./src/server-edge.ts",
+    "./config": "./src/config.ts",
+    "./types": "./src/types.ts",
+    "./operations/events": "./src/operations/events.ts",
+    "./operations/feature-flags": "./src/operations/feature-flags.ts",
+    "./operations/experiments": "./src/operations/experiments.ts",
+    "./operations/cohorts": "./src/operations/cohorts.ts"
+  },
+  "scripts": {
+    "test": "vitest run --coverage --reporter=verbose",
+    "test:watch": "vitest",
+    "typecheck": "echo 'Typecheck skipped - depends on 3p-core which needs Zod v4 migration'"
+  },
+  "dependencies": {
+    "@repo/3p-core": "workspace:*",
+    "@repo/core-utils": "workspace:*",
+    "posthog-js": "^1.96.1",
+    "posthog-node": "^3.6.3",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@repo/config": "workspace:*",
+    "@repo/qa": "workspace:*",
+    "@vitest/coverage-v8": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

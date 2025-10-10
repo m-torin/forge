@@ -4,15 +4,15 @@ import { vi } from 'vitest';
 type ReactNode = any;
 
 // Router mock functions that can be used across tests
-export const mockRouterPush = vi.fn();
-export const mockRouterReplace = vi.fn();
-export const mockRouterBack = vi.fn();
-export const mockRouterForward = vi.fn();
-export const mockRouterRefresh = vi.fn();
-export const mockRouterPrefetch = vi.fn();
+const mockRouterPush = vi.fn();
+const mockRouterReplace = vi.fn();
+const mockRouterBack = vi.fn();
+const mockRouterForward = vi.fn();
+const mockRouterRefresh = vi.fn();
+const mockRouterPrefetch = vi.fn();
 
 // Helper to reset all router mocks
-export const resetRouterMocks = () => {
+const resetRouterMocks = () => {
   mockRouterPush.mockClear();
   mockRouterReplace.mockClear();
   mockRouterBack.mockClear();
@@ -21,7 +21,7 @@ export const resetRouterMocks = () => {
   mockRouterPrefetch.mockClear();
 };
 
-export function mockNextNavigation(): void {
+function mockNextNavigation(): void {
   vi.mock('next/navigation', () => ({
     usePathname: () => '/',
     useRouter: () => ({
@@ -42,16 +42,16 @@ export function mockNextNavigation(): void {
 }
 
 // Next.js server-side mocks
-export const mockNextRequest = vi.fn();
-export const mockNextResponse = vi.fn(() => ({
+const mockNextRequest = vi.fn();
+const mockNextResponse = vi.fn(() => ({
   json: vi.fn(),
   status: vi.fn(),
   headers: new Map(),
 }));
 
 // Headers and cookies mocks
-export const mockHeaders = vi.fn(() => new Map());
-export const mockCookies = vi.fn(() => ({
+const mockHeaders = vi.fn(() => new Map());
+const mockCookies = vi.fn(() => ({
   get: vi.fn(),
   set: vi.fn(),
   delete: vi.fn(),
@@ -59,21 +59,21 @@ export const mockCookies = vi.fn(() => ({
   getAll: vi.fn(),
 }));
 
-export function mockNextServer(): void {
+function mockNextServer(): void {
   vi.mock('next/server', () => ({
     NextRequest: mockNextRequest,
     NextResponse: mockNextResponse,
   }));
 }
 
-export function mockNextHeaders(): void {
+function mockNextHeaders(): void {
   vi.mock('next/headers', () => ({
     headers: mockHeaders,
     cookies: mockCookies,
   }));
 }
 
-export function mockNextThemes(): void {
+function mockNextThemes(): void {
   vi.mock('next-themes', () => ({
     ThemeProvider: ({ children }: { children: ReactNode }) => children,
     useTheme: () => ({
@@ -85,7 +85,7 @@ export function mockNextThemes(): void {
   }));
 }
 
-export function mockNextImage(): void {
+function mockNextImage(): void {
   vi.mock('next/image', () => ({
     default: (props: any) => {
       const { alt, src, 'data-testid': testId, ...rest } = props;
@@ -102,7 +102,7 @@ export function mockNextImage(): void {
   }));
 }
 
-export function mockNextLink(): void {
+function mockNextLink(): void {
   vi.mock('next/link', () => ({
     default: ({
       children,
@@ -126,7 +126,7 @@ export function mockNextLink(): void {
   }));
 }
 
-export function mockNextFonts(): void {
+function mockNextFonts(): void {
   vi.mock('next/font/google', () => ({
     Inter: () => ({
       style: { fontFamily: 'Inter' },
@@ -152,7 +152,7 @@ export function mockNextFonts(): void {
 
 // mockNextHeaders function already defined above
 
-export function setupNextMocks(): void {
+function setupNextMocks(): void {
   mockNextNavigation();
   mockNextThemes();
   mockNextImage();
@@ -163,5 +163,3 @@ export function setupNextMocks(): void {
 
 // Automatically setup Next.js mocks when this module is imported
 setupNextMocks();
-
-export default setupNextMocks;

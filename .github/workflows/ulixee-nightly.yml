@@ -1,0 +1,32 @@
+name: Ulixee Nightly
+
+on:
+  schedule:
+    - cron: '0 7 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  nightly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - name: Build datastore
+        run: pnpm -F @repo/ulixee-anti-bot-scraper datastore:build
+      - name: Start CloudNode
+        run: pnpm -F @repo/ulixee-anti-bot-scraper datastore:serve
+      - name: Probe CloudNode
+        run: pnpm -F @repo/ulixee-anti-bot-scraper cloud:probe
+      - name: Run Double Agent report (amazon)
+        env:
+          ULIXEE_CLOUD_HOST: localhost:1818
+        run: pnpm -F @repo/ulixee-anti-bot-scraper double-agent:report amazon
+

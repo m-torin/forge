@@ -1,0 +1,181 @@
+{
+  "name": "@repo/db-prisma",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Prisma 6 driver adapters with multi-schema support for PostgreSQL, D1, and SQLite",
+  "keywords": [
+    "prisma",
+    "database",
+    "adapter",
+    "multi-schema",
+    "postgresql",
+    "d1",
+    "sqlite"
+  ],
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    "./build-stub": "./src/build-stub.ts",
+    "./edge": "./src/edge/index.ts",
+    "./node": "./src/node/index.ts",
+    "./runtime": "./src/runtime/index.ts",
+    "./adapters/base": "./src/adapters/base.ts",
+    "./adapters/postgresql": "./src/adapters/postgresql.ts",
+    "./adapters/neon": "./src/adapters/neon.ts",
+    "./adapters/planetscale": "./src/adapters/planetscale.ts",
+    "./adapters/turso": "./src/adapters/turso.ts",
+    "./adapters/d1": "./src/adapters/d1.ts",
+    "./adapters/sqlite": "./src/adapters/sqlite.ts",
+    "./types": "./src/types.ts",
+    "./config": "./src/config.ts",
+    "./utils": "./src/utils.ts",
+    "./env": "./env.ts",
+    "./orm": "./src/orm/index.ts",
+    "./orm/*": "./src/orm/*.ts",
+    "./orm/auth": "./src/orm/auth/index.ts",
+    "./orm/ecommerce": "./src/orm/ecommerce/index.ts",
+    "./orm/orders": "./src/orm/orders/index.ts",
+    "./orm/cms": "./src/orm/cms/index.ts",
+    "./orm/registry": "./src/orm/registry/index.ts",
+    "./orm/workflows": "./src/orm/workflows/index.ts",
+    "./extensions": "./src/extensions/index.ts",
+    "./validation": "./src/validation/index.ts",
+    "./validation/form-adapter": "./src/validation/form-adapter.ts",
+    "./validation/model-registry-adapter": "./src/validation/model-registry-adapter.ts",
+    "./validation/api-adapter": "./src/validation/api-adapter.ts",
+    "./validation/adapters/brand": "./src/validation/adapters/brand.ts",
+    "./validation/adapters/cast": "./src/validation/adapters/cast.ts",
+    "./validation/adapters/collection": "./src/validation/adapters/collection.ts",
+    "./validation/adapters/fandom": "./src/validation/adapters/fandom.ts",
+    "./validation/adapters/location": "./src/validation/adapters/location.ts",
+    "./validation/adapters/media": "./src/validation/adapters/media.ts",
+    "./validation/adapters/product": "./src/validation/adapters/product.ts",
+    "./validation/adapters/productcategory": "./src/validation/adapters/productcategory.ts",
+    "./validation/adapters/series": "./src/validation/adapters/series.ts",
+    "./validation/adapters/story": "./src/validation/adapters/story.ts",
+    "./validation/adapters/taxonomy": "./src/validation/adapters/taxonomy.ts",
+    "./zod/models/brand": "./dist/zod/models/brand.mjs",
+    "./zod/models/cast": "./dist/zod/models/cast.mjs",
+    "./zod/models/collection": "./dist/zod/models/collection.mjs",
+    "./zod/models/fandom": "./dist/zod/models/fandom.mjs",
+    "./zod/models/jollyroger": "./dist/zod/models/jollyroger.mjs",
+    "./zod/models/location": "./dist/zod/models/location.mjs",
+    "./zod/models/product": "./dist/zod/models/product.mjs",
+    "./zod/models/series": "./dist/zod/models/series.mjs",
+    "./zod/models/story": "./dist/zod/models/story.mjs",
+    "./zod/models/taxonomy": "./dist/zod/models/taxonomy.mjs",
+    "./zod/models/user": "./dist/zod/models/user.mjs",
+    "./zod/models/media": "./dist/zod/models/media.mjs",
+    "./zod/models/productcategory": "./dist/zod/models/productcategory.mjs",
+    "./zod/inputs/brand": "./dist/zod/inputs/brand.mjs",
+    "./zod/inputs/cast": "./dist/zod/inputs/cast.mjs",
+    "./zod/inputs/collection": "./dist/zod/inputs/collection.mjs",
+    "./zod/inputs/fandom": "./dist/zod/inputs/fandom.mjs",
+    "./zod/inputs/location": "./dist/zod/inputs/location.mjs",
+    "./zod/inputs/product": "./dist/zod/inputs/product.mjs",
+    "./zod/inputs/series": "./dist/zod/inputs/series.mjs",
+    "./zod/inputs/story": "./dist/zod/inputs/story.mjs",
+    "./zod/inputs/taxonomy": "./dist/zod/inputs/taxonomy.mjs",
+    "./zod/inputs/media": "./dist/zod/inputs/media.mjs",
+    "./zod/inputs/productcategory": "./dist/zod/inputs/productcategory.mjs",
+    "./helpers/json-helpers": "./generated/helpers/json-helpers.ts",
+    "./enums": "./generated/client/enums.ts",
+    "./client": "./generated/client/client.ts"
+  },
+  "files": [
+    "src/**/*",
+    "generated/**/*",
+    "dist/**/*",
+    "prisma/**/*.prisma",
+    "prisma.config.ts",
+    ".gitignore",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "pnpm generate:all",
+    "build:schemas": "tsup",
+    "bundle:analyze": "echo 'Analyzing bundle size...' && npx bundlesize",
+    "clean": "rm -rf generated dist",
+    "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "db:reset": "prisma migrate reset",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio",
+    "dev": "prisma studio",
+    "fix:enum-imports": "echo 'Deprecated - using tsup instead'",
+    "generate": "prisma generate --generator prisma-client",
+    "postgenerate": "echo '✅ Generated Prisma Clients'",
+    "generate:all": "npx prisma generate && pnpm build:schemas",
+    "generate:clean": "pnpm clean && pnpm generate:all",
+    "generate:edge": "prisma generate --generator edge",
+    "generate:zod": "prisma generate --generator zod",
+    "postinstall": "pnpm generate:clean",
+    "test:adapters": "echo 'Testing adapter availability...' && node -e 'import(\"./src/adapters/postgresql.js\").then(() => console.log(\"✅ PostgreSQL adapter\")).catch(() => console.log(\"❌ PostgreSQL adapter\"))'",
+    "typecheck": "tsc --noEmit",
+    "validate:edge": "echo 'Validating edge compatibility...' && node -e 'import(\"./src/edge/index.js\").then(() => console.log(\"✅ Edge exports valid\")).catch(e => console.error(\"❌ Edge validation failed:\", e))'"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.12.0",
+    "prisma": "^6.12.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "glob": "^11.0.3",
+    "prisma-zod-generator": "^1.17.4",
+    "tsup": "^8.5.0",
+    "tsx": "^4.19.2",
+    "typescript": "catalog:"
+  },
+  "peerDependencies": {
+    "@libsql/client": "*",
+    "@neondatabase/serverless": "*",
+    "@planetscale/database": "*",
+    "@prisma/adapter-better-sqlite3": "*",
+    "@prisma/adapter-d1": "*",
+    "@prisma/adapter-libsql": "*",
+    "@prisma/adapter-neon": "*",
+    "@prisma/adapter-pg": "*",
+    "@prisma/adapter-planetscale": "*",
+    "better-sqlite3": "*",
+    "pg": "*"
+  },
+  "peerDependenciesMeta": {
+    "@libsql/client": {
+      "optional": true
+    },
+    "@neondatabase/serverless": {
+      "optional": true
+    },
+    "@planetscale/database": {
+      "optional": true
+    },
+    "@prisma/adapter-better-sqlite3": {
+      "optional": true
+    },
+    "@prisma/adapter-d1": {
+      "optional": true
+    },
+    "@prisma/adapter-libsql": {
+      "optional": true
+    },
+    "@prisma/adapter-neon": {
+      "optional": true
+    },
+    "@prisma/adapter-pg": {
+      "optional": true
+    },
+    "@prisma/adapter-planetscale": {
+      "optional": true
+    },
+    "better-sqlite3": {
+      "optional": true
+    },
+    "pg": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

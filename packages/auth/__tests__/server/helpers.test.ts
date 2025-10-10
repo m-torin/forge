@@ -2,18 +2,18 @@
  * Tests for server helpers functionality
  */
 
-import { beforeEach, describe, expect, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from "vitest";
 
 // Mock NextResponse
 const mockNextResponseJson = vi.fn();
-vi.mock('next/server', () => ({
+vi.mock("next/server", () => ({
   NextResponse: {
     json: mockNextResponseJson,
   },
 }));
 
 // Mock server-only
-vi.mock('server-only', () => ({}));
+vi.mock("server-only", () => ({}));
 
 // Mock shared auth
 const mockAuth = {
@@ -21,34 +21,34 @@ const mockAuth = {
     getSession: vi.fn(),
   },
 };
-vi.mock('../../src/shared/auth', () => ({
+vi.mock("../../src/shared/auth", () => ({
   auth: mockAuth,
 }));
 
-describe('server helpers functionality', () => {
+describe("server helpers functionality", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     delete process.env.SERVICE_API_KEY;
   });
 
-  describe('createAuthHelpers', () => {
-    test('should create helpers with default config', async () => {
-      const helpersModule = await import('../../src/server/helpers');
+  describe("createAuthHelpers", () => {
+    test("should create helpers with default config", async () => {
+      const helpersModule = await import("../../src/server/helpers");
 
       const helpers = helpersModule.createAuthHelpers();
 
-      expect(helpers).toHaveProperty('requireAuth');
-      expect(helpers).toHaveProperty('getOptionalAuth');
-      expect(typeof helpers.requireAuth).toBe('function');
-      expect(typeof helpers.getOptionalAuth).toBe('function');
+      expect(helpers).toHaveProperty("requireAuth");
+      expect(helpers).toHaveProperty("getOptionalAuth");
+      expect(typeof helpers.requireAuth).toBe("function");
+      expect(typeof helpers.getOptionalAuth).toBe("function");
     });
 
-    test('should create helpers with custom config', async () => {
-      const helpersModule = await import('../../src/server/helpers');
+    test("should create helpers with custom config", async () => {
+      const helpersModule = await import("../../src/server/helpers");
 
       const config = {
-        serviceEmail: 'custom@service.com',
-        serviceName: 'Custom Service',
+        serviceEmail: "custom@service.com",
+        serviceName: "Custom Service",
       };
 
       const helpers = helpersModule.createAuthHelpers(config);
@@ -56,31 +56,31 @@ describe('server helpers functionality', () => {
       expect(helpers).toBeDefined();
     });
 
-    test('should create helpers with partial config', async () => {
-      const helpersModule = await import('../../src/server/helpers');
+    test("should create helpers with partial config", async () => {
+      const helpersModule = await import("../../src/server/helpers");
 
       const helpers = helpersModule.createAuthHelpers({
-        serviceName: 'Test Service',
+        serviceName: "Test Service",
       });
 
       expect(helpers).toBeDefined();
     });
   });
 
-  describe('requireAuth', () => {
-    test('should authenticate with valid service API key', async () => {
-      const helpersModule = await import('../../src/server/helpers');
+  describe("requireAuth", () => {
+    test("should authenticate with valid service API key", async () => {
+      const helpersModule = await import("../../src/server/helpers");
 
-      process.env.SERVICE_API_KEY = 'valid-service-key';
+      process.env.SERVICE_API_KEY = "valid-service-key";
 
       const helpers = helpersModule.createAuthHelpers({
-        serviceEmail: 'test@service.com',
-        serviceName: 'Test Service',
+        serviceEmail: "test@service.com",
+        serviceName: "Test Service",
       });
 
       const mockRequest = {
         headers: {
-          get: vi.fn().mockReturnValue('valid-service-key'),
+          get: vi.fn().mockReturnValue("valid-service-key"),
         },
       } as any;
 
@@ -88,28 +88,28 @@ describe('server helpers functionality', () => {
 
       expect(result).toStrictEqual({
         session: {
-          id: 'service-session',
-          activeOrganizationId: 'system',
-          userId: 'service',
+          id: "service-session",
+          activeOrganizationId: "system",
+          userId: "service",
         },
         user: {
-          id: 'service',
-          name: 'Test Service',
-          email: 'test@service.com',
+          id: "service",
+          name: "Test Service",
+          email: "test@service.com",
         },
       });
     });
 
-    test('should not authenticate with invalid service API key', async () => {
-      const helpersModule = await import('../../src/server/helpers');
+    test("should not authenticate with invalid service API key", async () => {
+      const helpersModule = await import("../../src/server/helpers");
 
-      process.env.SERVICE_API_KEY = 'valid-service-key';
+      process.env.SERVICE_API_KEY = "valid-service-key";
 
       const helpers = helpersModule.createAuthHelpers();
 
       const mockRequest = {
         headers: {
-          get: vi.fn().mockReturnValue('invalid-key'),
+          get: vi.fn().mockReturnValue("invalid-key"),
         },
       } as any;
 
@@ -119,20 +119,20 @@ describe('server helpers functionality', () => {
 
       expect(mockNextResponseJson).toHaveBeenCalledWith(
         {
-          error: 'Unauthorized',
-          message: 'Please authenticate',
+          error: "Unauthorized",
+          message: "Please authenticate",
         },
         {
           headers: {
-            'WWW-Authenticate': 'Bearer realm="api", charset="UTF-8"',
+            "WWW-Authenticate": 'Bearer realm="api", charset="UTF-8"',
           },
           status: 401,
         },
       );
     });
 
-    test('should authenticate with valid user session', async () => {
-      const helpersModule = await import('../../src/server/helpers');
+    test("should authenticate with valid user session", async () => {
+      const helpersModule = await import("../../src/server/helpers");
 
       const helpers = helpersModule.createAuthHelpers();
 
@@ -143,8 +143,8 @@ describe('server helpers functionality', () => {
       } as any;
 
       const mockSession = {
-        user: { id: 'user-1', name: 'Test User', email: 'test@example.com' },
-        session: { id: 'session-1' },
+        user: { id: "user-1", name: "Test User", email: "test@example.com" },
+        session: { id: "session-1" },
       };
 
       mockAuth.api.getSession.mockResolvedValue(mockSession);
@@ -157,8 +157,8 @@ describe('server helpers functionality', () => {
       });
     });
 
-    test('should return 401 when no authentication provided', async () => {
-      const helpersModule = await import('../../src/server/helpers');
+    test("should return 401 when no authentication provided", async () => {
+      const helpersModule = await import("../../src/server/helpers");
 
       const helpers = helpersModule.createAuthHelpers();
 
@@ -174,33 +174,33 @@ describe('server helpers functionality', () => {
 
       expect(mockNextResponseJson).toHaveBeenCalledWith(
         {
-          error: 'Unauthorized',
-          message: 'Please authenticate',
+          error: "Unauthorized",
+          message: "Please authenticate",
         },
         {
           headers: {
-            'WWW-Authenticate': 'Bearer realm="api", charset="UTF-8"',
+            "WWW-Authenticate": 'Bearer realm="api", charset="UTF-8"',
           },
           status: 401,
         },
       );
     });
 
-    test('should skip service auth when SERVICE_API_KEY not set', async () => {
-      const helpersModule = await import('../../src/server/helpers');
+    test("should skip service auth when SERVICE_API_KEY not set", async () => {
+      const helpersModule = await import("../../src/server/helpers");
 
       // No SERVICE_API_KEY env var
       const helpers = helpersModule.createAuthHelpers();
 
       const mockRequest = {
         headers: {
-          get: vi.fn().mockReturnValue('some-key'),
+          get: vi.fn().mockReturnValue("some-key"),
         },
       } as any;
 
       const mockSession = {
-        user: { id: 'user-1' },
-        session: { id: 'session-1' },
+        user: { id: "user-1" },
+        session: { id: "session-1" },
       };
 
       mockAuth.api.getSession.mockResolvedValue(mockSession);
@@ -211,20 +211,20 @@ describe('server helpers functionality', () => {
     });
   });
 
-  describe('getOptionalAuth', () => {
-    test('should return service auth with valid service API key', async () => {
-      const helpersModule = await import('../../src/server/helpers');
+  describe("getOptionalAuth", () => {
+    test("should return service auth with valid service API key", async () => {
+      const helpersModule = await import("../../src/server/helpers");
 
-      process.env.SERVICE_API_KEY = 'valid-service-key';
+      process.env.SERVICE_API_KEY = "valid-service-key";
 
       const helpers = helpersModule.createAuthHelpers({
-        serviceEmail: 'optional@service.com',
-        serviceName: 'Optional Service',
+        serviceEmail: "optional@service.com",
+        serviceName: "Optional Service",
       });
 
       const mockRequest = {
         headers: {
-          get: vi.fn().mockReturnValue('valid-service-key'),
+          get: vi.fn().mockReturnValue("valid-service-key"),
         },
       } as any;
 
@@ -232,20 +232,20 @@ describe('server helpers functionality', () => {
 
       expect(result).toStrictEqual({
         session: {
-          id: 'service-session',
-          activeOrganizationId: 'system',
-          userId: 'service',
+          id: "service-session",
+          activeOrganizationId: "system",
+          userId: "service",
         },
         user: {
-          id: 'service',
-          name: 'Optional Service',
-          email: 'optional@service.com',
+          id: "service",
+          name: "Optional Service",
+          email: "optional@service.com",
         },
       });
     });
 
-    test('should return user session when available', async () => {
-      const helpersModule = await import('../../src/server/helpers');
+    test("should return user session when available", async () => {
+      const helpersModule = await import("../../src/server/helpers");
 
       const helpers = helpersModule.createAuthHelpers();
 
@@ -256,8 +256,8 @@ describe('server helpers functionality', () => {
       } as any;
 
       const mockSession = {
-        user: { id: 'user-1', name: 'Test User' },
-        session: { id: 'session-1' },
+        user: { id: "user-1", name: "Test User" },
+        session: { id: "session-1" },
       };
 
       mockAuth.api.getSession.mockResolvedValue(mockSession);
@@ -267,8 +267,8 @@ describe('server helpers functionality', () => {
       expect(result).toBe(mockSession);
     });
 
-    test('should return null when no authentication available', async () => {
-      const helpersModule = await import('../../src/server/helpers');
+    test("should return null when no authentication available", async () => {
+      const helpersModule = await import("../../src/server/helpers");
 
       const helpers = helpersModule.createAuthHelpers();
 
@@ -285,16 +285,16 @@ describe('server helpers functionality', () => {
       expect(result).toBeNull();
     });
 
-    test('should not authenticate with invalid service API key', async () => {
-      const helpersModule = await import('../../src/server/helpers');
+    test("should not authenticate with invalid service API key", async () => {
+      const helpersModule = await import("../../src/server/helpers");
 
-      process.env.SERVICE_API_KEY = 'valid-service-key';
+      process.env.SERVICE_API_KEY = "valid-service-key";
 
       const helpers = helpersModule.createAuthHelpers();
 
       const mockRequest = {
         headers: {
-          get: vi.fn().mockReturnValue('invalid-key'),
+          get: vi.fn().mockReturnValue("invalid-key"),
         },
       } as any;
 
@@ -305,29 +305,29 @@ describe('server helpers functionality', () => {
       expect(result).toBeNull();
     });
 
-    test('should use default service config when not provided', async () => {
-      const helpersModule = await import('../../src/server/helpers');
+    test("should use default service config when not provided", async () => {
+      const helpersModule = await import("../../src/server/helpers");
 
-      process.env.SERVICE_API_KEY = 'valid-service-key';
+      process.env.SERVICE_API_KEY = "valid-service-key";
 
       const helpers = helpersModule.createAuthHelpers();
 
       const mockRequest = {
         headers: {
-          get: vi.fn().mockReturnValue('valid-service-key'),
+          get: vi.fn().mockReturnValue("valid-service-key"),
         },
       } as any;
 
       const result = await helpers.getOptionalAuth(mockRequest);
 
-      expect(result.user.email).toBe('service@system');
-      expect(result.user.name).toBe('Service Account');
+      expect(result.user.email).toBe("service@system");
+      expect(result.user.name).toBe("Service Account");
     });
   });
 
-  describe('edge cases', () => {
-    test('should handle headers.get returning null', async () => {
-      const helpersModule = await import('../../src/server/helpers');
+  describe("edge cases", () => {
+    test("should handle headers.get returning null", async () => {
+      const helpersModule = await import("../../src/server/helpers");
 
       const helpers = helpersModule.createAuthHelpers();
 
@@ -344,8 +344,8 @@ describe('server helpers functionality', () => {
       expect(result).toBeNull();
     });
 
-    test('should handle auth.api.getSession throwing error', async () => {
-      const helpersModule = await import('../../src/server/helpers');
+    test("should handle auth.api.getSession throwing error", async () => {
+      const helpersModule = await import("../../src/server/helpers");
 
       const helpers = helpersModule.createAuthHelpers();
 
@@ -355,22 +355,24 @@ describe('server helpers functionality', () => {
         },
       } as any;
 
-      mockAuth.api.getSession.mockRejectedValue(new Error('Session error'));
+      mockAuth.api.getSession.mockRejectedValue(new Error("Session error"));
 
-      await expect(helpers.requireAuth(mockRequest)).rejects.toThrow('Session error');
+      await expect(helpers.requireAuth(mockRequest)).rejects.toThrow(
+        "Session error",
+      );
     });
 
-    test('should handle empty config object', async () => {
-      const helpersModule = await import('../../src/server/helpers');
+    test("should handle empty config object", async () => {
+      const helpersModule = await import("../../src/server/helpers");
 
       const helpers = helpersModule.createAuthHelpers({});
 
-      expect(helpers).toHaveProperty('requireAuth');
-      expect(helpers).toHaveProperty('getOptionalAuth');
+      expect(helpers).toHaveProperty("requireAuth");
+      expect(helpers).toHaveProperty("getOptionalAuth");
     });
 
-    test('should handle missing SERVICE_API_KEY with API key provided', async () => {
-      const helpersModule = await import('../../src/server/helpers');
+    test("should handle missing SERVICE_API_KEY with API key provided", async () => {
+      const helpersModule = await import("../../src/server/helpers");
 
       // Ensure SERVICE_API_KEY is not set
       delete process.env.SERVICE_API_KEY;
@@ -379,7 +381,7 @@ describe('server helpers functionality', () => {
 
       const mockRequest = {
         headers: {
-          get: vi.fn().mockReturnValue('some-api-key'),
+          get: vi.fn().mockReturnValue("some-api-key"),
         },
       } as any;
 

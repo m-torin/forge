@@ -3,12 +3,16 @@
  * Mock provider implementations for testing different AI services
  */
 
-import { MockEmbeddingModelV2 } from 'ai/test';
+import { MockEmbeddingModelV2 } from "ai/test";
 
 /**
  * Create a mock embedding model with specified dimensions
  */
-export function getMockEmbeddingModel(provider: string, modelName: string, dimensions = 1536) {
+export function getMockEmbeddingModel(
+  provider: string,
+  modelName: string,
+  dimensions = 1536,
+) {
   return new MockEmbeddingModelV2({
     modelId: `${provider}:${modelName}`,
     doEmbed: async () => ({
@@ -25,10 +29,13 @@ export function getMockEmbeddingModel(provider: string, modelName: string, dimen
  */
 export const mockProviderRegistry = {
   openai: {
-    'text-embedding-3-small': () => getMockEmbeddingModel('openai', 'text-embedding-3-small', 1536),
-    'text-embedding-3-large': () => getMockEmbeddingModel('openai', 'text-embedding-3-large', 3072),
+    "text-embedding-3-small": () =>
+      getMockEmbeddingModel("openai", "text-embedding-3-small", 1536),
+    "text-embedding-3-large": () =>
+      getMockEmbeddingModel("openai", "text-embedding-3-large", 3072),
   },
   google: {
-    'text-embedding-004': () => getMockEmbeddingModel('google', 'text-embedding-004', 768),
+    "text-embedding-004": () =>
+      getMockEmbeddingModel("google", "text-embedding-004", 768),
   },
 };

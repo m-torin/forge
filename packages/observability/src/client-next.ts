@@ -7,8 +7,8 @@ import { ObservabilityBuilder } from './factory/builder';
 import { createBetterStackPlugin } from './plugins/betterstack';
 import { env as betterStackEnv } from './plugins/betterstack/env';
 import { createConsolePlugin } from './plugins/console';
-import { createSentryNextJSPlugin } from './plugins/sentry-nextjs';
-import { env as sentryEnv } from './plugins/sentry-nextjs/env';
+import { createSentryPlugin } from './plugins/sentry';
+import { env as sentryEnv } from './plugins/sentry/env';
 import { setObservabilityInstance } from './shared';
 
 /**
@@ -35,17 +35,8 @@ export async function createClientObservability() {
   // Auto-activate Sentry if client DSN is provided
   if (sentryEnv.NEXT_PUBLIC_SENTRY_DSN) {
     builder.withPlugin(
-      createSentryNextJSPlugin({
+      createSentryPlugin({
         dsn: sentryEnv.NEXT_PUBLIC_SENTRY_DSN,
-        environment: sentryEnv.NEXT_PUBLIC_SENTRY_ENVIRONMENT,
-        release: sentryEnv.NEXT_PUBLIC_SENTRY_RELEASE,
-        // Enable client-side features based on env vars
-        enableTracing: sentryEnv.NEXT_PUBLIC_SENTRY_ENABLE_TRACING ?? true,
-        enableReplay: sentryEnv.NEXT_PUBLIC_SENTRY_ENABLE_REPLAY ?? false,
-        enableFeedback: sentryEnv.NEXT_PUBLIC_SENTRY_ENABLE_FEEDBACK ?? false,
-        tracesSampleRate: sentryEnv.SENTRY_TRACES_SAMPLE_RATE,
-        replaysSessionSampleRate: sentryEnv.SENTRY_REPLAYS_SESSION_SAMPLE_RATE,
-        replaysOnErrorSampleRate: sentryEnv.SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE,
       }),
     );
   }
@@ -63,9 +54,6 @@ export async function createClientObservability() {
       }),
     );
   }
-
-  // LogTape is not supported in client-side environments due to Node.js dependencies
-  // Use Console, Sentry, or Better Stack for client-side logging
 
   return builder.build();
 }
@@ -93,23 +81,18 @@ export { ObservabilityBuilder } from './factory/builder';
 // Re-export plugins for direct access (excluding conflicting exports)
 export { BetterStackPlugin } from './plugins/betterstack';
 export { ConsolePlugin } from './plugins/console';
-// LogTapePlugin is not available in client-side environments
 export { SentryPlugin } from './plugins/sentry';
 export { SentryMicroFrontendPlugin } from './plugins/sentry-microfrontend';
-export { SentryNextJSPlugin } from './plugins/sentry-nextjs';
 
 // Re-export plugin-specific types with aliases to avoid conflicts
 export type { Env as BetterStackEnv, BetterStackPluginConfig } from './plugins/betterstack';
 export type { ConsolePluginConfig } from './plugins/console';
-// LogTape types are still exported for compatibility
-export type { Env as LogTapeEnv, LogTapePluginConfig } from './plugins/logtape';
 export type { Env as SentryEnv, SentryPluginConfig } from './plugins/sentry';
 export type {
+  BackstageAppConfig,
   MicroFrontendMode,
   SentryMicroFrontendConfig,
-  ZoneConfig,
 } from './plugins/sentry-microfrontend';
-export type { SentryNextJSPluginConfig } from './plugins/sentry-nextjs';
 
 // Async logger functions that handle initialization
 export const logDebug = async (message: string, context?: any) => {

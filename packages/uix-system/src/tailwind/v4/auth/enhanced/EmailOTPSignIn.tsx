@@ -3,13 +3,13 @@
  * Alternative sign-in method using email-based one-time passwords
  */
 
-import { useEffect, useState, useTransition } from 'react';
-import { useFormState } from 'react-dom';
-import { sendEmailOTP, verifyEmailOTP } from '../actions';
-import { Alert } from '../ui/Alert';
-import { Button } from '../ui/Button';
-import { Card, CardContent, CardHeader } from '../ui/Card';
-import { Input } from '../ui/Input';
+import { useEffect, useState, useTransition } from "react";
+import { useFormState } from "react-dom";
+import { sendEmailOTP, verifyEmailOTP } from "../actions";
+import { Alert } from "../ui/Alert";
+import { Button } from "../ui/Button";
+import { Card, CardContent, CardHeader } from "../ui/Card";
+import { Input } from "../ui/Input";
 
 interface EmailOTPSignInProps {
   onSuccess: () => void;
@@ -18,26 +18,32 @@ interface EmailOTPSignInProps {
   className?: string;
 }
 
-type AuthStep = 'email' | 'otp' | 'success';
+type AuthStep = "email" | "otp" | "success";
 
-const initialFormState = { success: false, error: '' };
+const initialFormState = { success: false, error: "" };
 
 export function EmailOTPSignIn({
   onSuccess: _onSuccess,
   onCancel,
   redirectTo: _redirectTo,
-  className = '',
+  className = "",
 }: EmailOTPSignInProps) {
   const [isPending, startTransition] = useTransition();
-  const [currentStep, setCurrentStep] = useState<AuthStep>('email');
-  const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
+  const [currentStep, setCurrentStep] = useState<AuthStep>("email");
+  const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
   const [countdown, setCountdown] = useState(0);
   const [resendAttempts, _setResendAttempts] = useState(0);
 
   // Form states
-  const [sendOtpState, sendOtpAction] = useFormState(sendEmailOTP, initialFormState);
-  const [verifyState, verifyAction] = useFormState(verifyEmailOTP, initialFormState);
+  const [sendOtpState, sendOtpAction] = useFormState(
+    sendEmailOTP,
+    initialFormState,
+  );
+  const [verifyState, verifyAction] = useFormState(
+    verifyEmailOTP,
+    initialFormState,
+  );
 
   // Countdown timer for resend functionality
   useEffect(() => {
@@ -53,8 +59,8 @@ export function EmailOTPSignIn({
     if (!email.trim()) return;
 
     const formData = new FormData();
-    formData.append('email', email);
-    formData.append('type', 'sign-in');
+    formData.append("email", email);
+    formData.append("type", "sign-in");
 
     startTransition(() => {
       sendOtpAction(formData);
@@ -67,8 +73,8 @@ export function EmailOTPSignIn({
     if (!otp.trim() || otp.length !== 6) return;
 
     const formData = new FormData();
-    formData.append('email', email);
-    formData.append('otp', otp);
+    formData.append("email", email);
+    formData.append("otp", otp);
 
     startTransition(() => {
       verifyAction(formData);
@@ -80,8 +86,8 @@ export function EmailOTPSignIn({
     if (countdown > 0 || resendAttempts >= 3) return;
 
     const formData = new FormData();
-    formData.append('email', email);
-    formData.append('type', 'sign-in');
+    formData.append("email", email);
+    formData.append("type", "sign-in");
 
     startTransition(() => {
       sendOtpAction(formData);
@@ -90,14 +96,14 @@ export function EmailOTPSignIn({
   };
 
   const handleEditEmail = () => {
-    setCurrentStep('email');
-    setOtp('');
+    setCurrentStep("email");
+    setOtp("");
     setCountdown(0);
   };
 
   const handleOtpChange = (value: string) => {
     // Only allow digits and limit to 6 characters
-    const cleanValue = value.replace(/\D/g, '').slice(0, 6);
+    const cleanValue = value.replace(/\D/g, "").slice(0, 6);
     setOtp(cleanValue);
   };
 
@@ -110,17 +116,19 @@ export function EmailOTPSignIn({
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-semibold text-gray-900">
-              {currentStep === 'email' && 'Sign in with Email OTP'}
-              {currentStep === 'otp' && 'Enter Verification Code'}
-              {currentStep === 'success' && 'Sign In Successful'}
+              {currentStep === "email" && "Sign in with Email OTP"}
+              {currentStep === "otp" && "Enter Verification Code"}
+              {currentStep === "success" && "Sign In Successful"}
             </h2>
             <p className="mt-1 text-sm text-gray-600">
-              {currentStep === 'email' && "We'll send a one-time password to your email"}
-              {currentStep === 'otp' && `Enter the 6-digit code sent to ${email}`}
-              {currentStep === 'success' && 'Redirecting you now...'}
+              {currentStep === "email" &&
+                "We'll send a one-time password to your email"}
+              {currentStep === "otp" &&
+                `Enter the 6-digit code sent to ${email}`}
+              {currentStep === "success" && "Redirecting you now..."}
             </p>
           </div>
-          {onCancel && currentStep !== 'success' && (
+          {onCancel && currentStep !== "success" && (
             <Button variant="outline" onClick={onCancel} size="sm">
               Cancel
             </Button>
@@ -129,10 +137,12 @@ export function EmailOTPSignIn({
       </CardHeader>
       <CardContent className="space-y-6">
         {(sendOtpState.error || verifyState.error) && (
-          <Alert variant="destructive">{sendOtpState.error || verifyState.error}</Alert>
+          <Alert variant="destructive">
+            {sendOtpState.error || verifyState.error}
+          </Alert>
         )}
 
-        {currentStep === 'success' && (
+        {currentStep === "success" && (
           <Alert variant="default">
             <div className="flex items-center">
               <span className="mr-3 text-lg text-green-600">✅</span>
@@ -144,10 +154,13 @@ export function EmailOTPSignIn({
           </Alert>
         )}
 
-        {currentStep === 'email' && (
+        {currentStep === "email" && (
           <form onSubmit={handleEmailSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="mb-2 block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="email"
+                className="mb-2 block text-sm font-medium text-gray-700"
+              >
                 Email Address
               </label>
               <Input
@@ -155,7 +168,7 @@ export function EmailOTPSignIn({
                 type="email"
                 required
                 value={email}
-                onChange={e => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email address"
                 className="w-full"
                 autoComplete="email"
@@ -165,16 +178,23 @@ export function EmailOTPSignIn({
               </p>
             </div>
 
-            <Button type="submit" className="w-full" disabled={isPending || !email.trim()}>
-              {isPending ? 'Sending Code...' : 'Send Verification Code'}
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isPending || !email.trim()}
+            >
+              {isPending ? "Sending Code..." : "Send Verification Code"}
             </Button>
           </form>
         )}
 
-        {currentStep === 'otp' && (
+        {currentStep === "otp" && (
           <form onSubmit={handleOtpSubmit} className="space-y-4">
             <div>
-              <label htmlFor="otp" className="mb-2 block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="otp"
+                className="mb-2 block text-sm font-medium text-gray-700"
+              >
                 Verification Code
               </label>
               <Input
@@ -182,7 +202,7 @@ export function EmailOTPSignIn({
                 type="text"
                 required
                 value={otp}
-                onChange={e => handleOtpChange(e.target.value)}
+                onChange={(e) => handleOtpChange(e.target.value)}
                 placeholder="000000"
                 className="w-full text-center font-mono text-2xl tracking-widest"
                 maxLength={6}
@@ -199,17 +219,21 @@ export function EmailOTPSignIn({
                   key={i}
                   className={`flex h-8 w-8 items-center justify-center rounded-lg border-2 font-mono text-sm ${
                     i < otp.length
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-300 bg-gray-50 text-gray-400'
+                      ? "border-blue-500 bg-blue-50 text-blue-700"
+                      : "border-gray-300 bg-gray-50 text-gray-400"
                   }`}
                 >
-                  {otp[i] || ''}
+                  {otp[i] || ""}
                 </div>
               ))}
             </div>
 
-            <Button type="submit" className="w-full" disabled={isPending || otp.length !== 6}>
-              {isPending ? 'Verifying...' : 'Verify & Sign In'}
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isPending || otp.length !== 6}
+            >
+              {isPending ? "Verifying..." : "Verify & Sign In"}
             </Button>
 
             <div className="flex flex-col space-y-3">
@@ -224,9 +248,13 @@ export function EmailOTPSignIn({
 
                 <div className="flex items-center space-x-2">
                   {countdown > 0 ? (
-                    <span className="text-gray-500">Resend in {countdown}s</span>
+                    <span className="text-gray-500">
+                      Resend in {countdown}s
+                    </span>
                   ) : maxAttemptsReached ? (
-                    <span className="text-xs text-red-600">Max attempts reached</span>
+                    <span className="text-xs text-red-600">
+                      Max attempts reached
+                    </span>
                   ) : (
                     <button
                       type="button"
@@ -241,13 +269,15 @@ export function EmailOTPSignIn({
               </div>
 
               <div className="text-center">
-                <span className="text-xs text-gray-500">Attempt {resendAttempts} of 3</span>
+                <span className="text-xs text-gray-500">
+                  Attempt {resendAttempts} of 3
+                </span>
               </div>
             </div>
           </form>
         )}
 
-        {currentStep !== 'success' && (
+        {currentStep !== "success" && (
           <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
             <div className="flex items-start">
               <span className="mr-3 text-lg text-blue-600">ℹ️</span>
@@ -258,8 +288,10 @@ export function EmailOTPSignIn({
                   <li>Verification codes expire after 10 minutes</li>
                   <li>Check your spam folder if you don't see the email</li>
                   <li>You can request up to 3 codes per session</li>
-                  {currentStep === 'otp' && (
-                    <li>The code is case-sensitive and contains only numbers</li>
+                  {currentStep === "otp" && (
+                    <li>
+                      The code is case-sensitive and contains only numbers
+                    </li>
                   )}
                 </ul>
               </div>
@@ -267,27 +299,29 @@ export function EmailOTPSignIn({
           </div>
         )}
 
-        {currentStep === 'otp' && (
+        {currentStep === "otp" && (
           <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
             <div className="flex items-start">
               <span className="mr-2 text-lg text-yellow-600">🔐</span>
               <div className="text-sm text-yellow-800">
                 <p className="mb-1 font-medium">Security Tip</p>
                 <p>
-                  Never share your verification code with anyone. We will never ask for your code
-                  via phone or email. If you didn't request this code, you can safely ignore this
-                  message.
+                  Never share your verification code with anyone. We will never
+                  ask for your code via phone or email. If you didn't request
+                  this code, you can safely ignore this message.
                 </p>
               </div>
             </div>
           </div>
         )}
 
-        {currentStep === 'success' && (
+        {currentStep === "success" && (
           <div className="flex items-center justify-center py-8">
             <div className="flex items-center space-x-3">
               <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-blue-600" />
-              <span className="text-sm text-gray-600">Completing sign in...</span>
+              <span className="text-sm text-gray-600">
+                Completing sign in...
+              </span>
             </div>
           </div>
         )}

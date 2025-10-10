@@ -5,7 +5,11 @@ import { vi } from 'vitest';
 vi.mock('server-only', () => ({}));
 
 // Only set essential test environment variables, leave specific ones to individual tests
-process.env.NODE_ENV = 'test';
+Object.defineProperty(process.env, 'NODE_ENV', {
+  value: 'test',
+  writable: true,
+  configurable: true,
+});
 process.env.CI = 'true';
 process.env.SKIP_ENV_VALIDATION = 'true';
 

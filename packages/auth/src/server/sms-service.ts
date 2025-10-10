@@ -3,7 +3,7 @@
  * Supports multiple SMS providers (Twilio, AWS SNS, etc.)
  */
 
-import { logError, logInfo } from '@repo/observability/server/next';
+import { logError, logInfo } from '@repo/observability';
 import 'server-only';
 
 import { safeEnv } from '../../env';

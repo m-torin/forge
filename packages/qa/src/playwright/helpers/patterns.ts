@@ -1,4 +1,4 @@
-import { expect, type BrowserContext, type Page } from '@playwright/test';
+import { expect, type BrowserContext, type Page } from "@playwright/test";
 
 /**
  * Common E2E test patterns and utilities
@@ -67,7 +67,12 @@ export class RetryUtils {
       factor?: number;
     } = {},
   ): Promise<T> {
-    const { factor = 2, initialDelay = 1000, maxAttempts = 3, maxDelay = 10000 } = options;
+    const {
+      factor = 2,
+      initialDelay = 1000,
+      maxAttempts = 3,
+      maxDelay = 10000,
+    } = options;
 
     let lastError: Error;
     let delay = initialDelay;
@@ -81,7 +86,7 @@ export class RetryUtils {
           throw lastError;
         }
 
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
         delay = Math.min(delay * factor, maxDelay);
       }
     }
@@ -107,7 +112,7 @@ export class RetryUtils {
       if (result !== null) {
         return result;
       }
-      await new Promise(resolve => setTimeout(resolve, interval));
+      await new Promise((resolve) => setTimeout(resolve, interval));
     }
 
     throw new Error(`Polling timeout after ${timeout}ms`);
@@ -131,11 +136,11 @@ export class NetworkUtils {
       headers?: Record<string, string>;
     },
   ) {
-    await this.page.route(pattern, route => {
+    await this.page.route(pattern, (route) => {
       route.fulfill({
         body: JSON.stringify(response.body || {}),
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           ...response.headers,
         },
         status: response.status || 200,
@@ -154,7 +159,7 @@ export class NetworkUtils {
       timestamp: number;
     }[] = [];
 
-    this.page.on('request', request => {
+    this.page.on("request", (request) => {
       if (!filter || filter(request.url())) {
         requests.push({
           url: request.url(),
@@ -176,17 +181,17 @@ export class NetworkUtils {
 
     // Wait for no network activity for 500ms
     // eslint-disable-next-line playwright/no-networkidle
-    await this.page.waitForLoadState('networkidle', { timeout });
+    await this.page.waitForLoadState("networkidle", { timeout });
 
     // Additional stability check
-    await expect(this.page.locator('body')).toBeVisible();
+    await expect(this.page.locator("body")).toBeVisible();
   }
 
   /**
    * Block resources by type
    */
-  async blockResources(types: ('image' | 'stylesheet' | 'font' | 'script')[]) {
-    await this.page.route('**/*', route => {
+  async blockResources(types: ("image" | "stylesheet" | "font" | "script")[]) {
+    await this.page.route("**/*", (route) => {
       if (types.includes(route.request().resourceType() as any)) {
         route.abort();
       } else {
@@ -198,8 +203,11 @@ export class NetworkUtils {
   /**
    * Intercept and modify requests/responses
    */
-  async interceptRequests(pattern: string | RegExp, handler: NetworkInterceptionHandler) {
-    await this.page.route(pattern, async route => {
+  async interceptRequests(
+    pattern: string | RegExp,
+    handler: NetworkInterceptionHandler,
+  ) {
+    await this.page.route(pattern, async (route) => {
       let request = route.request();
 
       // Modify request if handler provided
@@ -233,7 +241,7 @@ export class NetworkUtils {
 
         // Add delay if specified
         if (handler.delay) {
-          await new Promise(resolve => setTimeout(resolve, handler.delay));
+          await new Promise((resolve) => setTimeout(resolve, handler.delay));
         }
 
         route.fulfill({
@@ -244,7 +252,7 @@ export class NetworkUtils {
       } else {
         // Add delay if specified
         if (handler.delay) {
-          await new Promise(resolve => setTimeout(resolve, handler.delay));
+          await new Promise((resolve) => setTimeout(resolve, handler.delay));
         }
         route.fulfill({ response });
       }
@@ -255,7 +263,7 @@ export class NetworkUtils {
    * Mock GraphQL endpoint with operation-specific responses
    */
   async mockGraphQL(endpoint: string, mocks: Record<string, any>) {
-    await this.page.route(endpoint, route => {
+    await this.page.route(endpoint, (route) => {
       const postData = route.request().postData();
       if (!postData) {
         route.continue();
@@ -264,12 +272,13 @@ export class NetworkUtils {
 
       try {
         const { operationName, query } = JSON.parse(postData);
-        const operationKey = operationName || this.extractOperationFromQuery(query);
+        const operationKey =
+          operationName || this.extractOperationFromQuery(query);
 
         if (mocks[operationKey]) {
           route.fulfill({
             status: 200,
-            headers: { 'Content-Type': 'application/json' },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ data: mocks[operationKey] }),
           });
         } else {
@@ -285,7 +294,7 @@ export class NetworkUtils {
    * Simulate network conditions (slow 3G, offline, etc.)
    */
   async simulateNetworkConditions(
-    condition: 'slow3G' | 'fast3G' | 'offline' | 'custom',
+    condition: "slow3G" | "fast3G" | "offline" | "custom",
     customOptions?: NetworkCondition,
   ): Promise<() => Promise<void>> {
     const conditions: Record<string, NetworkCondition> = {
@@ -328,11 +337,11 @@ export class NetworkUtils {
       }
     };
 
-    await context.route('**/*', routeHandler);
+    await context.route("**/*", routeHandler);
 
     // Return cleanup function
     return async () => {
-      await context.unroute('**/*', routeHandler);
+      await context.unroute("**/*", routeHandler);
     };
   }
 
@@ -348,9 +357,12 @@ export class NetworkUtils {
       errorRate?: number;
     }>,
   ) {
-    await this.page.route(pattern, async route => {
+    await this.page.route(pattern, async (route) => {
       // Calculate weighted random response
-      const totalWeight = responses.reduce((sum, r) => sum + (r.weight || 1), 0);
+      const totalWeight = responses.reduce(
+        (sum, r) => sum + (r.weight || 1),
+        0,
+      );
       let random = Math.random() * totalWeight;
 
       let selectedResponse = responses[0];
@@ -363,10 +375,13 @@ export class NetworkUtils {
       }
 
       // Check for error simulation
-      if (selectedResponse.errorRate && Math.random() < selectedResponse.errorRate) {
+      if (
+        selectedResponse.errorRate &&
+        Math.random() < selectedResponse.errorRate
+      ) {
         route.fulfill({
           status: 500,
-          body: JSON.stringify({ error: 'Simulated server error' }),
+          body: JSON.stringify({ error: "Simulated server error" }),
         });
         return;
       }
@@ -374,14 +389,15 @@ export class NetworkUtils {
       // Add realistic delay
       if (selectedResponse.delay) {
         const delay =
-          Math.random() * (selectedResponse.delay.max - selectedResponse.delay.min) +
+          Math.random() *
+            (selectedResponse.delay.max - selectedResponse.delay.min) +
           selectedResponse.delay.min;
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
 
       route.fulfill({
         status: 200,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(selectedResponse.response),
       });
     });
@@ -392,7 +408,7 @@ export class NetworkUtils {
    */
   private extractOperationFromQuery(query: string): string {
     const match = query.match(/(?:query|mutation|subscription)\s+(\w+)/);
-    return match ? match[1] : 'unknown';
+    return match ? match[1] : "unknown";
   }
 }
 
@@ -403,7 +419,10 @@ export class ContextUtils {
   /**
    * Create authenticated context
    */
-  static async createAuthenticatedContext(browser: any, authState: any): Promise<BrowserContext> {
+  static async createAuthenticatedContext(
+    browser: any,
+    authState: any,
+  ): Promise<BrowserContext> {
     const context = await browser.newContext({
       storageState: authState,
     });
@@ -428,28 +447,28 @@ export class ContextUtils {
    */
   static async createMobileContext(
     browser: any,
-    device: 'iPhone 12' | 'Pixel 5' | 'Galaxy S21',
+    device: "iPhone 12" | "Pixel 5" | "Galaxy S21",
   ): Promise<BrowserContext> {
     const devices = {
-      'Galaxy S21': {
+      "Galaxy S21": {
         deviceScaleFactor: 3,
         hasTouch: true,
         isMobile: true,
-        userAgent: 'Mozilla/5.0 (Linux; Android 11; Samsung Galaxy S21)',
+        userAgent: "Mozilla/5.0 (Linux; Android 11; Samsung Galaxy S21)",
         viewport: { width: 360, height: 800 },
       },
-      'iPhone 12': {
+      "iPhone 12": {
         deviceScaleFactor: 3,
         hasTouch: true,
         isMobile: true,
-        userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)',
+        userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)",
         viewport: { width: 390, height: 844 },
       },
-      'Pixel 5': {
+      "Pixel 5": {
         deviceScaleFactor: 2.75,
         hasTouch: true,
         isMobile: true,
-        userAgent: 'Mozilla/5.0 (Linux; Android 11; Pixel 5)',
+        userAgent: "Mozilla/5.0 (Linux; Android 11; Pixel 5)",
         viewport: { width: 393, height: 851 },
       },
     };
@@ -470,14 +489,17 @@ export class PerformanceUtils {
   async measurePageLoad() {
     const metrics = await this.page.evaluate(() => {
       const navigation = performance.getEntriesByType(
-        'navigation',
+        "navigation",
       )[0] as PerformanceNavigationTiming;
       return {
         domContentLoaded:
-          navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart,
+          navigation.domContentLoadedEventEnd -
+          navigation.domContentLoadedEventStart,
         firstContentfulPaint:
-          performance.getEntriesByName('first-contentful-paint')[0]?.startTime || 0,
-        firstPaint: performance.getEntriesByName('first-paint')[0]?.startTime || 0,
+          performance.getEntriesByName("first-contentful-paint")[0]
+            ?.startTime || 0,
+        firstPaint:
+          performance.getEntriesByName("first-paint")[0]?.startTime || 0,
         loadComplete: navigation.loadEventEnd - navigation.loadEventStart,
       };
     });
@@ -489,22 +511,25 @@ export class PerformanceUtils {
    */
   async measureWebVitals() {
     return this.page.evaluate(() => {
-      return new Promise(resolve => {
+      return new Promise((resolve) => {
         const vitals: Record<string, number> = {};
         let vitalsCollected = 0;
         const expectedVitals = 3; // LCP, FID, CLS
 
-        const observer = new PerformanceObserver(list => {
-          list.getEntries().forEach(entry => {
-            if (entry.entryType === 'largest-contentful-paint') {
+        const observer = new PerformanceObserver((list) => {
+          list.getEntries().forEach((entry) => {
+            if (entry.entryType === "largest-contentful-paint") {
               vitals.lcp = entry.startTime;
               vitalsCollected++;
             }
-            if (entry.entryType === 'first-input') {
+            if (entry.entryType === "first-input") {
               vitals.fid = (entry as any).processingStart - entry.startTime;
               vitalsCollected++;
             }
-            if (entry.entryType === 'layout-shift' && !(entry as any).hadRecentInput) {
+            if (
+              entry.entryType === "layout-shift" &&
+              !(entry as any).hadRecentInput
+            ) {
               vitals.cls = (vitals.cls || 0) + (entry as any).value;
               if (!vitals.clsReported) {
                 vitals.clsReported = 1;
@@ -520,7 +545,11 @@ export class PerformanceUtils {
         });
 
         observer.observe({
-          entryTypes: ['largest-contentful-paint', 'first-input', 'layout-shift'],
+          entryTypes: [
+            "largest-contentful-paint",
+            "first-input",
+            "layout-shift",
+          ],
         });
 
         // Fallback timeout to ensure promise resolves
@@ -537,21 +566,34 @@ export class PerformanceUtils {
    */
   async analyzeResourceLoading() {
     return this.page.evaluate(() => {
-      const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
+      const resources = performance.getEntriesByType(
+        "resource",
+      ) as PerformanceResourceTiming[];
       const analysis = {
         totalResources: resources.length,
         totalSize: 0,
         totalDuration: 0,
-        slowResources: [] as Array<{ name: string; duration: number; size: number }>,
-        largeResources: [] as Array<{ name: string; size: number; type: string }>,
-        resourcesByType: {} as Record<string, { count: number; totalSize: number }>,
+        slowResources: [] as Array<{
+          name: string;
+          duration: number;
+          size: number;
+        }>,
+        largeResources: [] as Array<{
+          name: string;
+          size: number;
+          type: string;
+        }>,
+        resourcesByType: {} as Record<
+          string,
+          { count: number; totalSize: number }
+        >,
       };
 
-      resources.forEach(resource => {
+      resources.forEach((resource) => {
         const size = resource.transferSize || 0;
         const duration = resource.responseEnd - resource.requestStart;
-        const type = resource.initiatorType || 'other';
-        const name = resource.name.split('/').pop() || resource.name;
+        const type = resource.initiatorType || "other";
+        const name = resource.name.split("/").pop() || resource.name;
 
         analysis.totalSize += size;
         analysis.totalDuration += duration;
@@ -588,7 +630,7 @@ export class PerformanceUtils {
 
     for (let i = 0; i < iterations; i++) {
       const memory = await this.page.evaluate(() => {
-        if ('memory' in performance) {
+        if ("memory" in performance) {
           const mem = (performance as any).memory;
           return {
             usedJSHeapSize: mem.usedJSHeapSize,
@@ -605,7 +647,7 @@ export class PerformanceUtils {
       }
 
       // Wait between measurements
-      await new Promise(resolve => setTimeout(resolve, interval));
+      await new Promise((resolve) => setTimeout(resolve, interval));
     }
 
     // Analyze trend
@@ -629,16 +671,16 @@ export class PerformanceUtils {
    */
   async measureInteractivity() {
     return this.page.evaluate(() => {
-      return new Promise(resolve => {
+      return new Promise((resolve) => {
         const metrics: Record<string, number> = {};
 
         // Time to Interactive approximation
-        const observer = new PerformanceObserver(list => {
-          list.getEntries().forEach(entry => {
-            if (entry.name === 'first-contentful-paint') {
+        const observer = new PerformanceObserver((list) => {
+          list.getEntries().forEach((entry) => {
+            if (entry.name === "first-contentful-paint") {
               metrics.fcp = entry.startTime;
             }
-            if (entry.entryType === 'navigation') {
+            if (entry.entryType === "navigation") {
               const nav = entry as PerformanceNavigationTiming;
               metrics.domInteractive = nav.domInteractive;
               metrics.domComplete = nav.domComplete;
@@ -646,7 +688,7 @@ export class PerformanceUtils {
           });
         });
 
-        observer.observe({ entryTypes: ['paint', 'navigation'] });
+        observer.observe({ entryTypes: ["paint", "navigation"] });
 
         // Measure input responsiveness
         let inputCount = 0;
@@ -661,13 +703,13 @@ export class PerformanceUtils {
           }, 0);
         };
 
-        document.addEventListener('click', inputHandler);
-        document.addEventListener('keydown', inputHandler);
+        document.addEventListener("click", inputHandler);
+        document.addEventListener("keydown", inputHandler);
 
         setTimeout(() => {
           observer.disconnect();
-          document.removeEventListener('click', inputHandler);
-          document.removeEventListener('keydown', inputHandler);
+          document.removeEventListener("click", inputHandler);
+          document.removeEventListener("keydown", inputHandler);
           resolve(metrics);
         }, 5000);
       });
@@ -677,7 +719,9 @@ export class PerformanceUtils {
   /**
    * Measure operation duration
    */
-  async measureDuration<T>(operation: () => Promise<T>): Promise<{ result: T; duration: number }> {
+  async measureDuration<T>(
+    operation: () => Promise<T>,
+  ): Promise<{ result: T; duration: number }> {
     const start = Date.now();
     const result = await operation();
     const duration = Date.now() - start;
@@ -689,7 +733,7 @@ export class PerformanceUtils {
    */
   async checkMemoryUsage() {
     return this.page.evaluate(() => {
-      if ('memory' in performance) {
+      if ("memory" in performance) {
         return (performance as any).memory;
       }
       return null;
@@ -758,19 +802,19 @@ export class FileUtils {
    */
   async downloadFile(triggerSelector: string): Promise<string> {
     const [download] = await Promise.all([
-      this.page.waitForEvent('download'),
+      this.page.waitForEvent("download"),
       this.page.click(triggerSelector),
     ]);
 
     const path = await download.path();
-    return path || '';
+    return path || "";
   }
 
   /**
    * Wait for download to complete
    */
   async waitForDownload(action: () => Promise<void>) {
-    const downloadPromise = this.page.waitForEvent('download');
+    const downloadPromise = this.page.waitForEvent("download");
     await action();
     const download = await downloadPromise;
     await download.saveAs(`./test-downloads/${download.suggestedFilename()}`);

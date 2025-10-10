@@ -119,7 +119,7 @@ export const WithRichContent: Story = {
 };
 
 // Custom styling story
-export const CustomStyled: Story = {
+const CustomStyled: Story = {
   args: {
     className: 'border-2 border-blue-500 rounded-xl shadow-lg',
     placeholder: 'Custom styled editor...',
@@ -128,7 +128,7 @@ export const CustomStyled: Story = {
 };
 
 // Collaboration enabled (but not connected)
-export const WithCollaborationEnabled: Story = {
+const WithCollaborationEnabled: Story = {
   args: {
     enableCollaboration: true,
     documentId: 'story-collab-doc',
@@ -274,7 +274,7 @@ export const CollaborativeDefault: StoryObj<typeof CollaborativeSimpleEditor> = 
 };
 
 // Multiple users simulation (mock)
-export const MultipleUsers: StoryObj<typeof CollaborativeSimpleEditor> = {
+const MultipleUsers: StoryObj<typeof CollaborativeSimpleEditor> = {
   ...CollaborativeMeta,
   args: {
     documentId: 'multi-user-doc',
@@ -298,7 +298,7 @@ export const MultipleUsers: StoryObj<typeof CollaborativeSimpleEditor> = {
 };
 
 // High latency simulation
-export const HighLatency: StoryObj<typeof CollaborativeSimpleEditor> = {
+const HighLatency: StoryObj<typeof CollaborativeSimpleEditor> = {
   ...CollaborativeMeta,
   args: {
     documentId: 'high-latency-doc',
@@ -324,7 +324,7 @@ export const HighLatency: StoryObj<typeof CollaborativeSimpleEditor> = {
 };
 
 // Disconnected state
-export const Disconnected: StoryObj<typeof CollaborativeSimpleEditor> = {
+const Disconnected: StoryObj<typeof CollaborativeSimpleEditor> = {
   ...CollaborativeMeta,
   args: {
     documentId: 'disconnected-doc',

@@ -3,16 +3,16 @@
  * 100% React Server Component for requesting email verification
  */
 
-import { useFormState } from 'react-dom';
-import type { BaseProps, FormState } from '../types';
-import { createInitialActionState } from '../types';
-import { Alert } from '../ui/Alert';
-import { Button } from '../ui/Button';
-import { Card, CardContent, CardHeader } from '../ui/Card';
-import { cn } from '../utils/dark-mode';
+import { useFormState } from "react-dom";
+import type { BaseProps, FormState } from "../types";
+import { createInitialActionState } from "../types";
+import { Alert } from "../ui/Alert";
+import { Button } from "../ui/Button";
+import { Card, CardContent, CardHeader } from "../ui/Card";
+import { cn } from "../utils/dark-mode";
 
 // Import real server action from the auth package
-import { requestEmailVerificationAction } from '@repo/auth/server-actions';
+import { requestEmailVerificationAction } from "@repo/auth/server-actions";
 
 interface EmailVerificationRequestProps extends BaseProps {
   userEmail?: string;
@@ -27,14 +27,17 @@ const _initialState: FormState = { success: false };
 
 export function EmailVerificationRequest({
   userEmail,
-  title = 'Verify Your Email',
-  subtitle = 'Please verify your email address to complete your account setup',
+  title = "Verify Your Email",
+  subtitle = "Please verify your email address to complete your account setup",
   autoRequest: _autoRequest = false,
   onSuccess,
   onError,
-  className = '',
+  className = "",
 }: EmailVerificationRequestProps) {
-  const [state, action] = useFormState(requestEmailVerificationAction, createInitialActionState());
+  const [state, action] = useFormState(
+    requestEmailVerificationAction,
+    createInitialActionState(),
+  );
 
   // Handle callbacks
   if (state?.success && onSuccess) {
@@ -46,15 +49,15 @@ export function EmailVerificationRequest({
   }
 
   return (
-    <Card className={cn('mx-auto w-full max-w-md', className)}>
+    <Card className={cn("mx-auto w-full max-w-md", className)}>
       <CardHeader>
         <div className="text-center">
           <div
             className={cn(
-              'mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full',
+              "mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full",
               state?.success
-                ? 'bg-green-100 dark:bg-green-900/20'
-                : 'bg-yellow-100 dark:bg-yellow-900/20',
+                ? "bg-green-100 dark:bg-green-900/20"
+                : "bg-yellow-100 dark:bg-yellow-900/20",
             )}
           >
             {state?.success ? (
@@ -85,9 +88,20 @@ export function EmailVerificationRequest({
               </svg>
             )}
           </div>
-          <h1 className={cn('text-2xl font-bold text-gray-900', 'dark:text-gray-100')}>{title}</h1>
+          <h1
+            className={cn(
+              "text-2xl font-bold text-gray-900",
+              "dark:text-gray-100",
+            )}
+          >
+            {title}
+          </h1>
           {subtitle && (
-            <p className={cn('mt-2 text-sm text-gray-600', 'dark:text-gray-400')}>{subtitle}</p>
+            <p
+              className={cn("mt-2 text-sm text-gray-600", "dark:text-gray-400")}
+            >
+              {subtitle}
+            </p>
           )}
         </div>
       </CardHeader>
@@ -99,8 +113,8 @@ export function EmailVerificationRequest({
 
             <div
               className={cn(
-                'rounded-lg border border-green-200 bg-green-50 p-4',
-                'dark:border-green-800 dark:bg-green-900/20',
+                "rounded-lg border border-green-200 bg-green-50 p-4",
+                "dark:border-green-800 dark:bg-green-900/20",
               )}
             >
               <div className="flex items-start">
@@ -115,9 +129,16 @@ export function EmailVerificationRequest({
                     clipRule="evenodd"
                   />
                 </svg>
-                <div className={cn('text-sm text-green-800', 'dark:text-green-200')}>
+                <div
+                  className={cn(
+                    "text-sm text-green-800",
+                    "dark:text-green-200",
+                  )}
+                >
                   <h4 className="mb-1 font-medium">Check your email</h4>
-                  <p className="mb-2">We sent a verification link to {userEmail}</p>
+                  <p className="mb-2">
+                    We sent a verification link to {userEmail}
+                  </p>
                   <ul className="list-inside list-disc space-y-1 text-xs">
                     <li>Click the verification link to confirm your email</li>
                     <li>The link will expire in 24 hours</li>
@@ -136,7 +157,9 @@ export function EmailVerificationRequest({
                 className="w-full"
                 disabled={state === undefined}
               >
-                {state === undefined ? 'Sending...' : 'Send Another Verification Email'}
+                {state === undefined
+                  ? "Sending..."
+                  : "Send Another Verification Email"}
               </Button>
             </form>
           </div>
@@ -147,18 +170,32 @@ export function EmailVerificationRequest({
             {state?.error && <Alert variant="destructive">{state.error}</Alert>}
 
             {userEmail && (
-              <div className={cn('rounded-lg bg-gray-50 p-4', 'dark:bg-gray-800')}>
+              <div
+                className={cn("rounded-lg bg-gray-50 p-4", "dark:bg-gray-800")}
+              >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className={cn('text-sm font-medium text-gray-700', 'dark:text-gray-300')}>
+                    <p
+                      className={cn(
+                        "text-sm font-medium text-gray-700",
+                        "dark:text-gray-300",
+                      )}
+                    >
                       Email Address
                     </p>
-                    <p className={cn('text-lg text-gray-900', 'dark:text-gray-100')}>{userEmail}</p>
+                    <p
+                      className={cn(
+                        "text-lg text-gray-900",
+                        "dark:text-gray-100",
+                      )}
+                    >
+                      {userEmail}
+                    </p>
                   </div>
                   <span
                     className={cn(
-                      'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium',
-                      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200',
+                      "inline-flex items-center rounded-full px-2 py-1 text-xs font-medium",
+                      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200",
                     )}
                   >
                     Unverified
@@ -169,8 +206,8 @@ export function EmailVerificationRequest({
 
             <div
               className={cn(
-                'rounded-lg border border-blue-200 bg-blue-50 p-4',
-                'dark:border-blue-800 dark:bg-blue-900/20',
+                "rounded-lg border border-blue-200 bg-blue-50 p-4",
+                "dark:border-blue-800 dark:bg-blue-900/20",
               )}
             >
               <div className="flex items-start">
@@ -185,7 +222,9 @@ export function EmailVerificationRequest({
                     clipRule="evenodd"
                   />
                 </svg>
-                <div className={cn('text-sm text-blue-800', 'dark:text-blue-200')}>
+                <div
+                  className={cn("text-sm text-blue-800", "dark:text-blue-200")}
+                >
                   <h4 className="mb-1 font-medium">Why verify your email?</h4>
                   <ul className="list-inside list-disc space-y-1 text-xs">
                     <li>Secure your account with password reset capability</li>
@@ -205,7 +244,9 @@ export function EmailVerificationRequest({
                 className="w-full"
                 disabled={state === undefined || !userEmail}
               >
-                {state === undefined ? 'Sending Verification Email...' : 'Send Verification Email'}
+                {state === undefined
+                  ? "Sending Verification Email..."
+                  : "Send Verification Email"}
               </Button>
             </form>
           </div>
@@ -213,13 +254,13 @@ export function EmailVerificationRequest({
 
         <div className="mt-6 space-y-3">
           <div className="text-center">
-            <p className={cn('text-sm text-gray-600', 'dark:text-gray-400')}>
-              Need to use a different email?{' '}
+            <p className={cn("text-sm text-gray-600", "dark:text-gray-400")}>
+              Need to use a different email?{" "}
               <a
                 href="/account/settings"
                 className={cn(
-                  'text-blue-600 hover:text-blue-500',
-                  'dark:text-blue-400 dark:hover:text-blue-300',
+                  "text-blue-600 hover:text-blue-500",
+                  "dark:text-blue-400 dark:hover:text-blue-300",
                 )}
               >
                 Update your email address
@@ -231,8 +272,8 @@ export function EmailVerificationRequest({
             <button
               type="button"
               className={cn(
-                'text-sm text-gray-500 hover:text-gray-400',
-                'dark:text-gray-500 dark:hover:text-gray-400',
+                "text-sm text-gray-500 hover:text-gray-400",
+                "dark:text-gray-500 dark:hover:text-gray-400",
               )}
               onClick={() => {
                 // In real implementation, this might skip verification temporarily
@@ -244,11 +285,23 @@ export function EmailVerificationRequest({
           </div>
         </div>
 
-        <div className={cn('mt-6 rounded-lg bg-gray-50 p-4', 'dark:bg-gray-800')}>
-          <h4 className={cn('mb-2 text-sm font-medium text-gray-900', 'dark:text-gray-100')}>
+        <div
+          className={cn("mt-6 rounded-lg bg-gray-50 p-4", "dark:bg-gray-800")}
+        >
+          <h4
+            className={cn(
+              "mb-2 text-sm font-medium text-gray-900",
+              "dark:text-gray-100",
+            )}
+          >
             Having trouble?
           </h4>
-          <div className={cn('space-y-1 text-xs text-gray-600', 'dark:text-gray-400')}>
+          <div
+            className={cn(
+              "space-y-1 text-xs text-gray-600",
+              "dark:text-gray-400",
+            )}
+          >
             <p>• Check your spam/junk folder for the verification email</p>
             <p>• Make sure your email address is spelled correctly</p>
             <p>• Verification links expire after 24 hours</p>

@@ -29,7 +29,7 @@
  */
 
 // Import the helper from @repo/seo
-import { createSitemapConfig, NextSitemapConfig } from '@repo/seo/server/next';
+import { createSitemapConfig, NextSitemapConfig } from '../server-next';
 
 const config: NextSitemapConfig = createSitemapConfig({
   siteUrl: process.env.SITE_URL || 'https://example.com',

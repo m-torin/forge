@@ -9,7 +9,7 @@ import { BootstrapData } from '../types/posthog-types';
  * PostHog provider configuration helper for Next.js
  * This is safe to use in client-side code
  */
-export function createPostHogConfig(
+function createPostHogConfig(
   apiKey: string,
   options?: {
     autocapture?: boolean;
@@ -44,9 +44,4 @@ export function createPostHogConfig(
 /**
  * Re-export client-safe utilities from posthog-bootstrap
  */
-export {
-  createBootstrapData,
-  createMinimalBootstrapData,
-  generateDistinctId,
-  getDistinctIdFromCookies,
-} from './posthog-bootstrap';
+export { createPostHogConfig };

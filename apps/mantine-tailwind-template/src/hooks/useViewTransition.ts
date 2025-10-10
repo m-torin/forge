@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useCallback } from 'react';
+import { useCallback } from "react";
 
 interface ViewTransitionAPI {
   startViewTransition?: (callback: () => void) => {
@@ -17,7 +17,7 @@ declare global {
 export function useViewTransition() {
   const startTransition = useCallback((callback: () => void) => {
     // Check if View Transitions API is supported
-    if (typeof document !== 'undefined' && 'startViewTransition' in document) {
+    if (typeof document !== "undefined" && "startViewTransition" in document) {
       return document.startViewTransition(callback);
     } else {
       // Fallback for unsupported browsers
@@ -30,7 +30,8 @@ export function useViewTransition() {
     }
   }, []);
 
-  const isSupported = typeof document !== 'undefined' && 'startViewTransition' in document;
+  const isSupported =
+    typeof document !== "undefined" && "startViewTransition" in document;
 
   return { startTransition, isSupported };
 }

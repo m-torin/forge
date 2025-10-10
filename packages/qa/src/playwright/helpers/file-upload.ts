@@ -1,6 +1,6 @@
-import { expect, type Page } from '@playwright/test';
-import { readFileSync } from 'fs';
-import { resolve } from 'path';
+import { expect, type Page } from "@playwright/test";
+import { readFileSync } from "fs";
+import { resolve } from "path";
 
 /**
  * File upload utilities for multipart forms and drag-and-drop testing
@@ -21,7 +21,7 @@ export class FileUploadUtils {
     },
   ) {
     const paths = Array.isArray(filePaths) ? filePaths : [filePaths];
-    const absolutePaths = paths.map(path => resolve(path));
+    const absolutePaths = paths.map((path) => resolve(path));
 
     // Set files on input element
     await this.page.setInputFiles(selector, absolutePaths);
@@ -52,13 +52,13 @@ export class FileUploadUtils {
     },
   ) {
     const paths = Array.isArray(filePaths) ? filePaths : [filePaths];
-    const absolutePaths = paths.map(path => resolve(path));
+    const absolutePaths = paths.map((path) => resolve(path));
 
     // Create file data for drag and drop
-    const files = absolutePaths.map(filePath => {
+    const files = absolutePaths.map((filePath) => {
       // eslint-disable-next-line security/detect-non-literal-fs-filename
       const buffer = readFileSync(filePath);
-      const fileName = filePath.split('/').pop() || 'file';
+      const fileName = filePath.split("/").pop() || "file";
       return {
         name: fileName,
         mimeType: this.getMimeType(fileName),
@@ -80,25 +80,25 @@ export class FileUploadUtils {
 
         // Create DataTransfer object
         const dataTransfer = new DataTransfer();
-        fileList.forEach(file => dataTransfer.items.add(file));
+        fileList.forEach((file) => dataTransfer.items.add(file));
 
         // Dispatch drag events
         dropZone.dispatchEvent(
-          new DragEvent('dragenter', {
+          new DragEvent("dragenter", {
             bubbles: true,
             dataTransfer,
           }),
         );
 
         dropZone.dispatchEvent(
-          new DragEvent('dragover', {
+          new DragEvent("dragover", {
             bubbles: true,
             dataTransfer,
           }),
         );
 
         dropZone.dispatchEvent(
-          new DragEvent('drop', {
+          new DragEvent("drop", {
             bubbles: true,
             dataTransfer,
           }),
@@ -141,12 +141,16 @@ export class FileUploadUtils {
 
     // Check progress indicator
     if (options.progressIndicator) {
-      await expect(this.page.locator(options.progressIndicator)).toBeVisible({ timeout });
+      await expect(this.page.locator(options.progressIndicator)).toBeVisible({
+        timeout,
+      });
     }
 
     // Check for success or error
     if (options.successIndicator) {
-      await expect(this.page.locator(options.successIndicator)).toBeVisible({ timeout });
+      await expect(this.page.locator(options.successIndicator)).toBeVisible({
+        timeout,
+      });
     }
 
     if (options.errorIndicator) {
@@ -158,7 +162,7 @@ export class FileUploadUtils {
    * Test file upload with validation
    */
   async testFileUploadFlow(config: {
-    uploadMethod: 'input' | 'dragDrop';
+    uploadMethod: "input" | "dragDrop";
     selector: string;
     files: string | string[];
     validation: {
@@ -173,7 +177,7 @@ export class FileUploadUtils {
 
     // Perform upload
     let result;
-    if (config.uploadMethod === 'input') {
+    if (config.uploadMethod === "input") {
       result = await this.uploadFiles(config.selector, config.files, {
         waitForUpload: true,
         timeout: config.timeout,
@@ -212,9 +216,9 @@ export class FileUploadUtils {
       content: string | Buffer;
       mimeType?: string;
     }>,
-    tempDir = '/tmp',
+    tempDir = "/tmp",
   ) {
-    const { writeFileSync, mkdirSync } = require('fs');
+    const { writeFileSync, mkdirSync } = require("fs");
 
     // Ensure temp directory exists
     try {
@@ -242,7 +246,7 @@ export class FileUploadUtils {
   async testFileSizeLimit(
     selector: string,
     filePath: string,
-    expectedBehavior: 'accept' | 'reject',
+    expectedBehavior: "accept" | "reject",
     options?: {
       errorSelector?: string;
       timeout?: number;
@@ -250,11 +254,11 @@ export class FileUploadUtils {
   ) {
     await this.uploadFiles(selector, filePath);
 
-    if (expectedBehavior === 'reject' && options?.errorSelector) {
+    if (expectedBehavior === "reject" && options?.errorSelector) {
       await expect(this.page.locator(options.errorSelector)).toBeVisible({
         timeout: options.timeout || 10000,
       });
-    } else if (expectedBehavior === 'accept') {
+    } else if (expectedBehavior === "accept") {
       // Verify no error is shown
       if (options?.errorSelector) {
         await expect(this.page.locator(options.errorSelector)).toBeHidden();
@@ -268,13 +272,18 @@ export class FileUploadUtils {
   async testFileTypeValidation(
     selector: string,
     filePath: string,
-    expectedBehavior: 'accept' | 'reject',
+    expectedBehavior: "accept" | "reject",
     options?: {
       errorSelector?: string;
       timeout?: number;
     },
   ) {
-    return this.testFileSizeLimit(selector, filePath, expectedBehavior, options);
+    return this.testFileSizeLimit(
+      selector,
+      filePath,
+      expectedBehavior,
+      options,
+    );
   }
 
   /**
@@ -292,7 +301,9 @@ export class FileUploadUtils {
   ) {
     await this.uploadFiles(selector, filePaths);
 
-    const expectedCount = maxFiles ? Math.min(filePaths.length, maxFiles) : filePaths.length;
+    const expectedCount = maxFiles
+      ? Math.min(filePaths.length, maxFiles)
+      : filePaths.length;
     const shouldError = maxFiles && filePaths.length > maxFiles;
 
     if (shouldError && options?.errorSelector) {
@@ -319,29 +330,29 @@ export class FileUploadUtils {
    * Get MIME type for file extension
    */
   private getMimeType(fileName: string): string {
-    const ext = fileName.split('.').pop()?.toLowerCase();
+    const ext = fileName.split(".").pop()?.toLowerCase();
     const mimeTypes: Record<string, string> = {
-      pdf: 'application/pdf',
-      jpg: 'image/jpeg',
-      jpeg: 'image/jpeg',
-      png: 'image/png',
-      gif: 'image/gif',
-      webp: 'image/webp',
-      svg: 'image/svg+xml',
-      txt: 'text/plain',
-      csv: 'text/csv',
-      json: 'application/json',
-      xml: 'application/xml',
-      doc: 'application/msword',
-      docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      xls: 'application/vnd.ms-excel',
-      xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      zip: 'application/zip',
-      mp4: 'video/mp4',
-      mp3: 'audio/mpeg',
+      pdf: "application/pdf",
+      jpg: "image/jpeg",
+      jpeg: "image/jpeg",
+      png: "image/png",
+      gif: "image/gif",
+      webp: "image/webp",
+      svg: "image/svg+xml",
+      txt: "text/plain",
+      csv: "text/csv",
+      json: "application/json",
+      xml: "application/xml",
+      doc: "application/msword",
+      docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      xls: "application/vnd.ms-excel",
+      xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      zip: "application/zip",
+      mp4: "video/mp4",
+      mp3: "audio/mpeg",
     };
 
-    return mimeTypes[ext || ''] || 'application/octet-stream';
+    return mimeTypes[ext || ""] || "application/octet-stream";
   }
 }
 

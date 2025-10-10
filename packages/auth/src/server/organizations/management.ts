@@ -4,7 +4,7 @@
 
 import 'server-only';
 
-import { logError } from '@repo/observability/server/next';
+import { logError } from '@repo/observability';
 import { auth } from '../../shared/auth';
 import { getAuthHeaders } from '../get-headers';
 
@@ -18,6 +18,11 @@ export async function setActiveOrganizationAction(organizationId: string): Promi
   error?: string;
 }> {
   try {
+    // Require authentication
+    const session = await auth.api.getSession();
+    if (!session) {
+      return { success: false, error: 'Failed to set active organization' };
+    }
     await auth.api.setActiveOrganization({
       body: { organizationId },
       headers: await getAuthHeaders(),
@@ -115,6 +120,11 @@ export async function removeMemberAction(data: {
   error?: string;
 }> {
   try {
+    // Require authentication
+    const session = await auth.api.getSession();
+    if (!session) {
+      return { success: false, error: 'Failed to remove member' };
+    }
     // Use better-auth native removeMember API
     await auth.api.removeMember({
       body: {
@@ -148,6 +158,11 @@ export async function updateMemberRoleAction(data: {
   error?: string;
 }> {
   try {
+    // Require authentication
+    const session = await auth.api.getSession();
+    if (!session) {
+      return { success: false, error: 'Failed to update member role' };
+    }
     // Use better-auth native updateMemberRole API
     await auth.api.updateMemberRole({
       body: {
@@ -185,6 +200,11 @@ export async function createOrganizationAction(data: {
   error?: string;
 }> {
   try {
+    // Require authentication
+    const session = await auth.api.getSession();
+    if (!session) {
+      return { success: false, error: 'Failed to create organization' };
+    }
     // Use better-auth native createOrganization API
     const result = await auth.api.createOrganization({
       body: {
@@ -225,6 +245,11 @@ export async function updateOrganizationAction(data: {
   error?: string;
 }> {
   try {
+    // Require authentication
+    const session = await auth.api.getSession();
+    if (!session) {
+      return { success: false, error: 'Failed to update organization' };
+    }
     // Use better-auth native updateOrganization API
     const result = await auth.api.updateOrganization({
       body: {
@@ -262,6 +287,11 @@ export async function deleteOrganizationAction(organizationId: string): Promise<
   error?: string;
 }> {
   try {
+    // Require authentication
+    const session = await auth.api.getSession();
+    if (!session) {
+      return { success: false, error: 'Failed to delete organization' };
+    }
     // Use better-auth native deleteOrganization API
     await auth.api.deleteOrganization({
       body: { organizationId },
@@ -298,6 +328,11 @@ export async function inviteUserAction(data: {
   error?: string;
 }> {
   try {
+    // Require authentication
+    const session = await auth.api.getSession();
+    if (!session) {
+      return { success: false, error: 'Failed to invite user' };
+    }
     // Use better-auth native inviteUser API
     const result = await auth.api.inviteUser({
       body: {
@@ -331,6 +366,11 @@ export async function cancelInvitationAction(invitationId: string): Promise<{
   error?: string;
 }> {
   try {
+    // Require authentication
+    const session = await auth.api.getSession();
+    if (!session) {
+      return { success: false, error: 'Failed to cancel invitation' };
+    }
     // Use better-auth native cancelInvitation API
     await auth.api.cancelInvitation({
       body: { invitationId },
@@ -358,6 +398,11 @@ export async function acceptInvitationAction(invitationId: string): Promise<{
   error?: string;
 }> {
   try {
+    // Require authentication
+    const session = await auth.api.getSession();
+    if (!session) {
+      return { success: false, error: 'Failed to accept invitation' };
+    }
     // Use better-auth native acceptInvitation API
     const result = await auth.api.acceptInvitation({
       body: { invitationId },
@@ -385,6 +430,11 @@ export async function declineInvitationAction(invitationId: string): Promise<{
   error?: string;
 }> {
   try {
+    // Require authentication
+    const session = await auth.api.getSession();
+    if (!session) {
+      return { success: false, error: 'Failed to decline invitation' };
+    }
     // Use better-auth native rejectInvitation API
     await auth.api.rejectInvitation({
       body: { invitationId },

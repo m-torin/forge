@@ -1,0 +1,29 @@
+// community.prisma - Community and Content Models
+
+//==============================================================================
+// COMMUNITY MODELS
+//==============================================================================
+
+model Article {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Soft delete
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("DeletedArticles", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  // Basic information
+  title   String
+  slug    String        @unique
+  content Json          @db.JsonB // Flexible storage for article content
+  status  ContentStatus @default(DRAFT)
+
+  // Ownership (optional)
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([slug])
+  @@index([userId])
+}

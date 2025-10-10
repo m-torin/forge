@@ -1,0 +1,444 @@
+# Relationship Management in CMS
+
+## Overview
+
+The CMS uses a sophisticated relationship management system that ensures data
+consistency and provides an excellent user experience for managing complex
+entity relationships.
+
+## Core Concepts
+
+### Set-Based Semantics
+
+All relationship operations use **set-based semantics**, meaning:
+
+- **Replace**: Relationship arrays completely replace existing relationships
+- **Empty Array**: Explicitly removes all relationships of that type
+- **Undefined/Missing**: Leaves relationships unchanged
+
+```typescript
+// Example: Update product relationships
+await updateProductWithRelationshipsAction("product-id", {
+  brandIds: ["brand1", "brand2"], // Replace all brands with these two
+  collectionIds: [], // Remove all collections
+  taxonomyIds: ["tax1"] // Replace taxonomies with just tax1
+  // categoryIds not specified = leave categories unchanged
+});
+```
+
+### Relationship-Aware Actions
+
+Always use relationship-aware database actions for entity updates:
+
+| Action Type        | Relationship-Aware                     | Standard              | Use Case               |
+| ------------------ | -------------------------------------- | --------------------- | ---------------------- |
+| **Product Update** | `updateProductWithRelationshipsAction` | `updateProductAction` | ✅ Use for all updates |
+| **Product Create** | `createProductWithRelationshipsAction` | `createProductAction` | ✅ Use for all creates |
+| **Other Entities** | Similar pattern available              | Standard actions      | Follow same pattern    |
+
+## Implementation Patterns
+
+### Full-Page Form Updates
+
+When handling form submissions that include relationship data:
+
+```typescript
+// Example: Product page with relationships
+async function handleUpdateProduct(id: string, data: any) {
+  "use server";
+
+  // Build relationship-aware update data
+  const updateData = {
+    // Basic fields
+    name: data.name,
+    status: data.status,
+    price: data.price,
+
+    // Relationship arrays (always include, even if empty)
+    brandIds: data.brandIds ?? [],
+    collectionIds: data.collectionIds ?? [],
+    taxonomyIds: data.taxonomyIds ?? [],
+    categoryIds: data.categoryIds ?? [],
+    seriesIds: data.seriesIds ?? [],
+    storyIds: data.storyIds ?? [],
+    castIds: data.castIds ?? [],
+    locationIds: data.locationIds ?? [],
+
+    // Include other fields
+    ...data
+  };
+
+  await actions.updateProductWithRelationshipsAction(id, updateData);
+}
+```
+
+### Modal Form Updates
+
+Modal forms already use the relationship-aware actions correctly:
+
+```typescript
+// ProductForm.tsx (modal context)
+const handleSave = async () => {
+  const updateData = buildRelationshipData(form.values);
+  await actions.updateProductWithRelationshipsAction(productId, updateData);
+};
+```
+
+## UI Components
+
+### Standardized Relationship Picker
+
+Use the standardized relationship picker for consistent UX:
+
+```typescript
+import { StandardizedRelationshipPicker } from '#/components/shared';
+
+<StandardizedRelationshipPicker
+  name="brandIds"
+  label="Brands"
+  relationshipType="brands"
+  form={form}
+  creatable={true}
+  maxValues={5}
+  color="blue"
+  icon={IconBuildingStore}
+/>
+```
+
+### Relationship Combobox Features
+
+The relationship combobox supports:
+
+- **Taxonomy Hierarchy**: Automatic indentation for nested taxonomies
+- **Create on the Fly**: Add new entities directly from the picker
+- **Multi-select**: Select multiple entities at once
+- **Search**: Debounced search with fuzzy matching
+- **Validation**: Real-time validation with error display
+
+## Data Transformation
+
+### Taxonomy Hierarchy Display
+
+Taxonomies are automatically transformed to show hierarchy:
+
+```typescript
+// Automatic transformation in StandardizedRelationshipPicker
+const transformData = useCallback(
+  (items: any[]) => {
+    if (relationshipType === "taxonomies") {
+      return items.map((item) => ({
+        ...item,
+        label: item.level ? `${"  ".repeat(item.level)}${item.name}` : item.name
+      }));
+    }
+    return items;
+  },
+  [relationshipType]
+);
+```
+
+Result:
+
+```
+Electronics
+  Computers
+    Laptops
+    Desktops
+  Phones
+    Smartphones
+    Tablets
+```
+
+## Database Actions
+
+### Relationship-Aware Update
+
+The relationship-aware update action handles:
+
+1. **Disconnection**: Removes relationships not in the provided arrays
+2. **Connection**: Adds new relationships from the arrays
+3. **Preservation**: Maintains relationships not mentioned in the update
+
+```sql
+-- Example: Update product brands
+-- Old brands: [brand1, brand2, brand3]
+-- New brandIds: [brand2, brand4]
+-- Result: Disconnects brand1 and brand3, adds brand4, keeps brand2
+```
+
+### Transaction Safety
+
+All relationship updates are wrapped in database transactions:
+
+```typescript
+// Pseudo-code for relationship update
+await db.transaction(async (tx) => {
+  // 1. Update basic product fields
+  await tx.product.update({ where: { id }, data: basicFields });
+
+  // 2. Update each relationship type
+  if (brandIds !== undefined) {
+    await tx.product.update({
+      where: { id },
+      data: { brands: { set: brandIds.map((id) => ({ id })) } }
+    });
+  }
+
+  // 3. Repeat for all relationship types
+});
+```
+
+## Error Handling
+
+### Relationship Validation
+
+Relationships are validated at multiple levels:
+
+1. **Client-side**: Form validation prevents invalid selections
+2. **Server-side**: Database constraints ensure referential integrity
+3. **UI Feedback**: Real-time error display in relationship pickers
+
+```typescript
+// Example validation in relationship picker
+const validateRelationships = useCallback(
+  async (values: string[]) => {
+    if (values.length > maxValues) {
+      return `Cannot select more than ${maxValues} items`;
+    }
+
+    // Check if all selected items exist
+    const existingItems = await fetchAction({ where: { id: { in: values } } });
+    if (existingItems.length !== values.length) {
+      return "Some selected items no longer exist";
+    }
+
+    return null;
+  },
+  [maxValues, fetchAction]
+);
+```
+
+### Error Recovery
+
+When relationship operations fail:
+
+1. **Rollback**: Database transaction rolls back all changes
+2. **User Notification**: Clear error message displayed to user
+3. **Form State**: Form values preserved for retry
+4. **Retry Logic**: Automatic retry for transient failures
+
+## Testing Strategy
+
+### Unit Tests
+
+Test relationship operations in isolation:
+
+```typescript
+describe("Product Relationship Updates", () => {
+  it("should add new brand relationships", async () => {
+    await updateProductWithRelationshipsAction("product1", {
+      brandIds: ["brand1", "brand2"]
+    });
+
+    expect(mockPrisma.product.update).toHaveBeenCalledWith({
+      where: { id: "product1" },
+      data: { brands: { set: [{ id: "brand1" }, { id: "brand2" }] } }
+    });
+  });
+
+  it("should remove relationships with empty array", async () => {
+    await updateProductWithRelationshipsAction("product1", {
+      brandIds: []
+    });
+
+    expect(mockPrisma.product.update).toHaveBeenCalledWith({
+      where: { id: "product1" },
+      data: { brands: { set: [] } }
+    });
+  });
+});
+```
+
+### Integration Tests
+
+Test full relationship flows:
+
+```typescript
+describe('Relationship UI Integration', () => {
+  it('should persist relationship changes through form submission', async () => {
+    render(<ProductEditForm productId="test-id" />);
+
+    // Select relationships
+    await selectRelationship('brands', 'Brand A');
+    await selectRelationship('collections', 'Collection B');
+
+    // Submit form
+    await clickSaveButton();
+
+    // Verify database was updated
+    expect(updateProductWithRelationshipsAction).toHaveBeenCalledWith(
+      'test-id',
+      expect.objectContaining({
+        brandIds: ['brand-a-id'],
+        collectionIds: ['collection-b-id']
+      })
+    );
+  });
+});
+```
+
+## Best Practices
+
+### Always Use Relationship-Aware Actions
+
+❌ **Wrong**: Using standard actions
+
+```typescript
+// This will NOT update relationships properly
+await actions.updateProductAction({
+  where: { id: productId },
+  data: { name: "New Name", brandIds: ["brand1"] } // brandIds ignored!
+});
+```
+
+✅ **Right**: Using relationship-aware actions
+
+```typescript
+// This properly handles relationships
+await actions.updateProductWithRelationshipsAction(productId, {
+  name: "New Name",
+  brandIds: ["brand1"] // Properly connects to brand1
+});
+```
+
+### Provide Complete Relationship Data
+
+❌ **Wrong**: Partial relationship data
+
+```typescript
+// Only updating name, but form has relationship data
+const updateData = { name: form.values.name };
+```
+
+✅ **Right**: Include all relationship arrays
+
+```typescript
+// Include all relationship fields, even if empty
+const updateData = {
+  name: form.values.name,
+  brandIds: form.values.brandIds ?? [],
+  collectionIds: form.values.collectionIds ?? [],
+  taxonomyIds: form.values.taxonomyIds ?? []
+  // ... all other relationship arrays
+};
+```
+
+### Handle Loading States
+
+```typescript
+const [isUpdating, setIsUpdating] = useState(false);
+
+const handleSave = async () => {
+  setIsUpdating(true);
+  try {
+    await updateProductWithRelationshipsAction(productId, updateData);
+    notifications.show({ message: "Product updated successfully" });
+  } catch (error) {
+    notifications.show({ message: "Failed to update product", color: "red" });
+  } finally {
+    setIsUpdating(false);
+  }
+};
+```
+
+## Migration Guide
+
+### Updating Existing Forms
+
+1. **Replace Standard Actions**:
+
+   ```diff
+   - await actions.updateProductAction({ where: { id }, data });
+   + await actions.updateProductWithRelationshipsAction(id, data);
+   ```
+
+2. **Include Relationship Arrays**:
+
+   ```diff
+   const updateData = {
+     name: form.values.name,
+   + brandIds: form.values.brandIds ?? [],
+   + collectionIds: form.values.collectionIds ?? [],
+   };
+   ```
+
+3. **Update Component Exports**:
+   ```diff
+   // In sections/index.ts
+   - export { ProductRelationshipsSection } from './ProductRelationshipsSection';
+   + export { ProductRelationshipsSectionStandardized as ProductRelationshipsSection } from './ProductRelationshipsSectionStandardized';
+   ```
+
+### Form Integration
+
+Use the standardized form patterns:
+
+```typescript
+// Product form with relationships
+const form = useForm({
+  initialValues: {
+    name: product?.name || "",
+    brandIds: product?.brands?.map((b) => b.id) || [],
+    collectionIds: product?.collections?.map((c) => c.id) || []
+  },
+  validate: zodResolver(productFormSchema)
+});
+
+// In form submission
+const handleSubmit = form.onSubmit(async (values) => {
+  await handleUpdateProduct(productId, values);
+});
+```
+
+## Performance Considerations
+
+### Lazy Loading
+
+Relationship pickers use lazy loading for large datasets:
+
+```typescript
+// Automatic pagination in relationship picker
+const { data, loading } = useInfiniteQuery({
+  queryKey: ["brands", search],
+  queryFn: ({ pageParam = 0 }) =>
+    actions.getBrandsAction({
+      search,
+      skip: pageParam * 50,
+      take: 50
+    })
+});
+```
+
+### Debounced Search
+
+Search is automatically debounced to reduce API calls:
+
+```typescript
+// Built into RelationshipCombobox
+<RelationshipCombobox
+  searchDebounce={300} // 300ms debounce
+  // ... other props
+/>
+```
+
+### Caching
+
+Relationship data is cached using React Query:
+
+```typescript
+// Automatic caching with 5-minute stale time
+const queryClient = useQueryClient();
+queryClient.setQueryData(["brands"], brandsData, {
+  staleTime: 5 * 60 * 1000 // 5 minutes
+});
+```

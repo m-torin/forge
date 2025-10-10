@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import type { Locale } from '#/lib/i18n';
-import { NextIntlClientProvider } from '@repo/internationalization/client/next';
+import type { Locale } from "#/lib/i18n";
+import { NextIntlClientProvider } from "@repo/internationalization/client/next";
 
 interface ProvidersProps {
   locale: Locale;
@@ -9,5 +9,7 @@ interface ProvidersProps {
 }
 
 export function Providers({ locale, children }: ProvidersProps) {
-  return <NextIntlClientProvider locale={locale}>{children}</NextIntlClientProvider>;
+  return (
+    <NextIntlClientProvider locale={locale}>{children}</NextIntlClientProvider>
+  );
 }

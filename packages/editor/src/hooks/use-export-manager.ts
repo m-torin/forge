@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useLocalStorage } from '@mantine/hooks';
-import { Editor } from '@tiptap/core';
-import { useCallback } from 'react';
+import { useLocalStorage } from "@mantine/hooks";
+import { Editor } from "@tiptap/core";
+import { useCallback } from "react";
 import {
   createBackup,
   downloadFile,
@@ -11,9 +11,9 @@ import {
   exportToMarkdown,
   type ExportOptions,
   type ExportResult,
-} from '../utils/export-utils';
+} from "../utils/export-utils";
 
-export type ExportFormat = 'markdown' | 'html' | 'json' | 'backup';
+export type ExportFormat = "markdown" | "html" | "json" | "backup";
 
 export interface ExportPreferences {
   defaultFormat: ExportFormat;
@@ -42,44 +42,47 @@ export interface ExportHistoryItem {
 
 export function useExportManager(editor: Editor | null) {
   // User export preferences
-  const [exportPreferences, setExportPreferences] = useLocalStorage<ExportPreferences>({
-    key: 'notion-editor-export-preferences',
-    defaultValue: {
-      defaultFormat: 'markdown',
-      includeMetadata: true,
-      includeAuthor: true,
-      autoDownload: true,
-      customTemplates: {},
-    },
-    serialize: JSON.stringify,
-    deserialize: value =>
-      value === undefined
-        ? {
-            defaultFormat: 'markdown' as ExportFormat,
-            includeMetadata: true,
-            includeAuthor: true,
-            autoDownload: true,
-            customTemplates: {},
-          }
-        : JSON.parse(value),
-  });
+  const [exportPreferences, setExportPreferences] =
+    useLocalStorage<ExportPreferences>({
+      key: "notion-editor-export-preferences",
+      defaultValue: {
+        defaultFormat: "markdown",
+        includeMetadata: true,
+        includeAuthor: true,
+        autoDownload: true,
+        customTemplates: {},
+      },
+      serialize: JSON.stringify,
+      deserialize: (value) =>
+        value === undefined
+          ? {
+              defaultFormat: "markdown" as ExportFormat,
+              includeMetadata: true,
+              includeAuthor: true,
+              autoDownload: true,
+              customTemplates: {},
+            }
+          : JSON.parse(value),
+    });
 
   // Export history for tracking
-  const [exportHistory, setExportHistory] = useLocalStorage<ExportHistoryItem[]>({
-    key: 'notion-editor-export-history',
+  const [exportHistory, setExportHistory] = useLocalStorage<
+    ExportHistoryItem[]
+  >({
+    key: "notion-editor-export-history",
     defaultValue: [],
     serialize: JSON.stringify,
-    deserialize: value => (value === undefined ? [] : JSON.parse(value)),
+    deserialize: (value) => (value === undefined ? [] : JSON.parse(value)),
   });
 
   // Default export templates
   const defaultTemplatesValue = {
-    'blog-post': {
-      id: 'blog-post',
-      name: 'Blog Post',
-      format: 'html' as ExportFormat,
+    "blog-post": {
+      id: "blog-post",
+      name: "Blog Post",
+      format: "html" as ExportFormat,
       options: {
-        title: 'Blog Post',
+        title: "Blog Post",
         includeMetadata: true,
       },
       customStyles: `
@@ -96,20 +99,20 @@ export function useExportManager(editor: Editor | null) {
       `,
     },
     documentation: {
-      id: 'documentation',
-      name: 'Documentation',
-      format: 'markdown' as ExportFormat,
+      id: "documentation",
+      name: "Documentation",
+      format: "markdown" as ExportFormat,
       options: {
-        title: 'Documentation',
+        title: "Documentation",
         includeMetadata: true,
       },
     },
-    'meeting-notes': {
-      id: 'meeting-notes',
-      name: 'Meeting Notes',
-      format: 'html' as ExportFormat,
+    "meeting-notes": {
+      id: "meeting-notes",
+      name: "Meeting Notes",
+      format: "html" as ExportFormat,
       options: {
-        title: 'Meeting Notes',
+        title: "Meeting Notes",
         includeMetadata: true,
       },
       customStyles: `
@@ -126,11 +129,14 @@ export function useExportManager(editor: Editor | null) {
     },
   };
 
-  const [defaultTemplates, _setDefaultTemplates] = useLocalStorage<Record<string, ExportTemplate>>({
-    key: 'notion-editor-default-templates',
+  const [defaultTemplates, _setDefaultTemplates] = useLocalStorage<
+    Record<string, ExportTemplate>
+  >({
+    key: "notion-editor-default-templates",
     defaultValue: defaultTemplatesValue,
     serialize: JSON.stringify,
-    deserialize: value => (value === undefined ? defaultTemplatesValue : JSON.parse(value)),
+    deserialize: (value) =>
+      value === undefined ? defaultTemplatesValue : JSON.parse(value),
   });
 
   // Export with user preferences
@@ -144,39 +150,42 @@ export function useExportManager(editor: Editor | null) {
 
       const useFormat = format || exportPreferences.defaultFormat;
       const template = templateId
-        ? exportPreferences.customTemplates[templateId] || defaultTemplates[templateId]
+        ? exportPreferences.customTemplates[templateId] ||
+          defaultTemplates[templateId]
         : undefined;
 
       const baseOptions: ExportOptions = {
-        title: 'Untitled Document',
+        title: "Untitled Document",
         includeMetadata: exportPreferences.includeMetadata,
         timestamp: new Date(),
         ...customOptions,
       };
 
       // Apply template options if provided
-      const finalOptions = template ? { ...baseOptions, ...template.options } : baseOptions;
+      const finalOptions = template
+        ? { ...baseOptions, ...template.options }
+        : baseOptions;
 
       let result: ExportResult;
 
       switch (useFormat) {
-        case 'markdown':
+        case "markdown":
           result = exportToMarkdown(editor, finalOptions);
           break;
-        case 'html':
+        case "html":
           result = exportToHTML(editor, finalOptions);
           // Apply custom styles if from template
           if (template?.customStyles) {
             result.content = result.content.replace(
-              '</style>',
-              template.customStyles + '\n  </style>',
+              "</style>",
+              template.customStyles + "\n  </style>",
             );
           }
           break;
-        case 'json':
+        case "json":
           result = exportToJSON(editor, finalOptions);
           break;
-        case 'backup':
+        case "backup":
           result = createBackup(editor, finalOptions);
           break;
         default:
@@ -186,14 +195,14 @@ export function useExportManager(editor: Editor | null) {
       // Add to export history
       const historyItem: ExportHistoryItem = {
         id: Date.now().toString(),
-        title: finalOptions.title || 'Untitled Document',
+        title: finalOptions.title || "Untitled Document",
         format: useFormat,
         timestamp: new Date().toISOString(),
         filename: result.filename,
         size: new Blob([result.content]).size,
       };
 
-      setExportHistory(prev => [historyItem, ...prev.slice(0, 49)]); // Keep last 50 exports
+      setExportHistory((prev) => [historyItem, ...prev.slice(0, 49)]); // Keep last 50 exports
 
       // Auto-download if enabled
       if (exportPreferences.autoDownload) {
@@ -217,7 +226,8 @@ export function useExportManager(editor: Editor | null) {
   const exportWithTemplate = useCallback(
     (templateId: string, customOptions?: Partial<ExportOptions>) => {
       const template =
-        exportPreferences.customTemplates[templateId] || defaultTemplates[templateId];
+        exportPreferences.customTemplates[templateId] ||
+        defaultTemplates[templateId];
       if (!template) return null;
 
       return exportDocument(template.format, customOptions, templateId);
@@ -228,7 +238,7 @@ export function useExportManager(editor: Editor | null) {
   // Template management
   const saveTemplate = useCallback(
     (template: ExportTemplate) => {
-      setExportPreferences(prev => ({
+      setExportPreferences((prev) => ({
         ...prev,
         customTemplates: {
           ...prev.customTemplates,
@@ -241,7 +251,7 @@ export function useExportManager(editor: Editor | null) {
 
   const deleteTemplate = useCallback(
     (templateId: string) => {
-      setExportPreferences(prev => {
+      setExportPreferences((prev) => {
         const updated = { ...prev };
         delete updated.customTemplates[templateId];
         return updated;
@@ -289,7 +299,7 @@ export function useExportManager(editor: Editor | null) {
   // Update preferences helper
   const updatePreferences = useCallback(
     (updates: Partial<ExportPreferences>) => {
-      setExportPreferences(prev => ({ ...prev, ...updates }));
+      setExportPreferences((prev) => ({ ...prev, ...updates }));
     },
     [setExportPreferences],
   );
@@ -316,6 +326,6 @@ export function useExportManager(editor: Editor | null) {
     getExportStats,
 
     // Available formats
-    formats: ['markdown', 'html', 'json', 'backup'] as ExportFormat[],
+    formats: ["markdown", "html", "json", "backup"] as ExportFormat[],
   };
 }

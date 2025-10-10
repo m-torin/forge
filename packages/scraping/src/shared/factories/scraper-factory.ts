@@ -9,7 +9,7 @@ import { ProviderConfig, ScrapingProvider } from '../types/scraping-types';
 /**
  * Create AI-enhanced scraper
  */
-export async function createAIScraper(
+async function _createAIScraper(
   baseProvider = 'hero',
   aiOptions: {
     apiKey?: string;
@@ -72,7 +72,7 @@ export async function createBrowserScraper(
 /**
  * Create a client-side scraper
  */
-export async function createClientScraper(
+async function createClientScraper(
   provider = 'fetch',
   config: Partial<ProviderConfig> = {},
 ): Promise<ScrapingProvider> {
@@ -100,7 +100,7 @@ export async function createClientScraper(
 /**
  * Create an HTML parsing scraper (no browser)
  */
-export async function createHtmlScraper(
+async function _createHtmlScraper(
   engine: 'cheerio' | 'node-fetch' = 'cheerio',
   config: Partial<ProviderConfig> = {},
 ): Promise<ScrapingProvider> {

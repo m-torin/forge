@@ -1,6 +1,6 @@
-import { config, mergeConfig } from '@repo/config/next';
-import type { NextConfig } from 'next';
-import createNextIntlPlugin from 'next-intl/plugin';
+import { config, mergeConfig } from "@repo/config/next";
+import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin();
 

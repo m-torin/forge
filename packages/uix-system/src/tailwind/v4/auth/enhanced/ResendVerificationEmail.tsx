@@ -3,13 +3,13 @@
  * 100% React Server Component for resending email verification
  */
 
-import { useFormState } from 'react-dom';
-import type { BaseProps, FormState } from '../types';
-import { createInitialActionState } from '../types';
-import { Alert } from '../ui/Alert';
-import { Button } from '../ui/Button';
-import { Card, CardContent, CardHeader } from '../ui/Card';
-import { cn } from '../utils/dark-mode';
+import { useFormState } from "react-dom";
+import type { BaseProps, FormState } from "../types";
+import { createInitialActionState } from "../types";
+import { Alert } from "../ui/Alert";
+import { Button } from "../ui/Button";
+import { Card, CardContent, CardHeader } from "../ui/Card";
+import { cn } from "../utils/dark-mode";
 
 interface ResendVerificationEmailProps extends BaseProps {
   userEmail: string;
@@ -27,20 +27,22 @@ async function resendVerificationEmailAction(
   prevState: any,
   formData: FormData,
 ): Promise<FormState> {
-  'use server';
+  "use server";
 
   try {
-    const email = formData.get('email') as string;
+    const email = formData.get("email") as string;
 
     if (!email) {
       return {
         success: false,
-        errors: { email: ['Email is required'] },
+        errors: { email: ["Email is required"] },
       };
     }
 
     // Import Better Auth server action
-    const { sendVerificationEmailAction } = await import('@repo/auth/server-actions');
+    const { sendVerificationEmailAction } = await import(
+      "@repo/auth/server-actions"
+    );
 
     const result = await sendVerificationEmailAction(prevState, formData);
 
@@ -52,51 +54,55 @@ async function resendVerificationEmailAction(
     } else {
       return {
         success: false,
-        error: result.error || 'Failed to resend verification email.',
+        error: result.error || "Failed to resend verification email.",
       };
     }
   } catch (error: any) {
     // console.error('Resend verification email error:', error);
 
-    if (error?.message?.includes('already verified')) {
+    if (error?.message?.includes("already verified")) {
       return {
         success: true,
-        message: 'Your email is already verified!',
+        message: "Your email is already verified!",
       };
     }
 
-    if (error?.message?.includes('rate limit')) {
+    if (error?.message?.includes("rate limit")) {
       return {
         success: false,
         error:
-          'Please wait before requesting another verification email. You can request a new email every 60 seconds.',
+          "Please wait before requesting another verification email. You can request a new email every 60 seconds.",
       };
     }
 
-    if (error?.message?.includes('user not found')) {
+    if (error?.message?.includes("user not found")) {
       return {
         success: false,
-        error: 'No account found with this email address.',
+        error: "No account found with this email address.",
       };
     }
 
     return {
       success: false,
-      error: 'An error occurred while resending the verification email. Please try again.',
+      error:
+        "An error occurred while resending the verification email. Please try again.",
     };
   }
 }
 
 export function ResendVerificationEmail({
   userEmail,
-  title = 'Resend Verification Email',
+  title = "Resend Verification Email",
   subtitle = "Didn't receive the verification email? We can send you another one.",
   showRateLimit = true,
   onSuccess,
   onError,
-  className = '',
+  className = "",
 }: ResendVerificationEmailProps) {
-  const [state, action] = useFormState(resendVerificationEmailAction, createInitialActionState());
+  const [state, action] = useFormState(
+    resendVerificationEmailAction,
+    createInitialActionState(),
+  );
 
   // Handle callbacks
   if (state?.success && onSuccess) {
@@ -108,15 +114,15 @@ export function ResendVerificationEmail({
   }
 
   return (
-    <Card className={cn('mx-auto w-full max-w-md', className)}>
+    <Card className={cn("mx-auto w-full max-w-md", className)}>
       <CardHeader>
         <div className="text-center">
           <div
             className={cn(
-              'mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full',
+              "mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full",
               state?.success
-                ? 'bg-green-100 dark:bg-green-900/20'
-                : 'bg-blue-100 dark:bg-blue-900/20',
+                ? "bg-green-100 dark:bg-green-900/20"
+                : "bg-blue-100 dark:bg-blue-900/20",
             )}
           >
             {state?.success ? (
@@ -147,9 +153,20 @@ export function ResendVerificationEmail({
               </svg>
             )}
           </div>
-          <h1 className={cn('text-2xl font-bold text-gray-900', 'dark:text-gray-100')}>{title}</h1>
+          <h1
+            className={cn(
+              "text-2xl font-bold text-gray-900",
+              "dark:text-gray-100",
+            )}
+          >
+            {title}
+          </h1>
           {subtitle && (
-            <p className={cn('mt-2 text-sm text-gray-600', 'dark:text-gray-400')}>{subtitle}</p>
+            <p
+              className={cn("mt-2 text-sm text-gray-600", "dark:text-gray-400")}
+            >
+              {subtitle}
+            </p>
           )}
         </div>
       </CardHeader>
@@ -161,8 +178,8 @@ export function ResendVerificationEmail({
 
             <div
               className={cn(
-                'rounded-lg border border-green-200 bg-green-50 p-4',
-                'dark:border-green-800 dark:bg-green-900/20',
+                "rounded-lg border border-green-200 bg-green-50 p-4",
+                "dark:border-green-800 dark:bg-green-900/20",
               )}
             >
               <div className="flex items-start">
@@ -177,7 +194,12 @@ export function ResendVerificationEmail({
                     clipRule="evenodd"
                   />
                 </svg>
-                <div className={cn('text-sm text-green-800', 'dark:text-green-200')}>
+                <div
+                  className={cn(
+                    "text-sm text-green-800",
+                    "dark:text-green-200",
+                  )}
+                >
                   <h4 className="mb-1 font-medium">Email sent successfully!</h4>
                   <p className="mb-2">
                     Check your inbox at <strong>{userEmail}</strong>
@@ -197,7 +219,7 @@ export function ResendVerificationEmail({
                 variant="primary"
                 className="w-full"
                 onClick={() => {
-                  window.location.href = '/dashboard';
+                  window.location.href = "/dashboard";
                 }}
               >
                 Continue to Dashboard
@@ -220,18 +242,32 @@ export function ResendVerificationEmail({
           <div className="space-y-4">
             {state?.error && <Alert variant="destructive">{state.error}</Alert>}
 
-            <div className={cn('rounded-lg bg-gray-50 p-4', 'dark:bg-gray-800')}>
+            <div
+              className={cn("rounded-lg bg-gray-50 p-4", "dark:bg-gray-800")}
+            >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className={cn('text-sm font-medium text-gray-700', 'dark:text-gray-300')}>
+                  <p
+                    className={cn(
+                      "text-sm font-medium text-gray-700",
+                      "dark:text-gray-300",
+                    )}
+                  >
                     Email Address
                   </p>
-                  <p className={cn('text-lg text-gray-900', 'dark:text-gray-100')}>{userEmail}</p>
+                  <p
+                    className={cn(
+                      "text-lg text-gray-900",
+                      "dark:text-gray-100",
+                    )}
+                  >
+                    {userEmail}
+                  </p>
                 </div>
                 <span
                   className={cn(
-                    'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium',
-                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200',
+                    "inline-flex items-center rounded-full px-2 py-1 text-xs font-medium",
+                    "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200",
                   )}
                 >
                   Unverified
@@ -242,8 +278,8 @@ export function ResendVerificationEmail({
             {showRateLimit && (
               <div
                 className={cn(
-                  'rounded-lg border border-blue-200 bg-blue-50 p-4',
-                  'dark:border-blue-800 dark:bg-blue-900/20',
+                  "rounded-lg border border-blue-200 bg-blue-50 p-4",
+                  "dark:border-blue-800 dark:bg-blue-900/20",
                 )}
               >
                 <div className="flex items-start">
@@ -258,10 +294,18 @@ export function ResendVerificationEmail({
                       clipRule="evenodd"
                     />
                   </svg>
-                  <div className={cn('text-sm text-blue-800', 'dark:text-blue-200')}>
+                  <div
+                    className={cn(
+                      "text-sm text-blue-800",
+                      "dark:text-blue-200",
+                    )}
+                  >
                     <h4 className="mb-1 font-medium">Rate limit information</h4>
                     <ul className="list-inside list-disc space-y-1 text-xs">
-                      <li>You can request a new verification email every 60 seconds</li>
+                      <li>
+                        You can request a new verification email every 60
+                        seconds
+                      </li>
                       <li>Maximum of 5 verification emails per hour</li>
                       <li>This helps protect against spam and abuse</li>
                     </ul>
@@ -279,8 +323,8 @@ export function ResendVerificationEmail({
                 disabled={state === undefined}
               >
                 {state === undefined
-                  ? 'Sending Verification Email...'
-                  : 'Resend Verification Email'}
+                  ? "Sending Verification Email..."
+                  : "Resend Verification Email"}
               </Button>
             </form>
           </div>
@@ -288,13 +332,13 @@ export function ResendVerificationEmail({
 
         <div className="mt-6 space-y-3">
           <div className="text-center">
-            <p className={cn('text-sm text-gray-600', 'dark:text-gray-400')}>
-              Need to use a different email?{' '}
+            <p className={cn("text-sm text-gray-600", "dark:text-gray-400")}>
+              Need to use a different email?{" "}
               <a
                 href="/account/settings"
                 className={cn(
-                  'text-blue-600 hover:text-blue-500',
-                  'dark:text-blue-400 dark:hover:text-blue-300',
+                  "text-blue-600 hover:text-blue-500",
+                  "dark:text-blue-400 dark:hover:text-blue-300",
                 )}
               >
                 Update your email address
@@ -306,8 +350,8 @@ export function ResendVerificationEmail({
             <a
               href="/auth/signin"
               className={cn(
-                'text-sm text-gray-500 hover:text-gray-400',
-                'dark:text-gray-500 dark:hover:text-gray-400',
+                "text-sm text-gray-500 hover:text-gray-400",
+                "dark:text-gray-500 dark:hover:text-gray-400",
               )}
             >
               ← Back to sign in
@@ -315,11 +359,23 @@ export function ResendVerificationEmail({
           </div>
         </div>
 
-        <div className={cn('mt-6 rounded-lg bg-gray-50 p-4', 'dark:bg-gray-800')}>
-          <h4 className={cn('mb-2 text-sm font-medium text-gray-900', 'dark:text-gray-100')}>
+        <div
+          className={cn("mt-6 rounded-lg bg-gray-50 p-4", "dark:bg-gray-800")}
+        >
+          <h4
+            className={cn(
+              "mb-2 text-sm font-medium text-gray-900",
+              "dark:text-gray-100",
+            )}
+          >
             Still having trouble?
           </h4>
-          <div className={cn('space-y-1 text-xs text-gray-600', 'dark:text-gray-400')}>
+          <div
+            className={cn(
+              "space-y-1 text-xs text-gray-600",
+              "dark:text-gray-400",
+            )}
+          >
             <p>• Check your spam/junk folder thoroughly</p>
             <p>• Add our email address to your contacts</p>
             <p>• Try with a different email provider if possible</p>

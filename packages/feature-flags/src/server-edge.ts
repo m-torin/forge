@@ -53,9 +53,12 @@ export function createPostHogEdgeAdapter(
   const postHogHost = options.postHogHost || env.POSTHOG_HOST || 'https://app.posthog.com';
 
   if (!postHogKey) {
-    logWarn('PostHog API key not configured - feature flags will return false', {
-      provider: 'posthog-edge',
-    });
+    const debug = env.VERCEL_ANALYTICS_DEBUG === true;
+    if (debug) {
+      logWarn('PostHog API key not configured - feature flags will return false', {
+        provider: 'posthog-edge',
+      });
+    }
     // Return a no-op adapter that returns false for all flags
     return {
       isFeatureEnabled: () => ({
@@ -104,7 +107,7 @@ export function createPostHogEdgeAdapter(
             const data = await response.json();
             return Boolean(data.featureFlags?.[key]);
           } catch (error) {
-            logError(error instanceof Error ? error : new Error(String(error)), {
+            logError(error instanceof Error ? error.message : String(error), {
               provider: 'posthog-edge',
               method: 'isFeatureEnabled',
             });
@@ -144,7 +147,7 @@ export function createPostHogEdgeAdapter(
             const value = data.featureFlags?.[key];
             return value !== undefined ? value : false;
           } catch (error) {
-            logError(error instanceof Error ? error : new Error(String(error)), {
+            logError(error instanceof Error ? error.message : String(error), {
               provider: 'posthog-edge',
               method: 'featureFlagValue',
             });
@@ -189,7 +192,7 @@ export function createPostHogEdgeAdapter(
             }
             return (payload as T) || defaultPayload;
           } catch (error) {
-            logError(error instanceof Error ? error : new Error(String(error)), {
+            logError(error instanceof Error ? error.message : String(error), {
               provider: 'posthog-edge',
               method: 'featureFlagPayload',
             });
@@ -224,9 +227,12 @@ export async function getPostHogProviderData(options: {
   const postHogHost = options.postHogHost || env.POSTHOG_HOST || 'https://app.posthog.com';
 
   if (!personalApiKey || !projectId) {
-    logWarn('PostHog personal API key and project ID not configured - returning empty flags', {
-      provider: 'posthog-edge',
-    });
+    const debug = env.VERCEL_ANALYTICS_DEBUG === true;
+    if (debug) {
+      logWarn('PostHog personal API key and project ID not configured - returning empty flags', {
+        provider: 'posthog-edge',
+      });
+    }
     return {
       provider: 'posthog-edge',
       flags: [],
@@ -266,7 +272,7 @@ export async function getPostHogProviderData(options: {
       flags: transformedFlags,
     };
   } catch (error) {
-    logError(error instanceof Error ? error : new Error(String(error)), {
+    logError(error instanceof Error ? error.message : String(error), {
       provider: 'posthog-edge',
       method: 'getProviderData',
     });

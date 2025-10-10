@@ -4,9 +4,9 @@
  * Using official AI SDK v5 streaming patterns
  */
 
-import type { StreamObjectResult, StreamTextResult, UIMessage } from 'ai';
-import { simulateReadableStream } from 'ai/test';
-import { expect } from 'vitest';
+import type { StreamObjectResult, StreamTextResult, UIMessage } from "ai";
+import { simulateReadableStream } from "ai/test";
+import { expect } from "vitest";
 
 /**
  * Assert that a textStream produces expected text parts
@@ -33,7 +33,7 @@ export async function assertFullText(
   for await (const part of result.textStream) {
     parts.push(part);
   }
-  expect(parts.join('')).toBe(expectedText);
+  expect(parts.join("")).toBe(expectedText);
 }
 
 /**
@@ -53,7 +53,9 @@ export async function assertFullStreamChunks(
 /**
  * Collect all fullStream chunks for detailed assertions
  */
-export async function collectFullStreamChunks(result: StreamTextResult<any, any>): Promise<any[]> {
+export async function collectFullStreamChunks(
+  result: StreamTextResult<any, any>,
+): Promise<any[]> {
   const chunks: any[] = [];
   for await (const chunk of result.fullStream) {
     chunks.push(chunk);
@@ -69,7 +71,7 @@ export async function assertStreamContainsChunkTypes(
   requiredTypes: string[],
 ): Promise<void> {
   const chunks = await collectFullStreamChunks(result);
-  const actualTypes = chunks.map(chunk => chunk.type);
+  const actualTypes = chunks.map((chunk) => chunk.type);
 
   for (const requiredType of requiredTypes) {
     expect(actualTypes).toContain(requiredType);
@@ -100,8 +102,10 @@ export async function assertUIMessageStreamWithSources(
   result: StreamTextResult<any, any>,
   expectedSourceCount: number,
 ): Promise<void> {
-  const messageParts = await assertUIMessageStream(result, { sendSources: true });
-  const sourceParts = messageParts.filter(part => part.type === 'source');
+  const messageParts = await assertUIMessageStream(result, {
+    sendSources: true,
+  });
+  const sourceParts = messageParts.filter((part) => part.type === "source");
   expect(sourceParts).toHaveLength(expectedSourceCount);
 }
 
@@ -114,7 +118,7 @@ export async function assertStreamObject(
 ): Promise<void> {
   const partialObjects: any[] = [];
   for await (const chunk of result.fullStream) {
-    if (chunk.type === 'object') {
+    if (chunk.type === "object") {
       partialObjects.push(chunk.object);
     }
   }
@@ -140,16 +144,16 @@ export function createMockTextStream(
     initialDelayInMs,
     chunkDelayInMs,
     chunks: [
-      { type: 'text-start', id: 'text-1' },
-      ...textParts.map(delta => ({
-        type: 'text-delta' as const,
-        id: 'text-1',
+      { type: "text-start", id: "text-1" },
+      ...textParts.map((delta) => ({
+        type: "text-delta" as const,
+        id: "text-1",
         delta,
       })),
-      { type: 'text-end', id: 'text-1' },
+      { type: "text-end", id: "text-1" },
       {
-        type: 'finish' as const,
-        finishReason: 'stop' as const,
+        type: "finish" as const,
+        finishReason: "stop" as const,
         usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
       },
     ],
@@ -170,16 +174,16 @@ export function createMockObjectStream(
     initialDelayInMs,
     chunkDelayInMs,
     chunks: [
-      { type: 'text-start', id: 'text-1' },
-      ...jsonChunks.map(delta => ({
-        type: 'text-delta' as const,
-        id: 'text-1',
+      { type: "text-start", id: "text-1" },
+      ...jsonChunks.map((delta) => ({
+        type: "text-delta" as const,
+        id: "text-1",
         delta,
       })),
-      { type: 'text-end', id: 'text-1' },
+      { type: "text-end", id: "text-1" },
       {
-        type: 'finish' as const,
-        finishReason: 'stop' as const,
+        type: "finish" as const,
+        finishReason: "stop" as const,
         usage: { inputTokens: 10, outputTokens: 15, totalTokens: 25 },
       },
     ],
@@ -197,9 +201,9 @@ export function createMockUIMessageStream(
 
   const chunks = [
     `data: {"type":"start","messageId":"msg-test"}\n\n`,
-    ...messages.flatMap(msg => [
+    ...messages.flatMap((msg) => [
       `data: {"type":"text-start","id":"text-1"}\n\n`,
-      `data: {"type":"text-delta","id":"text-1","delta":"${(msg as any).content || ''}"}\n\n`,
+      `data: {"type":"text-delta","id":"text-1","delta":"${(msg as any).content || ""}"}\n\n`,
       `data: {"type":"text-end","id":"text-1"}\n\n`,
     ]),
     `data: {"type":"finish"}\n\n`,

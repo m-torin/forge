@@ -4,14 +4,14 @@
  */
 
 // Base setup including jest-dom and common utilities
-import './common';
+import "./common";
 
 // Import only necessary mocks for React packages
-import { cleanup } from '@testing-library/react';
-import { afterEach, vi } from 'vitest';
-import '../mocks/browser';
-import '../mocks/environment';
-import './providers';
+import { cleanup } from "@testing-library/react";
+import { afterEach, vi } from "vitest";
+import "../mocks/browser";
+import "../mocks/environment";
+import "./providers";
 
 // Cleanup after each test
 afterEach(() => {
@@ -20,11 +20,17 @@ afterEach(() => {
 });
 
 // Set test environment
-process.env.NODE_ENV = 'test';
+process.env.NODE_ENV = "test";
 
 // Browser mocks are already loaded via the browser mock module import
 
 // Export utilities for tests
-export { act, render, renderHook, screen, waitFor } from '@testing-library/react';
-export { userEvent } from '@testing-library/user-event';
-export * from '../utils/test-helpers';
+export {
+  act,
+  render,
+  renderHook,
+  screen,
+  waitFor,
+} from "@testing-library/react";
+export { userEvent } from "@testing-library/user-event";
+export * from "../utils/test-helpers";

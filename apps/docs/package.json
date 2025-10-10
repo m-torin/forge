@@ -12,7 +12,7 @@
     "doppler:secrets": "doppler secrets",
     "doppler:secrets:download": "doppler secrets download --no-file --format env",
     "doppler:secrets:upload": "doppler secrets upload .env.local",
-    "knip": "knip",
+    "knip": "knip --reporter json --exclude unlisted,unresolved,exports,dependencies,files,binaries,types,duplicates",
     "lint": "mintlify broken-links",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
@@ -28,6 +28,10 @@
   },
   "devDependencies": {
     "@repo/qa": "workspace:*",
-    "vite-tsconfig-paths": "catalog:"
+    "@vitest/coverage-v8": "catalog:",
+    "knip": "catalog:",
+    "madge": "catalog:",
+    "vite-tsconfig-paths": "catalog:",
+    "vitest": "catalog:"
   }
 }

@@ -3,8 +3,8 @@
  * Essential type definitions for multi-step agent operations
  */
 
-import type { ReactNode } from 'react';
-import type { z } from 'zod';
+import type { ReactNode } from "react";
+import type { z } from "zod";
 
 /**
  * Agent execution context providing runtime information
@@ -14,7 +14,7 @@ export interface AgentExecutionContext {
   userId?: string;
   timestamp: number;
   metadata?: Record<string, any>;
-  environment?: 'development' | 'staging' | 'production';
+  environment?: "development" | "staging" | "production";
   traceId?: string;
   parentSpanId?: string;
 }
@@ -56,7 +56,14 @@ export interface AgentConfiguration {
 export interface AgentStep {
   id?: string;
   stepNumber: number;
-  type: 'tool' | 'reasoning' | 'response' | 'error' | 'action' | 'parallel' | 'loop';
+  type:
+    | "tool"
+    | "reasoning"
+    | "response"
+    | "error"
+    | "action"
+    | "parallel"
+    | "loop";
   content: string;
   toolCalls?: Array<{
     id: string;
@@ -81,7 +88,7 @@ export interface AgentStep {
 export interface AgentStepResult {
   step: AgentStep;
   shouldContinue: boolean;
-  nextAction?: 'continue' | 'stop' | 'retry' | 'error';
+  nextAction?: "continue" | "stop" | "retry" | "error";
   error?: Error;
 }
 
@@ -95,12 +102,15 @@ export interface MultiStepAgentExecutor {
     context?: Partial<AgentExecutionContext>,
   ): Promise<AgentExecutionResult>;
 
-  executeStep(step: Partial<AgentStep>, context: AgentExecutionContext): Promise<AgentStepResult>;
+  executeStep(
+    step: Partial<AgentStep>,
+    context: AgentExecutionContext,
+  ): Promise<AgentStepResult>;
 
   abort(sessionId: string): Promise<void>;
 
   getStatus(sessionId: string): Promise<{
-    status: 'running' | 'completed' | 'error' | 'aborted';
+    status: "running" | "completed" | "error" | "aborted";
     currentStep?: number;
     totalSteps?: number;
   }>;
@@ -154,7 +164,7 @@ export interface AgentMemory {
  */
 export interface AgentWorkflowState {
   id: string;
-  status: 'pending' | 'running' | 'completed' | 'error' | 'paused';
+  status: "pending" | "running" | "completed" | "error" | "paused";
   currentStep: number;
   totalSteps: number;
   data: Record<string, any>;
@@ -168,12 +178,12 @@ export interface AgentWorkflowState {
  * Agent event types
  */
 export type AgentEvent =
-  | { type: 'step_start'; step: AgentStep }
-  | { type: 'step_complete'; step: AgentStep; result: any }
-  | { type: 'step_error'; step: AgentStep; error: Error }
-  | { type: 'execution_start'; context: AgentExecutionContext }
-  | { type: 'execution_complete'; result: AgentExecutionResult }
-  | { type: 'execution_error'; error: Error; context: AgentExecutionContext };
+  | { type: "step_start"; step: AgentStep }
+  | { type: "step_complete"; step: AgentStep; result: any }
+  | { type: "step_error"; step: AgentStep; error: Error }
+  | { type: "execution_start"; context: AgentExecutionContext }
+  | { type: "execution_complete"; result: AgentExecutionResult }
+  | { type: "execution_error"; error: Error; context: AgentExecutionContext };
 
 /**
  * Agent event listener
@@ -197,7 +207,7 @@ export interface AgentRegistry {
  */
 export interface ChatAgentMessage {
   id: string;
-  role: 'user' | 'assistant' | 'system';
+  role: "user" | "assistant" | "system";
   content: string | ReactNode;
   timestamp: number;
   metadata?: Record<string, any>;

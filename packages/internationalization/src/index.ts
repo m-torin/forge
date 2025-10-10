@@ -3,18 +3,23 @@
  * Provides dictionary loading and locale management utilities
  */
 
-import 'server-only';
+import "server-only";
 
-import { createDictionaryLoader } from './shared/dictionary-loader';
+import { createDictionaryLoader } from "./shared/dictionary-loader";
 
 // Create dictionary loader instance
 const dictionaryLoader = createDictionaryLoader();
 
 // Re-export types and utilities from shared loader
-export type { Dictionary, Locale } from './shared/dictionary-loader';
+export type { Dictionary, Locale } from "./shared/dictionary-loader";
 export const locales = dictionaryLoader.getLocales();
 export const getDictionary = dictionaryLoader.getDictionary;
 export const isLocaleSupported = dictionaryLoader.isLocaleSupported;
 
 // Re-export type augmentation support
-export type { DomainConfig, LocalePrefix, LocalePrefixConfig, RoutingConfig } from './types';
+export type {
+  DomainConfig,
+  LocalePrefix,
+  LocalePrefixConfig,
+  RoutingConfig,
+} from "./types";

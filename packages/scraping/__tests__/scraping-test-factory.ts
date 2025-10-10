@@ -4,19 +4,19 @@
 
 import { vi } from 'vitest';
 
-export interface TestCase {
+interface TestCase {
   name: string;
   input: any;
   expected: any;
   assertion: (result: any) => void;
 }
 
-export interface TestSuite {
+interface TestSuite {
   name: string;
   cases: TestCase[];
 }
 
-export interface TestScenario {
+interface TestScenario {
   name: string;
   args: any[];
   assertion: (result: any) => void;
@@ -24,7 +24,7 @@ export interface TestScenario {
   errorMessage?: string;
 }
 
-export interface UtilityTestSuite {
+interface UtilityTestSuite {
   utilityName: string;
   utilityFunction: (...args: any[]) => any;
   scenarios: TestScenario[];

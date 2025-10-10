@@ -3,14 +3,14 @@
  * 100% React Server Component for changing user password with security features
  */
 
-import { useFormState } from 'react-dom';
-import type { BaseProps, FormState } from '../types';
-import { createInitialActionState } from '../types';
-import { Alert } from '../ui/Alert';
-import { Button } from '../ui/Button';
-import { Card, CardContent, CardHeader } from '../ui/Card';
-import { Input } from '../ui/Input';
-import { cn } from '../utils/dark-mode';
+import { useFormState } from "react-dom";
+import type { BaseProps, FormState } from "../types";
+import { createInitialActionState } from "../types";
+import { Alert } from "../ui/Alert";
+import { Button } from "../ui/Button";
+import { Card, CardContent, CardHeader } from "../ui/Card";
+import { Input } from "../ui/Input";
+import { cn } from "../utils/dark-mode";
 
 interface ChangePasswordFormProps extends BaseProps {
   title?: string;
@@ -29,68 +29,76 @@ function getPasswordStrength(password: string): {
   feedback: string[];
   color: string;
 } {
-  if (!password) return { score: 0, feedback: [], color: 'gray' };
+  if (!password) return { score: 0, feedback: [], color: "gray" };
 
   let score = 0;
   const feedback: string[] = [];
 
   if (password.length >= 8) score += 1;
-  else feedback.push('At least 8 characters');
+  else feedback.push("At least 8 characters");
 
   if (/[a-z]/.test(password)) score += 1;
-  else feedback.push('Include lowercase letters');
+  else feedback.push("Include lowercase letters");
 
   if (/[A-Z]/.test(password)) score += 1;
-  else feedback.push('Include uppercase letters');
+  else feedback.push("Include uppercase letters");
 
   if (/[0-9]/.test(password)) score += 1;
-  else feedback.push('Include numbers');
+  else feedback.push("Include numbers");
 
   if (/[^A-Za-z0-9]/.test(password)) score += 1;
-  else feedback.push('Include special characters');
+  else feedback.push("Include special characters");
 
-  const colors = ['red', 'red', 'yellow', 'yellow', 'green', 'green'];
-  return { score, feedback, color: colors[score] || 'gray' };
+  const colors = ["red", "red", "yellow", "yellow", "green", "green"];
+  return { score, feedback, color: colors[score] || "gray" };
 }
 
 // Server action for changing password
-async function changePasswordAction(__prevState: any, formData: FormData): Promise<FormState> {
-  'use server';
+async function changePasswordAction(
+  __prevState: any,
+  formData: FormData,
+): Promise<FormState> {
+  "use server";
 
   try {
-    const currentPassword = formData.get('currentPassword') as string;
-    const newPassword = formData.get('newPassword') as string;
-    const confirmPassword = formData.get('confirmPassword') as string;
-    const requireCurrentPassword = formData.get('requireCurrentPassword') === 'true';
+    const currentPassword = formData.get("currentPassword") as string;
+    const newPassword = formData.get("newPassword") as string;
+    const confirmPassword = formData.get("confirmPassword") as string;
+    const requireCurrentPassword =
+      formData.get("requireCurrentPassword") === "true";
 
     // Validation
     const errors: Record<string, string[]> = {};
 
     if (requireCurrentPassword && !currentPassword) {
-      errors.currentPassword = ['Current password is required'];
+      errors.currentPassword = ["Current password is required"];
     }
 
     if (!newPassword) {
-      errors.newPassword = ['New password is required'];
+      errors.newPassword = ["New password is required"];
     } else {
       if (newPassword.length < 8) {
-        errors.newPassword = ['Password must be at least 8 characters long'];
+        errors.newPassword = ["Password must be at least 8 characters long"];
       }
 
       if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(newPassword)) {
         errors.newPassword = errors.newPassword || [];
-        errors.newPassword.push('Password must contain uppercase, lowercase, and numbers');
+        errors.newPassword.push(
+          "Password must contain uppercase, lowercase, and numbers",
+        );
       }
     }
 
     if (!confirmPassword) {
-      errors.confirmPassword = ['Please confirm your new password'];
+      errors.confirmPassword = ["Please confirm your new password"];
     } else if (newPassword !== confirmPassword) {
-      errors.confirmPassword = ['Passwords do not match'];
+      errors.confirmPassword = ["Passwords do not match"];
     }
 
     if (currentPassword && newPassword && currentPassword === newPassword) {
-      errors.newPassword = ['New password must be different from current password'];
+      errors.newPassword = [
+        "New password must be different from current password",
+      ];
     }
 
     if (Object.keys(errors).length > 0) {
@@ -112,64 +120,76 @@ async function changePasswordAction(__prevState: any, formData: FormData): Promi
     if (result.success) {
       return {
         success: true,
-        message: 'Password changed successfully! Please use your new password for future sign-ins.',
+        message:
+          "Password changed successfully! Please use your new password for future sign-ins.",
       };
     } else {
       return {
         success: false,
-        error: result.error || 'Failed to change password.',
+        error: result.error || "Failed to change password.",
       };
     }
   } catch (error: any) {
     // console.error('Change password error:', error);
 
-    if (error?.message?.includes('incorrect password')) {
+    if (error?.message?.includes("incorrect password")) {
       return {
         success: false,
-        errors: { currentPassword: ['Current password is incorrect'] },
+        errors: { currentPassword: ["Current password is incorrect"] },
       };
     }
 
-    if (error?.message?.includes('weak password')) {
-      return {
-        success: false,
-        errors: { newPassword: ['Password is too weak. Please choose a stronger password.'] },
-      };
-    }
-
-    if (error?.message?.includes('rate limit')) {
-      return {
-        success: false,
-        error: 'Too many password change attempts. Please wait a few minutes before trying again.',
-      };
-    }
-
-    if (error?.message?.includes('recent password')) {
+    if (error?.message?.includes("weak password")) {
       return {
         success: false,
         errors: {
-          newPassword: ['Cannot reuse a recent password. Please choose a different password.'],
+          newPassword: [
+            "Password is too weak. Please choose a stronger password.",
+          ],
+        },
+      };
+    }
+
+    if (error?.message?.includes("rate limit")) {
+      return {
+        success: false,
+        error:
+          "Too many password change attempts. Please wait a few minutes before trying again.",
+      };
+    }
+
+    if (error?.message?.includes("recent password")) {
+      return {
+        success: false,
+        errors: {
+          newPassword: [
+            "Cannot reuse a recent password. Please choose a different password.",
+          ],
         },
       };
     }
 
     return {
       success: false,
-      error: 'An error occurred while changing your password. Please try again.',
+      error:
+        "An error occurred while changing your password. Please try again.",
     };
   }
 }
 
 export function ChangePasswordForm({
-  title = 'Change Password',
-  subtitle = 'Update your password to keep your account secure',
+  title = "Change Password",
+  subtitle = "Update your password to keep your account secure",
   requireCurrentPassword = true,
   showPasswordStrength = true,
   onSuccess,
   onError,
-  className = '',
+  className = "",
 }: ChangePasswordFormProps) {
-  const [state, action] = useFormState(changePasswordAction, createInitialActionState());
+  const [state, action] = useFormState(
+    changePasswordAction,
+    createInitialActionState(),
+  );
 
   // Handle callbacks
   if (state?.success && onSuccess) {
@@ -181,19 +201,21 @@ export function ChangePasswordForm({
   }
 
   // Get password strength for client-side display (would need client component for real-time)
-  const newPassword = ''; // In real implementation, this would come from form state
-  const passwordStrength = showPasswordStrength ? getPasswordStrength(newPassword) : null;
+  const newPassword = ""; // In real implementation, this would come from form state
+  const passwordStrength = showPasswordStrength
+    ? getPasswordStrength(newPassword)
+    : null;
 
   return (
-    <Card className={cn('mx-auto w-full max-w-md', className)}>
+    <Card className={cn("mx-auto w-full max-w-md", className)}>
       <CardHeader>
         <div className="text-center">
           <div
             className={cn(
-              'mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full',
+              "mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full",
               state?.success
-                ? 'bg-green-100 dark:bg-green-900/20'
-                : 'bg-blue-100 dark:bg-blue-900/20',
+                ? "bg-green-100 dark:bg-green-900/20"
+                : "bg-blue-100 dark:bg-blue-900/20",
             )}
           >
             {state?.success ? (
@@ -224,9 +246,20 @@ export function ChangePasswordForm({
               </svg>
             )}
           </div>
-          <h1 className={cn('text-2xl font-bold text-gray-900', 'dark:text-gray-100')}>{title}</h1>
+          <h1
+            className={cn(
+              "text-2xl font-bold text-gray-900",
+              "dark:text-gray-100",
+            )}
+          >
+            {title}
+          </h1>
           {subtitle && (
-            <p className={cn('mt-2 text-sm text-gray-600', 'dark:text-gray-400')}>{subtitle}</p>
+            <p
+              className={cn("mt-2 text-sm text-gray-600", "dark:text-gray-400")}
+            >
+              {subtitle}
+            </p>
           )}
         </div>
       </CardHeader>
@@ -238,8 +271,8 @@ export function ChangePasswordForm({
 
             <div
               className={cn(
-                'rounded-lg border border-green-200 bg-green-50 p-4',
-                'dark:border-green-800 dark:bg-green-900/20',
+                "rounded-lg border border-green-200 bg-green-50 p-4",
+                "dark:border-green-800 dark:bg-green-900/20",
               )}
             >
               <div className="flex items-start">
@@ -254,8 +287,15 @@ export function ChangePasswordForm({
                     clipRule="evenodd"
                   />
                 </svg>
-                <div className={cn('text-sm text-green-800', 'dark:text-green-200')}>
-                  <h4 className="mb-1 font-medium">Password updated successfully!</h4>
+                <div
+                  className={cn(
+                    "text-sm text-green-800",
+                    "dark:text-green-200",
+                  )}
+                >
+                  <h4 className="mb-1 font-medium">
+                    Password updated successfully!
+                  </h4>
                   <ul className="list-inside list-disc space-y-1 text-xs">
                     <li>Your password has been changed</li>
                     <li>Use your new password for future sign-ins</li>
@@ -271,7 +311,7 @@ export function ChangePasswordForm({
                 variant="primary"
                 className="w-full"
                 onClick={() => {
-                  window.location.href = '/account/settings';
+                  window.location.href = "/account/settings";
                 }}
               >
                 Back to Account Settings
@@ -325,43 +365,52 @@ export function ChangePasswordForm({
                     <div className="h-2 flex-1 rounded-full bg-gray-200 dark:bg-gray-700">
                       <div
                         className={cn(
-                          'h-2 rounded-full transition-all duration-300',
-                          passwordStrength.color === 'red'
-                            ? 'bg-red-500'
-                            : passwordStrength.color === 'yellow'
-                              ? 'bg-yellow-500'
-                              : passwordStrength.color === 'green'
-                                ? 'bg-green-500'
-                                : 'bg-gray-300',
+                          "h-2 rounded-full transition-all duration-300",
+                          passwordStrength.color === "red"
+                            ? "bg-red-500"
+                            : passwordStrength.color === "yellow"
+                              ? "bg-yellow-500"
+                              : passwordStrength.color === "green"
+                                ? "bg-green-500"
+                                : "bg-gray-300",
                         )}
-                        style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
+                        style={{
+                          width: `${(passwordStrength.score / 5) * 100}%`,
+                        }}
                       />
                     </div>
                     <span
                       className={cn(
-                        'text-xs font-medium',
-                        passwordStrength.color === 'red'
-                          ? 'text-red-600 dark:text-red-400'
-                          : passwordStrength.color === 'yellow'
-                            ? 'text-yellow-600 dark:text-yellow-400'
-                            : passwordStrength.color === 'green'
-                              ? 'text-green-600 dark:text-green-400'
-                              : 'text-gray-600 dark:text-gray-400',
+                        "text-xs font-medium",
+                        passwordStrength.color === "red"
+                          ? "text-red-600 dark:text-red-400"
+                          : passwordStrength.color === "yellow"
+                            ? "text-yellow-600 dark:text-yellow-400"
+                            : passwordStrength.color === "green"
+                              ? "text-green-600 dark:text-green-400"
+                              : "text-gray-600 dark:text-gray-400",
                       )}
                     >
                       {passwordStrength.score <= 2
-                        ? 'Weak'
+                        ? "Weak"
                         : passwordStrength.score <= 4
-                          ? 'Medium'
-                          : 'Strong'}
+                          ? "Medium"
+                          : "Strong"}
                     </span>
                   </div>
 
                   {passwordStrength.feedback.length > 0 && (
-                    <div className={cn('text-xs text-gray-600', 'dark:text-gray-400')}>
-                      <p className="mb-1 font-medium">Password should include:</p>
+                    <div
+                      className={cn(
+                        "text-xs text-gray-600",
+                        "dark:text-gray-400",
+                      )}
+                    >
+                      <p className="mb-1 font-medium">
+                        Password should include:
+                      </p>
                       <ul className="list-inside list-disc space-y-0.5">
-                        {passwordStrength.feedback.map(item => (
+                        {passwordStrength.feedback.map((item) => (
                           <li key={item}>{item}</li>
                         ))}
                       </ul>
@@ -394,15 +443,15 @@ export function ChangePasswordForm({
               className="w-full"
               disabled={state === undefined}
             >
-              {state === undefined ? 'Changing Password...' : 'Change Password'}
+              {state === undefined ? "Changing Password..." : "Change Password"}
             </Button>
           </form>
         )}
 
         <div
           className={cn(
-            'mt-6 rounded-lg border border-blue-200 bg-blue-50 p-4',
-            'dark:border-blue-800 dark:bg-blue-900/20',
+            "mt-6 rounded-lg border border-blue-200 bg-blue-50 p-4",
+            "dark:border-blue-800 dark:bg-blue-900/20",
           )}
         >
           <div className="flex items-start">
@@ -417,11 +466,13 @@ export function ChangePasswordForm({
                 clipRule="evenodd"
               />
             </svg>
-            <div className={cn('text-sm text-blue-800', 'dark:text-blue-200')}>
+            <div className={cn("text-sm text-blue-800", "dark:text-blue-200")}>
               <h4 className="mb-1 font-medium">Password Security Tips</h4>
               <ul className="list-inside list-disc space-y-1 text-xs">
                 <li>Use a unique password that you don't use elsewhere</li>
-                <li>Include a mix of letters, numbers, and special characters</li>
+                <li>
+                  Include a mix of letters, numbers, and special characters
+                </li>
                 <li>Consider using a password manager</li>
                 <li>Don't share your password with anyone</li>
               </ul>
@@ -434,8 +485,8 @@ export function ChangePasswordForm({
             <a
               href="/account/settings"
               className={cn(
-                'text-sm text-gray-600 hover:text-gray-500',
-                'dark:text-gray-400 dark:hover:text-gray-300',
+                "text-sm text-gray-600 hover:text-gray-500",
+                "dark:text-gray-400 dark:hover:text-gray-300",
               )}
             >
               Cancel and return to settings
@@ -446,8 +497,8 @@ export function ChangePasswordForm({
             <a
               href="/auth/forgot-password"
               className={cn(
-                'text-sm text-blue-600 hover:text-blue-500',
-                'dark:text-blue-400 dark:hover:text-blue-300',
+                "text-sm text-blue-600 hover:text-blue-500",
+                "dark:text-blue-400 dark:hover:text-blue-300",
               )}
             >
               Forgot your current password?

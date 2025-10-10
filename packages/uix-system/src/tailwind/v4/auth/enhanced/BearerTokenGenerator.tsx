@@ -3,48 +3,51 @@
  * Comprehensive interface for creating, managing, and revoking API bearer tokens
  */
 
-import { useState, useTransition } from 'react';
-import { useFormState } from 'react-dom';
-import { Alert } from '../ui/Alert';
-import { Button } from '../ui/Button';
-import { Card, CardContent, CardHeader } from '../ui/Card';
-import { Input } from '../ui/Input';
+import { useState, useTransition } from "react";
+import { useFormState } from "react-dom";
+import { Alert } from "../ui/Alert";
+import { Button } from "../ui/Button";
+import { Card, CardContent, CardHeader } from "../ui/Card";
+import { Input } from "../ui/Input";
 
 // Real server actions from the auth package
 const generateTokenAction = async (__prevState: any, formData: FormData) => {
-  'use server';
+  "use server";
 
   try {
-    const { createAPIKeyAction } = await import('../actions');
+    const { createAPIKeyAction } = await import("../actions");
 
-    const name = formData.get('name') as string;
-    const description = formData.get('description') as string;
-    const expiresIn = formData.get('expiresIn') as string;
-    const scopes = JSON.parse((formData.get('scopes') as string) || '[]');
+    const name = formData.get("name") as string;
+    const description = formData.get("description") as string;
+    const expiresIn = formData.get("expiresIn") as string;
+    const scopes = JSON.parse((formData.get("scopes") as string) || "[]");
 
     let expiresAt: Date | undefined;
-    if (expiresIn !== 'never') {
+    if (expiresIn !== "never") {
       const days = parseInt(expiresIn);
       expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
     }
 
     // Create form data for our action
     const actionFormData = new FormData();
-    actionFormData.append('name', name);
-    actionFormData.append('expiresIn', expiresIn);
-    actionFormData.append('scopes', JSON.stringify(scopes));
+    actionFormData.append("name", name);
+    actionFormData.append("expiresIn", expiresIn);
+    actionFormData.append("scopes", JSON.stringify(scopes));
 
-    const result = await createAPIKeyAction({ success: false, error: '' }, actionFormData);
+    const result = await createAPIKeyAction(
+      { success: false, error: "" },
+      actionFormData,
+    );
 
     if (result && result.success) {
       return {
         success: true,
-        error: '',
+        error: "",
         token: {
-          id: 'token-id-placeholder',
+          id: "token-id-placeholder",
           name,
           description,
-          token: 'bearer-token-placeholder',
+          token: "bearer-token-placeholder",
           scopes,
           expiresAt: expiresAt?.toISOString() || null,
           createdAt: new Date().toISOString(),
@@ -55,66 +58,71 @@ const generateTokenAction = async (__prevState: any, formData: FormData) => {
       };
     }
 
-    throw new Error('Failed to create API key');
+    throw new Error("Failed to create API key");
   } catch (error: any) {
     return {
       success: false,
-      error: error?.message || 'Failed to generate bearer token',
+      error: error?.message || "Failed to generate bearer token",
     };
   }
 };
 
 const revokeTokenAction = async (__prevState: any, formData: FormData) => {
-  'use server';
+  "use server";
 
   try {
-    const { revokeAPIKeyAction } = await import('../actions');
+    const { revokeAPIKeyAction } = await import("../actions");
 
-    const tokenId = formData.get('tokenId') as string;
+    const tokenId = formData.get("tokenId") as string;
 
     const actionFormData = new FormData();
-    actionFormData.append('keyId', tokenId);
-    await revokeAPIKeyAction({ success: false, error: '' }, actionFormData);
+    actionFormData.append("keyId", tokenId);
+    await revokeAPIKeyAction({ success: false, error: "" }, actionFormData);
 
-    return { success: true, error: '', tokenId };
+    return { success: true, error: "", tokenId };
   } catch (error: any) {
     return {
       success: false,
-      error: error?.message || 'Failed to revoke token',
+      error: error?.message || "Failed to revoke token",
     };
   }
 };
 
 const regenerateTokenAction = async (__prevState: any, formData: FormData) => {
-  'use server';
+  "use server";
 
   try {
-    const { revokeAPIKeyAction, createAPIKeyAction } = await import('../actions');
+    const { revokeAPIKeyAction, createAPIKeyAction } = await import(
+      "../actions"
+    );
 
-    const tokenId = formData.get('tokenId') as string;
+    const tokenId = formData.get("tokenId") as string;
 
     // Revoke old key
     const revokeFormData = new FormData();
-    revokeFormData.append('keyId', tokenId);
-    await revokeAPIKeyAction({ success: false, error: '' }, revokeFormData);
+    revokeFormData.append("keyId", tokenId);
+    await revokeAPIKeyAction({ success: false, error: "" }, revokeFormData);
 
     // Create new key
     const createFormData = new FormData();
-    createFormData.append('name', 'Regenerated Token');
-    createFormData.append('expiresIn', '30');
-    const _newKey = await createAPIKeyAction({ success: false, error: '' }, createFormData);
+    createFormData.append("name", "Regenerated Token");
+    createFormData.append("expiresIn", "30");
+    const _newKey = await createAPIKeyAction(
+      { success: false, error: "" },
+      createFormData,
+    );
 
     return {
       success: true,
-      error: '',
+      error: "",
       tokenId,
-      newToken: 'new-token-placeholder',
-      newTokenId: 'new-token-id-placeholder',
+      newToken: "new-token-placeholder",
+      newTokenId: "new-token-id-placeholder",
     };
   } catch (error: any) {
     return {
       success: false,
-      error: error?.message || 'Failed to regenerate token',
+      error: error?.message || "Failed to regenerate token",
     };
   }
 };
@@ -123,7 +131,7 @@ interface ApiScope {
   id: string;
   name: string;
   description: string;
-  category: 'read' | 'write' | 'admin';
+  category: "read" | "write" | "admin";
   required?: boolean;
 }
 
@@ -152,71 +160,71 @@ interface BearerTokenGeneratorProps {
   className?: string;
 }
 
-const initialFormState = { success: false, error: '' };
+const initialFormState = { success: false, error: "" };
 
 const DEFAULT_SCOPES: ApiScope[] = [
   {
-    id: 'users:read',
-    name: 'Read Users',
-    description: 'View user profiles and basic information',
-    category: 'read',
+    id: "users:read",
+    name: "Read Users",
+    description: "View user profiles and basic information",
+    category: "read",
   },
   {
-    id: 'users:write',
-    name: 'Write Users',
-    description: 'Create and update user profiles',
-    category: 'write',
+    id: "users:write",
+    name: "Write Users",
+    description: "Create and update user profiles",
+    category: "write",
   },
   {
-    id: 'teams:read',
-    name: 'Read Teams',
-    description: 'View team information and membership',
-    category: 'read',
+    id: "teams:read",
+    name: "Read Teams",
+    description: "View team information and membership",
+    category: "read",
   },
   {
-    id: 'teams:write',
-    name: 'Write Teams',
-    description: 'Create and manage teams',
-    category: 'write',
+    id: "teams:write",
+    name: "Write Teams",
+    description: "Create and manage teams",
+    category: "write",
   },
   {
-    id: 'projects:read',
-    name: 'Read Projects',
-    description: 'View project data and settings',
-    category: 'read',
+    id: "projects:read",
+    name: "Read Projects",
+    description: "View project data and settings",
+    category: "read",
   },
   {
-    id: 'projects:write',
-    name: 'Write Projects',
-    description: 'Create and modify projects',
-    category: 'write',
+    id: "projects:write",
+    name: "Write Projects",
+    description: "Create and modify projects",
+    category: "write",
   },
   {
-    id: 'analytics:read',
-    name: 'Read Analytics',
-    description: 'Access usage and performance data',
-    category: 'read',
+    id: "analytics:read",
+    name: "Read Analytics",
+    description: "Access usage and performance data",
+    category: "read",
   },
   {
-    id: 'admin:read',
-    name: 'Admin Read',
-    description: 'Read administrative data',
-    category: 'admin',
+    id: "admin:read",
+    name: "Admin Read",
+    description: "Read administrative data",
+    category: "admin",
   },
   {
-    id: 'admin:write',
-    name: 'Admin Write',
-    description: 'Full administrative access',
-    category: 'admin',
+    id: "admin:write",
+    name: "Admin Write",
+    description: "Full administrative access",
+    category: "admin",
   },
 ];
 
 const EXPIRY_OPTIONS = [
-  { value: '7', label: '7 days' },
-  { value: '30', label: '30 days' },
-  { value: '90', label: '90 days' },
-  { value: '365', label: '1 year' },
-  { value: 'never', label: 'Never expires' },
+  { value: "7", label: "7 days" },
+  { value: "30", label: "30 days" },
+  { value: "90", label: "90 days" },
+  { value: "365", label: "1 year" },
+  { value: "never", label: "Never expires" },
 ];
 
 export function BearerTokenGenerator({
@@ -228,24 +236,37 @@ export function BearerTokenGenerator({
   maxTokens = 10,
   allowCustomExpiry = true,
   requireScopes = true,
-  className = '',
+  className = "",
 }: BearerTokenGeneratorProps) {
   const [isPending, startTransition] = useTransition();
   const [showGenerator, setShowGenerator] = useState(false);
-  const [tokenName, setTokenName] = useState('');
-  const [tokenDescription, setTokenDescription] = useState('');
+  const [tokenName, setTokenName] = useState("");
+  const [tokenDescription, setTokenDescription] = useState("");
   const [selectedScopes, setSelectedScopes] = useState<Set<string>>(new Set());
-  const [expiresIn, setExpiresIn] = useState('30');
-  const [customExpiry, setCustomExpiry] = useState('');
-  const [generatedToken, _setGeneratedToken] = useState<BearerToken | null>(null);
+  const [expiresIn, setExpiresIn] = useState("30");
+  const [customExpiry, setCustomExpiry] = useState("");
+  const [generatedToken, _setGeneratedToken] = useState<BearerToken | null>(
+    null,
+  );
   const [showToken, setShowToken] = useState(false);
-  const [copiedToken, setCopiedToken] = useState('');
-  const [filterCategory, setFilterCategory] = useState<'all' | 'read' | 'write' | 'admin'>('all');
+  const [copiedToken, setCopiedToken] = useState("");
+  const [filterCategory, setFilterCategory] = useState<
+    "all" | "read" | "write" | "admin"
+  >("all");
   const [revokeConfirm, setRevokeConfirm] = useState<string | null>(null);
 
-  const [generateState, generateAction] = useFormState(generateTokenAction, initialFormState);
-  const [revokeState, revokeAction] = useFormState(revokeTokenAction, initialFormState);
-  const [regenerateState, regenerateAction] = useFormState(regenerateTokenAction, initialFormState);
+  const [generateState, generateAction] = useFormState(
+    generateTokenAction,
+    initialFormState,
+  );
+  const [revokeState, revokeAction] = useFormState(
+    revokeTokenAction,
+    initialFormState,
+  );
+  const [regenerateState, regenerateAction] = useFormState(
+    regenerateTokenAction,
+    initialFormState,
+  );
 
   const handleGenerateToken = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -256,10 +277,13 @@ export function BearerTokenGenerator({
     }
 
     const formData = new FormData();
-    formData.append('name', tokenName);
-    formData.append('description', tokenDescription);
-    formData.append('expiresIn', expiresIn === 'custom' ? customExpiry : expiresIn);
-    formData.append('scopes', JSON.stringify(Array.from(selectedScopes)));
+    formData.append("name", tokenName);
+    formData.append("description", tokenDescription);
+    formData.append(
+      "expiresIn",
+      expiresIn === "custom" ? customExpiry : expiresIn,
+    );
+    formData.append("scopes", JSON.stringify(Array.from(selectedScopes)));
 
     startTransition(() => {
       generateAction(formData);
@@ -269,7 +293,7 @@ export function BearerTokenGenerator({
 
   const handleRevokeToken = async (tokenId: string) => {
     const formData = new FormData();
-    formData.append('tokenId', tokenId);
+    formData.append("tokenId", tokenId);
 
     startTransition(() => {
       revokeAction(formData);
@@ -279,7 +303,7 @@ export function BearerTokenGenerator({
 
   const handleRegenerateToken = async (tokenId: string) => {
     const formData = new FormData();
-    formData.append('tokenId', tokenId);
+    formData.append("tokenId", tokenId);
 
     startTransition(() => {
       regenerateAction(formData);
@@ -288,7 +312,7 @@ export function BearerTokenGenerator({
   };
 
   const handleScopeToggle = (scopeId: string) => {
-    setSelectedScopes(prev => {
+    setSelectedScopes((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(scopeId)) {
         newSet.delete(scopeId);
@@ -303,7 +327,7 @@ export function BearerTokenGenerator({
     try {
       await navigator.clipboard.writeText(token);
       setCopiedToken(token);
-      setTimeout(() => setCopiedToken(''), 2000);
+      setTimeout(() => setCopiedToken(""), 2000);
     } catch (_err) {
       // console.error('Failed to copy token:', err);
     }
@@ -311,51 +335,56 @@ export function BearerTokenGenerator({
 
   const getScopeColor = (category: string) => {
     switch (category) {
-      case 'read':
-        return 'text-blue-600 bg-blue-50 border-blue-200';
-      case 'write':
-        return 'text-green-600 bg-green-50 border-green-200';
-      case 'admin':
-        return 'text-red-600 bg-red-50 border-red-200';
+      case "read":
+        return "text-blue-600 bg-blue-50 border-blue-200";
+      case "write":
+        return "text-green-600 bg-green-50 border-green-200";
+      case "admin":
+        return "text-red-600 bg-red-50 border-red-200";
       default:
-        return 'text-gray-600 bg-gray-50 border-gray-200';
+        return "text-gray-600 bg-gray-50 border-gray-200";
     }
   };
 
   const formatExpiryDate = (expiresAt: string | null) => {
-    if (!expiresAt) return 'Never expires';
+    if (!expiresAt) return "Never expires";
     const date = new Date(expiresAt);
     const now = new Date();
     const diffMs = date.getTime() - now.getTime();
     const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
-    if (diffDays < 0) return 'Expired';
-    if (diffDays === 0) return 'Expires today';
-    if (diffDays === 1) return 'Expires tomorrow';
+    if (diffDays < 0) return "Expired";
+    if (diffDays === 0) return "Expires today";
+    if (diffDays === 1) return "Expires tomorrow";
     if (diffDays < 30) return `Expires in ${diffDays} days`;
     if (diffDays < 365) return `Expires in ${Math.ceil(diffDays / 30)} months`;
     return `Expires in ${Math.ceil(diffDays / 365)} years`;
   };
 
   const filteredScopes = availableScopes.filter(
-    scope => filterCategory === 'all' || scope.category === filterCategory,
+    (scope) => filterCategory === "all" || scope.category === filterCategory,
   );
 
-  const activeTokens = existingTokens.filter(t => t.isActive);
+  const activeTokens = existingTokens.filter((t) => t.isActive);
   const expiredTokens = existingTokens.filter(
-    t => t.expiresAt && new Date(t.expiresAt) < new Date(),
+    (t) => t.expiresAt && new Date(t.expiresAt) < new Date(),
   );
 
   return (
     <div className={`space-y-6 ${className}`}>
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-900">API Bearer Tokens</h2>
+          <h2 className="text-2xl font-semibold text-gray-900">
+            API Bearer Tokens
+          </h2>
           <p className="mt-1 text-sm text-gray-600">
             Generate and manage bearer tokens for API access
           </p>
         </div>
-        <Button onClick={() => setShowGenerator(true)} disabled={activeTokens.length >= maxTokens}>
+        <Button
+          onClick={() => setShowGenerator(true)}
+          disabled={activeTokens.length >= maxTokens}
+        >
           Generate New Token
         </Button>
       </div>
@@ -366,33 +395,41 @@ export function BearerTokenGenerator({
         </Alert>
       )}
 
-      {(generateState.success || revokeState.success || regenerateState.success) && !showToken && (
-        <Alert variant="default">
-          {generateState.success && 'Bearer token generated successfully!'}
-          {revokeState.success && 'Token revoked successfully!'}
-          {regenerateState.success && 'Token regenerated successfully!'}
-        </Alert>
-      )}
+      {(generateState.success ||
+        revokeState.success ||
+        regenerateState.success) &&
+        !showToken && (
+          <Alert variant="default">
+            {generateState.success && "Bearer token generated successfully!"}
+            {revokeState.success && "Token revoked successfully!"}
+            {regenerateState.success && "Token regenerated successfully!"}
+          </Alert>
+        )}
 
       {showToken && generatedToken && (
         <Alert variant="default">
           <div className="space-y-4">
             <div>
-              <h4 className="mb-2 font-medium text-green-800">Token Generated Successfully! 🎉</h4>
+              <h4 className="mb-2 font-medium text-green-800">
+                Token Generated Successfully! 🎉
+              </h4>
               <p className="mb-3 text-sm text-green-700">
-                Copy your bearer token now. For security reasons, it won't be shown again.
+                Copy your bearer token now. For security reasons, it won't be
+                shown again.
               </p>
             </div>
 
             <div className="rounded-lg border border-green-200 bg-white p-4">
               <div className="mb-2 flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700">Bearer Token</label>
+                <label className="text-sm font-medium text-gray-700">
+                  Bearer Token
+                </label>
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => handleCopyToken(generatedToken.token)}
                 >
-                  {copiedToken === generatedToken.token ? 'Copied!' : 'Copy'}
+                  {copiedToken === generatedToken.token ? "Copied!" : "Copy"}
                 </Button>
               </div>
               <div className="break-all rounded border bg-gray-50 p-3 font-mono text-sm">
@@ -405,14 +442,20 @@ export function BearerTokenGenerator({
                 <strong>Token Name:</strong> {generatedToken.name}
               </p>
               <p>
-                <strong>Expires:</strong> {formatExpiryDate(generatedToken.expiresAt)}
+                <strong>Expires:</strong>{" "}
+                {formatExpiryDate(generatedToken.expiresAt)}
               </p>
               <p>
-                <strong>Scopes:</strong> {generatedToken.scopes.length} permissions
+                <strong>Scopes:</strong> {generatedToken.scopes.length}{" "}
+                permissions
               </p>
             </div>
 
-            <Button size="sm" variant="outline" onClick={() => setShowToken(false)}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowToken(false)}
+            >
               I've saved my token
             </Button>
           </div>
@@ -425,7 +468,9 @@ export function BearerTokenGenerator({
             <div className="flex items-center">
               <span className="mr-3 text-2xl">🔑</span>
               <div>
-                <div className="text-2xl font-bold text-gray-900">{activeTokens.length}</div>
+                <div className="text-2xl font-bold text-gray-900">
+                  {activeTokens.length}
+                </div>
                 <div className="text-sm text-gray-600">Active Tokens</div>
               </div>
             </div>
@@ -438,7 +483,10 @@ export function BearerTokenGenerator({
               <span className="mr-3 text-2xl">📊</span>
               <div>
                 <div className="text-2xl font-bold text-blue-600">
-                  {activeTokens.reduce((sum, token) => sum + token.usageCount, 0)}
+                  {activeTokens.reduce(
+                    (sum, token) => sum + token.usageCount,
+                    0,
+                  )}
                 </div>
                 <div className="text-sm text-gray-600">Total Usage</div>
               </div>
@@ -451,7 +499,9 @@ export function BearerTokenGenerator({
             <div className="flex items-center">
               <span className="mr-3 text-2xl">⚠️</span>
               <div>
-                <div className="text-2xl font-bold text-orange-600">{expiredTokens.length}</div>
+                <div className="text-2xl font-bold text-orange-600">
+                  {expiredTokens.length}
+                </div>
                 <div className="text-sm text-gray-600">Expired</div>
               </div>
             </div>
@@ -477,8 +527,14 @@ export function BearerTokenGenerator({
         <Card className="border-blue-200 bg-blue-50">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-blue-900">Generate New Bearer Token</h3>
-              <Button variant="outline" size="sm" onClick={() => setShowGenerator(false)}>
+              <h3 className="text-lg font-medium text-blue-900">
+                Generate New Bearer Token
+              </h3>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowGenerator(false)}
+              >
                 Cancel
               </Button>
             </div>
@@ -498,7 +554,7 @@ export function BearerTokenGenerator({
                     type="text"
                     required
                     value={tokenName}
-                    onChange={e => setTokenName(e.target.value)}
+                    onChange={(e) => setTokenName(e.target.value)}
                     placeholder="e.g., Production API Access"
                     className="w-full"
                     maxLength={50}
@@ -515,20 +571,22 @@ export function BearerTokenGenerator({
                   <select
                     id="expiresIn"
                     value={expiresIn}
-                    onChange={e => setExpiresIn(e.target.value)}
+                    onChange={(e) => setExpiresIn(e.target.value)}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
                   >
-                    {EXPIRY_OPTIONS.map(option => (
+                    {EXPIRY_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label}
                       </option>
                     ))}
-                    {allowCustomExpiry && <option value="custom">Custom</option>}
+                    {allowCustomExpiry && (
+                      <option value="custom">Custom</option>
+                    )}
                   </select>
                 </div>
               </div>
 
-              {expiresIn === 'custom' && allowCustomExpiry && (
+              {expiresIn === "custom" && allowCustomExpiry && (
                 <div>
                   <label
                     htmlFor="customExpiry"
@@ -542,7 +600,7 @@ export function BearerTokenGenerator({
                     min="1"
                     max="3650"
                     value={customExpiry}
-                    onChange={e => setCustomExpiry(e.target.value)}
+                    onChange={(e) => setCustomExpiry(e.target.value)}
                     placeholder="Enter number of days"
                     className="w-full"
                   />
@@ -559,7 +617,7 @@ export function BearerTokenGenerator({
                 <textarea
                   id="tokenDescription"
                   value={tokenDescription}
-                  onChange={e => setTokenDescription(e.target.value)}
+                  onChange={(e) => setTokenDescription(e.target.value)}
                   placeholder="Describe what this token will be used for"
                   rows={3}
                   maxLength={200}
@@ -570,34 +628,34 @@ export function BearerTokenGenerator({
               <div>
                 <div className="mb-3 flex items-center justify-between">
                   <label className="text-sm font-medium text-gray-700">
-                    API Permissions {requireScopes && '*'}
+                    API Permissions {requireScopes && "*"}
                   </label>
                   <div className="flex space-x-2">
                     <button
                       type="button"
-                      onClick={() => setFilterCategory('all')}
-                      className={`rounded px-2 py-1 text-xs ${filterCategory === 'all' ? 'bg-blue-100 text-blue-800' : 'text-gray-600'}`}
+                      onClick={() => setFilterCategory("all")}
+                      className={`rounded px-2 py-1 text-xs ${filterCategory === "all" ? "bg-blue-100 text-blue-800" : "text-gray-600"}`}
                     >
                       All
                     </button>
                     <button
                       type="button"
-                      onClick={() => setFilterCategory('read')}
-                      className={`rounded px-2 py-1 text-xs ${filterCategory === 'read' ? 'bg-blue-100 text-blue-800' : 'text-gray-600'}`}
+                      onClick={() => setFilterCategory("read")}
+                      className={`rounded px-2 py-1 text-xs ${filterCategory === "read" ? "bg-blue-100 text-blue-800" : "text-gray-600"}`}
                     >
                       Read
                     </button>
                     <button
                       type="button"
-                      onClick={() => setFilterCategory('write')}
-                      className={`rounded px-2 py-1 text-xs ${filterCategory === 'write' ? 'bg-blue-100 text-blue-800' : 'text-gray-600'}`}
+                      onClick={() => setFilterCategory("write")}
+                      className={`rounded px-2 py-1 text-xs ${filterCategory === "write" ? "bg-blue-100 text-blue-800" : "text-gray-600"}`}
                     >
                       Write
                     </button>
                     <button
                       type="button"
-                      onClick={() => setFilterCategory('admin')}
-                      className={`rounded px-2 py-1 text-xs ${filterCategory === 'admin' ? 'bg-blue-100 text-blue-800' : 'text-gray-600'}`}
+                      onClick={() => setFilterCategory("admin")}
+                      className={`rounded px-2 py-1 text-xs ${filterCategory === "admin" ? "bg-blue-100 text-blue-800" : "text-gray-600"}`}
                     >
                       Admin
                     </button>
@@ -605,7 +663,7 @@ export function BearerTokenGenerator({
                 </div>
 
                 <div className="max-h-48 space-y-2 overflow-y-auto rounded-lg border border-gray-200 p-3">
-                  {filteredScopes.map(scope => (
+                  {filteredScopes.map((scope) => (
                     <div key={scope.id} className="flex items-start space-x-3">
                       <input
                         type="checkbox"
@@ -614,23 +672,31 @@ export function BearerTokenGenerator({
                         onChange={() => handleScopeToggle(scope.id)}
                         className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
-                      <label htmlFor={scope.id} className="flex-1 cursor-pointer">
+                      <label
+                        htmlFor={scope.id}
+                        className="flex-1 cursor-pointer"
+                      >
                         <div className="flex items-center space-x-2">
-                          <span className="font-medium text-gray-900">{scope.name}</span>
+                          <span className="font-medium text-gray-900">
+                            {scope.name}
+                          </span>
                           <span
                             className={`inline-flex rounded-full border px-2 py-1 text-xs font-medium ${getScopeColor(scope.category)}`}
                           >
                             {scope.category}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-600">{scope.description}</p>
+                        <p className="text-sm text-gray-600">
+                          {scope.description}
+                        </p>
                       </label>
                     </div>
                   ))}
                 </div>
 
                 <p className="mt-2 text-xs text-gray-500">
-                  {selectedScopes.size} permission{selectedScopes.size !== 1 ? 's' : ''} selected
+                  {selectedScopes.size} permission
+                  {selectedScopes.size !== 1 ? "s" : ""} selected
                 </p>
               </div>
 
@@ -638,11 +704,16 @@ export function BearerTokenGenerator({
                 <div className="flex items-start">
                   <span className="mr-3 text-lg text-yellow-600">⚠️</span>
                   <div className="text-sm text-yellow-800">
-                    <h4 className="mb-1 font-medium">Security Best Practices</h4>
+                    <h4 className="mb-1 font-medium">
+                      Security Best Practices
+                    </h4>
                     <ul className="list-inside list-disc space-y-1">
                       <li>Only grant the minimum permissions needed</li>
                       <li>Set appropriate expiration dates</li>
-                      <li>Store tokens securely and never commit to version control</li>
+                      <li>
+                        Store tokens securely and never commit to version
+                        control
+                      </li>
                       <li>Revoke tokens immediately if compromised</li>
                       <li>Monitor token usage regularly</li>
                     </ul>
@@ -656,11 +727,11 @@ export function BearerTokenGenerator({
                   isPending ||
                   !tokenName.trim() ||
                   (requireScopes && selectedScopes.size === 0) ||
-                  (expiresIn === 'custom' && !customExpiry)
+                  (expiresIn === "custom" && !customExpiry)
                 }
                 className="w-full"
               >
-                {isPending ? 'Generating Token...' : 'Generate Bearer Token'}
+                {isPending ? "Generating Token..." : "Generate Bearer Token"}
               </Button>
             </form>
           </CardContent>
@@ -691,64 +762,82 @@ export function BearerTokenGenerator({
                   />
                 </svg>
               </div>
-              <h3 className="mb-2 text-lg font-medium text-gray-900">No API Tokens</h3>
+              <h3 className="mb-2 text-lg font-medium text-gray-900">
+                No API Tokens
+              </h3>
               <p className="mb-4 text-gray-600">
                 Generate your first bearer token to start using the API
               </p>
-              <Button onClick={() => setShowGenerator(true)}>Generate First Token</Button>
+              <Button onClick={() => setShowGenerator(true)}>
+                Generate First Token
+              </Button>
             </div>
           ) : (
             <div className="space-y-4">
-              {existingTokens.map(token => (
+              {existingTokens.map((token) => (
                 <div
                   key={token.id}
                   className={`rounded-lg border p-4 ${
                     !token.isActive
-                      ? 'border-red-200 bg-red-50'
-                      : token.expiresAt && new Date(token.expiresAt) < new Date()
-                        ? 'border-yellow-200 bg-yellow-50'
-                        : 'border-gray-200'
+                      ? "border-red-200 bg-red-50"
+                      : token.expiresAt &&
+                          new Date(token.expiresAt) < new Date()
+                        ? "border-yellow-200 bg-yellow-50"
+                        : "border-gray-200"
                   }`}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="mb-2 flex items-center space-x-2">
-                        <h4 className="font-medium text-gray-900">{token.name}</h4>
+                        <h4 className="font-medium text-gray-900">
+                          {token.name}
+                        </h4>
                         {!token.isActive && (
                           <span className="inline-flex rounded-full border border-red-200 bg-red-100 px-2 py-1 text-xs font-medium text-red-800">
                             Revoked
                           </span>
                         )}
-                        {token.expiresAt && new Date(token.expiresAt) < new Date() && (
-                          <span className="inline-flex rounded-full border border-yellow-200 bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-800">
-                            Expired
+                        {token.expiresAt &&
+                          new Date(token.expiresAt) < new Date() && (
+                            <span className="inline-flex rounded-full border border-yellow-200 bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-800">
+                              Expired
+                            </span>
+                          )}
+                      </div>
+
+                      {token.description && (
+                        <p className="mb-2 text-sm text-gray-600">
+                          {token.description}
+                        </p>
+                      )}
+
+                      <div className="flex items-center space-x-4 text-sm text-gray-500">
+                        <span>
+                          Created:{" "}
+                          {new Date(token.createdAt).toLocaleDateString()}
+                        </span>
+                        <span>{formatExpiryDate(token.expiresAt)}</span>
+                        <span>Used: {token.usageCount} times</span>
+                        {token.lastUsedAt && (
+                          <span>
+                            Last used:{" "}
+                            {new Date(token.lastUsedAt).toLocaleDateString()}
                           </span>
                         )}
                       </div>
 
-                      {token.description && (
-                        <p className="mb-2 text-sm text-gray-600">{token.description}</p>
-                      )}
-
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
-                        <span>Created: {new Date(token.createdAt).toLocaleDateString()}</span>
-                        <span>{formatExpiryDate(token.expiresAt)}</span>
-                        <span>Used: {token.usageCount} times</span>
-                        {token.lastUsedAt && (
-                          <span>Last used: {new Date(token.lastUsedAt).toLocaleDateString()}</span>
-                        )}
-                      </div>
-
                       <div className="mt-2 flex flex-wrap gap-1">
-                        {token.scopes.map(scope => {
-                          const scopeInfo = availableScopes.find(s => s.id === scope);
+                        {token.scopes.map((scope) => {
+                          const scopeInfo = availableScopes.find(
+                            (s) => s.id === scope,
+                          );
                           return (
                             <span
                               key={scope}
                               className={`inline-flex rounded border px-2 py-1 text-xs font-medium ${
                                 scopeInfo
                                   ? getScopeColor(scopeInfo.category)
-                                  : 'border-gray-200 bg-gray-50 text-gray-600'
+                                  : "border-gray-200 bg-gray-50 text-gray-600"
                               }`}
                             >
                               {scopeInfo?.name || scope}
@@ -821,7 +910,8 @@ export function BearerTokenGenerator({
                 </div>
                 <p>Example with curl:</p>
                 <div className="rounded border border-blue-200 bg-white p-3 font-mono text-xs">
-                  curl -H "Authorization: Bearer your_token_here" https://api.example.com/users
+                  curl -H "Authorization: Bearer your_token_here"
+                  https://api.example.com/users
                 </div>
               </div>
             </div>

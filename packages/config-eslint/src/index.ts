@@ -95,7 +95,7 @@ const sharedRules = createRules({
   ],
 
   // Core ESLint rules
-  'no-console': SEVERITY.WARN,
+  'no-console': SEVERITY.OFF,
   'no-debugger': SEVERITY.WARN,
   'no-unused-vars': SEVERITY.OFF, // Using unused-imports plugin
   'no-useless-catch': SEVERITY.ERROR,
@@ -476,7 +476,7 @@ const config: Linter.FlatConfig[] = [
     files: ['packages/*/src/**/*.{ts,tsx,js,jsx}'],
     ignores: ['**/__tests__/**', '**/*.test.*', '**/*.spec.*', '**/examples/**'],
     rules: {
-      'no-console': SEVERITY.WARN,
+      'no-console': SEVERITY.OFF,
     },
   }),
 

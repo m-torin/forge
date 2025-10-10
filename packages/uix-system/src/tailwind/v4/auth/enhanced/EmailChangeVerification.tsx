@@ -3,19 +3,19 @@
  * 100% React Server Component for email address change verification
  */
 
-import { useFormState } from 'react-dom';
-import type { BaseProps, FormState } from '../types';
-import { createInitialActionState } from '../types';
-import { Alert } from '../ui/Alert';
-import { Button } from '../ui/Button';
-import { Card, CardContent, CardHeader } from '../ui/Card';
-import { Input } from '../ui/Input';
+import { useFormState } from "react-dom";
+import type { BaseProps, FormState } from "../types";
+import { createInitialActionState } from "../types";
+import { Alert } from "../ui/Alert";
+import { Button } from "../ui/Button";
+import { Card, CardContent, CardHeader } from "../ui/Card";
+import { Input } from "../ui/Input";
 
 import {
   cancelEmailChangeAction,
   confirmEmailChangeAction,
   initiateEmailChangeAction,
-} from './actions';
+} from "./actions";
 
 interface EmailChangeVerificationProps extends BaseProps {
   currentEmail: string;
@@ -32,12 +32,12 @@ const _initialState: FormState = { success: false };
 export function EmailChangeVerification({
   currentEmail,
   pendingEmail,
-  title = 'Change Email Address',
-  subtitle = 'Update your account email address with verification',
+  title = "Change Email Address",
+  subtitle = "Update your account email address with verification",
   showCancelButton = true,
   onCancel,
   onVerificationComplete: _onVerificationComplete,
-  className = '',
+  className = "",
 }: EmailChangeVerificationProps) {
   const [initiateState, initiateAction] = useFormState(
     initiateEmailChangeAction,
@@ -104,7 +104,9 @@ export function EmailChangeVerification({
                 />
               </svg>
               <div className="flex-1">
-                <h3 className="text-sm font-medium text-yellow-800">Pending Email Change</h3>
+                <h3 className="text-sm font-medium text-yellow-800">
+                  Pending Email Change
+                </h3>
                 <p className="mt-1 text-sm text-yellow-700">
                   Verification pending for: <strong>{pendingEmail}</strong>
                 </p>
@@ -129,15 +131,21 @@ export function EmailChangeVerification({
           </div>
         )}
 
-        {(initiateState?.error || confirmState?.error || cancelState?.error) && (
+        {(initiateState?.error ||
+          confirmState?.error ||
+          cancelState?.error) && (
           <Alert variant="destructive" className="mb-4">
             {initiateState?.error || confirmState?.error || cancelState?.error}
           </Alert>
         )}
 
-        {(initiateState?.success || confirmState?.success || cancelState?.success) && (
+        {(initiateState?.success ||
+          confirmState?.success ||
+          cancelState?.success) && (
           <Alert variant="success" className="mb-4">
-            {initiateState?.message || confirmState?.message || cancelState?.message}
+            {initiateState?.message ||
+              confirmState?.message ||
+              cancelState?.message}
           </Alert>
         )}
 
@@ -180,10 +188,16 @@ export function EmailChangeVerification({
                 <div className="text-sm text-blue-800">
                   <h4 className="mb-1 font-medium">Email Change Process</h4>
                   <ul className="list-inside list-disc space-y-1 text-xs">
-                    <li>We'll send a verification link to your new email address</li>
-                    <li>Your current email will remain active until verification</li>
+                    <li>
+                      We'll send a verification link to your new email address
+                    </li>
+                    <li>
+                      Your current email will remain active until verification
+                    </li>
                     <li>Click the verification link to complete the change</li>
-                    <li>You can cancel the request at any time before verification</li>
+                    <li>
+                      You can cancel the request at any time before verification
+                    </li>
                   </ul>
                 </div>
               </div>
@@ -196,7 +210,9 @@ export function EmailChangeVerification({
                 className="flex-1"
                 disabled={initiateState === undefined}
               >
-                {initiateState === undefined ? 'Sending...' : 'Send Verification Email'}
+                {initiateState === undefined
+                  ? "Sending..."
+                  : "Send Verification Email"}
               </Button>
               {showCancelButton && onCancel && (
                 <Button type="button" variant="outline" onClick={onCancel}>
@@ -210,7 +226,9 @@ export function EmailChangeVerification({
         {pendingEmail && (
           <div>
             <div className="mt-4 border-t border-gray-200 pt-4">
-              <h3 className="mb-3 text-sm font-medium text-gray-900">Have a verification token?</h3>
+              <h3 className="mb-3 text-sm font-medium text-gray-900">
+                Have a verification token?
+              </h3>
 
               <form action={confirmAction} className="space-y-4">
                 <Input
@@ -229,7 +247,9 @@ export function EmailChangeVerification({
                   className="w-full"
                   disabled={confirmState === undefined}
                 >
-                  {confirmState === undefined ? 'Verifying...' : 'Verify Email Change'}
+                  {confirmState === undefined
+                    ? "Verifying..."
+                    : "Verify Email Change"}
                 </Button>
               </form>
             </div>
@@ -239,10 +259,17 @@ export function EmailChangeVerification({
         <div className="mt-6 rounded-lg bg-gray-50 p-4">
           <h4 className="mb-2 text-sm font-medium text-gray-900">Need Help?</h4>
           <div className="space-y-1 text-xs text-gray-600">
-            <p>• If you don't receive the verification email, check your spam folder</p>
+            <p>
+              • If you don't receive the verification email, check your spam
+              folder
+            </p>
             <p>• Verification links expire after 24 hours for security</p>
-            <p>• You can request a new email change if the current one expires</p>
-            <p>• Contact support if you have trouble accessing your new email</p>
+            <p>
+              • You can request a new email change if the current one expires
+            </p>
+            <p>
+              • Contact support if you have trouble accessing your new email
+            </p>
           </div>
         </div>
       </CardContent>

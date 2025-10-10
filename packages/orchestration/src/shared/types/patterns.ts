@@ -19,7 +19,7 @@ export interface BatchPattern {
   processor: (items: unknown[]) => Promise<unknown[]>;
 }
 
-export interface BulkheadPattern {
+interface BulkheadPattern {
   /** Maximum concurrent operations */
   maxConcurrency: number;
   /** Maximum queue size for waiting operations */
@@ -34,7 +34,7 @@ export interface BulkheadPattern {
   rejectionStrategy: 'callback' | 'drop' | 'throw';
 }
 
-export interface CachePattern {
+interface CachePattern {
   /** Cache key generator */
   keyGenerator: (args: unknown[]) => string;
   /** Maximum cache size */
@@ -70,7 +70,7 @@ export interface CircuitBreakerPattern {
   timeout: number;
 }
 
-export interface DeduplicationPattern {
+interface DeduplicationPattern {
   /** Whether to extend window on duplicate */
   extendWindow?: boolean;
   /** Key extractor function */
@@ -83,7 +83,7 @@ export interface DeduplicationPattern {
   windowMs: number;
 }
 
-export interface FallbackPattern {
+interface FallbackPattern {
   /** Fallback operation */
   fallback: () => Promise<unknown>;
   /** Conditions to trigger fallback */
@@ -96,7 +96,7 @@ export interface FallbackPattern {
   retryPrimary?: boolean;
 }
 
-export interface MonitoringPattern {
+interface MonitoringPattern {
   /** Custom metric extractors */
   customMetrics?: Record<string, (result: unknown, duration: number) => number>;
   /** Whether to log operations */
@@ -171,7 +171,7 @@ export interface RetryPattern {
   strategy: 'exponential' | 'fixed' | 'linear';
 }
 
-export interface TimeoutPattern {
+interface TimeoutPattern {
   /** Timeout duration in milliseconds */
   duration: number;
   /** Custom timeout message */

@@ -2,7 +2,7 @@
  * Server-side API key validation
  */
 
-import { logError } from '@repo/observability/server/next';
+import { logError } from '@repo/observability';
 import { headers } from 'next/headers';
 import { type NextRequest } from 'next/server';
 import 'server-only';
@@ -256,10 +256,7 @@ export function extractApiKeyFromHeaders(headers: Headers): string | null {
 }
 
 // Export alias for backwards compatibility with tests
-export async function validateApiKeyPermissions(
-  apiKey: any,
-  permissions: string[],
-): Promise<boolean> {
+export function validateApiKeyPermissions(apiKey: any, permissions: string[]): boolean {
   // Basic implementation for testing
-  return apiKey && permissions.length > 0;
+  return Boolean(apiKey) && permissions.length > 0;
 }

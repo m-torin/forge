@@ -2,16 +2,18 @@ import { createEnv } from '@t3-oss/env-nextjs';
 import { z } from 'zod/v4';
 
 const isProduction = process.env.NODE_ENV === 'production';
+const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build';
 const hasRequiredEnvVars = Boolean(
   process.env.BETTER_AUTH_SECRET && process.env.DATABASE_URL && process.env.NEXT_PUBLIC_APP_URL,
 );
 
-// Make env vars optional in development or when they're missing (indicating .env.local usage)
-const requireInProduction = isProduction && hasRequiredEnvVars;
+// Make env vars optional in development, during build, or when they're missing (indicating .env.local usage)
+const requireInProduction = isProduction && !isBuildPhase && hasRequiredEnvVars;
 
 // Direct export for Next.js webpack inlining
 export const env = createEnv({
   server: {
+    ENABLE_BETTER_AUTH: z.enum(['true', 'false']).optional(),
     // Core auth configuration
     BETTER_AUTH_SECRET: requireInProduction ? z.string().min(1) : z.string().min(1).optional(),
     AUTH_SECRET: z.string().optional(), // Fallback for BETTER_AUTH_SECRET
@@ -62,6 +64,7 @@ export const env = createEnv({
     AUTH_FEATURES_ANALYTICS: z.string().optional(),
   },
   client: {
+    NEXT_PUBLIC_ENABLE_BETTER_AUTH: z.enum(['true', 'false']).optional(),
     // Public app configuration
     NEXT_PUBLIC_APP_URL: requireInProduction
       ? z.string().min(1).url()
@@ -82,6 +85,7 @@ export const env = createEnv({
     DATABASE_URL: process.env.DATABASE_URL,
     BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
     TRUSTED_ORIGINS: process.env.TRUSTED_ORIGINS,
+    ENABLE_BETTER_AUTH: process.env.ENABLE_BETTER_AUTH,
     GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
     GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
@@ -125,6 +129,7 @@ export const env = createEnv({
     NEXT_PUBLIC_AUTH_FEATURES_MAGIC_LINKS: process.env.NEXT_PUBLIC_AUTH_FEATURES_MAGIC_LINKS,
     NEXT_PUBLIC_AUTH_FEATURES_TWO_FACTOR: process.env.NEXT_PUBLIC_AUTH_FEATURES_TWO_FACTOR,
     NEXT_PUBLIC_AUTH_FEATURES_PASSKEYS: process.env.NEXT_PUBLIC_AUTH_FEATURES_PASSKEYS,
+    NEXT_PUBLIC_ENABLE_BETTER_AUTH: process.env.NEXT_PUBLIC_ENABLE_BETTER_AUTH,
   },
   onValidationError: error => {
     console.warn('Auth environment validation failed:', error);
@@ -160,6 +165,22 @@ export function safeEnv() {
     AUTH_FEATURES_ORGANIZATIONS: process.env.AUTH_FEATURES_ORGANIZATIONS || 'true',
     AUTH_FEATURES_MAGIC_LINKS: process.env.AUTH_FEATURES_MAGIC_LINKS || 'true',
     AUTH_FEATURES_TWO_FACTOR: process.env.AUTH_FEATURES_TWO_FACTOR || 'true',
+    AUTH_FEATURES_PHONE_NUMBER: process.env.AUTH_FEATURES_PHONE_NUMBER || 'true',
+    AUTH_FEATURES_ANONYMOUS: process.env.AUTH_FEATURES_ANONYMOUS || 'true',
+    AUTH_FEATURES_EMAIL_OTP: process.env.AUTH_FEATURES_EMAIL_OTP || 'true',
+    AUTH_FEATURES_RATE_LIMITING: process.env.AUTH_FEATURES_RATE_LIMITING || 'true',
+    AUTH_FEATURES_ANALYTICS: process.env.AUTH_FEATURES_ANALYTICS || 'true',
+    ENABLE_BETTER_AUTH: process.env.ENABLE_BETTER_AUTH || 'false',
+    // SMS providers
+    TWILIO_ACCOUNT_SID: process.env.TWILIO_ACCOUNT_SID || '',
+    TWILIO_AUTH_TOKEN: process.env.TWILIO_AUTH_TOKEN || '',
+    TWILIO_PHONE_NUMBER: process.env.TWILIO_PHONE_NUMBER || '',
+    AWS_SNS_ACCESS_KEY_ID: process.env.AWS_SNS_ACCESS_KEY_ID || '',
+    AWS_SNS_SECRET_ACCESS_KEY: process.env.AWS_SNS_SECRET_ACCESS_KEY || '',
+    AWS_SNS_REGION: process.env.AWS_SNS_REGION || '',
+    // Redis
+    UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL || '',
+    UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN || '',
 
     // Client variables
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
@@ -173,6 +194,7 @@ export function safeEnv() {
     NEXT_PUBLIC_AUTH_FEATURES_TWO_FACTOR:
       process.env.NEXT_PUBLIC_AUTH_FEATURES_TWO_FACTOR || 'true',
     NEXT_PUBLIC_AUTH_FEATURES_PASSKEYS: process.env.NEXT_PUBLIC_AUTH_FEATURES_PASSKEYS || 'true',
+    NEXT_PUBLIC_ENABLE_BETTER_AUTH: process.env.NEXT_PUBLIC_ENABLE_BETTER_AUTH || 'false',
   };
 }
 
@@ -201,6 +223,17 @@ export function safeServerEnv() {
       AUTH_FEATURES_ORGANIZATIONS: env.AUTH_FEATURES_ORGANIZATIONS || 'true',
       AUTH_FEATURES_MAGIC_LINKS: env.AUTH_FEATURES_MAGIC_LINKS || 'true',
       AUTH_FEATURES_TWO_FACTOR: env.AUTH_FEATURES_TWO_FACTOR || 'true',
+      ENABLE_BETTER_AUTH: env.ENABLE_BETTER_AUTH || 'false',
+      // SMS providers
+      TWILIO_ACCOUNT_SID: env.TWILIO_ACCOUNT_SID || '',
+      TWILIO_AUTH_TOKEN: env.TWILIO_AUTH_TOKEN || '',
+      TWILIO_PHONE_NUMBER: env.TWILIO_PHONE_NUMBER || '',
+      AWS_SNS_ACCESS_KEY_ID: env.AWS_SNS_ACCESS_KEY_ID || '',
+      AWS_SNS_SECRET_ACCESS_KEY: env.AWS_SNS_SECRET_ACCESS_KEY || '',
+      AWS_SNS_REGION: env.AWS_SNS_REGION || '',
+      // Redis
+      UPSTASH_REDIS_REST_URL: env.UPSTASH_REDIS_REST_URL || '',
+      UPSTASH_REDIS_REST_TOKEN: env.UPSTASH_REDIS_REST_TOKEN || '',
     };
   }
 
@@ -226,6 +259,22 @@ export function safeServerEnv() {
     AUTH_FEATURES_ORGANIZATIONS: process.env.AUTH_FEATURES_ORGANIZATIONS || 'true',
     AUTH_FEATURES_MAGIC_LINKS: process.env.AUTH_FEATURES_MAGIC_LINKS || 'true',
     AUTH_FEATURES_TWO_FACTOR: process.env.AUTH_FEATURES_TWO_FACTOR || 'true',
+    AUTH_FEATURES_PHONE_NUMBER: process.env.AUTH_FEATURES_PHONE_NUMBER || 'true',
+    AUTH_FEATURES_ANONYMOUS: process.env.AUTH_FEATURES_ANONYMOUS || 'true',
+    AUTH_FEATURES_EMAIL_OTP: process.env.AUTH_FEATURES_EMAIL_OTP || 'true',
+    AUTH_FEATURES_RATE_LIMITING: process.env.AUTH_FEATURES_RATE_LIMITING || 'true',
+    AUTH_FEATURES_ANALYTICS: process.env.AUTH_FEATURES_ANALYTICS || 'true',
+    ENABLE_BETTER_AUTH: process.env.ENABLE_BETTER_AUTH || 'false',
+    // SMS providers
+    TWILIO_ACCOUNT_SID: process.env.TWILIO_ACCOUNT_SID || '',
+    TWILIO_AUTH_TOKEN: process.env.TWILIO_AUTH_TOKEN || '',
+    TWILIO_PHONE_NUMBER: process.env.TWILIO_PHONE_NUMBER || '',
+    AWS_SNS_ACCESS_KEY_ID: process.env.AWS_SNS_ACCESS_KEY_ID || '',
+    AWS_SNS_SECRET_ACCESS_KEY: process.env.AWS_SNS_SECRET_ACCESS_KEY || '',
+    AWS_SNS_REGION: process.env.AWS_SNS_REGION || '',
+    // Redis
+    UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL || '',
+    UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN || '',
   };
 }
 
@@ -242,6 +291,7 @@ export function safeClientEnv() {
       NEXT_PUBLIC_AUTH_FEATURES_MAGIC_LINKS: env.NEXT_PUBLIC_AUTH_FEATURES_MAGIC_LINKS || 'true',
       NEXT_PUBLIC_AUTH_FEATURES_TWO_FACTOR: env.NEXT_PUBLIC_AUTH_FEATURES_TWO_FACTOR || 'true',
       NEXT_PUBLIC_AUTH_FEATURES_PASSKEYS: env.NEXT_PUBLIC_AUTH_FEATURES_PASSKEYS || 'true',
+      NEXT_PUBLIC_ENABLE_BETTER_AUTH: env.NEXT_PUBLIC_ENABLE_BETTER_AUTH || 'false',
     };
   }
 
@@ -258,6 +308,7 @@ export function safeClientEnv() {
     NEXT_PUBLIC_AUTH_FEATURES_TWO_FACTOR:
       process.env.NEXT_PUBLIC_AUTH_FEATURES_TWO_FACTOR || 'true',
     NEXT_PUBLIC_AUTH_FEATURES_PASSKEYS: process.env.NEXT_PUBLIC_AUTH_FEATURES_PASSKEYS || 'true',
+    NEXT_PUBLIC_ENABLE_BETTER_AUTH: process.env.NEXT_PUBLIC_ENABLE_BETTER_AUTH || 'false',
   };
 }
 

@@ -12,7 +12,7 @@ export interface ScheduleConfig {
   workflowId: string;
 }
 
-export interface ScheduleStatus {
+interface ScheduleStatus {
   enabled: boolean;
   errorCount?: number;
   lastRun?: Date;

@@ -287,7 +287,7 @@ export const generateProviderConfigs = {
 /**
  * Storage operation options generators
  */
-export const generateOperationOptions = {
+const generateOperationOptions = {
   /**
    * Generates upload options
    */
@@ -508,7 +508,7 @@ export const generateStorageErrors = {
 /**
  * Complete test scenarios generators
  */
-export const generateCompleteStorageData = {
+const generateCompleteStorageData = {
   /**
    * Generates complete upload scenarios
    */

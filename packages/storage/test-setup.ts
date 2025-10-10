@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { vi } from "vitest";
 
 // Storage environment is set via vitest config env option
 
@@ -7,8 +7,8 @@ global.fetch = vi.fn();
 
 // Mock the storage env module with centralized environment values
 const mockEnv = {
-  BLOB_READ_WRITE_TOKEN: process.env.BLOB_READ_WRITE_TOKEN || 'test-blob-token',
-  STORAGE_PROVIDER: 'vercel-blob',
+  BLOB_READ_WRITE_TOKEN: process.env.BLOB_READ_WRITE_TOKEN || "test-blob-token",
+  STORAGE_PROVIDER: "vercel-blob",
   R2_ACCOUNT_ID: process.env.R2_ACCOUNT_ID,
   R2_ACCESS_KEY_ID: process.env.R2_ACCESS_KEY_ID,
   R2_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY,
@@ -19,22 +19,22 @@ const mockEnv = {
   CLOUDFLARE_IMAGES_DELIVERY_URL: undefined,
   CLOUDFLARE_IMAGES_SIGNING_KEY: undefined,
   STORAGE_CONFIG: undefined,
-  STORAGE_LOG_LEVEL: 'error',
-  STORAGE_LOG_PERFORMANCE: 'false',
-  STORAGE_LOG_PROVIDER: 'console',
+  STORAGE_LOG_LEVEL: "error",
+  STORAGE_LOG_PERFORMANCE: "false",
+  STORAGE_LOG_PROVIDER: "console",
 };
 
-vi.mock('./env', () => ({
+vi.mock("./env", () => ({
   env: mockEnv,
   safeEnv: () => mockEnv,
 }));
 
 // Mock the keys module only if not testing keys itself
-if (!process.env.VITEST_TEST_FILEPATH?.includes('keys.test')) {
-  vi.mock('./keys', () => ({
+if (!process.env.VITEST_TEST_FILEPATH?.includes("keys.test")) {
+  vi.mock("./keys", () => ({
     keys: () => ({
-      BLOB_READ_WRITE_TOKEN: 'test-blob-token',
-      STORAGE_PROVIDER: 'vercel-blob',
+      BLOB_READ_WRITE_TOKEN: "test-blob-token",
+      STORAGE_PROVIDER: "vercel-blob",
       R2_ACCOUNT_ID: undefined,
       R2_ACCESS_KEY_ID: undefined,
       R2_SECRET_ACCESS_KEY: undefined,
@@ -45,9 +45,9 @@ if (!process.env.VITEST_TEST_FILEPATH?.includes('keys.test')) {
       CLOUDFLARE_IMAGES_DELIVERY_URL: undefined,
       CLOUDFLARE_IMAGES_SIGNING_KEY: undefined,
       STORAGE_CONFIG: undefined,
-      STORAGE_LOG_LEVEL: 'error',
+      STORAGE_LOG_LEVEL: "error",
       STORAGE_LOG_PERFORMANCE: false,
-      STORAGE_LOG_PROVIDER: 'console',
+      STORAGE_LOG_PROVIDER: "console",
     }),
   }));
 }

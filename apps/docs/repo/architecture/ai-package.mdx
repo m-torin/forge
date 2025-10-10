@@ -1067,7 +1067,7 @@ const bestVision = getBestModelForTask("vision");
 const model = selectModel({
   strategy: "reasoning",
   userTier: "free",
-  fallbackEnabled: true
+  fallbackEnabled: true,
 });
 // Free users get access to appropriate models only
 ```
@@ -1136,7 +1136,7 @@ const model = selectModel({
   userTier: "pro",
   fallbackEnabled: true,
   excludeDeprecated: true,
-  preferProvider: "anthropic"
+  preferProvider: "anthropic",
 });
 ```
 
@@ -1193,9 +1193,9 @@ export const ANTHROPIC_MODEL_METADATA = {
     reasoning: {
       supported: true,
       budgetTokens: 20000,
-      headers: { "anthropic-beta": "interleaved-thinking-2025-06-01" }
-    }
-  }
+      headers: { "anthropic-beta": "interleaved-thinking-2025-06-01" },
+    },
+  },
 };
 ```
 

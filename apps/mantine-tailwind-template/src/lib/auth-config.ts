@@ -7,63 +7,23 @@
  */
 
 import { env } from '#/root/env';
-import { createMemoryAdapter } from '@repo/auth/adapters/memory';
 import { logInfo, logWarn } from '@repo/observability';
 import { betterAuth } from 'better-auth';
 import { nextCookies } from 'better-auth/next-js';
+import { memoryAdapter } from './memory-adapter';
 
 // Detect if we're in demo mode (no database connection)
 const isDemoMode = !process.env.DATABASE_URL || process.env.DEMO_MODE === 'true';
 
 logInfo(`[Auth Config] Running in ${isDemoMode ? 'DEMO' : 'PRODUCTION'} mode`);
 
-// Demo users template - will be created with proper hashed passwords
-const DEMO_USER_TEMPLATES = [
-  {
-    id: '1',
-    name: 'Demo User',
-    email: 'demo@example.com',
-    password: 'demo123',
-    emailVerified: true,
-    image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=demo',
-    role: 'user',
-  },
-  {
-    id: '2',
-    name: 'Admin User',
-    email: 'admin@example.com',
-    password: 'admin123',
-    emailVerified: true,
-    image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin',
-    role: 'admin',
-  },
-  {
-    id: '3',
-    name: 'Jane Smith',
-    email: 'jane@example.com',
-    password: 'jane123',
-    emailVerified: true,
-    image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=jane',
-    role: 'user',
-  },
-];
-
 /**
  * Demo mode auth configuration
  */
 function createDemoAuth() {
-  // Create memory adapter with app-specific configuration
-  const memoryAdapter = createMemoryAdapter({
-    demoUsers: DEMO_USER_TEMPLATES,
-    logger: { info: logInfo, warn: logWarn, error: logWarn },
-    debugMode: process.env.NODE_ENV === 'development',
-    eagerInit: true,
-    adapterName: 'Mantine Tailwind Memory Adapter',
-  });
-
   return betterAuth({
     appName: 'Mantine + Tailwind Demo',
-    baseURL: env.NEXT_PUBLIC_APP_URL || 'http://localhost:3900',
+    baseURL: env.NEXT_PUBLIC_APP_URL || 'http://localhost:3300',
     secret: env.BETTER_AUTH_SECRET || 'demo-secret-key-not-for-production',
 
     // Use memory adapter for demo mode
@@ -212,14 +172,14 @@ export type AuthInstance = typeof auth;
 /**
  * Check if running in demo mode
  */
-export function isInDemoMode(): boolean {
+function _isInDemoMode(): boolean {
   return isDemoMode;
 }
 
 /**
  * Get demo mode info for UI display
  */
-export function getDemoModeInfo() {
+function _getDemoModeInfo() {
   if (!isDemoMode) return null;
 
   return {

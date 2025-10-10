@@ -1,6 +1,6 @@
 // src/integrations/aws/eventbridge/shared.ts
 
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import { createHash } from 'crypto';
 import { logInfo, logError, logWarn } from '@repo/observability';
 

@@ -1,4 +1,4 @@
-import { PostHog } from 'posthog-node';
+// PostHog import is now dynamic to prevent client bundling issues
 
 import { logError, logWarn } from '@repo/observability';
 import type { Adapter } from 'flags';
@@ -29,17 +29,21 @@ export interface PostHogServerAdapter {
   isFeatureEnabled<E = any>(): Adapter<boolean, E>;
 }
 
+// Dynamic PostHog import type
+type PostHogClient = import('posthog-node').PostHog;
+
 // Server-side PostHog client (singleton)
-let serverPostHogClient: PostHog | null = null;
+let serverPostHogClient: PostHogClient | null = null;
 
 /**
- * Get or create singleton PostHog server client
+ * Get or create singleton PostHog server client with dynamic import
  * @param apiKey - PostHog API key
  * @param host - PostHog host URL
  * @returns PostHog client instance
  */
-function getServerPostHogClient(apiKey: string, host: string): PostHog {
+async function getServerPostHogClient(apiKey: string, host: string): Promise<PostHogClient> {
   if (!serverPostHogClient) {
+    const { PostHog } = await import('posthog-node');
     serverPostHogClient = new PostHog(apiKey, { host });
   }
   return serverPostHogClient;
@@ -59,10 +63,13 @@ export function createPostHogServerAdapter(
   const postHogHost = options.postHogOptions?.host || env.POSTHOG_HOST || 'https://app.posthog.com';
 
   if (!postHogKey) {
-    logWarn('PostHog API key not configured - using offline fallback mode', {
-      adapter: 'posthog-server',
-      mode: 'offline-fallback',
-    });
+    const debug = env.VERCEL_ANALYTICS_DEBUG === true;
+    if (debug) {
+      logWarn('PostHog API key not configured - using offline fallback mode', {
+        adapter: 'posthog-server',
+        mode: 'offline-fallback',
+      });
+    }
     // Return an offline-compatible adapter with local fallbacks
     return {
       isFeatureEnabled: () => ({
@@ -117,14 +124,14 @@ export function createPostHogServerAdapter(
           const userId = (entities as any)?.user?.id || 'anonymous';
 
           try {
-            const client = getServerPostHogClient(postHogKey, postHogHost);
+            const client = await getServerPostHogClient(postHogKey, postHogHost);
             const result = await client.isFeatureEnabled(key, userId);
             return result || false;
           } catch (error) {
             logError(
               error instanceof Error
-                ? error
-                : new Error('Error checking PostHog feature flag: ' + String(error)),
+                ? error.message
+                : 'Error checking PostHog feature flag: ' + String(error),
               { adapter: 'posthog-server' },
             );
             return false;
@@ -145,14 +152,14 @@ export function createPostHogServerAdapter(
           const userId = (entities as any)?.user?.id || 'anonymous';
 
           try {
-            const client = getServerPostHogClient(postHogKey, postHogHost);
+            const client = await getServerPostHogClient(postHogKey, postHogHost);
             const value = await client.getFeatureFlag(key, userId);
             return value !== undefined ? value : false;
           } catch (error) {
             logError(
               error instanceof Error
-                ? error
-                : new Error('Error getting PostHog feature flag value: ' + String(error)),
+                ? error.message
+                : 'Error getting PostHog feature flag value: ' + String(error),
               { adapter: 'posthog-server' },
             );
             return false;
@@ -174,7 +181,7 @@ export function createPostHogServerAdapter(
           const defaultPayload = {} as T;
 
           try {
-            const client = getServerPostHogClient(postHogKey, postHogHost);
+            const client = await getServerPostHogClient(postHogKey, postHogHost);
             const payload = await client.getFeatureFlagPayload(key, userId);
             if (payload && transform) {
               return transform(payload);
@@ -183,8 +190,8 @@ export function createPostHogServerAdapter(
           } catch (error) {
             logError(
               error instanceof Error
-                ? error
-                : new Error('Error getting PostHog feature flag payload: ' + String(error)),
+                ? error.message
+                : 'Error getting PostHog feature flag payload: ' + String(error),
               { adapter: 'posthog-server' },
             );
             return defaultPayload;
@@ -202,7 +209,23 @@ export function createPostHogServerAdapter(
  * Automatically configured from POSTHOG_KEY environment variable
  * Falls back to offline mode if not configured
  */
-export const postHogServerAdapter = createPostHogServerAdapter();
+// Lazy/default adapter to avoid side effects at module load.
+// The actual adapter is created on first property access.
+let internalPostHogServerAdapter: PostHogServerAdapter | null = null;
+export const postHogServerAdapter: PostHogServerAdapter = new Proxy(
+  {},
+  {
+    get(_target, prop) {
+      if (!internalPostHogServerAdapter) {
+        internalPostHogServerAdapter = createPostHogServerAdapter();
+      }
+      return (internalPostHogServerAdapter as unknown as Record<string | symbol, unknown>)[
+        prop
+      ] as PostHogServerAdapter[keyof PostHogServerAdapter];
+    },
+  },
+  // TypeScript type coercion for proxy instance
+) as unknown as PostHogServerAdapter;
 
 /**
  * Get provider data for flags discovery endpoint
@@ -215,9 +238,12 @@ export async function getProviderData(options: { personalApiKey?: string; projec
   const projectId = options.projectId || env.POSTHOG_PROJECT_ID;
 
   if (!personalApiKey || !projectId) {
-    logWarn('PostHog personal API key and project ID not configured - returning empty flags', {
-      adapter: 'posthog-server',
-    });
+    const debug = env.VERCEL_ANALYTICS_DEBUG === true;
+    if (debug) {
+      logWarn('PostHog personal API key and project ID not configured - returning empty flags', {
+        adapter: 'posthog-server',
+      });
+    }
     return {
       provider: 'posthog',
       flags: [],
@@ -261,8 +287,8 @@ export async function getProviderData(options: { personalApiKey?: string; projec
   } catch (error) {
     logError(
       error instanceof Error
-        ? error
-        : new Error('Error fetching PostHog provider data: ' + String(error)),
+        ? error.message
+        : 'Error fetching PostHog provider data: ' + String(error),
       { adapter: 'posthog-server' },
     );
     throw error;

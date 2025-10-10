@@ -247,7 +247,7 @@ export function createWebsiteStructuredData(locale: Locale) {
 }
 
 // Breadcrumb structured data
-export function createBreadcrumbStructuredData(
+function _createBreadcrumbStructuredData(
   locale: Locale,
   items: Array<{ name: string; url: string }>,
 ) {
@@ -266,7 +266,7 @@ export function createBreadcrumbStructuredData(
 }
 
 // Software application structured data (for the template itself)
-export function createSoftwareApplicationStructuredData(locale: Locale) {
+function _createSoftwareApplicationStructuredData(locale: Locale) {
   const config = localeConfigs[locale as keyof typeof localeConfigs];
 
   return {
@@ -292,11 +292,7 @@ export function createSoftwareApplicationStructuredData(locale: Locale) {
 }
 
 // User profile structured data (for authenticated users)
-export function createUserProfileStructuredData(
-  userName: string,
-  userRole: string,
-  _locale: Locale,
-) {
+function _createUserProfileStructuredData(userName: string, userRole: string, _locale: Locale) {
   return {
     '@context': 'https://schema.org',
     '@type': 'Person',
@@ -310,7 +306,7 @@ export function createUserProfileStructuredData(
 }
 
 // FAQ structured data for common template questions
-export function createTemplatesFAQStructuredData(locale: Locale) {
+function _createTemplatesFAQStructuredData(locale: Locale) {
   const faqs = {
     en: [
       {

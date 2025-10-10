@@ -1,7 +1,7 @@
 import { fileTypeFromBuffer } from 'file-type';
 import sanitizeFilename from 'sanitize-filename';
 
-export interface SecureUploadConfig {
+interface SecureUploadConfig {
   allowedTypes: string[];
   maxSize: number;
   maxSizes?: {
@@ -11,7 +11,7 @@ export interface SecureUploadConfig {
   };
 }
 
-export interface ValidationResult {
+interface ValidationResult {
   valid: boolean;
   error?: string;
   sanitizedName?: string;
@@ -80,11 +80,11 @@ function formatBytes(bytes: number): string {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
-export const SAFE_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'] as const;
+const SAFE_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'] as const;
 
-export const SAFE_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/ogg'] as const;
+const _SAFE_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/ogg'] as const;
 
-export const SAFE_AUDIO_TYPES = [
+const _SAFE_AUDIO_TYPES = [
   'audio/mp3',
   'audio/mpeg',
   'audio/ogg',

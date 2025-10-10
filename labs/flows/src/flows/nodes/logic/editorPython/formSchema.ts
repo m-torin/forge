@@ -1,5 +1,5 @@
 // PythonEditorNode/formSchema.ts
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 const validatePython = (code: string): boolean => {
   try {

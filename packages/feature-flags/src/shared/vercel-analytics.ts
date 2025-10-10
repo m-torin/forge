@@ -63,7 +63,7 @@ export function unstable_setGlobalFlagsAnalyticsKeys(keys: string[]): void {
  * Get current global analytics keys
  * @returns Array of currently configured analytics keys
  */
-export function getGlobalAnalyticsKeys(): string[] {
+function _getGlobalAnalyticsKeys(): string[] {
   return [...globalAnalyticsKeys];
 }
 

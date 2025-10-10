@@ -2,7 +2,7 @@ import { createEnv } from '@t3-oss/env-nextjs';
 import { z } from 'zod/v4';
 
 // Direct export for Next.js webpack inlining
-export const env = createEnv({
+const env = createEnv({
   server: {
     // Flags SDK v4+ configuration
     FLAGS_SECRET: z.string().min(32).optional(),
@@ -58,7 +58,7 @@ export const env = createEnv({
 export function safeEnv() {
   try {
     if (env && typeof env === 'object') return env;
-  } catch (error) {
+  } catch (_error) {
     // Environment validation failed, use fallbacks
   }
 
@@ -84,29 +84,29 @@ export function safeEnv() {
 }
 
 // Helper functions for common patterns (following security package style)
-export function isProduction(): boolean {
+function isProduction(): boolean {
   const envVars = safeEnv();
   return envVars.NODE_ENV === 'production';
 }
 
-export function hasPostHogConfig(): boolean {
+function hasPostHogConfig(): boolean {
   const envVars = safeEnv();
   return Boolean(envVars.POSTHOG_KEY);
 }
 
-export function hasEdgeConfig(): boolean {
+function hasEdgeConfig(): boolean {
   const envVars = safeEnv();
   return Boolean(envVars.EDGE_CONFIG);
 }
 
-export function hasFlagsSecret(): boolean {
+function hasFlagsSecret(): boolean {
   const envVars = safeEnv();
   return Boolean(envVars.FLAGS_SECRET);
 }
 
-export function isEncryptionEnabled(): boolean {
+function isEncryptionEnabled(): boolean {
   return hasFlagsSecret() && isProduction();
 }
 
 // Export type for better DX
-export type Env = typeof env;
+type Env = typeof env;

@@ -770,15 +770,8 @@ globalThis.edgeRuntimeUtils = {
 };
 
 // Export edge runtime utilities for tests
-export const {
-  isEdgeRuntime,
-  mockWebApi,
-  mockNodeModule,
-  simulateNetworkDelay,
-  createMockRequest,
-  createMockResponse,
-  createMockHeaders,
-} = globalThis.edgeRuntimeUtils;
+export const { simulateNetworkDelay, createMockRequest, createMockResponse, createMockHeaders } =
+  globalThis.edgeRuntimeUtils;
 
 // Export edge runtime test helpers
 export const edgeRuntimeHelpers = {

@@ -1,0 +1,131 @@
+// cms.prisma - Content Management System Models for Company Content
+
+//==============================================================================
+// COMPANY CONTENT MANAGEMENT MODELS
+//==============================================================================
+
+model CompanyContent {
+  id   String             @id @default(cuid())
+  type CompanyContentType
+  slug String             @unique
+
+  // Content details
+  title       String?
+  description String?
+  content     Json    @db.JsonB
+
+  // Status and metadata
+  status      ContentStatus @default(DRAFT)
+  publishedAt DateTime?
+
+  // Display properties
+  displayOrder Int     @default(0)
+  isActive     Boolean @default(true)
+
+  // Audit fields
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdById String?
+  createdBy   User?     @relation("CreatedCompanyContent", fields: [createdById], references: [id], onDelete: SetNull)
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("DeletedCompanyContent", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  @@index([type])
+  @@index([slug])
+  @@index([type, status])
+  @@index([type, displayOrder])
+  @@map("company_content")
+}
+
+model CompanyMember {
+  id String @id @default(cuid())
+
+  // Personal information
+  name        String
+  title       String
+  bio         String?
+  email       String?
+  phone       String?
+  socialLinks Json?   @db.JsonB
+
+  // Display properties
+  displayOrder Int     @default(0)
+  isActive     Boolean @default(true)
+  isFeatured   Boolean @default(false)
+
+  // Audit fields
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdById String?
+  createdBy   User?     @relation("CreatedCompanyMember", fields: [createdById], references: [id], onDelete: SetNull)
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("DeletedCompanyMember", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  @@index([displayOrder])
+  @@index([isFeatured])
+  @@map("company_member")
+}
+
+model CompanyStatistic {
+  id String @id @default(cuid())
+
+  // Statistic details
+  label       String
+  value       String
+  description String?
+  unit        String?
+
+  // Display properties
+  displayOrder Int     @default(0)
+  isActive     Boolean @default(true)
+
+  // Content styling
+  styling Json? @db.JsonB // Color, icon, formatting options
+
+  // Audit fields
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdById String?
+  createdBy   User?     @relation("CreatedCompanyStatistic", fields: [createdById], references: [id], onDelete: SetNull)
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("DeletedCompanyStatistic", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  @@index([displayOrder])
+  @@map("company_statistic")
+}
+
+model SystemSetting {
+  id String @id @default(cuid())
+
+  // Setting identification
+  key         String  @unique
+  category    String
+  label       String
+  description String?
+
+  // Setting value
+  value        Json  @db.JsonB
+  defaultValue Json? @db.JsonB
+
+  // Constraints
+  dataType   SettingDataType
+  validation Json?           @db.JsonB // Validation rules
+
+  // Metadata
+  isPublic   Boolean @default(false) // Whether accessible in frontend
+  isRequired Boolean @default(false)
+
+  // Audit fields
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  updatedById String?
+  updatedBy   User?    @relation("UpdatedSystemSetting", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([key])
+  @@index([category])
+  @@index([isPublic])
+  @@map("system_setting")
+}

@@ -9,7 +9,7 @@ variable "environment" {
 variable "project_name" {
   description = "Project name"
   type        = string
-  default     = "letsfindmy-forge"
+  default     = "forge-forge"
 }
 
 variable "primary_domain" {

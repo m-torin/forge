@@ -10,8 +10,8 @@ import type {
   EmitterPagePayload,
   EmitterPayload,
   EmitterTrackPayload,
-} from '../emitters/emitter-types';
-import type { AnalyticsManager } from '../types/types';
+} from "../emitters/emitter-types";
+import type { AnalyticsManager } from "../types/types";
 
 /**
  * Process an emitter payload through the analytics manager
@@ -21,15 +21,18 @@ export async function processEmitterPayload(
   payload: EmitterPayload,
 ): Promise<void> {
   switch (payload.type) {
-    case 'identify':
-      return processIdentifyPayload(analytics, payload as EmitterIdentifyPayload);
-    case 'track':
+    case "identify":
+      return processIdentifyPayload(
+        analytics,
+        payload as EmitterIdentifyPayload,
+      );
+    case "track":
       return processTrackPayload(analytics, payload as EmitterTrackPayload);
-    case 'page':
+    case "page":
       return processPagePayload(analytics, payload as EmitterPagePayload);
-    case 'group':
+    case "group":
       return processGroupPayload(analytics, payload as EmitterGroupPayload);
-    case 'alias':
+    case "alias":
       return processAliasPayload(analytics, payload as EmitterAliasPayload);
     default:
       throw new Error(`Unknown emitter payload type: ${(payload as any).type}`);
@@ -115,7 +118,7 @@ export async function processAliasPayload(
     context: options.context,
   };
 
-  await analytics.alias(userId, previousId ?? '', trackingOptions);
+  await analytics.alias(userId, previousId ?? "", trackingOptions);
 }
 
 /**

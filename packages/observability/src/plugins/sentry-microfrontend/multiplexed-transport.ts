@@ -2,14 +2,14 @@
  * Multiplexed transport utilities for Sentry Micro Frontend Plugin
  */
 
-import type { ZoneConfig } from './types';
+import type { BackstageAppConfig } from './types';
 
 /**
  * Create a multiplexed transport that routes events to different Sentry projects
- * based on zone information
+ * based on backstageApp information
  */
 export function createMultiplexedTransport(
-  zones: ZoneConfig[],
+  backstage: BackstageAppConfig[],
   fallbackDsn?: string,
   sentryClient?: any,
 ): any {
@@ -29,25 +29,28 @@ export function createMultiplexedTransport(
       return [];
     }
 
-    // Extract zone information from various sources
-    const zone = event.tags?.zone || event.extra?.zone || event.contexts?.microFrontend?.zone;
+    // Extract backstageApp information from various sources
+    const backstageApp =
+      event.tags?.backstageApp ||
+      event.extra?.backstageApp ||
+      event.contexts?.microFrontend?.backstageApp;
 
-    if (zone) {
-      // Find zone configuration
-      const zoneConfig = zones.find(z => z.name === zone);
+    if (backstageApp) {
+      // Find backstageApp configuration
+      const backstageAppConfig = backstage.find(z => z.name === backstageApp);
 
-      if (zoneConfig && zoneConfig.dsn) {
-        // Route to zone-specific DSN
+      if (backstageAppConfig && backstageAppConfig.dsn) {
+        // Route to backstageApp-specific DSN
         const envelope: any[] = [
           {
-            dsn: zoneConfig.dsn,
-            release: zoneConfig.release || event.release,
+            dsn: backstageAppConfig.dsn,
+            release: backstageAppConfig.release || event.release,
           },
         ];
 
-        // Add zone-specific tags if configured
-        if (zoneConfig.tags && event.tags) {
-          Object.assign(event.tags, zoneConfig.tags);
+        // Add backstageApp-specific tags if configured
+        if (backstageAppConfig.tags && event.tags) {
+          Object.assign(event.tags, backstageAppConfig.tags);
         }
 
         return envelope;
@@ -68,7 +71,7 @@ export function createMultiplexedTransport(
  * Create a transport matcher function for more complex routing logic
  */
 export function createTransportMatcher(
-  zones: ZoneConfig[],
+  backstage: BackstageAppConfig[],
   customMatcher?: (event: any) => string | undefined,
 ): (args: any) => any[] {
   return (args: any) => {
@@ -79,43 +82,46 @@ export function createTransportMatcher(
     }
 
     // Use custom matcher if provided
-    let zone: string | undefined;
+    let backstageApp: string | undefined;
     if (customMatcher) {
-      zone = customMatcher(event);
+      backstageApp = customMatcher(event);
     }
 
-    // Fall back to default zone detection
-    if (!zone) {
-      zone = event.tags?.zone || event.extra?.zone || event.contexts?.microFrontend?.zone;
+    // Fall back to default backstageApp detection
+    if (!backstageApp) {
+      backstageApp =
+        event.tags?.backstageApp ||
+        event.extra?.backstageApp ||
+        event.contexts?.microFrontend?.backstageApp;
     }
 
-    // Try to detect zone from stack frames
-    if (!zone && event.exception?.values?.[0]?.stacktrace?.frames) {
+    // Try to detect backstageApp from stack frames
+    if (!backstageApp && event.exception?.values?.[0]?.stacktrace?.frames) {
       const frames = event.exception.values[0].stacktrace.frames;
       for (const frame of frames) {
         if (frame.filename) {
-          // Check if filename contains zone hints
+          // Check if filename contains backstageApp hints
           if (frame.filename.includes('/cms/')) {
-            zone = 'cms';
+            backstageApp = 'cms';
             break;
           } else if (frame.filename.includes('/workflows/')) {
-            zone = 'workflows';
+            backstageApp = 'workflows';
             break;
           } else if (frame.filename.includes('/authmgmt/')) {
-            zone = 'authmgmt';
+            backstageApp = 'authmgmt';
             break;
           }
         }
       }
     }
 
-    if (zone) {
-      const zoneConfig = zones.find(z => z.name === zone);
-      if (zoneConfig && zoneConfig.dsn) {
+    if (backstageApp) {
+      const backstageAppConfig = backstage.find(z => z.name === backstageApp);
+      if (backstageAppConfig && backstageAppConfig.dsn) {
         return [
           {
-            dsn: zoneConfig.dsn,
-            release: zoneConfig.release,
+            dsn: backstageAppConfig.dsn,
+            release: backstageAppConfig.release,
           },
         ];
       }
@@ -126,49 +132,49 @@ export function createTransportMatcher(
 }
 
 /**
- * Enhance an event with zone information before sending
+ * Enhance an event with Backstage app information before sending
  */
-export function enhanceEventWithZone(
+export function enhanceEventWithBackstageApp(
   event: any,
-  zone: string,
+  backstageApp: string,
   additionalContext?: Record<string, any>,
 ): any {
-  // Add zone tag
+  // Add backstageApp tag
   if (!event.tags) {
     event.tags = {};
   }
-  event.tags.zone = zone;
+  event.tags.backstageApp = backstageApp;
   event.tags.microFrontend = true;
 
-  // Add zone context
+  // Add backstageApp context
   if (!event.contexts) {
     event.contexts = {};
   }
   event.contexts.microFrontend = {
-    zone,
+    backstageApp,
     timestamp: new Date().toISOString(),
     ...additionalContext,
   };
 
-  // Add zone to extra for backward compatibility
+  // Add backstageApp to extra for backward compatibility
   if (!event.extra) {
     event.extra = {};
   }
-  event.extra.zone = zone;
+  event.extra.backstageApp = backstageApp;
 
   return event;
 }
 
 /**
- * Create a beforeSend hook that adds zone information
+ * Create a beforeSend hook that adds backstageApp information
  */
-export function createZoneBeforeSend(
-  zone: string,
+export function createBackstageBeforeSend(
+  backstageApp: string,
   originalBeforeSend?: (event: any, hint: any) => any,
 ): (event: any, hint: any) => any {
   return (event: any, hint: any) => {
-    // Enhance with zone information
-    enhanceEventWithZone(event, zone);
+    // Enhance with backstageApp information
+    enhanceEventWithBackstageApp(event, backstageApp);
 
     // Call original beforeSend if provided
     if (originalBeforeSend) {

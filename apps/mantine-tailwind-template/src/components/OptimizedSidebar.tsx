@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useMemo } from 'react';
-import { useSidebar } from './SidebarProvider';
+import { useMemo } from "react";
+import { useSidebar } from "./SidebarProvider";
 
 interface OptimizedSidebarProps {
   children: React.ReactNode;
@@ -14,19 +14,25 @@ export function OptimizedSidebar({ children }: OptimizedSidebarProps) {
   // Memoize expensive operations
   const sidebarStyles = useMemo(
     () => ({
-      transform: `translate3d(${isOpen ? '0' : '-100%'}, 0, 0)`,
-      willChange: 'transform' as const,
-      containIntrinsicSize: '320px auto',
-      contentVisibility: (isOpen ? 'visible' : 'hidden') as 'visible' | 'hidden',
+      transform: `translate3d(${isOpen ? "0" : "-100%"}, 0, 0)`,
+      willChange: "transform" as const,
+      containIntrinsicSize: "320px auto",
+      contentVisibility: (isOpen ? "visible" : "hidden") as
+        | "visible"
+        | "hidden",
     }),
     [isOpen],
   );
 
   const containerClasses = useMemo(
     () =>
-      ['responsive-container', 'sidebar-transition', isOpen ? 'sidebar-open' : 'sidebar-closed']
+      [
+        "responsive-container",
+        "sidebar-transition",
+        isOpen ? "sidebar-open" : "sidebar-closed",
+      ]
         .filter(Boolean)
-        .join(' '),
+        .join(" "),
     [isOpen],
   );
 
@@ -36,7 +42,7 @@ export function OptimizedSidebar({ children }: OptimizedSidebarProps) {
       style={sidebarStyles}
       role="navigation"
       aria-label="Main navigation"
-      data-sidebar-state={isOpen ? 'open' : 'closed'}
+      data-sidebar-state={isOpen ? "open" : "closed"}
     >
       <div className="sidebar-content">{children}</div>
     </aside>

@@ -1,0 +1,103 @@
+{
+  "name": "@repo/3p-vercel",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Vercel Analytics integration for 3rd party analytics",
+  "keywords": [
+    "analytics",
+    "vercel",
+    "tracking",
+    "3rd-party"
+  ],
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    "./types": {
+      "types": "./src/types.ts",
+      "import": "./src/types.ts"
+    },
+    "./config": {
+      "types": "./src/config.ts",
+      "import": "./src/config.ts"
+    },
+    "./adapter": {
+      "types": "./src/adapter.ts",
+      "import": "./src/adapter.ts"
+    },
+    "./server-adapter": {
+      "types": "./src/server-adapter.ts",
+      "import": "./src/server-adapter.ts"
+    },
+    "./client": {
+      "types": "./src/client.ts",
+      "import": "./src/client.ts"
+    },
+    "./react": {
+      "types": "./src/react.ts",
+      "import": "./src/react.ts"
+    },
+    "./server": {
+      "types": "./src/server.ts",
+      "import": "./src/server.ts"
+    },
+    "./operations/events": {
+      "types": "./src/operations/events.ts",
+      "import": "./src/operations/events.ts"
+    },
+    "./operations/page-views": {
+      "types": "./src/operations/page-views.ts",
+      "import": "./src/operations/page-views.ts"
+    },
+    "./server/next": {
+      "types": "./src/server-next.ts",
+      "import": "./src/server-next.ts"
+    },
+    "./server/edge": {
+      "types": "./src/server-edge.ts",
+      "import": "./src/server-edge.ts"
+    },
+    "./client/next": {
+      "types": "./src/client-next.ts",
+      "import": "./src/client-next.ts"
+    },
+    "./web-vitals": {
+      "types": "./src/web-vitals.ts",
+      "import": "./src/web-vitals.ts"
+    }
+  },
+  "files": [
+    "src/**/*",
+    ".gitignore",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "echo 'No build needed - consumed from source'",
+    "clean": "rm -rf dist .turbo",
+    "dev": "echo '3p-vercel ready for development'",
+    "test": "vitest run --coverage --reporter=verbose",
+    "test:watch": "vitest",
+    "typecheck": "echo 'Typecheck skipped - depends on 3p-core which needs Zod v4 migration'"
+  },
+  "dependencies": {
+    "@repo/3p-core": "workspace:*",
+    "@repo/core-utils": "workspace:*"
+  },
+  "devDependencies": {
+    "@repo/qa": "workspace:*",
+    "@types/node": "catalog:",
+    "@vercel/analytics": "^1.5.0",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "@vercel/analytics": "^1.5.0"
+  },
+  "peerDependenciesMeta": {
+    "@vercel/analytics": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

@@ -3,24 +3,24 @@
  * Comprehensive interface for managing multiple active sessions across devices
  */
 
-import { useState, useTransition } from 'react';
-import { useFormState } from 'react-dom';
-import { Alert } from '../ui/Alert';
-import { Button } from '../ui/Button';
-import { Card, CardContent } from '../ui/Card';
+import { useState, useTransition } from "react";
+import { useFormState } from "react-dom";
+import { Alert } from "../ui/Alert";
+import { Button } from "../ui/Button";
+import { Card, CardContent } from "../ui/Card";
 
 // Import server actions from the auth package
 import {
   refreshSessionsAction,
   revokeAllOtherSessionsAction,
   revokeSessionAction,
-} from '@repo/auth/server-actions';
+} from "@repo/auth/server-actions";
 
 interface SessionData {
   id: string;
   deviceInfo: {
     name: string;
-    type: 'desktop' | 'mobile' | 'tablet' | 'unknown';
+    type: "desktop" | "mobile" | "tablet" | "unknown";
     os: string;
     browser: string;
     version?: string;
@@ -34,11 +34,11 @@ interface SessionData {
     createdAt: string;
     lastActiveAt: string;
     isCurrentSession: boolean;
-    status: 'active' | 'idle' | 'expired';
+    status: "active" | "idle" | "expired";
   };
   security: {
     isTrusted: boolean;
-    riskLevel: 'low' | 'medium' | 'high';
+    riskLevel: "low" | "medium" | "high";
     loginMethod: string;
     twoFactorUsed?: boolean;
   };
@@ -56,7 +56,7 @@ interface MultiSessionDashboardProps {
   className?: string;
 }
 
-const initialFormState = { success: false, error: '' };
+const initialFormState = { success: false, error: "" };
 
 export function MultiSessionDashboard({
   sessions,
@@ -67,34 +67,44 @@ export function MultiSessionDashboard({
   allowBulkActions = true,
   showSecurityDetails = true,
   showLocationInfo = true,
-  className = '',
+  className = "",
 }: MultiSessionDashboardProps) {
   const [isPending, _startTransition] = useTransition();
-  const [selectedSessions, setSelectedSessions] = useState<Set<string>>(new Set());
-  const [sortBy, setSortBy] = useState<'lastActive' | 'created' | 'location' | 'device'>(
-    'lastActive',
+  const [selectedSessions, setSelectedSessions] = useState<Set<string>>(
+    new Set(),
   );
-  const [filterBy, setFilterBy] = useState<'all' | 'active' | 'idle' | 'trusted' | 'untrusted'>(
-    'all',
+  const [sortBy, setSortBy] = useState<
+    "lastActive" | "created" | "location" | "device"
+  >("lastActive");
+  const [filterBy, setFilterBy] = useState<
+    "all" | "active" | "idle" | "trusted" | "untrusted"
+  >("all");
+  const [showRevokeConfirm, setShowRevokeConfirm] = useState<string | null>(
+    null,
   );
-  const [showRevokeConfirm, setShowRevokeConfirm] = useState<string | null>(null);
 
-  const [revokeState, revokeAction] = useFormState(revokeSessionAction, initialFormState);
+  const [revokeState, revokeAction] = useFormState(
+    revokeSessionAction,
+    initialFormState,
+  );
   const [revokeAllState, revokeAllAction] = useFormState(
     revokeAllOtherSessionsAction,
     initialFormState,
   );
-  const [refreshState, refreshAction] = useFormState(refreshSessionsAction, initialFormState);
+  const [refreshState, refreshAction] = useFormState(
+    refreshSessionsAction,
+    initialFormState,
+  );
 
   const handleRevokeSession = (sessionId: string) => {
     const formData = new FormData();
-    formData.append('sessionId', sessionId);
+    formData.append("sessionId", sessionId);
     revokeAction(formData);
   };
 
   // Handle state changes from revokeAction
   if (revokeState.success) {
-    onSessionRevoked('revoked-session-id'); // In real implementation, you'd track which session was revoked
+    onSessionRevoked("revoked-session-id"); // In real implementation, you'd track which session was revoked
     setShowRevokeConfirm(null);
   }
 
@@ -120,7 +130,7 @@ export function MultiSessionDashboard({
   const handleSelectSession = (sessionId: string) => {
     if (sessionId === currentSessionId) return; // Can't select current session
 
-    setSelectedSessions(prev => {
+    setSelectedSessions((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(sessionId)) {
         newSet.delete(sessionId);
@@ -132,50 +142,50 @@ export function MultiSessionDashboard({
   };
 
   const handleSelectAll = () => {
-    const otherSessions = sessions.filter(s => s.id !== currentSessionId);
+    const otherSessions = sessions.filter((s) => s.id !== currentSessionId);
     setSelectedSessions(
       selectedSessions.size === otherSessions.length
         ? new Set()
-        : new Set(otherSessions.map(s => s.id)),
+        : new Set(otherSessions.map((s) => s.id)),
     );
   };
 
   const getDeviceIcon = (type: string) => {
     switch (type) {
-      case 'desktop':
-        return '🖥️';
-      case 'mobile':
-        return '📱';
-      case 'tablet':
-        return '📱';
+      case "desktop":
+        return "🖥️";
+      case "mobile":
+        return "📱";
+      case "tablet":
+        return "📱";
       default:
-        return '💻';
+        return "💻";
     }
   };
 
   const getRiskColor = (risk: string) => {
     switch (risk) {
-      case 'high':
-        return 'text-red-600 bg-red-50 border-red-200';
-      case 'medium':
-        return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-      case 'low':
-        return 'text-green-600 bg-green-50 border-green-200';
+      case "high":
+        return "text-red-600 bg-red-50 border-red-200";
+      case "medium":
+        return "text-yellow-600 bg-yellow-50 border-yellow-200";
+      case "low":
+        return "text-green-600 bg-green-50 border-green-200";
       default:
-        return 'text-gray-600 bg-gray-50 border-gray-200';
+        return "text-gray-600 bg-gray-50 border-gray-200";
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active':
-        return 'text-green-600 bg-green-50 border-green-200';
-      case 'idle':
-        return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-      case 'expired':
-        return 'text-red-600 bg-red-50 border-red-200';
+      case "active":
+        return "text-green-600 bg-green-50 border-green-200";
+      case "idle":
+        return "text-yellow-600 bg-yellow-50 border-yellow-200";
+      case "expired":
+        return "text-red-600 bg-red-50 border-red-200";
       default:
-        return 'text-gray-600 bg-gray-50 border-gray-200';
+        return "text-gray-600 bg-gray-50 border-gray-200";
     }
   };
 
@@ -190,19 +200,19 @@ export function MultiSessionDashboard({
     if (diffDays > 0) return `${diffDays}d ago`;
     if (diffHours > 0) return `${diffHours}h ago`;
     if (diffMins > 0) return `${diffMins}m ago`;
-    return 'Just now';
+    return "Just now";
   };
 
   const filteredAndSortedSessions = sessions
-    .filter(session => {
+    .filter((session) => {
       switch (filterBy) {
-        case 'active':
-          return session.activity.status === 'active';
-        case 'idle':
-          return session.activity.status === 'idle';
-        case 'trusted':
+        case "active":
+          return session.activity.status === "active";
+        case "idle":
+          return session.activity.status === "idle";
+        case "trusted":
           return session.security.isTrusted;
-        case 'untrusted':
+        case "untrusted":
           return !session.security.isTrusted;
         default:
           return true;
@@ -210,39 +220,49 @@ export function MultiSessionDashboard({
     })
     .sort((a, b) => {
       switch (sortBy) {
-        case 'lastActive':
+        case "lastActive":
           return (
             new Date(b.activity.lastActiveAt).getTime() -
             new Date(a.activity.lastActiveAt).getTime()
           );
-        case 'created':
+        case "created":
           return (
-            new Date(b.activity.createdAt).getTime() - new Date(a.activity.createdAt).getTime()
+            new Date(b.activity.createdAt).getTime() -
+            new Date(a.activity.createdAt).getTime()
           );
-        case 'location':
-          return (a.location.country || '').localeCompare(b.location.country || '');
-        case 'device':
+        case "location":
+          return (a.location.country || "").localeCompare(
+            b.location.country || "",
+          );
+        case "device":
           return a.deviceInfo.name.localeCompare(b.deviceInfo.name);
         default:
           return 0;
       }
     });
 
-  const activeSessions = sessions.filter(s => s.activity.status === 'active');
-  const otherSessions = sessions.filter(s => s.id !== currentSessionId);
+  const activeSessions = sessions.filter((s) => s.activity.status === "active");
+  const otherSessions = sessions.filter((s) => s.id !== currentSessionId);
 
   return (
     <div className={`space-y-6 ${className}`}>
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-900">Session Management</h2>
+          <h2 className="text-2xl font-semibold text-gray-900">
+            Session Management
+          </h2>
           <p className="mt-1 text-sm text-gray-600">
             Manage and monitor all your active sessions across devices
           </p>
         </div>
         <div className="flex space-x-2">
-          <Button onClick={handleRefresh} variant="outline" disabled={isPending} size="sm">
-            {isPending ? 'Refreshing...' : '🔄 Refresh'}
+          <Button
+            onClick={handleRefresh}
+            variant="outline"
+            disabled={isPending}
+            size="sm"
+          >
+            {isPending ? "Refreshing..." : "🔄 Refresh"}
           </Button>
           {allowBulkActions && otherSessions.length > 0 && (
             <Button
@@ -251,7 +271,7 @@ export function MultiSessionDashboard({
               disabled={isPending}
               size="sm"
             >
-              {isPending ? 'Revoking...' : 'Revoke All Others'}
+              {isPending ? "Revoking..." : "Revoke All Others"}
             </Button>
           )}
         </div>
@@ -263,11 +283,14 @@ export function MultiSessionDashboard({
         </Alert>
       )}
 
-      {(revokeState.success || revokeAllState.success || refreshState.success) && (
+      {(revokeState.success ||
+        revokeAllState.success ||
+        refreshState.success) && (
         <Alert variant="default">
-          {revokeState.success && 'Session revoked successfully!'}
-          {revokeAllState.success && `${revokeAllState.count || 0} sessions revoked successfully!`}
-          {refreshState.success && 'Sessions refreshed!'}
+          {revokeState.success && "Session revoked successfully!"}
+          {revokeAllState.success &&
+            `${revokeAllState.count || 0} sessions revoked successfully!`}
+          {refreshState.success && "Sessions refreshed!"}
         </Alert>
       )}
 
@@ -277,7 +300,9 @@ export function MultiSessionDashboard({
             <div className="flex items-center">
               <span className="mr-3 text-2xl">📊</span>
               <div>
-                <div className="text-2xl font-bold text-gray-900">{sessions.length}</div>
+                <div className="text-2xl font-bold text-gray-900">
+                  {sessions.length}
+                </div>
                 <div className="text-sm text-gray-600">Total Sessions</div>
               </div>
             </div>
@@ -289,7 +314,9 @@ export function MultiSessionDashboard({
             <div className="flex items-center">
               <span className="mr-3 text-2xl">✅</span>
               <div>
-                <div className="text-2xl font-bold text-green-600">{activeSessions.length}</div>
+                <div className="text-2xl font-bold text-green-600">
+                  {activeSessions.length}
+                </div>
                 <div className="text-sm text-gray-600">Active Sessions</div>
               </div>
             </div>
@@ -302,7 +329,7 @@ export function MultiSessionDashboard({
               <span className="mr-3 text-2xl">🔒</span>
               <div>
                 <div className="text-2xl font-bold text-blue-600">
-                  {sessions.filter(s => s.security.isTrusted).length}
+                  {sessions.filter((s) => s.security.isTrusted).length}
                 </div>
                 <div className="text-sm text-gray-600">Trusted Sessions</div>
               </div>
@@ -316,7 +343,10 @@ export function MultiSessionDashboard({
               <span className="mr-3 text-2xl">⚠️</span>
               <div>
                 <div className="text-2xl font-bold text-orange-600">
-                  {sessions.filter(s => s.security.riskLevel === 'high').length}
+                  {
+                    sessions.filter((s) => s.security.riskLevel === "high")
+                      .length
+                  }
                 </div>
                 <div className="text-sm text-gray-600">High Risk</div>
               </div>
@@ -330,10 +360,12 @@ export function MultiSessionDashboard({
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center space-x-4">
               <div>
-                <label className="mr-2 text-sm font-medium text-gray-700">Sort by:</label>
+                <label className="mr-2 text-sm font-medium text-gray-700">
+                  Sort by:
+                </label>
                 <select
                   value={sortBy}
-                  onChange={e => setSortBy(e.target.value as any)}
+                  onChange={(e) => setSortBy(e.target.value as any)}
                   className="rounded border border-gray-300 px-3 py-1 text-sm"
                 >
                   <option value="lastActive">Last Active</option>
@@ -344,10 +376,12 @@ export function MultiSessionDashboard({
               </div>
 
               <div>
-                <label className="mr-2 text-sm font-medium text-gray-700">Filter by:</label>
+                <label className="mr-2 text-sm font-medium text-gray-700">
+                  Filter by:
+                </label>
                 <select
                   value={filterBy}
-                  onChange={e => setFilterBy(e.target.value as any)}
+                  onChange={(e) => setFilterBy(e.target.value as any)}
                   className="rounded border border-gray-300 px-3 py-1 text-sm"
                 >
                   <option value="all">All Sessions</option>
@@ -362,14 +396,16 @@ export function MultiSessionDashboard({
             {allowBulkActions && otherSessions.length > 0 && (
               <div className="flex items-center space-x-2">
                 <Button size="sm" variant="outline" onClick={handleSelectAll}>
-                  {selectedSessions.size === otherSessions.length ? 'Deselect All' : 'Select All'}
+                  {selectedSessions.size === otherSessions.length
+                    ? "Deselect All"
+                    : "Select All"}
                 </Button>
                 {selectedSessions.size > 0 && (
                   <Button
                     size="sm"
                     variant="destructive"
                     onClick={() => {
-                      selectedSessions.forEach(sessionId => {
+                      selectedSessions.forEach((sessionId) => {
                         handleRevokeSession(sessionId);
                       });
                     }}
@@ -403,20 +439,24 @@ export function MultiSessionDashboard({
                   />
                 </svg>
               </div>
-              <h3 className="mb-2 text-lg font-medium text-gray-900">No Sessions Found</h3>
-              <p className="text-gray-600">Try adjusting your filters or refresh the list</p>
+              <h3 className="mb-2 text-lg font-medium text-gray-900">
+                No Sessions Found
+              </h3>
+              <p className="text-gray-600">
+                Try adjusting your filters or refresh the list
+              </p>
             </CardContent>
           </Card>
         ) : (
-          filteredAndSortedSessions.map(session => (
+          filteredAndSortedSessions.map((session) => (
             <Card
               key={session.id}
               className={`transition-all ${
                 session.activity.isCurrentSession
-                  ? 'border-blue-300 bg-blue-50'
+                  ? "border-blue-300 bg-blue-50"
                   : selectedSessions.has(session.id)
-                    ? 'border-purple-300 bg-purple-50'
-                    : 'hover:border-gray-300'
+                    ? "border-purple-300 bg-purple-50"
+                    : "hover:border-gray-300"
               }`}
             >
               <CardContent className="p-6">
@@ -433,7 +473,9 @@ export function MultiSessionDashboard({
                       </div>
                     )}
 
-                    <div className="text-3xl">{getDeviceIcon(session.deviceInfo.type)}</div>
+                    <div className="text-3xl">
+                      {getDeviceIcon(session.deviceInfo.type)}
+                    </div>
 
                     <div className="min-w-0 flex-1">
                       <div className="mb-2 flex items-center space-x-2">
@@ -461,32 +503,46 @@ export function MultiSessionDashboard({
 
                       <div className="grid grid-cols-1 gap-4 text-sm text-gray-600 md:grid-cols-3">
                         <div>
-                          <div className="mb-1 font-medium text-gray-700">Device</div>
+                          <div className="mb-1 font-medium text-gray-700">
+                            Device
+                          </div>
                           <div>
-                            {session.deviceInfo.browser} on {session.deviceInfo.os}
+                            {session.deviceInfo.browser} on{" "}
+                            {session.deviceInfo.os}
                           </div>
                           {session.deviceInfo.version && (
-                            <div className="text-xs">v{session.deviceInfo.version}</div>
+                            <div className="text-xs">
+                              v{session.deviceInfo.version}
+                            </div>
                           )}
                         </div>
 
                         {showLocationInfo && (
                           <div>
-                            <div className="mb-1 font-medium text-gray-700">Location</div>
+                            <div className="mb-1 font-medium text-gray-700">
+                              Location
+                            </div>
                             <div>
                               {session.location.city && session.location.country
                                 ? `${session.location.city}, ${session.location.country}`
-                                : session.location.country || 'Unknown location'}
+                                : session.location.country ||
+                                  "Unknown location"}
                             </div>
                             <div className="text-xs">{session.location.ip}</div>
                           </div>
                         )}
 
                         <div>
-                          <div className="mb-1 font-medium text-gray-700">Activity</div>
-                          <div>Last active: {formatDuration(session.activity.lastActiveAt)}</div>
+                          <div className="mb-1 font-medium text-gray-700">
+                            Activity
+                          </div>
+                          <div>
+                            Last active:{" "}
+                            {formatDuration(session.activity.lastActiveAt)}
+                          </div>
                           <div className="text-xs">
-                            Created: {formatDuration(session.activity.createdAt)}
+                            Created:{" "}
+                            {formatDuration(session.activity.createdAt)}
                           </div>
                         </div>
                       </div>
@@ -495,15 +551,23 @@ export function MultiSessionDashboard({
                         <div className="mt-3 border-t border-gray-200 pt-3">
                           <div className="flex items-center space-x-4 text-sm">
                             <div className="flex items-center space-x-1">
-                              <span className={session.security.isTrusted ? '🔒' : '⚠️'}>
-                                {session.security.isTrusted ? '🔒' : '⚠️'}
+                              <span
+                                className={
+                                  session.security.isTrusted ? "🔒" : "⚠️"
+                                }
+                              >
+                                {session.security.isTrusted ? "🔒" : "⚠️"}
                               </span>
                               <span
                                 className={
-                                  session.security.isTrusted ? 'text-green-600' : 'text-orange-600'
+                                  session.security.isTrusted
+                                    ? "text-green-600"
+                                    : "text-orange-600"
                                 }
                               >
-                                {session.security.isTrusted ? 'Trusted device' : 'Untrusted device'}
+                                {session.security.isTrusted
+                                  ? "Trusted device"
+                                  : "Untrusted device"}
                               </span>
                             </div>
                             <div>Login: {session.security.loginMethod}</div>
@@ -564,8 +628,14 @@ export function MultiSessionDashboard({
             <div className="text-sm text-blue-800">
               <h4 className="mb-2 font-medium">Session Security Tips</h4>
               <ul className="list-inside list-disc space-y-1">
-                <li>Regularly review and revoke sessions from unfamiliar devices or locations</li>
-                <li>Use trusted devices when possible and enable 2FA for added security</li>
+                <li>
+                  Regularly review and revoke sessions from unfamiliar devices
+                  or locations
+                </li>
+                <li>
+                  Use trusted devices when possible and enable 2FA for added
+                  security
+                </li>
                 <li>Sign out of shared or public computers when finished</li>
                 <li>Report any suspicious activity immediately</li>
               </ul>

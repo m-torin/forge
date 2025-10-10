@@ -220,7 +220,7 @@ export const mockHelpers = {
   setupRedisMocks() {
     const mockRedis = createMockRedisClient();
 
-    vi.doMock('@repo/database/redis/server', () => ({
+    vi.doMock('@repo/db-upstash-redis/server', () => ({
       redis: mockRedis,
     }));
 

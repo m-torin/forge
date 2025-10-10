@@ -7,7 +7,7 @@ import PQueue from 'p-queue';
 import { createServerObservability } from '@repo/observability/server/next';
 import { BatchPattern, PatternContext } from '../types/patterns';
 
-export interface BatchContext {
+interface BatchContext {
   batchId: string;
   events: {
     emit: (event: string, data: any) => Promise<void> | void;
@@ -23,7 +23,7 @@ export interface BatchContext {
   workflowId: string;
 }
 
-export interface BatchItem<T = any> {
+interface BatchItem<T = any> {
   /** When the item was added to the batch */
   addedAt: Date;
   /** The data to process */
@@ -43,21 +43,21 @@ export interface BatchOptions extends Partial<BatchPattern> {
   context?: Partial<PatternContext>;
 }
 
-export interface BatchProcessor<T, R> {
+interface BatchProcessor<T, R> {
   /** Process a batch of items */
   processBatch(items: T[]): Promise<R[]>;
   /** Optional: Process a single item (fallback) */
   processItem?(item: T): Promise<R>;
 }
 
-export interface BatchProcessorDefinition<T, R> {
+interface BatchProcessorDefinition<T, R> {
   name: string;
   onComplete?: (summary: any, context: BatchContext) => Promise<void> | void;
   onProgress?: (progress: any, context: BatchContext) => Promise<void> | void;
   processBatch: (items: BatchItem<T>[], context: BatchContext) => Promise<BatchResult<R>[]>;
 }
 
-export interface BatchResult<T = any> {
+interface BatchResult<T = any> {
   error?: string;
   id: string;
   result?: T;
@@ -423,7 +423,7 @@ const batchManagerRegistry = new WeakMap<object, Map<string, BatchManager<any, a
 /**
  * Create a batch processing decorator
  */
-export function Batch<T, R>(options: BatchOptions = {}) {
+function Batch<T, R>(options: BatchOptions = {}) {
   return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
 
@@ -470,7 +470,7 @@ export function Batch<T, R>(options: BatchOptions = {}) {
 /**
  * Create a batch processor with the expected interface for tests
  */
-export function createBatchProcessor<T, R>(config: {
+function createBatchProcessor<T, R>(config: {
   name: string;
   onComplete?: (summary: any, context: BatchContext) => Promise<void> | void;
   onProgress?: (progress: any, context: BatchContext) => Promise<void> | void;
@@ -487,7 +487,7 @@ export function createBatchProcessor<T, R>(config: {
 /**
  * Legacy utility function to create a simple batch processor
  */
-export function createSimpleBatchProcessor<T, R>(
+function createSimpleBatchProcessor<T, R>(
   batchFn: (items: T[]) => Promise<R[]>,
   itemFn?: (item: T) => Promise<R>,
 ): BatchProcessor<T, R> {

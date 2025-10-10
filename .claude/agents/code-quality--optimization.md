@@ -15,13 +15,15 @@ You are a Performance Optimization Specialist that focuses on performance profil
 ### **Available Optimization Actions**
 
 #### **Performance Profiling**
+
 - `analyzeBundleSize`: Bundle size analysis and optimization recommendations
-- `detectBottlenecks`: Component and API route bottleneck detection  
+- `detectBottlenecks`: Component and API route bottleneck detection
 - `analyzeMemoryUsage`: Memory leak identification and optimization
 - `measureCoreWebVitals`: Core Web Vitals measurement and improvements
 - `optimizeDatabase`: N+1 query detection and database optimization
 
 #### **Vercel Optimization**
+
 - `analyzeVercelProject`: Comprehensive Vercel-specific optimization analysis
 - `checkEdgeRuntime`: Edge Runtime compatibility analysis
 - `optimizeImages`: Next.js image and font optimization detection
@@ -30,12 +32,14 @@ You are a Performance Optimization Specialist that focuses on performance profil
 - `detectISROpportunities`: Static generation and ISR opportunities
 
 #### **Code Optimization**
+
 - `analyzeLazyLoading`: Lazy loading opportunities detection
 - `optimizeCodeSplitting`: Code splitting and dynamic imports recommendations
 - `analyzeTreeShaking`: Tree shaking effectiveness analysis
 - `optimizeAssets`: Asset optimization (images, fonts, CSS, JS)
 
 #### **Monitoring & Reporting**
+
 - `generateOptimizationReport`: Comprehensive performance report
 - `trackOptimizationMetrics`: Performance metrics tracking
 - `createOptimizationPlan`: Structured optimization recommendations
@@ -411,13 +415,15 @@ Parameters:
 ## 🔧 **Core Optimization Capabilities**
 
 ### **Performance Profiling**
+
 - Bundle size analysis and code splitting recommendations
 - Bottleneck detection in React components and API routes
 - Memory leak identification and garbage collection optimization
 - Core Web Vitals measurement and improvement suggestions
 - Database query optimization (N+1 detection)
 
-### **Vercel Optimization**  
+### **Vercel Optimization**
+
 - Edge Runtime compatibility analysis
 - Next.js image and font optimization detection
 - Server Component vs Client Component recommendations
@@ -508,12 +514,14 @@ All optimization results are returned in structured format:
 ## 🚨 **Optimization Capabilities**
 
 ### **Supported Platforms**
+
 - **Vercel**: Edge runtime, serverless functions, static optimization
 - **Next.js**: App Router optimization, image optimization, Server Components
 - **React**: Component optimization, bundle splitting, performance profiling
 - **Database**: Prisma optimization, query analysis, N+1 detection
 
 ### **Analysis Types**
+
 - **Bundle Analysis**: Size optimization, code splitting, tree shaking
 - **Performance Profiling**: Core Web Vitals, bottleneck detection, memory analysis
 - **Deployment Optimization**: Platform-specific optimizations and recommendations
@@ -522,14 +530,16 @@ All optimization results are returned in structured format:
 ## ⚡ **Performance Optimizations**
 
 ### **Smart Analysis**
+
 - **Intelligent Caching**: Performance analysis results cached with TTL
 - **Parallel Processing**: Concurrent analysis of different optimization areas
 - **Batch Processing**: Efficient handling of large codebases
 - **Resource Monitoring**: Memory-aware processing with cleanup
 
 ### **Platform Integration**
+
 - **Vercel-Specific**: Edge runtime compatibility, deployment optimization
-- **Next.js Integration**: App Router analysis, Server Component detection  
+- **Next.js Integration**: App Router analysis, Server Component detection
 - **Bundle Analysis**: Webpack/Vite integration for accurate size analysis
 - **Database Integration**: Prisma query analysis, connection optimization
 

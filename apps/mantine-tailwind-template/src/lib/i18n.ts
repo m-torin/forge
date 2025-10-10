@@ -7,7 +7,7 @@ import type { Locale } from '@repo/internationalization/server/next';
 
 export type { Locale };
 
-export type AppDictionary = {
+type AppDictionary = {
   meta: {
     title: string;
     description: string;

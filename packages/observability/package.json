@@ -4,6 +4,7 @@
   "private": true,
   "description": "Clean observability package with provider subpackages",
   "license": "MIT",
+  "sideEffects": false,
   "type": "module",
   "exports": {
     ".": {
@@ -70,14 +71,6 @@
     "./plugins/sentry-microfrontend/env": {
       "types": "./src/plugins/sentry-microfrontend/env.ts",
       "import": "./src/plugins/sentry-microfrontend/env.ts"
-    },
-    "./plugins/sentry-nextjs": {
-      "types": "./src/plugins/sentry-nextjs/index.ts",
-      "import": "./src/plugins/sentry-nextjs/index.ts"
-    },
-    "./plugins/sentry-nextjs/env": {
-      "types": "./src/plugins/sentry-nextjs/env.ts",
-      "import": "./src/plugins/sentry-nextjs/env.ts"
     }
   },
   "files": [
@@ -86,21 +79,12 @@
   ],
   "scripts": {
     "clean": "rm -rf .turbo node_modules",
-    "lint": "eslint .",
+    "lint": "eslint . --cache",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@logtail/node": "^0.5.5",
-    "@opentelemetry/api": "^1.9.0",
-    "@opentelemetry/exporter-jaeger": "^1.25.5",
-    "@opentelemetry/exporter-prometheus": "^0.203.0",
-    "@opentelemetry/exporter-zipkin": "^1.25.5",
-    "@opentelemetry/instrumentation": "^0.203.0",
-    "@opentelemetry/instrumentation-fs": "^0.23.0",
-    "@opentelemetry/instrumentation-http": "^0.203.0",
-    "@opentelemetry/sdk-node": "^0.203.0",
     "@sentry/nextjs": "catalog:",
     "@sentry/node": "latest",
     "@sentry/react": "latest",
@@ -113,7 +97,9 @@
     "@repo/qa": "workspace:*",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
+    "madge": "catalog:",
     "react": "catalog:",
     "typescript": "catalog:",
     "vite-tsconfig-paths": "catalog:",
@@ -133,12 +119,6 @@
   },
   "optionalDependencies": {
     "@logtail/js": "^0.5.5",
-    "@logtail/next": "^0.2.1",
-    "@logtape/cloudwatch-logs": "^1.0.4",
-    "@logtape/file": "^1.0.4",
-    "@logtape/logtape": "^1.0.4",
-    "@logtape/sentry": "^1.0.4",
-    "launchdarkly-js-client-sdk": "^3.3.0",
-    "unleash-proxy-client": "^3.2.0"
+    "@logtail/next": "^0.2.1"
   }
 }

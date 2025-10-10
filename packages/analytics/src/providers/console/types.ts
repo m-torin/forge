@@ -10,7 +10,7 @@ export interface ConsoleConfig {
   colorize?: boolean;
 }
 
-export interface ConsoleOptions {
+interface _ConsoleOptions {
   // Additional options for console provider
   timestamp?: boolean;
   detailed?: boolean;

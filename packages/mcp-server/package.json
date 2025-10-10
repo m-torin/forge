@@ -1,0 +1,84 @@
+{
+  "name": "@repo/mcp-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MCP server implementation for Claude Code with forge utilities",
+  "keywords": [
+    "mcp",
+    "claude",
+    "server",
+    "forge",
+    "tools"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./dist/index.mjs",
+      "default": "./src/index.ts"
+    },
+    "./tools": {
+      "types": "./src/tools/index.ts",
+      "import": "./dist/tools/index.mjs",
+      "default": "./src/tools/index.ts"
+    },
+    "./utils": {
+      "types": "./src/utils/index.ts",
+      "import": "./dist/utils/index.mjs",
+      "default": "./src/utils/index.ts"
+    },
+    "./server": {
+      "types": "./src/server.ts",
+      "import": "./dist/server.mjs",
+      "default": "./src/server.ts"
+    }
+  },
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "forge": "./bin/mcp-server.mjs",
+    "mcp-server": "./bin/mcp-server.mjs"
+  },
+  "files": [
+    "dist",
+    "bin"
+  ],
+  "scripts": {
+    "build": "turbo run build:base --filter=@repo/mcp-server",
+    "build:base": "tsup",
+    "build:watch": "tsup --watch",
+    "dev": "node --watch src/index.mjs",
+    "lint": "eslint . --fix --cache",
+    "start": "node bin/mcp-server.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "validate:mcp-schemas": "tsx scripts/validate-mcp-schemas.mts",
+    "validate:schemas": "tsx scripts/validate-mcp-schemas.mts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.19.1",
+    "@repo/core-utils": "workspace:*",
+    "@repo/observability": "workspace:*",
+    "acorn": "^8.14.0",
+    "glob": "^11.0.0",
+    "lru-cache": "catalog:",
+    "node-abort-controller": "^3.1.1",
+    "p-limit": "^6.1.0",
+    "p-queue": "^8.0.1",
+    "picomatch": "^4.0.2",
+    "shell-quote": "^1.8.1",
+    "ts-morph": "^24.0.0",
+    "zod": "catalog:downgrades"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/qa": "workspace:*",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "madge": "catalog:",
+    "tsup": "^8.0.0",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

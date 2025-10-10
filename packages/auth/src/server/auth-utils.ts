@@ -3,7 +3,7 @@
  * Helper functions for custom authentication flows
  */
 
-import { logError } from '@repo/observability/server/next';
+import { logError } from '@repo/observability';
 import { headers } from 'next/headers';
 import 'server-only';
 

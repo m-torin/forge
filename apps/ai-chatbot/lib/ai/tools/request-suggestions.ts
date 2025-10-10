@@ -1,0 +1,116 @@
+// @ts-nocheck
+import { getDocumentById, saveSuggestions } from '@/lib/db/queries';
+import type { Suggestion } from '@/lib/db/schema';
+import type { ChatMessage } from '@/lib/types';
+import { generateUUID } from '@/lib/utils';
+import { streamObject } from '@repo/ai';
+import { logError } from '@repo/observability';
+import { tool, type UIMessageStreamWriter } from 'ai';
+import type { Session } from 'next-auth';
+import { z } from 'zod/v3';
+import { myProvider } from '../providers';
+
+interface RequestSuggestionsProps {
+  session: Session;
+  dataStream: UIMessageStreamWriter<ChatMessage>;
+}
+
+export const requestSuggestions = ({ session, dataStream }: RequestSuggestionsProps) =>
+  tool({
+    description: 'Request suggestions for a document',
+    inputSchema: z.object({
+      documentId: z.string().describe('The ID of the document to request edits'),
+    }),
+    execute: async ({ documentId }) => {
+      const document = await getDocumentById({ id: documentId });
+
+      if (!document || !document.content) {
+        return {
+          error: 'Document not found',
+        };
+      }
+
+      const suggestions: Array<Omit<Suggestion, 'userId' | 'createdAt' | 'documentCreatedAt'>> = [];
+
+      const streamResult = await streamObject(
+        [
+          {
+            role: 'system',
+            parts: [
+              {
+                type: 'text',
+                text: 'You are a help writing assistant. Given a piece of writing, please offer suggestions to improve the piece of writing and describe the change. It is very important for the edits to contain full sentences instead of just words. Max 5 suggestions.',
+              },
+            ],
+          },
+          {
+            role: 'user',
+            parts: [
+              {
+                type: 'text',
+                text: typeof document.content === 'string' ? document.content : '',
+              },
+            ],
+          },
+        ],
+        z.object({
+          originalSentence: z.string().describe('The original sentence'),
+          suggestedSentence: z.string().describe('The suggested sentence'),
+          description: z.string().describe('The description of the suggestion'),
+        }),
+        {
+          model: myProvider.languageModel('artifact-model'),
+          output: 'array',
+        },
+      );
+
+      if (!streamResult.success || !streamResult.elementStream) {
+        const reason =
+          streamResult.error?.error instanceof Error
+            ? streamResult.error.error
+            : new Error('Unable to stream suggestions');
+        logError('[AI Tools] Failed to stream document suggestions', reason);
+        throw reason;
+      }
+
+      for await (const element of streamResult.elementStream) {
+        // @ts-ignore todo: fix type
+        const suggestion: Suggestion = {
+          originalText: element.originalSentence,
+          suggestedText: element.suggestedSentence,
+          description: element.description,
+          id: generateUUID(),
+          documentId: documentId,
+          isResolved: false,
+        };
+
+        dataStream.write({
+          type: 'data-suggestion',
+          data: suggestion,
+          transient: true,
+        });
+
+        suggestions.push(suggestion);
+      }
+
+      if (session.user?.id) {
+        const userId = session.user.id;
+
+        await saveSuggestions({
+          suggestions: suggestions.map(suggestion => ({
+            ...suggestion,
+            userId,
+            createdAt: new Date(),
+            documentCreatedAt: document.createdAt,
+          })),
+        });
+      }
+
+      return {
+        id: documentId,
+        title: document.title,
+        kind: document.kind,
+        message: 'Suggestions have been added to the document',
+      };
+    },
+  });

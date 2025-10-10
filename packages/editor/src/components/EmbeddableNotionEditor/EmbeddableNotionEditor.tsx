@@ -1,34 +1,41 @@
-'use client';
+"use client";
 
-import { logError, logWarn } from '@repo/observability';
-import { CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight';
-import Color from '@tiptap/extension-color';
-import Highlight from '@tiptap/extension-highlight';
-import Link from '@tiptap/extension-link';
-import { Placeholder } from '@tiptap/extension-placeholder';
-import { Table } from '@tiptap/extension-table';
-import { TableCell } from '@tiptap/extension-table-cell';
-import { TableHeader } from '@tiptap/extension-table-header';
-import { TableRow } from '@tiptap/extension-table-row';
-import { TaskItem } from '@tiptap/extension-task-item';
-import { TaskList } from '@tiptap/extension-task-list';
-import TextAlign from '@tiptap/extension-text-align';
-import { TextStyle } from '@tiptap/extension-text-style';
-import Underline from '@tiptap/extension-underline';
-import { UniqueID } from '@tiptap/extension-unique-id';
-import { TrailingNode } from '@tiptap/extensions';
-import { Editor, EditorContent, useEditor } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import { clsx } from 'clsx';
-import { all, createLowlight } from 'lowlight';
-import { useEffect, useRef } from 'react';
-import { generateNonce, sanitizeDimension, sanitizeTheme } from '../../utils/css-sanitizer';
-import { createSecureUploadHandler, DEFAULT_SECURE_CONFIG } from '../../utils/secure-media-upload';
-import { validateURL } from '../../utils/url-validator';
-import { MediaUploadNode } from '../NotionEditor/MediaUploadNode';
+import { logError, logWarn } from "@repo/observability";
+import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
+import Color from "@tiptap/extension-color";
+import Highlight from "@tiptap/extension-highlight";
+import Link from "@tiptap/extension-link";
+import { Placeholder } from "@tiptap/extension-placeholder";
+import { Table } from "@tiptap/extension-table";
+import { TableCell } from "@tiptap/extension-table-cell";
+import { TableHeader } from "@tiptap/extension-table-header";
+import { TableRow } from "@tiptap/extension-table-row";
+import { TaskItem } from "@tiptap/extension-task-item";
+import { TaskList } from "@tiptap/extension-task-list";
+import TextAlign from "@tiptap/extension-text-align";
+import { TextStyle } from "@tiptap/extension-text-style";
+import Underline from "@tiptap/extension-underline";
+import { UniqueID } from "@tiptap/extension-unique-id";
+import { TrailingNode } from "@tiptap/extensions";
+import { Editor, EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import { clsx } from "clsx";
+import { all, createLowlight } from "lowlight";
+import { useEffect, useRef } from "react";
+import {
+  generateNonce,
+  sanitizeDimension,
+  sanitizeTheme,
+} from "../../utils/css-sanitizer";
+import {
+  createSecureUploadHandler,
+  DEFAULT_SECURE_CONFIG,
+} from "../../utils/secure-media-upload";
+import { validateURL } from "../../utils/url-validator";
+import { MediaUploadNode } from "../NotionEditor/MediaUploadNode";
 
 // Import CSS file
-import './embeddable-editor.css';
+import "./embeddable-editor.css";
 
 // Create lowlight instance
 const lowlight = createLowlight(all);
@@ -110,7 +117,7 @@ export interface EmbeddableNotionEditorProps {
       abortSignal?: AbortSignal,
     ) => Promise<string>;
     onError?: (error: Error) => void;
-    onSuccess?: (url: string, mediaType: 'image' | 'video' | 'audio') => void;
+    onSuccess?: (url: string, mediaType: "image" | "video" | "audio") => void;
   };
   /**
    * Auto-save configuration
@@ -127,14 +134,14 @@ export interface EmbeddableNotionEditorProps {
  * Perfect for embedding in external applications, CMSs, or third-party sites
  */
 export function EmbeddableNotionEditor({
-  content = '',
-  placeholder = 'Start writing...',
+  content = "",
+  placeholder = "Start writing...",
   className,
   onChange,
   onUpdate,
   editable = true,
-  maxWidth = '100%',
-  minHeight = '200px',
+  maxWidth = "100%",
+  minHeight = "200px",
   showToolbar = true,
   theme = {},
   features = {
@@ -155,8 +162,8 @@ export function EmbeddableNotionEditor({
 
   // Sanitize theme values to prevent CSS injection
   const safeTheme = sanitizeTheme(theme);
-  const safeMaxWidth = sanitizeDimension(maxWidth) || '100%';
-  const safeMinHeight = sanitizeDimension(minHeight) || '200px';
+  const safeMaxWidth = sanitizeDimension(maxWidth) || "100%";
+  const safeMinHeight = sanitizeDimension(minHeight) || "200px";
 
   const editor = useEditor({
     // Enable Tiptap's built-in security features
@@ -164,22 +171,26 @@ export function EmbeddableNotionEditor({
     emitContentError: true,
     injectCSS: false, // We use external CSS now
     injectNonce:
-      typeof window !== 'undefined' && process.env.NODE_ENV === 'production'
+      typeof window !== "undefined" && process.env.NODE_ENV === "production"
         ? generateNonce()
         : undefined,
 
     // Content error handling
-    onContentError({ editor, error, disableCollaboration: _disableCollaboration }) {
-      logWarn('EmbeddableNotionEditor: Content validation error', {
-        operation: 'embeddable_editor_content_error',
+    onContentError({
+      editor,
+      error,
+      disableCollaboration: _disableCollaboration,
+    }) {
+      logWarn("EmbeddableNotionEditor: Content validation error", {
+        operation: "embeddable_editor_content_error",
         error: error.message,
       });
       // For embedded contexts, we'll try to sanitize rather than block
       try {
-        editor.commands.setContent('');
+        editor.commands.setContent("");
       } catch (e) {
-        logError('Failed to clear invalid content', {
-          operation: 'embeddable_editor_clear_content_error',
+        logError("Failed to clear invalid content", {
+          operation: "embeddable_editor_clear_content_error",
           error: e instanceof Error ? e.message : String(e),
         });
       }
@@ -198,20 +209,22 @@ export function EmbeddableNotionEditor({
       Placeholder.configure({
         placeholder,
         showOnlyWhenEditable: true,
-        emptyNodeClass: 'is-empty',
+        emptyNodeClass: "is-empty",
       }),
       ...(features.formatting ? [TextStyle, Underline] : []),
-      ...(features.colors ? [Color, Highlight.configure({ multicolor: true })] : []),
+      ...(features.colors
+        ? [Color, Highlight.configure({ multicolor: true })]
+        : []),
       TextAlign.configure({
-        types: ['heading', 'paragraph'],
-        alignments: ['left', 'center', 'right', 'justify'],
+        types: ["heading", "paragraph"],
+        alignments: ["left", "center", "right", "justify"],
       }),
       ...(features.links
         ? [
             Link.configure({
               openOnClick: false,
               HTMLAttributes: {
-                class: 'embeddable-editor-link',
+                class: "embeddable-editor-link",
               },
               validate: (url: string) => validateURL(url),
             }),
@@ -221,12 +234,12 @@ export function EmbeddableNotionEditor({
         ? [
             TaskList.configure({
               HTMLAttributes: {
-                class: 'embeddable-editor-task-list',
+                class: "embeddable-editor-task-list",
               },
             }),
             TaskItem.configure({
               HTMLAttributes: {
-                class: 'embeddable-editor-task-item',
+                class: "embeddable-editor-task-item",
               },
               nested: true,
             }),
@@ -237,22 +250,22 @@ export function EmbeddableNotionEditor({
             Table.configure({
               resizable: true,
               HTMLAttributes: {
-                class: 'embeddable-editor-table',
+                class: "embeddable-editor-table",
               },
             }),
             TableRow.configure({
               HTMLAttributes: {
-                class: 'embeddable-editor-table-row',
+                class: "embeddable-editor-table-row",
               },
             }),
             TableHeader.configure({
               HTMLAttributes: {
-                class: 'embeddable-editor-table-header',
+                class: "embeddable-editor-table-header",
               },
             }),
             TableCell.configure({
               HTMLAttributes: {
-                class: 'embeddable-editor-table-cell',
+                class: "embeddable-editor-table-cell",
               },
             }),
           ]
@@ -262,7 +275,7 @@ export function EmbeddableNotionEditor({
             CodeBlockLowlight.configure({
               lowlight,
               HTMLAttributes: {
-                class: 'embeddable-editor-code-block',
+                class: "embeddable-editor-code-block",
               },
             }),
           ]
@@ -270,16 +283,24 @@ export function EmbeddableNotionEditor({
       ...(features.mediaUpload
         ? [
             MediaUploadNode.configure({
-              accept: mediaUploadConfig.accept || DEFAULT_SECURE_CONFIG.allowedTypes.join(','),
-              maxSize: mediaUploadConfig.maxSize || DEFAULT_SECURE_CONFIG.maxSize,
-              maxSizes: mediaUploadConfig.maxSizes || DEFAULT_SECURE_CONFIG.maxSizes,
+              accept:
+                mediaUploadConfig.accept ||
+                DEFAULT_SECURE_CONFIG.allowedTypes.join(","),
+              maxSize:
+                mediaUploadConfig.maxSize || DEFAULT_SECURE_CONFIG.maxSize,
+              maxSizes:
+                mediaUploadConfig.maxSizes || DEFAULT_SECURE_CONFIG.maxSizes,
               upload:
                 mediaUploadConfig.uploadHandler ||
                 createSecureUploadHandler({
                   allowedTypes:
-                    mediaUploadConfig.accept?.split(',') || DEFAULT_SECURE_CONFIG.allowedTypes,
-                  maxSize: mediaUploadConfig.maxSize || DEFAULT_SECURE_CONFIG.maxSize,
-                  maxSizes: mediaUploadConfig.maxSizes || DEFAULT_SECURE_CONFIG.maxSizes,
+                    mediaUploadConfig.accept?.split(",") ||
+                    DEFAULT_SECURE_CONFIG.allowedTypes,
+                  maxSize:
+                    mediaUploadConfig.maxSize || DEFAULT_SECURE_CONFIG.maxSize,
+                  maxSizes:
+                    mediaUploadConfig.maxSizes ||
+                    DEFAULT_SECURE_CONFIG.maxSizes,
                 }),
               onError: mediaUploadConfig.onError || (() => {}),
               onSuccess: mediaUploadConfig.onSuccess || (() => {}),
@@ -287,11 +308,18 @@ export function EmbeddableNotionEditor({
           ]
         : []),
       UniqueID.configure({
-        types: ['heading', 'paragraph', 'codeBlock', 'table', 'taskList', 'blockquote'],
+        types: [
+          "heading",
+          "paragraph",
+          "codeBlock",
+          "table",
+          "taskList",
+          "blockquote",
+        ],
       }),
       TrailingNode.configure({
-        node: 'paragraph',
-        notAfter: ['heading', 'blockquote', 'codeBlock'],
+        node: "paragraph",
+        notAfter: ["heading", "blockquote", "codeBlock"],
       }),
     ],
     content,
@@ -320,7 +348,11 @@ export function EmbeddableNotionEditor({
     },
     editorProps: {
       attributes: {
-        class: clsx('embeddable-notion-editor-content', 'focus:outline-none', className),
+        class: clsx(
+          "embeddable-notion-editor-content",
+          "focus:outline-none",
+          className,
+        ),
         style: `max-width: ${safeMaxWidth}; min-height: ${safeMinHeight}`,
       },
     },
@@ -338,19 +370,22 @@ export function EmbeddableNotionEditor({
   if (!editor) {
     return (
       <div className="embeddable-notion-editor-loading">
-        <div className="animate-pulse rounded bg-gray-200" style={{ height: safeMinHeight }} />
+        <div
+          className="animate-pulse rounded bg-gray-200"
+          style={{ height: safeMinHeight }}
+        />
       </div>
     );
   }
 
   // Create CSS variables from sanitized theme
   const cssVariables = {
-    '--editor-bg': safeTheme.backgroundColor,
-    '--editor-text': safeTheme.textColor,
-    '--editor-border': safeTheme.borderColor,
-    '--editor-focus': safeTheme.focusColor,
-    '--editor-placeholder': safeTheme.placeholderColor,
-    '--editor-min-height': safeMinHeight,
+    "--editor-bg": safeTheme.backgroundColor,
+    "--editor-text": safeTheme.textColor,
+    "--editor-border": safeTheme.borderColor,
+    "--editor-focus": safeTheme.focusColor,
+    "--editor-placeholder": safeTheme.placeholderColor,
+    "--editor-min-height": safeMinHeight,
   } as React.CSSProperties;
 
   return (
@@ -366,21 +401,21 @@ export function EmbeddableNotionEditor({
             <>
               <button
                 onClick={() => editor.chain().focus().toggleBold().run()}
-                className={editor.isActive('bold') ? 'active' : ''}
+                className={editor.isActive("bold") ? "active" : ""}
                 title="Bold"
               >
                 <strong>B</strong>
               </button>
               <button
                 onClick={() => editor.chain().focus().toggleItalic().run()}
-                className={editor.isActive('italic') ? 'active' : ''}
+                className={editor.isActive("italic") ? "active" : ""}
                 title="Italic"
               >
                 <em>I</em>
               </button>
               <button
                 onClick={() => editor.chain().focus().toggleUnderline().run()}
-                className={editor.isActive('underline') ? 'active' : ''}
+                className={editor.isActive("underline") ? "active" : ""}
                 title="Underline"
               >
                 <u>U</u>
@@ -392,14 +427,14 @@ export function EmbeddableNotionEditor({
             <>
               <button
                 onClick={() => editor.chain().focus().toggleBulletList().run()}
-                className={editor.isActive('bulletList') ? 'active' : ''}
+                className={editor.isActive("bulletList") ? "active" : ""}
                 title="Bullet List"
               >
                 •
               </button>
               <button
                 onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                className={editor.isActive('orderedList') ? 'active' : ''}
+                className={editor.isActive("orderedList") ? "active" : ""}
                 title="Numbered List"
               >
                 1.
@@ -410,7 +445,7 @@ export function EmbeddableNotionEditor({
           {features.tasks && (
             <button
               onClick={() => editor.chain().focus().toggleTaskList().run()}
-              className={editor.isActive('taskList') ? 'active' : ''}
+              className={editor.isActive("taskList") ? "active" : ""}
               title="Task List"
             >
               ✓
@@ -418,16 +453,20 @@ export function EmbeddableNotionEditor({
           )}
 
           <button
-            onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-            className={editor.isActive('heading', { level: 1 }) ? 'active' : ''}
+            onClick={() =>
+              editor.chain().focus().toggleHeading({ level: 1 }).run()
+            }
+            className={editor.isActive("heading", { level: 1 }) ? "active" : ""}
             title="Heading 1"
           >
             H1
           </button>
 
           <button
-            onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-            className={editor.isActive('heading', { level: 2 }) ? 'active' : ''}
+            onClick={() =>
+              editor.chain().focus().toggleHeading({ level: 2 }).run()
+            }
+            className={editor.isActive("heading", { level: 2 }) ? "active" : ""}
             title="Heading 2"
           >
             H2
@@ -440,13 +479,13 @@ export function EmbeddableNotionEditor({
                   .chain()
                   .focus()
                   .insertContent({
-                    type: 'mediaUpload',
-                    attrs: { src: null, mediaType: 'image' },
+                    type: "mediaUpload",
+                    attrs: { src: null, mediaType: "image" },
                   })
                   .run();
               }}
               title="Upload Media"
-              style={{ fontSize: '14px', padding: '4px 8px' }}
+              style={{ fontSize: "14px", padding: "4px 8px" }}
             >
               📎
             </button>
@@ -455,7 +494,7 @@ export function EmbeddableNotionEditor({
           {features.codeBlocks && (
             <button
               onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-              className={editor.isActive('codeBlock') ? 'active' : ''}
+              className={editor.isActive("codeBlock") ? "active" : ""}
               title="Code Block"
             >
               &lt;/&gt;
@@ -465,7 +504,10 @@ export function EmbeddableNotionEditor({
       )}
 
       {/* Editor Content */}
-      <EditorContent editor={editor} data-testid="embeddable-notion-editor-content" />
+      <EditorContent
+        editor={editor}
+        data-testid="embeddable-notion-editor-content"
+      />
     </div>
   );
 }
@@ -516,7 +558,7 @@ export function useEmbeddableEditor() {
      */
     getWordCount: (editor: Editor) => {
       const text = editor.getText();
-      return text.split(/\s+/).filter(word => word.length > 0).length;
+      return text.split(/\s+/).filter((word) => word.length > 0).length;
     },
 
     /**

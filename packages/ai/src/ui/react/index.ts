@@ -1,0 +1,156 @@
+// Enhanced hooks with monorepo integrations
+export { useChat } from './use-chat';
+export type { UseChatConfig } from './use-chat';
+export { useCompletion } from './use-completion';
+export { useObject } from './use-object';
+
+// Message utilities (explicit for tree shaking)
+export {
+  convertLegacyToPartsFormat,
+  convertPartsToLegacyFormat,
+  countPartsByType,
+  extractFileAttachments,
+  extractTextContent,
+  extractToolCalls,
+  extractToolResults,
+  messageConverter,
+  messageFormatter,
+  messageHasPartType,
+  renderMessage,
+  renderMessageMetadata,
+  renderMessagePart,
+  renderMessages,
+  renderingPatterns,
+  type MessageRenderOptions,
+} from './messages';
+
+// Transport utilities (explicit for tree shaking)
+export {
+  autoConfigureTransport,
+  createAuthenticatedTransport,
+  createDevelopmentTransport,
+  createProductionTransport,
+  createTransport,
+  defaultTransport,
+  devTransport,
+  prodTransport,
+  smartTransport,
+  transportFactory,
+  transportPresets,
+  type TransportConfig,
+} from './transports';
+
+// State Management - AiChat Context and Hooks
+export {
+  AiChatContext,
+  AiChatProvider,
+  useAiChat,
+  useAiInput,
+  useBranchNavigation,
+  useChatOperations,
+  useConversationScroll,
+  useCurrentMessages,
+  useMessageActions,
+  type AiChatActions,
+  type AiChatContextValue,
+  type AiChatMessage,
+  type AiChatProviderProps,
+  type AiChatState,
+  type MessageMetadata,
+  type StreamingStatus,
+  type UseAiInputReturn,
+  type UseBranchNavigationReturn,
+  type UseChatOperationsReturn,
+  type UseConversationScrollReturn,
+  type UseCurrentMessagesReturn,
+  type UseMessageActionsReturn,
+} from './lib';
+
+// UI Components (explicit for tree shaking)
+export {
+  Action,
+  ActionVariants,
+  // AI Elements Components
+  Actions,
+  Branch,
+  BranchMessages,
+  BranchNext,
+  BranchPage,
+  BranchPrevious,
+  BranchSelector,
+  BranchVariants,
+  ChatContainer,
+  ChatContainerVariants,
+  ChatForm,
+  ChatFormVariants,
+  Conversation,
+  ConversationContent,
+  ConversationDemo,
+  ConversationDemoVariants,
+  ConversationErrorBoundary,
+  ConversationScrollButton,
+  ConversationVariants,
+  ConversationWithFeatures,
+  DefaultErrorFallback,
+  // Error Boundaries
+  ErrorBoundary,
+  Input,
+  Message,
+  MessageAvatar,
+  MessageContent,
+  // Legacy components
+  MessageList,
+  MessageListVariants,
+  MessageVariants,
+  PromptInputForm,
+  PromptInputSubmit,
+  PromptInputTextarea,
+  PromptInputVariants,
+  // Response component and demos
+  Response,
+  StatusIndicator,
+  StatusIndicatorVariants,
+  useChatComponents,
+  useErrorHandler,
+  useStatusInfo,
+  withErrorBoundary,
+  type ActionProps,
+  // AI Elements Types
+  type ActionsProps,
+  type BranchButtonProps,
+  type BranchMessagesProps,
+  type BranchPageProps,
+  type BranchProps,
+  type BranchSelectorProps,
+  type ChatContainerProps,
+  type ChatFormProps,
+  type ConversationContentProps,
+  type ConversationDemoProps,
+  type ConversationErrorBoundaryProps,
+  type ConversationProps,
+  type ConversationScrollButtonProps,
+  type ConversationWithFeaturesProps,
+  type DemoMessage,
+  type ErrorBoundaryProps,
+  type ErrorFallbackProps,
+  type InputProps,
+  type MessageAvatarProps,
+  type MessageContentProps,
+  type MessageListProps,
+  type MessageProps,
+  type MessageRole,
+  type PromptInputFormProps,
+  type PromptInputSubmitProps,
+  type PromptInputTextareaProps,
+  type ResponseProps,
+  type StatusIndicatorProps,
+} from './components';
+
+// Examples and integration patterns
+export {
+  AiSdkIntegrationExample,
+  AiSdkIntegrationVariants,
+  ExampleVariants,
+  Examples,
+  type AiSdkIntegrationExampleProps,
+} from './examples';

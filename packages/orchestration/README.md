@@ -20,15 +20,19 @@
 
 - _Key Features:_
   - **Upstash Integration**: Built on Upstash Workflow and QStash for durable
-    background job processing
+    background job processing with webhook signature verification
   - **Step Factory**: Utilities for creating and composing workflow steps with
-    retry logic
+    retry logic and AbortSignal.timeout support
   - **Error Handling**: Basic error classification with OrchestrationErrorCodes
-    and typed errors
-  - **Rate Limiting**: Built-in rate limiting and circuit breaker patterns for
-    resilient workflows
-  - **Batch Processing**: Batch manager for efficient processing of large
-    datasets
+    and typed errors, plus sensitive data masking
+  - **Rate Limiting**: Built-in rate limiting with LRU cache and circuit breaker
+    patterns for resilient workflows
+  - **Memory Management**: BoundedCache with TTL and analytics for preventing
+    unbounded growth
+  - **ES2023 Support**: Modern JavaScript features including immutable sorting
+    (.toSorted())
+  - **Security**: QStash signature verification, data masking, and crypto-secure
+    ID generation
   - **Monitoring**: Basic workflow execution status tracking and health checks
 
 - _Environment Variables:_
@@ -81,6 +85,55 @@
   - Error handling: `createOrchestrationError()`, `OrchestrationErrorCodes`
   - Rate limiting: `withRateLimit()`, circuit breaker: `withCircuitBreaker()`
   - Batch processing: `BatchManager`, monitoring: `engine.getStatus()`
+
+- _Node 22/ES2023 Features:_
+
+  ```typescript
+  // Modern AbortSignal with timeout and proper cleanup
+  import { createTimeoutSignal } from "@repo/orchestration/shared/factories/step-templates";
+
+  const signal = createTimeoutSignal(5000); // 5 second timeout
+  signal.addEventListener(
+    "abort",
+    () => {
+      console.log("Operation timed out");
+    },
+    { once: true }
+  ); // Proper cleanup
+
+  // BoundedCache with TTL and analytics
+  import { BoundedCache } from "@repo/orchestration";
+
+  const cache = new BoundedCache({
+    maxSize: 1000, // LRU eviction at 1000 entries
+    ttl: 300000, // 5 minute TTL
+    enableAnalytics: true // Track hits/misses
+  });
+
+  // Secure ID generation
+  import { randomUUID } from "crypto";
+  const secureId = randomUUID(); // Crypto-secure, not Math.random()
+
+  // Immutable operations (ES2023)
+  const sortedArray = data.toSorted((a, b) => a.timestamp - b.timestamp);
+
+  // Webhook signature verification
+  import { createWorkflowWebhookHandler } from "@repo/orchestration/server/next";
+
+  const handler = createWorkflowWebhookHandler({
+    provider: workflowProvider,
+    secret: process.env.QSTASH_CURRENT_SIGNING_KEY,
+    nextSecret: process.env.QSTASH_NEXT_SIGNING_KEY, // Key rotation support
+    onEvent: async (event) => {
+      // Handle verified webhook event
+    }
+  });
+
+  // Data masking for sensitive logs
+  import { maskSensitiveData } from "@repo/orchestration/shared/utils/data-masking";
+
+  console.log("User data:", maskSensitiveData(userData)); // Masks API keys, tokens, etc.
+  ```
 
 - _Documentation:_
   **[Orchestration Package](../../apps/docs/packages/orchestration/overview.mdx)**

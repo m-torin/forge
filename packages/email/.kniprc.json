@@ -1,0 +1,11 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "ignore": [
+    "env.ts",
+    "__tests__/test-utils/**",
+    "__tests__/test-factory.ts",
+    "__tests__/test-data-generators.ts",
+    "__tests__/email-test-factory.ts"
+  ],
+  "ignoreDependencies": ["@types/*", "@repo/config", "@repo/eslint-config", "@repo/qa"]
+}

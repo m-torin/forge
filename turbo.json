@@ -6,7 +6,7 @@
   "envMode": "loose",
   "tasks": {
     "build": {
-      "dependsOn": ["^build", "@repo/database#prisma:generate"],
+      "dependsOn": ["^build"],
       "inputs": [
         "src/**",
         "package.json",
@@ -20,7 +20,6 @@
         "!.next/cache/**",
         "**/generated/**",
         "prisma-generated/**",
-        "storybook-static/**",
         ".react-email/**",
         "dist/**",
         "build/**",
@@ -28,8 +27,37 @@
       ],
       "cache": true
     },
+    "@repo/3p-vercel#build": {
+      "cache": true,
+      "outputs": []
+    },
+    "@repo/db-firestore#build": {
+      "cache": true,
+      "outputs": []
+    },
+    "@repo/db-shared#build": {
+      "cache": true,
+      "outputs": []
+    },
+    "@repo/3p-core#build": {
+      "cache": true,
+      "outputs": []
+    },
+    "@repo/db-upstash-redis#build": {
+      "cache": true,
+      "outputs": []
+    },
+    "@repo/mcp-server#build:base": {
+      "dependsOn": ["^build", "validate:schemas"],
+      "cache": true,
+      "outputs": ["dist/**"]
+    },
+    "storybook#build": {
+      "cache": true,
+      "outputs": []
+    },
     "build:doppler": {
-      "dependsOn": ["^build:doppler", "@repo/database#prisma:generate:doppler"],
+      "dependsOn": ["^build:doppler"],
       "cache": true,
       "inputs": [
         "src/**",
@@ -47,7 +75,6 @@
         "!.next/static/development/**",
         "**/generated/**",
         "prisma-generated/**",
-        "storybook-static/**",
         ".react-email/**",
         "dist/**",
         "build/**",
@@ -62,7 +89,23 @@
       "cache": true,
       "outputs": []
     },
+    "validate:schemas": {
+      "dependsOn": ["^validate:schemas"],
+      "cache": true,
+      "inputs": [
+        "packages/core-utils/src/server/*-tool.ts",
+        "packages/mcp-server/src/tools/*.ts",
+        "packages/mcp-server/scripts/validate-mcp-schemas.mts",
+        "packages/*/package.json"
+      ],
+      "outputs": []
+    },
     "dev": {
+      "dependsOn": [],
+      "cache": false,
+      "persistent": true
+    },
+    "dev:embedded": {
       "dependsOn": [],
       "cache": false,
       "persistent": true
@@ -157,7 +200,7 @@
       "outputs": ["**/locales/**", "**/translations/**"]
     },
     "typecheck": {
-      "dependsOn": ["^typecheck", "@repo/database#prisma:generate"],
+      "dependsOn": ["^typecheck"],
       "cache": false,
       "inputs": ["src/**", "*.ts", "*.tsx", "tsconfig.json", "!**/*.test.*", "!**/*.spec.*"],
       "outputs": []
@@ -222,7 +265,7 @@
       "cache": false
     },
     "typecheck:affected": {
-      "dependsOn": ["^typecheck:affected", "@repo/database#prisma:generate"],
+      "dependsOn": ["^typecheck:affected"],
       "cache": false,
       "inputs": ["src/**", "*.ts", "*.tsx", "tsconfig.json", "!**/*.test.*", "!**/*.spec.*"],
       "outputs": []

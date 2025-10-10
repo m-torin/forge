@@ -4,14 +4,21 @@
  * Simplified login form for modal display
  */
 
-'use client';
+"use client";
 
-import { signInAction } from '#/app/actions/auth';
-import type { Locale } from '#/lib/i18n';
-import { Alert, Button, Checkbox, Input, PasswordInput, Stack } from '@mantine/core';
-import { useForm } from '@mantine/form';
-import { useRouter } from 'next/navigation';
-import { useActionState, useEffect } from 'react';
+import { signInAction } from "#/app/actions/auth";
+import type { Locale } from "#/lib/i18n";
+import {
+  Alert,
+  Button,
+  Checkbox,
+  Input,
+  PasswordInput,
+  Stack,
+} from "@mantine/core";
+import { useForm } from "@mantine/form";
+import { useRouter } from "next/navigation";
+import { useActionState, useEffect } from "react";
 
 interface LoginModalUiProps {
   locale: Locale;
@@ -31,8 +38,8 @@ export default function LoginModalUi({ locale, dict }: LoginModalUiProps) {
   // Use useActionState for server action integration
   const [state, formAction, isPending] = useActionState(signInAction, {
     success: false,
-    error: '',
-    fields: { email: '', password: '' },
+    error: "",
+    fields: { email: "", password: "" },
   });
 
   // Handle successful authentication by closing modal and refreshing
@@ -47,19 +54,19 @@ export default function LoginModalUi({ locale, dict }: LoginModalUiProps) {
   // Mantine form for client-side validation
   const form = useForm<LoginFormValues>({
     initialValues: {
-      email: state?.fields?.email || '',
-      password: '',
+      email: state?.fields?.email || "",
+      password: "",
       rememberMe: true,
     },
     validate: {
-      email: value => {
-        if (!value) return 'Email is required';
-        if (!/^\S+@\S+$/.test(value)) return 'Invalid email format';
+      email: (value) => {
+        if (!value) return "Email is required";
+        if (!/^\S+@\S+$/.test(value)) return "Invalid email format";
         return null;
       },
-      password: value => {
-        if (!value) return 'Password is required';
-        if (value.length < 3) return 'Password must be at least 3 characters';
+      password: (value) => {
+        if (!value) return "Password is required";
+        if (value.length < 3) return "Password must be at least 3 characters";
         return null;
       },
     },
@@ -68,11 +75,11 @@ export default function LoginModalUi({ locale, dict }: LoginModalUiProps) {
   const handleSubmit = (values: LoginFormValues) => {
     // Create FormData for server action
     const formData = new FormData();
-    formData.append('email', values.email);
-    formData.append('password', values.password);
-    formData.append('rememberMe', values.rememberMe ? 'on' : 'off');
-    formData.append('redirectTo', `/${locale}`);
-    formData.append('isModal', 'true'); // Signal this is from a modal
+    formData.append("email", values.email);
+    formData.append("password", values.password);
+    formData.append("rememberMe", values.rememberMe ? "on" : "off");
+    formData.append("redirectTo", `/${locale}`);
+    formData.append("isModal", "true"); // Signal this is from a modal
 
     // Call server action
     (formAction as any)(formData);
@@ -82,7 +89,7 @@ export default function LoginModalUi({ locale, dict }: LoginModalUiProps) {
     <form onSubmit={form.onSubmit(handleSubmit)}>
       <Stack gap="md">
         {/* Error Alert - Filter out NEXT_REDIRECT which is internal */}
-        {state?.error && !state.error.includes('NEXT_REDIRECT') && (
+        {state?.error && !state.error.includes("NEXT_REDIRECT") && (
           <Alert color="red" variant="light" className="harmony-transition">
             {state.error}
           </Alert>
@@ -100,34 +107,34 @@ export default function LoginModalUi({ locale, dict }: LoginModalUiProps) {
         </Alert>
 
         {/* Email Input */}
-        <Input.Wrapper label={dict.auth?.email || 'Email'} required>
+        <Input.Wrapper label={dict.auth?.email || "Email"} required>
           <Input
             type="email"
             placeholder="Enter your email"
             disabled={isPending}
-            {...form.getInputProps('email')}
+            {...form.getInputProps("email")}
           />
         </Input.Wrapper>
 
         {/* Password Input */}
         <PasswordInput
-          label={dict.auth?.password || 'Password'}
+          label={dict.auth?.password || "Password"}
           placeholder="Enter your password"
           required
           disabled={isPending}
-          {...form.getInputProps('password')}
+          {...form.getInputProps("password")}
         />
 
         {/* Remember Me */}
         <Checkbox
-          label={dict.auth?.rememberMe || 'Remember me'}
+          label={dict.auth?.rememberMe || "Remember me"}
           disabled={isPending}
-          {...form.getInputProps('rememberMe', { type: 'checkbox' })}
+          {...form.getInputProps("rememberMe", { type: "checkbox" })}
         />
 
         {/* Submit Button */}
         <Button type="submit" fullWidth loading={isPending}>
-          {dict.auth?.signIn || 'Sign in'}
+          {dict.auth?.signIn || "Sign in"}
         </Button>
       </Stack>
     </form>

@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   bulkDeleteMediaAction,
@@ -6,8 +6,8 @@ import {
   getMediaUrlAction,
   listMediaAction,
   uploadMediaAction,
-} from '@repo/storage/server/next';
-import React, { useState } from 'react';
+} from "@repo/storage/server/next";
+import React, { useState } from "react";
 
 /**
  * Example component demonstrating how to use storage server actions in a Next.js app
@@ -15,7 +15,7 @@ import React, { useState } from 'react';
 export function StorageActionsExample() {
   const [files, setFiles] = useState<Array<{ key: string; url: string }>>([]);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
 
   // Handle file upload
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -23,25 +23,31 @@ export function StorageActionsExample() {
     if (!file) return;
 
     setLoading(true);
-    setMessage('Uploading...');
+    setMessage("Uploading...");
 
     try {
       // Convert file to ArrayBuffer
       const buffer = await file.arrayBuffer();
 
       // Upload using server action
-      const result = await uploadMediaAction(`uploads/${Date.now()}-${file.name}`, buffer, {
-        contentType: file.type,
-      });
+      const result = await uploadMediaAction(
+        `uploads/${Date.now()}-${file.name}`,
+        buffer,
+        {
+          contentType: file.type,
+        },
+      );
 
       if (result.success && result.data) {
-        setMessage('Upload successful!');
+        setMessage("Upload successful!");
         await refreshFileList();
       } else {
         setMessage(`Upload failed: ${result.error}`);
       }
     } catch (error) {
-      setMessage(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setMessage(
+        `Error: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     } finally {
       setLoading(false);
     }
@@ -51,7 +57,7 @@ export function StorageActionsExample() {
   const refreshFileList = async () => {
     setLoading(true);
     try {
-      const result = await listMediaAction({ prefix: 'uploads/' });
+      const result = await listMediaAction({ prefix: "uploads/" });
 
       if (result.success && result.data) {
         // Get URLs for each file
@@ -60,7 +66,7 @@ export function StorageActionsExample() {
             const urlResult = await getMediaUrlAction(file.key);
             return {
               key: file.key,
-              url: urlResult.success && urlResult.data ? urlResult.data : '',
+              url: urlResult.success && urlResult.data ? urlResult.data : "",
             };
           }),
         );
@@ -71,7 +77,9 @@ export function StorageActionsExample() {
         setMessage(`Failed to list files: ${result.error}`);
       }
     } catch (error) {
-      setMessage(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setMessage(
+        `Error: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     } finally {
       setLoading(false);
     }
@@ -90,7 +98,9 @@ export function StorageActionsExample() {
         setMessage(`Failed to delete: ${result.error}`);
       }
     } catch (error) {
-      setMessage(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setMessage(
+        `Error: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     } finally {
       setLoading(false);
     }
@@ -107,14 +117,17 @@ export function StorageActionsExample() {
 
       if (result.success && result.data) {
         setMessage(
-          `Deleted ${result.data.succeeded.length} files, ` + `${result.data.failed.length} failed`,
+          `Deleted ${result.data.succeeded.length} files, ` +
+            `${result.data.failed.length} failed`,
         );
         await refreshFileList();
       } else {
         setMessage(`Bulk delete failed: ${result.error}`);
       }
     } catch (error) {
-      setMessage(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setMessage(
+        `Error: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     } finally {
       setLoading(false);
     }
@@ -122,12 +135,21 @@ export function StorageActionsExample() {
 
   return (
     <div className="mx-auto max-w-2xl p-4">
-      <h2 className="mb-4 text-2xl font-bold">Storage Server Actions Example</h2>
+      <h2 className="mb-4 text-2xl font-bold">
+        Storage Server Actions Example
+      </h2>
 
       <div className="mb-6 rounded border p-4">
         <h3 className="mb-2 text-lg font-semibold">Upload File</h3>
-        <input type="file" onChange={handleUpload} disabled={loading} className="mb-2" />
-        <p className="text-sm text-gray-600">Files will be uploaded to the 'uploads/' prefix</p>
+        <input
+          type="file"
+          onChange={handleUpload}
+          disabled={loading}
+          className="mb-2"
+        />
+        <p className="text-sm text-gray-600">
+          Files will be uploaded to the 'uploads/' prefix
+        </p>
       </div>
 
       <div className="mb-6 space-x-2">
@@ -155,7 +177,10 @@ export function StorageActionsExample() {
           <p className="text-gray-500">No files found</p>
         ) : (
           files.map((file: { key: string; url: string }) => (
-            <div key={file.key} className="flex items-center justify-between rounded border p-3">
+            <div
+              key={file.key}
+              className="flex items-center justify-between rounded border p-3"
+            >
               <div>
                 <p className="font-mono text-sm">{file.key}</p>
                 {file.url && (

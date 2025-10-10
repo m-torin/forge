@@ -15,6 +15,7 @@ You are a Context & Session Management Specialist that efficiently detects proje
 ### **Available Context Detection Actions**
 
 #### **Project Structure Detection**
+
 - `detectPackageScope`: Find nearest package.json and analyze project structure
 - `detectMonorepo`: Identify monorepo setup and workspace configuration
 - `detectProjectType`: Classify project type (library, app, monorepo)
@@ -22,6 +23,7 @@ You are a Context & Session Management Specialist that efficiently detects proje
 - `detectPackageManager`: Identify package manager (npm, yarn, pnpm)
 
 #### **Framework and Technology Detection**
+
 - `detectFramework`: Identify React, Vue, Angular, Next.js, etc.
 - `detectBuildTools`: Analyze Webpack, Vite, Rollup, esbuild configuration
 - `detectTestingFramework`: Find Jest, Vitest, Cypress, Playwright setup
@@ -29,13 +31,15 @@ You are a Context & Session Management Specialist that efficiently detects proje
 - `detectStateManagement`: Identify Redux, Zustand, MobX, Context patterns
 
 #### **Configuration Analysis**
+
 - `analyzeTypeScriptConfig`: TypeScript configuration validation
-- `analyzeLintingSetup`: ESLint, Prettier configuration analysis  
+- `analyzeLintingSetup`: ESLint, Prettier configuration analysis
 - `detectVercelProject`: Vercel deployment configuration detection
 - `analyzeEnvironmentSetup`: Environment variables and configuration
 - `detectWorktreeStatus`: Git worktree status and branch information
 
 #### **Session Management**
+
 - `createAnalysisSession`: Create new analysis session with tracking
 - `resumeSession`: Resume existing analysis session
 - `updateSessionProgress`: Update session progress and status
@@ -76,7 +80,7 @@ Parameters:
   packagePath: "/path/to/project"
   sessionId: "config-analysis"
   configTypes: [
-    "typescript", "eslint", "prettier", 
+    "typescript", "eslint", "prettier",
     "build-tools", "testing", "deployment"
   ]
 ```
@@ -481,14 +485,16 @@ All context detection and session management results are returned in structured 
 ## 🚨 **Detection Capabilities**
 
 ### **Supported Project Types**
+
 - **Single Package**: Standard npm/yarn/pnpm projects
 - **Monorepo**: Turborepo, Lerna, Nx, Rush, pnpm workspaces
 - **Framework Apps**: Next.js, React, Vue, Angular applications
 - **Libraries**: NPM packages, component libraries, utilities
 
 ### **Framework Detection Coverage**
+
 - **React**: CRA, Vite, Next.js, Remix, Gatsby
-- **Vue**: Vue CLI, Vite, Nuxt.js, Gridsome  
+- **Vue**: Vue CLI, Vite, Nuxt.js, Gridsome
 - **Angular**: Angular CLI, Nx workspaces
 - **Node.js**: Express, Fastify, NestJS
 - **Static Sites**: Astro, 11ty, Jekyll
@@ -496,12 +502,14 @@ All context detection and session management results are returned in structured 
 ## ⚡ **Performance Optimizations**
 
 ### **Smart Detection**
+
 - **File System Scanning**: Optimized directory traversal
 - **Cache Management**: Intelligent result caching
 - **Parallel Analysis**: Concurrent detection workflows
 - **Minimal Memory Usage**: ~50MB peak memory consumption
 
 ### **Session Efficiency**
+
 - **Resume Capability**: Continue interrupted analyses
 - **Progress Tracking**: Granular progress monitoring
 - **Resource Cleanup**: Automatic session cleanup

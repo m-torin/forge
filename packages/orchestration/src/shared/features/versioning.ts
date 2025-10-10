@@ -3,9 +3,11 @@
  * Advanced workflow management with versioning and composition utilities
  */
 
+import { randomUUID } from 'crypto';
+
 import { WorkflowDefinition, WorkflowExecution, WorkflowProvider } from '../types/index';
 
-export interface BulkOperation {
+interface BulkOperation {
   /** Completion timestamp */
   completedAt?: Date;
   /** Operation configuration */
@@ -53,7 +55,7 @@ export interface BulkOperation {
   type: 'cancel' | 'delete' | 'execute' | 'retry' | 'schedule';
 }
 
-export interface CompositionContext {
+interface CompositionContext {
   /** Composition execution ID */
   compositionId: string;
   /** Current workflow being executed */
@@ -70,7 +72,7 @@ export interface CompositionContext {
   setResult: (alias: string, result: unknown) => void;
 }
 
-export interface WorkflowComposition {
+interface WorkflowComposition {
   /** Description */
   description?: string;
   /** Error handling strategy */
@@ -110,7 +112,7 @@ export interface WorkflowComposition {
   }[];
 }
 
-export interface WorkflowVersion {
+interface WorkflowVersion {
   /** Compatibility information */
   compatibility?: {
     /** Breaking changes */
@@ -143,7 +145,7 @@ export interface WorkflowVersion {
   version: string;
 }
 
-export class BulkOperationManager {
+class BulkOperationManager {
   private operations = new Map<string, BulkOperation>();
   private provider: WorkflowProvider;
 
@@ -202,7 +204,7 @@ export class BulkOperationManager {
   // Private methods
 
   private generateOperationId(): string {
-    return `bulk_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `bulk_${Date.now()}_${randomUUID()}`;
   }
 
   private async getWorkflowDefinition(workflowId: string): Promise<WorkflowDefinition> {
@@ -317,7 +319,7 @@ export class BulkOperationManager {
   }
 }
 
-export class WorkflowComposer {
+class WorkflowComposer {
   private compositions = new Map<string, WorkflowComposition>();
   private provider: WorkflowProvider;
   private versionManager: WorkflowVersionManager;
@@ -462,7 +464,7 @@ export class WorkflowComposer {
   }
 
   private generateExecutionId(): string {
-    return `composition_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `composition_${Date.now()}_${randomUUID()}`;
   }
 
   private async getWorkflowDefinition(workflowId: string): Promise<WorkflowDefinition> {
@@ -549,7 +551,7 @@ export class WorkflowComposer {
   }
 }
 
-export class WorkflowVersionManager {
+class WorkflowVersionManager {
   private provider: WorkflowProvider;
   private versions = new Map<string, WorkflowVersion[]>();
 
@@ -764,14 +766,14 @@ export class WorkflowVersionManager {
 /**
  * Create bulk operation manager
  */
-export function createBulkOperationManager(provider: WorkflowProvider): BulkOperationManager {
+function createBulkOperationManager(provider: WorkflowProvider): BulkOperationManager {
   return new BulkOperationManager(provider);
 }
 
 /**
  * Create workflow composer
  */
-export function createWorkflowComposer(
+function createWorkflowComposer(
   provider: WorkflowProvider,
   versionManager: WorkflowVersionManager,
 ): WorkflowComposer {
@@ -781,6 +783,6 @@ export function createWorkflowComposer(
 /**
  * Create workflow version manager
  */
-export function createWorkflowVersionManager(provider: WorkflowProvider): WorkflowVersionManager {
+function createWorkflowVersionManager(provider: WorkflowProvider): WorkflowVersionManager {
   return new WorkflowVersionManager(provider);
 }

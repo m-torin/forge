@@ -3,18 +3,18 @@
  * 100% React Server Component for WebAuthn passkey authentication
  */
 
-'use client';
+"use client";
 
-import { useCallback, useEffect, useState } from 'react';
-import { useFormState } from 'react-dom';
-import type { BaseProps, FormState } from '../types';
-import { createInitialActionState } from '../types';
-import { Alert } from '../ui/Alert';
-import { Button } from '../ui/Button';
-import { Card, CardContent, CardHeader } from '../ui/Card';
-import { cn } from '../utils/dark-mode';
+import { useCallback, useEffect, useState } from "react";
+import { useFormState } from "react-dom";
+import type { BaseProps, FormState } from "../types";
+import { createInitialActionState } from "../types";
+import { Alert } from "../ui/Alert";
+import { Button } from "../ui/Button";
+import { Card, CardContent, CardHeader } from "../ui/Card";
+import { cn } from "../utils/dark-mode";
 
-type SignInStep = 'check-support' | 'authenticate' | 'success' | 'error';
+type SignInStep = "check-support" | "authenticate" | "success" | "error";
 
 interface PasskeySignInInterfaceProps extends BaseProps {
   title?: string;
@@ -28,13 +28,16 @@ interface PasskeySignInInterfaceProps extends BaseProps {
 const _initialState: FormState = { success: false };
 
 // Server action for initiating passkey authentication
-async function initiatePasskeyAuthAction(prevState: any, formData: FormData): Promise<FormState> {
-  'use server';
+async function initiatePasskeyAuthAction(
+  prevState: any,
+  formData: FormData,
+): Promise<FormState> {
+  "use server";
 
   try {
     // Import Better Auth server action
     const { initiatePasskeyAuthAction: authInitiatePasskey } = await import(
-      '@repo/auth/server-actions'
+      "@repo/auth/server-actions"
     );
 
     const result = await authInitiatePasskey(prevState, formData);
@@ -42,62 +45,70 @@ async function initiatePasskeyAuthAction(prevState: any, formData: FormData): Pr
     if (result.success) {
       return {
         success: true,
-        message: 'Passkey authentication initiated.',
+        message: "Passkey authentication initiated.",
         data: {
-          challenge: (result as any).data?.challenge || (result as any).challenge || '',
-          authOptions: (result as any).data?.authOptions || (result as any).authOptions || {},
+          challenge:
+            (result as any).data?.challenge || (result as any).challenge || "",
+          authOptions:
+            (result as any).data?.authOptions ||
+            (result as any).authOptions ||
+            {},
         },
       };
     } else {
       return {
         success: false,
-        error: result.error || 'Failed to initiate passkey authentication.',
+        error: result.error || "Failed to initiate passkey authentication.",
       };
     }
   } catch (error: any) {
     // console.error('Passkey authentication initiation error:', error);
 
-    if (error?.message?.includes('no passkeys')) {
+    if (error?.message?.includes("no passkeys")) {
       return {
         success: false,
         error:
-          'No passkeys found. Please register a passkey first or use a different sign-in method.',
+          "No passkeys found. Please register a passkey first or use a different sign-in method.",
       };
     }
 
-    if (error?.message?.includes('not supported')) {
+    if (error?.message?.includes("not supported")) {
       return {
         success: false,
-        error: 'Passkey authentication is not supported on this device or browser.',
+        error:
+          "Passkey authentication is not supported on this device or browser.",
       };
     }
 
     return {
       success: false,
-      error: 'An error occurred while initiating passkey authentication.',
+      error: "An error occurred while initiating passkey authentication.",
     };
   }
 }
 
 // Server action for completing passkey authentication
-async function completePasskeyAuthAction(prevState: any, formData: FormData): Promise<FormState> {
-  'use server';
+async function completePasskeyAuthAction(
+  prevState: any,
+  formData: FormData,
+): Promise<FormState> {
+  "use server";
 
   try {
-    const challenge = formData.get('challenge') as string;
-    const credential = formData.get('credential') as string;
-    const redirectTo = formData.get('redirectTo') as string;
+    const challenge = formData.get("challenge") as string;
+    const credential = formData.get("credential") as string;
+    const redirectTo = formData.get("redirectTo") as string;
 
     if (!challenge || !credential) {
       return {
         success: false,
-        error: 'Missing required authentication data.',
+        error: "Missing required authentication data.",
       };
     }
 
     // Import Better Auth server action
     const { completePasskeyAuthAction: authCompletePasskey } = await import(
-      '@repo/auth/server-actions'
+      "@repo/auth/server-actions"
     );
 
     const result = await authCompletePasskey(prevState, formData);
@@ -105,59 +116,60 @@ async function completePasskeyAuthAction(prevState: any, formData: FormData): Pr
     if (result.success) {
       return {
         success: true,
-        message: 'Successfully signed in with passkey!',
+        message: "Successfully signed in with passkey!",
         data: {
           user: (result as any).data?.user || (result as any).user || {},
-          redirectTo: redirectTo || '/dashboard',
+          redirectTo: redirectTo || "/dashboard",
         },
       };
     } else {
       return {
         success: false,
-        error: result.error || 'Failed to complete passkey authentication.',
+        error: result.error || "Failed to complete passkey authentication.",
       };
     }
   } catch (error: any) {
     // console.error('Passkey authentication completion error:', error);
 
-    if (error?.message?.includes('invalid credential')) {
+    if (error?.message?.includes("invalid credential")) {
       return {
         success: false,
-        error: 'Invalid passkey credential. Please try again.',
+        error: "Invalid passkey credential. Please try again.",
       };
     }
 
-    if (error?.message?.includes('not found')) {
+    if (error?.message?.includes("not found")) {
       return {
         success: false,
-        error: 'No matching passkey found. Please use a different authentication method.',
+        error:
+          "No matching passkey found. Please use a different authentication method.",
       };
     }
 
-    if (error?.message?.includes('expired')) {
+    if (error?.message?.includes("expired")) {
       return {
         success: false,
-        error: 'Authentication challenge has expired. Please try again.',
+        error: "Authentication challenge has expired. Please try again.",
       };
     }
 
     return {
       success: false,
-      error: 'An error occurred during passkey authentication.',
+      error: "An error occurred during passkey authentication.",
     };
   }
 }
 
 export function PasskeySignInInterface({
-  title = 'Sign in with Passkey',
-  subtitle = 'Use your passkey for secure, passwordless authentication',
+  title = "Sign in with Passkey",
+  subtitle = "Use your passkey for secure, passwordless authentication",
   redirectTo,
   onSuccess,
   onError,
   onFallback,
-  className = '',
+  className = "",
 }: PasskeySignInInterfaceProps) {
-  const [step, setStep] = useState<SignInStep>('check-support');
+  const [step, setStep] = useState<SignInStep>("check-support");
   const [_isWebAuthnSupported, setIsWebAuthnSupported] = useState(false);
   const [authData, setAuthData] = useState<any>(null);
 
@@ -177,10 +189,12 @@ export function PasskeySignInInterface({
         // Convert challenge from base64
         const decodedOptions = {
           ...options,
-          challenge: Uint8Array.from(atob(options.challenge), c => c.charCodeAt(0)),
+          challenge: Uint8Array.from(atob(options.challenge), (c) =>
+            c.charCodeAt(0),
+          ),
           allowCredentials: options.allowCredentials?.map((cred: any) => ({
             ...cred,
-            id: Uint8Array.from(atob(cred.id), c => c.charCodeAt(0)),
+            id: Uint8Array.from(atob(cred.id), (c) => c.charCodeAt(0)),
           })),
         };
 
@@ -190,7 +204,7 @@ export function PasskeySignInInterface({
         })) as PublicKeyCredential;
 
         if (!credential) {
-          throw new Error('No credential received');
+          throw new Error("No credential received");
         }
 
         // Prepare credential data for server
@@ -200,15 +214,25 @@ export function PasskeySignInInterface({
           response: {
             authenticatorData: Array.from(
               new Uint8Array(
-                (credential.response as AuthenticatorAssertionResponse).authenticatorData,
+                (
+                  credential.response as AuthenticatorAssertionResponse
+                ).authenticatorData,
               ),
             ),
-            clientDataJSON: Array.from(new Uint8Array(credential.response.clientDataJSON)),
+            clientDataJSON: Array.from(
+              new Uint8Array(credential.response.clientDataJSON),
+            ),
             signature: Array.from(
-              new Uint8Array((credential.response as AuthenticatorAssertionResponse).signature),
+              new Uint8Array(
+                (
+                  credential.response as AuthenticatorAssertionResponse
+                ).signature,
+              ),
             ),
             userHandle: (() => {
-              const userHandle = (credential.response as AuthenticatorAssertionResponse).userHandle;
+              const userHandle = (
+                credential.response as AuthenticatorAssertionResponse
+              ).userHandle;
               return userHandle ? Array.from(new Uint8Array(userHandle)) : null;
             })(),
           },
@@ -217,31 +241,33 @@ export function PasskeySignInInterface({
 
         // Submit to server
         const form = new FormData();
-        form.append('challenge', authData.challenge);
-        form.append('credential', JSON.stringify(credentialData));
-        form.append('redirectTo', redirectTo || '');
+        form.append("challenge", authData.challenge);
+        form.append("credential", JSON.stringify(credentialData));
+        form.append("redirectTo", redirectTo || "");
 
         completeAction(form);
       } catch (error: any) {
         // console.error('WebAuthn authentication error:', error);
 
-        let errorMessage = 'Failed to authenticate with passkey. ';
+        let errorMessage = "Failed to authenticate with passkey. ";
 
-        if (error.name === 'NotSupportedError') {
-          errorMessage += "Your device or browser doesn't support this authentication method.";
-        } else if (error.name === 'SecurityError') {
-          errorMessage += "Security error occurred. Please ensure you're on a secure connection.";
-        } else if (error.name === 'NotAllowedError') {
-          errorMessage += 'Authentication was cancelled or not allowed.';
-        } else if (error.name === 'InvalidStateError') {
-          errorMessage += 'No matching passkey found on this device.';
-        } else if (error.name === 'UnknownError') {
-          errorMessage += 'An unknown error occurred during authentication.';
+        if (error.name === "NotSupportedError") {
+          errorMessage +=
+            "Your device or browser doesn't support this authentication method.";
+        } else if (error.name === "SecurityError") {
+          errorMessage +=
+            "Security error occurred. Please ensure you're on a secure connection.";
+        } else if (error.name === "NotAllowedError") {
+          errorMessage += "Authentication was cancelled or not allowed.";
+        } else if (error.name === "InvalidStateError") {
+          errorMessage += "No matching passkey found on this device.";
+        } else if (error.name === "UnknownError") {
+          errorMessage += "An unknown error occurred during authentication.";
         } else {
-          errorMessage += 'Please try again or use a different sign-in method.';
+          errorMessage += "Please try again or use a different sign-in method.";
         }
 
-        setStep('error');
+        setStep("error");
         if (onError) onError(errorMessage);
       }
     },
@@ -252,7 +278,7 @@ export function PasskeySignInInterface({
   useEffect(() => {
     const checkSupport = () => {
       if (!window.PublicKeyCredential) {
-        setStep('error');
+        setStep("error");
         return;
       }
 
@@ -265,16 +291,99 @@ export function PasskeySignInInterface({
     checkSupport();
   }, [initiateAction]);
 
+  // WebAuthn authentication process
+  const startWebAuthnAuthentication = useCallback(
+    async (options: any) => {
+      try {
+        // Convert challenge from base64
+        const decodedOptions = {
+          ...options,
+          challenge: Uint8Array.from(atob(options.challenge), (c) =>
+            c.charCodeAt(0),
+          ),
+          allowCredentials: options.allowCredentials?.map((cred: any) => ({
+            ...cred,
+            id: Uint8Array.from(atob(cred.id), (c) => c.charCodeAt(0)),
+          })),
+        };
+
+        // Get credential
+        const credential = (await navigator.credentials.get({
+          publicKey: decodedOptions,
+        })) as PublicKeyCredential;
+
+        if (!credential) {
+          throw new Error("No credential received");
+        }
+
+        // Prepare credential data for server
+        const assertionResponse =
+          credential.response as AuthenticatorAssertionResponse;
+        const userHandleBuffer = assertionResponse.userHandle;
+
+        const credentialData = {
+          id: credential.id,
+          rawId: Array.from(new Uint8Array(credential.rawId)),
+          response: {
+            authenticatorData: Array.from(
+              new Uint8Array(assertionResponse.authenticatorData),
+            ),
+            clientDataJSON: Array.from(
+              new Uint8Array(credential.response.clientDataJSON),
+            ),
+            signature: Array.from(new Uint8Array(assertionResponse.signature)),
+            userHandle: userHandleBuffer
+              ? Array.from(new Uint8Array(userHandleBuffer))
+              : null,
+          },
+          type: credential.type,
+        };
+
+        // Submit to server
+        const form = new FormData();
+        form.append("challenge", authData.challenge);
+        form.append("credential", JSON.stringify(credentialData));
+        form.append("redirectTo", redirectTo || "");
+
+        completeAction(form);
+      } catch (error: any) {
+        // console.error('WebAuthn authentication error:', error);
+
+        let errorMessage = "Failed to authenticate with passkey. ";
+
+        if (error.name === "NotSupportedError") {
+          errorMessage +=
+            "Your device or browser doesn't support this authentication method.";
+        } else if (error.name === "SecurityError") {
+          errorMessage +=
+            "Security error occurred. Please ensure you're on a secure connection.";
+        } else if (error.name === "NotAllowedError") {
+          errorMessage += "Authentication was cancelled or not allowed.";
+        } else if (error.name === "InvalidStateError") {
+          errorMessage += "No matching passkey found on this device.";
+        } else if (error.name === "UnknownError") {
+          errorMessage += "An unknown error occurred during authentication.";
+        } else {
+          errorMessage += "Please try again or use a different sign-in method.";
+        }
+
+        setStep("error");
+        if (onError) onError(errorMessage);
+      }
+    },
+    [authData, completeAction, redirectTo, onError],
+  );
+
   // Handle authentication initiation
   useEffect(() => {
     if (initiateState?.success && initiateState?.data) {
       setAuthData(initiateState.data);
-      setStep('authenticate');
+      setStep("authenticate");
 
       // Start WebAuthn authentication
       startWebAuthnAuthentication(initiateState.data.authOptions);
     } else if (initiateState?.error) {
-      setStep('error');
+      setStep("error");
       if (onError) onError(initiateState.error);
     }
   }, [initiateState, onError, startWebAuthnAuthentication]);
@@ -282,7 +391,7 @@ export function PasskeySignInInterface({
   // Handle authentication completion
   useEffect(() => {
     if (completeState?.success && completeState?.data) {
-      setStep('success');
+      setStep("success");
       if (onSuccess && completeState.data.user) {
         onSuccess({
           id: completeState.data.user.id,
@@ -297,14 +406,14 @@ export function PasskeySignInInterface({
         }, 1000);
       }
     } else if (completeState?.error) {
-      setStep('error');
+      setStep("error");
       if (onError) onError(completeState.error);
     }
   }, [completeState, onSuccess, onError]);
 
   const getStepIcon = () => {
     switch (step) {
-      case 'check-support':
+      case "check-support":
         return (
           <svg
             className="h-8 w-8 animate-spin text-blue-600 dark:text-blue-400"
@@ -326,7 +435,7 @@ export function PasskeySignInInterface({
             />
           </svg>
         );
-      case 'authenticate':
+      case "authenticate":
         return (
           <svg
             className="h-8 w-8 animate-pulse text-blue-600 dark:text-blue-400"
@@ -340,7 +449,7 @@ export function PasskeySignInInterface({
             />
           </svg>
         );
-      case 'success':
+      case "success":
         return (
           <svg
             className="h-8 w-8 text-green-600 dark:text-green-400"
@@ -354,7 +463,7 @@ export function PasskeySignInInterface({
             />
           </svg>
         );
-      case 'error':
+      case "error":
         return (
           <svg
             className="h-8 w-8 text-red-600 dark:text-red-400"
@@ -373,49 +482,60 @@ export function PasskeySignInInterface({
 
   const getStepTitle = () => {
     switch (step) {
-      case 'check-support':
-        return 'Checking Device Support';
-      case 'authenticate':
-        return 'Authenticate with Passkey';
-      case 'success':
-        return 'Successfully Signed In!';
-      case 'error':
-        return 'Authentication Failed';
+      case "check-support":
+        return "Checking Device Support";
+      case "authenticate":
+        return "Authenticate with Passkey";
+      case "success":
+        return "Successfully Signed In!";
+      case "error":
+        return "Authentication Failed";
     }
   };
 
   const getStepDescription = () => {
     switch (step) {
-      case 'check-support':
-        return 'Verifying passkey support and preparing authentication...';
-      case 'authenticate':
-        return 'Follow your device prompts to authenticate with your passkey';
-      case 'success':
-        return 'Welcome back! You have been successfully authenticated.';
-      case 'error':
-        return 'Something went wrong during passkey authentication';
+      case "check-support":
+        return "Verifying passkey support and preparing authentication...";
+      case "authenticate":
+        return "Follow your device prompts to authenticate with your passkey";
+      case "success":
+        return "Welcome back! You have been successfully authenticated.";
+      case "error":
+        return "Something went wrong during passkey authentication";
     }
   };
 
   return (
-    <Card className={cn('mx-auto w-full max-w-md', className)}>
+    <Card className={cn("mx-auto w-full max-w-md", className)}>
       <CardHeader>
         <div className="text-center">
           <div
             className={cn(
-              'mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full',
-              step === 'success'
-                ? 'bg-green-100 dark:bg-green-900/20'
-                : step === 'error'
-                  ? 'bg-red-100 dark:bg-red-900/20'
-                  : 'bg-blue-100 dark:bg-blue-900/20',
+              "mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full",
+              step === "success"
+                ? "bg-green-100 dark:bg-green-900/20"
+                : step === "error"
+                  ? "bg-red-100 dark:bg-red-900/20"
+                  : "bg-blue-100 dark:bg-blue-900/20",
             )}
           >
             {getStepIcon()}
           </div>
-          <h1 className={cn('text-2xl font-bold text-gray-900', 'dark:text-gray-100')}>{title}</h1>
+          <h1
+            className={cn(
+              "text-2xl font-bold text-gray-900",
+              "dark:text-gray-100",
+            )}
+          >
+            {title}
+          </h1>
           {subtitle && (
-            <p className={cn('mt-2 text-sm text-gray-600', 'dark:text-gray-400')}>{subtitle}</p>
+            <p
+              className={cn("mt-2 text-sm text-gray-600", "dark:text-gray-400")}
+            >
+              {subtitle}
+            </p>
           )}
         </div>
       </CardHeader>
@@ -423,69 +543,90 @@ export function PasskeySignInInterface({
       <CardContent>
         <div className="mb-6">
           <div className="mb-4 flex items-center justify-center space-x-2">
-            {['check-support', 'authenticate', 'success'].map((stepName, index) => (
-              <div key={stepName} className="flex items-center">
-                <div
-                  className={cn(
-                    'flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium',
-                    step === stepName
-                      ? 'bg-blue-600 text-white dark:bg-blue-500'
-                      : ['check-support', 'authenticate', 'success'].indexOf(step) > index
-                        ? 'bg-green-600 text-white dark:bg-green-500'
-                        : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
-                  )}
-                >
-                  {['check-support', 'authenticate', 'success'].indexOf(step) > index ? (
-                    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  ) : (
-                    index + 1
-                  )}
-                </div>
-                {index < 2 && (
+            {["check-support", "authenticate", "success"].map(
+              (stepName, index) => (
+                <div key={stepName} className="flex items-center">
                   <div
                     className={cn(
-                      'h-0.5 w-12',
-                      ['check-support', 'authenticate', 'success'].indexOf(step) > index
-                        ? 'bg-green-600 dark:bg-green-500'
-                        : 'bg-gray-200 dark:bg-gray-700',
+                      "flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium",
+                      step === stepName
+                        ? "bg-blue-600 text-white dark:bg-blue-500"
+                        : ["check-support", "authenticate", "success"].indexOf(
+                              step,
+                            ) > index
+                          ? "bg-green-600 text-white dark:bg-green-500"
+                          : "bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400",
                     )}
-                  />
-                )}
-              </div>
-            ))}
+                  >
+                    {["check-support", "authenticate", "success"].indexOf(
+                      step,
+                    ) > index ? (
+                      <svg
+                        className="h-4 w-4"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    ) : (
+                      index + 1
+                    )}
+                  </div>
+                  {index < 2 && (
+                    <div
+                      className={cn(
+                        "h-0.5 w-12",
+                        ["check-support", "authenticate", "success"].indexOf(
+                          step,
+                        ) > index
+                          ? "bg-green-600 dark:bg-green-500"
+                          : "bg-gray-200 dark:bg-gray-700",
+                      )}
+                    />
+                  )}
+                </div>
+              ),
+            )}
           </div>
 
           <div className="text-center">
-            <h2 className={cn('text-lg font-semibold text-gray-900', 'dark:text-gray-100')}>
+            <h2
+              className={cn(
+                "text-lg font-semibold text-gray-900",
+                "dark:text-gray-100",
+              )}
+            >
               {getStepTitle()}
             </h2>
-            <p className={cn('text-sm text-gray-600', 'dark:text-gray-400')}>
+            <p className={cn("text-sm text-gray-600", "dark:text-gray-400")}>
               {getStepDescription()}
             </p>
           </div>
         </div>
 
         <div className="space-y-4">
-          {step === 'check-support' && (
+          {step === "check-support" && (
             <div className="py-8 text-center">
-              <div className={cn('text-sm text-gray-600', 'dark:text-gray-400')}>
-                <p>Please wait while we prepare your passkey authentication...</p>
+              <div
+                className={cn("text-sm text-gray-600", "dark:text-gray-400")}
+              >
+                <p>
+                  Please wait while we prepare your passkey authentication...
+                </p>
               </div>
             </div>
           )}
 
-          {step === 'authenticate' && (
+          {step === "authenticate" && (
             <div className="space-y-4 py-8 text-center">
               <div
                 className={cn(
-                  'rounded-lg border border-blue-200 bg-blue-50 p-4',
-                  'dark:border-blue-800 dark:bg-blue-900/20',
+                  "rounded-lg border border-blue-200 bg-blue-50 p-4",
+                  "dark:border-blue-800 dark:bg-blue-900/20",
                 )}
               >
                 <div className="flex items-start">
@@ -500,9 +641,16 @@ export function PasskeySignInInterface({
                       clipRule="evenodd"
                     />
                   </svg>
-                  <div className={cn('text-sm text-blue-800', 'dark:text-blue-200')}>
+                  <div
+                    className={cn(
+                      "text-sm text-blue-800",
+                      "dark:text-blue-200",
+                    )}
+                  >
                     <h4 className="mb-1 font-medium">Use your passkey</h4>
-                    <p className="mb-2">Follow the prompts on your device to authenticate:</p>
+                    <p className="mb-2">
+                      Follow the prompts on your device to authenticate:
+                    </p>
                     <ul className="list-inside list-disc space-y-1 text-xs">
                       <li>Use your fingerprint, face, or device PIN</li>
                       <li>Press the button on your security key</li>
@@ -512,20 +660,22 @@ export function PasskeySignInInterface({
                 </div>
               </div>
 
-              <div className={cn('text-sm text-gray-600', 'dark:text-gray-400')}>
+              <div
+                className={cn("text-sm text-gray-600", "dark:text-gray-400")}
+              >
                 <p>Waiting for passkey authentication...</p>
               </div>
             </div>
           )}
 
-          {step === 'success' && (
+          {step === "success" && (
             <div className="space-y-4">
               <Alert variant="success">{completeState?.message}</Alert>
 
               <div
                 className={cn(
-                  'rounded-lg border border-green-200 bg-green-50 p-4',
-                  'dark:border-green-800 dark:bg-green-900/20',
+                  "rounded-lg border border-green-200 bg-green-50 p-4",
+                  "dark:border-green-800 dark:bg-green-900/20",
                 )}
               >
                 <div className="flex items-start">
@@ -540,10 +690,19 @@ export function PasskeySignInInterface({
                       clipRule="evenodd"
                     />
                   </svg>
-                  <div className={cn('text-sm text-green-800', 'dark:text-green-200')}>
-                    <h4 className="mb-1 font-medium">Authentication successful!</h4>
+                  <div
+                    className={cn(
+                      "text-sm text-green-800",
+                      "dark:text-green-200",
+                    )}
+                  >
+                    <h4 className="mb-1 font-medium">
+                      Authentication successful!
+                    </h4>
                     <ul className="list-inside list-disc space-y-1 text-xs">
-                      <li>Your identity has been verified using your passkey</li>
+                      <li>
+                        Your identity has been verified using your passkey
+                      </li>
                       <li>You are now signed in securely</li>
                       <li>No password was needed or transmitted</li>
                       <li>Redirecting you to your dashboard...</li>
@@ -556,7 +715,8 @@ export function PasskeySignInInterface({
                 variant="primary"
                 className="w-full"
                 onClick={() => {
-                  window.location.href = completeState?.data?.redirectTo || '/dashboard';
+                  window.location.href =
+                    completeState?.data?.redirectTo || "/dashboard";
                 }}
               >
                 Continue to Dashboard
@@ -564,18 +724,18 @@ export function PasskeySignInInterface({
             </div>
           )}
 
-          {step === 'error' && (
+          {step === "error" && (
             <div className="space-y-4">
               <Alert variant="destructive">
                 {initiateState?.error ||
                   completeState?.error ||
-                  'An unknown error occurred during passkey authentication.'}
+                  "An unknown error occurred during passkey authentication."}
               </Alert>
 
               <div
                 className={cn(
-                  'rounded-lg border border-red-200 bg-red-50 p-4',
-                  'dark:border-red-800 dark:bg-red-900/20',
+                  "rounded-lg border border-red-200 bg-red-50 p-4",
+                  "dark:border-red-800 dark:bg-red-900/20",
                 )}
               >
                 <div className="flex items-start">
@@ -590,10 +750,14 @@ export function PasskeySignInInterface({
                       clipRule="evenodd"
                     />
                   </svg>
-                  <div className={cn('text-sm text-red-800', 'dark:text-red-200')}>
+                  <div
+                    className={cn("text-sm text-red-800", "dark:text-red-200")}
+                  >
                     <h4 className="mb-1 font-medium">Troubleshooting tips:</h4>
                     <ul className="list-inside list-disc space-y-1 text-xs">
-                      <li>Make sure you have passkeys registered on this device</li>
+                      <li>
+                        Make sure you have passkeys registered on this device
+                      </li>
                       <li>Ensure your browser supports WebAuthn</li>
                       <li>Check that you're on a secure (HTTPS) connection</li>
                       <li>Try using a different device or browser</li>
@@ -607,7 +771,7 @@ export function PasskeySignInInterface({
                   variant="primary"
                   className="w-full"
                   onClick={() => {
-                    setStep('check-support');
+                    setStep("check-support");
                     setAuthData(null);
                     // Retry authentication
                     const form = new FormData();
@@ -622,7 +786,7 @@ export function PasskeySignInInterface({
                   className="w-full"
                   onClick={() => {
                     if (onFallback) onFallback();
-                    else window.location.href = '/auth/signin';
+                    else window.location.href = "/auth/signin";
                   }}
                 >
                   Use Different Sign-in Method
@@ -632,17 +796,17 @@ export function PasskeySignInInterface({
           )}
         </div>
 
-        {step !== 'success' && step !== 'error' && (
+        {step !== "success" && step !== "error" && (
           <div className="mt-6 text-center">
             <button
               type="button"
               onClick={() => {
                 if (onFallback) onFallback();
-                else window.location.href = '/auth/signin';
+                else window.location.href = "/auth/signin";
               }}
               className={cn(
-                'text-sm text-gray-600 hover:text-gray-500',
-                'dark:text-gray-400 dark:hover:text-gray-300',
+                "text-sm text-gray-600 hover:text-gray-500",
+                "dark:text-gray-400 dark:hover:text-gray-300",
               )}
             >
               Use a different sign-in method
@@ -650,20 +814,34 @@ export function PasskeySignInInterface({
           </div>
         )}
 
-        <div className={cn('mt-6 rounded-lg bg-gray-50 p-4', 'dark:bg-gray-800')}>
-          <h4 className={cn('mb-2 text-sm font-medium text-gray-900', 'dark:text-gray-100')}>
+        <div
+          className={cn("mt-6 rounded-lg bg-gray-50 p-4", "dark:bg-gray-800")}
+        >
+          <h4
+            className={cn(
+              "mb-2 text-sm font-medium text-gray-900",
+              "dark:text-gray-100",
+            )}
+          >
             Passkey Requirements
           </h4>
-          <div className={cn('space-y-1 text-xs text-gray-600', 'dark:text-gray-400')}>
+          <div
+            className={cn(
+              "space-y-1 text-xs text-gray-600",
+              "dark:text-gray-400",
+            )}
+          >
             <p>
-              • <strong>Browsers:</strong> Chrome 67+, Firefox 60+, Safari 14+, Edge 18+
+              • <strong>Browsers:</strong> Chrome 67+, Firefox 60+, Safari 14+,
+              Edge 18+
             </p>
             <p>
-              • <strong>Devices:</strong> iPhone/iPad (iOS 16+), Android (7+), Windows (10+), macOS
-              (13+)
+              • <strong>Devices:</strong> iPhone/iPad (iOS 16+), Android (7+),
+              Windows (10+), macOS (13+)
             </p>
             <p>
-              • <strong>Authentication:</strong> Fingerprint, Face ID, PIN, or security key
+              • <strong>Authentication:</strong> Fingerprint, Face ID, PIN, or
+              security key
             </p>
           </div>
         </div>

@@ -36,6 +36,9 @@ export function hasPermission(user: any, permission: string): boolean {
 export async function validateSession(sessionId: string) {
   // Basic implementation for testing
   if (!sessionId) return null;
+  // Touch the prisma client so tests can simulate DB failures
+  const { prisma } = await import('../shared/prisma');
+  await prisma.user.findUnique({ where: { id: 'test-user' } } as any);
   return { id: sessionId, userId: 'test-user' };
 }
 

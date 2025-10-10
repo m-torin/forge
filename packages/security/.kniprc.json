@@ -1,0 +1,9 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "ignore": [
+    "__tests__/test-data-generators.ts",
+    "__tests__/test-factory.ts",
+    "__tests__/test-utils/**"
+  ],
+  "ignoreDependencies": ["@types/*", "@repo/db-upstash-redis", "@repo/eslint-config", "@repo/qa"]
+}

@@ -5,12 +5,12 @@ terraform {
 
   # Production state should be stored remotely
   backend "s3" {
-    bucket         = "letsfindmy-forge-terraform-state"
+    bucket         = "forge-forge-terraform-state"
     key            = "prod/terraform.tfstate"
     region         = "us-east-1"
     encrypt        = true
     dynamodb_table = "terraform-state-lock"
-    
+
     # These can be overridden via backend config
     # terraform init -backend-config="bucket=my-bucket"
   }

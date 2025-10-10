@@ -18,8 +18,9 @@ import {
   WorkflowExecution,
 } from './shared/types/index';
 // Import for internal use
-import { logWarn } from '@repo/observability/client';
 import { validateWorkflowDefinition } from './shared/utils/index';
+// Import consolidated timeout utilities
+import { createTimeoutSignal } from '@repo/core-utils/shared/timeout';
 
 // Client-side patterns (safe for browser usage)
 export {
@@ -283,35 +284,6 @@ export class WorkflowClient {
  */
 export function createWorkflowClient(config: WorkflowClientConfig): WorkflowClient {
   return new WorkflowClient(config);
-}
-
-/**
- * Create abort signal with timeout
- */
-function createTimeoutSignal(timeout: number): AbortSignal | undefined {
-  try {
-    // Check if AbortSignal.timeout is available (Node.js 16+)
-    if (
-      typeof AbortSignal !== 'undefined' &&
-      'timeout' in AbortSignal &&
-      typeof AbortSignal.timeout === 'function'
-    ) {
-      return AbortSignal.timeout(timeout);
-    }
-
-    // Fallback: create a manual timeout signal
-    if (typeof AbortController !== 'undefined') {
-      const controller = new AbortController();
-      setTimeout(() => controller.abort(), timeout);
-      return controller.signal;
-    }
-  } catch (error) {
-    // If anything fails, log warning and return undefined
-    // Fire and forget logging
-    logWarn('Failed to create timeout signal', { error, component: 'WorkflowClient' });
-  }
-
-  return undefined;
 }
 
 /**

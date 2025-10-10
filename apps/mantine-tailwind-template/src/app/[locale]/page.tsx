@@ -1,19 +1,19 @@
 // Force dynamic rendering since this page uses auth context, cookies, and headers
-import { getAuthContext } from '#/lib/auth-context';
-import { getAllFlagResults } from '#/lib/auth-flags';
+import { getAuthContext } from "#/lib/auth-context";
+import { getAllFlagResults } from "#/lib/auth-flags";
 import {
   enhancedFeatureCards,
   showBetaBanner,
   showLanguageSwitcher,
   welcomeMessageVariant,
-} from '#/lib/flags';
-import { getDictionary, type Locale } from '#/lib/i18n';
-import { createHomeMetadata } from '#/lib/seo';
-import type { Metadata } from 'next';
-import { cookies, headers } from 'next/headers';
-import PageUi from './PageUi';
+} from "#/lib/flags";
+import { getDictionary, type Locale } from "#/lib/i18n";
+import { createHomeMetadata } from "#/lib/seo";
+import type { Metadata } from "next";
+import { cookies, headers } from "next/headers";
+import PageUi from "./PageUi";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 // Generate dynamic metadata based on feature flags and auth state
 export async function generateMetadata({
@@ -54,7 +54,11 @@ export async function generateMetadata({
   return createHomeMetadata(locale, flagResults, userContext);
 }
 
-export default async function MarketingHome({ params }: { params: Promise<{ locale: Locale }> }) {
+export default async function MarketingHome({
+  params,
+}: {
+  params: Promise<{ locale: Locale }>;
+}) {
   const { locale } = await params;
   const dict = await getDictionary(locale);
 
@@ -64,5 +68,12 @@ export default async function MarketingHome({ params }: { params: Promise<{ loca
   // Get comprehensive flag results (including auth-aware flags)
   const flagResults = await getAllFlagResults(authContext);
 
-  return <PageUi locale={locale} dict={dict} flagResults={flagResults} authContext={authContext} />;
+  return (
+    <PageUi
+      locale={locale}
+      dict={dict}
+      flagResults={flagResults}
+      authContext={authContext}
+    />
+  );
 }

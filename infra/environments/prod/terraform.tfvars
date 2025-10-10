@@ -1,12 +1,12 @@
 # Production Environment Configuration
 
 environment    = "prod"
-primary_domain = "letsfindmy.com"
+primary_domain = "forge.com"
 
 additional_domains = [
-  "www.letsfindmy.com",
-  "api.letsfindmy.com",
-  "media.letsfindmy.com"
+  "www.forge.com",
+  "api.forge.com",
+  "media.forge.com"
 ]
 
 features = {
@@ -18,7 +18,7 @@ features = {
   email       = true
   ai          = true
   workers     = true
-  
+
   # External Services
   vercel      = true
   upstash     = true

@@ -60,7 +60,6 @@ export {
   integrationPreset,
   nextPreset,
   nodePreset,
-  qstashPreset as qstashPresetConfig,
   reactPreset,
 } from './configs/presets';
 

@@ -400,7 +400,7 @@ export function decodePermutation(code: string): FlagValuesType {
  * Legacy alias for decodePermutation to maintain backward compatibility
  * @deprecated Use decodePermutation instead
  */
-export const decodePermutationCode = decodePermutation;
+const _decodePermutationCode = decodePermutation;
 
 /**
  * Evaluate flags with given context

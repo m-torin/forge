@@ -414,8 +414,7 @@ resource "cloudflare_workers_script" "monitoring_dashboard" {
             'response_time_milliseconds_bucket{le="+Inf"} 10000',
             'response_time_milliseconds_sum 1234567',
             'response_time_milliseconds_count 10000'
-          ].join('
-');
+          ].join('\n');
 
           return new Response(metrics, {
             headers: { 'Content-Type': 'text/plain; version=0.0.4' }
@@ -484,8 +483,7 @@ resource "cloudflare_workers_script" "monitoring_dashboard" {
                   const text = await response.text();
 
                   // Parse Prometheus metrics
-                  const lines = text.split('\
-');
+                  const lines = text.split('\\n');
                   const metrics = {};
 
                   lines.forEach(line => {
@@ -548,10 +546,10 @@ resource "cloudflare_workers_kv_namespace" "metrics" {
 }
 
 # Route for monitoring dashboard
-resource "cloudflare_worker_route" "monitoring_dashboard" {
+resource "cloudflare_workers_route" "monitoring_dashboard" {
   count = var.enable_monitoring_dashboard && var.zone_id != "" ? 1 : 0
 
   zone_id     = var.zone_id
   pattern     = var.monitoring_dashboard_hostname
-  script_name = cloudflare_workers_script.monitoring_dashboard[0].name
+  script_name = cloudflare_workers_script.monitoring_dashboard[0].script_name
 }

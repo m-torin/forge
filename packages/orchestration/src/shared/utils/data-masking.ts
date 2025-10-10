@@ -54,8 +54,15 @@ const SENSITIVE_FIELDS = new Set([
   'redisToken',
   'qstash_token',
   'qstashToken',
+  'qstash_current_signing_key',
+  'qstash_next_signing_key',
   'upstash_redis_rest_url',
   'upstash_redis_rest_token',
+  'currentSigningKey',
+  'nextSigningKey',
+  'signature',
+  'webhookSecret',
+  'webhook_secret',
 ]);
 
 /**
@@ -66,7 +73,19 @@ const SENSITIVE_PATTERNS = [
   { pattern: /\b[A-Za-z0-9]{32,}\b/g, replacement: '[REDACTED_TOKEN]' },
 
   // URLs with credentials
-  { pattern: /([a-zA-Z]+:\/\/)([^:]+):([^@]+)#/g, replacement: '$1[REDACTED]:[REDACTED]@' },
+  { pattern: /([a-zA-Z]+:\/\/)([^:]+):([^@]+)@/g, replacement: '$1[REDACTED]:[REDACTED]@' },
+
+  // Upstash Redis URLs
+  {
+    pattern: /redis:\/\/[^@]+@[^\/]+\.[a-zA-Z0-9.-]+/g,
+    replacement: 'redis://[REDACTED]@[REDACTED_HOST]',
+  },
+
+  // QStash URLs and tokens
+  {
+    pattern: /https:\/\/qstash\.upstash\.io\/[^\s]*/g,
+    replacement: 'https://qstash.upstash.io/[REDACTED_ENDPOINT]',
+  },
 
   // Email addresses (partial masking)
   {
@@ -179,30 +198,30 @@ export function createMaskedError(error: Error): Error {
 /**
  * Safe console logging that masks sensitive data
  */
-export const safeConsole = {
-  log: (..._args: unknown[]) => {
-    // console.info(...args.map((arg: any) => _maskSensitiveData(arg)));
+const safeConsole = {
+  log: (...args: unknown[]) => {
+    console.info(...args.map((arg: any) => maskSensitiveData(arg)));
   },
 
-  error: (..._args: unknown[]) => {
-    // console.error(
-    //   ...args.map((arg: any) =>
-    //     arg instanceof Error ? _createMaskedError(arg) : _maskSensitiveData(arg),
-    //   ),
-    // );
+  error: (...args: unknown[]) => {
+    console.error(
+      ...args.map((arg: any) =>
+        arg instanceof Error ? createMaskedError(arg) : maskSensitiveData(arg),
+      ),
+    );
   },
 
-  warn: (..._args: unknown[]) => {
-    // console.warn(...args.map((arg: any) => _maskSensitiveData(arg)));
+  warn: (...args: unknown[]) => {
+    console.warn(...args.map((arg: any) => maskSensitiveData(arg)));
   },
 
-  info: (..._args: unknown[]) => {
-    // console.info(...args.map((arg: any) => _maskSensitiveData(arg)));
+  info: (...args: unknown[]) => {
+    console.info(...args.map((arg: any) => maskSensitiveData(arg)));
   },
 
-  debug: (..._args: unknown[]) => {
+  debug: (...args: unknown[]) => {
     if (process.env.NODE_ENV === 'development') {
-      // console.debug(...args.map((arg: any) => _maskSensitiveData(arg)));
+      console.debug(...args.map((arg: any) => maskSensitiveData(arg)));
     }
   },
 };
@@ -210,7 +229,7 @@ export const safeConsole = {
 /**
  * Create a safe logger instance
  */
-export function createSafeLogger(prefix?: string) {
+function createSafeLogger(prefix?: string) {
   const logPrefix = prefix ? `[${prefix}] ` : '';
 
   return {
@@ -243,7 +262,7 @@ export function createSafeLogger(prefix?: string) {
 /**
  * Wrap a function to automatically mask any errors it throws
  */
-export function withMaskedErrors<T extends (...args: unknown[]) => unknown>(
+function withMaskedErrors<T extends (...args: unknown[]) => unknown>(
   fn: T,
   errorPrefix?: string,
 ): T {

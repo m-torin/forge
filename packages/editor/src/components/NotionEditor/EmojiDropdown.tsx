@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { Editor } from '@tiptap/core';
-import { emojis, gitHubEmojis } from '@tiptap/extension-emoji';
-import { clsx } from 'clsx';
-import { useMemo, useState } from 'react';
+import { Editor } from "@tiptap/core";
+import { emojis, gitHubEmojis } from "@tiptap/extension-emoji";
+import { clsx } from "clsx";
+import { useMemo, useState } from "react";
 
 interface EmojiDropdownProps {
   editor: Editor | null;
@@ -18,186 +18,195 @@ const EMOJI_LIST = [...emojis, ...gitHubEmojis];
 
 // Group emojis by category for better organization
 const EMOJI_CATEGORIES = {
-  'Smileys & People': [
-    '😀',
-    '😃',
-    '😄',
-    '😁',
-    '😅',
-    '😂',
-    '🤣',
-    '😊',
-    '😇',
-    '🙂',
-    '🙃',
-    '😉',
-    '😌',
-    '😍',
-    '🥰',
-    '😘',
-    '😗',
-    '😙',
-    '😚',
-    '😋',
+  "Smileys & People": [
+    "😀",
+    "😃",
+    "😄",
+    "😁",
+    "😅",
+    "😂",
+    "🤣",
+    "😊",
+    "😇",
+    "🙂",
+    "🙃",
+    "😉",
+    "😌",
+    "😍",
+    "🥰",
+    "😘",
+    "😗",
+    "😙",
+    "😚",
+    "😋",
   ],
-  'Animals & Nature': [
-    '🐶',
-    '🐱',
-    '🐭',
-    '🐹',
-    '🐰',
-    '🦊',
-    '🐻',
-    '🐼',
-    '🐨',
-    '🐯',
-    '🦁',
-    '🐮',
-    '🐷',
-    '🐽',
-    '🐸',
-    '🐵',
-    '🙈',
-    '🙉',
-    '🙊',
+  "Animals & Nature": [
+    "🐶",
+    "🐱",
+    "🐭",
+    "🐹",
+    "🐰",
+    "🦊",
+    "🐻",
+    "🐼",
+    "🐨",
+    "🐯",
+    "🦁",
+    "🐮",
+    "🐷",
+    "🐽",
+    "🐸",
+    "🐵",
+    "🙈",
+    "🙉",
+    "🙊",
   ],
-  'Food & Drink': [
-    '🍎',
-    '🍐',
-    '🍊',
-    '🍋',
-    '🍌',
-    '🍉',
-    '🍇',
-    '🍓',
-    '🍈',
-    '🍒',
-    '🍑',
-    '🥭',
-    '🍍',
-    '🥥',
-    '🥝',
-    '🍅',
-    '🍆',
-    '🥑',
-    '🥦',
+  "Food & Drink": [
+    "🍎",
+    "🍐",
+    "🍊",
+    "🍋",
+    "🍌",
+    "🍉",
+    "🍇",
+    "🍓",
+    "🍈",
+    "🍒",
+    "🍑",
+    "🥭",
+    "🍍",
+    "🥥",
+    "🥝",
+    "🍅",
+    "🍆",
+    "🥑",
+    "🥦",
   ],
   Activities: [
-    '⚽',
-    '🏀',
-    '🏈',
-    '⚾',
-    '🥎',
-    '🎾',
-    '🏐',
-    '🏉',
-    '🥏',
-    '🎱',
-    '🪀',
-    '🏓',
-    '🏸',
-    '🏒',
-    '🏑',
-    '🥍',
-    '🏏',
-    '🪃',
-    '🥅',
+    "⚽",
+    "🏀",
+    "🏈",
+    "⚾",
+    "🥎",
+    "🎾",
+    "🏐",
+    "🏉",
+    "🥏",
+    "🎱",
+    "🪀",
+    "🏓",
+    "🏸",
+    "🏒",
+    "🏑",
+    "🥍",
+    "🏏",
+    "🪃",
+    "🥅",
   ],
-  'Travel & Places': [
-    '🚗',
-    '🚕',
-    '🚙',
-    '🚌',
-    '🚎',
-    '🏎️',
-    '🚓',
-    '🚑',
-    '🚒',
-    '🚐',
-    '🛻',
-    '🚚',
-    '🚛',
-    '🚜',
-    '🏍️',
-    '🛵',
-    '🚲',
-    '🛴',
-    '🛹',
+  "Travel & Places": [
+    "🚗",
+    "🚕",
+    "🚙",
+    "🚌",
+    "🚎",
+    "🏎️",
+    "🚓",
+    "🚑",
+    "🚒",
+    "🚐",
+    "🛻",
+    "🚚",
+    "🚛",
+    "🚜",
+    "🏍️",
+    "🛵",
+    "🚲",
+    "🛴",
+    "🛹",
   ],
   Objects: [
-    '⌚',
-    '📱',
-    '📲',
-    '💻',
-    '⌨️',
-    '🖥️',
-    '🖨️',
-    '🖱️',
-    '🖲️',
-    '🕹️',
-    '🗜️',
-    '💽',
-    '💾',
-    '💿',
-    '📀',
-    '📼',
-    '📷',
-    '📸',
-    '📹',
+    "⌚",
+    "📱",
+    "📲",
+    "💻",
+    "⌨️",
+    "🖥️",
+    "🖨️",
+    "🖱️",
+    "🖲️",
+    "🕹️",
+    "🗜️",
+    "💽",
+    "💾",
+    "💿",
+    "📀",
+    "📼",
+    "📷",
+    "📸",
+    "📹",
   ],
   Symbols: [
-    '❤️',
-    '🧡',
-    '💛',
-    '💚',
-    '💙',
-    '💜',
-    '🖤',
-    '🤍',
-    '🤎',
-    '💔',
-    '❣️',
-    '💕',
-    '💞',
-    '💓',
-    '💗',
-    '💖',
-    '💘',
-    '💝',
-    '💟',
+    "❤️",
+    "🧡",
+    "💛",
+    "💚",
+    "💙",
+    "💜",
+    "🖤",
+    "🤍",
+    "🤎",
+    "💔",
+    "❣️",
+    "💕",
+    "💞",
+    "💓",
+    "💗",
+    "💖",
+    "💘",
+    "💝",
+    "💟",
   ],
   Flags: [
-    '🏁',
-    '🚩',
-    '🎌',
-    '🏴',
-    '🏳️',
-    '🏳️‍🌈',
-    '🏳️‍⚧️',
-    '🏴‍☠️',
-    '🇦🇫',
-    '🇦🇽',
-    '🇦🇱',
-    '🇩🇿',
-    '🇦🇸',
-    '🇦🇩',
-    '🇦🇴',
-    '🇦🇮',
-    '🇦🇶',
+    "🏁",
+    "🚩",
+    "🎌",
+    "🏴",
+    "🏳️",
+    "🏳️‍🌈",
+    "🏳️‍⚧️",
+    "🏴‍☠️",
+    "🇦🇫",
+    "🇦🇽",
+    "🇦🇱",
+    "🇩🇿",
+    "🇦🇸",
+    "🇦🇩",
+    "🇦🇴",
+    "🇦🇮",
+    "🇦🇶",
   ],
 };
 
-export function EmojiDropdown({ editor, isOpen, onClose, position, query }: EmojiDropdownProps) {
-  const [selectedCategory, setSelectedCategory] = useState('Smileys & People');
+export function EmojiDropdown({
+  editor,
+  isOpen,
+  onClose,
+  position,
+  query,
+}: EmojiDropdownProps) {
+  const [selectedCategory, setSelectedCategory] = useState("Smileys & People");
 
   const filteredEmojis = useMemo(() => {
     if (!query) {
-      return EMOJI_CATEGORIES[selectedCategory as keyof typeof EMOJI_CATEGORIES] || [];
+      return (
+        EMOJI_CATEGORIES[selectedCategory as keyof typeof EMOJI_CATEGORIES] ||
+        []
+      );
     }
 
     // Search through all emojis based on query
     return EMOJI_LIST.filter((emoji: any) => {
-      if (typeof emoji === 'string') {
+      if (typeof emoji === "string") {
         return emoji.includes(query);
       }
       // For emoji objects with shortcodes
@@ -208,7 +217,9 @@ export function EmojiDropdown({ editor, isOpen, onClose, position, query }: Emoj
     })
       .slice(0, 50) // Limit results
       .map((emoji: any) =>
-        typeof emoji === 'string' ? emoji : emoji.fallbackImage || emoji.emoji || '',
+        typeof emoji === "string"
+          ? emoji
+          : emoji.fallbackImage || emoji.emoji || "",
       );
   }, [query, selectedCategory]);
 
@@ -232,14 +243,14 @@ export function EmojiDropdown({ editor, isOpen, onClose, position, query }: Emoj
       {!query && (
         <div className="border-b border-gray-100 p-2">
           <div className="flex gap-1 overflow-x-auto">
-            {Object.keys(EMOJI_CATEGORIES).map(category => (
+            {Object.keys(EMOJI_CATEGORIES).map((category) => (
               <button
                 key={category}
                 className={clsx(
-                  'flex-shrink-0 rounded px-2 py-1 text-xs transition-colors',
+                  "flex-shrink-0 rounded px-2 py-1 text-xs transition-colors",
                   selectedCategory === category
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'text-gray-600 hover:bg-gray-100',
+                    ? "bg-blue-100 text-blue-700"
+                    : "text-gray-600 hover:bg-gray-100",
                 )}
                 onClick={() => setSelectedCategory(category)}
               >
@@ -253,7 +264,7 @@ export function EmojiDropdown({ editor, isOpen, onClose, position, query }: Emoj
       <div className="max-h-64 overflow-y-auto p-2">
         {filteredEmojis.length > 0 ? (
           <div className="grid grid-cols-8 gap-1">
-            {filteredEmojis.map(emoji => (
+            {filteredEmojis.map((emoji) => (
               <div key={emoji.unicode || emoji.name}>
                 <button
                   className="flex h-8 w-8 items-center justify-center rounded text-lg transition-colors hover:bg-gray-100"

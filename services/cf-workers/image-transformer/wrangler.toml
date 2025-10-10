@@ -4,7 +4,7 @@ compatibility_date = "2023-05-15"
 
 # Build configuration
 [build]
-command = "npm run build"
+command = "pnpm build"
 
 # Development configuration
 [dev]
@@ -26,7 +26,6 @@ preview_id = "development-kv-id" # For local development
 binding = "IMAGES"
 bucket_name = "images-dev"
 
-# Secret bindings
-[[env.preview.vars]]
-name = "SIGNING_KEY"
-text = "dummy-signing-key-for-development"
+# Secret bindings for development
+[env.preview.vars]
+SIGNING_KEY = "dummy-signing-key-for-development"

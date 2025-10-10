@@ -7,14 +7,14 @@
  * For Next.js applications, use '@repo/internationalization/server/next' instead.
  */
 
-import 'server-only';
+import "server-only";
 
 // Import shared functionality for dictionary loading
-import type { Dictionary } from './shared/dictionary-loader';
-import { createDictionaryLoader } from './shared/dictionary-loader';
+import type { Dictionary } from "./shared/dictionary-loader";
+import { createDictionaryLoader } from "./shared/dictionary-loader";
 
 // Re-export routing configuration
-export { locales, routing, type Locale } from './routing';
+export { locales, routing, type Locale } from "./routing";
 
 // Create dictionary loader instance
 const dictionaryLoader = createDictionaryLoader();

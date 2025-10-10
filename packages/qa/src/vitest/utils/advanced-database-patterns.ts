@@ -1,4 +1,4 @@
-import { describe, expect, vi } from 'vitest';
+import { describe, expect, vi } from "vitest";
 
 /**
  * Advanced Database Test Patterns - Second Pass DRY Implementation
@@ -11,7 +11,7 @@ import { describe, expect, vi } from 'vitest';
 // UNIVERSAL FIELD TESTING FRAMEWORK
 // ================================================================================================
 
-export interface FieldTestScenario {
+interface FieldTestScenario {
   name: string;
   input: any;
   expectedOutput?: any;
@@ -19,114 +19,132 @@ export interface FieldTestScenario {
   errorMessage?: string;
 }
 
-export interface FieldTestConfig {
+interface FieldTestConfig {
   fieldName: string;
   mapperFunction: (input: any) => any;
   scenarios: FieldTestScenario[];
   validationRules?: {
     required?: boolean;
-    type?: 'string' | 'number' | 'boolean' | 'array' | 'object';
+    type?: "string" | "number" | "boolean" | "array" | "object";
     min?: number;
     max?: number;
     pattern?: RegExp;
   };
 }
 
-export const UNIVERSAL_FIELD_SCENARIOS: Record<string, FieldTestScenario[]> = {
+const UNIVERSAL_FIELD_SCENARIOS: Record<string, FieldTestScenario[]> = {
   stringFields: [
-    { name: 'null input', input: null, expectedOutput: null },
-    { name: 'undefined input', input: undefined, expectedOutput: undefined },
-    { name: 'empty string', input: '', expectedOutput: '' },
-    { name: 'whitespace only', input: '   ', expectedOutput: '   ' },
-    { name: 'special characters', input: '!@#$%^&*()', expectedOutput: '!@#$%^&*()' },
-    { name: 'unicode characters', input: 'Test-é-中文-🚀', expectedOutput: 'Test-é-中文-🚀' },
-    { name: 'very long string', input: 'x'.repeat(1000), expectedOutput: 'x'.repeat(1000) },
+    { name: "null input", input: null, expectedOutput: null },
+    { name: "undefined input", input: undefined, expectedOutput: undefined },
+    { name: "empty string", input: "", expectedOutput: "" },
+    { name: "whitespace only", input: "   ", expectedOutput: "   " },
     {
-      name: 'sql injection attempt',
+      name: "special characters",
+      input: "!@#$%^&*()",
+      expectedOutput: "!@#$%^&*()",
+    },
+    {
+      name: "unicode characters",
+      input: "Test-é-中文-🚀",
+      expectedOutput: "Test-é-中文-🚀",
+    },
+    {
+      name: "very long string",
+      input: "x".repeat(1000),
+      expectedOutput: "x".repeat(1000),
+    },
+    {
+      name: "sql injection attempt",
       input: "'; DROP TABLE users; --",
       expectedOutput: "'; DROP TABLE users; --",
     },
     {
-      name: 'html tags',
+      name: "html tags",
       input: '<script>alert("xss")</script>',
       expectedOutput: '<script>alert("xss")</script>',
     },
-    { name: 'newlines and tabs', input: 'line1\nline2\ttab', expectedOutput: 'line1\nline2\ttab' },
+    {
+      name: "newlines and tabs",
+      input: "line1\nline2\ttab",
+      expectedOutput: "line1\nline2\ttab",
+    },
   ],
 
   numberFields: [
-    { name: 'zero', input: 0, expectedOutput: 0 },
-    { name: 'positive integer', input: 42, expectedOutput: 42 },
-    { name: 'negative integer', input: -42, expectedOutput: -42 },
-    { name: 'positive float', input: 3.14159, expectedOutput: 3.14159 },
-    { name: 'negative float', input: -3.14159, expectedOutput: -3.14159 },
+    { name: "zero", input: 0, expectedOutput: 0 },
+    { name: "positive integer", input: 42, expectedOutput: 42 },
+    { name: "negative integer", input: -42, expectedOutput: -42 },
+    { name: "positive float", input: 3.14159, expectedOutput: 3.14159 },
+    { name: "negative float", input: -3.14159, expectedOutput: -3.14159 },
     {
-      name: 'very large number',
+      name: "very large number",
       input: Number.MAX_SAFE_INTEGER,
       expectedOutput: Number.MAX_SAFE_INTEGER,
     },
     {
-      name: 'very small number',
+      name: "very small number",
       input: Number.MIN_SAFE_INTEGER,
       expectedOutput: Number.MIN_SAFE_INTEGER,
     },
-    { name: 'NaN', input: NaN, shouldThrow: true },
-    { name: 'Infinity', input: Infinity, shouldThrow: true },
-    { name: 'string number', input: '123', expectedOutput: 123 },
-    { name: 'null', input: null, expectedOutput: null },
-    { name: 'undefined', input: undefined, expectedOutput: undefined },
+    { name: "NaN", input: NaN, shouldThrow: true },
+    { name: "Infinity", input: Infinity, shouldThrow: true },
+    { name: "string number", input: "123", expectedOutput: 123 },
+    { name: "null", input: null, expectedOutput: null },
+    { name: "undefined", input: undefined, expectedOutput: undefined },
   ],
 
   arrayFields: [
-    { name: 'empty array', input: [], expectedOutput: [] },
-    { name: 'single item', input: ['item1'], expectedOutput: ['item1'] },
+    { name: "empty array", input: [], expectedOutput: [] },
+    { name: "single item", input: ["item1"], expectedOutput: ["item1"] },
     {
-      name: 'multiple items',
-      input: ['item1', 'item2', 'item3'],
-      expectedOutput: ['item1', 'item2', 'item3'],
+      name: "multiple items",
+      input: ["item1", "item2", "item3"],
+      expectedOutput: ["item1", "item2", "item3"],
     },
-    { name: 'null', input: null, expectedOutput: null },
-    { name: 'undefined', input: undefined, expectedOutput: undefined },
+    { name: "null", input: null, expectedOutput: null },
+    { name: "undefined", input: undefined, expectedOutput: undefined },
     {
-      name: 'nested arrays',
-      input: [['nested1'], ['nested2']],
-      expectedOutput: [['nested1'], ['nested2']],
-    },
-    {
-      name: 'mixed types',
-      input: [1, 'string', true, null],
-      expectedOutput: [1, 'string', true, null],
+      name: "nested arrays",
+      input: [["nested1"], ["nested2"]],
+      expectedOutput: [["nested1"], ["nested2"]],
     },
     {
-      name: 'very large array',
-      input: Array(1000).fill('item'),
-      expectedOutput: Array(1000).fill('item'),
+      name: "mixed types",
+      input: [1, "string", true, null],
+      expectedOutput: [1, "string", true, null],
+    },
+    {
+      name: "very large array",
+      input: Array(1000).fill("item"),
+      expectedOutput: Array(1000).fill("item"),
     },
   ],
 
   booleanFields: [
-    { name: 'true', input: true, expectedOutput: true },
-    { name: 'false', input: false, expectedOutput: false },
-    { name: 'truthy string', input: 'true', expectedOutput: true },
-    { name: 'falsy string', input: 'false', expectedOutput: false },
-    { name: 'number 1', input: 1, expectedOutput: true },
-    { name: 'number 0', input: 0, expectedOutput: false },
-    { name: 'null', input: null, expectedOutput: null },
-    { name: 'undefined', input: undefined, expectedOutput: undefined },
+    { name: "true", input: true, expectedOutput: true },
+    { name: "false", input: false, expectedOutput: false },
+    { name: "truthy string", input: "true", expectedOutput: true },
+    { name: "falsy string", input: "false", expectedOutput: false },
+    { name: "number 1", input: 1, expectedOutput: true },
+    { name: "number 0", input: 0, expectedOutput: false },
+    { name: "null", input: null, expectedOutput: null },
+    { name: "undefined", input: undefined, expectedOutput: undefined },
   ],
 };
 
 /**
  * Creates comprehensive field tests based on field type and configuration
  */
-export function createFieldTestSuite(config: FieldTestConfig) {
+function createFieldTestSuite(config: FieldTestConfig) {
   return describe(`field:`, () => {
     const scenarios =
       config.scenarios ||
-      UNIVERSAL_FIELD_SCENARIOS[`${config.validationRules?.type || 'string'}Fields`] ||
+      UNIVERSAL_FIELD_SCENARIOS[
+        `${config.validationRules?.type || "string"}Fields`
+      ] ||
       [];
 
-    scenarios.forEach(scenario => {
+    scenarios.forEach((scenario) => {
       test(`handles ${scenario.name}`, () => {
         const result = config.mapperFunction(scenario.input);
         expect(result).toBeDefined();
@@ -134,9 +152,9 @@ export function createFieldTestSuite(config: FieldTestConfig) {
     });
 
     // Simple validation tests without conditional logic
-    test('validates field requirements', () => {
+    test("validates field requirements", () => {
       expect(config.mapperFunction).toBeDefined();
-      expect(typeof config.mapperFunction).toBe('function');
+      expect(typeof config.mapperFunction).toBe("function");
     });
   });
 }
@@ -145,19 +163,21 @@ export function createFieldTestSuite(config: FieldTestConfig) {
 // MAPPER TEST SUITE GENERATOR
 // ================================================================================================
 
-export interface BasicMapping {
+interface BasicMapping {
   inputField: string;
   outputField: string;
   transform?: (input: any) => any;
   expectedValue?: any;
 }
 
-export interface MapperTestConfig {
+interface MapperTestConfig {
   mapperName: string;
   mapperFunction: (input: any) => any;
   basicMappings: BasicMapping[];
-  edgeCaseTypes: Array<'null' | 'undefined' | 'empty' | 'specialChars' | 'unicode' | 'longStrings'>;
-  fieldValidations?: Record<string, FieldTestConfig['validationRules']>;
+  edgeCaseTypes: Array<
+    "null" | "undefined" | "empty" | "specialChars" | "unicode" | "longStrings"
+  >;
+  fieldValidations?: Record<string, FieldTestConfig["validationRules"]>;
   customTests?: Array<{
     name: string;
     input: any;
@@ -168,13 +188,15 @@ export interface MapperTestConfig {
 /**
  * Creates a comprehensive test suite for data mappers
  */
-export function createMapperTestSuite(config: MapperTestConfig) {
+function createMapperTestSuite(config: MapperTestConfig) {
   return describe(`${config.mapperName} Mapper`, () => {
     // Basic mapping tests
-    describe('basic Field Mappings', () => {
-      config.basicMappings.forEach(mapping => {
+    describe("basic Field Mappings", () => {
+      config.basicMappings.forEach((mapping) => {
         test(`maps ${mapping.inputField} to ${mapping.outputField}`, () => {
-          const input = { [mapping.inputField]: mapping.expectedValue || 'test-value' };
+          const input = {
+            [mapping.inputField]: mapping.expectedValue || "test-value",
+          };
           const result = config.mapperFunction(input);
 
           expect(result).toBeDefined();
@@ -184,8 +206,8 @@ export function createMapperTestSuite(config: MapperTestConfig) {
     });
 
     // Edge case tests
-    describe('edge Cases', () => {
-      config.edgeCaseTypes.forEach(edgeType => {
+    describe("edge Cases", () => {
+      config.edgeCaseTypes.forEach((edgeType) => {
         test(`handles ${edgeType} inputs gracefully`, () => {
           const inputGenerators: Record<string, () => any> = {
             null: () => null,
@@ -198,12 +220,12 @@ export function createMapperTestSuite(config: MapperTestConfig) {
               }, {} as any),
             unicode: () =>
               config.basicMappings.reduce((acc, mapping) => {
-                acc[mapping.inputField] = 'Test-é-中文-🚀-русский';
+                acc[mapping.inputField] = "Test-é-中文-🚀-русский";
                 return acc;
               }, {} as any),
             longStrings: () =>
               config.basicMappings.reduce((acc, mapping) => {
-                acc[mapping.inputField] = 'x'.repeat(10000);
+                acc[mapping.inputField] = "x".repeat(10000);
                 return acc;
               }, {} as any),
           };
@@ -215,10 +237,11 @@ export function createMapperTestSuite(config: MapperTestConfig) {
     });
 
     // Consistency tests
-    describe('mapping Consistency', () => {
-      test('produces consistent results for identical inputs', () => {
+    describe("mapping Consistency", () => {
+      test("produces consistent results for identical inputs", () => {
         const input = config.basicMappings.reduce((acc, mapping) => {
-          acc[mapping.inputField] = mapping.expectedValue || 'consistent-test-value';
+          acc[mapping.inputField] =
+            mapping.expectedValue || "consistent-test-value";
           return acc;
         }, {} as any);
 
@@ -228,9 +251,10 @@ export function createMapperTestSuite(config: MapperTestConfig) {
         expect(result1).toStrictEqual(result2);
       });
 
-      test('handles object mutations correctly', () => {
+      test("handles object mutations correctly", () => {
         const input = config.basicMappings.reduce((acc, mapping) => {
-          acc[mapping.inputField] = mapping.expectedValue || 'mutation-test-value';
+          acc[mapping.inputField] =
+            mapping.expectedValue || "mutation-test-value";
           return acc;
         }, {} as any);
 
@@ -248,7 +272,7 @@ export function createMapperTestSuite(config: MapperTestConfig) {
 // PERFORMANCE TEST PATTERN GENERATOR
 // ================================================================================================
 
-export interface PerformanceTestConfig {
+interface PerformanceTestConfig {
   testName: string;
   testFunction: (input: any) => Promise<any> | any;
   inputGenerator: () => any;
@@ -268,9 +292,9 @@ export interface PerformanceTestConfig {
 /**
  * Creates comprehensive performance tests
  */
-export function createPerformanceTestSuite(config: PerformanceTestConfig) {
+function createPerformanceTestSuite(config: PerformanceTestConfig) {
   return describe(`${config.testName} Performance`, () => {
-    test('performs basic operation within reasonable time', async () => {
+    test("performs basic operation within reasonable time", async () => {
       const input = config.inputGenerator();
       const startTime = performance.now();
 
@@ -280,7 +304,7 @@ export function createPerformanceTestSuite(config: PerformanceTestConfig) {
       expect(duration).toBeLessThan(5000); // 5 second timeout
     });
 
-    test('handles multiple operations', async () => {
+    test("handles multiple operations", async () => {
       const promises = Array.from({ length: 3 }, () => {
         const input = config.inputGenerator();
         return config.testFunction(input);
@@ -299,7 +323,7 @@ export function createPerformanceTestSuite(config: PerformanceTestConfig) {
 // DECLARATIVE TEST SUITE GENERATOR
 // ================================================================================================
 
-export interface EntityTestSuite {
+interface EntityTestSuite {
   entityName: string;
   operations: {
     create?: OperationTestConfig;
@@ -318,7 +342,7 @@ export interface EntityTestSuite {
   }>;
 }
 
-export interface OperationTestConfig {
+interface OperationTestConfig {
   operation: (input: any) => Promise<any> | any;
   validInputs: any[];
   invalidInputs: Array<{ input: any; expectedError?: string }>;
@@ -329,8 +353,8 @@ export interface OperationTestConfig {
   };
 }
 
-export interface RelationshipTestConfig {
-  type: 'oneToOne' | 'oneToMany' | 'manyToOne' | 'manyToMany';
+interface RelationshipTestConfig {
+  type: "oneToOne" | "oneToMany" | "manyToOne" | "manyToMany";
   relatedEntity: string;
   field: string;
   constraints?: {
@@ -342,41 +366,45 @@ export interface RelationshipTestConfig {
 /**
  * Generates comprehensive test suites from declarative configuration
  */
-export function generateEntityTestSuite(config: EntityTestSuite) {
+function generateEntityTestSuite(config: EntityTestSuite) {
   return describe(`${config.entityName} Entity`, () => {
     // CRUD Operations
-    Object.entries(config.operations).forEach(([operationType, operationConfig]) => {
-      if (!operationConfig) return;
+    Object.entries(config.operations).forEach(
+      ([operationType, operationConfig]) => {
+        if (!operationConfig) return;
 
-      describe(`${operationType.toUpperCase()} Operation`, () => {
-        // Valid input tests
-        operationConfig.validInputs.forEach((input, index) => {
-          test(`succeeds with valid input ${index + 1}`, async () => {
-            expect(async () => await operationConfig.operation(input)).not.toThrow();
+        describe(`${operationType.toUpperCase()} Operation`, () => {
+          // Valid input tests
+          operationConfig.validInputs.forEach((input, index) => {
+            test(`succeeds with valid input ${index + 1}`, async () => {
+              expect(
+                async () => await operationConfig.operation(input),
+              ).not.toThrow();
+            });
+          });
+
+          // Invalid input tests
+          operationConfig.invalidInputs.forEach((invalidCase, index) => {
+            test(`fails with invalid input ${index + 1}`, async () => {
+              await expect(
+                operationConfig.operation(invalidCase.input),
+              ).rejects.toThrow("Invalid input");
+            });
           });
         });
-
-        // Invalid input tests
-        operationConfig.invalidInputs.forEach((invalidCase, index) => {
-          test(`fails with invalid input ${index + 1}`, async () => {
-            await expect(operationConfig.operation(invalidCase.input)).rejects.toThrow(
-              'Invalid input',
-            );
-          });
-        });
-      });
-    });
+      },
+    );
 
     // Simple relationship tests
-    test('handles basic entity relationships', () => {
+    test("handles basic entity relationships", () => {
       expect(config.entityName).toBeDefined();
-      expect(typeof config.entityName).toBe('string');
+      expect(typeof config.entityName).toBe("string");
     });
 
     // Basic tests
-    test('entity configuration is valid', () => {
+    test("entity configuration is valid", () => {
       expect(config.operations).toBeDefined();
-      expect(typeof config.operations).toBe('object');
+      expect(typeof config.operations).toBe("object");
     });
   });
 }
@@ -385,10 +413,10 @@ export function generateEntityTestSuite(config: EntityTestSuite) {
 // UNIFIED TEST ENVIRONMENT MANAGER
 // ================================================================================================
 
-export interface TestRequirements {
-  databases?: Array<'prisma' | 'redis' | 'firestore' | 'vector'>;
-  mocks?: Array<'auth' | 'email' | 'storage' | 'analytics'>;
-  testData?: Array<'users' | 'products' | 'orders' | 'brands'>;
+interface TestRequirements {
+  databases?: Array<"prisma" | "redis" | "firestore" | "vector">;
+  mocks?: Array<"auth" | "email" | "storage" | "analytics">;
+  testData?: Array<"users" | "products" | "orders" | "brands">;
   environment?: Record<string, string>;
   cleanup?: {
     resetMocks?: boolean;
@@ -397,14 +425,14 @@ export interface TestRequirements {
   };
 }
 
-export interface TestEnvironment {
+interface TestEnvironment {
   setup: () => Promise<void>;
   cleanup: () => Promise<void>;
   reset: () => Promise<void>;
   getHelpers: () => TestHelpers;
 }
 
-export interface TestHelpers {
+interface TestHelpers {
   createTestData: (entity: string, overrides?: any) => any;
   mockService: (service: string, config?: any) => any;
   assertDatabase: (expectations: any) => Promise<void>;
@@ -413,7 +441,9 @@ export interface TestHelpers {
 /**
  * Creates a unified test environment with automatic setup and cleanup
  */
-export function createTestEnvironment(requirements: TestRequirements): TestEnvironment {
+function createTestEnvironment(
+  requirements: TestRequirements,
+): TestEnvironment {
   const state = {
     originalEnv: { ...process.env },
     setupComplete: false,
@@ -518,7 +548,7 @@ function generateTestDataForEntity(entity: string): any {
       id: `order-${Math.random().toString(36).substr(2, 9)}`,
       userId: `user-${Math.random().toString(36).substr(2, 9)}`,
       total: Math.floor(Math.random() * 1000) + 1,
-      status: 'pending',
+      status: "pending",
       createdAt: new Date(),
       updatedAt: new Date(),
     }),

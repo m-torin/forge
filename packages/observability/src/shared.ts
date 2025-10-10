@@ -65,20 +65,20 @@ export const getRuntimeEnvironment = () => runtimeInfo;
 let observabilityInstance: any = null;
 
 // Set the observability instance (called by environment-specific modules)
-export function setObservabilityInstance(instance: any) {
+export function setObservabilityInstance(instance: any): void {
   observabilityInstance = instance;
 }
 
 // Create a generic log function factory to reduce code duplication
 const createLogFunction = (level: 'debug' | 'info' | 'warn' | 'error') => {
-  return (message: string | Error, context?: any) => {
+  return (message: string, context?: any): void => {
     if (observabilityInstance) {
       const methodName = `log${level.charAt(0).toUpperCase() + level.slice(1)}`;
       observabilityInstance[methodName](message, context);
     } else {
       // Fallback to console with runtime info
       const contextStr = context ? JSON.stringify(context) : '';
-      console[level](`[Observability:${runtimeInfo.type}]`, message, contextStr);
+      (console[level] as any)(`[Observability:${runtimeInfo.type}]`, message, contextStr);
     }
   };
 };
@@ -89,13 +89,7 @@ export const logInfo = createLogFunction('info');
 export const logWarn = createLogFunction('warn');
 export const logError = createLogFunction('error');
 
-// Export types for convenience
-export type {
-  ObservabilityClient,
-  ObservabilityContext,
-  ObservabilityServer,
-  ObservabilityUser,
-} from './types';
+// Export types for convenience - removed for Rollup compatibility
 
 // Note: For direct access to observability instances, import from environment-specific modules:
 // - @repo/observability/client-next

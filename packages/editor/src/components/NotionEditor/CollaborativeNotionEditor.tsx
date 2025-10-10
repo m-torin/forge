@@ -1,28 +1,32 @@
-'use client';
+"use client";
 
-import { logError, logInfo } from '@repo/observability';
-import { EditorContent } from '@tiptap/react';
-import { clsx } from 'clsx';
-import { useEffect, useState } from 'react';
-import { useYjsCollaboration } from '../../hooks/use-yjs-collaboration';
-import type { YjsCollaborationOptions } from '../../types/collaboration';
+import { logError, logInfo } from "@repo/observability";
+import { EditorContent } from "@tiptap/react";
+import { clsx } from "clsx";
+import { useEffect, useState } from "react";
+import { useYjsCollaboration } from "../../hooks/use-yjs-collaboration";
+import type { YjsCollaborationOptions } from "../../types/collaboration";
 import {
   ALL_MEDIA_TYPES,
   createStorageUploadHandler,
   getMediaType,
   type MediaType,
   type MediaUploadConfig,
-} from '../../utils/media-upload-handler';
-import { EmojiDropdown } from './EmojiDropdown';
-import { NotionEditorErrorBoundary } from './ErrorBoundary';
-import { FloatingToolbar } from './FloatingToolbar';
-import { MediaUploadNode } from './MediaUploadNode';
-import { MentionDropdown } from './MentionDropdown';
-import type { User } from './NotionEditor';
-import { CompactTypingIndicator, TypingIndicator, useTypingIndicator } from './TypingIndicator';
+} from "../../utils/media-upload-handler";
+import { EmojiDropdown } from "./EmojiDropdown";
+import { NotionEditorErrorBoundary } from "./ErrorBoundary";
+import { FloatingToolbar } from "./FloatingToolbar";
+import { MediaUploadNode } from "./MediaUploadNode";
+import { MentionDropdown } from "./MentionDropdown";
+import type { User } from "./NotionEditor";
+import {
+  CompactTypingIndicator,
+  TypingIndicator,
+  useTypingIndicator,
+} from "./TypingIndicator";
 
 export interface CollaborativeNotionEditorProps
-  extends Omit<YjsCollaborationOptions, 'extensions'> {
+  extends Omit<YjsCollaborationOptions, "extensions"> {
   className?: string;
   placeholder?: string;
   users?: User[];
@@ -44,22 +48,22 @@ export interface CollaborativeNotionEditorProps
   };
   showFloatingToolbar?: boolean;
   showTypingIndicators?: boolean;
-  typingIndicatorPosition?: 'top' | 'bottom' | 'inline';
+  typingIndicatorPosition?: "top" | "bottom" | "inline";
   maxWidth?: string;
 }
 
 function CollaborativeNotionEditorCore({
   documentId,
   userId,
-  userName = 'Anonymous User',
-  userColor = '#3B82F6',
+  userName = "Anonymous User",
+  userColor = "#3B82F6",
   userAvatar,
-  websocketUrl = 'ws://localhost:1234',
+  websocketUrl = "ws://localhost:1234",
   enablePersistence = true,
   enablePresence = true,
   enableCursors = true,
   useMockProvider = false,
-  mockProviderType = 'websocket',
+  mockProviderType = "websocket",
   simulateLatency = true,
   latencyMs = 50,
   simulateDrops = false,
@@ -75,17 +79,23 @@ function CollaborativeNotionEditorCore({
   mediaUploadConfig,
   showFloatingToolbar = true,
   showTypingIndicators = true,
-  typingIndicatorPosition = 'bottom',
-  maxWidth = '100%',
+  typingIndicatorPosition = "bottom",
+  maxWidth = "100%",
 }: CollaborativeNotionEditorProps) {
   // State for dropdowns
   const [isEmojiDropdownOpen, setIsEmojiDropdownOpen] = useState(false);
-  const [emojiQuery, _setEmojiQuery] = useState('');
-  const [emojiDropdownPosition, _setEmojiDropdownPosition] = useState({ top: 0, left: 0 });
+  const [emojiQuery, _setEmojiQuery] = useState("");
+  const [emojiDropdownPosition, _setEmojiDropdownPosition] = useState({
+    top: 0,
+    left: 0,
+  });
 
   const [isMentionDropdownOpen, setIsMentionDropdownOpen] = useState(false);
-  const [mentionQuery, _setMentionQuery] = useState('');
-  const [mentionDropdownPosition, _setMentionDropdownPosition] = useState({ top: 0, left: 0 });
+  const [mentionQuery, _setMentionQuery] = useState("");
+  const [mentionDropdownPosition, _setMentionDropdownPosition] = useState({
+    top: 0,
+    left: 0,
+  });
 
   // State for upload handlers
   const [uploadHandler, setUploadHandler] = useState<
@@ -142,29 +152,31 @@ function CollaborativeNotionEditorCore({
 
   // Enhanced extensions for collaborative NotionEditor
   const getNotionExtensions = () => {
-    const { StarterKit } = require('@tiptap/starter-kit');
-    const { BulletList, OrderedList } = require('@tiptap/extension-list');
-    const { HorizontalRule } = require('@tiptap/extension-horizontal-rule');
-    const { FileHandler } = require('@tiptap/extension-file-handler');
-    const Placeholder = require('@tiptap/extension-placeholder');
-    const { TextStyle } = require('@tiptap/extension-text-style');
-    const Color = require('@tiptap/extension-color');
-    const Highlight = require('@tiptap/extension-highlight');
-    const Underline = require('@tiptap/extension-underline');
-    const TextAlign = require('@tiptap/extension-text-align');
-    const Link = require('@tiptap/extension-link');
-    const { TaskList } = require('@tiptap/extension-task-list');
-    const { TaskItem } = require('@tiptap/extension-task-item');
-    const { Table } = require('@tiptap/extension-table');
-    const { TableRow } = require('@tiptap/extension-table-row');
-    const { TableHeader } = require('@tiptap/extension-table-header');
-    const { TableCell } = require('@tiptap/extension-table-cell');
-    const { CodeBlockLowlight } = require('@tiptap/extension-code-block-lowlight');
-    const { UniqueID } = require('@tiptap/extension-unique-id');
-    const { TrailingNode } = require('@tiptap/extensions');
-    const Emoji = require('@tiptap/extension-emoji');
-    const Mention = require('@tiptap/extension-mention');
-    const { all, createLowlight } = require('lowlight');
+    const { StarterKit } = require("@tiptap/starter-kit");
+    const { BulletList, OrderedList } = require("@tiptap/extension-list");
+    const { HorizontalRule } = require("@tiptap/extension-horizontal-rule");
+    const { FileHandler } = require("@tiptap/extension-file-handler");
+    const Placeholder = require("@tiptap/extension-placeholder");
+    const { TextStyle } = require("@tiptap/extension-text-style");
+    const Color = require("@tiptap/extension-color");
+    const Highlight = require("@tiptap/extension-highlight");
+    const Underline = require("@tiptap/extension-underline");
+    const TextAlign = require("@tiptap/extension-text-align");
+    const Link = require("@tiptap/extension-link");
+    const { TaskList } = require("@tiptap/extension-task-list");
+    const { TaskItem } = require("@tiptap/extension-task-item");
+    const { Table } = require("@tiptap/extension-table");
+    const { TableRow } = require("@tiptap/extension-table-row");
+    const { TableHeader } = require("@tiptap/extension-table-header");
+    const { TableCell } = require("@tiptap/extension-table-cell");
+    const {
+      CodeBlockLowlight,
+    } = require("@tiptap/extension-code-block-lowlight");
+    const { UniqueID } = require("@tiptap/extension-unique-id");
+    const { TrailingNode } = require("@tiptap/extensions");
+    const Emoji = require("@tiptap/extension-emoji");
+    const Mention = require("@tiptap/extension-mention");
+    const { all, createLowlight } = require("lowlight");
 
     const lowlight = createLowlight(all);
 
@@ -181,7 +193,7 @@ function CollaborativeNotionEditorCore({
       Placeholder.configure({
         placeholder,
         showOnlyWhenEditable: true,
-        emptyNodeClass: 'is-empty',
+        emptyNodeClass: "is-empty",
       }),
       TextStyle,
       Color,
@@ -190,65 +202,72 @@ function CollaborativeNotionEditorCore({
       }),
       Underline,
       TextAlign.configure({
-        types: ['heading', 'paragraph'],
-        alignments: ['left', 'center', 'right', 'justify'],
+        types: ["heading", "paragraph"],
+        alignments: ["left", "center", "right", "justify"],
       }),
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: 'notion-link',
+          class: "notion-link",
         },
       }),
       TaskList.configure({
         HTMLAttributes: {
-          class: 'notion-task-list',
+          class: "notion-task-list",
         },
       }),
       TaskItem.configure({
         HTMLAttributes: {
-          class: 'notion-task-item',
+          class: "notion-task-item",
         },
         nested: true,
       }),
       Table.configure({
         resizable: true,
         HTMLAttributes: {
-          class: 'notion-table',
+          class: "notion-table",
         },
       }),
       TableRow.configure({
         HTMLAttributes: {
-          class: 'notion-table-row',
+          class: "notion-table-row",
         },
       }),
       TableHeader.configure({
         HTMLAttributes: {
-          class: 'notion-table-header',
+          class: "notion-table-header",
         },
       }),
       TableCell.configure({
         HTMLAttributes: {
-          class: 'notion-table-cell',
+          class: "notion-table-cell",
         },
       }),
       CodeBlockLowlight.configure({
         lowlight,
         HTMLAttributes: {
-          class: 'notion-code-block',
+          class: "notion-code-block",
         },
       }),
       UniqueID.configure({
-        types: ['heading', 'paragraph', 'codeBlock', 'table', 'taskList', 'blockquote'],
+        types: [
+          "heading",
+          "paragraph",
+          "codeBlock",
+          "table",
+          "taskList",
+          "blockquote",
+        ],
       }),
       TrailingNode.configure({
-        node: 'paragraph',
-        notAfter: ['heading', 'blockquote', 'codeBlock'],
+        node: "paragraph",
+        notAfter: ["heading", "blockquote", "codeBlock"],
       }),
       ...(enableEmoji
         ? [
             Emoji.configure({
               HTMLAttributes: {
-                class: 'notion-emoji',
+                class: "notion-emoji",
               },
               enableEmoticons: true,
             }),
@@ -258,25 +277,33 @@ function CollaborativeNotionEditorCore({
         ? [
             Mention.configure({
               HTMLAttributes: {
-                class: 'notion-mention',
+                class: "notion-mention",
               },
               renderText({ options, node }: { options: any; node: any }) {
                 return `${options.suggestion.char}${node.attrs.label ?? node.attrs.id}`;
               },
               suggestion: {
-                char: '@',
-                command: ({ editor, range, props }: { editor: any; range: any; props: any }) => {
+                char: "@",
+                command: ({
+                  editor,
+                  range,
+                  props,
+                }: {
+                  editor: any;
+                  range: any;
+                  props: any;
+                }) => {
                   editor
                     .chain()
                     .focus()
                     .insertContentAt(range, [
                       {
-                        type: 'mention',
+                        type: "mention",
                         attrs: props,
                       },
                       {
-                        type: 'text',
-                        text: ' ',
+                        type: "text",
+                        text: " ",
                       },
                     ])
                     .run();
@@ -285,19 +312,25 @@ function CollaborativeNotionEditorCore({
             }),
           ]
         : []),
-      ...((enableImageUpload && uploadHandler) || (enableMediaUpload && mediaUploadHandler)
+      ...((enableImageUpload && uploadHandler) ||
+      (enableMediaUpload && mediaUploadHandler)
         ? [
             MediaUploadNode.configure({
               accept: enableMediaUpload
                 ? mediaUploadConfig?.accept || ALL_MEDIA_TYPES
-                : imageUploadConfig.accept || 'image/*',
+                : imageUploadConfig.accept || "image/*",
               maxSize: enableMediaUpload
                 ? mediaUploadConfig?.maxSize
                 : imageUploadConfig.maxSize || 10 * 1024 * 1024,
-              maxSizes: enableMediaUpload ? mediaUploadConfig?.maxSizes : undefined,
+              maxSizes: enableMediaUpload
+                ? mediaUploadConfig?.maxSizes
+                : undefined,
               upload: enableMediaUpload ? mediaUploadHandler : uploadHandler,
-              onError: error => {
-                logError(`${enableMediaUpload ? 'Media' : 'Image'} upload error:`, error);
+              onError: (error) => {
+                logError(
+                  `${enableMediaUpload ? "Media" : "Image"} upload error:`,
+                  error,
+                );
               },
               onSuccess: (url, mediaType) => {
                 logInfo(`${mediaType} uploaded successfully:`, url);
@@ -305,30 +338,40 @@ function CollaborativeNotionEditorCore({
             }),
             FileHandler.configure({
               allowedMimeTypes: enableMediaUpload
-                ? ALL_MEDIA_TYPES.split(',')
-                : ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/svg+xml'],
+                ? ALL_MEDIA_TYPES.split(",")
+                : [
+                    "image/png",
+                    "image/jpeg",
+                    "image/gif",
+                    "image/webp",
+                    "image/svg+xml",
+                  ],
               onDrop: (currentEditor: any, files: File[]) => {
                 files.forEach((file: File) => {
                   if (enableMediaUpload) {
                     const mediaType = getMediaType(file.type);
-                    if (mediaType === 'video' || mediaType === 'audio' || mediaType === 'image') {
+                    if (
+                      mediaType === "video" ||
+                      mediaType === "audio" ||
+                      mediaType === "image"
+                    ) {
                       currentEditor
                         .chain()
                         .focus()
                         .insertContent({
-                          type: 'mediaUpload',
+                          type: "mediaUpload",
                           attrs: { src: null, mediaType },
                         })
                         .run();
                     }
-                  } else if (file.type.startsWith('image/')) {
+                  } else if (file.type.startsWith("image/")) {
                     // Insert image upload node for each dropped image
                     currentEditor
                       .chain()
                       .focus()
                       .insertContent({
-                        type: 'mediaUpload',
-                        attrs: { src: null, mediaType: 'image' },
+                        type: "mediaUpload",
+                        attrs: { src: null, mediaType: "image" },
                       })
                       .run();
                   }
@@ -338,24 +381,28 @@ function CollaborativeNotionEditorCore({
                 files.forEach((file: File) => {
                   if (enableMediaUpload) {
                     const mediaType = getMediaType(file.type);
-                    if (mediaType === 'video' || mediaType === 'audio' || mediaType === 'image') {
+                    if (
+                      mediaType === "video" ||
+                      mediaType === "audio" ||
+                      mediaType === "image"
+                    ) {
                       currentEditor
                         .chain()
                         .focus()
                         .insertContent({
-                          type: 'mediaUpload',
+                          type: "mediaUpload",
                           attrs: { src: null, mediaType },
                         })
                         .run();
                     }
-                  } else if (file.type.startsWith('image/')) {
+                  } else if (file.type.startsWith("image/")) {
                     // Insert image upload node for each pasted image
                     currentEditor
                       .chain()
                       .focus()
                       .insertContent({
-                        type: 'mediaUpload',
-                        attrs: { src: null, mediaType: 'image' },
+                        type: "mediaUpload",
+                        attrs: { src: null, mediaType: "image" },
                       })
                       .run();
                   }
@@ -367,24 +414,25 @@ function CollaborativeNotionEditorCore({
     ];
   };
 
-  const { editor, collaborators, isConnected, isLoading, error, provider } = useYjsCollaboration({
-    documentId,
-    userId,
-    userName,
-    userColor,
-    userAvatar,
-    websocketUrl,
-    enablePersistence,
-    enablePresence,
-    enableCursors,
-    useMockProvider,
-    mockProviderType,
-    simulateLatency,
-    latencyMs,
-    simulateDrops,
-    dropRate,
-    extensions: getNotionExtensions(),
-  });
+  const { editor, collaborators, isConnected, isLoading, error, provider } =
+    useYjsCollaboration({
+      documentId,
+      userId,
+      userName,
+      userColor,
+      userAvatar,
+      websocketUrl,
+      enablePersistence,
+      enablePresence,
+      enableCursors,
+      useMockProvider,
+      mockProviderType,
+      simulateLatency,
+      latencyMs,
+      simulateDrops,
+      dropRate,
+      extensions: getNotionExtensions(),
+    });
 
   // Typing indicator state
   const { isTyping: _isTyping, typingUsers } = useTypingIndicator({
@@ -396,7 +444,7 @@ function CollaborativeNotionEditorCore({
   });
 
   // Enhanced collaborators with typing state
-  const enhancedCollaborators = collaborators.map(collaborator => ({
+  const enhancedCollaborators = collaborators.map((collaborator) => ({
     ...collaborator,
     isTyping: typingUsers.includes(collaborator.id),
   }));
@@ -436,8 +484,8 @@ function CollaborativeNotionEditorCore({
             <div className="relative">
               <div
                 className={clsx(
-                  'h-2.5 w-2.5 rounded-full transition-all duration-300',
-                  isConnected ? 'bg-green-500' : 'bg-red-500',
+                  "h-2.5 w-2.5 rounded-full transition-all duration-300",
+                  isConnected ? "bg-green-500" : "bg-red-500",
                 )}
               />
               {isConnected && (
@@ -446,9 +494,12 @@ function CollaborativeNotionEditorCore({
             </div>
             <div className="flex items-center gap-1">
               <span
-                className={clsx('font-medium', isConnected ? 'text-green-700' : 'text-red-700')}
+                className={clsx(
+                  "font-medium",
+                  isConnected ? "text-green-700" : "text-red-700",
+                )}
               >
-                {isConnected ? 'Connected' : 'Disconnected'}
+                {isConnected ? "Connected" : "Disconnected"}
               </span>
               {!isConnected && (
                 <div className="flex items-center gap-1 text-xs text-red-600">
@@ -458,11 +509,11 @@ function CollaborativeNotionEditorCore({
                     <div className="h-1 w-1 animate-pulse rounded-full bg-red-400" />
                     <div
                       className="h-1 w-1 animate-pulse rounded-full bg-red-400"
-                      style={{ animationDelay: '0.2s' }}
+                      style={{ animationDelay: "0.2s" }}
                     />
                     <div
                       className="h-1 w-1 animate-pulse rounded-full bg-red-400"
-                      style={{ animationDelay: '0.4s' }}
+                      style={{ animationDelay: "0.4s" }}
                     />
                   </div>
                 </div>
@@ -486,16 +537,18 @@ function CollaborativeNotionEditorCore({
                     d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
                   />
                 </svg>
-                <span className="font-medium text-gray-600">{enhancedCollaborators.length}</span>
+                <span className="font-medium text-gray-600">
+                  {enhancedCollaborators.length}
+                </span>
               </div>
 
               <div className="flex -space-x-1">
-                {enhancedCollaborators.slice(0, 5).map(collaborator => (
+                {enhancedCollaborators.slice(0, 5).map((collaborator) => (
                   <div
                     key={collaborator.id}
                     className="relative flex h-7 w-7 items-center justify-center rounded-full border-2 border-white text-xs font-semibold text-white shadow-sm transition-transform hover:z-10 hover:scale-110"
                     style={{ backgroundColor: collaborator.color }}
-                    title={`${collaborator.name} ${collaborator.isTyping ? '(Typing...)' : '(Active)'}`}
+                    title={`${collaborator.name} ${collaborator.isTyping ? "(Typing...)" : "(Active)"}`}
                   >
                     {collaborator.avatar ? (
                       <img
@@ -509,11 +562,13 @@ function CollaborativeNotionEditorCore({
 
                     <div
                       className={clsx(
-                        'absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border border-white',
-                        collaborator.isTyping ? 'animate-pulse' : '',
+                        "absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border border-white",
+                        collaborator.isTyping ? "animate-pulse" : "",
                       )}
                       style={{
-                        backgroundColor: collaborator.isTyping ? '#10B981' : collaborator.color,
+                        backgroundColor: collaborator.isTyping
+                          ? "#10B981"
+                          : collaborator.color,
                       }}
                     />
                   </div>
@@ -528,7 +583,7 @@ function CollaborativeNotionEditorCore({
                 )}
               </div>
 
-              {showTypingIndicators && typingIndicatorPosition === 'inline' && (
+              {showTypingIndicators && typingIndicatorPosition === "inline" && (
                 <CompactTypingIndicator
                   collaborators={enhancedCollaborators}
                   currentUserId={userId}
@@ -542,7 +597,7 @@ function CollaborativeNotionEditorCore({
               <div className="flex items-center gap-1">
                 <svg
                   className="h-3 w-3 animate-spin text-green-500"
-                  style={{ animationDuration: '2s' }}
+                  style={{ animationDuration: "2s" }}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -562,7 +617,12 @@ function CollaborativeNotionEditorCore({
 
         <div className="flex items-center gap-3 text-xs text-gray-500">
           <div className="flex items-center gap-1">
-            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg
+              className="h-3 w-3"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -758,24 +818,30 @@ function CollaborativeNotionEditorCore({
         }}
       />
 
-      {showTypingIndicators && typingIndicatorPosition === 'top' && (
+      {showTypingIndicators && typingIndicatorPosition === "top" && (
         <div className="px-8 pt-4">
-          <TypingIndicator collaborators={enhancedCollaborators} currentUserId={userId} />
+          <TypingIndicator
+            collaborators={enhancedCollaborators}
+            currentUserId={userId}
+          />
         </div>
       )}
 
       <EditorContent
         editor={editor}
-        className={clsx('notion-collaborative-editor-content', className)}
+        className={clsx("notion-collaborative-editor-content", className)}
         data-testid="collaborative-notion-editor-content"
         role="textbox"
         aria-label={placeholder}
         aria-multiline="true"
       />
 
-      {showTypingIndicators && typingIndicatorPosition === 'bottom' && (
+      {showTypingIndicators && typingIndicatorPosition === "bottom" && (
         <div className="px-8 pb-4">
-          <TypingIndicator collaborators={enhancedCollaborators} currentUserId={userId} />
+          <TypingIndicator
+            collaborators={enhancedCollaborators}
+            currentUserId={userId}
+          />
         </div>
       )}
 
@@ -806,7 +872,9 @@ function CollaborativeNotionEditorCore({
 }
 
 // Wrapper component with error boundary
-export function CollaborativeNotionEditor(props: CollaborativeNotionEditorProps) {
+export function CollaborativeNotionEditor(
+  props: CollaborativeNotionEditorProps,
+) {
   return (
     <NotionEditorErrorBoundary>
       <CollaborativeNotionEditorCore {...props} />

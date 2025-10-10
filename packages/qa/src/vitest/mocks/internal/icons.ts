@@ -125,7 +125,7 @@ vi.mock('@hugeicons/core-free-icons', () => ({
 }));
 
 // Export helper functions
-export const getMockIconTestId = (library: string, name: string) => {
+const getMockIconTestId = (library: string, name: string) => {
   const prefixMap: Record<string, string> = {
     heroicons: 'heroicon',
     'heroicons-solid': 'heroicon-solid',
@@ -139,6 +139,6 @@ export const getMockIconTestId = (library: string, name: string) => {
   return `icon-${prefix}-${name}`;
 };
 
-export const resetIconMocks = () => {
+const resetIconMocks = () => {
   vi.clearAllMocks();
 };

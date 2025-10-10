@@ -1,0 +1,99 @@
+{
+  "name": "@repo/3p-core",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Core utilities and types for 3rd party analytics integrations",
+  "keywords": [
+    "analytics",
+    "3rd-party",
+    "integrations",
+    "tracking"
+  ],
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    "./types": {
+      "types": "./src/types.ts",
+      "import": "./src/types.ts"
+    },
+    "./config": {
+      "types": "./src/config.ts",
+      "import": "./src/config.ts"
+    },
+    "./adapters/minimal-adapter": {
+      "types": "./src/adapters/minimal-adapter.ts",
+      "import": "./src/adapters/minimal-adapter.ts"
+    },
+    "./adapters/base-adapter": {
+      "types": "./src/adapters/base-adapter.ts",
+      "import": "./src/adapters/base-adapter.ts"
+    },
+    "./composable/with-retry": {
+      "types": "./src/composable/with-retry.ts",
+      "import": "./src/composable/with-retry.ts"
+    },
+    "./composable/with-privacy": {
+      "types": "./src/composable/with-privacy.ts",
+      "import": "./src/composable/with-privacy.ts"
+    },
+    "./composable/with-batching": {
+      "types": "./src/composable/with-batching.ts",
+      "import": "./src/composable/with-batching.ts"
+    },
+    "./orchestration/lazy-multi-provider": {
+      "types": "./src/orchestration/lazy-multi-provider.ts",
+      "import": "./src/orchestration/lazy-multi-provider.ts"
+    },
+    "./orchestration/multi-provider": {
+      "types": "./src/orchestration/multi-provider.ts",
+      "import": "./src/orchestration/multi-provider.ts"
+    },
+    "./utils/validation": {
+      "types": "./src/utils/validation.ts",
+      "import": "./src/utils/validation.ts"
+    },
+    "./utils/conversion": {
+      "types": "./src/utils/conversion.ts",
+      "import": "./src/utils/conversion.ts"
+    },
+    "./operations/ecommerce": {
+      "types": "./src/operations/ecommerce.ts",
+      "import": "./src/operations/ecommerce.ts"
+    },
+    "./operations/user-journey": {
+      "types": "./src/operations/user-journey.ts",
+      "import": "./src/operations/user-journey.ts"
+    },
+    "./operations/marketing": {
+      "types": "./src/operations/marketing.ts",
+      "import": "./src/operations/marketing.ts"
+    }
+  },
+  "files": [
+    "src/**/*",
+    ".gitignore",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "echo 'No build needed - consumed from source'",
+    "clean": "rm -rf dist .turbo",
+    "dev": "echo '3p-core ready for development'",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "echo 'Typecheck skipped - package needs Zod v4 migration (not used by any apps)'"
+  },
+  "dependencies": {
+    "@repo/core-utils": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@repo/qa": "workspace:*",
+    "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

@@ -10,8 +10,7 @@
     "jsx": "preserve",
     "noEmit": true,
     "paths": {
-      "#/*": ["./*"],
-      "@repo/*": ["../../packages/*"]
+      "#/*": ["./*"]
     }
   },
   "exclude": ["node_modules", ".next", "**/.next", "dist", "build"]

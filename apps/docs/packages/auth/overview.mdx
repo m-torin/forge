@@ -171,7 +171,7 @@ const result = await authClient.signUp.email({
   name: "John Doe",
   // Optional organization creation
   organizationName: "My Company",
-  sendWelcomeEmail: true
+  sendWelcomeEmail: true,
 });
 
 if (result.error) {
@@ -184,7 +184,7 @@ if (result.error) {
 const session = await authClient.signIn.email({
   email: "user@example.com",
   password: "secure-password-123!",
-  rememberMe: true
+  rememberMe: true,
 });
 ```
 
@@ -201,8 +201,8 @@ await authClient.signIn.magicLink({
   data: {
     // Custom data passed to the callback
     invitationId: "inv-123",
-    source: "email-campaign"
-  }
+    source: "email-campaign",
+  },
 });
 ```
 
@@ -217,14 +217,14 @@ await authClient.signIn.social({
   callbackURL: "/dashboard",
   data: {
     createOrganization: true,
-    organizationName: "My Company"
-  }
+    organizationName: "My Company",
+  },
 });
 
 // GitHub OAuth
 await authClient.signIn.social({
   provider: "github",
-  callbackURL: "/dashboard"
+  callbackURL: "/dashboard",
 });
 ```
 
@@ -235,7 +235,7 @@ import { authClient } from "@repo/auth/client/next";
 
 // Register passkey
 const passkeyResult = await authClient.passkey.register({
-  name: "My MacBook Pro"
+  name: "My MacBook Pro",
 });
 
 // Sign in with passkey
@@ -256,7 +256,7 @@ function MyComponent() {
   // Auth guard with redirect
   useAuthGuard({
     redirectTo: "/sign-in",
-    requireOrganization: true
+    requireOrganization: true,
   });
 
   if (isPending) return <Loading />;
@@ -343,8 +343,8 @@ const newOrg = await authClient.organization.create({
   description: "A great company",
   metadata: {
     industry: "technology",
-    size: "startup"
-  }
+    size: "startup",
+  },
 });
 
 // Switch active organization
@@ -356,7 +356,7 @@ const organizations = await authClient.organization.list();
 // Update organization
 await authClient.organization.update(newOrg.id, {
   name: "My Updated Company",
-  description: "An even better company"
+  description: "An even better company",
 });
 ```
 
@@ -372,27 +372,27 @@ const invitation = await authClient.organization.inviteMember({
   customMessage: "Welcome to our team!",
   metadata: {
     department: "engineering",
-    startDate: "2024-01-15"
-  }
+    startDate: "2024-01-15",
+  },
 });
 
 // Accept invitation with validation
 await authClient.organization.acceptInvitation({
   invitationId: "invitation-id",
-  verifyEmail: true
+  verifyEmail: true,
 });
 
 // Update member role with permission checks
 await authClient.organization.updateMemberRole({
   userId: "user-id",
   role: "member",
-  organizationId: "org-id"
+  organizationId: "org-id",
 });
 
 // Remove member
 await authClient.organization.removeMember({
   userId: "user-id",
-  organizationId: "org-id"
+  organizationId: "org-id",
 });
 
 // List organization members
@@ -413,13 +413,13 @@ const apiKey = await authClient.apiKey.create({
   metadata: {
     environment: "production",
     service: "backend-api",
-    version: "1.0"
+    version: "1.0",
   },
   rateLimiting: {
     requestsPerMinute: 1000,
-    burstLimit: 100
+    burstLimit: 100,
   },
-  ipWhitelist: ["192.168.1.0/24", "10.0.0.0/8"]
+  ipWhitelist: ["192.168.1.0/24", "10.0.0.0/8"],
 });
 
 // Store the key securely - it's only shown once
@@ -435,8 +435,8 @@ await authClient.apiKey.revoke(apiKey.id);
 await authClient.apiKey.update(apiKey.id, {
   permissions: ["read:users", "read:posts"],
   rateLimiting: {
-    requestsPerMinute: 500
-  }
+    requestsPerMinute: 500,
+  },
 });
 ```
 
@@ -457,7 +457,7 @@ export async function GET(request: Request) {
   const validation = await validateApiKey(apiKey, {
     requiredPermissions: ["read:users"],
     checkRateLimit: true,
-    checkIpWhitelist: true
+    checkIpWhitelist: true,
   });
 
   if (!validation.isValid) {
@@ -468,7 +468,7 @@ export async function GET(request: Request) {
   return Response.json({
     message: "Success",
     user: validation.user,
-    permissions: validation.permissions
+    permissions: validation.permissions,
   });
 }
 ```
@@ -530,16 +530,16 @@ const users = await admin.users.list({
   filter: {
     role: "user",
     verified: true,
-    banned: false
+    banned: false,
   },
-  sort: { createdAt: "desc" }
+  sort: { createdAt: "desc" },
 });
 
 // Ban user
 await admin.users.ban({
   userId: "user-id",
   reason: "Terms of service violation",
-  duration: "7d" // 7 days, or 'permanent'
+  duration: "7d", // 7 days, or 'permanent'
 });
 
 // Unban user
@@ -550,7 +550,7 @@ const impersonationToken = await admin.users.impersonate({
   targetUserId: "user-id",
   adminUserId: "admin-user-id",
   reason: "Customer support",
-  expiresIn: 3600 // 1 hour
+  expiresIn: 3600, // 1 hour
 });
 ```
 
@@ -560,18 +560,18 @@ const impersonationToken = await admin.users.impersonate({
 // Admin organization operations
 await admin.organizations.suspend({
   organizationId: "org-id",
-  reason: "Payment overdue"
+  reason: "Payment overdue",
 });
 
 await admin.organizations.delete({
   organizationId: "org-id",
-  reason: "User request"
+  reason: "User request",
 });
 
 // Transfer organization ownership
 await admin.organizations.transferOwnership({
   organizationId: "org-id",
-  newOwnerId: "user-id"
+  newOwnerId: "user-id",
 });
 ```
 
@@ -588,7 +588,7 @@ const authRateLimit = createRateLimiter({
   max: 5, // 5 attempts per window
   message: "Too many authentication attempts",
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
 });
 
 // Apply to specific routes
@@ -610,7 +610,7 @@ const passwordPolicy = {
   requireNumbers: true,
   requireSpecialChars: true,
   preventCommonPasswords: true,
-  preventUserInfoInPassword: true
+  preventUserInfoInPassword: true,
 };
 ```
 
@@ -625,11 +625,11 @@ const sessionConfig = {
     name: "auth-session",
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax"
+    sameSite: "lax",
   },
   csrfProtection: true,
   enableSessionCache: true,
-  cachePrefix: "auth:session:"
+  cachePrefix: "auth:session:",
 };
 ```
 
@@ -642,26 +642,26 @@ import {
   createTestUser,
   createTestOrganization,
   mockAuthSession,
-  AuthTestBuilder
+  AuthTestBuilder,
 } from "@repo/auth/testing";
 
 // Create test user
 const testUser = await createTestUser({
   email: "test@example.com",
   name: "Test User",
-  verified: true
+  verified: true,
 });
 
 // Create test organization
 const testOrg = await createTestOrganization({
   name: "Test Org",
-  ownerId: testUser.id
+  ownerId: testUser.id,
 });
 
 // Mock auth session for testing
 const mockSession = mockAuthSession({
   user: testUser,
-  activeOrganization: testOrg
+  activeOrganization: testOrg,
 });
 
 // Advanced test builder pattern
@@ -682,12 +682,12 @@ import { MemoryAdapter } from "@repo/auth/adapters/memory";
 // Use in tests or development
 const memoryAdapter = new MemoryAdapter({
   persistToFile: false,
-  clearOnRestart: true
+  clearOnRestart: true,
 });
 
 // Configure in auth setup
 const auth = betterAuth({
-  database: memoryAdapter
+  database: memoryAdapter,
   // ... other config
 });
 ```

@@ -3,7 +3,7 @@
  * Provides basic rate limiting without complex middleware context dependencies
  */
 
-import { logError } from '@repo/observability/server/next';
+import { logError } from '@repo/observability';
 import type { BetterAuthPlugin } from 'better-auth';
 import 'server-only';
 

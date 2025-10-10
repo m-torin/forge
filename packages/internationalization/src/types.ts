@@ -3,13 +3,13 @@
  * Allows users to extend the Messages type with their own shape
  */
 
-import type { routing } from './routing';
+import type { routing } from "./routing";
 
 // Re-export the Locale type from routing
 export type Locale = (typeof routing.locales)[number];
 
 // Module augmentation for next-intl v4
-declare module 'next-intl' {
+declare module "next-intl" {
   interface AppConfig {
     // Define the Locale type based on the routing configuration
     Locale: (typeof routing.locales)[number];
@@ -27,7 +27,7 @@ declare module 'next-intl' {
 }
 
 // Export helper types for better DX
-export type LocalePrefix = 'always' | 'as-needed' | 'never';
+export type LocalePrefix = "always" | "as-needed" | "never";
 
 export interface LocalePrefixConfig<L extends string = Locale> {
   mode: LocalePrefix;

@@ -68,7 +68,11 @@ export interface StorageProvider {
   ): Promise<StorageObject>;
 }
 
-export type StorageProviderType = 'cloudflare-r2' | 'cloudflare-images' | 'vercel-blob' | 'multi';
+export type StorageProviderType =
+  | "cloudflare-r2"
+  | "cloudflare-images"
+  | "vercel-blob"
+  | "multi";
 
 export interface UploadOptions {
   cacheControl?: number;
@@ -109,12 +113,12 @@ export interface MultipartUploadResult extends StorageObject {
 export interface CloudflareImagesVariant {
   id: string;
   options: {
-    fit?: 'scale-down' | 'contain' | 'cover' | 'crop' | 'pad';
+    fit?: "scale-down" | "contain" | "cover" | "crop" | "pad";
     width?: number;
     height?: number;
     quality?: number;
-    format?: 'auto' | 'avif' | 'webp' | 'json' | 'jpeg' | 'png';
-    metadata?: 'keep' | 'copyright' | 'none';
+    format?: "auto" | "avif" | "webp" | "json" | "jpeg" | "png";
+    metadata?: "keep" | "copyright" | "none";
     background?: string;
     rotate?: 0 | 90 | 180 | 270 | 360;
     sharpen?: number;
@@ -122,11 +126,18 @@ export interface CloudflareImagesVariant {
     brightness?: number;
     contrast?: number;
     gamma?: number;
-    gravity?: 'auto' | 'left' | 'right' | 'top' | 'bottom' | 'center' | { x?: number; y?: number };
+    gravity?:
+      | "auto"
+      | "left"
+      | "right"
+      | "top"
+      | "bottom"
+      | "center"
+      | { x?: number; y?: number };
     border?: { color?: string; width?: number };
-    compression?: 'fast' | 'balanced' | 'best';
+    compression?: "fast" | "balanced" | "best";
     dpr?: number;
-    onerror?: 'redirect';
+    onerror?: "redirect";
     trim?: { top?: number; right?: number; bottom?: number; left?: number };
     anim?: boolean;
   };
@@ -151,7 +162,7 @@ export interface CloudflareImagesSigningKey {
 export interface CloudflareImagesListOptions extends ListOptions {
   perPage?: number;
   page?: number;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
 }
 
 export interface CloudflareImagesStats {
@@ -164,21 +175,28 @@ export interface CloudflareImagesStats {
 export interface CloudflareImagesTransformOptions {
   width?: number;
   height?: number;
-  fit?: 'scale-down' | 'contain' | 'cover' | 'crop' | 'pad';
-  gravity?: 'auto' | 'left' | 'right' | 'top' | 'bottom' | 'center' | { x?: number; y?: number };
+  fit?: "scale-down" | "contain" | "cover" | "crop" | "pad";
+  gravity?:
+    | "auto"
+    | "left"
+    | "right"
+    | "top"
+    | "bottom"
+    | "center"
+    | { x?: number; y?: number };
   quality?: number;
-  format?: 'auto' | 'avif' | 'webp' | 'json' | 'jpeg' | 'png';
+  format?: "auto" | "avif" | "webp" | "json" | "jpeg" | "png";
   anim?: boolean;
   background?: string;
   blur?: number;
   border?: { color?: string; width?: number };
   brightness?: number;
-  compression?: 'fast' | 'balanced' | 'best';
+  compression?: "fast" | "balanced" | "best";
   contrast?: number;
   dpr?: number;
   gamma?: number;
-  metadata?: 'keep' | 'copyright' | 'none';
-  onerror?: 'redirect';
+  metadata?: "keep" | "copyright" | "none";
+  onerror?: "redirect";
   rotate?: 0 | 90 | 180 | 270 | 360;
   sharpen?: number;
   trim?: { top?: number; right?: number; bottom?: number; left?: number };

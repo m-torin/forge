@@ -2,7 +2,7 @@
 title: UIX System Overview
 sidebarTitle: "UI/X System"
 description:
-  Comprehensive UI component system with Mantine, Tailwind, Algolia, and TipTap
+  Comprehensive UI component system with Mantine, Tailwind, and TipTap
 icon: "palette"
 ---
 
@@ -10,7 +10,7 @@ icon: "palette"
 
 A comprehensive UI component system providing production-ready components for
 authentication, data display, search, animations, and rich text editing. Built
-with Mantine, Tailwind CSS, Algolia Search, and TipTap Editor.
+with Mantine, Tailwind CSS, and TipTap Editor.
 
 ## Overview
 
@@ -19,7 +19,6 @@ specialized categories:
 
 - **Mantine Components** - Authentication flows, data tables, stats cards
 - **Tailwind v3/v4** - Advanced animations, mobile optimizations, themes
-- **Algolia Search** - Complete search implementation with SSR
 - **TipTap Editor** - Rich text editing with collaboration
 - **Shared Utilities** - Internationalization and common utilities
 
@@ -39,9 +38,6 @@ specialized categories:
   </Card>
   <Card title="Tailwind Animations" icon="sparkles">
     Advanced animations and mobile-first optimizations
-  </Card>
-  <Card title="Algolia Search" icon="magnifying-glass">
-    Production-ready search with autocomplete and refinements
   </Card>
 </CardGroup>
 
@@ -72,21 +68,6 @@ function AuthPage() {
     <AuthGuard fallback={<SignInForm />}>
       <Dashboard />
     </AuthGuard>
-  );
-}
-```
-
-#### Algolia Search Integration
-
-```typescript
-import { SearchProvider, SearchBox, SearchResults } from "@repo/uix-system/algolia";
-
-function SearchPage() {
-  return (
-    <SearchProvider indexName="products">
-      <SearchBox placeholder="Search products..." />
-      <SearchResults />
-    </SearchProvider>
   );
 }
 ```
@@ -252,77 +233,6 @@ import {
 />
 ```
 
-### Algolia Search Components
-
-#### Complete Search Implementation
-
-```typescript
-import {
-  SearchProvider,
-  SearchBox,
-  SearchResults,
-  SearchRefinements,
-  SearchPagination
-} from "@repo/uix-system/algolia";
-
-function SearchPage() {
-  return (
-    <SearchProvider
-      indexName="products"
-      searchClient={searchClient}
-      initialState={{
-        query: '',
-        refinements: {}
-      }}
-    >
-      <div className="search-layout">
-        <aside>
-          <SearchRefinements
-            attributes={['category', 'brand', 'price']}
-          />
-        </aside>
-
-        <main>
-          <SearchBox
-            placeholder="Search products..."
-            autocomplete={true}
-            showSubmit={true}
-          />
-
-          <SearchResults
-            hitComponent={ProductHit}
-            hitsPerPage={20}
-          />
-
-          <SearchPagination showFirst showLast />
-        </main>
-      </div>
-    </SearchProvider>
-  );
-}
-```
-
-#### Server-Side Rendering
-
-```typescript
-// pages/search.tsx
-import { GetServerSideProps } from 'next';
-import { getServerState } from 'react-instantsearch-hooks-server';
-
-export const getServerSideProps: GetServerSideProps = async ({ query }) => {
-  const serverState = await getServerState(<SearchPage />, {
-    renderToString,
-  });
-
-  return {
-    props: {
-      serverState,
-      query: query.q || '',
-    },
-  };
-};
-```
-
 ### TipTap Editor Components
 
 #### Rich Text Editor
@@ -354,10 +264,8 @@ import {
 ### Required Variables
 
 ```bash
-# For Algolia search functionality
-NEXT_PUBLIC_ALGOLIA_APPLICATION_ID=your-app-id
-NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY=your-search-key
-ALGOLIA_ADMIN_API_KEY=your-admin-key
+# For search functionality (when implemented)
+# NEXT_PUBLIC_SEARCH_API_KEY=your-search-key
 
 # For collaborative editing (optional)
 NEXT_PUBLIC_COLLABORATION_ENDPOINT=wss://your-collab-server.com
@@ -371,8 +279,6 @@ Add these to your app's `env.ts` file:
 ```typescript
 export const env = createEnv({
   client: {
-    NEXT_PUBLIC_ALGOLIA_APPLICATION_ID: z.string().optional(),
-    NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY: z.string().optional(),
     NEXT_PUBLIC_COLLABORATION_ENDPOINT: z.string().optional(),
     NEXT_PUBLIC_YJS_WEBSOCKET_URL: z.string().optional()
   }
@@ -391,8 +297,8 @@ import { ... } from "@repo/uix-system";
 // Mantine components
 import { ... } from "@repo/uix-system/mantine";
 
-// Algolia search
-import { ... } from "@repo/uix-system/algolia";
+// Search functionality (when implemented)
+// import { ... } from "@repo/uix-system/search";
 
 // Tailwind components
 import { ... } from "@repo/uix-system/tailwind/v3";
@@ -454,7 +360,6 @@ When creating new components:
 
 - **Mantine v7** - Core component library
 - **Tailwind CSS v3/v4** - Utility-first styling
-- **Algolia InstantSearch** - Search functionality
 - **TipTap Editor** - Rich text editing
 - **Yjs** - Real-time collaboration
 - **React 18** - Component framework

@@ -3,7 +3,7 @@
  * Advanced caching and performance optimization types for AI operations
  */
 
-import type { AgentExecutionContext } from './agent-core';
+import type { AgentExecutionContext } from "./agent-core";
 
 /**
  * Cache entry with metadata
@@ -50,7 +50,7 @@ export interface CacheConfig {
   maxMemoryMB?: number;
   defaultTTL?: number;
   cleanupInterval?: number;
-  evictionPolicy?: 'LRU' | 'LFU' | 'FIFO' | 'TTL';
+  evictionPolicy?: "LRU" | "LFU" | "FIFO" | "TTL";
   enableStats?: boolean;
   enableCompression?: boolean;
   persistToDisk?: boolean;
@@ -82,7 +82,11 @@ export interface AnalyticsPromptCache {
     entries: Array<{
       key: string;
       value: T;
-      options?: { ttl?: number; tags?: string[]; metadata?: Record<string, any> };
+      options?: {
+        ttl?: number;
+        tags?: string[];
+        metadata?: Record<string, any>;
+      };
     }>,
   ): Promise<void>;
   deleteMany(keys: string[]): Promise<number>;
@@ -106,14 +110,20 @@ export interface AnalyticsPromptCache {
   cleanup(): Promise<{ removed: number; freed: number }>;
   compact(): Promise<{ sizeBefore: number; sizeAfter: number }>;
   export(): Promise<Array<CacheEntry>>;
-  import(entries: Array<CacheEntry>): Promise<{ imported: number; skipped: number }>;
+  import(
+    entries: Array<CacheEntry>,
+  ): Promise<{ imported: number; skipped: number }>;
 
   // Event handling
   onHit?(key: string, value: any): void | Promise<void>;
   onMiss?(key: string): void | Promise<void>;
   onSet?(key: string, value: any): void | Promise<void>;
   onDelete?(key: string): void | Promise<void>;
-  onEvict?(key: string, value: any, reason: 'size' | 'ttl' | 'manual'): void | Promise<void>;
+  onEvict?(
+    key: string,
+    value: any,
+    reason: "size" | "ttl" | "manual",
+  ): void | Promise<void>;
 }
 
 /**
@@ -129,14 +139,14 @@ export interface LayeredCache {
     key: string,
     value: T,
     options?: {
-      layer?: 'l1' | 'l2' | 'l3';
+      layer?: "l1" | "l2" | "l3";
       ttl?: number;
       tags?: string[];
       metadata?: Record<string, any>;
     },
   ): Promise<void>;
-  promote(key: string, toLayer: 'l1' | 'l2'): Promise<boolean>;
-  demote(key: string, toLayer: 'l2' | 'l3'): Promise<boolean>;
+  promote(key: string, toLayer: "l1" | "l2"): Promise<boolean>;
+  demote(key: string, toLayer: "l2" | "l3"): Promise<boolean>;
   getStats(): Promise<{ l1: CacheStats; l2?: CacheStats; l3?: CacheStats }>;
 }
 
@@ -186,12 +196,18 @@ export interface CacheWarmingManager {
  */
 export interface DistributedCacheCoordinator {
   sync(keys?: string[]): Promise<{ synced: number; conflicts: number }>;
-  broadcast(operation: 'set' | 'delete' | 'clear', key?: string, value?: any): Promise<void>;
-  onRemoteChange(callback: (operation: string, key: string, value?: any) => void): void;
+  broadcast(
+    operation: "set" | "delete" | "clear",
+    key?: string,
+    value?: any,
+  ): Promise<void>;
+  onRemoteChange(
+    callback: (operation: string, key: string, value?: any) => void,
+  ): void;
   getNodeStatus(): Promise<
     Array<{
       nodeId: string;
-      status: 'healthy' | 'degraded' | 'offline';
+      status: "healthy" | "degraded" | "offline";
       lastSeen: number;
       cacheSize: number;
     }>
@@ -216,8 +232,8 @@ export interface CachePerformanceAnalyzer {
       peakUsageTimes: Array<{ hour: number; usage: number }>;
     };
     recommendations: Array<{
-      type: 'configuration' | 'usage' | 'architecture';
-      priority: 'high' | 'medium' | 'low';
+      type: "configuration" | "usage" | "architecture";
+      priority: "high" | "medium" | "low";
       description: string;
       estimatedImpact: string;
     }>;
@@ -227,7 +243,7 @@ export interface CachePerformanceAnalyzer {
     summary: string;
     metrics: Record<string, number>;
     charts: Array<{
-      type: 'line' | 'bar' | 'pie';
+      type: "line" | "bar" | "pie";
       title: string;
       data: any;
     }>;
@@ -310,7 +326,11 @@ export interface CacheMiddleware {
     metadata?: Record<string, any>;
   }>;
 
-  afterSet?<T>(key: string, value: T, cache: AnalyticsPromptCache): Promise<void>;
+  afterSet?<T>(
+    key: string,
+    value: T,
+    cache: AnalyticsPromptCache,
+  ): Promise<void>;
 }
 
 /**
@@ -325,20 +345,27 @@ export interface CacheFactory {
     l2?: AnalyticsPromptCache,
     l3?: AnalyticsPromptCache,
   ): LayeredCache;
-  createSemanticCache(config: CacheConfig & { embeddingModel: string }): SemanticCache;
+  createSemanticCache(
+    config: CacheConfig & { embeddingModel: string },
+  ): SemanticCache;
 }
 
 /**
  * Cache event types
  */
 export type CacheEvent =
-  | { type: 'hit'; key: string; value: any; responseTime: number }
-  | { type: 'miss'; key: string; responseTime: number }
-  | { type: 'set'; key: string; value: any; size?: number }
-  | { type: 'delete'; key: string; reason: 'manual' | 'ttl' | 'eviction' }
-  | { type: 'clear'; reason: string }
-  | { type: 'evict'; key: string; value: any; reason: 'size' | 'ttl' | 'manual' }
-  | { type: 'error'; operation: string; key?: string; error: Error };
+  | { type: "hit"; key: string; value: any; responseTime: number }
+  | { type: "miss"; key: string; responseTime: number }
+  | { type: "set"; key: string; value: any; size?: number }
+  | { type: "delete"; key: string; reason: "manual" | "ttl" | "eviction" }
+  | { type: "clear"; reason: string }
+  | {
+      type: "evict";
+      key: string;
+      value: any;
+      reason: "size" | "ttl" | "manual";
+    }
+  | { type: "error"; operation: string; key?: string; error: Error };
 
 /**
  * Cache event listener

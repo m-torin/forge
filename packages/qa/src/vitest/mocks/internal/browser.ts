@@ -185,5 +185,3 @@ export function setupBrowserMocks(): void {
 if (typeof window !== 'undefined' && typeof document !== 'undefined') {
   setupBrowserMocks();
 }
-
-export default setupBrowserMocks;

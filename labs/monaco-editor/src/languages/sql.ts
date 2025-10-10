@@ -5,7 +5,7 @@ import * as sqlFormatter from 'sql-formatter';
 // import { parse } from 'sql-parser'; // Removed
 
 // Language Configuration for Comments, Brackets, etc.
-export const sqlLanguageConfiguration: monaco.languages.LanguageConfiguration =
+const sqlLanguageConfiguration: monaco.languages.LanguageConfiguration =
   {
     comments: {
       lineComment: '--',
@@ -41,7 +41,7 @@ export const sqlLanguageConfiguration: monaco.languages.LanguageConfiguration =
   };
 
 // Monarch Language Configuration for Tokenization
-export const sqlMonarchLanguage: monaco.languages.IMonarchLanguage = {
+const sqlMonarchLanguage: monaco.languages.IMonarchLanguage = {
   tokenizer: {
     root: [
       // Keywords
@@ -247,7 +247,7 @@ export const formatSQL = (sql: string): string => {
   try {
     return sqlFormatter.format(sql, { language: 'sql' });
   } catch (error) {
-    // eslint-disable-next-line no-console
+     
     console.error('SQL Formatting Error:', error);
     return sql; // Return unformatted SQL on error
   }

@@ -14,7 +14,7 @@
 
 - _Key Features:_
   - **React Email Preview**: Live preview server for @repo/email templates
-  - **8 Professional Templates**: Magic link, welcome, password reset,
+  - **7 Professional Templates**: Magic link, welcome, password reset,
     verification, etc.
   - **Interactive Development**: Hot reload, responsive preview, dark mode
     testing
@@ -28,9 +28,8 @@
   - **Welcome**: User onboarding and welcome messages
   - **Password Reset**: Secure password reset flows
   - **Email Verification**: Account verification emails
-  - **Newsletter**: Marketing and newsletter campaigns
-  - **Invoice**: Billing and payment notifications
-  - **Receipt**: Purchase confirmations
-  - **Two-Factor**: 2FA authentication codes
+  - **API Key Created**: API key management notifications
+  - **Organization Invitation**: Team collaboration invitations
+  - **Contact**: Contact form submission notifications
 
 - _Documentation:_ **[Email Preview](../docs/apps/email.mdx)**

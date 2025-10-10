@@ -5,31 +5,31 @@
 import type { SentryPluginConfig } from '../sentry';
 
 /**
- * Configuration for a specific micro frontend zone
+ * Configuration for a specific micro frontend backstageApp
  */
-export interface ZoneConfig {
+export interface BackstageAppConfig {
   /**
-   * Name of the zone (e.g., 'cms', 'workflows', 'authmgmt')
+   * Name of the backstageApp (e.g., 'cms', 'workflows', 'authmgmt')
    */
   name: string;
 
   /**
-   * Sentry DSN for this zone (optional, uses default if not provided)
+   * Sentry DSN for this backstageApp (optional, uses default if not provided)
    */
   dsn?: string;
 
   /**
-   * Release version for this zone
+   * Release version for this backstageApp
    */
   release?: string;
 
   /**
-   * Additional tags to apply to events from this zone
+   * Additional tags to apply to events from this backstageApp
    */
   tags?: Record<string, string>;
 
   /**
-   * Path patterns that identify this zone
+   * Path patterns that identify this backstageApp
    */
   pathPatterns?: (string | RegExp)[];
 }
@@ -49,14 +49,14 @@ export interface SentryMicroFrontendConfig extends Omit<SentryPluginConfig, 'tra
   isHost?: boolean;
 
   /**
-   * The zone identifier for this micro frontend (e.g., 'cms', 'workflows')
+   * The backstageApp identifier for this micro frontend (e.g., 'cms', 'workflows')
    */
-  zone?: string;
+  backstageApp?: string;
 
   /**
-   * Configuration for all zones (only used in host mode)
+   * Configuration for all backstage (only used in host mode)
    */
-  zones?: ZoneConfig[];
+  backstageApps?: BackstageAppConfig[];
 
   /**
    * Whether to detect and use parent Sentry instance
@@ -65,18 +65,18 @@ export interface SentryMicroFrontendConfig extends Omit<SentryPluginConfig, 'tra
   detectParent?: boolean;
 
   /**
-   * Custom function to detect the current zone
+   * Custom function to detect the current backstageApp
    */
-  zoneDetector?: () => string | undefined;
+  backstageAppDetector?: () => string | undefined;
 
   /**
-   * Whether to add zone information to all events
+   * Whether to add backstageApp information to all events
    * @default true
    */
-  addZoneContext?: boolean;
+  addBackstageContext?: boolean;
 
   /**
-   * Fallback DSN to use if zone-specific DSN is not found
+   * Fallback DSN to use if backstageApp-specific DSN is not found
    */
   fallbackDsn?: string;
 
@@ -121,6 +121,6 @@ declare global {
   interface Window {
     Sentry?: any;
     __SENTRY_MICRO_FRONTEND_HOST__?: boolean;
-    __SENTRY_MICRO_FRONTEND_ZONE__?: string;
+    __SENTRY_MICRO_FRONTEND_APP__?: string;
   }
 }

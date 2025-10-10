@@ -1,1385 +1,700 @@
 ---
-title: "Vector Database (Upstash)"
+title: "CMS Vectorization System"
 description:
-  "AI/ML similarity search and embeddings with Upstash Vector for intelligent
-  product matching and recommendation systems"
+  "Advanced vector search for CMS content using Upstash Vector and OpenAI
+  embeddings"
 icon: "vector-square"
 ---
 
-# Vector Database (Upstash)
+# CMS Vectorization System
 
-High-performance vector database using Upstash Vector for AI/ML similarity
-search, embeddings, and intelligent recommendation systems.
+The CMS Vectorization System provides intelligent vector search capabilities for
+content management system entities. It automatically processes content from 13
+different CMS entity types, generates semantic embeddings, and stores them in
+Upstash Vector for fast similarity search.
 
 ## Overview
 
-The Vector database provides sophisticated similarity search capabilities for
-AI-powered features including product recommendations, semantic search, and
-content matching.
+### Key Features
 
-<CardGroup cols={2}>
-  <Card title="Similarity Search" icon="magnifying-glass">
-    Find similar products, content, and users based on vector embeddings
-  </Card>
-  <Card title="AI Recommendations" icon="brain">
-    Intelligent product and content recommendations using machine learning
-  </Card>
-  <Card title="Semantic Search" icon="search">
-    Natural language search with understanding of meaning and context
-  </Card>
-  <Card title="Content Matching" icon="link">
-    Automatic content categorization and duplicate detection
-  </Card>
-</CardGroup>
+- **13 Entity Types**: Supports Brand, Collection, Product, ProductCategory,
+  Fandom, Series, Story, Location, Media, CompanyContent, Article, Cast, and
+  Taxonomy
+- **Privacy-First**: Automatically excludes PII fields during content building
+- **Change Detection**: Uses SHA-256 hashing to skip unchanged content
+- **Batch Processing**: Efficient parent-child workflow pattern with
+  configurable batch sizes
+- **Retry Logic**: Exponential backoff with rate limiting for API resilience
+- **Vector Management**: Automatic cleanup of stale vector chunks
+- **Progress Tracking**: Optional Redis-based progress monitoring
+- **Admin Security**: Role-based access control with Better Auth integration
 
-## Quick Start
+### Architecture
 
-<CodeGroup>
-```typescript Next.js Server (Recommended)
-import { upstash, vectorOps } from '@repo/database/upstash/server/next';
-import { logError, logInfo } from '@repo/observability/server/next';
-
-// Store product embedding await upstash.upsert([{ id: 'product-123', vector:
-[0.1, 0.2, 0.3, ...], // 1536 dimensions for OpenAI embeddings metadata: {
-title: 'iPhone 15 Pro', category: 'electronics', price: 999.99, brand: 'Apple',
-}, }]);
-
-// Find similar products const results = await upstash.query({ vector:
-queryEmbedding, topK: 10, includeMetadata: true, filter: { category: { $eq:
-'electronics' }, price: { $lte: 1200 }, }, });
-
-````
-
-```typescript Node.js Server
-import { upstash, vectorOps, VectorOperations } from '@repo/database/upstash/server';
-import { logError, logInfo } from '@repo/observability/server/next';
-
-// Using convenience functions
-await vectorOps.upsert([{
-  id: 'product-123',
-  vector: [0.1, 0.2, 0.3, ...],
-  metadata: { title: 'iPhone 15 Pro', category: 'electronics' }
-}]);
-
-const results = await vectorOps.query({
-  vector: queryEmbedding,
-  topK: 10,
-  includeMetadata: true
-});
-
-// Or create custom instance
-const customVectorOps = new VectorOperations();
-await customVectorOps.upsert([...]);
-````
-
-```typescript Types Only (Client)
-import type { QueryResult, FetchResult } from "@repo/database/upstash/client";
-
-// Use for TypeScript typing in client components
-interface ProductVector {
-  id: string;
-  title: string;
-  category: string;
-  price: number;
-  brand: string;
-}
-
-// Type for query results
-type ProductQueryResult = QueryResult<{
-  title: string;
-  category: string;
-  price: number;
-  brand: string;
-}>;
+```mermaid
+graph TB
+    A[API Request] --> B[Admin Auth Check]
+    B --> C[Payload Validation]
+    C --> D[Entity Fetching]
+    D --> E[Content Building]
+    E --> F[Eligibility Check]
+    F --> G[Change Detection]
+    G --> H[Content Chunking]
+    H --> I[Embedding Generation]
+    I --> J[Vector Storage]
+    J --> K[Index Tracking]
 ```
 
-</CodeGroup>
+## Entity Types and Eligibility
 
-## Core Operations
+### Supported Models
 
-### Vector Storage and Retrieval
+| Entity Type       | Status Field | Eligible Values | Relationships               |
+| ----------------- | ------------ | --------------- | --------------------------- |
+| `brand`           | `status`     | `PUBLISHED`     | Children brands, products   |
+| `collection`      | `status`     | `PUBLISHED`     | Products, media             |
+| `product`         | `status`     | `ACTIVE`        | Variants, categories, brand |
+| `productCategory` | `status`     | `PUBLISHED`     | Products, parent/children   |
+| `fandom`          | `status`     | `PUBLISHED`     | Series, stories             |
+| `series`          | `status`     | `PUBLISHED`     | Stories, fandom             |
+| `story`           | `status`     | `PUBLISHED`     | Series, fandom, cast        |
+| `location`        | `status`     | `PUBLISHED`     | Stories, media              |
+| `media`           | `status`     | `PUBLISHED`     | Alt text required           |
+| `companyContent`  | `status`     | `PUBLISHED`     | Company information         |
+| `article`         | `status`     | `PUBLISHED`     | Blog posts, guides          |
+| `cast`            | `status`     | `PUBLISHED`     | Stories, characters         |
+| `taxonomy`        | `status`     | `PUBLISHED`     | Hierarchical categories     |
 
-<CodeGroup>
-```typescript Product Embeddings
-// Store product with rich metadata
-interface ProductVector {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  subcategory: string;
-  brand: string;
-  price: number;
-  features: string[];
-  tags: string[];
-  imageUrl?: string;
-}
+### Eligibility Rules
 
-async function storeProductEmbedding(product: ProductVector, embedding:
-number[]) { await upstash.upsert({ id: `product:${product.id}`, vector:
-embedding, metadata: { title: product.title, description: product.description,
-category: product.category, subcategory: product.subcategory, brand:
-product.brand, price: product.price, features: product.features.join(','), tags:
-product.tags.join(','), imageUrl: product.imageUrl, createdAt: Date.now(), },
-}); }
+All entities must meet these criteria to be vectorized:
 
-// Batch upsert for efficiency async function batchStoreProducts(products:
-Array<{product: ProductVector, embedding: number[]}>) { const vectors =
-products.map(({ product, embedding }) => ({ id: `product:${product.id}`, vector:
-embedding, metadata: { title: product.title, category: product.category, brand:
-product.brand, price: product.price, // Include other relevant metadata }, }));
+1. **Status Check**: Entity status must be in eligible values (see table above)
+2. **Soft Delete**: `deletedAt` field must be `null`
+3. **Content Quality**: Generated content must meet minimum length requirements
+   (20 characters default)
+4. **Privacy Compliance**: No PII fields are included in vector content
 
-// Upstash Vector supports batch operations await upstash.upsert(vectors); }
+## Content Building
 
-````
+### Privacy-First Architecture
 
-```typescript Content Embeddings
-// Store text content for semantic search
-interface ContentVector {
-  id: string;
-  type: 'article' | 'product_description' | 'user_review' | 'faq';
-  title: string;
+The content builders automatically exclude sensitive fields:
+
+```typescript
+// Excluded PII fields
+const PII_FIELDS = [
+  "email",
+  "phone",
+  "password",
+  "token",
+  "key",
+  "secret",
+  "api",
+  "credential",
+  "auth",
+  "session"
+];
+```
+
+### Content Structure
+
+Each entity type has a specific content building pattern:
+
+#### Brand Content
+
+```
+Brand: Nike
+Identifier: nike
+Type: APPAREL
+Status: PUBLISHED
+Website: https://nike.com
+Description: Athletic wear and footwear brand
+Sub-brands: Nike SB, Nike Air
+```
+
+#### Product Content
+
+```
+Product: Air Max 90
+Type: SHOE
+Status: ACTIVE
+Brand: Nike
+Category: Footwear
+Price: 120 USD
+Description: Classic running shoe
+Variants: Air Max 90 - Red, Air Max 90 - Blue
+```
+
+#### Article Content
+
+```
+Article: How to Choose Running Shoes
+Status: PUBLISHED
+Content: [HTML/Markdown cleaned and formatted]
+```
+
+### Builder Version Tracking
+
+All content builders use `BUILDER_VERSION` constant to track changes:
+
+```typescript
+export const BUILDER_VERSION = 1;
+
+export interface BuilderResult {
   content: string;
-  author?: string;
-  tags: string[];
-  language: string;
+  version: number;
+}
+```
+
+When builder logic changes materially, increment `BUILDER_VERSION` to force
+re-processing of all content.
+
+## Chunking Strategy
+
+### Configuration
+
+```typescript
+const DEFAULT_CHUNK_CONFIG = {
+  minSize: 500, // Minimum chunk size
+  maxSize: 1000, // Maximum chunk size
+  overlap: 100, // Overlap between chunks
+  minLength: 20 // Minimum content length
+};
+```
+
+### Chunking Logic
+
+1. **Boundary Detection**: Prefers paragraph breaks over sentence breaks
+2. **Sentence Splitting**: Splits on `.`, `!`, `?` when paragraph breaks
+   unavailable
+3. **Word Boundaries**: Ensures chunks don't break mid-word
+4. **Overlap Management**: Maintains context between adjacent chunks
+5. **Length Validation**: Enforces minimum meaningful content length
+
+### Vector ID Scheme
+
+Each chunk gets a unique vector ID following this pattern:
+
+```
+cms:{entityType}:{entityId}:v{version}:chunk:{chunkIndex}
+```
+
+Examples:
+
+- `cms:product:abc123:v1:chunk:0`
+- `cms:brand:nike:v2:chunk:1`
+- `cms:article:guide-123:v1:chunk:0`
+
+## Change Detection
+
+### Content Hashing
+
+Uses SHA-256 for stable, deterministic change detection:
+
+```typescript
+function createContentHash(content: string): string {
+  return crypto.createHash("sha256").update(content, "utf8").digest("hex");
+}
+```
+
+### Hash Comparison
+
+```typescript
+function hasContentChanged(
+  currentContent: string,
+  storedHash: string
+): boolean {
+  return createContentHash(currentContent) !== storedHash;
+}
+```
+
+Benefits:
+
+- **Efficiency**: Skips unchanged content automatically
+- **Accuracy**: Detects even minor content changes
+- **Stability**: Same content always produces same hash
+- **Performance**: Fast string comparison vs full content comparison
+
+## Database Schema
+
+### VectorIndex Model
+
+```prisma
+model VectorIndex {
+  id               String              @id @default(cuid())
+  entityType       String              // CMS entity type
+  entityId         String              // CMS entity ID
+  version          Int                 @default(1)
+  contentHash      String              // SHA-256 hash of content
+  chunkCount       Int                 @default(0)
+  vectorIds        Json                @default("[]") // Array of vector IDs
+  namespace        String              // Vector namespace
+  status           VectorIndexStatus   @default(PENDING)
+  lastError        String?             // Last error message
+  metadata         Json?               @db.JsonB
+
+  // Enhanced Performance & Retry Tracking Fields (v2)
+  retryCount       Int                 @default(0)     // Number of retry attempts
+  lastSyncedAt     DateTime?           // Last successful sync timestamp
+  processingTimeMs Int?                // Processing duration in milliseconds
+  contentLength    Int?                // Content length in characters
+
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  @@unique([entityType, entityId])
+  @@index([entityType, status])
+  @@index([status, updatedAt])
+  @@index([retryCount, status])        // For retry monitoring
+  @@index([lastSyncedAt])              // For maintenance queries
 }
 
-async function storeContentEmbedding(content: ContentVector, embedding: number[]) {
-  await upstash.upsert({
-    id: `content:${content.type}:${content.id}`,
-    vector: embedding,
-    metadata: {
-      type: content.type,
-      title: content.title,
-      content: content.content.substring(0, 500), // Truncate for metadata
-      author: content.author,
-      tags: content.tags.join(','),
-      language: content.language,
-      wordCount: content.content.split(' ').length,
-      createdAt: Date.now(),
-    },
-  });
+enum VectorIndexStatus {
+  PENDING     // Queued for processing
+  PROCESSING  // Currently being processed
+  SYNCED      // Successfully synchronized
+  FAILED      // Processing failed (with retry tracking)
+  SKIPPED     // Skipped due to conditions
+  STALE       // Needs re-processing
 }
+```
 
-// Store user behavior embeddings
-async function storeUserBehaviorEmbedding(userId: string, behaviorVector: number[]) {
-  await upstash.upsert({
-    id: `user:${userId}:behavior`,
-    vector: behaviorVector,
-    metadata: {
-      userId,
-      type: 'user_behavior',
-      lastUpdated: Date.now(),
-    },
-  });
+### Index Strategy
+
+- **Primary Key**: CUID for unique identification
+- **Unique Constraint**: One index per entity (entityType + entityId)
+- **Status Index**: Fast queries by processing status
+- **Temporal Index**: Efficient cleanup and maintenance queries
+- **Retry Index**: Monitor and query failed entities by retry count
+- **Sync Index**: Track successful synchronization timestamps for maintenance
+
+## API Endpoints
+
+### Rate Limiting
+
+All API endpoints include built-in rate limiting to prevent abuse:
+
+```typescript
+// Default rate limits (configurable via environment)
+const RATE_LIMITS = {
+  requests: 5, // Requests per window
+  windowMs: 60000 // 1 minute window
+};
+
+// Environment configuration
+CMS_VECTORIZATION_RATE_LIMIT_REQUESTS = 5;
+CMS_VECTORIZATION_RATE_LIMIT_WINDOW_MS = 60000;
+```
+
+**Rate Limit Headers:**
+
+- `X-RateLimit-Limit`: Total requests allowed per window
+- `X-RateLimit-Remaining`: Remaining requests in current window
+- `X-RateLimit-Reset`: Timestamp when window resets
+
+### POST /api/workflows/v3/cms-vectorization
+
+Execute vectorization workflow with authentication and validation.
+
+#### Authentication
+
+```typescript
+// Admin role required
+const session = await getSession();
+if (!session?.user || session.user.role !== "admin") {
+  return Response.json({ error: "Forbidden" }, { status: 403 });
 }
-````
+```
 
-</CodeGroup>
+#### Request Payload
 
-### Similarity Search
+```typescript
+interface CmsVectorizationPayload {
+  models: EntityType[]; // Required: Entity types to process
+  options?: {
+    batchSize?: number; // Batch size (1-500, default: 50)
+    entityIds?: string[]; // Specific entities (optional)
+    force?: boolean; // Force reprocessing (default: false)
+    dryRun?: boolean; // Dry run mode (default: false)
+  };
+  metadata?: Record<string, unknown>; // Custom metadata
+}
+```
 
-<Tabs>
-  <Tab title="Product Recommendations">
-    ```typescript
-    // Find similar products
-    async function findSimilarProducts(
-      productId: string,
-      options: {
-        limit?: number;
-        category?: string;
-        priceRange?: { min: number; max: number };
-        brand?: string;
-        excludeSelf?: boolean;
-      } = {}
-    ) {
-      // Get the reference product's embedding
-      const referenceProduct = await upstash.fetch([`product:${productId}`]);
-      if (!referenceProduct || referenceProduct.length === 0) {
-        throw new Error('Reference product not found');
-      }
+#### Response Format
 
-      const referenceVector = referenceProduct[0].vector;
+```typescript
+interface WorkflowResult {
+  workflowId: string;
+  status: "completed" | "partial" | "failed";
+  startTime: Date;
+  endTime: Date;
+  totalExecutionTimeMs: number;
 
-      // Build filter conditions
-      const filters: any = {};
+  // Entity Processing
+  requestedModels: EntityType[];
+  totalEntities: number;
+  processedEntities: number;
+  successfulEntities: number;
+  failedEntities: number;
+  skippedEntities: number;
 
-      if (options.category) {
-        filters.category = { $eq: options.category };
-      }
+  // Batch Processing
+  totalBatches: number;
+  completedBatches: number;
 
-      if (options.priceRange) {
-        filters.price = {
-          $gte: options.priceRange.min,
-          $lte: options.priceRange.max,
-        };
-      }
+  // Vector Operations
+  totalVectorsCreated: number;
+  totalVectorsUpdated: number;
+  totalVectorsDeleted: number;
 
-      if (options.brand) {
-        filters.brand = { $eq: options.brand };
-      }
+  // Error Tracking
+  errors: Array<{
+    entityType: string;
+    entityId: string;
+    error: string;
+    timestamp: Date;
+  }>;
+}
+```
 
-      // Perform similarity search
-      const results = await upstash.query({
-        vector: referenceVector,
-        topK: (options.limit || 10) + (options.excludeSelf ? 1 : 0),
-        includeMetadata: true,
-        includeValues: false,
-        filter: Object.keys(filters).length > 0 ? filters : undefined,
-      });
+### GET /api/workflows/v3/cms-vectorization
 
-      // Filter out the reference product if requested
-      let recommendations = results.matches || [];
-      if (options.excludeSelf) {
-        recommendations = recommendations.filter(
-          match => match.id !== `product:${productId}`
-        );
-      }
+Get workflow statistics and system status.
 
-      return recommendations.slice(0, options.limit || 10).map(match => ({
-        productId: match.id.replace('product:', ''),
-        similarity: match.score,
-        metadata: match.metadata,
-      }));
-    }
+#### Query Parameters
 
-    // Personalized recommendations based on user behavior
-    async function getPersonalizedRecommendations(
-      userId: string,
-      options: {
-        limit?: number;
-        categories?: string[];
-        excludeViewed?: boolean;
-      } = {}
-    ) {
-      // Get user behavior embedding
-      const userBehavior = await upstash.fetch([`user:${userId}:behavior`]);
-      if (!userBehavior || userBehavior.length === 0) {
-        // Fallback to popular products if no user behavior data
-        return getPopularProducts(options.limit || 10);
-      }
+- `?action=stats` (default) - Get vector index statistics
+- `?action=progress&workflowId=xyz` - Get workflow progress (Redis required)
+- `?action=result&workflowId=xyz` - Get completed workflow result
+- `?action=active` - List all active workflows
+- `?action=cleanup` - Cleanup orphaned indexes and old workflow data
 
-      const userVector = userBehavior[0].vector;
+#### Response
 
-      const filters: any = {};
-      if (options.categories && options.categories.length > 0) {
-        filters.category = { $in: options.categories };
-      }
-
-      const results = await upstash.query({
-        vector: userVector,
-        topK: options.limit || 20,
-        includeMetadata: true,
-        filter: Object.keys(filters).length > 0 ? filters : undefined,
-      });
-
-      return (results.matches || []).map(match => ({
-        productId: match.id.replace('product:', ''),
-        relevanceScore: match.score,
-        metadata: match.metadata,
-      }));
-    }
-    ```
-
-  </Tab>
-
-  <Tab title="Semantic Search">
-    ```typescript
-    // Semantic search across content
-    async function semanticSearch(
-      query: string,
-      options: {
-        types?: string[];
-        limit?: number;
-        language?: string;
-        minScore?: number;
-      } = {}
-    ) {
-      // Generate embedding for the search query
-      const queryEmbedding = await generateEmbedding(query);
-
-      const filters: any = {};
-
-      if (options.types && options.types.length > 0) {
-        filters.type = { $in: options.types };
-      }
-
-      if (options.language) {
-        filters.language = { $eq: options.language };
-      }
-
-      const results = await upstash.query({
-        vector: queryEmbedding,
-        topK: options.limit || 20,
-        includeMetadata: true,
-        filter: Object.keys(filters).length > 0 ? filters : undefined,
-      });
-
-      // Filter by minimum score if specified
-      let matches = results.matches || [];
-      if (options.minScore) {
-        matches = matches.filter(match => match.score >= options.minScore);
-      }
-
-      return matches.map(match => ({
-        id: match.id,
-        type: match.metadata?.type,
-        title: match.metadata?.title,
-        content: match.metadata?.content,
-        score: match.score,
-        metadata: match.metadata,
-      }));
-    }
-
-    // Smart content categorization
-    async function categorizeContent(content: string, existingCategories: string[]) {
-      const contentEmbedding = await generateEmbedding(content);
-
-      // Find similar existing content to infer category
-      const results = await upstash.query({
-        vector: contentEmbedding,
-        topK: 5,
-        includeMetadata: true,
-        filter: {
-          type: { $eq: 'article' },
-        },
-      });
-
-      // Analyze categories of similar content
-      const categoryScores = {} as Record<string, number>;
-
-      for (const match of results.matches || []) {
-        const category = match.metadata?.category;
-        if (category && existingCategories.includes(category)) {
-          categoryScores[category] = (categoryScores[category] || 0) + match.score;
-        }
-      }
-
-      // Return top suggested categories
-      return Object.entries(categoryScores)
-        .sort(([, a], [, b]) => b - a)
-        .slice(0, 3)
-        .map(([category, score]) => ({ category, confidence: score }));
-    }
-    ```
-
-  </Tab>
-
-  <Tab title="Duplicate Detection">
-    ```typescript
-    // Detect duplicate or near-duplicate content
-    async function findDuplicateContent(
-      content: string,
-      threshold: number = 0.95,
-      contentType?: string
-    ) {
-      const contentEmbedding = await generateEmbedding(content);
-
-      const filters: any = {};
-      if (contentType) {
-        filters.type = { $eq: contentType };
-      }
-
-      const results = await upstash.query({
-        vector: contentEmbedding,
-        topK: 10,
-        includeMetadata: true,
-        filter: Object.keys(filters).length > 0 ? filters : undefined,
-      });
-
-      const duplicates = (results.matches || [])
-        .filter(match => match.score >= threshold)
-        .map(match => ({
-          id: match.id,
-          similarity: match.score,
-          title: match.metadata?.title,
-          type: match.metadata?.type,
-          isDuplicate: match.score >= 0.98,
-          isNearDuplicate: match.score >= threshold && match.score < 0.98,
-        }));
-
-      return {
-        hasDuplicates: duplicates.length > 0,
-        duplicates,
-        maxSimilarity: Math.max(...duplicates.map(d => d.similarity), 0),
-      };
-    }
-
-    // Detect similar products for deduplication
-    async function findSimilarProductsForDedup(
-      product: ProductVector,
-      threshold: number = 0.90
-    ) {
-      const productEmbedding = await generateProductEmbedding(product);
-
-      const results = await upstash.query({
-        vector: productEmbedding,
-        topK: 20,
-        includeMetadata: true,
-        filter: {
-          category: { $eq: product.category },
-        },
-      });
-
-      const similar = (results.matches || [])
-        .filter(match =>
-          match.score >= threshold &&
-          match.id !== `product:${product.id}`
-        )
-        .map(match => ({
-          productId: match.id.replace('product:', ''),
-          similarity: match.score,
-          title: match.metadata?.title,
-          brand: match.metadata?.brand,
-          price: match.metadata?.price,
-          isDuplicate: match.score >= 0.95,
-        }));
-
-      return similar;
-    }
-    ```
-
-  </Tab>
-</Tabs>
-
-## Advanced Search Features
-
-### Multi-Modal Search
-
-<AccordionGroup>
-  <Accordion title="Image and Text Search" icon="image">
-    ```typescript
-    // Combined image and text embeddings
-    interface MultiModalEmbedding {
-      textEmbedding: number[];
-      imageEmbedding: number[];
-      combinedEmbedding: number[];
-    }
-
-    async function storeMultiModalProduct(
-      product: ProductVector,
-      embeddings: MultiModalEmbedding
-    ) {
-      // Store separate embeddings for different search types
-      await Promise.all([
-        // Text-based search
-        upstash.upsert({
-          id: `product:text:${product.id}`,
-          vector: embeddings.textEmbedding,
-          metadata: {
-            ...product,
-            searchType: 'text',
-          },
-        }),
-
-        // Image-based search
-        upstash.upsert({
-          id: `product:image:${product.id}`,
-          vector: embeddings.imageEmbedding,
-          metadata: {
-            ...product,
-            searchType: 'image',
-          },
-        }),
-
-        // Combined multi-modal search
-        upstash.upsert({
-          id: `product:multimodal:${product.id}`,
-          vector: embeddings.combinedEmbedding,
-          metadata: {
-            ...product,
-            searchType: 'multimodal',
-          },
-        }),
-      ]);
-    }
-
-    // Search by image similarity
-    async function searchByImage(imageEmbedding: number[], options: {
-      category?: string;
-      limit?: number;
-    } = {}) {
-      const filters: any = { searchType: { $eq: 'image' } };
-
-      if (options.category) {
-        filters.category = { $eq: options.category };
-      }
-
-      const results = await upstash.query({
-        vector: imageEmbedding,
-        topK: options.limit || 20,
-        includeMetadata: true,
-        filter: filters,
-      });
-
-      return (results.matches || []).map(match => ({
-        productId: match.id.replace('product:image:', ''),
-        similarity: match.score,
-        metadata: match.metadata,
-      }));
-    }
-    ```
-
-  </Accordion>
-
-  <Accordion title="Hybrid Search" icon="merge">
-    ```typescript
-    // Combine vector similarity with traditional search
-    async function hybridSearch(
-      query: string,
-      options: {
-        alpha?: number; // Weight for vector search (0-1)
-        textFilters?: Record<string, any>;
-        limit?: number;
-      } = {}
-    ) {
-      const alpha = options.alpha || 0.7; // Default: 70% vector, 30% text
-
-      // Vector similarity search
-      const queryEmbedding = await generateEmbedding(query);
-      const vectorResults = await upstash.query({
-        vector: queryEmbedding,
-        topK: options.limit || 50,
-        includeMetadata: true,
-        filter: options.textFilters,
-      });
-
-      // Text-based search (would typically use another search engine)
-      const textScores = await performTextSearch(query, options.textFilters);
-
-      // Combine scores
-      const combinedResults = (vectorResults.matches || []).map(match => {
-        const textScore = textScores[match.id] || 0;
-        const vectorScore = match.score;
-        const combinedScore = alpha * vectorScore + (1 - alpha) * textScore;
-
-        return {
-          ...match,
-          vectorScore,
-          textScore,
-          combinedScore,
-        };
-      });
-
-      // Sort by combined score and return top results
-      return combinedResults
-        .sort((a, b) => b.combinedScore - a.combinedScore)
-        .slice(0, options.limit || 20);
-    }
-
-    // Text search implementation (placeholder)
-    async function performTextSearch(
-      query: string,
-      filters?: Record<string, any>
-    ): Promise<Record<string, number>> {
-      // This would typically integrate with Elasticsearch, Algolia, or similar
-      // For now, returning mock scores based on text matching
-      return {};
-    }
-    ```
-
-  </Accordion>
-</AccordionGroup>
-
-### Real-time Recommendations
-
-<CodeGroup>
-```typescript User Behavior Tracking
-// Track user interactions for real-time recommendations
-interface UserInteraction {
-  userId: string;
-  type: 'view' | 'click' | 'purchase' | 'like' | 'share';
-  productId: string;
-  timestamp: number;
-  context?: {
-    searchQuery?: string;
-    category?: string;
-    source?: string;
+```typescript
+interface WorkflowStats {
+  totalIndexes: number;
+  indexesByModel: Record<EntityType, number>;
+  indexesByStatus: Record<VectorIndexStatus, number>;
+  recentActivity: {
+    last24h: number;
+    last7d: number;
+    last30d: number;
+  };
+  storageStats: {
+    totalVectors: number;
+    totalChunks: number;
+    avgChunksPerEntity: number;
   };
 }
-
-class UserBehaviorTracker { private interactions: Map<string, UserInteraction[]>
-= new Map();
-
-async trackInteraction(interaction: UserInteraction) { const userKey =
-interaction.userId; const userInteractions = this.interactions.get(userKey) ||
-[];
-
-    userInteractions.push(interaction);
-
-    // Keep only recent interactions (last 1000)
-    if (userInteractions.length > 1000) {
-      userInteractions.splice(0, userInteractions.length - 1000);
-    }
-
-    this.interactions.set(userKey, userInteractions);
-
-    // Update user behavior embedding periodically
-    if (userInteractions.length % 10 === 0) {
-      await this.updateUserEmbedding(interaction.userId);
-    }
-
-}
-
-async updateUserEmbedding(userId: string) { const interactions =
-this.interactions.get(userId) || [];
-
-    // Generate behavior vector based on interactions
-    const behaviorVector = await this.generateBehaviorVector(interactions);
-
-    // Store updated user behavior embedding
-    await upstash.upsert({
-      id: `user:${userId}:behavior`,
-      vector: behaviorVector,
-      metadata: {
-        userId,
-        interactionCount: interactions.length,
-        lastUpdated: Date.now(),
-        categories: this.extractTopCategories(interactions),
-        brands: this.extractTopBrands(interactions),
-      },
-    });
-
-}
-
-private async generateBehaviorVector(interactions: UserInteraction[]):
-Promise<number[]> { // This would typically use a trained model to convert user
-behavior into vector // For demonstration, we'll create a simplified version
-
-    const recentInteractions = interactions.slice(-50); // Last 50 interactions
-    const productIds = recentInteractions.map(i => i.productId);
-
-    // Get product embeddings for interacted products
-    const productVectors = await upstash.fetch(
-      productIds.map(id => `product:${id}`)
-    );
-
-    // Weight by interaction type and recency
-    const weights = recentInteractions.map((interaction, index) => {
-      const recencyWeight = (index + 1) / recentInteractions.length;
-      const typeWeight = this.getInteractionWeight(interaction.type);
-      return recencyWeight * typeWeight;
-    });
-
-    // Compute weighted average of product vectors
-    return this.computeWeightedAverage(
-      productVectors.map(pv => pv.vector),
-      weights
-    );
-
-}
-
-private getInteractionWeight(type: UserInteraction['type']): number { const
-weights = { view: 1.0, click: 2.0, like: 3.0, share: 4.0, purchase: 5.0, };
-return weights[type] || 1.0; }
-
-private computeWeightedAverage(vectors: number[][], weights: number[]): number[]
-{ if (vectors.length === 0) return [];
-
-    const dimensions = vectors[0].length;
-    const result = new Array(dimensions).fill(0);
-    const totalWeight = weights.reduce((sum, w) => sum + w, 0);
-
-    for (let d = 0; d < dimensions; d++) {
-      for (let i = 0; i < vectors.length; i++) {
-        result[d] += vectors[i][d] * weights[i];
-      }
-      result[d] /= totalWeight;
-    }
-
-    return result;
-
-}
-
-private extractTopCategories(interactions: UserInteraction[]): string[] { //
-Extract most frequent categories from interactions // This would typically query
-product metadata return []; }
-
-private extractTopBrands(interactions: UserInteraction[]): string[] { // Extract
-most frequent brands from interactions return []; } }
-
-````
-
-```typescript Real-time Recommendation Engine
-class RecommendationEngine {
-  private behaviorTracker = new UserBehaviorTracker();
-
-  async getRealtimeRecommendations(
-    userId: string,
-    context: {
-      currentProductId?: string;
-      category?: string;
-      limit?: number;
-    } = {}
-  ) {
-    const recommendations = [];
-
-    // 1. Collaborative filtering (similar users)
-    const collaborativeRecs = await this.getCollaborativeRecommendations(
-      userId,
-      context.limit || 10
-    );
-    recommendations.push(...collaborativeRecs);
-
-    // 2. Content-based filtering (similar products)
-    if (context.currentProductId) {
-      const contentRecs = await this.getContentBasedRecommendations(
-        context.currentProductId,
-        context.limit || 10
-      );
-      recommendations.push(...contentRecs);
-    }
-
-    // 3. Category-based recommendations
-    if (context.category) {
-      const categoryRecs = await this.getCategoryRecommendations(
-        context.category,
-        userId,
-        context.limit || 10
-      );
-      recommendations.push(...categoryRecs);
-    }
-
-    // 4. Trending/popular items
-    const trendingRecs = await this.getTrendingRecommendations(
-      context.limit || 5
-    );
-    recommendations.push(...trendingRecs);
-
-    // Deduplicate and rank
-    return this.rankAndDeduplicate(recommendations, context.limit || 20);
-  }
-
-  private async getCollaborativeRecommendations(userId: string, limit: number) {
-    // Find users with similar behavior
-    const userBehavior = await upstash.fetch([`user:${userId}:behavior`]);
-    if (!userBehavior || userBehavior.length === 0) return [];
-
-    const similarUsers = await upstash.query({
-      vector: userBehavior[0].vector,
-      topK: 10,
-      includeMetadata: true,
-      filter: {
-        type: { $eq: 'user_behavior' },
-      },
-    });
-
-    // Get products liked by similar users
-    // This would require additional data structures to track user-product interactions
-    return [];
-  }
-
-  private async getContentBasedRecommendations(productId: string, limit: number) {
-    return findSimilarProducts(productId, { limit, excludeSelf: true });
-  }
-
-  private async getCategoryRecommendations(category: string, userId: string, limit: number) {
-    // Get popular products in category that user hasn't interacted with
-    const categoryResults = await upstash.query({
-      vector: await this.getCategoryEmbedding(category),
-      topK: limit * 2, // Get more to filter out user's products
-      includeMetadata: true,
-      filter: {
-        category: { $eq: category },
-      },
-    });
-
-    // Filter out products user has already interacted with
-    // This would require tracking user interactions
-    return (categoryResults.matches || []).slice(0, limit);
-  }
-
-  private async getTrendingRecommendations(limit: number) {
-    // This would typically come from a separate analytics system
-    // For demo, return random popular products
-    return [];
-  }
-
-  private rankAndDeduplicate(recommendations: any[], limit: number) {
-    // Remove duplicates and rank by combined score
-    const seen = new Set();
-    const unique = recommendations.filter(rec => {
-      if (seen.has(rec.productId)) return false;
-      seen.add(rec.productId);
-      return true;
-    });
-
-    // Sort by score/relevance
-    unique.sort((a, b) => (b.score || b.similarity || 0) - (a.score || a.similarity || 0));
-
-    return unique.slice(0, limit);
-  }
-
-  private async getCategoryEmbedding(category: string): Promise<number[]> {
-    // Generate or retrieve category embedding
-    // This could be pre-computed from category products
-    return [];
-  }
-}
-````
-
-</CodeGroup>
-
-## Embedding Generation
-
-### Text Embeddings
-
-<Tabs>
-  <Tab title="OpenAI Integration">
-    ```typescript
-    import OpenAI from 'openai';
-
-    const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
-
-    async function generateEmbedding(text: string): Promise<number[]> {
-      try {
-        const response = await openai.embeddings.create({
-          model: 'text-embedding-3-small', // or text-embedding-3-large
-          input: text,
-          encoding_format: 'float',
-        });
-
-        return response.data[0].embedding;
-      } catch (error) {
-        logError('Embedding generation failed', {
-          error: error.message,
-          timestamp: new Date().toISOString()
-        });
-        throw error;
-      }
-    }
-
-    // Batch embedding generation for efficiency
-    async function generateBatchEmbeddings(texts: string[]): Promise<number[][]> {
-      const response = await openai.embeddings.create({
-        model: 'text-embedding-3-small',
-        input: texts,
-        encoding_format: 'float',
-      });
-
-      return response.data.map(item => item.embedding);
-    }
-
-    // Product-specific embedding
-    async function generateProductEmbedding(product: ProductVector): Promise<number[]> {
-      const text = `${product.title} ${product.description} ${product.category} ${product.brand} ${product.features.join(' ')} ${product.tags.join(' ')}`;
-      return generateEmbedding(text);
-    }
-    ```
-
-  </Tab>
-
-  <Tab title="Custom Embeddings">
-    ```typescript
-    // Custom embedding service for domain-specific models
-    class CustomEmbeddingService {
-      private modelEndpoint: string;
-      private apiKey: string;
-
-      constructor(endpoint: string, apiKey: string) {
-        this.modelEndpoint = endpoint;
-        this.apiKey = apiKey;
-      }
-
-      async generateEmbedding(text: string, model: string = 'default'): Promise<number[]> {
-        const response = await fetch(`${this.modelEndpoint}/embed`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${this.apiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            text,
-            model,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Embedding generation failed: ${response.statusText}`);
-        }
-
-        const result = await response.json();
-        return result.embedding;
-      }
-
-      // Specialized embeddings for different content types
-      async generateProductEmbedding(product: ProductVector): Promise<number[]> {
-        return this.generateEmbedding(
-          this.formatProductText(product),
-          'product-model'
-        );
-      }
-
-      async generateUserBehaviorEmbedding(interactions: UserInteraction[]): Promise<number[]> {
-        const behaviorText = this.formatBehaviorText(interactions);
-        return this.generateEmbedding(behaviorText, 'behavior-model');
-      }
-
-      private formatProductText(product: ProductVector): string {
-        return [
-          product.title,
-          product.description,
-          `Category: ${product.category}`,
-          `Brand: ${product.brand}`,
-          `Price: $${product.price}`,
-          `Features: ${product.features.join(', ')}`,
-          `Tags: ${product.tags.join(', ')}`,
-        ].join('
-
-'); }
-
-      private formatBehaviorText(interactions: UserInteraction[]): string {
-        const recentInteractions = interactions.slice(-20);
-        return recentInteractions.map(interaction =>
-          `${interaction.type}:${interaction.productId}`
-        ).join(' ');
-      }
-    }
-    ```
-
-  </Tab>
-</Tabs>
-
-## Performance Optimization
-
-### Efficient Vector Operations
-
-<CodeGroup>
-```typescript Batch Operations
-// Efficient batch processing
-async function processBatchVectors(
-  items: Array<{id: string, data: any}>,
-  batchSize: number = 100
-) {
-  const results = [];
-
-for (let i = 0; i < items.length; i += batchSize) { const batch = items.slice(i,
-i + batchSize);
-
-    // Generate embeddings in parallel
-    const embeddings = await Promise.all(
-      batch.map(item => generateEmbedding(item.data))
-    );
-
-    // Prepare vectors for batch upsert
-    const vectors = batch.map((item, index) => ({
-      id: item.id,
-      vector: embeddings[index],
-      metadata: {
-        ...item.data,
-        processedAt: Date.now(),
-      },
-    }));
-
-    // Batch upsert to vector database
-    await upstash.upsert(vectors);
-
-    results.push(...vectors);
-
-    // Rate limiting - wait between batches
-    if (i + batchSize < items.length) {
-      await new Promise(resolve => setTimeout(resolve, 100));
-    }
-
-}
-
-return results; }
-
-// Parallel search across multiple categories async function
-parallelCategorySearch( queryVector: number[], categories: string[], limit:
-number = 10 ) { const searchPromises = categories.map(category =>
-upstash.query({ vector: queryVector, topK: limit, includeMetadata: true, filter:
-{ category: { $eq: category }, }, }).then(result => ({ category, results:
-result.matches || [], })) );
-
-const categoryResults = await Promise.all(searchPromises);
-
-// Combine and rank results across categories const allResults =
-categoryResults.flatMap(cr => cr.results.map(r => ({ ...r, category: cr.category
-})) );
-
-return allResults .sort((a, b) => b.score - a.score) .slice(0, limit); }
-
-````
-
-```typescript Caching and Optimization
-// Cache frequently used embeddings
-class EmbeddingCache {
-  private cache = new Map<string, { embedding: number[], timestamp: number }>();
-  private readonly TTL = 24 * 60 * 60 * 1000; // 24 hours
-
-  async getEmbedding(text: string): Promise<number[]> {
-    const cached = this.cache.get(text);
-
-    if (cached && Date.now() - cached.timestamp < this.TTL) {
-      return cached.embedding;
-    }
-
-    const embedding = await generateEmbedding(text);
-    this.cache.set(text, { embedding, timestamp: Date.now() });
-
-    return embedding;
-  }
-
-  // Periodic cleanup
-  cleanup() {
-    const now = Date.now();
-    for (const [key, value] of this.cache.entries()) {
-      if (now - value.timestamp >= this.TTL) {
-        this.cache.delete(key);
-      }
-    }
-  }
-}
-
-// Optimize search with filters
-async function optimizedVectorSearch(
-  queryVector: number[],
-  options: {
-    preFilters?: Record<string, any>;
-    postFilters?: (result: any) => boolean;
-    limit?: number;
-    scoreThreshold?: number;
-  } = {}
-) {
-  // Apply pre-filters to reduce search space
-  const searchResult = await upstash.query({
-    vector: queryVector,
-    topK: (options.limit || 20) * 2, // Get more results for post-filtering
-    includeMetadata: true,
-    filter: options.preFilters,
-  });
-
-  let results = searchResult.matches || [];
-
-  // Apply score threshold
-  if (options.scoreThreshold) {
-    results = results.filter(r => r.score >= options.scoreThreshold);
-  }
-
-  // Apply post-filters
-  if (options.postFilters) {
-    results = results.filter(options.postFilters);
-  }
-
-  return results.slice(0, options.limit || 20);
-}
-````
-
-</CodeGroup>
-
-## Monitoring and Analytics
-
-### Vector Database Metrics
-
-<AccordionGroup>
-  <Accordion title="Search Performance" icon="gauge">
-    ```typescript
-    // Track search performance and quality
-    class VectorSearchAnalytics {
-      async logSearch(searchId: string, query: {
-        type: string;
-        queryVector: number[];
-        filters?: any;
-        results: any[];
-        latency: number;
-        userId?: string;
-      }) {
-        await redis.lpush('search:logs', JSON.stringify({
-          searchId,
-          timestamp: Date.now(),
-          type: query.type,
-          filterCount: Object.keys(query.filters || {}).length,
-          resultCount: query.results.length,
-          latency: query.latency,
-          userId: query.userId,
-          topScore: query.results[0]?.score || 0,
-          avgScore: query.results.reduce((sum, r) => sum + r.score, 0) / query.results.length,
-        }));
-
-        // Keep only recent logs
-        await redis.ltrim('search:logs', 0, 9999); // Keep last 10k searches
-      }
-
-      async getSearchStats(period: 'hour' | 'day' | 'week' = 'day') {
-        const logs = await redis.lrange('search:logs', 0, -1);
-        const searches = logs.map(log => JSON.parse(log));
-
-        const cutoff = Date.now() - this.getPeriodMs(period);
-        const recentSearches = searches.filter(s => s.timestamp >= cutoff);
-
-        return {
-          totalSearches: recentSearches.length,
-          avgLatency: recentSearches.reduce((sum, s) => sum + s.latency, 0) / recentSearches.length,
-          avgResultCount: recentSearches.reduce((sum, s) => sum + s.resultCount, 0) / recentSearches.length,
-          avgTopScore: recentSearches.reduce((sum, s) => sum + s.topScore, 0) / recentSearches.length,
-          searchTypes: this.groupBy(recentSearches, 'type'),
-          userDistribution: this.groupBy(recentSearches, 'userId'),
-        };
-      }
-
-      private getPeriodMs(period: string): number {
-        const periods = {
-          hour: 60 * 60 * 1000,
-          day: 24 * 60 * 60 * 1000,
-          week: 7 * 24 * 60 * 60 * 1000,
-        };
-        return periods[period] || periods.day;
-      }
-
-      private groupBy(items: any[], key: string) {
-        return items.reduce((groups, item) => {
-          const group = item[key] || 'unknown';
-          groups[group] = (groups[group] || 0) + 1;
-          return groups;
-        }, {});
-      }
-    }
-    ```
-
-  </Accordion>
-
-  <Accordion title="Recommendation Quality" icon="star">
-    ```typescript
-    // Track recommendation effectiveness
-    class RecommendationAnalytics {
-      async trackRecommendationClick(
-        userId: string,
-        recommendationId: string,
-        productId: string,
-        position: number
-      ) {
-        await redis.hincrby(`rec:clicks:${recommendationId}`, 'total', 1);
-        await redis.hincrby(`rec:clicks:${recommendationId}`, `position:${position}`, 1);
-
-        // Track user engagement
-        await redis.lpush(`user:${userId}:rec_clicks`, JSON.stringify({
-          recommendationId,
-          productId,
-          position,
-          timestamp: Date.now(),
-        }));
-      }
-
-      async getRecommendationMetrics(recommendationId: string) {
-        const clicks = await redis.hgetall(`rec:clicks:${recommendationId}`);
-        const impressions = await redis.get(`rec:impressions:${recommendationId}`);
-
-        const totalClicks = parseInt(clicks.total || '0');
-        const totalImpressions = parseInt(impressions || '0');
-
-        return {
-          ctr: totalImpressions > 0 ? totalClicks / totalImpressions : 0,
-          totalClicks,
-          totalImpressions,
-          positionBreakdown: Object.entries(clicks)
-            .filter(([key]) => key.startsWith('position:'))
-            .map(([key, value]) => ({
-              position: parseInt(key.split(':')[1]),
-              clicks: parseInt(value),
-            })),
-        };
-      }
-
-      // A/B test different recommendation algorithms
-      async trackRecommendationExperiment(
-        userId: string,
-        experimentId: string,
-        variant: string,
-        recommendations: any[]
-      ) {
-        await redis.sadd(`experiment:${experimentId}:users`, userId);
-        await redis.hset(`experiment:${experimentId}:variants`, userId, variant);
-
-        await redis.lpush(`experiment:${experimentId}:recommendations`, JSON.stringify({
-          userId,
-          variant,
-          recommendations: recommendations.map(r => r.productId),
-          timestamp: Date.now(),
-        }));
-      }
-    }
-    ```
-
-  </Accordion>
-</AccordionGroup>
-
-## Best Practices
-
-<Warning>
-  **Vector Database Best Practices:** - Choose appropriate embedding dimensions
-  for your use case (512-1536 typically) - Implement proper data preprocessing
-  and normalization - Use metadata filters to reduce search space and improve
-  performance - Monitor search quality and adjust similarity thresholds based on
-  user feedback
-</Warning>
-
-### Recommended Patterns
-
-1. **Embedding Strategy**
-   - Use consistent embedding models across your application
-   - Preprocess and normalize text before embedding generation
-   - Cache frequently used embeddings to reduce API calls
-
-2. **Search Optimization**
-   - Use metadata filters to narrow search space
-   - Implement hybrid search combining vector similarity with traditional
-     filters
-   - Set appropriate similarity thresholds based on use case
-
-3. **Data Management**
-   - Implement batch operations for large-scale updates
-   - Regular cleanup of outdated vectors
-   - Version control for embedding models and data
-
-4. **Quality Assurance**
-   - Monitor search quality through user feedback
-   - A/B testing for recommendation algorithms
-   - Regular evaluation of embedding model performance
-
-## Integration with Embedding Models
-
-### OpenAI Embeddings
-
-```typescript
-import OpenAI from "openai";
-
-const openai = new OpenAI();
-
-async function storeDocument(text: string, metadata: any) {
-  // Generate embedding
-  const response = await openai.embeddings.create({
-    model: "text-embedding-3-small",
-    input: text
-  });
-
-  const embedding = response.data[0].embedding;
-
-  // Store in Upstash Vector
-  await adapter.create("documents", {
-    id: `doc-${Date.now()}`,
-    vector: embedding,
-    metadata
-  });
-}
 ```
 
-### Semantic Search Example
+### DELETE /api/workflows/v3/cms-vectorization
 
-```typescript
-async function semanticSearch(query: string, limit = 5) {
-  // Generate query embedding
-  const response = await openai.embeddings.create({
-    model: "text-embedding-3-small",
-    input: query
-  });
+Cancel running workflow.
 
-  const queryEmbedding = response.data[0].embedding;
+#### Query Parameters
 
-  // Search similar documents
-  const results = await adapter.query(
-    {
-      vector: queryEmbedding,
-      topK: limit,
-      includeMetadata: true
+- `?workflowId=xyz` - Required workflow ID to cancel
+
+#### Requirements
+
+- Redis tracking must be configured
+- Admin authentication required
+- Workflow must be in active state
+
+```bash
+curl -X DELETE "/api/workflows/v3/cms-vectorization?workflowId=workflow_123" \
+  -H "Authorization: Bearer admin-token"
+```
+
+## Environment Configuration
+
+### Required Variables
+
+```bash
+# Upstash Vector Configuration
+UPSTASH_VECTOR_URL=https://your-vector-index.upstash.io
+UPSTASH_VECTOR_TOKEN=your_vector_token
+
+# OpenAI Configuration
+OPENAI_API_KEY=sk-your_openai_key
+
+# Optional: Embedding Model (default: text-embedding-3-small)
+CMS_EMBEDDING_MODEL=text-embedding-3-small
+
+# Optional: Batch Configuration
+CMS_VECTORIZATION_BATCH_SIZE=50
+CMS_VECTORIZATION_MAX_RETRIES=3
+CMS_VECTORIZATION_RETRY_DELAY=1000
+
+# Optional: Redis Progress Tracking
+CMS_VECTORIZATION_REDIS_TRACKING=true
+UPSTASH_REDIS_URL=redis://your-redis-url
+UPSTASH_REDIS_TOKEN=your_redis_token
+```
+
+### Embedding Models
+
+| Model                    | Dimensions | Use Case                       |
+| ------------------------ | ---------- | ------------------------------ |
+| `text-embedding-3-small` | 1536       | Default, balanced performance  |
+| `text-embedding-3-large` | 3072       | Higher quality, more expensive |
+| `text-embedding-ada-002` | 1536       | Legacy, still supported        |
+
+### Performance Tuning
+
+```bash
+# Batch Processing
+CMS_VECTORIZATION_BATCH_SIZE=50       # Entities per batch
+CMS_VECTORIZATION_CHUNK_MIN_SIZE=500  # Minimum chunk size
+CMS_VECTORIZATION_CHUNK_MAX_SIZE=1000 # Maximum chunk size
+CMS_VECTORIZATION_CHUNK_OVERLAP=100   # Chunk overlap
+
+# Rate Limiting
+CMS_VECTORIZATION_RATE_LIMIT_RPM=3500    # Requests per minute
+CMS_VECTORIZATION_RATE_LIMIT_TPM=1000000 # Tokens per minute
+
+# Retry Configuration
+CMS_VECTORIZATION_MAX_RETRIES=3    # Maximum retry attempts
+CMS_VECTORIZATION_RETRY_DELAY=1000 # Base delay (ms)
+CMS_VECTORIZATION_RETRY_BACKOFF=2  # Exponential backoff factor
+```
+
+## Usage Examples
+
+### Basic Vectorization
+
+```bash
+# Vectorize all brands
+curl -X POST /api/workflows/v3/cms-vectorization \
+  -H "Content-Type: application/json" \
+  -d '{
+    "models": ["brand"],
+    "metadata": {"source": "manual-trigger"}
+  }'
+```
+
+### Batch Processing with Options
+
+```bash
+# Process specific products with small batches
+curl -X POST /api/workflows/v3/cms-vectorization \
+  -H "Content-Type: application/json" \
+  -d '{
+    "models": ["product"],
+    "options": {
+      "batchSize": 10,
+      "entityIds": ["prod-1", "prod-2", "prod-3"],
+      "force": true
     },
-    "documents"
-  );
+    "metadata": {"source": "product-update", "user": "admin"}
+  }'
+```
 
-  return results.map((result) => ({
-    score: result.score,
-    metadata: result.metadata,
-    id: result.id
-  }));
-}
+### Dry Run Testing
+
+```bash
+# Test processing without making changes
+curl -X POST /api/workflows/v3/cms-vectorization \
+  -H "Content-Type: application/json" \
+  -d '{
+    "models": ["article", "companyContent"],
+    "options": {"dryRun": true}
+  }'
+```
+
+### Check Status
+
+```bash
+# Get system statistics
+curl /api/workflows/v3/cms-vectorization?stats=true
+
+# Get brand-specific stats
+curl /api/workflows/v3/cms-vectorization?model=brand &
+stats=true
 ```
 
 ## Troubleshooting
 
-<AccordionGroup>
-  <Accordion title="Environment Variables" icon="warning">
-    **Error**: `Upstash Vector client not available. Please configure UPSTASH_VECTOR_REST_URL and UPSTASH_VECTOR_REST_TOKEN environment variables.`
-    
-    **Solution**: 
-    1. Ensure `UPSTASH_VECTOR_REST_URL` and `UPSTASH_VECTOR_REST_TOKEN` are set in your environment variables
-    2. Create an Upstash Vector database at https://console.upstash.com/vector
-    3. Add the credentials to your `.env.local` file or Doppler configuration
-    
-    **Note**: Vector operations will fail gracefully with warnings if not configured, allowing the application to continue running.
-  </Accordion>
+### Common Issues
 
-<Accordion title="Dimension Mismatch" icon="arrows-alt">
-  **Error**: `Vector dimension mismatch` **Solution**: Ensure all vectors have
-  the same dimension as your index. Use consistent embedding models.
-</Accordion>
+#### 1. Authentication Failures
 
-  <Accordion title="Quota Exceeded" icon="exclamation-triangle">
-    **Error**: `Request quota exceeded` **Solution**: Check your Upstash Vector usage limits and
-    upgrade plan if needed.
-  </Accordion>
-</AccordionGroup>
-
-### Performance Tips
-
-- Use batch operations (`upsertMany`, `deleteMany`) for better performance
-- Keep metadata lightweight to reduce storage costs
-- Use appropriate `topK` values to balance accuracy and performance
-- Consider using namespaces to organize different types of vectors
-- Implement caching for frequently accessed vectors
-
-### Debugging
-
-```typescript
-// Test vector operations
-async function testVectorOperations() {
-  try {
-    // Test connection
-    const info = await adapter.getInfo();
-    logInfo("Vector database status", {
-      info,
-      timestamp: new Date().toISOString()
-    });
-
-    // Test embedding generation
-    const testEmbedding = await generateEmbedding("test text");
-    logInfo("Embedding dimensions", {
-      dimensions: testEmbedding.length,
-      timestamp: new Date().toISOString()
-    });
-
-    // Test upsert and query
-    await adapter.create("test", {
-      id: "test-1",
-      vector: testEmbedding,
-      metadata: { test: true }
-    });
-
-    const results = await adapter.query(
-      {
-        vector: testEmbedding,
-        topK: 1,
-        includeMetadata: true
-      },
-      "test"
-    );
-
-    logInfo("Vector query results", {
-      results,
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    logError("Vector operation failed", {
-      error: error.message,
-      timestamp: new Date().toISOString()
-    });
-  }
-}
+```
+Error: Invalid API key
+Solution: Check OPENAI_API_KEY environment variable
 ```
 
-The Vector database integration provides powerful AI-driven capabilities that
-enable intelligent product recommendations, semantic search, and content
-matching, significantly enhancing user experience and business intelligence
-capabilities.
+#### 2. Dimension Mismatches
+
+```
+Error: Vector dimension mismatch: expected 1536, got 1024
+Solution: Verify CMS_EMBEDDING_MODEL configuration matches Upstash Vector index
+```
+
+#### 3. Database Connection Issues
+
+```
+Error: P1008: Operations timed out
+Solution: Check database connection, consider increasing connection pool size
+```
+
+#### 4. Rate Limiting
+
+```
+Error: Rate limit exceeded
+Solution: Reduce batch size or implement longer delays between requests
+```
+
+### Debugging Steps
+
+1. **Check Environment Variables**: Ensure all required vars are set
+2. **Verify Database Schema**: Run `pnpm migrate` to ensure latest schema
+3. **Test API Endpoints**: Use dry run mode to test without side effects
+4. **Monitor Logs**: Check application logs for detailed error messages
+5. **Inspect Vector Index**: Verify Upstash Vector configuration and dimensions
+6. **Check Rate Limits**: Monitor `X-RateLimit-*` headers in API responses
+7. **Review Retry Status**: Query failed entities with retry count tracking
+8. **Validate Performance**: Check `processingTimeMs` and `contentLength`
+   metrics
+
+### Performance Optimization
+
+#### Batch Size Tuning
+
+- **Small Batches (10-25)**: Better error isolation, higher API overhead
+- **Medium Batches (50-100)**: Balanced performance, recommended default
+- **Large Batches (200-500)**: Higher throughput, risk of timeout failures
+
+#### Memory Management
+
+- Monitor memory usage during large batch processing
+- Consider processing high-content entities (articles, products) separately
+- Use smaller batch sizes for content-heavy entity types
+
+#### Rate Limit Management
+
+```typescript
+// Recommended rate limits for OpenAI API
+const RATE_LIMITS = {
+  "text-embedding-3-small": { rpm: 3500, tpm: 1000000 },
+  "text-embedding-3-large": { rpm: 3500, tpm: 1000000 },
+  "text-embedding-ada-002": { rpm: 3000, tpm: 1000000 }
+};
+```
+
+## Maintenance
+
+### Regular Tasks
+
+1. **Index Cleanup**: Remove stale vector indexes for deleted entities
+2. **Performance Review**: Monitor processing times and adjust batch sizes
+3. **Error Analysis**: Review error patterns and update retry logic
+4. **Schema Updates**: Increment `BUILDER_VERSION` when content logic changes
+5. **Retry Monitoring**: Track entities with high retry counts for investigation
+6. **Rate Limit Analysis**: Review API rate limiting effectiveness and adjust
+   limits
+7. **Performance Metrics**: Monitor `processingTimeMs` trends for optimization
+
+### Enhanced Queries
+
+```sql
+-- Find entities needing retry (failed with retries remaining)
+SELECT entityType, entityId, retryCount, lastError, updatedAt
+FROM "VectorIndex"
+WHERE status = 'FAILED' AND retryCount < 3
+ORDER BY retryCount ASC, updatedAt ASC;
+
+-- Find stale entities (not synced recently)
+SELECT entityType, entityId, lastSyncedAt, updatedAt
+FROM "VectorIndex"
+WHERE status = 'SYNCED'
+  AND lastSyncedAt < NOW() - INTERVAL '7 days'
+ORDER BY lastSyncedAt ASC;
+
+-- Performance analysis
+SELECT entityType,
+       COUNT(*) as total_entities,
+       AVG(processingTimeMs) as avg_processing_time,
+       AVG(contentLength) as avg_content_length,
+       AVG(chunkCount) as avg_chunks
+FROM "VectorIndex"
+WHERE status = 'SYNCED' AND processingTimeMs IS NOT NULL
+GROUP BY entityType
+ORDER BY avg_processing_time DESC;
+```
+
+### Automated Maintenance
+
+```bash
+# Clean up stale indexes (deleted entities)
+curl -X DELETE /api/workflows/v3/cms-vectorization?cleanup=stale
+
+# Re-process failed entities
+curl -X POST /api/workflows/v3/cms-vectorization \
+  -d '{"models": ["*"], "options": {"force": true, "statusFilter": "FAILED"}}'
+```
+
+### Backup and Recovery
+
+- **Vector Data**: Managed by Upstash Vector service
+- **Index Tracking**: Backed up with main database
+- **Configuration**: Version controlled in application code
+
+## Security Considerations
+
+### Access Control
+
+- **Admin Only**: All vectorization endpoints require admin role
+- **API Authentication**: Uses Better Auth session validation
+- **Rate Limiting**: Built-in protection against abuse
+
+### Data Privacy
+
+- **PII Exclusion**: Automatic filtering of sensitive fields
+- **Content Sanitization**: HTML/script tag removal
+- **Audit Logging**: Track all vectorization activities
+
+### Network Security
+
+- **HTTPS Only**: All API communications encrypted
+- **API Key Protection**: Secure environment variable management
+- **Network Isolation**: Upstash Vector accessed via secured endpoints
+
+## Migration and Upgrades
+
+### Version Management
+
+When upgrading the vectorization system:
+
+1. **Increment BUILDER_VERSION** for content logic changes
+2. **Run migration** for database schema changes
+3. **Force re-processing** for all entities if needed
+4. **Test thoroughly** with dry run mode first
+
+### Data Migration
+
+```bash
+# Force re-process all entities after upgrade
+curl -X POST /api/workflows/v3/cms-vectorization \
+  -d '{
+    "models": ["brand", "product", "collection", "article"], 
+    "options": {"force": true},
+    "metadata": {"migration": "v2-to-v3"}
+  }'
+```
+
+### Rollback Procedures
+
+1. **Database Rollback**: Use database migration rollback
+2. **Code Rollback**: Deploy previous application version
+3. **Vector Cleanup**: Remove vectors created during failed migration
+4. **Index Reset**: Reset VectorIndex status to previous state
+
+---
+
+For additional support and advanced configuration options, refer to the workflow
+implementation files or contact the development team.

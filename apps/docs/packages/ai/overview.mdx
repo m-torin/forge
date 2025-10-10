@@ -125,7 +125,7 @@ orchestration.
 import {
   executeMultiStepAgent,
   stepCountAtMost,
-  createResearchAgent
+  createResearchAgent,
 } from "@repo/ai/server/agents";
 
 // Simple multi-step execution
@@ -136,20 +136,20 @@ const result = await executeMultiStepAgent({
   stopWhen: stepCountAtMost(6),
   onStepFinish: ({ stepNumber, result }) => {
     console.log(`Step ${stepNumber}:`, result.text);
-  }
+  },
 });
 
 // Pre-configured research agent
 const agent = createResearchAgent({
   searchTools: true,
   analysisTools: true,
-  citationRequired: true
+  citationRequired: true,
 });
 
 const research = await executeMultiStepAgent({
   ...agent,
   messages: [{ role: "user", content: "Analyze AI market trends" }],
-  maxSteps: 10
+  maxSteps: 10,
 });
 ```
 
@@ -230,7 +230,7 @@ environments.
 import {
   createComputerTool,
   createBashTool,
-  createTextEditorTool
+  createTextEditorTool,
 } from "@repo/ai/server/tools";
 
 // Computer interaction
@@ -238,8 +238,8 @@ const computerTool = createComputerTool({
   display: 1,
   security: {
     allowedApplications: ["chrome", "vscode", "terminal"],
-    blockedRegions: [{ x: 0, y: 0, width: 100, height: 50 }]
-  }
+    blockedRegions: [{ x: 0, y: 0, width: 100, height: 50 }],
+  },
 });
 
 // Secure bash execution
@@ -248,8 +248,8 @@ const bashTool = createBashTool({
   security: {
     allowedCommands: ["ls", "cat", "grep", "find", "node"],
     blockedCommands: ["rm -rf", "sudo"],
-    networkAccess: false
-  }
+    networkAccess: false,
+  },
 });
 
 // File editing
@@ -257,15 +257,15 @@ const editorTool = createTextEditorTool({
   allowedPaths: ["/workspace/**"],
   maxFileSize: 1024 * 1024, // 1MB
   security: {
-    allowedExtensions: [".js", ".ts", ".md", ".json"]
-  }
+    allowedExtensions: [".js", ".ts", ".md", ".json"],
+  },
 });
 
 // Use with AI models
 const result = await generateText({
   model: createAnthropicModel("claude-3-5-sonnet-20241022"),
   messages: [{ role: "user", content: "Take screenshot and list files" }],
-  tools: { computer: computerTool, bash: bashTool, editor: editorTool }
+  tools: { computer: computerTool, bash: bashTool, editor: editorTool },
 });
 ```
 
@@ -342,7 +342,7 @@ import { Index } from "@upstash/vector";
 
 const vectorDB = new Index({
   url: process.env.UPSTASH_VECTOR_REST_URL!,
-  token: process.env.UPSTASH_VECTOR_REST_TOKEN!
+  token: process.env.UPSTASH_VECTOR_REST_TOKEN!,
 });
 
 // Vector tools for AI SDK
@@ -350,7 +350,7 @@ const vectorTools = createVectorTools({
   vectorDB,
   embeddingModel: "text-embedding-3-large",
   defaultTopK: 10,
-  cacheEmbeddings: true
+  cacheEmbeddings: true,
 });
 
 const result = await streamText({
@@ -358,8 +358,8 @@ const result = await streamText({
   messages,
   tools: {
     searchKnowledge: vectorTools.searchVectorContext,
-    addDocument: vectorTools.addToKnowledgeBase
-  }
+    addDocument: vectorTools.addToKnowledgeBase,
+  },
 });
 ```
 
@@ -373,7 +373,7 @@ const ragWorkflow = new VectorRAGWorkflow({
   chatModel: "gpt-4o",
   namespace: "knowledge-base",
   enableReranking: true,
-  enableCaching: true
+  enableCaching: true,
 });
 
 // Add documents
@@ -381,14 +381,14 @@ await ragWorkflow.addDocuments([
   {
     id: "ai-basics",
     content: "Artificial intelligence overview...",
-    metadata: { topic: "AI", difficulty: "beginner" }
-  }
+    metadata: { topic: "AI", difficulty: "beginner" },
+  },
 ]);
 
 // Query with streaming
 const response = await ragWorkflow.query("What is AI?", {
   stream: true,
-  includeContext: true
+  includeContext: true,
 });
 ```
 
@@ -402,12 +402,12 @@ const hybridTools = createHybridSearchTools({
   textSearchIndex: textSearchService,
   combineStrategy: "rrf", // Reciprocal Rank Fusion
   vectorWeight: 0.7,
-  textWeight: 0.3
+  textWeight: 0.3,
 });
 
 const results = await hybridTools.hybridSearch.execute({
   query: "quantum computing applications",
-  finalTopK: 10
+  finalTopK: 10,
 });
 ```
 
@@ -422,15 +422,15 @@ backpressure handling.
 import {
   EnhancedStreamData,
   StreamInterruptionController,
-  BackpressureController
+  BackpressureController,
 } from "@repo/ai/server/streaming";
 
 // Rich metadata streaming
 const streamData = new EnhancedStreamData({
   types: {
     progress: { step: "string", percentage: "number" },
-    metrics: { tokens_used: "number", cost: "number" }
-  }
+    metrics: { tokens_used: "number", cost: "number" },
+  },
 });
 
 const response = await createStreamingResponseWithData({
@@ -440,9 +440,9 @@ const response = await createStreamingResponseWithData({
   onProgress: ({ step, percentage }) => {
     streamData.append({
       type: "progress",
-      data: { step, percentage }
+      data: { step, percentage },
     });
-  }
+  },
 });
 ```
 
@@ -453,7 +453,7 @@ const response = await createStreamingResponseWithData({
 const controller = new StreamInterruptionController();
 const interruptibleStream = createInterruptibleStream(
   originalStream,
-  controller
+  controller,
 );
 
 controller.onInterrupt(async (reason) => {
@@ -470,7 +470,7 @@ document.getElementById("stop-btn").onclick = () =>
 const backpressureController = new BackpressureController({
   highWaterMark: 100,
   strategy: "throttle",
-  maxBufferSize: 1000
+  maxBufferSize: 1000,
 });
 ```
 
@@ -484,7 +484,7 @@ Enterprise-grade prompt management with templates, caching, and version control.
 import {
   PromptTemplateRegistry,
   PromptCache,
-  PromptVersionManager
+  PromptVersionManager,
 } from "@repo/ai/server/prompts";
 
 // Template registry
@@ -493,21 +493,21 @@ const registry = new PromptTemplateRegistry();
 registry.register("analysis", {
   template: "Analyze {{product}} focusing on {{aspects}}. Format: {{format}}",
   variables: ["product", "aspects", "format"],
-  metadata: { category: "analysis", version: "1.0" }
+  metadata: { category: "analysis", version: "1.0" },
 });
 
 // Use template
 const prompt = createPrompt("analysis", {
   product: "iPhone 15 Pro",
   aspects: "performance, battery",
-  format: "JSON"
+  format: "JSON",
 });
 
 // Intelligent caching
 const cache = new PromptCache({
   strategy: "LRU",
   maxSize: 1000,
-  ttl: 3600000 // 1 hour
+  ttl: 3600000, // 1 hour
 });
 
 // Version control
@@ -529,25 +529,25 @@ const mcpManager = new MCPServerManager();
 await mcpManager.registerServer("filesystem", {
   command: "npx",
   args: ["@modelcontextprotocol/server-filesystem", "/workspace"],
-  capabilities: ["resources", "tools"]
+  capabilities: ["resources", "tools"],
 });
 
 // Create tools from MCP servers
 const mcpTools = await createMCPTools(mcpManager, {
   allowedServers: ["filesystem", "database"],
-  securityPolicy: "strict"
+  securityPolicy: "strict",
 });
 
 // MCP RAG integration
 const mcpRAG = createMCPRAGWorkflow({
   mcpServers: {
     knowledge: "mcp://knowledge-base",
-    documents: "mcp://document-store"
+    documents: "mcp://document-store",
   },
   ragConfig: {
     embeddingModel: "text-embedding-3-large",
-    topK: 10
-  }
+    topK: 10,
+  },
 });
 ```
 
@@ -560,42 +560,42 @@ const mcpRAG = createMCPRAGWorkflow({
 import {
   createOpenAIModel,
   createAnthropicModel,
-  createModels
+  createModels,
 } from "@repo/ai/server/next";
 
 // Multi-step agents
 import {
   executeMultiStepAgent,
   createResearchAgent,
-  executeParallelAgents
+  executeParallelAgents,
 } from "@repo/ai/server/agents";
 
 // Computer use tools
 import {
   createBashTool,
   createTextEditorTool,
-  createComputerTool
+  createComputerTool,
 } from "@repo/ai/server/tools";
 
 // Vector and RAG
 import {
   createVectorTools,
   VectorRAGWorkflow,
-  createHybridSearchTools
+  createHybridSearchTools,
 } from "@repo/ai/server/next";
 
 // Advanced streaming
 import {
   EnhancedStreamData,
   StreamInterruptionController,
-  BackpressureController
+  BackpressureController,
 } from "@repo/ai/server/streaming";
 
 // Prompt management
 import {
   PromptTemplateRegistry,
   PromptCache,
-  PromptVersionManager
+  PromptVersionManager,
 } from "@repo/ai/server/prompts";
 
 // RSC utilities
@@ -642,13 +642,13 @@ import { useAIChat, useAIStream } from "@repo/ai/client/next";
 import {
   createErrorRecovery,
   createCircuitBreaker,
-  createRetryStrategy
+  createRetryStrategy,
 } from "@repo/ai/server/next";
 
 // Circuit breaker for external APIs
 const circuitBreaker = createCircuitBreaker({
   failureThreshold: 5,
-  resetTimeout: 30000
+  resetTimeout: 30000,
 });
 
 // Retry with exponential backoff
@@ -656,7 +656,7 @@ const retryStrategy = createRetryStrategy({
   maxRetries: 3,
   baseDelay: 1000,
   backoffFactor: 2,
-  jitter: true
+  jitter: true,
 });
 
 // Graceful degradation
@@ -664,8 +664,8 @@ const recovery = createErrorRecovery({
   fallbackModel: "gpt-3.5-turbo",
   degradedMode: {
     disableStreaming: true,
-    reduceContextLength: true
-  }
+    reduceContextLength: true,
+  },
 });
 ```
 

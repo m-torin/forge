@@ -149,10 +149,15 @@ export function createAdvancedMiddleware(
 
       return response || NextResponse.next();
     } catch (error) {
-      logError(
+      const maybePromise = logError(
         'Advanced middleware error:',
         error instanceof Error ? error : new Error(String(error)),
-      );
+      ) as any;
+      if (maybePromise && typeof maybePromise.then === 'function') {
+        try {
+          await maybePromise;
+        } catch {}
+      }
 
       // Return error response with debugging info
       return NextResponse.json(

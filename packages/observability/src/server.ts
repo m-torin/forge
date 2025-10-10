@@ -2,9 +2,9 @@
  * Auto-configuring server export for Node.js environments (non-Next.js)
  */
 
-import { safeEnv } from '../env';
-import { ObservabilityBuilder } from './factory/builder';
-import { createConsoleServerPlugin } from './plugins/console';
+import { safeEnv } from "../env";
+import { ObservabilityBuilder } from "./factory/builder";
+import { createConsoleServerPlugin } from "./plugins/console";
 
 /**
  * Auto-configured observability for Node.js server environments
@@ -15,7 +15,8 @@ const builder = ObservabilityBuilder.create();
 // Console logging control
 const env = safeEnv();
 const isDevelopment =
-  env.NEXT_PUBLIC_NODE_ENV === 'development' || process.env.NODE_ENV === 'development';
+  env.NEXT_PUBLIC_NODE_ENV === "development" ||
+  process.env.NODE_ENV === "development";
 const enableConsole =
   env.NEXT_PUBLIC_OBSERVABILITY_CONSOLE_ENABLED ?? // Explicit control
   isDevelopment ?? // Auto in dev
@@ -24,7 +25,7 @@ const enableConsole =
 // Always add console plugin, control via enabled flag
 builder.withPlugin(
   createConsoleServerPlugin({
-    prefix: '[Server]',
+    prefix: "[Server]",
     enabled: enableConsole,
   }),
 );
@@ -39,9 +40,9 @@ builder.withPlugin(
 export const observability = builder.build();
 
 // Export types and utilities
-export * from './core/types';
-export { createObservability } from './factory';
-export { ObservabilityBuilder } from './factory/builder';
+export * from "./core/types";
+export { createObservability } from "./factory";
+export { ObservabilityBuilder } from "./factory/builder";
 
 /**
  * Logger functions exported from the observability instance

@@ -186,6 +186,21 @@ export function PasskeyRegistrationWizard({
     createInitialActionState(),
   );
 
+  // Check WebAuthn support on component mount
+  useEffect(() => {
+    const checkSupport = () => {
+      if (!window.PublicKeyCredential) {
+        setStep('error');
+        return;
+      }
+
+      setIsWebAuthnSupported(true);
+      setStep('name-passkey');
+    };
+
+    checkSupport();
+  }, []);
+
   // WebAuthn registration process
   const startWebAuthnRegistration = useCallback(
     async (options: any) => {
@@ -254,21 +269,6 @@ export function PasskeyRegistrationWizard({
     },
     [registrationData, completeAction, onError],
   );
-
-  // Check WebAuthn support on component mount
-  useEffect(() => {
-    const checkSupport = () => {
-      if (!window.PublicKeyCredential) {
-        setStep('error');
-        return;
-      }
-
-      setIsWebAuthnSupported(true);
-      setStep('name-passkey');
-    };
-
-    checkSupport();
-  }, []);
 
   // Handle passkey registration initiation
   useEffect(() => {
@@ -439,6 +439,7 @@ export function PasskeyRegistrationWizard({
       </CardHeader>
 
       <CardContent>
+        {/* Step Progress */}
         <div className="mb-6">
           <div className="mb-4 flex items-center justify-center space-x-2">
             {['check-support', 'name-passkey', 'create-passkey', 'success'].map(
@@ -496,7 +497,9 @@ export function PasskeyRegistrationWizard({
           </div>
         </div>
 
+        {/* Step Content */}
         <div className="space-y-4">
+          {/* Check Support Step */}
           {step === 'check-support' && (
             <div className="py-8 text-center">
               <div className={cn('text-sm text-gray-600', 'dark:text-gray-400')}>
@@ -505,6 +508,7 @@ export function PasskeyRegistrationWizard({
             </div>
           )}
 
+          {/* Name Passkey Step */}
           {step === 'name-passkey' && (
             <form action={initiateAction} className="space-y-4">
               {initiateState?.error && <Alert variant="destructive">{initiateState.error}</Alert>}
@@ -563,6 +567,7 @@ export function PasskeyRegistrationWizard({
             </form>
           )}
 
+          {/* Create Passkey Step */}
           {step === 'create-passkey' && (
             <div className="space-y-4 py-8 text-center">
               <div
@@ -604,6 +609,7 @@ export function PasskeyRegistrationWizard({
             </div>
           )}
 
+          {/* Success Step */}
           {step === 'success' && (
             <div className="space-y-4">
               <Alert variant="success">{completeState?.message}</Alert>
@@ -664,6 +670,7 @@ export function PasskeyRegistrationWizard({
             </div>
           )}
 
+          {/* Error Step */}
           {step === 'error' && (
             <div className="space-y-4">
               <Alert variant="destructive">
@@ -730,6 +737,7 @@ export function PasskeyRegistrationWizard({
           )}
         </div>
 
+        {/* Cancel Button (except on success) */}
         {step !== 'success' && step !== 'error' && (
           <div className="mt-6 text-center">
             <button
@@ -748,6 +756,7 @@ export function PasskeyRegistrationWizard({
           </div>
         )}
 
+        {/* Browser Support Information */}
         <div className={cn('mt-6 rounded-lg bg-gray-50 p-4', 'dark:bg-gray-800')}>
           <h4 className={cn('mb-2 text-sm font-medium text-gray-900', 'dark:text-gray-100')}>
             Passkey Support

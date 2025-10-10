@@ -21,7 +21,7 @@ export const mockGenerateMetadata = vi.fn(async (props: any, parent?: any) => {
 });
 
 // Mock generateImageMetadata function
-export const mockGenerateImageMetadata = vi.fn(async (props: any) => {
+const mockGenerateImageMetadata = vi.fn(async (props: any) => {
   return [
     {
       id: 0,
@@ -39,7 +39,7 @@ export const mockGenerateImageMetadata = vi.fn(async (props: any) => {
 });
 
 // Mock generateStaticParams function
-export const mockGenerateStaticParams = vi.fn(async () => {
+const mockGenerateStaticParams = vi.fn(async () => {
   return [
     { id: '1', slug: 'first-post' },
     { id: '2', slug: 'second-post' },
@@ -48,7 +48,7 @@ export const mockGenerateStaticParams = vi.fn(async () => {
 });
 
 // Mock generateViewport function
-export const mockGenerateViewport = vi.fn(async (props: any) => {
+const mockGenerateViewport = vi.fn(async (props: any) => {
   return {
     width: 'device-width',
     initialScale: 1,
@@ -60,12 +60,12 @@ export const mockGenerateViewport = vi.fn(async (props: any) => {
 });
 
 // Mock generateSitemaps function
-export const mockGenerateSitemaps = vi.fn(async () => {
+const mockGenerateSitemaps = vi.fn(async () => {
   return [{ id: 'sitemap-1' }, { id: 'sitemap-2' }];
 });
 
 // Mock ImageResponse from next/og
-export const mockImageResponse = vi.fn((element: any, options: any = {}) => {
+const mockImageResponse = vi.fn((element: any, options: any = {}) => {
   const mockResponse = {
     body: 'mock-image-body',
     headers: new Headers({
