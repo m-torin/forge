@@ -1,5 +1,5 @@
 // JavaScriptEditorNode/formSchema.ts
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 const validateJavaScript = (code: string): boolean => {
   try {

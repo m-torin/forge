@@ -1,5 +1,5 @@
 {
-  "extends": "@repo/config/typescript/nextjs.json",
+  "extends": "../config/src/typescript/nextjs.json",
   "compilerOptions": {
     "baseUrl": ".",
     "types": ["vitest/globals"],
@@ -10,5 +10,5 @@
     }
   },
   "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "examples/**/*"]
 }

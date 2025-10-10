@@ -233,7 +233,7 @@ export async function debugConfig(config: AnalyticsConfig): Promise<void> {
   });
 
   if (result.errors.length > 0) {
-    logError(new Error('Analytics configuration errors: Validation failed'), {
+    logError('Analytics configuration errors: Validation failed', {
       errors: result.errors,
     });
   }

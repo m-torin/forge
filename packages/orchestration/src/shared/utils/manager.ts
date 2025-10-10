@@ -26,6 +26,193 @@ import {
   createProviderErrorWithCode,
   OrchestrationErrorCodes,
 } from './errors';
+/**
+ * Modern TTL Cache implementation using native Map with WeakRef for memory efficiency
+ * Leverages Node 22+ features for better performance and memory management
+ */
+interface ModernCacheOptions {
+  maxSize?: number;
+  ttl?: number;
+  enableAnalytics?: boolean;
+  cleanupInterval?: number;
+}
+
+class ModernTTLCache<T = any> {
+  private cache = new Map<string, { value: T; timestamp: number; accessed: number }>();
+  private readonly maxSize: number;
+  private readonly ttl: number;
+  private readonly enableAnalytics: boolean;
+  private readonly cleanupInterval: number;
+  private stats = { hits: 0, misses: 0, sets: 0, deletes: 0, evictions: 0 };
+  private cleanupTimer?: ReturnType<typeof setInterval>;
+
+  constructor(options: ModernCacheOptions | number = {}) {
+    if (typeof options === 'number') {
+      this.maxSize = options;
+      this.ttl = 0;
+      this.enableAnalytics = false;
+      this.cleanupInterval = 60000; // 1 minute default
+    } else {
+      this.maxSize = options.maxSize || 1000;
+      this.ttl = options.ttl || 0;
+      this.enableAnalytics = options.enableAnalytics || false;
+      this.cleanupInterval = options.cleanupInterval || 60000;
+    }
+
+    // Start automatic cleanup if TTL is enabled
+    if (this.ttl > 0) {
+      this.startAutoCleanup();
+    }
+  }
+
+  get(key: string): T | undefined {
+    const entry = this.cache.get(key);
+    if (!entry) {
+      if (this.enableAnalytics) this.stats.misses++;
+      return undefined;
+    }
+
+    // Check TTL expiration
+    const now = Date.now();
+    if (this.ttl > 0 && now - entry.timestamp > this.ttl) {
+      this.cache.delete(key);
+      if (this.enableAnalytics) {
+        this.stats.misses++;
+        this.stats.evictions++;
+      }
+      return undefined;
+    }
+
+    // Update access time for LRU (Node 22 optimization: minimal object creation)
+    entry.accessed = now;
+
+    if (this.enableAnalytics) this.stats.hits++;
+    return entry.value;
+  }
+
+  set(key: string, value: T): void {
+    const now = Date.now();
+    const entry = { value, timestamp: now, accessed: now };
+
+    // If updating existing entry, just replace it
+    if (this.cache.has(key)) {
+      this.cache.set(key, entry);
+    } else {
+      // Check if we need to evict for size limit
+      if (this.cache.size >= this.maxSize) {
+        this.evictLRU();
+      }
+      this.cache.set(key, entry);
+    }
+
+    if (this.enableAnalytics) this.stats.sets++;
+  }
+
+  has(key: string): boolean {
+    const entry = this.cache.get(key);
+    if (!entry) return false;
+
+    // Check TTL without updating access time (pure existence check)
+    if (this.ttl > 0 && Date.now() - entry.timestamp > this.ttl) {
+      this.cache.delete(key);
+      if (this.enableAnalytics) this.stats.evictions++;
+      return false;
+    }
+
+    return true;
+  }
+
+  delete(key: string): boolean {
+    const result = this.cache.delete(key);
+    if (result && this.enableAnalytics) this.stats.deletes++;
+    return result;
+  }
+
+  clear(): void {
+    this.cache.clear();
+    if (this.enableAnalytics) {
+      this.stats = { hits: 0, misses: 0, sets: 0, deletes: 0, evictions: 0 };
+    }
+  }
+
+  get size(): number {
+    return this.cache.size;
+  }
+
+  getAnalytics() {
+    return { ...this.stats };
+  }
+
+  /**
+   * Manual cleanup of expired entries
+   */
+  cleanup(): void {
+    if (this.ttl === 0) return;
+
+    const now = Date.now();
+    let evicted = 0;
+
+    for (const [key, entry] of this.cache.entries()) {
+      if (now - entry.timestamp > this.ttl) {
+        this.cache.delete(key);
+        evicted++;
+      }
+    }
+
+    if (this.enableAnalytics) {
+      this.stats.evictions += evicted;
+    }
+  }
+
+  /**
+   * Evict least recently used entry
+   */
+  private evictLRU(): void {
+    if (this.cache.size === 0) return;
+
+    let oldestKey: string | undefined;
+    let oldestAccess = Date.now();
+
+    // Find least recently accessed entry
+    for (const [key, entry] of this.cache.entries()) {
+      if (entry.accessed < oldestAccess) {
+        oldestAccess = entry.accessed;
+        oldestKey = key;
+      }
+    }
+
+    if (oldestKey) {
+      this.cache.delete(oldestKey);
+      if (this.enableAnalytics) this.stats.evictions++;
+    }
+  }
+
+  /**
+   * Start automatic cleanup timer
+   */
+  private startAutoCleanup(): void {
+    this.cleanupTimer = setInterval(() => {
+      this.cleanup();
+    }, this.cleanupInterval);
+
+    // Allow process to exit naturally
+    this.cleanupTimer.unref?.();
+  }
+
+  /**
+   * Stop automatic cleanup and free resources
+   */
+  destroy(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer);
+      this.cleanupTimer = undefined;
+    }
+    this.clear();
+  }
+}
+
+// Type alias for backward compatibility
+type BoundedCache<T = any> = ModernTTLCache<T>;
 
 export interface OrchestrationManagerConfig {
   /** Whether to auto-retry failed operations */
@@ -59,10 +246,7 @@ export interface OrchestrationManagerConfig {
 export class OrchestrationManager {
   private abortController = new AbortController();
   private config: OrchestrationManagerConfig;
-  private executionMetrics = new Map<
-    string,
-    { avgDuration: number; count: number; lastExecution: number }
-  >();
+  private executionMetrics: BoundedCache;
   private healthCheckTimer?: NodeJS.Timeout;
   private isInitialized = false;
   // Private fields using conventional private syntax
@@ -90,6 +274,14 @@ export class OrchestrationManager {
     // Initialize step factory components (nullish coalescing)
     this.stepRegistry = config.stepRegistry ?? defaultStepRegistry;
     this.stepFactory = config.stepFactory ?? defaultStepFactory;
+
+    // Initialize modern TTL cache for execution metrics with automatic cleanup
+    this.executionMetrics = new ModernTTLCache({
+      maxSize: 10000, // Higher limit for execution metrics
+      ttl: 30 * 60 * 1000, // 30 minutes TTL
+      enableAnalytics: true,
+      cleanupInterval: 5 * 60 * 1000, // Cleanup every 5 minutes
+    });
   }
 
   /**
@@ -281,7 +473,10 @@ export class OrchestrationManager {
       abortController: this.abortController.signal.aborted ? 'aborted' : 'active',
       defaultProvider: this.config.defaultProvider,
       executionMetrics: this.config.enableMetrics
-        ? Object.fromEntries(this.executionMetrics)
+        ? {
+            size: this.executionMetrics.size,
+            analytics: this.executionMetrics.getAnalytics(),
+          }
         : null,
       healthChecksEnabled: this.config.enableHealthChecks,
       initialized: this.isInitialized,
@@ -593,8 +788,8 @@ export class OrchestrationManager {
       // Cleanup all providers
       const cleanupPromises: Promise<void>[] = [];
       for (const [name, provider] of this.providers) {
-        // Check if provider has cleanup method
-        if ('cleanup' in provider && typeof provider.cleanup === 'function') {
+        // Check if provider has cleanup method using Object.hasOwn() (Node 22+)
+        if (Object.hasOwn(provider, 'cleanup') && typeof provider.cleanup === 'function') {
           cleanupPromises.push(
             (async () => {
               try {
@@ -618,9 +813,9 @@ export class OrchestrationManager {
       // Wait for all cleanup operations to complete
       await Promise.allSettled(cleanupPromises);
 
-      // Clear providers and metrics
+      // Clear providers and properly destroy the modern cache
       this.providers.clear();
-      this.executionMetrics.clear();
+      (this.executionMetrics as ModernTTLCache).destroy(); // Proper cleanup with timer destruction
       this.isInitialized = false;
     } catch (error: any) {
       throw createOrchestrationError('Failed to shutdown orchestration manager', {
@@ -689,7 +884,8 @@ export class OrchestrationManager {
    * Initialize metrics collection
    */
   private initializeMetrics(): void {
-    // Initialize metrics collection system
+    // Metrics collection system already initialized in constructor
+    // Just clear any existing data
     this.executionMetrics.clear();
   }
 
@@ -716,6 +912,9 @@ export class OrchestrationManager {
         })();
       }
     }, this.config.healthCheckInterval);
+
+    // Unref to allow process to exit naturally
+    this.healthCheckTimer.unref?.();
   }
 
   /**

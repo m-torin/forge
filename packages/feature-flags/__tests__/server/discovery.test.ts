@@ -219,7 +219,7 @@ describe('server/discovery', () => {
 
       mockGetProviderData.mockRejectedValue('string error');
 
-      await expect(getProviderDataWithMetadata({})).rejects.toThrow();
+      await expect(getProviderDataWithMetadata({})).rejects.toThrow('string error');
       expect(mockLogError).toHaveBeenCalledWith(expect.any(Error), {
         context: 'provider-data-metadata',
       });
@@ -300,7 +300,7 @@ describe('server/discovery', () => {
       const { mergeMultipleProviders } = await import('#/server/discovery');
 
       // Force an error by passing invalid providers
-      await expect(mergeMultipleProviders(null as any)).rejects.toThrow();
+      await expect(mergeMultipleProviders(null as any)).rejects.toThrow(/map/);
       expect(mockLogError).toHaveBeenCalledWith(expect.any(Error), { context: 'provider-merge' });
     });
   });

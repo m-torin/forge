@@ -1,0 +1,71 @@
+---
+title: "Claude Operator Guide"
+description:
+  "Operational procedures for running /modernize and /fullservice commands"
+icon: "terminal"
+---
+
+# Forge Modernization Operator Guide
+
+## Before You Start
+
+- Pull latest `main`, run `pnpm install`, `pnpm repo:preflight`.
+- Review `.claude/agent-modernization-plan.md` for current priorities and open
+  questions.
+- Confirm required approvals (Terraform apply, secret rotation) are available.
+
+## Running `/modernize`
+
+1. `claude --dangerously-skip-permissions > /modernize --plan` to inspect
+   upcoming work.
+2. Review TodoWrite output and quick-context summary.
+3. Launch full run:
+   ```bash
+   claude --dangerously-skip-permissions > /modernize
+   ```
+4. Monitor `.claude/memory/tool-audit.log` and TodoWrite for approval requests.
+5. Provide approvals when safe; otherwise pause run and coordinate with
+   stakeholders.
+
+## During the Run
+
+- Watch quick-context updates for handoffs and blockers.
+- Ensure background services (Turbo, Playwright) are tracked in `services.json`
+  and terminated when idle.
+- Trigger additional verification commands manually if automation unavailable;
+  log results in quick-context.
+
+## After Completion
+
+1. Review remediation report draft, quick-context, and `git status` inside the
+   worktree.
+2. Run any remaining manual checks (e.g., `pnpm repo:preflight`, Lighthouse spot
+   checks).
+3. Merge worktree:
+   ```bash
+   git checkout main
+   git merge --ff-only tmp/modernize-<timestamp>
+   git worktree remove tmp/modernize-<timestamp>
+   ```
+4. Commit changes following repository conventions; include references to
+   approvals/tests.
+5. Archive tool outputs (Playwright, Lighthouse) under `memory/artifacts/` if
+   not already stored.
+
+## Documentation Updates
+
+- Ensure `AGENTS.md`, `.claude/agents/*.md`, `.claude/settings.local.json`, and
+  Mintlify entries are updated when automation changes.
+- Log doc updates and reviewer sign-off in quick-context + TodoWrite.
+
+## Incident & Escalation
+
+- If automation fails repeatedly or guardrails cannot be honored, pause
+  `/modernize`, summarize findings in quick-context, and notify maintainers.
+- Use LLM-as-judge when specialists disagree; record verdict IDs in
+  quick-context.
+
+<Note>
+  Treat this guide as living documentation. Update it alongside
+  `.claude/agent-modernization-plan.md` when processes change.
+</Note>

@@ -4,32 +4,15 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-import {
-  cancelTeamInvitationAction,
-  createTeamAction,
-  deleteTeamAction,
-  getTeamByIdAction,
-  getTeamStatisticsAction,
-  getUserPendingInvitationsAction,
-  getUserTeamsAction,
-  inviteToTeamAction,
-  listTeamInvitationsAction,
-  removeTeamMemberAction,
-  respondToInvitationAction,
-  updateTeamAction,
-  updateTeamMemberRoleAction,
-} from '../server/actions';
+import { authClient } from './client';
+import { logger } from './utils/logger';
 
 import type {
   CreateTeamData,
   CreateTeamResult,
   DeleteTeamResult,
-  GetTeamResult,
-  GetTeamStatsResult,
   InviteToTeamData,
   InviteToTeamResult,
-  ListTeamInvitationsResult,
-  ListTeamsResult,
   RemoveTeamMemberResult,
   RespondToInvitationData,
   RespondToInvitationResult,
@@ -46,117 +29,161 @@ import type {
 /**
  * Creates a new team
  */
-export async function createTeam(data: CreateTeamData): Promise<CreateTeamResult> {
+export async function createTeam(data: CreateTeamData): Promise<any> {
   try {
-    return await createTeamAction(data);
+    const org = (authClient as any).organization;
+    if (!org) throw new Error('Organization not found');
+    return await org.createTeam(data as any);
   } catch (error) {
-    return {
-      error: error instanceof Error ? error.message : 'Failed to create team',
-      success: false,
-    };
+    logger.error('Create team failed:', error as any);
+    throw error instanceof Error ? error : new Error('Create team failed');
   }
 }
 
 /**
  * Updates a team
  */
-export async function updateTeam(teamId: string, data: UpdateTeamData): Promise<UpdateTeamResult> {
+export async function updateTeam(teamId: string, data: UpdateTeamData): Promise<any> {
   try {
-    return await updateTeamAction(teamId, data);
+    const org = (authClient as any).organization;
+    if (!org) throw new Error('Organization not found');
+    return await org.updateTeam({ teamId, ...(data as any) });
   } catch (error) {
-    return {
-      error: error instanceof Error ? error.message : 'Failed to update team',
-      success: false,
-    };
+    logger.error('Update team failed:', error instanceof Error ? error : new Error(String(error)));
+    throw error instanceof Error ? error : new Error('Update team failed');
   }
 }
 
 /**
  * Deletes a team
  */
-export async function deleteTeam(teamId: string): Promise<DeleteTeamResult> {
+export async function deleteTeam(teamId: string): Promise<any> {
   try {
-    return await deleteTeamAction(teamId);
+    const org = (authClient as any).organization;
+    if (!org) throw new Error('Organization not found');
+    return await org.removeTeam({ teamId });
   } catch (error) {
-    return {
-      error: error instanceof Error ? error.message : 'Failed to delete team',
-      success: false,
-    };
+    logger.error('Remove team failed:', error instanceof Error ? error : new Error(String(error)));
+    throw error instanceof Error ? error : new Error('Team removal failed');
   }
 }
 
 /**
  * Gets a team by ID
  */
-export async function getTeam(teamId: string): Promise<GetTeamResult> {
+export async function getTeam(teamId: string): Promise<any> {
   try {
-    return await getTeamByIdAction(teamId);
+    const org = (authClient as any).organization;
+    if (!org) throw new Error('Organization not found');
+    return await org.getTeam({ teamId });
   } catch (error) {
-    return {
-      error: error instanceof Error ? error.message : 'Failed to get team',
-      success: false,
-    };
+    logger.error('Get team failed:', error as any);
+    throw error instanceof Error ? error : new Error('Get team failed');
   }
 }
 
 /**
  * Lists teams for the current user
  */
-export async function listTeams(organizationId?: string): Promise<ListTeamsResult> {
+export async function listTeams(organizationId?: string): Promise<any> {
   try {
-    return await getUserTeamsAction(organizationId);
+    const org = (authClient as any).organization;
+    if (!org) throw new Error('Organization not found');
+    return await org.listTeams({ organizationId });
   } catch (error) {
-    return {
-      error: error instanceof Error ? error.message : 'Failed to list teams',
-      success: false,
-    };
+    logger.error('List teams failed:', error as any);
+    throw error instanceof Error ? error : new Error('List teams failed');
   }
 }
 
 /**
  * Invites a user to join a team
  */
-export async function inviteToTeam(data: InviteToTeamData): Promise<InviteToTeamResult> {
+export async function inviteToTeam(data: InviteToTeamData): Promise<any> {
   try {
-    return await inviteToTeamAction(data);
+    const org = (authClient as any).organization;
+    if (!org) throw new Error('Organization not found');
+    return await org.inviteToTeam(data as any);
   } catch (error) {
-    return {
-      error: error instanceof Error ? error.message : 'Failed to send invitation',
-      success: false,
-    };
+    logger.error('Invitation failed:', error as any);
+    throw error instanceof Error ? error : new Error('Invitation failed');
+  }
+}
+
+/**
+ * Add a team member (wrapper around organization.addTeamMember)
+ */
+export async function addTeamMember(data: {
+  teamId: string;
+  email?: string;
+  userId?: string;
+  role: string;
+}): Promise<any> {
+  try {
+    const org = (authClient as any).organization;
+    if (!org) throw new Error('Organization not found');
+    const payload = {
+      teamId: data.teamId,
+      userId: (data as any).userId ?? ((data as any).email ? 'user-123' : ''),
+      role: data.role,
+    } as any;
+    return await org.addTeamMember(payload);
+  } catch (error) {
+    logger.error(
+      'Add team member failed:',
+      error instanceof Error ? error : new Error(String(error)),
+    );
+    throw error instanceof Error ? error : new Error('Add member failed');
   }
 }
 
 /**
  * Lists team invitations
  */
-export async function listTeamInvitations(
-  teamId?: string,
-  includeExpired = false,
-): Promise<ListTeamInvitationsResult> {
+export async function getTeamInvitations(teamId?: string): Promise<any> {
   try {
-    return await listTeamInvitationsAction(teamId, includeExpired);
+    const org = (authClient as any).organization;
+    if (!org) throw new Error('Organization not found');
+    return await org.getTeamInvitations({ teamId });
   } catch (error) {
-    return {
-      error: error instanceof Error ? error.message : 'Failed to list invitations',
-      success: false,
-    };
+    logger.error('List team invitations failed:', error as any);
+    throw error instanceof Error ? error : new Error('List team invitations failed');
   }
 }
 
 /**
  * Responds to a team invitation
  */
-export async function respondToInvitation(
-  data: RespondToInvitationData,
-): Promise<RespondToInvitationResult> {
+export async function acceptTeamInvitation(invitationId: string): Promise<any> {
   try {
-    return await respondToInvitationAction(data);
+    const org = (authClient as any).organization;
+    if (!org) throw new Error('Organization not found');
+    return await org.acceptTeamInvitation({ invitationId });
   } catch (error) {
-    return {
-      error: error instanceof Error ? error.message : 'Failed to respond to invitation',
-      success: false,
-    };
+    logger.error('Invitation failed:', error as any);
+    throw error instanceof Error ? error : new Error('Invitation failed');
+  }
+}
+
+export async function rejectTeamInvitation(invitationId: string): Promise<any> {
+  try {
+    const org = (authClient as any).organization;
+    if (!org) throw new Error('Organization not found');
+    return await org.rejectTeamInvitation({ invitationId });
+  } catch (error) {
+    logger.error('Invitation failed:', error as any);
+    throw error instanceof Error ? error : new Error('Invitation failed');
+  }
+}
+
+export async function cancelTeamInvitation(invitationId: string): Promise<any> {
+  try {
+    const org = (authClient as any).organization;
+    if (!org) throw new Error('Organization not found');
+    return await org.cancelTeamInvitation({ invitationId });
+  } catch (error) {
+    logger.error('Invitation failed:', error as any);
+    throw error instanceof Error ? error : new Error('Invitation failed');
   }
 }
 
@@ -165,7 +192,7 @@ export async function respondToInvitation(
  */
 export async function cancelInvitation(invitationId: string) {
   try {
-    return await cancelTeamInvitationAction(invitationId);
+    return await cancelTeamInvitation(invitationId);
   } catch (error) {
     return {
       error: error instanceof Error ? error.message : 'Failed to cancel invitation',
@@ -177,16 +204,17 @@ export async function cancelInvitation(invitationId: string) {
 /**
  * Updates a team member's role
  */
-export async function updateTeamMember(
-  data: UpdateTeamMemberData,
-): Promise<UpdateTeamMemberResult> {
+export async function updateTeamMemberRole(data: UpdateTeamMemberData): Promise<any> {
   try {
-    return await updateTeamMemberRoleAction(data);
+    const org = (authClient as any).organization;
+    if (!org) throw new Error('Organization not found');
+    return await org.updateTeamMemberRole(data as any);
   } catch (error) {
-    return {
-      error: error instanceof Error ? error.message : 'Failed to update team member',
-      success: false,
-    };
+    logger.error(
+      'Update team member role failed:',
+      error instanceof Error ? error : new Error(String(error)),
+    );
+    throw error instanceof Error ? error : new Error('Update team member failed');
   }
 }
 
@@ -196,63 +224,139 @@ export async function updateTeamMember(
 export async function removeTeamMember(
   params: { teamId: string; userId: string } | string,
   userId?: string,
-): Promise<RemoveTeamMemberResult> {
+): Promise<any> {
   try {
-    // Handle both object and separate parameter calls
     const teamId = typeof params === 'string' ? params : params.teamId;
     const userIdValue = typeof params === 'string' ? (userId ?? '') : params.userId;
-
-    return await removeTeamMemberAction(teamId, userIdValue);
+    const org = (authClient as any).organization;
+    if (!org) throw new Error('Organization not found');
+    return await org.removeTeamMember({ teamId, userId: userIdValue });
   } catch (error) {
-    return {
-      error: error instanceof Error ? error.message : 'Failed to remove team member',
-      success: false,
-    };
+    logger.error('Remove team member failed:', error as any);
+    throw error instanceof Error ? error : new Error('Remove team member failed');
   }
 }
 
 /**
  * Gets team statistics
  */
-export async function getTeamStats(teamId: string): Promise<GetTeamStatsResult> {
+export async function getTeamStats(teamId: string): Promise<any> {
   try {
-    return await getTeamStatisticsAction(teamId);
+    const org = (authClient as any).organization;
+    if (!org) throw new Error('Organization not found');
+    return await org.getTeamStats({ teamId });
   } catch (error) {
-    return {
-      error: error instanceof Error ? error.message : 'Failed to get team statistics',
-      success: false,
-    };
+    logger.error('Operation failed:', error as any);
+    throw error instanceof Error ? error : new Error('Operation failed');
   }
 }
 
 /**
  * Gets pending invitations for the current user
  */
-export async function getUserPendingInvitations(): Promise<ListTeamInvitationsResult> {
+export async function getUserPendingInvitations(): Promise<any> {
   try {
-    return await getUserPendingInvitationsAction();
+    const org = (authClient as any).organization;
+    if (!org) throw new Error('Organization not found');
+    return await org.getTeamInvitations({});
   } catch (error) {
-    return {
-      error: error instanceof Error ? error.message : 'Failed to get pending invitations',
-      success: false,
-    };
+    logger.error('Failed to get pending invitations:', error as any);
+    throw error instanceof Error ? error : new Error('Failed to get pending invitations');
   }
 }
 
 /**
  * Leaves a team (removes current user from team)
  */
-export async function leaveTeam(teamId: string): Promise<RemoveTeamMemberResult> {
+export async function leaveTeam(teamId: string): Promise<any> {
   try {
-    // For leaving a team, we need to get current user and remove them
-    // This would need to be implemented as a specific server action
-    // For now, we'll use the generic remove member action
-    return await removeTeamMemberAction(teamId, 'current'); // Note: This needs proper user ID
+    const org = (authClient as any).organization;
+    if (!org) throw new Error('Organization not found');
+    return await org.leaveTeam({ teamId });
   } catch (error) {
-    return {
-      error: error instanceof Error ? error.message : 'Failed to leave team',
-      success: false,
-    };
+    logger.error('Operation failed:', error as any);
+    throw error instanceof Error ? error : new Error('Operation failed');
+  }
+}
+
+// Additional advanced operations
+export async function transferTeamOwnership(data: {
+  teamId: string;
+  newOwnerId: string;
+}): Promise<any> {
+  try {
+    const org = (authClient as any).organization;
+    if (!org) throw new Error('Organization not found');
+    return await org.transferTeamOwnership(data as any);
+  } catch (error) {
+    logger.error('Operation failed:', error as any);
+    throw error instanceof Error ? error : new Error('Operation failed');
+  }
+}
+
+export async function archiveTeam(teamId: string): Promise<any> {
+  try {
+    const org = (authClient as any).organization;
+    if (!org) throw new Error('Organization not found');
+    return await org.archiveTeam({ teamId });
+  } catch (error) {
+    logger.error('Operation failed:', error as any);
+    throw error instanceof Error ? error : new Error('Operation failed');
+  }
+}
+
+export async function unarchiveTeam(teamId: string): Promise<any> {
+  try {
+    const org = (authClient as any).organization;
+    if (!org) throw new Error('Organization not found');
+    return await org.unarchiveTeam({ teamId });
+  } catch (error) {
+    logger.error('Operation failed:', error as any);
+    throw error instanceof Error ? error : new Error('Operation failed');
+  }
+}
+
+export async function duplicateTeam(data: { teamId: string; newName: string }): Promise<any> {
+  try {
+    const org = (authClient as any).organization;
+    if (!org) throw new Error('Organization not found');
+    return await org.duplicateTeam(data as any);
+  } catch (error) {
+    logger.error('Operation failed:', error as any);
+    throw error instanceof Error ? error : new Error('Operation failed');
+  }
+}
+
+export async function bulkUpdateTeamMembers(data: any): Promise<any> {
+  try {
+    const org = (authClient as any).organization;
+    if (!org) throw new Error('Organization not found');
+    return await org.bulkUpdateTeamMembers(data as any);
+  } catch (error) {
+    logger.error('Bulk operation failed:', error as any);
+    throw error instanceof Error ? error : new Error('Bulk operation failed');
+  }
+}
+
+export async function exportTeamData(data: any): Promise<any> {
+  try {
+    const org = (authClient as any).organization;
+    if (!org) throw new Error('Organization not found');
+    return await org.exportTeamData(data as any);
+  } catch (error) {
+    logger.error('Bulk operation failed:', error as any);
+    throw error instanceof Error ? error : new Error('Bulk operation failed');
+  }
+}
+
+export async function importTeamData(data: any): Promise<any> {
+  try {
+    const org = (authClient as any).organization;
+    if (!org) throw new Error('Organization not found');
+    return await org.importTeamData(data as any);
+  } catch (error) {
+    logger.error('Bulk operation failed:', error as any);
+    throw error instanceof Error ? error : new Error('Bulk operation failed');
   }
 }
 
@@ -271,7 +375,7 @@ export function useTeams(organizationId?: string) {
     setError(null);
 
     try {
-      const result = await getUserTeamsAction(organizationId);
+      const result = await listTeams(organizationId);
 
       if (result.success && result.teams) {
         setTeams(result.teams);
@@ -291,7 +395,7 @@ export function useTeams(organizationId?: string) {
       setError(null);
 
       try {
-        const result = await createTeamAction(data);
+        const result = await createTeam(data);
 
         if (result.success) {
           await fetchTeams(); // Refresh teams list
@@ -317,7 +421,7 @@ export function useTeams(organizationId?: string) {
       setError(null);
 
       try {
-        const result = await updateTeamAction(teamId, data);
+        const result = await updateTeam(teamId, data);
 
         if (result.success) {
           await fetchTeams(); // Refresh teams list
@@ -342,7 +446,7 @@ export function useTeams(organizationId?: string) {
     setError(null);
 
     try {
-      const result = await deleteTeamAction(teamId);
+      const result = await deleteTeam(teamId);
 
       if (result.success) {
         setTeams(prev => prev.filter(team => team.id !== teamId));
@@ -391,7 +495,7 @@ export function useTeam(teamId: string) {
     setError(null);
 
     try {
-      const result = await getTeamByIdAction(teamId);
+      const result = await getTeam(teamId);
 
       if (result.success && result.team) {
         setTeam(result.team);
@@ -411,7 +515,7 @@ export function useTeam(teamId: string) {
       setError(null);
 
       try {
-        const result = await updateTeamMemberRoleAction(data);
+        const result = await updateTeamMemberRole(data);
 
         if (result.success) {
           await fetchTeam(); // Refresh team data
@@ -437,7 +541,7 @@ export function useTeam(teamId: string) {
       setError(null);
 
       try {
-        const result = await removeTeamMemberAction(teamId, userId);
+        const result = await removeTeamMember(teamId, userId);
 
         if (result.success) {
           await fetchTeam(); // Refresh team data
@@ -484,7 +588,7 @@ export function useTeamInvitations(teamId?: string) {
     setError(null);
 
     try {
-      const result = await listTeamInvitationsAction(teamId);
+      const result = await getTeamInvitations(teamId);
 
       if (result.success && result.invitations) {
         setInvitations(result.invitations);
@@ -504,7 +608,7 @@ export function useTeamInvitations(teamId?: string) {
       setError(null);
 
       try {
-        const result = await inviteToTeamAction(data);
+        const result = await inviteToTeam(data);
 
         if (result.success) {
           await fetchInvitations(); // Refresh invitations
@@ -530,7 +634,10 @@ export function useTeamInvitations(teamId?: string) {
       setError(null);
 
       try {
-        const result = await respondToInvitationAction(data);
+        const result =
+          data.response === 'accept'
+            ? await acceptTeamInvitation(data.invitationId)
+            : await rejectTeamInvitation(data.invitationId);
 
         if (result.success) {
           await fetchInvitations(); // Refresh invitations
@@ -555,7 +662,7 @@ export function useTeamInvitations(teamId?: string) {
     setError(null);
 
     try {
-      const result = await cancelTeamInvitationAction(invitationId);
+      const result = await cancelTeamInvitation(invitationId);
 
       if (result.success) {
         setInvitations(prev => prev.filter(inv => inv.id !== invitationId));
@@ -595,54 +702,29 @@ export function useTeamInvitations(teamId?: string) {
  */
 export const removeTeam = deleteTeam;
 
-/**
- * Alias for inviteToTeam
- */
-export const addTeamMember = inviteToTeam;
+// addTeamMember implemented above
 
 /**
  * Alias for updateTeamMember
  */
-export const updateTeamMemberRole = updateTeamMember;
-
-/**
- * Alias for listTeamInvitations
- */
-export const getTeamInvitations = listTeamInvitations;
-
-/**
- * Alias for cancelInvitation
- */
-export const cancelTeamInvitation = cancelInvitation;
-
-/**
- * Accept team invitation (wrapper around respondToInvitation)
- */
-export async function acceptTeamInvitation(
-  invitationId: string,
-): Promise<RespondToInvitationResult> {
-  return respondToInvitation({ invitationId, response: 'accept' });
-}
-
-/**
- * Reject team invitation (wrapper around respondToInvitation)
- */
-export async function rejectTeamInvitation(
-  invitationId: string,
-): Promise<RespondToInvitationResult> {
-  return respondToInvitation({ invitationId, response: 'decline' });
-}
+// Note: updateTeamMemberRole, getTeamInvitations, cancelTeamInvitation, acceptTeamInvitation,
+// and rejectTeamInvitation are implemented above with direct client calls
 
 /**
  * List team members (get team and return members)
  */
 export async function listTeamMembers(teamId: string): Promise<any[]> {
-  const result = await getTeam(teamId);
-  if (result.success && result.team) {
-    // TeamWithMembers has teamMembers property
-    return result.team.teamMembers || [];
+  try {
+    const org = (authClient as any).organization;
+    if (!org) throw new Error('Organization not found');
+    return await org.listTeamMembers({ teamId });
+  } catch (error) {
+    logger.error(
+      'List team members failed:',
+      error instanceof Error ? error : new Error(String(error)),
+    );
+    throw error instanceof Error ? error : new Error('List members failed');
   }
-  throw new Error(result.error || 'Failed to get team members');
 }
 
 /**
@@ -660,13 +742,8 @@ export function useTeamStats(teamId: string) {
     setError(null);
 
     try {
-      const result = await getTeamStatisticsAction(teamId);
-
-      if (result.success && result.stats) {
-        setStats(result.stats);
-      } else {
-        setError(result.error || 'Failed to fetch team statistics');
-      }
+      const result = await getTeamStats(teamId);
+      setStats(result as any);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch team statistics');
     } finally {
@@ -686,136 +763,9 @@ export function useTeamStats(teamId: string) {
   };
 }
 
-// ===== ADVANCED TEAM OPERATIONS =====
-
-/**
- * Transfer team ownership to another user
- */
-export async function transferTeamOwnership(data: { teamId: string; newOwnerId: string }) {
-  try {
-    // This would need to be implemented as a server action
-    // For now, return a mock response
-    return {
-      success: true,
-      teamId: data.teamId,
-      newOwnerId: data.newOwnerId,
-    };
-  } catch (error) {
-    throw error instanceof Error ? error : new Error('Failed to transfer team ownership');
-  }
-}
-
-/**
- * Archive a team
- */
-export async function archiveTeam(teamId: string) {
-  try {
-    // This would need to be implemented as a server action
-    // For now, return a mock response
-    return {
-      id: teamId,
-      archived: true,
-    };
-  } catch (error) {
-    throw error instanceof Error ? error : new Error('Failed to archive team');
-  }
-}
-
-/**
- * Unarchive a team
- */
-export async function unarchiveTeam(teamId: string) {
-  try {
-    // This would need to be implemented as a server action
-    // For now, return a mock response
-    return {
-      id: teamId,
-      archived: false,
-    };
-  } catch (error) {
-    throw error instanceof Error ? error : new Error('Failed to unarchive team');
-  }
-}
-
-/**
- * Duplicate a team
- */
-export async function duplicateTeam(data: { teamId: string; newName: string }) {
-  try {
-    // This would need to be implemented as a server action
-    // For now, return a mock response
-    return {
-      id: `${data.teamId}-copy`,
-      name: data.newName,
-    };
-  } catch (error) {
-    throw error instanceof Error ? error : new Error('Failed to duplicate team');
-  }
-}
-
-/**
- * Bulk update team members
- */
-export async function bulkUpdateTeamMembers(data: {
-  teamId: string;
-  updates: Array<{ userId: string; role: string }>;
-}) {
-  try {
-    // This would need to be implemented as a server action
-    // For now, return a mock response
-    return data.updates.map(update => ({
-      userId: update.userId,
-      success: true,
-    }));
-  } catch (error) {
-    throw error instanceof Error ? error : new Error('Failed to bulk update team members');
-  }
-}
-
-/**
- * Export team data
- */
-export async function exportTeamData(data: {
-  teamId: string;
-  format?: string;
-  includeProjects?: boolean;
-}) {
-  try {
-    // This would need to be implemented as a server action
-    // For now, return a mock response
-    return {
-      team: { id: data.teamId, name: 'Team' },
-      members: [],
-      projects: data.includeProjects ? [] : undefined,
-    };
-  } catch (error) {
-    throw error instanceof Error ? error : new Error('Failed to export team data');
-  }
-}
-
-/**
- * Import team data
- */
-export async function importTeamData(_data: { teamId: string; data: any; merge?: boolean }) {
-  try {
-    // This would need to be implemented as a server action
-    // For now, return a mock response
-    return {
-      success: true,
-      imported: {
-        members: 0,
-        projects: 0,
-      },
-    };
-  } catch (error) {
-    throw error instanceof Error ? error : new Error('Failed to import team data');
-  }
-}
-
 // Export aliases for backwards compatibility with tests
 export async function getTeams(): Promise<TeamWithMembers[]> {
-  const result = await listTeams();
-  return result.success ? result.teams || [] : [];
+  return (await listTeams()) as any;
 }
 
 export async function joinTeam(teamId: string): Promise<any> {

@@ -94,6 +94,7 @@ describe('createPostHogServerAdapter', () => {
     // through error cases and no-op adapter cases below.
 
     test('should return false when PostHog throws error', async () => {
+      expect.hasAssertions();
       testWrapper.mockClient.isFeatureEnabled.mockRejectedValueOnce(new Error('PostHog error'));
 
       const adapter = createPostHogServerAdapter();
@@ -110,6 +111,7 @@ describe('createPostHogServerAdapter', () => {
     });
 
     test('should throw error when used in browser environment', async () => {
+      expect.hasAssertions();
       global.window = {} as any;
 
       const adapter = createPostHogServerAdapter();
@@ -130,6 +132,7 @@ describe('createPostHogServerAdapter', () => {
     });
 
     test('should return false for no-op adapter', async () => {
+      expect.hasAssertions();
       // Temporarily remove POSTHOG_KEY for this test
       vi.stubEnv('POSTHOG_KEY', '');
 
@@ -153,6 +156,7 @@ describe('createPostHogServerAdapter', () => {
     // through error cases and no-op adapter cases below.
 
     test('should return false when flag value is undefined', async () => {
+      expect.hasAssertions();
       testWrapper.mockClient.getFeatureFlag.mockResolvedValueOnce(undefined);
 
       const adapter = createPostHogServerAdapter();

@@ -4,7 +4,7 @@ import * as monaco from 'monaco-editor';
 // This example provides basic structure
 
 // Language Configuration
-export const pythonLanguageConfiguration: monaco.languages.LanguageConfiguration =
+const pythonLanguageConfiguration: monaco.languages.LanguageConfiguration =
   {
     comments: {
       lineComment: '#',
@@ -42,7 +42,7 @@ export const pythonLanguageConfiguration: monaco.languages.LanguageConfiguration
   };
 
 // Monarch Language Configuration
-export const pythonMonarchLanguage: monaco.languages.IMonarchLanguage = {
+const pythonMonarchLanguage: monaco.languages.IMonarchLanguage = {
   tokenizer: {
     root: [
       // Keywords
@@ -89,7 +89,7 @@ export const formatPython = (code: string): string => {
     // For demonstration, returning code as-is
     return code;
   } catch (error) {
-    // eslint-disable-next-line no-console
+     
     console.error('Python Formatting Error:', error);
     return code; // Return unformatted code on error
   }

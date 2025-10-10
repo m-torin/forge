@@ -258,10 +258,10 @@ function executeOfflineFallback<T>(
         return (createDeterministicHash(key + contextString) % 2 === 0) as T;
     }
   } catch (error) {
-    logError(
-      error instanceof Error ? error : new Error('Offline fallback failed: ' + String(error)),
-      { key, fallbackType: config.type },
-    );
+    logError(error instanceof Error ? error.message : 'Offline fallback failed: ' + String(error), {
+      key,
+      fallbackType: config.type,
+    });
 
     // Ultimate fallback - return safe default
     if (config.variants && config.variants.length > 0) {

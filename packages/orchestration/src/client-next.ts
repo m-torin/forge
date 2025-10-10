@@ -10,6 +10,9 @@
 
 'use client';
 
+// Re-export logging functions for use in Next.js client environments
+import { logError, logInfo, logWarn } from '@repo/observability/client/next';
+
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ExecutionHistory, WorkflowAlert, WorkflowMetrics } from './shared/features/monitoring';
@@ -20,6 +23,8 @@ import {
   WorkflowExecution,
   WorkflowProvider,
 } from './shared/types/index';
+
+export { logError, logInfo, logWarn };
 
 export interface UseExecutionHistoryOptions {
   /** Enable/disable the hook */
@@ -300,7 +305,7 @@ export function useExecutionHistory(
 
     refresh();
 
-    let intervalId: NodeJS.Timeout | null = null;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
     if (refreshInterval > 0) {
       intervalId = setInterval(() => {
         if (isMountedRef.current) {
@@ -351,7 +356,7 @@ export function useWorkflow(workflowId: string, options: UseWorkflowOptions): Us
   const [currentExecutionId, setCurrentExecutionId] = useState<null | string>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const isMountedRef = useRef(true);
-  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const { autoRefresh = true, enabled = true, pollInterval = 1000, provider } = options;
 
@@ -633,7 +638,7 @@ export function useWorkflowAlerts(
   useEffect(() => {
     refresh();
 
-    let intervalId: NodeJS.Timeout | null = null;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
     if (refreshInterval > 0) {
       intervalId = setInterval(() => {
         if (isMountedRef.current) {
@@ -728,7 +733,7 @@ export function useWorkflowList(options: UseWorkflowListOptions): UseWorkflowLis
   useEffect(() => {
     refresh();
 
-    let intervalId: NodeJS.Timeout | null = null;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
     if (refreshInterval > 0) {
       intervalId = setInterval(() => {
         if (isMountedRef.current) {
@@ -828,7 +833,7 @@ export function useWorkflowMetrics(
 
     refresh();
 
-    let intervalId: NodeJS.Timeout | null = null;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
     if (refreshInterval > 0) {
       intervalId = setInterval(() => {
         if (isMountedRef.current) {
@@ -1054,7 +1059,7 @@ export function useWorkflowSchedule(
     if (currentScheduleId) {
       refresh();
 
-      let intervalId: NodeJS.Timeout | null = null;
+      let intervalId: ReturnType<typeof setInterval> | null = null;
       if (refreshInterval > 0) {
         intervalId = setInterval(() => {
           if (isMountedRef.current) {

@@ -1,6 +1,6 @@
 import DOMPurify from 'dompurify';
 
-export interface SafeTheme {
+interface SafeTheme {
   backgroundColor: string;
   textColor: string;
   borderColor: string;
@@ -42,7 +42,7 @@ function sanitizeColor(color?: string): string | null {
   return match ? match[1].trim() : null;
 }
 
-export function sanitizeCSSValue(value: string, property: string): string | null {
+function sanitizeCSSValue(value: string, property: string): string | null {
   if (!value || !property) return null;
 
   // Create a test element with the CSS property

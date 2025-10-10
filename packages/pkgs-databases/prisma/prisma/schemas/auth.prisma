@@ -1,0 +1,222 @@
+// auth.prisma - Authentication and User Management Models
+
+//==============================================================================
+// USER & AUTHENTICATION MODELS
+//==============================================================================
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  phoneNumber   String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  role          String    @default("user")
+  banned        Boolean   @default(false)
+  banReason     String?
+  banExpires    DateTime?
+
+  // Soft delete support
+  deletedAt DateTime?
+
+  // Author information
+  bio              String?   @db.Text
+  expertise        String[]
+  isVerifiedAuthor Boolean   @default(false)
+  authorSince      DateTime?
+
+  // User preferences and settings
+  preferences Json? @db.JsonB
+
+  // Account status
+  isSuspended       Boolean @default(false)
+  suspensionDetails Json?   @db.JsonB
+
+  // Authentication relationships
+  sessions Session[]
+  posts    Post[]
+
+  // Better Auth organization relationships
+  members       Member[]
+  invitations   Invitation[]
+  accounts      Account[]
+  twoFactorAuth TwoFactor?
+  passkeys      Passkey[]
+
+  // CMS content relationships
+  createdCompanyContent CompanyContent[]   @relation("CreatedCompanyContent")
+  deletedCompanyContent CompanyContent[]   @relation("DeletedCompanyContent")
+  createdCompanyMembers CompanyMember[]    @relation("CreatedCompanyMember")
+  deletedCompanyMembers CompanyMember[]    @relation("DeletedCompanyMember")
+  createdCompanyStats   CompanyStatistic[] @relation("CreatedCompanyStatistic")
+  deletedCompanyStats   CompanyStatistic[] @relation("DeletedCompanyStatistic")
+  updatedSystemSettings SystemSetting[]    @relation("UpdatedSystemSetting")
+
+  // Community relationships
+  deletedArticles Article[] @relation("DeletedArticles")
+  articles        Article[]
+
+  @@index([email])
+  @@index([role, banned])
+  @@map("user")
+}
+
+model Session {
+  id                   String        @id @default(cuid())
+  expiresAt            DateTime
+  token                String        @unique
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  ipAddress            String?
+  userAgent            String?
+  userId               String
+  activeOrganizationId String?
+  impersonatedBy       String?
+  user                 User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activeOrganization   Organization? @relation(fields: [activeOrganizationId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+  @@index([userId, activeOrganizationId])
+  @@index([impersonatedBy])
+  @@map("session")
+}
+
+//==============================================================================
+// BETTER AUTH ORGANIZATION MODELS
+//==============================================================================
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String?  @unique
+  logo      String?
+  metadata  Json?    @db.JsonB
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  members     Member[]
+  invitations Invitation[]
+  sessions    Session[]
+
+  @@index([slug])
+  @@map("organization")
+}
+
+model Member {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String
+  role           String   @default("member")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([organizationId])
+  @@index([userId])
+  @@map("member")
+}
+
+model Invitation {
+  id             String   @id @default(cuid())
+  organizationId String
+  email          String
+  role           String   @default("member")
+  inviterId      String
+  inviterName    String?
+  expiresAt      DateTime
+  status         String   @default("pending") // pending, accepted, expired, cancelled
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  inviter      User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, email])
+  @@index([organizationId])
+  @@index([email])
+  @@index([inviterId])
+  @@index([expiresAt])
+  @@map("invitation")
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  userId                String
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([identifier, value])
+  @@index([identifier])
+  @@index([expiresAt])
+  @@map("verification")
+}
+
+model TwoFactor {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  secret      String
+  backupCodes String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("two_factor")
+}
+
+model Passkey {
+  id             String   @id @default(cuid())
+  name           String?
+  publicKey      String
+  userId         String
+  webauthnUserID String
+  counter        Int
+  deviceType     String
+  backedUp       Boolean
+  transports     String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, webauthnUserID])
+  @@index([userId])
+  @@map("passkey")
+}

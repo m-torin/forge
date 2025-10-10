@@ -1,18 +1,18 @@
-import { CollaborationProvider } from '#/providers/collaboration-provider';
-import { CollaborationOptions } from '#/types';
-import { MantineProvider } from '@mantine/core';
-import { render, RenderOptions } from '@testing-library/react';
-import { ReactElement, ReactNode } from 'react';
+import { CollaborationProvider } from "#/providers/collaboration-provider";
+import { CollaborationOptions } from "#/types";
+import { MantineProvider } from "@mantine/core";
+import { render, RenderOptions } from "@testing-library/react";
+import { ReactElement, ReactNode } from "react";
 
 // Mantine mocks are handled by QA centralized setup
 
-interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
+interface CustomRenderOptions extends Omit<RenderOptions, "wrapper"> {
   collaborationOptions?: Partial<CollaborationOptions>;
 }
 
 const defaultCollaborationOptions: CollaborationOptions = {
-  documentId: 'test-document',
-  userId: 'test-user',
+  documentId: "test-document",
+  userId: "test-user",
   enablePresence: true,
   enableCursors: true,
   autoSave: false,
@@ -27,7 +27,9 @@ function CollaborationWrapper({
 }) {
   return (
     <MantineProvider>
-      <CollaborationProvider options={{ ...defaultCollaborationOptions, ...options }}>
+      <CollaborationProvider
+        options={{ ...defaultCollaborationOptions, ...options }}
+      >
         {children}
       </CollaborationProvider>
     </MantineProvider>
@@ -42,7 +44,9 @@ export function renderWithCollaboration(
 
   return render(ui, {
     wrapper: ({ children }) => (
-      <CollaborationWrapper options={collaborationOptions}>{children}</CollaborationWrapper>
+      <CollaborationWrapper options={collaborationOptions}>
+        {children}
+      </CollaborationWrapper>
     ),
     ...renderOptions,
   });
@@ -56,9 +60,9 @@ export function renderWithoutProvider(
 }
 
 // Custom matchers for collaboration testing
-export const collaborationMatchers = {
+const collaborationMatchers = {
   toHaveCollaborator: (collaborators: any[], userId: string) => {
-    const hasCollaborator = collaborators.some(c => c.id === userId);
+    const hasCollaborator = collaborators.some((c) => c.id === userId);
     return {
       pass: hasCollaborator,
       message: () =>
@@ -72,61 +76,70 @@ export const collaborationMatchers = {
     pass: isConnected,
     message: () =>
       isConnected
-        ? 'Expected collaboration to be disconnected'
-        : 'Expected collaboration to be connected',
+        ? "Expected collaboration to be disconnected"
+        : "Expected collaboration to be connected",
   }),
 
   toHaveActiveCollaborators: (collaborators: any[], count: number) => {
-    const activeCount = collaborators.filter(c => c.isActive).length;
+    const activeCount = collaborators.filter((c) => c.isActive).length;
     return {
       pass: activeCount === count,
-      message: () => `Expected ${count} active collaborators, but got ${activeCount}`,
+      message: () =>
+        `Expected ${count} active collaborators, but got ${activeCount}`,
     };
   },
 };
 
 // Extend expect with custom matchers
-if (typeof expect !== 'undefined') {
+if (typeof expect !== "undefined") {
   expect.extend(collaborationMatchers);
 }
 
 // Test utilities for simulating collaboration events
-export function simulateUserJoin(mockWebSocket: any, userId: string, userName: string) {
+function simulateUserJoin(
+  mockWebSocket: any,
+  userId: string,
+  userName: string,
+) {
   mockWebSocket.simulateMessage({
-    type: 'presence',
+    type: "presence",
     userId,
-    data: { action: 'join', name: userName },
+    data: { action: "join", name: userName },
   });
 }
 
-export function simulateUserLeave(mockWebSocket: any, userId: string) {
+function simulateUserLeave(mockWebSocket: any, userId: string) {
   mockWebSocket.simulateMessage({
-    type: 'presence',
+    type: "presence",
     userId,
-    data: { action: 'leave' },
+    data: { action: "leave" },
   });
 }
 
-export function simulateEdit(mockWebSocket: any, userId: string, content: string) {
+function simulateEdit(mockWebSocket: any, userId: string, content: string) {
   mockWebSocket.simulateMessage({
-    type: 'edit',
+    type: "edit",
     userId,
-    data: { content, operation: { type: 'replace', content } },
+    data: { content, operation: { type: "replace", content } },
   });
 }
 
-export function simulateCursorMove(mockWebSocket: any, userId: string, x: number, y: number) {
+function simulateCursorMove(
+  mockWebSocket: any,
+  userId: string,
+  x: number,
+  y: number,
+) {
   mockWebSocket.simulateMessage({
-    type: 'cursor',
+    type: "cursor",
     userId,
     data: { cursor: { x, y } },
   });
 }
 
 // Wait for collaboration state updates
-export function waitForCollaboration(ms = 100) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+function waitForCollaboration(ms = 100) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export * from '@testing-library/react';
-export { renderWithCollaboration as render };
+export * from "@testing-library/react";

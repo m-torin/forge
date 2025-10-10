@@ -1,0 +1,382 @@
+---
+title: ProductQuickView URL Parameter Pattern
+description:
+  Refactoring pattern for converting client components with server function
+  calls to proper server component architecture using URL parameters
+icon: "arrow-right-arrow-left"
+---
+
+# ProductQuickView URL Parameter Pattern
+
+This guide demonstrates the pattern for refactoring client components that
+inappropriately call server functions into proper server component architecture
+using URL parameters for data fetching.
+
+## 🚨 Anti-Pattern: Client-Side Server Function Calls
+
+### The Problem
+
+During the database integration audit, we found components like
+`ProductQuickView` that were calling server functions directly from client
+components:
+
+```typescript
+// ❌ WRONG: Client component calling server function
+'use client';
+
+import { getProduct } from '@repo/database/server-actions/productActions';
+
+export function ProductQuickView({ handle }: { handle: string }) {
+  const [product, setProduct] = useState(null);
+
+  useEffect(() => {
+    // This violates server/client boundary
+    getProduct(handle).then(setProduct);
+  }, [handle]);
+
+  if (!product) return <div>Loading...</div>;
+
+  return <ProductDisplay product={product} />;
+}
+```
+
+### Why This Is Wrong
+
+1. **Boundary Violation**: Client components cannot directly call server
+   functions
+2. **Hydration Issues**: Server-side rendering inconsistencies
+3. **Performance**: Unnecessary client-side data fetching
+4. **Type Safety**: Lost compile-time guarantees
+5. **Error Handling**: Complex error boundary requirements
+
+## ✅ Correct Pattern: Server Component with URL Parameters
+
+### Implementation Strategy
+
+The solution uses a **server component wrapper** that fetches data and passes it
+to a **client component** for interactivity:
+
+```
+URL Parameter → Server Component → Data Fetch → Client Component
+```
+
+### Step 1: Create Server Component Wrapper
+
+```typescript
+// components/features/products/ProductQuickViewWrapper.tsx
+import { getProduct } from '@repo/database/server-actions/productActions';
+import { ProductQuickViewClient } from './ProductQuickViewClient';
+
+interface ProductQuickViewWrapperProps {
+  handle: string;
+}
+
+export default async function ProductQuickViewWrapper({
+  handle
+}: ProductQuickViewWrapperProps) {
+  // Server-side data fetching
+  const product = await getProduct(handle);
+
+  // Handle error states at server level
+  if (!product) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <p className="text-neutral-500">Product not found</p>
+      </div>
+    );
+  }
+
+  // Pass data to client component
+  return <ProductQuickViewClient product={product} />;
+}
+```
+
+### Step 2: Convert Original Component to Pure Client
+
+```typescript
+// components/features/products/ProductQuickViewClient.tsx
+'use client';
+
+import type { Product } from '@repo/database';
+import { useState } from 'react';
+import { Button } from '@mantine/core';
+
+interface ProductQuickViewClientProps {
+  product: Product;
+}
+
+export function ProductQuickViewClient({ product }: ProductQuickViewClientProps) {
+  // Pure client-side interactivity
+  const [selectedVariant, setSelectedVariant] = useState(product.variants[0]);
+  const [quantity, setQuantity] = useState(1);
+
+  const handleAddToCart = async () => {
+    // Client-side cart operations
+    try {
+      await addToCartAction(product.id, selectedVariant.id, quantity);
+      // Handle success
+    } catch (error) {
+      // Handle error
+    }
+  };
+
+  return (
+    <div className="product-quickview">
+      <h2>{product.title}</h2>
+      <p className="price">${product.price}</p>
+
+      {/* Variant selection */}
+      <div className="variants">
+        {product.variants.map(variant => (
+          <button
+            key={variant.id}
+            onClick={() => setSelectedVariant(variant)}
+            className={selectedVariant.id === variant.id ? 'selected' : ''}
+          >
+            {variant.name}
+          </button>
+        ))}
+      </div>
+
+      {/* Quantity selector */}
+      <div className="quantity">
+        <label>Quantity:</label>
+        <input
+          type="number"
+          value={quantity}
+          onChange={(e) => setQuantity(Number(e.target.value))}
+          min="1"
+        />
+      </div>
+
+      <Button onClick={handleAddToCart}>
+        Add to Cart
+      </Button>
+    </div>
+  );
+}
+```
+
+### Step 3: URL-Based Integration
+
+```typescript
+// app/(shop)/(other-pages)/products/[handle]/page.tsx
+import { ProductQuickViewWrapper } from '@/components/features/products/ProductQuickViewWrapper';
+
+interface ProductPageProps {
+  params: {
+    handle: string;
+  };
+}
+
+export default async function ProductPage({ params }: ProductPageProps) {
+  const { handle } = params;
+
+  return (
+    <div className="product-page">
+      <ProductQuickViewWrapper handle={handle} />
+    </div>
+  );
+}
+```
+
+## 🔄 Migration Pattern
+
+### Before & After Comparison
+
+<Tabs>
+  <Tab title="Before (Anti-Pattern)">
+    ```typescript
+    // ❌ Client component with server function calls
+    'use client';
+    
+    export function ProductQuickView({ handle }) {
+      const [product, setProduct] = useState(null);
+      const [loading, setLoading] = useState(true);
+      const [error, setError] = useState(null);
+      
+      useEffect(() => {
+        getProduct(handle)
+          .then(setProduct)
+          .catch(setError)
+          .finally(() => setLoading(false));
+      }, [handle]);
+      
+      if (loading) return <LoadingSpinner />;
+      if (error) return <ErrorDisplay error={error} />;
+      if (!product) return <NotFound />;
+      
+      return <ProductDisplay product={product} />;
+    }
+    ```
+  </Tab>
+  
+  <Tab title="After (Correct Pattern)">
+    ```typescript
+    // ✅ Server component wrapper
+    export default async function ProductQuickViewWrapper({ handle }) {
+      const product = await getProduct(handle);
+      
+      if (!product) {
+        return <NotFound />;
+      }
+      
+      return <ProductQuickViewClient product={product} />;
+    }
+    
+    // ✅ Pure client component
+    'use client';
+    export function ProductQuickViewClient({ product }) {
+      // Only client-side interactivity
+      return <ProductDisplay product={product} />;
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## 🎯 Pattern Advantages
+
+### Performance Benefits
+
+1. **Server-Side Rendering**: Data is fetched during SSR
+2. **Faster Hydration**: Client receives pre-loaded data
+3. **Better Caching**: Server-level response caching
+4. **Reduced Bundle Size**: Server functions not shipped to client
+
+### Developer Experience
+
+1. **Type Safety**: Full TypeScript inference chain
+2. **Clear Boundaries**: Explicit server/client separation
+3. **Error Handling**: Server-side error boundaries
+4. **Testing**: Easier to test server and client logic separately
+
+### SEO & Accessibility
+
+1. **Content Availability**: Data present in initial HTML
+2. **Progressive Enhancement**: Works without JavaScript
+3. **Better Core Web Vitals**: Faster First Contentful Paint
+
+## 🛠 Implementation Checklist
+
+### Server Component Wrapper
+
+- [ ] **Async function** - Use `async` for server component
+- [ ] **URL parameter extraction** - Get data keys from props
+- [ ] **Server action calls** - Use server actions for data fetching
+- [ ] **Error handling** - Handle not found and error states
+- [ ] **Data passing** - Pass data as props to client component
+
+### Client Component Refactor
+
+- [ ] **'use client' directive** - Mark as client component
+- [ ] **Remove server calls** - No direct server action calls
+- [ ] **Pure props** - Receive data via props only
+- [ ] **Client interactivity** - Focus on UI state and user interactions
+- [ ] **Type safety** - Use proper TypeScript interfaces
+
+### URL Parameter Setup
+
+- [ ] **Route definition** - Use Next.js dynamic routes `[param]`
+- [ ] **Parameter extraction** - Extract from `params` object
+- [ ] **Type definitions** - Define proper prop interfaces
+- [ ] **Error boundaries** - Handle invalid parameters
+
+## 🔍 Advanced Patterns
+
+### Multiple Data Dependencies
+
+```typescript
+// Server component fetching multiple data sources
+export default async function ProductPageWrapper({
+  params: { handle }
+}: ProductPageProps) {
+  // Parallel data fetching
+  const [product, reviews, recommendations] = await Promise.all([
+    getProduct(handle),
+    getProductReviews(handle),
+    getProductRecommendations(handle),
+  ]);
+
+  if (!product) {
+    return <NotFound />;
+  }
+
+  return (
+    <ProductPageClient
+      product={product}
+      reviews={reviews}
+      recommendations={recommendations}
+    />
+  );
+}
+```
+
+### Search Parameters Integration
+
+```typescript
+// Handle both route params and search params
+export default async function ProductPageWrapper({
+  params: { handle },
+  searchParams
+}: ProductPageProps) {
+  const variant = searchParams.variant;
+  const product = await getProduct(handle);
+  const selectedVariant = variant
+    ? product.variants.find(v => v.slug === variant)
+    : product.variants[0];
+
+  return (
+    <ProductPageClient
+      product={product}
+      selectedVariant={selectedVariant}
+    />
+  );
+}
+```
+
+### Error Boundary Integration
+
+```typescript
+// Server component with comprehensive error handling
+export default async function ProductPageWrapper({
+  params: { handle }
+}: ProductPageProps) {
+  try {
+    const product = await getProduct(handle);
+
+    if (!product) {
+      notFound(); // Next.js 404 page
+    }
+
+    return <ProductPageClient product={product} />;
+  } catch (error) {
+    // Log error for monitoring
+    console.error('Product fetch error:', error);
+
+    // Return error UI
+    return (
+      <div className="error-state">
+        <h2>Something went wrong</h2>
+        <p>Unable to load product details</p>
+      </div>
+    );
+  }
+}
+```
+
+## 🎯 Success Criteria
+
+A properly implemented ProductQuickView pattern should:
+
+- ✅ **Server component wrapper** handles data fetching
+- ✅ **Client component** handles only UI interactivity
+- ✅ **URL parameters** drive data requirements
+- ✅ **No server function calls** from client components
+- ✅ **Proper error handling** at server and client levels
+- ✅ **Type safety** throughout the data flow
+- ✅ **SEO friendly** with server-side rendering
+- ✅ **Performance optimized** with proper caching
+
+This pattern ensures proper separation of concerns while maintaining the
+benefits of both server and client components in Next.js App Router
+architecture.

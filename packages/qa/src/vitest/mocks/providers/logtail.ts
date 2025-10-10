@@ -5,8 +5,8 @@
  * Supports @logtail/js and @logtail/next packages.
  */
 
-import type { Mock } from 'vitest';
-import { vi } from 'vitest';
+import type { Mock } from "vitest";
+import { vi } from "vitest";
 
 /**
  * Logtail mock client interface
@@ -45,7 +45,7 @@ export interface LogtailMockScenarios {
  * Configuration for Logtail mock factory
  */
 export interface LogtailMockConfig {
-  package?: '@logtail/js' | '@logtail/next';
+  package?: "@logtail/js" | "@logtail/next";
   includeContextMethods?: boolean;
   mockReturnValues?: {
     flush?: boolean;
@@ -62,7 +62,7 @@ export function createLogtailMock(config: LogtailMockConfig = {}): {
   resetMocks: () => void;
 } {
   const {
-    package: logtailPackage = '@logtail/js',
+    package: logtailPackage = "@logtail/js",
     includeContextMethods = true,
     mockReturnValues = {},
   } = config;
@@ -85,9 +85,9 @@ export function createLogtailMock(config: LogtailMockConfig = {}): {
   };
 
   // Add package-specific methods
-  if (logtailPackage === '@logtail/next') {
-    vi.spyOn(mockClient, 'captureException').mockImplementation(() => {});
-    vi.spyOn(mockClient, 'captureMessage').mockImplementation(() => {});
+  if (logtailPackage === "@logtail/next") {
+    vi.spyOn(mockClient, "captureException").mockImplementation(() => {});
+    vi.spyOn(mockClient, "captureMessage").mockImplementation(() => {});
   }
 
   // Mock Logtail class constructor
@@ -107,30 +107,30 @@ export function createLogtailMock(config: LogtailMockConfig = {}): {
     },
 
     flushError: () => {
-      mockClient.flush.mockRejectedValue(new Error('Logtail flush failed'));
+      mockClient.flush.mockRejectedValue(new Error("Logtail flush failed"));
     },
 
     loggingError: () => {
       mockClient.trace.mockImplementation(() => {
-        throw new Error('Logtail trace failed');
+        throw new Error("Logtail trace failed");
       });
       mockClient.debug.mockImplementation(() => {
-        throw new Error('Logtail debug failed');
+        throw new Error("Logtail debug failed");
       });
       mockClient.info.mockImplementation(() => {
-        throw new Error('Logtail info failed');
+        throw new Error("Logtail info failed");
       });
       mockClient.warn.mockImplementation(() => {
-        throw new Error('Logtail warn failed');
+        throw new Error("Logtail warn failed");
       });
       mockClient.error.mockImplementation(() => {
-        throw new Error('Logtail error failed');
+        throw new Error("Logtail error failed");
       });
     },
 
     reset: () => {
-      Object.values(mockClient).forEach(mock => {
-        if (typeof mock?.mockReset === 'function') {
+      Object.values(mockClient).forEach((mock) => {
+        if (typeof mock?.mockReset === "function") {
           mock.mockReset();
         }
       });
@@ -158,11 +158,13 @@ export function createLogtailMock(config: LogtailMockConfig = {}): {
 /**
  * Create a Logtail mock for dynamic imports
  */
-export function createLogtailDynamicImportMock(config: LogtailMockConfig = {}): Mock {
+export function createLogtailDynamicImportMock(
+  config: LogtailMockConfig = {},
+): Mock {
   const { MockLogtailClass } = createLogtailMock(config);
 
   return vi.fn().mockImplementation((moduleName: string) => {
-    if (moduleName.includes('@logtail/')) {
+    if (moduleName.includes("@logtail/")) {
       return Promise.resolve(MockLogtailClass);
     }
     return Promise.reject(new Error(`Unknown module: ${moduleName}`));
@@ -176,33 +178,34 @@ export function createLogtailDynamicImportMock(config: LogtailMockConfig = {}): 
 const defaultLogTailMock = createLogtailMock();
 
 // Mock both common Logtail packages to handle dynamic imports at module level
-vi.mock('@logtail/js', () => ({
+vi.mock("@logtail/js", () => ({
   default: defaultLogTailMock.MockLogtailClass,
   Logtail: defaultLogTailMock.MockLogtailClass,
 }));
 
-vi.mock('@logtail/next', () => ({
+vi.mock("@logtail/next", () => ({
   default: defaultLogTailMock.MockLogtailClass,
   Logtail: defaultLogTailMock.MockLogtailClass,
 }));
 
 export function setupLogtailMocks(config: LogtailMockConfig = {}) {
-  const { mockClient, MockLogtailClass, scenarios, resetMocks } = createLogtailMock(config);
+  const { mockClient, MockLogtailClass, scenarios, resetMocks } =
+    createLogtailMock(config);
 
   // Mock common environment variables
-  vi.mock('../../src/env', () => ({
+  vi.mock("../../src/env", () => ({
     safeEnv: () => ({
-      LOGTAIL_SOURCE_TOKEN: 'test-token',
-      BETTERSTACK_SOURCE_TOKEN: 'test-token',
+      LOGTAIL_SOURCE_TOKEN: "test-token",
+      BETTERSTACK_SOURCE_TOKEN: "test-token",
       BETTERSTACK_ENABLED: true,
-      BETTER_STACK_SOURCE_TOKEN: 'test-token',
-      BETTER_STACK_INGESTING_URL: 'https://in.logs.betterstack.com',
-      BETTER_STACK_LOG_LEVEL: 'info',
-      NEXT_PUBLIC_BETTER_STACK_SOURCE_TOKEN: 'test-token',
-      NEXT_PUBLIC_BETTER_STACK_INGESTING_URL: 'https://in.logs.betterstack.com',
-      NEXT_PUBLIC_BETTER_STACK_LOG_LEVEL: 'info',
-      NEXT_PUBLIC_LOGTAIL_TOKEN: 'test-token',
-      NEXT_PUBLIC_BETTERSTACK_TOKEN: 'test-token',
+      BETTER_STACK_SOURCE_TOKEN: "test-token",
+      BETTER_STACK_INGESTING_URL: "https://in.logs.betterstack.com",
+      BETTER_STACK_LOG_LEVEL: "info",
+      NEXT_PUBLIC_BETTER_STACK_SOURCE_TOKEN: "test-token",
+      NEXT_PUBLIC_BETTER_STACK_INGESTING_URL: "https://in.logs.betterstack.com",
+      NEXT_PUBLIC_BETTER_STACK_LOG_LEVEL: "info",
+      NEXT_PUBLIC_LOGTAIL_TOKEN: "test-token",
+      NEXT_PUBLIC_BETTERSTACK_TOKEN: "test-token",
     }),
   }));
 
@@ -218,36 +221,36 @@ export function setupLogtailMocks(config: LogtailMockConfig = {}) {
  * Standard Logtail test data generators
  */
 export const logtailTestData = {
-  error: (message = 'Test error') => new Error(message),
+  error: (message = "Test error") => new Error(message),
 
   context: (overrides = {}) => ({
-    extra: { key: 'value' },
-    tags: { component: 'test' },
-    user: { id: '123' },
+    extra: { key: "value" },
+    tags: { component: "test" },
+    user: { id: "123" },
     ...overrides,
   }),
 
   user: (overrides = {}) => ({
-    id: '123',
-    email: 'test@example.com',
-    name: 'Test User',
+    id: "123",
+    email: "test@example.com",
+    name: "Test User",
     ...overrides,
   }),
 
   breadcrumb: (overrides = {}) => ({
-    message: 'Test breadcrumb',
-    level: 'info' as const,
+    message: "Test breadcrumb",
+    level: "info" as const,
     timestamp: Date.now() / 1000,
     ...overrides,
   }),
 
   initConfig: (overrides = {}) => ({
-    sourceToken: 'test-token',
-    endpoint: 'https://in.logs.betterstack.com',
+    sourceToken: "test-token",
+    endpoint: "https://in.logs.betterstack.com",
     ...overrides,
   }),
 
-  logEntry: (level = 'info', message = 'Test message', data = {}) => ({
+  logEntry: (level = "info", message = "Test message", data = {}) => ({
     level,
     message,
     data,

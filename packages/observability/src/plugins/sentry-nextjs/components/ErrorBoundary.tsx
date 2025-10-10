@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import * as Sentry from '@sentry/nextjs';
-import React, { Component, ReactNode } from 'react';
+import * as Sentry from "@sentry/nextjs";
+import React, { Component, ReactNode } from "react";
 
 /**
  * Error boundary component with Sentry integration
@@ -24,7 +24,10 @@ interface ErrorBoundaryState {
   eventId: string | null;
 }
 
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export class ErrorBoundary extends Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = {
@@ -42,7 +45,12 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    const { onError, beforeCapture, level = 'error', errorTag = 'ErrorBoundary' } = this.props;
+    const {
+      onError,
+      beforeCapture,
+      level = "error",
+      errorTag = "ErrorBoundary",
+    } = this.props;
 
     // Call custom error handler if provided
     if (onError) {
@@ -50,15 +58,15 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     }
 
     // Capture with Sentry
-    const eventId = Sentry.withScope(scope => {
+    const eventId = Sentry.withScope((scope) => {
       // Set error level
       scope.setLevel(level);
 
       // Set error tag
-      scope.setTag('component', errorTag);
+      scope.setTag("component", errorTag);
 
       // Add error boundary context
-      scope.setContext('errorBoundary', {
+      scope.setContext("errorBoundary", {
         componentStack: errorInfo.componentStack,
       });
 
@@ -102,35 +110,37 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       return (
         <div
           style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: '400px',
-            padding: '20px',
-            textAlign: 'center',
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: "400px",
+            padding: "20px",
+            textAlign: "center",
           }}
         >
-          <h1 style={{ fontSize: '24px', marginBottom: '16px' }}>Something went wrong</h1>
-          <p style={{ marginBottom: '24px', color: '#666' }}>
+          <h1 style={{ fontSize: "24px", marginBottom: "16px" }}>
+            Something went wrong
+          </h1>
+          <p style={{ marginBottom: "24px", color: "#666" }}>
             An error occurred while rendering this component.
           </p>
           <button
             onClick={this.reset}
             style={{
-              padding: '10px 20px',
-              fontSize: '16px',
-              backgroundColor: '#0070f3',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
+              padding: "10px 20px",
+              fontSize: "16px",
+              backgroundColor: "#0070f3",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
             }}
           >
             Try again
           </button>
           {this.state.eventId && (
-            <p style={{ marginTop: '16px', fontSize: '12px', color: '#999' }}>
+            <p style={{ marginTop: "16px", fontSize: "12px", color: "#999" }}>
               Error ID: {this.state.eventId}
             </p>
           )}

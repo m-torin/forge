@@ -153,7 +153,7 @@ const importGroups = [
   "parent", // ../
   "sibling", // ./
   "index", // ./index
-  "side-effect" // CSS/side effects
+  "side-effect", // CSS/side effects
 ];
 ```
 
@@ -177,8 +177,8 @@ const config = {
   files: ["**/*.tsx"],
   plugins: ["react"],
   rules: {
-    "react/jsx-uses-react": "off"
-  }
+    "react/jsx-uses-react": "off",
+  },
 };
 ```
 
@@ -232,7 +232,7 @@ const SERVER_COMPONENT_FILES = [
   "app/**/loading.{js,jsx,ts,tsx}",
   "app/**/error.{js,jsx,ts,tsx}",
   "app/**/not-found.{js,jsx,ts,tsx}",
-  "app/**/global-error.{js,jsx,ts,tsx}"
+  "app/**/global-error.{js,jsx,ts,tsx}",
 ];
 
 // Rule sets grouped by purpose
@@ -241,16 +241,16 @@ const performanceRules = {
   rules: {
     "@next/next/no-img-element": "error",
     "@next/next/no-page-custom-font": "warn",
-    "@next/next/no-sync-scripts": "error"
-  }
+    "@next/next/no-sync-scripts": "error",
+  },
 };
 
 const serverComponentRules = {
   files: SERVER_COMPONENT_FILES,
   rules: {
     "@next/next/no-client-only-import-in-server-component": "error",
-    "react-hooks/rules-of-hooks": "off" // Server components don't use hooks
-  }
+    "react-hooks/rules-of-hooks": "off", // Server components don't use hooks
+  },
 };
 ```
 
@@ -634,9 +634,9 @@ export default [
       // Allow any for Storybook stories
       "@typescript-eslint/no-explicit-any": "off",
       // Allow default exports for stories
-      "import/no-default-export": "off"
-    }
-  }
+      "import/no-default-export": "off",
+    },
+  },
 ];
 ```
 
@@ -650,12 +650,12 @@ export default [
     rules: {
       // Stricter rules for library code
       "@typescript-eslint/explicit-function-return-type": "error",
-      "@typescript-eslint/no-explicit-any": "error"
-    }
+      "@typescript-eslint/no-explicit-any": "error",
+    },
   },
   {
-    ignores: ["dist/**/*", "**/*.d.ts", "coverage/**/*"]
-  }
+    ignores: ["dist/**/*", "**/*.d.ts", "coverage/**/*"],
+  },
 ];
 ```
 

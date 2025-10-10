@@ -3,21 +3,29 @@
  * 100% React Server Component for displaying email verification status
  */
 
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useFormState } from 'react-dom';
-import type { BaseProps, FormState } from '../types';
-import { createInitialActionState } from '../types';
-import { Alert } from '../ui/Alert';
-import { Button } from '../ui/Button';
-import { Card, CardContent, CardHeader } from '../ui/Card';
-import { cn } from '../utils/dark-mode';
+import { useEffect, useState } from "react";
+import { useFormState } from "react-dom";
+import type { BaseProps, FormState } from "../types";
+import { createInitialActionState } from "../types";
+import { Alert } from "../ui/Alert";
+import { Button } from "../ui/Button";
+import { Card, CardContent, CardHeader } from "../ui/Card";
+import { cn } from "../utils/dark-mode";
 
 // Import real server actions from the auth package
-import { resendVerificationEmailAction, verifyEmailAction } from '@repo/auth/server-actions';
+import {
+  resendVerificationEmailAction,
+  verifyEmailAction,
+} from "@repo/auth/server-actions";
 
-type VerificationStatus = 'pending' | 'verified' | 'expired' | 'error' | 'processing';
+type VerificationStatus =
+  | "pending"
+  | "verified"
+  | "expired"
+  | "error"
+  | "processing";
 
 interface EmailVerificationStatusProps extends BaseProps {
   userEmail: string;
@@ -32,15 +40,18 @@ const _initialState: FormState = { success: false };
 
 export function EmailVerificationStatus({
   userEmail,
-  initialStatus = 'pending',
+  initialStatus = "pending",
   token,
   onStatusChange,
   onVerified,
   allowResend = true,
-  className = '',
+  className = "",
 }: EmailVerificationStatusProps) {
   const [status, setStatus] = useState<VerificationStatus>(initialStatus);
-  const [verifyState, verifyAction] = useFormState(verifyEmailAction, createInitialActionState());
+  const [verifyState, verifyAction] = useFormState(
+    verifyEmailAction,
+    createInitialActionState(),
+  );
   const [resendState, resendAction] = useFormState(
     resendVerificationEmailAction,
     createInitialActionState(),
@@ -48,11 +59,11 @@ export function EmailVerificationStatus({
 
   // Auto-verify if token is provided
   useEffect(() => {
-    if (token && status === 'pending') {
-      setStatus('processing');
+    if (token && status === "pending") {
+      setStatus("processing");
       // Auto-submit verification
       const form = new FormData();
-      form.append('token', token);
+      form.append("token", token);
       verifyAction(form);
     }
   }, [token, status, verifyAction]);
@@ -60,15 +71,15 @@ export function EmailVerificationStatus({
   // Handle verification result
   useEffect(() => {
     if (verifyState?.success) {
-      setStatus('verified');
+      setStatus("verified");
       if (onVerified) {
         onVerified();
       }
     } else if (verifyState?.error) {
-      if (verifyState.error.includes('expired')) {
-        setStatus('expired');
+      if (verifyState.error.includes("expired")) {
+        setStatus("expired");
       } else {
-        setStatus('error');
+        setStatus("error");
       }
     }
   }, [verifyState, onVerified]);
@@ -82,7 +93,7 @@ export function EmailVerificationStatus({
 
   const getStatusIcon = () => {
     switch (status) {
-      case 'processing':
+      case "processing":
         return (
           <svg
             className="h-8 w-8 animate-spin text-blue-600 dark:text-blue-400"
@@ -104,7 +115,7 @@ export function EmailVerificationStatus({
             />
           </svg>
         );
-      case 'verified':
+      case "verified":
         return (
           <svg
             className="h-8 w-8 text-green-600 dark:text-green-400"
@@ -118,7 +129,7 @@ export function EmailVerificationStatus({
             />
           </svg>
         );
-      case 'expired':
+      case "expired":
         return (
           <svg
             className="h-8 w-8 text-yellow-600 dark:text-yellow-400"
@@ -132,7 +143,7 @@ export function EmailVerificationStatus({
             />
           </svg>
         );
-      case 'error':
+      case "error":
         return (
           <svg
             className="h-8 w-8 text-red-600 dark:text-red-400"
@@ -167,37 +178,39 @@ export function EmailVerificationStatus({
 
   const getStatusMessage = () => {
     switch (status) {
-      case 'processing':
+      case "processing":
         return {
-          title: 'Verifying Your Email',
-          description: 'Please wait while we verify your email address...',
-          variant: 'default' as const,
+          title: "Verifying Your Email",
+          description: "Please wait while we verify your email address...",
+          variant: "default" as const,
         };
-      case 'verified':
+      case "verified":
         return {
-          title: 'Email Verified Successfully!',
-          description: 'Your email address has been verified. Your account is now fully activated.',
-          variant: 'success' as const,
-        };
-      case 'expired':
-        return {
-          title: 'Verification Link Expired',
+          title: "Email Verified Successfully!",
           description:
-            'This verification link has expired. Please request a new verification email.',
-          variant: 'warning' as const,
+            "Your email address has been verified. Your account is now fully activated.",
+          variant: "success" as const,
         };
-      case 'error':
+      case "expired":
         return {
-          title: 'Verification Failed',
-          description: "We couldn't verify your email address. The link may be invalid or expired.",
-          variant: 'destructive' as const,
+          title: "Verification Link Expired",
+          description:
+            "This verification link has expired. Please request a new verification email.",
+          variant: "warning" as const,
+        };
+      case "error":
+        return {
+          title: "Verification Failed",
+          description:
+            "We couldn't verify your email address. The link may be invalid or expired.",
+          variant: "destructive" as const,
         };
       default: // pending
         return {
-          title: 'Email Verification Pending',
+          title: "Email Verification Pending",
           description:
-            'Please check your email and click the verification link to activate your account.',
-          variant: 'warning' as const,
+            "Please check your email and click the verification link to activate your account.",
+          variant: "warning" as const,
         };
     }
   };
@@ -205,27 +218,32 @@ export function EmailVerificationStatus({
   const statusMessage = getStatusMessage();
 
   return (
-    <Card className={cn('mx-auto w-full max-w-md', className)}>
+    <Card className={cn("mx-auto w-full max-w-md", className)}>
       <CardHeader>
         <div className="text-center">
           <div
             className={cn(
-              'mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full',
-              status === 'verified'
-                ? 'bg-green-100 dark:bg-green-900/20'
-                : status === 'expired'
-                  ? 'bg-yellow-100 dark:bg-yellow-900/20'
-                  : status === 'error'
-                    ? 'bg-red-100 dark:bg-red-900/20'
-                    : 'bg-blue-100 dark:bg-blue-900/20',
+              "mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full",
+              status === "verified"
+                ? "bg-green-100 dark:bg-green-900/20"
+                : status === "expired"
+                  ? "bg-yellow-100 dark:bg-yellow-900/20"
+                  : status === "error"
+                    ? "bg-red-100 dark:bg-red-900/20"
+                    : "bg-blue-100 dark:bg-blue-900/20",
             )}
           >
             {getStatusIcon()}
           </div>
-          <h2 className={cn('text-xl font-bold text-gray-900', 'dark:text-gray-100')}>
+          <h2
+            className={cn(
+              "text-xl font-bold text-gray-900",
+              "dark:text-gray-100",
+            )}
+          >
             {statusMessage.title}
           </h2>
-          <p className={cn('mt-2 text-sm text-gray-600', 'dark:text-gray-400')}>
+          <p className={cn("mt-2 text-sm text-gray-600", "dark:text-gray-400")}>
             {statusMessage.description}
           </p>
         </div>
@@ -238,23 +256,32 @@ export function EmailVerificationStatus({
         </Alert>
 
         {/* Email Display */}
-        <div className={cn('mb-4 rounded-lg bg-gray-50 p-4', 'dark:bg-gray-800')}>
+        <div
+          className={cn("mb-4 rounded-lg bg-gray-50 p-4", "dark:bg-gray-800")}
+        >
           <div className="flex items-center justify-between">
             <div>
-              <p className={cn('text-sm font-medium text-gray-700', 'dark:text-gray-300')}>
+              <p
+                className={cn(
+                  "text-sm font-medium text-gray-700",
+                  "dark:text-gray-300",
+                )}
+              >
                 Email Address
               </p>
-              <p className={cn('text-lg text-gray-900', 'dark:text-gray-100')}>{userEmail}</p>
+              <p className={cn("text-lg text-gray-900", "dark:text-gray-100")}>
+                {userEmail}
+              </p>
             </div>
             <span
               className={cn(
-                'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium',
-                status === 'verified'
-                  ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200'
-                  : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200',
+                "inline-flex items-center rounded-full px-2 py-1 text-xs font-medium",
+                status === "verified"
+                  ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200"
+                  : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200",
               )}
             >
-              {status === 'verified' ? 'Verified' : 'Unverified'}
+              {status === "verified" ? "Verified" : "Unverified"}
             </span>
           </div>
         </div>
@@ -275,7 +302,7 @@ export function EmailVerificationStatus({
         {/* Action Buttons */}
         <div className="space-y-3">
           {/* Manual verification with token */}
-          {status === 'pending' && token && (
+          {status === "pending" && token && (
             <form action={verifyAction}>
               <input type="hidden" name="token" value={token} />
               <Button
@@ -284,37 +311,42 @@ export function EmailVerificationStatus({
                 className="w-full"
                 disabled={verifyState === undefined}
               >
-                {verifyState === undefined ? 'Verifying...' : 'Verify Email Now'}
+                {verifyState === undefined
+                  ? "Verifying..."
+                  : "Verify Email Now"}
               </Button>
             </form>
           )}
 
           {/* Resend verification email */}
-          {allowResend && (status === 'pending' || status === 'expired' || status === 'error') && (
-            <form action={resendAction}>
-              <input type="hidden" name="email" value={userEmail} />
-              <Button
-                type="submit"
-                variant={status === 'pending' ? 'outline' : 'primary'}
-                className="w-full"
-                disabled={resendState === undefined}
-              >
-                {resendState === undefined
-                  ? 'Sending...'
-                  : status === 'pending'
-                    ? 'Resend Verification Email'
-                    : 'Send New Verification Email'}
-              </Button>
-            </form>
-          )}
+          {allowResend &&
+            (status === "pending" ||
+              status === "expired" ||
+              status === "error") && (
+              <form action={resendAction}>
+                <input type="hidden" name="email" value={userEmail} />
+                <Button
+                  type="submit"
+                  variant={status === "pending" ? "outline" : "primary"}
+                  className="w-full"
+                  disabled={resendState === undefined}
+                >
+                  {resendState === undefined
+                    ? "Sending..."
+                    : status === "pending"
+                      ? "Resend Verification Email"
+                      : "Send New Verification Email"}
+                </Button>
+              </form>
+            )}
 
           {/* Continue to dashboard (verified) */}
-          {status === 'verified' && (
+          {status === "verified" && (
             <Button
               variant="primary"
               className="w-full"
               onClick={() => {
-                window.location.href = '/dashboard';
+                window.location.href = "/dashboard";
               }}
             >
               Continue to Dashboard
@@ -326,8 +358,8 @@ export function EmailVerificationStatus({
             <a
               href="/account/settings"
               className={cn(
-                'text-sm text-gray-600 hover:text-gray-500',
-                'dark:text-gray-400 dark:hover:text-gray-300',
+                "text-sm text-gray-600 hover:text-gray-500",
+                "dark:text-gray-400 dark:hover:text-gray-300",
               )}
             >
               Need to change your email address?
@@ -336,11 +368,11 @@ export function EmailVerificationStatus({
         </div>
 
         {/* Verification Benefits (for pending status) */}
-        {status === 'pending' && (
+        {status === "pending" && (
           <div
             className={cn(
-              'mt-6 rounded-lg border border-blue-200 bg-blue-50 p-4',
-              'dark:border-blue-800 dark:bg-blue-900/20',
+              "mt-6 rounded-lg border border-blue-200 bg-blue-50 p-4",
+              "dark:border-blue-800 dark:bg-blue-900/20",
             )}
           >
             <div className="flex items-start">
@@ -355,8 +387,12 @@ export function EmailVerificationStatus({
                   clipRule="evenodd"
                 />
               </svg>
-              <div className={cn('text-sm text-blue-800', 'dark:text-blue-200')}>
-                <h4 className="mb-1 font-medium">Complete your verification to:</h4>
+              <div
+                className={cn("text-sm text-blue-800", "dark:text-blue-200")}
+              >
+                <h4 className="mb-1 font-medium">
+                  Complete your verification to:
+                </h4>
                 <ul className="list-inside list-disc space-y-1 text-xs">
                   <li>Secure your account with password recovery</li>
                   <li>Receive important security notifications</li>
@@ -369,11 +405,23 @@ export function EmailVerificationStatus({
         )}
 
         {/* Help Information */}
-        <div className={cn('mt-6 rounded-lg bg-gray-50 p-4', 'dark:bg-gray-800')}>
-          <h4 className={cn('mb-2 text-sm font-medium text-gray-900', 'dark:text-gray-100')}>
+        <div
+          className={cn("mt-6 rounded-lg bg-gray-50 p-4", "dark:bg-gray-800")}
+        >
+          <h4
+            className={cn(
+              "mb-2 text-sm font-medium text-gray-900",
+              "dark:text-gray-100",
+            )}
+          >
             Need Help?
           </h4>
-          <div className={cn('space-y-1 text-xs text-gray-600', 'dark:text-gray-400')}>
+          <div
+            className={cn(
+              "space-y-1 text-xs text-gray-600",
+              "dark:text-gray-400",
+            )}
+          >
             <p>• Check your spam folder for the verification email</p>
             <p>• Verification links expire after 24 hours</p>
             <p>• Make sure you're clicking the link from the same device</p>

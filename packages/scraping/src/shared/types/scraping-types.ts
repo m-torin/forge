@@ -4,19 +4,14 @@
 
 // Re-import provider types first
 import {
-  Cookie,
   ExtractedData,
   MultiScrapeOptions,
   PDFOptions,
-  ProviderType,
-  ProxyConfig,
-  ResourceType,
   ScrapeOptions,
   ScrapeResult,
   ScreenshotOptions,
   SelectorConfig,
   SelectorMap,
-  ViewportConfig,
 } from './provider';
 
 // Add missing types from original package
@@ -77,19 +72,12 @@ export interface ScrapingManager {
 
 // Re-export existing types
 export type {
-  Cookie,
   ExtractedData,
   MultiScrapeOptions,
-  PDFOptions,
-  ProviderType,
-  ProxyConfig,
-  ResourceType,
   ScrapeOptions,
   ScrapeResult,
-  ScreenshotOptions,
   SelectorConfig,
   SelectorMap,
-  ViewportConfig,
 };
 
 export interface ScrapingProvider {
@@ -108,7 +96,7 @@ export interface ScrapingProvider {
 }
 
 // Error types from original package
-export class ScrapingError extends Error {
+class _ScrapingError extends Error {
   constructor(
     message: string,
     public code: string,
@@ -120,7 +108,7 @@ export class ScrapingError extends Error {
   }
 }
 
-export const ScrapingErrorCodes = {
+const _ScrapingErrorCodes = {
   BLOCKED_BY_ROBOTS: 'BLOCKED_BY_ROBOTS',
   BROWSER_LAUNCH_FAILED: 'BROWSER_LAUNCH_FAILED',
   CAPTCHA_DETECTED: 'CAPTCHA_DETECTED',

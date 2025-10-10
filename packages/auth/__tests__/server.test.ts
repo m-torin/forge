@@ -2,10 +2,10 @@
  * Server authentication tests
  */
 
-import { beforeEach, describe, expect, vi } from 'vitest';
+import { beforeEach, describe, expect, vi } from "vitest";
 
 // Import after mocking
-import { getCurrentUser, getSession } from '../../src/server/session';
+import { getCurrentUser, getSession } from "../../src/server/session";
 
 // Use vi.hoisted for mocks
 const { mockGetSession } = vi.hoisted(() => {
@@ -14,13 +14,13 @@ const { mockGetSession } = vi.hoisted(() => {
 });
 
 // Mock the auth module
-vi.mock('../src/server/session', () => ({
+vi.mock("../src/server/session", () => ({
   getCurrentUser: vi.fn(),
   getSession: vi.fn(),
 }));
 
 // Mock the auth config
-vi.mock('../src/shared/auth', () => ({
+vi.mock("../src/shared/auth", () => ({
   auth: {
     api: {
       getSession: mockGetSession,
@@ -28,17 +28,17 @@ vi.mock('../src/shared/auth', () => ({
   },
 }));
 
-describe('server Authentication', () => {
+describe("server Authentication", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('getCurrentUser', () => {
-    test('should return user when session exists', async () => {
+  describe("getCurrentUser", () => {
+    test("should return user when session exists", async () => {
       const mockUser = {
-        id: '1',
-        name: 'Test User',
-        email: 'test@example.com',
+        id: "1",
+        name: "Test User",
+        email: "test@example.com",
         emailVerified: true,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -46,7 +46,7 @@ describe('server Authentication', () => {
         twoFactorEnabled: false,
         image: null,
         phoneNumber: null,
-        role: 'user',
+        role: "user",
         phoneNumberVerified: false,
         banReason: null,
         banExpires: null,
@@ -61,7 +61,7 @@ describe('server Authentication', () => {
       };
 
       mockGetSession.mockResolvedValue({
-        session: { id: 'session-1', userId: '1' },
+        session: { id: "session-1", userId: "1" },
         user: mockUser,
       });
 
@@ -71,7 +71,7 @@ describe('server Authentication', () => {
       expect(user).toStrictEqual(mockUser);
     });
 
-    test('should return null when no session', async () => {
+    test("should return null when no session", async () => {
       mockGetSession.mockResolvedValue(null);
       vi.mocked(getCurrentUser).mockResolvedValue(null);
 
@@ -80,29 +80,29 @@ describe('server Authentication', () => {
     });
   });
 
-  describe('getSession', () => {
-    test('should return session data when authenticated', async () => {
+  describe("getSession", () => {
+    test("should return session data when authenticated", async () => {
       const mockSessionData = {
-        activeOrganizationId: 'org-1',
+        activeOrganizationId: "org-1",
         session: {
-          id: 'session-1',
-          token: 'session-token',
-          userId: '1',
+          id: "session-1",
+          token: "session-token",
+          userId: "1",
           expiresAt: new Date(),
           createdAt: new Date(),
           updatedAt: new Date(),
-          activeOrganizationId: 'org-1',
+          activeOrganizationId: "org-1",
         },
         user: {
-          id: '1',
-          name: 'Test User',
-          email: 'test@example.com',
+          id: "1",
+          name: "Test User",
+          email: "test@example.com",
           emailVerified: true,
           createdAt: new Date(),
           updatedAt: new Date(),
-          role: 'user',
+          role: "user",
           phoneNumberVerified: false,
-          bio: 'Test user',
+          bio: "Test user",
         },
       };
 
@@ -117,7 +117,7 @@ describe('server Authentication', () => {
       expect(session).toStrictEqual(mockSessionData);
     });
 
-    test('should return null when not authenticated', async () => {
+    test("should return null when not authenticated", async () => {
       mockGetSession.mockResolvedValue(null);
       vi.mocked(getSession).mockResolvedValue(null);
 

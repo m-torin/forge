@@ -3,22 +3,22 @@
  * Comprehensive wizard for creating teams with member invitations and role assignments
  */
 
-import { useState, useTransition } from 'react';
-import { useFormState } from 'react-dom';
-import { Alert } from '../ui/Alert';
-import { Button } from '../ui/Button';
-import { Card, CardContent, CardHeader } from '../ui/Card';
-import { Input } from '../ui/Input';
+import { useState, useTransition } from "react";
+import { useFormState } from "react-dom";
+import { Alert } from "../ui/Alert";
+import { Button } from "../ui/Button";
+import { Card, CardContent, CardHeader } from "../ui/Card";
+import { Input } from "../ui/Input";
 
 import {
   createTeamAction,
   inviteTeamMembersAction as inviteMembersAction,
   uploadTeamImageAction,
-} from '../../../../../../auth/src/server-actions';
+} from "../../../../../../auth/src/server-actions";
 
 interface TeamMember {
   email: string;
-  role: 'admin' | 'member' | 'viewer';
+  role: "admin" | "member" | "viewer";
   name?: string;
 }
 
@@ -28,49 +28,49 @@ interface TeamCreationWizardProps {
   allowPublicTeams?: boolean;
   requireTeamImage?: boolean;
   maxTeamMembers?: number;
-  defaultRole?: 'admin' | 'member' | 'viewer';
+  defaultRole?: "admin" | "member" | "viewer";
   className?: string;
 }
 
-type WizardStep = 'details' | 'image' | 'members' | 'review' | 'success';
+type WizardStep = "details" | "image" | "members" | "review" | "success";
 
-const initialFormState = { success: false, error: '' };
+const initialFormState = { success: false, error: "" };
 
 const ROLE_DESCRIPTIONS = {
-  admin: 'Can manage team settings, members, and content',
-  member: 'Can create and edit content, view all team data',
-  viewer: 'Can view team content but cannot edit',
+  admin: "Can manage team settings, members, and content",
+  member: "Can create and edit content, view all team data",
+  viewer: "Can view team content but cannot edit",
 };
 
 const TEAM_TEMPLATES = [
   {
-    name: 'Development Team',
-    description: 'Software development and engineering team',
-    icon: '💻',
+    name: "Development Team",
+    description: "Software development and engineering team",
+    icon: "💻",
     defaultMembers: [
-      { role: 'admin' as const, placeholder: 'team-lead@company.com' },
-      { role: 'member' as const, placeholder: 'developer@company.com' },
-      { role: 'member' as const, placeholder: 'designer@company.com' },
+      { role: "admin" as const, placeholder: "team-lead@company.com" },
+      { role: "member" as const, placeholder: "developer@company.com" },
+      { role: "member" as const, placeholder: "designer@company.com" },
     ],
   },
   {
-    name: 'Marketing Team',
-    description: 'Marketing and growth team',
-    icon: '📈',
+    name: "Marketing Team",
+    description: "Marketing and growth team",
+    icon: "📈",
     defaultMembers: [
-      { role: 'admin' as const, placeholder: 'marketing-lead@company.com' },
-      { role: 'member' as const, placeholder: 'content-manager@company.com' },
-      { role: 'viewer' as const, placeholder: 'analyst@company.com' },
+      { role: "admin" as const, placeholder: "marketing-lead@company.com" },
+      { role: "member" as const, placeholder: "content-manager@company.com" },
+      { role: "viewer" as const, placeholder: "analyst@company.com" },
     ],
   },
   {
-    name: 'Sales Team',
-    description: 'Sales and customer success team',
-    icon: '💼',
+    name: "Sales Team",
+    description: "Sales and customer success team",
+    icon: "💼",
     defaultMembers: [
-      { role: 'admin' as const, placeholder: 'sales-manager@company.com' },
-      { role: 'member' as const, placeholder: 'sales-rep@company.com' },
-      { role: 'member' as const, placeholder: 'success-manager@company.com' },
+      { role: "admin" as const, placeholder: "sales-manager@company.com" },
+      { role: "member" as const, placeholder: "sales-rep@company.com" },
+      { role: "member" as const, placeholder: "success-manager@company.com" },
     ],
   },
 ];
@@ -81,48 +81,59 @@ export function TeamCreationWizard({
   allowPublicTeams = true,
   requireTeamImage = false,
   maxTeamMembers = 50,
-  defaultRole = 'member',
-  className = '',
+  defaultRole = "member",
+  className = "",
 }: TeamCreationWizardProps) {
   const [isPending, startTransition] = useTransition();
-  const [currentStep, setCurrentStep] = useState<WizardStep>('details');
+  const [currentStep, setCurrentStep] = useState<WizardStep>("details");
   const [teamData, setTeamData] = useState({
-    name: '',
-    description: '',
+    name: "",
+    description: "",
     isPublic: false,
-    imageUrl: '',
-    slug: '',
+    imageUrl: "",
+    slug: "",
   });
   const [members, setMembers] = useState<TeamMember[]>([]);
-  const [currentMemberEmail, setCurrentMemberEmail] = useState('');
-  const [currentMemberRole, setCurrentMemberRole] = useState<'admin' | 'member' | 'viewer'>(
-    defaultRole,
-  );
-  const [selectedTemplate, setSelectedTemplate] = useState<(typeof TEAM_TEMPLATES)[0] | null>(null);
-  const [createdTeamId, setCreatedTeamId] = useState('');
+  const [currentMemberEmail, setCurrentMemberEmail] = useState("");
+  const [currentMemberRole, setCurrentMemberRole] = useState<
+    "admin" | "member" | "viewer"
+  >(defaultRole);
+  const [selectedTemplate, setSelectedTemplate] = useState<
+    (typeof TEAM_TEMPLATES)[0] | null
+  >(null);
+  const [createdTeamId, setCreatedTeamId] = useState("");
 
-  const [createState, _createAction] = useFormState(createTeamAction, initialFormState);
-  const [inviteState, _inviteAction] = useFormState(inviteMembersAction, initialFormState);
-  const [uploadState, _uploadAction] = useFormState(uploadTeamImageAction, initialFormState);
+  const [createState, _createAction] = useFormState(
+    createTeamAction,
+    initialFormState,
+  );
+  const [inviteState, _inviteAction] = useFormState(
+    inviteMembersAction,
+    initialFormState,
+  );
+  const [uploadState, _uploadAction] = useFormState(
+    uploadTeamImageAction,
+    initialFormState,
+  );
 
   const handleDetailsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const formData = new FormData();
-    formData.append('teamName', teamData.name);
-    formData.append('description', teamData.description);
-    formData.append('isPublic', teamData.isPublic.toString());
+    formData.append("teamName", teamData.name);
+    formData.append("description", teamData.description);
+    formData.append("isPublic", teamData.isPublic.toString());
 
     startTransition(async () => {
       const result = await createTeamAction(createState, formData);
       if (result?.success) {
         setCreatedTeamId(result.teamId);
-        setTeamData(prev => ({ ...prev, slug: result.slug || '' }));
+        setTeamData((prev) => ({ ...prev, slug: result.slug || "" }));
 
         if (requireTeamImage) {
-          setCurrentStep('image');
+          setCurrentStep("image");
         } else {
-          setCurrentStep('members');
+          setCurrentStep("members");
         }
       }
     });
@@ -132,14 +143,14 @@ export function TeamCreationWizard({
     if (!file || !createdTeamId) return;
 
     const formData = new FormData();
-    formData.append('teamId', createdTeamId);
-    formData.append('image', file);
+    formData.append("teamId", createdTeamId);
+    formData.append("image", file);
 
     startTransition(async () => {
       const result = await uploadTeamImageAction(uploadState, formData);
       if (result?.success) {
-        setTeamData(prev => ({ ...prev, imageUrl: result.imageUrl || '' }));
-        setCurrentStep('members');
+        setTeamData((prev) => ({ ...prev, imageUrl: result.imageUrl || "" }));
+        setCurrentStep("members");
       }
     });
   };
@@ -148,8 +159,12 @@ export function TeamCreationWizard({
     if (!currentMemberEmail.trim()) return;
 
     // Check if email already exists
-    if (members.find(m => m.email.toLowerCase() === currentMemberEmail.toLowerCase())) {
-      alert('This email is already added to the team');
+    if (
+      members.find(
+        (m) => m.email.toLowerCase() === currentMemberEmail.toLowerCase(),
+      )
+    ) {
+      alert("This email is already added to the team");
       return;
     }
 
@@ -163,28 +178,33 @@ export function TeamCreationWizard({
       role: currentMemberRole,
     };
 
-    setMembers(prev => [...prev, newMember]);
-    setCurrentMemberEmail('');
+    setMembers((prev) => [...prev, newMember]);
+    setCurrentMemberEmail("");
   };
 
   const handleRemoveMember = (email: string) => {
-    setMembers(prev => prev.filter(m => m.email !== email));
+    setMembers((prev) => prev.filter((m) => m.email !== email));
   };
 
-  const handleMemberRoleChange = (email: string, role: 'admin' | 'member' | 'viewer') => {
-    setMembers(prev => prev.map(m => (m.email === email ? { ...m, role } : m)));
+  const handleMemberRoleChange = (
+    email: string,
+    role: "admin" | "member" | "viewer",
+  ) => {
+    setMembers((prev) =>
+      prev.map((m) => (m.email === email ? { ...m, role } : m)),
+    );
   };
 
   const handleTemplateSelect = (template: (typeof TEAM_TEMPLATES)[0]) => {
     setSelectedTemplate(template);
-    setTeamData(prev => ({
+    setTeamData((prev) => ({
       ...prev,
       name: template.name,
       description: template.description,
     }));
 
     // Pre-populate members from template
-    const templateMembers: TeamMember[] = template.defaultMembers.map(tm => ({
+    const templateMembers: TeamMember[] = template.defaultMembers.map((tm) => ({
       email: tm.placeholder,
       role: tm.role,
     }));
@@ -193,24 +213,24 @@ export function TeamCreationWizard({
 
   const handleInviteMembers = async () => {
     if (!createdTeamId || members.length === 0) {
-      setCurrentStep('review');
+      setCurrentStep("review");
       return;
     }
 
     const formData = new FormData();
-    formData.append('teamId', createdTeamId);
-    formData.append('invitations', JSON.stringify(members));
+    formData.append("teamId", createdTeamId);
+    formData.append("invitations", JSON.stringify(members));
 
     startTransition(async () => {
       const result = await inviteMembersAction(inviteState, formData);
       if (result?.success) {
-        setCurrentStep('review');
+        setCurrentStep("review");
       }
     });
   };
 
   const handleFinishWizard = () => {
-    setCurrentStep('success');
+    setCurrentStep("success");
     setTimeout(() => {
       onTeamCreated({
         teamId: createdTeamId,
@@ -223,48 +243,48 @@ export function TeamCreationWizard({
 
   const getStepTitle = () => {
     switch (currentStep) {
-      case 'details':
-        return 'Team Details';
-      case 'image':
-        return 'Team Image';
-      case 'members':
-        return 'Invite Members';
-      case 'review':
-        return 'Review & Confirm';
-      case 'success':
-        return 'Team Created!';
+      case "details":
+        return "Team Details";
+      case "image":
+        return "Team Image";
+      case "members":
+        return "Invite Members";
+      case "review":
+        return "Review & Confirm";
+      case "success":
+        return "Team Created!";
       default:
-        return 'Create Team';
+        return "Create Team";
     }
   };
 
   const getStepDescription = () => {
     switch (currentStep) {
-      case 'details':
-        return 'Give your team a name and description';
-      case 'image':
-        return 'Upload a team image or logo';
-      case 'members':
-        return 'Invite team members and assign roles';
-      case 'review':
-        return 'Review your team settings before finishing';
-      case 'success':
-        return 'Your team has been created successfully';
+      case "details":
+        return "Give your team a name and description";
+      case "image":
+        return "Upload a team image or logo";
+      case "members":
+        return "Invite team members and assign roles";
+      case "review":
+        return "Review your team settings before finishing";
+      case "success":
+        return "Your team has been created successfully";
       default:
-        return '';
+        return "";
     }
   };
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'admin':
-        return 'text-red-600 bg-red-50 border-red-200';
-      case 'member':
-        return 'text-blue-600 bg-blue-50 border-blue-200';
-      case 'viewer':
-        return 'text-gray-600 bg-gray-50 border-gray-200';
+      case "admin":
+        return "text-red-600 bg-red-50 border-red-200";
+      case "member":
+        return "text-blue-600 bg-blue-50 border-blue-200";
+      case "viewer":
+        return "text-gray-600 bg-gray-50 border-gray-200";
       default:
-        return 'text-gray-600 bg-gray-50 border-gray-200';
+        return "text-gray-600 bg-gray-50 border-gray-200";
     }
   };
 
@@ -274,7 +294,9 @@ export function TeamCreationWizard({
         <CardHeader>
           <div className="text-center">
             <div className="mb-3 text-4xl">👥</div>
-            <h2 className="text-2xl font-bold text-gray-900">{getStepTitle()}</h2>
+            <h2 className="text-2xl font-bold text-gray-900">
+              {getStepTitle()}
+            </h2>
             <p className="mt-2 text-sm text-gray-600">{getStepDescription()}</p>
           </div>
         </CardHeader>
@@ -285,45 +307,51 @@ export function TeamCreationWizard({
             </Alert>
           )}
 
-          {(createState.success || inviteState.success || uploadState.success) &&
-            currentStep !== 'success' && (
+          {(createState.success ||
+            inviteState.success ||
+            uploadState.success) &&
+            currentStep !== "success" && (
               <Alert variant="default">
-                {createState.success && 'Team created successfully!'}
+                {createState.success && "Team created successfully!"}
                 {inviteState.success &&
                   `${(inviteState as any).invitationsSent || 0} invitations sent!`}
-                {uploadState.success && 'Team image uploaded successfully!'}
+                {uploadState.success && "Team image uploaded successfully!"}
               </Alert>
             )}
 
-          {currentStep === 'details' && (
+          {currentStep === "details" && (
             <div className="space-y-6">
               <div>
                 <h3 className="mb-4 text-lg font-medium text-gray-900">
                   Choose a Template (Optional)
                 </h3>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                  {TEAM_TEMPLATES.map(template => (
+                  {TEAM_TEMPLATES.map((template) => (
                     <div
                       key={template.name}
                       role="button"
                       tabIndex={0}
                       onClick={() => handleTemplateSelect(template)}
-                      onKeyDown={e => {
-                        if (e.key === 'Enter' || e.key === ' ') {
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
                           e.preventDefault();
                           handleTemplateSelect(template);
                         }
                       }}
                       className={`cursor-pointer rounded-lg border-2 p-4 transition-all ${
                         selectedTemplate?.name === template.name
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-200 hover:border-gray-300'
+                          ? "border-blue-500 bg-blue-50"
+                          : "border-gray-200 hover:border-gray-300"
                       }`}
                     >
                       <div className="text-center">
                         <div className="mb-2 text-3xl">{template.icon}</div>
-                        <h4 className="font-medium text-gray-900">{template.name}</h4>
-                        <p className="mt-1 text-sm text-gray-600">{template.description}</p>
+                        <h4 className="font-medium text-gray-900">
+                          {template.name}
+                        </h4>
+                        <p className="mt-1 text-sm text-gray-600">
+                          {template.description}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -343,12 +371,16 @@ export function TeamCreationWizard({
                     type="text"
                     required
                     value={teamData.name}
-                    onChange={e => setTeamData(prev => ({ ...prev, name: e.target.value }))}
+                    onChange={(e) =>
+                      setTeamData((prev) => ({ ...prev, name: e.target.value }))
+                    }
                     placeholder="Enter team name"
                     className="w-full"
                     maxLength={50}
                   />
-                  <p className="mt-1 text-xs text-gray-500">{teamData.name.length}/50 characters</p>
+                  <p className="mt-1 text-xs text-gray-500">
+                    {teamData.name.length}/50 characters
+                  </p>
                 </div>
 
                 <div>
@@ -361,7 +393,12 @@ export function TeamCreationWizard({
                   <textarea
                     id="description"
                     value={teamData.description}
-                    onChange={e => setTeamData(prev => ({ ...prev, description: e.target.value }))}
+                    onChange={(e) =>
+                      setTeamData((prev) => ({
+                        ...prev,
+                        description: e.target.value,
+                      }))
+                    }
                     placeholder="Describe what this team does"
                     rows={3}
                     maxLength={200}
@@ -379,15 +416,24 @@ export function TeamCreationWizard({
                         type="checkbox"
                         id="isPublic"
                         checked={teamData.isPublic}
-                        onChange={e =>
-                          setTeamData(prev => ({ ...prev, isPublic: e.target.checked }))
+                        onChange={(e) =>
+                          setTeamData((prev) => ({
+                            ...prev,
+                            isPublic: e.target.checked,
+                          }))
                         }
                         className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
-                      <label htmlFor="isPublic" className="text-sm text-gray-700">
-                        <span className="font-medium">Make this team public</span>
+                      <label
+                        htmlFor="isPublic"
+                        className="text-sm text-gray-700"
+                      >
+                        <span className="font-medium">
+                          Make this team public
+                        </span>
                         <p className="mt-1 text-xs text-gray-500">
-                          Public teams can be discovered and joined by anyone in your organization
+                          Public teams can be discovered and joined by anyone in
+                          your organization
                         </p>
                       </label>
                     </div>
@@ -400,10 +446,15 @@ export function TeamCreationWizard({
                     disabled={isPending || !teamData.name.trim()}
                     className="flex-1"
                   >
-                    {isPending ? 'Creating Team...' : 'Continue'}
+                    {isPending ? "Creating Team..." : "Continue"}
                   </Button>
                   {onCancel && (
-                    <Button type="button" variant="outline" onClick={onCancel} disabled={isPending}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={onCancel}
+                      disabled={isPending}
+                    >
                       Cancel
                     </Button>
                   )}
@@ -412,7 +463,7 @@ export function TeamCreationWizard({
             </div>
           )}
 
-          {currentStep === 'image' && (
+          {currentStep === "image" && (
             <div className="space-y-6">
               <div className="text-center">
                 <div className="mx-auto mb-4 flex h-32 w-32 items-center justify-center rounded-lg border-2 border-dashed border-gray-300">
@@ -435,7 +486,7 @@ export function TeamCreationWizard({
                     type="file"
                     id="teamImage"
                     accept="image/*"
-                    onChange={e => {
+                    onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) handleImageUpload(file);
                     }}
@@ -445,24 +496,28 @@ export function TeamCreationWizard({
                     htmlFor="teamImage"
                     className="inline-flex cursor-pointer items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                   >
-                    {isPending ? 'Uploading...' : 'Upload Image'}
+                    {isPending ? "Uploading..." : "Upload Image"}
                   </label>
-                  <p className="mt-2 text-xs text-gray-500">Recommended: 150x150px, max 2MB</p>
+                  <p className="mt-2 text-xs text-gray-500">
+                    Recommended: 150x150px, max 2MB
+                  </p>
                 </div>
               </div>
 
               <div className="flex space-x-3">
                 <Button
-                  onClick={() => setCurrentStep('members')}
+                  onClick={() => setCurrentStep("members")}
                   disabled={isPending}
                   className="flex-1"
                 >
-                  {requireTeamImage && !teamData.imageUrl ? 'Upload Image to Continue' : 'Continue'}
+                  {requireTeamImage && !teamData.imageUrl
+                    ? "Upload Image to Continue"
+                    : "Continue"}
                 </Button>
                 {!requireTeamImage && (
                   <Button
                     variant="outline"
-                    onClick={() => setCurrentStep('members')}
+                    onClick={() => setCurrentStep("members")}
                     disabled={isPending}
                   >
                     Skip
@@ -472,20 +527,22 @@ export function TeamCreationWizard({
             </div>
           )}
 
-          {currentStep === 'members' && (
+          {currentStep === "members" && (
             <div className="space-y-6">
               <div>
-                <h3 className="mb-4 text-lg font-medium text-gray-900">Add Team Members</h3>
+                <h3 className="mb-4 text-lg font-medium text-gray-900">
+                  Add Team Members
+                </h3>
 
                 <div className="mb-4 flex space-x-2">
                   <Input
                     type="email"
                     value={currentMemberEmail}
-                    onChange={e => setCurrentMemberEmail(e.target.value)}
+                    onChange={(e) => setCurrentMemberEmail(e.target.value)}
                     placeholder="Enter email address"
                     className="flex-1"
-                    onKeyPress={e => {
-                      if (e.key === 'Enter') {
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter") {
                         e.preventDefault();
                         handleAddMember();
                       }
@@ -493,7 +550,9 @@ export function TeamCreationWizard({
                   />
                   <select
                     value={currentMemberRole}
-                    onChange={e => setCurrentMemberRole(e.target.value as any)}
+                    onChange={(e) =>
+                      setCurrentMemberRole(e.target.value as any)
+                    }
                     className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
                   >
                     <option value="viewer">Viewer</option>
@@ -503,7 +562,10 @@ export function TeamCreationWizard({
                   <Button
                     type="button"
                     onClick={handleAddMember}
-                    disabled={!currentMemberEmail.trim() || members.length >= maxTeamMembers}
+                    disabled={
+                      !currentMemberEmail.trim() ||
+                      members.length >= maxTeamMembers
+                    }
                     size="sm"
                   >
                     Add
@@ -517,7 +579,9 @@ export function TeamCreationWizard({
 
               {members.length > 0 && (
                 <div className="space-y-3">
-                  <h4 className="font-medium text-gray-900">Team Members ({members.length})</h4>
+                  <h4 className="font-medium text-gray-900">
+                    Team Members ({members.length})
+                  </h4>
                   <div className="space-y-2">
                     {members.map((member, index) => (
                       <div
@@ -531,7 +595,9 @@ export function TeamCreationWizard({
                             </span>
                           </div>
                           <div>
-                            <div className="font-medium text-gray-900">{member.email}</div>
+                            <div className="font-medium text-gray-900">
+                              {member.email}
+                            </div>
                             <div className="text-xs text-gray-500">
                               {ROLE_DESCRIPTIONS[member.role]}
                             </div>
@@ -540,8 +606,11 @@ export function TeamCreationWizard({
                         <div className="flex items-center space-x-2">
                           <select
                             value={member.role}
-                            onChange={e =>
-                              handleMemberRoleChange(member.email, e.target.value as any)
+                            onChange={(e) =>
+                              handleMemberRoleChange(
+                                member.email,
+                                e.target.value as any,
+                              )
                             }
                             className={`rounded-full border px-2 py-1 text-xs ${getRoleColor(member.role)}`}
                           >
@@ -584,12 +653,16 @@ export function TeamCreationWizard({
               </div>
 
               <div className="flex space-x-3">
-                <Button onClick={handleInviteMembers} disabled={isPending} className="flex-1">
-                  {isPending ? 'Sending Invitations...' : 'Continue'}
+                <Button
+                  onClick={handleInviteMembers}
+                  disabled={isPending}
+                  className="flex-1"
+                >
+                  {isPending ? "Sending Invitations..." : "Continue"}
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => setCurrentStep('review')}
+                  onClick={() => setCurrentStep("review")}
                   disabled={isPending}
                 >
                   Skip Invitations
@@ -598,15 +671,19 @@ export function TeamCreationWizard({
             </div>
           )}
 
-          {currentStep === 'review' && (
+          {currentStep === "review" && (
             <div className="space-y-6">
               <div>
-                <h3 className="mb-4 text-lg font-medium text-gray-900">Review Team Settings</h3>
+                <h3 className="mb-4 text-lg font-medium text-gray-900">
+                  Review Team Settings
+                </h3>
 
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div className="space-y-4">
                     <div>
-                      <h4 className="font-medium text-gray-700">Team Details</h4>
+                      <h4 className="font-medium text-gray-700">
+                        Team Details
+                      </h4>
                       <div className="mt-2 rounded-lg bg-gray-50 p-4">
                         <div className="mb-3 flex items-center space-x-3">
                           {teamData.imageUrl ? (
@@ -621,22 +698,28 @@ export function TeamCreationWizard({
                             </div>
                           )}
                           <div>
-                            <div className="font-medium text-gray-900">{teamData.name}</div>
-                            <div className="text-sm text-gray-600">/{teamData.slug}</div>
+                            <div className="font-medium text-gray-900">
+                              {teamData.name}
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              /{teamData.slug}
+                            </div>
                           </div>
                         </div>
                         {teamData.description && (
-                          <p className="text-sm text-gray-600">{teamData.description}</p>
+                          <p className="text-sm text-gray-600">
+                            {teamData.description}
+                          </p>
                         )}
                         <div className="mt-2 flex items-center space-x-2">
                           <span
                             className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
                               teamData.isPublic
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-gray-100 text-gray-800'
+                                ? "bg-green-100 text-green-800"
+                                : "bg-gray-100 text-gray-800"
                             }`}
                           >
-                            {teamData.isPublic ? 'Public' : 'Private'}
+                            {teamData.isPublic ? "Public" : "Private"}
                           </span>
                         </div>
                       </div>
@@ -645,7 +728,9 @@ export function TeamCreationWizard({
 
                   <div className="space-y-4">
                     <div>
-                      <h4 className="font-medium text-gray-700">Team Members ({members.length})</h4>
+                      <h4 className="font-medium text-gray-700">
+                        Team Members ({members.length})
+                      </h4>
                       <div className="mt-2 space-y-2">
                         {members.length === 0 ? (
                           <p className="rounded-lg bg-gray-50 p-4 text-sm text-gray-500">
@@ -658,7 +743,9 @@ export function TeamCreationWizard({
                                 key={member.email || `member-${index}`}
                                 className="flex items-center justify-between rounded bg-gray-50 p-2"
                               >
-                                <span className="text-sm text-gray-900">{member.email}</span>
+                                <span className="text-sm text-gray-900">
+                                  {member.email}
+                                </span>
                                 <span
                                   className={`inline-flex rounded-full border px-2 py-1 text-xs font-medium ${getRoleColor(member.role)}`}
                                 >
@@ -680,21 +767,26 @@ export function TeamCreationWizard({
                   <div className="text-sm text-green-800">
                     <h4 className="mb-2 font-medium">Ready to Create Team</h4>
                     <p>
-                      Your team "{teamData.name}" is ready to be created with {members.length}{' '}
-                      member{members.length !== 1 ? 's' : ''}.
-                      {members.length > 0 && ' Invitation emails will be sent to all members.'}
+                      Your team "{teamData.name}" is ready to be created with{" "}
+                      {members.length} member{members.length !== 1 ? "s" : ""}.
+                      {members.length > 0 &&
+                        " Invitation emails will be sent to all members."}
                     </p>
                   </div>
                 </div>
               </div>
 
               <div className="flex space-x-3">
-                <Button onClick={handleFinishWizard} disabled={isPending} className="flex-1">
+                <Button
+                  onClick={handleFinishWizard}
+                  disabled={isPending}
+                  className="flex-1"
+                >
                   Create Team
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => setCurrentStep('members')}
+                  onClick={() => setCurrentStep("members")}
                   disabled={isPending}
                 >
                   Back
@@ -703,7 +795,7 @@ export function TeamCreationWizard({
             </div>
           )}
 
-          {currentStep === 'success' && (
+          {currentStep === "success" && (
             <div className="space-y-6 text-center">
               <div className="mb-4 text-6xl">🎉</div>
               <div>
@@ -722,11 +814,14 @@ export function TeamCreationWizard({
                     <li>Your team dashboard is now available</li>
                     {members.length > 0 && (
                       <li>
-                        Invitation emails have been sent to {members.length} member
-                        {members.length !== 1 ? 's' : ''}
+                        Invitation emails have been sent to {members.length}{" "}
+                        member
+                        {members.length !== 1 ? "s" : ""}
                       </li>
                     )}
-                    <li>You can start adding content and managing team settings</li>
+                    <li>
+                      You can start adding content and managing team settings
+                    </li>
                     <li>Invite more members anytime from team settings</li>
                   </ul>
                 </div>
@@ -735,7 +830,9 @@ export function TeamCreationWizard({
               <div className="flex items-center justify-center py-4">
                 <div className="flex items-center space-x-3">
                   <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-blue-600" />
-                  <span className="text-sm text-gray-600">Redirecting to your team...</span>
+                  <span className="text-sm text-gray-600">
+                    Redirecting to your team...
+                  </span>
                 </div>
               </div>
             </div>
@@ -743,37 +840,65 @@ export function TeamCreationWizard({
 
           <div className="mt-6 border-t border-gray-200 pt-4">
             <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
-              {['details', 'image', 'members', 'review', 'success'].map((step, index) => {
-                const stepNames = ['Details', 'Image', 'Members', 'Review', 'Success'];
-                const isActive = currentStep === step;
-                const isCompleted =
-                  ['details', 'image', 'members', 'review', 'success'].indexOf(currentStep) > index;
+              {["details", "image", "members", "review", "success"].map(
+                (step, index) => {
+                  const stepNames = [
+                    "Details",
+                    "Image",
+                    "Members",
+                    "Review",
+                    "Success",
+                  ];
+                  const isActive = currentStep === step;
+                  const isCompleted =
+                    [
+                      "details",
+                      "image",
+                      "members",
+                      "review",
+                      "success",
+                    ].indexOf(currentStep) > index;
 
-                return (
-                  <div key={step} className="flex items-center">
-                    <div className="flex items-center space-x-1">
-                      <div
-                        className={`h-2 w-2 rounded-full ${
-                          isActive ? 'bg-blue-500' : isCompleted ? 'bg-green-500' : 'bg-gray-300'
-                        }`}
-                      />
-                      <span
-                        className={isActive ? 'text-blue-600' : isCompleted ? 'text-green-600' : ''}
-                      >
-                        {stepNames[index]}
-                      </span>
+                  return (
+                    <div key={step} className="flex items-center">
+                      <div className="flex items-center space-x-1">
+                        <div
+                          className={`h-2 w-2 rounded-full ${
+                            isActive
+                              ? "bg-blue-500"
+                              : isCompleted
+                                ? "bg-green-500"
+                                : "bg-gray-300"
+                          }`}
+                        />
+                        <span
+                          className={
+                            isActive
+                              ? "text-blue-600"
+                              : isCompleted
+                                ? "text-green-600"
+                                : ""
+                          }
+                        >
+                          {stepNames[index]}
+                        </span>
+                      </div>
+                      {index < stepNames.length - 1 && (
+                        <div className="mx-2 h-px w-8 bg-gray-300" />
+                      )}
                     </div>
-                    {index < stepNames.length - 1 && <div className="mx-2 h-px w-8 bg-gray-300" />}
-                  </div>
-                );
-              })}
+                  );
+                },
+              )}
             </div>
           </div>
         </CardContent>
       </Card>
 
       <div className="mt-4 text-center">
-        <p className="text-xs text-gray-500">🔒 Team data is encrypted and secure</p>
+        <p className="text-xs text-gray-500">
+          🔒 Team data is encrypted and secure
+        </p>
       </div>
     </div>
   );

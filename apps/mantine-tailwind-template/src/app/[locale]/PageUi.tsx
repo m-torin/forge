@@ -13,8 +13,8 @@ import { ColorSchemesSwitcher } from '#/components/color-schemes-switcher';
 import { LanguageSwitcher } from '#/components/language-switcher';
 import { useSidebar } from '#/components/SidebarProvider';
 import { AnalyticsEvents, trackEvent, trackPageView } from '#/lib/analytics';
+import { useAuth } from '#/lib/auth-client';
 import { ActionIcon, Button, Card } from '@mantine/core';
-import { useAuth } from '@repo/auth/client/next';
 import { logInfo, logWarn } from '@repo/observability';
 import { IconBrandNextjs, IconBrandTailwind, IconLogin, IconUserPlus } from '@tabler/icons-react';
 import type { Route } from 'next';
@@ -298,7 +298,11 @@ export default function PageUi({
                   </Link>
                 </div>
               )}
-              {showLangSwitcher && <LanguageSwitcher />}
+              {showLangSwitcher && (
+                <div className="hidden md:block">
+                  <LanguageSwitcher currentLocale={locale} />
+                </div>
+              )}
               <ColorSchemesSwitcher />
             </div>
           </div>

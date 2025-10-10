@@ -7,7 +7,7 @@ export interface PostHogConfig {
   options?: PostHogOptions;
 }
 
-export interface PostHogOptions {
+interface PostHogOptions {
   host?: string;
   autocapture?: boolean;
   capture_pageview?: boolean;

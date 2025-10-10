@@ -33,7 +33,7 @@ interface MockSession {
 }
 
 // Mock user factory
-export const createMockUser = (overrides?: Partial<MockUser>): MockUser => ({
+const createMockUser = (overrides?: Partial<MockUser>): MockUser => ({
   id: 'user_123',
   name: 'Test User',
   createdAt: new Date(),
@@ -45,9 +45,7 @@ export const createMockUser = (overrides?: Partial<MockUser>): MockUser => ({
 });
 
 // Mock organization factory
-export const createMockOrganization = (
-  overrides?: Partial<MockOrganization>,
-): MockOrganization => ({
+const createMockOrganization = (overrides?: Partial<MockOrganization>): MockOrganization => ({
   id: 'org_123',
   name: 'Test Organization',
   createdAt: new Date(),
@@ -59,7 +57,7 @@ export const createMockOrganization = (
 });
 
 // Mock session factory
-export const createMockSession = (overrides?: Partial<MockSession>): MockSession => ({
+const createMockSession = (overrides?: Partial<MockSession>): MockSession => ({
   session: {
     id: 'session_123',
     activeOrganizationId: 'org_123',
@@ -72,7 +70,7 @@ export const createMockSession = (overrides?: Partial<MockSession>): MockSession
 });
 
 // Better Auth server mock
-export const mockAuthServer = {
+const mockAuthServer = {
   api: {
     getSession: vi.fn().mockResolvedValue(createMockSession()),
     signOut: vi.fn().mockResolvedValue({ success: true }),
@@ -86,7 +84,7 @@ export const mockAuthServer = {
 };
 
 // Better Auth client mock
-export const mockAuthClient = {
+const mockAuthClient = {
   organization: {
     create: vi.fn().mockResolvedValue(createMockOrganization()),
     setActive: vi.fn().mockResolvedValue({ success: true }),
@@ -114,7 +112,7 @@ export const mockAuthClient = {
 };
 
 // Middleware mock
-export const mockAuthMiddleware = vi.fn().mockImplementation(req => {
+const mockAuthMiddleware = vi.fn().mockImplementation(req => {
   // Add auth headers to request
   req.headers.set('x-user-id', 'user_123');
   req.headers.set('x-organization-id', 'org_123');

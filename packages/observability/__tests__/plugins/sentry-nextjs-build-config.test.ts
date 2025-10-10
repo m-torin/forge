@@ -2,12 +2,12 @@
  * Tests for Next.js Sentry build configuration utilities
  */
 
-import { withSentryConfig } from '@sentry/nextjs';
-import { beforeEach, describe, expect, vi } from 'vitest';
-import { withObservabilitySentry } from '../../src/plugins/sentry-nextjs/build-config';
+import { withSentryConfig } from "@sentry/nextjs";
+import { beforeEach, describe, expect, vi } from "vitest";
+import { withObservabilitySentry } from "../../src/plugins/sentry-nextjs/build-config";
 
 // Mock @sentry/nextjs first
-vi.mock('@sentry/nextjs', () => ({
+vi.mock("@sentry/nextjs", () => ({
   withSentryConfig: vi.fn(),
 }));
 
@@ -15,21 +15,21 @@ const mockWithSentryConfig = vi.mocked(withSentryConfig);
 
 // Mock environment variables
 const mockEnv = {
-  SENTRY_ORG: 'test-org',
-  SENTRY_PROJECT: 'test-project',
-  SENTRY_AUTH_TOKEN: 'test-token',
-  SENTRY_URL: 'https://sentry.example.com',
-  CI: 'true',
+  SENTRY_ORG: "test-org",
+  SENTRY_PROJECT: "test-project",
+  SENTRY_AUTH_TOKEN: "test-token",
+  SENTRY_URL: "https://sentry.example.com",
+  CI: "true",
 };
 
-vi.mock('../../src/plugins/sentry-nextjs/env', () => ({
+vi.mock("../../src/plugins/sentry-nextjs/env", () => ({
   safeEnv: () => mockEnv,
 }));
 
-describe.todo('withObservabilitySentry', () => {
+describe.todo("withObservabilitySentry", () => {
   const mockNextConfig = {
     experimental: {
-      serverComponentsExternalPackages: ['some-package'],
+      serverComponentsExternalPackages: ["some-package"],
     },
   } as any;
 
@@ -41,23 +41,23 @@ describe.todo('withObservabilitySentry', () => {
     }));
   });
 
-  describe('basic Configuration', () => {
-    test('should wrap Next.js config with Sentry configuration', () => {
+  describe("basic Configuration", () => {
+    test("should wrap Next.js config with Sentry configuration", () => {
       const result = withObservabilitySentry(mockNextConfig);
 
       expect(mockWithSentryConfig).toHaveBeenCalledWith(
         mockNextConfig,
         expect.objectContaining({
-          org: 'test-org',
-          project: 'test-project',
-          authToken: 'test-token',
-          sentryUrl: 'https://sentry.example.com',
+          org: "test-org",
+          project: "test-project",
+          authToken: "test-token",
+          sentryUrl: "https://sentry.example.com",
         }),
       );
-      expect(result).toHaveProperty('_sentryOptions');
+      expect(result).toHaveProperty("_sentryOptions");
     });
 
-    test('should use default configuration when no options provided', () => {
+    test("should use default configuration when no options provided", () => {
       withObservabilitySentry(mockNextConfig);
 
       expect(mockWithSentryConfig).toHaveBeenCalledWith(
@@ -71,8 +71,10 @@ describe.todo('withObservabilitySentry', () => {
       );
     });
 
-    test('should handle missing environment variables gracefully', () => {
-      vi.mocked(require('../../src/plugins/sentry-nextjs/env').safeEnv).mockReturnValue({
+    test("should handle missing environment variables gracefully", () => {
+      vi.mocked(
+        require("../../src/plugins/sentry-nextjs/env").safeEnv,
+      ).mockReturnValue({
         CI: undefined,
       });
 
@@ -91,15 +93,15 @@ describe.todo('withObservabilitySentry', () => {
     });
   });
 
-  describe('custom Options', () => {
-    test('should merge custom options with defaults', () => {
+  describe("custom Options", () => {
+    test("should merge custom options with defaults", () => {
       const customOptions = {
-        org: 'custom-org',
+        org: "custom-org",
         silent: false,
         debug: true,
         sourcemaps: {
           disable: false,
-          assets: ['**/*.js', '**/*.js.map'],
+          assets: ["**/*.js", "**/*.js.map"],
         },
       };
 
@@ -108,8 +110,8 @@ describe.todo('withObservabilitySentry', () => {
       expect(mockWithSentryConfig).toHaveBeenCalledWith(
         mockNextConfig,
         expect.objectContaining({
-          org: 'custom-org', // Should override env
-          project: 'test-project', // Should keep env value
+          org: "custom-org", // Should override env
+          project: "test-project", // Should keep env value
           silent: false, // Should override default
           debug: true, // Should override default
           sourcemaps: customOptions.sourcemaps,
@@ -117,13 +119,13 @@ describe.todo('withObservabilitySentry', () => {
       );
     });
 
-    test('should handle release configuration', () => {
+    test("should handle release configuration", () => {
       const customOptions = {
         release: {
-          name: 'v1.0.0',
+          name: "v1.0.0",
           create: true,
           finalize: true,
-          dist: 'build-123',
+          dist: "build-123",
         },
       };
 
@@ -137,9 +139,9 @@ describe.todo('withObservabilitySentry', () => {
       );
     });
 
-    test('should handle tunneling configuration', () => {
+    test("should handle tunneling configuration", () => {
       const customOptions = {
-        tunnelRoute: '/monitoring',
+        tunnelRoute: "/monitoring",
       };
 
       withObservabilitySentry(mockNextConfig, customOptions);
@@ -147,12 +149,12 @@ describe.todo('withObservabilitySentry', () => {
       expect(mockWithSentryConfig).toHaveBeenCalledWith(
         mockNextConfig,
         expect.objectContaining({
-          tunnelRoute: '/monitoring',
+          tunnelRoute: "/monitoring",
         }),
       );
     });
 
-    test('should handle automatic Vercel monitors', () => {
+    test("should handle automatic Vercel monitors", () => {
       const customOptions = {
         automaticVercelMonitors: true,
       };
@@ -168,8 +170,8 @@ describe.todo('withObservabilitySentry', () => {
     });
   });
 
-  describe('source Maps Configuration', () => {
-    test('should configure default source maps settings', () => {
+  describe("source Maps Configuration", () => {
+    test("should configure default source maps settings", () => {
       withObservabilitySentry(mockNextConfig);
 
       expect(mockWithSentryConfig).toHaveBeenCalledWith(
@@ -183,12 +185,12 @@ describe.todo('withObservabilitySentry', () => {
       );
     });
 
-    test('should allow custom source maps configuration', () => {
+    test("should allow custom source maps configuration", () => {
       const customOptions = {
         sourcemaps: {
           disable: false,
-          assets: ['**/*.js'],
-          ignore: ['**/node_modules/**'],
+          assets: ["**/*.js"],
+          ignore: ["**/node_modules/**"],
           deleteSourcemapsAfterUpload: false,
         },
       };
@@ -203,7 +205,7 @@ describe.todo('withObservabilitySentry', () => {
       );
     });
 
-    test('should disable source maps when requested', () => {
+    test("should disable source maps when requested", () => {
       const customOptions = {
         sourcemaps: {
           disable: true,
@@ -223,40 +225,45 @@ describe.todo('withObservabilitySentry', () => {
     });
   });
 
-  describe('error Handling', () => {
-    test('should provide custom error handler', () => {
+  describe("error Handling", () => {
+    test("should provide custom error handler", () => {
       withObservabilitySentry(mockNextConfig);
 
       const call = mockWithSentryConfig.mock.calls[0];
       const options = call[1];
 
-      expect(options).toHaveProperty('errorHandler');
-      expect(typeof options?.errorHandler).toBe('function');
+      expect(options).toHaveProperty("errorHandler");
+      expect(typeof options?.errorHandler).toBe("function");
     });
 
-    test('should handle build errors gracefully', () => {
+    test("should handle build errors gracefully", () => {
       withObservabilitySentry(mockNextConfig);
 
       const call = mockWithSentryConfig.mock.calls[0];
       const options = call[1];
       const errorHandler = options?.errorHandler;
 
-      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      const mockError = new Error('Build failed');
+      const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const mockError = new Error("Build failed");
 
       // Should not throw
       expect(() => errorHandler?.(mockError)).not.toThrow();
-      expect(consoleSpy).toHaveBeenCalledWith('🚨 Sentry build step failed:', mockError.message);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "🚨 Sentry build step failed:",
+        mockError.message,
+      );
 
       consoleSpy.mockRestore();
     });
   });
 
-  describe('environment Detection', () => {
-    test('should detect CI environment correctly', () => {
-      vi.mocked(require('../../src/plugins/sentry-nextjs/env').safeEnv).mockReturnValue({
+  describe("environment Detection", () => {
+    test("should detect CI environment correctly", () => {
+      vi.mocked(
+        require("../../src/plugins/sentry-nextjs/env").safeEnv,
+      ).mockReturnValue({
         ...mockEnv,
-        CI: 'true',
+        CI: "true",
       });
 
       withObservabilitySentry(mockNextConfig);
@@ -269,8 +276,10 @@ describe.todo('withObservabilitySentry', () => {
       );
     });
 
-    test('should handle non-CI environments', () => {
-      vi.mocked(require('../../src/plugins/sentry-nextjs/env').safeEnv).mockReturnValue({
+    test("should handle non-CI environments", () => {
+      vi.mocked(
+        require("../../src/plugins/sentry-nextjs/env").safeEnv,
+      ).mockReturnValue({
         ...mockEnv,
         CI: undefined,
       });
@@ -286,21 +295,21 @@ describe.todo('withObservabilitySentry', () => {
     });
   });
 
-  describe('integration with Next.js Config', () => {
-    test('should preserve existing Next.js configuration', () => {
+  describe("integration with Next.js Config", () => {
+    test("should preserve existing Next.js configuration", () => {
       const complexNextConfig = {
         experimental: {
           instrumentationHook: true,
-          serverActions: { allowedOrigins: ['localhost'] },
+          serverActions: { allowedOrigins: ["localhost"] },
         },
         env: {
-          CUSTOM_KEY: 'value',
+          CUSTOM_KEY: "value",
         },
         async headers() {
           return [
             {
-              source: '/(.*)',
-              headers: [{ key: 'X-Custom-Header', value: 'test' }],
+              source: "/(.*)",
+              headers: [{ key: "X-Custom-Header", value: "test" }],
             },
           ];
         },
@@ -308,18 +317,24 @@ describe.todo('withObservabilitySentry', () => {
 
       const result = withObservabilitySentry(complexNextConfig);
 
-      expect(mockWithSentryConfig).toHaveBeenCalledWith(complexNextConfig, expect.any(Object));
+      expect(mockWithSentryConfig).toHaveBeenCalledWith(
+        complexNextConfig,
+        expect.any(Object),
+      );
 
       // Verify the original config structure is preserved
       expect(result).toStrictEqual(expect.objectContaining(complexNextConfig));
     });
 
-    test('should work with empty Next.js config', () => {
+    test("should work with empty Next.js config", () => {
       const emptyConfig = {};
 
       withObservabilitySentry(emptyConfig);
 
-      expect(mockWithSentryConfig).toHaveBeenCalledWith(emptyConfig, expect.any(Object));
+      expect(mockWithSentryConfig).toHaveBeenCalledWith(
+        emptyConfig,
+        expect.any(Object),
+      );
     });
   });
 });

@@ -4,7 +4,7 @@
 
 import 'server-only';
 
-import { logError } from '@repo/observability/server/next';
+import { logError } from '@repo/observability';
 import { auth } from '../../shared/auth';
 import { getAuthHeaders } from '../get-headers';
 import { checkPermission } from './permissions';

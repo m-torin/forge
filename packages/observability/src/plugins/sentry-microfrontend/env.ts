@@ -10,7 +10,7 @@ import { z } from 'zod/v4';
  */
 export const env = createEnv({
   server: {
-    // Zone-specific DSNs for server-side
+    // Backstage app-specific DSNs for server-side
     SENTRY_DSN_CMS: z.string().url().optional(),
     SENTRY_DSN_WORKFLOWS: z.string().url().optional(),
     SENTRY_DSN_AUTHMGMT: z.string().url().optional(),
@@ -24,7 +24,7 @@ export const env = createEnv({
     SENTRY_MICROFRONTEND_MULTIPLEXED_TRANSPORT: z.boolean().optional(),
   },
   client: {
-    // Zone-specific DSNs for client-side
+    // Backstage app-specific DSNs for client-side
     NEXT_PUBLIC_SENTRY_DSN_CMS: z.string().url().optional(),
     NEXT_PUBLIC_SENTRY_DSN_WORKFLOWS: z.string().url().optional(),
     NEXT_PUBLIC_SENTRY_DSN_AUTHMGMT: z.string().url().optional(),
@@ -89,7 +89,8 @@ export function safeEnv() {
       | 'child'
       | 'standalone'
       | undefined,
-    SENTRY_MICROFRONTEND_ZONE: process.env.SENTRY_MICROFRONTEND_ZONE,
+    SENTRY_MICROFRONTEND_APP:
+      process.env.SENTRY_MICROFRONTEND_APP || process.env.SENTRY_MICROFRONTEND_ZONE,
     SENTRY_MICROFRONTEND_ENABLED: process.env.SENTRY_MICROFRONTEND_ENABLED === 'true',
     SENTRY_MICROFRONTEND_MULTIPLEXED_TRANSPORT:
       process.env.SENTRY_MICROFRONTEND_MULTIPLEXED_TRANSPORT === 'true',
@@ -103,7 +104,9 @@ export function safeEnv() {
       | 'child'
       | 'standalone'
       | undefined,
-    NEXT_PUBLIC_SENTRY_MICROFRONTEND_ZONE: process.env.NEXT_PUBLIC_SENTRY_MICROFRONTEND_ZONE,
+    NEXT_PUBLIC_SENTRY_MICROFRONTEND_APP:
+      process.env.NEXT_PUBLIC_SENTRY_MICROFRONTEND_APP ||
+      process.env.NEXT_PUBLIC_SENTRY_MICROFRONTEND_ZONE,
     NEXT_PUBLIC_SENTRY_MICROFRONTEND_ENABLED:
       process.env.NEXT_PUBLIC_SENTRY_MICROFRONTEND_ENABLED === 'true',
   };

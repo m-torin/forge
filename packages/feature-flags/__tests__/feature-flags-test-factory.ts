@@ -5,7 +5,7 @@
  * This factory provides common test scenarios and data generators for feature flag adapters.
  */
 
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { featureFlagTestData } from './test-data-generators';
 import { createDecideParams } from './test-utils';
 
@@ -62,40 +62,54 @@ export function createAdapterTestSuite<TAdapter = any>(config: AdapterTestConfig
       }
     });
 
+    if (teardown) {
+      afterEach(async () => {
+        await teardown();
+      });
+    }
+
     // Generate test scenarios
-    scenarios.forEach(
-      ({
+    const buildScenarioRunner =
+      (
+        scenarioSetup: AdapterTestScenario<TAdapter>['setup'],
+        scenarioTest: AdapterTestScenario<TAdapter>['test'],
+      ) =>
+      async () => {
+        if (scenarioSetup) {
+          await scenarioSetup();
+        }
+
+        const adapter = adapterFactory();
+        await scenarioTest(adapter);
+      };
+
+    const createThrowingTest = (
+      runner: () => Promise<void>,
+      expectedError?: string,
+    ): (() => Promise<void>) => {
+      return async () => {
+        const matcher = expectedError ?? Error;
+        await expect(runner()).rejects.toThrow(matcher);
+      };
+    };
+
+    scenarios.forEach(scenario => {
+      const {
         name,
         description,
         setup: scenarioSetup,
         test: scenarioTest,
         shouldThrow,
         expectedError,
-      }) => {
-        test(`${name} - ${description}`, async () => {
-          if (scenarioSetup) {
-            await scenarioSetup();
-          }
+      } = scenario;
+      const runner = buildScenarioRunner(scenarioSetup, scenarioTest);
+      const testFn = shouldThrow ? createThrowingTest(runner, expectedError) : runner;
 
-          if (shouldThrow) {
-            if (expectedError) {
-              await expect(async () => {
-                const adapter = adapterFactory();
-                await scenarioTest(adapter);
-              }).rejects.toThrow(expectedError);
-            } else {
-              await expect(async () => {
-                const adapter = adapterFactory();
-                await scenarioTest(adapter);
-              }).rejects.toThrow();
-            }
-          } else {
-            const adapter = adapterFactory();
-            await scenarioTest(adapter);
-          }
-        });
-      },
-    );
+      test(`${name} - ${description}`, async () => {
+        expect.hasAssertions();
+        await testFn();
+      });
+    });
 
     // Standard validation tests
     test('should create adapter instance', () => {
@@ -113,13 +127,6 @@ export function createAdapterTestSuite<TAdapter = any>(config: AdapterTestConfig
       expect(instance).toHaveProperty('decide');
       expect(typeof instance.decide).toBe('function');
     });
-
-    // Cleanup
-    if (teardown) {
-      afterEach(async () => {
-        await teardown();
-      });
-    }
   });
 }
 
@@ -199,9 +206,8 @@ export const createScenarios = {
     test: async (adapter: T) => {
       const instance = (adapter as any)();
       expect(instance.config).toBeDefined();
-      if (configOptions) {
-        expect(instance.config).toMatchObject(configOptions);
-      }
+      const expectedConfig = configOptions ?? {};
+      expect(instance.config).toMatchObject(expectedConfig);
     },
   }),
 

@@ -1,8 +1,12 @@
-'use client';
+"use client";
 
-import { useDebouncedValue, useLocalStorage, usePagination } from '@mantine/hooks';
-import { useCallback, useMemo, useState } from 'react';
-import type { SavedDocument } from './use-document-persistence';
+import {
+  useDebouncedValue,
+  useLocalStorage,
+  usePagination,
+} from "@mantine/hooks";
+import { useCallback, useMemo, useState } from "react";
+import type { SavedDocument } from "./use-document-persistence";
 
 export interface DocumentSearchFilters {
   dateRange?: {
@@ -14,9 +18,9 @@ export interface DocumentSearchFilters {
     max?: number;
   };
   hasContent?: boolean;
-  searchIn: ('title' | 'content' | 'both')[];
-  sortBy: 'relevance' | 'modified' | 'created' | 'title' | 'wordCount';
-  sortOrder: 'asc' | 'desc';
+  searchIn: ("title" | "content" | "both")[];
+  sortBy: "relevance" | "modified" | "created" | "title" | "wordCount";
+  sortOrder: "asc" | "desc";
 }
 
 export interface DocumentSearchResult {
@@ -62,11 +66,11 @@ export function useDocumentSearch(
     enablePagination = true,
   } = options;
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<DocumentSearchFilters>({
-    searchIn: ['both'],
-    sortBy: 'relevance',
-    sortOrder: 'desc',
+    searchIn: ["both"],
+    sortBy: "relevance",
+    sortOrder: "desc",
   });
   const [isSearching, setIsSearching] = useState(false);
 
@@ -75,15 +79,15 @@ export function useDocumentSearch(
 
   // Search history stored in localStorage
   const [searchHistory, setSearchHistory] = useLocalStorage<SearchHistory[]>({
-    key: 'notion-editor-search-history',
+    key: "notion-editor-search-history",
     defaultValue: [],
     serialize: JSON.stringify,
-    deserialize: value => (value === undefined ? [] : JSON.parse(value)),
+    deserialize: (value) => (value === undefined ? [] : JSON.parse(value)),
   });
 
   // Search preferences
   const [searchPreferences, setSearchPreferences] = useLocalStorage({
-    key: 'notion-editor-search-preferences',
+    key: "notion-editor-search-preferences",
     defaultValue: {
       highlightMatches: true,
       showContentPreview: true,
@@ -91,7 +95,7 @@ export function useDocumentSearch(
       maxHistoryItems: 20,
     },
     serialize: JSON.stringify,
-    deserialize: value =>
+    deserialize: (value) =>
       value === undefined
         ? {
             highlightMatches: true,
@@ -104,18 +108,21 @@ export function useDocumentSearch(
 
   // Enhanced search algorithm with scoring
   const performSearch = useCallback(
-    (query: string, docs: Record<string, SavedDocument>): DocumentSearchResult[] => {
+    (
+      query: string,
+      docs: Record<string, SavedDocument>,
+    ): DocumentSearchResult[] => {
       if (!query.trim()) return [];
 
       setIsSearching(true);
       const searchTerms = query
         .toLowerCase()
         .split(/\s+/)
-        .filter(term => term.length > 0);
+        .filter((term) => term.length > 0);
       const results: DocumentSearchResult[] = [];
 
       try {
-        Object.values(docs).forEach(document => {
+        Object.values(docs).forEach((document) => {
           let relevanceScore = 0;
           let matchCount = 0;
           const titleMatches: Array<{ text: string; isMatch: boolean }> = [];
@@ -129,23 +136,41 @@ export function useDocumentSearch(
           // Apply filters
           if (filters.dateRange?.start || filters.dateRange?.end) {
             const docDate = new Date(document.modified);
-            if (filters.dateRange.start && docDate < new Date(filters.dateRange.start)) return;
-            if (filters.dateRange.end && docDate > new Date(filters.dateRange.end)) return;
+            if (
+              filters.dateRange.start &&
+              docDate < new Date(filters.dateRange.start)
+            )
+              return;
+            if (
+              filters.dateRange.end &&
+              docDate > new Date(filters.dateRange.end)
+            )
+              return;
           }
 
-          if (filters.wordCountRange?.min && document.wordCount < filters.wordCountRange.min)
+          if (
+            filters.wordCountRange?.min &&
+            document.wordCount < filters.wordCountRange.min
+          )
             return;
-          if (filters.wordCountRange?.max && document.wordCount > filters.wordCountRange.max)
+          if (
+            filters.wordCountRange?.max &&
+            document.wordCount > filters.wordCountRange.max
+          )
             return;
-          if (filters.hasContent && document.content.text.trim().length === 0) return;
+          if (filters.hasContent && document.content.text.trim().length === 0)
+            return;
 
           // Search in title
-          if (filters.searchIn.includes('title') || filters.searchIn.includes('both')) {
+          if (
+            filters.searchIn.includes("title") ||
+            filters.searchIn.includes("both")
+          ) {
             const titleWords = document.title.split(/(\s+)/);
 
-            titleWords.forEach(word => {
+            titleWords.forEach((word) => {
               const wordLower = word.toLowerCase();
-              const isMatch = searchTerms.some(term => {
+              const isMatch = searchTerms.some((term) => {
                 if (wordLower.includes(term)) {
                   matchCount++;
                   // Calculate relevance score
@@ -163,11 +188,14 @@ export function useDocumentSearch(
           }
 
           // Search in content
-          if (filters.searchIn.includes('content') || filters.searchIn.includes('both')) {
+          if (
+            filters.searchIn.includes("content") ||
+            filters.searchIn.includes("both")
+          ) {
             const contentText = document.content.text;
             const contentLower = contentText.toLowerCase();
 
-            searchTerms.forEach(term => {
+            searchTerms.forEach((term) => {
               let index = 0;
               let termMatches = 0;
 
@@ -180,7 +208,10 @@ export function useDocumentSearch(
                 relevanceScore += 2; // Content matches get lower score than title
 
                 // Extract context around the match
-                const contextStart = Math.max(0, index - Math.floor(contextLength / 2));
+                const contextStart = Math.max(
+                  0,
+                  index - Math.floor(contextLength / 2),
+                );
                 const contextEnd = Math.min(
                   contentText.length,
                   index + term.length + Math.floor(contextLength / 2),
@@ -189,12 +220,13 @@ export function useDocumentSearch(
 
                 // Clean up context boundaries
                 if (contextStart > 0) {
-                  const firstSpace = context.indexOf(' ');
-                  if (firstSpace !== -1) context = context.slice(firstSpace + 1);
+                  const firstSpace = context.indexOf(" ");
+                  if (firstSpace !== -1)
+                    context = context.slice(firstSpace + 1);
                 }
 
                 if (contextEnd < contentText.length) {
-                  const lastSpace = context.lastIndexOf(' ');
+                  const lastSpace = context.lastIndexOf(" ");
                   if (lastSpace !== -1) context = context.slice(0, lastSpace);
                 }
 
@@ -212,7 +244,8 @@ export function useDocumentSearch(
 
           // Apply relevance boosts
           const daysSinceModified =
-            (Date.now() - new Date(document.modified).getTime()) / (1000 * 60 * 60 * 24);
+            (Date.now() - new Date(document.modified).getTime()) /
+            (1000 * 60 * 60 * 24);
           if (daysSinceModified < 7)
             relevanceScore += 3; // Recent documents
           else if (daysSinceModified < 30) relevanceScore += 1;
@@ -242,38 +275,44 @@ export function useDocumentSearch(
           let comparison = 0;
 
           switch (filters.sortBy) {
-            case 'relevance':
+            case "relevance":
               comparison = a.relevanceScore - b.relevanceScore;
               break;
-            case 'title':
+            case "title":
               comparison = a.document.title.localeCompare(b.document.title);
               break;
-            case 'modified':
+            case "modified":
               comparison =
-                new Date(a.document.modified).getTime() - new Date(b.document.modified).getTime();
+                new Date(a.document.modified).getTime() -
+                new Date(b.document.modified).getTime();
               break;
-            case 'created':
+            case "created":
               comparison =
-                new Date(a.document.created).getTime() - new Date(b.document.created).getTime();
+                new Date(a.document.created).getTime() -
+                new Date(b.document.created).getTime();
               break;
-            case 'wordCount':
+            case "wordCount":
               comparison = a.document.wordCount - b.document.wordCount;
               break;
           }
 
-          return filters.sortOrder === 'asc' ? comparison : -comparison;
+          return filters.sortOrder === "asc" ? comparison : -comparison;
         });
 
         // Add to search history
-        if (enableHistory && searchPreferences.saveSearchHistory && query.trim()) {
+        if (
+          enableHistory &&
+          searchPreferences.saveSearchHistory &&
+          query.trim()
+        ) {
           const historyEntry: SearchHistory = {
             query: query.trim(),
             timestamp: new Date().toISOString(),
             resultCount: results.length,
           };
 
-          setSearchHistory(prev => {
-            const filtered = prev.filter(h => h.query !== query.trim());
+          setSearchHistory((prev) => {
+            const filtered = prev.filter((h) => h.query !== query.trim());
             const updated = [historyEntry, ...filtered];
             return updated.slice(0, searchPreferences.maxHistoryItems);
           });
@@ -322,7 +361,13 @@ export function useDocumentSearch(
     const startIndex = (pagination.active - 1) * pageSize;
     const endIndex = startIndex + pageSize;
     return allSearchResults.slice(startIndex, endIndex);
-  }, [allSearchResults, pagination.active, pageSize, enablePagination, maxResults]);
+  }, [
+    allSearchResults,
+    pagination.active,
+    pageSize,
+    enablePagination,
+    maxResults,
+  ]);
 
   // Reset pagination when search query changes
   useMemo(() => {
@@ -333,7 +378,7 @@ export function useDocumentSearch(
 
   // Clear search
   const clearSearch = useCallback(() => {
-    setSearchQuery('');
+    setSearchQuery("");
     setIsSearching(false);
     if (enablePagination) {
       pagination.setPage(1);
@@ -343,9 +388,9 @@ export function useDocumentSearch(
   // Reset filters
   const resetFilters = useCallback(() => {
     setFilters({
-      searchIn: ['both'],
-      sortBy: 'relevance',
-      sortOrder: 'desc',
+      searchIn: ["both"],
+      sortBy: "relevance",
+      sortOrder: "desc",
     });
   }, []);
 
@@ -370,16 +415,19 @@ export function useDocumentSearch(
       const suggestions = new Set<string>();
       const queryLower = query.toLowerCase();
 
-      Object.values(documents).forEach(doc => {
+      Object.values(documents).forEach((doc) => {
         // Extract words from title and content
-        const words = [...doc.title.split(/\s+/), ...doc.content.text.split(/\s+/)].filter(
-          word =>
+        const words = [
+          ...doc.title.split(/\s+/),
+          ...doc.content.text.split(/\s+/),
+        ].filter(
+          (word) =>
             word.length > 3 &&
             word.toLowerCase().startsWith(queryLower) &&
             word.toLowerCase() !== queryLower,
         );
 
-        words.forEach(word => suggestions.add(word.toLowerCase()));
+        words.forEach((word) => suggestions.add(word.toLowerCase()));
       });
 
       return Array.from(suggestions).slice(0, limit);
@@ -409,7 +457,9 @@ export function useDocumentSearch(
     pagination: enablePagination ? pagination : null,
     pageSize,
     currentPage: enablePagination ? pagination.active : 1,
-    totalPages: enablePagination ? Math.ceil(allSearchResults.length / pageSize) : 1,
+    totalPages: enablePagination
+      ? Math.ceil(allSearchResults.length / pageSize)
+      : 1,
 
     // History
     searchHistory,

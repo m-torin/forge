@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   IconArchive,
@@ -16,16 +16,16 @@ import {
   IconTagPlus,
   IconTrash,
   IconX,
-} from '@tabler/icons-react';
-import { clsx } from 'clsx';
-import { useMemo, useState } from 'react';
+} from "@tabler/icons-react";
+import { clsx } from "clsx";
+import { useMemo, useState } from "react";
 import type {
   DocumentFolder,
   DocumentMetadata,
   DocumentTag,
   FolderTreeNode,
-} from '../../hooks/use-document-organization';
-import type { SavedDocument } from '../../hooks/use-document-persistence';
+} from "../../hooks/use-document-organization";
+import type { SavedDocument } from "../../hooks/use-document-persistence";
 
 export interface DocumentOrganizerProps {
   documents: Record<string, SavedDocument>;
@@ -41,16 +41,19 @@ export interface DocumentOrganizerProps {
   ) => void;
   onUpdateFolder: (
     folderId: string,
-    updates: Partial<Pick<DocumentFolder, 'name' | 'description' | 'color'>>,
+    updates: Partial<Pick<DocumentFolder, "name" | "description" | "color">>,
   ) => void;
   onDeleteFolder: (folderId: string) => void;
   onMoveDocumentToFolder: (documentId: string, folderId?: string) => void;
 
   // Tag operations
-  onCreateTag: (name: string, options?: { color?: string; description?: string }) => void;
+  onCreateTag: (
+    name: string,
+    options?: { color?: string; description?: string },
+  ) => void;
   onUpdateTag: (
     tagId: string,
-    updates: Partial<Pick<DocumentTag, 'name' | 'color' | 'description'>>,
+    updates: Partial<Pick<DocumentTag, "name" | "color" | "description">>,
   ) => void;
   onDeleteTag: (tagId: string) => void;
   onAddTagToDocument: (documentId: string, tagId: string) => void;
@@ -67,27 +70,33 @@ export interface DocumentOrganizerProps {
   enableDragDrop?: boolean;
 }
 
-type ViewMode = 'folders' | 'tags' | 'all' | 'pinned' | 'archived' | 'unorganized';
+type ViewMode =
+  | "folders"
+  | "tags"
+  | "all"
+  | "pinned"
+  | "archived"
+  | "unorganized";
 
 const FOLDER_COLORS = [
-  '#3B82F6', // blue
-  '#10B981', // emerald
-  '#F59E0B', // amber
-  '#EF4444', // red
-  '#8B5CF6', // violet
-  '#EC4899', // pink
-  '#6B7280', // gray
+  "#3B82F6", // blue
+  "#10B981", // emerald
+  "#F59E0B", // amber
+  "#EF4444", // red
+  "#8B5CF6", // violet
+  "#EC4899", // pink
+  "#6B7280", // gray
 ];
 
 const TAG_COLORS = [
-  '#3B82F6', // blue
-  '#10B981', // emerald
-  '#F59E0B', // amber
-  '#EF4444', // red
-  '#8B5CF6', // violet
-  '#EC4899', // pink
-  '#14B8A6', // teal
-  '#F97316', // orange
+  "#3B82F6", // blue
+  "#10B981", // emerald
+  "#F59E0B", // amber
+  "#EF4444", // red
+  "#8B5CF6", // violet
+  "#EC4899", // pink
+  "#14B8A6", // teal
+  "#F97316", // orange
 ];
 
 export function DocumentOrganizer({
@@ -112,17 +121,21 @@ export function DocumentOrganizer({
   showCreateButtons = true,
   enableDragDrop: _enableDragDrop = true,
 }: DocumentOrganizerProps) {
-  const [viewMode, setViewMode] = useState<ViewMode>('folders');
-  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
-  const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<ViewMode>("folders");
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(
+    new Set(),
+  );
+  const [searchQuery, setSearchQuery] = useState("");
   const [showFolderDialog, setShowFolderDialog] = useState(false);
   const [showTagDialog, setShowTagDialog] = useState(false);
-  const [editingFolder, setEditingFolder] = useState<DocumentFolder | null>(null);
+  const [editingFolder, setEditingFolder] = useState<DocumentFolder | null>(
+    null,
+  );
   const [editingTag, setEditingTag] = useState<DocumentTag | null>(null);
 
   // Toggle folder expansion
   const toggleFolder = (folderId: string) => {
-    setExpandedFolders(prev => {
+    setExpandedFolders((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(folderId)) {
         newSet.delete(folderId);
@@ -141,23 +154,27 @@ export function DocumentOrganizer({
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       docs = docs.filter(
-        doc =>
-          doc.title.toLowerCase().includes(query) || doc.content.text.toLowerCase().includes(query),
+        (doc) =>
+          doc.title.toLowerCase().includes(query) ||
+          doc.content.text.toLowerCase().includes(query),
       );
     }
 
     // Apply view mode filter
     switch (viewMode) {
-      case 'pinned':
-        docs = docs.filter(doc => documentMetadata[doc.id]?.isPinned);
+      case "pinned":
+        docs = docs.filter((doc) => documentMetadata[doc.id]?.isPinned);
         break;
-      case 'archived':
-        docs = docs.filter(doc => documentMetadata[doc.id]?.isArchived);
+      case "archived":
+        docs = docs.filter((doc) => documentMetadata[doc.id]?.isArchived);
         break;
-      case 'unorganized':
-        docs = docs.filter(doc => {
+      case "unorganized":
+        docs = docs.filter((doc) => {
           const metadata = documentMetadata[doc.id];
-          return !metadata?.folderId && (!metadata?.tagIds || metadata.tagIds.length === 0);
+          return (
+            !metadata?.folderId &&
+            (!metadata?.tagIds || metadata.tagIds.length === 0)
+          );
         });
         break;
     }
@@ -167,7 +184,7 @@ export function DocumentOrganizer({
 
   // Get documents in a specific folder
   const getDocumentsInFolder = (folderId?: string) => {
-    return filteredDocuments.filter(doc => {
+    return filteredDocuments.filter((doc) => {
       const metadata = documentMetadata[doc.id];
       return metadata?.folderId === folderId;
     });
@@ -175,7 +192,7 @@ export function DocumentOrganizer({
 
   // Get documents with a specific tag
   const getDocumentsWithTag = (tagId: string) => {
-    return filteredDocuments.filter(doc => {
+    return filteredDocuments.filter((doc) => {
       const metadata = documentMetadata[doc.id];
       return metadata?.tagIds.includes(tagId);
     });
@@ -184,7 +201,8 @@ export function DocumentOrganizer({
   // Render document item
   const renderDocument = (doc: SavedDocument) => {
     const metadata = documentMetadata[doc.id];
-    const docTags = metadata?.tagIds.map(tagId => tags[tagId]).filter(Boolean) || [];
+    const docTags =
+      metadata?.tagIds.map((tagId) => tags[tagId]).filter(Boolean) || [];
 
     return (
       <div
@@ -192,8 +210,8 @@ export function DocumentOrganizer({
         role="button"
         tabIndex={0}
         onClick={() => onSelectDocument(doc.id)}
-        onKeyDown={e => {
-          if (e.key === 'Enter' || e.key === ' ') {
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
             onSelectDocument(doc.id);
           }
         }}
@@ -207,7 +225,10 @@ export function DocumentOrganizer({
               {doc.title}
             </h4>
             {metadata?.isPinned && (
-              <IconPinFilled size={12} className="flex-shrink-0 text-yellow-500" />
+              <IconPinFilled
+                size={12}
+                className="flex-shrink-0 text-yellow-500"
+              />
             )}
             {metadata?.isArchived && (
               <IconArchive size={12} className="flex-shrink-0 text-gray-400" />
@@ -216,37 +237,40 @@ export function DocumentOrganizer({
 
           {docTags.length > 0 && (
             <div className="mt-1 flex items-center gap-1">
-              {docTags.slice(0, 3).map(tag => (
+              {docTags.slice(0, 3).map((tag) => (
                 <span
                   key={tag.id}
                   className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs"
                   style={{
-                    backgroundColor: tag.color ? `${tag.color}20` : '#f3f4f6',
-                    color: tag.color || '#6b7280',
+                    backgroundColor: tag.color ? `${tag.color}20` : "#f3f4f6",
+                    color: tag.color || "#6b7280",
                   }}
                 >
                   {tag.name}
                 </span>
               ))}
               {docTags.length > 3 && (
-                <span className="text-xs text-gray-500">+{docTags.length - 3}</span>
+                <span className="text-xs text-gray-500">
+                  +{docTags.length - 3}
+                </span>
               )}
             </div>
           )}
 
           <div className="mt-1 text-xs text-gray-500">
-            {doc.wordCount} words • {new Date(doc.modified).toLocaleDateString()}
+            {doc.wordCount} words •{" "}
+            {new Date(doc.modified).toLocaleDateString()}
           </div>
         </div>
 
         <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
           <button
-            onClick={e => {
+            onClick={(e) => {
               e.stopPropagation();
               onTogglePin(doc.id);
             }}
             className="rounded p-1 transition-colors hover:bg-gray-200"
-            title={metadata?.isPinned ? 'Unpin' : 'Pin'}
+            title={metadata?.isPinned ? "Unpin" : "Pin"}
           >
             {metadata?.isPinned ? (
               <IconPinFilled size={14} className="text-yellow-500" />
@@ -256,12 +280,12 @@ export function DocumentOrganizer({
           </button>
 
           <button
-            onClick={e => {
+            onClick={(e) => {
               e.stopPropagation();
               onToggleArchive(doc.id);
             }}
             className="rounded p-1 transition-colors hover:bg-gray-200"
-            title={metadata?.isArchived ? 'Unarchive' : 'Archive'}
+            title={metadata?.isArchived ? "Unarchive" : "Archive"}
           >
             {metadata?.isArchived ? (
               <IconArchiveOff size={14} className="text-blue-500" />
@@ -276,7 +300,7 @@ export function DocumentOrganizer({
 
   // Render folder tree recursively
   const renderFolderTree = (nodes: FolderTreeNode[]) => {
-    return nodes.map(folder => {
+    return nodes.map((folder) => {
       const folderDocs = getDocumentsInFolder(folder.id);
       const isExpanded = expandedFolders.has(folder.id);
 
@@ -303,10 +327,12 @@ export function DocumentOrganizer({
 
             <div
               className="h-3 w-3 flex-shrink-0 rounded"
-              style={{ backgroundColor: folder.color || '#6b7280' }}
+              style={{ backgroundColor: folder.color || "#6b7280" }}
             />
 
-            <span className="flex-1 font-medium text-gray-900">{folder.name}</span>
+            <span className="flex-1 font-medium text-gray-900">
+              {folder.name}
+            </span>
 
             <span className="text-xs text-gray-500">
               {folderDocs.length +
@@ -318,7 +344,7 @@ export function DocumentOrganizer({
 
             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
               <button
-                onClick={e => {
+                onClick={(e) => {
                   e.stopPropagation();
                   setEditingFolder(folder);
                   setShowFolderDialog(true);
@@ -329,7 +355,7 @@ export function DocumentOrganizer({
                 <IconEdit size={12} />
               </button>
               <button
-                onClick={e => {
+                onClick={(e) => {
                   e.stopPropagation();
                   if (
                     confirm(
@@ -353,7 +379,9 @@ export function DocumentOrganizer({
             </div>
           )}
 
-          {isExpanded && folder.children.length > 0 && renderFolderTree(folder.children)}
+          {isExpanded &&
+            folder.children.length > 0 &&
+            renderFolderTree(folder.children)}
         </div>
       );
     });
@@ -361,11 +389,13 @@ export function DocumentOrganizer({
 
   // Render tags view
   const renderTagsView = () => {
-    const sortedTags = Object.values(tags).sort((a, b) => b.documentCount - a.documentCount);
+    const sortedTags = Object.values(tags).sort(
+      (a, b) => b.documentCount - a.documentCount,
+    );
 
     return (
       <div className="space-y-4">
-        {sortedTags.map(tag => {
+        {sortedTags.map((tag) => {
           const tagDocs = getDocumentsWithTag(tag.id);
 
           return (
@@ -373,13 +403,17 @@ export function DocumentOrganizer({
               <div className="flex items-center gap-3 rounded-t-lg bg-gray-50 p-3">
                 <div
                   className="h-3 w-3 flex-shrink-0 rounded-full"
-                  style={{ backgroundColor: tag.color || '#6b7280' }}
+                  style={{ backgroundColor: tag.color || "#6b7280" }}
                 />
                 <div className="flex-1">
                   <h3 className="font-medium text-gray-900">{tag.name}</h3>
-                  {tag.description && <p className="text-sm text-gray-600">{tag.description}</p>}
+                  {tag.description && (
+                    <p className="text-sm text-gray-600">{tag.description}</p>
+                  )}
                 </div>
-                <span className="text-sm text-gray-500">{tagDocs.length} docs</span>
+                <span className="text-sm text-gray-500">
+                  {tagDocs.length} docs
+                </span>
 
                 <div className="flex items-center gap-1">
                   <button
@@ -395,7 +429,9 @@ export function DocumentOrganizer({
                   <button
                     onClick={() => {
                       if (
-                        confirm(`Delete tag "${tag.name}"? It will be removed from all documents.`)
+                        confirm(
+                          `Delete tag "${tag.name}"? It will be removed from all documents.`,
+                        )
                       ) {
                         onDeleteTag(tag.id);
                       }
@@ -417,7 +453,7 @@ export function DocumentOrganizer({
   };
 
   return (
-    <div className={clsx('document-organizer flex h-full flex-col', className)}>
+    <div className={clsx("document-organizer flex h-full flex-col", className)}>
       <div className="flex items-center justify-between border-b border-gray-200 p-4">
         <h2 className="text-lg font-semibold text-gray-900">Organize</h2>
 
@@ -443,21 +479,21 @@ export function DocumentOrganizer({
 
       <div className="flex items-center gap-1 border-b border-gray-200 bg-gray-50 p-2">
         {[
-          { key: 'folders', label: 'Folders', icon: IconFolder },
-          { key: 'tags', label: 'Tags', icon: IconTag },
-          { key: 'all', label: 'All', icon: IconFile },
-          { key: 'pinned', label: 'Pinned', icon: IconPin },
-          { key: 'archived', label: 'Archived', icon: IconArchive },
-          { key: 'unorganized', label: 'Unorganized', icon: IconSearch },
+          { key: "folders", label: "Folders", icon: IconFolder },
+          { key: "tags", label: "Tags", icon: IconTag },
+          { key: "all", label: "All", icon: IconFile },
+          { key: "pinned", label: "Pinned", icon: IconPin },
+          { key: "archived", label: "Archived", icon: IconArchive },
+          { key: "unorganized", label: "Unorganized", icon: IconSearch },
         ].map(({ key, label, icon: Icon }) => (
           <button
             key={key}
             onClick={() => setViewMode(key as ViewMode)}
             className={clsx(
-              'flex items-center gap-1 rounded-md px-3 py-1.5 text-sm transition-colors',
+              "flex items-center gap-1 rounded-md px-3 py-1.5 text-sm transition-colors",
               viewMode === key
-                ? 'border border-gray-200 bg-white text-blue-600 shadow-sm'
-                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
+                ? "border border-gray-200 bg-white text-blue-600 shadow-sm"
+                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900",
             )}
           >
             <Icon size={14} />
@@ -476,12 +512,12 @@ export function DocumentOrganizer({
             type="text"
             placeholder="Search documents..."
             value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full rounded-lg border border-gray-300 py-2 pl-9 pr-9 text-sm focus:border-transparent focus:ring-2 focus:ring-blue-500"
           />
           {searchQuery && (
             <button
-              onClick={() => setSearchQuery('')}
+              onClick={() => setSearchQuery("")}
               className="absolute right-3 top-1/2 -translate-y-1/2 transform text-gray-400 hover:text-gray-600"
             >
               <IconX size={16} />
@@ -491,21 +527,25 @@ export function DocumentOrganizer({
       </div>
 
       <div className="flex-1 overflow-auto p-3">
-        {viewMode === 'folders' && (
+        {viewMode === "folders" && (
           <div className="space-y-1">
-            <div className="space-y-1">{getDocumentsInFolder().map(renderDocument)}</div>
+            <div className="space-y-1">
+              {getDocumentsInFolder().map(renderDocument)}
+            </div>
 
             {renderFolderTree(folderTree)}
           </div>
         )}
 
-        {viewMode === 'tags' && renderTagsView()}
+        {viewMode === "tags" && renderTagsView()}
 
-        {(viewMode === 'all' ||
-          viewMode === 'pinned' ||
-          viewMode === 'archived' ||
-          viewMode === 'unorganized') && (
-          <div className="space-y-2">{filteredDocuments.map(renderDocument)}</div>
+        {(viewMode === "all" ||
+          viewMode === "pinned" ||
+          viewMode === "archived" ||
+          viewMode === "unorganized") && (
+          <div className="space-y-2">
+            {filteredDocuments.map(renderDocument)}
+          </div>
         )}
       </div>
 
@@ -514,7 +554,7 @@ export function DocumentOrganizer({
           folder={editingFolder}
           folders={folders}
           colors={FOLDER_COLORS}
-          onSave={data => {
+          onSave={(data) => {
             if (editingFolder) {
               onUpdateFolder(editingFolder.id, data);
             } else {
@@ -534,7 +574,7 @@ export function DocumentOrganizer({
         <TagDialog
           tag={editingTag}
           colors={TAG_COLORS}
-          onSave={data => {
+          onSave={(data) => {
             if (editingTag) {
               onUpdateTag(editingTag.id, data);
             } else {
@@ -558,15 +598,26 @@ interface FolderDialogProps {
   folder?: DocumentFolder | null;
   folders: Record<string, DocumentFolder>;
   colors: string[];
-  onSave: (data: { name: string; description?: string; color?: string; parentId?: string }) => void;
+  onSave: (data: {
+    name: string;
+    description?: string;
+    color?: string;
+    parentId?: string;
+  }) => void;
   onCancel: () => void;
 }
 
-function FolderDialog({ folder, folders, colors, onSave, onCancel }: FolderDialogProps) {
-  const [name, setName] = useState(folder?.name || '');
-  const [description, setDescription] = useState(folder?.description || '');
+function FolderDialog({
+  folder,
+  folders,
+  colors,
+  onSave,
+  onCancel,
+}: FolderDialogProps) {
+  const [name, setName] = useState(folder?.name || "");
+  const [description, setDescription] = useState(folder?.description || "");
   const [color, setColor] = useState(folder?.color || colors[0]);
-  const [parentId, setParentId] = useState(folder?.parentId || '');
+  const [parentId, setParentId] = useState(folder?.parentId || "");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -582,16 +633,23 @@ function FolderDialog({ folder, folders, colors, onSave, onCancel }: FolderDialo
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <form onSubmit={handleSubmit} className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
-        <h3 className="mb-4 text-lg font-semibold">{folder ? 'Edit Folder' : 'Create Folder'}</h3>
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl"
+      >
+        <h3 className="mb-4 text-lg font-semibold">
+          {folder ? "Edit Folder" : "Create Folder"}
+        </h3>
 
         <div className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Name</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Name
+            </label>
             <input
               type="text"
               value={name}
-              onChange={e => setName(e.target.value)}
+              onChange={(e) => setName(e.target.value)}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500"
               placeholder="Folder name"
               required
@@ -599,10 +657,12 @@ function FolderDialog({ folder, folders, colors, onSave, onCancel }: FolderDialo
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Description</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Description
+            </label>
             <textarea
               value={description}
-              onChange={e => setDescription(e.target.value)}
+              onChange={(e) => setDescription(e.target.value)}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500"
               rows={2}
               placeholder="Optional description"
@@ -610,16 +670,20 @@ function FolderDialog({ folder, folders, colors, onSave, onCancel }: FolderDialo
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">Color</label>
+            <label className="mb-2 block text-sm font-medium text-gray-700">
+              Color
+            </label>
             <div className="flex gap-2">
-              {colors.map(c => (
+              {colors.map((c) => (
                 <button
                   key={c}
                   type="button"
                   onClick={() => setColor(c)}
                   className={clsx(
-                    'h-6 w-6 rounded-full border-2 transition-all',
-                    color === c ? 'scale-110 border-gray-400' : 'border-gray-200',
+                    "h-6 w-6 rounded-full border-2 transition-all",
+                    color === c
+                      ? "scale-110 border-gray-400"
+                      : "border-gray-200",
                   )}
                   style={{ backgroundColor: c }}
                 />
@@ -628,14 +692,16 @@ function FolderDialog({ folder, folders, colors, onSave, onCancel }: FolderDialo
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Parent Folder</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Parent Folder
+            </label>
             <select
               value={parentId}
-              onChange={e => setParentId(e.target.value)}
+              onChange={(e) => setParentId(e.target.value)}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Root Level</option>
-              {Object.values(folders).map(f => (
+              {Object.values(folders).map((f) => (
                 <option key={f.id} value={f.id} disabled={f.id === folder?.id}>
                   {f.name}
                 </option>
@@ -649,7 +715,7 @@ function FolderDialog({ folder, folders, colors, onSave, onCancel }: FolderDialo
             type="submit"
             className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
           >
-            {folder ? 'Update' : 'Create'}
+            {folder ? "Update" : "Create"}
           </button>
           <button
             type="button"
@@ -668,13 +734,17 @@ function FolderDialog({ folder, folders, colors, onSave, onCancel }: FolderDialo
 interface TagDialogProps {
   tag?: DocumentTag | null;
   colors: string[];
-  onSave: (data: { name: string; description?: string; color?: string }) => void;
+  onSave: (data: {
+    name: string;
+    description?: string;
+    color?: string;
+  }) => void;
   onCancel: () => void;
 }
 
 function TagDialog({ tag, colors, onSave, onCancel }: TagDialogProps) {
-  const [name, setName] = useState(tag?.name || '');
-  const [description, setDescription] = useState(tag?.description || '');
+  const [name, setName] = useState(tag?.name || "");
+  const [description, setDescription] = useState(tag?.description || "");
   const [color, setColor] = useState(tag?.color || colors[0]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -690,16 +760,23 @@ function TagDialog({ tag, colors, onSave, onCancel }: TagDialogProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <form onSubmit={handleSubmit} className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
-        <h3 className="mb-4 text-lg font-semibold">{tag ? 'Edit Tag' : 'Create Tag'}</h3>
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl"
+      >
+        <h3 className="mb-4 text-lg font-semibold">
+          {tag ? "Edit Tag" : "Create Tag"}
+        </h3>
 
         <div className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Name</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Name
+            </label>
             <input
               type="text"
               value={name}
-              onChange={e => setName(e.target.value)}
+              onChange={(e) => setName(e.target.value)}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500"
               placeholder="Tag name"
               required
@@ -707,10 +784,12 @@ function TagDialog({ tag, colors, onSave, onCancel }: TagDialogProps) {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Description</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Description
+            </label>
             <textarea
               value={description}
-              onChange={e => setDescription(e.target.value)}
+              onChange={(e) => setDescription(e.target.value)}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500"
               rows={2}
               placeholder="Optional description"
@@ -718,16 +797,20 @@ function TagDialog({ tag, colors, onSave, onCancel }: TagDialogProps) {
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">Color</label>
+            <label className="mb-2 block text-sm font-medium text-gray-700">
+              Color
+            </label>
             <div className="flex gap-2">
-              {colors.map(c => (
+              {colors.map((c) => (
                 <button
                   key={c}
                   type="button"
                   onClick={() => setColor(c)}
                   className={clsx(
-                    'h-6 w-6 rounded-full border-2 transition-all',
-                    color === c ? 'scale-110 border-gray-400' : 'border-gray-200',
+                    "h-6 w-6 rounded-full border-2 transition-all",
+                    color === c
+                      ? "scale-110 border-gray-400"
+                      : "border-gray-200",
                   )}
                   style={{ backgroundColor: c }}
                 />
@@ -741,7 +824,7 @@ function TagDialog({ tag, colors, onSave, onCancel }: TagDialogProps) {
             type="submit"
             className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
           >
-            {tag ? 'Update' : 'Create'}
+            {tag ? "Update" : "Create"}
           </button>
           <button
             type="button"

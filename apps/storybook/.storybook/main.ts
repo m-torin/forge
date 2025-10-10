@@ -59,6 +59,7 @@ const config: StorybookConfig = {
         ...config.resolve.alias,
         // Alias @repo/auth/client to our mock implementation
         '@repo/auth/client': require.resolve('../../../packages/auth/mocks/storybook-client'),
+        '@storybook/test': require.resolve('./storybook-test-shim.js'),
         // Mock geist fonts for Storybook
         'geist/font/mono': require.resolve('../../../packages/uix-system/mocks/geist-mono'),
         'geist/font/sans': require.resolve('../../../packages/uix-system/mocks/geist-sans'),

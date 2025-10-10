@@ -1,0 +1,172 @@
+/**
+ * Light Editor Styles (Tailwind-based)
+ *
+ * Import this file in your app to get default editor styling
+ */
+
+/* Editor container */
+[data-editor-root] {
+  @apply relative;
+}
+
+/* ProseMirror editor styles */
+.ProseMirror {
+  @apply min-h-[200px] px-4 py-3 focus:outline-none;
+}
+
+.ProseMirror p {
+  @apply my-2;
+}
+
+.ProseMirror h1 {
+  @apply mb-4 mt-6 text-4xl font-bold;
+}
+
+.ProseMirror h2 {
+  @apply mb-3 mt-5 text-3xl font-bold;
+}
+
+.ProseMirror h3 {
+  @apply mb-2 mt-4 text-2xl font-semibold;
+}
+
+.ProseMirror h4 {
+  @apply mb-2 mt-3 text-xl font-semibold;
+}
+
+.ProseMirror h5 {
+  @apply mb-1 mt-2 text-lg font-medium;
+}
+
+.ProseMirror h6 {
+  @apply mb-1 mt-2 text-base font-medium;
+}
+
+/* Lists */
+.ProseMirror ul {
+  @apply my-4 list-disc pl-6;
+}
+
+.ProseMirror ol {
+  @apply my-4 list-decimal pl-6;
+}
+
+.ProseMirror li {
+  @apply my-1;
+}
+
+/* Task lists */
+.ProseMirror ul[data-type="taskList"] {
+  @apply list-none pl-0;
+}
+
+.ProseMirror ul[data-type="taskList"] li {
+  @apply flex items-start gap-2;
+}
+
+.ProseMirror ul[data-type="taskList"] li input[type="checkbox"] {
+  @apply mt-1 cursor-pointer;
+}
+
+/* Blockquote */
+.ProseMirror blockquote {
+  @apply my-4 border-l-4 border-gray-300 pl-4 italic text-gray-700;
+}
+
+/* Code */
+.ProseMirror code {
+  @apply rounded bg-gray-100 px-1.5 py-0.5 font-mono text-sm text-gray-800;
+}
+
+.ProseMirror pre {
+  @apply my-4 overflow-x-auto rounded-lg bg-gray-900 p-4;
+}
+
+.ProseMirror pre code {
+  @apply bg-transparent p-0 text-gray-100;
+}
+
+/* Horizontal rule */
+.ProseMirror hr {
+  @apply my-6 border-t border-gray-300;
+}
+
+/* Links */
+.ProseMirror a {
+  @apply text-blue-600 underline hover:text-blue-800;
+}
+
+/* Images */
+.ProseMirror img {
+  @apply max-w-full rounded-lg;
+}
+
+.ProseMirror img.ProseMirror-selectednode {
+  @apply outline outline-2 outline-blue-500;
+}
+
+/* Tables */
+.ProseMirror table {
+  @apply my-4 w-full border-collapse;
+}
+
+.ProseMirror th {
+  @apply border border-gray-300 bg-gray-100 px-3 py-2 text-left font-semibold;
+}
+
+.ProseMirror td {
+  @apply border border-gray-300 px-3 py-2;
+}
+
+/* Placeholder */
+.ProseMirror p.is-editor-empty:first-child::before {
+  @apply pointer-events-none float-left h-0 text-gray-400;
+  content: attr(data-placeholder);
+}
+
+/* Selection */
+.ProseMirror .ProseMirror-selectednode {
+  @apply outline outline-2 outline-blue-500;
+}
+
+/* Collaboration cursor */
+.ProseMirror .collaboration-cursor__caret {
+  @apply relative ml-[-1px] mr-[-1px] border-l-2 border-r-2 border-black;
+}
+
+.ProseMirror .collaboration-cursor__label {
+  @apply absolute -top-6 left-[-1px] whitespace-nowrap rounded-t px-2 py-1 text-xs text-white;
+}
+
+/* AI Highlight */
+.ProseMirror mark[data-ai-highlight] {
+  @apply rounded bg-blue-100 px-0.5;
+}
+
+/* Drag handle */
+.drag-handle {
+  @apply flex h-6 w-6 cursor-grab items-center justify-center rounded opacity-0 transition-opacity hover:bg-gray-100;
+}
+
+.ProseMirror:hover .drag-handle {
+  @apply opacity-100;
+}
+
+/* Mathematics */
+.ProseMirror .math-inline {
+  @apply inline-block cursor-pointer rounded bg-gray-50 px-1 hover:bg-gray-100;
+}
+
+/* Twitter embed */
+.ProseMirror [data-twitter] {
+  @apply my-4;
+}
+
+/* Bubble menu styles */
+.tippy-box[data-theme~="light"] {
+  @apply rounded-lg border border-gray-200 bg-white shadow-lg;
+}
+
+.tippy-box[data-theme~="light"] .tippy-content {
+  @apply p-0;
+}

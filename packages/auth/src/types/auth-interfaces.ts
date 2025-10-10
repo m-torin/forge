@@ -16,7 +16,7 @@ export interface EmailCredentials {
  * OAuth credentials
  */
 export interface OAuthCredentials {
-  provider: 'github' | 'google' | 'facebook' | 'discord' | 'microsoft';
+  provider: "github" | "google" | "facebook" | "discord" | "microsoft";
   redirectTo?: string;
   scopes?: string[];
 }
@@ -138,8 +138,8 @@ export interface SessionConfig {
  * Database configuration
  */
 export interface DatabaseConfig {
-  adapter: 'prisma' | 'drizzle' | 'kysely';
-  provider: 'postgresql' | 'mysql' | 'sqlite';
+  adapter: "prisma" | "drizzle" | "kysely";
+  provider: "postgresql" | "mysql" | "sqlite";
   url?: string;
 }
 
@@ -217,7 +217,11 @@ export interface AuthContext {
   isAuthenticated: boolean;
   isLoading: boolean;
   signIn: (
-    credentials: EmailCredentials | OAuthCredentials | PhoneCredentials | MagicLinkCredentials,
+    credentials:
+      | EmailCredentials
+      | OAuthCredentials
+      | PhoneCredentials
+      | MagicLinkCredentials,
   ) => Promise<AuthResult>;
   signOut: () => Promise<void>;
   requireAuth: () => UserProfile;
@@ -234,14 +238,23 @@ export interface TypedAuthClientMethods {
     data: UserRegistrationData,
   ) => Promise<AuthResult<{ user: UserProfile; session: SessionData }>>;
   signOut: () => Promise<void>;
-  getSession: () => Promise<AuthResult<{ user: UserProfile; session: SessionData }>>;
+  getSession: () => Promise<
+    AuthResult<{ user: UserProfile; session: SessionData }>
+  >;
   forgotPassword: (email: string) => Promise<AuthResult<{ message: string }>>;
-  resetPassword: (token: string, password: string) => Promise<AuthResult<{ message: string }>>;
+  resetPassword: (
+    token: string,
+    password: string,
+  ) => Promise<AuthResult<{ message: string }>>;
   verifyEmail: (token: string) => Promise<AuthResult<{ message: string }>>;
   signInWithOAuth: (credentials: OAuthCredentials) => Promise<AuthResult>;
   signInWithPhone: (credentials: PhoneCredentials) => Promise<AuthResult>;
-  signInWithMagicLink: (credentials: MagicLinkCredentials) => Promise<AuthResult>;
-  createAnonymousSession: (credentials?: AnonymousCredentials) => Promise<AuthResult>;
+  signInWithMagicLink: (
+    credentials: MagicLinkCredentials,
+  ) => Promise<AuthResult>;
+  createAnonymousSession: (
+    credentials?: AnonymousCredentials,
+  ) => Promise<AuthResult>;
 }
 
 /**
@@ -250,7 +263,7 @@ export interface TypedAuthClientMethods {
 export interface OTPVerificationData {
   identifier: string; // email or phone
   code: string;
-  type: 'email' | 'sms' | 'totp';
+  type: "email" | "sms" | "totp";
 }
 
 /**
@@ -260,7 +273,7 @@ export interface TwoFactorData {
   secret?: string;
   backupCodes?: string[];
   enabled: boolean;
-  method: 'totp' | 'sms' | 'email';
+  method: "totp" | "sms" | "email";
 }
 
 /**
@@ -290,7 +303,12 @@ export interface RateLimitInfo {
  * Security event data
  */
 export interface SecurityEvent {
-  type: 'login' | 'logout' | 'password_change' | 'email_change' | 'suspicious_activity';
+  type:
+    | "login"
+    | "logout"
+    | "password_change"
+    | "email_change"
+    | "suspicious_activity";
   userId: string;
   ipAddress: string;
   userAgent: string;
@@ -305,7 +323,7 @@ export interface OrganizationMember {
   id: string;
   userId: string;
   organizationId: string;
-  role: 'owner' | 'admin' | 'member' | 'guest';
+  role: "owner" | "admin" | "member" | "guest";
   permissions: string[];
   joinedAt: Date;
   user: UserProfile;
@@ -318,7 +336,7 @@ export interface InvitationData {
   id: string;
   email: string;
   organizationId: string;
-  role: 'admin' | 'member' | 'guest';
+  role: "admin" | "member" | "guest";
   expiresAt: Date;
   token: string;
   invitedBy: string;

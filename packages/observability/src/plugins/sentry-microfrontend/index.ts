@@ -7,5 +7,5 @@
 
 export { createMultiplexedTransport } from './multiplexed-transport';
 export { SentryMicroFrontendPlugin, createSentryMicroFrontendPlugin } from './plugin';
-export type { MicroFrontendMode, SentryMicroFrontendConfig, ZoneConfig } from './types';
-export { createZoneScope, detectCurrentZone, isHostEnvironment } from './utils';
+export type { BackstageAppConfig, MicroFrontendMode, SentryMicroFrontendConfig } from './types';
+export { createBackstageScope, detectCurrentBackstageApp, isHostEnvironment } from './utils';

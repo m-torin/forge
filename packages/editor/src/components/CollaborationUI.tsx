@@ -1,11 +1,19 @@
-'use client';
+"use client";
 
-import { ActionIcon, Box, Divider, Group, Paper, Stack, Text } from '@mantine/core';
-import { IconMessage, IconSettings, IconUsers } from '@tabler/icons-react';
-import { useState } from 'react';
-import { Collaborator } from '../types/index';
-import { CollaboratorAvatar } from './CollaboratorAvatar';
-import { PresenceIndicator } from './PresenceIndicator';
+import {
+  ActionIcon,
+  Box,
+  Divider,
+  Group,
+  Paper,
+  Stack,
+  Text,
+} from "@mantine/core";
+import { IconMessage, IconSettings, IconUsers } from "@tabler/icons-react";
+import { useState } from "react";
+import { Collaborator } from "../types/index";
+import { CollaboratorAvatar } from "./CollaboratorAvatar";
+import { PresenceIndicator } from "./PresenceIndicator";
 
 interface CollaborationUIProps {
   collaborators: Collaborator[];
@@ -28,8 +36,8 @@ export function CollaborationUI({
 }: CollaborationUIProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const activeCollaborators = collaborators.filter(c => c.isActive);
-  const inactiveCollaborators = collaborators.filter(c => !c.isActive);
+  const activeCollaborators = collaborators.filter((c) => c.isActive);
+  const inactiveCollaborators = collaborators.filter((c) => !c.isActive);
 
   return (
     <Paper p="md" shadow="sm" withBorder>
@@ -38,13 +46,18 @@ export function CollaborationUI({
           <Group>
             <IconUsers size={16} />
             <Text size="sm" fw={500}>
-              {documentTitle || 'Collaboration'}
+              {documentTitle || "Collaboration"}
             </Text>
           </Group>
 
           <Group gap="xs">
             {showChatButton && (
-              <ActionIcon variant="subtle" size="sm" onClick={onOpenChat} title="Open chat">
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                onClick={onOpenChat}
+                title="Open chat"
+              >
                 <IconMessage size={14} />
               </ActionIcon>
             )}
@@ -72,8 +85,12 @@ export function CollaborationUI({
                 Active ({activeCollaborators.length})
               </Text>
               <Group gap="xs">
-                {activeCollaborators.slice(0, 5).map(collaborator => (
-                  <CollaboratorAvatar key={collaborator.id} collaborator={collaborator} size="sm" />
+                {activeCollaborators.slice(0, 5).map((collaborator) => (
+                  <CollaboratorAvatar
+                    key={collaborator.id}
+                    collaborator={collaborator}
+                    size="sm"
+                  />
                 ))}
                 {activeCollaborators.length > 5 && (
                   <Text size="xs" c="dimmed">
@@ -91,20 +108,20 @@ export function CollaborationUI({
             <Box>
               <Group
                 justify="space-between"
-                style={{ cursor: 'pointer' }}
+                style={{ cursor: "pointer" }}
                 onClick={() => setIsExpanded(!isExpanded)}
               >
                 <Text size="xs" c="dimmed">
                   Recently active ({inactiveCollaborators.length})
                 </Text>
                 <Text size="xs" c="dimmed">
-                  {isExpanded ? '−' : '+'}
+                  {isExpanded ? "−" : "+"}
                 </Text>
               </Group>
 
               {isExpanded && (
                 <Group gap="xs" mt="xs">
-                  {inactiveCollaborators.map(collaborator => (
+                  {inactiveCollaborators.map((collaborator) => (
                     <CollaboratorAvatar
                       key={collaborator.id}
                       collaborator={collaborator}

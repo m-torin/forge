@@ -9,7 +9,7 @@ import {
   Section,
   Tailwind,
   Text,
-} from '@react-email/components';
+} from "@react-email/components";
 
 interface ApiKeyCreatedTemplateProps extends Record<string, any> {
   readonly apiKeyId: string;
@@ -22,7 +22,7 @@ interface ApiKeyCreatedTemplateProps extends Record<string, any> {
 export const ApiKeyCreatedTemplate = ({
   apiKeyId,
   apiKeyName,
-  dashboardUrl = 'https://example.com/api-keys',
+  dashboardUrl = "https://example.com/api-keys",
   email: email,
   name,
 }: ApiKeyCreatedTemplateProps) => (
@@ -45,13 +45,17 @@ export const ApiKeyCreatedTemplate = ({
               </Text>
 
               <Section className="mb-6 rounded-md bg-zinc-50 p-4">
-                <Text className="m-0 mb-2 text-sm font-medium text-zinc-700">API Key Details:</Text>
+                <Text className="m-0 mb-2 text-sm font-medium text-zinc-700">
+                  API Key Details:
+                </Text>
                 <Text className="m-0 mb-1 text-sm text-zinc-600">
                   <strong>Name:</strong> {apiKeyName}
                 </Text>
                 <Text className="m-0 mb-1 text-sm text-zinc-600">
-                  <strong>Key ID:</strong>{' '}
-                  <code className="rounded bg-zinc-200 px-1 py-0.5 text-xs">{apiKeyId}</code>
+                  <strong>Key ID:</strong>{" "}
+                  <code className="rounded bg-zinc-200 px-1 py-0.5 text-xs">
+                    {apiKeyId}
+                  </code>
                 </Text>
                 <Text className="m-0 text-sm text-zinc-600">
                   <strong>Created:</strong> {new Date().toLocaleDateString()}
@@ -59,8 +63,9 @@ export const ApiKeyCreatedTemplate = ({
               </Section>
 
               <Text className="m-0 mb-6 rounded-md bg-red-50 p-3 text-sm text-red-600">
-                ⚠️ <strong>Important:</strong> For security reasons, we don't include the actual API
-                key in this email. You can find it in your dashboard immediately after creation.
+                ⚠️ <strong>Important:</strong> For security reasons, we don't
+                include the actual API key in this email. You can find it in
+                your dashboard immediately after creation.
               </Text>
 
               <Section className="mb-6">
@@ -75,13 +80,13 @@ export const ApiKeyCreatedTemplate = ({
               <Hr className="my-4" />
 
               <Text className="m-0 mb-2 text-sm text-zinc-500">
-                <strong>Security reminder:</strong> Keep your API keys secure and don't share them
-                in public repositories or client-side code.
+                <strong>Security reminder:</strong> Keep your API keys secure
+                and don't share them in public repositories or client-side code.
               </Text>
 
               <Text className="m-0 mb-4 text-sm text-zinc-500">
-                If you didn't create this API key, please contact our support team immediately and
-                revoke any unauthorized keys.
+                If you didn't create this API key, please contact our support
+                team immediately and revoke any unauthorized keys.
               </Text>
 
               <Text className="m-0 text-sm text-zinc-500">
@@ -93,10 +98,18 @@ export const ApiKeyCreatedTemplate = ({
                 <Text className="m-0 mb-2 text-xs font-bold text-gray-500">
                   [Debug Info: All Fields]
                 </Text>
-                <Text className="m-0 text-xs text-gray-500">apiKeyId: {apiKeyId}</Text>
-                <Text className="m-0 text-xs text-gray-500">apiKeyName: {apiKeyName}</Text>
-                <Text className="m-0 text-xs text-gray-500">dashboardUrl: {dashboardUrl}</Text>
-                <Text className="m-0 text-xs text-gray-500">email: {email}</Text>
+                <Text className="m-0 text-xs text-gray-500">
+                  apiKeyId: {apiKeyId}
+                </Text>
+                <Text className="m-0 text-xs text-gray-500">
+                  apiKeyName: {apiKeyName}
+                </Text>
+                <Text className="m-0 text-xs text-gray-500">
+                  dashboardUrl: {dashboardUrl}
+                </Text>
+                <Text className="m-0 text-xs text-gray-500">
+                  email: {email}
+                </Text>
                 <Text className="m-0 text-xs text-gray-500">name: {name}</Text>
               </Section>
             </Section>

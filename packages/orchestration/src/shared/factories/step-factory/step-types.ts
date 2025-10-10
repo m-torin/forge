@@ -19,7 +19,7 @@ export type ErrorCode =
 export type ExecutionId = `exec_${string}`;
 
 // Modern ES2022+ type utilities
-export type NonEmptyArray<T> = [T, ...T[]];
+type NonEmptyArray<T> = [T, ...T[]];
 export type ProgressState = 'cancelled' | 'completed' | 'failed' | 'in_progress' | 'pending';
 /**
  * Simple workflow step interface for function-based API
@@ -94,19 +94,6 @@ export interface StepExecutionContext<TInput = any> {
 export type StepExecutionFunction<TInput = any, TOutput = any> = (
   context: StepExecutionContext<TInput>,
 ) => Promise<StepExecutionResult<TOutput>>;
-
-/**
- * Result from step execution
- */
-export interface StepExecutionResult<TOutput = any> {
-  error?: WorkflowError;
-  metadata?: Record<string, any>;
-  output?: TOutput;
-  performance: StepPerformanceData;
-  shouldRetry?: boolean;
-  skipped?: boolean;
-  success: boolean;
-}
 
 /**
  * Result of step execution

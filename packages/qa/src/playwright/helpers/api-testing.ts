@@ -1,4 +1,4 @@
-import { type APIRequestContext, type APIResponse } from '@playwright/test';
+import { type APIRequestContext, type APIResponse } from "@playwright/test";
 
 /**
  * API Testing utilities for Playwright
@@ -10,7 +10,7 @@ export class APITestUtils {
    * Make authenticated API request
    */
   async authenticatedRequest(
-    method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
+    method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH",
     url: string,
     options?: {
       data?: any;
@@ -19,7 +19,7 @@ export class APITestUtils {
     },
   ): Promise<APIResponse> {
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...options?.headers,
     };
 
@@ -33,15 +33,15 @@ export class APITestUtils {
     }
 
     switch (method) {
-      case 'GET':
+      case "GET":
         return this.request.get(url, requestOptions);
-      case 'POST':
+      case "POST":
         return this.request.post(url, requestOptions);
-      case 'PUT':
+      case "PUT":
         return this.request.put(url, requestOptions);
-      case 'DELETE':
+      case "DELETE":
         return this.request.delete(url, requestOptions);
-      case 'PATCH':
+      case "PATCH":
         return this.request.patch(url, requestOptions);
     }
   }
@@ -49,7 +49,7 @@ export class APITestUtils {
   /**
    * Test health endpoints
    */
-  async checkHealth(endpoint = '/api/health'): Promise<boolean> {
+  async checkHealth(endpoint = "/api/health"): Promise<boolean> {
     const response = await this.request.get(endpoint);
     return response.ok();
   }
@@ -57,10 +57,15 @@ export class APITestUtils {
   /**
    * Get JSON response with type safety
    */
-  async getJSON<T>(url: string, options?: { headers?: Record<string, string> }): Promise<T> {
+  async getJSON<T>(
+    url: string,
+    options?: { headers?: Record<string, string> },
+  ): Promise<T> {
     const response = await this.request.get(url, options);
     if (!response.ok()) {
-      throw new Error(`API request failed: ${response.status()} ${response.statusText()}`);
+      throw new Error(
+        `API request failed: ${response.status()} ${response.statusText()}`,
+      );
     }
     return response.json();
   }
@@ -76,12 +81,14 @@ export class APITestUtils {
     const response = await this.request.post(url, {
       data,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...options?.headers,
       },
     });
     if (!response.ok()) {
-      throw new Error(`API request failed: ${response.status()} ${response.statusText()}`);
+      throw new Error(
+        `API request failed: ${response.status()} ${response.statusText()}`,
+      );
     }
     return response.json();
   }
@@ -90,7 +97,7 @@ export class APITestUtils {
    * Create a mock API response
    */
   async mockResponse(
-    page: import('@playwright/test').Page,
+    page: import("@playwright/test").Page,
     pattern: string | RegExp,
     response: {
       status?: number;
@@ -99,20 +106,22 @@ export class APITestUtils {
       delay?: number;
     },
   ) {
-    await page.route(pattern, async route => {
+    await page.route(pattern, async (route) => {
       // Add realistic delay if specified
       if (response.delay) {
-        await new Promise(resolve => setTimeout(resolve, response.delay));
+        await new Promise((resolve) => setTimeout(resolve, response.delay));
       }
 
       route.fulfill({
         status: response.status || 200,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           ...response.headers,
         },
         body:
-          typeof response.body === 'string' ? response.body : JSON.stringify(response.body || {}),
+          typeof response.body === "string"
+            ? response.body
+            : JSON.stringify(response.body || {}),
       });
     });
   }
@@ -136,10 +145,13 @@ export class APIAssertions {
   /**
    * Assert response contains JSON with specific shape
    */
-  static async assertJSON<T>(response: APIResponse, validator: (data: T) => boolean): Promise<T> {
+  static async assertJSON<T>(
+    response: APIResponse,
+    validator: (data: T) => boolean,
+  ): Promise<T> {
     const data = await response.json();
     if (!validator(data)) {
-      throw new Error('Response JSON validation failed');
+      throw new Error("Response JSON validation failed");
     }
     return data;
   }
@@ -147,7 +159,10 @@ export class APIAssertions {
   /**
    * Assert response headers
    */
-  static assertHeaders(response: APIResponse, expectedHeaders: Record<string, string | RegExp>) {
+  static assertHeaders(
+    response: APIResponse,
+    expectedHeaders: Record<string, string | RegExp>,
+  ) {
     for (const [key, value] of Object.entries(expectedHeaders)) {
       const actualValue = response.headers()[key.toLowerCase()];
       if (!actualValue) {
@@ -156,10 +171,14 @@ export class APIAssertions {
       if (value instanceof RegExp) {
         // eslint-disable-next-line vitest/no-conditional-tests
         if (!value.test(actualValue)) {
-          throw new Error(`Header "${key}" value "${actualValue}" does not match pattern ${value}`);
+          throw new Error(
+            `Header "${key}" value "${actualValue}" does not match pattern ${value}`,
+          );
         }
       } else if (actualValue !== value) {
-        throw new Error(`Header "${key}" expected "${value}", got "${actualValue}"`);
+        throw new Error(
+          `Header "${key}" expected "${value}", got "${actualValue}"`,
+        );
       }
     }
   }
@@ -171,7 +190,7 @@ export class APIAssertions {
 export class GraphQLTestUtils {
   constructor(
     private readonly request: APIRequestContext,
-    private readonly endpoint = '/api/graphql',
+    private readonly endpoint = "/api/graphql",
   ) {}
 
   /**
@@ -188,13 +207,15 @@ export class GraphQLTestUtils {
         variables,
       },
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...options?.headers,
       },
     });
 
     if (!response.ok()) {
-      throw new Error(`GraphQL request failed: ${response.status()} ${response.statusText()}`);
+      throw new Error(
+        `GraphQL request failed: ${response.status()} ${response.statusText()}`,
+      );
     }
 
     const result = await response.json();

@@ -83,7 +83,7 @@ export async function encryptFlags(values: Record<string, any>): Promise<string>
       return Buffer.from(JSON.stringify(values)).toString('base64');
     }
   } catch (error) {
-    logError(error instanceof Error ? error : new Error('Failed to encrypt flag values'), {
+    logError(error instanceof Error ? error.message : 'Failed to encrypt flag values', {
       context: 'encryption',
     });
     throw error;
@@ -133,7 +133,7 @@ export async function decryptFlags(encryptedValues: string): Promise<Record<stri
       return JSON.parse(Buffer.from(encryptedValues, 'base64').toString());
     }
   } catch (error) {
-    logError(error instanceof Error ? error : new Error('Failed to decode legacy flag values'), {
+    logError(error instanceof Error ? error.message : 'Failed to decode legacy flag values', {
       context: 'legacy-decryption',
     });
     throw error;
@@ -193,7 +193,7 @@ export async function encryptData(data: any): Promise<string> {
       return Buffer.from(JSON.stringify(data)).toString('base64');
     }
   } catch (error) {
-    logError(error instanceof Error ? error : new Error('Failed to encrypt data'), {
+    logError(error instanceof Error ? error.message : 'Failed to encrypt data', {
       context: 'data-encryption',
     });
     throw error;
@@ -242,7 +242,7 @@ export async function decryptData(encryptedData: string): Promise<any> {
       return JSON.parse(Buffer.from(encryptedData, 'base64').toString());
     }
   } catch (error) {
-    logError(error instanceof Error ? error : new Error('Failed to decode legacy data'), {
+    logError(error instanceof Error ? error.message : 'Failed to decode legacy data', {
       context: 'legacy-data-decryption',
     });
     throw error;
@@ -359,7 +359,7 @@ export async function safeEncryptFlags(
     const encrypted = await encryptFlags(values);
     return { encrypted, plaintext: null };
   } catch (error) {
-    logError(error instanceof Error ? error : new Error('Safe encryption failed'), {
+    logError(error instanceof Error ? error.message : 'Safe encryption failed', {
       context: 'safe-encryption',
     });
 
@@ -407,7 +407,7 @@ export async function encryptFlagDefinitions(
 
     return await encryptWithSecret(definitionsWithMeta, encryptionSecret);
   } catch (error) {
-    logError(error instanceof Error ? error : new Error('Failed to encrypt flag definitions'), {
+    logError(error instanceof Error ? error.message : 'Failed to encrypt flag definitions', {
       context: 'encrypt-flag-definitions',
     });
     throw error;
@@ -448,7 +448,7 @@ export async function decryptFlagDefinitions(
     // Fallback for legacy format
     return decrypted;
   } catch (error) {
-    logError(error instanceof Error ? error : new Error('Failed to decrypt flag definitions'), {
+    logError(error instanceof Error ? error.message : 'Failed to decrypt flag definitions', {
       context: 'decrypt-flag-definitions',
     });
     throw error;
@@ -486,7 +486,7 @@ export async function encryptOverrides(
 
     return await encryptWithSecret(overridesWithMeta, encryptionSecret);
   } catch (error) {
-    logError(error instanceof Error ? error : new Error('Failed to encrypt flag overrides'), {
+    logError(error instanceof Error ? error.message : 'Failed to encrypt flag overrides', {
       context: 'encrypt-overrides',
     });
     throw error;
@@ -527,7 +527,7 @@ export async function decryptOverrides(
     // Fallback for legacy format
     return decrypted;
   } catch (error) {
-    logError(error instanceof Error ? error : new Error('Failed to decrypt flag overrides'), {
+    logError(error instanceof Error ? error.message : 'Failed to decrypt flag overrides', {
       context: 'decrypt-overrides',
     });
     throw error;

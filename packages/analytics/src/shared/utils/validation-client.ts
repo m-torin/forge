@@ -7,13 +7,13 @@ import { PROVIDER_REQUIREMENTS } from './config';
 
 import type { AnalyticsConfig, ProviderConfig } from '../types/types';
 
-export interface ValidationError {
+interface ValidationError {
   field: string;
   message: string;
   provider: string;
 }
 
-export interface ValidationResult {
+interface ValidationResult {
   errors: ValidationError[];
   isValid: boolean;
   warnings: string[];

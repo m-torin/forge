@@ -26,10 +26,14 @@
 // ============================================
 // SERVER-SIDE EXAMPLES (server-next.ts)
 // ============================================
-import { Metadata } from 'next';
-import { Product, WithContext } from 'schema-dts';
+import { Metadata } from "next";
+import { Product, WithContext } from "schema-dts";
 
-import { OptimizedJsonLd, StreamingJsonLd, useOpenGraphPreview } from '@repo/seo/client/next';
+import {
+  OptimizedJsonLd,
+  StreamingJsonLd,
+  useOpenGraphPreview,
+} from "@repo/seo/client/next";
 import {
   generateI18nSitemap,
   generateMetadataAsync,
@@ -39,7 +43,7 @@ import {
   metadataTemplates,
   SEOManager,
   viewportPresets,
-} from '@repo/seo/server/next';
+} from "@repo/seo/server/next";
 
 /**
  * Example: Optimized JsonLd with Next.js Script component
@@ -47,24 +51,28 @@ import {
  */
 export function ProductPageWithOptimizedSEO({ product }: { product: any }) {
   const structuredData: WithContext<Product> = {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
+    "@context": "https://schema.org",
+    "@type": "Product",
     name: product.name,
     description: product.description,
     image: product.images,
     offers: {
-      '@type': 'Offer',
+      "@type": "Offer",
       price: product.price,
       priceCurrency: product.currency,
       availability: product.inStock
-        ? 'https://schema.org/InStock'
-        : 'https://schema.org/OutOfStock',
+        ? "https://schema.org/InStock"
+        : "https://schema.org/OutOfStock",
     },
   };
 
   return (
     <>
-      <OptimizedJsonLd data={structuredData} id="product-data" strategy="afterInteractive" />
+      <OptimizedJsonLd
+        data={structuredData}
+        id="product-data"
+        strategy="afterInteractive"
+      />
 
       <OptimizedJsonLd
         data={structuredData}
@@ -85,22 +93,26 @@ export function StreamingProductPage({ productId }: { productId: string }) {
     const res = await fetch(`/api/products/${productId}`);
     const product = await res.json();
     return {
-      '@context': 'https://schema.org',
-      '@type': 'Product',
+      "@context": "https://schema.org",
+      "@type": "Product",
       name: product.name,
       description: product.description,
     } as WithContext<Product>;
   })();
 
   const fallbackData: WithContext<Product> = {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
-    name: 'Loading...',
-    description: 'Product information is loading',
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: "Loading...",
+    description: "Product information is loading",
   };
 
   return (
-    <StreamingJsonLd dataPromise={productPromise} fallback={fallbackData} id="streaming-product" />
+    <StreamingJsonLd
+      dataPromise={productPromise}
+      fallback={fallbackData}
+      id="streaming-product"
+    />
   );
 }
 
@@ -110,10 +122,10 @@ export function StreamingProductPage({ productId }: { productId: string }) {
  */
 export function ContentEditor() {
   const { preview, updatePreview, generatePreviewHtml } = useOpenGraphPreview({
-    title: 'My Article',
-    description: 'Article description',
-    image: '/images/article-hero.jpg',
-    url: 'https://example.com/article',
+    title: "My Article",
+    description: "Article description",
+    image: "/images/article-hero.jpg",
+    url: "https://example.com/article",
   });
 
   return (
@@ -147,9 +159,9 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
     name: product.name,
     description: product.description,
     price: product.price,
-    currency: 'USD',
+    currency: "USD",
     image: product.image,
-    availability: product.inStock ? 'InStock' : 'OutOfStock',
+    availability: product.inStock ? "InStock" : "OutOfStock",
     brand: product.brand,
   });
 }
@@ -188,7 +200,7 @@ export function ProfileMetadata({ user }: { user: any }): Metadata {
  * Example: Dynamic viewport based on user agent
  */
 export function generateDynamicViewport(request: any) {
-  const userAgent = request.headers.get('user-agent') || '';
+  const userAgent = request.headers.get("user-agent") || "";
   return generateViewport(userAgent);
 }
 
@@ -214,30 +226,36 @@ export const viewportExamples = {
  */
 export async function generateMultiLangSitemap() {
   const products = await getProducts();
-  const locales = ['en', 'es', 'fr', 'de'];
-  const baseUrl = 'https://example.com';
+  const locales = ["en", "es", "fr", "de"];
+  const baseUrl = "https://example.com";
 
   const routes = products.map((product: any) => ({
     url: `${baseUrl}/products/${product.slug}`,
     lastModified: product.updatedAt,
-    changeFrequency: 'daily' as const,
+    changeFrequency: "daily" as const,
     priority: 0.8,
   }));
 
-  return generateI18nSitemap(routes, locales, 'en');
+  return generateI18nSitemap(routes, locales, "en");
 }
 
 /**
  * Example: Preview mode metadata
  */
-export function DraftPageMetadata({ isDraft, page }: { isDraft: boolean; page: any }) {
+export function DraftPageMetadata({
+  isDraft,
+  page,
+}: {
+  isDraft: boolean;
+  page: any;
+}) {
   const baseMetadata: Metadata = {
     title: page.title,
     description: page.description,
   };
 
   return generatePreviewMetadata(isDraft, baseMetadata, {
-    draftIndicator: '🚧 DRAFT',
+    draftIndicator: "🚧 DRAFT",
     noIndexDrafts: true,
   });
 }
@@ -270,12 +288,12 @@ export async function ProductPageMetadata(props: {
 export async function EdgeMetadata(request: any) {
   // This runs on the edge runtime
   const url = new URL(request.url);
-  const slug = url.pathname.split('/').pop();
+  const slug = url.pathname.split("/").pop();
 
   return generateMetadataEdge(request, {
     title: `Edge Page - ${slug}`,
-    description: 'This metadata was generated on the edge',
-    image: '/images/edge-og.jpg',
+    description: "This metadata was generated on the edge",
+    image: "/images/edge-og.jpg",
   });
 }
 
@@ -283,16 +301,16 @@ export async function EdgeMetadata(request: any) {
  * Example: Using SEOManager for consistent configuration
  */
 const seoManager = new SEOManager({
-  applicationName: 'My E-commerce Store',
+  applicationName: "My E-commerce Store",
   author: {
-    name: 'John Doe',
-    url: 'https://johndoe.com',
+    name: "John Doe",
+    url: "https://johndoe.com",
   },
-  keywords: ['ecommerce', 'shopping', 'online store'],
-  locale: 'en_US',
-  publisher: 'My Company',
-  themeColor: '#0070f3',
-  twitterHandle: '@mystore',
+  keywords: ["ecommerce", "shopping", "online store"],
+  locale: "en_US",
+  publisher: "My Company",
+  themeColor: "#0070f3",
+  twitterHandle: "@mystore",
 });
 
 /**
@@ -312,7 +330,7 @@ export function PageWithSEOManager({ page }: { page: any }) {
     image: page.image,
     keywords: page.tags,
     article:
-      page.type === 'article'
+      page.type === "article"
         ? {
             publishedTime: page.publishedAt,
             modifiedTime: page.updatedAt,
@@ -331,15 +349,15 @@ async function getProduct(id: string) {
   // Mock implementation
   return {
     id,
-    name: 'Example Product',
-    description: 'A great product',
+    name: "Example Product",
+    description: "A great product",
     price: 99.99,
-    currency: 'USD',
-    image: '/images/product.jpg',
+    currency: "USD",
+    image: "/images/product.jpg",
     inStock: true,
-    brand: 'Example Brand',
+    brand: "Example Brand",
 
-    slug: 'example-product',
+    slug: "example-product",
     updatedAt: new Date(),
   };
 }
@@ -347,8 +365,8 @@ async function getProduct(id: string) {
 async function getProducts() {
   // Mock implementation
   return [
-    { slug: 'product-1', updatedAt: new Date() },
-    { slug: 'product-2', updatedAt: new Date() },
+    { slug: "product-1", updatedAt: new Date() },
+    { slug: "product-2", updatedAt: new Date() },
   ];
 }
 
@@ -356,7 +374,7 @@ async function getProducts() {
  * Example: Complete page with all SEO features
  */
 export default async function ComprehensiveSEOExample() {
-  const product = await getProduct('123');
+  const product = await getProduct("123");
 
   // Generate metadata
   const metadata = metadataTemplates.product({
@@ -365,7 +383,7 @@ export default async function ComprehensiveSEOExample() {
     price: product.price,
     currency: product.currency,
     image: product.image,
-    availability: 'InStock',
+    availability: "InStock",
   });
 
   // Return complete page setup
@@ -373,8 +391,8 @@ export default async function ComprehensiveSEOExample() {
     metadata,
     viewport: viewportPresets.default,
     structuredData: {
-      '@context': 'https://schema.org',
-      '@type': 'Product',
+      "@context": "https://schema.org",
+      "@type": "Product",
       name: product.name,
       description: product.description,
     },

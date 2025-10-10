@@ -27,7 +27,7 @@ export abstract class PlaywrightUtilityError extends Error {
  */
 export class AuthenticationError extends PlaywrightUtilityError {
   constructor(message: string, context?: Record<string, any>) {
-    super(message, 'AUTH_ERROR', context);
+    super(message, "AUTH_ERROR", context);
   }
 }
 
@@ -36,7 +36,7 @@ export class AuthenticationError extends PlaywrightUtilityError {
  */
 export class NetworkError extends PlaywrightUtilityError {
   constructor(message: string, context?: Record<string, any>) {
-    super(message, 'NETWORK_ERROR', context);
+    super(message, "NETWORK_ERROR", context);
   }
 }
 
@@ -45,7 +45,7 @@ export class NetworkError extends PlaywrightUtilityError {
  */
 export class FileUploadError extends PlaywrightUtilityError {
   constructor(message: string, context?: Record<string, any>) {
-    super(message, 'FILE_UPLOAD_ERROR', context);
+    super(message, "FILE_UPLOAD_ERROR", context);
   }
 }
 
@@ -54,7 +54,7 @@ export class FileUploadError extends PlaywrightUtilityError {
  */
 export class PerformanceError extends PlaywrightUtilityError {
   constructor(message: string, context?: Record<string, any>) {
-    super(message, 'PERFORMANCE_ERROR', context);
+    super(message, "PERFORMANCE_ERROR", context);
   }
 }
 
@@ -63,7 +63,7 @@ export class PerformanceError extends PlaywrightUtilityError {
  */
 export class SessionError extends PlaywrightUtilityError {
   constructor(message: string, context?: Record<string, any>) {
-    super(message, 'SESSION_ERROR', context);
+    super(message, "SESSION_ERROR", context);
   }
 }
 
@@ -72,7 +72,7 @@ export class SessionError extends PlaywrightUtilityError {
  */
 export class ConfigurationError extends PlaywrightUtilityError {
   constructor(message: string, context?: Record<string, any>) {
-    super(message, 'CONFIG_ERROR', context);
+    super(message, "CONFIG_ERROR", context);
   }
 }
 
@@ -81,7 +81,10 @@ export class ConfigurationError extends PlaywrightUtilityError {
  */
 export class TimeoutError extends PlaywrightUtilityError {
   constructor(message: string, timeout: number, context?: Record<string, any>) {
-    super(`${message} (timeout: ${timeout}ms)`, 'TIMEOUT_ERROR', { timeout, ...context });
+    super(`${message} (timeout: ${timeout}ms)`, "TIMEOUT_ERROR", {
+      timeout,
+      ...context,
+    });
   }
 }
 
@@ -116,7 +119,13 @@ export class ErrorHandler {
       if (timeout) {
         const timeoutPromise = new Promise<never>((_resolve, reject) => {
           timeoutId = setTimeout(() => {
-            reject(new TimeoutError(`Operation '${operationName}' timed out`, timeout, metadata));
+            reject(
+              new TimeoutError(
+                `Operation '${operationName}' timed out`,
+                timeout,
+                metadata,
+              ),
+            );
           }, timeout);
         });
 
@@ -171,11 +180,11 @@ export class ErrorHandler {
       initialDelay = 1000,
       maxDelay = 10000,
       factor = 2,
-      operationName = 'operation',
+      operationName = "operation",
       shouldRetry = () => true,
     } = options;
 
-    let lastError: Error = new Error('No attempts made');
+    let lastError: Error = new Error("No attempts made");
     let delay = initialDelay;
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -193,7 +202,7 @@ export class ErrorHandler {
           `Attempt ${attempt}/${maxAttempts} failed for ${operationName}: ${lastError.message}. Retrying in ${delay}ms...`,
         );
 
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
         delay = Math.min(delay * factor, maxDelay);
       }
     }
@@ -201,15 +210,18 @@ export class ErrorHandler {
     // Create a concrete error class instead of the abstract base
     class RetryExhaustedError extends PlaywrightUtilityError {
       constructor(message: string, context: Record<string, any>) {
-        super(message, 'RETRY_EXHAUSTED', context);
+        super(message, "RETRY_EXHAUSTED", context);
       }
     }
 
-    throw new RetryExhaustedError(`All ${maxAttempts} attempts failed for ${operationName}`, {
-      attempts: maxAttempts,
-      lastError: lastError.message,
-      operationName,
-    });
+    throw new RetryExhaustedError(
+      `All ${maxAttempts} attempts failed for ${operationName}`,
+      {
+        attempts: maxAttempts,
+        lastError: lastError.message,
+        operationName,
+      },
+    );
   }
 
   /**
@@ -223,7 +235,7 @@ export class ErrorHandler {
       operationName?: string;
     } = {},
   ): Promise<T | undefined> {
-    const { fallback, logError = true, operationName = 'operation' } = options;
+    const { fallback, logError = true, operationName = "operation" } = options;
 
     try {
       return await operation();

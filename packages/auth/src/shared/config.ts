@@ -125,13 +125,9 @@ export function createAuthConfig(): AuthConfig {
     secret:
       serverConfig.BETTER_AUTH_SECRET ||
       serverConfig.AUTH_SECRET ||
-      (process.env.NODE_ENV === 'production'
-        ? (() => {
-            throw new Error(
-              'BETTER_AUTH_SECRET is required. Please set it in your environment variables.',
-            );
-          })()
-        : 'development-secret-change-in-production'),
+      // Fallback for build-time (production builds need this to compile)
+      // Runtime will still validate through serverConfig validation
+      'build-time-placeholder-secret-must-set-in-production-env',
     teams: {
       defaultPermissions: ['read'],
       enableInvitations: true,

@@ -13,13 +13,13 @@ export default {
       blockThreats: ${block_threats},
       quarantineThreats: ${quarantine_threats}
     };
-
+    
     try {
       const messageId = message.headers.get('Message-ID') || generateMessageId();
       const from = message.from;
       const to = message.to;
       const subject = message.headers.get('Subject') || '';
-
+      
       // Initialize threat analysis
       const threatAnalysis = {
         messageId,
@@ -31,34 +31,34 @@ export default {
         score: 0,
         verdict: 'clean'
       };
-
+      
       // Check sender reputation
       const senderThreat = await checkSenderReputation(from, env);
       if (senderThreat) {
         threatAnalysis.threats.push(senderThreat);
         threatAnalysis.score += senderThreat.score;
       }
-
+      
       // Analyze email content
       const bodyText = await message.text();
       const contentThreats = await analyzeContent(bodyText, subject, config, env);
       threatAnalysis.threats.push(...contentThreats);
       threatAnalysis.score += contentThreats.reduce((sum, threat) => sum + threat.score, 0);
-
+      
       // Scan links if enabled
       if (config.scanLinks) {
         const linkThreats = await scanLinks(bodyText, env);
         threatAnalysis.threats.push(...linkThreats);
         threatAnalysis.score += linkThreats.reduce((sum, threat) => sum + threat.score, 0);
       }
-
+      
       // Scan attachments if enabled
       if (config.scanAttachments && message.parts) {
         const attachmentThreats = await scanAttachments(message.parts, env);
         threatAnalysis.threats.push(...attachmentThreats);
         threatAnalysis.score += attachmentThreats.reduce((sum, threat) => sum + threat.score, 0);
       }
-
+      
       // Determine verdict based on score
       if (threatAnalysis.score >= 80) {
         threatAnalysis.verdict = 'malicious';
@@ -67,40 +67,40 @@ export default {
       } else if (threatAnalysis.score >= 20) {
         threatAnalysis.verdict = 'warning';
       }
-
+      
       // Store threat analysis
       if (env.KV_EMAIL_SECURITY) {
         await env.KV_EMAIL_SECURITY.put(`threat:${messageId}`, JSON.stringify(threatAnalysis), {
           expirationTtl: 2592000 // 30 days
         });
       }
-
+      
       // Handle threats based on verdict
       if (threatAnalysis.verdict === 'malicious' && config.blockThreats) {
         // Block the email
         await logThreatAction(threatAnalysis, 'blocked', env);
         return; // Don't forward
       }
-
+      
       if ((threatAnalysis.verdict === 'malicious' || threatAnalysis.verdict === 'suspicious') && config.quarantineThreats) {
         // Quarantine the email
         await quarantineEmail(message, threatAnalysis, env);
         await logThreatAction(threatAnalysis, 'quarantined', env);
         return; // Don't forward
       }
-
+      
       // Add security headers for warnings
       if (threatAnalysis.verdict === 'warning') {
         message.headers.set('X-Threat-Score', threatAnalysis.score.toString());
         message.headers.set('X-Threat-Verdict', threatAnalysis.verdict);
       }
-
+      
       // Forward the message
       await message.forward(message.to);
-
+      
       // Log the analysis
       await logThreatAction(threatAnalysis, 'allowed', env);
-
+      
     } catch (error) {
       console.error('Threat scanner error:', error);
       await message.forward(message.to);
@@ -110,14 +110,14 @@ export default {
 
 async function checkSenderReputation(from, env) {
   const domain = from.split('@')[1];
-
+  
   // Check against known threat domains
   const threatDomains = [
     'suspicious-domain.com',
     'phishing-site.net',
     'malware-host.org'
   ];
-
+  
   if (threatDomains.includes(domain)) {
     return {
       type: 'sender_reputation',
@@ -126,7 +126,7 @@ async function checkSenderReputation(from, env) {
       severity: 'high'
     };
   }
-
+  
   // Check SPF/DKIM if available
   if (env.KV_EMAIL_SECURITY) {
     const reputationData = await env.KV_EMAIL_SECURITY.get(`reputation:${domain}`, 'json');
@@ -139,13 +139,13 @@ async function checkSenderReputation(from, env) {
       };
     }
   }
-
+  
   return null;
 }
 
 async function analyzeContent(bodyText, subject, config, env) {
   const threats = [];
-
+  
   // Check for phishing indicators
   if (config.phishingDetection) {
     const phishingIndicators = [
@@ -156,17 +156,17 @@ async function analyzeContent(bodyText, subject, config, env) {
       /congratulations.{0,20}you.{0,20}have.{0,20}won/i,
       /limited.{0,20}time.{0,20}offer/i
     ];
-
+    
     let phishingScore = 0;
     const foundIndicators = [];
-
+    
     phishingIndicators.forEach(pattern => {
       if (pattern.test(bodyText) || pattern.test(subject)) {
         phishingScore += 15;
         foundIndicators.push(pattern.source);
       }
     });
-
+    
     if (phishingScore > 0) {
       threats.push({
         type: 'phishing',
@@ -177,14 +177,14 @@ async function analyzeContent(bodyText, subject, config, env) {
       });
     }
   }
-
+  
   // Check for sensitive information patterns
   const sensitivePatterns = [
     { pattern: /\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}/g, type: 'credit_card' },
     { pattern: /\d{3}[-\s]?\d{2}[-\s]?\d{4}/g, type: 'ssn' },
     { pattern: /password\s*[:=]\s*\S+/gi, type: 'password' }
   ];
-
+  
   sensitivePatterns.forEach(({ pattern, type }) => {
     const matches = bodyText.match(pattern);
     if (matches) {
@@ -197,7 +197,7 @@ async function analyzeContent(bodyText, subject, config, env) {
       });
     }
   });
-
+  
   // Use AI for advanced content analysis if available
   if (config.malwareDetection && env.AI) {
     try {
@@ -209,13 +209,11 @@ async function analyzeContent(bodyText, subject, config, env) {
           },
           {
             role: 'user',
-            content: `Subject: ${subject}
-
-Body: ${bodyText.substring(0, 1000)}`
+            content: `Subject: ${subject}\n\nBody: ${bodyText.substring(0, 1000)}`
           }
         ]
       });
-
+      
       if (aiAnalysis.response) {
         try {
           const aiResult = JSON.parse(aiAnalysis.response);
@@ -236,7 +234,7 @@ Body: ${bodyText.substring(0, 1000)}`
       console.error('AI analysis failed:', error);
     }
   }
-
+  
   return threats;
 }
 
@@ -244,18 +242,18 @@ async function scanLinks(bodyText, env) {
   const threats = [];
   const urlRegex = /(https?:\/\/[^\s<>\"]+)/gi;
   const urls = bodyText.match(urlRegex) || [];
-
+  
   for (const url of urls) {
     try {
       const domain = new URL(url).hostname;
-
+      
       // Check against known malicious domains
       const maliciousDomains = [
         'malware-site.com',
         'phishing-domain.net',
         'suspicious-link.org'
       ];
-
+      
       if (maliciousDomains.includes(domain)) {
         threats.push({
           type: 'malicious_link',
@@ -266,7 +264,7 @@ async function scanLinks(bodyText, env) {
         });
         continue;
       }
-
+      
       // Check for suspicious patterns
       if (domain.includes('bit.ly') || domain.includes('tinyurl') || domain.includes('goo.gl')) {
         threats.push({
@@ -277,7 +275,7 @@ async function scanLinks(bodyText, env) {
           details: { url, domain }
         });
       }
-
+      
       // Check for URL spoofing
       if (domain.includes('paypal') && !domain.endsWith('paypal.com')) {
         threats.push({
@@ -288,27 +286,27 @@ async function scanLinks(bodyText, env) {
           details: { url, domain }
         });
       }
-
+      
     } catch (error) {
       console.error(`Error analyzing URL ${url}:`, error);
     }
   }
-
+  
   return threats;
 }
 
 async function scanAttachments(parts, env) {
   const threats = [];
-
+  
   for (const part of parts) {
     if (part.filename) {
       const extension = part.filename.split('.').pop()?.toLowerCase();
-
+      
       // Check for dangerous file extensions
       const dangerousExtensions = [
         'exe', 'bat', 'com', 'cmd', 'pif', 'scr', 'vbs', 'js', 'jar', 'ps1'
       ];
-
+      
       if (dangerousExtensions.includes(extension)) {
         threats.push({
           type: 'dangerous_attachment',
@@ -318,7 +316,7 @@ async function scanAttachments(parts, env) {
           details: { filename: part.filename, extension }
         });
       }
-
+      
       // Check for double extensions
       if (part.filename.split('.').length > 2) {
         threats.push({
@@ -331,13 +329,13 @@ async function scanAttachments(parts, env) {
       }
     }
   }
-
+  
   return threats;
 }
 
 async function quarantineEmail(message, threatAnalysis, env) {
   if (!env.KV_EMAIL_QUARANTINE) return;
-
+  
   const quarantineData = {
     messageId: threatAnalysis.messageId,
     from: message.from,
@@ -349,7 +347,7 @@ async function quarantineEmail(message, threatAnalysis, env) {
     verdict: threatAnalysis.verdict,
     body: await message.text()
   };
-
+  
   await env.KV_EMAIL_QUARANTINE.put(
     `quarantine:${threatAnalysis.messageId}`,
     JSON.stringify(quarantineData),
@@ -359,7 +357,7 @@ async function quarantineEmail(message, threatAnalysis, env) {
 
 async function logThreatAction(threatAnalysis, action, env) {
   if (!env.KV_EMAIL_SECURITY) return;
-
+  
   const logEntry = {
     messageId: threatAnalysis.messageId,
     timestamp: new Date().toISOString(),
@@ -368,7 +366,7 @@ async function logThreatAction(threatAnalysis, action, env) {
     score: threatAnalysis.score,
     verdict: threatAnalysis.verdict
   };
-
+  
   await env.KV_EMAIL_SECURITY.put(
     `log:${threatAnalysis.messageId}`,
     JSON.stringify(logEntry),

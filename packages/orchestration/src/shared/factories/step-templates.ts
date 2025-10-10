@@ -30,7 +30,7 @@ type _Priority = 'high' | 'low' | 'normal' | 'urgent';
 /**
  * Input schema for HTTP request steps (enhanced with modern validation)
  */
-export const HttpRequestInputSchema = z
+const HttpRequestInputSchema = z
   .object({
     body: z.unknown().optional(),
     cache: z.enum(['default', 'no-store', 'reload', 'no-cache', 'force-cache']).optional(),
@@ -59,7 +59,7 @@ export const HttpRequestInputSchema = z
 /**
  * Output schema for HTTP request steps (enhanced)
  */
-export const HttpRequestOutputSchema = z.object({
+const HttpRequestOutputSchema = z.object({
   cached: z.boolean().optional(),
   data: z.unknown(),
   duration: z.number(),
@@ -73,8 +73,8 @@ export const HttpRequestOutputSchema = z.object({
   url: z.string(),
 });
 
-export type HttpRequestInput = z.infer<typeof HttpRequestInputSchema>;
-export type HttpRequestOutput = z.infer<typeof HttpRequestOutputSchema>;
+type HttpRequestInput = z.infer<typeof HttpRequestInputSchema>;
+type HttpRequestOutput = z.infer<typeof HttpRequestOutputSchema>;
 
 // HTTP request utilities using functional programming
 const createHeaders =
@@ -104,7 +104,7 @@ const parseResponseData = async (response: Response): Promise<unknown> => {
 /**
  * Create an HTTP request step using modern functional patterns
  */
-export function createHttpRequestStep(
+function createHttpRequestStep(
   name: string,
   description?: string,
   customConfig?: {
@@ -137,16 +137,64 @@ export function createHttpRequestStep(
           ? await customConfig.interceptors.request(input)
           : input;
 
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), processedInput.timeout);
+        // Create timeout signal with modern AbortSignal.timeout if available, otherwise fallback
+        const createTimeoutSignal = (ms: number) => {
+          if (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) {
+            try {
+              return AbortSignal.timeout(ms);
+            } catch {
+              // Fallback if AbortSignal.timeout fails
+            }
+          }
 
-        // Combine abort signals using modern approach
-        const signals = [controller.signal, abortSignal, processedInput.signal].filter(Boolean);
+          // Manual fallback implementation
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => {
+            controller.abort(new DOMException('Operation timed out', 'TimeoutError'));
+          }, ms);
+
+          // Cleanup timeout on abort
+          controller.signal.addEventListener(
+            'abort',
+            () => {
+              clearTimeout(timeoutId);
+            },
+            { once: true },
+          );
+
+          return controller.signal;
+        };
+
+        const timeoutSignal = createTimeoutSignal(processedInput.timeout);
+
+        // Combine abort signals
+        const signals = [timeoutSignal, abortSignal, processedInput.signal].filter(Boolean);
+        let combinedSignal = timeoutSignal;
+
         if (signals.length > 1) {
-          // Use AbortSignal.any if available (newer browsers), otherwise manual combination
-          const _combinedSignal = (AbortSignal as any).any?.(signals) ?? controller.signal;
-          if (!AbortSignal.any && abortSignal) {
-            abortSignal.addEventListener('abort', () => controller.abort());
+          // Use AbortSignal.any if available, otherwise manual combination
+          if (typeof AbortSignal !== 'undefined' && (AbortSignal as any).any) {
+            try {
+              combinedSignal = (AbortSignal as any).any(signals);
+            } catch {
+              // Fallback to manual combination
+              const controller = new AbortController();
+              signals.forEach(signal => {
+                if (signal && !signal.aborted) {
+                  signal.addEventListener('abort', () => controller.abort(), { once: true });
+                }
+              });
+              combinedSignal = controller.signal;
+            }
+          } else {
+            // Manual combination fallback
+            const controller = new AbortController();
+            signals.forEach(signal => {
+              if (signal && !signal.aborted) {
+                signal.addEventListener('abort', () => controller.abort(), { once: true });
+              }
+            });
+            combinedSignal = controller.signal;
           }
         }
 
@@ -162,10 +210,8 @@ export function createHttpRequestStep(
           method: processedInput.method,
           mode: processedInput.mode,
           redirect: processedInput.followRedirects ? 'follow' : 'manual',
-          signal: controller.signal,
+          signal: combinedSignal,
         });
-
-        clearTimeout(timeoutId);
 
         const duration = Date.now() - startTime;
 
@@ -298,7 +344,7 @@ const createQueryContext = (query: string, parameters: any[] = []) => ({
 /**
  * Enhanced input schema for database query steps
  */
-export const DatabaseQueryInputSchema = z
+const DatabaseQueryInputSchema = z
   .object({
     connection: z.string().optional(),
     maxRows: z.number().positive().optional(),
@@ -317,7 +363,7 @@ export const DatabaseQueryInputSchema = z
 /**
  * Enhanced output schema for database query steps
  */
-export const DatabaseQueryOutputSchema = z.object({
+const DatabaseQueryOutputSchema = z.object({
   // Modern additions
   affectedRows: z.number().optional(),
   duration: z.number(),
@@ -329,13 +375,13 @@ export const DatabaseQueryOutputSchema = z.object({
   warnings: z.array(z.string()).optional(),
 });
 
-export type DatabaseQueryInput = z.infer<typeof DatabaseQueryInputSchema>;
-export type DatabaseQueryOutput = z.infer<typeof DatabaseQueryOutputSchema>;
+type DatabaseQueryInput = z.infer<typeof DatabaseQueryInputSchema>;
+type DatabaseQueryOutput = z.infer<typeof DatabaseQueryOutputSchema>;
 
 /**
  * Create a database query step using modern functional patterns
  */
-export function createDatabaseQueryStep(
+function createDatabaseQueryStep(
   name: string,
   description?: string,
   customConfig?: {
@@ -503,7 +549,7 @@ export function createDatabaseQueryStep(
 /**
  * Input schema for file processing steps
  */
-export const FileProcessingInputSchema = z.object({
+const FileProcessingInputSchema = z.object({
   encoding: z.string().default('utf-8'),
   filePath: z.string().min(1, 'File path is required'),
   operation: z.enum(['read', 'write', 'delete', 'copy', 'move', 'compress', 'decompress']),
@@ -514,7 +560,7 @@ export const FileProcessingInputSchema = z.object({
 /**
  * Output schema for file processing steps
  */
-export const FileProcessingOutputSchema = z.object({
+const FileProcessingOutputSchema = z.object({
   content: z.unknown().optional(),
   filePath: z.string(),
   metadata: z.record(z.string(), z.unknown()).optional(),
@@ -522,13 +568,13 @@ export const FileProcessingOutputSchema = z.object({
   success: z.boolean(),
 });
 
-export type FileProcessingInput = z.infer<typeof FileProcessingInputSchema>;
-export type FileProcessingOutput = z.infer<typeof FileProcessingOutputSchema>;
+type FileProcessingInput = z.infer<typeof FileProcessingInputSchema>;
+type FileProcessingOutput = z.infer<typeof FileProcessingOutputSchema>;
 
 /**
  * Create a file processing step
  */
-export function createFileProcessingStep(
+function createFileProcessingStep(
   name: string,
   description?: string,
   customConfig?: {
@@ -607,7 +653,7 @@ export function createFileProcessingStep(
 /**
  * Input schema for notification steps
  */
-export const NotificationInputSchema = z.object({
+const NotificationInputSchema = z.object({
   attachments: z
     .array(
       z.object({
@@ -628,7 +674,7 @@ export const NotificationInputSchema = z.object({
 /**
  * Output schema for notification steps
  */
-export const NotificationOutputSchema = z.object({
+const NotificationOutputSchema = z.object({
   cost: z.number().optional(),
   deliveryStatus: z.record(z.string(), z.string()),
   messageId: z.string().optional(),
@@ -636,13 +682,13 @@ export const NotificationOutputSchema = z.object({
   sent: z.boolean(),
 });
 
-export type NotificationInput = z.infer<typeof NotificationInputSchema>;
-export type NotificationOutput = z.infer<typeof NotificationOutputSchema>;
+type NotificationInput = z.infer<typeof NotificationInputSchema>;
+type NotificationOutput = z.infer<typeof NotificationOutputSchema>;
 
 /**
  * Create a notification step
  */
-export function createNotificationStep(
+function createNotificationStep(
   name: string,
   description?: string,
   customConfig?: {
@@ -729,7 +775,7 @@ export function createNotificationStep(
 /**
  * Input schema for data transformation steps
  */
-export const DataTransformationInputSchema = z.object({
+const DataTransformationInputSchema = z.object({
   data: z.unknown(),
   options: z
     .object({
@@ -749,7 +795,7 @@ export const DataTransformationInputSchema = z.object({
 /**
  * Output schema for data transformation steps
  */
-export const DataTransformationOutputSchema = z.object({
+const DataTransformationOutputSchema = z.object({
   data: z.unknown(),
   errors: z
     .array(
@@ -764,13 +810,13 @@ export const DataTransformationOutputSchema = z.object({
   transformedCount: z.number(),
 });
 
-export type DataTransformationInput = z.infer<typeof DataTransformationInputSchema>;
-export type DataTransformationOutput = z.infer<typeof DataTransformationOutputSchema>;
+type DataTransformationInput = z.infer<typeof DataTransformationInputSchema>;
+type DataTransformationOutput = z.infer<typeof DataTransformationOutputSchema>;
 
 /**
  * Create a data transformation step
  */
-export function createDataTransformationStep(
+function createDataTransformationStep(
   name: string,
   description?: string,
   customConfig?: {
@@ -910,7 +956,7 @@ export function createDataTransformationStep(
 /**
  * Input schema for conditional steps
  */
-export const ConditionalInputSchema = z.object({
+const ConditionalInputSchema = z.object({
   condition: z.object({
     customFunction: z.string().optional(), // For custom conditions
     left: z.unknown(),
@@ -933,19 +979,19 @@ export const ConditionalInputSchema = z.object({
 /**
  * Output schema for conditional steps
  */
-export const ConditionalOutputSchema = z.object({
+const ConditionalOutputSchema = z.object({
   conditionMet: z.boolean(),
   evaluationDetails: z.record(z.string(), z.unknown()).optional(),
   nextSteps: z.array(z.string()).optional(),
 });
 
-export type ConditionalInput = z.infer<typeof ConditionalInputSchema>;
-export type ConditionalOutput = z.infer<typeof ConditionalOutputSchema>;
+type ConditionalInput = z.infer<typeof ConditionalInputSchema>;
+type ConditionalOutput = z.infer<typeof ConditionalOutputSchema>;
 
 /**
  * Create a batch processing step using async generators
  */
-export function createBatchProcessingStep<TInput, TOutput>(
+function createBatchProcessingStep<TInput, TOutput>(
   name: string,
   batchProcessor: (batch: TInput[]) => Promise<TOutput[]>,
   options: {
@@ -1032,7 +1078,7 @@ export function createBatchProcessingStep<TInput, TOutput>(
 /**
  * Create a conditional step
  */
-export function createConditionalStep(
+function createConditionalStep(
   name: string,
   description?: string,
   customConfig?: {
@@ -1157,7 +1203,7 @@ export function createConditionalStep(
 /**
  * Create a delay/sleep step
  */
-export function createDelayStep(
+function createDelayStep(
   name: string,
   delayMs: number,
   description?: string,
@@ -1177,16 +1223,67 @@ export function createDelayStep(
       const startTime = Date.now();
 
       try {
-        await new Promise((resolve, reject: any) => {
-          const timeout = setTimeout(resolve, delay);
+        // Use modern AbortSignal.timeout with timers/promises if available
+        if (
+          typeof AbortSignal !== 'undefined' &&
+          Object.hasOwn(AbortSignal, 'timeout') &&
+          typeof (globalThis as any).importScripts === 'undefined'
+        ) {
+          try {
+            const { setTimeout: promiseTimeout } = await import('timers/promises');
+            const timeoutSignal = AbortSignal.timeout(delay);
 
-          if (context.abortSignal) {
-            context.abortSignal.addEventListener('abort', () => {
-              clearTimeout(timeout);
-              reject(new Error('Delay aborted'));
+            // Combine with external abort signal
+            let signal = timeoutSignal;
+            if (context.abortSignal) {
+              if ((AbortSignal as any).any) {
+                signal = (AbortSignal as any).any([timeoutSignal, context.abortSignal]);
+              } else {
+                const controller = new AbortController();
+                [timeoutSignal, context.abortSignal].forEach(s => {
+                  if (s && !s.aborted) {
+                    s.addEventListener('abort', () => controller.abort(), { once: true });
+                  }
+                });
+                signal = controller.signal;
+              }
+            }
+
+            await promiseTimeout(delay, undefined, { signal });
+          } catch (_error) {
+            // If import fails or AbortSignal.timeout fails, use fallback
+            await new Promise((resolve, reject: any) => {
+              const timeout = setTimeout(resolve, delay);
+
+              if (context.abortSignal) {
+                context.abortSignal.addEventListener(
+                  'abort',
+                  () => {
+                    clearTimeout(timeout);
+                    reject(new Error('Delay aborted'));
+                  },
+                  { once: true },
+                );
+              }
             });
           }
-        });
+        } else {
+          // Fallback implementation
+          await new Promise((resolve, reject: any) => {
+            const timeout = setTimeout(resolve, delay);
+
+            if (context.abortSignal) {
+              context.abortSignal.addEventListener(
+                'abort',
+                () => {
+                  clearTimeout(timeout);
+                  reject(new Error('Delay aborted'));
+                },
+                { once: true },
+              );
+            }
+          });
+        }
 
         const actualDelay = Date.now() - startTime;
 
@@ -1228,7 +1325,7 @@ export function createDelayStep(
 /**
  * Create a map-reduce step using functional programming
  */
-export function createMapReduceStep<TInput, TMapped, TOutput>(
+function createMapReduceStep<TInput, TMapped, TOutput>(
   name: string,
   mapper: (item: TInput) => Promise<TMapped> | TMapped,
   reducer: (accumulator: TOutput, current: TMapped) => TOutput,

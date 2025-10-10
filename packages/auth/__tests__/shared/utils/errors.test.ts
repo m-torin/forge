@@ -2,91 +2,91 @@
  * Tests for shared error utilities
  */
 
-import { describe, expect } from 'vitest';
+import { describe, expect } from "vitest";
 
-describe('error utilities', () => {
-  describe('getErrorMessage', () => {
-    test('should extract message from Error instance', async () => {
-      const errorsModule = await import('../../src/shared/utils/errors');
+describe("error utilities", () => {
+  describe("getErrorMessage", () => {
+    test("should extract message from Error instance", async () => {
+      const errorsModule = await import("../../src/shared/utils/errors");
 
-      const error = new Error('Test error message');
+      const error = new Error("Test error message");
       const message = errorsModule.getErrorMessage(error);
 
-      expect(message).toBe('Test error message');
+      expect(message).toBe("Test error message");
     });
 
-    test('should return default message for non-Error values', async () => {
-      const errorsModule = await import('../../src/shared/utils/errors');
+    test("should return default message for non-Error values", async () => {
+      const errorsModule = await import("../../src/shared/utils/errors");
 
-      const message = errorsModule.getErrorMessage('string error');
+      const message = errorsModule.getErrorMessage("string error");
 
-      expect(message).toBe('An error occurred');
+      expect(message).toBe("An error occurred");
     });
 
-    test('should return custom default message', async () => {
-      const errorsModule = await import('../../src/shared/utils/errors');
+    test("should return custom default message", async () => {
+      const errorsModule = await import("../../src/shared/utils/errors");
 
-      const customDefault = 'Custom default message';
+      const customDefault = "Custom default message";
       const message = errorsModule.getErrorMessage(null, customDefault);
 
       expect(message).toBe(customDefault);
     });
 
-    test('should handle undefined error', async () => {
-      const errorsModule = await import('../../src/shared/utils/errors');
+    test("should handle undefined error", async () => {
+      const errorsModule = await import("../../src/shared/utils/errors");
 
       const message = errorsModule.getErrorMessage(undefined);
 
-      expect(message).toBe('An error occurred');
+      expect(message).toBe("An error occurred");
     });
 
-    test('should handle object that is not Error', async () => {
-      const errorsModule = await import('../../src/shared/utils/errors');
+    test("should handle object that is not Error", async () => {
+      const errorsModule = await import("../../src/shared/utils/errors");
 
       const message = errorsModule.getErrorMessage({ notAnError: true });
 
-      expect(message).toBe('An error occurred');
+      expect(message).toBe("An error occurred");
     });
 
-    test('should handle number error', async () => {
-      const errorsModule = await import('../../src/shared/utils/errors');
+    test("should handle number error", async () => {
+      const errorsModule = await import("../../src/shared/utils/errors");
 
       const message = errorsModule.getErrorMessage(404);
 
-      expect(message).toBe('An error occurred');
+      expect(message).toBe("An error occurred");
     });
   });
 
-  describe('createErrorResponse', () => {
-    test('should create error response with Error instance', async () => {
-      const errorsModule = await import('../../src/shared/utils/errors');
+  describe("createErrorResponse", () => {
+    test("should create error response with Error instance", async () => {
+      const errorsModule = await import("../../src/shared/utils/errors");
 
-      const error = new Error('Test error');
+      const error = new Error("Test error");
       const response = errorsModule.createErrorResponse(error);
 
       expect(response).toStrictEqual({
         success: false,
         data: null,
-        error: 'Test error',
+        error: "Test error",
       });
     });
 
-    test('should create error response with non-Error value', async () => {
-      const errorsModule = await import('../../src/shared/utils/errors');
+    test("should create error response with non-Error value", async () => {
+      const errorsModule = await import("../../src/shared/utils/errors");
 
-      const response = errorsModule.createErrorResponse('string error');
+      const response = errorsModule.createErrorResponse("string error");
 
       expect(response).toStrictEqual({
         success: false,
         data: null,
-        error: 'Operation failed',
+        error: "Operation failed",
       });
     });
 
-    test('should create error response with custom default message', async () => {
-      const errorsModule = await import('../../src/shared/utils/errors');
+    test("should create error response with custom default message", async () => {
+      const errorsModule = await import("../../src/shared/utils/errors");
 
-      const customDefault = 'Custom operation failed';
+      const customDefault = "Custom operation failed";
       const response = errorsModule.createErrorResponse(null, customDefault);
 
       expect(response).toStrictEqual({
@@ -96,21 +96,21 @@ describe('error utilities', () => {
       });
     });
 
-    test('should handle typed error response', async () => {
-      const errorsModule = await import('../../src/shared/utils/errors');
+    test("should handle typed error response", async () => {
+      const errorsModule = await import("../../src/shared/utils/errors");
 
       interface UserData {
         id: string;
         name: string;
       }
 
-      const error = new Error('User not found');
+      const error = new Error("User not found");
       const response = errorsModule.createErrorResponse<UserData>(error);
 
       expect(response).toStrictEqual({
         success: false,
         data: null,
-        error: 'User not found',
+        error: "User not found",
       });
 
       // Type assertion to verify TypeScript types
@@ -118,35 +118,35 @@ describe('error utilities', () => {
       expect(response.data).toBeNull();
     });
 
-    test('should create error response with undefined error', async () => {
-      const errorsModule = await import('../../src/shared/utils/errors');
+    test("should create error response with undefined error", async () => {
+      const errorsModule = await import("../../src/shared/utils/errors");
 
       const response = errorsModule.createErrorResponse(undefined);
 
       expect(response).toStrictEqual({
         success: false,
         data: null,
-        error: 'Operation failed',
+        error: "Operation failed",
       });
     });
   });
 
-  describe('createSuccessResponse', () => {
-    test('should create success response with data', async () => {
-      const errorsModule = await import('../../src/shared/utils/errors');
+  describe("createSuccessResponse", () => {
+    test("should create success response with data", async () => {
+      const errorsModule = await import("../../src/shared/utils/errors");
 
-      const data = { id: '1', name: 'Test User' };
+      const data = { id: "1", name: "Test User" };
       const response = errorsModule.createSuccessResponse(data);
 
       expect(response).toStrictEqual({
         success: true,
-        data: { id: '1', name: 'Test User' },
+        data: { id: "1", name: "Test User" },
         error: undefined,
       });
     });
 
-    test('should create success response with null data', async () => {
-      const errorsModule = await import('../../src/shared/utils/errors');
+    test("should create success response with null data", async () => {
+      const errorsModule = await import("../../src/shared/utils/errors");
 
       const response = errorsModule.createSuccessResponse(null);
 
@@ -157,20 +157,20 @@ describe('error utilities', () => {
       });
     });
 
-    test('should create success response with string data', async () => {
-      const errorsModule = await import('../../src/shared/utils/errors');
+    test("should create success response with string data", async () => {
+      const errorsModule = await import("../../src/shared/utils/errors");
 
-      const response = errorsModule.createSuccessResponse('success message');
+      const response = errorsModule.createSuccessResponse("success message");
 
       expect(response).toStrictEqual({
         success: true,
-        data: 'success message',
+        data: "success message",
         error: undefined,
       });
     });
 
-    test('should create success response with array data', async () => {
-      const errorsModule = await import('../../src/shared/utils/errors');
+    test("should create success response with array data", async () => {
+      const errorsModule = await import("../../src/shared/utils/errors");
 
       const data = [{ id: 1 }, { id: 2 }];
       const response = errorsModule.createSuccessResponse(data);
@@ -182,8 +182,8 @@ describe('error utilities', () => {
       });
     });
 
-    test('should create success response with boolean data', async () => {
-      const errorsModule = await import('../../src/shared/utils/errors');
+    test("should create success response with boolean data", async () => {
+      const errorsModule = await import("../../src/shared/utils/errors");
 
       const response = errorsModule.createSuccessResponse(true);
 
@@ -194,8 +194,8 @@ describe('error utilities', () => {
       });
     });
 
-    test('should preserve type information', async () => {
-      const errorsModule = await import('../../src/shared/utils/errors');
+    test("should preserve type information", async () => {
+      const errorsModule = await import("../../src/shared/utils/errors");
 
       interface ApiResponse {
         users: Array<{ id: string; name: string }>;
@@ -203,7 +203,7 @@ describe('error utilities', () => {
       }
 
       const data: ApiResponse = {
-        users: [{ id: '1', name: 'John' }],
+        users: [{ id: "1", name: "John" }],
         total: 1,
       };
 

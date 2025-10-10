@@ -2,12 +2,12 @@
  * Vitest setup for auth package tests
  */
 
-import { setupNextMocks } from '@repo/qa/vitest/mocks/internal/next';
-import { cleanup } from '@testing-library/react';
-import { afterEach, beforeEach, vi } from 'vitest';
+import { setupNextMocks } from "@repo/qa/vitest/mocks/internal/next";
+import { cleanup } from "@testing-library/react";
+import { afterEach, beforeEach, vi } from "vitest";
 
-import { resetMocks } from './mocks/auth';
-import { restoreGlobals } from './utilities/factories';
+import { resetMocks } from "./mocks/auth";
+import { restoreGlobals } from "./utilities/factories";
 
 // Setup global test environment
 beforeEach(() => {
@@ -15,16 +15,16 @@ beforeEach(() => {
   resetMocks();
 
   // Mock console to reduce noise in tests
-  vi.spyOn(console, 'error').mockImplementation(() => {});
-  vi.spyOn(console, 'warn').mockImplementation(() => {});
+  vi.spyOn(console, "error").mockImplementation(() => {});
+  vi.spyOn(console, "warn").mockImplementation(() => {});
 
   // Mock fetch globally
   global.fetch = vi.fn();
 
   // Mock environment variables
-  vi.stubEnv('BETTER_AUTH_SECRET', 'test-secret');
-  vi.stubEnv('DATABASE_URL', 'postgresql://test:test@localhost:5432/test');
-  vi.stubEnv('NEXT_PUBLIC_APP_URL', 'http://localhost:3000');
+  vi.stubEnv("BETTER_AUTH_SECRET", "test-secret");
+  vi.stubEnv("DATABASE_URL", "postgresql://test:test@localhost:5432/test");
+  vi.stubEnv("NEXT_PUBLIC_APP_URL", "http://localhost:3000");
 
   // Setup centralized Next.js mocks
   setupNextMocks();
@@ -45,7 +45,7 @@ afterEach(() => {
 });
 
 // Mock Better Auth
-vi.mock('better-auth', () => ({
+vi.mock("better-auth", () => ({
   BetterAuth: vi.fn().mockImplementation(() => ({
     api: {
       createApiKey: vi.fn(),
@@ -67,12 +67,12 @@ vi.mock('better-auth', () => ({
 }));
 
 // Mock Better Auth cookies
-vi.mock('better-auth/cookies', () => ({
-  getSessionCookie: vi.fn().mockReturnValue('mock-session-cookie'),
+vi.mock("better-auth/cookies", () => ({
+  getSessionCookie: vi.fn().mockReturnValue("mock-session-cookie"),
 }));
 
 // Mock database
-vi.mock('@repo/database', () => ({
+vi.mock("@repo/db-prisma", () => ({
   database: {
     apiKey: {
       count: vi.fn(),
@@ -151,7 +151,7 @@ declare global {
 global.testUtils = {
   createMockResponse: (data: any, status = 200) => {
     return new Response(JSON.stringify(data), {
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
       status,
     });
   },

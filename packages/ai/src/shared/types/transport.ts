@@ -8,7 +8,7 @@ export interface V5TransportConfig {
   url?: string;
   headers?: Record<string, string> | Headers;
   body?: Record<string, unknown>;
-  credentials?: 'omit' | 'same-origin' | 'include';
+  credentials?: "omit" | "same-origin" | "include";
   fetch?: typeof globalThis.fetch;
 }
 
@@ -24,7 +24,7 @@ export interface BaseAIHookOptions {
   // Legacy options for backward compatibility
   headers?: Record<string, string> | Headers;
   body?: Record<string, unknown>;
-  credentials?: 'omit' | 'same-origin' | 'include';
+  credentials?: "omit" | "same-origin" | "include";
   fetch?: typeof globalThis.fetch;
 
   // Common callback options
@@ -42,7 +42,7 @@ export function mergeTransportConfig(
   api: string;
   headers?: Record<string, string> | Headers;
   body?: Record<string, unknown>;
-  credentials?: 'omit' | 'same-origin' | 'include';
+  credentials?: "omit" | "same-origin" | "include";
   fetch?: typeof globalThis.fetch;
 } {
   const { transport, api = defaultApi } = options;

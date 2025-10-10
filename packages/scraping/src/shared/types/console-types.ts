@@ -10,7 +10,7 @@ export type ConsoleConfig = ConsoleProviderConfig;
 /**
  * Console log entry
  */
-export interface ConsoleLogEntry {
+interface _ConsoleLogEntry {
   data?: any;
   level: 'debug' | 'error' | 'info' | 'warn';
   message: string;
@@ -20,7 +20,7 @@ export interface ConsoleLogEntry {
 /**
  * Console mock configuration
  */
-export interface ConsoleMockConfig {
+interface _ConsoleMockConfig {
   delay?: number;
   enableMocking?: boolean;
   failureMessage?: string;
@@ -31,7 +31,7 @@ export interface ConsoleMockConfig {
 /**
  * Console operation result
  */
-export interface ConsoleOperationResult {
+interface _ConsoleOperationResult {
   details?: any;
   duration: number;
   message: string;
@@ -61,7 +61,7 @@ export interface ConsoleScrapeOptions extends ScrapeOptions {
 /**
  * Console scraping result
  */
-export interface ConsoleScrapeResult extends ScrapeResult {
+interface _ConsoleScrapeResult extends ScrapeResult {
   logged: boolean;
   logLevel: string;
   timestamp: number;

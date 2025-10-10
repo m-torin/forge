@@ -84,6 +84,7 @@ export const setupCommonMocks = () => {
   // Mock Better Auth plugins
   vi.mock('better-auth/plugins', () => ({
     admin: vi.fn(() => ({})),
+    anonymous: vi.fn(() => ({})),
     apiKey: vi.fn(() => ({})),
     bearer: vi.fn(() => ({})),
     csrf: vi.fn(() => ({})),
@@ -223,17 +224,17 @@ export const setupCommonMocks = () => {
   }));
 
   // Mock database
-  vi.mock('@repo/database', () => ({
+  vi.mock('@repo/db-prisma', () => ({
     db: mockPrisma,
   }));
 
   // Alternative database mock path
-  vi.mock('@repo/database/prisma', () => ({
+  vi.mock('@repo/db-prisma/client', () => ({
     prisma: mockPrisma,
   }));
 
   // Mock database server path
-  vi.mock('@repo/database/prisma/server/next', () => ({
+  vi.mock('../../src/shared/prisma', () => ({
     prisma: mockPrisma,
   }));
 
@@ -280,7 +281,7 @@ export const setupCommonMocks = () => {
   }));
 
   // Mock client utils
-  vi.mock('../../src/client/utils/logger', () => ({
+  vi.mock('#/client/utils/logger', () => ({
     logger: {
       info: vi.fn(),
       error: vi.fn(),
@@ -290,7 +291,7 @@ export const setupCommonMocks = () => {
   }));
 
   // Mock auth client
-  vi.mock('../../src/client/client', () => ({
+  vi.mock('#/client/client', () => ({
     authClient: {
       signIn: {
         email: vi.fn().mockResolvedValue({ success: true }),
@@ -323,7 +324,7 @@ export const setupCommonMocks = () => {
 export const setupEnvironmentMocks = () => {
   // Set up test environment
   // Set NODE_ENV directly without defineProperty
-  process.env.NODE_ENV = 'test';
+  (process.env as any).NODE_ENV = 'test';
   process.env.CI = 'true';
   process.env.SKIP_ENV_VALIDATION = 'true';
 

@@ -16,15 +16,15 @@ monorepo.
 
 <CardGroup cols={2}>
   <Card title="ESLint Configuration" icon="shield-check">
-    **@repo/eslint-config** - Comprehensive ESLint rules using ESLint 9 flat
-    config system
+    **@repo/config-eslint** - Comprehensive ESLint rules with 1,500+ lines of
+    configuration
   </Card>
   <Card title="Build Configuration" icon="wrench">
     **@repo/config** - TypeScript, Next.js, Prettier, and Knip configurations
   </Card>
 </CardGroup>
 
-## @repo/eslint-config
+## @repo/config-eslint
 
 The most comprehensive configuration package in the Forge ecosystem, providing
 battle-tested ESLint configurations for modern TypeScript and React development.
@@ -35,25 +35,25 @@ battle-tested ESLint configurations for modern TypeScript and React development.
   <Tab title="Next.js Apps">
     ```typescript
     // eslint.config.ts
-    import nextConfig from '@repo/eslint-config/next';
+    import nextConfig from '@repo/config-eslint/next';
     export default nextConfig;
     ```
   </Tab>
 
 <Tab title="React Packages">
   ```typescript // eslint.config.ts import reactPackageConfig from
-  '@repo/eslint-config/react-package'; export default reactPackageConfig; ```
+  '@repo/config-eslint/react-package'; export default reactPackageConfig; ```
 </Tab>
 
 <Tab title="Node.js Packages">
   ```typescript // eslint.config.ts import packageConfig from
-  '@repo/eslint-config/package'; export default packageConfig; ```
+  '@repo/config-eslint/package'; export default packageConfig; ```
 </Tab>
 
   <Tab title="Server Applications">
     ```typescript
     // eslint.config.ts
-    import serverConfig from '@repo/eslint-config/server';
+    import serverConfig from '@repo/config-eslint/server';
     export default serverConfig;
     ```
   </Tab>
@@ -68,33 +68,32 @@ battle-tested ESLint configurations for modern TypeScript and React development.
 | `package`       | Node.js packages          | Import rules, TypeScript integration, performance              |
 | `server`        | Server applications       | Node.js best practices, security rules                         |
 | `remix`         | Remix applications        | Remix-specific patterns, React Router                          |
-| `.` (base)      | Base TypeScript projects  | Core TypeScript, security, imports, code quality               |
 
 ### Rule Categories
 
-#### Core Rules
+#### Core Rules (600+ rules)
 
 - **TypeScript**: Strict type checking, naming conventions, performance
 - **Import/Export**: Module resolution, dependency management, tree-shaking
 - **Code Quality**: Complexity, maintainability, readability
+- **Performance**: Bundle optimization, runtime performance
+
+#### React Rules (400+ rules)
+
+- **Hooks**: Dependency arrays, rules of hooks, custom hook patterns
+- **JSX**: Accessibility, performance, best practices
+- **Component Patterns**: Prop types, composition, lifecycle
+
+#### Security & Best Practices (300+ rules)
+
 - **Security**: XSS prevention, safe patterns, vulnerability detection
+- **Node.js**: File system, process management, async patterns
+- **Testing**: Jest patterns, test organization, mocking
 
-#### Framework-Specific Rules
+#### Advanced Features (200+ rules)
 
-- **React**: Hooks validation, JSX best practices, component patterns
-- **Next.js**: App Router patterns, performance optimizations, Server Components
-- **Node.js**: File system security, process management, async patterns
-
-#### Testing & Quality Assurance
-
-- **Vitest**: Test structure, assertion preferences, async testing
-- **Playwright**: E2E testing patterns, web-first assertions
-- **Testing Library**: Query best practices, semantic matchers
-
-#### Code Organization
-
-- **Import Sorting**: Automatic import organization with perfectionist
 - **Promise Handling**: Async/await patterns, error handling
+- **Perfectionist**: Code organization, sorting, formatting
 - **Accessibility**: WCAG compliance, screen reader support
 
 ### Custom Rules & Overrides
@@ -107,7 +106,7 @@ The configuration includes custom rules for Forge-specific patterns:
   'import/no-restricted-paths': [
     'error',
     {
-      zones: [
+      'no-app-imports': [
         {
           target: './packages/*/src/**',
           from: './apps/**',
@@ -164,7 +163,7 @@ Provides essential build and development configurations for the entire monorepo.
     }
     ```
   </Tab>
-  
+
   <Tab title="React Library">
     ```json
     // For React component libraries
@@ -178,7 +177,7 @@ Provides essential build and development configurations for the entire monorepo.
     }
     ```
   </Tab>
-  
+
   <Tab title="Node.js Package">
     ```json
     // For server-side packages
@@ -196,65 +195,37 @@ Provides essential build and development configurations for the entire monorepo.
 
 ### Next.js Configuration
 
-Advanced Next.js configuration with performance optimizations, Prisma plugin,
-and PostHog analytics:
+Advanced Next.js configuration with performance optimizations:
 
 ```typescript
 // packages/config/src/next/index.ts
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // ESLint configuration
-  eslint: {
-    ignoreDuringBuilds: true
-  },
-
-  // Experimental features
+  // Performance optimizations
   experimental: {
-    typedRoutes: true,
-    forceSwcTransforms: true,
-    optimizePackageImports: ["@mantine/core", "@mantine/hooks"]
-  },
-
-  // Turbopack configuration
-  turbopack: {
-    rules: {
-      "*.svg": {
-        as: "*.js",
-        loaders: ["@svgr/webpack"]
+    optimizePackageImports: ["@mantine/core", "@mantine/hooks", "lucide-react"],
+    turbo: {
+      rules: {
+        "*.svg": {
+          loaders: ["@svgr/webpack"],
+          as: "*.js"
+        }
       }
     }
   },
 
-  // SWC compiler optimizations
-  compiler: {
-    reactRemoveProperties: isProd,
-    removeConsole: isProd ? { exclude: ["error", "warn"] } : false
-  },
-
-  // Image optimization
-  images: {
-    formats: ["image/avif", "image/webp"]
-  },
-
-  // PostHog analytics rewrites
-  async rewrites() {
-    return {
-      beforeFiles: [
-        {
-          source: "/ingest/static/:path*",
-          destination: "https://us-assets.i.posthog.com/static/:path*"
-        },
-        {
-          source: "/ingest/:path*",
-          destination: "https://us.i.posthog.com/:path*"
-        }
-      ]
-    };
-  },
-
-  // Comprehensive webpack configuration with Prisma plugin
-  webpack: webpackConfig
+  // Build optimizations
+  webpack: (config, { dev, isServer }) => {
+    if (!dev && !isServer) {
+      config.optimization.splitChunks.cacheGroups.vendor = {
+        test: /[\\/]node_modules[\\/]/,
+        name: "vendors",
+        chunks: "all"
+      };
+    }
+    return config;
+  }
 };
 
 export default nextConfig;
@@ -262,43 +233,28 @@ export default nextConfig;
 
 ### Prettier Configuration
 
-Consistent code formatting across the monorepo with comprehensive language
-support:
+Consistent code formatting across the monorepo:
 
 ```javascript
 // packages/config/src/prettier/index.mjs
 export default {
+  printWidth: 80,
+  tabWidth: 2,
+  useTabs: false,
   semi: true,
   singleQuote: true,
-  tabWidth: 2,
-  trailingComma: "all",
-  printWidth: 100,
+  quoteProps: "as-needed",
+  trailingComma: "es5",
   bracketSpacing: true,
-  endOfLine: "lf",
-  plugins: [
-    "prettier-plugin-organize-imports",
-    "prettier-plugin-tailwindcss",
-    "prettier-plugin-sh",
-    "prettier-plugin-packagejson"
-  ],
-  // Language-specific overrides for TypeScript, JSON, YAML, Markdown
-  overrides: [
-    {
-      files: ["*.ts", "*.tsx", "*.js", "*.jsx"],
-      options: {
-        arrowParens: "avoid",
-        trailingComma: "all"
-      }
-    },
-    {
-      files: "package*.json",
-      options: {
-        printWidth: 1000,
-        trailingComma: "none"
-      }
-    }
-    // Additional overrides for YAML, Markdown, shell scripts
-  ]
+  bracketSameLine: false,
+  arrowParens: "avoid",
+
+  // Plugin configurations
+  plugins: ["prettier-plugin-organize-imports", "prettier-plugin-tailwindcss"],
+
+  // Tailwind CSS class sorting
+  tailwindConfig: "./tailwind.config.ts",
+  tailwindFunctions: ["clsx", "cn", "cva"]
 };
 ```
 
@@ -308,25 +264,20 @@ Dead code detection and dependency analysis:
 
 ```json
 {
-  "entry": [
-    "src/index.{ts,tsx}",
-    "index.{ts,tsx}",
-    "keys.ts",
-    "types.ts",
-    "mocks.ts",
-    "**/*.config.{js,ts,mjs}",
-    "**/*.test.{ts,tsx}",
-    "**/*.stories.{ts,tsx}"
-  ],
-  "ignoreDependencies": ["@types/*"],
-  "project": [
-    "src/**/*.{ts,tsx}",
-    "lib/**/*.{ts,tsx}",
-    "components/**/*.{ts,tsx}",
-    "utils/**/*.{ts,tsx}",
-    "examples/**/*.{ts,tsx}",
-    "**/*.config.{js,ts,mjs}"
-  ]
+  "include": ["src/**/*.{ts,tsx}"],
+  "exclude": ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}"],
+  "ignoreBinaries": ["next", "turbo"],
+  "ignoreDependencies": ["@types/*", "eslint-*", "prettier-*"],
+  "workspaces": {
+    "packages/*": {
+      "entry": "src/index.ts",
+      "ignore": ["dist/**", "build/**"]
+    },
+    "apps/*": {
+      "entry": ["src/**/*.{ts,tsx}", "app/**/*.{ts,tsx}"],
+      "ignore": [".next/**", "dist/**"]
+    }
+  }
 }
 ```
 
@@ -337,7 +288,7 @@ Dead code detection and dependency analysis:
 ```json
 {
   "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
+    "@repo/config-eslint": "workspace:*",
     "@repo/config": "workspace:*"
   }
 }
@@ -349,50 +300,47 @@ Dead code detection and dependency analysis:
   <Tab title="ESLint">
     ```typescript
     // eslint.config.ts
-    import nextConfig from '@repo/eslint-config/next';
-    
+    import nextConfig from '@repo/config-eslint/next';
+
     export default nextConfig;
     ```
+
   </Tab>
-  
+
   <Tab title="TypeScript">
     ```json
     // tsconfig.json
     {
-      "extends": "@repo/config/typescript/nextjs.json",
-      "compilerOptions": {
-        "baseUrl": ".",
-        "paths": {
-          "#/*": ["./src/*"]
-        }
-      },
+      "extends": "@repo/config/typescript/nextjs",
       "include": ["src/**/*", "app/**/*"],
       "exclude": ["node_modules", ".next"]
     }
     ```
   </Tab>
-  
+
   <Tab title="Next.js">
     ```typescript
     // next.config.ts
     import baseConfig from '@repo/config/next';
-    
+
     const config = {
       ...baseConfig,
       // App-specific overrides
     };
-    
+
     export default config;
     ```
+
   </Tab>
-  
+
   <Tab title="Prettier">
     ```javascript
     // prettier.config.mjs
     import baseConfig from '@repo/config/prettier';
-    
+
     export default baseConfig;
     ```
+
   </Tab>
 </Tabs>
 
@@ -432,7 +380,7 @@ Dead code detection and dependency analysis:
 2. **Install Forge configs**:
 
    ```bash
-   pnpm add -D @repo/eslint-config @repo/config
+   pnpm add -D @repo/config-eslint @repo/config
    ```
 
 3. **Create new config files** using the templates above
@@ -454,7 +402,7 @@ For project-specific needs, extend the base configurations:
 
 ```typescript
 // eslint.config.ts
-import baseConfig from "@repo/eslint-config/next";
+import baseConfig from "@repo/config-eslint/next";
 
 export default [
   ...baseConfig,

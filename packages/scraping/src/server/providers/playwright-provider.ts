@@ -417,7 +417,7 @@ export class PlaywrightProvider implements ScrapingProvider {
 /**
  * Convenience function for quick scraping
  */
-export async function quickScrape(
+async function quickScrape(
   url: string,
   selectors: SelectorMap,
   options: {
@@ -452,7 +452,7 @@ export async function quickScrape(
 /**
  * Scrape multiple pages with the same selectors
  */
-export async function scrapeMultiple(
+async function _scrapeMultiple(
   urls: string[],
   selectors: SelectorMap,
   options: {
@@ -500,7 +500,7 @@ export async function scrapeMultiple(
 /**
  * Scrape with pagination support
  */
-export async function scrapeWithPagination(
+async function _scrapeWithPagination(
   startUrl: string,
   selectors: SelectorMap & {
     nextPageSelector?: string;

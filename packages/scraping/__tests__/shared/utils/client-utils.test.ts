@@ -1,6 +1,6 @@
-import { createUtilityTestSuite } from '#/__tests__/scraping-test-factory';
 import { ClientProgressTracker, getBrowserInfo, parseUrlParams } from '#/shared/utils/client-utils';
 import { beforeEach, describe, expect, vi } from 'vitest';
+import { createUtilityTestSuite } from '../../scraping-test-factory';
 
 describe('client-utils', () => {
   beforeEach(() => {
@@ -18,7 +18,7 @@ describe('client-utils', () => {
       {
         name: 'detect browser environment',
         args: [],
-        assertion: (result: any) => {
+        assertion: result => {
           expect(result).toBeFalsy();
         },
       },
@@ -34,7 +34,7 @@ describe('client-utils', () => {
       {
         name: 'detect Node.js environment',
         args: [],
-        assertion: (result: any) => {
+        assertion: result => {
           expect(result).toBeTruthy();
         },
       },
@@ -76,7 +76,7 @@ describe('client-utils', () => {
       {
         name: 'parse URL parameters correctly',
         args: ['https://example.com?param1=value1&param2=value2'],
-        assertion: (result: any) => {
+        assertion: result => {
           expect(result).toStrictEqual({
             param1: 'value1',
             param2: 'value2',
@@ -86,14 +86,14 @@ describe('client-utils', () => {
       {
         name: 'handle URLs without parameters',
         args: ['https://example.com'],
-        assertion: (result: any) => {
+        assertion: result => {
           expect(result).toStrictEqual({});
         },
       },
       {
         name: 'handle complex URL parameters',
         args: ['https://example.com?search=hello%20world&page=1&filter=active'],
-        assertion: (result: any) => {
+        assertion: result => {
           expect(result).toMatchObject({
             search: expect.any(String),
             page: '1',
@@ -117,7 +117,7 @@ describe('client-utils', () => {
       {
         name: 'handle getCurrentTitle in browser environment',
         args: [],
-        assertion: (result: any) => {
+        assertion: result => {
           expect(result).toBe('');
         },
       },
@@ -136,7 +136,7 @@ describe('client-utils', () => {
       {
         name: 'handle getPageHtml in browser environment',
         args: [],
-        assertion: (result: any) => {
+        assertion: result => {
           expect(result).toBe('');
         },
       },
@@ -151,7 +151,7 @@ describe('client-utils', () => {
       {
         name: 'return browser information',
         args: [],
-        assertion: (result: any) => {
+        assertion: result => {
           expect(result).toBeDefined();
           expect(typeof result).toBe('object');
         },
@@ -167,7 +167,7 @@ describe('client-utils', () => {
       {
         name: 'create progress tracker instance',
         args: [],
-        assertion: (result: any) => {
+        assertion: result => {
           expect(result).toBeDefined();
           expect(typeof result.start).toBe('function');
           expect(typeof result.increment).toBe('function');

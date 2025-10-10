@@ -165,7 +165,6 @@ The monorepo follows strict layering to prevent circular dependencies:
 
 <Tab title="Layer 4: Business Services">
   **Core business functionality** - `@repo/analytics` - PostHog, Segment, GA
-  integration - `@repo/email` - React Email templates - `@repo/notifications` -
   Knock + Mantine notifications ```typescript // Analytics usage import{" "}
   {createAnalyticsClient} from '@repo/analytics/client/next'; const analytics =
   createAnalyticsClient(); ```
@@ -181,8 +180,9 @@ The monorepo follows strict layering to prevent circular dependencies:
 
   <Tab title="Layer 6: UI">
     **User interface components** - `@repo/uix-system` - Mantine components and themes
-    ```typescript // UI system usage import {SearchBox} from '@repo/uix-system/algolia';
-    <SearchBox placeholder="Search products..." />
+    ```typescript // UI system usage
+    import { Button } from '@repo/uix-system/mantine';
+    <Button>Click me</Button>
     ```
   </Tab>
 </Tabs>

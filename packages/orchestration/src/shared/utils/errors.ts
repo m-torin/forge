@@ -8,25 +8,18 @@
 export enum OrchestrationErrorCodes {
   CANCEL_EXECUTION_ERROR = 'CANCEL_EXECUTION_ERROR',
 
-  CIRCUIT_BREAKER_OPEN = 'CIRCUIT_BREAKER_OPEN',
-  CONFIGURATION_ERROR = 'CONFIGURATION_ERROR',
-  CRITICAL_ERROR = 'CRITICAL_ERROR',
   DUPLICATE_STEP = 'DUPLICATE_STEP',
 
   GET_EXECUTION_ERROR = 'GET_EXECUTION_ERROR',
   // Initialization and lifecycle errors
   INITIALIZATION_ERROR = 'INITIALIZATION_ERROR',
-  INVALID_INPUT = 'INVALID_INPUT',
   INVALID_STEP_DEFINITION = 'INVALID_STEP_DEFINITION',
   INVALID_STEP_REGISTRATION = 'INVALID_STEP_REGISTRATION',
   LIST_EXECUTIONS_ERROR = 'LIST_EXECUTIONS_ERROR',
 
-  MAX_RETRIES_EXCEEDED = 'MAX_RETRIES_EXCEEDED',
   NO_PROVIDER_AVAILABLE = 'NO_PROVIDER_AVAILABLE',
-  OPERATION_TIMEOUT = 'OPERATION_TIMEOUT',
   // Generic orchestration errors
   ORCHESTRATION_ERROR = 'ORCHESTRATION_ERROR',
-  PARTIAL_FAILURE = 'PARTIAL_FAILURE',
   // Provider errors
   PROVIDER_ERROR = 'PROVIDER_ERROR',
   PROVIDER_NOT_FOUND = 'PROVIDER_NOT_FOUND',
@@ -34,14 +27,10 @@ export enum OrchestrationErrorCodes {
   PROVIDER_UNHEALTHY = 'PROVIDER_UNHEALTHY',
 
   // Pattern-specific errors
-  RATE_LIMIT_EXCEEDED = 'RATE_LIMIT_EXCEEDED',
   SCHEDULE_WORKFLOW_ERROR = 'SCHEDULE_WORKFLOW_ERROR',
   SHUTDOWN_ERROR = 'SHUTDOWN_ERROR',
-  STEP_COMPOSITION_ERROR = 'STEP_COMPOSITION_ERROR',
   STEP_CUSTOM_VALIDATION_ERROR = 'STEP_CUSTOM_VALIDATION_ERROR',
   // Step factory errors
-  STEP_EXECUTION_ERROR = 'STEP_EXECUTION_ERROR',
-  STEP_EXECUTION_FAILED = 'STEP_EXECUTION_FAILED',
   STEP_FACTORY_DISABLED = 'STEP_FACTORY_DISABLED',
   STEP_INPUT_VALIDATION_ERROR = 'STEP_INPUT_VALIDATION_ERROR',
   STEP_NOT_FOUND = 'STEP_NOT_FOUND',
@@ -51,7 +40,6 @@ export enum OrchestrationErrorCodes {
   UNSCHEDULE_WORKFLOW_ERROR = 'UNSCHEDULE_WORKFLOW_ERROR',
   // Workflow execution errors
   WORKFLOW_EXECUTION_ERROR = 'WORKFLOW_EXECUTION_ERROR',
-  WORKFLOW_VALIDATION_ERROR = 'WORKFLOW_VALIDATION_ERROR',
 }
 
 export interface ValidationError {
@@ -166,7 +154,7 @@ export class RateLimitError extends OrchestrationError {
   }
 }
 
-export class TimeoutError extends OrchestrationError {
+class TimeoutError extends OrchestrationError {
   public readonly timeoutMs: number;
 
   constructor(message: string, timeoutMs: number, context?: Record<string, any>) {
@@ -375,7 +363,7 @@ export function createWorkflowExecutionError(
 /**
  * Creates a standardized WorkflowExecutionError with centralized error codes
  */
-export function createWorkflowExecutionErrorWithCode(
+function createWorkflowExecutionErrorWithCode(
   message: string,
   workflowId: string,
   options?: {
@@ -410,7 +398,7 @@ export function createWorkflowExecutionErrorWithCode(
 /**
  * Extracts error details for logging/monitoring
  */
-export function extractErrorDetails(error: Error): Record<string, any> {
+function extractErrorDetails(error: Error): Record<string, any> {
   const details: Record<string, any> = {
     message: (error as Error)?.message || 'Unknown error',
     name: error.name,

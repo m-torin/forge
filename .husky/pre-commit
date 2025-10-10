@@ -1,0 +1,49 @@
+#!/bin/sh
+# Pre-commit hook with 3-layer approach
+
+# Export for Claude Code integration
+CHANGED_PATHS=$(git diff --cached --name-only | tr '\n' ',')
+export CLAUDE_FILE_PATHS="$CHANGED_PATHS"
+
+echo "🚀 Running pre-commit checks..."
+
+# ════════════════════════════════════════════════════════
+# LAYER 1: File-level (lint-staged)
+# Auto-format + lint ONLY staged files (~2-3s)
+# ════════════════════════════════════════════════════════
+echo "📝 [Layer 1] Formatting and linting staged files..."
+pnpm lint-staged || exit 1
+
+# ════════════════════════════════════════════════════════
+# LAYER 2: Package-level (Turbo with cache)
+# ESLint + typecheck on affected scope (~2-3s with cache)
+# ════════════════════════════════════════════════════════
+SCOPE=$(node scripts/detect-scope.mjs "$CHANGED_PATHS" || echo ".")
+echo "🔎 [Layer 2] Scope detected: $SCOPE"
+
+if [ "$SCOPE" != "." ]; then
+  echo "📦 Running Turbo checks for scope: $SCOPE"
+  # Run typecheck only (linting done manually, tests run in CI)
+  pnpm turbo typecheck \
+    --filter "$SCOPE" \
+    || exit 1
+else
+  echo "📦 Running repo-wide preflight..."
+  pnpm repo:preflight || exit 1
+fi
+
+# ════════════════════════════════════════════════════════
+# LAYER 3: Validation (always run)
+# Contamination + coverage checks (~2s)
+# ════════════════════════════════════════════════════════
+echo "🔍 [Layer 3] Validation checks..."
+node scripts/validate.mjs contamination &
+CONTAM_PID=$!
+
+node scripts/validate.mjs coverage --scope "$SCOPE" &
+COV_PID=$!
+
+wait $CONTAM_PID || exit 1
+wait $COV_PID || exit 1
+
+echo "✅ All pre-commit checks passed!"

@@ -1,6 +1,6 @@
 // React testing setup
-import { setupBrowserMocks } from '@repo/qa/vitest/setup/browser';
-import '@testing-library/jest-dom';
+import { setupBrowserMocks } from "@repo/qa/vitest/setup/browser";
+import "@testing-library/jest-dom";
 
 // Setup centralized browser mocks (includes matchMedia, ResizeObserver, etc.)
 setupBrowserMocks();
@@ -16,7 +16,7 @@ global.WebSocket = class MockWebSocket {
   constructor(url: string) {
     setTimeout(() => {
       if (this.onopen) {
-        this.onopen(new Event('open'));
+        this.onopen(new Event("open"));
       }
     }, 0);
   }
@@ -28,7 +28,7 @@ global.WebSocket = class MockWebSocket {
   close() {
     setTimeout(() => {
       if (this.onclose) {
-        this.onclose(new CloseEvent('close'));
+        this.onclose(new CloseEvent("close"));
       }
     }, 0);
   }

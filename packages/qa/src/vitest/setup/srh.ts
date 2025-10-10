@@ -1,5 +1,5 @@
 // SRH (Serverless Redis HTTP) setup utilities
-export interface SRHConfig {
+interface SRHConfig {
   url?: string;
   token?: string;
   redisUrl?: string;
@@ -15,7 +15,7 @@ const defaultSRHConfig: SRHConfig = {
 };
 
 // SRH container management (for Docker-based testing)
-export class SRHContainer {
+class SRHContainer {
   private containerId: string | null = null;
   private config: SRHConfig;
 
@@ -54,7 +54,7 @@ export class SRHContainer {
 let globalSRHContainer: SRHContainer | null = null;
 
 // Setup SRH for tests
-export const setupSRH = async (config?: SRHConfig): Promise<void> => {
+const setupSRH = async (config?: SRHConfig): Promise<void> => {
   globalSRHContainer = new SRHContainer(config);
   await globalSRHContainer.start();
 
@@ -76,7 +76,7 @@ export const setupSRH = async (config?: SRHConfig): Promise<void> => {
 };
 
 // Cleanup SRH after tests
-export const cleanupSRH = async (): Promise<void> => {
+const cleanupSRH = async (): Promise<void> => {
   if (globalSRHContainer) {
     await globalSRHContainer.stop();
     globalSRHContainer = null;
@@ -249,15 +249,3 @@ export const withSRHEnvironment = (config?: SRHConfig) => {
 };
 
 // Default export for convenience
-export default {
-  setupSRH,
-  cleanupSRH,
-  setupSRHEnvironment,
-  cleanupSRHEnvironment,
-  createSRHTestConfig,
-  generateSRHDockerCompose,
-  generateSRHGitHubActions,
-  withSRH,
-  withSRHEnvironment,
-  SRHContainer,
-};

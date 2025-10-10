@@ -8,13 +8,16 @@
       "env": ["NEXT_PUBLIC_*", "PRISMA_DB_URL", "NEXTAUTH_URL", "AUTH_SECRET"]
     },
     "dev": {
-      "dependsOn": ["prisma:generate"],
+      "dependsOn": ["prisma:generate", "@labs/monaco-editor#build"],
       "cache": false,
       "persistent": true
     },
     "prisma:generate": {
       "outputs": ["src/lib/prisma/generated/**"],
       "cache": true
+    },
+    "typecheck": {
+      "dependsOn": ["@labs/monaco-editor#build"]
     },
     "test:e2e": {
       "dependsOn": ["build"],

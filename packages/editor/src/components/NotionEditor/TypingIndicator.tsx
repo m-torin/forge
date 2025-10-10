@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { clsx } from 'clsx';
-import { useEffect, useMemo, useState } from 'react';
-import type { Collaborator } from '../../types/collaboration';
+import { clsx } from "clsx";
+import { useEffect, useMemo, useState } from "react";
+import type { Collaborator } from "../../types/collaboration";
 
-export interface TypingIndicatorProps {
+interface TypingIndicatorProps {
   collaborators: Collaborator[];
   currentUserId: string;
   className?: string;
@@ -24,8 +24,10 @@ export function TypingIndicator({
   // Filter out current user and get only typing users
   const typingUsers = useMemo(() => {
     return collaborators.filter(
-      collaborator =>
-        collaborator.id !== currentUserId && collaborator.isTyping && collaborator.isActive,
+      (collaborator) =>
+        collaborator.id !== currentUserId &&
+        collaborator.isTyping &&
+        collaborator.isActive,
     );
   }, [collaborators, currentUserId]);
 
@@ -34,7 +36,7 @@ export function TypingIndicator({
     if (typingUsers.length === 0) return;
 
     const interval = setInterval(() => {
-      setAnimationPhase(prev => (prev + 1) % 4);
+      setAnimationPhase((prev) => (prev + 1) % 4);
     }, 500);
 
     return () => clearInterval(interval);
@@ -49,12 +51,12 @@ export function TypingIndicator({
 
   const renderTypingDots = () => (
     <div className="ml-2 flex items-center gap-0.5">
-      {[0, 1, 2].map(dotIndex => (
+      {[0, 1, 2].map((dotIndex) => (
         <div
           key={dotIndex}
           className={clsx(
-            'h-1 w-1 rounded-full bg-gray-400 transition-opacity duration-200',
-            animationPhase > dotIndex ? 'opacity-100' : 'opacity-30',
+            "h-1 w-1 rounded-full bg-gray-400 transition-opacity duration-200",
+            animationPhase > dotIndex ? "opacity-100" : "opacity-30",
           )}
           style={{
             animationDelay: `${dotIndex * 150}ms`,
@@ -72,27 +74,27 @@ export function TypingIndicator({
     } else if (typingUsers.length <= maxVisibleUsers) {
       const names = visibleUsers
         .slice(0, -1)
-        .map(u => u.name)
-        .join(', ');
+        .map((u) => u.name)
+        .join(", ");
       return `${names}, and ${visibleUsers[visibleUsers.length - 1].name} are typing`;
     } else {
-      const names = visibleUsers.map(u => u.name).join(', ');
-      return `${names} and ${hiddenCount} other${hiddenCount > 1 ? 's' : ''} are typing`;
+      const names = visibleUsers.map((u) => u.name).join(", ");
+      return `${names} and ${hiddenCount} other${hiddenCount > 1 ? "s" : ""} are typing`;
     }
   };
 
   return (
     <div
       className={clsx(
-        'typing-indicator flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600',
-        'animate-in slide-in-from-bottom-2 fade-in-0 duration-200',
+        "typing-indicator flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600",
+        "animate-in slide-in-from-bottom-2 fade-in-0 duration-200",
         className,
       )}
     >
       {/* User Avatars */}
       {showAvatars && (
         <div className="flex -space-x-1">
-          {visibleUsers.map(user => (
+          {visibleUsers.map((user) => (
             <div
               key={user.id}
               className="relative flex h-6 w-6 items-center justify-center rounded-full border-2 border-white text-xs font-semibold text-white shadow-sm"
@@ -138,7 +140,7 @@ export function TypingIndicator({
 }
 
 // Compact version for use in headers or minimal spaces
-export interface CompactTypingIndicatorProps {
+interface CompactTypingIndicatorProps {
   collaborators: Collaborator[];
   currentUserId: string;
   className?: string;
@@ -153,8 +155,10 @@ export function CompactTypingIndicator({
 
   const typingUsers = useMemo(() => {
     return collaborators.filter(
-      collaborator =>
-        collaborator.id !== currentUserId && collaborator.isTyping && collaborator.isActive,
+      (collaborator) =>
+        collaborator.id !== currentUserId &&
+        collaborator.isTyping &&
+        collaborator.isActive,
     );
   }, [collaborators, currentUserId]);
 
@@ -162,7 +166,7 @@ export function CompactTypingIndicator({
     if (typingUsers.length === 0) return;
 
     const interval = setInterval(() => {
-      setAnimationPhase(prev => (prev + 1) % 4);
+      setAnimationPhase((prev) => (prev + 1) % 4);
     }, 400);
 
     return () => clearInterval(interval);
@@ -175,14 +179,14 @@ export function CompactTypingIndicator({
   return (
     <div
       className={clsx(
-        'compact-typing-indicator flex items-center gap-1 text-xs text-gray-500',
-        'animate-in fade-in-0 duration-200',
+        "compact-typing-indicator flex items-center gap-1 text-xs text-gray-500",
+        "animate-in fade-in-0 duration-200",
         className,
       )}
     >
       {/* User count */}
       <div className="flex -space-x-0.5">
-        {typingUsers.slice(0, 2).map(user => (
+        {typingUsers.slice(0, 2).map((user) => (
           <div
             key={user.id}
             className="h-2 w-2 rounded-full border border-white"
@@ -196,12 +200,12 @@ export function CompactTypingIndicator({
 
       {/* Animated dots */}
       <div className="flex items-center gap-0.5">
-        {[0, 1, 2].map(dotIndex => (
+        {[0, 1, 2].map((dotIndex) => (
           <div
             key={dotIndex}
             className={clsx(
-              'h-0.5 w-0.5 rounded-full bg-gray-400 transition-opacity duration-150',
-              animationPhase > dotIndex ? 'opacity-100' : 'opacity-20',
+              "h-0.5 w-0.5 rounded-full bg-gray-400 transition-opacity duration-150",
+              animationPhase > dotIndex ? "opacity-100" : "opacity-20",
             )}
           />
         ))}
@@ -211,7 +215,7 @@ export function CompactTypingIndicator({
 }
 
 // Hook for managing typing state
-export interface UseTypingIndicatorOptions {
+interface UseTypingIndicatorOptions {
   editor: any; // Tiptap Editor
   provider: any; // Y.js provider
   userId: string;
@@ -257,7 +261,7 @@ export function useTypingIndicator({
     // Broadcast typing state periodically
     const broadcastTypingState = () => {
       if (provider && isTyping !== lastTypingState) {
-        provider.awareness?.setLocalStateField('isTyping', isTyping);
+        provider.awareness?.setLocalStateField("isTyping", isTyping);
         lastTypingState = isTyping;
       }
     };
@@ -268,20 +272,22 @@ export function useTypingIndicator({
 
       const newTypingUsers = new Set<string>();
 
-      provider.awareness.getStates().forEach((state: any, _clientId: number) => {
-        if (state.user?.id !== userId && state.isTyping) {
-          newTypingUsers.add(state.user.id);
-        }
-      });
+      provider.awareness
+        .getStates()
+        .forEach((state: any, _clientId: number) => {
+          if (state.user?.id !== userId && state.isTyping) {
+            newTypingUsers.add(state.user.id);
+          }
+        });
 
       setTypingUsers(newTypingUsers);
     };
 
     // Set up event listeners
-    editor.on('update', handleUpdate);
+    editor.on("update", handleUpdate);
 
     if (provider.awareness) {
-      provider.awareness.on('update', handleAwarenessUpdate);
+      provider.awareness.on("update", handleAwarenessUpdate);
     }
 
     // Set up broadcast interval
@@ -292,11 +298,11 @@ export function useTypingIndicator({
       if (typingTimer) clearTimeout(typingTimer);
       if (broadcastTimer) clearInterval(broadcastTimer);
 
-      editor.off('update', handleUpdate);
+      editor.off("update", handleUpdate);
 
       if (provider.awareness) {
-        provider.awareness.off('update', handleAwarenessUpdate);
-        provider.awareness.setLocalStateField('isTyping', false);
+        provider.awareness.off("update", handleAwarenessUpdate);
+        provider.awareness.setLocalStateField("isTyping", false);
       }
     };
   }, [editor, provider, userId, isTyping, typingTimeout, updateInterval]);

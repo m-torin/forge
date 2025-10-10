@@ -7,7 +7,7 @@ import Link from '@tiptap/extension-link';
 // ENHANCED LINK NODE
 // =============================================================================
 
-export interface LinkOptions {
+interface LinkOptions {
   openOnClick: boolean;
   linkOnPaste: boolean;
   autolink: boolean;
@@ -209,7 +209,7 @@ export const enhancedLinkStyles = `
 // LINK UTILS
 // =============================================================================
 
-export const linkUtils = {
+const linkUtils = {
   /**
    * Validate if a URL is safe and properly formatted
    */

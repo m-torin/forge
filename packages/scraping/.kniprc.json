@@ -1,0 +1,35 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "ignore": [
+    "env.ts",
+    "playwright.config.ts",
+    "__tests__/setup.ts",
+    "__tests__/test-data-generators.ts",
+    "__tests__/test-factory.ts",
+    "__tests__/scraping-test-factory.ts",
+    "__tests__/test-utils/**",
+    "scripts/**",
+    "src/next/**",
+    "src/shared/factories/**",
+    "src/shared/types/legacy-types.ts",
+    "src/shared/utils/config.ts"
+  ],
+  "ignoreDependencies": [
+    "@types/*",
+    "@anthropic-ai/sdk",
+    "@ulixee/hero-playground",
+    "cheerio",
+    "openai",
+    "playwright",
+    "puppeteer",
+    "@repo/config",
+    "@t3-oss/env-nextjs",
+    "@repo/eslint-config",
+    "@repo/observability",
+    "@repo/qa",
+    "@vitest/coverage-v8",
+    "next",
+    "react",
+    "react-dom"
+  ]
+}

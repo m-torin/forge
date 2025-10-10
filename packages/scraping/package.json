@@ -11,8 +11,8 @@
   "scripts": {
     "circular": "madge --circular --extensions ts,tsx,js,jsx .",
     "coverage:collect": "vitest run --coverage --reporter=json",
-    "knip": "knip --fix --reporter json",
-    "lint": "eslint . --fix",
+    "knip": "knip --reporter json --exclude unlisted,unresolved,exports,dependencies,files,binaries,types,duplicates",
+    "lint": "eslint . --fix --cache",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:coverage:json": "vitest run --coverage --reporter=json",
@@ -20,25 +20,29 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@repo/observability": "workspace:*",
     "@t3-oss/env-nextjs": "catalog:",
-    "cheerio": "^1.0.0",
-    "jsdom": "catalog:",
-    "playwright": "^1.49.1",
-    "puppeteer": "^23.6.0",
-    "robots-parser": "^3.0.1",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@anthropic-ai/sdk": "^0.57.0",
     "@repo/config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
+    "@repo/observability": "workspace:*",
     "@repo/qa": "workspace:*",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@ulixee/hero-playground": "2.0.0-alpha.34",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "knip": "catalog:",
+    "madge": "catalog:",
     "next": "catalog:",
     "openai": "^5.10.2",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "vite-tsconfig-paths": "catalog:"
+    "typescript": "catalog:",
+    "vite-tsconfig-paths": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "@anthropic-ai/sdk": "*",

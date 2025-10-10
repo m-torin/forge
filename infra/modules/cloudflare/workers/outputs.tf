@@ -4,16 +4,16 @@
 output "workers" {
   description = "Deployed worker scripts"
   value = {
-    for k, v in cloudflare_worker_script.this : k => {
+    for k, v in cloudflare_workers_script.this : k => {
       id          = v.id
       name        = v.name
       usage_model = v.usage_model
       routes = concat(
-        [for r in cloudflare_worker_route.script_routes : r.pattern if strcontains(r.id, k)],
-        [for r in cloudflare_worker_route.additional : r.pattern if r.script_name == v.name]
+        [for r in cloudflare_workers_route.script_routes : r.pattern if strcontains(r.id, k)],
+        [for r in cloudflare_workers_route.additional : r.pattern if r.script_name == v.script_name]
       )
-      custom_domains = [for d in cloudflare_worker_domain.this : d.hostname if strcontains(d.id, k)]
-      cron_schedules = [for c in cloudflare_worker_cron_trigger.this : c.schedules[0] if strcontains(c.id, v.name)]
+      custom_domains = [for d in cloudflare_workers_custom_domain.this : d.hostname if strcontains(d.id, k)]
+      cron_schedules = [for c in cloudflare_workers_cron_trigger.this : c.schedules[0] if strcontains(c.id, v.script_name)]
     }
   }
 }
@@ -94,10 +94,10 @@ output "workers_subdomain" {
 output "worker_urls" {
   description = "Worker access URLs"
   value = {
-    for k, v in cloudflare_worker_script.this : k => {
+    for k, v in cloudflare_workers_script.this : k => {
       subdomain = var.workers_subdomain.enabled ? "https://${v.name}.${cloudflare_workers_subdomain.this[0].subdomain}.workers.dev" : null
-      routes    = [for r in cloudflare_worker_route.script_routes : r.pattern if strcontains(r.id, k)]
-      custom    = [for d in cloudflare_worker_domain.this : "https://${d.hostname}" if strcontains(d.id, k)]
+      routes    = [for r in cloudflare_workers_route.script_routes : r.pattern if strcontains(r.id, k)]
+      custom    = [for d in cloudflare_workers_custom_domain.this : "https://${d.hostname}" if strcontains(d.id, k)]
     }
   }
 }
@@ -122,9 +122,9 @@ output "workers_summary" {
     workers = {
       count = length(var.workers)
       names = keys(var.workers)
-      routes_total = length(cloudflare_worker_route.script_routes) + length(cloudflare_worker_route.additional)
-      custom_domains_total = length(cloudflare_worker_domain.this)
-      cron_triggers_total = length(cloudflare_worker_cron_trigger.this)
+      routes_total = length(cloudflare_workers_route.script_routes) + length(cloudflare_workers_route.additional)
+      custom_domains_total = length(cloudflare_workers_custom_domain.this)
+      cron_triggers_total = length(cloudflare_workers_cron_trigger.this)
     }
     storage = {
       kv_namespaces    = length(var.kv_namespaces)
@@ -159,7 +159,7 @@ output "example_worker_code" {
         }
       };
     JS
-    
+
     kv_example = <<-JS
       export default {
         async fetch(request, env, ctx) {
@@ -168,21 +168,21 @@ output "example_worker_code" {
         }
       };
     JS
-    
+
     d1_example = <<-JS
       export default {
         async fetch(request, env, ctx) {
           const results = await env.DB.prepare(
             "SELECT * FROM users WHERE id = ?"
           ).bind(1).all();
-          
+
           return new Response(JSON.stringify(results), {
             headers: { "Content-Type": "application/json" }
           });
         }
       };
     JS
-    
+
     queue_example = <<-JS
       export default {
         async fetch(request, env, ctx) {
@@ -192,7 +192,7 @@ output "example_worker_code" {
           });
           return new Response("Queued");
         },
-        
+
         async queue(batch, env, ctx) {
           for (const message of batch.messages) {
             console.log("Processing:", message.body);
@@ -201,13 +201,13 @@ output "example_worker_code" {
         }
       };
     JS
-    
+
     durable_object_example = <<-JS
       export class Counter {
         constructor(state, env) {
           this.state = state;
         }
-        
+
         async fetch(request) {
           const count = (await this.state.storage.get("count")) || 0;
           const newCount = count + 1;
@@ -215,7 +215,7 @@ output "example_worker_code" {
           return new Response(newCount.toString());
         }
       }
-      
+
       export default {
         async fetch(request, env, ctx) {
           const id = env.COUNTER.idFromName("global");

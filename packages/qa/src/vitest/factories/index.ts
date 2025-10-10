@@ -3,7 +3,7 @@
 /**
  * Base factory interface
  */
-export interface Factory<T> {
+interface Factory<T> {
   (overrides?: Partial<T>): T;
   sequence: (field: keyof T, start?: number) => Factory<T>;
   trait: (name: string, modifications: Partial<T>) => Factory<T>;
@@ -14,7 +14,7 @@ export interface Factory<T> {
 /**
  * Create a factory with sequence and trait support
  */
-export function createFactory<T>(defaultData: T): Factory<T> {
+function createFactory<T>(defaultData: T): Factory<T> {
   let sequenceCounters: Record<string, number> = {};
   let traits: Record<string, Partial<T>> = {};
 
@@ -62,12 +62,12 @@ export function createFactory<T>(defaultData: T): Factory<T> {
 /**
  * Current timestamp for consistent test data
  */
-export const testTimestamp = new Date('2024-01-01T00:00:00.000Z');
+const testTimestamp = new Date('2024-01-01T00:00:00.000Z');
 
 /**
  * Common ID generators
  */
-export const generateId = {
+const generateId = {
   uuid: (prefix = '') => `${prefix}${Math.random().toString(36).substr(2, 9)}`,
   sequential: (prefix = '', start = 1) => {
     let counter = start;
@@ -79,7 +79,7 @@ export const generateId = {
 /**
  * User factory
  */
-export interface TestUser {
+interface TestUser {
   id: string;
   name: string;
   email: string;
@@ -92,7 +92,7 @@ export interface TestUser {
   metadata: Record<string, any>;
 }
 
-export const userFactory = createFactory<TestUser>({
+const userFactory = createFactory<TestUser>({
   id: 'user_123',
   name: 'Test User',
   email: 'test@example.com',
@@ -108,7 +108,7 @@ export const userFactory = createFactory<TestUser>({
 /**
  * Organization factory
  */
-export interface TestOrganization {
+interface TestOrganization {
   id: string;
   name: string;
   slug: string;
@@ -124,7 +124,7 @@ export interface TestOrganization {
   };
 }
 
-export const organizationFactory = createFactory<TestOrganization>({
+const organizationFactory = createFactory<TestOrganization>({
   id: 'org_123',
   name: 'Test Organization',
   slug: 'test-org',
@@ -143,7 +143,7 @@ export const organizationFactory = createFactory<TestOrganization>({
 /**
  * Brand factory
  */
-export interface TestBrand {
+interface TestBrand {
   id: string;
   name: string;
   slug: string;
@@ -166,7 +166,7 @@ export interface TestBrand {
   };
 }
 
-export const brandFactory = createFactory<TestBrand>({
+const brandFactory = createFactory<TestBrand>({
   id: 'brand_123',
   name: 'Test Brand',
   slug: 'test-brand',
@@ -192,7 +192,7 @@ export const brandFactory = createFactory<TestBrand>({
 /**
  * Product factory
  */
-export interface TestProduct {
+interface TestProduct {
   id: string;
   name: string;
   slug: string;
@@ -222,7 +222,7 @@ export interface TestProduct {
   };
 }
 
-export const productFactory = createFactory<TestProduct>({
+const productFactory = createFactory<TestProduct>({
   id: 'product_123',
   name: 'Test Product',
   slug: 'test-product',
@@ -255,7 +255,7 @@ export const productFactory = createFactory<TestProduct>({
 /**
  * Collection factory
  */
-export interface TestCollection {
+interface TestCollection {
   id: string;
   name: string;
   slug: string;
@@ -272,7 +272,7 @@ export interface TestCollection {
   };
 }
 
-export const collectionFactory = createFactory<TestCollection>({
+const collectionFactory = createFactory<TestCollection>({
   id: 'collection_123',
   name: 'Test Collection',
   slug: 'test-collection',
@@ -292,7 +292,7 @@ export const collectionFactory = createFactory<TestCollection>({
 /**
  * Order factory
  */
-export interface TestOrder {
+interface TestOrder {
   id: string;
   number: string;
   status: 'PENDING' | 'CONFIRMED' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
@@ -318,7 +318,7 @@ export interface TestOrder {
   updatedAt: Date;
 }
 
-export const orderFactory = createFactory<TestOrder>({
+const orderFactory = createFactory<TestOrder>({
   id: 'order_123',
   number: 'ORD-001',
   status: 'CONFIRMED',
@@ -348,7 +348,7 @@ export const orderFactory = createFactory<TestOrder>({
 /**
  * Analytics event factory
  */
-export interface TestAnalyticsEvent {
+interface TestAnalyticsEvent {
   id: string;
   event: string;
   userId?: string;
@@ -366,7 +366,7 @@ export interface TestAnalyticsEvent {
   timestamp: Date;
 }
 
-export const analyticsEventFactory = createFactory<TestAnalyticsEvent>({
+const analyticsEventFactory = createFactory<TestAnalyticsEvent>({
   id: 'event_123',
   event: 'page_view',
   userId: 'user_123',
@@ -387,7 +387,7 @@ export const analyticsEventFactory = createFactory<TestAnalyticsEvent>({
 /**
  * Workflow execution factory
  */
-export interface TestWorkflowExecution {
+interface TestWorkflowExecution {
   id: string;
   type: string;
   status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
@@ -401,7 +401,7 @@ export interface TestWorkflowExecution {
   duration: number | null;
 }
 
-export const workflowExecutionFactory = createFactory<TestWorkflowExecution>({
+const workflowExecutionFactory = createFactory<TestWorkflowExecution>({
   id: 'workflow_123',
   type: 'seo-generation',
   status: 'completed',
@@ -418,7 +418,7 @@ export const workflowExecutionFactory = createFactory<TestWorkflowExecution>({
 /**
  * Export all factories
  */
-export const factories = {
+const factories = {
   user: userFactory,
   organization: organizationFactory,
   brand: brandFactory,
@@ -432,14 +432,14 @@ export const factories = {
 /**
  * Helper to create multiple instances
  */
-export function createMany<T>(factory: Factory<T>, count: number, overrides?: Partial<T>[]): T[] {
+function createMany<T>(factory: Factory<T>, count: number, overrides?: Partial<T>[]): T[] {
   return Array.from({ length: count }, (_, index) => factory(overrides?.[index] || {}));
 }
 
 /**
  * Helper to create related data
  */
-export function createRelatedData() {
+function createRelatedData() {
   const user = userFactory();
   const organization = organizationFactory();
   const brand = brandFactory();

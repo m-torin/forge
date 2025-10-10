@@ -15,7 +15,7 @@ export interface TransactionContext {
   parentSampled?: boolean;
   trimEnd?: boolean;
   metadata?: {
-    source?: 'custom' | 'route' | 'url';
+    source?: "custom" | "route" | "url";
     [key: string]: any;
   };
 }
@@ -39,22 +39,22 @@ export interface SpanContext {
  * Span status values
  */
 export type SpanStatus =
-  | 'ok'
-  | 'cancelled'
-  | 'internal_error'
-  | 'invalid_argument'
-  | 'deadline_exceeded'
-  | 'not_found'
-  | 'already_exists'
-  | 'permission_denied'
-  | 'resource_exhausted'
-  | 'failed_precondition'
-  | 'aborted'
-  | 'out_of_range'
-  | 'unimplemented'
-  | 'unavailable'
-  | 'data_loss'
-  | 'unauthenticated';
+  | "ok"
+  | "cancelled"
+  | "internal_error"
+  | "invalid_argument"
+  | "deadline_exceeded"
+  | "not_found"
+  | "already_exists"
+  | "permission_denied"
+  | "resource_exhausted"
+  | "failed_precondition"
+  | "aborted"
+  | "out_of_range"
+  | "unimplemented"
+  | "unavailable"
+  | "data_loss"
+  | "unauthenticated";
 
 /**
  * Transaction interface
@@ -134,7 +134,10 @@ export interface Hub {
   pushScope(): Scope;
   popScope(): boolean;
   withScope(callback: (scope: Scope) => void): void;
-  startTransaction(context: TransactionContext, customSamplingContext?: any): Transaction;
+  startTransaction(
+    context: TransactionContext,
+    customSamplingContext?: any,
+  ): Transaction;
   startSpan(context: SpanContext): Span;
 }
 
@@ -188,13 +191,19 @@ export interface Breadcrumb {
 /**
  * Severity levels
  */
-export type SeverityLevel = 'fatal' | 'error' | 'warning' | 'log' | 'info' | 'debug';
+export type SeverityLevel =
+  | "fatal"
+  | "error"
+  | "warning"
+  | "log"
+  | "info"
+  | "debug";
 
 /**
  * Request session status
  */
 export interface RequestSession {
-  status?: 'ok' | 'errored' | 'crashed';
+  status?: "ok" | "errored" | "crashed";
 }
 
 /**
@@ -210,34 +219,36 @@ export interface SamplingContext {
 /**
  * Custom sampling function type
  */
-export type TraceSampler = (samplingContext: SamplingContext) => number | boolean;
+export type TraceSampler = (
+  samplingContext: SamplingContext,
+) => number | boolean;
 
 /**
  * Measurement units
  */
 export type MeasurementUnit =
-  | 'nanosecond'
-  | 'microsecond'
-  | 'millisecond'
-  | 'second'
-  | 'minute'
-  | 'hour'
-  | 'day'
-  | 'week'
-  | 'bit'
-  | 'byte'
-  | 'kilobyte'
-  | 'kibibyte'
-  | 'megabyte'
-  | 'mebibyte'
-  | 'gigabyte'
-  | 'gibibyte'
-  | 'terabyte'
-  | 'tebibyte'
-  | 'petabyte'
-  | 'pebibyte'
-  | 'exabyte'
-  | 'exbibyte'
-  | 'ratio'
-  | 'percent'
-  | 'none';
+  | "nanosecond"
+  | "microsecond"
+  | "millisecond"
+  | "second"
+  | "minute"
+  | "hour"
+  | "day"
+  | "week"
+  | "bit"
+  | "byte"
+  | "kilobyte"
+  | "kibibyte"
+  | "megabyte"
+  | "mebibyte"
+  | "gigabyte"
+  | "gibibyte"
+  | "terabyte"
+  | "tebibyte"
+  | "petabyte"
+  | "pebibyte"
+  | "exabyte"
+  | "exbibyte"
+  | "ratio"
+  | "percent"
+  | "none";

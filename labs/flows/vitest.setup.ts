@@ -1,11 +1,22 @@
-// Use centralized browser mocks from @repo/qa
+// For now, we'll use a local mock setup
 import '@testing-library/jest-dom';
-import { setupBrowserMocks } from '@repo/qa/vitest/mocks/internal/browser';
 
-// Set up centralized browser mocks (includes ResizeObserver)
-setupBrowserMocks();
+// Mock React Flow DOM APIs for testing
+class MockResizeObserver {
+  callback: globalThis.ResizeObserverCallback;
 
-// React Flow specific DOM API mocks
+  constructor(callback: globalThis.ResizeObserverCallback) {
+    this.callback = callback;
+  }
+
+  observe(target: Element) {
+    this.callback([{ target } as globalThis.ResizeObserverEntry], this);
+  }
+
+  unobserve() {}
+  disconnect() {}
+}
+
 class MockDOMMatrixReadOnly {
   m22: number;
   
@@ -15,7 +26,8 @@ class MockDOMMatrixReadOnly {
   }
 }
 
-// React Flow specific mocks
+// Initialize DOM mocks for React Flow
+global.ResizeObserver = MockResizeObserver;
 // @ts-ignore
 global.DOMMatrixReadOnly = MockDOMMatrixReadOnly;
 

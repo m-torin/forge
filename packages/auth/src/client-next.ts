@@ -12,6 +12,11 @@ import { authClient } from './client/client-next';
  * Next.js specific authentication provider and context
  */
 export { AuthProvider, useAuthContext } from './client/auth-provider';
+export {
+  authFeatureFlag,
+  isAuthEnabledClient,
+  shouldLoadAuthComponents,
+} from './shared/utils/feature-flags';
 
 /**
  * Authentication hooks optimized for Next.js
@@ -91,6 +96,11 @@ export const emailOTP = (authClient as any).emailOTP || {};
  * Navigation utilities for authenticated routes
  */
 export { useAuthRedirect } from './client/navigation';
+
+/**
+ * Protected route components for Next.js
+ */
+export { ProtectedRoute, withAuth } from './client/protected-route';
 
 /**
  * Client-side authentication methods safe for Next.js

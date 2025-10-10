@@ -1,9 +1,9 @@
-import '@testing-library/jest-dom';
-import { beforeEach, vi } from 'vitest';
+import "@testing-library/jest-dom";
+import { beforeEach, vi } from "vitest";
 
 // Import centralized mocks from @repo/qa
-import '@repo/qa/vitest/mocks/packages/nextjs';
-import '@repo/qa/vitest/mocks/packages/server-only';
+import "@repo/qa/vitest/mocks/packages/nextjs";
+import "@repo/qa/vitest/mocks/packages/server-only";
 
 // Mock console methods for cleaner test output
 const originalConsole = console;
@@ -16,7 +16,7 @@ global.console = {
 };
 
 // Mock Next.js modules completely
-vi.mock('next', () => ({
+vi.mock("next", () => ({
   Metadata: {},
   Viewport: {},
   MetadataRoute: {},
@@ -25,12 +25,12 @@ vi.mock('next', () => ({
 }));
 
 // Mock lodash.merge for metadata merging
-vi.mock('lodash.merge', () => ({
+vi.mock("lodash.merge", () => ({
   default: vi.fn((target, source) => ({ ...target, ...source })),
 }));
 
 // Mock schema-dts for structured data
-vi.mock('schema-dts', () => ({
+vi.mock("schema-dts", () => ({
   Thing: {},
   WithContext: {},
   Person: {},
@@ -54,14 +54,14 @@ vi.mock('schema-dts', () => ({
 }));
 
 // Mock React for client components
-vi.mock('react', async () => {
-  const actual = await vi.importActual('react');
+vi.mock("react", async () => {
+  const actual = await vi.importActual("react");
   return {
     ...actual,
-    useState: vi.fn(initial => [initial, vi.fn()]),
-    useEffect: vi.fn(fn => fn()),
-    useMemo: vi.fn(fn => fn()),
-    useCallback: vi.fn(fn => fn),
+    useState: vi.fn((initial) => [initial, vi.fn()]),
+    useEffect: vi.fn((fn) => fn()),
+    useMemo: vi.fn((fn) => fn()),
+    useCallback: vi.fn((fn) => fn),
     useContext: vi.fn(() => ({})),
     createContext: vi.fn(() => ({
       Provider: vi.fn(({ children }) => children),
@@ -71,14 +71,14 @@ vi.mock('react', async () => {
 });
 
 // Mock React DOM for server-side rendering
-vi.mock('react-dom/server', () => ({
-  renderToString: vi.fn(element => `<div>${element}</div>`),
-  renderToStaticMarkup: vi.fn(element => `${element}`),
+vi.mock("react-dom/server", () => ({
+  renderToString: vi.fn((element) => `<div>${element}</div>`),
+  renderToStaticMarkup: vi.fn((element) => `${element}`),
 }));
 
 // Mock environment setup
 export const setupEnvironmentMocks = (
-  env: 'development' | 'production' | 'test' = 'development',
+  env: "development" | "production" | "test" = "development",
 ) => {
   const originalEnv = process.env.NODE_ENV;
   const originalVars = {
@@ -89,10 +89,10 @@ export const setupEnvironmentMocks = (
   };
 
   (process.env as any).NODE_ENV = env;
-  process.env.VERCEL_PROJECT_PRODUCTION_URL = 'example.com';
-  process.env.NEXT_PUBLIC_URL = 'https://test.com';
-  process.env.NEXT_PUBLIC_SITE_NAME = 'Test Site';
-  process.env.NEXT_PUBLIC_SITE_DESCRIPTION = 'A test site for SEO testing';
+  process.env.VERCEL_PROJECT_PRODUCTION_URL = "example.com";
+  process.env.NEXT_PUBLIC_URL = "https://test.com";
+  process.env.NEXT_PUBLIC_SITE_NAME = "Test Site";
+  process.env.NEXT_PUBLIC_SITE_DESCRIPTION = "A test site for SEO testing";
 
   return () => {
     (process.env as any).NODE_ENV = originalEnv;
@@ -108,29 +108,29 @@ export const setupEnvironmentMocks = (
 
 // Mock browser environment for client-side testing
 export const setupBrowserMocks = () => {
-  Object.defineProperty(global, 'window', {
+  Object.defineProperty(global, "window", {
     value: {
       location: {
-        href: 'https://example.com/test',
-        pathname: '/test',
-        search: '?param=value',
-        hash: '#section',
-        origin: 'https://example.com',
+        href: "https://example.com/test",
+        pathname: "/test",
+        search: "?param=value",
+        hash: "#section",
+        origin: "https://example.com",
       },
       navigator: {
-        userAgent: 'Mozilla/5.0 (Test Browser)',
-        language: 'en-US',
-        languages: ['en-US', 'en'],
+        userAgent: "Mozilla/5.0 (Test Browser)",
+        language: "en-US",
+        languages: ["en-US", "en"],
       },
       document: {
-        title: 'Test Page',
+        title: "Test Page",
         createElement: vi.fn().mockReturnValue({
           setAttribute: vi.fn(),
           appendChild: vi.fn(),
           remove: vi.fn(),
         }),
         querySelector: vi.fn().mockReturnValue({
-          content: 'test-content',
+          content: "test-content",
           setAttribute: vi.fn(),
         }),
         head: {
@@ -146,7 +146,7 @@ export const setupBrowserMocks = () => {
     writable: true,
   });
 
-  Object.defineProperty(global, 'document', {
+  Object.defineProperty(global, "document", {
     value: global.window.document,
     writable: true,
   });
@@ -161,43 +161,43 @@ export const setupNodeMocks = () => {
 // Common SEO test configuration
 export const createSEOTestConfig = (overrides: any = {}) => ({
   metadata: {
-    siteName: 'Test Site',
-    defaultTitle: 'Test Page',
-    titleTemplate: '%s | Test Site',
-    defaultDescription: 'A test page for SEO testing',
-    defaultImage: 'https://example.com/default-image.jpg',
-    defaultLocale: 'en-US',
+    siteName: "Test Site",
+    defaultTitle: "Test Page",
+    titleTemplate: "%s | Test Site",
+    defaultDescription: "A test page for SEO testing",
+    defaultImage: "https://example.com/default-image.jpg",
+    defaultLocale: "en-US",
     ...overrides.metadata,
   },
   openGraph: {
-    type: 'website',
-    siteName: 'Test Site',
+    type: "website",
+    siteName: "Test Site",
     images: [
       {
-        url: 'https://example.com/og-image.jpg',
+        url: "https://example.com/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: 'Test Site Image',
+        alt: "Test Site Image",
       },
     ],
     ...overrides.openGraph,
   },
   twitter: {
-    card: 'summary_large_image',
-    site: '@testsite',
-    creator: '@testcreator',
+    card: "summary_large_image",
+    site: "@testsite",
+    creator: "@testcreator",
     ...overrides.twitter,
   },
   structuredData: {
     organization: {
-      name: 'Test Organization',
-      url: 'https://example.com',
-      logo: 'https://example.com/logo.png',
+      name: "Test Organization",
+      url: "https://example.com",
+      logo: "https://example.com/logo.png",
     },
     website: {
-      url: 'https://example.com',
-      name: 'Test Site',
-      description: 'A test website',
+      url: "https://example.com",
+      name: "Test Site",
+      description: "A test website",
     },
     ...overrides.structuredData,
   },
@@ -206,16 +206,16 @@ export const createSEOTestConfig = (overrides: any = {}) => ({
 
 // Common metadata creation patterns
 export const createTestMetadata = async (config = {}) => {
-  const { createMetadata } = await import('#/utils/metadata');
+  const { createMetadata } = await import("#/utils/metadata");
   return createMetadata({
-    title: 'Test Page',
-    description: 'Test page description',
+    title: "Test Page",
+    description: "Test page description",
     ...config,
   });
 };
 
 export const createTestStructuredData = async (type: string, data = {}) => {
-  const module = await import('#/components/structured-data');
+  const module = await import("#/components/structured-data");
   const functionName = `create${type.charAt(0).toUpperCase() + type.slice(1)}Schema`;
   const createFunction = (module as any)[functionName];
 
@@ -227,13 +227,13 @@ export const createTestStructuredData = async (type: string, data = {}) => {
 };
 
 // Export test factories and generators
-export * from './seo-mocks';
-export * from './seo-test-data';
-export * from './seo-test-factory';
+export * from "./seo-mocks";
+export * from "./seo-test-data";
+export * from "./seo-test-factory";
 
 // Reset all mocks before each test
 beforeEach(() => {
   vi.clearAllMocks();
   setupBrowserMocks();
-  setupEnvironmentMocks('development');
+  setupEnvironmentMocks("development");
 });

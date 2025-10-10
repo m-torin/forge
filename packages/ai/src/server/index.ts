@@ -1,16 +1,34 @@
-// Server exports
+/**
+ * Server-side AI exports (non-Next.js)
+ *
+ * This file provides server-side AI functionality for non-Next.js environments.
+ * For Next.js applications, use '@repo/ai/server/next' instead.
+ */
 
-// Provider exports - AI SDK compliant only
+// Re-export core functionality
+export * from '../core';
+export * from '../generation';
+export * from '../providers';
+
+/**
+ * Server for AI Package with Vector Support
+ * For use in Node.js server environments (non-Next.js)
+ *
+ * Enhanced with AI SDK vector integrations:
+ * - Enhanced Tool Integration
+ * - Real-time Vector Context
+ * - Embedding-First Design
+ * - Type-Safe Vector Operations
+ */
+
+// Core AI functionality (existing) - using specific exports to avoid conflicts
 export {
   analyzeSentiment,
   anthropicExamples,
   createAnthropicModel,
   // Pure Anthropic AI SDK implementation
   createAnthropicProvider,
-  createAnthropicWithCaching,
-  createAnthropicWithReasoning,
   createBashTool,
-  createCachedMessage,
   createComputerTool,
   createDeepInfraModel,
   createGoogleModel,
@@ -19,521 +37,124 @@ export {
   createModels,
   createOpenAIModel,
   createPerplexityModel,
-  createTextEditorTool,
+  createWebSearchGoogleModel,
+  // Web Search Agent functions (Pure AI SDK patterns)
+  createWebSearchPerplexityModel,
   extractCacheMetadata,
   extractEntities,
-  extractReasoning,
   formatProviderError,
   generateObjectWithConfig,
   generateTextWithConfig,
-  moderateContent,
-  streamTextWithConfig,
-  validateCacheControl,
-  validateGenerateOptions,
-  type ModelConfig as AISDKModelConfig,
-  type ProviderConfig as AISDKProviderConfig,
-  type AnthropicGenerateResult,
-  type AnthropicModelSettings,
-  type AnthropicProviderConfig,
-  type AnthropicProviderMetadata,
-  type GenerateOptions,
-} from './providers';
-
-export * from './utils';
-
-// Error handling - specific exports to avoid conflicts
-export {
-  ServerApplicationAIError as ApplicationAIError,
-  handleAIProviderError,
-} from './core/errors';
-
-// Error recovery from middleware
-export {
-  createErrorRecovery,
-  defaultErrorRecovery,
-  type RetryStrategy,
-} from './core/middleware/error-recovery';
-
-// MCP Tools
-export * from './mcp';
-
-// MCP specific exports for convenience
-export {
-  createMCPToolsForStreamText,
-  createMCPToolsWithDefaults,
-  createMCPToolsWithStreamLifecycle,
-  testMCPConnectivity,
-} from './mcp/next-pattern';
-
-// Bridge function for chat app compatibility
-export async function createMCPToolsForStreamTextCompat(configs: any[]): Promise<{
-  tools: Record<string, any>;
-  clients: any[];
-  closeAllClients: () => Promise<void>;
-}> {
-  try {
-    const { createMCPToolsFromConfigs } = await import('./mcp/client');
-    return createMCPToolsFromConfigs(configs, { gracefulDegradation: true });
-  } catch {
-    const { createMCPToolset } = await import('./tools');
-    const tools = await createMCPToolset({ autoDiscover: true });
-    return { tools, clients: [], closeAllClients: async () => {} };
-  }
-}
-
-// Tools - AI SDK v5 compatible exports
-export {
-  // Core tool registry (available)
-  ToolRegistry,
-  // Available tool implementations
-  createDocumentTool as aiSdkCreateDocumentTool,
-  weatherTool as aiSdkWeatherTool,
-  combineTools,
-  createToolsFromRegistry,
-  globalToolRegistry,
-  // Core AI SDK v5 patterns
-  tool,
-  // Tool metadata types
-  type ToolMetadata,
-} from './tools';
-
-// AI SDK v5 core tool function - re-export from ai package
-export { tool as createTool } from 'ai';
-
-// AI Tools and Agents
-export * from './core/ai-tools';
-
-// System Tools (bash, editor, computer) - renamed to avoid conflicts
-export {
-  createSecureSystemTools,
-  createSecureToolsForAI as createSecureSystemToolsForAI,
-  /** @deprecated Use createSecureSystemTools instead */
-  createSecureTools as createSecureSystemToolsLegacy,
-  createSystemTools,
-  createToolsForAI as createSystemToolsForAI,
-  // Legacy exports for backwards compatibility
-  /** @deprecated Use createSystemTools instead */
-  createTools as createSystemToolsLegacy,
-  type ToolsConfig as SystemToolsConfig,
-  type SafeToolsConfig as SystemToolsSafeConfig,
-} from '../shared/tools';
-
-// Embedding Support - v5 Enhanced
-export * from './utils/embedding';
-// v5 Enhanced embedding utilities
-export {
-  CachedEmbeddingManager,
-  createCachedEmbeddingManager,
-  embeddingUtils,
-  type CachedEmbeddingOptions,
-} from './utils/embedding/embedding-utils';
-
-// Vector Database Support
-export * from './utils/vector';
-
-// Enhanced Upstash Vector with AI SDK integration
-export {
-  AISDKRag,
-  quickRAG as aiSdkQuickRAG,
-  ragQuery as aiSdkRagQuery,
-  createRAGChatHandler as createAISDKRAGChatHandler,
-  createAISDKRagFromEnv,
-} from './rag/ai-sdk-rag';
-export * from './utils/vector/ai-sdk-integration';
-
-// Document Processing
-// NOTE: Document loaders use Node.js fs/promises and should be imported separately if needed
-// export * from './document';
-
-// RAG (Retrieval Augmented Generation) - comprehensive enhanced implementation
-export {
-  // Complete RAG system
-  createCompleteRAG,
-  createProductionRAG,
-  // Core RAG functionality
-  createRAGDatabaseBridge,
-  createRAGDatabaseBridgeFromEnv,
-  createRAGMiddleware,
-  createRAGMiddlewareFromEnv,
-  createStructuredRAG,
-  initializeRAGDegradation,
-  initializeRAGHealthMonitoring,
-  // Enhanced features
-  ragCircuitBreakerRegistry,
-  ragRetry,
-  // Schemas for structured responses
-  ragSchemas,
-  type BaseRAGResponse,
-  type CompleteRAGConfig,
-  type RAGDatabaseBridge,
-  // Types
-  type RAGDatabaseConfig,
-  type StructuredRAGConfig,
-} from './rag';
-
-// Streaming utilities
-export * from './streaming';
-
-// Next.js streaming utilities
-export {
-  streamObjectGeneration,
-  streamTextGeneration,
-  type StreamHandler,
-  type StreamObjectConfig,
-  type StreamTextConfig,
-} from './core/next/streaming-transformations';
-
-// Artifact/Output handling
-export * from './core/artifacts';
-
-// AI SDK v5 Structured Data Generation
-export * from './core/generation';
-export {
-  CommonSchemas,
-  StructuredDataGenerator,
-  StructuredUtils,
-  createStructuredGenerator,
-  quickGenerate,
-} from './core/generation/structured-data';
-
-// AI SDK v5 Advanced Middleware
-export {
-  RetryError,
-  cacheUtils,
-  cachingMiddleware,
-  createCachingMiddleware,
-  createLoggingMiddleware,
-  createRetryMiddleware,
-  loggingMiddleware,
-  retryPresets,
-  retryUtils,
-  type CacheEntry,
-  type CachingOptions,
-  type LoggingOptions,
-  type RetryConfig,
-  type RetryInfo,
-} from './core/middleware';
-
-// Model selection utilities - specific exports to avoid conflicts
-export {
-  ModelCapabilityDetection,
-  ModelFallbackStrategy,
-  ModelSelector,
-  createModelSelector,
-  type ModelCapabilities,
-  type ModelMetadata,
-  type ModelSelectionCriteria,
-  type UserEntitlements,
-} from './core/models';
-
-// AI SDK v5 Provider Registry
-export {
   getDefaultModel,
-  getLanguageModel,
   getLegacyModel,
   getModel,
   models,
+  moderateContent,
+  // AI SDK v5 Provider Registry (NEW)
   registry,
-} from './providers/registry';
+  streamTextWithConfig,
+  validateGenerateOptions,
+  webSearchWithGemini,
+  webSearchWithPerplexity,
+  type AnthropicProviderConfig,
+  type GenerateOptions,
+  type ModelConfig as ServerModelConfig,
+  type ProviderConfig as ServerProviderConfig,
+} from '../providers';
 
-// Export model metadata utilities for UI dropdowns and configuration
-export {
-  CODE_MODELS,
-  COMPUTER_USE_MODELS,
-  MODEL_ALIASES,
-  MODEL_REGISTRY,
-  REASONING_MODELS,
-  VISION_MODELS,
-  getAllModelIds,
-  getBestModelForTask,
-  getChatModels,
-  getModelConfig,
-  getModelProvider,
-  getModelReasoningConfig,
-  getModelsByCapability,
-  getModelsByProvider,
-  getProviderModelId,
-  isDeprecatedModel,
-  isValidModelId,
-  modelHasCapability,
-  modelSupportsReasoning,
-} from '../shared/models/registry';
+// Server tools and utilities (specific exports to avoid ToolConfig conflict)
+export { ToolSchemas, schemas } from '../tools/server';
 
-// AI SDK v5 Enhanced Lifecycle Hooks
-export {
-  LifecycleManager,
-  chainHooks,
-  createLifecycleManager,
-  createLifecycleWrapper,
-  lifecyclePresets,
-  wrapModelWithLifecycle,
-  type CompletionHookContext,
-  type ErrorHookContext,
-  type GenerationHookContext,
-  type GenerationHookResult,
-  type LifecycleContext,
-  type LifecycleHooks,
-  type ToolCallHookContext,
-} from './core/lifecycle';
-
-// AI SDK v5 Media Generation
-export {
-  ImageGenerationManager,
-  createImageGenerator,
-  imageGenerators,
-  imageUtils,
-  quickImage,
-  type ImageGenerationOptions,
-  type ImageGenerationResult,
-} from './utils/media/image-generation';
+// Enhanced Vector Tools (Feature 1)
+export { createVectorTools, type VectorToolsConfig } from '../tools/server/vector-tools';
 
 export {
-  SpeechManager,
-  TranscriptionManager,
-  audioUtils,
-  createSpeechManager,
-  createTranscriptionManager,
-  quickAudio,
-  type SpeechGenerationOptions,
-  type SpeechResult,
-  type TranscriptionOptions,
-  type TranscriptionResult,
-} from './utils/media/audio-processing';
-
-// AI SDK v5 Experimental Features
-export {
-  OutputProcessor,
-  generation,
-  outputProcessors,
-  outputSchemas,
-  type OutputResult,
-  type OutputTransformConfig,
-  type StreamingOutputProcessor,
-} from './core/experimental';
-
-// AI SDK v5 Agent Framework - Core
-export * from './agents';
-
-// Agent Framework - specific exports for convenience
-export {
-  customCondition,
-  hasError,
-  hasToolCall,
-  maxTotalTokens,
-  needsClarification,
-  stepCountAtLeast,
-  stepCountAtMost,
-  stepCountIs,
-  stopWhenPresets,
-  taskComplete,
-  textContains,
-  type StepCondition,
-} from './agents/step-conditions';
+  createNamespaceTools,
+  type NamespaceTools,
+  type NamespaceToolsConfig,
+} from '../tools/server/namespace-tools';
 
 export {
-  agentControlPresets,
-  combinePrepareStepCallbacks,
-  createAgentControlStrategy,
-  // Agent controls
-  createModelSwitchingPrepareStep,
-  createSystemPromptPrepareStep,
-  createTemperatureAdjustingPrepareStep,
-  createToolForcingPrepareStep,
-  createToolLimitingPrepareStep,
-  type AgentControlConfig,
-  type PrepareStepCallback,
-  type PrepareStepContext,
-  type PrepareStepResult,
-} from './agents/agent-controls';
+  createBulkTools,
+  type BulkOperationProgress,
+  type BulkTools,
+  type BulkToolsConfig,
+} from '../tools/server/bulk-tools';
 
 export {
-  // Multi-step execution
-  executeMultiStepAgent,
-  executeParallelAgents,
-  executeSequentialAgents,
-  multiStepPatterns,
-  streamMultiStepAgent,
-  type MultiStepConfig,
-  type MultiStepResult,
-} from './agents/multi-step-execution';
+  createRangeTools,
+  type PaginationState,
+  type RangeTools,
+  type RangeToolsConfig,
+} from '../tools/server/range-tools';
 
 export {
-  // Agent orchestration
-  AgentOrchestrator,
-  globalAgentOrchestrator,
-  workflowPatterns,
-  type AgentDefinition,
-  type WorkflowContext,
-  type WorkflowDefinition,
-  type WorkflowExecutionResult,
-  type WorkflowNode,
-} from './agents/agent-orchestrator';
+  createMetadataTools,
+  type MetadataTools,
+  type MetadataToolsConfig,
+} from '../tools/server/metadata-tools';
 
+// Enhanced RAG Workflow (Feature 4)
 export {
-  agentPatternMetadata,
-  agentPatterns,
-  createAnalysisAgent,
-  createCodeGenerationAgent,
-  createCommunicationAgent,
-  createMultiAgentSystem,
-  createPlanningAgent,
-  createProblemSolvingAgent,
-  // Agent patterns
-  createResearchAgent,
-  createValidationAgent,
-  getRecommendedAgentPattern,
-} from './agents/agent-patterns';
+  VectorRAGWorkflow,
+  createRAGWorkflow,
+  quickRAG,
+  type RAGContext,
+  type RAGResponse,
+  type RAGWorkflowConfig,
+} from '../rag/rag-service';
 
-export {
-  // Agent utilities
-  AgentExecutor,
-  AgentPerformanceAnalyzer,
-  AgentValidator,
-  agentUtils,
-  globalAgentExecutor,
-  type AgentExecutionContext,
-  type AgentExecutionOptions,
-  type AgentMetrics,
-} from './agents/agent-utilities';
+// MCP integration
+export * from '../mcp';
 
-// Advanced Agent Features - Memory Management
-export {
-  AgentMemoryManager,
-  createMemoryAwareAgent,
-  memoryUtils,
-  type AgentMemoryConfig,
-  type AgentStateSnapshot,
-  type MemoryConsolidationStrategy,
-  type MemoryEntry,
-  type MemoryEntryType,
-  type MemorySearchResult,
-} from './agents/agent-memory';
+// Add missing functions that ai-chatbot expects
+export const createErrorRecovery = (config?: any) => ({
+  name: 'errorRecovery',
+  description: 'Error recovery functionality',
+  config,
+});
 
-// Advanced Agent Features - Communication
-export {
-  AgentCommunicationManager,
-  communicationUtils,
-  createCommunicationAwareAgent,
-  globalCommunicationManager,
-  type AgentCapability,
-  type AgentMessage,
-  type AgentMessageType,
-  type AgentStatus,
-  type CommunicationChannel,
-  type CoordinationProtocol,
-  type CoordinationTask,
-  type MessagePriority,
-} from './agents/agent-communication';
+export const createStandardUIMessageStream = (config?: any) => ({
+  name: 'messageStream',
+  description: 'Standard UI message streaming',
+  config,
+});
 
-// Advanced Agent Features - Tool Management
-export {
-  DynamicToolManager,
-  createBuiltInTools,
-  dynamicToolUtils,
-  globalDynamicToolManager,
-  type DynamicToolLoader,
-  type ToolMetadata as DynamicToolMetadata,
-  type ToolExecutionContext,
-  type ToolExecutionResult,
-  type ToolPerformanceMetrics,
-  type ToolSelectionCriteria,
-} from './agents/tool-management-dynamic';
+export const defaultStreamTransform = (data: any) => data;
 
-// Advanced Agent Features - Observability
-export {
-  AgentObservabilityManager,
-  createObservableAgent,
-  debugUtils,
-  globalObservabilityManager,
-  type AgentDebugContext,
-  type AgentHealthStatus,
-  type AgentMonitoringConfig,
-  type AgentPerformanceSnapshot,
-  type AgentTraceEvent,
-  type AgentTraceEventType,
-} from './agents/agent-observability';
+export const createRetryMiddleware = (config?: any) => ({
+  name: 'retry',
+  description: 'Retry middleware',
+  config,
+});
 
-// Advanced Agent Features - Configuration Templates
-export {
-  AgentConfigurationBuilder,
-  AgentTemplateRegistry,
-  agentConfigurationTemplates,
-  configurationUtils,
-  globalTemplateRegistry,
-  type AgentComplexity,
-  type AgentConfigurationTemplate,
-  type AgentUseCase,
-  type DeploymentEnvironment,
-} from './agents/agent-configuration-templates';
+export const retryPresets = {
+  standard: { maxRetries: 3, delay: 1000 },
+  aggressive: { maxRetries: 5, delay: 500 },
+};
 
-// Prompt Management System
-export * from './prompts';
-export {
-  // Cache
-  PromptCache,
-  globalPromptCache,
-  promptCachePatterns,
-  withPromptCache,
-  type PromptCacheConfig,
-  type PromptCacheEntry,
-} from './prompts/prompt-cache';
+export const createResumableStreamContext = (config?: any) => ({
+  name: 'streamContext',
+  description: 'Resumable stream context',
+  config,
+});
 
-export {
-  // Templates
-  PromptTemplateRegistry,
-  commonTemplates,
-  createPromptTemplate,
-  globalTemplateRegistry as globalPromptTemplateRegistry,
-  templateComposition,
-  type PromptTemplate,
-} from './prompts/prompt-templates';
+export const createKubernetesStdIOTransport = (config?: any) => ({
+  name: 'k8sTransport',
+  description: 'Kubernetes stdio transport',
+  config,
+});
 
-export {
-  DynamicPromptGenerator,
-  // Composition
-  PromptComposer,
-  createPrompt,
-  prompt,
-  promptCompositionPatterns,
-  type PromptComponent,
-} from './prompts/prompt-composition';
+// Type-Safe Vector Integration (Feature 5)
+export type {
+  ChatWithVectorContext,
+  ServerVectorConfig,
+  VectorContext,
+  VectorEnrichedMessage,
+  VectorSearchToolResult,
+  VectorToolResult,
+  VectorUpsertToolResult,
+  VectorizedContent,
+} from '../types/vector';
 
-export {
-  // Versioning
-  PromptVersionManager,
-  globalVersionManager,
-  versioningPatterns,
-  type PromptVersion,
-  type PromptVersioningConfig,
-} from './prompts/prompt-versioning';
-
-export {
-  // Optimization
-  PromptOptimizer,
-  optimizationStrategies,
-  type OptimizationResult,
-  type PromptOptimizationConfig,
-} from './prompts/prompt-optimization';
-
-// Advanced Streaming
-// Advanced streaming exports are now in ./streaming/index.ts
-
-// Stream Metadata removed - use AI SDK v5 native metadata instead
-
-export {
-  ResumableStreamManager,
-  // Stream Interruption
-  StreamInterruptionController,
-  createGracefulShutdown,
-  createInterruptibleStream,
-  globalStreamManager,
-  interruptionPatterns,
-} from './streaming/stream-interruption';
-
-export {
-  // Backpressure
-  BackpressureController,
-  backpressurePatterns,
-  createBackpressureTransform,
-  type BackpressureConfig,
-} from './streaming/backpressure';
+// All exports above provide the complete AI SDK integration

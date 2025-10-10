@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useLocalStorage, useStateHistory } from '@mantine/hooks';
-import { nanoid } from 'nanoid';
-import { useCallback, useMemo } from 'react';
-import type { SavedDocument } from './use-document-persistence';
+import { useLocalStorage, useStateHistory } from "@mantine/hooks";
+import { nanoid } from "nanoid";
+import { useCallback, useMemo } from "react";
+import type { SavedDocument } from "./use-document-persistence";
 
 export interface DocumentFolder {
   id: string;
@@ -50,15 +50,15 @@ export interface UseDocumentOrganizationOptions {
 
 export interface OrganizationAction {
   type:
-    | 'move_document'
-    | 'create_folder'
-    | 'delete_folder'
-    | 'create_tag'
-    | 'delete_tag'
-    | 'add_tag'
-    | 'remove_tag'
-    | 'pin_document'
-    | 'archive_document';
+    | "move_document"
+    | "create_folder"
+    | "delete_folder"
+    | "create_tag"
+    | "delete_tag"
+    | "add_tag"
+    | "remove_tag"
+    | "pin_document"
+    | "archive_document";
   timestamp: string;
   data: any;
   description: string;
@@ -77,40 +77,41 @@ export function useDocumentOrganization(
   } = options;
 
   // Folders storage
-  const [folders, setFolders] = useLocalStorage<Record<string, DocumentFolder>>({
-    key: 'notion-editor-folders',
-    defaultValue: {},
-    serialize: JSON.stringify,
-    deserialize: value => (value === undefined ? {} : JSON.parse(value)),
-  });
-
-  // Tags storage
-  const [tags, setTags] = useLocalStorage<Record<string, DocumentTag>>({
-    key: 'notion-editor-tags',
-    defaultValue: {},
-    serialize: JSON.stringify,
-    deserialize: value => (value === undefined ? {} : JSON.parse(value)),
-  });
-
-  // Document metadata storage
-  const [documentMetadata, setDocumentMetadata] = useLocalStorage<Record<string, DocumentMetadata>>(
+  const [folders, setFolders] = useLocalStorage<Record<string, DocumentFolder>>(
     {
-      key: 'notion-editor-document-metadata',
+      key: "notion-editor-folders",
       defaultValue: {},
       serialize: JSON.stringify,
-      deserialize: value => (value === undefined ? {} : JSON.parse(value)),
+      deserialize: (value) => (value === undefined ? {} : JSON.parse(value)),
     },
   );
 
+  // Tags storage
+  const [tags, setTags] = useLocalStorage<Record<string, DocumentTag>>({
+    key: "notion-editor-tags",
+    defaultValue: {},
+    serialize: JSON.stringify,
+    deserialize: (value) => (value === undefined ? {} : JSON.parse(value)),
+  });
+
+  // Document metadata storage
+  const [documentMetadata, setDocumentMetadata] = useLocalStorage<
+    Record<string, DocumentMetadata>
+  >({
+    key: "notion-editor-document-metadata",
+    defaultValue: {},
+    serialize: JSON.stringify,
+    deserialize: (value) => (value === undefined ? {} : JSON.parse(value)),
+  });
+
   // State history for undo/redo functionality
 
-  const [lastAction, actionHandlers, actionHistory] = useStateHistory<OrganizationAction | null>(
-    null,
-  );
+  const [lastAction, actionHandlers, actionHistory] =
+    useStateHistory<OrganizationAction | null>(null);
 
   // Helper function to record actions for undo/redo
   const recordAction = useCallback(
-    (type: OrganizationAction['type'], data: any, description: string) => {
+    (type: OrganizationAction["type"], data: any, description: string) => {
       const action: OrganizationAction = {
         type,
         timestamp: new Date().toISOString(),
@@ -154,14 +155,14 @@ export function useDocumentOrganization(
         documentIds: [],
       };
 
-      setFolders(prev => ({
+      setFolders((prev) => ({
         ...prev,
         [folder.id]: folder,
       }));
 
       // Record action for undo/redo
       recordAction(
-        'create_folder',
+        "create_folder",
         { folderId: folder.id, folder },
         `Created folder "${folder.name}"`,
       );
@@ -175,12 +176,12 @@ export function useDocumentOrganization(
   const updateFolder = useCallback(
     (
       folderId: string,
-      updates: Partial<Pick<DocumentFolder, 'name' | 'description' | 'color'>>,
+      updates: Partial<Pick<DocumentFolder, "name" | "description" | "color">>,
     ): boolean => {
       const folder = folders[folderId];
       if (!folder) return false;
 
-      setFolders(prev => ({
+      setFolders((prev) => ({
         ...prev,
         [folderId]: {
           ...folder,
@@ -204,9 +205,9 @@ export function useDocumentOrganization(
       if (folder.documentIds.length > 0) {
         if (moveDocumentsToParent) {
           // Move documents to parent folder or root
-          setDocumentMetadata(prev => {
+          setDocumentMetadata((prev) => {
             const updated = { ...prev };
-            folder.documentIds.forEach(docId => {
+            folder.documentIds.forEach((docId) => {
               if (updated[docId]) {
                 updated[docId] = {
                   ...updated[docId],
@@ -218,9 +219,9 @@ export function useDocumentOrganization(
           });
         } else {
           // Remove folder reference from documents
-          setDocumentMetadata(prev => {
+          setDocumentMetadata((prev) => {
             const updated = { ...prev };
-            folder.documentIds.forEach(docId => {
+            folder.documentIds.forEach((docId) => {
               if (updated[docId]) {
                 updated[docId] = {
                   ...updated[docId],
@@ -234,8 +235,10 @@ export function useDocumentOrganization(
       }
 
       // Handle child folders
-      const childFolders = Object.values(folders).filter(f => f.parentId === folderId);
-      childFolders.forEach(childFolder => {
+      const childFolders = Object.values(folders).filter(
+        (f) => f.parentId === folderId,
+      );
+      childFolders.forEach((childFolder) => {
         if (moveDocumentsToParent) {
           updateFolder(childFolder.id, { parentId: folder.parentId } as any);
         } else {
@@ -244,7 +247,7 @@ export function useDocumentOrganization(
       });
 
       // Remove folder
-      setFolders(prev => {
+      setFolders((prev) => {
         const updated = { ...prev };
         delete updated[folderId];
         return updated;
@@ -276,7 +279,7 @@ export function useDocumentOrganization(
         documentCount: 0,
       };
 
-      setTags(prev => ({
+      setTags((prev) => ({
         ...prev,
         [tag.id]: tag,
       }));
@@ -290,12 +293,12 @@ export function useDocumentOrganization(
   const updateTag = useCallback(
     (
       tagId: string,
-      updates: Partial<Pick<DocumentTag, 'name' | 'color' | 'description'>>,
+      updates: Partial<Pick<DocumentTag, "name" | "color" | "description">>,
     ): boolean => {
       const tag = tags[tagId];
       if (!tag) return false;
 
-      setTags(prev => ({
+      setTags((prev) => ({
         ...prev,
         [tagId]: {
           ...tag,
@@ -315,14 +318,14 @@ export function useDocumentOrganization(
       if (!tag) return false;
 
       // Remove tag from all documents
-      setDocumentMetadata(prev => {
+      setDocumentMetadata((prev) => {
         const updated = { ...prev };
-        Object.keys(updated).forEach(docId => {
+        Object.keys(updated).forEach((docId) => {
           const metadata = updated[docId];
           if (metadata.tagIds.includes(tagId)) {
             updated[docId] = {
               ...metadata,
-              tagIds: metadata.tagIds.filter(id => id !== tagId),
+              tagIds: metadata.tagIds.filter((id) => id !== tagId),
             };
           }
         });
@@ -330,7 +333,7 @@ export function useDocumentOrganization(
       });
 
       // Remove tag
-      setTags(prev => {
+      setTags((prev) => {
         const updated = { ...prev };
         delete updated[tagId];
         return updated;
@@ -351,7 +354,7 @@ export function useDocumentOrganization(
       const now = new Date().toISOString();
 
       // Update document metadata
-      setDocumentMetadata(prev => ({
+      setDocumentMetadata((prev) => ({
         ...prev,
         [documentId]: {
           documentId,
@@ -365,7 +368,7 @@ export function useDocumentOrganization(
       }));
 
       // Update folder document lists
-      setFolders(prev => {
+      setFolders((prev) => {
         const updated = { ...prev };
 
         // Remove from old folder
@@ -374,7 +377,9 @@ export function useDocumentOrganization(
           if (oldFolder) {
             updated[currentMetadata.folderId] = {
               ...oldFolder,
-              documentIds: oldFolder.documentIds.filter(id => id !== documentId),
+              documentIds: oldFolder.documentIds.filter(
+                (id) => id !== documentId,
+              ),
               modified: now,
             };
           }
@@ -399,10 +404,10 @@ export function useDocumentOrganization(
       const document = documents[documentId];
       const oldFolderName = currentMetadata?.folderId
         ? folders[currentMetadata.folderId]?.name
-        : 'Root';
-      const newFolderName = folderId ? folders[folderId]?.name : 'Root';
+        : "Root";
+      const newFolderName = folderId ? folders[folderId]?.name : "Root";
       recordAction(
-        'move_document',
+        "move_document",
         {
           documentId,
           oldFolderId: currentMetadata?.folderId,
@@ -413,7 +418,14 @@ export function useDocumentOrganization(
 
       return true;
     },
-    [documents, folders, documentMetadata, setDocumentMetadata, setFolders, recordAction],
+    [
+      documents,
+      folders,
+      documentMetadata,
+      setDocumentMetadata,
+      setFolders,
+      recordAction,
+    ],
   );
 
   // Add tag to document
@@ -426,7 +438,7 @@ export function useDocumentOrganization(
 
       const now = new Date().toISOString();
 
-      setDocumentMetadata(prev => ({
+      setDocumentMetadata((prev) => ({
         ...prev,
         [documentId]: {
           documentId,
@@ -440,7 +452,7 @@ export function useDocumentOrganization(
       }));
 
       // Update tag document count
-      setTags(prev => ({
+      setTags((prev) => ({
         ...prev,
         [tagId]: {
           ...prev[tagId],
@@ -452,14 +464,21 @@ export function useDocumentOrganization(
       const document = documents[documentId];
       const tag = tags[tagId];
       recordAction(
-        'add_tag',
+        "add_tag",
         { documentId, tagId },
         `Added tag "${tag?.name}" to "${document?.title}"`,
       );
 
       return true;
     },
-    [documents, tags, documentMetadata, setDocumentMetadata, setTags, recordAction],
+    [
+      documents,
+      tags,
+      documentMetadata,
+      setDocumentMetadata,
+      setTags,
+      recordAction,
+    ],
   );
 
   // Remove tag from document
@@ -468,16 +487,16 @@ export function useDocumentOrganization(
       const currentMetadata = documentMetadata[documentId];
       if (!currentMetadata?.tagIds.includes(tagId)) return false;
 
-      setDocumentMetadata(prev => ({
+      setDocumentMetadata((prev) => ({
         ...prev,
         [documentId]: {
           ...currentMetadata,
-          tagIds: currentMetadata.tagIds.filter(id => id !== tagId),
+          tagIds: currentMetadata.tagIds.filter((id) => id !== tagId),
         },
       }));
 
       // Update tag document count
-      setTags(prev => ({
+      setTags((prev) => ({
         ...prev,
         [tagId]: {
           ...prev[tagId],
@@ -498,7 +517,7 @@ export function useDocumentOrganization(
       const currentMetadata = documentMetadata[documentId];
       const now = new Date().toISOString();
 
-      setDocumentMetadata(prev => ({
+      setDocumentMetadata((prev) => ({
         ...prev,
         [documentId]: {
           documentId,
@@ -513,11 +532,11 @@ export function useDocumentOrganization(
 
       // Record action for undo/redo
       const document = documents[documentId];
-      const action = !currentMetadata?.isPinned ? 'pinned' : 'unpinned';
+      const action = !currentMetadata?.isPinned ? "pinned" : "unpinned";
       recordAction(
-        'pin_document',
+        "pin_document",
         { documentId, wasPinned: currentMetadata?.isPinned || false },
-        `${action === 'pinned' ? 'Pinned' : 'Unpinned'} "${document?.title}"`,
+        `${action === "pinned" ? "Pinned" : "Unpinned"} "${document?.title}"`,
       );
 
       return true;
@@ -533,7 +552,7 @@ export function useDocumentOrganization(
       const currentMetadata = documentMetadata[documentId];
       const now = new Date().toISOString();
 
-      setDocumentMetadata(prev => ({
+      setDocumentMetadata((prev) => ({
         ...prev,
         [documentId]: {
           documentId,
@@ -548,11 +567,11 @@ export function useDocumentOrganization(
 
       // Record action for undo/redo
       const document = documents[documentId];
-      const action = !currentMetadata?.isArchived ? 'archived' : 'unarchived';
+      const action = !currentMetadata?.isArchived ? "archived" : "unarchived";
       recordAction(
-        'archive_document',
+        "archive_document",
         { documentId, wasArchived: currentMetadata?.isArchived || false },
-        `${action === 'archived' ? 'Archived' : 'Unarchived'} "${document?.title}"`,
+        `${action === "archived" ? "Archived" : "Unarchived"} "${document?.title}"`,
       );
 
       return true;
@@ -580,8 +599,8 @@ export function useDocumentOrganization(
   const folderTree = useMemo((): FolderTreeNode[] => {
     const buildTree = (parentId?: string, depth = 0): FolderTreeNode[] => {
       return Object.values(folders)
-        .filter(folder => folder.parentId === parentId)
-        .map(folder => ({
+        .filter((folder) => folder.parentId === parentId)
+        .map((folder) => ({
           ...folder,
           children: buildTree(folder.id, depth + 1),
           depth,
@@ -595,7 +614,7 @@ export function useDocumentOrganization(
   // Get documents by folder
   const getDocumentsByFolder = useCallback(
     (folderId?: string) => {
-      return Object.values(documents).filter(doc => {
+      return Object.values(documents).filter((doc) => {
         const metadata = documentMetadata[doc.id];
         return metadata?.folderId === folderId;
       });
@@ -606,7 +625,7 @@ export function useDocumentOrganization(
   // Get documents by tag
   const getDocumentsByTag = useCallback(
     (tagId: string) => {
-      return Object.values(documents).filter(doc => {
+      return Object.values(documents).filter((doc) => {
         const metadata = documentMetadata[doc.id];
         return metadata?.tagIds.includes(tagId);
       });
@@ -616,7 +635,7 @@ export function useDocumentOrganization(
 
   // Get pinned documents
   const getPinnedDocuments = useCallback(() => {
-    return Object.values(documents).filter(doc => {
+    return Object.values(documents).filter((doc) => {
       const metadata = documentMetadata[doc.id];
       return metadata?.isPinned;
     });
@@ -624,7 +643,7 @@ export function useDocumentOrganization(
 
   // Get archived documents
   const getArchivedDocuments = useCallback(() => {
-    return Object.values(documents).filter(doc => {
+    return Object.values(documents).filter((doc) => {
       const metadata = documentMetadata[doc.id];
       return metadata?.isArchived;
     });
@@ -632,9 +651,12 @@ export function useDocumentOrganization(
 
   // Get unorganized documents (no folder, no tags)
   const getUnorganizedDocuments = useCallback(() => {
-    return Object.values(documents).filter(doc => {
+    return Object.values(documents).filter((doc) => {
       const metadata = documentMetadata[doc.id];
-      return !metadata?.folderId && (!metadata?.tagIds || metadata.tagIds.length === 0);
+      return (
+        !metadata?.folderId &&
+        (!metadata?.tagIds || metadata.tagIds.length === 0)
+      );
     });
   }, [documents, documentMetadata]);
 
@@ -642,15 +664,15 @@ export function useDocumentOrganization(
   const updateTagCounts = useCallback(() => {
     const tagCounts: Record<string, number> = {};
 
-    Object.values(documentMetadata).forEach(metadata => {
-      metadata.tagIds.forEach(tagId => {
+    Object.values(documentMetadata).forEach((metadata) => {
+      metadata.tagIds.forEach((tagId) => {
         tagCounts[tagId] = (tagCounts[tagId] || 0) + 1;
       });
     });
 
-    setTags(prev => {
+    setTags((prev) => {
       const updated = { ...prev };
-      Object.keys(updated).forEach(tagId => {
+      Object.keys(updated).forEach((tagId) => {
         updated[tagId] = {
           ...updated[tagId],
           documentCount: tagCounts[tagId] || 0,
@@ -666,23 +688,23 @@ export function useDocumentOrganization(
 
     try {
       switch (lastAction.type) {
-        case 'move_document': {
+        case "move_document": {
           const { documentId, oldFolderId } = lastAction.data;
           return moveDocumentToFolder(documentId, oldFolderId);
         }
-        case 'add_tag': {
+        case "add_tag": {
           const { documentId, tagId } = lastAction.data;
           return removeTagFromDocument(documentId, tagId);
         }
-        case 'pin_document': {
+        case "pin_document": {
           const { documentId } = lastAction.data;
           return toggleDocumentPin(documentId);
         }
-        case 'archive_document': {
+        case "archive_document": {
           const { documentId } = lastAction.data;
           return toggleDocumentArchive(documentId);
         }
-        case 'create_folder': {
+        case "create_folder": {
           const { folderId } = lastAction.data;
           return deleteFolder(folderId, false);
         }
@@ -690,8 +712,7 @@ export function useDocumentOrganization(
           return false;
       }
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to undo action:', error);
+      console.error("Failed to undo action:", error);
       return false;
     }
   }, [

@@ -13,7 +13,7 @@ const hasRequiredEnvVars = Boolean(
 const requireInProduction = isProductionEnv && !isBuildEnv && hasRequiredEnvVars;
 
 // Direct export for Next.js webpack inlining
-export const env = createEnv({
+const env = createEnv({
   server: {
     STRIPE_SECRET_KEY: requireInProduction
       ? z.string().startsWith('sk_')
@@ -76,4 +76,4 @@ export function hasStripeConfig(): boolean {
 }
 
 // Export type for better DX
-export type Env = typeof env;
+export type PaymentsEnv = typeof env;

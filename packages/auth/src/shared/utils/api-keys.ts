@@ -22,7 +22,7 @@ export function maskApiKey(apiKey: string): string {
  */
 export function generateApiKeyName(): string {
   const adjectives = ['Quick', 'Secure', 'Fast', 'Smart', 'Auto', 'Main', 'Test', 'Dev'];
-  const nouns = ['Access', 'Key', 'Token', 'Auth', 'API', 'Service', 'Client', 'App'];
+  const nouns = ['Access', 'Key', 'Token', 'Auth', 'Api', 'Service', 'Client', 'App'];
 
   const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
   const noun = nouns[Math.floor(Math.random() * nouns.length)];

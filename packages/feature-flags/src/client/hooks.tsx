@@ -26,10 +26,7 @@ export function useFlag<T>(flagFunction: () => Promise<T>, initialValue?: T): T 
         setValue(false as T);
       }
     };
-    evaluateFlag().catch(error => {
-      // Catch any remaining unhandled promise rejections
-      logError('Unhandled flag evaluation error', { error: String(error), hook: 'useFlag' });
-    });
+    void evaluateFlag();
   }, [flagFunction]);
 
   return value;
@@ -89,13 +86,7 @@ export function useFeatureFlag(key: string): boolean {
         setEnabled(false);
       }
     };
-    checkEnabled().catch(error => {
-      // Catch any remaining unhandled promise rejections
-      logError('Unhandled feature flag check error', {
-        error: String(error),
-        hook: 'useFlagCheck',
-      });
-    });
+    void checkEnabled();
   }, [adapter, key]);
 
   return enabled;
@@ -120,13 +111,7 @@ export function useFeatureFlagPayload<T = any>(key: string, defaultValue?: T): T
         setValue(defaultValue);
       }
     };
-    getFlagValue().catch(error => {
-      // Catch any remaining unhandled promise rejections
-      logError('Unhandled feature flag payload error', {
-        error: String(error),
-        hook: 'useFlagPayload',
-      });
-    });
+    void getFlagValue();
   }, [adapter, key, defaultValue]);
 
   return value;
@@ -151,10 +136,7 @@ export function useFeatureFlags(): Record<string, any> {
         setFlags({});
       }
     };
-    getAllFlags().catch(error => {
-      // Catch any remaining unhandled promise rejections
-      logError('Unhandled feature flags fetch error', { error: String(error), hook: 'useFlags' });
-    });
+    void getAllFlags();
   }, [adapter]);
 
   return flags;

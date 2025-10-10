@@ -17,7 +17,7 @@ export interface JsonObject {
 /**
  * JSON array
  */
-export interface JsonArray extends Array<JsonValue> {}
+interface JsonArray extends Array<JsonValue> {}
 
 /**
  * Generic input/output data for workflows
@@ -42,7 +42,7 @@ export interface ErrorDetails {
 /**
  * Context object for operations
  */
-export interface OperationContext {
+interface OperationContext {
   workflowId?: string;
   executionId?: string;
   stepId?: string;
@@ -54,7 +54,7 @@ export interface OperationContext {
 /**
  * Step input/output type
  */
-export type StepData = JsonObject;
+type StepData = JsonObject;
 
 /**
  * Event payload type
@@ -64,7 +64,7 @@ export type EventPayload = JsonObject;
 /**
  * Schedule data type
  */
-export interface ScheduleData {
+interface ScheduleData {
   id: string;
   workflowId: string;
   cron?: string;

@@ -22,7 +22,7 @@ export const createMockBrowser = () => ({
   close: vi.fn().mockResolvedValue(undefined),
 });
 
-export const createMockCheerio = () => ({
+const createMockCheerio = () => ({
   load: vi.fn().mockImplementation((html: string) => {
     const mockCheerio = (selector: string) => ({
       text: vi.fn().mockReturnValue('Mock text'),
@@ -36,7 +36,7 @@ export const createMockCheerio = () => ({
   }),
 });
 
-export const createMockFetch = () => ({
+const createMockFetch = () => ({
   fetch: vi.fn().mockImplementation((url: string | URL | Request) => {
     const urlString = typeof url === 'string' ? url : url.toString();
     if (urlString.includes('error')) {

@@ -10,25 +10,24 @@ Essential information about all packages in the Forge monorepo for quick lookup.
 
 ## Package Overview
 
-| Package                      | Purpose                        | Layer | Edge Support | Key Import                                               |
-| ---------------------------- | ------------------------------ | ----- | ------------ | -------------------------------------------------------- |
-| `@repo/auth`                 | Better Auth with organizations | 5     | ✅           | `auth` from `/server/next`                               |
-| `@repo/database`             | Prisma ORM + generated types   | 3     | ❌           | `import { prisma }` from `/prisma/server/next`           |
-| `@repo/analytics`            | PostHog/GA with feature flags  | 4     | ✅           | `import { analytics }`                                   |
-| `@repo/observability`        | Sentry error tracking          | 2     | ✅           | `createServerObservability` from `/server/next`          |
-| `@repo/notifications`        | Mantine notifications          | 4     | ✅           | `/mantine-notifications`                                 |
-| `@repo/email`                | Email templates and sending    | 4     | ❌           | `import { sendEmail }`                                   |
-| `@repo/storage`              | Cloudflare R2/Images           | 5.5   | ✅           | `import { initializeStorage, createStorageProvider }`    |
-| `@repo/payments`             | Stripe integration             | 5     | ❌           | `import { stripe }`                                      |
-| `@repo/ai`                   | AI/ML functionality            | 5.5   | ✅           | `import { getBestModelForTask }` from `/models`          |
-| `@repo/scraping`             | Web scraping utilities         | 5.5   | ❌           | `import { scraper }`                                     |
-| `@repo/feature-flags`        | Feature flag management        | 4     | ✅           | `import { flags }`                                       |
-| `@repo/internationalization` | i18n support                   | 5     | ✅           | `import { i18n }`                                        |
-| `@repo/seo`                  | SEO utilities                  | 5     | ✅           | `import { createStructuredData, JsonLd }`                |
-| `@repo/links`                | Link management                | 5     | ✅           | `import { createServerLinkManager }` from `/server/next` |
-| `@repo/orchestration`        | Workflow management            | 5     | ❌           | `import { workflow }`                                    |
-| `@repo/security`             | Security utilities             | 2     | ✅           | `import { security }`                                    |
-| `@repo/qa`                   | Testing utilities              | 2     | ✅           | `import { testUtils }`                                   |
+| Package                      | Purpose                        | Layer | Edge Support | Key Import                                |
+| ---------------------------- | ------------------------------ | ----- | ------------ | ----------------------------------------- |
+| `@repo/auth`                 | Better Auth with organizations | 5     | ✅           | `auth` from `/server/next`                |
+| `@repo/db-prisma`            | Prisma ORM + generated types   | 3     | ❌           | `import { db } from '@repo/db-prisma'`    |
+| `@repo/analytics`            | PostHog/GA with feature flags  | 4     | ✅           | `import { analytics }`                    |
+| `@repo/observability`        | Sentry error tracking          | 2     | ✅           | `createObservability` from `/server/next` |
+| `@repo/email`                | Email templates and sending    | 4     | ❌           | `import { sendEmail }`                    |
+| `@repo/storage`              | Cloudflare R2/Images           | 5.5   | ✅           | `import { storage }`                      |
+| `@repo/payments`             | Stripe integration             | 5     | ❌           | `import { stripe }`                       |
+| `@repo/ai`                   | AI/ML functionality            | 5.5   | ✅           | `import { ai }`                           |
+| `@repo/scraping`             | Web scraping utilities         | 5.5   | ❌           | `import { scraper }`                      |
+| `@repo/feature-flags`        | Feature flag management        | 4     | ✅           | `import { flags }`                        |
+| `@repo/internationalization` | i18n support                   | 5     | ✅           | `import { i18n }`                         |
+| `@repo/seo`                  | SEO utilities                  | 5     | ✅           | `import { seo }`                          |
+| `@repo/links`                | Link management                | 5     | ✅           | `import { links }`                        |
+| `@repo/orchestration`        | Workflow management            | 5     | ❌           | `import { workflow }`                     |
+| `@repo/security`             | Security utilities             | 2     | ✅           | `import { security }`                     |
+| `@repo/qa`                   | Testing utilities              | 2     | ✅           | `import { testUtils }`                    |
 
 ## Import Patterns
 
@@ -37,15 +36,15 @@ Essential information about all packages in the Forge monorepo for quick lookup.
 ```typescript
 // Server components/actions
 import { auth } from "@repo/auth/server/next";
-import { createServerObservability } from "@repo/observability/server/next";
+import { createObservability } from "@repo/observability/server/next";
 
 // Client components
 import { useAuth } from "@repo/auth/client/next";
-import { getObservability } from "@repo/observability/client/next";
+import { createObservability } from "@repo/observability/client/next";
 
 // Middleware
 import { auth } from "@repo/auth/server/edge";
-import { createEdgeObservability } from "@repo/observability/server/edge";
+import { createObservability } from "@repo/observability/server/edge";
 ```
 
 ### Node.js Workers/Scripts
@@ -53,7 +52,7 @@ import { createEdgeObservability } from "@repo/observability/server/edge";
 ```typescript
 // Node.js only
 import { createAuth } from "@repo/auth/server";
-import { createServerObservability } from "@repo/observability/server";
+import { createObservability } from "@repo/observability/server";
 ```
 
 ## Environment Variables
@@ -119,10 +118,10 @@ pnpm test
 pnpm migrate
 
 # Generate Prisma client
-pnpm --filter @repo/database generate
+pnpm --filter @repo/db-prisma generate
 
 # Open Prisma Studio
-cd packages/database && pnpm dev
+cd packages/db-prisma && pnpm dev
 ```
 
 ### Building
@@ -269,26 +268,26 @@ export async function protectedAction() {
 ### Basic CRUD
 
 ```typescript
-import { prisma } from "@repo/database/prisma/server/next";
+import { db } from "@repo/db-prisma";
 
 // Create
-const user = await prisma.user.create({
+const user = await db.user.create({
   data: { email: "test@example.com", name: "Test" }
 });
 
 // Read
-const user = await prisma.user.findUnique({
+const user = await db.user.findUnique({
   where: { id: userId }
 });
 
 // Update
-const updated = await prisma.user.update({
+const updated = await db.user.update({
   where: { id: userId },
   data: { name: "New Name" }
 });
 
 // Delete
-await prisma.user.delete({
+await db.user.delete({
   where: { id: userId }
 });
 ```
@@ -296,7 +295,7 @@ await prisma.user.delete({
 ### Complex Queries
 
 ```typescript
-const users = await prisma.user.findMany({
+const users = await db.user.findMany({
   where: {
     posts: {
       some: { published: true }
@@ -358,7 +357,7 @@ import { auth } from "@repo/auth/server/next"; // ❌
 
 // Forgetting to regenerate Prisma client
 // After schema changes, always run:
-// pnpm --filter @repo/database generate
+// pnpm --filter @repo/db-prisma generate
 ```
 
 ### ✅ Do this instead
@@ -376,7 +375,7 @@ import { useAuth } from '@repo/auth/client/next'; // ✅
 
 // Always regenerate after schema changes
 pnpm migrate
-pnpm --filter @repo/database generate
+pnpm --filter @repo/db-prisma generate
 ```
 
 ## Performance Tips

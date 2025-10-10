@@ -4,15 +4,30 @@
  * Displays user profile with Tailwind styling
  */
 
-'use client';
+"use client";
 
-import { signOutAction } from '#/app/actions/auth';
-import type { User } from '#/lib/auth-context';
-import type { Locale } from '#/lib/i18n';
-import { Avatar, Badge, Button, Card, Group, Stack, Text, Title } from '@mantine/core';
-import { IconArrowLeft, IconCalendar, IconMail, IconShield, IconUser } from '@tabler/icons-react';
-import type { Route } from 'next';
-import Link from 'next/link';
+import { signOutAction } from "#/app/actions/auth";
+import type { User } from "#/lib/auth-context";
+import type { Locale } from "#/lib/i18n";
+import {
+  Avatar,
+  Badge,
+  Button,
+  Card,
+  Group,
+  Stack,
+  Text,
+  Title,
+} from "@mantine/core";
+import {
+  IconArrowLeft,
+  IconCalendar,
+  IconMail,
+  IconShield,
+  IconUser,
+} from "@tabler/icons-react";
+import type { Route } from "next";
+import Link from "next/link";
 
 interface ProfilePageUiProps {
   locale: Locale;
@@ -28,11 +43,11 @@ export default function ProfilePageUi({ locale, user }: ProfilePageUiProps) {
   };
 
   const formatDate = (date: Date | undefined) => {
-    if (!date) return 'Unknown';
+    if (!date) return "Unknown";
     return new Intl.DateTimeFormat(locale, {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     }).format(date);
   };
 
@@ -55,7 +70,11 @@ export default function ProfilePageUi({ locale, user }: ProfilePageUiProps) {
               </Title>
             </Group>
 
-            <Button variant="outline" onClick={handleSignOut} className="harmony-transition">
+            <Button
+              variant="outline"
+              onClick={handleSignOut}
+              className="harmony-transition"
+            >
               Sign Out
             </Button>
           </Group>
@@ -84,7 +103,10 @@ export default function ProfilePageUi({ locale, user }: ProfilePageUiProps) {
                 <Title order={2} className="harmony-text-primary">
                   {user.name}
                 </Title>
-                <Text size="sm" className="harmony-text-secondary mb-2 capitalize">
+                <Text
+                  size="sm"
+                  className="harmony-text-secondary mb-2 capitalize"
+                >
                   {user.role}
                 </Text>
 
@@ -92,9 +114,9 @@ export default function ProfilePageUi({ locale, user }: ProfilePageUiProps) {
                 <Badge
                   leftSection={<IconShield size={12} />}
                   variant="light"
-                  color={user.role === 'admin' ? 'violet' : 'blue'}
+                  color={user.role === "admin" ? "violet" : "blue"}
                 >
-                  {user.role === 'admin' ? 'Administrator' : 'User'}
+                  {user.role === "admin" ? "Administrator" : "User"}
                 </Badge>
               </div>
             </Group>
@@ -127,7 +149,11 @@ export default function ProfilePageUi({ locale, user }: ProfilePageUiProps) {
                   <Text size="sm" fw={500} className="harmony-text-primary">
                     User ID
                   </Text>
-                  <Text size="sm" ff="monospace" className="harmony-text-secondary">
+                  <Text
+                    size="sm"
+                    ff="monospace"
+                    className="harmony-text-secondary"
+                  >
                     {user.id}
                   </Text>
                 </div>
@@ -149,7 +175,7 @@ export default function ProfilePageUi({ locale, user }: ProfilePageUiProps) {
           </Card>
 
           {/* Admin Features */}
-          {user.role === 'admin' && (
+          {user.role === "admin" && (
             <Card
               withBorder
               shadow="md"
@@ -183,7 +209,12 @@ export default function ProfilePageUi({ locale, user }: ProfilePageUiProps) {
                   </Text>
                 </Stack>
 
-                <Button variant="outline" size="sm" color="violet" className="harmony-transition">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  color="violet"
+                  className="harmony-transition"
+                >
                   View Admin Dashboard
                 </Button>
               </Stack>
@@ -194,7 +225,11 @@ export default function ProfilePageUi({ locale, user }: ProfilePageUiProps) {
           <Card withBorder padding="lg" className="harmony-card bg-yellow-50">
             <Group gap="md" align="flex-start">
               <div className="mt-1 flex-shrink-0">
-                <svg className="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor">
+                <svg
+                  className="h-5 w-5 text-yellow-500"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
                   <path
                     fillRule="evenodd"
                     d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
@@ -207,8 +242,9 @@ export default function ProfilePageUi({ locale, user }: ProfilePageUiProps) {
                   Demo Account
                 </Text>
                 <Text size="sm" c="yellow.7">
-                  This is a demonstration profile. No real user data is stored or processed. All
-                  authentication is handled in-memory for this template.
+                  This is a demonstration profile. No real user data is stored
+                  or processed. All authentication is handled in-memory for this
+                  template.
                 </Text>
               </div>
             </Group>

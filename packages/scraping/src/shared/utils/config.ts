@@ -8,7 +8,7 @@ import { ProviderConfig, ScrapingConfig } from '../types/scraping-types';
 /**
  * Default configuration values
  */
-export const DEFAULT_CONFIG = {
+const DEFAULT_CONFIG = {
   timeout: 30000,
   retries: 3,
   retryDelay: 1000,
@@ -30,7 +30,7 @@ export const DEFAULT_CONFIG = {
 /**
  * Provider-specific default configurations
  */
-export const PROVIDER_DEFAULTS = {
+const PROVIDER_DEFAULTS = {
   playwright: {
     timeout: 30000,
     options: {
@@ -145,10 +145,7 @@ export function createConfigBuilder(): ConfigBuilder {
 /**
  * Merge provider configuration with defaults
  */
-export function mergeProviderConfig(
-  provider: string,
-  config: Partial<ProviderConfig>,
-): ProviderConfig {
+function _mergeProviderConfig(provider: string, config: Partial<ProviderConfig>): ProviderConfig {
   const defaults = PROVIDER_DEFAULTS[provider as keyof typeof PROVIDER_DEFAULTS] || {};
   return {
     ...defaults,
@@ -175,7 +172,7 @@ export function mergeScrapingConfig(config: Partial<ScrapingConfig>): ScrapingCo
 /**
  * Validate provider configuration
  */
-export function validateProviderConfig(
+function validateProviderConfig(
   provider: string,
   config: ProviderConfig,
 ): { valid: boolean; errors: string[] } {
@@ -214,7 +211,7 @@ export function validateProviderConfig(
 /**
  * Get environment-specific configuration
  */
-export function getEnvironmentConfig(): Partial<ScrapingConfig> {
+function getEnvironmentConfig(): Partial<ScrapingConfig> {
   const isProduction = process.env.NODE_ENV === 'production';
   const isTest = process.env.NODE_ENV === 'test';
 

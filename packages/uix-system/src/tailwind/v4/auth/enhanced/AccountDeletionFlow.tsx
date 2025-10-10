@@ -3,20 +3,20 @@
  * 100% React Server Component for secure account deletion with confirmations
  */
 
-import { useState } from 'react';
-import { useFormState } from 'react-dom';
-import type { BaseProps, FormState } from '../types';
-import { createInitialActionState } from '../types';
-import { Alert } from '../ui/Alert';
-import { Button } from '../ui/Button';
-import { Card, CardContent, CardHeader } from '../ui/Card';
-import { Input } from '../ui/Input';
+import { useState } from "react";
+import { useFormState } from "react-dom";
+import type { BaseProps, FormState } from "../types";
+import { createInitialActionState } from "../types";
+import { Alert } from "../ui/Alert";
+import { Button } from "../ui/Button";
+import { Card, CardContent, CardHeader } from "../ui/Card";
+import { Input } from "../ui/Input";
 
 import {
   cancelAccountDeletionAction,
   confirmAccountDeletionAction,
   initiateAccountDeletionAction,
-} from './actions';
+} from "./actions";
 
 interface AccountDeletionFlowProps extends BaseProps {
   userEmail: string;
@@ -44,15 +44,17 @@ export function AccountDeletionFlow({
   userName,
   organizationCount = 0,
   hasActiveSubscriptions = false,
-  title = 'Delete Account',
-  subtitle = 'Permanently delete your account and all associated data',
+  title = "Delete Account",
+  subtitle = "Permanently delete your account and all associated data",
   onDeletionComplete: _onDeletionComplete,
   onCancel,
-  className = '',
+  className = "",
 }: AccountDeletionFlowProps) {
-  const [currentStep, setCurrentStep] = useState<'warning' | 'confirmation' | 'token'>('warning');
-  const [confirmEmailInput, setConfirmEmailInput] = useState('');
-  const [confirmTextInput, setConfirmTextInput] = useState('');
+  const [currentStep, setCurrentStep] = useState<
+    "warning" | "confirmation" | "token"
+  >("warning");
+  const [confirmEmailInput, setConfirmEmailInput] = useState("");
+  const [confirmTextInput, setConfirmTextInput] = useState("");
 
   const [initiateState, initiateAction] = useFormState(
     initiateAccountDeletionAction,
@@ -69,36 +71,38 @@ export function AccountDeletionFlow({
 
   const deletionSteps: DeletionStep[] = [
     {
-      id: 'backup',
-      title: 'Backup Your Data',
-      description: 'Download any important data before deletion',
+      id: "backup",
+      title: "Backup Your Data",
+      description: "Download any important data before deletion",
       completed: false,
       required: false,
     },
     {
-      id: 'subscriptions',
-      title: 'Cancel Subscriptions',
-      description: 'Cancel all active subscriptions and memberships',
+      id: "subscriptions",
+      title: "Cancel Subscriptions",
+      description: "Cancel all active subscriptions and memberships",
       completed: !hasActiveSubscriptions,
       required: hasActiveSubscriptions,
     },
     {
-      id: 'organizations',
-      title: 'Transfer Organizations',
-      description: 'Transfer ownership or leave organizations',
+      id: "organizations",
+      title: "Transfer Organizations",
+      description: "Transfer ownership or leave organizations",
       completed: organizationCount === 0,
       required: organizationCount > 0,
     },
     {
-      id: 'confirm',
-      title: 'Final Confirmation',
-      description: 'Confirm permanent account deletion',
+      id: "confirm",
+      title: "Final Confirmation",
+      description: "Confirm permanent account deletion",
       completed: false,
       required: true,
     },
   ];
 
-  const canProceed = deletionSteps.filter(step => step.required).every(step => step.completed);
+  const canProceed = deletionSteps
+    .filter((step) => step.required)
+    .every((step) => step.completed);
 
   return (
     <div className={`space-y-6 ${className}`}>
@@ -137,7 +141,9 @@ export function AccountDeletionFlow({
               />
             </svg>
             <div className="text-sm text-red-800">
-              <h4 className="mb-2 font-medium">⚠️ This Action Cannot Be Undone</h4>
+              <h4 className="mb-2 font-medium">
+                ⚠️ This Action Cannot Be Undone
+              </h4>
               <p className="mb-2">Deleting your account will permanently:</p>
               <ul className="list-inside list-disc space-y-1">
                 <li>Delete all your personal data and account information</li>
@@ -157,33 +163,43 @@ export function AccountDeletionFlow({
         </Alert>
       )}
 
-      {(initiateState?.success || confirmState?.success || cancelState?.success) && (
+      {(initiateState?.success ||
+        confirmState?.success ||
+        cancelState?.success) && (
         <Alert variant="success">
-          {initiateState?.message || confirmState?.message || cancelState?.message}
+          {initiateState?.message ||
+            confirmState?.message ||
+            cancelState?.message}
         </Alert>
       )}
 
-      {currentStep === 'warning' && (
+      {currentStep === "warning" && (
         <Card>
           <CardHeader>
-            <h2 className="text-lg font-medium text-gray-900">Before You Delete Your Account</h2>
+            <h2 className="text-lg font-medium text-gray-900">
+              Before You Delete Your Account
+            </h2>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {deletionSteps.map(step => (
+              {deletionSteps.map((step) => (
                 <div
                   key={step.id}
                   className={`flex items-start space-x-3 rounded-lg border p-3 ${
                     step.completed
-                      ? 'border-green-200 bg-green-50'
+                      ? "border-green-200 bg-green-50"
                       : step.required
-                        ? 'border-red-200 bg-red-50'
-                        : 'border-gray-200 bg-gray-50'
+                        ? "border-red-200 bg-red-50"
+                        : "border-gray-200 bg-gray-50"
                   }`}
                 >
                   <div
                     className={`mt-0.5 flex h-5 w-5 items-center justify-center rounded-full ${
-                      step.completed ? 'bg-green-100' : step.required ? 'bg-red-100' : 'bg-gray-100'
+                      step.completed
+                        ? "bg-green-100"
+                        : step.required
+                          ? "bg-red-100"
+                          : "bg-gray-100"
                     }`}
                   >
                     {step.completed ? (
@@ -200,7 +216,7 @@ export function AccountDeletionFlow({
                       </svg>
                     ) : (
                       <svg
-                        className={`h-3 w-3 ${step.required ? 'text-red-600' : 'text-gray-400'}`}
+                        className={`h-3 w-3 ${step.required ? "text-red-600" : "text-gray-400"}`}
                         fill="currentColor"
                         viewBox="0 0 20 20"
                       >
@@ -216,10 +232,10 @@ export function AccountDeletionFlow({
                     <h3
                       className={`text-sm font-medium ${
                         step.completed
-                          ? 'text-green-800'
+                          ? "text-green-800"
                           : step.required
-                            ? 'text-red-800'
-                            : 'text-gray-700'
+                            ? "text-red-800"
+                            : "text-gray-700"
                       }`}
                     >
                       {step.title}
@@ -230,10 +246,10 @@ export function AccountDeletionFlow({
                     <p
                       className={`text-sm ${
                         step.completed
-                          ? 'text-green-700'
+                          ? "text-green-700"
                           : step.required
-                            ? 'text-red-700'
-                            : 'text-gray-600'
+                            ? "text-red-700"
+                            : "text-gray-600"
                       }`}
                     >
                       {step.description}
@@ -245,7 +261,7 @@ export function AccountDeletionFlow({
 
             <div className="mt-6 flex gap-3">
               <Button
-                onClick={() => setCurrentStep('confirmation')}
+                onClick={() => setCurrentStep("confirmation")}
                 variant="destructive"
                 disabled={!canProceed}
               >
@@ -261,10 +277,12 @@ export function AccountDeletionFlow({
         </Card>
       )}
 
-      {currentStep === 'confirmation' && (
+      {currentStep === "confirmation" && (
         <Card>
           <CardHeader>
-            <h2 className="text-lg font-medium text-gray-900">Confirm Account Deletion</h2>
+            <h2 className="text-lg font-medium text-gray-900">
+              Confirm Account Deletion
+            </h2>
           </CardHeader>
           <CardContent>
             <form action={initiateAction} className="space-y-4">
@@ -297,7 +315,7 @@ export function AccountDeletionFlow({
                 placeholder="Type your email address"
                 required
                 value={confirmEmailInput}
-                onChange={e => setConfirmEmailInput(e.target.value)}
+                onChange={(e) => setConfirmEmailInput(e.target.value)}
                 error={initiateState?.errors?.confirmEmail?.[0]}
                 description={`Type "${userEmail}" to confirm`}
               />
@@ -309,7 +327,7 @@ export function AccountDeletionFlow({
                 placeholder="DELETE MY ACCOUNT"
                 required
                 value={confirmTextInput}
-                onChange={e => setConfirmTextInput(e.target.value)}
+                onChange={(e) => setConfirmTextInput(e.target.value)}
                 error={initiateState?.errors?.confirmText?.[0]}
                 description="Type exactly: DELETE MY ACCOUNT"
               />
@@ -342,8 +360,8 @@ export function AccountDeletionFlow({
                   <div className="text-sm text-yellow-800">
                     <p className="mb-1 font-medium">Final Warning</p>
                     <p>
-                      This will send a confirmation email to {userEmail}. You'll have 24 hours to
-                      complete the deletion process.
+                      This will send a confirmation email to {userEmail}. You'll
+                      have 24 hours to complete the deletion process.
                     </p>
                   </div>
                 </div>
@@ -356,12 +374,18 @@ export function AccountDeletionFlow({
                   disabled={
                     initiateState === undefined ||
                     confirmEmailInput !== userEmail ||
-                    confirmTextInput !== 'DELETE MY ACCOUNT'
+                    confirmTextInput !== "DELETE MY ACCOUNT"
                   }
                 >
-                  {initiateState === undefined ? 'Processing...' : 'Send Deletion Confirmation'}
+                  {initiateState === undefined
+                    ? "Processing..."
+                    : "Send Deletion Confirmation"}
                 </Button>
-                <Button type="button" variant="outline" onClick={() => setCurrentStep('warning')}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setCurrentStep("warning")}
+                >
                   Back
                 </Button>
               </div>
@@ -370,16 +394,18 @@ export function AccountDeletionFlow({
         </Card>
       )}
 
-      {currentStep === 'token' && (
+      {currentStep === "token" && (
         <Card>
           <CardHeader>
-            <h2 className="text-lg font-medium text-gray-900">Complete Account Deletion</h2>
+            <h2 className="text-lg font-medium text-gray-900">
+              Complete Account Deletion
+            </h2>
           </CardHeader>
           <CardContent>
             <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-4">
               <p className="text-sm text-blue-800">
-                We've sent a confirmation email to <strong>{userEmail}</strong>. Click the link in
-                the email or enter the deletion token below.
+                We've sent a confirmation email to <strong>{userEmail}</strong>.
+                Click the link in the email or enter the deletion token below.
               </p>
             </div>
 
@@ -401,20 +427,32 @@ export function AccountDeletionFlow({
                   name="finalConfirmation"
                   className="mt-1 h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-500"
                 />
-                <label htmlFor="finalConfirmation" className="text-sm text-gray-700">
-                  I understand that this action is <strong>permanent and irreversible</strong>. My
-                  account and all associated data will be permanently deleted.
+                <label
+                  htmlFor="finalConfirmation"
+                  className="text-sm text-gray-700"
+                >
+                  I understand that this action is{" "}
+                  <strong>permanent and irreversible</strong>. My account and
+                  all associated data will be permanently deleted.
                 </label>
               </div>
 
               <div className="flex gap-3">
-                <Button type="submit" variant="destructive" disabled={confirmState === undefined}>
+                <Button
+                  type="submit"
+                  variant="destructive"
+                  disabled={confirmState === undefined}
+                >
                   {confirmState === undefined
-                    ? 'Deleting Account...'
-                    : 'Permanently Delete Account'}
+                    ? "Deleting Account..."
+                    : "Permanently Delete Account"}
                 </Button>
                 <form action={cancelAction} className="inline">
-                  <Button type="submit" variant="outline" disabled={cancelState === undefined}>
+                  <Button
+                    type="submit"
+                    variant="outline"
+                    disabled={cancelState === undefined}
+                  >
                     Cancel Deletion
                   </Button>
                 </form>
@@ -428,10 +466,20 @@ export function AccountDeletionFlow({
         <CardContent className="p-4">
           <h4 className="mb-2 text-sm font-medium text-gray-900">Need Help?</h4>
           <div className="space-y-1 text-xs text-gray-600">
-            <p>• If you're having trouble with your account, try reaching out to support first</p>
-            <p>• Account deletion is permanent - consider deactivating instead</p>
-            <p>• You have 24 hours from confirmation email to complete deletion</p>
-            <p>• Contact support if you need to recover a recently deleted account</p>
+            <p>
+              • If you're having trouble with your account, try reaching out to
+              support first
+            </p>
+            <p>
+              • Account deletion is permanent - consider deactivating instead
+            </p>
+            <p>
+              • You have 24 hours from confirmation email to complete deletion
+            </p>
+            <p>
+              • Contact support if you need to recover a recently deleted
+              account
+            </p>
           </div>
         </CardContent>
       </Card>

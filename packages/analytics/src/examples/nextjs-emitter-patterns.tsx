@@ -5,12 +5,27 @@
  * for Next.js 15 applications using the App Router.
  */
 
-import { cookies } from 'next/headers';
-import React from 'react';
+import { cookies } from "next/headers";
+import React from "react";
 
-import { TrackedButton, TrackedLink, useAnalytics, useTrackEvent } from '../next/app-router';
-import { identifyServerUser, trackEventAction, trackServerEvent } from '../next/rsc';
-import { createUserSession, EventBatch, page, track, withMetadata } from '../shared/emitters';
+import {
+  TrackedButton,
+  TrackedLink,
+  useAnalytics,
+  useTrackEvent,
+} from "../next/app-router";
+import {
+  identifyServerUser,
+  trackEventAction,
+  trackServerEvent,
+} from "../next/rsc";
+import {
+  createUserSession,
+  EventBatch,
+  page,
+  track,
+  withMetadata,
+} from "../shared/emitters";
 
 // ====================================
 // CLIENT COMPONENTS WITH HOOKS
@@ -24,7 +39,7 @@ export function ProductCard({ product }: { product: any }) {
   const handleView = async () => {
     if (!analytics) return;
 
-    await analytics.track('Product Viewed', {
+    await analytics.track("Product Viewed", {
       product_id: product.id,
       name: product.name,
       brand: product.brand,
@@ -35,7 +50,7 @@ export function ProductCard({ product }: { product: any }) {
 
   // Method 2: Using the trackEvent hook
   const handleAddToCart = async () => {
-    await trackEvent('Product Added to Cart', {
+    await trackEvent("Product Added to Cart", {
       product_id: product.id,
       name: product.name,
       cart_total: product.price,
@@ -60,16 +75,16 @@ export function ProductCard({ product }: { product: any }) {
 
 export function HeroSection() {
   // Create emitter payloads for tracked components
-  const ctaClickEvent = track('CTA Clicked', {
-    location: 'hero',
-    text: 'Start Free Trial',
-    variant: 'primary',
+  const ctaClickEvent = track("CTA Clicked", {
+    location: "hero",
+    text: "Start Free Trial",
+    variant: "primary",
   });
 
-  const learnMoreEvent = track('Link Clicked', {
-    destination: '/features',
-    location: 'hero',
-    text: 'Learn More',
+  const learnMoreEvent = track("Link Clicked", {
+    destination: "/features",
+    location: "hero",
+    text: "Learn More",
   });
 
   return (
@@ -102,9 +117,9 @@ export function HeroSection() {
 export function SignupForm() {
   const analytics = useAnalytics();
   const [formData, _setFormData] = React.useState({
-    company: '',
-    email: '',
-    role: '',
+    company: "",
+    email: "",
+    role: "",
   });
 
   // Track form progression with event batch
@@ -115,15 +130,15 @@ export function SignupForm() {
       .map(([field]) => field);
 
     if (filledFields.length === 1) {
-      batch.addTrack('Form Started', {
-        form_id: 'signup',
+      batch.addTrack("Form Started", {
+        form_id: "signup",
         first_field: filledFields[0],
       });
     }
 
-    filledFields.forEach(field => {
-      batch.addTrack('Form Field Completed', {
-        form_id: 'signup',
+    filledFields.forEach((field) => {
+      batch.addTrack("Form Field Completed", {
+        form_id: "signup",
         field_name: field,
       });
     });
@@ -133,7 +148,7 @@ export function SignupForm() {
     // Track each event individually since emitBatch might not be available
     const events = batch.getEvents();
     for (const event of events) {
-      if (event.type === 'track') {
+      if (event.type === "track") {
         await analytics.track(event.event, event.properties);
       }
     }
@@ -147,18 +162,18 @@ export function SignupForm() {
     e.preventDefault();
 
     // Track form submission with metadata
-    const submitEvent = track('Form Submitted', {
-      form_id: 'signup',
+    const submitEvent = track("Form Submitted", {
+      form_id: "signup",
       fields: Object.keys(formData),
-      method: 'manual',
+      method: "manual",
     });
 
     if (!analytics) return;
 
     await analytics.track(submitEvent.event, {
       ...submitEvent.properties,
-      experiment: 'simplified-signup',
-      form_version: 'v2',
+      experiment: "simplified-signup",
+      form_version: "v2",
     });
   };
 
@@ -175,20 +190,20 @@ export async function ProductListingPage({
   searchParams: { category?: string; sort?: string };
 }) {
   // Track page view in RSC
-  await trackServerEvent('Page Viewed', {
-    page_name: 'Product Listing',
-    category: searchParams.category || 'all',
-    path: '/products',
+  await trackServerEvent("Page Viewed", {
+    page_name: "Product Listing",
+    category: searchParams.category || "all",
+    path: "/products",
     server_rendered: true,
-    sort_order: searchParams.sort || 'popular',
+    sort_order: searchParams.sort || "popular",
   });
 
   // Track search/filter usage
   if (searchParams.category) {
-    await trackServerEvent('Filter Applied', {
-      filter_type: 'category',
+    await trackServerEvent("Filter Applied", {
+      filter_type: "category",
       filter_value: searchParams.category,
-      page: 'products',
+      page: "products",
     });
   }
 
@@ -200,22 +215,22 @@ export async function ProductListingPage({
 // ====================================
 
 export async function updateUserProfile(formData: FormData) {
-  'use server';
+  "use server";
 
-  const userId = 'user_123'; // Get from session
+  const userId = "user_123"; // Get from session
   const updates = {
-    name: formData.get('name') as string,
-    company: formData.get('company') as string,
-    email: formData.get('email') as string,
+    name: formData.get("name") as string,
+    company: formData.get("company") as string,
+    email: formData.get("email") as string,
   };
 
   // Create user session for consistent tracking
-  const session = createUserSession(userId, 'session_xyz');
+  const session = createUserSession(userId, "session_xyz");
 
   // Track profile update
-  const updateEvent = session.track('Profile Updated', {
+  const updateEvent = session.track("Profile Updated", {
     fields_changed: Object.keys(updates),
-    update_source: 'settings_page',
+    update_source: "settings_page",
   });
 
   await trackEventAction(updateEvent.event, updateEvent.properties);
@@ -235,17 +250,17 @@ export async function updateUserProfile(formData: FormData) {
 export async function trackMiddlewareEvents(request: Request) {
   const url = new URL(request.url);
   const cookieStore = await cookies();
-  const userId = cookieStore.get('userId')?.value;
+  const userId = cookieStore.get("userId")?.value;
 
   // Build context for middleware events
   const context = {
-    ip: request.headers.get('x-forwarded-for') || 'unknown',
+    ip: request.headers.get("x-forwarded-for") || "unknown",
     page: {
       url: url.toString(),
       path: url.pathname,
       search: url.search,
     },
-    userAgent: request.headers.get('user-agent') || 'unknown',
+    userAgent: request.headers.get("user-agent") || "unknown",
   };
 
   // Track page request
@@ -273,22 +288,22 @@ export function LiveDashboard() {
   React.useEffect(() => {
     // Track dashboard view
     if (analytics) {
-      analytics.track('Dashboard Viewed', {
+      analytics.track("Dashboard Viewed", {
         widgets_visible: 5,
-        view_mode: 'real-time',
+        view_mode: "real-time",
       });
     }
 
     // Set up WebSocket for real-time updates
-    const ws = new WebSocket('wss://api.example.com/metrics');
+    const ws = new WebSocket("wss://api.example.com/metrics");
 
-    ws.onmessage = async event => {
+    ws.onmessage = async (event) => {
       const data = JSON.parse(event.data);
       setMetrics(data);
 
       // Track significant metric changes
       if (data.alert && analytics) {
-        await analytics.track('Metric Alert', {
+        await analytics.track("Metric Alert", {
           metric_name: data.alert.metric,
           current_value: data.alert.value,
           severity: data.alert.severity,
@@ -322,12 +337,12 @@ export class AnalyticsErrorBoundary extends React.Component<
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // Track error with emitter
-    const errorEvent = track('React Error', {
+    const errorEvent = track("React Error", {
       component_stack: errorInfo.componentStack,
       error_boundary: true,
       error_message: error.message,
       error_stack: error.stack,
-      severity: 'high',
+      severity: "high",
     });
 
     // Send to analytics
@@ -349,7 +364,7 @@ export class AnalyticsErrorBoundary extends React.Component<
 
 export function EnhancedSearchBar() {
   const analytics = useAnalytics();
-  const [query, setQuery] = React.useState('');
+  const [query, setQuery] = React.useState("");
   const [suggestions, _setSuggestions] = React.useState<string[]>([]);
 
   // Debounced search tracking
@@ -359,7 +374,7 @@ export function EnhancedSearchBar() {
       clearTimeout(timeout);
       timeout = setTimeout(() => {
         if (analytics) {
-          analytics.track('Search Performed', {
+          analytics.track("Search Performed", {
             has_suggestions: suggestions.length > 0,
             query: searchQuery,
             query_length: searchQuery.length,
@@ -379,7 +394,7 @@ export function EnhancedSearchBar() {
   return (
     <div>
       <input
-        onChange={e => handleSearch(e.target.value)}
+        onChange={(e) => handleSearch(e.target.value)}
         placeholder="Search..."
         type="search"
         value={query}

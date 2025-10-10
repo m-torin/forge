@@ -5,7 +5,7 @@
  * Provides consistent testing approaches across all email test files.
  */
 
-import { expect, vi } from 'vitest';
+import { expect, vi } from "vitest";
 
 // ============================================================================
 // CORE EMAIL TEST PATTERNS
@@ -14,7 +14,7 @@ import { expect, vi } from 'vitest';
 /**
  * Standard pattern for testing email sending functions
  */
-export function testEmailSendingFunction<T>(
+function testEmailSendingFunction<T>(
   functionName: string,
   emailFunction: (data: T) => Promise<any>,
   baseData: T,
@@ -27,7 +27,7 @@ export function testEmailSendingFunction<T>(
     customAssertions?: (result: any) => void;
   }>,
 ) {
-  scenarios.forEach(scenario => {
+  scenarios.forEach((scenario) => {
     test(`should ${scenario.name}`, async () => {
       if (scenario.setup) {
         scenario.setup();
@@ -36,7 +36,9 @@ export function testEmailSendingFunction<T>(
       const testData = { ...baseData, ...scenario.data };
 
       if (scenario.expectedError) {
-        await expect(emailFunction(testData)).rejects.toThrow(scenario.expectedError);
+        await expect(emailFunction(testData)).rejects.toThrow(
+          scenario.expectedError,
+        );
       } else {
         const result = await emailFunction(testData);
 
@@ -55,7 +57,7 @@ export function testEmailSendingFunction<T>(
 /**
  * Pattern for testing email templates
  */
-export function testEmailTemplate<T>(
+function testEmailTemplate<T>(
   templateName: string,
   templateFunction: (props: T) => any,
   scenarios: Array<{
@@ -65,7 +67,7 @@ export function testEmailTemplate<T>(
     customAssertions?: (result: any) => void;
   }>,
 ) {
-  scenarios.forEach(scenario => {
+  scenarios.forEach((scenario) => {
     test(`should ${scenario.name}`, () => {
       if (scenario.shouldNotThrow !== false) {
         expect(() => templateFunction(scenario.props)).not.toThrow();
@@ -94,8 +96,8 @@ export function testEmailServiceIntegration(
     customAssertions?: (result: any) => void;
   }>,
 ) {
-  describe('email service integration', () => {
-    scenarios.forEach(scenario => {
+  describe("email service integration", () => {
+    scenarios.forEach((scenario) => {
       test(`should handle ${scenario.name}`, async () => {
         scenario.setup();
 
@@ -127,11 +129,11 @@ export function testEmailValidation(
     }>;
   }>,
 ) {
-  describe('email validation', () => {
-    validationConfigs.forEach(config => {
+  describe("email validation", () => {
+    validationConfigs.forEach((config) => {
       describe(config.name, () => {
-        config.testCases.forEach(testCase => {
-          test(`should ${testCase.expectedValid ? 'accept' : 'reject'} ${testCase.name}`, () => {
+        config.testCases.forEach((testCase) => {
+          test(`should ${testCase.expectedValid ? "accept" : "reject"} ${testCase.name}`, () => {
             const result = config.validationFunction(testCase.data);
             expect(result.isValid).toBe(testCase.expectedValid);
           });
@@ -148,15 +150,15 @@ export function testEmailValidation(
 /**
  * Creates a standardized mock for Resend service
  */
-export function createStandardResendMock(overrides: any = {}) {
+function createStandardResendMock(overrides: any = {}) {
   return {
     emails: {
       send: vi.fn().mockResolvedValue({
-        data: { id: 'email_123' },
+        data: { id: "email_123" },
         error: null,
       }),
       create: vi.fn().mockResolvedValue({
-        data: { id: 'email_123' },
+        data: { id: "email_123" },
         error: null,
       }),
       ...overrides.emails,
@@ -168,17 +170,17 @@ export function createStandardResendMock(overrides: any = {}) {
 /**
  * Creates a standardized mock for React Email render
  */
-export function createStandardRenderMock(overrides: any = {}) {
-  return vi.fn().mockResolvedValue('<html>Mock rendered email</html>');
+function createStandardRenderMock(overrides: any = {}) {
+  return vi.fn().mockResolvedValue("<html>Mock rendered email</html>");
 }
 
 /**
  * Creates a standardized mock for environment variables
  */
-export function createStandardEnvMock(overrides: any = {}) {
+function createStandardEnvMock(overrides: any = {}) {
   return vi.fn().mockReturnValue({
-    RESEND_FROM: 'noreply@example.com',
-    RESEND_TOKEN: 're_123456789',
+    RESEND_FROM: "noreply@example.com",
+    RESEND_TOKEN: "re_123456789",
     ...overrides,
   });
 }
@@ -186,29 +188,43 @@ export function createStandardEnvMock(overrides: any = {}) {
 /**
  * Creates a standardized mock for email templates
  */
-export function createStandardTemplateMocks() {
+function createStandardTemplateMocks() {
   return {
     MagicLinkTemplate: vi
       .fn()
-      .mockImplementation(props => `MagicLinkTemplate:${JSON.stringify(props)}`),
+      .mockImplementation(
+        (props) => `MagicLinkTemplate:${JSON.stringify(props)}`,
+      ),
     VerificationTemplate: vi
       .fn()
-      .mockImplementation(props => `VerificationTemplate:${JSON.stringify(props)}`),
+      .mockImplementation(
+        (props) => `VerificationTemplate:${JSON.stringify(props)}`,
+      ),
     PasswordResetTemplate: vi
       .fn()
-      .mockImplementation(props => `PasswordResetTemplate:${JSON.stringify(props)}`),
+      .mockImplementation(
+        (props) => `PasswordResetTemplate:${JSON.stringify(props)}`,
+      ),
     ContactTemplate: vi
       .fn()
-      .mockImplementation(props => `ContactTemplate:${JSON.stringify(props)}`),
+      .mockImplementation(
+        (props) => `ContactTemplate:${JSON.stringify(props)}`,
+      ),
     OrganizationInvitationTemplate: vi
       .fn()
-      .mockImplementation(props => `OrganizationInvitationTemplate:${JSON.stringify(props)}`),
+      .mockImplementation(
+        (props) => `OrganizationInvitationTemplate:${JSON.stringify(props)}`,
+      ),
     WelcomeTemplate: vi
       .fn()
-      .mockImplementation(props => `WelcomeTemplate:${JSON.stringify(props)}`),
+      .mockImplementation(
+        (props) => `WelcomeTemplate:${JSON.stringify(props)}`,
+      ),
     ApiKeyCreatedTemplate: vi
       .fn()
-      .mockImplementation(props => `ApiKeyCreatedTemplate:${JSON.stringify(props)}`),
+      .mockImplementation(
+        (props) => `ApiKeyCreatedTemplate:${JSON.stringify(props)}`,
+      ),
   };
 }
 
@@ -219,7 +235,7 @@ export function createStandardTemplateMocks() {
 /**
  * Validates email sending workflow
  */
-export function validateEmailSendingWorkflow(
+function validateEmailSendingWorkflow(
   mockRender: any,
   mockResendSend: any,
   expectedTemplateCall: any,
@@ -232,16 +248,16 @@ export function validateEmailSendingWorkflow(
 /**
  * Validates email template rendering
  */
-export function validateEmailTemplateRendering(mockTemplate: any, expectedProps: any) {
+function validateEmailTemplateRendering(mockTemplate: any, expectedProps: any) {
   expect(mockTemplate).toHaveBeenCalledWith(expectedProps);
 }
 
 /**
  * Validates email service response
  */
-export function validateEmailServiceResponse(
+function validateEmailServiceResponse(
   result: any,
-  expectedResponse: any = { data: { id: 'email_123' }, error: null },
+  expectedResponse: any = { data: { id: "email_123" }, error: null },
 ) {
   expect(result).toStrictEqual(expectedResponse);
 }
@@ -249,7 +265,7 @@ export function validateEmailServiceResponse(
 /**
  * Validates email parameters
  */
-export function validateEmailParameters(
+function validateEmailParameters(
   emailParams: any,
   expectedParams: {
     from: string;
@@ -274,7 +290,7 @@ export function validateEmailParameters(
 /**
  * Asserts that email function handles default values correctly
  */
-export function assertEmailFunctionDefaults<T>(
+function assertEmailFunctionDefaults<T>(
   emailFunction: (data: T) => Promise<any>,
   baseData: T,
   defaultAssertions: Array<{
@@ -283,7 +299,7 @@ export function assertEmailFunctionDefaults<T>(
     mockValidation: (mockCall: any) => void;
   }>,
 ) {
-  defaultAssertions.forEach(assertion => {
+  defaultAssertions.forEach((assertion) => {
     test(`should use default ${String(assertion.field)} when not provided`, async () => {
       const dataWithoutField = { ...baseData };
       delete dataWithoutField[assertion.field];
@@ -298,7 +314,7 @@ export function assertEmailFunctionDefaults<T>(
 /**
  * Asserts that email function handles errors gracefully
  */
-export function assertEmailFunctionErrorHandling<T>(
+function assertEmailFunctionErrorHandling<T>(
   emailFunction: (data: T) => Promise<any>,
   baseData: T,
   errorScenarios: Array<{
@@ -307,11 +323,13 @@ export function assertEmailFunctionErrorHandling<T>(
     expectedError: string;
   }>,
 ) {
-  errorScenarios.forEach(scenario => {
+  errorScenarios.forEach((scenario) => {
     test(`should handle ${scenario.name} gracefully`, async () => {
       scenario.setup();
 
-      await expect(emailFunction(baseData)).rejects.toThrow(scenario.expectedError);
+      await expect(emailFunction(baseData)).rejects.toThrow(
+        scenario.expectedError,
+      );
     });
   });
 }
@@ -319,7 +337,7 @@ export function assertEmailFunctionErrorHandling<T>(
 /**
  * Asserts that email templates handle edge cases
  */
-export function assertEmailTemplateEdgeCases<T>(
+function assertEmailTemplateEdgeCases<T>(
   templateFunction: (props: T) => any,
   edgeCases: Array<{
     name: string;
@@ -327,7 +345,7 @@ export function assertEmailTemplateEdgeCases<T>(
     expectedBehavior: string;
   }>,
 ) {
-  edgeCases.forEach(edgeCase => {
+  edgeCases.forEach((edgeCase) => {
     test(`should ${edgeCase.expectedBehavior}`, () => {
       expect(() => templateFunction(edgeCase.props)).not.toThrow();
     });
@@ -341,12 +359,12 @@ export function assertEmailTemplateEdgeCases<T>(
 /**
  * Measures email operation performance
  */
-export function measureEmailOperationPerformance<T>(
+function measureEmailOperationPerformance<T>(
   operation: () => T | Promise<T>,
   maxDuration: number = 100, // 100ms default
   iterations: number = 10,
 ): Promise<{ result: T; averageTime: number; totalTime: number }> {
-  return new Promise(async resolve => {
+  return new Promise(async (resolve) => {
     const start = performance.now();
     let result!: T;
 
@@ -367,12 +385,12 @@ export function measureEmailOperationPerformance<T>(
 /**
  * Tests email template performance
  */
-export function testEmailTemplatePerformance<T>(
+function testEmailTemplatePerformance<T>(
   templateFunction: (props: T) => any,
   props: T,
   maxRenderTime: number = 10, // 10ms default
 ) {
-  test('should render template quickly', async () => {
+  test("should render template quickly", async () => {
     await measureEmailOperationPerformance(
       () => templateFunction(props),
       maxRenderTime,
@@ -384,12 +402,12 @@ export function testEmailTemplatePerformance<T>(
 /**
  * Tests email sending performance
  */
-export function testEmailSendingPerformance<T>(
+function testEmailSendingPerformance<T>(
   emailFunction: (data: T) => Promise<any>,
   emailData: T,
   maxSendTime: number = 50, // 50ms default
 ) {
-  test('should send email quickly', async () => {
+  test("should send email quickly", async () => {
     await measureEmailOperationPerformance(
       () => emailFunction(emailData),
       maxSendTime,
@@ -405,7 +423,7 @@ export function testEmailSendingPerformance<T>(
 /**
  * Tests multiple email templates with the same pattern
  */
-export function testEmailTemplatesBulk<T>(
+function testEmailTemplatesBulk<T>(
   templates: Array<{
     name: string;
     templateFunction: (props: T) => any;
@@ -413,7 +431,7 @@ export function testEmailTemplatesBulk<T>(
   }>,
   testPattern: (templateFunction: (props: T) => any, props: T) => void,
 ) {
-  templates.forEach(template => {
+  templates.forEach((template) => {
     describe(`${template.name} template`, () => {
       testPattern(template.templateFunction, template.testProps);
     });
@@ -423,7 +441,7 @@ export function testEmailTemplatesBulk<T>(
 /**
  * Tests multiple email sending functions with the same pattern
  */
-export function testEmailSendingFunctionsBulk<T>(
+function testEmailSendingFunctionsBulk<T>(
   functions: Array<{
     name: string;
     emailFunction: (data: T) => Promise<any>;
@@ -431,7 +449,7 @@ export function testEmailSendingFunctionsBulk<T>(
   }>,
   testPattern: (emailFunction: (data: T) => Promise<any>, data: T) => void,
 ) {
-  functions.forEach(func => {
+  functions.forEach((func) => {
     describe(`${func.name} function`, () => {
       testPattern(func.emailFunction, func.testData);
     });
@@ -445,35 +463,35 @@ export function testEmailSendingFunctionsBulk<T>(
 /**
  * Generates common error scenarios for email testing
  */
-export function generateEmailErrorScenarios() {
+function generateEmailErrorScenarios() {
   return [
     {
-      name: 'template rendering failure',
+      name: "template rendering failure",
       setup: () => {
         // Mock will be configured by caller
       },
-      expectedError: 'Failed to send',
+      expectedError: "Failed to send",
     },
     {
-      name: 'email service failure',
+      name: "email service failure",
       setup: () => {
         // Mock will be configured by caller
       },
-      expectedError: 'Failed to send',
+      expectedError: "Failed to send",
     },
     {
-      name: 'network error',
+      name: "network error",
       setup: () => {
         // Mock will be configured by caller
       },
-      expectedError: 'Network error',
+      expectedError: "Network error",
     },
     {
-      name: 'authentication error',
+      name: "authentication error",
       setup: () => {
         // Mock will be configured by caller
       },
-      expectedError: 'Authentication failed',
+      expectedError: "Authentication failed",
     },
   ];
 }
@@ -481,37 +499,37 @@ export function generateEmailErrorScenarios() {
 /**
  * Generates edge case scenarios for email testing
  */
-export function generateEmailEdgeCaseScenarios() {
+function generateEmailEdgeCaseScenarios() {
   return [
     {
-      name: 'empty string values',
-      modifications: { name: '', subject: '' },
-      expectedBehavior: 'handle empty strings gracefully',
+      name: "empty string values",
+      modifications: { name: "", subject: "" },
+      expectedBehavior: "handle empty strings gracefully",
     },
     {
-      name: 'null values',
+      name: "null values",
       modifications: { name: null },
-      expectedBehavior: 'handle null values gracefully',
+      expectedBehavior: "handle null values gracefully",
     },
     {
-      name: 'undefined values',
+      name: "undefined values",
       modifications: { name: undefined },
-      expectedBehavior: 'handle undefined values gracefully',
+      expectedBehavior: "handle undefined values gracefully",
     },
     {
-      name: 'very long strings',
-      modifications: { name: 'A'.repeat(1000) },
-      expectedBehavior: 'handle very long strings gracefully',
+      name: "very long strings",
+      modifications: { name: "A".repeat(1000) },
+      expectedBehavior: "handle very long strings gracefully",
     },
     {
-      name: 'special characters',
-      modifications: { name: 'Test!@#$%^&*()' },
-      expectedBehavior: 'handle special characters gracefully',
+      name: "special characters",
+      modifications: { name: "Test!@#$%^&*()" },
+      expectedBehavior: "handle special characters gracefully",
     },
     {
-      name: 'unicode characters',
-      modifications: { name: 'Test 中文 🎉' },
-      expectedBehavior: 'handle unicode characters gracefully',
+      name: "unicode characters",
+      modifications: { name: "Test 中文 🎉" },
+      expectedBehavior: "handle unicode characters gracefully",
     },
   ];
 }
@@ -529,10 +547,10 @@ export function testModuleExports(
   expectedExports: Array<{ name: string; type: string }>,
 ) {
   describe(`${moduleName} exports`, () => {
-    test('should export all required functions and objects', async () => {
+    test("should export all required functions and objects", async () => {
       const module = await import(importPath);
 
-      expectedExports.forEach(exportInfo => {
+      expectedExports.forEach((exportInfo) => {
         expect(typeof module[exportInfo.name]).toBe(exportInfo.type);
       });
     });
@@ -551,11 +569,11 @@ export function testEmailSendingFunctions(
     defaultValues?: any;
   }>,
 ) {
-  describe('email sending functions', () => {
-    functionConfigs.forEach(config => {
+  describe("email sending functions", () => {
+    functionConfigs.forEach((config) => {
       test(`should have ${config.functionName} function`, async () => {
-        const module = await import('../../src/index');
-        expect(typeof (module as any)[config.functionName]).toBe('function');
+        const module = await import("../../src/index");
+        expect(typeof (module as any)[config.functionName]).toBe("function");
       });
     });
   });
@@ -578,16 +596,16 @@ export function testEmailTemplates(
     }>;
   }>,
 ) {
-  describe('email templates', () => {
-    templateConfigs.forEach(config => {
+  describe("email templates", () => {
+    templateConfigs.forEach((config) => {
       describe(config.name, () => {
         test(`should have ${config.templateName} function`, async () => {
           const module = await import(config.importPath);
-          expect(typeof module[config.templateName]).toBe('function');
+          expect(typeof module[config.templateName]).toBe("function");
         });
 
         if (config.edgeCases) {
-          config.edgeCases.forEach(edgeCase => {
+          config.edgeCases.forEach((edgeCase) => {
             test(`should ${edgeCase.expectedBehavior}`, async () => {
               const module = await import(config.importPath);
               const template = module[config.templateName];
@@ -613,8 +631,8 @@ export function testEmailErrorHandling(
     expectedFallback?: any;
   }>,
 ) {
-  describe('error handling patterns', () => {
-    scenarios.forEach(scenario => {
+  describe("error handling patterns", () => {
+    scenarios.forEach((scenario) => {
       test(`should handle ${scenario.name}`, async () => {
         scenario.setup();
 
@@ -640,8 +658,8 @@ export function testEmailPerformance(
     iterations?: number;
   }>,
 ) {
-  describe('performance patterns', () => {
-    scenarios.forEach(scenario => {
+  describe("performance patterns", () => {
+    scenarios.forEach((scenario) => {
       test(`should ${scenario.name} within performance limits`, async () => {
         const start = performance.now();
 
@@ -664,7 +682,7 @@ export function testEmailPerformance(
 /**
  * Tests email workflow integration
  */
-export function testEmailWorkflowIntegration<T>(
+function testEmailWorkflowIntegration<T>(
   workflowName: string,
   emailFunction: (data: T) => Promise<any>,
   templateFunction: (props: any) => any,
@@ -685,7 +703,7 @@ export function testEmailWorkflowIntegration<T>(
 /**
  * Tests email service integration
  */
-export function testEmailServiceIntegrationPattern(
+function testEmailServiceIntegrationPattern(
   serviceName: string,
   serviceConfigurations: Array<{
     name: string;
@@ -695,7 +713,7 @@ export function testEmailServiceIntegrationPattern(
   }>,
 ) {
   describe(`${serviceName} service integration`, () => {
-    serviceConfigurations.forEach(config => {
+    serviceConfigurations.forEach((config) => {
       test(`should ${config.expectedBehavior} with ${config.name}`, async () => {
         await config.test();
       });
@@ -706,7 +724,7 @@ export function testEmailServiceIntegrationPattern(
 /**
  * Tests email template consistency across different data
  */
-export function testEmailTemplateConsistency<T>(
+function testEmailTemplateConsistency<T>(
   templateFunction: (props: T) => any,
   testDataSets: Array<{
     name: string;
@@ -714,7 +732,7 @@ export function testEmailTemplateConsistency<T>(
     expectedConsistency: (result: any) => void;
   }>,
 ) {
-  testDataSets.forEach(dataSet => {
+  testDataSets.forEach((dataSet) => {
     test(`should maintain consistency with ${dataSet.name}`, () => {
       const result = templateFunction(dataSet.data);
       dataSet.expectedConsistency(result);

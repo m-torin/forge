@@ -1,0 +1,9 @@
+{
+  "extends": "../../config/src/typescript/react-library.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "baseUrl": "."
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules", "dist", ".turbo"]
+}

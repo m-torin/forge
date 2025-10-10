@@ -9,7 +9,7 @@ vi.stubEnv('UPSTASH_REDIS_REST_URL', 'https://test-redis.upstash.io');
 vi.stubEnv('UPSTASH_REDIS_REST_TOKEN', 'test-redis-token');
 
 // Mock server-only modules
-vi.mock('@repo/database/redis/server', () => ({
+vi.mock('@repo/db-prisma/redis/server', () => ({
   redis: {
     ping: () => Promise.resolve('PONG'),
     set: () => Promise.resolve('OK'),

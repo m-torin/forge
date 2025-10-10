@@ -5,10 +5,126 @@
 
 import { Ratelimit } from '@upstash/ratelimit';
 
-import { redis } from '@repo/database/redis/server';
+import { redis } from '@repo/db-upstash-redis/server';
 
 import { JsonObject, RateLimitConfig, RateLimitPattern } from '../../shared/types/index';
 import { createProviderError, RateLimitError } from '../../shared/utils/errors';
+// Note: Using internal cache implementation instead of @repo/mcp-server
+// import { BoundedCache } from '@repo/mcp-server/utils';
+
+// Enhanced cache implementation matching expected interface
+interface CacheOptions {
+  maxSize?: number;
+  ttl?: number;
+  enableAnalytics?: boolean;
+}
+
+class BoundedCache<T = any> {
+  private cache = new Map<string, { value: T; timestamp: number }>();
+  private maxSize: number;
+  private ttl: number;
+  private enableAnalytics: boolean;
+  private stats = { hits: 0, misses: 0, sets: 0, deletes: 0 };
+
+  constructor(options: CacheOptions | number = {}) {
+    if (typeof options === 'number') {
+      this.maxSize = options;
+      this.ttl = 0;
+      this.enableAnalytics = false;
+    } else {
+      this.maxSize = options.maxSize || 1000;
+      this.ttl = options.ttl || 0;
+      this.enableAnalytics = options.enableAnalytics || false;
+    }
+  }
+
+  get(key: string): T | undefined {
+    const entry = this.cache.get(key);
+    if (!entry) {
+      if (this.enableAnalytics) this.stats.misses++;
+      return undefined;
+    }
+
+    // Check TTL
+    if (this.ttl > 0 && Date.now() - entry.timestamp > this.ttl) {
+      this.cache.delete(key);
+      if (this.enableAnalytics) this.stats.misses++;
+      return undefined;
+    }
+
+    // Move to end (most recently used)
+    this.cache.delete(key);
+    this.cache.set(key, entry);
+
+    if (this.enableAnalytics) this.stats.hits++;
+    return entry.value;
+  }
+
+  set(key: string, value: T): void {
+    const entry = { value, timestamp: Date.now() };
+
+    if (this.cache.has(key)) {
+      this.cache.delete(key);
+    } else if (this.cache.size >= this.maxSize) {
+      // Remove oldest entry
+      const firstKey = this.cache.keys().next().value;
+      if (firstKey) this.cache.delete(firstKey);
+    }
+
+    this.cache.set(key, entry);
+    if (this.enableAnalytics) this.stats.sets++;
+  }
+
+  has(key: string): boolean {
+    const entry = this.cache.get(key);
+    if (!entry) return false;
+
+    // Check TTL
+    if (this.ttl > 0 && Date.now() - entry.timestamp > this.ttl) {
+      this.cache.delete(key);
+      return false;
+    }
+
+    return true;
+  }
+
+  delete(key: string): boolean {
+    const result = this.cache.delete(key);
+    if (result && this.enableAnalytics) this.stats.deletes++;
+    return result;
+  }
+
+  clear(): void {
+    this.cache.clear();
+  }
+
+  get size(): number {
+    return this.cache.size;
+  }
+
+  keys(): IterableIterator<string> {
+    return this.cache.keys();
+  }
+
+  getAnalytics() {
+    return { ...this.stats };
+  }
+
+  cleanup(): void {
+    if (this.ttl === 0) return;
+
+    const now = Date.now();
+    const toDelete: string[] = [];
+
+    for (const [key, entry] of this.cache.entries()) {
+      if (now - entry.timestamp > this.ttl) {
+        toDelete.push(key);
+      }
+    }
+
+    toDelete.forEach(key => this.cache.delete(key));
+  }
+}
 
 export interface RateLimitProviderOptions {
   /** Rate limit algorithm */
@@ -20,7 +136,7 @@ export interface RateLimitProviderOptions {
   };
   /** Prefix for Redis keys */
   keyPrefix?: string;
-  /** Whether to enable Redis (uses @repo/database/redis) */
+  /** Whether to enable Redis (uses @repo/db-prisma/redis) */
   enableRedis?: boolean;
 }
 
@@ -29,7 +145,7 @@ export class RateLimitProvider {
   public readonly version = '1.0.0';
 
   private options: RateLimitProviderOptions;
-  private rateLimiters = new Map<string, Ratelimit>();
+  private rateLimiters: BoundedCache;
   private useRedis: boolean;
 
   private get redis() {
@@ -46,6 +162,13 @@ export class RateLimitProvider {
     };
 
     this.useRedis = this.options.enableRedis !== false;
+
+    // Initialize bounded cache for rate limiters with TTL and size limits
+    this.rateLimiters = new BoundedCache({
+      maxSize: 1000, // Limit to 1000 rate limiters
+      ttl: 10 * 60 * 1000, // 10 minutes TTL
+      enableAnalytics: true,
+    });
   }
 
   /**
@@ -119,6 +242,9 @@ export class RateLimitProvider {
    * Create a rate limiting decorator
    */
   createRateLimitDecorator(pattern: RateLimitPattern) {
+    // Capture the provider instance to reuse it
+    const providerInstance = this;
+
     return function rateLimitDecorator<_T extends (...args: unknown[]) => Promise<unknown>>(
       _target: unknown,
       _propertyName: string,
@@ -127,10 +253,8 @@ export class RateLimitProvider {
       const method = descriptor.value;
 
       descriptor.value = async function (this: unknown, ...args: unknown[]) {
-        const provider = new RateLimitProvider(
-          (this as { options: RateLimitProviderOptions }).options,
-        );
-        return provider.withRateLimit(pattern, () => method.apply(this, args));
+        // Reuse the provider instance instead of creating a new one
+        return providerInstance.withRateLimit(pattern, () => method.apply(this, args));
       };
 
       return descriptor;
@@ -177,10 +301,11 @@ export class RateLimitProvider {
   getStats(): {
     activeLimiters: number;
     limiterTypes: Record<string, number>;
+    cacheAnalytics?: any;
   } {
     const limiterTypes: Record<string, number> = {};
 
-    for (const [key] of this.rateLimiters) {
+    for (const key of this.rateLimiters.keys()) {
       const parts = key.split('-');
       const algorithm = parts[parts.length - 1];
       limiterTypes[algorithm] = (limiterTypes[algorithm] || 0) + 1;
@@ -189,6 +314,7 @@ export class RateLimitProvider {
     return {
       activeLimiters: this.rateLimiters.size,
       limiterTypes,
+      cacheAnalytics: this.rateLimiters.getAnalytics(),
     };
   }
 
@@ -328,8 +454,8 @@ export class RateLimitProvider {
    * Cleanup resources
    */
   async cleanup(): Promise<void> {
-    // Clear rate limiter cache
-    this.rateLimiters.clear();
+    // Clear rate limiter cache using bounded cache cleanup
+    this.rateLimiters.cleanup();
     // Redis connections are automatically managed by Upstash
     return;
   }

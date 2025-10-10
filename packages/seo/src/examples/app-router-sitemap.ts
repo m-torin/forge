@@ -30,7 +30,7 @@
 
 import { MetadataRoute } from 'next';
 
-import { generateSitemapObject, type DynamicSitemapRoute } from '@repo/seo/server/next';
+import { generateSitemapObject, type DynamicSitemapRoute } from '../server-next';
 
 // Example function to get your dynamic content
 async function getProducts() {

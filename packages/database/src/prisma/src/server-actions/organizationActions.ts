@@ -3,9 +3,9 @@
  * Provides server-side functions that can be called from client components
  */
 
-'use server';
+"use server";
 
-import type { Prisma, PrismaClient } from '../../../../prisma-generated/client';
+import type { Prisma, PrismaClient } from "../../../../prisma-generated/client";
 import {
   aggregateOrganizationsOrm,
   countOrganizationsOrm,
@@ -22,14 +22,14 @@ import {
   updateManyOrganizationsOrm,
   updateOrganizationOrm,
   upsertOrganizationOrm,
-} from '../orm/auth/authOrm';
+} from "../orm/auth/authOrm";
 
 // CREATE ACTIONS
 export async function createOrganizationAction(
   args: Prisma.OrganizationCreateArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return createOrganizationOrm(args, prisma);
 }
 
@@ -37,7 +37,7 @@ export async function createManyOrganizationsAction(
   args: Prisma.OrganizationCreateManyArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return createManyOrganizationsOrm(args, prisma);
 }
 
@@ -46,7 +46,7 @@ export async function findFirstOrganizationAction(
   args?: Prisma.OrganizationFindFirstArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return findFirstOrganizationOrm(args, prisma);
 }
 
@@ -54,7 +54,7 @@ export async function findFirstOrganizationActionOrThrow(
   args: Prisma.OrganizationFindFirstOrThrowArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return findFirstOrganizationOrmOrThrow(args, prisma);
 }
 
@@ -62,7 +62,7 @@ export async function findUniqueOrganizationAction(
   args: Prisma.OrganizationFindUniqueArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return findUniqueOrganizationOrm(args, prisma);
 }
 
@@ -70,7 +70,7 @@ export async function findUniqueOrganizationActionOrThrow(
   args: Prisma.OrganizationFindUniqueOrThrowArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return findUniqueOrganizationOrmOrThrow(args, prisma);
 }
 
@@ -78,7 +78,7 @@ export async function findManyOrganizationsAction(
   args?: Prisma.OrganizationFindManyArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return findManyOrganizationsOrm(args, prisma);
 }
 
@@ -87,7 +87,7 @@ export async function updateOrganizationAction(
   args: Prisma.OrganizationUpdateArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return updateOrganizationOrm(args, prisma);
 }
 
@@ -95,7 +95,7 @@ export async function updateManyOrganizationsAction(
   args: Prisma.OrganizationUpdateManyArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return updateManyOrganizationsOrm(args, prisma);
 }
 
@@ -103,7 +103,7 @@ export async function upsertOrganizationAction(
   args: Prisma.OrganizationUpsertArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return upsertOrganizationOrm(args, prisma);
 }
 
@@ -112,7 +112,7 @@ export async function deleteOrganizationAction(
   args: Prisma.OrganizationDeleteArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return deleteOrganizationOrm(args, prisma);
 }
 
@@ -120,7 +120,7 @@ export async function deleteManyOrganizationsAction(
   args?: Prisma.OrganizationDeleteManyArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return deleteManyOrganizationsOrm(args, prisma);
 }
 
@@ -129,7 +129,7 @@ export async function aggregateOrganizationsAction(
   args: Prisma.OrganizationAggregateArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return aggregateOrganizationsOrm(args, prisma);
 }
 
@@ -137,7 +137,7 @@ export async function countOrganizationsAction(
   args?: Prisma.OrganizationCountArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return countOrganizationsOrm(args, prisma);
 }
 
@@ -145,6 +145,6 @@ export async function groupByOrganizationsAction(
   args: Prisma.OrganizationGroupByArgs,
   prisma?: PrismaClient,
 ) {
-  'use server';
+  "use server";
   return groupByOrganizationsOrm(args, prisma);
 }

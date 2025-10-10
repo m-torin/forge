@@ -63,9 +63,10 @@ create comprehensive component libraries.
     # Start Storybook development server
     cd apps/storybook
     pnpm dev
-    
+
     # Access at http://localhost:3700
     ```
+
   </Step>
 
 <Step title="Create New Story">
@@ -77,10 +78,11 @@ create comprehensive component libraries.
     ```bash
     # Build static Storybook
     pnpm build-storybook
-    
+
     # Deploy to Chromatic
     pnpm chromatic
     ```
+
   </Step>
 </Steps>
 
@@ -94,7 +96,7 @@ create comprehensive component libraries.
     // src/stories/Button.stories.tsx
     import type { Meta, StoryObj } from '@storybook/react';
     import { Button } from '@mantine/core';
-    
+
     const meta: Meta<typeof Button> = {
       title: 'Components/Button',
       component: Button,
@@ -121,10 +123,10 @@ create comprehensive component libraries.
         },
       },
     };
-    
+
     export default meta;
     type Story = StoryObj<typeof meta>;
-    
+
     export const Default: Story = {
       args: {
         children: 'Button',
@@ -132,7 +134,7 @@ create comprehensive component libraries.
         size: 'md',
       },
     };
-    
+
     export const Variants: Story = {
       render: () => (
         <div style={{ display: 'flex', gap: '1rem' }}>
@@ -145,15 +147,16 @@ create comprehensive component libraries.
       ),
     };
     ```
+
   </Tab>
-  
+
   <Tab title="Form Components">
     ```typescript
     // src/stories/TextInput.stories.tsx
     import type { Meta, StoryObj } from '@storybook/react';
     import { TextInput } from '@mantine/core';
     import { IconUser, IconLock } from '@tabler/icons-react';
-    
+
     const meta: Meta<typeof TextInput> = {
       title: 'Forms/TextInput',
       component: TextInput,
@@ -162,17 +165,17 @@ create comprehensive component libraries.
       },
       tags: ['autodocs'],
     };
-    
+
     export default meta;
     type Story = StoryObj<typeof meta>;
-    
+
     export const Default: Story = {
       args: {
         label: 'Username',
         placeholder: 'Enter your username',
       },
     };
-    
+
     export const WithIcon: Story = {
       args: {
         label: 'Username',
@@ -180,7 +183,7 @@ create comprehensive component libraries.
         leftSection: <IconUser size={16} />,
       },
     };
-    
+
     export const Password: Story = {
       args: {
         label: 'Password',
@@ -189,7 +192,7 @@ create comprehensive component libraries.
         leftSection: <IconLock size={16} />,
       },
     };
-    
+
     export const WithError: Story = {
       args: {
         label: 'Email',
@@ -199,14 +202,15 @@ create comprehensive component libraries.
       },
     };
     ```
+
   </Tab>
-  
+
   <Tab title="Complex Components">
     ```typescript
     // src/stories/ProductCard.stories.tsx
     import type { Meta, StoryObj } from '@storybook/react';
     import { ProductCard } from '@repo/uix-system/mantine';
-    
+
     const meta: Meta<typeof ProductCard> = {
       title: 'E-commerce/ProductCard',
       component: ProductCard,
@@ -222,10 +226,10 @@ create comprehensive component libraries.
       },
       tags: ['autodocs'],
     };
-    
+
     export default meta;
     type Story = StoryObj<typeof meta>;
-    
+
     const mockProduct = {
       id: '1',
       title: 'iPhone 15 Pro',
@@ -242,13 +246,13 @@ create comprehensive component libraries.
       reviewCount: 1247,
       inStock: true,
     };
-    
+
     export const Default: Story = {
       args: {
         product: mockProduct,
       },
     };
-    
+
     export const OutOfStock: Story = {
       args: {
         product: {
@@ -257,7 +261,7 @@ create comprehensive component libraries.
         },
       },
     };
-    
+
     export const OnSale: Story = {
       args: {
         product: {
@@ -268,7 +272,7 @@ create comprehensive component libraries.
         },
       },
     };
-    
+
     export const Loading: Story = {
       args: {
         product: mockProduct,
@@ -276,6 +280,7 @@ create comprehensive component libraries.
       },
     };
     ```
+
   </Tab>
 </Tabs>
 
@@ -374,7 +379,7 @@ export const Typography: StoryObj = {
     ```typescript
     // .storybook/main.ts
     import type { StorybookConfig } from '@storybook/react-vite';
-    
+
     const config: StorybookConfig = {
       stories: ['../src/stories/**/*.stories.@(js|jsx|ts|tsx|mdx)'],
       addons: [
@@ -397,22 +402,23 @@ export const Typography: StoryObj = {
         },
       },
     };
-    
+
     export default config;
     ```
-    
+
     ```bash
     # Run visual regression tests
     pnpm chromatic --project-token=<PROJECT_TOKEN>
-    
+
     # Skip unchanged stories
     pnpm chromatic --skip-unchanged
-    
+
     # Auto-accept changes
     pnpm chromatic --auto-accept-changes
     ```
+
   </Accordion>
-  
+
   <Accordion title="Accessibility Testing" icon="universal-access">
     ```typescript
     // Accessibility story example
@@ -458,7 +464,7 @@ export const Typography: StoryObj = {
     ```typescript
     // src/stories/Button.stories.tsx with interactions
     import { expect, userEvent, within } from '@storybook/test';
-    
+
     export const ButtonClick: Story = {
       args: {
         children: 'Click me',
@@ -467,14 +473,15 @@ export const Typography: StoryObj = {
       play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
         const button = canvas.getByRole('button');
-        
+
         await expect(button).toBeInTheDocument();
         await userEvent.click(button);
       },
     };
     ```
+
   </Tab>
-  
+
   <Tab title="Form Testing">
     ```typescript
     // Form interaction testing
@@ -482,7 +489,7 @@ export const Typography: StoryObj = {
       render: () => {
         const [value, setValue] = useState('');
         const [submitted, setSubmitted] = useState(false);
-        
+
         return (
           <form onSubmit={(e) => {
             e.preventDefault();
@@ -507,17 +514,18 @@ export const Typography: StoryObj = {
       },
       play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
-        
+
         const input = canvas.getByTestId('name-input');
         const button = canvas.getByTestId('submit-button');
-        
+
         await userEvent.type(input, 'John Doe');
         await userEvent.click(button);
-        
+
         await expect(canvas.getByTestId('success-message')).toBeInTheDocument();
       },
     };
     ```
+
   </Tab>
 </Tabs>
 
@@ -612,20 +620,20 @@ Different button variants for different use cases:
           page: () => (
             <>
               <h1>Button Guidelines</h1>
-              
+
               <h2>When to Use</h2>
               <ul>
                 <li>Primary actions (submit, save, continue)</li>
                 <li>Navigation between steps</li>
                 <li>Triggering modal dialogs</li>
               </ul>
-              
+
               <h2>When Not to Use</h2>
               <ul>
                 <li>Navigation between pages (use Link instead)</li>
                 <li>Non-action text (use Text instead)</li>
               </ul>
-              
+
               <h2>Accessibility</h2>
               <ul>
                 <li>Always provide descriptive button text</li>
@@ -638,15 +646,16 @@ Different button variants for different use cases:
       },
     };
     ```
+
   </Accordion>
-  
+
   <Accordion title="Brand Guidelines" icon="palette">
     ```typescript
     export const BrandGuidelines: Story = {
       render: () => (
         <Stack>
           <Title order={2}>Brand Guidelines</Title>
-          
+
           <Card>
             <Title order={3}>Primary Colors</Title>
             <Text>Use primary blue for main actions and brand elements.</Text>
@@ -655,7 +664,7 @@ Different button variants for different use cases:
               <Text>#228BE6</Text>
             </Group>
           </Card>
-          
+
           <Card>
             <Title order={3}>Typography</Title>
             <Text>Use consistent typography scale and weights.</Text>
@@ -671,6 +680,7 @@ Different button variants for different use cases:
       ),
     };
     ```
+
   </Accordion>
 </AccordionGroup>
 
@@ -693,17 +703,17 @@ Different button variants for different use cases:
     };
     ```
   </Step>
-  
+
   <Step title="CI/CD Pipeline">
     ```yaml
     # .github/workflows/storybook.yml
     name: Deploy Storybook
-    
+
     on:
       push:
         branches: [main]
-        paths: ['apps/storybook/**', 'packages/design-system/**']
-    
+        paths: ['apps/storybook/**', 'packages/uix-system/**']
+
     jobs:
       deploy-storybook:
         runs-on: ubuntu-latest
@@ -713,24 +723,25 @@ Different button variants for different use cases:
             with:
               node-version: '20'
               cache: 'pnpm'
-          
+
           - run: pnpm install
           - run: pnpm --filter storybook build-storybook
-          
+
           # Deploy to Vercel
           - uses: vercel/action@v1
             with:
               vercel-token: ${{ secrets.VERCEL_TOKEN }}
               vercel-project-id: ${{ secrets.STORYBOOK_PROJECT_ID }}
               vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          
+
           # Visual testing with Chromatic
           - run: pnpm --filter storybook chromatic
             env:
               CHROMATIC_PROJECT_TOKEN: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
     ```
+
   </Step>
-  
+
   <Step title="Performance Monitoring">
     ```typescript
     // Monitor Storybook build performance
@@ -784,7 +795,7 @@ Different button variants for different use cases:
 ## Story Organization
 
 <Note>
-**Stories have been moved to live next to their components in the design-system package.**
+**Stories have been moved to live next to their components in the uix-system package.**
 
 Stories are now co-located with their components for better organization.
 
@@ -796,18 +807,13 @@ Stories are organized in the following structure:
 
 #### Ciseco E-commerce Stories
 
-Stories are located in `/packages/design-system/ciseco/components/[component]/`
+Stories are located in `/packages/uix-system/components/[component]/`
 
 - E-commerce focused components for online stores
 - Product cards, shopping carts, checkout flows
 - E-commerce specific headers, heroes, and layouts
 - Built with Tailwind CSS and e-commerce best practices
 
-#### Algolia Search Stories
-
-Stories are located in `/packages/design-system/algolia/components/[component]/`
-
-- Search components powered by Algolia
 - Search boxes, results, autocomplete, and providers
 - E-commerce search examples
 - Documentation search patterns
@@ -816,8 +822,7 @@ Stories are located in `/packages/design-system/algolia/components/[component]/`
 
 Stories maintain their hierarchical organization:
 
-- `ciseco/ProductCard` - E-commerce product card
-- `algolia/SearchBox` - Search input component
+- `ProductCard` - E-commerce product card
 
 ### Component Import Examples
 
@@ -825,11 +830,6 @@ Stories maintain their hierarchical organization:
 ```typescript Ciseco Components
 // Ciseco components
 import { ProductCard, Header } from '@repo/uix-system/mantine';
-```
-
-```typescript Algolia Components
-// Algolia components
-import { SearchBox, SearchProvider } from "@repo/uix-system/algolia";
 ```
 
 </CodeGroup>

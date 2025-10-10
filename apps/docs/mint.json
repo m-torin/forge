@@ -45,6 +45,11 @@
       ]
     },
     {
+      "group": "Operations",
+      "icon": "gears",
+      "pages": ["repo/operations/claude-operator-guide"]
+    },
+    {
       "group": "Applications",
       "icon": "app-window",
       "pages": ["apps/storybook", "apps/email", "apps/ai-chatbot", "apps/mantine-tailwind-template"]
@@ -54,45 +59,53 @@
       "pages": [
         {
           "group": "AI",
-          "pages": ["packages/ai/overview"]
+          "pages": ["packages/ai", "packages/ai/architecture"]
         },
         "packages/analytics",
         {
           "group": "Auth",
+          "pages": ["packages/auth", "packages/auth/better-auth", "packages/auth/feature-summary"]
+        },
+        "packages/config",
+        {
+          "group": "Database",
           "pages": [
-            "packages/auth/overview",
-            "packages/auth/better-auth",
-            "packages/auth/feature-summary"
+            "packages/database/overview",
+            "packages/database/prisma",
+            "packages/database/prisma-modernization",
+            "packages/database/prisma-patterns",
+            "packages/database/server-actions",
+            "packages/database/validation",
+            "packages/database/redis",
+            "packages/database/firestore",
+            "packages/database/vector"
           ]
         },
-        "packages/config/overview",
-        "packages/database/overview",
-        "packages/editor/overview",
+        "packages/editor",
         "packages/email",
         "packages/feature-flags",
         "packages/internationalization",
         "packages/links",
         "packages/mcp-utils",
-        "packages/code-quality-agents",
         "packages/notifications",
-        "packages/observability/overview",
-        "packages/orchestration/overview",
+        "packages/observability",
+        "packages/orchestration",
         "packages/payments",
-        "packages/qa/overview",
+        "packages/qa",
         {
           "group": "Scraping",
-          "pages": ["packages/scraping"]
+          "pages": ["packages/scraping", "packages/scraping/architecture"]
         },
         "packages/security",
         "packages/seo",
         "packages/storage",
-        "packages/uix-system/overview"
+        "packages/uix-system"
       ]
     },
     {
       "group": "Labs",
       "icon": "flask",
-      "pages": ["labs/flows", "labs/monaco-editor", "labs/with-zones-app"]
+      "pages": ["labs/flows", "labs/monaco-editor"]
     }
   ],
   "footerSocials": {

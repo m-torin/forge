@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useDebouncedCallback, useIdle, useMove } from '@mantine/hooks';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useCollaboration } from './use-collaboration';
+import { useDebouncedCallback, useIdle, useMove } from "@mantine/hooks";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCollaboration } from "./use-collaboration";
 
 interface PresenceOptions {
   documentId: string;
@@ -13,7 +13,9 @@ interface PresenceOptions {
   idleTimeout?: number;
 }
 
-export function usePresence(options: PresenceOptions): ReturnType<typeof useCollaboration> & {
+export function usePresence(options: PresenceOptions): ReturnType<
+  typeof useCollaboration
+> & {
   cursorPosition: { x: number; y: number } | null;
   selection: { start: number; end: number } | null;
   isActive: boolean;
@@ -26,8 +28,14 @@ export function usePresence(options: PresenceOptions): ReturnType<typeof useColl
   selectionRef: React.RefObject<HTMLElement | null>;
 } {
   const { idleTimeout = 30000 } = options;
-  const [cursorPosition, setCursorPosition] = useState<{ x: number; y: number } | null>(null);
-  const [selection, setSelection] = useState<{ start: number; end: number } | null>(null);
+  const [cursorPosition, setCursorPosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+  const [selection, setSelection] = useState<{
+    start: number;
+    end: number;
+  } | null>(null);
   const selectionRef = useRef<HTMLElement>(null);
 
   const collaboration = useCollaboration({
@@ -66,7 +74,7 @@ export function usePresence(options: PresenceOptions): ReturnType<typeof useColl
   const debouncedCursorUpdate = useDebouncedCallback(
     (position: { x: number; y: number }) => {
       collaboration.sendEvent({
-        type: 'cursor',
+        type: "cursor",
         userId: options.userId,
         data: { cursor: position },
       });
@@ -78,7 +86,7 @@ export function usePresence(options: PresenceOptions): ReturnType<typeof useColl
   const debouncedSelectionUpdate = useDebouncedCallback(
     (start: number, end: number) => {
       collaboration.sendEvent({
-        type: 'selection',
+        type: "selection",
         userId: options.userId,
         data: { selection: { start, end } },
       });
@@ -130,8 +138,11 @@ export function usePresence(options: PresenceOptions): ReturnType<typeof useColl
     };
 
     // Use passive event listener for better performance
-    document.addEventListener('selectionchange', handleSelectionChange, { passive: true });
-    return () => document.removeEventListener('selectionchange', handleSelectionChange);
+    document.addEventListener("selectionchange", handleSelectionChange, {
+      passive: true,
+    });
+    return () =>
+      document.removeEventListener("selectionchange", handleSelectionChange);
   }, [options.trackSelection, updateSelection]);
 
   return {

@@ -1,5 +1,4 @@
-import '@testing-library/jest-dom';
-import { beforeEach, vi } from 'vitest';
+import { beforeEach, vi } from "vitest";
 
 // Centralized mocks from @repo/qa are automatically loaded via createReactPackageConfig setup files
 
@@ -13,15 +12,15 @@ global.console = {
 };
 
 // Mock React hooks (app-specific, not in centralized mocks)
-vi.mock('react', async () => {
-  const actual = await vi.importActual('react');
+vi.mock("react", async () => {
+  const actual = await vi.importActual("react");
   return {
     ...actual,
-    useCallback: vi.fn(fn => fn),
-    useEffect: vi.fn(fn => fn()),
-    useMemo: vi.fn(fn => fn()),
+    useCallback: vi.fn((fn) => fn),
+    useEffect: vi.fn((fn) => fn()),
+    useMemo: vi.fn((fn) => fn()),
     useRef: vi.fn(() => ({ current: null })),
-    useState: vi.fn(initial => [initial, vi.fn()]),
+    useState: vi.fn((initial) => [initial, vi.fn()]),
   };
 });
 
@@ -34,18 +33,22 @@ export const createAnalyticsTestConfig = (overrides = {}) => ({
 });
 
 // Common analytics creation patterns
-export const createTestAnalytics = async (config = createAnalyticsTestConfig()) => {
-  const { createClientAnalytics } = await import('#/client/index');
+export const createTestAnalytics = async (
+  config = createAnalyticsTestConfig(),
+) => {
+  const { createClientAnalytics } = await import("#/client/index");
   return createClientAnalytics(config);
 };
 
-export const createTestServerAnalytics = async (config = createAnalyticsTestConfig()) => {
-  const { createServerAnalytics } = await import('#/server/index');
+export const createTestServerAnalytics = async (
+  config = createAnalyticsTestConfig(),
+) => {
+  const { createServerAnalytics } = await import("#/server/index");
   return createServerAnalytics(config);
 };
 
 // Export test factories and generators
-export * from './emitter-test-factory';
+export * from "./emitter-test-factory";
 // Note: createTestData is already exported from emitter-test-factory, so we don't re-export from test-data-generators
 export {
   ecommerceTestData,
@@ -53,7 +56,7 @@ export {
   testPatterns,
   userTestData,
   validateTestData,
-} from './test-data-generators';
+} from "./test-data-generators";
 
 // Reset all mocks before each test
 beforeEach(() => {

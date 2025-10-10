@@ -4,12 +4,11 @@
 
 import 'server-only';
 
-import { logError } from '@repo/observability/server/next';
+import { logError } from '@repo/observability';
 import { auth } from '../../shared/auth';
 import { getAuthHeaders } from '../get-headers';
 
-import type { Member, Organization } from '@repo/database/prisma';
-import type { OrganizationRole, Session } from '../../shared/types';
+import type { Member, Organization, OrganizationRole, Session } from '../../shared/types';
 
 /**
  * Gets the current organization for the authenticated user using better-auth native method

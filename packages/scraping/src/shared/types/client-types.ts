@@ -7,7 +7,7 @@ import { ScrapeOptions, ScrapeResult } from './scraping-types';
 /**
  * Browser environment info
  */
-export interface BrowserInfo {
+interface BrowserInfo {
   cookieEnabled: boolean;
   language: string;
   onLine: boolean;
@@ -18,7 +18,7 @@ export interface BrowserInfo {
 /**
  * Client configuration
  */
-export interface ClientConfig {
+interface _ClientConfig {
   corsProxy?: string;
   debug?: boolean;
   onError?: (error: Error, context: ClientErrorContext) => void;
@@ -29,7 +29,7 @@ export interface ClientConfig {
 /**
  * Client error context
  */
-export interface ClientErrorContext {
+interface ClientErrorContext {
   browserInfo?: BrowserInfo;
   method: string;
   provider: string;
@@ -40,7 +40,7 @@ export interface ClientErrorContext {
 /**
  * Progress tracking for client operations
  */
-export interface ClientProgress {
+interface ClientProgress {
   completed: number;
   current?: string;
   percentage: number;
@@ -68,7 +68,7 @@ export interface ClientScrapeOptions extends Omit<ScrapeOptions, 'provider'> {
 /**
  * Client-side scraping result
  */
-export interface ClientScrapeResult extends ScrapeResult {
+interface _ClientScrapeResult extends ScrapeResult {
   isCORS?: boolean;
   proxyUsed?: boolean;
 }
@@ -76,7 +76,7 @@ export interface ClientScrapeResult extends ScrapeResult {
 /**
  * Download options for client-side file downloads
  */
-export interface DownloadOptions {
+interface _DownloadOptions {
   charset?: string;
   filename: string;
   mimeType?: string;

@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 
-export interface MockWebSocketOptions {
+interface MockWebSocketOptions {
   autoConnect?: boolean;
   latency?: number;
   shouldFailConnection?: boolean;

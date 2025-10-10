@@ -34,7 +34,7 @@ and production readiness.
 | Package               | Description                    | Key Technologies                        |
 | --------------------- | ------------------------------ | --------------------------------------- |
 | `@repo/auth`          | Authentication & authorization | Better Auth, organizations, API keys    |
-| `@repo/database`      | Multi-provider database layer  | Prisma, PostgreSQL, Redis, Firestore    |
+| `@repo/db-prisma`     | Multi-provider database layer  | Prisma, PostgreSQL, Redis, Firestore    |
 | `@repo/qa`            | Enterprise testing framework   | Vitest, Playwright, comprehensive mocks |
 | `@repo/analytics`     | Multi-provider analytics       | PostHog, Vercel Analytics, Segment      |
 | `@repo/payments`      | Subscription & billing         | Stripe integration                      |
@@ -62,8 +62,8 @@ and production readiness.
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/forge.git
-cd forge
+git clone https://github.com/agrippan/forge-forge.git
+cd forge-forge
 
 # Install dependencies
 pnpm install
@@ -74,14 +74,19 @@ cp .env.example .env.local
 # Set up database
 pnpm migrate
 
-# Start all applications
-pnpm dev
+# Run scoped verification (respect automation guardrails)
+pnpm repo:preflight
+
+# To work on a specific app, use targeted scripts (avoid long-lived `pnpm dev`)
+pnpm --filter webapp dev # Example: start webapp locally when manual review is required
 ```
 
 ### Applications & Services
 
 | App Name  | Summary                                      | Port |
 | --------- | -------------------------------------------- | ---- |
+| Webapp    | Main web application                         | 3200 |
+| AI Chat   | AI chatbot interface                         | 3100 |
 | Email     | React Email template development and preview | 3500 |
 | Studio    | Prisma Studio database management interface  | 3600 |
 | Storybook | UI component development and showcase        | 3700 |
@@ -113,7 +118,7 @@ forge/
 │   ├── docs/               # Documentation site
 │   ├── email/              # Email preview
 │   ├── storybook/          # Component library
-│   └── studio/             # Database management
+│   ├── studio/             # Database management
 ├── packages/               # Shared packages (7 layers)
 │   ├── auth/               # Authentication
 │   ├── database/           # Database layer
@@ -138,9 +143,9 @@ forge/
 ### Common Commands
 
 ```bash
-# Development
-pnpm dev               # Run all apps
-pnpm dev --filter=docs # Run specific app
+# Development (manual only - avoid long-lived dev servers in automation)
+pnpm dev               # Run all apps (user only)
+pnpm dev --filter=docs # Run specific app (user only)
 
 # Building
 pnpm build         # Build all packages and apps
@@ -202,7 +207,7 @@ STRIPE_SECRET_KEY="sk_test_your_key"
 - Performance and accessibility testing
 - 90%+ test coverage targets
 
-### 📊 **Analytics & Observability**
+---
 
 - Multi-provider analytics (PostHog, Vercel, Segment)
 - Error tracking with Sentry
@@ -250,20 +255,169 @@ const apiKey = process.env.API_KEY;
 import { render, screen } from '@repo/qa/vitest';
 ```
 
+## 🤖 Agentic Workflow (Autonomous Development)
+
+Forge uses **18 specialist agents** coordinated by an orchestrator to enable
+autonomous development with Forge-level rigor: clear ownership, contamination
+checks, strict quality gates, and memory discipline.
+
+### Quick Start
+
+```bash
+# 1. Run repo:setup (automatically installs git hooks)
+pnpm repo:setup
+
+# 2. Start autonomous development cycle
+claude --dangerously-skip-permissions
+> /fullservice
+```
+
+### The 18-Agent System
+
+| Agent                      | Domain              | Responsibility                                              |
+| -------------------------- | ------------------- | ----------------------------------------------------------- |
+| **orchestrator**           | Coordination        | Delegates to specialists, enforces boundaries               |
+| **stack-next-react**       | Next.js/React       | App Router, RSC, server actions                             |
+| **stack-tailwind-mantine** | UI                  | Mantine components, Tailwind styling                        |
+| **stack-editing**          | Rich Text           | TipTap v3, SSR safety, editor extensions                    |
+| **stack-ai**               | AI/Chatbot          | Model integration, streaming                                |
+| **stack-prisma**           | Database            | Prisma ORM, schema, migrations                              |
+| **stack-auth**             | Authentication      | Better Auth, sessions, RBAC                                 |
+| **testing**                | QA                  | Vitest, Playwright, coverage                                |
+| **typescript**             | Types               | tsconfig, type utilities                                    |
+| **linting**                | Quality             | ESLint, Prettier                                            |
+| **foundations**            | Build               | pnpm, Turborepo, workspace                                  |
+| **infra**                  | Infrastructure      | Terraform, CI/CD, deployments                               |
+| **integrations**           | External            | Upstash, Stripe, APIs                                       |
+| **agentic**                | Automation          | Claude configs, MCP                                         |
+| **docs**                   | Documentation       | Mintlify, AI hints                                          |
+| **security**               | Security            | Audits, vulnerabilities                                     |
+| **performance**            | Observability       | Monitoring, profiling                                       |
+| **reviewer**               | External validation | Session quality, improvement approval, blind spot detection |
+
+### 3-Tier Delegation Architecture
+
+The agent system follows a **Product Manager → Engineering Manager → Engineers**
+model:
+
+```
+┌─────────────────────────────────────────┐
+│  Tier 1: Product Manager                │
+│  (Slash Commands: /fullservice, etc.)   │
+│  • Defines WHAT to accomplish            │
+│  • Delegates immediately to orchestrator │
+│  • NEVER implements code                 │
+└─────────────┬───────────────────────────┘
+              │ Task(orchestrator)
+              ↓
+┌─────────────────────────────────────────┐
+│  Tier 2: Engineering Manager             │
+│  (orchestrator agent)                    │
+│  • Plans HOW to accomplish               │
+│  • Coordinates specialist engineers      │
+│  • NEVER implements code                 │
+└─────────────┬───────────────────────────┘
+              │ Task(specialist)
+              ↓
+┌─────────────────────────────────────────┐
+│  Tier 3: Engineers                       │
+│  (17 specialist agents)                  │
+│  • Implement solutions in their domain   │
+│  • Report results to orchestrator        │
+└─────────────────────────────────────────┘
+```
+
+**Example flow:**
+
+1. User runs `/fullservice` → Slash command delegates to orchestrator
+2. Orchestrator analyzes → Delegates to `stack-ai`, `docs`, `foundations`
+3. Specialists implement → Report back to orchestrator
+4. Orchestrator synthesizes → Reports to user
+
+**See `AGENTS.md` for complete coordination model and anti-patterns.**
+
+### Web "Stages" and Boundaries
+
+- **UI Stage**: Client components (React, Mantine)
+- **Server Stage**: Server actions, RSC
+- **Edge Stage**: Middleware (Web APIs only)
+- **Packages Stage**: Shared libraries
+- **Data Stage**: Prisma/database
+- **Infra Stage**: CI/CD, deployment
+
+**Contamination checks** enforce these boundaries automatically (pre-commit +
+CI).
+
+### /fullservice Command
+
+Primary autonomous command for closing the gap between vision and reality:
+
+```bash
+# REQUIRED: Start with permission bypass
+claude --dangerously-skip-permissions
+
+# Run autonomous cycle (2-12 hours)
+> /fullservice
+
+# Resume an in-flight session
+> /fullservice --resume
+
+# Eight-phase loop:
+# 1. AUDIT: Compare docs vs implementation
+# 2. BUILD: Implement missing features
+# 3. VALIDATE: Run quality gates + contamination checks
+# 4. DISCOVER: Log new issues from testing
+# 5. REFLECT: Capture agent learnings and improvement proposals
+# 6. REVIEW: Optional external reviewer validation (--review)
+# 7. VERIFY: Re-run automation for regression proof
+# 8. COMMIT: Finalize worktree with documented tests
+```
+
+**See `AGENTS.md` for complete playbook.**
+
+### Quality Gates
+
+**Pre-commit** (automated):
+
+- Scope-aware lint/typecheck/test
+- Contamination boundary checks
+- Coverage threshold enforcement
+
+**CI** (GitHub Actions):
+
+- repo:preflight on all scopes
+- Contamination checks (blocking)
+- Storybook smoke tests
+- Coverage upload
+
+### Documentation
+
+- **AGENTS.md** - Agent playbook, stage boundaries, contamination rules
+- **CLAUDE.md** - Autonomous operation guide
+- **.claude/commands/fullservice.md** - /fullservice specification
+- **.claude/docs/contamination-web.md** - Complete contamination matrices
+- **.claude/memory/README.md** - Memory management guide
+
 ## 🤝 Contributing
 
-1. **Read the Documentation** - Start with
+1. **Read the Documentation** - Start with `AGENTS.md` and
    [Development Guide](./apps/docs/repo/development/overview.mdx)
-2. **Follow Conventions** - Use existing patterns and code style
-3. **Write Tests** - Maintain high test coverage
-4. **Update Documentation** - Keep docs current with changes
+2. **Run Setup** - `pnpm repo:setup` (installs git hooks automatically)
+3. **Follow Conventions** - Use existing patterns and code style, respect stage
+   boundaries
+4. **Run Contamination Checks** - `node scripts/validate.mjs contamination` or
+   `pnpm validate:contamination` before commits
+5. **Write Tests** - Maintain high test coverage (≥50% default)
+6. **Update Documentation** - Keep docs current with changes
 
 ### Code Quality Standards
 
 - TypeScript strict mode enabled
 - ESLint and Prettier configured
-- Pre-commit hooks enforce standards
+- **Pre-commit hooks enforce contamination checks**
+- **Quality gates must pass** (lint, typecheck, test, coverage)
 - All tests must pass before merge
+- **No stage boundary violations** (enforced via CI)
 
 ## 📄 License
 

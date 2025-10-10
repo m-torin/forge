@@ -6,12 +6,12 @@
  * Follows the successful email package DRY pattern.
  */
 
-import { vi } from 'vitest';
+import { vi } from "vitest";
 import {
   generateFileContent,
   generateStorageErrors,
   generateStorageResults,
-} from '../test-data-generators';
+} from "../test-data-generators";
 
 // Import centralized mocks from @repo/qa
 // Note: Setup file import commented out due to path resolution issues
@@ -20,7 +20,7 @@ import {
 /**
  * Storage provider mock scenarios
  */
-export const storageProviderMockScenarios = {
+const storageProviderMockScenarios = {
   /**
    * Success scenario - all operations succeed
    */
@@ -30,7 +30,7 @@ export const storageProviderMockScenarios = {
     delete: vi.fn().mockResolvedValue(undefined),
     exists: vi.fn().mockResolvedValue(true),
     getMetadata: vi.fn().mockResolvedValue(generateStorageResults.metadata()),
-    getUrl: vi.fn().mockResolvedValue('https://example.com/signed-url'),
+    getUrl: vi.fn().mockResolvedValue("https://example.com/signed-url"),
     list: vi.fn().mockResolvedValue(generateStorageResults.list(3)),
   }),
 
@@ -43,7 +43,7 @@ export const storageProviderMockScenarios = {
     delete: vi.fn().mockRejectedValue(generateStorageErrors.storage()),
     exists: vi.fn().mockResolvedValue(true),
     getMetadata: vi.fn().mockResolvedValue(generateStorageResults.metadata()),
-    getUrl: vi.fn().mockResolvedValue('https://example.com/signed-url'),
+    getUrl: vi.fn().mockResolvedValue("https://example.com/signed-url"),
     list: vi.fn().mockResolvedValue(generateStorageResults.list(1)),
   }),
 
@@ -84,11 +84,11 @@ export const storageProviderMockScenarios = {
    */
   fileNotFound: () => ({
     upload: vi.fn().mockResolvedValue(generateStorageResults.upload()),
-    download: vi.fn().mockRejectedValue(new Error('File not found')),
-    delete: vi.fn().mockRejectedValue(new Error('File not found')),
+    download: vi.fn().mockRejectedValue(new Error("File not found")),
+    delete: vi.fn().mockRejectedValue(new Error("File not found")),
     exists: vi.fn().mockResolvedValue(false),
-    getMetadata: vi.fn().mockRejectedValue(new Error('File not found')),
-    getUrl: vi.fn().mockRejectedValue(new Error('File not found')),
+    getMetadata: vi.fn().mockRejectedValue(new Error("File not found")),
+    getUrl: vi.fn().mockRejectedValue(new Error("File not found")),
     list: vi.fn().mockResolvedValue([]),
   }),
 
@@ -101,7 +101,7 @@ export const storageProviderMockScenarios = {
     delete: vi.fn().mockResolvedValue(undefined),
     exists: vi.fn().mockResolvedValue(true),
     getMetadata: vi.fn().mockResolvedValue(generateStorageResults.metadata()),
-    getUrl: vi.fn().mockResolvedValue('https://example.com/signed-url'),
+    getUrl: vi.fn().mockResolvedValue("https://example.com/signed-url"),
     list: vi.fn().mockResolvedValue(generateStorageResults.list(3)),
     ...overrides,
   }),
@@ -118,14 +118,18 @@ export const cloudflareR2MockScenarios = {
     ...storageProviderMockScenarios.allSuccess(),
     getPublicUrl: vi
       .fn()
-      .mockImplementation((key: string) => `https://pub-test-bucket.r2.dev/${key}`),
+      .mockImplementation(
+        (key: string) => `https://pub-test-bucket.r2.dev/${key}`,
+      ),
     getPresignedUploadUrl: vi.fn().mockResolvedValue({
-      url: 'https://test-bucket.r2.cloudflarestorage.com/presigned-upload',
-      headers: { 'Content-Type': 'text/plain' },
+      url: "https://test-bucket.r2.cloudflarestorage.com/presigned-upload",
+      headers: { "Content-Type": "text/plain" },
     }),
     getPresignedDownloadUrl: vi
       .fn()
-      .mockResolvedValue('https://test-bucket.r2.cloudflarestorage.com/presigned-download'),
+      .mockResolvedValue(
+        "https://test-bucket.r2.cloudflarestorage.com/presigned-download",
+      ),
     uploadFromUrl: vi.fn().mockResolvedValue(generateStorageResults.upload()),
   }),
 
@@ -134,7 +138,9 @@ export const cloudflareR2MockScenarios = {
    */
   withCustomDomain: () => ({
     ...storageProviderMockScenarios.allSuccess(),
-    getPublicUrl: vi.fn().mockImplementation((key: string) => `https://cdn.example.com/${key}`),
+    getPublicUrl: vi
+      .fn()
+      .mockImplementation((key: string) => `https://cdn.example.com/${key}`),
   }),
 
   /**
@@ -144,12 +150,18 @@ export const cloudflareR2MockScenarios = {
     ...storageProviderMockScenarios.networkError(),
     getPublicUrl: vi
       .fn()
-      .mockImplementation((key: string) => `https://pub-test-bucket.r2.dev/${key}`),
-    getPresignedUploadUrl: vi.fn().mockRejectedValue(generateStorageErrors.provider.cloudflareR2()),
+      .mockImplementation(
+        (key: string) => `https://pub-test-bucket.r2.dev/${key}`,
+      ),
+    getPresignedUploadUrl: vi
+      .fn()
+      .mockRejectedValue(generateStorageErrors.provider.cloudflareR2()),
     getPresignedDownloadUrl: vi
       .fn()
       .mockRejectedValue(generateStorageErrors.provider.cloudflareR2()),
-    uploadFromUrl: vi.fn().mockRejectedValue(generateStorageErrors.provider.cloudflareR2()),
+    uploadFromUrl: vi
+      .fn()
+      .mockRejectedValue(generateStorageErrors.provider.cloudflareR2()),
   }),
 };
 
@@ -162,13 +174,13 @@ export const vercelBlobMockScenarios = {
    */
   success: () => {
     const mockPut = vi.fn().mockResolvedValue({
-      pathname: 'test-key',
-      url: 'https://blob.vercel.com/test-key',
+      pathname: "test-key",
+      url: "https://blob.vercel.com/test-key",
     });
     const mockHead = vi.fn().mockResolvedValue({
-      contentType: 'text/plain',
+      contentType: "text/plain",
       size: 1024,
-      uploadedAt: '2023-01-01T00:00:00Z',
+      uploadedAt: "2023-01-01T00:00:00Z",
     });
     const mockDel = vi.fn().mockResolvedValue(undefined);
     const mockList = vi.fn().mockResolvedValue({
@@ -176,21 +188,25 @@ export const vercelBlobMockScenarios = {
         pathname: item.key,
         url: item.url,
         size: item.size,
-        uploadedAt: '2023-01-01T00:00:00Z',
+        uploadedAt: "2023-01-01T00:00:00Z",
       })),
     });
 
     return {
-      upload: vi.fn().mockImplementation(async (key: string, content: any, options: any) => {
-        await mockPut(key, content, options);
-        const metadata = await mockHead(key);
-        return generateStorageResults.upload({
-          key,
-          size: metadata.size,
-          contentType: metadata.contentType,
-        });
-      }),
-      download: vi.fn().mockResolvedValue(generateFileContent.asBlobs().textBlob),
+      upload: vi
+        .fn()
+        .mockImplementation(async (key: string, content: any, options: any) => {
+          await mockPut(key, content, options);
+          const metadata = await mockHead(key);
+          return generateStorageResults.upload({
+            key,
+            size: metadata.size,
+            contentType: metadata.contentType,
+          });
+        }),
+      download: vi
+        .fn()
+        .mockResolvedValue(generateFileContent.asBlobs().textBlob),
       delete: vi.fn().mockImplementation(async (key: string) => {
         await mockDel(key);
       }),
@@ -248,13 +264,23 @@ export const vercelBlobMockScenarios = {
    * Token validation error
    */
   invalidToken: () => ({
-    upload: vi.fn().mockRejectedValue(new Error('Vercel Blob token is required')),
-    download: vi.fn().mockRejectedValue(new Error('Vercel Blob token is required')),
-    delete: vi.fn().mockRejectedValue(new Error('Vercel Blob token is required')),
+    upload: vi
+      .fn()
+      .mockRejectedValue(new Error("Vercel Blob token is required")),
+    download: vi
+      .fn()
+      .mockRejectedValue(new Error("Vercel Blob token is required")),
+    delete: vi
+      .fn()
+      .mockRejectedValue(new Error("Vercel Blob token is required")),
     exists: vi.fn().mockResolvedValue(false),
-    getMetadata: vi.fn().mockRejectedValue(new Error('Vercel Blob token is required')),
-    getUrl: vi.fn().mockRejectedValue(new Error('Vercel Blob token is required')),
-    list: vi.fn().mockRejectedValue(new Error('Vercel Blob token is required')),
+    getMetadata: vi
+      .fn()
+      .mockRejectedValue(new Error("Vercel Blob token is required")),
+    getUrl: vi
+      .fn()
+      .mockRejectedValue(new Error("Vercel Blob token is required")),
+    list: vi.fn().mockRejectedValue(new Error("Vercel Blob token is required")),
   }),
 };
 
@@ -268,18 +294,18 @@ export const cloudflareImagesMockScenarios = {
   success: () => ({
     ...storageProviderMockScenarios.allSuccess(),
     createVariant: vi.fn().mockResolvedValue({
-      id: 'variant-id',
+      id: "variant-id",
       options: { width: 100, height: 100 },
     }),
     getDirectUploadUrl: vi.fn().mockResolvedValue({
-      uploadURL: 'https://upload.imagedelivery.net/direct-upload',
-      id: 'upload-id-123',
+      uploadURL: "https://upload.imagedelivery.net/direct-upload",
+      id: "upload-id-123",
     }),
     getImageUrl: vi
       .fn()
       .mockImplementation(
         (id: string, variant?: string) =>
-          `https://imagedelivery.net/account-hash/${id}${variant ? `/${variant}` : '/public'}`,
+          `https://imagedelivery.net/account-hash/${id}${variant ? `/${variant}` : "/public"}`,
       ),
   }),
 
@@ -287,17 +313,27 @@ export const cloudflareImagesMockScenarios = {
    * Image processing error scenario
    */
   processingError: () => ({
-    upload: vi.fn().mockRejectedValue(generateStorageErrors.provider.cloudflareImages()),
-    download: vi.fn().mockResolvedValue(generateFileContent.asBlobs().imageBlob),
+    upload: vi
+      .fn()
+      .mockRejectedValue(generateStorageErrors.provider.cloudflareImages()),
+    download: vi
+      .fn()
+      .mockResolvedValue(generateFileContent.asBlobs().imageBlob),
     delete: vi.fn().mockResolvedValue(undefined),
     exists: vi.fn().mockResolvedValue(true),
     getMetadata: vi.fn().mockResolvedValue(generateStorageResults.metadata()),
-    getUrl: vi.fn().mockResolvedValue('https://imagedelivery.net/account-hash/image-id/public'),
+    getUrl: vi
+      .fn()
+      .mockResolvedValue(
+        "https://imagedelivery.net/account-hash/image-id/public",
+      ),
     list: vi.fn().mockResolvedValue(generateStorageResults.list(3)),
-    createVariant: vi.fn().mockRejectedValue(new Error('Image processing failed')),
+    createVariant: vi
+      .fn()
+      .mockRejectedValue(new Error("Image processing failed")),
     getDirectUploadUrl: vi.fn().mockResolvedValue({
-      uploadURL: 'https://upload.imagedelivery.net/direct-upload',
-      id: 'upload-id-123',
+      uploadURL: "https://upload.imagedelivery.net/direct-upload",
+      id: "upload-id-123",
     }),
   }),
 };
@@ -319,39 +355,63 @@ export const multiStorageMockScenarios = {
     return {
       getProvider: vi
         .fn()
-        .mockImplementation((name: string) => providers[name as keyof typeof providers]),
+        .mockImplementation(
+          (name: string) => providers[name as keyof typeof providers],
+        ),
       getProviderNames: vi.fn().mockReturnValue(Object.keys(providers)),
-      upload: vi.fn().mockImplementation(async (key: string, content: any, options: any) => {
-        // Route based on file extension or explicit provider
-        const provider =
-          options?.provider || (key.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? 'images' : 'documents');
-        return providers[provider as keyof typeof providers].upload(key, content, options);
-      }),
+      upload: vi
+        .fn()
+        .mockImplementation(async (key: string, content: any, options: any) => {
+          // Route based on file extension or explicit provider
+          const provider =
+            options?.provider ||
+            (key.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? "images" : "documents");
+          return providers[provider as keyof typeof providers].upload(
+            key,
+            content,
+            options,
+          );
+        }),
       download: vi.fn().mockImplementation(async (key: string) => {
-        const provider = key.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? 'images' : 'documents';
+        const provider = key.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+          ? "images"
+          : "documents";
         return providers[provider as keyof typeof providers].download(key);
       }),
       delete: vi.fn().mockImplementation(async (key: string) => {
-        const provider = key.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? 'images' : 'documents';
+        const provider = key.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+          ? "images"
+          : "documents";
         return providers[provider as keyof typeof providers].delete(key);
       }),
       exists: vi.fn().mockImplementation(async (key: string) => {
-        const provider = key.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? 'images' : 'documents';
+        const provider = key.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+          ? "images"
+          : "documents";
         return providers[provider as keyof typeof providers].exists(key);
       }),
       getMetadata: vi.fn().mockImplementation(async (key: string) => {
-        const provider = key.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? 'images' : 'documents';
+        const provider = key.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+          ? "images"
+          : "documents";
         return providers[provider as keyof typeof providers].getMetadata(key);
       }),
       getUrl: vi.fn().mockImplementation(async (key: string, options: any) => {
-        const provider = key.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? 'images' : 'documents';
-        return providers[provider as keyof typeof providers].getUrl(key, options);
+        const provider = key.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+          ? "images"
+          : "documents";
+        return providers[provider as keyof typeof providers].getUrl(
+          key,
+          options,
+        );
       }),
       list: vi.fn().mockImplementation(async (options: any) => {
-        const provider = options?.provider || 'documents';
-        if (provider === 'all') {
+        const provider = options?.provider || "documents";
+        if (provider === "all") {
           // Return results from all providers
-          const allResults = await Promise.all(Object.values(providers).map(p => p.list(options)));
+          const allResults = await Promise.all(
+            Object.values(providers).map((p) => p.list(options)),
+          );
           return allResults.flat();
         }
         return providers[provider as keyof typeof providers].list(options);
@@ -365,14 +425,28 @@ export const multiStorageMockScenarios = {
    */
   providerNotFound: () => ({
     getProvider: vi.fn().mockReturnValue(undefined),
-    getProviderNames: vi.fn().mockReturnValue(['documents']),
-    upload: vi.fn().mockRejectedValue(new Error("Provider 'non-existent' not found")),
-    download: vi.fn().mockRejectedValue(new Error("Provider 'non-existent' not found")),
-    delete: vi.fn().mockRejectedValue(new Error("Provider 'non-existent' not found")),
-    exists: vi.fn().mockRejectedValue(new Error("Provider 'non-existent' not found")),
-    getMetadata: vi.fn().mockRejectedValue(new Error("Provider 'non-existent' not found")),
-    getUrl: vi.fn().mockRejectedValue(new Error("Provider 'non-existent' not found")),
-    list: vi.fn().mockRejectedValue(new Error("Provider 'non-existent' not found")),
+    getProviderNames: vi.fn().mockReturnValue(["documents"]),
+    upload: vi
+      .fn()
+      .mockRejectedValue(new Error("Provider 'non-existent' not found")),
+    download: vi
+      .fn()
+      .mockRejectedValue(new Error("Provider 'non-existent' not found")),
+    delete: vi
+      .fn()
+      .mockRejectedValue(new Error("Provider 'non-existent' not found")),
+    exists: vi
+      .fn()
+      .mockRejectedValue(new Error("Provider 'non-existent' not found")),
+    getMetadata: vi
+      .fn()
+      .mockRejectedValue(new Error("Provider 'non-existent' not found")),
+    getUrl: vi
+      .fn()
+      .mockRejectedValue(new Error("Provider 'non-existent' not found")),
+    list: vi
+      .fn()
+      .mockRejectedValue(new Error("Provider 'non-existent' not found")),
     getCloudflareImagesProvider: vi.fn().mockReturnValue(undefined),
   }),
 };
@@ -434,7 +508,7 @@ export const setupStorageMocks = {
   /**
    * Sets up all storage mocks for testing
    */
-  all: (scenario: 'success' | 'error' | 'partial' = 'success') => {
+  all: (scenario: "success" | "error" | "partial" = "success") => {
     const scenarios = {
       success: {
         cloudflareR2: cloudflareR2MockScenarios.success(),
@@ -466,19 +540,19 @@ export const setupStorageMocks = {
    * Sets up provider-specific mocks
    */
   provider: (
-    providerName: 'cloudflare-r2' | 'vercel-blob' | 'cloudflare-images',
-    scenario: 'success' | 'error' = 'success',
+    providerName: "cloudflare-r2" | "vercel-blob" | "cloudflare-images",
+    scenario: "success" | "error" = "success",
   ) => {
     const mockScenarios = {
-      'cloudflare-r2': {
+      "cloudflare-r2": {
         success: cloudflareR2MockScenarios.success(),
         error: cloudflareR2MockScenarios.apiError(),
       },
-      'vercel-blob': {
+      "vercel-blob": {
         success: vercelBlobMockScenarios.success(),
         error: vercelBlobMockScenarios.apiError(),
       },
-      'cloudflare-images': {
+      "cloudflare-images": {
         success: cloudflareImagesMockScenarios.success(),
         error: cloudflareImagesMockScenarios.processingError(),
       },
@@ -506,7 +580,7 @@ export const setupStorageMocks = {
 /**
  * Test assertion helpers
  */
-export const storageAssertions = {
+const storageAssertions = {
   /**
    * Asserts upload operation was successful
    */
@@ -517,7 +591,7 @@ export const storageAssertions = {
       size: expect.any(Number),
     });
     if (result.contentType) {
-      expect(typeof result.contentType).toBe('string');
+      expect(typeof result.contentType).toBe("string");
     }
   },
 
@@ -556,7 +630,7 @@ export const storageAssertions = {
    * Asserts URL generation was successful
    */
   expectUrlSuccess: (result: any) => {
-    expect(typeof result).toBe('string');
+    expect(typeof result).toBe("string");
     expect(result).toMatch(/^https?:\/\//);
   },
 
@@ -587,7 +661,11 @@ export const storageAssertions = {
   /**
    * Asserts provider mock was called correctly
    */
-  expectProviderCalled: (mockProvider: any, method: string, expectedArgs?: any[]) => {
+  expectProviderCalled: (
+    mockProvider: any,
+    method: string,
+    expectedArgs?: any[],
+  ) => {
     expect(mockProvider[method]).toHaveBeenCalledWith();
     if (expectedArgs) {
       expect(mockProvider[method]).toHaveBeenCalledWith(...expectedArgs);
@@ -610,7 +688,7 @@ export const storageAssertions = {
 /**
  * Performance test utilities
  */
-export const storagePerformanceUtils = {
+const storagePerformanceUtils = {
   /**
    * Measures operation performance
    */
@@ -634,7 +712,7 @@ export const storagePerformanceUtils = {
     maxDuration: number = 5000,
   ): Promise<{ results: T[]; duration: number }> => {
     const start = performance.now();
-    const results = await Promise.all(operations.map(op => op()));
+    const results = await Promise.all(operations.map((op) => op()));
     const duration = performance.now() - start;
 
     expect(duration).toBeLessThan(maxDuration);
@@ -650,12 +728,12 @@ export const storageTestEnvironment = {
   /**
    * Sets up test environment with all mocks
    */
-  setup: (scenario: 'success' | 'error' | 'partial' = 'success') => {
+  setup: (scenario: "success" | "error" | "partial" = "success") => {
     const mocks = setupStorageMocks.all(scenario);
 
     // Mock external dependencies if not already mocked by @repo/qa
     if (!vi.isMockFunction(global.fetch)) {
-      vi.stubGlobal('fetch', vi.fn());
+      vi.stubGlobal("fetch", vi.fn());
     }
 
     return mocks;

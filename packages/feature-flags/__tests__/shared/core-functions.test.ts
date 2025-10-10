@@ -27,8 +27,6 @@ describe('shared/core-functions', () => {
 
     // Mock globalThis.dispatchEvent
     if (!globalThis.dispatchEvent) {
-      (globalThis as any).dispatchEvent = vi.fn(() => true);
-    } else {
       vi.spyOn(globalThis, 'dispatchEvent').mockImplementation(() => true);
     }
   });

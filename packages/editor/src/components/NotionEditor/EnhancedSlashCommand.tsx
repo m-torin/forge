@@ -19,7 +19,7 @@ declare module '@tiptap/core' {
 }
 
 // Define the command item structure
-export interface SlashCommandItem {
+interface SlashCommandItem {
   title: string;
   description: string;
   icon: string;
@@ -30,7 +30,7 @@ export interface SlashCommandItem {
 }
 
 // Enhanced slash commands with categories and shortcuts
-export const ENHANCED_SLASH_COMMANDS: SlashCommandItem[] = [
+const ENHANCED_SLASH_COMMANDS: SlashCommandItem[] = [
   // Text Blocks
   {
     title: 'Text',
@@ -149,7 +149,7 @@ export const ENHANCED_SLASH_COMMANDS: SlashCommandItem[] = [
 ];
 
 // Suggestion component interface
-export interface SlashSuggestionRef {
+interface SlashSuggestionRef {
   onKeyDown: (props: { event: KeyboardEvent }) => boolean;
 }
 
@@ -420,7 +420,7 @@ export const EnhancedSlashCommand = Extension.create<{
 });
 
 // Hook to access slash commands programmatically
-export const useSlashCommands = () => {
+const _useSlashCommands = () => {
   const getCommandsByCategory = (category: string) => {
     return ENHANCED_SLASH_COMMANDS.filter(cmd => cmd.category === category);
   };
@@ -450,5 +450,3 @@ export const useSlashCommands = () => {
     getCommandByTitle,
   };
 };
-
-export { SlashSuggestion };

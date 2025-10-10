@@ -96,7 +96,8 @@
 
 @layer base {
   :root {
-    --sidebar-transition: margin-inline-start 300ms ease-out, grid-template-columns 300ms ease-out;
+    --sidebar-transition:
+      margin-inline-start 300ms ease-out, grid-template-columns 300ms ease-out;
   }
 }
 

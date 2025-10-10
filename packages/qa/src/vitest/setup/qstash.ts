@@ -76,7 +76,7 @@ function getQStashCliPath(): string {
 /**
  * Start QStash development server for testing
  */
-export async function startQStashDevServer(port = 8081): Promise<QStashDevServer> {
+async function startQStashDevServer(port = 8081): Promise<QStashDevServer> {
   if (qstashServer) {
     return qstashServer;
   }
@@ -179,7 +179,7 @@ export async function startQStashDevServer(port = 8081): Promise<QStashDevServer
 /**
  * Stop QStash development server
  */
-export async function stopQStashDevServer(): Promise<void> {
+async function stopQStashDevServer(): Promise<void> {
   if (!qstashServer) {
     return;
   }

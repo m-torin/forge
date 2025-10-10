@@ -27,7 +27,7 @@ export async function GET(_request: NextRequest) {
     });
   } catch (error) {
     // Use proper error logging
-    logError(error instanceof Error ? error : new Error('Failed to load flag definitions'), {
+    logError(error instanceof Error ? error.message : 'Failed to load flag definitions', {
       context: 'flags-discovery-endpoint',
     });
 

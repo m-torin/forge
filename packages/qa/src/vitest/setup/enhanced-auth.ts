@@ -4,9 +4,9 @@
  * Provides comprehensive auth environment setup for all packages
  */
 
-import { cleanup } from '@testing-library/react';
-import { afterEach, beforeEach, vi } from 'vitest';
-import { setupNextMocks } from '../mocks/internal/next';
+import { cleanup } from "@testing-library/react";
+import { afterEach, beforeEach, vi } from "vitest";
+import { setupNextMocks } from "../mocks/internal/next";
 
 /**
  * Enhanced auth setup with all Better Auth mocks and database setup
@@ -19,16 +19,16 @@ export function setupEnhancedAuth() {
     resetAuthMocks();
 
     // Mock console to reduce noise in tests
-    vi.spyOn(console, 'error').mockImplementation(() => {});
-    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(console, "warn").mockImplementation(() => {});
 
     // Mock fetch globally
-    vi.spyOn(global, 'fetch').mockResolvedValue(new Response());
+    vi.spyOn(global, "fetch").mockResolvedValue(new Response());
 
     // Mock environment variables
-    vi.stubEnv('BETTER_AUTH_SECRET', 'test-secret');
-    vi.stubEnv('DATABASE_URL', 'postgresql://test:test@localhost:5432/test');
-    vi.stubEnv('NEXT_PUBLIC_APP_URL', 'http://localhost:3000');
+    vi.stubEnv("BETTER_AUTH_SECRET", "test-secret");
+    vi.stubEnv("DATABASE_URL", "postgresql://test:test@localhost:5432/test");
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "http://localhost:3000");
 
     // Setup centralized Next.js mocks
     setupNextMocks();
@@ -56,7 +56,7 @@ export function resetAuthMocks() {
   vi.clearAllMocks();
 
   // Reset any module-level state
-  if (typeof global !== 'undefined') {
+  if (typeof global !== "undefined") {
     delete global.testUtils;
   }
 }
@@ -66,12 +66,12 @@ export function resetAuthMocks() {
  */
 export function restoreGlobals() {
   // Restore fetch if it was replaced
-  if (global.fetch && typeof (global.fetch as any).mockRestore === 'function') {
+  if (global.fetch && typeof (global.fetch as any).mockRestore === "function") {
     (global.fetch as any).mockRestore();
   }
 
   // Restore any other globals that tests might have modified
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     // Restore window globals in browser environment
     delete window.testUtils;
   }
@@ -83,7 +83,7 @@ export function restoreGlobals() {
  */
 export function setupBetterAuthMocks() {
   // Mock Better Auth core
-  vi.mock('better-auth', () => ({
+  vi.mock("better-auth", () => ({
     BetterAuth: vi.fn().mockImplementation(() => ({
       api: {
         createApiKey: vi.fn(),
@@ -105,8 +105,8 @@ export function setupBetterAuthMocks() {
   }));
 
   // Mock Better Auth cookies
-  vi.mock('better-auth/cookies', () => ({
-    getSessionCookie: vi.fn().mockReturnValue('mock-session-cookie'),
+  vi.mock("better-auth/cookies", () => ({
+    getSessionCookie: vi.fn().mockReturnValue("mock-session-cookie"),
   }));
 }
 
@@ -116,7 +116,7 @@ export function setupBetterAuthMocks() {
  */
 export function setupAuthDatabaseMocks() {
   // Mock database with all auth-related models
-  vi.mock('@repo/database', () => ({
+  vi.mock("@repo/database", () => ({
     database: {
       apiKey: {
         count: vi.fn(),
@@ -197,7 +197,7 @@ export function setupAuthTestUtilities() {
   global.testUtils = {
     createMockResponse: (data: any, status = 200) => {
       return new Response(JSON.stringify(data), {
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
         status,
       });
     },
@@ -227,7 +227,7 @@ export const authSetupHelpers = {
    * Create a test environment with authenticated user
    */
   authenticatedUser: () => {
-    const { createMockSession } = require('../mocks/internal/auth-factories');
+    const { createMockSession } = require("../mocks/internal/auth-factories");
     const mockSession = createMockSession();
 
     vi.mocked(global.fetch).mockResolvedValueOnce(
@@ -241,14 +241,18 @@ export const authSetupHelpers = {
    * Create a test environment with unauthenticated user
    */
   unauthenticatedUser: () => {
-    vi.mocked(global.fetch).mockResolvedValueOnce(new Response(null, { status: 401 }));
+    vi.mocked(global.fetch).mockResolvedValueOnce(
+      new Response(null, { status: 401 }),
+    );
   },
 
   /**
    * Create a test environment with specific organization
    */
   withOrganization: (orgData?: any) => {
-    const { createMockOrganization } = require('../mocks/internal/auth-factories');
+    const {
+      createMockOrganization,
+    } = require("../mocks/internal/auth-factories");
     const mockOrg = createMockOrganization(orgData);
 
     vi.mocked(global.fetch).mockResolvedValueOnce(
@@ -263,8 +267,8 @@ export const authSetupHelpers = {
    */
   mockAuthMiddleware: (req: any) => {
     req.headers = req.headers || new Headers();
-    req.headers.set('x-user-id', 'user-123');
-    req.headers.set('x-organization-id', 'org-123');
+    req.headers.set("x-user-id", "user-123");
+    req.headers.set("x-organization-id", "org-123");
     return req;
   },
 };

@@ -1,4 +1,4 @@
-import { expect } from '@playwright/test';
+import { expect } from "@playwright/test";
 
 /**
  * Performance budgets configuration
@@ -78,7 +78,11 @@ export class PerformanceBudgetValidator {
   constructor(budgets?: PerformanceBudgets) {
     // Auto-select budget based on environment
     const environment =
-      process.env.NODE_ENV === 'production' ? 'production' : process.env.CI ? 'ci' : 'development';
+      process.env.NODE_ENV === "production"
+        ? "production"
+        : process.env.CI
+          ? "ci"
+          : "development";
 
     this.budgets = budgets || ENVIRONMENT_BUDGETS[environment];
   }
@@ -86,7 +90,12 @@ export class PerformanceBudgetValidator {
   /**
    * Validate Web Vitals against budgets
    */
-  validateWebVitals(vitals: { lcp?: number; fid?: number; cls?: number; fcp?: number }) {
+  validateWebVitals(vitals: {
+    lcp?: number;
+    fid?: number;
+    cls?: number;
+    fcp?: number;
+  }) {
     if (this.budgets.lcp && vitals.lcp) {
       expect(
         vitals.lcp,
@@ -102,9 +111,10 @@ export class PerformanceBudgetValidator {
     }
 
     if (this.budgets.cls && vitals.cls) {
-      expect(vitals.cls, `CLS ${vitals.cls} exceeds budget of ${this.budgets.cls}`).toBeLessThan(
-        this.budgets.cls,
-      );
+      expect(
+        vitals.cls,
+        `CLS ${vitals.cls} exceeds budget of ${this.budgets.cls}`,
+      ).toBeLessThan(this.budgets.cls);
     }
 
     if (this.budgets.fcp && vitals.fcp) {
@@ -118,7 +128,10 @@ export class PerformanceBudgetValidator {
   /**
    * Validate page load performance against budgets
    */
-  validatePageLoad(metrics: { loadComplete?: number; domContentLoaded?: number }) {
+  validatePageLoad(metrics: {
+    loadComplete?: number;
+    domContentLoaded?: number;
+  }) {
     if (this.budgets.pageLoad && metrics.loadComplete) {
       expect(
         metrics.loadComplete,
@@ -150,7 +163,7 @@ export class PerformanceBudgetValidator {
     }
 
     if (this.budgets.maxResourceSize) {
-      analysis.largeResources.forEach(resource => {
+      analysis.largeResources.forEach((resource) => {
         expect(
           resource.size,
           `Resource ${resource.name} size ${resource.size} bytes exceeds budget of ${this.budgets.maxResourceSize} bytes`,
@@ -162,7 +175,10 @@ export class PerformanceBudgetValidator {
   /**
    * Validate memory usage against budgets
    */
-  validateMemoryUsage(leakDetection: { hasLeak: boolean; growthPercentage: number }) {
+  validateMemoryUsage(leakDetection: {
+    hasLeak: boolean;
+    growthPercentage: number;
+  }) {
     if (this.budgets.memoryGrowthPercentage) {
       expect(
         leakDetection.growthPercentage,
@@ -170,13 +186,16 @@ export class PerformanceBudgetValidator {
       ).toBeLessThan(this.budgets.memoryGrowthPercentage);
     }
 
-    expect(leakDetection.hasLeak, 'Memory leak detected').toBe(false);
+    expect(leakDetection.hasLeak, "Memory leak detected").toBe(false);
   }
 
   /**
    * Validate interactivity metrics against budgets
    */
-  validateInteractivity(metrics: { domInteractive?: number; averageInputDelay?: number }) {
+  validateInteractivity(metrics: {
+    domInteractive?: number;
+    averageInputDelay?: number;
+  }) {
     if (this.budgets.tti && metrics.domInteractive) {
       expect(
         metrics.domInteractive,
@@ -204,7 +223,7 @@ export class PerformanceBudgetValidator {
   }) {
     const report = {
       timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || 'development',
+      environment: process.env.NODE_ENV || "development",
       budgets: this.budgets,
       results,
       violations: [] as string[],
@@ -227,7 +246,10 @@ export class PerformanceBudgetValidator {
     }
 
     // Calculate score (0-100)
-    report.score = Math.max(0, Math.round(100 - (violations / Math.max(totalChecks, 1)) * 100));
+    report.score = Math.max(
+      0,
+      Math.round(100 - (violations / Math.max(totalChecks, 1)) * 100),
+    );
 
     return report;
   }
@@ -236,9 +258,15 @@ export class PerformanceBudgetValidator {
 /**
  * Create a performance budget validator with custom budgets
  */
-export function createPerformanceBudgets(customBudgets?: Partial<PerformanceBudgets>) {
+export function createPerformanceBudgets(
+  customBudgets?: Partial<PerformanceBudgets>,
+) {
   const environment =
-    process.env.NODE_ENV === 'production' ? 'production' : process.env.CI ? 'ci' : 'development';
+    process.env.NODE_ENV === "production"
+      ? "production"
+      : process.env.CI
+        ? "ci"
+        : "development";
 
   const baseBudgets = ENVIRONMENT_BUDGETS[environment];
   const finalBudgets = { ...baseBudgets, ...customBudgets };

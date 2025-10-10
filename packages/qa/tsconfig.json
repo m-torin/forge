@@ -20,6 +20,7 @@
     "src/vitest/examples/**",
     "src/vitest/**/*.test.ts",
     "src/vitest/**/*.spec.ts",
-    "src/playwright/**/*.spec.ts"
+    "src/playwright/**/*.spec.ts",
+    "eslint.config.ts"
   ]
 }

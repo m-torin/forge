@@ -3,11 +3,11 @@
  * 100% React Server Component for real-time password strength analysis
  */
 
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import type { BaseProps } from '../types';
-import { cn } from '../utils/dark-mode';
+import { useEffect, useState } from "react";
+import type { BaseProps } from "../types";
+import { cn } from "../utils/dark-mode";
 
 interface PasswordStrengthIndicatorProps extends BaseProps {
   password: string;
@@ -28,7 +28,7 @@ interface PasswordRule {
 
 interface PasswordStrength {
   score: number; // 0-100
-  level: 'very-weak' | 'weak' | 'fair' | 'good' | 'strong';
+  level: "very-weak" | "weak" | "fair" | "good" | "strong";
   passedRules: string[];
   failedRules: string[];
   suggestions: string[];
@@ -36,83 +36,83 @@ interface PasswordStrength {
 
 const defaultRules: PasswordRule[] = [
   {
-    id: 'length',
-    name: 'Length',
-    description: 'At least 8 characters',
-    test: password => password.length >= 8,
+    id: "length",
+    name: "Length",
+    description: "At least 8 characters",
+    test: (password) => password.length >= 8,
     weight: 10,
   },
   {
-    id: 'lowercase',
-    name: 'Lowercase',
-    description: 'At least one lowercase letter',
-    test: password => /[a-z]/.test(password),
+    id: "lowercase",
+    name: "Lowercase",
+    description: "At least one lowercase letter",
+    test: (password) => /[a-z]/.test(password),
     weight: 6,
   },
   {
-    id: 'uppercase',
-    name: 'Uppercase',
-    description: 'At least one uppercase letter',
-    test: password => /[A-Z]/.test(password),
+    id: "uppercase",
+    name: "Uppercase",
+    description: "At least one uppercase letter",
+    test: (password) => /[A-Z]/.test(password),
     weight: 6,
   },
   {
-    id: 'numbers',
-    name: 'Numbers',
-    description: 'At least one number',
-    test: password => /\d/.test(password),
+    id: "numbers",
+    name: "Numbers",
+    description: "At least one number",
+    test: (password) => /\d/.test(password),
     weight: 7,
   },
   {
-    id: 'symbols',
-    name: 'Symbols',
-    description: 'At least one special character',
-    test: password => /[!@#$%^&*(),.?":{}|<>]/.test(password),
+    id: "symbols",
+    name: "Symbols",
+    description: "At least one special character",
+    test: (password) => /[!@#$%^&*(),.?":{}|<>]/.test(password),
     weight: 8,
   },
   {
-    id: 'no-common',
-    name: 'Not Common',
-    description: 'Not a common password',
-    test: password => !isCommonPassword(password),
+    id: "no-common",
+    name: "Not Common",
+    description: "Not a common password",
+    test: (password) => !isCommonPassword(password),
     weight: 9,
   },
   {
-    id: 'no-sequential',
-    name: 'No Sequences',
-    description: 'No obvious sequences (123, abc)',
-    test: password => !hasSequentialChars(password),
+    id: "no-sequential",
+    name: "No Sequences",
+    description: "No obvious sequences (123, abc)",
+    test: (password) => !hasSequentialChars(password),
     weight: 7,
   },
   {
-    id: 'no-repeated',
-    name: 'No Repetition',
-    description: 'No excessive character repetition',
-    test: password => !hasExcessiveRepetition(password),
+    id: "no-repeated",
+    name: "No Repetition",
+    description: "No excessive character repetition",
+    test: (password) => !hasExcessiveRepetition(password),
     weight: 5,
   },
 ];
 
 // Common passwords list (simplified for demo)
 const commonPasswords = new Set([
-  'password',
-  '123456',
-  '123456789',
-  'qwerty',
-  'abc123',
-  'password123',
-  'admin',
-  'letmein',
-  'welcome',
-  '12345678',
-  'monkey',
-  'dragon',
-  'princess',
-  'sunshine',
-  'master',
-  'shadow',
-  'football',
-  'baseball',
+  "password",
+  "123456",
+  "123456789",
+  "qwerty",
+  "abc123",
+  "password123",
+  "admin",
+  "letmein",
+  "welcome",
+  "12345678",
+  "monkey",
+  "dragon",
+  "princess",
+  "sunshine",
+  "master",
+  "shadow",
+  "football",
+  "baseball",
 ]);
 
 function isCommonPassword(password: string): boolean {
@@ -121,15 +121,15 @@ function isCommonPassword(password: string): boolean {
 
 function hasSequentialChars(password: string): boolean {
   const sequential = [
-    '123456789',
-    'abcdefghijklmnopqrstuvwxyz',
-    'qwertyuiop',
-    'asdfghjkl',
-    'zxcvbnm',
+    "123456789",
+    "abcdefghijklmnopqrstuvwxyz",
+    "qwertyuiop",
+    "asdfghjkl",
+    "zxcvbnm",
   ];
 
   const lower = password.toLowerCase();
-  return sequential.some(seq => {
+  return sequential.some((seq) => {
     for (let i = 0; i <= seq.length - 3; i++) {
       if (lower.includes(seq.slice(i, i + 3))) return true;
     }
@@ -143,14 +143,17 @@ function hasExcessiveRepetition(password: string): boolean {
   return repeatedChar || repeatedPattern;
 }
 
-function analyzePassword(password: string, rules: PasswordRule[]): PasswordStrength {
+function analyzePassword(
+  password: string,
+  rules: PasswordRule[],
+): PasswordStrength {
   if (!password) {
     return {
       score: 0,
-      level: 'very-weak',
+      level: "very-weak",
       passedRules: [],
-      failedRules: rules.map(r => r.id),
-      suggestions: ['Enter a password to see strength analysis'],
+      failedRules: rules.map((r) => r.id),
+      suggestions: ["Enter a password to see strength analysis"],
     };
   }
 
@@ -160,7 +163,7 @@ function analyzePassword(password: string, rules: PasswordRule[]): PasswordStren
   let passedWeight = 0;
 
   // Test each rule
-  rules.forEach(rule => {
+  rules.forEach((rule) => {
     totalWeight += rule.weight;
     if (rule.test(password)) {
       passedRules.push(rule.id);
@@ -174,12 +177,12 @@ function analyzePassword(password: string, rules: PasswordRule[]): PasswordStren
   const score = Math.round((passedWeight / totalWeight) * 100);
 
   // Determine level
-  let level: PasswordStrength['level'];
-  if (score < 20) level = 'very-weak';
-  else if (score < 40) level = 'weak';
-  else if (score < 60) level = 'fair';
-  else if (score < 80) level = 'good';
-  else level = 'strong';
+  let level: PasswordStrength["level"];
+  if (score < 20) level = "very-weak";
+  else if (score < 40) level = "weak";
+  else if (score < 60) level = "fair";
+  else if (score < 80) level = "good";
+  else level = "strong";
 
   // Generate suggestions
   const suggestions = generateSuggestions(password, failedRules, rules);
@@ -194,33 +197,33 @@ function generateSuggestions(
 ): string[] {
   const suggestions: string[] = [];
 
-  if (failedRules.includes('length')) {
-    suggestions.push('Make your password at least 8 characters long');
+  if (failedRules.includes("length")) {
+    suggestions.push("Make your password at least 8 characters long");
   }
-  if (failedRules.includes('lowercase')) {
-    suggestions.push('Add lowercase letters (a-z)');
+  if (failedRules.includes("lowercase")) {
+    suggestions.push("Add lowercase letters (a-z)");
   }
-  if (failedRules.includes('uppercase')) {
-    suggestions.push('Add uppercase letters (A-Z)');
+  if (failedRules.includes("uppercase")) {
+    suggestions.push("Add uppercase letters (A-Z)");
   }
-  if (failedRules.includes('numbers')) {
-    suggestions.push('Include at least one number (0-9)');
+  if (failedRules.includes("numbers")) {
+    suggestions.push("Include at least one number (0-9)");
   }
-  if (failedRules.includes('symbols')) {
-    suggestions.push('Add special characters (!@#$%^&*)');
+  if (failedRules.includes("symbols")) {
+    suggestions.push("Add special characters (!@#$%^&*)");
   }
-  if (failedRules.includes('no-common')) {
+  if (failedRules.includes("no-common")) {
     suggestions.push('Avoid common passwords like "password" or "123456"');
   }
-  if (failedRules.includes('no-sequential')) {
+  if (failedRules.includes("no-sequential")) {
     suggestions.push('Avoid sequential characters like "123" or "abc"');
   }
-  if (failedRules.includes('no-repeated')) {
-    suggestions.push('Avoid repeating characters or patterns');
+  if (failedRules.includes("no-repeated")) {
+    suggestions.push("Avoid repeating characters or patterns");
   }
 
   if (password.length > 0 && suggestions.length === 0) {
-    suggestions.push('Great password! Consider using a password manager.');
+    suggestions.push("Great password! Consider using a password manager.");
   }
 
   return suggestions;
@@ -233,14 +236,16 @@ export function PasswordStrengthIndicator({
   showSuggestions = true,
   customRules,
   onStrengthChange,
-  className = '',
+  className = "",
 }: PasswordStrengthIndicatorProps) {
   const [strength, setStrength] = useState<PasswordStrength | null>(null);
 
   const rules =
     customRules ||
-    defaultRules.map(rule =>
-      rule.id === 'length' ? { ...rule, test: pwd => pwd.length >= minLength } : rule,
+    defaultRules.map((rule) =>
+      rule.id === "length"
+        ? { ...rule, test: (pwd) => pwd.length >= minLength }
+        : rule,
     );
 
   useEffect(() => {
@@ -254,68 +259,73 @@ export function PasswordStrengthIndicator({
 
   if (!strength) return null;
 
-  const getStrengthColor = (level: PasswordStrength['level']) => {
+  const getStrengthColor = (level: PasswordStrength["level"]) => {
     switch (level) {
-      case 'very-weak':
+      case "very-weak":
         return cn(
-          'text-red-600 bg-red-50 border-red-200',
-          'dark:text-red-400 dark:bg-red-900/20 dark:border-red-800',
+          "text-red-600 bg-red-50 border-red-200",
+          "dark:text-red-400 dark:bg-red-900/20 dark:border-red-800",
         );
-      case 'weak':
+      case "weak":
         return cn(
-          'text-orange-600 bg-orange-50 border-orange-200',
-          'dark:text-orange-400 dark:bg-orange-900/20 dark:border-orange-800',
+          "text-orange-600 bg-orange-50 border-orange-200",
+          "dark:text-orange-400 dark:bg-orange-900/20 dark:border-orange-800",
         );
-      case 'fair':
+      case "fair":
         return cn(
-          'text-yellow-600 bg-yellow-50 border-yellow-200',
-          'dark:text-yellow-400 dark:bg-yellow-900/20 dark:border-yellow-800',
+          "text-yellow-600 bg-yellow-50 border-yellow-200",
+          "dark:text-yellow-400 dark:bg-yellow-900/20 dark:border-yellow-800",
         );
-      case 'good':
+      case "good":
         return cn(
-          'text-blue-600 bg-blue-50 border-blue-200',
-          'dark:text-blue-400 dark:bg-blue-900/20 dark:border-blue-800',
+          "text-blue-600 bg-blue-50 border-blue-200",
+          "dark:text-blue-400 dark:bg-blue-900/20 dark:border-blue-800",
         );
-      case 'strong':
+      case "strong":
         return cn(
-          'text-green-600 bg-green-50 border-green-200',
-          'dark:text-green-400 dark:bg-green-900/20 dark:border-green-800',
+          "text-green-600 bg-green-50 border-green-200",
+          "dark:text-green-400 dark:bg-green-900/20 dark:border-green-800",
         );
     }
   };
 
-  const getStrengthBarColor = (level: PasswordStrength['level']) => {
+  const getStrengthBarColor = (level: PasswordStrength["level"]) => {
     switch (level) {
-      case 'very-weak':
-        return cn('bg-red-500', 'dark:bg-red-500');
-      case 'weak':
-        return cn('bg-orange-500', 'dark:bg-orange-500');
-      case 'fair':
-        return cn('bg-yellow-500', 'dark:bg-yellow-500');
-      case 'good':
-        return cn('bg-blue-500', 'dark:bg-blue-500');
-      case 'strong':
-        return cn('bg-green-500', 'dark:bg-green-500');
+      case "very-weak":
+        return cn("bg-red-500", "dark:bg-red-500");
+      case "weak":
+        return cn("bg-orange-500", "dark:bg-orange-500");
+      case "fair":
+        return cn("bg-yellow-500", "dark:bg-yellow-500");
+      case "good":
+        return cn("bg-blue-500", "dark:bg-blue-500");
+      case "strong":
+        return cn("bg-green-500", "dark:bg-green-500");
     }
   };
 
   const strengthLabel = {
-    'very-weak': 'Very Weak',
-    weak: 'Weak',
-    fair: 'Fair',
-    good: 'Good',
-    strong: 'Strong',
+    "very-weak": "Very Weak",
+    weak: "Weak",
+    fair: "Fair",
+    good: "Good",
+    strong: "Strong",
   };
 
   return (
     <div className={`space-y-4 ${className}`}>
       <div>
         <div className="mb-2 flex items-center justify-between">
-          <span className={cn('text-sm font-medium text-gray-700', 'dark:text-gray-300')}>
+          <span
+            className={cn(
+              "text-sm font-medium text-gray-700",
+              "dark:text-gray-300",
+            )}
+          >
             Password Strength
           </span>
           <div className="flex items-center space-x-2">
-            <span className={cn('text-sm text-gray-600', 'dark:text-gray-400')}>
+            <span className={cn("text-sm text-gray-600", "dark:text-gray-400")}>
               {strength.score}%
             </span>
             <span
@@ -326,7 +336,12 @@ export function PasswordStrengthIndicator({
           </div>
         </div>
 
-        <div className={cn('h-2 w-full rounded-full bg-gray-200', 'dark:bg-gray-700')}>
+        <div
+          className={cn(
+            "h-2 w-full rounded-full bg-gray-200",
+            "dark:bg-gray-700",
+          )}
+        >
           <div
             className={`h-2 rounded-full transition-all duration-300 ${getStrengthBarColor(strength.level)}`}
             style={{ width: `${strength.score}%` }}
@@ -336,15 +351,17 @@ export function PasswordStrengthIndicator({
 
       {showRequirements && (
         <div>
-          <h4 className="mb-2 text-sm font-medium text-gray-700">Requirements</h4>
+          <h4 className="mb-2 text-sm font-medium text-gray-700">
+            Requirements
+          </h4>
           <div className="space-y-2">
-            {rules.map(rule => {
+            {rules.map((rule) => {
               const isPassed = strength.passedRules.includes(rule.id);
               return (
                 <div key={rule.id} className="flex items-center space-x-2">
                   <div
                     className={`flex h-4 w-4 items-center justify-center rounded-full ${
-                      isPassed ? 'bg-green-100' : 'bg-gray-100'
+                      isPassed ? "bg-green-100" : "bg-gray-100"
                     }`}
                   >
                     {isPassed ? (
@@ -373,7 +390,9 @@ export function PasswordStrengthIndicator({
                       </svg>
                     )}
                   </div>
-                  <span className={`text-sm ${isPassed ? 'text-green-700' : 'text-gray-600'}`}>
+                  <span
+                    className={`text-sm ${isPassed ? "text-green-700" : "text-gray-600"}`}
+                  >
                     {rule.description}
                   </span>
                 </div>
@@ -385,9 +404,11 @@ export function PasswordStrengthIndicator({
 
       {showSuggestions && strength.suggestions.length > 0 && (
         <div>
-          <h4 className="mb-2 text-sm font-medium text-gray-700">Suggestions</h4>
+          <h4 className="mb-2 text-sm font-medium text-gray-700">
+            Suggestions
+          </h4>
           <div className="space-y-1">
-            {strength.suggestions.map(suggestion => (
+            {strength.suggestions.map((suggestion) => (
               <div key={suggestion} className="flex items-start space-x-2">
                 <svg
                   className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-500"
@@ -407,7 +428,7 @@ export function PasswordStrengthIndicator({
         </div>
       )}
 
-      {strength.level === 'strong' && (
+      {strength.level === "strong" && (
         <div className="rounded-lg border border-green-200 bg-green-50 p-3">
           <div className="flex items-start">
             <svg
@@ -424,15 +445,15 @@ export function PasswordStrengthIndicator({
             <div className="text-sm text-green-800">
               <p className="mb-1 font-medium">Excellent password!</p>
               <p>
-                Consider using a password manager to generate and store unique passwords for each
-                account.
+                Consider using a password manager to generate and store unique
+                passwords for each account.
               </p>
             </div>
           </div>
         </div>
       )}
 
-      {strength.level === 'very-weak' && password.length > 0 && (
+      {strength.level === "very-weak" && password.length > 0 && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-3">
           <div className="flex items-start">
             <svg
@@ -449,8 +470,8 @@ export function PasswordStrengthIndicator({
             <div className="text-sm text-red-800">
               <p className="mb-1 font-medium">This password is too weak</p>
               <p>
-                Weak passwords can be easily guessed or cracked. Please follow the suggestions
-                above.
+                Weak passwords can be easily guessed or cracked. Please follow
+                the suggestions above.
               </p>
             </div>
           </div>

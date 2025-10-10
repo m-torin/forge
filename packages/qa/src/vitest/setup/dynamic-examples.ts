@@ -9,7 +9,7 @@ import {
 /**
  * Example: Full-stack Next.js app (like webapp/ai-chatbot)
  */
-export function setupFullStackApp() {
+function setupFullStackApp() {
   return setupDynamicEnvironment({
     ...environmentPatterns.fullStack(),
     // Add app-specific overrides
@@ -32,9 +32,9 @@ export function setupFullStackApp() {
 }
 
 /**
- * Example: Backend service (like email service)
+ * Example: Backend service (like email/studio)
  */
-export function setupBackendService() {
+function setupBackendService() {
   return setupDynamicEnvironment({
     ...environmentPatterns.backend(),
     // Always include orchestration for workflow services
@@ -49,7 +49,7 @@ export function setupBackendService() {
 /**
  * Example: Package library testing
  */
-export function setupPackageLibrary(packageName: string) {
+function setupPackageLibrary(packageName: string) {
   return setupDynamicEnvironment({
     environments: ['common'],
     custom: {
@@ -73,7 +73,7 @@ export function setupPackageLibrary(packageName: string) {
 /**
  * Example: Testing-specific environment with custom test data
  */
-export function setupTestEnvironment(options: {
+function setupTestEnvironment(options: {
   testSuite?: string;
   mockLevel?: 'minimal' | 'full';
   features?: string[];
@@ -104,7 +104,7 @@ export function setupTestEnvironment(options: {
 /**
  * Example: Multi-tenant environment testing
  */
-export function setupMultiTenantEnvironment(tenantId: string) {
+function setupMultiTenantEnvironment(tenantId: string) {
   return setupDynamicEnvironment({
     environments: ['database', 'auth', 'analytics'],
     custom: {
@@ -120,7 +120,7 @@ export function setupMultiTenantEnvironment(tenantId: string) {
 /**
  * Example: Edge/serverless environment
  */
-export function setupEdgeEnvironment() {
+function setupEdgeEnvironment() {
   return setupDynamicEnvironment({
     environments: ['common'],
     custom: {
@@ -146,7 +146,7 @@ export function setupEdgeEnvironment() {
 /**
  * Example: Development vs Production environment switching
  */
-export function setupEnvironmentByMode(mode: 'development' | 'test' | 'production') {
+function setupEnvironmentByMode(mode: 'development' | 'test' | 'production') {
   const baseConfig: DynamicEnvironmentConfig = {
     environments: ['common'],
   };
@@ -193,7 +193,7 @@ export function setupEnvironmentByMode(mode: 'development' | 'test' | 'productio
 /**
  * Example: Feature flag driven environment
  */
-export function setupFeatureFlagEnvironment(enabledFeatures: string[]) {
+function setupFeatureFlagEnvironment(enabledFeatures: string[]) {
   const config: DynamicEnvironmentConfig = {
     environments: ['common', 'featureFlags'],
     conditional: [],
@@ -226,7 +226,7 @@ export function setupFeatureFlagEnvironment(enabledFeatures: string[]) {
 /**
  * Example: Integration test environment with external services
  */
-export function setupIntegrationTestEnvironment() {
+function setupIntegrationTestEnvironment() {
   return setupDynamicEnvironment({
     environments: ['database', 'auth', 'payments', 'email'],
     custom: {

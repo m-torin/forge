@@ -1,50 +1,61 @@
-'use client';
+"use client";
 
-import { CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight';
-import { DragHandle } from '@tiptap/extension-drag-handle';
-import Emoji from '@tiptap/extension-emoji';
-import { FileHandler } from '@tiptap/extension-file-handler';
-import Highlight from '@tiptap/extension-highlight';
-import { HorizontalRule } from '@tiptap/extension-horizontal-rule';
-import Link from '@tiptap/extension-link';
-import { EnhancedLinkExtension, enhancedLinkStyles } from './LinkNode';
+import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
+import { DragHandle } from "@tiptap/extension-drag-handle";
+import Emoji from "@tiptap/extension-emoji";
+import { FileHandler } from "@tiptap/extension-file-handler";
+import Highlight from "@tiptap/extension-highlight";
+import { HorizontalRule } from "@tiptap/extension-horizontal-rule";
+import Link from "@tiptap/extension-link";
+import { EnhancedLinkExtension, enhancedLinkStyles } from "./LinkNode";
 // Consolidated v3 bundle imports
-import { logError, logInfo } from '@repo/observability';
-import { ListKit } from '@tiptap/extension-list';
-import Mention from '@tiptap/extension-mention';
-import { TableKit } from '@tiptap/extension-table';
-import TextAlign from '@tiptap/extension-text-align';
-import { TextStyleKit } from '@tiptap/extension-text-style';
-import Underline from '@tiptap/extension-underline';
-import { UniqueID } from '@tiptap/extension-unique-id';
-import { Placeholder, TrailingNode } from '@tiptap/extensions';
-import { Editor, EditorContent, useEditor } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import { clsx } from 'clsx';
-import { all, createLowlight } from 'lowlight';
-import { useEffect, useState } from 'react';
+import { logError, logInfo } from "@repo/observability";
+import { ListKit } from "@tiptap/extension-list";
+import Mention from "@tiptap/extension-mention";
+import { TableKit } from "@tiptap/extension-table";
+import TextAlign from "@tiptap/extension-text-align";
+import { TextStyleKit } from "@tiptap/extension-text-style";
+import Underline from "@tiptap/extension-underline";
+import { UniqueID } from "@tiptap/extension-unique-id";
+import { Placeholder, TrailingNode } from "@tiptap/extensions";
+import { Editor, EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import { clsx } from "clsx";
+import { all, createLowlight } from "lowlight";
+import { useEffect, useState } from "react";
 import {
   ALL_MEDIA_TYPES,
   createStorageUploadHandler,
   getMediaType,
   type MediaUploadConfig,
-} from '../../utils/media-upload-handler';
-import { createSuggestionRender, getSuggestionItems } from '../../utils/suggestion-render';
-import { ContextMenu } from './ContextMenu';
-import { EmojiSuggestion, SEARCHABLE_EMOJIS, type EmojiItem } from './EmojiSuggestion';
-import { EnhancedSlashCommand } from './EnhancedSlashCommand';
-import { NotionEditorErrorBoundary } from './ErrorBoundary';
-import { FloatingToolbar } from './FloatingToolbar';
-import { KeyboardShortcuts } from './KeyboardShortcuts';
-import { MediaUploadNode } from './MediaUploadNode';
-import { DEFAULT_USERS, MentionSuggestion, type User as MentionUser } from './MentionSuggestion';
+} from "../../utils/media-upload-handler";
+import {
+  createSuggestionRender,
+  getSuggestionItems,
+} from "../../utils/suggestion-render";
+import { ContextMenu } from "./ContextMenu";
+import {
+  EmojiSuggestion,
+  SEARCHABLE_EMOJIS,
+  type EmojiItem,
+} from "./EmojiSuggestion";
+import { EnhancedSlashCommand } from "./EnhancedSlashCommand";
+import { NotionEditorErrorBoundary } from "./ErrorBoundary";
+import { FloatingToolbar } from "./FloatingToolbar";
+import { KeyboardShortcuts } from "./KeyboardShortcuts";
+import { MediaUploadNode } from "./MediaUploadNode";
+import {
+  DEFAULT_USERS,
+  MentionSuggestion,
+  type User as MentionUser,
+} from "./MentionSuggestion";
 import {
   MobileFloatingToolbar,
   MobileGestureHandler,
   MobileSelectionOverlay,
   mobileStyles,
   useIsMobile,
-} from './MobileEnhancements';
+} from "./MobileEnhancements";
 
 // Create lowlight instance for code highlighting
 const lowlight = createLowlight(all);
@@ -87,7 +98,7 @@ export interface NotionEditorProps {
 }
 
 function NotionEditorCore({
-  content = '',
+  content = "",
   placeholder = "Type '/' for commands...",
   className,
   onChange,
@@ -98,7 +109,7 @@ function NotionEditorCore({
   showContextMenu = true,
   enableLinkPreviews = true,
   enableMobileOptimizations = true,
-  maxWidth = '100%',
+  maxWidth = "100%",
   users = [],
   enableEmoji = true,
   enableMentions = true,
@@ -184,22 +195,22 @@ function NotionEditorCore({
         // Configure list extensions
         bulletList: {
           HTMLAttributes: {
-            class: 'notion-bullet-list',
+            class: "notion-bullet-list",
           },
         },
         orderedList: {
           HTMLAttributes: {
-            class: 'notion-ordered-list',
+            class: "notion-ordered-list",
           },
         },
         taskList: {
           HTMLAttributes: {
-            class: 'notion-task-list',
+            class: "notion-task-list",
           },
         },
         taskItem: {
           HTMLAttributes: {
-            class: 'notion-task-item',
+            class: "notion-task-item",
           },
           nested: true,
         },
@@ -208,12 +219,12 @@ function NotionEditorCore({
       Placeholder.configure({
         placeholder,
         showOnlyWhenEditable: true,
-        emptyNodeClass: 'is-empty',
+        emptyNodeClass: "is-empty",
       }),
       TextStyleKit.configure({
         // Configure color extension
         color: {
-          types: ['textStyle'],
+          types: ["textStyle"],
         },
         // Disable features we don't use
         backgroundColor: false,
@@ -226,21 +237,21 @@ function NotionEditorCore({
       }),
       Underline,
       TextAlign.configure({
-        types: ['heading', 'paragraph'],
-        alignments: ['left', 'center', 'right', 'justify'],
+        types: ["heading", "paragraph"],
+        alignments: ["left", "center", "right", "justify"],
       }),
       enableLinkPreviews
         ? EnhancedLinkExtension.configure({
             openOnClick: false,
             showPreviews: true,
             HTMLAttributes: {
-              class: 'enhanced-notion-link',
+              class: "enhanced-notion-link",
             },
           })
         : Link.configure({
             openOnClick: false,
             HTMLAttributes: {
-              class: 'notion-link',
+              class: "notion-link",
             },
           }),
       TableKit.configure({
@@ -248,48 +259,55 @@ function NotionEditorCore({
         table: {
           resizable: true,
           HTMLAttributes: {
-            class: 'notion-table',
+            class: "notion-table",
           },
         },
         tableRow: {
           HTMLAttributes: {
-            class: 'notion-table-row',
+            class: "notion-table-row",
           },
         },
         tableHeader: {
           HTMLAttributes: {
-            class: 'notion-table-header',
+            class: "notion-table-header",
           },
         },
         tableCell: {
           HTMLAttributes: {
-            class: 'notion-table-cell',
+            class: "notion-table-cell",
           },
         },
       }),
       CodeBlockLowlight.configure({
         lowlight,
         HTMLAttributes: {
-          class: 'notion-code-block',
+          class: "notion-code-block",
         },
       }),
       // New Phase 1 extensions
       UniqueID.configure({
-        types: ['heading', 'paragraph', 'codeBlock', 'table', 'taskList', 'blockquote'],
+        types: [
+          "heading",
+          "paragraph",
+          "codeBlock",
+          "table",
+          "taskList",
+          "blockquote",
+        ],
       }),
       TrailingNode.configure({
-        node: 'paragraph',
-        notAfter: ['heading', 'blockquote', 'codeBlock'],
+        node: "paragraph",
+        notAfter: ["heading", "blockquote", "codeBlock"],
       }),
       ...(enableEmoji
         ? [
             Emoji.configure({
               HTMLAttributes: {
-                class: 'notion-emoji',
+                class: "notion-emoji",
               },
               enableEmoticons: true,
               suggestion: {
-                char: ':',
+                char: ":",
                 command: ({
                   editor,
                   range,
@@ -300,7 +318,11 @@ function NotionEditorCore({
                   props: EmojiItem;
                 }) => {
                   // Remove the emoji trigger text and insert the emoji
-                  editor.chain().focus().insertContentAt(range, props.emoji).run();
+                  editor
+                    .chain()
+                    .focus()
+                    .insertContentAt(range, props.emoji)
+                    .run();
                 },
                 items: ({ query }: { query: string }) => {
                   return getSuggestionItems(
@@ -310,8 +332,12 @@ function NotionEditorCore({
                       const lowercaseQuery = q.toLowerCase();
                       return (
                         item.name.toLowerCase().includes(lowercaseQuery) ||
-                        item.shortcodes.some(code => code.toLowerCase().includes(lowercaseQuery)) ||
-                        item.tags?.some(tag => tag.toLowerCase().includes(lowercaseQuery)) ||
+                        item.shortcodes.some((code) =>
+                          code.toLowerCase().includes(lowercaseQuery),
+                        ) ||
+                        item.tags?.some((tag) =>
+                          tag.toLowerCase().includes(lowercaseQuery),
+                        ) ||
                         false
                       );
                     },
@@ -321,11 +347,11 @@ function NotionEditorCore({
                 render: createSuggestionRender({
                   component: EmojiSuggestion,
                   popup: {
-                    placement: 'bottom-start',
+                    placement: "bottom-start",
                     offset: 6,
-                    fallbackPlacements: ['top-start', 'bottom-end', 'top-end'],
+                    fallbackPlacements: ["top-start", "bottom-end", "top-end"],
                     padding: 8,
-                    strategy: 'absolute',
+                    strategy: "absolute",
                   },
                 }),
               },
@@ -336,29 +362,37 @@ function NotionEditorCore({
         ? [
             Mention.configure({
               HTMLAttributes: {
-                class: 'notion-mention',
+                class: "notion-mention",
               },
               renderText({ options, node }: { options: any; node: any }) {
                 return `${options.suggestion.char}${node.attrs.label ?? node.attrs.id}`;
               },
               suggestion: {
-                char: '@',
-                command: ({ editor, range, props }: { editor: any; range: any; props: any }) => {
+                char: "@",
+                command: ({
+                  editor,
+                  range,
+                  props,
+                }: {
+                  editor: any;
+                  range: any;
+                  props: any;
+                }) => {
                   // Remove the mention text and insert the mention node
                   editor
                     .chain()
                     .focus()
                     .insertContentAt(range, [
                       {
-                        type: 'mention',
+                        type: "mention",
                         attrs: {
-                          id: props?.id || 'unknown',
-                          label: props?.name || 'Unknown User',
+                          id: props?.id || "unknown",
+                          label: props?.name || "Unknown User",
                         },
                       },
                       {
-                        type: 'text',
-                        text: ' ',
+                        type: "text",
+                        text: " ",
                       },
                     ])
                     .run();
@@ -381,11 +415,11 @@ function NotionEditorCore({
                 render: createSuggestionRender({
                   component: MentionSuggestion,
                   popup: {
-                    placement: 'bottom-start',
+                    placement: "bottom-start",
                     offset: 6,
-                    fallbackPlacements: ['top-start', 'bottom-end', 'top-end'],
+                    fallbackPlacements: ["top-start", "bottom-end", "top-end"],
                     padding: 8,
-                    strategy: 'absolute',
+                    strategy: "absolute",
                   },
                 }),
               },
@@ -398,35 +432,48 @@ function NotionEditorCore({
         ? [
             DragHandle.configure({
               render: () => {
-                const handle = document.createElement('div');
-                handle.className = 'drag-handle';
-                handle.innerHTML = '⋮⋮';
-                handle.contentEditable = 'false';
+                const handle = document.createElement("div");
+                handle.className = "drag-handle";
+                handle.innerHTML = "⋮⋮";
+                handle.contentEditable = "false";
                 handle.draggable = true;
                 return handle;
               },
-              onNodeChange: ({ node, _editor }: { node: any; editor: any; _editor?: any }) => {
+              onNodeChange: ({
+                node,
+                _editor,
+              }: {
+                node: any;
+                editor: any;
+                _editor?: any;
+              }) => {
                 // Optional: Add hover highlighting or other interactions
                 if (node) {
-                  logInfo('Hovering over node:', node.type.name);
+                  logInfo("Hovering over node:", node.type.name);
                 }
               },
             }),
           ]
         : []),
-      ...((enableImageUpload && uploadHandler) || (enableMediaUpload && mediaUploadHandler)
+      ...((enableImageUpload && uploadHandler) ||
+      (enableMediaUpload && mediaUploadHandler)
         ? [
             MediaUploadNode.configure({
               accept: enableMediaUpload
                 ? mediaUploadConfig.accept || ALL_MEDIA_TYPES
-                : imageUploadConfig.accept || 'image/*',
+                : imageUploadConfig.accept || "image/*",
               maxSize: enableMediaUpload
                 ? mediaUploadConfig.maxSize
                 : imageUploadConfig.maxSize || 10 * 1024 * 1024,
-              maxSizes: enableMediaUpload ? mediaUploadConfig.maxSizes : undefined,
+              maxSizes: enableMediaUpload
+                ? mediaUploadConfig.maxSizes
+                : undefined,
               upload: enableMediaUpload ? mediaUploadHandler : uploadHandler,
-              onError: error => {
-                logError(`${enableMediaUpload ? 'Media' : 'Image'} upload error:`, error);
+              onError: (error) => {
+                logError(
+                  `${enableMediaUpload ? "Media" : "Image"} upload error:`,
+                  error,
+                );
               },
               onSuccess: (url, mediaType) => {
                 logInfo(`${mediaType} uploaded successfully:`, url);
@@ -434,32 +481,40 @@ function NotionEditorCore({
             }),
             FileHandler.configure({
               allowedMimeTypes: enableMediaUpload
-                ? ALL_MEDIA_TYPES.split(',')
-                : ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/svg+xml'],
+                ? ALL_MEDIA_TYPES.split(",")
+                : [
+                    "image/png",
+                    "image/jpeg",
+                    "image/gif",
+                    "image/webp",
+                    "image/svg+xml",
+                  ],
               onDrop: (currentEditor: any, files: File[]) => {
                 files.forEach((file: File) => {
                   const mediaType = getMediaType(file.type);
                   if (
                     enableMediaUpload &&
-                    (mediaType === 'video' || mediaType === 'audio' || mediaType === 'image')
+                    (mediaType === "video" ||
+                      mediaType === "audio" ||
+                      mediaType === "image")
                   ) {
                     // Insert media upload node for any media type
                     currentEditor
                       .chain()
                       .focus()
                       .insertContent({
-                        type: 'mediaUpload',
+                        type: "mediaUpload",
                         attrs: { src: null, mediaType },
                       })
                       .run();
-                  } else if (file.type.startsWith('image/')) {
+                  } else if (file.type.startsWith("image/")) {
                     // Insert media upload node for images only
                     currentEditor
                       .chain()
                       .focus()
                       .insertContent({
-                        type: 'mediaUpload',
-                        attrs: { src: null, mediaType: 'image' },
+                        type: "mediaUpload",
+                        attrs: { src: null, mediaType: "image" },
                       })
                       .run();
                   }
@@ -470,25 +525,27 @@ function NotionEditorCore({
                   const mediaType = getMediaType(file.type);
                   if (
                     enableMediaUpload &&
-                    (mediaType === 'video' || mediaType === 'audio' || mediaType === 'image')
+                    (mediaType === "video" ||
+                      mediaType === "audio" ||
+                      mediaType === "image")
                   ) {
                     // Insert media upload node for any media type
                     currentEditor
                       .chain()
                       .focus()
                       .insertContent({
-                        type: 'mediaUpload',
+                        type: "mediaUpload",
                         attrs: { src: null, mediaType },
                       })
                       .run();
-                  } else if (file.type.startsWith('image/')) {
+                  } else if (file.type.startsWith("image/")) {
                     // Insert media upload node for images only
                     currentEditor
                       .chain()
                       .focus()
                       .insertContent({
-                        type: 'mediaUpload',
-                        attrs: { src: null, mediaType: 'image' },
+                        type: "mediaUpload",
+                        attrs: { src: null, mediaType: "image" },
                       })
                       .run();
                   }
@@ -508,9 +565,9 @@ function NotionEditorCore({
     editorProps: {
       attributes: {
         class: clsx(
-          'notion-editor-content',
-          'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl',
-          'max-w-none focus:outline-none',
+          "notion-editor-content",
+          "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl",
+          "max-w-none focus:outline-none",
           className,
         ),
         style: `max-width: ${maxWidth}`,
@@ -531,7 +588,10 @@ function NotionEditorCore({
   }
 
   return (
-    <div className="notion-editor-container relative" data-testid="notion-editor-container">
+    <div
+      className="notion-editor-container relative"
+      data-testid="notion-editor-container"
+    >
       <style
         dangerouslySetInnerHTML={{
           __html: `
@@ -634,9 +694,9 @@ function NotionEditorCore({
           text-decoration: underline;
         }
         
-        ${enableLinkPreviews ? enhancedLinkStyles : ''}
+        ${enableLinkPreviews ? enhancedLinkStyles : ""}
         
-        ${shouldUseMobileOptimizations ? mobileStyles : ''}
+        ${shouldUseMobileOptimizations ? mobileStyles : ""}
         
         .drag-handle {
           position: absolute;

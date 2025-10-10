@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useWindowEvent } from '@mantine/hooks';
-import { useEffect, useRef } from 'react';
+import { useWindowEvent } from "@mantine/hooks";
+import { useEffect, useRef } from "react";
 
 export function useBodyScrollLock(isLocked: boolean) {
-  const originalStyleRef = useRef<string>('');
+  const originalStyleRef = useRef<string>("");
 
   // Use Mantine's useWindowEvent for touchmove handling
   useWindowEvent(
-    'touchmove',
+    "touchmove",
     (e: TouchEvent) => {
       if (!isLocked) return;
       if (e.touches.length > 1) return;
@@ -24,7 +24,7 @@ export function useBodyScrollLock(isLocked: boolean) {
     originalStyleRef.current = window.getComputedStyle(document.body).overflow;
 
     // Lock scroll
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
 
     return () => {
       // Restore scroll

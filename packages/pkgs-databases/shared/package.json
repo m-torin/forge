@@ -1,0 +1,53 @@
+{
+  "name": "@repo/db-shared",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Shared utilities for database packages",
+  "keywords": [
+    "database",
+    "errors",
+    "utilities",
+    "shared"
+  ],
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.ts",
+      "import": "./index.ts"
+    },
+    "./errors": {
+      "types": "./errors.ts",
+      "import": "./errors.ts"
+    },
+    "./utils": {
+      "types": "./utils.ts",
+      "import": "./utils.ts"
+    },
+    "./performance": {
+      "types": "./performance.ts",
+      "import": "./performance.ts"
+    }
+  },
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "files": [
+    "**/*",
+    ".gitignore"
+  ],
+  "scripts": {
+    "build": "echo 'No build needed - consumed from source'",
+    "clean": "rm -rf dist .turbo",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

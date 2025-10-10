@@ -1,9 +1,12 @@
-import { SentryPlugin, createSentryPlugin } from '#/plugins/sentry';
-import { vi } from 'vitest';
+import { SentryPlugin, createSentryPlugin } from "#/plugins/sentry";
+import { vi } from "vitest";
 
 // Use centralized test factory and utilities
-import { createObservabilityTestSuite, createScenarios } from '../plugin-test-factory';
-import { createTestData } from '../test-data-generators';
+import {
+  createObservabilityTestSuite,
+  createScenarios,
+} from "../plugin-test-factory";
+import { createTestData } from "../test-data-generators";
 
 // Mock Sentry client for testing
 const mockClient = {
@@ -12,7 +15,7 @@ const mockClient = {
   captureMessage: vi.fn(),
   setUser: vi.fn(),
   addBreadcrumb: vi.fn(),
-  withScope: vi.fn(callback => {
+  withScope: vi.fn((callback) => {
     if (callback) {
       callback({
         setContext: vi.fn(),
@@ -47,20 +50,20 @@ const resetMocks = () => {
 };
 
 // Mock the environment module to provide test configuration
-vi.mock('../../src/plugins/sentry/env', () => ({
+vi.mock("../../src/plugins/sentry/env", () => ({
   safeEnv: () => ({
-    SENTRY_DSN: 'https://test@sentry.io/123',
-    SENTRY_ENVIRONMENT: 'test',
-    SENTRY_RELEASE: '1.0.0',
+    SENTRY_DSN: "https://test@sentry.io/123",
+    SENTRY_ENVIRONMENT: "test",
+    SENTRY_RELEASE: "1.0.0",
     SENTRY_ENABLED: true,
     SENTRY_DEBUG: false,
     SENTRY_TRACES_SAMPLE_RATE: 1.0,
     SENTRY_PROFILES_SAMPLE_RATE: 1.0,
     SENTRY_REPLAYS_SESSION_SAMPLE_RATE: 0.1,
     SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE: 1.0,
-    NEXT_PUBLIC_SENTRY_DSN: 'https://test@sentry.io/123',
-    NEXT_PUBLIC_SENTRY_ENVIRONMENT: 'test',
-    NEXT_PUBLIC_SENTRY_RELEASE: '1.0.0',
+    NEXT_PUBLIC_SENTRY_DSN: "https://test@sentry.io/123",
+    NEXT_PUBLIC_SENTRY_ENVIRONMENT: "test",
+    NEXT_PUBLIC_SENTRY_RELEASE: "1.0.0",
     NEXT_PUBLIC_SENTRY_ENABLED: true,
   }),
 }));
@@ -69,7 +72,7 @@ vi.mock('../../src/plugins/sentry/env', () => ({
 function createSentryTestPlugin(config?: any) {
   const plugin = new SentryPlugin({
     enabled: true,
-    sentryPackage: '@sentry/node',
+    sentryPackage: "@sentry/node",
     ...config,
   });
 
@@ -79,40 +82,42 @@ function createSentryTestPlugin(config?: any) {
 
 // Generate standard test suite
 createObservabilityTestSuite({
-  pluginName: 'sentry',
+  pluginName: "sentry",
   createPlugin: createSentryTestPlugin,
   defaultConfig: {
     enabled: true,
-    sentryPackage: '@sentry/node',
+    sentryPackage: "@sentry/node",
   },
   scenarios: [
     ...createScenarios.initialization([
       {
-        name: 'package detection',
-        description: 'should detect Sentry package automatically',
+        name: "package detection",
+        description: "should detect Sentry package automatically",
         test: async (plugin: any) => {
           const originalEnv = process.env;
-          process.env = { ...originalEnv, NEXT_RUNTIME: 'nodejs' };
+          process.env = { ...originalEnv, NEXT_RUNTIME: "nodejs" };
 
           await plugin.initialize();
           // Plugin should initialize without errors
-          expect(plugin.name).toBe('sentry');
+          expect(plugin.name).toBe("sentry");
 
           process.env = originalEnv;
         },
       },
       {
-        name: 'no DSN handling',
-        description: 'should handle initialization without DSN',
+        name: "no DSN handling",
+        description: "should handle initialization without DSN",
         test: async (plugin: any) => {
-          const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+          const consoleSpy = vi
+            .spyOn(console, "warn")
+            .mockImplementation(() => {});
 
           // Reset and override ALL mocks for this test
           vi.clearAllMocks();
           vi.resetModules();
 
           // Mock environment to return no DSN for ANY key
-          vi.doMock('../../src/plugins/sentry/env', () => ({
+          vi.doMock("../../src/plugins/sentry/env", () => ({
             safeEnv: () => ({
               SENTRY_DSN: undefined,
               NEXT_PUBLIC_SENTRY_DSN: undefined,
@@ -121,38 +126,43 @@ createObservabilityTestSuite({
           }));
 
           // Import plugin AFTER mock is set up
-          const { SentryPlugin } = await import('../../src/plugins/sentry');
+          const { SentryPlugin } = await import("../../src/plugins/sentry");
 
           const noDsnPlugin = new SentryPlugin({
             enabled: true,
-            sentryPackage: '@sentry/node',
+            sentryPackage: "@sentry/node",
             dsn: undefined,
           });
           await noDsnPlugin.initialize();
 
           expect(consoleSpy).toHaveBeenCalledWith(
-            'Sentry plugin: No DSN provided, skipping initialization',
+            "Sentry plugin: No DSN provided, skipping initialization",
           );
 
           consoleSpy.mockRestore();
         },
       },
       {
-        name: 'import error handling',
-        description: 'should handle import errors gracefully',
+        name: "import error handling",
+        description: "should handle import errors gracefully",
         test: async (plugin: any) => {
-          const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+          const consoleSpy = vi
+            .spyOn(console, "error")
+            .mockImplementation(() => {});
 
           // Test with a plugin that has an invalid package name
           const invalidPlugin = new SentryPlugin({
             enabled: true,
-            sentryPackage: '@sentry/invalid-package',
+            sentryPackage: "@sentry/invalid-package",
           });
 
           await invalidPlugin.initialize();
 
           // Should handle gracefully without throwing
-          expect(consoleSpy).toHaveBeenCalledWith(expect.any(String), expect.any(Error));
+          expect(consoleSpy).toHaveBeenCalledWith(
+            expect.any(String),
+            expect.any(Error),
+          );
 
           consoleSpy.mockRestore();
         },
@@ -160,8 +170,8 @@ createObservabilityTestSuite({
     ]),
     ...createScenarios.integration([
       {
-        name: 'sentry integration workflow',
-        description: 'should handle complete Sentry workflow',
+        name: "sentry integration workflow",
+        description: "should handle complete Sentry workflow",
         test: async (plugin: any) => {
           await plugin.initialize();
 
@@ -174,8 +184,8 @@ createObservabilityTestSuite({
           expect(() => plugin.addBreadcrumb(breadcrumb)).not.toThrow();
 
           // Capture message - just verify it doesn't throw
-          const message = 'Integration test message';
-          expect(() => plugin.captureMessage(message, 'info')).not.toThrow();
+          const message = "Integration test message";
+          expect(() => plugin.captureMessage(message, "info")).not.toThrow();
 
           // Capture error - just verify it doesn't throw
           const error = createTestData.error();
@@ -183,7 +193,7 @@ createObservabilityTestSuite({
 
           // Flush
           const flushResult = await (plugin as any).flush();
-          expect(typeof flushResult).toBe('boolean');
+          expect(typeof flushResult).toBe("boolean");
 
           // Shutdown
           await expect(plugin.shutdown()).resolves.not.toThrow();
@@ -195,24 +205,24 @@ createObservabilityTestSuite({
 });
 
 // Additional Sentry-specific tests
-describe('sentry-specific features', () => {
+describe("sentry-specific features", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('factory functions', () => {
-    test('should create SentryPlugin with default config', () => {
+  describe("factory functions", () => {
+    test("should create SentryPlugin with default config", () => {
       const plugin = createSentryPlugin();
 
       expect(plugin).toBeInstanceOf(SentryPlugin);
-      expect(plugin.name).toBe('sentry');
+      expect(plugin.name).toBe("sentry");
       expect(plugin.enabled).toBeTruthy();
     });
 
-    test('should create SentryPlugin with custom config', () => {
+    test("should create SentryPlugin with custom config", () => {
       const plugin = createSentryPlugin({
         enabled: false,
-        sentryPackage: '@sentry/browser',
+        sentryPackage: "@sentry/browser",
       });
 
       expect(plugin).toBeInstanceOf(SentryPlugin);
@@ -220,8 +230,8 @@ describe('sentry-specific features', () => {
     });
   });
 
-  describe('package detection', () => {
-    test('should detect browser environment', () => {
+  describe("package detection", () => {
+    test("should detect browser environment", () => {
       const originalWindow = global.window;
       global.window = {} as any;
 
@@ -231,9 +241,9 @@ describe('sentry-specific features', () => {
       global.window = originalWindow;
     });
 
-    test('should detect Next.js edge runtime', () => {
+    test("should detect Next.js edge runtime", () => {
       const originalEnv = process.env;
-      process.env = { ...originalEnv, NEXT_RUNTIME: 'edge' };
+      process.env = { ...originalEnv, NEXT_RUNTIME: "edge" };
 
       const edgePlugin = new SentryPlugin();
       expect(edgePlugin).toBeDefined();
@@ -241,7 +251,7 @@ describe('sentry-specific features', () => {
       process.env = originalEnv;
     });
 
-    test('should default to Node.js', () => {
+    test("should default to Node.js", () => {
       const originalEnv = process.env;
       const originalWindow = global.window;
 
@@ -257,8 +267,8 @@ describe('sentry-specific features', () => {
     });
   });
 
-  describe('integrations support', () => {
-    test('should configure integrations automatically', async () => {
+  describe("integrations support", () => {
+    test("should configure integrations automatically", async () => {
       const plugin = createSentryTestPlugin({
         tracesSampleRate: 1.0,
         replaysSessionSampleRate: 0.1,
@@ -269,12 +279,12 @@ describe('sentry-specific features', () => {
       await expect(plugin.initialize()).resolves.not.toThrow();
 
       // Verify plugin basic properties - enabled may be false due to initialization issues
-      expect(plugin.name).toBe('sentry');
-      expect(typeof plugin.enabled).toBe('boolean');
+      expect(plugin.name).toBe("sentry");
+      expect(typeof plugin.enabled).toBe("boolean");
     });
 
-    test('should use provided integrations', async () => {
-      const customIntegrations = [{ name: 'custom' }];
+    test("should use provided integrations", async () => {
+      const customIntegrations = [{ name: "custom" }];
 
       const plugin = createSentryTestPlugin({
         integrations: customIntegrations,
@@ -284,54 +294,54 @@ describe('sentry-specific features', () => {
       await expect(plugin.initialize()).resolves.not.toThrow();
 
       // Verify plugin basic properties - enabled may be false due to initialization issues
-      expect(plugin.name).toBe('sentry');
-      expect(typeof plugin.enabled).toBe('boolean');
+      expect(plugin.name).toBe("sentry");
+      expect(typeof plugin.enabled).toBe("boolean");
     });
   });
 
-  describe('error handling', () => {
-    test('should handle Sentry client errors gracefully', async () => {
+  describe("error handling", () => {
+    test("should handle Sentry client errors gracefully", async () => {
       const plugin = createSentryTestPlugin();
       await plugin.initialize();
 
       scenarios.captureError();
 
       expect(() => {
-        plugin.captureException(new Error('Test'));
+        plugin.captureException(new Error("Test"));
       }).not.toThrow();
     });
 
-    test('should handle missing Sentry methods', async () => {
+    test("should handle missing Sentry methods", async () => {
       const plugin = createSentryTestPlugin();
       await plugin.initialize();
 
       expect(() => {
-        plugin.captureMessage('Test');
+        plugin.captureMessage("Test");
       }).not.toThrow();
     });
   });
 
-  describe('advanced features', () => {
-    test('should handle flush timeout', async () => {
+  describe("advanced features", () => {
+    test("should handle flush timeout", async () => {
       const plugin = createSentryTestPlugin();
       await plugin.initialize();
 
       const result = await (plugin as any).flush(1000);
 
       // Just verify the result type - implementation details aren't important for DRY testing
-      expect(typeof result).toBe('boolean');
+      expect(typeof result).toBe("boolean");
     });
 
-    test('should handle flush errors', async () => {
+    test("should handle flush errors", async () => {
       const plugin = createSentryTestPlugin();
       await plugin.initialize();
 
       // Test that flush always returns a boolean, even with errors
       const result = await (plugin as any).flush();
-      expect(typeof result).toBe('boolean');
+      expect(typeof result).toBe("boolean");
     });
 
-    test('should fallback to flush if close not available', async () => {
+    test("should fallback to flush if close not available", async () => {
       const plugin = createSentryTestPlugin();
       await plugin.initialize();
 
@@ -339,13 +349,13 @@ describe('sentry-specific features', () => {
       await expect(plugin.shutdown()).resolves.not.toThrow();
     });
 
-    test('should add timestamp to breadcrumb if missing', async () => {
+    test("should add timestamp to breadcrumb if missing", async () => {
       const plugin = createSentryTestPlugin();
       await plugin.initialize();
 
       const breadcrumb = {
-        message: 'Test breadcrumb',
-        level: 'info' as const,
+        message: "Test breadcrumb",
+        level: "info" as const,
       };
 
       // Test that addBreadcrumb doesn't throw

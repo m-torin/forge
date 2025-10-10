@@ -22,7 +22,7 @@ try {
 /**
  * Default form data for testing
  */
-export const mockFormDefaults = {
+const mockFormDefaults = {
   brand: {
     name: '',
     slug: '',
@@ -67,7 +67,7 @@ export const mockFormDefaults = {
 /**
  * Mock router functions for form navigation
  */
-export const mockRouter = {
+const mockRouter = {
   push: vi.fn(),
   replace: vi.fn(),
   back: vi.fn(),
@@ -79,7 +79,7 @@ export const mockRouter = {
 /**
  * Common mock data factories
  */
-export const mockDataFactories = {
+const mockDataFactories = {
   brand: (overrides: any = {}) => ({
     id: '1',
     name: 'Test Brand',
@@ -160,7 +160,7 @@ export const mockDataFactories = {
  * Setup enhanced form mocks for common use cases
  * Note: Enhanced form utilities have been moved to @repo/qa/vitest/mocks/packages/mantine
  */
-export function setupEnhancedFormMocks(formType: keyof typeof mockFormDefaults = 'brand') {
+function setupEnhancedFormMocks(formType: keyof typeof mockFormDefaults = 'brand') {
   // Import the enhanced form utilities from mantine package
   const {
     createMockEnhancedForm,
@@ -188,13 +188,6 @@ export function setupEnhancedFormMocks(formType: keyof typeof mockFormDefaults =
 
 // Export everything for easy access
 // Note: Enhanced form utilities have been moved to @repo/qa/vitest/mocks/packages/mantine
-export { mockDataFactories as dataFactories };
-
 // Re-export from mantine package for backward compatibility
-export {
-  clearFormMocks as clearMocks,
-  createMockEnhancedForm as createMockForm,
-  formStates,
-  enhancedFormTestScenarios as formTestScenarios,
-} from '../packages/mantine';
+export { formStates } from '../packages/mantine';
 export type { MockEnhancedForm } from '../packages/mantine';

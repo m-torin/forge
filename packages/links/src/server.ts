@@ -31,7 +31,7 @@
  * ```
  */
 
-import { logDebug, logError } from '@repo/observability/server';
+import { logDebug, logError } from "@repo/observability/server";
 import {
   BulkCreateResponse,
   ClickEvent,
@@ -39,8 +39,8 @@ import {
   LinkConfig,
   LinkManager,
   LinkMetrics,
-} from './shared/types/index';
-import { createLinkManager } from './shared/utils/link-manager';
+} from "./shared/types/index";
+import { createLinkManager } from "./shared/utils/link-manager";
 
 // ============================================================================
 // CORE SERVER FUNCTIONS
@@ -50,7 +50,9 @@ import { createLinkManager } from './shared/utils/link-manager';
  * Create a server-side link manager instance
  * This is the primary way to create link management for server-side applications
  */
-export async function createServerLinkManager(config: LinkConfig): Promise<LinkManager> {
+export async function createServerLinkManager(
+  config: LinkConfig,
+): Promise<LinkManager> {
   return createLinkManager(config);
 }
 
@@ -90,7 +92,7 @@ export async function createServerLinkManagerWithAnalytics(
     try {
       // const { createServerObservability } = await import('@repo/analytics/server/next'); // Commented: property doesn't exist
       // const analytics = await createServerObservability(analyticsConfig); // Commented: property doesn't exist
-      const analyticsModule = await import('@repo/analytics/shared');
+      const analyticsModule = await import("@repo/analytics/shared");
       const analytics = await analyticsModule.createAnalytics(analyticsConfig);
 
       enhancedConfig.analytics = {
@@ -101,12 +103,17 @@ export async function createServerLinkManagerWithAnalytics(
             await analytics.track(event, properties);
           },
         },
-        events: ['link_created', 'link_clicked', 'link_deleted', 'bulk_created'],
+        events: [
+          "link_created",
+          "link_clicked",
+          "link_deleted",
+          "bulk_created",
+        ],
         sampling: 1.0,
-        debugMode: process.env.NODE_ENV === 'development',
+        debugMode: process.env.NODE_ENV === "development",
       };
     } catch (error) {
-      logDebug('[LinkManager] Analytics integration not available', {
+      logDebug("[LinkManager] Analytics integration not available", {
         error: error instanceof Error ? error.message : String(error),
       });
     }
@@ -131,7 +138,11 @@ export async function bulkCreateShortLinks(
     concurrency?: number;
   } = {},
 ): Promise<BulkCreateResponse> {
-  const { validateUrls = true, chunkSize = 100, concurrency: _concurrency = 5 } = options;
+  const {
+    validateUrls = true,
+    chunkSize = 100,
+    concurrency: _concurrency = 5,
+  } = options;
 
   // Validate URLs if requested
   if (validateUrls) {
@@ -293,7 +304,9 @@ export function createRedirectHandler(linkManager: LinkManager) {
       return { url: link.url, status: 302 };
     } catch (error: any) {
       logError(
-        error instanceof Error ? error : new Error(`Error handling redirect: ${String(error)}`),
+        error instanceof Error
+          ? error
+          : new Error(`Error handling redirect: ${String(error)}`),
       );
       return null;
     }
@@ -305,7 +318,7 @@ export function createRedirectHandler(linkManager: LinkManager) {
  */
 function validateServerConfig(config: LinkConfig): void {
   if (!config.providers) {
-    throw new Error('No providers configured');
+    throw new Error("No providers configured");
   }
 
   const enabledProviders = Object.entries(config.providers).filter(
@@ -313,13 +326,13 @@ function validateServerConfig(config: LinkConfig): void {
   );
 
   if (enabledProviders.length === 0) {
-    throw new Error('No providers enabled');
+    throw new Error("No providers enabled");
   }
 
   // Validate Dub configuration if enabled
   if (config.providers.dub?.enabled) {
     if (!config.providers.dub.apiKey) {
-      throw new Error('Dub API key is required when Dub provider is enabled');
+      throw new Error("Dub API key is required when Dub provider is enabled");
     }
   }
 }
@@ -349,27 +362,30 @@ async function getGeolocationFromIP(_ip: string): Promise<{
 }
 
 function extractBrowserFromUA(userAgent: string): string {
-  if (userAgent.includes('Chrome') && !userAgent.includes('Edg')) return 'Chrome';
-  if (userAgent.includes('Firefox')) return 'Firefox';
-  if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) return 'Safari';
-  if (userAgent.includes('Edg')) return 'Edge';
-  if (userAgent.includes('Opera') || userAgent.includes('OPR')) return 'Opera';
-  return 'Other';
+  if (userAgent.includes("Chrome") && !userAgent.includes("Edg"))
+    return "Chrome";
+  if (userAgent.includes("Firefox")) return "Firefox";
+  if (userAgent.includes("Safari") && !userAgent.includes("Chrome"))
+    return "Safari";
+  if (userAgent.includes("Edg")) return "Edge";
+  if (userAgent.includes("Opera") || userAgent.includes("OPR")) return "Opera";
+  return "Other";
 }
 
 function extractOSFromUA(userAgent: string): string {
-  if (/Windows/i.test(userAgent)) return 'Windows';
-  if (/Mac/i.test(userAgent) && !/iPhone|iPad|iPod/i.test(userAgent)) return 'Mac';
-  if (/Linux/i.test(userAgent)) return 'Linux';
-  if (/Android/i.test(userAgent)) return 'Android';
-  if (/iPhone|iPad|iPod/i.test(userAgent)) return 'iOS';
-  return 'Other';
+  if (/Windows/i.test(userAgent)) return "Windows";
+  if (/Mac/i.test(userAgent) && !/iPhone|iPad|iPod/i.test(userAgent))
+    return "Mac";
+  if (/Linux/i.test(userAgent)) return "Linux";
+  if (/Android/i.test(userAgent)) return "Android";
+  if (/iPhone|iPad|iPod/i.test(userAgent)) return "iOS";
+  return "Other";
 }
 
 function extractDeviceFromUA(userAgent: string): string {
-  if (/Mobile/i.test(userAgent)) return 'Mobile';
-  if (/Tablet|iPad/i.test(userAgent)) return 'Tablet';
-  return 'Desktop';
+  if (/Mobile/i.test(userAgent)) return "Mobile";
+  if (/Tablet|iPad/i.test(userAgent)) return "Tablet";
+  return "Desktop";
 }
 
 // ============================================================================
@@ -400,4 +416,4 @@ export type {
   LinkProvider,
   LinkTag,
   UpdateLinkRequest,
-} from './shared/types/index';
+} from "./shared/types/index";

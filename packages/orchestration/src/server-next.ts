@@ -8,6 +8,8 @@
  * For non-Next.js applications, use '@repo/orchestration/server' instead.
  */
 
+import { randomUUID } from 'crypto';
+
 import { logError, logInfo, logWarn } from '@repo/observability/server/next';
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod/v4';
@@ -21,7 +23,7 @@ import {
 } from './shared/features/monitoring';
 import { EnhancedScheduleConfig, ScheduleStatus } from './shared/features/scheduler';
 import { WorkflowData, WorkflowDefinition, WorkflowProvider } from './shared/types/index';
-import { createMaskedError } from './shared/utils/data-masking';
+import { createMaskedError, maskSensitiveData } from './shared/utils/data-masking';
 import {
   apiSchemas,
   commonSchemas,
@@ -36,6 +38,9 @@ import {
 
 // Export singleton instance using the shared StepRegistry
 import { StepRegistry as SharedStepRegistry } from './shared/factories/step-registry';
+
+// Re-export logging functions for use in Next.js server environments
+export { logError, logInfo, logWarn };
 
 export interface ApiRouteContext {
   executionId?: string;
@@ -102,36 +107,33 @@ export function createApiRoute<T extends Record<string, unknown>>(
 }
 
 /**
- * Server Actions for Next.js App Router
+ * Server-side workflow utilities for Next.js App Router
+ *
+ * Note: These functions are designed to be used within server components or API routes.
+ * For server actions, create separate files with 'use server' at the top level.
  */
-export function createWorkflowActions(provider: WorkflowProvider) {
+export function createWorkflowUtils(provider: WorkflowProvider) {
   return {
     /**
-     * Cancel execution action
+     * Cancel execution utility
      */
-    async cancelExecutionAction(executionId: string): Promise<void> {
-      'use server';
+    async cancelExecution(executionId: string): Promise<void> {
       await provider.cancelExecution(executionId);
     },
 
     /**
-     * Create schedule action
+     * Create schedule utility
      */
-    async createScheduleAction(
-      _workflowId: string,
-      _config: EnhancedScheduleConfig,
-    ): Promise<string> {
-      'use server';
+    async createSchedule(_workflowId: string, _config: EnhancedScheduleConfig): Promise<string> {
       // This would call a schedule provider method
       // For now, this is a placeholder
       return 'placeholder_schedule_id'; // await provider.createSchedule(workflowId, config);
     },
 
     /**
-     * Execute workflow action
+     * Execute workflow utility
      */
-    async executeWorkflowAction(workflowId: string, input?: unknown): Promise<string> {
-      'use server';
+    async executeWorkflow(workflowId: string, input?: unknown): Promise<string> {
       // Create a basic workflow definition
       const workflowDefinition: WorkflowDefinition = {
         id: workflowId,
@@ -144,13 +146,12 @@ export function createWorkflowActions(provider: WorkflowProvider) {
     },
 
     /**
-     * Update schedule action
+     * Update schedule utility
      */
-    async updateScheduleAction(
+    async updateSchedule(
       _scheduleId: string,
       _config: Partial<EnhancedScheduleConfig>,
     ): Promise<void> {
-      'use server';
       // This would call a schedule provider method
       // await provider.updateSchedule(scheduleId, config);
     },
@@ -652,7 +653,7 @@ export async function createWorkflowMiddleware(config: WorkflowApiConfig) {
 
         // Add rate limit headers to successful responses
         const headers = new Headers(createRateLimitHeaders(rateLimitResult));
-        return new NextResponse(null, { headers });
+        return NextResponse.next({ headers });
       }
 
       // Let the route handlers take over
@@ -668,15 +669,65 @@ export function createWorkflowWebhookHandler(config: {
   onEvent?: (event: WorkflowWebhookEvent) => Promise<void>;
   provider: WorkflowProvider;
   secret?: string;
+  /** Next signing key for key rotation (optional) */
+  nextSecret?: string;
 }) {
   return async (request: NextRequest): Promise<NextResponse> => {
     try {
       // Verify webhook signature if secret is provided
       if (config.secret) {
-        // Implementation would verify webhook signature
-        // This is a placeholder
+        try {
+          const { Receiver } = await import('@upstash/qstash');
+
+          // Get the signature from headers (case-insensitive)
+          const signature =
+            request.headers.get('Upstash-Signature') || request.headers.get('upstash-signature');
+
+          if (!signature) {
+            return NextResponse.json({ error: 'Missing signature header' }, { status: 401 });
+          }
+
+          // Get the raw request body
+          const body = await request.text();
+
+          // Create receiver with signing keys
+          const receiverOptions = {
+            currentSigningKey: config.secret,
+          } as any;
+          if (config.nextSecret) {
+            receiverOptions.nextSigningKey = config.nextSecret;
+          }
+          const receiver = new Receiver(receiverOptions);
+
+          // Verify the signature
+          const isValid = await receiver.verify({
+            signature,
+            body,
+          });
+
+          if (!isValid) {
+            return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+          }
+
+          // Parse the verified body as JSON
+          const event: WorkflowWebhookEvent = JSON.parse(body);
+
+          // Handle the event
+          if (config.onEvent) {
+            await config.onEvent(event);
+          }
+
+          return NextResponse.json({ message: 'Event processed' }, { status: 200 });
+        } catch (error: any) {
+          logError(
+            'Webhook signature verification failed',
+            error instanceof Error ? error : new Error(String(error)),
+          );
+          return NextResponse.json({ error: 'Signature verification failed' }, { status: 401 });
+        }
       }
 
+      // No signature verification - parse JSON directly
       const event: WorkflowWebhookEvent = await request.json();
 
       // Handle the event
@@ -719,7 +770,7 @@ export function compose(...steps: Array<any>) {
       }
       return result;
     },
-    id: `composed-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    id: `composed-${Date.now()}-${randomUUID()}`,
     name: 'composed-workflow',
   };
 }
@@ -737,7 +788,7 @@ export function createStep(
   if (typeof nameOrFn === 'function') {
     return {
       execute: nameOrFn,
-      id: `step-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id: `step-${Date.now()}-${randomUUID()}`,
       name: nameOrFn.name || 'unnamed-step',
     };
   }
@@ -746,7 +797,7 @@ export function createStep(
   }
   return {
     execute: stepFn,
-    id: `step-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    id: `step-${Date.now()}-${randomUUID()}`,
     name: nameOrFn,
   };
 }
@@ -784,7 +835,7 @@ export function createStepWithValidation(
 
       return result;
     },
-    id: `validated-step-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    id: `validated-step-${Date.now()}-${randomUUID()}`,
     name,
     schema,
   };
@@ -798,7 +849,7 @@ export function createWorkflowStep(
   return {
     handler: stepFn,
     execute: stepFn,
-    id: `workflow-step-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    id: `workflow-step-${Date.now()}-${randomUUID()}`,
     metadata,
     name: metadata.name,
     options,
@@ -1235,7 +1286,7 @@ export const StepTemplates = {
 
   log: (message: string) =>
     createStep(async (input: any) => {
-      logInfo(message, input);
+      logInfo(message, maskSensitiveData(input));
       return input;
     }),
 
@@ -1247,13 +1298,16 @@ export const StepTemplates = {
   database: (name: string, description?: string) =>
     createStep(async (input: any) => {
       // Mock database operation
-      logInfo(`Database operation: ${name}${description ? ` - ${description}` : ''}`, input);
+      logInfo(
+        `Database operation: ${name}${description ? ` - ${description}` : ''}`,
+        maskSensitiveData(input),
+      );
       return input;
     }),
 
   notification: (message: string, _type: 'info' | 'success' | 'warning' | 'error' = 'info') =>
     createStep(async (input: any) => {
-      logInfo(`${message}`, input);
+      logInfo(`${message}`, maskSensitiveData(input));
       return input;
     }),
 
@@ -1277,14 +1331,20 @@ export const StepTemplates = {
   api: (url: string, options?: any) =>
     createStep(async (input: any) => {
       // Mock API call
-      logInfo(`API call to ${url}`, { input, options });
+      logInfo(`API call to ${url}`, {
+        input: maskSensitiveData(input),
+        options: maskSensitiveData(options),
+      });
       return { ...input, apiResponse: { status: 'success', url } };
     }),
 
   cache: (key: string, ttl?: number) =>
     createStep(async (input: any) => {
       // Mock cache operation
-      logInfo(`Cache operation with key: ${key}${ttl ? ` (TTL: ${ttl}s)` : ''}`, input);
+      logInfo(
+        `Cache operation with key: ${key}${ttl ? ` (TTL: ${ttl}s)` : ''}`,
+        maskSensitiveData(input),
+      );
       return input;
     }),
 };

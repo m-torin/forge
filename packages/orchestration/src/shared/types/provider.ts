@@ -10,7 +10,7 @@ export type AnyProviderConfig =
   | UpstashQStashConfig
   | UpstashWorkflowConfig;
 
-export interface CustomProviderConfig extends ProviderConfig {
+interface CustomProviderConfig extends ProviderConfig {
   config: {
     /** Additional configuration for custom provider */
     [key: string]: any;
@@ -20,7 +20,7 @@ export interface CustomProviderConfig extends ProviderConfig {
   type: 'custom';
 }
 
-export interface ProviderCapabilities {
+interface ProviderCapabilities {
   /** Maximum concurrent executions */
   maxConcurrency?: number;
   /** Maximum execution timeout */
@@ -37,7 +37,7 @@ export interface ProviderCapabilities {
   supportsWebhooks: boolean;
 }
 
-export interface ProviderConfig {
+interface ProviderConfig {
   /** Provider-specific configuration */
   config: Record<string, unknown>;
   /** Whether this provider is enabled */
@@ -54,7 +54,7 @@ export interface ProviderConfig {
   type: 'custom' | 'rate-limit' | 'upstash-qstash' | 'upstash-workflow';
 }
 
-export interface ProviderContext {
+interface ProviderContext {
   /** Current execution environment */
   environment: 'development' | 'production' | 'staging';
   /** Additional context data */
@@ -72,7 +72,7 @@ export interface ProviderContext {
   };
 }
 
-export type ProviderFeature =
+type ProviderFeature =
   | 'batch-processing'
   | 'dead-letter-queue'
   | 'monitoring'
@@ -100,7 +100,7 @@ export interface ProviderHealthReport {
   type: string;
 }
 
-export interface ProviderMetrics {
+interface ProviderMetrics {
   /** Current active executions */
   activeExecutions: number;
   /** Average execution time in milliseconds */
@@ -118,7 +118,7 @@ export interface ProviderMetrics {
   totalExecutions: number;
 }
 
-export interface ProviderRegistry {
+interface ProviderRegistry {
   /** Get all registered providers */
   getAllProviders(): WorkflowProvider[];
   /** Get the default provider for workflow execution */
@@ -154,7 +154,7 @@ export interface RateLimitConfig extends ProviderConfig {
   type: 'rate-limit';
 }
 
-export interface UpstashQStashConfig extends ProviderConfig {
+interface UpstashQStashConfig extends ProviderConfig {
   config: {
     /** Base URL for callbacks */
     baseUrl: string;

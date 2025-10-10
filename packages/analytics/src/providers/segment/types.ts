@@ -7,7 +7,7 @@ export interface SegmentConfig {
   options?: SegmentOptions;
 }
 
-export interface SegmentOptions {
+interface SegmentOptions {
   // Segment Analytics 2.0 options
   integrations?: Record<string, any>;
   timeout?: number;

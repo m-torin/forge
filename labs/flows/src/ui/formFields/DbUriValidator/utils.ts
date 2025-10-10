@@ -1,5 +1,5 @@
 import { ConnectionString } from 'connection-string';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 // Type Definitions
 export interface UriRequirementProps {

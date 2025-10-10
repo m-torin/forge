@@ -11,7 +11,7 @@ export function generateAppRouterLayoutCode(includeImports = true): string {
 import type { Metadata } from 'next';
 
 `
-    : '';
+    : "";
 
   return `${imports}export function generateMetadata(): Metadata {
   return {
@@ -95,7 +95,7 @@ export default function GlobalError({
  * Generate route.ts handler with Sentry error handling
  */
 export function generateRouteHandlerCode(
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
+  method: "GET" | "POST" | "PUT" | "DELETE" = "GET",
 ): string {
   return `import * as Sentry from "@sentry/nextjs";
 import { NextRequest, NextResponse } from "next/server";
@@ -131,7 +131,9 @@ export async function ${method}(request: NextRequest) {
 /**
  * Generate server action with Sentry instrumentation
  */
-export function generateServerActionCode(actionName = 'myServerAction'): string {
+export function generateServerActionCode(
+  actionName = "myServerAction",
+): string {
   return `"use server";
 
 import * as Sentry from "@sentry/nextjs";

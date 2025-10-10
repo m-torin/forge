@@ -6,7 +6,11 @@ export { getProviderData } from 'flags/next';
 /**
  * Get the current flag context from Next.js headers/cookies
  */
-export async function getFlagContext() {
+export async function getFlagContext(): Promise<{
+  overrides: Record<string, boolean>;
+  cookies: any;
+  headers: any;
+}> {
   // Dynamically import to avoid bundling in client
   const { cookies, headers } = await import('next/headers');
   const [headerStore, cookieStore] = await Promise.all([headers(), cookies()]);

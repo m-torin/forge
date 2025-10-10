@@ -111,7 +111,7 @@ export const KeyboardShortcuts = Extension.create({
  * Simplified keyboard shortcut descriptions for help/docs
  * Only includes Notion-specific shortcuts, not the standard Tiptap ones
  */
-export const getNotionKeyboardShortcuts = () => {
+const getNotionKeyboardShortcuts = () => {
   return [
     // Notion-specific shortcuts
     { category: 'Notion Features', shortcut: 'Mod+/', description: 'Open slash commands' },
@@ -163,7 +163,7 @@ export const getNotionKeyboardShortcuts = () => {
 /**
  * Platform-specific keyboard shortcut helper
  */
-export const getPlatformShortcut = (shortcut: string): string => {
+const getPlatformShortcut = (shortcut: string): string => {
   const isMac =
     typeof window !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0;
 

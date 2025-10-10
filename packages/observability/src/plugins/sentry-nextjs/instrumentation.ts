@@ -51,7 +51,7 @@ export interface InstrumentationConfig {
    * Feature flag configuration
    */
   featureFlags?: {
-    provider?: 'launchdarkly' | 'unleash';
+    provider?: "launchdarkly" | "unleash";
     config?: any;
   };
 }
@@ -59,12 +59,14 @@ export interface InstrumentationConfig {
 /**
  * Generate instrumentation.ts content
  */
-export function createInstrumentation(config: InstrumentationConfig = {}): string {
+export function createInstrumentation(
+  config: InstrumentationConfig = {},
+): string {
   const {
     productionOnly = true,
     includePreview = true,
-    customInitCode = '',
-    customErrorHandler: _customErrorHandler = '',
+    customInitCode = "",
+    customErrorHandler: _customErrorHandler = "",
     verbose = false,
   } = config;
 
@@ -72,7 +74,7 @@ export function createInstrumentation(config: InstrumentationConfig = {}): strin
     ? includePreview
       ? `process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'preview'`
       : `process.env.NODE_ENV === 'production'`
-    : 'true';
+    : "true";
 
   return `/**
  * Next.js instrumentation file
@@ -88,24 +90,24 @@ export async function register() {
     if (process.env.NEXT_RUNTIME === 'nodejs') {
       // Initialize observability for server-side Node.js runtime
       const { getObservability } = await import('@repo/observability/server/next');
-      ${verbose ? "console.log('[Observability] Initializing for Node.js runtime');" : ''}
+      ${verbose ? "console.log('[Observability] Initializing for Node.js runtime');" : ""}
       await getObservability();
     }
 
     if (process.env.NEXT_RUNTIME === 'edge') {
       // Initialize observability for edge runtime
       const { getObservability } = await import('@repo/observability/server/edge');
-      ${verbose ? "console.log('[Observability] Initializing for Edge runtime');" : ''}
+      ${verbose ? "console.log('[Observability] Initializing for Edge runtime');" : ""}
       await getObservability();
     }
 
-    ${customInitCode ? `// Custom initialization code\n    ${customInitCode}` : ''}
+    ${customInitCode ? `// Custom initialization code\n    ${customInitCode}` : ""}
   }${
     verbose
       ? ` else {
     console.log('[Observability] Skipping initialization in development');
   }`
-      : ''
+      : ""
   }
 }
 
@@ -131,9 +133,11 @@ export interface ClientInstrumentationConfig extends InstrumentationConfig {
   };
 }
 
-export function createClientInstrumentation(config: ClientInstrumentationConfig = {}): string {
+export function createClientInstrumentation(
+  config: ClientInstrumentationConfig = {},
+): string {
   const {
-    customInitCode = '',
+    customInitCode = "",
     verbose = false,
     enableRouterTransitionCapture = true,
     featureFlags,
@@ -141,14 +145,18 @@ export function createClientInstrumentation(config: ClientInstrumentationConfig 
     replayOptions,
   } = config;
 
-  const featureFlagImports = featureFlags ? generateFeatureFlagImports(featureFlags) : '';
-  const featureFlagInit = featureFlags ? generateFeatureFlagInit(featureFlags) : '';
+  const featureFlagImports = featureFlags
+    ? generateFeatureFlagImports(featureFlags)
+    : "";
+  const featureFlagInit = featureFlags
+    ? generateFeatureFlagInit(featureFlags)
+    : "";
 
   // Format trace propagation targets for template literal
   const formattedTargets = tracePropagationTargets
     ? JSON.stringify(tracePropagationTargets, null, 8)
         .replace(/"([^"]+)"/g, "'$1'")
-        .replace(/"\\\/([^"]+)\\\/"/g, '/$1/')
+        .replace(/"\\\/([^"]+)\\\/"/g, "/$1/")
     : `[
         'localhost',
         /^https:\\/\\/yourserver\\//,
@@ -209,10 +217,10 @@ Sentry.init({
     enableLogs: env.NEXT_PUBLIC_SENTRY_ENABLE_LOGS ?? true 
   },
   
-  ${customInitCode ? `// Custom configuration\n  ${customInitCode}` : ''}
+  ${customInitCode ? `// Custom configuration\n  ${customInitCode}` : ""}
 });
 
-${verbose ? "console.log('[Observability] Client-side Sentry initialized');" : ''}
+${verbose ? "console.log('[Observability] Client-side Sentry initialized');" : ""}
 
 ${featureFlagInit}
 
@@ -220,7 +228,7 @@ ${
   enableRouterTransitionCapture
     ? `// Export router transition capture for Next.js
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;`
-    : ''
+    : ""
 }
 `;
 }
@@ -229,15 +237,15 @@ export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;`
  * Generate feature flag imports
  */
 function generateFeatureFlagImports(
-  featureFlags: NonNullable<InstrumentationConfig['featureFlags']>,
+  featureFlags: NonNullable<InstrumentationConfig["featureFlags"]>,
 ): string {
   switch (featureFlags.provider) {
-    case 'launchdarkly':
+    case "launchdarkly":
       return `import * as LaunchDarkly from 'launchdarkly-js-client-sdk';`;
-    case 'unleash':
+    case "unleash":
       return `import { UnleashClient } from 'unleash-proxy-client';`;
     default:
-      return '';
+      return "";
   }
 }
 
@@ -245,14 +253,14 @@ function generateFeatureFlagImports(
  * Generate feature flag initialization code
  */
 function generateFeatureFlagInit(
-  featureFlags: NonNullable<InstrumentationConfig['featureFlags']>,
+  featureFlags: NonNullable<InstrumentationConfig["featureFlags"]>,
 ): string {
   switch (featureFlags.provider) {
-    case 'launchdarkly':
+    case "launchdarkly":
       return `
 // Initialize LaunchDarkly
 const ldClient = LaunchDarkly.initialize(
-  env.NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_ID || '${featureFlags.config?.clientId || ''}',
+  env.NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_ID || '${featureFlags.config?.clientId || ""}',
   { kind: 'user', key: 'anonymous' },
   { 
     streaming: true,
@@ -261,26 +269,32 @@ const ldClient = LaunchDarkly.initialize(
   }
 );
 `;
-    case 'unleash':
+    case "unleash":
       return `
 // Initialize Unleash
 const unleash = new UnleashClient({
-  url: env.NEXT_PUBLIC_UNLEASH_URL || '${featureFlags.config?.url || ''}',
-  clientKey: env.NEXT_PUBLIC_UNLEASH_CLIENT_KEY || '${featureFlags.config?.clientKey || ''}',
-  appName: env.NEXT_PUBLIC_UNLEASH_APP_NAME || '${featureFlags.config?.appName || 'nextjs-app'}',
+  url: env.NEXT_PUBLIC_UNLEASH_URL || '${featureFlags.config?.url || ""}',
+  clientKey: env.NEXT_PUBLIC_UNLEASH_CLIENT_KEY || '${featureFlags.config?.clientKey || ""}',
+  appName: env.NEXT_PUBLIC_UNLEASH_APP_NAME || '${featureFlags.config?.appName || "nextjs-app"}',
 });
 unleash.start();
 `;
     default:
-      return '';
+      return "";
   }
 }
 
 /**
  * Generate server-side instrumentation content
  */
-export function createServerInstrumentation(config: InstrumentationConfig = {}): string {
-  const { customInitCode = '', verbose = false, enableAppRouterMetadata = true } = config;
+export function createServerInstrumentation(
+  config: InstrumentationConfig = {},
+): string {
+  const {
+    customInitCode = "",
+    verbose = false,
+    enableAppRouterMetadata = true,
+  } = config;
 
   return `/**
  * Server-side instrumentation file
@@ -324,16 +338,16 @@ Sentry.init({
     enableLogs: env.SENTRY_ENABLE_LOGS ?? true 
   },
   
-  ${customInitCode ? `// Custom configuration\n  ${customInitCode}` : ''}
+  ${customInitCode ? `// Custom configuration\n  ${customInitCode}` : ""}
 });
 
-${verbose ? "console.log('[Observability] Server-side Sentry initialized');" : ''}
+${verbose ? "console.log('[Observability] Server-side Sentry initialized');" : ""}
 
 ${
   enableAppRouterMetadata
     ? `// Export helper for App Router metadata integration
 export const getTraceData = Sentry.getTraceData;`
-    : ''
+    : ""
 }
 
 // Export onRequestError hook for Next.js instrumentation
@@ -344,8 +358,10 @@ export { captureRequestError as onRequestError } from '@sentry/nextjs';
 /**
  * Generate edge runtime instrumentation content
  */
-export function createEdgeInstrumentation(config: InstrumentationConfig = {}): string {
-  const { customInitCode = '', verbose = false } = config;
+export function createEdgeInstrumentation(
+  config: InstrumentationConfig = {},
+): string {
+  const { customInitCode = "", verbose = false } = config;
 
   return `/**
  * Edge runtime instrumentation file
@@ -369,24 +385,30 @@ Sentry.init({
   // Performance monitoring
   tracesSampleRate: env.SENTRY_TRACES_SAMPLE_RATE || 1.0,
   
-  ${customInitCode ? `// Custom configuration\n  ${customInitCode}` : ''}
+  ${customInitCode ? `// Custom configuration\n  ${customInitCode}` : ""}
 });
 
-${verbose ? "console.log('[Observability] Edge runtime Sentry initialized');" : ''}
+${verbose ? "console.log('[Observability] Edge runtime Sentry initialized');" : ""}
 `;
 }
 
 /**
  * Generate sentry.client.config.ts content (official pattern)
  */
-export function createSentryClientConfig(config: ClientInstrumentationConfig = {}): string {
-  const { customInitCode = '', tracePropagationTargets, replayOptions } = config;
+export function createSentryClientConfig(
+  config: ClientInstrumentationConfig = {},
+): string {
+  const {
+    customInitCode = "",
+    tracePropagationTargets,
+    replayOptions,
+  } = config;
 
   // Format trace propagation targets for direct code
   const formattedTargets = tracePropagationTargets
     ? tracePropagationTargets
-        .map(t => (typeof t === 'string' ? `'${t}'` : t.toString()))
-        .join(',\n    ')
+        .map((t) => (typeof t === "string" ? `'${t}'` : t.toString()))
+        .join(",\n    ")
     : `'localhost',\n    /^https:\\/\\/yourserver\\//`;
 
   return `// This file configures the initialization of Sentry on the client.
@@ -407,7 +429,7 @@ Sentry.init({
     // ___PRODUCT_OPTION_END___ performance
     
     // ___PRODUCT_OPTION_START___ session-replay
-    Sentry.replayIntegration(${replayOptions ? JSON.stringify(replayOptions) : ''}),
+    Sentry.replayIntegration(${replayOptions ? JSON.stringify(replayOptions) : ""}),
     // ___PRODUCT_OPTION_END___ session-replay
     
     // ___PRODUCT_OPTION_START___ user-feedback
@@ -444,8 +466,10 @@ Sentry.init({
 /**
  * Generate sentry.server.config.ts content (official pattern)
  */
-export function createSentryServerConfig(config: InstrumentationConfig = {}): string {
-  const { customInitCode = '' } = config;
+export function createSentryServerConfig(
+  config: InstrumentationConfig = {},
+): string {
+  const { customInitCode = "" } = config;
 
   return `// This file configures the initialization of Sentry on the server.
 // The config you add here will be used whenever the server handles a request.
@@ -473,8 +497,10 @@ Sentry.init({
 /**
  * Generate sentry.edge.config.ts content (official pattern)
  */
-export function createSentryEdgeConfig(config: InstrumentationConfig = {}): string {
-  const { customInitCode = '' } = config;
+export function createSentryEdgeConfig(
+  config: InstrumentationConfig = {},
+): string {
+  const { customInitCode = "" } = config;
 
   return `// This file configures the initialization of Sentry for edge features (middleware, edge routes, and so on).
 // The config you add here will be used whenever one of the edge features is loaded.

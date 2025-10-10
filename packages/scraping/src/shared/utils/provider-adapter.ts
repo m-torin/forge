@@ -8,7 +8,7 @@ import { ProviderConfig, ScrapingProvider } from '../types/scraping-types';
 /**
  * Provider adapter interface
  */
-export interface ProviderAdapter {
+interface ProviderAdapter {
   adapt(provider: any): ScrapingProvider;
   canAdapt(provider: any): boolean;
 }
@@ -42,7 +42,7 @@ const adapterRegistry = new ProviderAdapterRegistry();
 /**
  * Legacy provider adapter for old scraping interfaces
  */
-export class LegacyProviderAdapter implements ProviderAdapter {
+class LegacyProviderAdapter implements ProviderAdapter {
   canAdapt(provider: any): boolean {
     return (
       provider && typeof provider.scrape === 'function' && typeof provider.launch === 'function'
@@ -85,28 +85,28 @@ export class LegacyProviderAdapter implements ProviderAdapter {
 /**
  * Register a provider adapter
  */
-export function registerAdapter(name: string, adapter: ProviderAdapter): void {
+function registerAdapter(name: string, adapter: ProviderAdapter): void {
   adapterRegistry.register(name, adapter);
 }
 
 /**
  * Adapt a provider using registered adapters
  */
-export function adaptProvider(providerName: string, provider: any): ScrapingProvider {
+function _adaptProvider(providerName: string, provider: any): ScrapingProvider {
   return adapterRegistry.adapt(providerName, provider);
 }
 
 /**
  * Check if a provider can be adapted
  */
-export function canAdaptProvider(providerName: string, provider: any): boolean {
+function _canAdaptProvider(providerName: string, provider: any): boolean {
   return adapterRegistry.canAdapt(providerName, provider);
 }
 
 /**
  * Auto-adapt a provider by trying all registered adapters
  */
-export function autoAdaptProvider(provider: any): ScrapingProvider | null {
+function _autoAdaptProvider(provider: any): ScrapingProvider | null {
   for (const [name] of (adapterRegistry as any).adapters) {
     if (adapterRegistry.canAdapt(name, provider)) {
       return adapterRegistry.adapt(name, provider);
@@ -119,7 +119,7 @@ export function autoAdaptProvider(provider: any): ScrapingProvider | null {
 registerAdapter('legacy', new LegacyProviderAdapter());
 
 // Additional exports for backward compatibility
-export interface ProviderRoute {
+interface ProviderRoute {
   pattern: RegExp | string;
   provider: string;
   options?: any;
@@ -128,7 +128,7 @@ export interface ProviderRoute {
 /**
  * Process a scraping request and route to appropriate provider
  */
-export async function processScrapingNextNextRequest(
+async function processScrapingNextNextRequest(
   url: string,
   routes: ProviderRoute[],
   providers: Record<string, ScrapingProvider>,

@@ -42,7 +42,7 @@ export interface RetryConfig {
   retryIf?: (error: WorkflowError) => boolean;
 }
 
-export interface ScheduleConfig {
+interface ScheduleConfig {
   /** Cron expression for schedule */
   cron: string;
   /** Whether schedule is currently active */
@@ -82,7 +82,7 @@ export interface WorkflowDefinition {
   version: string;
 }
 
-export interface WorkflowEngineConfig {
+interface WorkflowEngineConfig {
   defaultProvider?: string;
   events?: {
     bus?: EventBus;
@@ -269,7 +269,7 @@ export interface WorkflowStepExecution {
   stepName?: string;
 }
 
-export interface WorkflowTrigger {
+interface WorkflowTrigger {
   /** Payload provided by trigger */
   payload?: EventPayload;
   /** Source of the trigger */
@@ -284,7 +284,7 @@ export interface WorkflowTrigger {
 /**
  * Event bus interface for workflow events
  */
-export interface EventBus {
+interface EventBus {
   emit(event: string, data: EventPayload): void;
   on(event: string, handler: (data: EventPayload) => void): void;
   off(event: string, handler: (data: EventPayload) => void): void;

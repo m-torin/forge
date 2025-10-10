@@ -66,7 +66,15 @@ export const signIn: AuthClientMethods['signIn'] = async credentials => {
  * Signs out the current user
  */
 export const signOut = async () => {
-  await authClient.signOut();
+  try {
+    await authClient.signOut();
+    return { success: true };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : 'Sign out failed',
+      success: false,
+    };
+  }
 };
 
 /**

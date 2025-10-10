@@ -43,7 +43,7 @@ export interface CustomFeatureFlagConfig {
  * Feature flag configuration
  */
 export interface FeatureFlagConfig {
-  provider: 'launchdarkly' | 'unleash' | 'custom';
+  provider: "launchdarkly" | "unleash" | "custom";
   launchDarkly?: LaunchDarklyConfig;
   unleash?: UnleashConfig;
   custom?: CustomFeatureFlagConfig;
@@ -61,7 +61,7 @@ export async function buildFeatureFlagIntegration(
   if (!sentryClient) return integrations;
 
   switch (config.provider) {
-    case 'launchdarkly':
+    case "launchdarkly":
       if (config.launchDarkly && sentryClient.launchDarklyIntegration) {
         integrations.push(sentryClient.launchDarklyIntegration());
 
@@ -72,7 +72,7 @@ export async function buildFeatureFlagIntegration(
       }
       break;
 
-    case 'unleash':
+    case "unleash":
       if (config.unleash && sentryClient.unleashIntegration) {
         const unleashOptions = config.unleash.featureFlagClientClass
           ? { featureFlagClientClass: config.unleash.featureFlagClientClass }
@@ -87,7 +87,7 @@ export async function buildFeatureFlagIntegration(
       }
       break;
 
-    case 'custom':
+    case "custom":
       if (config.custom?.integration) {
         integrations.push(config.custom.integration);
 
@@ -134,7 +134,7 @@ const unleash = new UnleashClient({
   url: '${config.url}',
   clientKey: '${config.clientKey}',
   appName: '${config.appName}',
-  ${config.options ? `...${JSON.stringify(config.options, null, 2)}` : ''}
+  ${config.options ? `...${JSON.stringify(config.options, null, 2)}` : ""}
 });
 
 // Start the client
@@ -153,14 +153,14 @@ export async function detectFeatureFlagPackages(): Promise<{
   let unleash = false;
 
   // Skip dynamic imports in test environment
-  if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
+  if (typeof process !== "undefined" && process.env.NODE_ENV === "test") {
     return { launchDarkly: false, unleash: false };
   }
 
   try {
     // Check for LaunchDarkly - use string concatenation to avoid static analysis
     // @ts-ignore - Optional dependency
-    const ldModule = 'launchdarkly' + '-js-client-sdk';
+    const ldModule = "launchdarkly" + "-js-client-sdk";
     await import(/* @vite-ignore */ ldModule);
     launchDarkly = true;
   } catch (_) {
@@ -170,7 +170,7 @@ export async function detectFeatureFlagPackages(): Promise<{
   try {
     // Check for Unleash - use string concatenation to avoid static analysis
     // @ts-ignore - Optional dependency
-    const unleashModule = 'unleash' + '-proxy-client';
+    const unleashModule = "unleash" + "-proxy-client";
     await import(/* @vite-ignore */ unleashModule);
     unleash = true;
   } catch (_) {
@@ -188,9 +188,9 @@ export async function getRecommendedFeatureFlagConfig(): Promise<Partial<Feature
 
   if (detected.launchDarkly) {
     return {
-      provider: 'launchdarkly',
+      provider: "launchdarkly",
       launchDarkly: {
-        clientId: process.env.NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_ID || '',
+        clientId: process.env.NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_ID || "",
         options: {
           streaming: true,
           useReport: true,
@@ -201,11 +201,11 @@ export async function getRecommendedFeatureFlagConfig(): Promise<Partial<Feature
 
   if (detected.unleash) {
     return {
-      provider: 'unleash',
+      provider: "unleash",
       unleash: {
-        url: process.env.NEXT_PUBLIC_UNLEASH_URL || '',
-        clientKey: process.env.NEXT_PUBLIC_UNLEASH_CLIENT_KEY || '',
-        appName: process.env.NEXT_PUBLIC_UNLEASH_APP_NAME || 'nextjs-app',
+        url: process.env.NEXT_PUBLIC_UNLEASH_URL || "",
+        clientKey: process.env.NEXT_PUBLIC_UNLEASH_CLIENT_KEY || "",
+        appName: process.env.NEXT_PUBLIC_UNLEASH_APP_NAME || "nextjs-app",
       },
     };
   }

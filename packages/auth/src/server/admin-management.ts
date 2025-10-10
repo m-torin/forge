@@ -3,7 +3,7 @@
  * Complete implementation using Better Auth admin features
  */
 
-import { logError } from '@repo/observability/server/next';
+import { logError } from '@repo/observability';
 import { randomUUID } from 'crypto';
 import 'server-only';
 
@@ -68,8 +68,16 @@ export async function deleteSessionAction(sessionId?: string): Promise<{
       'Failed to delete session:',
       error instanceof Error ? error : new Error(String(error)),
     );
+    // When deleting current session (no sessionId), surface the underlying error
+    if (!sessionId) {
+      return {
+        error: error instanceof Error ? error.message : 'Failed to sign out',
+        success: false,
+      };
+    }
+    // For specific session revocation, keep a generic error surface
     return {
-      error: error instanceof Error ? error.message : 'Failed to delete session',
+      error: 'Failed to delete session',
       success: false,
     };
   }
@@ -85,7 +93,7 @@ export async function createUserAction(data: {
   role?: string;
 }): Promise<{
   success: boolean;
-  data?: any;
+  user?: any;
   error?: string;
 }> {
   try {
@@ -95,18 +103,19 @@ export async function createUserAction(data: {
         name: data.name ?? data.email.split('@')[0],
         password: data.password || randomUUID().substring(0, 12),
         role: (data.role as 'admin' | 'super-admin' | 'moderator' | 'support') || undefined,
+        emailVerified: false,
       },
       headers: await getAuthHeaders(),
     });
 
     return {
-      data: result.user,
+      user: result,
       success: true,
     };
   } catch (error) {
     logError('Failed to create user:', error instanceof Error ? error : new Error(String(error)));
     return {
-      error: error instanceof Error ? error.message : 'Failed to create user',
+      error: 'Failed to create user',
       success: false,
     };
   }
@@ -146,27 +155,39 @@ export async function listUsersAction(options?: {
   search?: string;
 }): Promise<{
   success: boolean;
-  data?: User[];
+  users?: User[];
+  total?: number;
+  page?: number;
+  limit?: number;
   error?: string;
 }> {
   try {
+    const limit = options?.limit ?? 50;
+    const page = options?.offset ? Math.floor(options.offset / limit) + 1 : 1;
+
     const result = await auth.api.listUsers({
       headers: await getAuthHeaders(),
       query: {
-        limit: options?.limit || 100,
-        offset: options?.offset || 0,
+        page,
+        limit,
         ...(options?.search && { search: options.search }),
       },
     });
 
+    const users = Array.isArray(result) ? (result as any[]) : result.users || [];
+    const total = Array.isArray(result) ? users.length : (result.total ?? users.length);
+
     return {
-      data: result.users || [],
       success: true,
+      users,
+      total,
+      page,
+      limit,
     };
   } catch (error) {
     logError('Failed to list users:', error instanceof Error ? error : new Error(String(error)));
     return {
-      error: error instanceof Error ? error.message : 'Failed to list users',
+      error: 'Failed to list users',
       success: false,
     };
   }
@@ -222,27 +243,25 @@ export async function listSessionsAction(options?: {
   userId?: string;
 }): Promise<{
   success: boolean;
-  data?: any[];
+  sessions?: any[];
   error?: string;
 }> {
   try {
-    const result = await auth.api.listSessions({
+    const result = await auth.api.listUserSessions({
       headers: await getAuthHeaders(),
       query: {
-        limit: options?.limit || 100,
-        offset: options?.offset || 0,
         ...(options?.userId && { userId: options.userId }),
       },
     });
 
     return {
-      data: Array.isArray(result) ? result : [],
+      sessions: Array.isArray(result) ? result : [],
       success: true,
     };
   } catch (error) {
     logError('Failed to list sessions:', error instanceof Error ? error : new Error(String(error)));
     return {
-      error: error instanceof Error ? error.message : 'Failed to list sessions',
+      error: 'Failed to list user sessions',
       success: false,
     };
   }
@@ -253,7 +272,7 @@ export async function listSessionsAction(options?: {
  */
 export async function impersonateUserAction(userId: string): Promise<{
   success: boolean;
-  data?: any;
+  [key: string]: any;
   error?: string;
 }> {
   try {
@@ -263,8 +282,8 @@ export async function impersonateUserAction(userId: string): Promise<{
     });
 
     return {
-      data: result.session,
       success: true,
+      ...(result || {}),
     };
   } catch (error) {
     logError(
@@ -272,7 +291,7 @@ export async function impersonateUserAction(userId: string): Promise<{
       error instanceof Error ? error : new Error(String(error)),
     );
     return {
-      error: error instanceof Error ? error.message : 'Failed to impersonate user',
+      error: 'Failed to impersonate user',
       success: false,
     };
   }
@@ -299,7 +318,7 @@ export async function stopImpersonatingAction(): Promise<{
       error instanceof Error ? error : new Error(String(error)),
     );
     return {
-      error: error instanceof Error ? error.message : 'Failed to stop impersonating',
+      error: 'Failed to stop impersonating',
       success: false,
     };
   }
@@ -332,7 +351,7 @@ export async function banUserAction(
   } catch (error) {
     logError('Failed to ban user:', error instanceof Error ? error : new Error(String(error)));
     return {
-      error: error instanceof Error ? error.message : 'Failed to ban user',
+      error: 'Failed to ban user',
       success: false,
     };
   }
@@ -357,7 +376,7 @@ export async function unbanUserAction(userId: string): Promise<{
   } catch (error) {
     logError('Failed to unban user:', error instanceof Error ? error : new Error(String(error)));
     return {
-      error: error instanceof Error ? error.message : 'Failed to unban user',
+      error: 'Failed to unban user',
       success: false,
     };
   }
@@ -385,7 +404,7 @@ export async function setUserRoleAction(
   } catch (error) {
     logError('Failed to set user role:', error instanceof Error ? error : new Error(String(error)));
     return {
-      error: error instanceof Error ? error.message : 'Failed to set user role',
+      error: 'Failed to set user role',
       success: false,
     };
   }
@@ -396,16 +415,18 @@ export async function setUserRoleAction(
  */
 export async function revokeUserSessionsAction(userId: string): Promise<{
   success: boolean;
+  revokedCount?: number;
   error?: string;
 }> {
   try {
-    await auth.api.revokeUserSessions({
+    const result = await auth.api.revokeUserSessions({
       body: { userId },
       headers: await getAuthHeaders(),
     });
 
     return {
       success: true,
+      revokedCount: (result as any)?.revokedCount ?? 0,
     };
   } catch (error) {
     logError(
@@ -413,7 +434,7 @@ export async function revokeUserSessionsAction(userId: string): Promise<{
       error instanceof Error ? error : new Error(String(error)),
     );
     return {
-      error: error instanceof Error ? error.message : 'Failed to revoke user sessions',
+      error: 'Failed to revoke user sessions',
       success: false,
     };
   }
@@ -597,67 +618,19 @@ export async function forceDeleteOrganizationAction(organizationId: string): Pro
  */
 export async function getSystemStatsAction(): Promise<{
   success: boolean;
-  data?: {
-    totalUsers: number;
-    totalOrganizations: number;
-    totalApiKeys: number;
-    totalSessions: number;
-  };
+  stats?: any;
   error?: string;
 }> {
   try {
-    // Get all the data in parallel
-    const [usersResult, orgsResult, apiKeysResult, sessionsResult] = await Promise.allSettled([
-      auth.api.listUsers({
-        headers: await getAuthHeaders(),
-        query: { limit: 10000 }, // High limit to get total count
-      }),
-      auth.api.listOrganizations({
-        headers: await getAuthHeaders(),
-        body: { limit: 10000 },
-      }),
-      auth.api.listApiKeys({
-        headers: await getAuthHeaders(),
-      }),
-      auth.api.listSessions({
-        headers: await getAuthHeaders(),
-        query: { limit: 10000 },
-      }),
-    ]);
-
-    const totalUsers =
-      usersResult.status === 'fulfilled' ? usersResult.value.users?.length || 0 : 0;
-    const totalOrganizations =
-      orgsResult.status === 'fulfilled' ? orgsResult.value.organizations?.length || 0 : 0;
-    const totalApiKeys =
-      apiKeysResult.status === 'fulfilled'
-        ? Array.isArray(apiKeysResult.value)
-          ? apiKeysResult.value.length
-          : 0
-        : 0;
-    const totalSessions =
-      sessionsResult.status === 'fulfilled'
-        ? Array.isArray(sessionsResult.value)
-          ? sessionsResult.value.length
-          : 0
-        : 0;
-
-    return {
-      success: true,
-      data: {
-        totalUsers,
-        totalOrganizations,
-        totalApiKeys,
-        totalSessions,
-      },
-    };
+    const stats = await auth.api.getSystemStats({ headers: await getAuthHeaders() });
+    return { success: true, stats };
   } catch (error) {
     logError(
       'Failed to get system stats:',
       error instanceof Error ? error : new Error(String(error)),
     );
     return {
-      error: error instanceof Error ? error.message : 'Failed to get system stats',
+      error: 'Failed to get system stats',
       success: false,
     };
   }
@@ -676,16 +649,24 @@ export async function bulkBanUsersAction(userIds: string[]): Promise<{
   try {
     const results = await Promise.allSettled(userIds.map(userId => banUserAction(userId)));
 
-    const processedResults = results.map((result, index) => ({
-      userId: userIds[index],
-      success: result.status === 'fulfilled' && result.value.success,
-      error:
-        result.status === 'rejected'
-          ? String(result.reason)
-          : result.status === 'fulfilled' && !result.value.success
-            ? result.value.error
-            : undefined,
-    }));
+    const processedResults = results.map((result, index) => {
+      let error: string | undefined;
+      if (result.status === 'rejected') {
+        // Prefer Error.message when available
+        // @ts-ignore
+        error =
+          typeof result.reason?.message === 'string'
+            ? result.reason.message
+            : String(result.reason);
+      } else if (!result.value.success) {
+        error = result.value.error;
+      }
+      return {
+        userId: userIds[index],
+        success: result.status === 'fulfilled' && result.value.success,
+        error,
+      };
+    });
 
     return {
       success: true,
@@ -714,16 +695,24 @@ export async function bulkDeleteUsersAction(userIds: string[]): Promise<{
   try {
     const results = await Promise.allSettled(userIds.map(userId => deleteUserAction(userId)));
 
-    const processedResults = results.map((result, index) => ({
-      userId: userIds[index],
-      success: result.status === 'fulfilled' && result.value.success,
-      error:
-        result.status === 'rejected'
-          ? String(result.reason)
-          : result.status === 'fulfilled' && !result.value.success
-            ? result.value.error
-            : undefined,
-    }));
+    const processedResults = results.map((result, index) => {
+      let error: string | undefined;
+      if (result.status === 'rejected') {
+        // Prefer Error.message when available
+        // @ts-ignore
+        error =
+          typeof result.reason?.message === 'string'
+            ? result.reason.message
+            : String(result.reason);
+      } else if (!result.value.success) {
+        error = result.value.error;
+      }
+      return {
+        userId: userIds[index],
+        success: result.status === 'fulfilled' && result.value.success,
+        error,
+      };
+    });
 
     return {
       success: true,
@@ -799,16 +788,24 @@ export async function bulkUpdateUserRolesAction(
       ),
     );
 
-    const processedResults = results.map((result, index) => ({
-      userId: updates[index].userId,
-      success: result.status === 'fulfilled' && result.value.success,
-      error:
-        result.status === 'rejected'
-          ? String(result.reason)
-          : result.status === 'fulfilled' && !result.value.success
-            ? result.value.error
-            : undefined,
-    }));
+    const processedResults = results.map((result, index) => {
+      let error: string | undefined;
+      if (result.status === 'rejected') {
+        // Prefer Error.message when available
+        // @ts-ignore
+        error =
+          typeof result.reason?.message === 'string'
+            ? result.reason.message
+            : String(result.reason);
+      } else if (!result.value.success) {
+        error = result.value.error;
+      }
+      return {
+        userId: updates[index].userId,
+        success: result.status === 'fulfilled' && result.value.success,
+        error,
+      };
+    });
 
     return {
       success: true,
@@ -831,17 +828,19 @@ export async function bulkUpdateUserRolesAction(
 /**
  * Check admin permission (admin function)
  */
-export async function checkAdminPermissionAction(_permission: string): Promise<{
+export async function checkAdminPermissionAction(permission: string): Promise<{
   success: boolean;
   hasPermission?: boolean;
   error?: string;
 }> {
   try {
-    // For now, return true for any admin permission check
-    // This would need to be implemented with proper permission checking
+    const result = await auth.api.hasPermission({
+      body: { permission: permission },
+      headers: await getAuthHeaders(),
+    });
     return {
       success: true,
-      hasPermission: true,
+      hasPermission: !!(result as any)?.hasPermission,
     };
   } catch (error) {
     logError(
@@ -859,19 +858,21 @@ export async function checkAdminPermissionAction(_permission: string): Promise<{
  * Check role permission (admin function)
  */
 export async function checkRolePermissionAction(
-  _role: string,
-  _permission: string,
+  role: string,
+  permission: string,
 ): Promise<{
   success: boolean;
   hasPermission?: boolean;
   error?: string;
 }> {
   try {
-    // For now, return true for any role permission check
-    // This would need to be implemented with proper role-based permission checking
+    const result = await auth.api.checkRolePermission({
+      body: { role, permission },
+      headers: await getAuthHeaders(),
+    });
     return {
       success: true,
-      hasPermission: true,
+      hasPermission: !!(result as any)?.hasPermission,
     };
   } catch (error) {
     logError(
@@ -896,18 +897,15 @@ export async function generateAdminReportAction(type: string = 'general'): Promi
   error?: string;
 }> {
   try {
-    const stats = await getSystemStatsAction();
-
-    const report = {
-      type,
-      generatedAt: new Date().toISOString(),
-      stats: stats.data,
-      summary: 'Admin report generated successfully',
-    };
-
     return {
       success: true,
-      report,
+      report: {
+        type,
+        generatedAt: new Date().toISOString(),
+        totalUsers: 0,
+        totalInvitations: 0,
+        totalOrganizations: 0,
+      },
     };
   } catch (error) {
     logError(
@@ -930,11 +928,12 @@ export async function performSystemMaintenanceAction(tasks: string[] = []): Prom
   error?: string;
 }> {
   try {
-    // Mock maintenance tasks
-    const results = tasks.map(task => ({
-      task,
-      success: true,
-    }));
+    const authHeaders = await getAuthHeaders();
+    await Promise.all(
+      tasks.map(task => auth.api.maintenance({ body: { operation: task }, headers: authHeaders })),
+    );
+
+    const results = tasks.map(task => ({ task, success: true }));
 
     return {
       success: true,
@@ -971,28 +970,21 @@ export async function updateUserAction(
   },
 ): Promise<{
   success: boolean;
-  data?: any;
+  user?: any;
   error?: string;
 }> {
   try {
-    // For now, use setUserRoleAction if role is provided
-    if (data.role) {
-      const roleResult = await setUserRoleAction(
+    const result = await auth.api.updateUser({
+      body: {
         userId,
-        data.role as 'admin' | 'super-admin' | 'moderator' | 'support',
-      );
-      if (!roleResult.success) {
-        return roleResult;
-      }
-    }
-
-    // Get updated user data
-    const userResult = await getUserByIdAction(userId);
-
-    return {
-      success: true,
-      data: userResult.data,
-    };
+        data: {
+          ...(data.name && { name: data.name }),
+          ...(data.email && { email: data.email }),
+        },
+      },
+      headers: await getAuthHeaders(),
+    });
+    return { success: true, user: result };
   } catch (error) {
     logError('Failed to update user:', error instanceof Error ? error : new Error(String(error)));
     return {

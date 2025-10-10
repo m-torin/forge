@@ -1,19 +1,24 @@
-'use client';
+"use client";
 
-import { clsx } from 'clsx';
-import { AnimatePresence, motion } from 'framer-motion';
-import { useTheme } from 'next-themes';
-import { useEffect, useState } from 'react';
-import { useUIComponents } from '../ui-components';
+import { clsx } from "clsx";
+import { AnimatePresence, motion } from "framer-motion";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
+import { useUIComponents } from "../ui-components";
 
 // Create cn utility function for this package
-const cn = (...classes: (string | undefined | null | boolean)[]) => clsx(classes);
+const cn = (...classes: (string | undefined | null | boolean)[]) =>
+  clsx(classes);
 
 // Fallback Button component if not provided by useUIComponents
-const DefaultButton = ({ children, className: btnClassName, ...props }: any) => (
+const DefaultButton = ({
+  children,
+  className: btnClassName,
+  ...props
+}: any) => (
   <button
     className={clsx(
-      'inline-flex items-center justify-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-100',
+      "inline-flex items-center justify-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-100",
       btnClassName,
     )}
     {...props}
@@ -36,14 +41,18 @@ export function EnhancedThemeToggle({ className }: { className?: string }) {
 
   if (!mounted) {
     return (
-      <Button variant="ghost" size="sm" className={cn('h-9 w-9 p-0', className)}>
+      <Button
+        variant="ghost"
+        size="sm"
+        className={cn("h-9 w-9 p-0", className)}
+      >
         <div className="h-4 w-4" />
       </Button>
     );
   }
 
   const toggleTheme = () => {
-    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+    setTheme(resolvedTheme === "dark" ? "light" : "dark");
   };
 
   return (
@@ -54,19 +63,19 @@ export function EnhancedThemeToggle({ className }: { className?: string }) {
           size="sm"
           onClick={toggleTheme}
           className={cn(
-            'relative h-9 w-9 overflow-hidden rounded-full p-0 transition-all duration-300',
-            'hover:bg-muted hover:scale-110 active:scale-95',
+            "relative h-9 w-9 overflow-hidden rounded-full p-0 transition-all duration-300",
+            "hover:bg-muted hover:scale-110 active:scale-95",
             className,
           )}
         >
           <AnimatePresence mode="wait">
-            {resolvedTheme === 'dark' ? (
+            {resolvedTheme === "dark" ? (
               <motion.div
                 key="moon"
                 initial={{ opacity: 0, rotate: -90, scale: 0.8 }}
                 animate={{ opacity: 1, rotate: 0, scale: 1 }}
                 exit={{ opacity: 0, rotate: 90, scale: 0.8 }}
-                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
                 className="flex items-center justify-center"
               >
                 <svg
@@ -89,7 +98,7 @@ export function EnhancedThemeToggle({ className }: { className?: string }) {
                 initial={{ opacity: 0, rotate: 90, scale: 0.8 }}
                 animate={{ opacity: 1, rotate: 0, scale: 1 }}
                 exit={{ opacity: 0, rotate: -90, scale: 0.8 }}
-                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
                 className="flex items-center justify-center"
               >
                 <svg
@@ -114,15 +123,17 @@ export function EnhancedThemeToggle({ className }: { className?: string }) {
             className="absolute inset-0 rounded-full"
             animate={{
               background:
-                resolvedTheme === 'dark'
-                  ? 'radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%)'
-                  : 'radial-gradient(circle, rgba(251, 191, 36, 0.1) 0%, transparent 70%)',
+                resolvedTheme === "dark"
+                  ? "radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%)"
+                  : "radial-gradient(circle, rgba(251, 191, 36, 0.1) 0%, transparent 70%)",
             }}
             transition={{ duration: 0.3 }}
           />
         </SafeButton>
       </TooltipTrigger>
-      <TooltipContent>Switch to {resolvedTheme === 'dark' ? 'light' : 'dark'} mode</TooltipContent>
+      <TooltipContent>
+        Switch to {resolvedTheme === "dark" ? "light" : "dark"} mode
+      </TooltipContent>
     </Tooltip>
   );
 }
@@ -142,20 +153,20 @@ export function ThemeSelector({ className }: { className?: string }) {
 
   if (!mounted) {
     return (
-      <SafeButton variant="outline" size="sm" className={cn('w-32', className)}>
+      <SafeButton variant="outline" size="sm" className={cn("w-32", className)}>
         <div className="h-4 w-16" />
       </SafeButton>
     );
   }
 
   const themeOptions = [
-    { value: 'light', label: 'Light', icon: '☀️' },
-    { value: 'dark', label: 'Dark', icon: '🌙' },
-    { value: 'system', label: 'System', icon: '💻' },
+    { value: "light", label: "Light", icon: "☀️" },
+    { value: "dark", label: "Dark", icon: "🌙" },
+    { value: "system", label: "System", icon: "💻" },
   ];
 
   return (
-    <div className={cn('relative', className)}>
+    <div className={cn("relative", className)}>
       <SafeButton
         variant="outline"
         size="sm"
@@ -163,8 +174,10 @@ export function ThemeSelector({ className }: { className?: string }) {
         className="w-32 justify-between"
       >
         <div className="flex items-center gap-2">
-          <span>{themeOptions.find(t => t.value === theme)?.icon}</span>
-          <span className="text-sm">{themeOptions.find(t => t.value === theme)?.label}</span>
+          <span>{themeOptions.find((t) => t.value === theme)?.icon}</span>
+          <span className="text-sm">
+            {themeOptions.find((t) => t.value === theme)?.label}
+          </span>
         </div>
         <motion.svg
           width="12"
@@ -197,9 +210,9 @@ export function ThemeSelector({ className }: { className?: string }) {
                   <motion.button
                     key={option.value}
                     className={cn(
-                      'flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm transition-colors',
-                      'hover:bg-muted focus:bg-muted focus:outline-none',
-                      theme === option.value && 'bg-muted',
+                      "flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm transition-colors",
+                      "hover:bg-muted focus:bg-muted focus:outline-none",
+                      theme === option.value && "bg-muted",
                     )}
                     onClick={() => {
                       setTheme(option.value);

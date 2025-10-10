@@ -1,32 +1,36 @@
-import { MantineProvider } from '@mantine/core';
-import type { RenderOptions, RenderResult } from '@testing-library/react';
-import { render as rtlRender } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import type { ReactElement, ReactNode } from 'react';
-import * as React from 'react';
+import { MantineProvider } from "@mantine/core";
+import type { RenderOptions, RenderResult } from "@testing-library/react";
+import { render as rtlRender } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import type { ReactElement, ReactNode } from "react";
+import * as React from "react";
 
 // Types for providers
 interface TestProviderProps {
   children: ReactNode;
-  colorScheme?: 'light' | 'dark' | 'auto';
+  colorScheme?: "light" | "dark" | "auto";
   theme?: any;
   locale?: string;
 }
 
 // Base providers wrapper
-export function TestProviders({ children, colorScheme = 'light', theme = {} }: TestProviderProps) {
+export function TestProviders({
+  children,
+  colorScheme = "light",
+  theme = {},
+}: TestProviderProps) {
   const testTheme = {
     ...theme,
-    forceColorScheme: colorScheme as 'light' | 'dark',
+    forceColorScheme: colorScheme as "light" | "dark",
   };
 
   return <MantineProvider theme={testTheme}>{children}</MantineProvider>;
 }
 
 // Custom render options
-interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
+interface CustomRenderOptions extends Omit<RenderOptions, "wrapper"> {
   // Mantine-specific options
-  colorScheme?: 'light' | 'dark' | 'auto';
+  colorScheme?: "light" | "dark" | "auto";
   theme?: any;
   locale?: string;
 
@@ -50,12 +54,15 @@ interface CustomRenderResult extends RenderResult {
  * Custom render function that wraps components with common providers
  * and sets up user event automatically
  */
-export function render(ui: ReactElement, options: CustomRenderOptions = {}): CustomRenderResult {
+export function render(
+  ui: ReactElement,
+  options: CustomRenderOptions = {},
+): CustomRenderResult {
   const {
     colorScheme,
     theme,
     locale,
-    route = '/',
+    route = "/",
     providers: CustomProviders,
     wrapper: CustomWrapper,
     userEventOptions,
@@ -63,8 +70,8 @@ export function render(ui: ReactElement, options: CustomRenderOptions = {}): Cus
   } = options;
 
   // Set up the URL before rendering
-  if (route && typeof window !== 'undefined') {
-    window.history.pushState({}, 'Test page', route);
+  if (route && typeof window !== "undefined") {
+    window.history.pushState({}, "Test page", route);
   }
 
   // Create a user event instance
@@ -106,16 +113,16 @@ export function render(ui: ReactElement, options: CustomRenderOptions = {}): Cus
 // Helper to render with dark mode
 export function renderDark(
   ui: ReactElement,
-  options?: Omit<CustomRenderOptions, 'colorScheme'>,
+  options?: Omit<CustomRenderOptions, "colorScheme">,
 ): CustomRenderResult {
-  return render(ui, { ...options, colorScheme: 'dark' });
+  return render(ui, { ...options, colorScheme: "dark" });
 }
 
 // Helper to render with specific locale
 export function renderWithLocale(
   ui: ReactElement,
   locale: string,
-  options?: Omit<CustomRenderOptions, 'locale'>,
+  options?: Omit<CustomRenderOptions, "locale">,
 ): CustomRenderResult {
   return render(ui, { ...options, locale });
 }
@@ -123,13 +130,13 @@ export function renderWithLocale(
 // Helper to render without any providers (for testing provider behavior)
 export function renderBare(
   ui: ReactElement,
-  options?: Omit<RenderOptions, 'wrapper'>,
+  options?: Omit<RenderOptions, "wrapper">,
 ): RenderResult {
   return rtlRender(ui, options);
 }
 
 // Re-export everything from testing library for convenience
-export * from '@testing-library/react';
+export * from "@testing-library/react";
 export { userEvent };
 
 // Export the TestProviders component for custom usage

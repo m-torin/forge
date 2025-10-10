@@ -5,15 +5,15 @@
  */
 
 // Force dynamic rendering since this page requires authentication checks
-import { trackProfileViewAction } from '#/app/actions/auth';
-import { getAuthContext } from '#/lib/auth-context';
-import { getDictionary, type Locale } from '#/lib/i18n';
-import { createAuthMetadata } from '#/lib/seo';
-import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
-import ProfilePageUi from './ProfilePageUi';
+import { trackProfileViewAction } from "#/app/actions/auth";
+import { getAuthContext } from "#/lib/auth-context";
+import { getDictionary, type Locale } from "#/lib/i18n";
+import { createAuthMetadata } from "#/lib/seo";
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import ProfilePageUi from "./ProfilePageUi";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -30,16 +30,22 @@ export async function generateMetadata({
       }
     : undefined;
 
-  return createAuthMetadata(locale, 'profile', userContext);
+  return createAuthMetadata(locale, "profile", userContext);
 }
 
-export default async function ProfilePage({ params }: { params: Promise<{ locale: Locale }> }) {
+export default async function ProfilePage({
+  params,
+}: {
+  params: Promise<{ locale: Locale }>;
+}) {
   const { locale } = await params;
 
   // Check authentication
   const authContext = await getAuthContext();
   if (!authContext.isAuthenticated || !authContext.user) {
-    redirect(`/${locale}/login?redirectTo=${encodeURIComponent(`/${locale}/profile`)}`);
+    redirect(
+      `/${locale}/login?redirectTo=${encodeURIComponent(`/${locale}/profile`)}`,
+    );
   }
 
   // Track profile view for analytics
