@@ -13,7 +13,7 @@ import { BrowserScrapeOptions, InteractionStep } from './types';
 /**
  * Browser scraping with authentication
  */
-export async function authenticatedScrape(
+async function _authenticatedScrape(
   url: string,
   auth: {
     loginUrl: string;
@@ -110,7 +110,7 @@ export async function browserScrape(
 /**
  * Browser scraping with complex interactions
  */
-export async function browserScrapeWithInteractions(
+async function browserScrapeWithInteractions(
   url: string,
   options: BrowserScrapeOptions = {},
 ): Promise<any> {
@@ -229,7 +229,7 @@ export async function withBrowser<T>(
 /**
  * Multi-step browser workflow
  */
-export async function workflowScrape(
+async function _workflowScrape(
   steps: {
     extract?: any;
     interactions?: InteractionStep[];

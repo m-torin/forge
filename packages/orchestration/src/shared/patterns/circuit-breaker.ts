@@ -16,27 +16,109 @@ export interface CircuitBreakerOptions extends Partial<CircuitBreakerPattern> {
 }
 
 /**
- * Circuit Breaker Manager
+ * Resource tracking for circuit breakers to ensure proper cleanup
  */
-export class CircuitBreakerManager {
+interface CircuitBreakerResources {
+  eventListeners: Array<{ event: string; listener: (...args: any[]) => void }>;
+  timers: Set<NodeJS.Timeout>;
+  intervals: Set<NodeJS.Timeout>;
+  abortControllers: Set<AbortController>;
+  createdAt: Date;
+  lastUsed: Date;
+}
+
+/**
+ * Circuit Breaker Manager with enhanced WeakMap-based resource tracking
+ */
+class CircuitBreakerManager {
   private breakers = new Map<string, OpossumCircuitBreaker<unknown[], unknown>>();
+  // Use WeakMap for automatic garbage collection of cleanup resources (Node 22+ optimization)
+  private readonly resourceTracking = new WeakMap<
+    OpossumCircuitBreaker<unknown[], unknown>,
+    CircuitBreakerResources
+  >();
 
   /**
-   * Remove all circuit breakers
+   * Remove all circuit breakers with comprehensive resource cleanup
    */
   clear(): void {
     for (const [_name, breaker] of this.breakers) {
-      // Remove all event listeners to prevent memory leaks
-      if ('removeAllListeners' in breaker && typeof breaker.removeAllListeners === 'function') {
-        (breaker as any).removeAllListeners();
-      }
-
-      // If the circuit breaker has a destroy method, call it
-      if (typeof (breaker as any).destroy === 'function') {
-        (breaker as any).destroy();
-      }
+      this.cleanupBreakerResources(breaker);
     }
     this.breakers.clear();
+  }
+
+  /**
+   * Comprehensive cleanup of circuit breaker resources using WeakMap tracking
+   */
+  private cleanupBreakerResources(breaker: OpossumCircuitBreaker<unknown[], unknown>): void {
+    const resources = this.resourceTracking.get(breaker);
+
+    if (resources) {
+      // Clean up tracked event listeners
+      for (const { event, listener } of resources.eventListeners) {
+        try {
+          // Use off method which is the standard EventEmitter method
+          (breaker as any).off(event, listener);
+        } catch (_error) {
+          try {
+            // Fallback to removeListener if off is not available
+            (breaker as any).removeListener?.(event, listener);
+          } catch (fallbackError) {
+            // Log cleanup errors but continue cleanup process
+
+            console.warn(`Failed to remove listener for event '${event}':`, fallbackError);
+          }
+        }
+      }
+
+      // Clean up any tracked timers and intervals
+      for (const timer of resources.timers) {
+        clearTimeout(timer);
+      }
+      resources.timers.clear();
+
+      for (const interval of resources.intervals) {
+        clearInterval(interval);
+      }
+      resources.intervals.clear();
+
+      // Clean up any tracked abort controllers
+      for (const controller of resources.abortControllers) {
+        try {
+          controller.abort('Circuit breaker cleanup');
+        } catch (error) {
+          // Log abort errors but continue cleanup
+
+          console.warn('Failed to abort controller during cleanup:', error);
+        }
+      }
+      resources.abortControllers.clear();
+    }
+
+    // Standard opossum cleanup
+    if (
+      Object.hasOwn(breaker, 'removeAllListeners') &&
+      typeof (breaker as any).removeAllListeners === 'function'
+    ) {
+      try {
+        (breaker as any).removeAllListeners();
+      } catch (error) {
+        console.warn('Failed to remove all listeners:', error);
+      }
+    }
+
+    // Call destroy method if available
+    if (typeof (breaker as any).destroy === 'function') {
+      try {
+        (breaker as any).destroy();
+      } catch (error) {
+        console.warn('Failed to destroy circuit breaker:', error);
+      }
+    }
+
+    // WeakMap will automatically clean up when breaker is garbage collected
+    this.resourceTracking.delete(breaker);
   }
 
   /**
@@ -82,21 +164,39 @@ export class CircuitBreakerManager {
       volumeThreshold: pattern.minimumCallsToTrip,
     });
 
-    // Set up event handlers
+    // Initialize WeakMap-based resource tracking for comprehensive cleanup
+    const resources: CircuitBreakerResources = {
+      eventListeners: [],
+      timers: new Set(),
+      intervals: new Set(),
+      abortControllers: new Set(),
+      createdAt: new Date(),
+      lastUsed: new Date(),
+    };
+    this.resourceTracking.set(breaker, resources);
+
+    // Helper function to track event listeners for proper cleanup
+    const trackEventListener = (event: string, listener: (...args: any[]) => void) => {
+      resources.eventListeners.push({ event, listener });
+      (breaker as any).on(event, listener);
+    };
+
+    // Set up event handlers with tracking
     if (pattern.onOpen) {
-      breaker.on('open', pattern.onOpen);
+      trackEventListener('open', pattern.onOpen);
     }
 
     if (pattern.onClose) {
-      breaker.on('close', pattern.onClose);
+      trackEventListener('close', pattern.onClose);
     }
 
     if (pattern.onHalfOpen) {
-      breaker.on('halfOpen', pattern.onHalfOpen);
+      trackEventListener('halfOpen', pattern.onHalfOpen);
     }
 
-    // Default event handlers for logging
-    breaker.on('open', async () => {
+    // Default event handlers for logging (with tracking)
+    trackEventListener('open', async () => {
+      resources.lastUsed = new Date();
       try {
         const logger = await createServerObservability();
         logger.log('warning', `Circuit breaker '${name}' opened`);
@@ -105,7 +205,8 @@ export class CircuitBreakerManager {
       }
     });
 
-    breaker.on('halfOpen', async () => {
+    trackEventListener('halfOpen', async () => {
+      resources.lastUsed = new Date();
       try {
         const logger = await createServerObservability();
         logger.log('info', `Circuit breaker '${name}' half-opened`);
@@ -114,7 +215,8 @@ export class CircuitBreakerManager {
       }
     });
 
-    breaker.on('close', async () => {
+    trackEventListener('close', async () => {
+      resources.lastUsed = new Date();
       try {
         const logger = await createServerObservability();
         logger.log('info', `Circuit breaker '${name}' closed`);
@@ -125,6 +227,94 @@ export class CircuitBreakerManager {
 
     this.breakers.set(name, breaker);
     return breaker;
+  }
+
+  /**
+   * Add a timer to the resource tracking for a specific circuit breaker
+   */
+  addTimer(name: string, timer: NodeJS.Timeout): boolean {
+    const breaker = this.breakers.get(name);
+    if (!breaker) return false;
+
+    const resources = this.resourceTracking.get(breaker);
+    if (resources) {
+      resources.timers.add(timer);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Add an interval to the resource tracking for a specific circuit breaker
+   */
+  addInterval(name: string, interval: NodeJS.Timeout): boolean {
+    const breaker = this.breakers.get(name);
+    if (!breaker) return false;
+
+    const resources = this.resourceTracking.get(breaker);
+    if (resources) {
+      resources.intervals.add(interval);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Add an abort controller to the resource tracking for a specific circuit breaker
+   */
+  addAbortController(name: string, controller: AbortController): boolean {
+    const breaker = this.breakers.get(name);
+    if (!breaker) return false;
+
+    const resources = this.resourceTracking.get(breaker);
+    if (resources) {
+      resources.abortControllers.add(controller);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Get resource usage statistics for all circuit breakers
+   */
+  getResourceStats(): Array<{
+    name: string;
+    eventListeners: number;
+    timers: number;
+    intervals: number;
+    abortControllers: number;
+    createdAt: Date;
+    lastUsed: Date;
+    age: number; // milliseconds since creation
+  }> {
+    const stats: Array<{
+      name: string;
+      eventListeners: number;
+      timers: number;
+      intervals: number;
+      abortControllers: number;
+      createdAt: Date;
+      lastUsed: Date;
+      age: number;
+    }> = [];
+
+    for (const [name, breaker] of this.breakers) {
+      const resources = this.resourceTracking.get(breaker);
+      if (resources) {
+        stats.push({
+          name,
+          eventListeners: resources.eventListeners.length,
+          timers: resources.timers.size,
+          intervals: resources.intervals.size,
+          abortControllers: resources.abortControllers.size,
+          createdAt: resources.createdAt,
+          lastUsed: resources.lastUsed,
+          age: Date.now() - resources.createdAt.getTime(),
+        });
+      }
+    }
+
+    return stats;
   }
 
   /**
@@ -145,7 +335,7 @@ export class CircuitBreakerManager {
   }
 
   /**
-   * Remove a circuit breaker
+   * Remove a circuit breaker with comprehensive resource cleanup
    */
   remove(name: string): boolean {
     const breaker = this.breakers.get(name);
@@ -153,16 +343,8 @@ export class CircuitBreakerManager {
       return false;
     }
 
-    // Remove all event listeners to prevent memory leaks
-    if ('removeAllListeners' in breaker && typeof breaker.removeAllListeners === 'function') {
-      (breaker as any).removeAllListeners();
-    }
-
-    // If the circuit breaker has a destroy method, call it
-    if (typeof (breaker as any).destroy === 'function') {
-      (breaker as any).destroy();
-    }
-
+    // Use comprehensive cleanup method
+    this.cleanupBreakerResources(breaker);
     this.breakers.delete(name);
     return true;
   }
@@ -271,7 +453,7 @@ const globalManager = new CircuitBreakerManager();
 /**
  * Create a circuit breaker decorator
  */
-export function CircuitBreaker(name: string, options: CircuitBreakerOptions = {}) {
+function CircuitBreaker(name: string, options: CircuitBreakerOptions = {}) {
   return function <_T extends (...args: any[]) => Promise<any>>(
     target: any,
     propertyName: string,
@@ -302,7 +484,7 @@ export function CircuitBreaker(name: string, options: CircuitBreakerOptions = {}
 /**
  * Get circuit breaker statistics
  */
-export function getCircuitBreakerStats(name?: string): any {
+function getCircuitBreakerStats(name?: string): any {
   if (name) {
     return globalManager.getStats(name);
   }
@@ -312,7 +494,7 @@ export function getCircuitBreakerStats(name?: string): any {
 /**
  * Reset circuit breaker(s)
  */
-export function resetCircuitBreaker(name?: string): boolean | void {
+function resetCircuitBreaker(name?: string): boolean | void {
   if (name) {
     return globalManager.reset(name);
   }
@@ -397,7 +579,7 @@ export const CircuitBreakerConfigs = {
 /**
  * Create a circuit breaker function with predefined configuration
  */
-export function createCircuitBreakerFn<T extends any[], R>(
+function createCircuitBreakerFn<T extends any[], R>(
   name: string,
   config: keyof typeof CircuitBreakerConfigs,
 ) {

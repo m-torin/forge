@@ -5,26 +5,26 @@
  * Supports streaming structured data with schema validation and partial updates.
  */
 
-import { logError, logInfo, logWarn } from '@repo/observability';
-import { type DeepPartial, type StreamObjectResult } from 'ai';
-import { z, type ZodSchema } from 'zod';
+import { logError, logInfo, logWarn } from "@repo/observability";
+import { type DeepPartial, type StreamObjectResult } from "ai";
+import { z, type ZodSchema } from "zod";
 
 // Re-export official AI SDK object streaming types
-export type { DeepPartial, StreamObjectResult } from 'ai';
+export type { DeepPartial, StreamObjectResult } from "ai";
 
 /**
  * Object stream event types following official AI SDK v5 specification
  */
 export type ObjectStreamEventType =
-  | 'object-start'
-  | 'object-delta'
-  | 'object-end'
-  | 'element-start'
-  | 'element-delta'
-  | 'element-end'
-  | 'validation-error'
-  | 'finish'
-  | 'error';
+  | "object-start"
+  | "object-delta"
+  | "object-end"
+  | "element-start"
+  | "element-delta"
+  | "element-end"
+  | "validation-error"
+  | "finish"
+  | "error";
 
 /**
  * Object stream event part structure
@@ -63,7 +63,10 @@ export interface ObjectStreamConfig<T> {
   /** Maximum retries for validation errors */
   maxValidationRetries?: number;
   /** Custom error handler */
-  onError?: (error: Error, context: { validationErrors?: z.ZodError[] }) => void;
+  onError?: (
+    error: Error,
+    context: { validationErrors?: z.ZodError[] },
+  ) => void;
 }
 
 /**
@@ -80,7 +83,12 @@ export function createObjectStreamHandler<T>(
   result: StreamObjectResult<T, T, any>,
   config: ObjectStreamConfig<T>,
 ) {
-  const { schema, validatePartials = false, maxValidationRetries = 3, onError } = config;
+  const {
+    schema,
+    validatePartials = false,
+    maxValidationRetries = 3,
+    onError,
+  } = config;
 
   let validationRetryCount = 0;
 
@@ -89,10 +97,12 @@ export function createObjectStreamHandler<T>(
      * Process partial object stream events
      * Following official AI SDK v5 pattern: result.partialObjectStream
      */
-    processPartialObjects: async (handlers: ObjectStreamEventHandlers<T>): Promise<void> => {
+    processPartialObjects: async (
+      handlers: ObjectStreamEventHandlers<T>,
+    ): Promise<void> => {
       try {
-        logInfo('Starting partial object stream processing', {
-          operation: 'process_partial_objects_start',
+        logInfo("Starting partial object stream processing", {
+          operation: "process_partial_objects_start",
           metadata: {
             validatePartials,
             maxValidationRetries,
@@ -101,7 +111,7 @@ export function createObjectStreamHandler<T>(
 
         for await (const partialObject of result.partialObjectStream) {
           const eventPart: ObjectStreamEventPart<T> = {
-            type: 'object-delta',
+            type: "object-delta",
             partialObject: partialObject as DeepPartial<T>,
           };
 
@@ -116,19 +126,19 @@ export function createObjectStreamHandler<T>(
                 validationRetryCount++;
 
                 if (validationRetryCount <= maxValidationRetries) {
-                  logWarn('Partial object validation failed, continuing...', {
-                    operation: 'partial_object_validation_warning',
+                  logWarn("Partial object validation failed, continuing...", {
+                    operation: "partial_object_validation_warning",
                     metadata: {
                       retryCount: validationRetryCount,
                       errors: error.issues,
                     },
                   });
 
-                  eventPart.type = 'validation-error';
+                  eventPart.type = "validation-error";
                   eventPart.error = error;
                 } else {
-                  logError('Max validation retries exceeded', {
-                    operation: 'partial_object_validation_max_retries',
+                  logError("Max validation retries exceeded", {
+                    operation: "partial_object_validation_max_retries",
                     metadata: {
                       retryCount: validationRetryCount,
                       errors: error.issues,
@@ -149,7 +159,9 @@ export function createObjectStreamHandler<T>(
               await handler(eventPart);
             } catch (handlerError) {
               const err =
-                handlerError instanceof Error ? handlerError : new Error(String(handlerError));
+                handlerError instanceof Error
+                  ? handlerError
+                  : new Error(String(handlerError));
               onError?.(err, {});
             }
           }
@@ -159,19 +171,20 @@ export function createObjectStreamHandler<T>(
         const finishHandler = handlers.finish;
         if (finishHandler) {
           await finishHandler({
-            type: 'finish',
-            finishReason: 'completed',
+            type: "finish",
+            finishReason: "completed",
           });
         }
 
-        logInfo('Partial object stream processing completed', {
-          operation: 'process_partial_objects_complete',
+        logInfo("Partial object stream processing completed", {
+          operation: "process_partial_objects_complete",
         });
       } catch (error) {
-        const streamError = error instanceof Error ? error : new Error(String(error));
+        const streamError =
+          error instanceof Error ? error : new Error(String(error));
 
-        logError('Partial object stream processing failed', {
-          operation: 'process_partial_objects_error',
+        logError("Partial object stream processing failed", {
+          operation: "process_partial_objects_error",
           error: streamError,
         });
 
@@ -181,7 +194,7 @@ export function createObjectStreamHandler<T>(
         const errorHandler = handlers.error;
         if (errorHandler) {
           await errorHandler({
-            type: 'error',
+            type: "error",
             error: streamError,
           });
         }
@@ -194,45 +207,50 @@ export function createObjectStreamHandler<T>(
      * Process element stream (for array objects)
      * Following official AI SDK v5 pattern: result.elementStream
      */
-    processElements: async (handlers: ObjectStreamEventHandlers<T>): Promise<void> => {
-      if (!('elementStream' in result)) {
-        logWarn('Element stream not available - object is not in array mode', {
-          operation: 'process_elements_not_available',
+    processElements: async (
+      handlers: ObjectStreamEventHandlers<T>,
+    ): Promise<void> => {
+      if (!("elementStream" in result)) {
+        logWarn("Element stream not available - object is not in array mode", {
+          operation: "process_elements_not_available",
         });
         return;
       }
 
       try {
-        logInfo('Starting element stream processing', {
-          operation: 'process_elements_start',
+        logInfo("Starting element stream processing", {
+          operation: "process_elements_start",
         });
 
         for await (const element of (result as any).elementStream) {
           const eventPart: ObjectStreamEventPart<T> = {
-            type: 'element-delta',
+            type: "element-delta",
             element,
           };
 
-          const handler = handlers['element-delta'];
+          const handler = handlers["element-delta"];
           if (handler) {
             try {
               await handler(eventPart);
             } catch (handlerError) {
               const err =
-                handlerError instanceof Error ? handlerError : new Error(String(handlerError));
+                handlerError instanceof Error
+                  ? handlerError
+                  : new Error(String(handlerError));
               onError?.(err, {});
             }
           }
         }
 
-        logInfo('Element stream processing completed', {
-          operation: 'process_elements_complete',
+        logInfo("Element stream processing completed", {
+          operation: "process_elements_complete",
         });
       } catch (error) {
-        const streamError = error instanceof Error ? error : new Error(String(error));
+        const streamError =
+          error instanceof Error ? error : new Error(String(error));
 
-        logError('Element stream processing failed', {
-          operation: 'process_elements_error',
+        logError("Element stream processing failed", {
+          operation: "process_elements_error",
           error: streamError,
         });
 
@@ -245,24 +263,27 @@ export function createObjectStreamHandler<T>(
      * Process text stream (JSON representation)
      * Following official AI SDK v5 pattern: result.textStream
      */
-    processTextStream: async (onTextChunk: (chunk: string) => void): Promise<void> => {
+    processTextStream: async (
+      onTextChunk: (chunk: string) => void,
+    ): Promise<void> => {
       try {
-        logInfo('Starting text stream processing', {
-          operation: 'process_text_stream_start',
+        logInfo("Starting text stream processing", {
+          operation: "process_text_stream_start",
         });
 
         for await (const textChunk of result.textStream) {
           onTextChunk(textChunk);
         }
 
-        logInfo('Text stream processing completed', {
-          operation: 'process_text_stream_complete',
+        logInfo("Text stream processing completed", {
+          operation: "process_text_stream_complete",
         });
       } catch (error) {
-        const streamError = error instanceof Error ? error : new Error(String(error));
+        const streamError =
+          error instanceof Error ? error : new Error(String(error));
 
-        logError('Text stream processing failed', {
-          operation: 'process_text_stream_error',
+        logError("Text stream processing failed", {
+          operation: "process_text_stream_error",
           error: streamError,
         });
 
@@ -277,27 +298,30 @@ export function createObjectStreamHandler<T>(
      */
     getFinalObject: async (): Promise<T> => {
       try {
-        logInfo('Waiting for final object', {
-          operation: 'get_final_object_start',
+        logInfo("Waiting for final object", {
+          operation: "get_final_object_start",
         });
 
         const finalObject = await result.object;
         const validated = schema.parse(finalObject);
 
-        logInfo('Final object retrieved and validated', {
-          operation: 'get_final_object_complete',
+        logInfo("Final object retrieved and validated", {
+          operation: "get_final_object_complete",
         });
 
         return validated;
       } catch (error) {
-        const finalError = error instanceof Error ? error : new Error(String(error));
+        const finalError =
+          error instanceof Error ? error : new Error(String(error));
 
-        logError('Failed to get final object', {
-          operation: 'get_final_object_error',
+        logError("Failed to get final object", {
+          operation: "get_final_object_error",
           error: finalError,
         });
 
-        onError?.(finalError, { validationErrors: error instanceof z.ZodError ? [error] : [] });
+        onError?.(finalError, {
+          validationErrors: error instanceof z.ZodError ? [error] : [],
+        });
         throw finalError;
       }
     },
@@ -307,8 +331,8 @@ export function createObjectStreamHandler<T>(
      */
     toStreamResponse: (): Response => {
       try {
-        logInfo('Creating object stream response', {
-          operation: 'create_object_stream_response',
+        logInfo("Creating object stream response", {
+          operation: "create_object_stream_response",
         });
 
         return new Response(
@@ -316,12 +340,13 @@ export function createObjectStreamHandler<T>(
             async start(controller) {
               try {
                 for await (const part of result.fullStream) {
-                  const chunk = JSON.stringify(part) + '\n';
+                  const chunk = JSON.stringify(part) + "\n";
                   controller.enqueue(new TextEncoder().encode(chunk));
                 }
                 controller.close();
               } catch (error) {
-                const streamError = error instanceof Error ? error : new Error(String(error));
+                const streamError =
+                  error instanceof Error ? error : new Error(String(error));
                 onError?.(streamError, {});
                 controller.error(streamError);
               }
@@ -329,17 +354,18 @@ export function createObjectStreamHandler<T>(
           }),
           {
             headers: {
-              'Content-Type': 'application/json; charset=utf-8',
-              'Cache-Control': 'no-cache',
-              Connection: 'keep-alive',
+              "Content-Type": "application/json; charset=utf-8",
+              "Cache-Control": "no-cache",
+              Connection: "keep-alive",
             },
           },
         );
       } catch (error) {
-        const responseError = error instanceof Error ? error : new Error(String(error));
+        const responseError =
+          error instanceof Error ? error : new Error(String(error));
 
-        logError('Failed to create object stream response', {
-          operation: 'create_object_stream_response_error',
+        logError("Failed to create object stream response", {
+          operation: "create_object_stream_response_error",
           error: responseError,
         });
 
@@ -359,7 +385,11 @@ export const objectStreamingPatterns = {
    */
   createProgressTracker: <T>(
     schema: ZodSchema<T>,
-    onProgress: (progress: { current: number; total: number; percentage: number }) => void,
+    onProgress: (progress: {
+      current: number;
+      total: number;
+      percentage: number;
+    }) => void,
   ) => {
     let current = 0;
     let total = 100; // Default total, can be updated
@@ -416,7 +446,10 @@ export const objectStreamingPatterns = {
   /**
    * Create a batched object processor
    */
-  createBatchProcessor: <T>(batchSize: number = 10, onBatch: (batch: DeepPartial<T>[]) => void) => {
+  createBatchProcessor: <T>(
+    batchSize: number = 10,
+    onBatch: (batch: DeepPartial<T>[]) => void,
+  ) => {
     let batch: DeepPartial<T>[] = [];
 
     return {
@@ -452,7 +485,7 @@ export const objectStreamingPatterns = {
 export function createObjectStream<T>(
   result: StreamObjectResult<T, T, any>,
   schema: ZodSchema<T>,
-  options: Omit<ObjectStreamConfig<T>, 'schema'> = {},
+  options: Omit<ObjectStreamConfig<T>, "schema"> = {},
 ) {
   return createObjectStreamHandler(result, { schema, ...options });
 }

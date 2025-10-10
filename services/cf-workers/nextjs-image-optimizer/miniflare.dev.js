@@ -74,8 +74,7 @@ async function start() {
 
   // Handle shutdown
   process.on("SIGINT", () => {
-    console.log("
-Shutting down server...");
+    console.log("\nShutting down server...");
     server.close();
     process.exit(0);
   });

@@ -45,7 +45,7 @@
   ```bash
   # Optional - for automated AI translations
   DEEPSEEK_API_KEY=your_deepseek_api_key
-  
+
   # Environment detection
   NODE_ENV=development
   NEXT_PUBLIC_NODE_ENV=development
@@ -107,6 +107,87 @@
       </>
     );
   }
+  ```
+
+- _Dictionary Structure:_
+
+  ```json
+  {
+    "common": { "locale": "English", "language": "Language" },
+    "web": {
+      "global": { "primaryCta": "Book a call" },
+      "header": { "home": "Home", "product": { "title": "Product" } },
+      "home": { "meta": { "title": "Transform Your Business" } }
+    }
+  }
+  ```
+
+- _Automated Translation:_
+
+  ```bash
+  # Generate translations using Languine AI
+  pnpm translate
+  ```
+
+- _AI Hints:_
+
+  ```typescript
+  // Primary: Next.js App Router i18n with automated translations
+  import {
+    getDictionary,
+    internationalizationMiddleware,
+  } from "@repo/internationalization/server/next";
+  // Client: import { Link } from "@repo/internationalization/client/next"
+  // ❌ NEVER: Hardcode strings or ignore locale routing
+  ```
+
+- _Key Features:_
+  - **Next.js App Router**: Built for App Router with locale detection
+    middleware
+  - **Dictionary System**: Type-safe dictionary loading with automatic fallbacks
+    to English
+  - **Automated Translation**: AI-powered translation generation with Languine
+  - **Locale-Aware Components**: Link component with automatic locale prefix
+    handling
+  - **5 Supported Languages**: English (default), Spanish, French, German,
+    Portuguese
+  - **Graceful Fallbacks**: Automatic fallback to English for unsupported
+    locales
+
+- _Supported Locales:_
+  - `en` (English - default), `es` (Spanish), `fr` (French), `de` (German), `pt`
+    (Portuguese)
+
+- _Environment Variables:_
+
+  ```bash
+  # Optional - for automated AI translations
+  DEEPSEEK_API_KEY=your_deepseek_api_key
+
+  # Environment detection
+  NODE_ENV=development
+  NEXT_PUBLIC_NODE_ENV=development
+  ```
+
+- _Quick Setup:_
+
+  ```typescript
+  // 1. Middleware setup
+  import { internationalizationMiddleware } from "@repo/internationalization/server/next";
+  export function middleware(request: NextRequest) {
+    return internationalizationMiddleware(request);
+  }
+
+  // 2. Server component usage
+  import { getDictionary } from "@repo/internationalization/server/next";
+  export default async function Page({ params: { locale } }) {
+    const dict = await getDictionary(locale);
+    return <h1>{dict.web.home.meta.title}</h1>;
+  }
+
+  // 3. Locale-aware navigation
+  import { Link } from "@repo/internationalization/client/next";
+  <Link href="/products">Products</Link> // Renders as /es/products when locale is 'es'
   ```
 
 - _Dictionary Structure:_

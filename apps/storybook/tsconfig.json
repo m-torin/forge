@@ -10,6 +10,13 @@
       "#/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "next.config.ts", "**/*.ts", "**/*.tsx", ".storybook/**/*"],
+  "include": [
+    "next-env.d.ts",
+    "next.config.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".storybook/**/*",
+    "types/**/*.d.ts"
+  ],
   "exclude": ["node_modules", "storybook-static"]
 }

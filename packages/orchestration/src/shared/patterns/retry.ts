@@ -17,7 +17,7 @@ export interface RetryOptions extends Partial<RetryPattern> {
 /**
  * Calculate delay for a specific attempt using different strategies
  */
-export function calculateDelay(
+function calculateDelay(
   attempt: number,
   pattern: Pick<RetryPattern, 'baseDelay' | 'jitter' | 'maxDelay' | 'strategy'>,
 ): number {
@@ -57,7 +57,7 @@ export function calculateDelay(
 /**
  * Create a retry decorator for class methods
  */
-export function Retry(options: RetryOptions = {}) {
+function Retry(options: RetryOptions = {}) {
   return function <_T extends (...args: any[]) => Promise<any>>(
     _target: any,
     _propertyName: string,
@@ -257,7 +257,7 @@ export const RetryStrategies = {
 /**
  * Create a retry function with predefined strategy
  */
-export function createRetryFn<T>(strategy: keyof typeof RetryStrategies) {
+function createRetryFn<T>(strategy: keyof typeof RetryStrategies) {
   const options = RetryStrategies[strategy];
 
   return (fn: () => Promise<T>, overrides?: Partial<RetryOptions>) => {
@@ -268,6 +268,110 @@ export function createRetryFn<T>(strategy: keyof typeof RetryStrategies) {
 // Export commonly used retry functions
 export const retryFast = createRetryFn('fast');
 export const retryStandard = createRetryFn('standard');
-export const retryPatient = createRetryFn('patient');
+const retryPatient = createRetryFn('patient');
 export const retryNetwork = createRetryFn('network');
-export const retryDatabase = createRetryFn('database');
+const retryDatabase = createRetryFn('database');
+
+/**
+ * Advanced retry controller using Promise.withResolvers() (ES2023/Node 22+)
+ * Provides fine-grained control over retry timing and conditions
+ */
+class AdvancedRetryController<T> {
+  private promise: Promise<T>;
+  private resolve: (value: T | PromiseLike<T>) => void;
+  private reject: (reason?: any) => void;
+  private attemptCount = 0;
+  private maxAttempts: number;
+  private baseDelay: number;
+  private isAborted = false;
+
+  constructor(maxAttempts = 3, baseDelay = 1000) {
+    this.maxAttempts = maxAttempts;
+    this.baseDelay = baseDelay;
+
+    // Use Promise.withResolvers() (ES2023) for modern promise control
+    const { promise, resolve, reject } = Promise.withResolvers<T>();
+    this.promise = promise;
+    this.resolve = resolve;
+    this.reject = reject;
+  }
+
+  /**
+   * Attempt to execute the operation with retry logic
+   */
+  async attempt(operation: () => Promise<T>): Promise<void> {
+    if (this.isAborted) {
+      this.reject(new Error('Operation was aborted'));
+      return;
+    }
+
+    this.attemptCount++;
+
+    try {
+      const result = await operation();
+      this.resolve(result);
+    } catch (error) {
+      if (this.attemptCount >= this.maxAttempts) {
+        this.reject(error);
+      } else {
+        // Schedule next attempt with exponential backoff
+        const delay = this.baseDelay * Math.pow(2, this.attemptCount - 1);
+        setTimeout(async () => {
+          try {
+            await this.attempt(operation);
+          } catch {
+            // Error handling is done within the attempt method
+          }
+        }, delay);
+      }
+    }
+  }
+
+  /**
+   * Abort the retry operation
+   */
+  abort(reason = 'Operation aborted'): void {
+    this.isAborted = true;
+    this.reject(new Error(reason));
+  }
+
+  /**
+   * Get the promise that resolves when the operation succeeds or all retries are exhausted
+   */
+  getPromise(): Promise<T> {
+    return this.promise;
+  }
+
+  /**
+   * Get current attempt statistics
+   */
+  getStats(): { attemptCount: number; maxAttempts: number; isAborted: boolean } {
+    return {
+      attemptCount: this.attemptCount,
+      maxAttempts: this.maxAttempts,
+      isAborted: this.isAborted,
+    };
+  }
+}
+
+/**
+ * Create a retry controller for more advanced retry scenarios
+ *
+ * @example
+ * ```typescript
+ * const controller = createAdvancedRetry<string>(3, 1000);
+ *
+ * // Start the retry process
+ * controller.attempt(async () => {
+ *   const response = await fetch('/api/data');
+ *   if (!response.ok) throw new Error('Request failed');
+ *   return response.text();
+ * });
+ *
+ * // Handle result or abort if needed
+ * const result = await controller.getPromise();
+ * ```
+ */
+function createAdvancedRetry<T>(maxAttempts = 3, baseDelay = 1000): AdvancedRetryController<T> {
+  return new AdvancedRetryController<T>(maxAttempts, baseDelay);
+}

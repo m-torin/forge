@@ -3,7 +3,16 @@
 
 setup:
   # Monorepo project
-  - path: packages/database
+  - path: packages/pkgs-databases/upstash-vector
+    project: monorepo
+    config: dev
+  - path: packages/pkgs-databases/upstash-redis
+    project: monorepo
+    config: dev
+  - path: packages/pkgs-databases/prisma
+    project: monorepo
+    config: dev
+  - path: packages/pkgs-databases/firestore
     project: monorepo
     config: dev
   - path: apps/docs
@@ -18,6 +27,11 @@ setup:
   - path: apps/studio
     project: monorepo
     config: dev
-  - path: apps/ai-chatbot
+  - path: apps/mantine-tailwind-template
     project: monorepo
+    config: dev
+
+  # AI Chatbot project
+  - path: apps/ai-chatbot
+    project: next-app-ai-chatbot
     config: dev

@@ -2,10 +2,10 @@
  * Simple tests for shared email utilities
  */
 
-import { describe, expect, vi } from 'vitest';
+import { describe, expect, vi } from "vitest";
 
 // Mock the external email dependencies
-vi.mock('@repo/email/server', () => ({
+vi.mock("@repo/email/server", () => ({
   sendApiKeyCreatedEmail: vi.fn(),
   sendMagicLinkEmail: vi.fn(),
   sendOrganizationInvitationEmail: vi.fn(),
@@ -14,16 +14,16 @@ vi.mock('@repo/email/server', () => ({
   sendWelcomeEmail: vi.fn(),
 }));
 
-vi.mock('@repo/observability', () => ({
+vi.mock("@repo/observability", () => ({
   logError: vi.fn(),
 }));
 
-vi.mock('server-only', () => ({}));
+vi.mock("server-only", () => ({}));
 
-describe('shared email utilities', () => {
-  describe('basic structure', () => {
-    test('should export email functions', async () => {
-      const emailModule = await import('../../src/shared/email');
+describe("shared email utilities", () => {
+  describe("basic structure", () => {
+    test("should export email functions", async () => {
+      const emailModule = await import("../../src/shared/email");
 
       // Test that key functions exist
       expect(emailModule.sendVerificationEmail).toBeDefined();
@@ -32,24 +32,24 @@ describe('shared email utilities', () => {
       expect(emailModule.sendApiKeyCreatedEmail).toBeDefined();
     });
 
-    test('should have proper function types', async () => {
-      const emailModule = await import('../../src/shared/email');
+    test("should have proper function types", async () => {
+      const emailModule = await import("../../src/shared/email");
 
-      expect(typeof emailModule.sendVerificationEmail).toBe('function');
-      expect(typeof emailModule.sendWelcomeEmail).toBe('function');
-      expect(typeof emailModule.sendPasswordResetEmail).toBe('function');
-      expect(typeof emailModule.sendApiKeyCreatedEmail).toBe('function');
+      expect(typeof emailModule.sendVerificationEmail).toBe("function");
+      expect(typeof emailModule.sendWelcomeEmail).toBe("function");
+      expect(typeof emailModule.sendPasswordResetEmail).toBe("function");
+      expect(typeof emailModule.sendApiKeyCreatedEmail).toBe("function");
     });
   });
 
   // Mark complex email integration tests as todo
-  describe.todo('email integration', () => {
-    test.todo('should send verification emails with correct parameters');
-    test.todo('should send welcome emails');
-    test.todo('should send password reset emails');
-    test.todo('should send API key creation emails');
-    test.todo('should send organization invitation emails');
-    test.todo('should send magic link emails');
-    test.todo('should handle email sending errors');
+  describe.todo("email integration", () => {
+    test.todo("should send verification emails with correct parameters");
+    test.todo("should send welcome emails");
+    test.todo("should send password reset emails");
+    test.todo("should send API key creation emails");
+    test.todo("should send organization invitation emails");
+    test.todo("should send magic link emails");
+    test.todo("should handle email sending errors");
   });
 });

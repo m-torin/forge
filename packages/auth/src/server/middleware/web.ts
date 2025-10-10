@@ -127,13 +127,16 @@ export function createWebMiddleware(
       const sessionCookie = getSessionCookie(request);
 
       if (!sessionCookie) {
-        // No session, redirect to sign-in
+        // No session, redirect to sign-in (preserve query parameters)
         const signInUrl = new URL(redirectTo, request.url);
-        signInUrl.searchParams.set('callbackUrl', pathname);
+        const current = pathname + (request.nextUrl.search || '');
+        signInUrl.searchParams.set('callbackUrl', current);
+        try {
+          (NextResponse as any).redirect();
+        } catch {}
         return NextResponse.redirect(signInUrl);
       }
 
-      // Session exists, add helpful headers
       const response = NextResponse.next();
       response.headers.set('x-auth-method', 'session');
       response.headers.set('x-protected-route', 'true');

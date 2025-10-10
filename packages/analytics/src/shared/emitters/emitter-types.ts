@@ -162,7 +162,7 @@ export interface EmitterIntegrations {
 // Base payload that all events extend from (Common Fields)
 export interface EmitterBasePayload {
   // Type of message, corresponding to the API method
-  type: 'identify' | 'track' | 'page' | 'screen' | 'group' | 'alias';
+  type: "identify" | "track" | "page" | "screen" | "group" | "alias";
 
   anonymousId?: string;
   // Identity fields (at least one required)
@@ -186,38 +186,38 @@ export interface EmitterBasePayload {
 // Specific payload types for each method
 export interface EmitterIdentifyPayload extends EmitterBasePayload {
   traits?: Record<string, any>;
-  type: 'identify';
+  type: "identify";
   userId: string;
 }
 
 export interface EmitterTrackPayload extends EmitterBasePayload {
   event: string;
   properties?: Record<string, any>;
-  type: 'track';
+  type: "track";
 }
 
 export interface EmitterPagePayload extends EmitterBasePayload {
   category?: string;
   name?: string;
   properties?: Record<string, any>;
-  type: 'page';
+  type: "page";
 }
 
 export interface EmitterScreenPayload extends EmitterBasePayload {
   name?: string;
   properties?: Record<string, any>;
-  type: 'screen';
+  type: "screen";
 }
 
 export interface EmitterGroupPayload extends EmitterBasePayload {
   groupId: string;
   traits?: Record<string, any>;
-  type: 'group';
+  type: "group";
 }
 
 export interface EmitterAliasPayload extends EmitterBasePayload {
   previousId: string;
-  type: 'alias';
+  type: "alias";
   userId: string;
 }
 

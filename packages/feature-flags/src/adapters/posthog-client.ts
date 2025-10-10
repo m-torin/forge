@@ -44,7 +44,10 @@ export function createPostHogClientAdapter(
     options.postHogOptions?.host || env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com';
 
   if (!postHogKey) {
-    logWarn('PostHog API key not configured - feature flags will return false');
+    const debug = env.VERCEL_ANALYTICS_DEBUG === true;
+    if (debug) {
+      logWarn('PostHog API key not configured - feature flags will return false');
+    }
     // Return a no-op adapter that returns false for all flags
     return {
       isFeatureEnabled: () => ({

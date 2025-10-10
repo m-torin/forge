@@ -10,7 +10,7 @@ variable "doppler_token" {
 variable "domain" {
   description = "Primary domain for the application"
   type        = string
-  default     = "letsfindmy.com"
+  default     = "forge.com"
 }
 
 # Optional overrides for when not using Doppler

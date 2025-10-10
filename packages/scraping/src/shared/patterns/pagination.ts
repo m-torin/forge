@@ -19,7 +19,7 @@ import { PaginationOptions, PaginationResult } from './types';
  * Scrape with infinite scroll pagination
  * Requires browser automation
  */
-export async function scrapeWithInfiniteScroll(
+async function _scrapeWithInfiniteScroll(
   url: string,
   selectors: SelectorMap,
   options: ScrapeOptions & {
@@ -125,7 +125,7 @@ export async function scrapeWithInfiniteScroll(
 /**
  * Scrape with numeric pagination (page=1, page=2, etc.)
  */
-export async function scrapeWithNumericPagination(
+async function _scrapeWithNumericPagination(
   baseUrl: string,
   selectors: SelectorMap,
   options: ScrapeOptions & {

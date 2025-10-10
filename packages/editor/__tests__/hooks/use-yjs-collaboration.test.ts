@@ -1,9 +1,9 @@
-import { useYjsCollaboration } from '#/hooks/use-yjs-collaboration';
-import { renderHook, waitFor } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { useYjsCollaboration } from "#/hooks/use-yjs-collaboration";
+import { renderHook, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock Y.js and WebSocket dependencies
-vi.mock('yjs', () => ({
+vi.mock("yjs", () => ({
   Doc: vi.fn(() => ({
     on: vi.fn(),
     off: vi.fn(),
@@ -12,7 +12,7 @@ vi.mock('yjs', () => ({
   })),
 }));
 
-vi.mock('y-websocket', () => ({
+vi.mock("y-websocket", () => ({
   WebsocketProvider: vi.fn(() => ({
     on: vi.fn(),
     off: vi.fn(),
@@ -29,7 +29,7 @@ vi.mock('y-websocket', () => ({
   })),
 }));
 
-vi.mock('y-indexeddb', () => ({
+vi.mock("y-indexeddb", () => ({
   IndexeddbPersistence: vi.fn(() => ({
     on: vi.fn(),
     off: vi.fn(),
@@ -37,13 +37,13 @@ vi.mock('y-indexeddb', () => ({
   })),
 }));
 
-vi.mock('@tiptap/react', () => ({
+vi.mock("@tiptap/react", () => ({
   useEditor: vi.fn(() => ({
     commands: {
       setContent: vi.fn(),
     },
     setEditable: vi.fn(),
-    getHTML: vi.fn(() => '<p>Test content</p>'),
+    getHTML: vi.fn(() => "<p>Test content</p>"),
     isActive: vi.fn(() => false),
     can: vi.fn(() => ({ undo: vi.fn(() => true), redo: vi.fn(() => true) })),
     chain: vi.fn(() => ({
@@ -61,7 +61,7 @@ vi.mock('@tiptap/react', () => ({
   })),
 }));
 
-describe('useYjsCollaboration', () => {
+describe("useYjsCollaboration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -70,11 +70,11 @@ describe('useYjsCollaboration', () => {
     vi.restoreAllMocks();
   });
 
-  it('initializes with default options', async () => {
+  it("initializes with default options", async () => {
     const { result } = renderHook(() =>
       useYjsCollaboration({
-        documentId: 'test-doc',
-        userId: 'user-1',
+        documentId: "test-doc",
+        userId: "user-1",
       }),
     );
 
@@ -87,12 +87,12 @@ describe('useYjsCollaboration', () => {
     expect(result.current.error).toBeNull();
   });
 
-  it('handles connection status changes', async () => {
+  it("handles connection status changes", async () => {
     const { result } = renderHook(() =>
       useYjsCollaboration({
-        documentId: 'test-doc',
-        userId: 'user-1',
-        websocketUrl: 'ws://localhost:1234',
+        documentId: "test-doc",
+        userId: "user-1",
+        websocketUrl: "ws://localhost:1234",
       }),
     );
 
@@ -104,12 +104,12 @@ describe('useYjsCollaboration', () => {
     expect(result.current.isConnected).toBe(false);
   });
 
-  it('creates provider with custom websocket URL', async () => {
+  it("creates provider with custom websocket URL", async () => {
     const { result } = renderHook(() =>
       useYjsCollaboration({
-        documentId: 'test-doc',
-        userId: 'user-1',
-        websocketUrl: 'ws://custom-server:8080',
+        documentId: "test-doc",
+        userId: "user-1",
+        websocketUrl: "ws://custom-server:8080",
       }),
     );
 
@@ -120,11 +120,11 @@ describe('useYjsCollaboration', () => {
     expect(result.current.provider).toBeDefined();
   });
 
-  it('disables persistence when enablePersistence is false', async () => {
+  it("disables persistence when enablePersistence is false", async () => {
     const { result } = renderHook(() =>
       useYjsCollaboration({
-        documentId: 'test-doc',
-        userId: 'user-1',
+        documentId: "test-doc",
+        userId: "user-1",
         enablePersistence: false,
       }),
     );
@@ -136,11 +136,11 @@ describe('useYjsCollaboration', () => {
     expect(result.current.persistence).toBeNull();
   });
 
-  it('creates persistence when enablePersistence is true', async () => {
+  it("creates persistence when enablePersistence is true", async () => {
     const { result } = renderHook(() =>
       useYjsCollaboration({
-        documentId: 'test-doc',
-        userId: 'user-1',
+        documentId: "test-doc",
+        userId: "user-1",
         enablePersistence: true,
       }),
     );
@@ -152,11 +152,11 @@ describe('useYjsCollaboration', () => {
     expect(result.current.persistence).toBeDefined();
   });
 
-  it('provides disconnect function', async () => {
+  it("provides disconnect function", async () => {
     const { result } = renderHook(() =>
       useYjsCollaboration({
-        documentId: 'test-doc',
-        userId: 'user-1',
+        documentId: "test-doc",
+        userId: "user-1",
       }),
     );
 
@@ -164,7 +164,7 @@ describe('useYjsCollaboration', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    expect(typeof result.current.disconnect).toBe('function');
+    expect(typeof result.current.disconnect).toBe("function");
 
     // Test disconnect functionality
     result.current.disconnect();
@@ -173,11 +173,11 @@ describe('useYjsCollaboration', () => {
     expect(result.current.isConnected).toBe(false);
   });
 
-  it('provides reconnect function', async () => {
+  it("provides reconnect function", async () => {
     const { result } = renderHook(() =>
       useYjsCollaboration({
-        documentId: 'test-doc',
-        userId: 'user-1',
+        documentId: "test-doc",
+        userId: "user-1",
       }),
     );
 
@@ -185,17 +185,17 @@ describe('useYjsCollaboration', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    expect(typeof result.current.reconnect).toBe('function');
+    expect(typeof result.current.reconnect).toBe("function");
   });
 
-  it('handles user information correctly', async () => {
+  it("handles user information correctly", async () => {
     const { result } = renderHook(() =>
       useYjsCollaboration({
-        documentId: 'test-doc',
-        userId: 'user-1',
-        userName: 'John Doe',
-        userColor: '#FF6B6B',
-        userAvatar: 'https://example.com/avatar.jpg',
+        documentId: "test-doc",
+        userId: "user-1",
+        userName: "John Doe",
+        userColor: "#FF6B6B",
+        userAvatar: "https://example.com/avatar.jpg",
       }),
     );
 
@@ -206,13 +206,13 @@ describe('useYjsCollaboration', () => {
     expect(result.current.editor).toBeDefined();
   });
 
-  it('handles extensions correctly', async () => {
-    const mockExtension = { name: 'custom-extension' };
+  it("handles extensions correctly", async () => {
+    const mockExtension = { name: "custom-extension" };
 
     const { result } = renderHook(() =>
       useYjsCollaboration({
-        documentId: 'test-doc',
-        userId: 'user-1',
+        documentId: "test-doc",
+        userId: "user-1",
         extensions: [mockExtension],
       }),
     );
@@ -224,11 +224,11 @@ describe('useYjsCollaboration', () => {
     expect(result.current.editor).toBeDefined();
   });
 
-  it('cleans up on unmount', async () => {
+  it("cleans up on unmount", async () => {
     const { result, unmount } = renderHook(() =>
       useYjsCollaboration({
-        documentId: 'test-doc',
-        userId: 'user-1',
+        documentId: "test-doc",
+        userId: "user-1",
       }),
     );
 
@@ -236,12 +236,12 @@ describe('useYjsCollaboration', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    const disconnectSpy = vi.spyOn(result.current, 'disconnect');
+    const disconnectSpy = vi.spyOn(result.current, "disconnect");
 
     unmount();
 
     // Note: Due to how the hook is structured, we can't directly test
     // the cleanup function, but we can verify the disconnect method exists
-    expect(typeof result.current.disconnect).toBe('function');
+    expect(typeof result.current.disconnect).toBe("function");
   });
 });

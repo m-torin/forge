@@ -11,23 +11,22 @@ essential patterns, commands, and workflows.
 
 ## Package Overview
 
-| Package                      | Purpose                        | Layer | Edge Support | Key Import                                               |
-| ---------------------------- | ------------------------------ | ----- | ------------ | -------------------------------------------------------- |
-| `@repo/auth`                 | Better Auth with organizations | 5     | ✅           | `auth` from `/server/next`                               |
-| `@repo/database`             | Prisma ORM + generated types   | 3     | ❌           | `import { prisma }` from `/prisma/server/next`           |
-| `@repo/analytics`            | PostHog/GA with feature flags  | 4     | ✅           | `import { analytics }`                                   |
-| `@repo/observability`        | Sentry error tracking          | 2     | ✅           | `createServerObservability` from `/server/next`          |
-| `@repo/notifications`        | Mantine notifications          | 4     | ✅           | `/mantine-notifications`                                 |
-| `@repo/email`                | Email templates and sending    | 4     | ❌           | `import { sendEmail }`                                   |
-| `@repo/storage`              | Cloudflare R2/Images           | 5.5   | ✅           | `import { initializeStorage, createStorageProvider }`    |
-| `@repo/payments`             | Stripe integration             | 5     | ❌           | `import { stripe }`                                      |
-| `@repo/ai`                   | AI/ML functionality            | 5.5   | ✅           | `import { getBestModelForTask }` from `/models`          |
-| `@repo/scraping`             | Web scraping utilities         | 5.5   | ❌           | `import { scraper }`                                     |
-| `@repo/feature-flags`        | Feature flag management        | 4     | ✅           | `import { flags }`                                       |
-| `@repo/internationalization` | i18n support                   | 5     | ✅           | `import { i18n }`                                        |
-| `@repo/seo`                  | SEO utilities                  | 5     | ✅           | `import { createStructuredData, JsonLd }`                |
-| `@repo/links`                | Link management                | 5     | ✅           | `import { createServerLinkManager }` from `/server/next` |
-| `@repo/orchestration`        | Workflow management            | 5     | ❌           | `import { workflow }`                                    |
+| Package                      | Purpose                        | Layer | Edge Support | Key Import                                |
+| ---------------------------- | ------------------------------ | ----- | ------------ | ----------------------------------------- |
+| `@repo/auth`                 | Better Auth with organizations | 5     | ✅           | `auth` from `/server/next`                |
+| `@repo/db-prisma`            | Prisma ORM + generated types   | 3     | ❌           | `import { db }`                           |
+| `@repo/analytics`            | PostHog/GA with feature flags  | 4     | ✅           | `import { analytics }`                    |
+| `@repo/observability`        | Sentry error tracking          | 2     | ✅           | `createObservability` from `/server/next` |
+| `@repo/email`                | Email templates and sending    | 4     | ❌           | `import { sendEmail }`                    |
+| `@repo/storage`              | Cloudflare R2/Images           | 5.5   | ✅           | `import { storage }`                      |
+| `@repo/payments`             | Stripe integration             | 5     | ❌           | `import { stripe }`                       |
+| `@repo/ai`                   | AI/ML functionality            | 5.5   | ✅           | `import { ai }`                           |
+| `@repo/scraping`             | Web scraping utilities         | 5.5   | ❌           | `import { scraper }`                      |
+| `@repo/feature-flags`        | Feature flag management        | 4     | ✅           | `import { flags }`                        |
+| `@repo/internationalization` | i18n support                   | 5     | ✅           | `import { i18n }`                         |
+| `@repo/seo`                  | SEO utilities                  | 5     | ✅           | `import { seo }`                          |
+| `@repo/links`                | Link management                | 5     | ✅           | `import { links }`                        |
+| `@repo/orchestration`        | Workflow management            | 5     | ❌           | `import { workflow }`                     |
 
 ## Import Patterns & Decision Trees
 
@@ -69,7 +68,7 @@ import { createAuth } from "@repo/auth/server";
 ```
 What type of code is this?
 ├─ UI Component
-│  ├─ Reusable across apps? → /packages/design-system
+│  ├─ Reusable across apps? → /packages/uix-system
 │  └─ App-specific? → /apps/[app]/components
 ├─ Business Logic
 │  ├─ Authentication? → /packages/auth
@@ -81,7 +80,7 @@ What type of code is this?
 │  ├─ ESLint? → /packages/eslint-config
 │  └─ Build-related? → /packages/next-config
 └─ New Feature
-   ├─ Needs database? → Start with schema in /packages/database
+   ├─ Needs database? → Start with schema in /packages/pkgs-databases/prisma
    ├─ Needs API? → Create server action
    └─ Just UI? → Start with component
 ```
@@ -206,7 +205,7 @@ export function safeEnv() {
 
 import { z } from "zod";
 import { auth } from "@repo/auth/server/next";
-import { prisma } from "@repo/database/prisma/server/next";
+import { db } from "@repo/db-prisma";
 import { revalidatePath } from "next/cache";
 
 const schema = z.object({
@@ -226,7 +225,7 @@ export async function createFeature(formData: FormData) {
     const validated = schema.parse(Object.fromEntries(formData));
 
     // Database operation
-    const result = await prisma.feature.create({
+    const result = await db.feature.create({
       data: {
         ...validated,
         userId: session.user.id
@@ -253,9 +252,9 @@ export async function createFeature(formData: FormData) {
 # Use Grep tool to search for existing patterns
 
 # 2. Update Prisma schema (if needed)
-# Edit packages/database/src/prisma/schemas/*.prisma files, then:
+# Edit packages/db-prisma/src/prisma/schemas/*.prisma files, then:
 pnpm migrate
-pnpm --filter @repo/database generate
+pnpm --filter @repo/db-prisma generate
 
 # 3. Create server action (Forge pattern)
 # Create file in /app/actions/ following Forge conventions
@@ -299,13 +298,13 @@ pnpm build --filter=[app-name] -- --debug
 # If migration fails:
 
 # 1. Check migration status
-pnpm --filter @repo/database db:status
+pnpm --filter @repo/db-prisma db:status
 
 # 2. If needed, reset database (CAUTION: Data loss!)
-pnpm --filter @repo/database db:push --force-reset
+pnpm --filter @repo/db-prisma db:push --force-reset
 
 # 3. Regenerate client
-pnpm --filter @repo/database generate
+pnpm --filter @repo/db-prisma generate
 
 # 4. Run migrations again
 pnpm migrate
@@ -339,10 +338,10 @@ pnpm test
 pnpm migrate
 
 # Generate Prisma client
-pnpm --filter @repo/database generate
+pnpm --filter @repo/db-prisma generate
 
 # Open Prisma Studio
-cd packages/database && pnpm dev
+cd packages/db-prisma && pnpm dev
 ```
 
 ### Building
@@ -373,7 +372,7 @@ pnpm build:doppler
 
 - [ ] **Schema Updated**: Added/updated Prisma models
 - [ ] **Migration Generated**: `pnpm migrate` completed successfully
-- [ ] **Client Regenerated**: `pnpm --filter @repo/database generate` completed
+- [ ] **Client Regenerated**: `pnpm --filter @repo/db-prisma generate` completed
 - [ ] **Types Validated**: `pnpm typecheck` passes
 - [ ] **Indexes Added**: Proper database indexes for performance
 
@@ -501,31 +500,72 @@ export async function protectedAction() {
 }
 ```
 
+## Observability Patterns
+
+### Structured Logging
+
+```typescript
+import { logInfo, logError } from "@repo/observability/server/next";
+
+export async function handleWebhook(payload: unknown) {
+  try {
+    await logInfo("webhook.received", { kind: "payment", payload });
+    // ...process payload
+  } catch (error) {
+    await logError("webhook.failed", { error });
+    throw error;
+  }
+}
+```
+
+### Client Tracking
+
+```typescript
+"use client";
+import { useObservability } from '@repo/observability/client/next';
+
+export function TrackButtonClicks() {
+  const observability = useObservability();
+
+  return (
+    <button
+      onClick={() => {
+        observability.logInfo('ui.button.clicked', {
+          component: 'TrackButtonClicks',
+        });
+      }}
+    >
+      Track Action
+    </button>
+  );
+}
+```
+
 ## Database Patterns
 
 ### Basic CRUD
 
 ```typescript
-import { prisma } from "@repo/database/prisma/server/next";
+import { db } from "@repo/db-prisma";
 
 // Create
-const user = await prisma.user.create({
+const user = await db.user.create({
   data: { email: "test@example.com", name: "Test" }
 });
 
 // Read
-const user = await prisma.user.findUnique({
+const user = await db.user.findUnique({
   where: { id: userId }
 });
 
 // Update
-const updated = await prisma.user.update({
+const updated = await db.user.update({
   where: { id: userId },
   data: { name: "New Name" }
 });
 
 // Delete
-await prisma.user.delete({
+await db.user.delete({
   where: { id: userId }
 });
 ```
@@ -574,7 +614,7 @@ import { auth } from "@repo/auth/server/next"; // ❌
 
 // Forgetting to regenerate Prisma client
 // After schema changes, always run:
-// pnpm --filter @repo/database generate
+// pnpm --filter @repo/db-prisma generate
 ```
 
 ### ✅ Do this instead
@@ -591,7 +631,7 @@ import { useAuth } from '@repo/auth/client/next'; // ✅
 
 // Always regenerate after schema changes
 pnpm migrate
-pnpm --filter @repo/database generate
+pnpm --filter @repo/db-prisma generate
 ```
 
 ## Verification Commands
@@ -617,7 +657,7 @@ pnpm madge --circular
 
 # Database
 pnpm migrate
-pnpm --filter @repo/database generate
+pnpm --filter @repo/db-prisma generate
 ```
 
 ## File Structure Patterns

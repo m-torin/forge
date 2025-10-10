@@ -1,7 +1,15 @@
-import { getDictionary, type Locale } from '#/lib/i18n';
-import { ActionIcon, Box, Button, Card, Group, Stack, Text } from '@mantine/core';
-import { IconHome, IconSettings, IconUser } from '@tabler/icons-react';
-import SidebarHeader from './SidebarHeader';
+import { getDictionary, type Locale } from "#/lib/i18n";
+import {
+  ActionIcon,
+  Box,
+  Button,
+  Card,
+  Group,
+  Stack,
+  Text,
+} from "@mantine/core";
+import { IconHome, IconSettings, IconUser } from "@tabler/icons-react";
+import SidebarHeader from "./SidebarHeader";
 
 type Props = {
   params: Promise<{ locale: Locale }>;

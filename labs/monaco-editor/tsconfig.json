@@ -13,5 +13,11 @@
     }
   },
   "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["dist", "build", "node_modules", "src/languages/sas.ts"]
+  "exclude": [
+    "dist",
+    "build",
+    "node_modules",
+    "src/languages/sas.ts",
+    "vitest.config.ts"
+  ]
 }

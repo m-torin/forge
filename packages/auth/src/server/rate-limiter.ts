@@ -3,7 +3,7 @@
  * Provides sliding window, fixed window, and token bucket algorithms
  */
 
-import { logError, logInfo, logWarn } from '@repo/observability/server/next';
+import { logError, logInfo, logWarn } from '@repo/observability';
 import 'server-only';
 
 import { safeEnv } from '../../env';
@@ -358,8 +358,24 @@ export class RateLimiter {
   }
 }
 
-// Export singleton instance
-export const rateLimiter = new RateLimiter();
+// Lazy singleton instance - initialized only when used
+let rateLimiterInstance: RateLimiter | null = null;
+
+export function getRateLimiter(): RateLimiter {
+  if (!rateLimiterInstance) {
+    rateLimiterInstance = new RateLimiter();
+  }
+  return rateLimiterInstance;
+}
+
+/**
+ * @deprecated Use getRateLimiter() instead for lazy initialization
+ */
+export const rateLimiter = new Proxy({} as RateLimiter, {
+  get(_, prop) {
+    return getRateLimiter()[prop as keyof RateLimiter];
+  },
+});
 
 /**
  * Common rate limiting configurations

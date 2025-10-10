@@ -10,30 +10,32 @@
  */
 export async function lazyLoadSentryIntegration(
   integrationName:
-    | 'replayIntegration'
-    | 'replayCanvasIntegration'
-    | 'feedbackIntegration'
-    | 'browserTracingIntegration'
-    | 'browserProfilingIntegration'
-    | 'httpClientIntegration'
-    | 'contextLinesIntegration'
-    | 'reportingObserverIntegration'
-    | 'captureConsoleIntegration'
-    | 'extraErrorDataIntegration'
-    | 'sessionTimingIntegration'
-    | 'debugIntegration',
+    | "replayIntegration"
+    | "replayCanvasIntegration"
+    | "feedbackIntegration"
+    | "browserTracingIntegration"
+    | "browserProfilingIntegration"
+    | "httpClientIntegration"
+    | "contextLinesIntegration"
+    | "reportingObserverIntegration"
+    | "captureConsoleIntegration"
+    | "extraErrorDataIntegration"
+    | "sessionTimingIntegration"
+    | "debugIntegration",
   options?: any,
 ): Promise<void> {
   try {
     // Dynamically import @sentry/nextjs
-    const Sentry = await import('@sentry/nextjs');
+    const Sentry = await import("@sentry/nextjs");
 
     // Get the main Sentry instance
     const mainSentry = (window as any).Sentry || Sentry;
 
     // Check if integration function exists
-    if (typeof (Sentry as any)[integrationName] !== 'function') {
-      console.warn(`Integration ${integrationName} not found in @sentry/nextjs`);
+    if (typeof (Sentry as any)[integrationName] !== "function") {
+      console.warn(
+        `Integration ${integrationName} not found in @sentry/nextjs`,
+      );
       return;
     }
 
@@ -60,7 +62,9 @@ export async function lazyLoadIntegrations(
   }>,
 ): Promise<void> {
   await Promise.all(
-    integrations.map(({ name, options }) => lazyLoadSentryIntegration(name, options)),
+    integrations.map(({ name, options }) =>
+      lazyLoadSentryIntegration(name, options),
+    ),
   );
 }
 
@@ -80,14 +84,14 @@ export async function conditionalLazyLoad(
   loader: () => Promise<void>,
 ): Promise<void> {
   // Check if already loaded
-  const loadedKey = `sentry_lazy_loaded_${typeof condition === 'string' ? condition : 'custom'}`;
+  const loadedKey = `sentry_lazy_loaded_${typeof condition === "string" ? condition : "custom"}`;
   if ((window as any)[loadedKey]) {
     return;
   }
 
   // Evaluate condition
   const shouldLoad =
-    typeof condition === 'string'
+    typeof condition === "string"
       ? true // String conditions are assumed to be event names
       : await condition();
 
@@ -108,14 +112,17 @@ export function createLazyLoadingConfig() {
     // Set up lazy loading after initial load
     beforeSend: async (event: any, _hint: any) => {
       // Auto-load replay on error
-      if (event.exception && !(window as any).sentry_lazy_loaded_replay_on_error) {
+      if (
+        event.exception &&
+        !(window as any).sentry_lazy_loaded_replay_on_error
+      ) {
         try {
-          await lazyLoadSentryIntegration('replayIntegration', {
+          await lazyLoadSentryIntegration("replayIntegration", {
             replaysOnErrorSampleRate: 1.0,
           });
           (window as any).sentry_lazy_loaded_replay_on_error = true;
         } catch (error) {
-          console.warn('Failed to lazy load replay integration:', error);
+          console.warn("Failed to lazy load replay integration:", error);
         }
       }
 
@@ -156,17 +163,17 @@ async function lazyLoadSentryIntegration(name, options) {
         return `
 // Conditionally load ${name}
 if (${condition}) {
-  lazyLoadSentryIntegration('${name}'${optionsStr ? `, ${optionsStr}` : ''});
+  lazyLoadSentryIntegration('${name}'${optionsStr ? `, ${optionsStr}` : ""});
 }`;
       }
 
       return `
 // Load ${name} on demand
 setTimeout(() => {
-  lazyLoadSentryIntegration('${name}'${optionsStr ? `, ${optionsStr}` : ''});
+  lazyLoadSentryIntegration('${name}'${optionsStr ? `, ${optionsStr}` : ""});
 }, 1000);`;
     })
-    .join('\n');
+    .join("\n");
 
   return `${imports}\n${loaders}`;
 }
@@ -176,10 +183,12 @@ setTimeout(() => {
  */
 export function useLazyLoadIntegration() {
   return {
-    loadReplay: (options?: any) => lazyLoadSentryIntegration('replayIntegration', options),
-    loadFeedback: (options?: any) => lazyLoadSentryIntegration('feedbackIntegration', options),
+    loadReplay: (options?: any) =>
+      lazyLoadSentryIntegration("replayIntegration", options),
+    loadFeedback: (options?: any) =>
+      lazyLoadSentryIntegration("feedbackIntegration", options),
     loadProfiling: (options?: any) =>
-      lazyLoadSentryIntegration('browserProfilingIntegration', options),
+      lazyLoadSentryIntegration("browserProfilingIntegration", options),
     loadAll: (integrations: Parameters<typeof lazyLoadIntegrations>[0]) =>
       lazyLoadIntegrations(integrations),
   };

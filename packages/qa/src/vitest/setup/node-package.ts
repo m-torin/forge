@@ -4,21 +4,24 @@
  */
 
 // Import base setup
-import { vi } from 'vitest';
-import './common';
+import { vi } from "vitest";
+import "./common";
 
 // Import AI mocks for packages that need them
-import '../mocks/providers/ai';
+import "../mocks/providers/ai";
 
 // Import centralized provider mocks
-import './providers';
+import "./providers";
 
 // Set test environment
-process.env.NODE_ENV = 'test';
+process.env.NODE_ENV = "test";
 
 // Mock common Node.js modules that might be used
-vi.mock('node:fs/promises', async () => {
-  const actual = await vi.importActual<typeof import('node:fs/promises')>('node:fs/promises');
+vi.mock("node:fs/promises", async () => {
+  const actual =
+    await vi.importActual<typeof import("node:fs/promises")>(
+      "node:fs/promises",
+    );
   return {
     ...actual,
     readFile: vi.fn(),
@@ -32,12 +35,13 @@ vi.mock('node:fs/promises', async () => {
 });
 
 // Mock crypto for consistent test results
-vi.mock('node:crypto', async () => {
-  const actual = await vi.importActual<typeof import('node:crypto')>('node:crypto');
+vi.mock("node:crypto", async () => {
+  const actual =
+    await vi.importActual<typeof import("node:crypto")>("node:crypto");
   return {
     ...actual,
-    randomUUID: vi.fn(() => 'test-uuid-12345'),
-    randomBytes: vi.fn((size: number) => Buffer.alloc(size, 'test')),
+    randomUUID: vi.fn(() => "test-uuid-12345"),
+    randomBytes: vi.fn((size: number) => Buffer.alloc(size, "test")),
   };
 });
 
@@ -57,7 +61,7 @@ export const mockEnv = (overrides: Record<string, string>) => {
 export const createMockResponse = (data: any, status = 200) => {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { 'Content-Type': 'application/json' },
+    headers: { "Content-Type": "application/json" },
   });
 };
 
@@ -73,4 +77,4 @@ export const createMockFetch = (responses: Record<string, any>) => {
 };
 
 // Export commonly used testing utilities
-export * from '../utils/test-helpers';
+export * from "../utils/test-helpers";

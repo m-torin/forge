@@ -1,17 +1,17 @@
-import type { BrowserContext, Page } from '@playwright/test';
-import { BetterAuthTestHelpers } from './auth';
-import { ErrorHandler, PlaywrightUtilityError } from './errors';
-import { FileUploadUtils } from './file-upload';
-import { NetworkUtils, PerformanceUtils } from './patterns';
-import { PerformanceBudgetValidator } from './performance-budgets';
-import { ContextSessionUtils, SessionUtils } from './session-management';
+import type { BrowserContext, Page } from "@playwright/test";
+import { BetterAuthTestHelpers } from "./auth";
+import { ErrorHandler, PlaywrightUtilityError } from "./errors";
+import { FileUploadUtils } from "./file-upload";
+import { NetworkUtils, PerformanceUtils } from "./patterns";
+import { PerformanceBudgetValidator } from "./performance-budgets";
+import { ContextSessionUtils, SessionUtils } from "./session-management";
 import type {
   CompositeTestResult,
   TestFixture,
   TestMetadata,
   UtilityEventHandler,
   UtilityFactoryConfig,
-} from './shared-interfaces';
+} from "./shared-interfaces";
 
 /**
  * Comprehensive utility suite combining all Playwright helpers
@@ -75,7 +75,7 @@ export class PlaywrightUtilitySuite {
   }): Promise<CompositeTestResult> {
     const startTime = Date.now();
     const result: CompositeTestResult = {
-      metadata: this.config.metadata || { testName: 'authenticated-flow' },
+      metadata: this.config.metadata || { testName: "authenticated-flow" },
       success: false,
       totalDuration: 0,
       errors: [],
@@ -83,14 +83,17 @@ export class PlaywrightUtilitySuite {
     };
 
     try {
-      await this.eventHandlers?.onStart?.('authenticated-test-flow', options);
+      await this.eventHandlers?.onStart?.("authenticated-test-flow", options);
 
       // Authenticate user
       if (this.auth) {
-        await ErrorHandler.withContext(() => this.auth!.signIn(this.page, options.user), {
-          operation: 'authentication',
-          errorType: PlaywrightUtilityError,
-        });
+        await ErrorHandler.withContext(
+          () => this.auth!.signIn(this.page, options.user),
+          {
+            operation: "authentication",
+            errorType: PlaywrightUtilityError,
+          },
+        );
 
         await this.auth.waitForAuth(this.page);
         result.session = {
@@ -102,7 +105,8 @@ export class PlaywrightUtilitySuite {
       // Setup performance monitoring if requested
       let performanceCleanup: (() => Promise<void>) | undefined;
       if (options.measurePerformance) {
-        performanceCleanup = await this.network.simulateNetworkConditions('fast3G');
+        performanceCleanup =
+          await this.network.simulateNetworkConditions("fast3G");
       }
 
       // Execute the main test operation
@@ -113,11 +117,12 @@ export class PlaywrightUtilitySuite {
       // Measure performance if requested
       if (options.measurePerformance) {
         const webVitals = (await this.performance.measureWebVitals()) as any;
-        const resourceAnalysis = await this.performance.analyzeResourceLoading();
+        const resourceAnalysis =
+          await this.performance.analyzeResourceLoading();
 
         result.performance = [
           {
-            operation: 'test-operation',
+            operation: "test-operation",
             duration: operationDuration,
             startTime: operationStart,
             endTime: Date.now(),
@@ -154,11 +159,15 @@ export class PlaywrightUtilitySuite {
       }
 
       result.success = true;
-      await this.eventHandlers?.onComplete?.('authenticated-test-flow', result);
+      await this.eventHandlers?.onComplete?.("authenticated-test-flow", result);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       result.errors.push(errorMessage);
-      await this.eventHandlers?.onError?.('authenticated-test-flow', error as Error);
+      await this.eventHandlers?.onError?.(
+        "authenticated-test-flow",
+        error as Error,
+      );
       throw error;
     } finally {
       result.totalDuration = Date.now() - startTime;
@@ -172,7 +181,7 @@ export class PlaywrightUtilitySuite {
    */
   async executeFileUploadTest(options: {
     files: string | string[];
-    uploadMethod: 'input' | 'dragDrop';
+    uploadMethod: "input" | "dragDrop";
     selector: string;
     validation: {
       expectedFiles: number;
@@ -183,7 +192,7 @@ export class PlaywrightUtilitySuite {
   }): Promise<CompositeTestResult> {
     const startTime = Date.now();
     const result: CompositeTestResult = {
-      metadata: { testName: 'file-upload-test', ...this.config.metadata },
+      metadata: { testName: "file-upload-test", ...this.config.metadata },
       success: false,
       totalDuration: 0,
       errors: [],
@@ -191,7 +200,7 @@ export class PlaywrightUtilitySuite {
     };
 
     try {
-      await this.eventHandlers?.onStart?.('file-upload-test', options);
+      await this.eventHandlers?.onStart?.("file-upload-test", options);
 
       // Perform file upload
       const uploadResult = await this.fileUpload.testFileUploadFlow({
@@ -213,10 +222,11 @@ export class PlaywrightUtilitySuite {
 
       // Measure performance if requested
       if (options.measurePerformance) {
-        const resourceAnalysis = await this.performance.analyzeResourceLoading();
+        const resourceAnalysis =
+          await this.performance.analyzeResourceLoading();
         result.performance = [
           {
-            operation: 'file-upload',
+            operation: "file-upload",
             duration: uploadResult.duration,
             startTime: startTime,
             endTime: Date.now(),
@@ -230,11 +240,12 @@ export class PlaywrightUtilitySuite {
       }
 
       result.success = true;
-      await this.eventHandlers?.onComplete?.('file-upload-test', result);
+      await this.eventHandlers?.onComplete?.("file-upload-test", result);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       result.errors.push(errorMessage);
-      await this.eventHandlers?.onError?.('file-upload-test', error as Error);
+      await this.eventHandlers?.onError?.("file-upload-test", error as Error);
     } finally {
       result.totalDuration = Date.now() - startTime;
     }
@@ -249,11 +260,11 @@ export class PlaywrightUtilitySuite {
     pages: string[];
     budgets?: any;
     includeMemoryLeakDetection?: boolean;
-    networkConditions?: 'slow3G' | 'fast3G' | 'offline';
+    networkConditions?: "slow3G" | "fast3G" | "offline";
   }): Promise<CompositeTestResult> {
     const startTime = Date.now();
     const result: CompositeTestResult = {
-      metadata: { testName: 'performance-audit', ...this.config.metadata },
+      metadata: { testName: "performance-audit", ...this.config.metadata },
       success: false,
       totalDuration: 0,
       errors: [],
@@ -262,12 +273,14 @@ export class PlaywrightUtilitySuite {
     };
 
     try {
-      await this.eventHandlers?.onStart?.('performance-audit', options);
+      await this.eventHandlers?.onStart?.("performance-audit", options);
 
       // Setup network conditions if specified
       let networkCleanup: (() => Promise<void>) | undefined;
       if (options.networkConditions) {
-        networkCleanup = await this.network.simulateNetworkConditions(options.networkConditions);
+        networkCleanup = await this.network.simulateNetworkConditions(
+          options.networkConditions,
+        );
       }
 
       // Audit each page
@@ -281,7 +294,8 @@ export class PlaywrightUtilitySuite {
           const webVitals = (await this.performance.measureWebVitals()) as any;
 
           // Analyze resources
-          const resourceAnalysis = await this.performance.analyzeResourceLoading();
+          const resourceAnalysis =
+            await this.performance.analyzeResourceLoading();
 
           // Check for memory leaks if requested
           let memoryLeakInfo: any;
@@ -318,7 +332,10 @@ export class PlaywrightUtilitySuite {
                 fcp: webVitals.fcp,
               });
               validator.validateResourceLoading(resourceAnalysis);
-              if (memoryLeakInfo && memoryLeakInfo.growthPercentage !== undefined) {
+              if (
+                memoryLeakInfo &&
+                memoryLeakInfo.growthPercentage !== undefined
+              ) {
                 validator.validateMemoryUsage({
                   hasLeak: memoryLeakInfo.hasLeak,
                   growthPercentage: memoryLeakInfo.growthPercentage,
@@ -329,7 +346,8 @@ export class PlaywrightUtilitySuite {
             }
           }
         } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : String(error);
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
           result.errors.push(`Failed to audit ${pageUrl}: ${errorMessage}`);
 
           result.performance!.push({
@@ -349,11 +367,12 @@ export class PlaywrightUtilitySuite {
       }
 
       result.success = result.errors.length === 0;
-      await this.eventHandlers?.onComplete?.('performance-audit', result);
+      await this.eventHandlers?.onComplete?.("performance-audit", result);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       result.errors.push(errorMessage);
-      await this.eventHandlers?.onError?.('performance-audit', error as Error);
+      await this.eventHandlers?.onError?.("performance-audit", error as Error);
     } finally {
       result.totalDuration = Date.now() - startTime;
     }
@@ -365,7 +384,7 @@ export class PlaywrightUtilitySuite {
    * Cleanup all utilities and resources
    */
   async cleanup(): Promise<void> {
-    await Promise.all(this.fixture.cleanup.map(fn => fn()));
+    await Promise.all(this.fixture.cleanup.map((fn) => fn()));
     this.fixture.cleanup.length = 0;
   }
 
@@ -397,7 +416,9 @@ export class PlaywrightUtilitySuite {
 /**
  * Factory function to create a utility suite
  */
-export function createUtilitySuite(config: UtilityFactoryConfig): PlaywrightUtilitySuite {
+export function createUtilitySuite(
+  config: UtilityFactoryConfig,
+): PlaywrightUtilitySuite {
   return new PlaywrightUtilitySuite(config);
 }
 
@@ -410,7 +431,7 @@ export function createDefaultUtilitySuite(
 ): PlaywrightUtilitySuite {
   return new PlaywrightUtilitySuite({
     page,
-    metadata: metadata || { testName: 'default-test' },
+    metadata: metadata || { testName: "default-test" },
     enabledUtilities: {
       auth: true,
       performance: true,
@@ -430,7 +451,7 @@ export function createPerformanceUtilitySuite(
 ): PlaywrightUtilitySuite {
   return new PlaywrightUtilitySuite({
     page,
-    metadata: metadata || { testName: 'performance-test' },
+    metadata: metadata || { testName: "performance-test" },
     enabledUtilities: {
       auth: false,
       performance: true,

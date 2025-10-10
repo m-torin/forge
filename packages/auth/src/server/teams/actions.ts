@@ -4,7 +4,7 @@
 
 import 'server-only';
 
-import { logError, logWarn } from '@repo/observability/server/next';
+import { logError, logWarn } from '@repo/observability';
 import { auth } from '../../shared/auth';
 import { isValidRole } from '../../shared/teams';
 import { getAuthHeaders } from '../get-headers';

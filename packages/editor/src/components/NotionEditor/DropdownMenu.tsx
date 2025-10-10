@@ -16,7 +16,7 @@ interface DropdownMenuProps {
   modal?: boolean;
 }
 
-export function DropdownMenu({
+function DropdownMenu({
   children,
   open: controlledOpen,
   onOpenChange,
@@ -58,7 +58,7 @@ interface DropdownMenuTriggerProps {
   className?: string;
 }
 
-export const DropdownMenuTrigger = forwardRef<HTMLButtonElement, DropdownMenuTriggerProps>(
+const DropdownMenuTrigger = forwardRef<HTMLButtonElement, DropdownMenuTriggerProps>(
   ({ children, asChild = false, className, ...props }, ref) => {
     const context = React.useContext(DropdownMenuContext);
 
@@ -100,7 +100,7 @@ interface DropdownMenuContentProps {
   className?: string;
 }
 
-export const DropdownMenuContent = forwardRef<HTMLDivElement, DropdownMenuContentProps>(
+const DropdownMenuContent = forwardRef<HTMLDivElement, DropdownMenuContentProps>(
   ({ children, side = 'bottom', align = 'start', className, ...props }, ref) => {
     const context = React.useContext(DropdownMenuContext);
     const contentRef = useRef<HTMLDivElement>(null);
@@ -171,7 +171,7 @@ interface DropdownMenuGroupProps {
   className?: string;
 }
 
-export function DropdownMenuGroup({ children, className }: DropdownMenuGroupProps) {
+function DropdownMenuGroup({ children, className }: DropdownMenuGroupProps) {
   return <div className={clsx('dropdown-menu-group', 'space-y-1', className)}>{children}</div>;
 }
 
@@ -183,7 +183,7 @@ interface DropdownMenuItemProps {
   onClick?: () => void;
 }
 
-export const DropdownMenuItem = forwardRef<HTMLDivElement, DropdownMenuItemProps>(
+const DropdownMenuItem = forwardRef<HTMLDivElement, DropdownMenuItemProps>(
   ({ children, asChild = false, disabled = false, className, onClick, ...props }, ref) => {
     const context = React.useContext(DropdownMenuContext);
 

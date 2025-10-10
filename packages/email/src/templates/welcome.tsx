@@ -9,7 +9,7 @@ import {
   Section,
   Tailwind,
   Text,
-} from '@react-email/components';
+} from "@react-email/components";
 
 interface WelcomeTemplateProps extends Record<string, any> {
   readonly dashboardUrl?: string;
@@ -21,7 +21,7 @@ interface WelcomeTemplateProps extends Record<string, any> {
 export const WelcomeTemplate = ({
   name,
   email: email,
-  dashboardUrl = 'https://example.com/dashboard',
+  dashboardUrl = "https://example.com/dashboard",
   organizationName,
 }: WelcomeTemplateProps) => (
   <Tailwind>
@@ -39,9 +39,9 @@ export const WelcomeTemplate = ({
               <Text className="m-0 mb-4 text-zinc-500">Hi {name}!</Text>
 
               <Text className="m-0 mb-4 text-zinc-500">
-                Congratulations! You've successfully created your organization{' '}
-                <strong>{organizationName}</strong>. You're all set to start collaborating with your
-                team.
+                Congratulations! You've successfully created your organization{" "}
+                <strong>{organizationName}</strong>. You're all set to start
+                collaborating with your team.
               </Text>
 
               <Text className="m-0 mb-6 text-zinc-500">
@@ -75,8 +75,8 @@ export const WelcomeTemplate = ({
               <Hr className="my-4" />
 
               <Text className="m-0 mb-2 text-sm text-zinc-500">
-                If you have any questions or need help getting started, don't hesitate to reach out
-                to our support team.
+                If you have any questions or need help getting started, don't
+                hesitate to reach out to our support team.
               </Text>
 
               <Text className="m-0 text-sm text-zinc-500">
@@ -88,8 +88,12 @@ export const WelcomeTemplate = ({
                 <Text className="m-0 mb-2 text-xs font-bold text-gray-500">
                   [Debug Info: All Fields]
                 </Text>
-                <Text className="m-0 text-xs text-gray-500">dashboardUrl: {dashboardUrl}</Text>
-                <Text className="m-0 text-xs text-gray-500">email: {email}</Text>
+                <Text className="m-0 text-xs text-gray-500">
+                  dashboardUrl: {dashboardUrl}
+                </Text>
+                <Text className="m-0 text-xs text-gray-500">
+                  email: {email}
+                </Text>
                 <Text className="m-0 text-xs text-gray-500">name: {name}</Text>
                 <Text className="m-0 text-xs text-gray-500">
                   organizationName: {organizationName}

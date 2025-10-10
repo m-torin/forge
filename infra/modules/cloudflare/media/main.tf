@@ -15,7 +15,7 @@ resource "cloudflare_images" "this" {
   count = var.enable_images ? 1 : 0
 
   account_id = var.account_id
-  
+
   variants = {
     for name, config in var.images_variants : name => {
       width    = config.width
@@ -28,10 +28,10 @@ resource "cloudflare_images" "this" {
       metadata = config.metadata
     }
   }
-  
+
   # Delivery URL configuration
   delivery_url = var.images_delivery_url != "" ? var.images_delivery_url : null
-  
+
   # Access control
   require_signed_urls = var.images_access.require_signed_urls
   allowed_origins     = var.images_access.allowed_origins
@@ -115,11 +115,11 @@ resource "cloudflare_r2_bucket_lifecycle" "this" {
     content {
       id      = rules.value.id
       enabled = rules.value.enabled
-      
+
       conditions {
         prefix = rules.value.prefix
       }
-      
+
       dynamic "expiration" {
         for_each = rules.value.expiration_days != null ? [1] : []
         content {
@@ -129,7 +129,7 @@ resource "cloudflare_r2_bucket_lifecycle" "this" {
           }
         }
       }
-      
+
       dynamic "noncurrent_version_expiration" {
         for_each = rules.value.noncurrent_version_expiration_days != null ? [1] : []
         content {
@@ -139,7 +139,7 @@ resource "cloudflare_r2_bucket_lifecycle" "this" {
           }
         }
       }
-      
+
       dynamic "abort_multipart_uploads_transition" {
         for_each = rules.value.abort_incomplete_multipart_upload_days != null ? [1] : []
         content {
@@ -149,7 +149,7 @@ resource "cloudflare_r2_bucket_lifecycle" "this" {
           }
         }
       }
-      
+
       dynamic "storage_class_transitions" {
         for_each = rules.value.transition_to_ia_days != null ? [1] : []
         content {
@@ -193,12 +193,12 @@ resource "cloudflare_api_token" "r2_access" {
   for_each = var.enable_r2 ? var.r2_access_keys : {}
 
   name = "${each.key}-r2-access"
-  
+
   dynamic "policy" {
     for_each = each.value.bucket_names
     content {
       permission_groups = [
-        for perm in each.value.permissions : 
+        for perm in each.value.permissions :
         data.cloudflare_api_token_permission_groups.all.r2["${perm}_bucket"]
       ]
       resources = {
@@ -206,7 +206,7 @@ resource "cloudflare_api_token" "r2_access" {
       }
     }
   }
-  
+
   condition {
     request_ip {
       in = each.value.ip_whitelist
@@ -336,15 +336,15 @@ locals {
 }
 
 # Media Processing Workers (Custom + Standard)
-resource "cloudflare_worker_script" "media_processor" {
+resource "cloudflare_workers_script" "media_processor" {
   for_each = merge(var.media_workers, local.standard_image_workers)
 
   account_id         = var.account_id
-  name               = each.value.script_name
+  script_name        = each.value.script_name
   content            = each.value.script_content != null ? each.value.script_content : file(each.value.script_path)
   compatibility_date = lookup(each.value, "compatibility_date", "2024-01-01")
   module             = true
-  
+
   # Plain text bindings for environment variables
   dynamic "plain_text_binding" {
     for_each = lookup(each.value, "environment_variables", {})
@@ -353,7 +353,7 @@ resource "cloudflare_worker_script" "media_processor" {
       text = plain_text_binding.value
     }
   }
-  
+
   # Secret text bindings
   dynamic "secret_text_binding" {
     for_each = lookup(each.value, "secrets", {})
@@ -362,7 +362,7 @@ resource "cloudflare_worker_script" "media_processor" {
       text = secret_text_binding.value
     }
   }
-  
+
   # KV namespace bindings
   dynamic "kv_namespace_binding" {
     for_each = lookup(each.value, "kv_namespaces", [])
@@ -371,7 +371,7 @@ resource "cloudflare_worker_script" "media_processor" {
       namespace_id = kv_namespace_binding.value
     }
   }
-  
+
   # R2 bucket bindings
   dynamic "r2_bucket_binding" {
     for_each = lookup(each.value, "r2_buckets", [])
@@ -380,7 +380,7 @@ resource "cloudflare_worker_script" "media_processor" {
       bucket_name = r2_bucket_binding.value
     }
   }
-  
+
   # AI bindings
   dynamic "ai_binding" {
     for_each = lookup(each.value, "ai_bindings", [])
@@ -389,7 +389,7 @@ resource "cloudflare_worker_script" "media_processor" {
       binding = ai_binding.value
     }
   }
-  
+
   # D1 database bindings
   dynamic "d1_database_binding" {
     for_each = lookup(each.value, "d1_databases", [])
@@ -401,7 +401,7 @@ resource "cloudflare_worker_script" "media_processor" {
 }
 
 # Worker Routes
-resource "cloudflare_worker_route" "media_processor" {
+resource "cloudflare_workers_route" "media_processor" {
   for_each = {
     for item in flatten([
       for worker_key, worker in var.media_workers : [
@@ -424,7 +424,7 @@ resource "cloudflare_stream" "settings" {
   count = var.enable_stream ? 1 : 0
 
   account_id = var.account_id
-  
+
   default_profile         = var.stream_settings.default_profile
   require_signed_urls     = var.stream_settings.require_signed_urls
   allowed_origins         = var.stream_settings.allowed_origins
@@ -441,14 +441,14 @@ resource "cloudflare_stream_live_input" "this" {
 
   account_id = var.account_id
   name       = each.key
-  
+
   recording {
     mode                = each.value.recording.mode
     require_signed_urls = each.value.recording.require_signed_urls
     allowed_origins     = each.value.recording.allowed_origins
     timeout_seconds     = each.value.recording.timeout_seconds
   }
-  
+
   default_creator = each.value.default_creator
 }
 
@@ -467,7 +467,7 @@ resource "cloudflare_logpush_job" "media" {
   max_upload_interval_seconds = each.value.max_upload_interval_seconds
   max_upload_records = each.value.max_upload_records
   name             = each.key
-  
+
   dynamic "output_options" {
     for_each = each.value.output_options != null ? [each.value.output_options] : []
     content {

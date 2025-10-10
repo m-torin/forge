@@ -47,7 +47,14 @@ export interface EdgeRuntimeConfig {
   /**
    * Features to disable in edge runtime
    */
-  disabledFeatures?: ('breadcrumbs' | 'contexts' | 'tags' | 'user' | 'extra' | 'attachments')[];
+  disabledFeatures?: (
+    | "breadcrumbs"
+    | "contexts"
+    | "tags"
+    | "user"
+    | "extra"
+    | "attachments"
+  )[];
 }
 
 /**
@@ -78,8 +85,8 @@ export function createEdgeOptimizedConfig(
       ...baseConfig.transportOptions,
       // Use minimal headers
       headers: {
-        'Content-Type': 'application/json',
-        ...(enableCompression && { 'Content-Encoding': 'gzip' }),
+        "Content-Type": "application/json",
+        ...(enableCompression && { "Content-Encoding": "gzip" }),
       },
     },
 
@@ -129,7 +136,7 @@ export function createEdgeOptimizedConfig(
     // Disable features not needed in edge
     integrations: (integrations: any[]) => {
       const baseIntegrations =
-        typeof baseConfig.integrations === 'function'
+        typeof baseConfig.integrations === "function"
           ? baseConfig.integrations(integrations)
           : integrations;
 
@@ -139,7 +146,11 @@ export function createEdgeOptimizedConfig(
 
         // Remove heavy integrations in minimal mode
         if (minimalMode) {
-          const heavyIntegrations = ['ExtraErrorData', 'ReportingObserver', 'SessionTiming'];
+          const heavyIntegrations = [
+            "ExtraErrorData",
+            "ReportingObserver",
+            "SessionTiming",
+          ];
           if (heavyIntegrations.includes(name)) {
             return false;
           }
@@ -186,7 +197,7 @@ function optimizeEventForEdge(
 
     // Remove non-essential contexts
     if (optimized.contexts) {
-      const essentialContexts = ['os', 'runtime', 'app'];
+      const essentialContexts = ["os", "runtime", "app"];
       for (const key of Object.keys(optimized.contexts)) {
         if (!essentialContexts.includes(key)) {
           delete optimized.contexts[key];
@@ -245,20 +256,20 @@ function optimizeEventForEdge(
  * Recursively truncate strings in an object
  */
 function truncateStrings(obj: any, maxLength: number): void {
-  if (typeof obj === 'string') {
+  if (typeof obj === "string") {
     return;
   }
 
   if (Array.isArray(obj)) {
-    obj.forEach(item => truncateStrings(item, maxLength));
+    obj.forEach((item) => truncateStrings(item, maxLength));
     return;
   }
 
-  if (obj && typeof obj === 'object') {
+  if (obj && typeof obj === "object") {
     for (const key of Object.keys(obj)) {
-      if (typeof obj[key] === 'string' && obj[key].length > maxLength) {
-        obj[key] = obj[key].substring(0, maxLength) + '...';
-      } else if (typeof obj[key] === 'object') {
+      if (typeof obj[key] === "string" && obj[key].length > maxLength) {
+        obj[key] = obj[key].substring(0, maxLength) + "...";
+      } else if (typeof obj[key] === "object") {
         truncateStrings(obj[key], maxLength);
       }
     }
@@ -274,26 +285,26 @@ function truncateStrings(obj: any, maxLength: number): void {
  * Lightweight performance monitoring for edge runtime
  */
 export const edgePerformanceIntegration = () => ({
-  name: 'EdgePerformance',
+  name: "EdgePerformance",
   setupOnce: () => {},
   setup: (client: any) => {
-    if (typeof globalThis.performance === 'undefined') return;
+    if (typeof globalThis.performance === "undefined") return;
 
     // Track edge function execution time
     const startTime = performance.now();
 
     // Add cleanup on response
     if (globalThis.addEventListener) {
-      globalThis.addEventListener('beforeunload', () => {
+      globalThis.addEventListener("beforeunload", () => {
         const duration = performance.now() - startTime;
 
         client.addBreadcrumb({
-          category: 'edge.performance',
-          message: 'Edge function completed',
+          category: "edge.performance",
+          message: "Edge function completed",
           data: {
             duration,
-            region: process.env.VERCEL_REGION || 'unknown',
-            runtime: 'edge',
+            region: process.env.VERCEL_REGION || "unknown",
+            runtime: "edge",
           },
         });
       });
@@ -305,19 +316,19 @@ export const edgePerformanceIntegration = () => ({
  * Edge location context integration
  */
 export const edgeLocationIntegration = () => ({
-  name: 'EdgeLocation',
+  name: "EdgeLocation",
   setupOnce: () => {},
   setup: (client: any) => {
     client.configureScope((scope: any) => {
-      scope.setContext('edge', {
-        region: process.env.VERCEL_REGION || 'unknown',
+      scope.setContext("edge", {
+        region: process.env.VERCEL_REGION || "unknown",
         requestId: process.env.VERCEL_REQUEST_ID,
         env: process.env.VERCEL_ENV || process.env.NODE_ENV,
-        runtime: 'edge',
+        runtime: "edge",
       });
 
-      scope.setTag('edge.region', process.env.VERCEL_REGION || 'unknown');
-      scope.setTag('runtime', 'edge');
+      scope.setTag("edge.region", process.env.VERCEL_REGION || "unknown");
+      scope.setTag("runtime", "edge");
     });
   },
 });
@@ -326,10 +337,10 @@ export const edgeLocationIntegration = () => ({
  * Generate edge runtime configuration
  */
 export function generateEdgeRuntimeConfig(
-  environment: 'development' | 'preview' | 'production',
+  environment: "development" | "preview" | "production",
 ): EdgeRuntimeConfig {
   switch (environment) {
-    case 'development':
+    case "development":
       return {
         minimalMode: false,
         maxEventSize: 500000,
@@ -339,7 +350,7 @@ export function generateEdgeRuntimeConfig(
         },
       };
 
-    case 'preview':
+    case "preview":
       return {
         minimalMode: true,
         maxEventSize: 200000,
@@ -349,7 +360,7 @@ export function generateEdgeRuntimeConfig(
         },
       };
 
-    case 'production':
+    case "production":
       return {
         minimalMode: true,
         maxEventSize: 100000,
@@ -363,12 +374,12 @@ export function generateEdgeRuntimeConfig(
             hnd1: 0.1, // Asia
           },
           byRoute: {
-            '^/api/critical': 1.0,
-            '^/api/': 0.2,
-            '^/': 0.05,
+            "^/api/critical": 1.0,
+            "^/api/": 0.2,
+            "^/": 0.05,
           },
         },
-        disabledFeatures: ['attachments'],
+        disabledFeatures: ["attachments"],
       };
   }
 }

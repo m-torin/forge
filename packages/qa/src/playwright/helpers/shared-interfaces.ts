@@ -1,4 +1,4 @@
-import type { BrowserContext, Page } from '@playwright/test';
+import type { BrowserContext, Page } from "@playwright/test";
 
 /**
  * Shared interfaces and types for utility integration
@@ -29,7 +29,7 @@ export interface TestMetadata {
   /** Test category */
   category?: string;
   /** Test environment */
-  environment?: 'development' | 'staging' | 'production' | 'ci';
+  environment?: "development" | "staging" | "production" | "ci";
   /** Custom tags */
   tags?: string[];
   /** Test configuration */

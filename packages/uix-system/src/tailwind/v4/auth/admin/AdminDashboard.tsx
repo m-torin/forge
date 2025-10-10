@@ -3,11 +3,11 @@
  * Provides comprehensive overview and navigation for system administration
  */
 
-import { useState, useTransition } from 'react';
-import { Alert } from '../ui/Alert';
-import { Button } from '../ui/Button';
-import { Card, CardContent, CardHeader } from '../ui/Card';
-import { Input } from '../ui/Input';
+import { useState, useTransition } from "react";
+import { Alert } from "../ui/Alert";
+import { Button } from "../ui/Button";
+import { Card, CardContent, CardHeader } from "../ui/Card";
+import { Input } from "../ui/Input";
 
 interface DashboardStats {
   users: {
@@ -50,10 +50,15 @@ interface DashboardStats {
 
 interface RecentActivity {
   id: string;
-  type: 'user_created' | 'user_banned' | 'login_failed' | 'org_created' | 'admin_action';
+  type:
+    | "user_created"
+    | "user_banned"
+    | "login_failed"
+    | "org_created"
+    | "admin_action";
   description: string;
   timestamp: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  severity: "low" | "medium" | "high" | "critical";
   userId?: string;
   userEmail?: string;
   ipAddress?: string;
@@ -62,12 +67,12 @@ interface RecentActivity {
 
 interface SystemAlert {
   id: string;
-  type: 'warning' | 'error' | 'info';
+  type: "warning" | "error" | "info";
   title: string;
   message: string;
   timestamp: string;
   resolved: boolean;
-  priority: 'low' | 'medium' | 'high' | 'critical';
+  priority: "low" | "medium" | "high" | "critical";
 }
 
 interface AdminDashboardProps {
@@ -91,11 +96,11 @@ export function AdminDashboard({
   onNavigateToOrganizations,
   onNavigateToApiKeys,
   onNavigateToSecurity,
-  className = '',
+  className = "",
 }: AdminDashboardProps) {
   const [isPending, _startTransition] = useTransition();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedTimeframe, setSelectedTimeframe] = useState('7d');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedTimeframe, setSelectedTimeframe] = useState("7d");
 
   const handleQuickSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,44 +110,44 @@ export function AdminDashboard({
     }
   };
 
-  const getActivityIcon = (type: RecentActivity['type']) => {
+  const getActivityIcon = (type: RecentActivity["type"]) => {
     switch (type) {
-      case 'user_created':
-        return '👤';
-      case 'user_banned':
-        return '🚫';
-      case 'login_failed':
-        return '⚠️';
-      case 'org_created':
-        return '🏢';
-      case 'admin_action':
-        return '⚙️';
+      case "user_created":
+        return "👤";
+      case "user_banned":
+        return "🚫";
+      case "login_failed":
+        return "⚠️";
+      case "org_created":
+        return "🏢";
+      case "admin_action":
+        return "⚙️";
       default:
-        return '📋';
+        return "📋";
     }
   };
 
-  const getSeverityColor = (severity: RecentActivity['severity']) => {
+  const getSeverityColor = (severity: RecentActivity["severity"]) => {
     switch (severity) {
-      case 'critical':
-        return 'text-red-600 bg-red-50 border-red-200';
-      case 'high':
-        return 'text-orange-600 bg-orange-50 border-orange-200';
-      case 'medium':
-        return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-      case 'low':
-        return 'text-green-600 bg-green-50 border-green-200';
+      case "critical":
+        return "text-red-600 bg-red-50 border-red-200";
+      case "high":
+        return "text-orange-600 bg-orange-50 border-orange-200";
+      case "medium":
+        return "text-yellow-600 bg-yellow-50 border-yellow-200";
+      case "low":
+        return "text-green-600 bg-green-50 border-green-200";
     }
   };
 
-  const getAlertColor = (type: SystemAlert['type']) => {
+  const getAlertColor = (type: SystemAlert["type"]) => {
     switch (type) {
-      case 'error':
-        return 'text-red-600 bg-red-50 border-red-200';
-      case 'warning':
-        return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-      case 'info':
-        return 'text-blue-600 bg-blue-50 border-blue-200';
+      case "error":
+        return "text-red-600 bg-red-50 border-red-200";
+      case "warning":
+        return "text-yellow-600 bg-yellow-50 border-yellow-200";
+      case "info":
+        return "text-blue-600 bg-blue-50 border-blue-200";
     }
   };
 
@@ -150,20 +155,24 @@ export function AdminDashboard({
     return new Date(timestamp).toLocaleString();
   };
 
-  const unResolvedAlerts = systemAlerts.filter(alert => !alert.resolved);
-  const criticalAlerts = unResolvedAlerts.filter(alert => alert.priority === 'critical');
+  const unResolvedAlerts = systemAlerts.filter((alert) => !alert.resolved);
+  const criticalAlerts = unResolvedAlerts.filter(
+    (alert) => alert.priority === "critical",
+  );
 
   return (
     <div className={`space-y-6 ${className}`}>
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="mt-1 text-gray-600">System overview and administration tools</p>
+          <p className="mt-1 text-gray-600">
+            System overview and administration tools
+          </p>
         </div>
         <div className="flex items-center gap-3">
           <select
             value={selectedTimeframe}
-            onChange={e => setSelectedTimeframe(e.target.value)}
+            onChange={(e) => setSelectedTimeframe(e.target.value)}
             className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
           >
             <option value="1d">Last 24 hours</option>
@@ -172,7 +181,7 @@ export function AdminDashboard({
             <option value="90d">Last 90 days</option>
           </select>
           <Button onClick={onRefresh} disabled={isPending}>
-            {isPending ? 'Refreshing...' : 'Refresh'}
+            {isPending ? "Refreshing..." : "Refresh"}
           </Button>
         </div>
       </div>
@@ -183,8 +192,9 @@ export function AdminDashboard({
             <div>
               <h3 className="font-semibold">Critical System Alerts</h3>
               <p>
-                {criticalAlerts.length} critical issue{criticalAlerts.length !== 1 ? 's' : ''}{' '}
-                require immediate attention
+                {criticalAlerts.length} critical issue
+                {criticalAlerts.length !== 1 ? "s" : ""} require immediate
+                attention
               </p>
             </div>
             <Button variant="outline" size="sm" onClick={onNavigateToSecurity}>
@@ -202,7 +212,7 @@ export function AdminDashboard({
                 type="search"
                 placeholder="Quick search users, organizations, or sessions..."
                 value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full"
               />
             </div>
@@ -248,7 +258,9 @@ export function AdminDashboard({
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="text-gray-400">New this week:</span>
-                  <span className="font-medium text-blue-600">+{stats.users.newThisWeek}</span>
+                  <span className="font-medium text-blue-600">
+                    +{stats.users.newThisWeek}
+                  </span>
                 </div>
               </div>
             </div>
@@ -301,7 +313,9 @@ export function AdminDashboard({
         >
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-gray-500">Organizations</h3>
+              <h3 className="text-sm font-medium text-gray-500">
+                Organizations
+              </h3>
               <span className="text-2xl">🏢</span>
             </div>
           </CardHeader>
@@ -349,7 +363,9 @@ export function AdminDashboard({
               <div className="text-2xl font-bold text-gray-900">
                 {stats.security.twoFactorEnabled.toLocaleString()}
               </div>
-              <div className="mb-2 text-xs text-gray-500">2FA Enabled Users</div>
+              <div className="mb-2 text-xs text-gray-500">
+                2FA Enabled Users
+              </div>
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-500">Failed Logins:</span>
@@ -365,7 +381,9 @@ export function AdminDashboard({
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="text-gray-400">Password Resets:</span>
-                  <span className="font-medium text-blue-600">{stats.security.passwordResets}</span>
+                  <span className="font-medium text-blue-600">
+                    {stats.security.passwordResets}
+                  </span>
                 </div>
               </div>
             </div>
@@ -386,15 +404,21 @@ export function AdminDashboard({
         <CardContent>
           <div className="grid grid-cols-4 gap-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900">{stats.apiKeys.total}</div>
+              <div className="text-2xl font-bold text-gray-900">
+                {stats.apiKeys.total}
+              </div>
               <div className="text-sm text-gray-500">Total Keys</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{stats.apiKeys.active}</div>
+              <div className="text-2xl font-bold text-green-600">
+                {stats.apiKeys.active}
+              </div>
               <div className="text-sm text-gray-500">Active</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-red-600">{stats.apiKeys.expired}</div>
+              <div className="text-2xl font-bold text-red-600">
+                {stats.apiKeys.expired}
+              </div>
               <div className="text-sm text-gray-500">Expired</div>
             </div>
             <div className="text-center">
@@ -411,8 +435,14 @@ export function AdminDashboard({
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-gray-900">Recent Activity</h3>
-              <Button variant="outline" size="sm" onClick={onNavigateToSecurity}>
+              <h3 className="text-lg font-medium text-gray-900">
+                Recent Activity
+              </h3>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onNavigateToSecurity}
+              >
                 View All
               </Button>
             </div>
@@ -420,16 +450,22 @@ export function AdminDashboard({
           <CardContent>
             <div className="space-y-4">
               {recentActivity.length === 0 ? (
-                <p className="py-4 text-center text-gray-500">No recent activity</p>
+                <p className="py-4 text-center text-gray-500">
+                  No recent activity
+                </p>
               ) : (
-                recentActivity.slice(0, 5).map(activity => (
+                recentActivity.slice(0, 5).map((activity) => (
                   <div key={activity.id} className="flex items-start space-x-3">
                     <div className="flex-shrink-0">
-                      <span className="text-lg">{getActivityIcon(activity.type)}</span>
+                      <span className="text-lg">
+                        {getActivityIcon(activity.type)}
+                      </span>
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center space-x-2">
-                        <p className="truncate text-sm text-gray-900">{activity.description}</p>
+                        <p className="truncate text-sm text-gray-900">
+                          {activity.description}
+                        </p>
                         <span
                           className={`inline-flex rounded-full border px-2 py-1 text-xs font-medium ${getSeverityColor(activity.severity)}`}
                         >
@@ -462,7 +498,9 @@ export function AdminDashboard({
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-gray-900">System Alerts</h3>
+              <h3 className="text-lg font-medium text-gray-900">
+                System Alerts
+              </h3>
               <span className="inline-flex rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800">
                 {unResolvedAlerts.length} active
               </span>
@@ -476,7 +514,7 @@ export function AdminDashboard({
                   <p className="text-gray-500">All systems operational</p>
                 </div>
               ) : (
-                unResolvedAlerts.slice(0, 5).map(alert => (
+                unResolvedAlerts.slice(0, 5).map((alert) => (
                   <div
                     key={alert.id}
                     className={`rounded-lg border p-4 ${getAlertColor(alert.type)}`}
@@ -489,13 +527,13 @@ export function AdminDashboard({
                           <span>{formatTimestamp(alert.timestamp)}</span>
                           <span
                             className={`rounded-full px-2 py-1 font-medium ${
-                              alert.priority === 'critical'
-                                ? 'bg-red-100 text-red-800'
-                                : alert.priority === 'high'
-                                  ? 'bg-orange-100 text-orange-800'
-                                  : alert.priority === 'medium'
-                                    ? 'bg-yellow-100 text-yellow-800'
-                                    : 'bg-gray-100 text-gray-800'
+                              alert.priority === "critical"
+                                ? "bg-red-100 text-red-800"
+                                : alert.priority === "high"
+                                  ? "bg-orange-100 text-orange-800"
+                                  : alert.priority === "medium"
+                                    ? "bg-yellow-100 text-yellow-800"
+                                    : "bg-gray-100 text-gray-800"
                             }`}
                           >
                             {alert.priority}

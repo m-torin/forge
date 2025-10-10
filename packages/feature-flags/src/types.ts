@@ -26,23 +26,23 @@ export interface FlagEvaluationResult<T = FlagValue> {
   reason?: FlagEvaluationReason;
   ruleId?: string;
   segmentId?: string;
-  source: 'cache' | 'network' | 'fallback' | 'default';
+  source: "cache" | "network" | "fallback" | "default";
   timestamp: number;
   value: T;
   variant?: string;
 }
 
 export type FlagEvaluationReason =
-  | 'targeting_match'
-  | 'fallthrough'
-  | 'prerequisite_failed'
-  | 'individual_targeting'
-  | 'rule_match'
-  | 'percentage_rollout'
-  | 'experiment'
-  | 'off'
-  | 'error'
-  | 'unknown';
+  | "targeting_match"
+  | "fallthrough"
+  | "prerequisite_failed"
+  | "individual_targeting"
+  | "rule_match"
+  | "percentage_rollout"
+  | "experiment"
+  | "off"
+  | "error"
+  | "unknown";
 
 // ============================================================================
 // FEATURE FLAG PROVIDER INTERFACE
@@ -62,7 +62,9 @@ export interface FeatureFlagProvider {
     context?: FlagContext,
   ): Promise<FlagEvaluationResult<T>>;
 
-  getAllFlags(context?: FlagContext): Promise<Record<string, FlagEvaluationResult>>;
+  getAllFlags(
+    context?: FlagContext,
+  ): Promise<Record<string, FlagEvaluationResult>>;
 
   // Variants and experiments
   getVariant(
@@ -78,12 +80,21 @@ export interface FeatureFlagProvider {
   updateContext(updates: Partial<FlagContext>): void;
 
   // Real-time updates
-  onFlagChange?(key: string, callback: (result: FlagEvaluationResult) => void): () => void;
+  onFlagChange?(
+    key: string,
+    callback: (result: FlagEvaluationResult) => void,
+  ): () => void;
 
-  onFlagsChange?(callback: (changes: Record<string, FlagEvaluationResult>) => void): () => void;
+  onFlagsChange?(
+    callback: (changes: Record<string, FlagEvaluationResult>) => void,
+  ): () => void;
 
   // Analytics integration
-  trackExposure?(key: string, result: FlagEvaluationResult, context?: FlagContext): void;
+  trackExposure?(
+    key: string,
+    result: FlagEvaluationResult,
+    context?: FlagContext,
+  ): void;
 }
 
 // ============================================================================
@@ -118,7 +129,7 @@ export interface FlagConfig {
     analyticsProvider?: string;
 
     // Error handling
-    fallbackStrategy?: 'default' | 'cache' | 'last_known';
+    fallbackStrategy?: "default" | "cache" | "last_known";
 
     // Provider-specific options
     [key: string]: any;
@@ -149,7 +160,9 @@ export interface FeatureFlagManager {
     options?: FlagEvaluationOptions,
   ): Promise<FlagEvaluationResult<T>>;
 
-  getAllFlags(options?: FlagEvaluationOptions): Promise<Record<string, FlagEvaluationResult>>;
+  getAllFlags(
+    options?: FlagEvaluationOptions,
+  ): Promise<Record<string, FlagEvaluationResult>>;
 
   isEnabled(key: string, options?: FlagEvaluationOptions): Promise<boolean>;
 
@@ -170,7 +183,7 @@ export interface FeatureFlagManager {
 
 export interface FlagEvaluationOptions {
   context?: Partial<FlagContext>;
-  fallbackStrategy?: 'default' | 'cache' | 'last_known';
+  fallbackStrategy?: "default" | "cache" | "last_known";
   provider?: string;
   timeout?: number;
   trackExposure?: boolean;
@@ -216,7 +229,7 @@ export interface TypedFlag<T = FlagValue> {
   defaultValue: T;
   description?: string;
   key: string;
-  type?: 'boolean' | 'string' | 'number' | 'json';
+  type?: "boolean" | "string" | "number" | "json";
   variants?: string[];
 }
 
@@ -228,7 +241,7 @@ export type TypedFlagMap<T extends Record<string, any>> = {
 export function defineFlag<T>(
   key: string,
   defaultValue: T,
-  options?: Omit<TypedFlag<T>, 'key' | 'defaultValue'>,
+  options?: Omit<TypedFlag<T>, "key" | "defaultValue">,
 ): TypedFlag<T> {
   return {
     defaultValue,
@@ -252,7 +265,7 @@ export interface FlagCache {
 export interface CacheConfig {
   enabled: boolean;
   maxSize?: number;
-  strategy?: 'lru' | 'fifo' | 'ttl';
+  strategy?: "lru" | "fifo" | "ttl";
   ttl: number; // milliseconds
 }
 
@@ -269,20 +282,20 @@ export class FeatureFlagError extends Error {
     public readonly cause?: Error,
   ) {
     super(message);
-    this.name = 'FeatureFlagError';
+    this.name = "FeatureFlagError";
   }
 }
 
 export type FlagErrorCode =
-  | 'PROVIDER_NOT_FOUND'
-  | 'PROVIDER_NOT_INITIALIZED'
-  | 'FLAG_NOT_FOUND'
-  | 'EVALUATION_ERROR'
-  | 'TIMEOUT'
-  | 'NETWORK_ERROR'
-  | 'INVALID_CONTEXT'
-  | 'INVALID_CONFIGURATION'
-  | 'AUTHENTICATION_ERROR';
+  | "PROVIDER_NOT_FOUND"
+  | "PROVIDER_NOT_INITIALIZED"
+  | "FLAG_NOT_FOUND"
+  | "EVALUATION_ERROR"
+  | "TIMEOUT"
+  | "NETWORK_ERROR"
+  | "INVALID_CONTEXT"
+  | "INVALID_CONFIGURATION"
+  | "AUTHENTICATION_ERROR";
 
 // ============================================================================
 // UTILITY TYPES
@@ -299,7 +312,7 @@ export interface FlagMetrics {
 }
 
 export interface FlagDebugInfo {
-  cacheStatus: 'hit' | 'miss' | 'stale';
+  cacheStatus: "hit" | "miss" | "stale";
   context: FlagContext;
   errors?: Error[];
   evaluationTime: number;

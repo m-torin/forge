@@ -11,7 +11,7 @@ import { AIExtractionOptions, AIExtractionResult } from './types';
 /**
  * Structured extraction with validation
  */
-export async function extractStructured<T = any>(
+async function _extractStructured<T = any>(
   html: string,
   schema: Record<string, any>,
   options: Omit<AIExtractionOptions, 'schema'> = { prompt: 'Extract data according to schema' },
@@ -113,7 +113,7 @@ export async function extractWithAI(
 /**
  * Multi-model extraction with consensus
  */
-export async function extractWithConsensus(
+async function _extractWithConsensus(
   html: string,
   prompt: string,
   options: AIExtractionOptions & {

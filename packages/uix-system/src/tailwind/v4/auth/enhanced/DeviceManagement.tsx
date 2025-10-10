@@ -3,19 +3,23 @@
  * 100% React Server Component for managing user devices and sessions
  */
 
-import { useFormState } from 'react-dom';
-import type { BaseProps, FormState } from '../types';
-import { createInitialActionState } from '../types';
-import { Alert } from '../ui/Alert';
-import { Button } from '../ui/Button';
-import { Card, CardContent, CardHeader } from '../ui/Card';
+import { useFormState } from "react-dom";
+import type { BaseProps, FormState } from "../types";
+import { createInitialActionState } from "../types";
+import { Alert } from "../ui/Alert";
+import { Button } from "../ui/Button";
+import { Card, CardContent, CardHeader } from "../ui/Card";
 
-import { revokeAllDevicesAction, revokeDeviceAction, updateDeviceTrustAction } from './actions';
+import {
+  revokeAllDevicesAction,
+  revokeDeviceAction,
+  updateDeviceTrustAction,
+} from "./actions";
 
 interface Device {
   id: string;
   name: string;
-  deviceType: 'desktop' | 'mobile' | 'tablet' | 'unknown';
+  deviceType: "desktop" | "mobile" | "tablet" | "unknown";
   os: string;
   browser: string;
   ipAddress: string;
@@ -42,14 +46,17 @@ const _initialState: FormState = { success: false };
 export function DeviceManagement({
   devices,
   currentDeviceId,
-  title = 'Device Management',
-  subtitle = 'Manage devices that have access to your account',
+  title = "Device Management",
+  subtitle = "Manage devices that have access to your account",
   showTrustOptions = true,
   onDeviceRevoked: _onDeviceRevoked,
   onDeviceTrusted: _onDeviceTrusted,
-  className = '',
+  className = "",
 }: DeviceManagementProps) {
-  const [revokeState, revokeAction] = useFormState(revokeDeviceAction, createInitialActionState());
+  const [revokeState, revokeAction] = useFormState(
+    revokeDeviceAction,
+    createInitialActionState(),
+  );
   const [trustState, trustAction] = useFormState(
     updateDeviceTrustAction,
     createInitialActionState(),
@@ -59,9 +66,9 @@ export function DeviceManagement({
     createInitialActionState(),
   );
 
-  const getDeviceIcon = (deviceType: Device['deviceType']) => {
+  const getDeviceIcon = (deviceType: Device["deviceType"]) => {
     switch (deviceType) {
-      case 'desktop':
+      case "desktop":
         return (
           <svg
             className="h-6 w-6 text-gray-400"
@@ -77,7 +84,7 @@ export function DeviceManagement({
             />
           </svg>
         );
-      case 'mobile':
+      case "mobile":
         return (
           <svg
             className="h-6 w-6 text-gray-400"
@@ -93,7 +100,7 @@ export function DeviceManagement({
             />
           </svg>
         );
-      case 'tablet':
+      case "tablet":
         return (
           <svg
             className="h-6 w-6 text-gray-400"
@@ -136,14 +143,14 @@ export function DeviceManagement({
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
 
-    if (diffMins < 1) return 'Just now';
+    if (diffMins < 1) return "Just now";
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
     return date.toLocaleDateString();
   };
 
-  const otherDevices = devices.filter(device => !device.isCurrent);
+  const otherDevices = devices.filter((device) => !device.isCurrent);
 
   return (
     <div className={`space-y-6 ${className}`}>
@@ -173,16 +180,22 @@ export function DeviceManagement({
         </Alert>
       )}
 
-      {(revokeState?.success || trustState?.success || revokeAllState?.success) && (
+      {(revokeState?.success ||
+        trustState?.success ||
+        revokeAllState?.success) && (
         <Alert variant="success">
-          {revokeState?.message || trustState?.message || revokeAllState?.message}
+          {revokeState?.message ||
+            trustState?.message ||
+            revokeAllState?.message}
         </Alert>
       )}
 
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-medium text-gray-900">Current Device</h2>
+            <h2 className="text-lg font-medium text-gray-900">
+              Current Device
+            </h2>
             <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
               Active Now
             </span>
@@ -190,15 +203,20 @@ export function DeviceManagement({
         </CardHeader>
         <CardContent>
           {(() => {
-            const currentDevice = devices.find(device => device.isCurrent);
-            if (!currentDevice) return <p className="text-gray-500">Current device not found</p>;
+            const currentDevice = devices.find((device) => device.isCurrent);
+            if (!currentDevice)
+              return <p className="text-gray-500">Current device not found</p>;
 
             return (
               <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0">{getDeviceIcon(currentDevice.deviceType)}</div>
+                <div className="flex-shrink-0">
+                  {getDeviceIcon(currentDevice.deviceType)}
+                </div>
                 <div className="flex-1">
                   <div className="flex items-center space-x-2">
-                    <h3 className="text-sm font-medium text-gray-900">{currentDevice.name}</h3>
+                    <h3 className="text-sm font-medium text-gray-900">
+                      {currentDevice.name}
+                    </h3>
                     {currentDevice.trusted && showTrustOptions && (
                       <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">
                         Trusted
@@ -210,10 +228,12 @@ export function DeviceManagement({
                       {currentDevice.os} • {currentDevice.browser}
                     </p>
                     <p>IP: {currentDevice.ipAddress}</p>
-                    {currentDevice.location && <p>Location: {currentDevice.location}</p>}
+                    {currentDevice.location && (
+                      <p>Location: {currentDevice.location}</p>
+                    )}
                     <p className="text-xs text-gray-500">
                       {currentDevice.sessionCount} active session
-                      {currentDevice.sessionCount !== 1 ? 's' : ''}
+                      {currentDevice.sessionCount !== 1 ? "s" : ""}
                     </p>
                   </div>
                 </div>
@@ -231,14 +251,22 @@ export function DeviceManagement({
             </h2>
             {otherDevices.length > 0 && (
               <form action={revokeAllAction}>
-                <input type="hidden" name="currentDeviceId" value={currentDeviceId} />
+                <input
+                  type="hidden"
+                  name="currentDeviceId"
+                  value={currentDeviceId}
+                />
                 <Button
                   type="submit"
                   variant="destructive"
                   size="sm"
                   disabled={revokeAllState === undefined}
                   onClick={() => {
-                    if (!confirm('This will sign out all other devices. Are you sure?')) {
+                    if (
+                      !confirm(
+                        "This will sign out all other devices. Are you sure?",
+                      )
+                    ) {
                       return;
                     }
                   }}
@@ -262,21 +290,29 @@ export function DeviceManagement({
                   />
                 </svg>
               </div>
-              <h3 className="text-sm font-medium text-gray-900">No Other Devices</h3>
-              <p className="mt-1 text-sm text-gray-500">You're only signed in on this device</p>
+              <h3 className="text-sm font-medium text-gray-900">
+                No Other Devices
+              </h3>
+              <p className="mt-1 text-sm text-gray-500">
+                You're only signed in on this device
+              </p>
             </div>
           ) : (
             <div className="space-y-4">
-              {otherDevices.map(device => (
+              {otherDevices.map((device) => (
                 <div
                   key={device.id}
                   className="flex items-start justify-between rounded-lg border border-gray-200 p-4"
                 >
                   <div className="flex items-start space-x-4">
-                    <div className="flex-shrink-0">{getDeviceIcon(device.deviceType)}</div>
+                    <div className="flex-shrink-0">
+                      {getDeviceIcon(device.deviceType)}
+                    </div>
                     <div className="flex-1">
                       <div className="flex items-center space-x-2">
-                        <h3 className="text-sm font-medium text-gray-900">{device.name}</h3>
+                        <h3 className="text-sm font-medium text-gray-900">
+                          {device.name}
+                        </h3>
                         {device.trusted && showTrustOptions && (
                           <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">
                             Trusted
@@ -290,11 +326,17 @@ export function DeviceManagement({
                         <p>IP: {device.ipAddress}</p>
                         {device.location && <p>Location: {device.location}</p>}
                         <div className="mt-1 flex items-center space-x-4 text-xs text-gray-500">
-                          <span>Last active: {formatLastActive(device.lastActive)}</span>
                           <span>
-                            {device.sessionCount} session{device.sessionCount !== 1 ? 's' : ''}
+                            Last active: {formatLastActive(device.lastActive)}
                           </span>
-                          <span>Added: {new Date(device.createdAt).toLocaleDateString()}</span>
+                          <span>
+                            {device.sessionCount} session
+                            {device.sessionCount !== 1 ? "s" : ""}
+                          </span>
+                          <span>
+                            Added:{" "}
+                            {new Date(device.createdAt).toLocaleDateString()}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -303,15 +345,23 @@ export function DeviceManagement({
                   <div className="flex items-center space-x-2">
                     {showTrustOptions && (
                       <form action={trustAction} className="inline">
-                        <input type="hidden" name="deviceId" value={device.id} />
-                        <input type="hidden" name="trusted" value={(!device.trusted).toString()} />
+                        <input
+                          type="hidden"
+                          name="deviceId"
+                          value={device.id}
+                        />
+                        <input
+                          type="hidden"
+                          name="trusted"
+                          value={(!device.trusted).toString()}
+                        />
                         <Button
                           type="submit"
                           variant="outline"
                           size="sm"
                           disabled={trustState === undefined}
                         >
-                          {device.trusted ? 'Untrust' : 'Trust'}
+                          {device.trusted ? "Untrust" : "Trust"}
                         </Button>
                       </form>
                     )}
@@ -358,10 +408,19 @@ export function DeviceManagement({
               <h4 className="mb-2 font-medium">Device Security Tips</h4>
               <ul className="list-inside list-disc space-y-1">
                 <li>Review your devices regularly and sign out unused ones</li>
-                <li>Mark frequently used devices as trusted to reduce security prompts</li>
-                <li>If you see an unfamiliar device, sign it out immediately</li>
-                <li>Use "Sign Out All Others" if you suspect unauthorized access</li>
-                <li>Devices are automatically signed out after extended inactivity</li>
+                <li>
+                  Mark frequently used devices as trusted to reduce security
+                  prompts
+                </li>
+                <li>
+                  If you see an unfamiliar device, sign it out immediately
+                </li>
+                <li>
+                  Use "Sign Out All Others" if you suspect unauthorized access
+                </li>
+                <li>
+                  Devices are automatically signed out after extended inactivity
+                </li>
               </ul>
             </div>
           </div>

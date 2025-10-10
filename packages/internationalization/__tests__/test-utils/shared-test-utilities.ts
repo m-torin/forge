@@ -3,9 +3,9 @@
  * Reduces code duplication and provides consistent test patterns
  */
 
-import { render, screen } from '@testing-library/react';
-import { expect, vi } from 'vitest';
-import type { Dictionary, Locale } from '../../src/shared/dictionary-loader';
+import { render, screen } from "@testing-library/react";
+import { expect, vi } from "vitest";
+import type { Dictionary, Locale } from "../../src/shared/dictionary-loader";
 
 // ============================================================================
 // MOCK UTILITIES
@@ -16,18 +16,22 @@ import type { Dictionary, Locale } from '../../src/shared/dictionary-loader';
  */
 export function createDictionaryLoaderMock() {
   return {
-    getLocales: vi.fn(() => ['en', 'fr', 'es', 'pt', 'de']),
+    getLocales: vi.fn(() => ["en", "fr", "es", "pt", "de"]),
     getDictionary: vi.fn((locale: string) => {
       const dictionaries = {
-        en: { common: { hello: 'Hello', goodbye: 'Goodbye' } },
-        fr: { common: { hello: 'Bonjour', goodbye: 'Au revoir' } },
-        es: { common: { hello: 'Hola', goodbye: 'Adiós' } },
-        pt: { common: { hello: 'Olá', goodbye: 'Tchau' } },
-        de: { common: { hello: 'Hallo', goodbye: 'Auf Wiedersehen' } },
+        en: { common: { hello: "Hello", goodbye: "Goodbye" } },
+        fr: { common: { hello: "Bonjour", goodbye: "Au revoir" } },
+        es: { common: { hello: "Hola", goodbye: "Adiós" } },
+        pt: { common: { hello: "Olá", goodbye: "Tchau" } },
+        de: { common: { hello: "Hallo", goodbye: "Auf Wiedersehen" } },
       };
-      return dictionaries[locale as keyof typeof dictionaries] || dictionaries.en;
+      return (
+        dictionaries[locale as keyof typeof dictionaries] || dictionaries.en
+      );
     }),
-    isLocaleSupported: vi.fn((locale: string) => ['en', 'fr', 'es', 'pt', 'de'].includes(locale)),
+    isLocaleSupported: vi.fn((locale: string) =>
+      ["en", "fr", "es", "pt", "de"].includes(locale),
+    ),
     normalizeDictionary: vi.fn((dict: any) => dict),
   };
 }
@@ -39,28 +43,36 @@ export function createMiddlewareMock() {
   return {
     createI18nMiddleware: vi.fn((config: any) => {
       return vi.fn((request: any) => {
-        const acceptLanguage = request.headers['accept-language'] || 'en';
-        const detectedLocale = acceptLanguage.split(',')[0].split('-')[0];
-        const supportedLocales = config.locales || ['en', 'fr', 'es', 'pt', 'de'];
+        const acceptLanguage = request.headers["accept-language"] || "en";
+        const detectedLocale = acceptLanguage.split(",")[0].split("-")[0];
+        const supportedLocales = config.locales || [
+          "en",
+          "fr",
+          "es",
+          "pt",
+          "de",
+        ];
         const locale = supportedLocales.includes(detectedLocale)
           ? detectedLocale
           : config.defaultLocale;
 
         return {
           status: 200,
-          headers: { 'x-locale': locale },
+          headers: { "x-locale": locale },
           locale,
         };
       });
     }),
-    detectLocale: vi.fn((acceptLanguage: string, supportedLocales: string[]) => {
-      const detected = acceptLanguage.split(',')[0].split('-')[0];
-      return supportedLocales.includes(detected) ? detected : 'en';
-    }),
+    detectLocale: vi.fn(
+      (acceptLanguage: string, supportedLocales: string[]) => {
+        const detected = acceptLanguage.split(",")[0].split("-")[0];
+        return supportedLocales.includes(detected) ? detected : "en";
+      },
+    ),
     parseAcceptLanguage: vi.fn((header: string) => {
-      return header.split(',').map(lang => ({
-        code: lang.split(';')[0].trim(),
-        quality: lang.includes('q=') ? parseFloat(lang.split('q=')[1]) : 1,
+      return header.split(",").map((lang) => ({
+        code: lang.split(";")[0].trim(),
+        quality: lang.includes("q=") ? parseFloat(lang.split("q=")[1]) : 1,
       }));
     }),
   };
@@ -71,8 +83,8 @@ export function createMiddlewareMock() {
  */
 export function createNextNavigationMock() {
   return {
-    useParams: vi.fn(() => ({ locale: 'en' })),
-    usePathname: vi.fn(() => '/'),
+    useParams: vi.fn(() => ({ locale: "en" })),
+    usePathname: vi.fn(() => "/"),
     useRouter: vi.fn(() => ({
       push: vi.fn(),
       replace: vi.fn(),
@@ -84,7 +96,7 @@ export function createNextNavigationMock() {
     useSearchParams: vi.fn(() => ({
       get: vi.fn(),
       has: vi.fn(),
-      toString: vi.fn(() => ''),
+      toString: vi.fn(() => ""),
     })),
     redirect: vi.fn(),
     notFound: vi.fn(),
@@ -110,418 +122,418 @@ export function setupI18nMocks() {
  * Creates base dictionary for testing
  */
 export function createBaseDictionary(
-  locale: Locale = 'en',
+  locale: Locale = "en",
   overrides: Partial<Dictionary> = {},
 ): Dictionary {
   const baseDictionaries = {
     en: {
       common: {
-        hello: 'Hello',
-        goodbye: 'Goodbye',
-        welcome: 'Welcome',
-        loading: 'Loading...',
-        error: 'Error',
-        success: 'Success',
-        yes: 'Yes',
-        no: 'No',
-        ok: 'OK',
-        cancel: 'Cancel',
-        save: 'Save',
-        delete: 'Delete',
-        edit: 'Edit',
-        create: 'Create',
-        update: 'Update',
-        search: 'Search',
-        filter: 'Filter',
-        sort: 'Sort',
-        reset: 'Reset',
-        submit: 'Submit',
-        close: 'Close',
-        open: 'Open',
-        next: 'Next',
-        previous: 'Previous',
-        first: 'First',
-        last: 'Last',
+        hello: "Hello",
+        goodbye: "Goodbye",
+        welcome: "Welcome",
+        loading: "Loading...",
+        error: "Error",
+        success: "Success",
+        yes: "Yes",
+        no: "No",
+        ok: "OK",
+        cancel: "Cancel",
+        save: "Save",
+        delete: "Delete",
+        edit: "Edit",
+        create: "Create",
+        update: "Update",
+        search: "Search",
+        filter: "Filter",
+        sort: "Sort",
+        reset: "Reset",
+        submit: "Submit",
+        close: "Close",
+        open: "Open",
+        next: "Next",
+        previous: "Previous",
+        first: "First",
+        last: "Last",
       },
       navigation: {
-        home: 'Home',
-        about: 'About',
-        contact: 'Contact',
-        products: 'Products',
-        services: 'Services',
-        blog: 'Blog',
-        help: 'Help',
-        support: 'Support',
-        faq: 'FAQ',
-        terms: 'Terms',
-        privacy: 'Privacy',
-        sitemap: 'Sitemap',
+        home: "Home",
+        about: "About",
+        contact: "Contact",
+        products: "Products",
+        services: "Services",
+        blog: "Blog",
+        help: "Help",
+        support: "Support",
+        faq: "FAQ",
+        terms: "Terms",
+        privacy: "Privacy",
+        sitemap: "Sitemap",
       },
       forms: {
-        firstName: 'First Name',
-        lastName: 'Last Name',
-        email: 'Email',
-        phone: 'Phone',
-        address: 'Address',
-        city: 'City',
-        state: 'State',
-        country: 'Country',
-        zipCode: 'ZIP Code',
-        message: 'Message',
-        subject: 'Subject',
-        category: 'Category',
-        priority: 'Priority',
-        status: 'Status',
-        date: 'Date',
-        time: 'Time',
-        quantity: 'Quantity',
-        price: 'Price',
-        total: 'Total',
+        firstName: "First Name",
+        lastName: "Last Name",
+        email: "Email",
+        phone: "Phone",
+        address: "Address",
+        city: "City",
+        state: "State",
+        country: "Country",
+        zipCode: "ZIP Code",
+        message: "Message",
+        subject: "Subject",
+        category: "Category",
+        priority: "Priority",
+        status: "Status",
+        date: "Date",
+        time: "Time",
+        quantity: "Quantity",
+        price: "Price",
+        total: "Total",
       },
       errors: {
-        required: 'This field is required',
-        invalid: 'Invalid value',
-        tooShort: 'Too short',
-        tooLong: 'Too long',
-        invalidEmail: 'Invalid email address',
-        invalidPhone: 'Invalid phone number',
-        invalidUrl: 'Invalid URL',
-        invalidDate: 'Invalid date',
-        invalidTime: 'Invalid time',
-        invalidNumber: 'Invalid number',
-        notFound: 'Not found',
-        unauthorized: 'Unauthorized',
-        forbidden: 'Forbidden',
-        serverError: 'Server error',
-        networkError: 'Network error',
+        required: "This field is required",
+        invalid: "Invalid value",
+        tooShort: "Too short",
+        tooLong: "Too long",
+        invalidEmail: "Invalid email address",
+        invalidPhone: "Invalid phone number",
+        invalidUrl: "Invalid URL",
+        invalidDate: "Invalid date",
+        invalidTime: "Invalid time",
+        invalidNumber: "Invalid number",
+        notFound: "Not found",
+        unauthorized: "Unauthorized",
+        forbidden: "Forbidden",
+        serverError: "Server error",
+        networkError: "Network error",
       },
     },
     fr: {
       common: {
-        hello: 'Bonjour',
-        goodbye: 'Au revoir',
-        welcome: 'Bienvenue',
-        loading: 'Chargement...',
-        error: 'Erreur',
-        success: 'Succès',
-        yes: 'Oui',
-        no: 'Non',
-        ok: 'OK',
-        cancel: 'Annuler',
-        save: 'Enregistrer',
-        delete: 'Supprimer',
-        edit: 'Modifier',
-        create: 'Créer',
-        update: 'Mettre à jour',
-        search: 'Rechercher',
-        filter: 'Filtrer',
-        sort: 'Trier',
-        reset: 'Réinitialiser',
-        submit: 'Soumettre',
-        close: 'Fermer',
-        open: 'Ouvrir',
-        next: 'Suivant',
-        previous: 'Précédent',
-        first: 'Premier',
-        last: 'Dernier',
+        hello: "Bonjour",
+        goodbye: "Au revoir",
+        welcome: "Bienvenue",
+        loading: "Chargement...",
+        error: "Erreur",
+        success: "Succès",
+        yes: "Oui",
+        no: "Non",
+        ok: "OK",
+        cancel: "Annuler",
+        save: "Enregistrer",
+        delete: "Supprimer",
+        edit: "Modifier",
+        create: "Créer",
+        update: "Mettre à jour",
+        search: "Rechercher",
+        filter: "Filtrer",
+        sort: "Trier",
+        reset: "Réinitialiser",
+        submit: "Soumettre",
+        close: "Fermer",
+        open: "Ouvrir",
+        next: "Suivant",
+        previous: "Précédent",
+        first: "Premier",
+        last: "Dernier",
       },
       navigation: {
-        home: 'Accueil',
-        about: 'À propos',
-        contact: 'Contact',
-        products: 'Produits',
-        services: 'Services',
-        blog: 'Blog',
-        help: 'Aide',
-        support: 'Support',
-        faq: 'FAQ',
-        terms: 'Conditions',
-        privacy: 'Confidentialité',
-        sitemap: 'Plan du site',
+        home: "Accueil",
+        about: "À propos",
+        contact: "Contact",
+        products: "Produits",
+        services: "Services",
+        blog: "Blog",
+        help: "Aide",
+        support: "Support",
+        faq: "FAQ",
+        terms: "Conditions",
+        privacy: "Confidentialité",
+        sitemap: "Plan du site",
       },
       forms: {
-        firstName: 'Prénom',
-        lastName: 'Nom',
-        email: 'E-mail',
-        phone: 'Téléphone',
-        address: 'Adresse',
-        city: 'Ville',
-        state: 'État',
-        country: 'Pays',
-        zipCode: 'Code postal',
-        message: 'Message',
-        subject: 'Sujet',
-        category: 'Catégorie',
-        priority: 'Priorité',
-        status: 'Statut',
-        date: 'Date',
-        time: 'Heure',
-        quantity: 'Quantité',
-        price: 'Prix',
-        total: 'Total',
+        firstName: "Prénom",
+        lastName: "Nom",
+        email: "E-mail",
+        phone: "Téléphone",
+        address: "Adresse",
+        city: "Ville",
+        state: "État",
+        country: "Pays",
+        zipCode: "Code postal",
+        message: "Message",
+        subject: "Sujet",
+        category: "Catégorie",
+        priority: "Priorité",
+        status: "Statut",
+        date: "Date",
+        time: "Heure",
+        quantity: "Quantité",
+        price: "Prix",
+        total: "Total",
       },
       errors: {
-        required: 'Ce champ est obligatoire',
-        invalid: 'Valeur invalide',
-        tooShort: 'Trop court',
-        tooLong: 'Trop long',
-        invalidEmail: 'Adresse e-mail invalide',
-        invalidPhone: 'Numéro de téléphone invalide',
-        invalidUrl: 'URL invalide',
-        invalidDate: 'Date invalide',
-        invalidTime: 'Heure invalide',
-        invalidNumber: 'Numéro invalide',
-        notFound: 'Introuvable',
-        unauthorized: 'Non autorisé',
-        forbidden: 'Interdit',
-        serverError: 'Erreur serveur',
-        networkError: 'Erreur réseau',
+        required: "Ce champ est obligatoire",
+        invalid: "Valeur invalide",
+        tooShort: "Trop court",
+        tooLong: "Trop long",
+        invalidEmail: "Adresse e-mail invalide",
+        invalidPhone: "Numéro de téléphone invalide",
+        invalidUrl: "URL invalide",
+        invalidDate: "Date invalide",
+        invalidTime: "Heure invalide",
+        invalidNumber: "Numéro invalide",
+        notFound: "Introuvable",
+        unauthorized: "Non autorisé",
+        forbidden: "Interdit",
+        serverError: "Erreur serveur",
+        networkError: "Erreur réseau",
       },
     },
     es: {
       common: {
-        hello: 'Hola',
-        goodbye: 'Adiós',
-        welcome: 'Bienvenido',
-        loading: 'Cargando...',
-        error: 'Error',
-        success: 'Éxito',
-        yes: 'Sí',
-        no: 'No',
-        ok: 'OK',
-        cancel: 'Cancelar',
-        save: 'Guardar',
-        delete: 'Eliminar',
-        edit: 'Editar',
-        create: 'Crear',
-        update: 'Actualizar',
-        search: 'Buscar',
-        filter: 'Filtrar',
-        sort: 'Ordenar',
-        reset: 'Restablecer',
-        submit: 'Enviar',
-        close: 'Cerrar',
-        open: 'Abrir',
-        next: 'Siguiente',
-        previous: 'Anterior',
-        first: 'Primero',
-        last: 'Último',
+        hello: "Hola",
+        goodbye: "Adiós",
+        welcome: "Bienvenido",
+        loading: "Cargando...",
+        error: "Error",
+        success: "Éxito",
+        yes: "Sí",
+        no: "No",
+        ok: "OK",
+        cancel: "Cancelar",
+        save: "Guardar",
+        delete: "Eliminar",
+        edit: "Editar",
+        create: "Crear",
+        update: "Actualizar",
+        search: "Buscar",
+        filter: "Filtrar",
+        sort: "Ordenar",
+        reset: "Restablecer",
+        submit: "Enviar",
+        close: "Cerrar",
+        open: "Abrir",
+        next: "Siguiente",
+        previous: "Anterior",
+        first: "Primero",
+        last: "Último",
       },
       navigation: {
-        home: 'Inicio',
-        about: 'Acerca de',
-        contact: 'Contacto',
-        products: 'Productos',
-        services: 'Servicios',
-        blog: 'Blog',
-        help: 'Ayuda',
-        support: 'Soporte',
-        faq: 'FAQ',
-        terms: 'Términos',
-        privacy: 'Privacidad',
-        sitemap: 'Mapa del sitio',
+        home: "Inicio",
+        about: "Acerca de",
+        contact: "Contacto",
+        products: "Productos",
+        services: "Servicios",
+        blog: "Blog",
+        help: "Ayuda",
+        support: "Soporte",
+        faq: "FAQ",
+        terms: "Términos",
+        privacy: "Privacidad",
+        sitemap: "Mapa del sitio",
       },
       forms: {
-        firstName: 'Nombre',
-        lastName: 'Apellido',
-        email: 'Correo',
-        phone: 'Teléfono',
-        address: 'Dirección',
-        city: 'Ciudad',
-        state: 'Estado',
-        country: 'País',
-        zipCode: 'Código postal',
-        message: 'Mensaje',
-        subject: 'Asunto',
-        category: 'Categoría',
-        priority: 'Prioridad',
-        status: 'Estado',
-        date: 'Fecha',
-        time: 'Hora',
-        quantity: 'Cantidad',
-        price: 'Precio',
-        total: 'Total',
+        firstName: "Nombre",
+        lastName: "Apellido",
+        email: "Correo",
+        phone: "Teléfono",
+        address: "Dirección",
+        city: "Ciudad",
+        state: "Estado",
+        country: "País",
+        zipCode: "Código postal",
+        message: "Mensaje",
+        subject: "Asunto",
+        category: "Categoría",
+        priority: "Prioridad",
+        status: "Estado",
+        date: "Fecha",
+        time: "Hora",
+        quantity: "Cantidad",
+        price: "Precio",
+        total: "Total",
       },
       errors: {
-        required: 'Este campo es obligatorio',
-        invalid: 'Valor inválido',
-        tooShort: 'Demasiado corto',
-        tooLong: 'Demasiado largo',
-        invalidEmail: 'Correo electrónico inválido',
-        invalidPhone: 'Número de teléfono inválido',
-        invalidUrl: 'URL inválida',
-        invalidDate: 'Fecha inválida',
-        invalidTime: 'Hora inválida',
-        invalidNumber: 'Número inválido',
-        notFound: 'No encontrado',
-        unauthorized: 'No autorizado',
-        forbidden: 'Prohibido',
-        serverError: 'Error del servidor',
-        networkError: 'Error de red',
+        required: "Este campo es obligatorio",
+        invalid: "Valor inválido",
+        tooShort: "Demasiado corto",
+        tooLong: "Demasiado largo",
+        invalidEmail: "Correo electrónico inválido",
+        invalidPhone: "Número de teléfono inválido",
+        invalidUrl: "URL inválida",
+        invalidDate: "Fecha inválida",
+        invalidTime: "Hora inválida",
+        invalidNumber: "Número inválido",
+        notFound: "No encontrado",
+        unauthorized: "No autorizado",
+        forbidden: "Prohibido",
+        serverError: "Error del servidor",
+        networkError: "Error de red",
       },
     },
     pt: {
       common: {
-        hello: 'Olá',
-        goodbye: 'Tchau',
-        welcome: 'Bem-vindo',
-        loading: 'Carregando...',
-        error: 'Erro',
-        success: 'Sucesso',
-        yes: 'Sim',
-        no: 'Não',
-        ok: 'OK',
-        cancel: 'Cancelar',
-        save: 'Salvar',
-        delete: 'Excluir',
-        edit: 'Editar',
-        create: 'Criar',
-        update: 'Atualizar',
-        search: 'Pesquisar',
-        filter: 'Filtrar',
-        sort: 'Ordenar',
-        reset: 'Redefinir',
-        submit: 'Enviar',
-        close: 'Fechar',
-        open: 'Abrir',
-        next: 'Próximo',
-        previous: 'Anterior',
-        first: 'Primeiro',
-        last: 'Último',
+        hello: "Olá",
+        goodbye: "Tchau",
+        welcome: "Bem-vindo",
+        loading: "Carregando...",
+        error: "Erro",
+        success: "Sucesso",
+        yes: "Sim",
+        no: "Não",
+        ok: "OK",
+        cancel: "Cancelar",
+        save: "Salvar",
+        delete: "Excluir",
+        edit: "Editar",
+        create: "Criar",
+        update: "Atualizar",
+        search: "Pesquisar",
+        filter: "Filtrar",
+        sort: "Ordenar",
+        reset: "Redefinir",
+        submit: "Enviar",
+        close: "Fechar",
+        open: "Abrir",
+        next: "Próximo",
+        previous: "Anterior",
+        first: "Primeiro",
+        last: "Último",
       },
       navigation: {
-        home: 'Início',
-        about: 'Sobre',
-        contact: 'Contato',
-        products: 'Produtos',
-        services: 'Serviços',
-        blog: 'Blog',
-        help: 'Ajuda',
-        support: 'Suporte',
-        faq: 'FAQ',
-        terms: 'Termos',
-        privacy: 'Privacidade',
-        sitemap: 'Mapa do site',
+        home: "Início",
+        about: "Sobre",
+        contact: "Contato",
+        products: "Produtos",
+        services: "Serviços",
+        blog: "Blog",
+        help: "Ajuda",
+        support: "Suporte",
+        faq: "FAQ",
+        terms: "Termos",
+        privacy: "Privacidade",
+        sitemap: "Mapa do site",
       },
       forms: {
-        firstName: 'Nome',
-        lastName: 'Sobrenome',
-        email: 'E-mail',
-        phone: 'Telefone',
-        address: 'Endereço',
-        city: 'Cidade',
-        state: 'Estado',
-        country: 'País',
-        zipCode: 'CEP',
-        message: 'Mensagem',
-        subject: 'Assunto',
-        category: 'Categoria',
-        priority: 'Prioridade',
-        status: 'Status',
-        date: 'Data',
-        time: 'Hora',
-        quantity: 'Quantidade',
-        price: 'Preço',
-        total: 'Total',
+        firstName: "Nome",
+        lastName: "Sobrenome",
+        email: "E-mail",
+        phone: "Telefone",
+        address: "Endereço",
+        city: "Cidade",
+        state: "Estado",
+        country: "País",
+        zipCode: "CEP",
+        message: "Mensagem",
+        subject: "Assunto",
+        category: "Categoria",
+        priority: "Prioridade",
+        status: "Status",
+        date: "Data",
+        time: "Hora",
+        quantity: "Quantidade",
+        price: "Preço",
+        total: "Total",
       },
       errors: {
-        required: 'Este campo é obrigatório',
-        invalid: 'Valor inválido',
-        tooShort: 'Muito curto',
-        tooLong: 'Muito longo',
-        invalidEmail: 'Endereço de e-mail inválido',
-        invalidPhone: 'Número de telefone inválido',
-        invalidUrl: 'URL inválida',
-        invalidDate: 'Data inválida',
-        invalidTime: 'Hora inválida',
-        invalidNumber: 'Número inválido',
-        notFound: 'Não encontrado',
-        unauthorized: 'Não autorizado',
-        forbidden: 'Proibido',
-        serverError: 'Erro do servidor',
-        networkError: 'Erro de rede',
+        required: "Este campo é obrigatório",
+        invalid: "Valor inválido",
+        tooShort: "Muito curto",
+        tooLong: "Muito longo",
+        invalidEmail: "Endereço de e-mail inválido",
+        invalidPhone: "Número de telefone inválido",
+        invalidUrl: "URL inválida",
+        invalidDate: "Data inválida",
+        invalidTime: "Hora inválida",
+        invalidNumber: "Número inválido",
+        notFound: "Não encontrado",
+        unauthorized: "Não autorizado",
+        forbidden: "Proibido",
+        serverError: "Erro do servidor",
+        networkError: "Erro de rede",
       },
     },
     de: {
       common: {
-        hello: 'Hallo',
-        goodbye: 'Auf Wiedersehen',
-        welcome: 'Willkommen',
-        loading: 'Wird geladen...',
-        error: 'Fehler',
-        success: 'Erfolg',
-        yes: 'Ja',
-        no: 'Nein',
-        ok: 'OK',
-        cancel: 'Abbrechen',
-        save: 'Speichern',
-        delete: 'Löschen',
-        edit: 'Bearbeiten',
-        create: 'Erstellen',
-        update: 'Aktualisieren',
-        search: 'Suchen',
-        filter: 'Filter',
-        sort: 'Sortieren',
-        reset: 'Zurücksetzen',
-        submit: 'Absenden',
-        close: 'Schließen',
-        open: 'Öffnen',
-        next: 'Weiter',
-        previous: 'Zurück',
-        first: 'Erste',
-        last: 'Letzte',
+        hello: "Hallo",
+        goodbye: "Auf Wiedersehen",
+        welcome: "Willkommen",
+        loading: "Wird geladen...",
+        error: "Fehler",
+        success: "Erfolg",
+        yes: "Ja",
+        no: "Nein",
+        ok: "OK",
+        cancel: "Abbrechen",
+        save: "Speichern",
+        delete: "Löschen",
+        edit: "Bearbeiten",
+        create: "Erstellen",
+        update: "Aktualisieren",
+        search: "Suchen",
+        filter: "Filter",
+        sort: "Sortieren",
+        reset: "Zurücksetzen",
+        submit: "Absenden",
+        close: "Schließen",
+        open: "Öffnen",
+        next: "Weiter",
+        previous: "Zurück",
+        first: "Erste",
+        last: "Letzte",
       },
       navigation: {
-        home: 'Startseite',
-        about: 'Über uns',
-        contact: 'Kontakt',
-        products: 'Produkte',
-        services: 'Dienstleistungen',
-        blog: 'Blog',
-        help: 'Hilfe',
-        support: 'Support',
-        faq: 'FAQ',
-        terms: 'Bedingungen',
-        privacy: 'Datenschutz',
-        sitemap: 'Sitemap',
+        home: "Startseite",
+        about: "Über uns",
+        contact: "Kontakt",
+        products: "Produkte",
+        services: "Dienstleistungen",
+        blog: "Blog",
+        help: "Hilfe",
+        support: "Support",
+        faq: "FAQ",
+        terms: "Bedingungen",
+        privacy: "Datenschutz",
+        sitemap: "Sitemap",
       },
       forms: {
-        firstName: 'Vorname',
-        lastName: 'Nachname',
-        email: 'E-Mail',
-        phone: 'Telefon',
-        address: 'Adresse',
-        city: 'Stadt',
-        state: 'Bundesland',
-        country: 'Land',
-        zipCode: 'Postleitzahl',
-        message: 'Nachricht',
-        subject: 'Betreff',
-        category: 'Kategorie',
-        priority: 'Priorität',
-        status: 'Status',
-        date: 'Datum',
-        time: 'Zeit',
-        quantity: 'Menge',
-        price: 'Preis',
-        total: 'Gesamt',
+        firstName: "Vorname",
+        lastName: "Nachname",
+        email: "E-Mail",
+        phone: "Telefon",
+        address: "Adresse",
+        city: "Stadt",
+        state: "Bundesland",
+        country: "Land",
+        zipCode: "Postleitzahl",
+        message: "Nachricht",
+        subject: "Betreff",
+        category: "Kategorie",
+        priority: "Priorität",
+        status: "Status",
+        date: "Datum",
+        time: "Zeit",
+        quantity: "Menge",
+        price: "Preis",
+        total: "Gesamt",
       },
       errors: {
-        required: 'Dieses Feld ist erforderlich',
-        invalid: 'Ungültiger Wert',
-        tooShort: 'Zu kurz',
-        tooLong: 'Zu lang',
-        invalidEmail: 'Ungültige E-Mail-Adresse',
-        invalidPhone: 'Ungültige Telefonnummer',
-        invalidUrl: 'Ungültige URL',
-        invalidDate: 'Ungültiges Datum',
-        invalidTime: 'Ungültige Zeit',
-        invalidNumber: 'Ungültige Nummer',
-        notFound: 'Nicht gefunden',
-        unauthorized: 'Nicht autorisiert',
-        forbidden: 'Verboten',
-        serverError: 'Serverfehler',
-        networkError: 'Netzwerkfehler',
+        required: "Dieses Feld ist erforderlich",
+        invalid: "Ungültiger Wert",
+        tooShort: "Zu kurz",
+        tooLong: "Zu lang",
+        invalidEmail: "Ungültige E-Mail-Adresse",
+        invalidPhone: "Ungültige Telefonnummer",
+        invalidUrl: "Ungültige URL",
+        invalidDate: "Ungültiges Datum",
+        invalidTime: "Ungültige Zeit",
+        invalidNumber: "Ungültige Nummer",
+        notFound: "Nicht gefunden",
+        unauthorized: "Nicht autorisiert",
+        forbidden: "Verboten",
+        serverError: "Serverfehler",
+        networkError: "Netzwerkfehler",
       },
     },
   };
@@ -547,25 +559,25 @@ export function createMiddlewareRequest(
 ) {
   return {
     headers: {
-      'accept-language': overrides.acceptLanguage || 'en-US,en;q=0.9',
-      'user-agent': 'Mozilla/5.0 (compatible; test)',
+      "accept-language": overrides.acceptLanguage || "en-US,en;q=0.9",
+      "user-agent": "Mozilla/5.0 (compatible; test)",
       ...overrides.headers,
     },
     cookies: overrides.cookies || {},
     nextUrl: {
-      pathname: overrides.pathname || '/',
-      search: '',
-      hash: '',
-      origin: 'https://example.com',
-      href: `https://example.com${overrides.pathname || '/'}`,
+      pathname: overrides.pathname || "/",
+      search: "",
+      hash: "",
+      origin: "https://example.com",
+      href: `https://example.com${overrides.pathname || "/"}`,
     },
-    method: overrides.method || 'GET',
-    url: overrides.url || `https://example.com${overrides.pathname || '/'}`,
-    ip: '192.168.1.1',
+    method: overrides.method || "GET",
+    url: overrides.url || `https://example.com${overrides.pathname || "/"}`,
+    ip: "192.168.1.1",
     geo: {
-      country: 'US',
-      region: 'CA',
-      city: 'San Francisco',
+      country: "US",
+      region: "CA",
+      city: "San Francisco",
     },
   };
 }
@@ -575,20 +587,26 @@ export function createMiddlewareRequest(
  */
 export function createI18nConfig(overrides: any = {}) {
   return {
-    locales: ['en', 'fr', 'es', 'pt', 'de'],
-    defaultLocale: 'en',
-    fallbackLocale: 'en',
-    cookieName: 'locale',
-    headerName: 'x-locale',
+    locales: ["en", "fr", "es", "pt", "de"],
+    defaultLocale: "en",
+    fallbackLocale: "en",
+    cookieName: "locale",
+    headerName: "x-locale",
     pathnames: {
-      '/': '/',
-      '/about': { en: '/about', fr: '/a-propos', es: '/acerca-de', pt: '/sobre', de: '/ueber-uns' },
-      '/contact': {
-        en: '/contact',
-        fr: '/contact',
-        es: '/contacto',
-        pt: '/contato',
-        de: '/kontakt',
+      "/": "/",
+      "/about": {
+        en: "/about",
+        fr: "/a-propos",
+        es: "/acerca-de",
+        pt: "/sobre",
+        de: "/ueber-uns",
+      },
+      "/contact": {
+        en: "/contact",
+        fr: "/contact",
+        es: "/contacto",
+        pt: "/contato",
+        de: "/kontakt",
       },
     },
     ...overrides,
@@ -600,10 +618,10 @@ export function createI18nConfig(overrides: any = {}) {
  */
 export function createComponentProps(overrides: any = {}) {
   return {
-    locale: 'en',
-    dictionary: createBaseDictionary('en'),
-    className: 'test-component',
-    'data-testid': 'i18n-component',
+    locale: "en",
+    dictionary: createBaseDictionary("en"),
+    className: "test-component",
+    "data-testid": "i18n-component",
     ...overrides,
   };
 }
@@ -628,18 +646,21 @@ export function validateI18nComponent(
   expect(screen.getByText(expectedText)).toBeInTheDocument();
 
   // Check if locale is properly set in the component
-  const component = renderResult.container.querySelector('[data-locale]');
+  const component = renderResult.container.querySelector("[data-locale]");
   if (component) {
-    expect(component).toHaveAttribute('data-locale', expectedLocale);
+    expect(component).toHaveAttribute("data-locale", expectedLocale);
   }
 }
 
 /**
  * Validates that dictionary contains required keys
  */
-export function validateDictionaryKeys(dictionary: Dictionary, requiredKeys: string[]) {
-  requiredKeys.forEach(key => {
-    const keys = key.split('.');
+export function validateDictionaryKeys(
+  dictionary: Dictionary,
+  requiredKeys: string[],
+) {
+  requiredKeys.forEach((key) => {
+    const keys = key.split(".");
     let current = dictionary;
 
     for (const k of keys) {
@@ -648,7 +669,7 @@ export function validateDictionaryKeys(dictionary: Dictionary, requiredKeys: str
       current = current[k];
     }
 
-    expect(typeof current).toBe('string');
+    expect(typeof current).toBe("string");
     expect(current.length).toBeGreaterThan(0);
   });
 }
@@ -662,9 +683,9 @@ export function validateLocaleConsistency(
 ) {
   const locales = Object.keys(dictionaries) as Locale[];
 
-  referenceKeys.forEach(key => {
-    locales.forEach(locale => {
-      const keys = key.split('.');
+  referenceKeys.forEach((key) => {
+    locales.forEach((locale) => {
+      const keys = key.split(".");
       let current = dictionaries[locale];
 
       for (const k of keys) {
@@ -672,7 +693,7 @@ export function validateLocaleConsistency(
         current = current[k];
       }
 
-      expect(typeof current).toBe('string');
+      expect(typeof current).toBe("string");
       expect(current.length).toBeGreaterThan(0);
     });
   });
@@ -691,7 +712,9 @@ export function validateMiddlewareResponse(
   if (expectedHeaders) {
     Object.entries(expectedHeaders).forEach(([key, value]) => {
       if (response.headers) {
-        expect(response.headers[key] || response.headers.get?.(key)).toBe(value);
+        expect(response.headers[key] || response.headers.get?.(key)).toBe(
+          value,
+        );
       }
     });
   }
@@ -707,9 +730,9 @@ export function validateMiddlewareResponse(
 export function generateLocaleTestScenarios<T>(
   operation: (locale: Locale) => T,
   validation: (result: T, locale: Locale) => void,
-  supportedLocales: Locale[] = ['en', 'fr', 'es', 'pt', 'de'],
+  supportedLocales: Locale[] = ["en", "fr", "es", "pt", "de"],
 ) {
-  return supportedLocales.map(locale => ({
+  return supportedLocales.map((locale) => ({
     name: `${locale} locale`,
     locale,
     test: () => {
@@ -725,44 +748,52 @@ export function generateLocaleTestScenarios<T>(
 export function generateMiddlewareTestScenarios() {
   return [
     {
-      name: 'English Accept-Language',
-      request: createMiddlewareRequest({ acceptLanguage: 'en-US,en;q=0.9' }),
-      expectedLocale: 'en',
+      name: "English Accept-Language",
+      request: createMiddlewareRequest({ acceptLanguage: "en-US,en;q=0.9" }),
+      expectedLocale: "en",
     },
     {
-      name: 'French Accept-Language',
-      request: createMiddlewareRequest({ acceptLanguage: 'fr-FR,fr;q=0.9,en;q=0.8' }),
-      expectedLocale: 'fr',
+      name: "French Accept-Language",
+      request: createMiddlewareRequest({
+        acceptLanguage: "fr-FR,fr;q=0.9,en;q=0.8",
+      }),
+      expectedLocale: "fr",
     },
     {
-      name: 'Spanish Accept-Language',
-      request: createMiddlewareRequest({ acceptLanguage: 'es-ES,es;q=0.9,en;q=0.8' }),
-      expectedLocale: 'es',
+      name: "Spanish Accept-Language",
+      request: createMiddlewareRequest({
+        acceptLanguage: "es-ES,es;q=0.9,en;q=0.8",
+      }),
+      expectedLocale: "es",
     },
     {
-      name: 'Portuguese Accept-Language',
-      request: createMiddlewareRequest({ acceptLanguage: 'pt-BR,pt;q=0.9,en;q=0.8' }),
-      expectedLocale: 'pt',
+      name: "Portuguese Accept-Language",
+      request: createMiddlewareRequest({
+        acceptLanguage: "pt-BR,pt;q=0.9,en;q=0.8",
+      }),
+      expectedLocale: "pt",
     },
     {
-      name: 'German Accept-Language',
-      request: createMiddlewareRequest({ acceptLanguage: 'de-DE,de;q=0.9,en;q=0.8' }),
-      expectedLocale: 'de',
+      name: "German Accept-Language",
+      request: createMiddlewareRequest({
+        acceptLanguage: "de-DE,de;q=0.9,en;q=0.8",
+      }),
+      expectedLocale: "de",
     },
     {
-      name: 'Unsupported Accept-Language',
-      request: createMiddlewareRequest({ acceptLanguage: 'zh-CN,zh;q=0.9' }),
-      expectedLocale: 'en', // Fallback
+      name: "Unsupported Accept-Language",
+      request: createMiddlewareRequest({ acceptLanguage: "zh-CN,zh;q=0.9" }),
+      expectedLocale: "en", // Fallback
     },
     {
-      name: 'Empty Accept-Language',
-      request: createMiddlewareRequest({ acceptLanguage: '' }),
-      expectedLocale: 'en', // Default
+      name: "Empty Accept-Language",
+      request: createMiddlewareRequest({ acceptLanguage: "" }),
+      expectedLocale: "en", // Default
     },
     {
-      name: 'Malformed Accept-Language',
-      request: createMiddlewareRequest({ acceptLanguage: 'invalid-header' }),
-      expectedLocale: 'en', // Fallback
+      name: "Malformed Accept-Language",
+      request: createMiddlewareRequest({ acceptLanguage: "invalid-header" }),
+      expectedLocale: "en", // Fallback
     },
   ];
 }
@@ -773,40 +804,40 @@ export function generateMiddlewareTestScenarios() {
 export function generateI18nErrorScenarios() {
   return [
     {
-      name: 'Dictionary file not found',
+      name: "Dictionary file not found",
       setup: () => {
         vi.mocked(require).mockImplementation(() => {
-          throw new Error('ENOENT: no such file or directory');
+          throw new Error("ENOENT: no such file or directory");
         });
       },
-      expectedError: 'ENOENT',
+      expectedError: "ENOENT",
       expectedFallback: {},
     },
     {
-      name: 'Invalid JSON in dictionary',
+      name: "Invalid JSON in dictionary",
       setup: () => {
         vi.mocked(require).mockImplementation(() => {
-          throw new SyntaxError('Unexpected token in JSON');
+          throw new SyntaxError("Unexpected token in JSON");
         });
       },
-      expectedError: 'Unexpected token',
+      expectedError: "Unexpected token",
       expectedFallback: {},
     },
     {
-      name: 'Network error loading dictionary',
+      name: "Network error loading dictionary",
       setup: () => {
-        vi.mocked(fetch).mockRejectedValue(new Error('Network error'));
+        vi.mocked(fetch).mockRejectedValue(new Error("Network error"));
       },
-      expectedError: 'Network error',
+      expectedError: "Network error",
       expectedFallback: {},
     },
     {
-      name: 'Invalid locale code',
+      name: "Invalid locale code",
       operation: (locale: string) => {
-        const supportedLocales = ['en', 'fr', 'es', 'pt', 'de'];
-        return supportedLocales.includes(locale) ? locale : 'en';
+        const supportedLocales = ["en", "fr", "es", "pt", "de"];
+        return supportedLocales.includes(locale) ? locale : "en";
       },
-      expectedFallback: 'en',
+      expectedFallback: "en",
     },
   ];
 }
@@ -846,7 +877,7 @@ export async function measureI18nExecutionTime<T>(
 export function validateI18nPerformance(
   averageTime: number,
   maxAllowedTime: number = 5, // 5ms default for i18n operations
-  operation: string = 'i18n operation',
+  operation: string = "i18n operation",
 ) {
   expect(averageTime).toBeLessThan(maxAllowedTime);
 
@@ -866,15 +897,15 @@ export function validateI18nPerformance(
  */
 export function renderWithI18n(
   component: React.ReactElement,
-  locale: Locale = 'en',
+  locale: Locale = "en",
   dictionary?: Dictionary,
 ) {
   const mockUseParams = vi.fn(() => ({ locale }));
 
   // Mock Next.js navigation hooks
-  vi.mocked(vi.importActual('next/navigation')).mockImplementation(() => ({
+  vi.mocked(vi.importActual("next/navigation")).mockImplementation(() => ({
     useParams: mockUseParams,
-    usePathname: vi.fn(() => '/'),
+    usePathname: vi.fn(() => "/"),
     useRouter: vi.fn(() => ({
       push: vi.fn(),
       replace: vi.fn(),
@@ -891,9 +922,9 @@ export function renderWithI18n(
 export function testComponentAcrossLocales(
   componentFactory: (locale: Locale) => React.ReactElement,
   expectedTexts: Record<Locale, string>,
-  supportedLocales: Locale[] = ['en', 'fr', 'es', 'pt', 'de'],
+  supportedLocales: Locale[] = ["en", "fr", "es", "pt", "de"],
 ) {
-  supportedLocales.forEach(locale => {
+  supportedLocales.forEach((locale) => {
     test(`should render correctly in ${locale}`, () => {
       const component = componentFactory(locale);
       const { container } = renderWithI18n(component, locale);
@@ -907,9 +938,12 @@ export function testComponentAcrossLocales(
 /**
  * Creates test utilities for component testing
  */
-export function createComponentTestUtils(defaultLocale: Locale = 'en') {
+export function createComponentTestUtils(defaultLocale: Locale = "en") {
   return {
-    renderWithLocale: (component: React.ReactElement, locale: Locale = defaultLocale) => {
+    renderWithLocale: (
+      component: React.ReactElement,
+      locale: Locale = defaultLocale,
+    ) => {
       return renderWithI18n(component, locale);
     },
 
@@ -918,11 +952,11 @@ export function createComponentTestUtils(defaultLocale: Locale = 'en') {
     },
 
     expectLocaleAttribute: (element: HTMLElement, expectedLocale: Locale) => {
-      expect(element).toHaveAttribute('data-locale', expectedLocale);
+      expect(element).toHaveAttribute("data-locale", expectedLocale);
     },
 
     expectLocalizedUrl: (element: HTMLElement, expectedPattern: RegExp) => {
-      const href = element.getAttribute('href');
+      const href = element.getAttribute("href");
       expect(href).toMatch(expectedPattern);
     },
   };

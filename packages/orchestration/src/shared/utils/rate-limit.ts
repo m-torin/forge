@@ -6,7 +6,7 @@
 import { Ratelimit } from '@upstash/ratelimit';
 import { NextRequest } from 'next/server';
 
-import { redis } from '@repo/database/redis/server';
+import { redis } from '@repo/db-upstash-redis/server';
 import { logError, logInfo, logWarn } from '@repo/observability/server/next';
 
 export interface RateLimitConfig {
@@ -14,12 +14,17 @@ export interface RateLimitConfig {
   maxRequests: number;
   /** Time window in milliseconds */
   windowMs: number;
-  /** Whether to use Redis (uses @repo/database/redis) */
+  /** Whether to use Redis (uses @repo/db-prisma/redis) */
   useRedis?: boolean;
   /** Custom identifier function */
   getIdentifier?: (request: NextRequest) => string;
   /** Prefix for rate limit keys */
   prefix?: string;
+  /**
+   * Whether to fail open (allow) or closed (deny) when rate limiting fails
+   * Default: false (fail closed for security)
+   */
+  failOpen?: boolean;
 }
 
 export interface RateLimitResult {
@@ -62,7 +67,7 @@ function getDefaultIdentifier(request: NextRequest): string {
 }
 
 /**
- * Check if Redis is available (uses shared instance from '@repo/database)
+ * Check if Redis is available (uses shared instance from '@repo/db-prisma)
  */
 function isRedisAvailable(): boolean {
   try {
@@ -136,16 +141,37 @@ export function createRateLimiter(config: RateLimitConfig) {
           reason: result.success ? undefined : 'Rate limit exceeded',
         };
       } catch (error: any) {
-        // If rate limiting fails, allow the request but log the error
-        // Fire and forget logging
-        logError('Error checking rate limit', { error, component: 'RateLimit' });
+        // Log rate limiting errors for monitoring
+        logError('Rate limiting system failure', {
+          error,
+          component: 'RateLimit',
+          identifier: identifier.slice(0, 10) + '...', // Truncate for privacy
+          config: { maxRequests, windowMs, prefix },
+        });
 
-        return {
-          success: true,
-          remaining: maxRequests,
-          limit: maxRequests,
-          reset: Date.now() + windowMs,
-        };
+        // Security-first approach: fail closed by default
+        if (config.failOpen === true) {
+          logWarn('Rate limiter failing open - allowing request despite error', { identifier });
+          return {
+            success: true,
+            remaining: maxRequests,
+            limit: maxRequests,
+            reset: Date.now() + windowMs,
+            reason: 'Rate limiter unavailable - failing open',
+          };
+        } else {
+          // Fail closed - deny request when rate limiting is unavailable
+          logWarn('Rate limiter failing closed - denying request due to system error', {
+            identifier,
+          });
+          return {
+            success: false,
+            remaining: 0,
+            limit: maxRequests,
+            reset: Date.now() + windowMs,
+            reason: 'Rate limiting unavailable - failing closed for security',
+          };
+        }
       }
     },
   };

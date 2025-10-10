@@ -6,14 +6,11 @@
  */
 
 import {
-  ContextBuilder,
   createAnonymousSession,
   createUserSession,
-  EventBatch,
   identify,
   page,
   track,
-  withMetadata,
 } from '@repo/analytics/client/next';
 
 import { logInfo, logWarn } from '@repo/observability';
@@ -41,7 +38,7 @@ export async function trackPageView(pageName: string, properties?: any) {
   }
 }
 
-export async function trackIdentify(userId: string, traits?: any) {
+async function _trackIdentify(userId: string, traits?: any) {
   try {
     identify(userId, traits);
     logInfo('[Analytics] Identify:', { userId, traits });
@@ -53,16 +50,7 @@ export async function trackIdentify(userId: string, traits?: any) {
 }
 
 // Re-export emitter functions for easy access
-export {
-  ContextBuilder,
-  createAnonymousSession,
-  createUserSession,
-  EventBatch,
-  identify,
-  page,
-  track,
-  withMetadata,
-};
+export { createAnonymousSession, createUserSession, identify, track };
 
 // Common analytics events for the template app
 export const AnalyticsEvents = {
@@ -84,4 +72,4 @@ export const AnalyticsEvents = {
   SESSION_STARTED: 'Session Started',
 } as const;
 
-export type AnalyticsEvent = (typeof AnalyticsEvents)[keyof typeof AnalyticsEvents];
+type _AnalyticsEvent = (typeof AnalyticsEvents)[keyof typeof AnalyticsEvents];

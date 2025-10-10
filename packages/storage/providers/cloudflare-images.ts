@@ -13,7 +13,7 @@ import {
   UploadOptions,
 } from '../types';
 
-export interface CloudflareImagesConfig {
+interface CloudflareImagesConfig {
   accountId: string;
   apiToken: string;
   deliveryUrl?: string;

@@ -69,6 +69,7 @@ export function SignInForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<SignInFormValues>({
+    mode: 'controlled',
     initialValues: {
       email: '',
       password: '',
@@ -124,6 +125,7 @@ export function SignInForm({
             placeholder="your@email.com"
             required
             data-testid="signin-email"
+            key={form.key('email')}
             {...form.getInputProps('email')}
           />
 

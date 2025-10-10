@@ -8,7 +8,7 @@
  * Now centralized for consistency across all packages
  */
 
-import { expect } from 'vitest';
+import { expect } from "vitest";
 
 // Type definitions for AI SDK components - avoiding direct imports
 type LanguageModelV2Usage = {
@@ -18,7 +18,12 @@ type LanguageModelV2Usage = {
   reasoningTokens?: number;
 };
 
-type LanguageModelV2FinishReason = 'stop' | 'tool-calls' | 'length' | 'content-filter' | 'error';
+type LanguageModelV2FinishReason =
+  | "stop"
+  | "tool-calls"
+  | "length"
+  | "content-filter"
+  | "error";
 
 type MockLanguageModelV2Config = {
   modelId: string;
@@ -32,7 +37,7 @@ let MockLanguageModelV2: new (config: MockLanguageModelV2Config) => any;
 let simulateReadableStream: (config: any) => any;
 
 try {
-  ({ MockLanguageModelV2, simulateReadableStream } = require('ai/test'));
+  ({ MockLanguageModelV2, simulateReadableStream } = require("ai/test"));
 } catch (error) {
   // Fallback mocks when AI SDK is not available
   MockLanguageModelV2 = class {
@@ -50,13 +55,13 @@ try {
 /**
  * Basic text generation model - returns simple text response
  */
-export const createBasicTextModel = (text = 'Mock generated text') =>
+export const createBasicTextModel = (text = "Mock generated text") =>
   new MockLanguageModelV2({
-    modelId: 'test-basic-model',
+    modelId: "test-basic-model",
     doGenerate: async () => ({
-      finishReason: 'stop' as const,
+      finishReason: "stop" as const,
       usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
-      content: [{ type: 'text', text }],
+      content: [{ type: "text", text }],
       warnings: [],
     }),
   });
@@ -64,24 +69,26 @@ export const createBasicTextModel = (text = 'Mock generated text') =>
 /**
  * Streaming text model - uses simulateReadableStream for deterministic streaming
  */
-export const createStreamingTextModel = (textParts = ['Hello', ' ', 'world!']) =>
+export const createStreamingTextModel = (
+  textParts = ["Hello", " ", "world!"],
+) =>
   new MockLanguageModelV2({
-    modelId: 'test-streaming-model',
+    modelId: "test-streaming-model",
     doStream: async () => ({
       stream: simulateReadableStream({
         initialDelayInMs: 0,
         chunkDelayInMs: 10,
         chunks: [
-          { type: 'text-start', id: 'text-1' },
+          { type: "text-start", id: "text-1" },
           ...textParts.map((delta, index) => ({
-            type: 'text-delta' as const,
-            id: 'text-1',
+            type: "text-delta" as const,
+            id: "text-1",
             delta,
           })),
-          { type: 'text-end', id: 'text-1' },
+          { type: "text-end", id: "text-1" },
           {
-            type: 'finish' as const,
-            finishReason: 'stop' as const,
+            type: "finish" as const,
+            finishReason: "stop" as const,
             usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
           },
         ],
@@ -93,18 +100,19 @@ export const createStreamingTextModel = (textParts = ['Hello', ' ', 'world!']) =
  * Tool-calling model - generates tool calls for testing multi-step workflows
  */
 export const createToolCallingModel = (
-  textParts: string[] = ['Calling tool...'],
+  textParts: string[] = ["Calling tool..."],
   toolCalls: any[] = [],
 ) =>
   new MockLanguageModelV2({
-    modelId: 'test-tool-model',
+    modelId: "test-tool-model",
     doGenerate: async () => ({
-      finishReason: toolCalls.length > 0 ? ('tool-calls' as const) : ('stop' as const),
+      finishReason:
+        toolCalls.length > 0 ? ("tool-calls" as const) : ("stop" as const),
       usage: { inputTokens: 15, outputTokens: 25, totalTokens: 40 },
       content: [
-        { type: 'text', text: textParts.join('') },
-        ...toolCalls.map(call => ({
-          type: 'tool-call' as const,
+        { type: "text", text: textParts.join("") },
+        ...toolCalls.map((call) => ({
+          type: "tool-call" as const,
           toolCallId: call.toolCallId,
           toolName: call.toolName,
           input: call.input,
@@ -118,34 +126,37 @@ export const createToolCallingModel = (
  * Multi-step tool model - for testing maxSteps and step-based stop conditions
  */
 export const createMultiStepToolModel = (
-  textParts: string[] = ['Step by step...'],
+  textParts: string[] = ["Step by step..."],
   toolCalls: any[] = [],
   maxSteps = 1,
 ) =>
   new MockLanguageModelV2({
-    modelId: 'test-multistep-model',
+    modelId: "test-multistep-model",
     doStream: async () => ({
       stream: simulateReadableStream({
         initialDelayInMs: 0,
         chunkDelayInMs: 10,
         chunks: [
-          { type: 'text-start', id: 'text-1' },
-          ...textParts.map(delta => ({
-            type: 'text-delta' as const,
-            id: 'text-1',
+          { type: "text-start", id: "text-1" },
+          ...textParts.map((delta) => ({
+            type: "text-delta" as const,
+            id: "text-1",
             delta,
           })),
-          { type: 'text-end', id: 'text-1' },
+          { type: "text-end", id: "text-1" },
           // Distribute tool calls across steps based on maxSteps
-          ...toolCalls.slice(0, maxSteps).map(call => ({
-            type: 'tool-call' as const,
+          ...toolCalls.slice(0, maxSteps).map((call) => ({
+            type: "tool-call" as const,
             toolCallId: call.toolCallId,
             toolName: call.toolName,
             input: call.input,
           })),
           {
-            type: 'finish' as const,
-            finishReason: toolCalls.length > 0 ? ('tool-calls' as const) : ('stop' as const),
+            type: "finish" as const,
+            finishReason:
+              toolCalls.length > 0
+                ? ("tool-calls" as const)
+                : ("stop" as const),
             usage: { inputTokens: 20, outputTokens: 30, totalTokens: 50 },
           },
         ],
@@ -157,32 +168,32 @@ export const createMultiStepToolModel = (
  * Streaming tool model - combines streaming text with tool calls
  */
 export const createStreamingToolModel = (
-  textParts: string[] = ['Let me check the weather...'],
+  textParts: string[] = ["Let me check the weather..."],
   toolCalls: any[] = [],
 ) =>
   new MockLanguageModelV2({
-    modelId: 'test-streaming-tool-model',
+    modelId: "test-streaming-tool-model",
     doStream: async () => ({
       stream: simulateReadableStream({
         initialDelayInMs: 0,
         chunkDelayInMs: 15,
         chunks: [
-          { type: 'text-start', id: 'text-1' },
-          ...textParts.map(delta => ({
-            type: 'text-delta' as const,
-            id: 'text-1',
+          { type: "text-start", id: "text-1" },
+          ...textParts.map((delta) => ({
+            type: "text-delta" as const,
+            id: "text-1",
             delta,
           })),
-          { type: 'text-end', id: 'text-1' },
-          ...toolCalls.map(call => ({
-            type: 'tool-call' as const,
+          { type: "text-end", id: "text-1" },
+          ...toolCalls.map((call) => ({
+            type: "tool-call" as const,
             toolCallId: call.toolCallId,
             toolName: call.toolName,
             input: call.input,
           })),
           {
-            type: 'finish' as const,
-            finishReason: 'tool-calls' as const,
+            type: "finish" as const,
+            finishReason: "tool-calls" as const,
             usage: { inputTokens: 20, outputTokens: 30, totalTokens: 50 },
           },
         ],
@@ -195,9 +206,11 @@ export const createStreamingToolModel = (
  */
 export const createEmbeddingModel = (embeddingDim = 3) =>
   new MockLanguageModelV2({
-    modelId: 'test-embedding-model',
+    modelId: "test-embedding-model",
     doEmbed: async ({ values }: { values: any[] }) => ({
-      embeddings: values.map(() => Array.from({ length: embeddingDim }, (_, i) => (i + 1) * 0.1)),
+      embeddings: values.map(() =>
+        Array.from({ length: embeddingDim }, (_, i) => (i + 1) * 0.1),
+      ),
       usage: { inputTokens: 10 * values.length },
     }),
   });
@@ -207,7 +220,7 @@ export const createEmbeddingModel = (embeddingDim = 3) =>
  */
 export const createErrorModel = (error: Error) =>
   new MockLanguageModelV2({
-    modelId: 'test-error-model',
+    modelId: "test-error-model",
     doGenerate: async () => {
       throw error;
     },
@@ -217,17 +230,17 @@ export const createErrorModel = (error: Error) =>
  * Reasoning model - includes reasoning in output for testing reasoning extraction
  */
 export const createReasoningModel = (
-  reasoning = 'Let me think about this...',
-  answer = 'The answer is 42.',
+  reasoning = "Let me think about this...",
+  answer = "The answer is 42.",
 ) =>
   new MockLanguageModelV2({
-    modelId: 'test-reasoning-model',
+    modelId: "test-reasoning-model",
     doGenerate: async () => ({
-      finishReason: 'stop' as const,
+      finishReason: "stop" as const,
       usage: { inputTokens: 15, outputTokens: 25, totalTokens: 40 },
       content: [
         {
-          type: 'text',
+          type: "text",
           text: `<think>${reasoning}</think>${answer}`,
         },
       ],
@@ -238,22 +251,24 @@ export const createReasoningModel = (
 /**
  * Multi-modal model - handles images and text content
  */
-export const createMultiModalModel = (response = 'I can see the image contains...') =>
+export const createMultiModalModel = (
+  response = "I can see the image contains...",
+) =>
   new MockLanguageModelV2({
-    modelId: 'test-multimodal-model',
+    modelId: "test-multimodal-model",
     doGenerate: async ({ messages }: { messages: any[] }) => {
       const hasImageContent = messages.some((msg: any) =>
-        msg.content.some((content: any) => content.type === 'media'),
+        msg.content.some((content: any) => content.type === "media"),
       );
 
       return {
-        finishReason: 'stop' as const,
+        finishReason: "stop" as const,
         usage: {
           inputTokens: hasImageContent ? 50 : 10,
           outputTokens: 30,
           totalTokens: hasImageContent ? 80 : 40,
         },
-        content: [{ type: 'text', text: response }],
+        content: [{ type: "text", text: response }],
         warnings: [],
       };
     },
@@ -262,19 +277,21 @@ export const createMultiModalModel = (response = 'I can see the image contains..
 /**
  * Telemetry-enabled model - for testing experimental_telemetry features
  */
-export const createTelemetryModel = (text = 'Telemetry test response') =>
+export const createTelemetryModel = (text = "Telemetry test response") =>
   new MockLanguageModelV2({
-    modelId: 'test-telemetry-model',
+    modelId: "test-telemetry-model",
     doGenerate: async (params: any) => ({
-      finishReason: 'stop' as const,
+      finishReason: "stop" as const,
       usage: {
         inputTokens: 10,
         outputTokens: 20,
         totalTokens: 30,
         // Include reasoning tokens if applicable
-        reasoningTokens: params.experimental_telemetry?.isEnabled ? 5 : undefined,
+        reasoningTokens: params.experimental_telemetry?.isEnabled
+          ? 5
+          : undefined,
       },
-      content: [{ type: 'text', text }],
+      content: [{ type: "text", text }],
       warnings: [],
     }),
   });
@@ -284,12 +301,16 @@ export const createTelemetryModel = (text = 'Telemetry test response') =>
  */
 export const createHighUsageModel = (inputTokens = 1000, outputTokens = 2000) =>
   new MockLanguageModelV2({
-    modelId: 'test-high-usage-model',
+    modelId: "test-high-usage-model",
     doGenerate: async () => ({
-      finishReason: 'stop' as const,
-      usage: { inputTokens, outputTokens, totalTokens: inputTokens + outputTokens },
-      content: [{ type: 'text', text: 'High token usage response' }],
-      warnings: [{ type: 'other', message: 'High token usage detected' }],
+      finishReason: "stop" as const,
+      usage: {
+        inputTokens,
+        outputTokens,
+        totalTokens: inputTokens + outputTokens,
+      },
+      content: [{ type: "text", text: "High token usage response" }],
+      warnings: [{ type: "other", message: "High token usage detected" }],
     }),
   });
 
@@ -298,7 +319,7 @@ export const createHighUsageModel = (inputTokens = 1000, outputTokens = 2000) =>
  */
 export const createCustomModel = (
   doGenerateOverride: (params: any) => Promise<any>,
-  modelId = 'test-custom-model',
+  modelId = "test-custom-model",
 ) =>
   new MockLanguageModelV2({
     modelId,
@@ -310,7 +331,7 @@ export const createCustomModel = (
  */
 export const createCustomStreamingModel = (
   doStreamOverride: (params: any) => Promise<any>,
-  modelId = 'test-custom-streaming-model',
+  modelId = "test-custom-streaming-model",
 ) =>
   new MockLanguageModelV2({
     modelId,
@@ -326,31 +347,31 @@ export const createCustomStreamingModel = (
  */
 export function createMockOpenAI() {
   return {
-    provider: 'openai',
+    provider: "openai",
     languageModel: (modelId: string) => {
       switch (modelId) {
-        case 'gpt-4':
-        case 'gpt-4o':
+        case "gpt-4":
+        case "gpt-4o":
           return new MockLanguageModelV2({
             modelId,
             doGenerate: async () => ({
-              finishReason: 'stop',
+              finishReason: "stop",
               usage: { inputTokens: 15, outputTokens: 25, totalTokens: 40 },
-              content: [{ type: 'text', text: `Mock ${modelId} response` }],
+              content: [{ type: "text", text: `Mock ${modelId} response` }],
               warnings: [],
             }),
           });
-        case 'gpt-3.5-turbo':
-          return createBasicTextModel('Mock GPT-3.5 response');
+        case "gpt-3.5-turbo":
+          return createBasicTextModel("Mock GPT-3.5 response");
         default:
           return createBasicTextModel(`Mock OpenAI ${modelId} response`);
       }
     },
     embedding: (modelId: string) => {
       switch (modelId) {
-        case 'text-embedding-3-small':
+        case "text-embedding-3-small":
           return createEmbeddingModel(1536);
-        case 'text-embedding-3-large':
+        case "text-embedding-3-large":
           return createEmbeddingModel(3072);
         default:
           return createEmbeddingModel(1536);
@@ -364,28 +385,28 @@ export function createMockOpenAI() {
  */
 export function createMockAnthropic() {
   return {
-    provider: 'anthropic',
+    provider: "anthropic",
     languageModel: (modelId: string) => {
       switch (modelId) {
-        case 'claude-3-haiku-20240307':
-          return createStreamingTextModel(['Fast ', 'Claude ', 'response']);
-        case 'claude-3-sonnet-20240229':
+        case "claude-3-haiku-20240307":
+          return createStreamingTextModel(["Fast ", "Claude ", "response"]);
+        case "claude-3-sonnet-20240229":
           return new MockLanguageModelV2({
             modelId,
             doGenerate: async () => ({
-              finishReason: 'stop',
+              finishReason: "stop",
               usage: { inputTokens: 20, outputTokens: 40, totalTokens: 60 },
-              content: [{ type: 'text', text: 'Mock Claude Sonnet response' }],
+              content: [{ type: "text", text: "Mock Claude Sonnet response" }],
               warnings: [],
             }),
           });
-        case 'claude-3-opus-20240229':
+        case "claude-3-opus-20240229":
           return new MockLanguageModelV2({
             modelId,
             doGenerate: async () => ({
-              finishReason: 'stop',
+              finishReason: "stop",
               usage: { inputTokens: 25, outputTokens: 50, totalTokens: 75 },
-              content: [{ type: 'text', text: 'Mock Claude Opus response' }],
+              content: [{ type: "text", text: "Mock Claude Opus response" }],
               warnings: [],
             }),
           });
@@ -401,28 +422,33 @@ export function createMockAnthropic() {
  */
 export function createMockGoogle() {
   return {
-    provider: 'google',
+    provider: "google",
     languageModel: (modelId: string) => {
       switch (modelId) {
-        case 'gemini-pro':
+        case "gemini-pro":
           return new MockLanguageModelV2({
             modelId,
             doGenerate: async () => ({
-              finishReason: 'stop',
+              finishReason: "stop",
               usage: { inputTokens: 12, outputTokens: 28, totalTokens: 40 },
-              content: [{ type: 'text', text: 'Mock Gemini Pro response' }],
+              content: [{ type: "text", text: "Mock Gemini Pro response" }],
               warnings: [],
             }),
           });
-        case 'gemini-1.5-pro':
-          return createStreamingTextModel(['Gemini ', '1.5 ', 'Pro ', 'response']);
+        case "gemini-1.5-pro":
+          return createStreamingTextModel([
+            "Gemini ",
+            "1.5 ",
+            "Pro ",
+            "response",
+          ]);
         default:
           return createBasicTextModel(`Mock Google ${modelId} response`);
       }
     },
     embedding: (modelId: string) => {
       switch (modelId) {
-        case 'text-embedding-004':
+        case "text-embedding-004":
           return createEmbeddingModel(768);
         default:
           return createEmbeddingModel(768);
@@ -436,16 +462,21 @@ export function createMockGoogle() {
  */
 export function createMockPerplexity() {
   return {
-    provider: 'perplexity',
+    provider: "perplexity",
     languageModel: (modelId: string) => {
       switch (modelId) {
-        case 'llama-3.1-sonar-small-128k-online':
+        case "llama-3.1-sonar-small-128k-online":
           return new MockLanguageModelV2({
             modelId,
             doGenerate: async () => ({
-              finishReason: 'stop',
+              finishReason: "stop",
               usage: { inputTokens: 18, outputTokens: 32, totalTokens: 50 },
-              content: [{ type: 'text', text: 'Mock Perplexity response with search results' }],
+              content: [
+                {
+                  type: "text",
+                  text: "Mock Perplexity response with search results",
+                },
+              ],
               warnings: [],
             }),
           });
@@ -459,11 +490,17 @@ export function createMockPerplexity() {
 /**
  * Create a custom provider for testing
  */
-export function createCustomTestProvider(providerId: string, models: Record<string, any>) {
+export function createCustomTestProvider(
+  providerId: string,
+  models: Record<string, any>,
+) {
   return {
     provider: providerId,
     languageModel: (modelId: string) => {
-      return models[modelId] || createBasicTextModel(`Mock ${providerId} ${modelId} response`);
+      return (
+        models[modelId] ||
+        createBasicTextModel(`Mock ${providerId} ${modelId} response`)
+      );
     },
   };
 }
@@ -481,7 +518,10 @@ export const mockProviderRegistry = {
 /**
  * Get a mock model from any provider
  */
-export function getMockModel(provider: keyof typeof mockProviderRegistry, modelId: string): any {
+export function getMockModel(
+  provider: keyof typeof mockProviderRegistry,
+  modelId: string,
+): any {
   const providerFactory = mockProviderRegistry[provider];
   return providerFactory.languageModel(modelId);
 }
@@ -494,7 +534,7 @@ export function getMockEmbeddingModel(
   modelId: string,
 ): any {
   const providerFactory = mockProviderRegistry[provider];
-  if ('embedding' in providerFactory && providerFactory.embedding) {
+  if ("embedding" in providerFactory && providerFactory.embedding) {
     return providerFactory.embedding(modelId);
   }
   return createEmbeddingModel();
@@ -557,7 +597,7 @@ export function assertProviderFeatures(
   const providerFactory = mockProviderRegistry[provider];
 
   if (features.embeddings) {
-    expect('embedding' in providerFactory).toBeTruthy();
+    expect("embedding" in providerFactory).toBeTruthy();
   }
 
   // Add more feature assertions as needed
@@ -566,8 +606,10 @@ export function assertProviderFeatures(
 /**
  * Create provider-specific error scenarios for testing
  */
-export function createProviderErrorScenarios(provider: keyof typeof mockProviderRegistry) {
-  const baseModel = getMockModel(provider, 'test-model');
+export function createProviderErrorScenarios(
+  provider: keyof typeof mockProviderRegistry,
+) {
+  const baseModel = getMockModel(provider, "test-model");
 
   return {
     rateLimitError: new MockLanguageModelV2({
@@ -597,38 +639,40 @@ export function createProviderErrorScenarios(provider: keyof typeof mockProvider
 export const aiTestScenarios = {
   // Text generation scenarios
   textGeneration: {
-    basic: () => createBasicTextModel('Basic test response'),
-    streaming: () => createStreamingTextModel(['Streaming ', 'test ', 'response']),
-    reasoning: () => createReasoningModel('Testing reasoning...', 'Reasoning complete'),
-    multiModal: () => createMultiModalModel('Analyzed image successfully'),
+    basic: () => createBasicTextModel("Basic test response"),
+    streaming: () =>
+      createStreamingTextModel(["Streaming ", "test ", "response"]),
+    reasoning: () =>
+      createReasoningModel("Testing reasoning...", "Reasoning complete"),
+    multiModal: () => createMultiModalModel("Analyzed image successfully"),
   },
 
   // Tool calling scenarios
   toolCalling: {
     simple: () =>
       createToolCallingModel(
-        ['Calling tool...'],
+        ["Calling tool..."],
         [
           {
-            toolCallId: 'test-tool-1',
-            toolName: 'testTool',
-            input: { query: 'test' },
+            toolCallId: "test-tool-1",
+            toolName: "testTool",
+            input: { query: "test" },
           },
         ],
       ),
     multiStep: () =>
       createMultiStepToolModel(
-        ['Step 1...', 'Step 2...'],
+        ["Step 1...", "Step 2..."],
         [
           {
-            toolCallId: 'test-tool-1',
-            toolName: 'stepOne',
-            input: { data: 'step1' },
+            toolCallId: "test-tool-1",
+            toolName: "stepOne",
+            input: { data: "step1" },
           },
           {
-            toolCallId: 'test-tool-2',
-            toolName: 'stepTwo',
-            input: { data: 'step2' },
+            toolCallId: "test-tool-2",
+            toolName: "stepTwo",
+            input: { data: "step2" },
           },
         ],
         2,
@@ -637,16 +681,20 @@ export const aiTestScenarios = {
 
   // Provider-specific scenarios
   providers: {
-    openai: () => getMockModel('openai', 'gpt-4'),
-    anthropic: () => getMockModel('anthropic', 'claude-3-sonnet-20240229'),
-    google: () => getMockModel('google', 'gemini-pro'),
-    perplexity: () => getMockModel('perplexity', 'llama-3.1-sonar-small-128k-online'),
+    openai: () => getMockModel("openai", "gpt-4"),
+    anthropic: () => getMockModel("anthropic", "claude-3-sonnet-20240229"),
+    google: () => getMockModel("google", "gemini-pro"),
+    perplexity: () =>
+      getMockModel("perplexity", "llama-3.1-sonar-small-128k-online"),
   },
 
   // Error scenarios
   errors: {
-    rateLimitOpenAI: () => createProviderErrorScenarios('openai').rateLimitError,
-    authFailureAnthropic: () => createProviderErrorScenarios('anthropic').authError,
-    modelNotFoundGoogle: () => createProviderErrorScenarios('google').invalidModelError,
+    rateLimitOpenAI: () =>
+      createProviderErrorScenarios("openai").rateLimitError,
+    authFailureAnthropic: () =>
+      createProviderErrorScenarios("anthropic").authError,
+    modelNotFoundGoogle: () =>
+      createProviderErrorScenarios("google").invalidModelError,
   },
 };

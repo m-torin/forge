@@ -30,10 +30,14 @@ export function ProtectedRoute({
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      // Store current URL for redirect after login
-      const currentUrl = window.location.pathname + window.location.search;
+      // Store current URL for redirect after login (defensive for test/SSR)
+      const loc = (typeof window !== 'undefined' && (window as any)?.location) || {
+        pathname: '/',
+        search: '',
+      };
+      const currentUrl = String(loc.pathname || '/') + String(loc.search || '');
       const redirectUrl = `${redirectTo}?returnUrl=${encodeURIComponent(currentUrl)}`;
-      router.push(redirectUrl);
+      router.push(redirectUrl as any);
     }
   }, [isLoading, isAuthenticated, router, redirectTo]);
 

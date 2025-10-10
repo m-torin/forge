@@ -4,16 +4,23 @@
  * Client component with pure Tailwind styling and Mantine form logic
  */
 
-'use client';
+"use client";
 
-import { signUpAction } from '#/app/actions/auth';
-import type { Locale } from '#/lib/i18n';
-import { Alert, Button, Card, PasswordInput, Stack, TextInput } from '@mantine/core';
-import { useForm } from '@mantine/form';
-import { IconArrowLeft, IconBrandNextjs } from '@tabler/icons-react';
-import type { Route } from 'next';
-import Link from 'next/link';
-import { useActionState } from 'react';
+import { signUpAction } from "#/app/actions/auth";
+import type { Locale } from "#/lib/i18n";
+import {
+  Alert,
+  Button,
+  Card,
+  PasswordInput,
+  Stack,
+  TextInput,
+} from "@mantine/core";
+import { useForm } from "@mantine/form";
+import { IconArrowLeft, IconBrandNextjs } from "@tabler/icons-react";
+import type { Route } from "next";
+import Link from "next/link";
+import { useActionState } from "react";
 
 interface SignUpPageUiProps {
   locale: Locale;
@@ -33,41 +40,46 @@ interface SignUpFormValues {
   confirmPassword: string;
 }
 
-export default function SignUpPageUi({ locale, dict, redirectTo, error }: SignUpPageUiProps) {
+export default function SignUpPageUi({
+  locale,
+  dict,
+  redirectTo,
+  error,
+}: SignUpPageUiProps) {
   // Use useActionState for server action integration
   const [state, formAction] = useActionState(signUpAction, {
     success: false,
     error: error,
-    fields: { name: '', email: '', password: '', confirmPassword: '' },
+    fields: { name: "", email: "", password: "", confirmPassword: "" },
   });
 
   // Mantine form for client-side validation
   const form = useForm<SignUpFormValues>({
     initialValues: {
-      name: state?.fields?.name || '',
-      email: state?.fields?.email || '',
-      password: '',
-      confirmPassword: '',
+      name: state?.fields?.name || "",
+      email: state?.fields?.email || "",
+      password: "",
+      confirmPassword: "",
     },
     validate: {
-      name: value => {
-        if (!value) return 'Name is required';
-        if (value.length < 2) return 'Name must be at least 2 characters';
+      name: (value) => {
+        if (!value) return "Name is required";
+        if (value.length < 2) return "Name must be at least 2 characters";
         return null;
       },
-      email: value => {
-        if (!value) return 'Email is required';
-        if (!/^\S+@\S+$/.test(value)) return 'Invalid email format';
+      email: (value) => {
+        if (!value) return "Email is required";
+        if (!/^\S+@\S+$/.test(value)) return "Invalid email format";
         return null;
       },
-      password: value => {
-        if (!value) return 'Password is required';
-        if (value.length < 6) return 'Password must be at least 6 characters';
+      password: (value) => {
+        if (!value) return "Password is required";
+        if (value.length < 6) return "Password must be at least 6 characters";
         return null;
       },
       confirmPassword: (value, values) => {
-        if (!value) return 'Please confirm your password';
-        if (value !== values.password) return 'Passwords do not match';
+        if (!value) return "Please confirm your password";
+        if (value !== values.password) return "Passwords do not match";
         return null;
       },
     },
@@ -76,11 +88,11 @@ export default function SignUpPageUi({ locale, dict, redirectTo, error }: SignUp
   const handleSubmit = (values: SignUpFormValues) => {
     // Create FormData for server action
     const formData = new FormData();
-    formData.append('name', values.name);
-    formData.append('email', values.email);
-    formData.append('password', values.password);
-    formData.append('confirmPassword', values.confirmPassword);
-    formData.append('redirectTo', redirectTo);
+    formData.append("name", values.name);
+    formData.append("email", values.email);
+    formData.append("password", values.password);
+    formData.append("confirmPassword", values.confirmPassword);
+    formData.append("redirectTo", redirectTo);
 
     // Call server action
     formAction(formData);
@@ -102,21 +114,36 @@ export default function SignUpPageUi({ locale, dict, redirectTo, error }: SignUp
           <div className="mb-4 flex justify-center">
             <div className="flex items-center">
               <IconBrandNextjs size={32} className="mr-2 text-black" />
-              <span className="text-2xl font-bold text-gray-900">{dict.header.title}</span>
+              <span className="text-2xl font-bold text-gray-900">
+                {dict.header.title}
+              </span>
             </div>
           </div>
 
-          <h2 className="text-3xl font-bold text-gray-900">Create your account</h2>
-          <p className="mt-2 text-sm text-gray-600">Join us and start building amazing things</p>
+          <h2 className="text-3xl font-bold text-gray-900">
+            Create your account
+          </h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Join us and start building amazing things
+          </p>
         </div>
 
         {/* Sign Up Form */}
-        <Card withBorder shadow="lg" padding="lg" className="harmony-bg-surface">
+        <Card
+          withBorder
+          shadow="lg"
+          padding="lg"
+          className="harmony-bg-surface"
+        >
           <form onSubmit={form.onSubmit(handleSubmit)}>
             <Stack gap="md">
               {/* Error Alert */}
               {state?.error && (
-                <Alert color="red" variant="light" className="harmony-transition">
+                <Alert
+                  color="red"
+                  variant="light"
+                  className="harmony-transition"
+                >
                   {state.error}
                 </Alert>
               )}
@@ -126,7 +153,7 @@ export default function SignUpPageUi({ locale, dict, redirectTo, error }: SignUp
                 label="Full Name"
                 required
                 placeholder="Enter your full name"
-                {...form.getInputProps('name')}
+                {...form.getInputProps("name")}
               />
 
               {/* Email Input */}
@@ -135,7 +162,7 @@ export default function SignUpPageUi({ locale, dict, redirectTo, error }: SignUp
                 type="email"
                 required
                 placeholder="Enter your email"
-                {...form.getInputProps('email')}
+                {...form.getInputProps("email")}
               />
 
               {/* Password Input */}
@@ -143,7 +170,7 @@ export default function SignUpPageUi({ locale, dict, redirectTo, error }: SignUp
                 label="Password"
                 required
                 placeholder="Create a password (min. 6 characters)"
-                {...form.getInputProps('password')}
+                {...form.getInputProps("password")}
               />
 
               {/* Confirm Password Input */}
@@ -151,7 +178,7 @@ export default function SignUpPageUi({ locale, dict, redirectTo, error }: SignUp
                 label="Confirm Password"
                 required
                 placeholder="Confirm your password"
-                {...form.getInputProps('confirmPassword')}
+                {...form.getInputProps("confirmPassword")}
               />
 
               {/* Submit Button */}

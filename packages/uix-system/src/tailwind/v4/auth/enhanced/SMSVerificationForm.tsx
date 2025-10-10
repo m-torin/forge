@@ -3,16 +3,16 @@
  * 100% React Server Component for verifying SMS codes
  */
 
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useFormState } from 'react-dom';
-import type { BaseProps, FormState } from '../types';
-import { createInitialActionState } from '../types';
-import { Alert } from '../ui/Alert';
-import { Button } from '../ui/Button';
-import { Card, CardContent, CardHeader } from '../ui/Card';
-import { cn } from '../utils/dark-mode';
+import { useEffect, useState } from "react";
+import { useFormState } from "react-dom";
+import type { BaseProps, FormState } from "../types";
+import { createInitialActionState } from "../types";
+import { Alert } from "../ui/Alert";
+import { Button } from "../ui/Button";
+import { Card, CardContent, CardHeader } from "../ui/Card";
+import { cn } from "../utils/dark-mode";
 
 interface SMSVerificationFormProps extends BaseProps {
   phoneNumber: string;
@@ -28,20 +28,23 @@ interface SMSVerificationFormProps extends BaseProps {
 const _initialState: FormState = { success: false };
 
 // Server action for verifying SMS code
-async function verifySMSCodeAction(prevState: any, formData: FormData): Promise<FormState> {
-  'use server';
+async function verifySMSCodeAction(
+  prevState: any,
+  formData: FormData,
+): Promise<FormState> {
+  "use server";
 
   try {
-    const phoneNumber = formData.get('phoneNumber') as string;
-    const code = formData.get('code') as string;
+    const phoneNumber = formData.get("phoneNumber") as string;
+    const code = formData.get("code") as string;
 
     // Validation
     const errors: Record<string, string[]> = {};
 
-    if (!phoneNumber) errors.phoneNumber = ['Phone number is required'];
-    if (!code) errors.code = ['Verification code is required'];
+    if (!phoneNumber) errors.phoneNumber = ["Phone number is required"];
+    if (!code) errors.code = ["Verification code is required"];
     if (code && !/^\d{6}$/.test(code)) {
-      errors.code = ['Verification code must be 6 digits'];
+      errors.code = ["Verification code must be 6 digits"];
     }
 
     if (Object.keys(errors).length > 0) {
@@ -49,75 +52,86 @@ async function verifySMSCodeAction(prevState: any, formData: FormData): Promise<
     }
 
     // Import Better Auth server action
-    const { verifySMSCodeAction: authVerifySMS } = await import('@repo/auth/server-actions');
+    const { verifySMSCodeAction: authVerifySMS } = await import(
+      "@repo/auth/server-actions"
+    );
 
     const result = await authVerifySMS(prevState, formData);
 
     if (result.success) {
       return {
         success: true,
-        message: 'Phone number verified successfully! Your account is now more secure.',
+        message:
+          "Phone number verified successfully! Your account is now more secure.",
       };
     } else {
       return {
         success: false,
-        error: result.error || 'Invalid verification code. Please try again.',
+        error: result.error || "Invalid verification code. Please try again.",
       };
     }
   } catch (error: any) {
     // console.error('SMS verification error:', error);
 
-    if (error?.message?.includes('invalid code')) {
+    if (error?.message?.includes("invalid code")) {
       return {
         success: false,
-        errors: { code: ['Invalid verification code. Please check and try again.'] },
+        errors: {
+          code: ["Invalid verification code. Please check and try again."],
+        },
       };
     }
 
-    if (error?.message?.includes('expired')) {
+    if (error?.message?.includes("expired")) {
       return {
         success: false,
-        error: 'Verification code has expired. Please request a new code.',
+        error: "Verification code has expired. Please request a new code.",
       };
     }
 
-    if (error?.message?.includes('too many attempts')) {
+    if (error?.message?.includes("too many attempts")) {
       return {
         success: false,
-        error: 'Too many failed attempts. Please wait 15 minutes before trying again.',
+        error:
+          "Too many failed attempts. Please wait 15 minutes before trying again.",
       };
     }
 
-    if (error?.message?.includes('already verified')) {
+    if (error?.message?.includes("already verified")) {
       return {
         success: true,
-        message: 'This phone number is already verified!',
+        message: "This phone number is already verified!",
       };
     }
 
     return {
       success: false,
-      error: 'An error occurred during verification. Please try again.',
+      error: "An error occurred during verification. Please try again.",
     };
   }
 }
 
 // Server action for resending SMS code
-async function resendSMSCodeAction(prevState: any, formData: FormData): Promise<FormState> {
-  'use server';
+async function resendSMSCodeAction(
+  prevState: any,
+  formData: FormData,
+): Promise<FormState> {
+  "use server";
 
   try {
-    const phoneNumber = formData.get('phoneNumber') as string;
+    const phoneNumber = formData.get("phoneNumber") as string;
 
     if (!phoneNumber) {
       return {
         success: false,
-        errors: { phoneNumber: ['Phone number is required'] },
+        errors: { phoneNumber: ["Phone number is required"] },
       };
     }
 
     // Import Better Auth server action
-    const { resendSMSCodeAction: authResendSMS } = await import('@repo/auth/server-actions');
+    const { resendSMSCodeAction: authResendSMS } = await import(
+      "@repo/auth/server-actions"
+    );
 
     const result = await authResendSMS(prevState, formData);
 
@@ -129,55 +143,63 @@ async function resendSMSCodeAction(prevState: any, formData: FormData): Promise<
     } else {
       return {
         success: false,
-        error: result.error || 'Failed to resend verification code.',
+        error: result.error || "Failed to resend verification code.",
       };
     }
   } catch (error: any) {
     // console.error('SMS resend error:', error);
 
-    if (error?.message?.includes('rate limit')) {
+    if (error?.message?.includes("rate limit")) {
       return {
         success: false,
         error:
-          'Please wait before requesting another code. You can request a new code every 60 seconds.',
+          "Please wait before requesting another code. You can request a new code every 60 seconds.",
       };
     }
 
-    if (error?.message?.includes('daily limit')) {
+    if (error?.message?.includes("daily limit")) {
       return {
         success: false,
-        error: 'Daily SMS limit reached. Please try again tomorrow or contact support.',
+        error:
+          "Daily SMS limit reached. Please try again tomorrow or contact support.",
       };
     }
 
-    if (error?.message?.includes('carrier blocked')) {
+    if (error?.message?.includes("carrier blocked")) {
       return {
         success: false,
-        error: 'SMS messages to this number are currently blocked. Please contact support.',
+        error:
+          "SMS messages to this number are currently blocked. Please contact support.",
       };
     }
 
     return {
       success: false,
-      error: 'An error occurred while resending the code. Please try again.',
+      error: "An error occurred while resending the code. Please try again.",
     };
   }
 }
 
 export function SMSVerificationForm({
   phoneNumber,
-  title = 'Verify Your Phone Number',
-  subtitle = 'Enter the 6-digit code sent to your phone',
+  title = "Verify Your Phone Number",
+  subtitle = "Enter the 6-digit code sent to your phone",
   codeLength = 6,
   resendCooldown = 60,
   onSuccess,
   onError,
   onResendSuccess,
-  className = '',
+  className = "",
 }: SMSVerificationFormProps) {
-  const [verifyState, verifyAction] = useFormState(verifySMSCodeAction, createInitialActionState());
-  const [resendState, resendAction] = useFormState(resendSMSCodeAction, createInitialActionState());
-  const [code, setCode] = useState('');
+  const [verifyState, verifyAction] = useFormState(
+    verifySMSCodeAction,
+    createInitialActionState(),
+  );
+  const [resendState, resendAction] = useFormState(
+    resendSMSCodeAction,
+    createInitialActionState(),
+  );
+  const [code, setCode] = useState("");
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
 
   // Start cooldown timer
@@ -191,7 +213,7 @@ export function SMSVerificationForm({
   useEffect(() => {
     if (cooldownRemaining > 0) {
       const timer = setInterval(() => {
-        setCooldownRemaining(prev => prev - 1);
+        setCooldownRemaining((prev) => prev - 1);
       }, 1000);
       return () => clearInterval(timer);
     }
@@ -201,8 +223,8 @@ export function SMSVerificationForm({
   useEffect(() => {
     if (code.length === codeLength && /^\d+$/.test(code)) {
       const form = new FormData();
-      form.append('phoneNumber', phoneNumber);
-      form.append('code', code);
+      form.append("phoneNumber", phoneNumber);
+      form.append("code", code);
       verifyAction(form);
     }
   }, [code, codeLength, phoneNumber, verifyAction]);
@@ -223,22 +245,22 @@ export function SMSVerificationForm({
   // Format phone number for display
   const formatPhoneNumber = (phone: string) => {
     // Simple formatting for display
-    if (phone.startsWith('+1') && phone.length === 12) {
+    if (phone.startsWith("+1") && phone.length === 12) {
       return `${phone.slice(0, 2)} (${phone.slice(2, 5)}) ${phone.slice(5, 8)}-${phone.slice(8)}`;
     }
     return phone;
   };
 
   return (
-    <Card className={cn('mx-auto w-full max-w-md', className)}>
+    <Card className={cn("mx-auto w-full max-w-md", className)}>
       <CardHeader>
         <div className="text-center">
           <div
             className={cn(
-              'mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full',
+              "mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full",
               verifyState?.success
-                ? 'bg-green-100 dark:bg-green-900/20'
-                : 'bg-blue-100 dark:bg-blue-900/20',
+                ? "bg-green-100 dark:bg-green-900/20"
+                : "bg-blue-100 dark:bg-blue-900/20",
             )}
           >
             {verifyState?.success ? (
@@ -269,9 +291,20 @@ export function SMSVerificationForm({
               </svg>
             )}
           </div>
-          <h1 className={cn('text-2xl font-bold text-gray-900', 'dark:text-gray-100')}>{title}</h1>
+          <h1
+            className={cn(
+              "text-2xl font-bold text-gray-900",
+              "dark:text-gray-100",
+            )}
+          >
+            {title}
+          </h1>
           {subtitle && (
-            <p className={cn('mt-2 text-sm text-gray-600', 'dark:text-gray-400')}>{subtitle}</p>
+            <p
+              className={cn("mt-2 text-sm text-gray-600", "dark:text-gray-400")}
+            >
+              {subtitle}
+            </p>
           )}
         </div>
       </CardHeader>
@@ -284,8 +317,8 @@ export function SMSVerificationForm({
 
             <div
               className={cn(
-                'rounded-lg border border-green-200 bg-green-50 p-4',
-                'dark:border-green-800 dark:bg-green-900/20',
+                "rounded-lg border border-green-200 bg-green-50 p-4",
+                "dark:border-green-800 dark:bg-green-900/20",
               )}
             >
               <div className="flex items-start">
@@ -300,10 +333,16 @@ export function SMSVerificationForm({
                     clipRule="evenodd"
                   />
                 </svg>
-                <div className={cn('text-sm text-green-800', 'dark:text-green-200')}>
+                <div
+                  className={cn(
+                    "text-sm text-green-800",
+                    "dark:text-green-200",
+                  )}
+                >
                   <h4 className="mb-1 font-medium">Phone number verified!</h4>
                   <p className="mb-2">
-                    Your phone number {formatPhoneNumber(phoneNumber)} is now verified
+                    Your phone number {formatPhoneNumber(phoneNumber)} is now
+                    verified
                   </p>
                   <ul className="list-inside list-disc space-y-1 text-xs">
                     <li>SMS two-factor authentication is now available</li>
@@ -318,7 +357,7 @@ export function SMSVerificationForm({
               variant="primary"
               className="w-full"
               onClick={() => {
-                window.location.href = '/account/settings';
+                window.location.href = "/account/settings";
               }}
             >
               Continue to Account Settings
@@ -330,19 +369,37 @@ export function SMSVerificationForm({
         {!verifyState?.success && (
           <div className="space-y-4">
             {/* Error Messages */}
-            {verifyState?.error && <Alert variant="destructive">{verifyState.error}</Alert>}
+            {verifyState?.error && (
+              <Alert variant="destructive">{verifyState.error}</Alert>
+            )}
 
-            {resendState?.error && <Alert variant="destructive">{resendState.error}</Alert>}
+            {resendState?.error && (
+              <Alert variant="destructive">{resendState.error}</Alert>
+            )}
 
-            {resendState?.success && <Alert variant="success">{resendState.message}</Alert>}
+            {resendState?.success && (
+              <Alert variant="success">{resendState.message}</Alert>
+            )}
 
             {/* Phone Number Display */}
-            <div className={cn('rounded-lg bg-gray-50 p-4', 'dark:bg-gray-800')}>
+            <div
+              className={cn("rounded-lg bg-gray-50 p-4", "dark:bg-gray-800")}
+            >
               <div className="text-center">
-                <p className={cn('text-sm font-medium text-gray-700', 'dark:text-gray-300')}>
+                <p
+                  className={cn(
+                    "text-sm font-medium text-gray-700",
+                    "dark:text-gray-300",
+                  )}
+                >
                   Verification code sent to:
                 </p>
-                <p className={cn('font-mono text-lg text-gray-900', 'dark:text-gray-100')}>
+                <p
+                  className={cn(
+                    "font-mono text-lg text-gray-900",
+                    "dark:text-gray-100",
+                  )}
+                >
                   {formatPhoneNumber(phoneNumber)}
                 </p>
               </div>
@@ -354,7 +411,10 @@ export function SMSVerificationForm({
 
               <div className="space-y-2">
                 <label
-                  className={cn('block text-sm font-medium text-gray-700', 'dark:text-gray-300')}
+                  className={cn(
+                    "block text-sm font-medium text-gray-700",
+                    "dark:text-gray-300",
+                  )}
                 >
                   Verification Code
                 </label>
@@ -366,17 +426,19 @@ export function SMSVerificationForm({
                     pattern="[0-9]*"
                     maxLength={codeLength}
                     value={code}
-                    onChange={e => {
-                      const value = e.target.value.replace(/\D/g, '');
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, "");
                       setCode(value);
                     }}
                     className={cn(
-                      'w-full px-4 py-3 text-center font-mono text-2xl',
-                      'rounded-md border border-gray-300 shadow-sm',
-                      'focus:border-blue-500 focus:outline-none focus:ring-blue-500',
-                      'dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100',
-                      'dark:focus:border-blue-400 dark:focus:ring-blue-400',
-                      verifyState?.errors?.code ? 'border-red-500 dark:border-red-400' : '',
+                      "w-full px-4 py-3 text-center font-mono text-2xl",
+                      "rounded-md border border-gray-300 shadow-sm",
+                      "focus:border-blue-500 focus:outline-none focus:ring-blue-500",
+                      "dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100",
+                      "dark:focus:border-blue-400 dark:focus:ring-blue-400",
+                      verifyState?.errors?.code
+                        ? "border-red-500 dark:border-red-400"
+                        : "",
                     )}
                     placeholder="000000"
                     autoComplete="one-time-code"
@@ -384,11 +446,21 @@ export function SMSVerificationForm({
                   />
                 </div>
                 {verifyState?.errors?.code && (
-                  <p className={cn('text-center text-sm text-red-600', 'dark:text-red-400')}>
+                  <p
+                    className={cn(
+                      "text-center text-sm text-red-600",
+                      "dark:text-red-400",
+                    )}
+                  >
                     {verifyState.errors.code[0]}
                   </p>
                 )}
-                <p className={cn('text-center text-xs text-gray-600', 'dark:text-gray-400')}>
+                <p
+                  className={cn(
+                    "text-center text-xs text-gray-600",
+                    "dark:text-gray-400",
+                  )}
+                >
                   Enter the {codeLength}-digit code sent to your phone
                 </p>
               </div>
@@ -397,16 +469,22 @@ export function SMSVerificationForm({
                 type="submit"
                 variant="primary"
                 className="w-full"
-                disabled={verifyState === undefined || code.length !== codeLength}
+                disabled={
+                  verifyState === undefined || code.length !== codeLength
+                }
               >
-                {verifyState === undefined ? 'Verifying...' : 'Verify Phone Number'}
+                {verifyState === undefined
+                  ? "Verifying..."
+                  : "Verify Phone Number"}
               </Button>
             </form>
 
             {/* Resend Code */}
             <div className="space-y-3">
               <div className="text-center">
-                <p className={cn('text-sm text-gray-600', 'dark:text-gray-400')}>
+                <p
+                  className={cn("text-sm text-gray-600", "dark:text-gray-400")}
+                >
                   Didn't receive the code?
                 </p>
               </div>
@@ -420,10 +498,10 @@ export function SMSVerificationForm({
                   disabled={resendState === undefined || cooldownRemaining > 0}
                 >
                   {resendState === undefined
-                    ? 'Resending...'
+                    ? "Resending..."
                     : cooldownRemaining > 0
                       ? `Resend code in ${cooldownRemaining}s`
-                      : 'Resend verification code'}
+                      : "Resend verification code"}
                 </Button>
               </form>
             </div>
@@ -431,11 +509,23 @@ export function SMSVerificationForm({
         )}
 
         {/* Help Information */}
-        <div className={cn('mt-6 rounded-lg bg-gray-50 p-4', 'dark:bg-gray-800')}>
-          <h4 className={cn('mb-2 text-sm font-medium text-gray-900', 'dark:text-gray-100')}>
+        <div
+          className={cn("mt-6 rounded-lg bg-gray-50 p-4", "dark:bg-gray-800")}
+        >
+          <h4
+            className={cn(
+              "mb-2 text-sm font-medium text-gray-900",
+              "dark:text-gray-100",
+            )}
+          >
             Having trouble?
           </h4>
-          <div className={cn('space-y-1 text-xs text-gray-600', 'dark:text-gray-400')}>
+          <div
+            className={cn(
+              "space-y-1 text-xs text-gray-600",
+              "dark:text-gray-400",
+            )}
+          >
             <p>• Make sure your phone can receive SMS messages</p>
             <p>• Check that the phone number is correct</p>
             <p>• Verification codes expire after 10 minutes</p>
@@ -449,8 +539,8 @@ export function SMSVerificationForm({
             <a
               href="/account/phone/setup"
               className={cn(
-                'text-sm text-gray-600 hover:text-gray-500',
-                'dark:text-gray-400 dark:hover:text-gray-300',
+                "text-sm text-gray-600 hover:text-gray-500",
+                "dark:text-gray-400 dark:hover:text-gray-300",
               )}
             >
               Use a different phone number
@@ -461,8 +551,8 @@ export function SMSVerificationForm({
             <a
               href="/account/settings"
               className={cn(
-                'text-sm text-gray-500 hover:text-gray-400',
-                'dark:text-gray-500 dark:hover:text-gray-400',
+                "text-sm text-gray-500 hover:text-gray-400",
+                "dark:text-gray-500 dark:hover:text-gray-400",
               )}
             >
               Skip for now and return to settings

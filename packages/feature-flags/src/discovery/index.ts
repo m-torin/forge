@@ -12,8 +12,8 @@ export function createFlagsDiscoveryEndpoint(
     } catch (error) {
       logError(
         error instanceof Error
-          ? error
-          : new Error('Error in flags discovery endpoint: ' + String(error)),
+          ? error.message
+          : 'Error in flags discovery endpoint: ' + String(error),
         { endpoint: 'discovery' },
       );
       // Return empty flags instead of failing

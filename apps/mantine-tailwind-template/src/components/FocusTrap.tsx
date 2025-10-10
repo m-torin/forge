@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useFocusTrap } from '@mantine/hooks';
+import { useFocusTrap } from "@mantine/hooks";
 
 interface FocusTrapProps {
   children: React.ReactNode;

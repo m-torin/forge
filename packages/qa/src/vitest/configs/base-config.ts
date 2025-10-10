@@ -1,19 +1,19 @@
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import type { UserConfig } from 'vitest/config';
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import type { UserConfig } from "vitest/config";
 
 /**
  * Vitest configuration types for better type safety
  */
-export interface VitestTestConfig extends NonNullable<UserConfig['test']> {
-  coverage?: NonNullable<UserConfig['test']>['coverage'];
+interface VitestTestConfig extends NonNullable<UserConfig["test"]> {
+  coverage?: NonNullable<UserConfig["test"]>["coverage"];
 }
 
-export interface ConfigurationOptions {
+interface ConfigurationOptions {
   /** Enable coverage collection */
   coverage?: boolean;
   /** Test environment type */
-  environment?: 'jsdom' | 'node' | 'happy-dom' | 'edge-runtime';
+  environment?: "jsdom" | "node" | "happy-dom" | "edge-runtime";
   /** Custom setup files */
   setupFiles?: string[];
   /** Test timeout in milliseconds */
@@ -53,46 +53,46 @@ export const baseTestConfig: VitestTestConfig = {
   // Coverage configuration with performance optimizations
   coverage: {
     enabled: false,
-    provider: 'v8',
+    provider: "v8",
     reporter: process.env.CI
-      ? ['text', 'json', 'json-summary', 'lcov']
-      : ['text', 'json', 'json-summary', 'html', 'lcov'],
+      ? ["text", "json", "json-summary", "lcov"]
+      : ["text", "json", "json-summary", "html", "lcov"],
     reportOnFailure: true,
     // Performance: Reduce memory usage during coverage collection
     cleanOnRerun: false,
     skipFull: false,
     exclude: [
       // Dependencies
-      'node_modules/**',
+      "node_modules/**",
 
       // Build outputs
-      'dist/**',
-      'build/**',
-      '.next/**',
+      "dist/**",
+      "build/**",
+      ".next/**",
 
       // Test files
-      '__tests__/**',
-      '**/*.test.*',
-      '**/*.spec.*',
-      '**/test-utils.*',
-      '**/setup.*',
-      '**/mocks/**',
-      'e2e-tests/**',
-      'playwright-report/**',
-      'test-results/**',
+      "__tests__/**",
+      "**/*.test.*",
+      "**/*.spec.*",
+      "**/test-utils.*",
+      "**/setup.*",
+      "**/mocks/**",
+      "e2e-tests/**",
+      "playwright-report/**",
+      "test-results/**",
 
       // Config files
-      '**/*.config.*',
+      "**/*.config.*",
 
       // Type definitions
-      '**/*.d.ts',
+      "**/*.d.ts",
 
       // Storybook
-      '**/*.stories.*',
+      "**/*.stories.*",
 
       // Generated files
-      'generated/**',
-      '**/generated/**',
+      "generated/**",
+      "**/generated/**",
     ],
     all: true,
     clean: false,
@@ -114,13 +114,13 @@ export const baseTestConfig: VitestTestConfig = {
 
   // Default excludes for test discovery
   exclude: [
-    'node_modules',
-    'dist',
-    'build',
-    '.next',
-    'e2e-tests/**/*',
-    'playwright-report/**/*',
-    'test-results/**/*',
+    "node_modules",
+    "dist",
+    "build",
+    ".next",
+    "e2e-tests/**/*",
+    "playwright-report/**/*",
+    "test-results/**/*",
   ],
 };
 
@@ -133,23 +133,23 @@ export const baseConfig: UserConfig = {
     ...baseTestConfig,
     server: {
       deps: {
-        inline: [/@repo\/testing/, 'react', 'react-dom'],
+        inline: [/@repo\/testing/, "react", "react-dom"],
         external: [],
       },
     },
   },
   resolve: {
-    extensions: ['.ts', '.tsx', '.js', '.jsx', '.json', '.mjs', '.mts'],
+    extensions: [".ts", ".tsx", ".js", ".jsx", ".json", ".mjs", ".mts"],
     alias: {
-      '@repo/qa': resolve(dirname(fileURLToPath(import.meta.url)), '../../..'),
-      '@logtape/cloudwatch-logs': resolve(
+      "@repo/qa": resolve(dirname(fileURLToPath(import.meta.url)), "../../.."),
+      "@logtape/cloudwatch-logs": resolve(
         dirname(fileURLToPath(import.meta.url)),
-        '../mocks/providers/logtape-cloudwatch-stub.ts',
+        "../mocks/providers/logtape-cloudwatch-stub.ts",
       ),
     },
   },
   optimizeDeps: {
-    include: ['@repo/qa'],
+    include: ["@repo/qa"],
     force: true,
   },
 };
@@ -171,7 +171,9 @@ export const baseConfig: UserConfig = {
  * });
  * ```
  */
-export function getBaseTestConfig(overrides: Partial<VitestTestConfig> = {}): VitestTestConfig {
+export function getBaseTestConfig(
+  overrides: Partial<VitestTestConfig> = {},
+): VitestTestConfig {
   return {
     ...baseTestConfig,
     ...overrides,
@@ -192,20 +194,20 @@ export function getBaseTestConfig(overrides: Partial<VitestTestConfig> = {}): Vi
  */
 export const environmentConfigs = {
   jsdom: {
-    environment: 'jsdom' as const,
+    environment: "jsdom" as const,
     css: {
       modules: {
-        classNameStrategy: 'non-scoped' as const,
+        classNameStrategy: "non-scoped" as const,
       },
     },
   },
 
   node: {
-    environment: 'node' as const,
+    environment: "node" as const,
   },
 
   edge: {
-    environment: 'edge-runtime' as const,
+    environment: "edge-runtime" as const,
   },
 } as const;
 
@@ -215,7 +217,7 @@ export const environmentConfigs = {
 export interface BaseConfigOptions {
   aliases?: Record<string, string>;
   coverage?: boolean;
-  environment?: 'jsdom' | 'node' | 'happy-dom' | 'edge-runtime';
+  environment?: "jsdom" | "node" | "happy-dom" | "edge-runtime";
   rootDir?: string;
   setupFiles?: string[];
 }
@@ -246,21 +248,21 @@ export function createBaseConfig(options: BaseConfigOptions = {}): UserConfig {
   const {
     aliases = {},
     coverage = false,
-    environment = 'jsdom',
+    environment = "jsdom",
     rootDir = process.cwd(),
     setupFiles = [],
   } = options;
 
   // Get current directory for proper path resolution
   const currentDir = import.meta.dirname;
-  const packagesDir = resolve(currentDir, '../../../packages');
+  const packagesDir = resolve(currentDir, "../../../packages");
 
   return {
     resolve: {
-      extensions: ['.ts', '.tsx', '.js', '.jsx', '.json', '.mjs', '.mts'],
+      extensions: [".ts", ".tsx", ".js", ".jsx", ".json", ".mjs", ".mts"],
       alias: {
-        '@': resolve(rootDir, './'),
-        '@repo': packagesDir,
+        "@": resolve(rootDir, "./"),
+        "@repo": packagesDir,
         ...aliases,
       },
     },
@@ -272,8 +274,10 @@ export function createBaseConfig(options: BaseConfigOptions = {}): UserConfig {
         ? {
             ...baseTestConfig?.coverage,
             enabled: true,
-            provider: 'v8',
-            reporter: process.env.CI ? ['text', 'json'] : ['text', 'json', 'html'],
+            provider: "v8",
+            reporter: process.env.CI
+              ? ["text", "json"]
+              : ["text", "json", "html"],
           }
         : {
             ...baseTestConfig?.coverage,
@@ -286,7 +290,6 @@ export function createBaseConfig(options: BaseConfigOptions = {}): UserConfig {
 /**
  * Default base configuration export
  */
-export default createBaseConfig();
 
 /**
  * Timeout configurations for different test types
@@ -317,7 +320,7 @@ export const poolConfigs = {
 
   // Run tests sequentially (good for database tests)
   sequential: {
-    pool: 'forks' as const,
+    pool: "forks" as const,
     poolOptions: {
       forks: {
         singleFork: true,

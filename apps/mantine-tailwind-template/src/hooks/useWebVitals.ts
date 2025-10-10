@@ -1,18 +1,18 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
 interface WebVitalMetric {
   name: string;
   value: number;
-  rating: 'good' | 'needs-improvement' | 'poor';
+  rating: "good" | "needs-improvement" | "poor";
   delta: number;
   id: string;
 }
 
 export function useWebVitals(onMetric?: (metric: WebVitalMetric) => void) {
   useEffect(() => {
-    if (typeof window === 'undefined' || !onMetric) return;
+    if (typeof window === "undefined" || !onMetric) return;
 
     let observer: PerformanceObserver | undefined;
 
@@ -23,7 +23,7 @@ export function useWebVitals(onMetric?: (metric: WebVitalMetric) => void) {
         let webVitals: any = null;
         try {
           // @ts-ignore - web-vitals may not be installed
-          webVitals = await import('web-vitals');
+          webVitals = await import("web-vitals");
         } catch {
           // web-vitals not available, use fallback
           webVitals = null;
@@ -31,22 +31,22 @@ export function useWebVitals(onMetric?: (metric: WebVitalMetric) => void) {
 
         if (!webVitals) {
           // Fallback to basic performance monitoring
-          if ('PerformanceObserver' in window) {
-            const observer = new PerformanceObserver(list => {
-              list.getEntries().forEach(entry => {
-                if (entry.entryType === 'navigation') {
+          if ("PerformanceObserver" in window) {
+            const observer = new PerformanceObserver((list) => {
+              list.getEntries().forEach((entry) => {
+                if (entry.entryType === "navigation") {
                   const navEntry = entry as PerformanceNavigationTiming;
                   onMetric({
-                    name: 'FCP',
+                    name: "FCP",
                     value: navEntry.loadEventEnd - navEntry.loadEventStart,
-                    rating: 'good',
+                    rating: "good",
                     delta: 0,
-                    id: 'fallback-fcp',
+                    id: "fallback-fcp",
                   });
                 }
               });
             });
-            observer.observe({ entryTypes: ['navigation'] });
+            observer.observe({ entryTypes: ["navigation"] });
           }
           return;
         }
@@ -56,7 +56,7 @@ export function useWebVitals(onMetric?: (metric: WebVitalMetric) => void) {
         // Cumulative Layout Shift
         getCLS((metric: any) => {
           onMetric({
-            name: 'CLS',
+            name: "CLS",
             value: metric.value,
             rating: metric.rating,
             delta: metric.delta,
@@ -67,7 +67,7 @@ export function useWebVitals(onMetric?: (metric: WebVitalMetric) => void) {
         // First Input Delay
         getFID((metric: any) => {
           onMetric({
-            name: 'FID',
+            name: "FID",
             value: metric.value,
             rating: metric.rating,
             delta: metric.delta,
@@ -78,7 +78,7 @@ export function useWebVitals(onMetric?: (metric: WebVitalMetric) => void) {
         // First Contentful Paint
         getFCP((metric: any) => {
           onMetric({
-            name: 'FCP',
+            name: "FCP",
             value: metric.value,
             rating: metric.rating,
             delta: metric.delta,
@@ -89,7 +89,7 @@ export function useWebVitals(onMetric?: (metric: WebVitalMetric) => void) {
         // Largest Contentful Paint
         getLCP((metric: any) => {
           onMetric({
-            name: 'LCP',
+            name: "LCP",
             value: metric.value,
             rating: metric.rating,
             delta: metric.delta,
@@ -100,7 +100,7 @@ export function useWebVitals(onMetric?: (metric: WebVitalMetric) => void) {
         // Time to First Byte
         getTTFB((metric: any) => {
           onMetric({
-            name: 'TTFB',
+            name: "TTFB",
             value: metric.value,
             rating: metric.rating,
             delta: metric.delta,
@@ -109,14 +109,14 @@ export function useWebVitals(onMetric?: (metric: WebVitalMetric) => void) {
         });
 
         // Monitor long tasks that can hurt performance
-        if ('PerformanceObserver' in window) {
-          observer = new PerformanceObserver(list => {
-            list.getEntries().forEach(entry => {
-              if (entry.entryType === 'longtask') {
+        if ("PerformanceObserver" in window) {
+          observer = new PerformanceObserver((list) => {
+            list.getEntries().forEach((entry) => {
+              if (entry.entryType === "longtask") {
                 onMetric({
-                  name: 'Long Task',
+                  name: "Long Task",
                   value: entry.duration,
-                  rating: entry.duration > 50 ? 'poor' : 'good',
+                  rating: entry.duration > 50 ? "poor" : "good",
                   delta: entry.duration,
                   id: `longtask-${Date.now()}`,
                 });
@@ -124,11 +124,11 @@ export function useWebVitals(onMetric?: (metric: WebVitalMetric) => void) {
             });
           });
 
-          observer.observe({ entryTypes: ['longtask'] });
+          observer.observe({ entryTypes: ["longtask"] });
         }
       } catch (error) {
         // eslint-disable-next-line no-console
-        console.warn('Web Vitals monitoring failed to initialize:', error);
+        console.warn("Web Vitals monitoring failed to initialize:", error);
       }
     };
 

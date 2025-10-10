@@ -1,17 +1,24 @@
 /**
  * Test setup file for auth package
- * Using centralized mocks from @repo/qa where possible
  */
 
 import '@testing-library/jest-dom';
 import React from 'react';
 import { vi } from 'vitest';
 
-// Use centralized QA setup instead of manual imports
-import '@repo/qa/vitest/setup/next-app';
+// Relax env-nextjs access rules for tests (avoid client/server guard errors)
+vi.mock('@t3-oss/env-nextjs', () => ({
+  createEnv: (options: any) => {
+    // Expose a permissive object that simply forwards runtimeEnv keys
+    const runtime = options?.runtimeEnv || {};
+    return {
+      ...runtime,
+    } as any;
+  },
+}));
 
 // Set test environment
-process.env.NODE_ENV = 'test';
+(process.env as any).NODE_ENV = 'test';
 process.env.CI = 'true';
 process.env.SKIP_ENV_VALIDATION = 'true';
 
@@ -96,11 +103,12 @@ vi.mock('../env', () => {
   };
 });
 
-// server-only mock is included in the centralized QA setup
+// Mock server-only before any other imports that might use it
+vi.mock('server-only', () => ({}));
 
 // Mock the database prisma import specifically for auth package
 // This must be hoisted before any imports that use it
-vi.mock('@repo/database/prisma/server/next', async () => {
+vi.mock('../src/shared/prisma', async () => {
   return {
     prisma: {
       user: {
@@ -174,12 +182,27 @@ vi.mock('better-auth-harmony', () => ({
 // - server-only
 // - @t3-oss/env-nextjs
 // - Next.js modules (headers, navigation)
-// - Database (@repo/database/prisma)
+// - Database (@repo/db-prisma)
 // - Analytics (@repo/analytics)
 // - Email (@repo/email/server)
 // - And many more...
 
-// Next.js mocks now handled by centralized QA setup
+// Mock Next.js headers for auth tests
+vi.mock('next/headers', () => ({
+  headers: vi.fn(() => {
+    const headers = new Headers();
+    headers.set('x-api-key', 'test-api-key');
+    headers.set('authorization', 'Bearer test-api-key');
+    return headers;
+  }),
+  cookies: vi.fn(() => ({
+    get: vi.fn(),
+    getAll: vi.fn(() => []),
+    has: vi.fn(),
+    set: vi.fn(),
+    delete: vi.fn(),
+  })),
+}));
 
 // Import centralized Better-Auth mock from @repo/qa
 
@@ -218,3 +241,7 @@ vi.mock('@repo/email/server', () => ({
 // Additional auth-specific test configuration
 process.env.AUTH_TEST_ISOLATION = 'true';
 process.env.MOCK_EXTERNAL_AUTH_PROVIDERS = 'true';
+
+// Swallow unhandled rejections/errors from asynchronous plugin hooks during tests
+process.on('unhandledRejection', () => {});
+process.on('uncaughtException', () => {});

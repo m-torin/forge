@@ -5,6 +5,10 @@ node_modules
 .pnp
 .pnp.js
 
+# ESLint and Prettier caches
+node_modules/.cache/
+.eslintcache
+
 # Local env files
 .env
 .env.local
@@ -50,3 +54,35 @@ dist
 
 # BaseHub
 .basehub
+
+# Local workflow history
+.forge/
+.tmp/
+
+# Claude Memory Working Files (regenerated each session)
+# Templates are kept in git, working files are ignored
+.claude/memory/quick-context.md
+.claude/memory/full-context.md
+.claude/memory/*-learnings.md
+.claude/memory/fullservice-session-*.md
+.claude/memory/session-report-*.md
+.claude/memory/audit-*.md
+.claude/memory/agent-improvements-*.md
+.claude/memory/checkpoint-*.md
+.claude/memory/discoveries-*.md
+.claude/memory/guardrail-improvements-*.md
+.claude/memory/workflow-improvements-*.md
+.claude/memory/verification-results-*.md
+.claude/memory/coordination-violations.md
+.claude/memory/orchestrator-review-*.md
+.claude/memory/future-session-guidance.md
+.claude/memory/archive/
+.claude/memory/tool-audit.log
+.claude/memory/services.json
+.claude/memory/improvement-metrics.json
+.claude/memory/artifacts/
+
+# Keep templates (negation patterns)
+!.claude/memory/*-template.md
+!.claude/memory/README.md
+!.claude/memory/context-index.md

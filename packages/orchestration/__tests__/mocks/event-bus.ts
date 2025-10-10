@@ -47,7 +47,7 @@ export function createMockEventBus() {
 
     async emit(type: string, data?: any) {
       const event = {
-        id: `event_${Math.random().toString(36).substr(2, 9)}`,
+        id: `event_${crypto.randomUUID()}`,
         type,
         data,
         timestamp: Date.now(),

@@ -176,7 +176,7 @@ try {
     error: error instanceof Error ? error.message : String(error),
     code: (error as any)?.code,
     timestamp: new Date().toISOString(),
-    operation: "riskyOperation"
+    operation: "riskyOperation",
   });
 
   // Or pass the error directly
@@ -242,7 +242,7 @@ import {
   logInfo,
   logError,
   logWarn,
-  logDebug
+  logDebug,
 } from "@repo/observability/server/next";
 
 // Fire-and-forget logging - no await needed!
@@ -288,7 +288,7 @@ import {
   logInfo,
   logError,
   logWarn,
-  logDebug
+  logDebug,
 } from "@repo/observability/server/next";
 
 // Next.js client components and client-side code
@@ -296,7 +296,7 @@ import {
   logInfo,
   logError,
   logWarn,
-  logDebug
+  logDebug,
 } from "@repo/observability/client/next";
 
 // Edge runtime (middleware, edge functions)
@@ -304,7 +304,7 @@ import {
   logInfo,
   logError,
   logWarn,
-  logDebug
+  logDebug,
 } from "@repo/observability/server/edge";
 
 // Standard Node.js applications
@@ -312,7 +312,7 @@ import {
   logInfo,
   logError,
   logWarn,
-  logDebug
+  logDebug,
 } from "@repo/observability/server";
 
 // Generic client-side (browser)
@@ -320,7 +320,7 @@ import {
   logInfo,
   logError,
   logWarn,
-  logDebug
+  logDebug,
 } from "@repo/observability/client";
 
 // Environment-agnostic packages (uses runtime detection)
@@ -336,11 +336,11 @@ variables. For custom configuration:
 import {
   createServerObservability,
   getObservability,
-  ObservabilityBuilder
+  ObservabilityBuilder,
 } from "@repo/observability/server/next";
 import {
   createConsoleServerPlugin,
-  createSentryPlugin
+  createSentryPlugin,
 } from "@repo/observability/server/next";
 
 // Custom observability configuration
@@ -348,14 +348,14 @@ const customObservability = ObservabilityBuilder.create()
   .withPlugin(
     createConsoleServerPlugin({
       prefix: "[MyApp]",
-      enabled: true
-    })
+      enabled: true,
+    }),
   )
   .withPlugin(
     createSentryPlugin({
       dsn: process.env.SENTRY_DSN,
-      environment: process.env.NODE_ENV
-    })
+      environment: process.env.NODE_ENV,
+    }),
   )
   .build();
 
@@ -378,7 +378,7 @@ import { createConsolePlugin } from "@repo/observability/plugins/console";
 
 const consolePlugin = createConsolePlugin({
   prefix: "[MyApp]",
-  enabled: true // Automatically enabled in development
+  enabled: true, // Automatically enabled in development
 });
 ```
 
@@ -390,7 +390,7 @@ import { createSentryPlugin } from "@repo/observability/plugins/sentry";
 const sentryPlugin = createSentryPlugin({
   dsn: process.env.SENTRY_DSN,
   environment: process.env.NODE_ENV,
-  tracesSampleRate: 0.1
+  tracesSampleRate: 0.1,
 });
 ```
 
@@ -400,7 +400,7 @@ const sentryPlugin = createSentryPlugin({
 import { createBetterStackPlugin } from "@repo/observability/plugins/betterstack";
 
 const betterStackPlugin = createBetterStackPlugin({
-  sourceToken: process.env.BETTERSTACK_SOURCE_TOKEN
+  sourceToken: process.env.BETTERSTACK_SOURCE_TOKEN,
 });
 ```
 
@@ -415,9 +415,9 @@ const logTapePlugin = createLogTapePlugin({
     file: { path: "/var/log/app.log" },
     cloudwatch: {
       logGroup: "/aws/lambda/my-function",
-      region: "us-east-1"
-    }
-  }
+      region: "us-east-1",
+    },
+  },
 });
 ```
 
@@ -441,7 +441,7 @@ async function loadUserData(userId: string) {
     observability.logInfo("User data loaded successfully", {
       userId,
       duration: `${duration.toFixed(2)}ms`,
-      operation: "load-user-data"
+      operation: "load-user-data",
     });
 
     return data;
@@ -452,7 +452,7 @@ async function loadUserData(userId: string) {
       error,
       userId,
       duration: `${duration.toFixed(2)}ms`,
-      operation: "load-user-data"
+      operation: "load-user-data",
     });
 
     throw error;
@@ -470,7 +470,7 @@ import { startTransaction } from "@sentry/nextjs";
 // Manual performance tracking
 const transaction = startTransaction({
   name: "workflow-execution",
-  op: "workflow"
+  op: "workflow",
 });
 
 transaction.setTag("workflowType", "product-classification");
@@ -745,9 +745,9 @@ vi.mock("@repo/observability/server/next", () => ({
       captureException: vi.fn(),
       captureMessage: vi.fn(),
       setUser: vi.fn(),
-      addBreadcrumb: vi.fn()
-    })
-  )
+      addBreadcrumb: vi.fn(),
+    }),
+  ),
 }));
 
 // Mock client-side observability
@@ -765,9 +765,9 @@ vi.mock("@repo/observability/client/next", () => ({
       captureException: vi.fn(),
       captureMessage: vi.fn(),
       setUser: vi.fn(),
-      addBreadcrumb: vi.fn()
-    })
-  )
+      addBreadcrumb: vi.fn(),
+    }),
+  ),
 }));
 
 // Mock shared observability
@@ -776,7 +776,7 @@ vi.mock("@repo/observability", () => ({
   logError: vi.fn(),
   logWarn: vi.fn(),
   logDebug: vi.fn(),
-  getRuntimeEnvironment: vi.fn(() => ({ type: "node", version: "22.0.0" }))
+  getRuntimeEnvironment: vi.fn(() => ({ type: "node", version: "22.0.0" })),
 }));
 ```
 
@@ -860,7 +860,7 @@ function UserProfile({ userId }: { userId: string }) {
      organizationId: org.id,
      action: "profile_update",
      timestamp: Date.now(),
-     userAgent: request.headers["user-agent"]
+     userAgent: request.headers["user-agent"],
    });
    ```
 
@@ -874,7 +874,7 @@ function UserProfile({ userId }: { userId: string }) {
        operation: "criticalOperation",
        userId: user.id,
        retryAttempt: attemptNumber,
-       duration: Date.now() - startTime
+       duration: Date.now() - startTime,
      });
    }
    ```
@@ -899,7 +899,7 @@ function UserProfile({ userId }: { userId: string }) {
    observability.setUser({
      id: user.id,
      email: user.email,
-     organizationId: org.id
+     organizationId: org.id,
    });
    ```
 
@@ -911,13 +911,13 @@ function UserProfile({ userId }: { userId: string }) {
      logInfo("Operation completed", {
        operation: "expensiveOperation",
        duration: `${(performance.now() - startTime).toFixed(2)}ms`,
-       resultSize: JSON.stringify(result).length
+       resultSize: JSON.stringify(result).length,
      });
    } catch (error) {
      logError("Operation failed", {
        error,
        operation: "expensiveOperation",
-       duration: `${(performance.now() - startTime).toFixed(2)}ms`
+       duration: `${(performance.now() - startTime).toFixed(2)}ms`,
      });
    }
    ```

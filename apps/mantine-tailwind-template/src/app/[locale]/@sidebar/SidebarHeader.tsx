@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useSidebar } from '#/components/SidebarProvider';
-import { ActionIcon, Text } from '@mantine/core';
-import { IconX } from '@tabler/icons-react';
+import { useSidebar } from "#/components/SidebarProvider";
+import { ActionIcon, Text } from "@mantine/core";
+import { IconX } from "@tabler/icons-react";
 
 export default function SidebarHeader() {
   const { close } = useSidebar();

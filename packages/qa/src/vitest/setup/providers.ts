@@ -7,15 +7,15 @@
  */
 
 // Import existing centralized mock setup functions
-import { vi } from 'vitest';
-import { setupLogtailMocks } from '../mocks/providers/logtail';
-import { setupLogTapeMocks } from '../mocks/providers/logtape';
-import { setupSentryMocks } from '../mocks/providers/sentry';
-import { setupVercelAnalyticsMocks } from '../mocks/providers/vercel-analytics';
+import { vi } from "vitest";
+import { setupLogtailMocks } from "../mocks/providers/logtail";
+import { setupLogTapeMocks } from "../mocks/providers/logtape";
+import { setupSentryMocks } from "../mocks/providers/sentry";
+import { setupVercelAnalyticsMocks } from "../mocks/providers/vercel-analytics";
 
 // Set up Sentry mocks (covers @sentry/node, @sentry/browser, @sentry/nextjs)
 setupSentryMocks({
-  package: '@sentry/node', // Default for server environments
+  package: "@sentry/node", // Default for server environments
   includeIntegrations: true,
   includePerformance: true,
   includeReplays: true,
@@ -24,7 +24,7 @@ setupSentryMocks({
 
 // Set up Logtail/BetterStack mocks (covers @logtail/js, @logtail/node, @logtail/next)
 setupLogtailMocks({
-  package: '@logtail/js', // Default package
+  package: "@logtail/js", // Default package
   includeContextMethods: true,
 });
 
@@ -38,7 +38,7 @@ setupLogTapeMocks({
 setupVercelAnalyticsMocks();
 
 // Additional common mocks that aren't covered by the provider factories
-vi.mock('server-only', () => ({}));
+vi.mock("server-only", () => ({}));
 
 // Console log suppression for cleaner test output (preserve existing behavior)
 const originalConsole = console;

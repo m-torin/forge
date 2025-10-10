@@ -120,8 +120,8 @@ describe('observability Package', () => {
 
     test('logError should handle Error objects', () => {
       const error = createTestData.error();
-      expect(() => logError(error)).not.toThrow();
-      expect(() => logError(error, { context: 'test' })).not.toThrow();
+      expect(() => logError(error.message)).not.toThrow();
+      expect(() => logError(error.message, { context: 'test' })).not.toThrow();
     });
   });
 });

@@ -13,20 +13,16 @@ import { postHogServerAdapter } from './posthog-server';
 /**
  * Create PostHog adapter with proper configuration
  */
-export function createPostHogAdapter() {
+function createPostHogAdapter() {
   const env = safeEnv();
 
-  if (!env.POSTHOG_KEY) {
-    logWarn('PostHog key not configured - adapter will use offline fallback', {
-      adapter: 'posthog',
-      mode: 'offline-fallback',
+  const debug = env.VERCEL_ANALYTICS_DEBUG === true;
+  if (debug) {
+    logInfo('PostHog adapter initialized', {
+      hasKey: !!env.POSTHOG_KEY,
+      host: env.POSTHOG_HOST || 'https://app.posthog.com',
     });
   }
-
-  logInfo('PostHog adapter configured', {
-    hasKey: !!env.POSTHOG_KEY,
-    host: env.POSTHOG_HOST || 'https://app.posthog.com',
-  });
 
   return postHogServerAdapter;
 }
@@ -34,19 +30,25 @@ export function createPostHogAdapter() {
 /**
  * Create Edge Config adapter with proper configuration
  */
-export function createEdgeConfigAdapter() {
+function createEdgeConfigAdapter() {
   const env = safeEnv();
+  const isDev = process.env.NODE_ENV !== 'production';
+  const isDebug = process.env.NEXT_PUBLIC_OBSERVABILITY_DEBUG === 'true';
 
   if (!env.EDGE_CONFIG) {
-    logWarn('Edge Config connection string not configured - adapter will use offline fallback', {
-      adapter: 'edge-config',
-      mode: 'offline-fallback',
-    });
+    if (isDev || isDebug) {
+      logWarn('Edge Config connection string not configured - adapter will use offline fallback', {
+        adapter: 'edge-config',
+        mode: 'offline-fallback',
+      });
+    }
   }
 
-  logInfo('Edge Config adapter configured', {
-    hasConnection: !!env.EDGE_CONFIG,
-  });
+  if (isDev || isDebug) {
+    logInfo('Edge Config adapter configured', {
+      hasConnection: !!env.EDGE_CONFIG,
+    });
+  }
 
   return legacyEdgeConfigAdapter;
 }
@@ -104,7 +106,7 @@ export function createPostHogPayloadAdapter<T>(_transform?: (payload: any) => T)
  * Migration helper: Convert old custom adapters to modern ones
  * This helps transition from our custom implementations
  */
-export function migrateAdapter(adapterType: string): (() => any) | undefined {
+function _migrateAdapter(adapterType: string): (() => any) | undefined {
   switch (adapterType) {
     case 'postHogServerAdapter.isFeatureEnabled':
       logInfo('Migrating custom PostHog adapter to modern interface');

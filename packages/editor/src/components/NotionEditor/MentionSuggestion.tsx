@@ -20,7 +20,7 @@ const DEFAULT_USERS: User[] = [
   { id: '5', name: 'Charlie Brown', email: 'charlie@example.com' },
 ];
 
-export interface MentionSuggestionRef {
+interface MentionSuggestionRef {
   onKeyDown: (props: { event: KeyboardEvent }) => boolean;
 }
 

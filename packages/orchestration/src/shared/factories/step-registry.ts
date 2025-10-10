@@ -32,7 +32,7 @@ export interface StepCompositionConfig {
 /**
  * Step dependency graph node
  */
-export interface StepDependencyNode {
+interface StepDependencyNode {
   /** Step definition */
   definition: WorkflowStepDefinition;
   /** Direct dependencies */
@@ -64,7 +64,7 @@ export interface StepExecutionPlan {
 /**
  * Step registry entry with additional metadata
  */
-export interface StepRegistryEntry<TInput = any, TOutput = any> {
+interface StepRegistryEntry<TInput = any, TOutput = any> {
   /** Whether the step is currently active */
   active: boolean;
   /** Step definition */
@@ -548,7 +548,6 @@ export class StepRegistry {
       // Filter by name pattern
       if (filters.namePattern) {
         try {
-          // eslint-disable-next-line security/detect-non-literal-regexp
           const pattern = new RegExp(filters.namePattern, 'i');
           if (!pattern.test(metadata.name)) {
             continue;

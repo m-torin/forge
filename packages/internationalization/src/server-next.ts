@@ -9,11 +9,11 @@
 
 // Re-export all server-side functions from next-intl
 // Import hasLocale from the main package
-import { hasLocale } from 'next-intl';
+import { hasLocale } from "next-intl";
 
 // Import shared functionality for dictionary loading
-import type { Dictionary } from './shared/dictionary-loader';
-import { createDictionaryLoader } from './shared/dictionary-loader';
+import type { Dictionary } from "./shared/dictionary-loader";
+import { createDictionaryLoader } from "./shared/dictionary-loader";
 
 export {
   getFormatter,
@@ -24,17 +24,17 @@ export {
   getTimeZone,
   getTranslations,
   setRequestLocale,
-} from 'next-intl/server';
+} from "next-intl/server";
 export { hasLocale };
 
 // Re-export routing configuration
-export { locales, routing, type Locale } from './routing';
+export { locales, routing, type Locale } from "./routing";
 
 // Re-export navigation utilities
-export { getPathname, Link, permanentRedirect, redirect } from './navigation';
+export { getPathname, Link, permanentRedirect, redirect } from "./navigation";
 
 // Re-export middleware functionality
-export { config, internationalizationMiddleware } from './middleware';
+export { config, internationalizationMiddleware } from "./middleware";
 
 // Create dictionary loader instance for compatibility
 const dictionaryLoader = createDictionaryLoader();

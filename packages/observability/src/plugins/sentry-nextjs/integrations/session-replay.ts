@@ -33,7 +33,7 @@ export interface SessionReplayConfig {
   /**
    * Canvas recording quality
    */
-  canvasQuality?: 'low' | 'medium' | 'high';
+  canvasQuality?: "low" | "medium" | "high";
 
   /**
    * Canvas frame rate
@@ -133,7 +133,7 @@ export interface SessionReplayConfig {
     /**
      * Console levels to capture
      */
-    levels?: ('log' | 'info' | 'warn' | 'error' | 'debug')[];
+    levels?: ("log" | "info" | "warn" | "error" | "debug")[];
   };
 
   /**
@@ -145,8 +145,14 @@ export interface SessionReplayConfig {
 /**
  * Generate replay integration configuration
  */
-export function generateReplayIntegrationConfig(config: SessionReplayConfig): any {
-  const { privacy = {}, networkCapture = {}, consoleCapture: _consoleCapture = {} } = config;
+export function generateReplayIntegrationConfig(
+  config: SessionReplayConfig,
+): any {
+  const {
+    privacy = {},
+    networkCapture = {},
+    consoleCapture: _consoleCapture = {},
+  } = config;
 
   const replayConfig: any = {
     // Privacy settings
@@ -159,14 +165,16 @@ export function generateReplayIntegrationConfig(config: SessionReplayConfig): an
     ...(privacy.block && { block: privacy.block }),
     ...(privacy.ignore && { ignore: privacy.ignore }),
     ...(privacy.maskTextClass && { maskTextClass: privacy.maskTextClass }),
-    ...(privacy.blockMediaClass && { blockMediaClass: privacy.blockMediaClass }),
+    ...(privacy.blockMediaClass && {
+      blockMediaClass: privacy.blockMediaClass,
+    }),
 
     // Network settings
     networkDetailAllowUrls: networkCapture.urlIncludePatterns || [],
     networkDetailDenyUrls: networkCapture.urlExcludePatterns || [],
     networkCaptureBodies: networkCapture.captureBodies ?? false,
-    networkRequestHeaders: networkCapture.captureHeaders ? ['*'] : [],
-    networkResponseHeaders: networkCapture.captureHeaders ? ['*'] : [],
+    networkRequestHeaders: networkCapture.captureHeaders ? ["*"] : [],
+    networkResponseHeaders: networkCapture.captureHeaders ? ["*"] : [],
   };
 
   return replayConfig;
@@ -175,13 +183,17 @@ export function generateReplayIntegrationConfig(config: SessionReplayConfig): an
 /**
  * Generate canvas integration configuration
  */
-export function generateCanvasIntegrationConfig(config: SessionReplayConfig): any {
+export function generateCanvasIntegrationConfig(
+  config: SessionReplayConfig,
+): any {
   if (!config.enableCanvas) {
     return null;
   }
 
-  const quality = config.canvasQuality || 'medium';
-  const fps = config.canvasFPS || (quality === 'high' ? 15 : quality === 'medium' ? 10 : 5);
+  const quality = config.canvasQuality || "medium";
+  const fps =
+    config.canvasFPS ||
+    (quality === "high" ? 15 : quality === "medium" ? 10 : 5);
 
   return {
     recordCanvas: true,
@@ -189,8 +201,8 @@ export function generateCanvasIntegrationConfig(config: SessionReplayConfig): an
       canvas: fps,
     },
     dataURLOptions: {
-      type: 'image/webp',
-      quality: quality === 'high' ? 0.8 : quality === 'medium' ? 0.6 : 0.4,
+      type: "image/webp",
+      quality: quality === "high" ? 0.8 : quality === "medium" ? 0.6 : 0.4,
     },
   };
 }
@@ -202,23 +214,23 @@ export const PRIVACY_PRESETS = {
   strict: {
     maskAllText: true,
     blockAllMedia: true,
-    mask: ['.sensitive', '[data-private]', 'input', 'textarea'],
-    block: ['iframe', 'video', 'audio', 'img'],
-    maskTextClass: 'sentry-mask',
-    blockMediaClass: 'sentry-block',
+    mask: [".sensitive", "[data-private]", "input", "textarea"],
+    block: ["iframe", "video", "audio", "img"],
+    maskTextClass: "sentry-mask",
+    blockMediaClass: "sentry-block",
   },
   balanced: {
     maskAllText: false,
     blockAllMedia: false,
-    mask: ['input[type="password"]', '[data-sensitive]', '.private'],
-    unmask: ['.public', '[data-public]'],
-    maskTextClass: 'sentry-mask',
+    mask: ['input[type="password"]', "[data-sensitive]", ".private"],
+    unmask: [".public", "[data-public]"],
+    maskTextClass: "sentry-mask",
   },
   minimal: {
     maskAllText: false,
     blockAllMedia: false,
     mask: ['input[type="password"]'],
-    unmask: ['*'],
+    unmask: ["*"],
   },
 };
 
@@ -287,7 +299,7 @@ export function generateCustomSamplingFunction(rules: {
   if (urlPatterns.some(pattern => window.location.href.includes(pattern))) {
     return true;
   }`
-      : ''
+      : ""
   }
 
   // User role-based sampling
@@ -299,7 +311,7 @@ export function generateCustomSamplingFunction(rules: {
   if (userRoles.includes(currentUserRole)) {
     return true;
   }`
-      : ''
+      : ""
   }
 
   // Error type-based sampling
@@ -310,11 +322,11 @@ export function generateCustomSamplingFunction(rules: {
   if (event.exception && errorTypes.includes(event.exception.values[0]?.type)) {
     return true;
   }`
-      : ''
+      : ""
   }
 
   // Custom logic
-  ${rules.customLogic || ''}
+  ${rules.customLogic || ""}
 
   // Default sampling
   return Math.random() < 0.1; // 10% default
@@ -386,9 +398,9 @@ ${MASKING_UTILITIES}
 replaysSessionSampleRate: 0,
 replaysOnErrorSampleRate: 0,
 beforeSendReplay: ${generateCustomSamplingFunction({
-  urlPatterns: ['/checkout', '/payment'],
-  userRoles: ['premium', 'enterprise'],
-  errorTypes: ['TypeError', 'ReferenceError'],
+  urlPatterns: ["/checkout", "/payment"],
+  userRoles: ["premium", "enterprise"],
+  errorTypes: ["TypeError", "ReferenceError"],
 })}
 \`\`\`
 

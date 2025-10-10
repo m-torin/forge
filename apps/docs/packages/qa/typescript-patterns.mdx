@@ -1,7 +1,6 @@
 ---
 title: "TypeScript Testing Patterns"
-description:
-  "Advanced TypeScript testing patterns, type safety, and testing
+description: "Advanced TypeScript testing patterns, type safety, and testing
   TypeScript-specific features"
 icon: "code"
 ---
@@ -32,7 +31,7 @@ import {
   expectType,
   expectAssignable,
   expectNotAssignable,
-  expectTypeOf
+  expectTypeOf,
 } from "@repo/qa/vitest/utils/typescript";
 
 // Define interfaces
@@ -95,7 +94,7 @@ describe("Type Safety", () => {
       id: "123",
       name: "John Doe",
       email: "john@example.com",
-      roles: ["user"]
+      roles: ["user"],
     };
 
     // Type validation
@@ -124,7 +123,7 @@ function createArray<T>(length: number, value: T): T[] {
 
 function mapObject<T, U>(
   obj: Record<string, T>,
-  mapper: (value: T, key: string) => U
+  mapper: (value: T, key: string) => U,
 ): Record<string, U> {
   const result: Record<string, U> = {};
   for (const [key, value] of Object.entries(obj)) {
@@ -174,7 +173,7 @@ describe("Generic Function Testing", () => {
       name: "John Doe",
       email: "john@example.com",
       age: 30,
-      isActive: true
+      isActive: true,
     };
 
     const basicInfo = pick(user, ["id", "name"]);
@@ -186,7 +185,7 @@ describe("Generic Function Testing", () => {
     expect(basicInfo).toStrictEqual({ id: "123", name: "John Doe" });
     expect(contactInfo).toStrictEqual({
       name: "John Doe",
-      email: "john@example.com"
+      email: "john@example.com",
     });
   });
 });
@@ -199,7 +198,7 @@ describe("Generic Function Testing", () => {
 import {
   testTypeGuard,
   validateTypeAssertion,
-  expectNarrowedType
+  expectNarrowedType,
 } from "@repo/qa/vitest/utils/typescript";
 
 // Type guard functions
@@ -219,7 +218,7 @@ function isUser(value: unknown): value is User {
 
 function isArrayOf<T>(
   value: unknown,
-  guard: (item: unknown) => item is T
+  guard: (item: unknown) => item is T,
 ): value is T[] {
   return Array.isArray(value) && value.every(guard);
 }
@@ -247,12 +246,12 @@ describe("Type Guard Testing", () => {
       id: "123",
       name: "John Doe",
       email: "john@example.com",
-      roles: ["user"]
+      roles: ["user"],
     };
 
     const invalidUser = {
       id: 123, // Wrong type
-      name: "John Doe"
+      name: "John Doe",
       // Missing email
     };
 
@@ -285,7 +284,7 @@ describe("Type Guard Testing", () => {
       expect(unknownArray.map((s) => s.toUpperCase())).toStrictEqual([
         "A",
         "B",
-        "C"
+        "C",
       ]);
     }
   });
@@ -342,10 +341,10 @@ describe("Utility Type Testing", () => {
           name: "John",
           settings: {
             theme: "dark",
-            notifications: true
-          }
-        }
-      }
+            notifications: true,
+          },
+        },
+      },
     };
 
     expectTypeOf<
@@ -390,14 +389,14 @@ describe("Utility Type Testing", () => {
     const userWithAge: UserFormWithAge = {
       name: "John",
       email: "john@example.com",
-      age: 30 // Now required
+      age: 30, // Now required
     };
 
     expectTypeOf<UserFormWithAge["age"]>().toEqualTypeOf<number>();
 
     // Test PartialBy
     const userWithoutEmail: UserFormWithoutEmail = {
-      name: "John"
+      name: "John",
       // email is now optional
     };
 
@@ -461,10 +460,10 @@ describe("Advanced Type Transformations", () => {
         id: "123",
         name: "John Doe",
         email: "john@example.com",
-        roles: ["user"]
+        roles: ["user"],
       },
       status: "success",
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     expect(userResponse.data.name).toBe("John Doe");
@@ -489,12 +488,12 @@ describe("Advanced Type Transformations", () => {
     const createInput: UserCreateInput = {
       name: "John Doe",
       email: "john@example.com",
-      roles: ["user"]
+      roles: ["user"],
       // id, createdAt, updatedAt are omitted
     };
 
     const updateInput: UserUpdateInput = {
-      name: "Jane Doe"
+      name: "Jane Doe",
       // All fields are optional
     };
 
@@ -516,7 +515,7 @@ describe("Function Overload Testing", () => {
   function processData(data: number): number;
   function processData(data: boolean): boolean;
   function processData(
-    data: string | number | boolean
+    data: string | number | boolean,
   ): string | number | boolean {
     if (typeof data === "string") {
       return data.toUpperCase();
@@ -577,7 +576,7 @@ describe("Higher-Order Function Testing", () => {
   // Generic higher-order function
   function withRetry<TArgs extends any[], TReturn>(
     fn: (...args: TArgs) => Promise<TReturn>,
-    maxRetries: number = 3
+    maxRetries: number = 3,
   ): (...args: TArgs) => Promise<TReturn> {
     return async (...args: TArgs): Promise<TReturn> => {
       let lastError: Error;
@@ -822,7 +821,7 @@ describe("Template Literal Type Testing", () => {
 import {
   testTypeScriptCompilation,
   expectCompilationError,
-  expectNoCompilationErrors
+  expectNoCompilationErrors,
 } from "@repo/qa/vitest/utils/typescript";
 
 describe("Compilation Testing", () => {
@@ -865,7 +864,7 @@ describe("Compilation Testing", () => {
     const compilation = await testTypeScriptCompilation(invalidCode);
     expectCompilationError(compilation, {
       code: 2322, // Type assignment error
-      message: /Type 'number' is not assignable to type 'string'/
+      message: /Type 'number' is not assignable to type 'string'/,
     });
   });
 
@@ -880,13 +879,13 @@ describe("Compilation Testing", () => {
       codeWithImplicitAny,
       {
         strict: true,
-        noImplicitAny: true
-      }
+        noImplicitAny: true,
+      },
     );
 
     expectCompilationError(strictCompilation, {
       code: 7006, // Implicit any error
-      message: /Parameter 'data' implicitly has an 'any' type/
+      message: /Parameter 'data' implicitly has an 'any' type/,
     });
   });
 });
@@ -916,7 +915,7 @@ export const TypeTestingUtils = {
   // Ensure type has specific property
   assertHasProperty<T, K extends string>(
     obj: T,
-    key: K
+    key: K,
   ): T extends Record<K, any> ? true : false {
     return (key in obj) as any;
   },
@@ -924,7 +923,7 @@ export const TypeTestingUtils = {
   // Test type is never (unreachable)
   assertNever(_: never): void {
     // This function should never be called
-  }
+  },
 };
 
 describe("Type Testing Best Practices", () => {
@@ -949,7 +948,7 @@ describe("Type Testing Best Practices", () => {
         id: apiUser.id,
         name: apiUser.name,
         email: apiUser.email,
-        created_at: new Date(apiUser.createdAt)
+        created_at: new Date(apiUser.createdAt),
       };
     }
 
@@ -958,7 +957,7 @@ describe("Type Testing Best Practices", () => {
       id: "123",
       name: "John Doe",
       email: "john@example.com",
-      createdAt: "2024-01-01T00:00:00Z"
+      createdAt: "2024-01-01T00:00:00Z",
     };
 
     const dbUser = apiToDatabase(apiUser);

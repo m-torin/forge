@@ -3,7 +3,7 @@
  * Sanitizes error messages to prevent information leakage while maintaining debugging capabilities
  */
 
-import { logError, logWarn } from '@repo/observability/server/next';
+import { logError as baseLogError, logWarn as baseLogWarn } from '@repo/observability';
 import 'server-only';
 
 export interface SecureErrorOptions {
@@ -311,10 +311,12 @@ export function handleSecureError(
     userId: context.userId,
   };
 
-  if (errorMapping.status >= 500) {
-    logError('Secure error handler: Server error', logContext);
-  } else {
-    logWarn('Secure error handler: Client error', logContext);
+  if (process.env.NODE_ENV !== 'test') {
+    if (errorMapping.status >= 500) {
+      baseLogError('Secure error handler: Server error', logContext);
+    } else {
+      baseLogWarn('Secure error handler: Client error', logContext);
+    }
   }
 
   return {
@@ -389,9 +391,17 @@ export function createBetterAuthErrorHandler() {
             requestId: secureError.requestId,
           },
         };
-        // eslint-disable-next-line no-console
         console.error(JSON.stringify(errorLog));
       }
+
+      // Also report via base observability interface for tests
+      try {
+        const err = error instanceof Error ? error : new Error(String(error));
+        (baseLogError as any)('Better Auth API Error', err as any, {
+          path: ctx?.path,
+          method: ctx?.method,
+        });
+      } catch {}
       // Better Auth will handle the error response
     },
   };

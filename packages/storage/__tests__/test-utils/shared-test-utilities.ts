@@ -5,8 +5,11 @@
  * Provides shared utilities, mock helpers, assertion patterns, and performance testing.
  */
 
-import { vi } from 'vitest';
-import { generateStorageErrors, generateStorageResults } from '../test-data-generators';
+import { vi } from "vitest";
+import {
+  generateStorageErrors,
+  generateStorageResults,
+} from "../test-data-generators";
 
 /**
  * Mock creation utilities
@@ -15,7 +18,9 @@ export const mockUtils = {
   /**
    * Creates a mock storage provider with all required methods
    */
-  createStorageProvider: (scenario: 'success' | 'error' | 'partial' = 'success') => {
+  createStorageProvider: (
+    scenario: "success" | "error" | "partial" = "success",
+  ) => {
     const baseMethods = {
       upload: vi.fn(),
       download: vi.fn(),
@@ -27,19 +32,21 @@ export const mockUtils = {
     };
 
     switch (scenario) {
-      case 'success':
+      case "success":
         return {
           ...baseMethods,
           upload: vi.fn().mockResolvedValue(generateStorageResults.upload()),
-          download: vi.fn().mockResolvedValue(new Blob(['test data'])),
+          download: vi.fn().mockResolvedValue(new Blob(["test data"])),
           delete: vi.fn().mockResolvedValue(undefined),
           exists: vi.fn().mockResolvedValue(true),
-          getMetadata: vi.fn().mockResolvedValue(generateStorageResults.metadata()),
-          getUrl: vi.fn().mockResolvedValue('https://example.com/signed-url'),
+          getMetadata: vi
+            .fn()
+            .mockResolvedValue(generateStorageResults.metadata()),
+          getUrl: vi.fn().mockResolvedValue("https://example.com/signed-url"),
           list: vi.fn().mockResolvedValue(generateStorageResults.list(3)),
         };
 
-      case 'error':
+      case "error":
         const error = generateStorageErrors.network();
         return {
           ...baseMethods,
@@ -52,15 +59,17 @@ export const mockUtils = {
           list: vi.fn().mockRejectedValue(error),
         };
 
-      case 'partial':
+      case "partial":
         return {
           ...baseMethods,
           upload: vi.fn().mockResolvedValue(generateStorageResults.upload()),
-          download: vi.fn().mockResolvedValue(new Blob(['test data'])),
+          download: vi.fn().mockResolvedValue(new Blob(["test data"])),
           delete: vi.fn().mockRejectedValue(generateStorageErrors.storage()),
           exists: vi.fn().mockResolvedValue(true),
-          getMetadata: vi.fn().mockResolvedValue(generateStorageResults.metadata()),
-          getUrl: vi.fn().mockResolvedValue('https://example.com/signed-url'),
+          getMetadata: vi
+            .fn()
+            .mockResolvedValue(generateStorageResults.metadata()),
+          getUrl: vi.fn().mockResolvedValue("https://example.com/signed-url"),
           list: vi.fn().mockResolvedValue(generateStorageResults.list(1)),
         };
 
@@ -72,7 +81,7 @@ export const mockUtils = {
   /**
    * Creates a mock multi-storage manager
    */
-  createMultiStorageManager: (scenario: 'success' | 'error' = 'success') => {
+  createMultiStorageManager: (scenario: "success" | "error" = "success") => {
     const providers = {
       documents: mockUtils.createStorageProvider(scenario),
       images: mockUtils.createStorageProvider(scenario),
@@ -82,37 +91,61 @@ export const mockUtils = {
     return {
       getProvider: vi
         .fn()
-        .mockImplementation((name: string) => providers[name as keyof typeof providers]),
+        .mockImplementation(
+          (name: string) => providers[name as keyof typeof providers],
+        ),
       getProviderNames: vi.fn().mockReturnValue(Object.keys(providers)),
-      upload: vi.fn().mockImplementation(async (key: string, content: any, options: any) => {
-        const provider =
-          options?.provider || (key.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? 'images' : 'documents');
-        return providers[provider as keyof typeof providers].upload(key, content, options);
-      }),
+      upload: vi
+        .fn()
+        .mockImplementation(async (key: string, content: any, options: any) => {
+          const provider =
+            options?.provider ||
+            (key.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? "images" : "documents");
+          return providers[provider as keyof typeof providers].upload(
+            key,
+            content,
+            options,
+          );
+        }),
       download: vi.fn().mockImplementation(async (key: string) => {
-        const provider = key.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? 'images' : 'documents';
+        const provider = key.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+          ? "images"
+          : "documents";
         return providers[provider as keyof typeof providers].download(key);
       }),
       delete: vi.fn().mockImplementation(async (key: string) => {
-        const provider = key.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? 'images' : 'documents';
+        const provider = key.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+          ? "images"
+          : "documents";
         return providers[provider as keyof typeof providers].delete(key);
       }),
       exists: vi.fn().mockImplementation(async (key: string) => {
-        const provider = key.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? 'images' : 'documents';
+        const provider = key.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+          ? "images"
+          : "documents";
         return providers[provider as keyof typeof providers].exists(key);
       }),
       getMetadata: vi.fn().mockImplementation(async (key: string) => {
-        const provider = key.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? 'images' : 'documents';
+        const provider = key.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+          ? "images"
+          : "documents";
         return providers[provider as keyof typeof providers].getMetadata(key);
       }),
       getUrl: vi.fn().mockImplementation(async (key: string, options: any) => {
-        const provider = key.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? 'images' : 'documents';
-        return providers[provider as keyof typeof providers].getUrl(key, options);
+        const provider = key.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+          ? "images"
+          : "documents";
+        return providers[provider as keyof typeof providers].getUrl(
+          key,
+          options,
+        );
       }),
       list: vi.fn().mockImplementation(async (options: any) => {
-        const provider = options?.provider || 'documents';
-        if (provider === 'all') {
-          const allResults = await Promise.all(Object.values(providers).map(p => p.list(options)));
+        const provider = options?.provider || "documents";
+        if (provider === "all") {
+          const allResults = await Promise.all(
+            Object.values(providers).map((p) => p.list(options)),
+          );
           return allResults.flat();
         }
         return providers[provider as keyof typeof providers].list(options);
@@ -153,34 +186,38 @@ export const dataFactories = {
   /**
    * Creates test data for specific provider type
    */
-  forProvider: (providerType: 'cloudflare-r2' | 'vercel-blob' | 'cloudflare-images') => {
+  forProvider: (
+    providerType: "cloudflare-r2" | "vercel-blob" | "cloudflare-images",
+  ) => {
     const baseData = {
-      key: 'test-file.txt',
-      content: Buffer.from('test content'),
+      key: "test-file.txt",
+      content: Buffer.from("test content"),
       options: {},
     };
 
     switch (providerType) {
-      case 'cloudflare-r2':
+      case "cloudflare-r2":
         return {
           ...baseData,
-          key: 'documents/test-file.pdf',
-          options: { contentType: 'application/pdf' },
+          key: "documents/test-file.pdf",
+          options: { contentType: "application/pdf" },
         };
 
-      case 'vercel-blob':
+      case "vercel-blob":
         return {
           ...baseData,
-          key: 'cache/temp-file.json',
-          options: { contentType: 'application/json' },
+          key: "cache/temp-file.json",
+          options: { contentType: "application/json" },
         };
 
-      case 'cloudflare-images':
+      case "cloudflare-images":
         return {
           ...baseData,
-          key: 'photo.jpg',
-          content: new File(['image data'], 'photo.jpg', { type: 'image/jpeg' }),
-          options: { contentType: 'image/jpeg' },
+          key: "photo.jpg",
+          content: new File(["image data"], "photo.jpg", {
+            type: "image/jpeg",
+          }),
+          options: { contentType: "image/jpeg" },
         };
 
       default:
@@ -191,43 +228,45 @@ export const dataFactories = {
   /**
    * Creates test data for specific operation
    */
-  forOperation: (operation: 'upload' | 'download' | 'delete' | 'list' | 'exists' | 'getUrl') => {
+  forOperation: (
+    operation: "upload" | "download" | "delete" | "list" | "exists" | "getUrl",
+  ) => {
     const baseData = {
-      key: 'test-file.txt',
-      content: Buffer.from('test content'),
+      key: "test-file.txt",
+      content: Buffer.from("test content"),
       options: {},
     };
 
     switch (operation) {
-      case 'upload':
+      case "upload":
         return {
           ...baseData,
-          options: { contentType: 'text/plain' },
+          options: { contentType: "text/plain" },
         };
 
-      case 'download':
+      case "download":
         return {
-          key: 'existing-file.txt',
+          key: "existing-file.txt",
         };
 
-      case 'delete':
+      case "delete":
         return {
-          key: 'file-to-delete.txt',
+          key: "file-to-delete.txt",
         };
 
-      case 'list':
+      case "list":
         return {
-          options: { prefix: 'documents/', limit: 10 },
+          options: { prefix: "documents/", limit: 10 },
         };
 
-      case 'exists':
+      case "exists":
         return {
-          key: 'check-existence.txt',
+          key: "check-existence.txt",
         };
 
-      case 'getUrl':
+      case "getUrl":
         return {
-          key: 'generate-url.txt',
+          key: "generate-url.txt",
           options: { expiresIn: 3600 },
         };
 
@@ -239,38 +278,38 @@ export const dataFactories = {
   /**
    * Creates edge case test data
    */
-  edgeCase: (caseType: 'empty' | 'large' | 'unicode' | 'special-chars') => {
+  edgeCase: (caseType: "empty" | "large" | "unicode" | "special-chars") => {
     switch (caseType) {
-      case 'empty':
+      case "empty":
         return {
-          key: 'empty-file.txt',
+          key: "empty-file.txt",
           content: Buffer.alloc(0),
           options: {},
         };
 
-      case 'large':
+      case "large":
         return {
-          key: 'large-file.bin',
-          content: Buffer.alloc(1024 * 1024, 'x'), // 1MB
-          options: { contentType: 'application/octet-stream' },
+          key: "large-file.bin",
+          content: Buffer.alloc(1024 * 1024, "x"), // 1MB
+          options: { contentType: "application/octet-stream" },
         };
 
-      case 'unicode':
+      case "unicode":
         return {
-          key: '测试文件-🌍.txt',
-          content: Buffer.from('Hello 世界 🌍'),
-          options: { contentType: 'text/plain; charset=utf-8' },
+          key: "测试文件-🌍.txt",
+          content: Buffer.from("Hello 世界 🌍"),
+          options: { contentType: "text/plain; charset=utf-8" },
         };
 
-      case 'special-chars':
+      case "special-chars":
         return {
-          key: 'file with spaces & symbols.txt',
-          content: Buffer.from('Content with special chars: !@#$%^&*()'),
+          key: "file with spaces & symbols.txt",
+          content: Buffer.from("Content with special chars: !@#$%^&*()"),
           options: {},
         };
 
       default:
-        return dataFactories.forOperation('upload');
+        return dataFactories.forOperation("upload");
     }
   },
 
@@ -279,8 +318,12 @@ export const dataFactories = {
    */
   bulkData: (count: number = 5) => ({
     keys: Array.from({ length: count }, (_, i) => `bulk-file-${i}.txt`),
-    contents: Array.from({ length: count }, (_, i) => Buffer.from(`Bulk content ${i}`)),
-    options: Array.from({ length: count }, (_, i) => ({ contentType: 'text/plain' })),
+    contents: Array.from({ length: count }, (_, i) =>
+      Buffer.from(`Bulk content ${i}`),
+    ),
+    options: Array.from({ length: count }, (_, i) => ({
+      contentType: "text/plain",
+    })),
   }),
 };
 
@@ -299,7 +342,7 @@ export const assertionHelpers = {
     });
 
     if (result.contentType) {
-      expect(typeof result.contentType).toBe('string');
+      expect(typeof result.contentType).toBe("string");
     }
 
     if (result.lastModified) {
@@ -364,7 +407,7 @@ export const assertionHelpers = {
    * Asserts that a URL is valid
    */
   expectValidUrl: (url: string) => {
-    expect(typeof url).toBe('string');
+    expect(typeof url).toBe("string");
     expect(url).toMatch(/^https?:\/\//);
     expect(() => new URL(url)).not.toThrow();
   },
@@ -372,7 +415,11 @@ export const assertionHelpers = {
   /**
    * Asserts that provider mocks were called correctly
    */
-  expectProviderCalls: (provider: any, method: string, expectedArgs?: any[]) => {
+  expectProviderCalls: (
+    provider: any,
+    method: string,
+    expectedArgs?: any[],
+  ) => {
     expect(provider[method]).toHaveBeenCalledWith();
 
     if (expectedArgs) {
@@ -383,7 +430,11 @@ export const assertionHelpers = {
   /**
    * Asserts bulk operation results
    */
-  expectBulkResults: (result: any, expectedSuccesses: number, expectedFailures: number = 0) => {
+  expectBulkResults: (
+    result: any,
+    expectedSuccesses: number,
+    expectedFailures: number = 0,
+  ) => {
     if (expectedFailures === 0) {
       assertionHelpers.expectActionSuccess(result);
       expect(result.data.succeeded).toHaveLength(expectedSuccesses);
@@ -423,7 +474,7 @@ export const performanceUtils = {
     maxDuration: number = 5000,
   ): Promise<{ results: T[]; duration: number; avgDuration: number }> => {
     const start = performance.now();
-    const results = await Promise.all(operations.map(op => op()));
+    const results = await Promise.all(operations.map((op) => op()));
     const duration = performance.now() - start;
     const avgDuration = duration / operations.length;
 
@@ -461,7 +512,10 @@ export const performanceUtils = {
     maxDuration: number = 1000,
   ) => {
     return async () => {
-      const { result, duration } = await performanceUtils.measureAsync(operation, maxDuration);
+      const { result, duration } = await performanceUtils.measureAsync(
+        operation,
+        maxDuration,
+      );
 
       expect(result).toBeDefined();
       expect(duration).toBeLessThan(maxDuration);
@@ -479,30 +533,30 @@ export const errorUtils = {
    * Creates network error scenarios
    */
   networkErrors: () => [
-    new Error('Network request failed'),
-    new Error('Connection timeout'),
-    new Error('DNS resolution failed'),
-    new Error('Service unavailable'),
+    new Error("Network request failed"),
+    new Error("Connection timeout"),
+    new Error("DNS resolution failed"),
+    new Error("Service unavailable"),
   ],
 
   /**
    * Creates authentication error scenarios
    */
   authErrors: () => [
-    new Error('Invalid credentials'),
-    new Error('Access denied'),
-    new Error('Token expired'),
-    new Error('Insufficient permissions'),
+    new Error("Invalid credentials"),
+    new Error("Access denied"),
+    new Error("Token expired"),
+    new Error("Insufficient permissions"),
   ],
 
   /**
    * Creates storage-specific error scenarios
    */
   storageErrors: () => [
-    new Error('File not found'),
-    new Error('Storage quota exceeded'),
-    new Error('File too large'),
-    new Error('Invalid file type'),
+    new Error("File not found"),
+    new Error("Storage quota exceeded"),
+    new Error("File too large"),
+    new Error("Invalid file type"),
   ],
 
   /**
@@ -511,7 +565,7 @@ export const errorUtils = {
   createIntermittentError: (failureRate: number = 0.3) => {
     return vi.fn().mockImplementation(() => {
       if (Math.random() < failureRate) {
-        throw new Error('Intermittent failure');
+        throw new Error("Intermittent failure");
       }
       return generateStorageResults.upload();
     });
@@ -523,7 +577,7 @@ export const errorUtils = {
   createTimeoutError: (delay: number = 1000) => {
     return vi.fn().mockImplementation(() => {
       return new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Operation timeout')), delay);
+        setTimeout(() => reject(new Error("Operation timeout")), delay);
       });
     });
   },
@@ -539,7 +593,11 @@ export const testPatterns = {
   testCrudOperations: (provider: any, testData: any) => {
     return {
       async testCreate() {
-        const result = await provider.upload(testData.key, testData.content, testData.options);
+        const result = await provider.upload(
+          testData.key,
+          testData.content,
+          testData.options,
+        );
         assertionHelpers.expectStorageResult(result, testData.key);
         return result;
       },
@@ -551,8 +609,12 @@ export const testPatterns = {
       },
 
       async testUpdate() {
-        const newContent = Buffer.from('updated content');
-        const result = await provider.upload(testData.key, newContent, testData.options);
+        const newContent = Buffer.from("updated content");
+        const result = await provider.upload(
+          testData.key,
+          newContent,
+          testData.options,
+        );
         assertionHelpers.expectStorageResult(result, testData.key);
         return result;
       },
@@ -563,14 +625,14 @@ export const testPatterns = {
       },
 
       async testList() {
-        const result = await provider.list({ prefix: 'test-' });
+        const result = await provider.list({ prefix: "test-" });
         assertionHelpers.expectListResult(result);
         return result;
       },
 
       async testExists() {
         const exists = await provider.exists(testData.key);
-        expect(typeof exists).toBe('boolean');
+        expect(typeof exists).toBe("boolean");
         return exists;
       },
     };
@@ -583,23 +645,27 @@ export const testPatterns = {
     return {
       async testUploadError() {
         provider.upload.mockRejectedValueOnce(generateStorageErrors.storage());
-        await expect(provider.upload('error-key', Buffer.from('test'))).rejects.toThrow();
+        await expect(
+          provider.upload("error-key", Buffer.from("test")),
+        ).rejects.toThrow();
       },
 
       async testDownloadError() {
-        provider.download.mockRejectedValueOnce(new Error('File not found'));
-        await expect(provider.download('non-existent')).rejects.toThrow();
+        provider.download.mockRejectedValueOnce(new Error("File not found"));
+        await expect(provider.download("non-existent")).rejects.toThrow();
       },
 
       async testDeleteError() {
-        provider.delete.mockRejectedValueOnce(new Error('Delete failed'));
-        await expect(provider.delete('error-key')).rejects.toThrow();
+        provider.delete.mockRejectedValueOnce(new Error("Delete failed"));
+        await expect(provider.delete("error-key")).rejects.toThrow();
       },
 
       async testNetworkError() {
         const networkError = generateStorageErrors.network();
         provider.upload.mockRejectedValueOnce(networkError);
-        await expect(provider.upload('test', Buffer.from('test'))).rejects.toThrow();
+        await expect(
+          provider.upload("test", Buffer.from("test")),
+        ).rejects.toThrow();
       },
     };
   },
@@ -611,8 +677,9 @@ export const testPatterns = {
     return {
       async testUploadPerformance() {
         return performanceUtils.createPerformanceTest(
-          'upload performance',
-          () => provider.upload(testData.key, testData.content, testData.options),
+          "upload performance",
+          () =>
+            provider.upload(testData.key, testData.content, testData.options),
           1000,
         )();
       },
@@ -627,7 +694,10 @@ export const testPatterns = {
       },
 
       async testConcurrentOperations() {
-        const concurrentOps = Array.from({ length: 10 }, () => () => provider.exists(testData.key));
+        const concurrentOps = Array.from(
+          { length: 10 },
+          () => () => provider.exists(testData.key),
+        );
 
         return performanceUtils.measureBatch(concurrentOps, 2000);
       },
@@ -644,18 +714,18 @@ export const validationUtils = {
    */
   validateProviderInterface: (provider: any) => {
     const requiredMethods = [
-      'upload',
-      'download',
-      'delete',
-      'exists',
-      'getMetadata',
-      'getUrl',
-      'list',
+      "upload",
+      "download",
+      "delete",
+      "exists",
+      "getMetadata",
+      "getUrl",
+      "list",
     ];
 
-    requiredMethods.forEach(method => {
+    requiredMethods.forEach((method) => {
       expect(provider[method]).toBeDefined();
-      expect(typeof provider[method]).toBe('function');
+      expect(typeof provider[method]).toBe("function");
     });
   },
 
@@ -664,20 +734,20 @@ export const validationUtils = {
    */
   validateMultiStorageInterface: (manager: any) => {
     const requiredMethods = [
-      'getProvider',
-      'getProviderNames',
-      'upload',
-      'download',
-      'delete',
-      'exists',
-      'getMetadata',
-      'getUrl',
-      'list',
+      "getProvider",
+      "getProviderNames",
+      "upload",
+      "download",
+      "delete",
+      "exists",
+      "getMetadata",
+      "getUrl",
+      "list",
     ];
 
-    requiredMethods.forEach(method => {
+    requiredMethods.forEach((method) => {
       expect(manager[method]).toBeDefined();
-      expect(typeof manager[method]).toBe('function');
+      expect(typeof manager[method]).toBe("function");
     });
   },
 
@@ -685,7 +755,7 @@ export const validationUtils = {
    * Validates action function interface
    */
   validateActionInterface: (actionFn: any) => {
-    expect(typeof actionFn).toBe('function');
+    expect(typeof actionFn).toBe("function");
   },
 
   /**
@@ -693,10 +763,10 @@ export const validationUtils = {
    */
   validateConfiguration: (config: any, requiredFields: string[]) => {
     expect(config).toBeDefined();
-    expect(typeof config).toBe('object');
+    expect(typeof config).toBe("object");
     expect(config).not.toBeNull();
 
-    requiredFields.forEach(field => {
+    requiredFields.forEach((field) => {
       expect(config[field]).toBeDefined();
     });
   },

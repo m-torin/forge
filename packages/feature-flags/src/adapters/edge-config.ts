@@ -40,10 +40,15 @@ export function createEdgeConfigAdapter(options: EdgeConfigAdapterOptions = {}) 
   const teamSlug = options.options?.teamSlug;
 
   if (!connectionString) {
-    logWarn('Edge Config connection string not configured - using offline fallback mode', {
-      adapter: 'edge-config',
-      mode: 'offline-fallback',
-    });
+    // Only warn in development or explicit debug to reduce build noise
+    const isDev = process.env.NODE_ENV !== 'production';
+    const isDebug = process.env.NEXT_PUBLIC_OBSERVABILITY_DEBUG === 'true';
+    if (isDev || isDebug) {
+      logWarn('Edge Config connection string not configured - using offline fallback mode', {
+        adapter: 'edge-config',
+        mode: 'offline-fallback',
+      });
+    }
     // Return an offline-compatible adapter with local fallbacks
     return function edgeConfigAdapter<T = any, E = any>(): Adapter<T, E> {
       return {
@@ -106,8 +111,8 @@ export function createEdgeConfigAdapter(options: EdgeConfigAdapterOptions = {}) 
         } catch (error) {
           logError(
             error instanceof Error
-              ? error
-              : new Error('Error reading from Edge Config: ' + String(error)),
+              ? error.message
+              : 'Error reading from Edge Config: ' + String(error),
             { adapter: 'edge-config' },
           );
           throw error;
@@ -210,8 +215,8 @@ export async function getEdgeConfigProviderData(options: EdgeConfigAdapterOption
   } catch (error) {
     logError(
       error instanceof Error
-        ? error
-        : new Error('Error fetching Edge Config provider data: ' + String(error)),
+        ? error.message
+        : 'Error fetching Edge Config provider data: ' + String(error),
       { adapter: 'edge-config' },
     );
     throw error;

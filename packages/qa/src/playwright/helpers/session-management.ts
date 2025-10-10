@@ -1,4 +1,4 @@
-import { expect, type BrowserContext, type Page } from '@playwright/test';
+import { expect, type BrowserContext, type Page } from "@playwright/test";
 
 /**
  * Session and cookie management utilities for authentication and state management
@@ -18,15 +18,15 @@ export class SessionUtils {
       expires?: number;
       httpOnly?: boolean;
       secure?: boolean;
-      sameSite?: 'Strict' | 'Lax' | 'None';
+      sameSite?: "Strict" | "Lax" | "None";
     }>,
   ) {
     const context = this.page.context();
 
-    const cookiesWithDefaults = cookies.map(cookie => ({
+    const cookiesWithDefaults = cookies.map((cookie) => ({
       ...cookie,
       domain: cookie.domain || new URL(this.page.url()).hostname,
-      path: cookie.path || '/',
+      path: cookie.path || "/",
       expires: cookie.expires || Math.floor(Date.now() / 1000) + 3600, // 1 hour default
     }));
 
@@ -48,7 +48,9 @@ export class SessionUtils {
     const context = this.page.context();
     const cookies = await context.cookies();
 
-    const cookiesToClear = cookies.filter(cookie => cookieNames.includes(cookie.name));
+    const cookiesToClear = cookies.filter((cookie) =>
+      cookieNames.includes(cookie.name),
+    );
 
     for (const cookie of cookiesToClear) {
       await context.clearCookies({
@@ -64,7 +66,7 @@ export class SessionUtils {
   async getCookie(name: string): Promise<string | null> {
     const context = this.page.context();
     const cookies = await context.cookies();
-    const cookie = cookies.find(c => c.name === name);
+    const cookie = cookies.find((c) => c.name === name);
     return cookie ? cookie.value : null;
   }
 
@@ -76,7 +78,9 @@ export class SessionUtils {
     expect(cookieValue, `Cookie ${name} should exist`).not.toBeNull();
 
     if (expectedValue !== undefined) {
-      expect(cookieValue, `Cookie ${name} should have expected value`).toBe(expectedValue);
+      expect(cookieValue, `Cookie ${name} should have expected value`).toBe(
+        expectedValue,
+      );
     }
   }
 
@@ -96,7 +100,7 @@ export class SessionUtils {
    * Get session storage item
    */
   async getSessionStorage(key: string): Promise<string | null> {
-    return this.page.evaluate(key => sessionStorage.getItem(key), key);
+    return this.page.evaluate((key) => sessionStorage.getItem(key), key);
   }
 
   /**
@@ -122,7 +126,7 @@ export class SessionUtils {
    * Get local storage item
    */
   async getLocalStorage(key: string): Promise<string | null> {
-    return this.page.evaluate(key => localStorage.getItem(key), key);
+    return this.page.evaluate((key) => localStorage.getItem(key), key);
   }
 
   /**
@@ -148,7 +152,7 @@ export class SessionUtils {
       for (let i = 0; i < window.localStorage.length; i++) {
         const key = window.localStorage.key(i);
         if (key) {
-          storage[key] = window.localStorage.getItem(key) || '';
+          storage[key] = window.localStorage.getItem(key) || "";
         }
       }
       return storage;
@@ -159,7 +163,7 @@ export class SessionUtils {
       for (let i = 0; i < window.sessionStorage.length; i++) {
         const key = window.sessionStorage.key(i);
         if (key) {
-          storage[key] = window.sessionStorage.getItem(key) || '';
+          storage[key] = window.sessionStorage.getItem(key) || "";
         }
       }
       return storage;
@@ -182,14 +186,14 @@ export class SessionUtils {
     await context.addCookies(sessionState.cookies);
 
     // Restore localStorage
-    await this.page.evaluate(storage => {
+    await this.page.evaluate((storage) => {
       Object.entries(storage).forEach(([key, value]) => {
         localStorage.setItem(key, value);
       });
     }, sessionState.localStorage);
 
     // Restore sessionStorage
-    await this.page.evaluate(storage => {
+    await this.page.evaluate((storage) => {
       Object.entries(storage).forEach(([key, value]) => {
         sessionStorage.setItem(key, value);
       });
@@ -201,37 +205,37 @@ export class SessionUtils {
    */
   async createAuthenticatedSession(options: {
     token: string;
-    tokenType?: 'bearer' | 'jwt' | 'session';
-    storageType?: 'cookie' | 'localStorage' | 'sessionStorage';
+    tokenType?: "bearer" | "jwt" | "session";
+    storageType?: "cookie" | "localStorage" | "sessionStorage";
     cookieName?: string;
     localStorageKey?: string;
   }) {
     const {
       token,
-      tokenType = 'bearer',
-      storageType = 'cookie',
-      cookieName = 'auth-token',
-      localStorageKey = 'authToken',
+      tokenType = "bearer",
+      storageType = "cookie",
+      cookieName = "auth-token",
+      localStorageKey = "authToken",
     } = options;
 
     switch (storageType) {
-      case 'cookie':
+      case "cookie":
         await this.setAuthCookies([
           {
             name: cookieName,
             value: token,
-            httpOnly: tokenType === 'session',
+            httpOnly: tokenType === "session",
             secure: true,
-            sameSite: 'Lax',
+            sameSite: "Lax",
           },
         ]);
         break;
 
-      case 'localStorage':
+      case "localStorage":
         await this.setLocalStorage(localStorageKey, token);
         break;
 
-      case 'sessionStorage':
+      case "sessionStorage":
         await this.setSessionStorage(localStorageKey, token);
         break;
     }
@@ -242,42 +246,43 @@ export class SessionUtils {
    */
   async verifyAuthenticated(
     options: {
-      storageType?: 'cookie' | 'localStorage' | 'sessionStorage';
+      storageType?: "cookie" | "localStorage" | "sessionStorage";
       cookieName?: string;
       localStorageKey?: string;
       redirectUrl?: string;
     } = {},
   ) {
     const {
-      storageType = 'cookie',
-      cookieName = 'auth-token',
-      localStorageKey = 'authToken',
+      storageType = "cookie",
+      cookieName = "auth-token",
+      localStorageKey = "authToken",
       redirectUrl,
     } = options;
 
     let authValue: string | null = null;
 
     switch (storageType) {
-      case 'cookie':
+      case "cookie":
         authValue = await this.getCookie(cookieName);
         break;
-      case 'localStorage':
+      case "localStorage":
         authValue = await this.getLocalStorage(localStorageKey);
         break;
-      case 'sessionStorage':
+      case "sessionStorage":
         authValue = await this.getSessionStorage(localStorageKey);
         break;
     }
 
-    expect(authValue, 'User should be authenticated').not.toBeNull();
-    expect(authValue, 'Auth token should not be empty').not.toBe('');
+    expect(authValue, "User should be authenticated").not.toBeNull();
+    expect(authValue, "Auth token should not be empty").not.toBe("");
 
     // Check if redirected to login page
     if (redirectUrl) {
       const currentUrl = this.page.url();
-      expect(currentUrl, 'Should not redirect to login when authenticated').not.toContain(
-        redirectUrl,
-      );
+      expect(
+        currentUrl,
+        "Should not redirect to login when authenticated",
+      ).not.toContain(redirectUrl);
     }
   }
 
@@ -286,7 +291,7 @@ export class SessionUtils {
    */
   async verifyNotAuthenticated(
     options: {
-      storageType?: 'cookie' | 'localStorage' | 'sessionStorage';
+      storageType?: "cookie" | "localStorage" | "sessionStorage";
       cookieName?: string;
       localStorageKey?: string;
       shouldRedirect?: boolean;
@@ -294,33 +299,36 @@ export class SessionUtils {
     } = {},
   ) {
     const {
-      storageType = 'cookie',
-      cookieName = 'auth-token',
-      localStorageKey = 'authToken',
+      storageType = "cookie",
+      cookieName = "auth-token",
+      localStorageKey = "authToken",
       shouldRedirect = false,
-      loginUrl = '/login',
+      loginUrl = "/login",
     } = options;
 
     let authValue: string | null = null;
 
     switch (storageType) {
-      case 'cookie':
+      case "cookie":
         authValue = await this.getCookie(cookieName);
         break;
-      case 'localStorage':
+      case "localStorage":
         authValue = await this.getLocalStorage(localStorageKey);
         break;
-      case 'sessionStorage':
+      case "sessionStorage":
         authValue = await this.getSessionStorage(localStorageKey);
         break;
     }
 
-    expect(authValue, 'User should not be authenticated').toBeNull();
+    expect(authValue, "User should not be authenticated").toBeNull();
 
     // Check if redirected to login page
     if (shouldRedirect && loginUrl) {
       const currentUrl = this.page.url();
-      expect(currentUrl, 'Should redirect to login when not authenticated').toContain(loginUrl);
+      expect(
+        currentUrl,
+        "Should redirect to login when not authenticated",
+      ).toContain(loginUrl);
     }
   }
 
@@ -329,26 +337,32 @@ export class SessionUtils {
    */
   async expireSession(
     options: {
-      storageType?: 'cookie' | 'localStorage' | 'sessionStorage';
+      storageType?: "cookie" | "localStorage" | "sessionStorage";
       cookieName?: string;
       localStorageKey?: string;
     } = {},
   ) {
     const {
-      storageType = 'cookie',
-      cookieName = 'auth-token',
-      localStorageKey = 'authToken',
+      storageType = "cookie",
+      cookieName = "auth-token",
+      localStorageKey = "authToken",
     } = options;
 
     switch (storageType) {
-      case 'cookie':
+      case "cookie":
         await this.clearCookiesByName([cookieName]);
         break;
-      case 'localStorage':
-        await this.page.evaluate(key => localStorage.removeItem(key), localStorageKey);
+      case "localStorage":
+        await this.page.evaluate(
+          (key) => localStorage.removeItem(key),
+          localStorageKey,
+        );
         break;
-      case 'sessionStorage':
-        await this.page.evaluate(key => sessionStorage.removeItem(key), localStorageKey);
+      case "sessionStorage":
+        await this.page.evaluate(
+          (key) => sessionStorage.removeItem(key),
+          localStorageKey,
+        );
         break;
     }
   }
@@ -358,29 +372,29 @@ export class SessionUtils {
    */
   async testSessionPersistence(
     options: {
-      storageType?: 'cookie' | 'localStorage' | 'sessionStorage';
+      storageType?: "cookie" | "localStorage" | "sessionStorage";
       cookieName?: string;
       localStorageKey?: string;
       shouldPersist?: boolean;
     } = {},
   ) {
     const {
-      storageType = 'cookie',
-      cookieName = 'auth-token',
-      localStorageKey = 'authToken',
+      storageType = "cookie",
+      cookieName = "auth-token",
+      localStorageKey = "authToken",
       shouldPersist = true,
     } = options;
 
     // Get auth value before reload
     let authValueBefore: string | null = null;
     switch (storageType) {
-      case 'cookie':
+      case "cookie":
         authValueBefore = await this.getCookie(cookieName);
         break;
-      case 'localStorage':
+      case "localStorage":
         authValueBefore = await this.getLocalStorage(localStorageKey);
         break;
-      case 'sessionStorage':
+      case "sessionStorage":
         authValueBefore = await this.getSessionStorage(localStorageKey);
         break;
     }
@@ -391,21 +405,26 @@ export class SessionUtils {
     // Get auth value after reload
     let authValueAfter: string | null = null;
     switch (storageType) {
-      case 'cookie':
+      case "cookie":
         authValueAfter = await this.getCookie(cookieName);
         break;
-      case 'localStorage':
+      case "localStorage":
         authValueAfter = await this.getLocalStorage(localStorageKey);
         break;
-      case 'sessionStorage':
+      case "sessionStorage":
         authValueAfter = await this.getSessionStorage(localStorageKey);
         break;
     }
 
     if (shouldPersist) {
-      expect(authValueAfter, 'Session should persist after reload').toBe(authValueBefore);
+      expect(authValueAfter, "Session should persist after reload").toBe(
+        authValueBefore,
+      );
     } else {
-      expect(authValueAfter, 'Session should not persist after reload').toBeNull();
+      expect(
+        authValueAfter,
+        "Session should not persist after reload",
+      ).toBeNull();
     }
   }
 }

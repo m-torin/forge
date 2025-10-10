@@ -2,18 +2,20 @@
  * Utility functions for Sentry Micro Frontend Plugin
  */
 
-import type { ZoneConfig } from './types';
+import type { BackstageAppConfig } from "./types";
 
 /**
- * Detect the current micro frontend zone based on URL path
+ * Detect the current micro frontend backstageApp based on URL path
  */
-export function detectCurrentZone(customPatterns?: ZoneConfig[]): string | undefined {
+export function detectCurrentBackstageApp(
+  customPatterns?: BackstageAppConfig[],
+): string | undefined {
   // Edge runtime compatible check
-  if (typeof globalThis === 'undefined' || !globalThis.location) {
+  if (typeof globalThis === "undefined" || !globalThis.location) {
     // Server-side or edge: check Next.js basePath or environment variables
     // Note: process.env is not available in edge runtime
-    if (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_BASE_PATH) {
-      return process.env.NEXT_PUBLIC_BASE_PATH.replace('/', '');
+    if (typeof process !== "undefined" && process.env?.NEXT_PUBLIC_BASE_PATH) {
+      return process.env.NEXT_PUBLIC_BASE_PATH.replace("/", "");
     }
     return undefined;
   }
@@ -25,7 +27,7 @@ export function detectCurrentZone(customPatterns?: ZoneConfig[]): string | undef
     for (const config of customPatterns) {
       if (config.pathPatterns) {
         for (const pattern of config.pathPatterns) {
-          if (typeof pattern === 'string' && path.startsWith(pattern)) {
+          if (typeof pattern === "string" && path.startsWith(pattern)) {
             return config.name;
           } else if (pattern instanceof RegExp && pattern.test(path)) {
             return config.name;
@@ -36,23 +38,27 @@ export function detectCurrentZone(customPatterns?: ZoneConfig[]): string | undef
   }
 
   // Default patterns for common microfrontend zones
-  if (path.startsWith('/admin')) return 'admin';
-  if (path.startsWith('/dashboard')) return 'dashboard';
-  if (path.startsWith('/settings')) return 'settings';
+  if (path.startsWith("/admin")) return "admin";
+  if (path.startsWith("/dashboard")) return "dashboard";
+  if (path.startsWith("/settings")) return "settings";
 
-  // Check for zone in global object (set by host)
+  // Check for backstageApp in global object (set by host)
+  if ((globalThis as any).__SENTRY_MICRO_FRONTEND_APP__) {
+    return (globalThis as any).__SENTRY_MICRO_FRONTEND_APP__;
+  }
   if ((globalThis as any).__SENTRY_MICRO_FRONTEND_ZONE__) {
+    // Backwards compatibility with legacy zone naming
     return (globalThis as any).__SENTRY_MICRO_FRONTEND_ZONE__;
   }
 
-  return 'main';
+  return "main";
 }
 
 /**
  * Check if running in a host environment
  */
 export function isHostEnvironment(): boolean {
-  if (typeof globalThis === 'undefined') {
+  if (typeof globalThis === "undefined") {
     return false;
   }
 
@@ -64,7 +70,7 @@ export function isHostEnvironment(): boolean {
   // Check if Sentry is already initialized (likely means we're a child)
   if (
     (globalThis as any).Sentry &&
-    typeof (globalThis as any).Sentry.getCurrentHub === 'function'
+    typeof (globalThis as any).Sentry.getCurrentHub === "function"
   ) {
     return false;
   }
@@ -74,30 +80,33 @@ export function isHostEnvironment(): boolean {
 }
 
 /**
- * Create a Sentry scope with zone-specific context
+ * Create a Sentry scope with backstageApp-specific context
  */
-export function createZoneScope(zone: string, additionalTags?: Record<string, string>): any {
-  if (typeof globalThis === 'undefined' || !(globalThis as any).Sentry) {
+export function createBackstageScope(
+  backstageApp: string,
+  additionalTags?: Record<string, string>,
+): any {
+  if (typeof globalThis === "undefined" || !(globalThis as any).Sentry) {
     return null;
   }
 
   const Sentry = (globalThis as any).Sentry;
 
   // Check if Scope constructor is available
-  if (!Sentry.Scope || typeof Sentry.Scope !== 'function') {
+  if (!Sentry.Scope || typeof Sentry.Scope !== "function") {
     return null;
   }
 
   try {
     const scope = new Sentry.Scope();
 
-    // Set zone tag
-    scope.setTag('zone', zone);
-    scope.setTag('microFrontend', true);
+    // Set backstageApp tag
+    scope.setTag("backstageApp", backstageApp);
+    scope.setTag("microFrontend", true);
 
-    // Set zone context
-    scope.setContext('microFrontend', {
-      zone,
+    // Set backstageApp context
+    scope.setContext("microFrontend", {
+      backstageApp,
       isHost: (globalThis as any).__SENTRY_MICRO_FRONTEND_HOST__ || false,
       url: globalThis.location?.href || undefined,
     });
@@ -111,7 +120,10 @@ export function createZoneScope(zone: string, additionalTags?: Record<string, st
 
     return scope;
   } catch (error) {
-    console.error('[SentryMicroFrontendPlugin] Failed to create zone scope:', error);
+    console.error(
+      "[SentryMicroFrontendPlugin] Failed to create Backstage scope:",
+      error,
+    );
     return null;
   }
 }
@@ -120,7 +132,7 @@ export function createZoneScope(zone: string, additionalTags?: Record<string, st
  * Check if Sentry is already initialized by a parent application
  */
 export function hasParentSentry(): boolean {
-  if (typeof globalThis === 'undefined') {
+  if (typeof globalThis === "undefined") {
     return false;
   }
 
@@ -131,8 +143,10 @@ export function hasParentSentry(): boolean {
   }
 
   // Verify it's a real Sentry instance with expected methods
-  const requiredMethods = ['captureException', 'captureMessage', 'withScope'];
-  return requiredMethods.every(method => typeof Sentry[method] === 'function');
+  const requiredMethods = ["captureException", "captureMessage", "withScope"];
+  return requiredMethods.every(
+    (method) => typeof Sentry[method] === "function",
+  );
 }
 
 /**
@@ -148,20 +162,24 @@ export function getParentSentry(): any {
 /**
  * Mark the current environment as a host
  */
-export function markAsHost(zone?: string): void {
-  if (typeof globalThis !== 'undefined') {
+export function markAsHost(backstageApp?: string): void {
+  if (typeof globalThis !== "undefined") {
     (globalThis as any).__SENTRY_MICRO_FRONTEND_HOST__ = true;
-    if (zone) {
-      (globalThis as any).__SENTRY_MICRO_FRONTEND_ZONE__ = zone;
+    if (backstageApp) {
+      (globalThis as any).__SENTRY_MICRO_FRONTEND_APP__ = backstageApp;
+      (globalThis as any).__SENTRY_MICRO_FRONTEND_ZONE__ = backstageApp;
     }
   }
 }
 
 /**
- * Get zone-specific configuration
+ * Get backstageApp-specific configuration
  */
-export function getZoneConfig(zone: string, zones: ZoneConfig[]): ZoneConfig | undefined {
-  return zones.find(z => z.name === zone);
+export function getBackstageAppConfig(
+  backstageApp: string,
+  backstage: BackstageAppConfig[],
+): BackstageAppConfig | undefined {
+  return backstage.find((app) => app.name === backstageApp);
 }
 
 /**
@@ -171,10 +189,10 @@ export function getZoneConfig(zone: string, zones: ZoneConfig[]): ZoneConfig | u
 
 export function ensureSingleInit(): void {
   // Use a more robust initialization check with timestamps
-  const initKey = '__SENTRY_INIT_STATE__';
+  const initKey = "__SENTRY_INIT_STATE__";
   const now = Date.now();
 
-  if (typeof globalThis !== 'undefined') {
+  if (typeof globalThis !== "undefined") {
     const globalState = (globalThis as any)[initKey];
 
     // Check if already initialized or currently initializing
@@ -182,14 +200,14 @@ export function ensureSingleInit(): void {
       const { status, timestamp, id } = globalState;
 
       // If initialized, throw error
-      if (status === 'initialized') {
+      if (status === "initialized") {
         throw new Error(
-          'Sentry has already been initialized! Use hasParentSentry() to check before initializing.',
+          "Sentry has already been initialized! Use hasParentSentry() to check before initializing.",
         );
       }
 
       // If initializing and it's been less than 5 seconds, assume another process is initializing
-      if (status === 'initializing' && now - timestamp < 5000) {
+      if (status === "initializing" && now - timestamp < 5000) {
         throw new Error(
           `Sentry initialization already in progress (started ${now - timestamp}ms ago by ${id})`,
         );
@@ -199,7 +217,7 @@ export function ensureSingleInit(): void {
     // Mark as initializing with timestamp and unique ID
     const initId = `${now}-${Math.random().toString(36).substr(2, 9)}`;
     (globalThis as any)[initKey] = {
-      status: 'initializing',
+      status: "initializing",
       timestamp: now,
       id: initId,
     };
@@ -208,12 +226,12 @@ export function ensureSingleInit(): void {
     // In a real thread-safe implementation, this would use proper locking
     const checkState = (globalThis as any)[initKey];
     if (checkState.id !== initId) {
-      throw new Error('Concurrent Sentry initialization detected');
+      throw new Error("Concurrent Sentry initialization detected");
     }
 
     // Mark as initialized
     (globalThis as any)[initKey] = {
-      status: 'initialized',
+      status: "initialized",
       timestamp: now,
       id: initId,
     };
@@ -227,7 +245,7 @@ export function ensureSingleInit(): void {
  * Reset initialization flag (mainly for testing)
  */
 export function resetInitFlag(): void {
-  if (typeof globalThis !== 'undefined') {
+  if (typeof globalThis !== "undefined") {
     delete (globalThis as any).__SENTRY_INITIALIZED__;
     delete (globalThis as any).__SENTRY_INIT_STATE__;
   }

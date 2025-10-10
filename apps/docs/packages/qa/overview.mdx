@@ -95,7 +95,7 @@ import { defineConfig } from "vitest/config";
 import { nextPreset } from "@repo/qa";
 
 export default defineConfig({
-  test: nextPreset
+  test: nextPreset,
 });
 ```
 
@@ -328,13 +328,13 @@ beforeEach(() => {
     collections: {
       users: [
         { id: "user1", name: "John Doe", email: "john@example.com" },
-        { id: "user2", name: "Jane Smith", email: "jane@example.com" }
+        { id: "user2", name: "Jane Smith", email: "jane@example.com" },
       ],
       products: [
         { id: "prod1", name: "Product 1", price: 99.99 },
-        { id: "prod2", name: "Product 2", price: 149.99 }
-      ]
-    }
+        { id: "prod2", name: "Product 2", price: 149.99 },
+      ],
+    },
   });
 });
 ```
@@ -348,11 +348,11 @@ beforeEach(() => {
   mockNextAPI({
     "/api/users": {
       GET: { users: [{ id: "1", name: "John" }] },
-      POST: { success: true, user: { id: "2", name: "Jane" } }
+      POST: { success: true, user: { id: "2", name: "Jane" } },
     },
     "/api/products": {
-      GET: { products: [{ id: "1", name: "Product" }] }
-    }
+      GET: { products: [{ id: "1", name: "Product" }] },
+    },
   });
 });
 ```
@@ -364,7 +364,7 @@ beforeEach(() => {
 ```typescript
 import {
   setupTestDatabase,
-  cleanupTestDatabase
+  cleanupTestDatabase,
 } from "@repo/qa/vitest/database";
 
 describe("Database Tests", () => {
@@ -391,7 +391,7 @@ import { withTransaction } from "@repo/qa/vitest/database";
 test("should handle database transactions", async () => {
   await withTransaction(async (tx) => {
     const user = await tx.user.create({
-      data: { email: "test@example.com", name: "Test User" }
+      data: { email: "test@example.com", name: "Test User" },
     });
 
     expect(user.email).toBe("test@example.com");
@@ -454,9 +454,9 @@ expect.extend({
 
     return {
       message: () => `expected ${received} to be a valid email`,
-      pass
+      pass,
     };
-  }
+  },
 });
 
 test("should validate email format", () => {
@@ -477,7 +477,7 @@ interface UserService {
 
 const mockUserService = createTypedMock<UserService>({
   getUser: vi.fn().mockResolvedValue({ id: "1", name: "John" }),
-  createUser: vi.fn().mockResolvedValue({ id: "2", name: "Jane" })
+  createUser: vi.fn().mockResolvedValue({ id: "2", name: "Jane" }),
 });
 ```
 

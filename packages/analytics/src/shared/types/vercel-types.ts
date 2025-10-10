@@ -12,7 +12,7 @@ export interface VercelConfig {
   };
 }
 
-export type VercelTrackProperties = Record<string, any>;
+type _VercelTrackProperties = Record<string, any>;
 
 // Vercel Analytics has limited server-side support
 // Mainly focused on web vitals and page views on client

@@ -196,7 +196,7 @@ const SEARCHABLE_EMOJIS: EmojiItem[] = EMOJI_LIST.map(emoji => ({
   category: emoji.group || 'Other',
 }));
 
-export interface EmojiSuggestionRef {
+interface EmojiSuggestionRef {
   onKeyDown: (props: { event: KeyboardEvent }) => boolean;
 }
 

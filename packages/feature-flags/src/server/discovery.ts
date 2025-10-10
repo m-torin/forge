@@ -1,5 +1,6 @@
 import { logError, logInfo } from '@repo/observability';
 import { createFlagsDiscoveryEndpoint, getProviderData } from 'flags/next';
+import type { NextRequest } from 'next/server';
 import { safeEnv } from '../../env';
 
 /**
@@ -22,7 +23,7 @@ export function createModernFlagsDiscoveryEndpoint(
     secret?: string;
     enableLogging?: boolean;
   } = {},
-) {
+): (request: NextRequest) => Promise<Response> {
   const env = safeEnv();
   const { secret: _secret = env.FLAGS_SECRET, enableLogging = true } = options;
 
@@ -46,7 +47,7 @@ export function createModernFlagsDiscoveryEndpoint(
 
       return providerData;
     } catch (error) {
-      logError(error instanceof Error ? error : new Error('Failed to generate flags data'), {
+      logError(error instanceof Error ? error.message : 'Failed to generate flags data', {
         context: 'flags-discovery',
       });
       throw error;
@@ -98,7 +99,7 @@ export async function getProviderDataWithMetadata(
     return baseData;
   } catch (error) {
     logError(
-      error instanceof Error ? error : new Error('Failed to generate provider data with metadata'),
+      error instanceof Error ? error.message : 'Failed to generate provider data with metadata',
       { context: 'provider-data-metadata' },
     );
     throw error;
@@ -124,7 +125,7 @@ export async function mergeMultipleProviders(providers: Array<() => Promise<any>
     // Log any failed providers
     const failedCount = providerResults.length - successfulResults.length;
     if (failedCount > 0) {
-      logError(new Error(`${failedCount} flag providers failed`), { context: 'provider-merge' });
+      logError(`${failedCount} flag providers failed`, { context: 'provider-merge' });
     }
 
     // Merge definitions from all successful providers
@@ -147,7 +148,7 @@ export async function mergeMultipleProviders(providers: Array<() => Promise<any>
       },
     };
   } catch (error) {
-    logError(error instanceof Error ? error : new Error('Failed to merge providers'), {
+    logError(error instanceof Error ? error.message : 'Failed to merge providers', {
       context: 'provider-merge',
     });
     throw error;

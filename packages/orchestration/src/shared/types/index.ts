@@ -3,56 +3,45 @@
  */
 
 // Common types
-export type {
-  ErrorDetails,
-  EventPayload,
-  JsonArray,
-  JsonObject,
-  JsonValue,
-  Metadata,
-  OperationContext,
-  ScheduleData,
-  StepData,
-} from './common';
+export type { JsonObject, JsonValue } from './common';
 
-// Saga pattern types
+// Enhanced execution results with discriminated unions
 export type {
-  SagaContext,
-  SagaDefinition,
-  SagaExecution,
-  SagaExecutionState,
-  SagaStep,
-} from '../features/saga';
+  CancelledExecutionResult,
+  ExecutionContext,
+  ExecutionId,
+  ExecutionResult,
+  FailureExecutionResult,
+  PendingExecutionResult,
+  PerformanceMetrics,
+  SkippedExecutionResult,
+  StepId,
+  SuccessExecutionResult,
+  WorkflowExecutionResult,
+  WorkflowId,
+} from './execution-results';
+
+export {
+  ExecutionResultBuilder,
+  ExecutionResultGuards,
+  ExecutionResultMatchers,
+  ExecutionResultUtils,
+  createExecutionId,
+  createExecutionResultBuilder,
+  createStepId,
+  createWorkflowId,
+} from './execution-results';
+
+// Saga pattern types;
 
 // Reliability pattern types
-export type {
-  BatchPattern,
-  BulkheadPattern,
-  CachePattern,
-  CircuitBreakerPattern,
-  DeduplicationPattern,
-  FallbackPattern,
-  MonitoringPattern,
-  PatternContext,
-  PatternResult,
-  RateLimitPattern,
-  RetryPattern,
-  TimeoutPattern,
-} from './patterns';
+export type { RateLimitPattern } from './patterns';
 
 // Provider configuration types
 export type {
   AnyProviderConfig,
-  CustomProviderConfig,
-  ProviderCapabilities,
-  ProviderConfig,
-  ProviderContext,
-  ProviderFeature,
   ProviderHealthReport,
-  ProviderMetrics,
-  ProviderRegistry,
   RateLimitConfig,
-  UpstashQStashConfig,
   UpstashWorkflowConfig,
 } from './provider';
 
@@ -82,7 +71,6 @@ export type {
   WorkflowStep,
   WorkflowStepExecution,
   WorkflowStepStatus,
-  WorkflowTrigger,
 } from './workflow';
 
 export interface ScheduledExecution {

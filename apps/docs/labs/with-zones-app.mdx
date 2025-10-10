@@ -35,17 +35,17 @@ The lab consists of two independent Next.js applications:
 
 <AccordionGroup>
   <Accordion title="Home Zone" icon="home">
-    - **Path Coverage**: Serves root paths (`/`, `/about`)
-    - **Port**: Development server runs on port 3000
-    - **Routing**: Includes rewrites configuration to route `/blog/*` to blog zone
-    - **Purpose**: Main application entry point and general pages
+    - **Path Coverage**: Serves root paths (`/`, `/about`) - **Port**:
+    Development server runs on port 3000 - **Routing**: Includes rewrites
+    configuration to route `/blog/*` to blog zone - **Purpose**: Main
+    application entry point and general pages
   </Accordion>
-  
+
   <Accordion title="Blog Zone" icon="newspaper">
-    - **Path Coverage**: Serves blog content (`/blog`, `/blog/post/[id]`)
-    - **Port**: Development server runs on port 4000
-    - **BasePath**: Configured with `/blog` basePath for asset isolation
-    - **Purpose**: Dedicated blog functionality with independent deployment
+    - **Path Coverage**: Serves blog content (`/blog`, `/blog/post/[id]`) -
+    **Port**: Development server runs on port 4000 - **BasePath**: Configured
+    with `/blog` basePath for asset isolation - **Purpose**: Dedicated blog
+    functionality with independent deployment
   </Accordion>
 </AccordionGroup>
 
@@ -57,10 +57,10 @@ graph TB
     B -->|/ or /about| C[Home Zone]
     B -->|/blog/*| D[Rewrite Rule]
     D --> E[Blog Zone]
-    
+
     C --> F[Home App Response]
     E --> G[Blog App Response]
-    
+
     style C fill:#e1f5fe
     style E fill:#f3e5f5
 ```
@@ -72,6 +72,7 @@ The architecture uses Next.js [`rewrites`](https://nextjs.org/docs/pages/api-ref
 ### Development Setup
 
 1. **Start Home Zone** (Terminal 1):
+
    ```bash
    cd home
    pnpm install && pnpm dev
@@ -79,6 +80,7 @@ The architecture uses Next.js [`rewrites`](https://nextjs.org/docs/pages/api-ref
    ```
 
 2. **Start Blog Zone** (Terminal 2):
+
    ```bash
    cd blog
    pnpm install && pnpm dev
@@ -100,15 +102,15 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: '/blog',
-        destination: `${process.env.BLOG_URL}/blog`
+        source: "/blog",
+        destination: `${process.env.BLOG_URL}/blog`,
       },
       {
-        source: '/blog/:path*',
-        destination: `${process.env.BLOG_URL}/blog/:path*`
-      }
+        source: "/blog/:path*",
+        destination: `${process.env.BLOG_URL}/blog/:path*`,
+      },
     ];
-  }
+  },
 };
 ```
 
@@ -117,12 +119,10 @@ const nextConfig = {
 ```javascript
 // blog/next.config.js
 const nextConfig = {
-  basePath: '/blog',
-  
+  basePath: "/blog",
+
   // Asset prefix for production
-  assetPrefix: process.env.NODE_ENV === 'production' 
-    ? '/blog' 
-    : undefined
+  assetPrefix: process.env.NODE_ENV === "production" ? "/blog" : undefined,
 };
 ```
 
@@ -175,18 +175,14 @@ For automated deployments, configure each zone as a separate Vercel project:
 
 <Tabs>
   <Tab title="Blog Project">
-    - **Root Directory**: `blog`
-    - **Build Command**: `pnpm build`
-    - **Output Directory**: `.next`
-    - **Install Command**: `pnpm install`
+    - **Root Directory**: `blog` - **Build Command**: `pnpm build` - **Output
+    Directory**: `.next` - **Install Command**: `pnpm install`
   </Tab>
-  
+
   <Tab title="Home Project">
-    - **Root Directory**: `home`
-    - **Build Command**: `pnpm build`
-    - **Output Directory**: `.next`
-    - **Install Command**: `pnpm install`
-    - **Environment Variables**: `BLOG_URL`
+    - **Root Directory**: `home` - **Build Command**: `pnpm build` - **Output
+    Directory**: `.next` - **Install Command**: `pnpm install` - **Environment
+    Variables**: `BLOG_URL`
   </Tab>
 </Tabs>
 
@@ -219,6 +215,7 @@ For automated deployments, configure each zone as a separate Vercel project:
 **SEO**: Consider sitemap generation and robots.txt for multi-zone architecture.
 
 **State Management**: Global state sharing between zones requires careful planning.
+
 </Warning>
 
 ## Advanced Patterns
@@ -234,7 +231,7 @@ async rewrites() {
       source: '/api/blog/:path*',
       destination: `${process.env.BLOG_URL}/api/blog/:path*`
     },
-    
+
     // Route blog pages to blog zone
     {
       source: '/blog/:path*',
@@ -266,8 +263,8 @@ export const Header = ({ zone }: { zone: 'home' | 'blog' }) => {
 ```typescript
 // utils/navigation.ts
 export const getZoneUrl = (path: string) => {
-  if (path.startsWith('/blog')) {
-    return process.env.NODE_ENV === 'development' 
+  if (path.startsWith("/blog")) {
+    return process.env.NODE_ENV === "development"
       ? `http://localhost:4000${path}`
       : path; // In production, handled by rewrites
   }
@@ -281,21 +278,25 @@ export const getZoneUrl = (path: string) => {
 
 ```typescript
 // tests/multi-zone.test.ts
-describe('Multi-Zone Routing', () => {
-  test('home zone serves root paths', async () => {
-    const response = await fetch('http://localhost:3000/');
+describe("Multi-Zone Routing", () => {
+  test("home zone serves root paths", async () => {
+    const response = await fetch("http://localhost:3000/");
     expect(response.status).toBe(200);
   });
-  
-  test('blog paths route to blog zone', async () => {
-    const response = await fetch('http://localhost:3000/blog');
+
+  test("blog paths route to blog zone", async () => {
+    const response = await fetch("http://localhost:3000/blog");
     expect(response.status).toBe(200);
   });
-  
-  test('assets load from correct zones', async () => {
-    const homeAsset = await fetch('http://localhost:3000/_next/static/css/home.css');
-    const blogAsset = await fetch('http://localhost:3000/blog/_next/static/css/blog.css');
-    
+
+  test("assets load from correct zones", async () => {
+    const homeAsset = await fetch(
+      "http://localhost:3000/_next/static/css/home.css",
+    );
+    const blogAsset = await fetch(
+      "http://localhost:3000/blog/_next/static/css/blog.css",
+    );
+
     expect(homeAsset.status).toBe(200);
     expect(blogAsset.status).toBe(200);
   });
@@ -310,10 +311,10 @@ describe('Multi-Zone Routing', () => {
 // utils/analytics.ts
 export const trackZonePerformance = (zone: string, path: string) => {
   // Track performance metrics per zone
-  analytics.track('zone_visit', {
+  analytics.track("zone_visit", {
     zone,
     path,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   });
 };
 ```
@@ -331,7 +332,7 @@ function Error({ statusCode, hasGetInitialPropsRun, err, zone = 'home' }) {
       return <Redirect to={`${process.env.BLOG_URL}${err.path}`} />;
     }
   }
-  
+
   return <ErrorPage statusCode={statusCode} zone={zone} />;
 }
 ```
@@ -342,19 +343,23 @@ function Error({ statusCode, hasGetInitialPropsRun, err, zone = 'home' }) {
 
 <AccordionGroup>
   <Accordion title="Large Enterprise Applications">
-    Different teams managing separate sections of a large application with independent release cycles.
+    Different teams managing separate sections of a large application with
+    independent release cycles.
   </Accordion>
-  
+
   <Accordion title="Micro-Frontend Architecture">
-    Organizations adopting micro-frontend patterns for better scalability and team autonomy.
+    Organizations adopting micro-frontend patterns for better scalability and
+    team autonomy.
   </Accordion>
-  
+
   <Accordion title="Legacy Migration">
-    Gradually migrating from legacy systems by implementing new features as separate zones.
+    Gradually migrating from legacy systems by implementing new features as
+    separate zones.
   </Accordion>
-  
+
   <Accordion title="Performance Optimization">
-    Separating heavy features (like admin panels) from main user-facing applications.
+    Separating heavy features (like admin panels) from main user-facing
+    applications.
   </Accordion>
 </AccordionGroup>
 
@@ -364,21 +369,20 @@ function Error({ statusCode, hasGetInitialPropsRun, err, zone = 'home' }) {
 
 <AccordionGroup>
   <Accordion title="404 Errors on Blog Routes">
-    - Verify `BLOG_URL` environment variable is set correctly
-    - Check that blog zone is running and accessible
-    - Ensure rewrites configuration matches blog paths
+    - Verify `BLOG_URL` environment variable is set correctly - Check that blog
+    zone is running and accessible - Ensure rewrites configuration matches blog
+    paths
   </Accordion>
-  
+
   <Accordion title="Asset Loading Issues">
-    - Confirm `basePath` is configured in blog zone
-    - Check that asset URLs include the correct base path
-    - Verify public folder structure in each zone
+    - Confirm `basePath` is configured in blog zone - Check that asset URLs
+    include the correct base path - Verify public folder structure in each zone
   </Accordion>
-  
+
   <Accordion title="Development Server Conflicts">
-    - Ensure zones run on different ports (3000, 4000)
-    - Check for port conflicts with other services
-    - Restart both development servers if routing issues persist
+    - Ensure zones run on different ports (3000, 4000) - Check for port
+    conflicts with other services - Restart both development servers if routing
+    issues persist
   </Accordion>
 </AccordionGroup>
 

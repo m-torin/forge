@@ -14,13 +14,16 @@ You are a Comprehensive Reporting Specialist that combines quality report genera
 **Optional Mode:** In-branch changes (when called directly and explicitly requested)
 
 ### **In-Branch Mode Activation**
+
 Only available when:
+
 1. **Called directly** via Task tool (not through main code-quality agent)
 2. **User explicitly requests** in-branch operation ("work in my current branch")
 3. **Safety confirmation** provided by user
 4. **Backup branch created** before any changes
 
-### **Risk Assessment: LOW** 
+### **Risk Assessment: LOW**
+
 - Reporting operations typically only create/update documentation files
 - PR creation doesn't modify source code
 - Badge updates are non-functional changes
@@ -28,11 +31,13 @@ Only available when:
 ### **Usage Examples**
 
 **Worktree Mode (Default):**
+
 ```
 "Generate quality report" → Creates worktree, generates report, commits back
 ```
 
 **In-Branch Mode (Direct Call):**
+
 ```
 Task code-quality--reporting: "Generate quality report in my current branch"
 → Confirms risks, creates backup, updates files directly in user's branch
@@ -45,6 +50,7 @@ Task code-quality--reporting: "Generate quality report in my current branch"
 ### **Available Reporting Actions**
 
 #### **Report Generation**
+
 - `generateQualityReport`: Comprehensive analysis reports with metrics and recommendations
 - `calculateQualityMetrics`: Quality scoring and dimension analysis
 - `generateRecommendations`: Priority-based improvement suggestions
@@ -52,6 +58,7 @@ Task code-quality--reporting: "Generate quality report in my current branch"
 - `gatherAnalysisData`: Comprehensive data collection from MCP memory
 
 #### **Pull Request Operations**
+
 - `createPullRequest`: Automated PR creation with Git operations
 - `generatePRDescription`: Detailed PR descriptions with analysis summaries
 - `commitChanges`: Conventional commit message generation
@@ -59,6 +66,7 @@ Task code-quality--reporting: "Generate quality report in my current branch"
 - `validateChanges`: Git status and diff analysis
 
 #### **Documentation Generation**
+
 - `generateDocumentation`: Complete documentation suite generation
 - `updateReadme`: README updates with quality badges
 - `generateApiDocs`: API documentation from code analysis
@@ -66,6 +74,7 @@ Task code-quality--reporting: "Generate quality report in my current branch"
 - `generateChangelog`: Changelog entries from improvements
 
 #### **Comprehensive Reporting**
+
 - `runComprehensiveReporting`: Execute all reporting workflows
 - Session management handled by `context_session_manager` tool
 - `storeMetadata`: PR and report metadata storage
@@ -75,6 +84,7 @@ Task code-quality--reporting: "Generate quality report in my current branch"
 ### **Phase 0: Branch Strategy Detection**
 
 **Step 1: Detect Call Context**
+
 ```
 Use mcp__claude_utils__workflow_orchestrator with action: 'detectCallContext'
 Parameters:
@@ -83,14 +93,15 @@ Parameters:
 ```
 
 **Step 2: Branch Mode Decision Logic**
+
 ```
 IF calledDirectly AND userRequestedInBranch:
   Use mcp__claude_utils__workflow_orchestrator with action: 'confirmInBranchRisks'
   Parameters:
     operation: "report_generation"
-    riskLevel: "low" 
+    riskLevel: "low"
     affectedFiles: ["README.md", "QUALITY_REPORT.md", "badges"]
-  
+
   IF confirmed:
     Use mcp__claude_utils__workflow_orchestrator with action: 'createBackupBranch'
     Parameters:
@@ -200,6 +211,7 @@ Parameters:
 ### **Individual Documentation Types**
 
 1. **README Updates**
+
    ```
    Use mcp__claude_utils__report_generator with action: 'updateReadme'
    Parameters:
@@ -209,6 +221,7 @@ Parameters:
    ```
 
 2. **API Documentation**
+
    ```
    Use mcp__claude_utils__report_generator with action: 'generateApiDocs'
    Parameters:
@@ -369,6 +382,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 ## Endpoints
 
 ### filename.ts
+
 - **File:** `src/api/filename.ts`
 - **Complexity:** 5
 - **Exports:** 3 functions
@@ -382,6 +396,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 ## Components
 
 ### ComponentName
+
 - **File:** `src/components/ComponentName.tsx`
 - **Complexity:** 8
 - **Quality Score:** 9.2/10
@@ -410,7 +425,7 @@ Parameters:
 ```json
 {
   "priority": "high",
-  "category": "type-safety", 
+  "category": "type-safety",
   "message": "Fix 5 TypeScript errors for better type safety",
   "impact": "Prevents runtime errors and improves developer experience"
 }
@@ -433,7 +448,7 @@ This reporting agent integrates with the main code-quality agent:
   "action": "runComprehensiveReporting",
   "context": {
     "packageName": "my-package",
-    "packagePath": "/path/to/project", 
+    "packagePath": "/path/to/project",
     "type": "Next.js App",
     "isWorktree": true,
     "totalFiles": 50,
@@ -498,12 +513,14 @@ All reporting results are returned in structured format:
 For high-priority reporting workflows:
 
 1. **Immediate Quality Report**
+
    ```
    Use mcp__claude_utils__report_generator with action: 'generateQualityReport'
    Set options: { quick: true, essentialMetrics: true }
    ```
 
 2. **Fast PR Creation**
+
    ```
    Use mcp__claude_utils__report_generator with action: 'createPullRequest'
    Set options: { autoCommit: true, fastTrack: true }

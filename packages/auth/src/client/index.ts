@@ -93,21 +93,22 @@ export * from './api-keys';
 
 // Client-side team functionality - explicit exports to avoid ambiguity
 export {
+  acceptTeamInvitation,
   cancelInvitation,
   // Team methods (standalone functions)
   createTeam,
   deleteTeam,
   getTeam,
+  getTeamInvitations,
   getTeamStats,
   getUserPendingInvitations,
   inviteToTeam,
   leaveTeam,
-  listTeamInvitations,
   listTeams,
+  rejectTeamInvitation,
   removeTeamMember,
-  respondToInvitation,
   updateTeam,
-  updateTeamMember,
+  updateTeamMemberRole,
   useTeam,
   useTeamInvitations,
   useTeamStats,

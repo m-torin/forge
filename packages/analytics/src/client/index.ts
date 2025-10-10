@@ -64,98 +64,37 @@ export function createClientAnalyticsUninitialized(config: AnalyticsConfig): Ana
 
 // Export all core emitters - these are the preferred way to track events
 export {
+  // Core Segment.io spec emitters
   alias,
-  // Emitter utilities
-  ContextBuilder,
-  createAnonymousSession,
-  createUserSession,
   // Ecommerce emitters namespace
   ecommerce,
-  EventBatch,
   group,
-  // Core Segment.io spec emitters
   identify,
-  isAliasPayload,
-  isGroupPayload,
-  isIdentifyPayload,
-  isPagePayload,
-
-  // Type guards
-  isTrackPayload,
   page,
-  PayloadBuilder,
   track,
-  withMetadata,
-  withUTM,
 } from '../shared/emitters';
 
 // ============================================================================
 // ADAPTER UTILITIES
 // ============================================================================
 
-export {
-  createEmitterProcessor,
-  // Emitter processing utilities
-  processEmitterPayload,
-  trackEcommerceEvent,
-} from '../shared/utils/emitter-adapter';
+export { createEmitterProcessor, processEmitterPayload } from '../shared/utils/emitter-adapter';
 
 // ============================================================================
 // TYPES
 // ============================================================================
 
-// Core analytics types
-export type {
-  AnalyticsConfig,
-  AnalyticsContext,
-  AnalyticsManager,
-  AnalyticsProvider,
-  ProviderConfig,
-  TrackingOptions,
-} from '../shared/types/types';
+// Core analytics types;
 
-// Emitter types
-export type {
-  EmitterAliasPayload,
-  EmitterContext,
-  EmitterGroupPayload,
-  EmitterIdentifyPayload,
-  EmitterOptions,
-  EmitterPagePayload,
-  EmitterPayload,
-  EmitterTrackPayload,
-} from '../shared/emitters/emitter-types';
+// Emitter types;
 
-// Provider-specific types
-export type { SegmentConfig, SegmentOptions } from '../shared/types/segment-types';
+// Provider-specific types;
 
-export type { BootstrapData, PostHogConfig, PostHogOptions } from '../shared/types/posthog-types';
-
-export type { VercelConfig, VercelOptions } from '../shared/types/vercel-types';
-
-export type { ConsoleConfig, ConsoleOptions } from '../shared/types/console-types';
-
-// Ecommerce types
-export type {
-  BaseProductProperties,
-  CartProperties,
-  EcommerceEventSpec,
-  ExtendedProductProperties,
-  OrderProperties,
-} from '../shared/emitters/ecommerce/types';
+// Ecommerce types;
 
 // ============================================================================
 // CONFIGURATION UTILITIES
 // ============================================================================
-
-export {
-  createConfigBuilder,
-  getAnalyticsConfig,
-  PROVIDER_REQUIREMENTS,
-  validateConfig,
-} from '../shared/utils/config';
-
-export type { ConfigBuilder, ConfigRequirements } from '../shared/utils/config';
 
 // ============================================================================
 // VALIDATION UTILITIES
@@ -169,15 +108,5 @@ export type { ConfigBuilder, ConfigRequirements } from '../shared/utils/config';
 // ============================================================================
 
 // Manager utilities
-export {
-  AnalyticsManager as AnalyticsManagerClass,
-  createAnalyticsManager,
-} from '../shared/utils/manager';
 
 // PostHog utilities
-export {
-  createBootstrapData,
-  createMinimalBootstrapData,
-  generateDistinctId,
-  getDistinctIdFromCookies,
-} from '../shared/utils/posthog-bootstrap';

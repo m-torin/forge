@@ -231,10 +231,10 @@ vi.mock('@t3-oss/env-nextjs', () => ({
 }));
 
 // Export helper functions
-export const mockUUID = () => 'mock-uuid-v4';
-export const mockNanoID = () => 'mock-nanoid';
-export const mockDate = new Date('2024-01-01T00:00:00.000Z');
+const mockUUID = () => 'mock-uuid-v4';
+const mockNanoID = () => 'mock-nanoid';
+const mockDate = new Date('2024-01-01T00:00:00.000Z');
 
-export const resetUtilityMocks = () => {
+const resetUtilityMocks = () => {
   vi.clearAllMocks();
 };

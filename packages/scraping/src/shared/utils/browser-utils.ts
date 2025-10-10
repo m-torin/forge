@@ -4,7 +4,7 @@
 
 import { ScrapingProvider } from '../types/scraping-types';
 
-export interface BrowserPool {
+interface BrowserPool {
   acquire(): Promise<ScrapingProvider>;
   release(provider: ScrapingProvider): Promise<void>;
   drain(): Promise<void>;

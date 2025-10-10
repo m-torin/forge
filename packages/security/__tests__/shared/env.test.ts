@@ -35,7 +35,11 @@ describe('safeEnv', () => {
   });
 
   test('should return fallback values when environment validation fails', async () => {
-    process.env.NODE_ENV = 'production';
+    Object.defineProperty(process.env, 'NODE_ENV', {
+      value: 'production',
+      writable: true,
+      configurable: true,
+    });
     process.env.ARCJET_KEY = 'invalid_key';
 
     const { safeEnv } = await import('../../env');
@@ -52,7 +56,11 @@ describe('safeEnv', () => {
   });
 
   test('should allow empty ARCJET_KEY in development', async () => {
-    process.env.NODE_ENV = 'development';
+    Object.defineProperty(process.env, 'NODE_ENV', {
+      value: 'development',
+      writable: true,
+      configurable: true,
+    });
     process.env.ARCJET_KEY = '';
 
     const { safeEnv } = await import('../../env');

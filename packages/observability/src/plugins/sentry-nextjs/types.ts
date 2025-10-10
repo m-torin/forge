@@ -11,13 +11,13 @@ import type {
   SeverityLevel,
   Span,
   User,
-} from '@sentry/nextjs';
+} from "@sentry/nextjs";
 
 /**
  * Re-export common Sentry types for convenience
  */
 // Define basic types for compatibility
-export type Severity = 'fatal' | 'error' | 'warning' | 'log' | 'info' | 'debug';
+export type Severity = "fatal" | "error" | "warning" | "log" | "info" | "debug";
 export type Integration = any;
 export type TransactionContext = any;
 export type Transaction = any;
@@ -29,13 +29,22 @@ export type Primitive = string | number | boolean | null | undefined;
 export type Tags = Record<string, string>;
 export type CaptureContext = any;
 
-export type { Breadcrumb, Context, Contexts, Event, EventHint, SeverityLevel, Span, User };
+export type {
+  Breadcrumb,
+  Context,
+  Contexts,
+  Event,
+  EventHint,
+  SeverityLevel,
+  Span,
+  User,
+};
 
 /**
  * Next.js specific event context
  */
 export interface NextJSContext extends Context {
-  runtime: 'nodejs' | 'edge' | 'browser';
+  runtime: "nodejs" | "edge" | "browser";
   isServer: boolean;
   isClient: boolean;
   isEdge: boolean;
@@ -74,55 +83,55 @@ export interface ServerActionContext {
  * Type-safe integration names
  */
 export type IntegrationName =
-  | 'BrowserTracing'
-  | 'Replay'
-  | 'ReplayCanvas'
-  | 'Feedback'
-  | 'Profiling'
-  | 'HttpClient'
-  | 'ContextLines'
-  | 'ReportingObserver'
-  | 'CaptureConsole'
-  | 'ExtraErrorData'
-  | 'RewriteFrames'
-  | 'SessionTiming'
-  | 'Debug'
-  | 'Dedupe'
-  | 'FeatureFlags'
-  | 'LaunchDarkly'
-  | 'Unleash'
-  | 'Custom';
+  | "BrowserTracing"
+  | "Replay"
+  | "ReplayCanvas"
+  | "Feedback"
+  | "Profiling"
+  | "HttpClient"
+  | "ContextLines"
+  | "ReportingObserver"
+  | "CaptureConsole"
+  | "ExtraErrorData"
+  | "RewriteFrames"
+  | "SessionTiming"
+  | "Debug"
+  | "Dedupe"
+  | "FeatureFlags"
+  | "LaunchDarkly"
+  | "Unleash"
+  | "Custom";
 
 /**
  * Type-safe event types
  */
 export type EventType =
-  | 'error'
-  | 'transaction'
-  | 'session'
-  | 'attachment'
-  | 'user_report'
-  | 'profile'
-  | 'replay'
-  | 'check_in';
+  | "error"
+  | "transaction"
+  | "session"
+  | "attachment"
+  | "user_report"
+  | "profile"
+  | "replay"
+  | "check_in";
 
 /**
  * Type-safe transaction operations
  */
 export type TransactionOp =
-  | 'navigation'
-  | 'pageload'
-  | 'http.server'
-  | 'http.client'
-  | 'db'
-  | 'rpc'
-  | 'browser'
-  | 'resource'
-  | 'route.render'
-  | 'route.navigation'
-  | 'serveraction'
-  | 'middleware'
-  | 'api.route';
+  | "navigation"
+  | "pageload"
+  | "http.server"
+  | "http.client"
+  | "db"
+  | "rpc"
+  | "browser"
+  | "resource"
+  | "route.render"
+  | "route.navigation"
+  | "serveraction"
+  | "middleware"
+  | "api.route";
 
 /**
  * Type guards
@@ -132,7 +141,9 @@ export const TypeGuards = {
    * Check if error is a Next.js error
    */
   isNextJSError(error: unknown): error is NextJSError {
-    return error instanceof Error && ('digest' in error || 'statusCode' in error);
+    return (
+      error instanceof Error && ("digest" in error || "statusCode" in error)
+    );
   },
 
   /**
@@ -140,10 +151,10 @@ export const TypeGuards = {
    */
   isNextJSContext(context: unknown): context is NextJSContext {
     return (
-      typeof context === 'object' &&
+      typeof context === "object" &&
       context !== null &&
-      'runtime' in context &&
-      typeof (context as any).runtime === 'string'
+      "runtime" in context &&
+      typeof (context as any).runtime === "string"
     );
   },
 
@@ -151,35 +162,35 @@ export const TypeGuards = {
    * Check if running on server
    */
   isServer(): boolean {
-    return typeof window === 'undefined';
+    return typeof window === "undefined";
   },
 
   /**
    * Check if running on client
    */
   isClient(): boolean {
-    return typeof window !== 'undefined';
+    return typeof window !== "undefined";
   },
 
   /**
    * Check if running in edge runtime
    */
   isEdgeRuntime(): boolean {
-    return process.env.NEXT_RUNTIME === 'edge';
+    return process.env.NEXT_RUNTIME === "edge";
   },
 
   /**
    * Check if running in development
    */
   isDevelopment(): boolean {
-    return process.env.NODE_ENV === 'development';
+    return process.env.NODE_ENV === "development";
   },
 
   /**
    * Check if running in production
    */
   isProduction(): boolean {
-    return process.env.NODE_ENV === 'production';
+    return process.env.NODE_ENV === "production";
   },
 };
 
@@ -193,7 +204,7 @@ export const ConfigValidators = {
   isValidDSN(dsn: string): boolean {
     try {
       const url = new URL(dsn);
-      return url.protocol === 'https:' || url.protocol === 'http:';
+      return url.protocol === "https:" || url.protocol === "http:";
     } catch {
       return false;
     }
@@ -203,7 +214,7 @@ export const ConfigValidators = {
    * Validate sample rate
    */
   isValidSampleRate(rate: unknown): rate is number {
-    return typeof rate === 'number' && rate >= 0 && rate <= 1;
+    return typeof rate === "number" && rate >= 0 && rate <= 1;
   },
 
   /**
@@ -211,20 +222,24 @@ export const ConfigValidators = {
    */
   isValidIntegration(integration: unknown): integration is Integration {
     return (
-      typeof integration === 'object' &&
+      typeof integration === "object" &&
       integration !== null &&
-      'name' in integration &&
-      typeof (integration as any).name === 'string'
+      "name" in integration &&
+      typeof (integration as any).name === "string"
     );
   },
 
   /**
    * Validate trace propagation targets
    */
-  isValidTracePropagationTargets(targets: unknown): targets is (string | RegExp)[] {
+  isValidTracePropagationTargets(
+    targets: unknown,
+  ): targets is (string | RegExp)[] {
     return (
       Array.isArray(targets) &&
-      targets.every(target => typeof target === 'string' || target instanceof RegExp)
+      targets.every(
+        (target) => typeof target === "string" || target instanceof RegExp,
+      )
     );
   },
 };
@@ -235,10 +250,10 @@ export const ConfigValidators = {
 export class EventBuilder {
   private event: Partial<Event> = {
     timestamp: Date.now() / 1000,
-    platform: 'javascript',
+    platform: "javascript",
   };
 
-  constructor(type: EventType = 'error') {
+  constructor(type: EventType = "error") {
     this.event.type = type as any;
   }
 
@@ -346,7 +361,7 @@ export class BreadcrumbBuilder {
  */
 export class TransactionBuilder {
   private transaction: Partial<TransactionContext> = {
-    op: 'navigation',
+    op: "navigation",
   };
 
   constructor(name: string) {
@@ -425,7 +440,7 @@ export interface NextJSSentryOptions {
 
   // Feature flags
   featureFlags?: {
-    provider?: 'launchdarkly' | 'unleash' | 'custom';
+    provider?: "launchdarkly" | "unleash" | "custom";
     config?: any;
   };
 

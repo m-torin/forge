@@ -1,10 +1,10 @@
-import { Button, Container, Group, Text, Title } from '@mantine/core';
-import { IconHome } from '@tabler/icons-react';
-import Link from 'next/link';
+import { Button, Container, Group, Text, Title } from "@mantine/core";
+import { IconHome } from "@tabler/icons-react";
+import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <Container size="md" style={{ textAlign: 'center', paddingTop: '10rem' }}>
+    <Container size="md" style={{ textAlign: "center", paddingTop: "10rem" }}>
       <Title size="h1" mb="md">
         404
       </Title>
@@ -17,7 +17,7 @@ export default function NotFound() {
       <Group justify="center">
         <Button
           component={Link}
-          href={'/' as any}
+          href={"/" as any}
           leftSection={<IconHome size={16} />}
           variant="filled"
         >

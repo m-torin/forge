@@ -8,21 +8,21 @@ import { logInfo } from '@repo/observability';
 /**
  * Check if running in browser environment
  */
-export function isBrowser(): boolean {
+function isBrowser(): boolean {
   return typeof window !== 'undefined';
 }
 
 /**
  * Check if running in Node.js environment
  */
-export function isNode(): boolean {
+function _isNode(): boolean {
   return typeof process !== 'undefined' && !!process.versions?.node;
 }
 
 /**
  * Get current page URL (browser only)
  */
-export function getCurrentUrl(): string {
+function _getCurrentUrl(): string {
   if (!isBrowser()) {
     throw new Error('getCurrentUrl() can only be called in browser environment');
   }
@@ -32,7 +32,7 @@ export function getCurrentUrl(): string {
 /**
  * Get current page title (browser only)
  */
-export function getCurrentTitle(): string {
+function _getCurrentTitle(): string {
   if (!isBrowser()) {
     throw new Error('getCurrentTitle() can only be called in browser environment');
   }
@@ -42,7 +42,7 @@ export function getCurrentTitle(): string {
 /**
  * Get page HTML content (browser only)
  */
-export function getPageHtml(): string {
+function _getPageHtml(): string {
   if (!isBrowser()) {
     throw new Error('getPageHtml() can only be called in browser environment');
   }
@@ -52,7 +52,7 @@ export function getPageHtml(): string {
 /**
  * Extract data using CSS selectors (browser only)
  */
-export function extractFromCurrentPage(
+function _extractFromCurrentPage(
   selectors: Record<string, string>,
 ): Record<string, string | string[] | null> {
   if (!isBrowser()) {
@@ -84,7 +84,7 @@ export function extractFromCurrentPage(
 /**
  * Download content as file (browser only)
  */
-export function downloadContent(
+function _downloadContent(
   content: string,
   filename: string,
   mimeType: string = 'text/plain',
@@ -110,7 +110,7 @@ export function downloadContent(
 /**
  * Log to browser console with timestamp
  */
-export function clientLog(message: string, ...args: any[]): void {
+function clientLog(message: string, ...args: any[]): void {
   if (isBrowser()) {
     // Client logging is acceptable for debugging purposes
     logInfo(`[${new Date().toISOString()}] ${message}`, ...args);
@@ -185,7 +185,7 @@ export function getBrowserInfo(): {
 /**
  * Simple fetch wrapper with timeout
  */
-export async function clientFetch(
+async function _clientFetch(
   url: string,
   options: RequestInit & { timeout?: number } = {},
 ): Promise<Response> {

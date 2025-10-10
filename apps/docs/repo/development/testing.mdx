@@ -76,7 +76,7 @@ All test configurations are provided by the `@repo/qa` package:
 import { createNextAppConfig } from "@repo/qa/vitest/configs";
 
 export default createNextAppConfig({
-  setupFiles: ["./__tests__/setup.ts"]
+  setupFiles: ["./__tests__/setup.ts"],
 });
 
 // playwright.config.ts
@@ -85,7 +85,7 @@ import { createAppPlaywrightConfig } from "@repo/qa/playwright";
 export default createAppPlaywrightConfig({
   name: "app-name",
   port: 3000,
-  baseURL: "http://localhost:3000"
+  baseURL: "http://localhost:3000",
 });
 ```
 
@@ -266,8 +266,8 @@ import { vi } from "vitest";
 // Mock app-specific modules
 vi.mock("#/lib/custom-service", () => ({
   customService: {
-    doSomething: vi.fn().mockResolvedValue({ success: true })
-  }
+    doSomething: vi.fn().mockResolvedValue({ success: true }),
+  },
 }));
 ```
 
@@ -1412,26 +1412,26 @@ export default createReactConfig({
       "src/**/*.d.ts",
       "src/**/*.stories.tsx",
       "src/**/*.test.{ts,tsx}",
-      "src/**/index.{ts,tsx}"
+      "src/**/index.{ts,tsx}",
     ],
     threshold: {
       global: {
         branches: 80,
         functions: 80,
         lines: 80,
-        statements: 80
+        statements: 80,
       },
       // Per-file thresholds
       "src/components/": {
         branches: 90,
         functions: 90,
         lines: 90,
-        statements: 90
-      }
+        statements: 90,
+      },
     },
     // Fail if coverage falls below threshold
-    thresholdAutoUpdate: true
-  }
+    thresholdAutoUpdate: true,
+  },
 });
 ```
 

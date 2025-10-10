@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   IconArchive,
@@ -17,17 +17,17 @@ import {
   IconTemplate,
   IconTrash,
   IconX,
-} from '@tabler/icons-react';
-import { clsx } from 'clsx';
-import { useMemo, useState } from 'react';
+} from "@tabler/icons-react";
+import { clsx } from "clsx";
+import { useMemo, useState } from "react";
 import type {
   ExportFormat,
   ExportHistoryItem,
   ExportPreferences,
   ExportTemplate,
-} from '../../hooks/use-export-manager';
+} from "../../hooks/use-export-manager";
 
-export interface ExportTemplateManagerProps {
+interface ExportTemplateManagerProps {
   templates: Record<string, ExportTemplate>;
   defaultTemplates: Record<string, ExportTemplate>;
   preferences: ExportPreferences;
@@ -40,7 +40,7 @@ export interface ExportTemplateManagerProps {
   className?: string;
 }
 
-type ViewMode = 'templates' | 'preferences' | 'history';
+type ViewMode = "templates" | "preferences" | "history";
 
 const FORMAT_ICONS = {
   markdown: IconFileText,
@@ -50,10 +50,10 @@ const FORMAT_ICONS = {
 } as const;
 
 const FORMAT_COLORS = {
-  markdown: '#4F46E5', // indigo
-  html: '#DC2626', // red
-  json: '#059669', // green
-  backup: '#7C3AED', // purple
+  markdown: "#4F46E5", // indigo
+  html: "#DC2626", // red
+  json: "#059669", // green
+  backup: "#7C3AED", // purple
 } as const;
 
 export function ExportTemplateManager({
@@ -68,17 +68,21 @@ export function ExportTemplateManager({
   onQuickExport,
   className,
 }: ExportTemplateManagerProps) {
-  const [viewMode, setViewMode] = useState<ViewMode>('templates');
+  const [viewMode, setViewMode] = useState<ViewMode>("templates");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState<ExportTemplate | null>(null);
-  const [previewTemplate, setPreviewTemplate] = useState<ExportTemplate | null>(null);
+  const [editingTemplate, setEditingTemplate] = useState<ExportTemplate | null>(
+    null,
+  );
+  const [previewTemplate, setPreviewTemplate] = useState<ExportTemplate | null>(
+    null,
+  );
 
   // Combine and categorize templates
   const { userTemplates, systemTemplates } = useMemo(() => {
     const user: ExportTemplate[] = [];
     const system: ExportTemplate[] = [];
 
-    Object.values(templates).forEach(template => {
+    Object.values(templates).forEach((template) => {
       if (defaultTemplates[template.id]) {
         system.push(template);
       } else {
@@ -100,30 +104,43 @@ export function ExportTemplateManager({
             className="rounded-lg p-2"
             style={{ backgroundColor: `${FORMAT_COLORS[template.format]}20` }}
           >
-            <FormatIcon size={20} style={{ color: FORMAT_COLORS[template.format] }} />
+            <FormatIcon
+              size={20}
+              style={{ color: FORMAT_COLORS[template.format] }}
+            />
           </div>
           <div>
             <h3 className="font-semibold text-gray-900">{template.name}</h3>
-            <p className="text-sm capitalize text-gray-500">{template.format} format</p>
+            <p className="text-sm capitalize text-gray-500">
+              {template.format} format
+            </p>
           </div>
         </div>
 
         <div className="space-y-3">
           <div>
-            <h4 className="mb-2 text-sm font-medium text-gray-700">Export Options</h4>
+            <h4 className="mb-2 text-sm font-medium text-gray-700">
+              Export Options
+            </h4>
             <div className="space-y-2 rounded-lg bg-gray-50 p-3">
               <div className="flex justify-between text-sm">
                 <span>Include Metadata:</span>
                 <span
-                  className={template.options.includeMetadata ? 'text-green-600' : 'text-gray-400'}
+                  className={
+                    template.options.includeMetadata
+                      ? "text-green-600"
+                      : "text-gray-400"
+                  }
                 >
-                  {template.options.includeMetadata ? 'Yes' : 'No'}
+                  {template.options.includeMetadata ? "Yes" : "No"}
                 </span>
               </div>
               {template.options.title && (
                 <div className="flex justify-between text-sm">
                   <span>Default Title:</span>
-                  <span className="text-gray-600">{template.options.title}</span>
+                  <span className="text-gray-600">
+                    {template.options.title}
+                  </span>
                 </div>
               )}
             </div>
@@ -131,7 +148,9 @@ export function ExportTemplateManager({
 
           {template.customStyles && (
             <div>
-              <h4 className="mb-2 text-sm font-medium text-gray-700">Custom Styles</h4>
+              <h4 className="mb-2 text-sm font-medium text-gray-700">
+                Custom Styles
+              </h4>
               <div className="max-h-32 overflow-auto rounded-lg bg-gray-900 p-3 font-mono text-xs text-gray-100">
                 <pre>{template.customStyles}</pre>
               </div>
@@ -154,7 +173,9 @@ export function ExportTemplateManager({
             <IconDownload size={16} />
             Quick Export
           </button>
-          <span className="text-sm text-gray-500">Default: {preferences.defaultFormat} format</span>
+          <span className="text-sm text-gray-500">
+            Default: {preferences.defaultFormat} format
+          </span>
         </div>
 
         <button
@@ -173,7 +194,7 @@ export function ExportTemplateManager({
             My Templates
           </h3>
           <div className="grid gap-3">
-            {userTemplates.map(template => (
+            {userTemplates.map((template) => (
               <TemplateCard
                 key={template.id}
                 template={template}
@@ -185,7 +206,9 @@ export function ExportTemplateManager({
                 }}
                 onDelete={() => onDeleteTemplate(template.id)}
                 onPreview={() => setPreviewTemplate(template)}
-                onSetDefault={() => onUpdatePreferences({ defaultFormat: template.format })}
+                onSetDefault={() =>
+                  onUpdatePreferences({ defaultFormat: template.format })
+                }
                 isUserTemplate={true}
               />
             ))}
@@ -199,7 +222,7 @@ export function ExportTemplateManager({
           Built-in Templates
         </h3>
         <div className="grid gap-3">
-          {systemTemplates.map(template => (
+          {systemTemplates.map((template) => (
             <TemplateCard
               key={template.id}
               template={template}
@@ -215,7 +238,9 @@ export function ExportTemplateManager({
                 setShowCreateDialog(true);
               }}
               onPreview={() => setPreviewTemplate(template)}
-              onSetDefault={() => onUpdatePreferences({ defaultFormat: template.format })}
+              onSetDefault={() =>
+                onUpdatePreferences({ defaultFormat: template.format })
+              }
               isUserTemplate={false}
             />
           ))}
@@ -225,25 +250,30 @@ export function ExportTemplateManager({
   );
 
   return (
-    <div className={clsx('export-template-manager flex h-full flex-col', className)}>
+    <div
+      className={clsx(
+        "export-template-manager flex h-full flex-col",
+        className,
+      )}
+    >
       <div className="flex items-center justify-between border-b border-gray-200 p-4">
         <h2 className="text-lg font-semibold text-gray-900">Export Manager</h2>
       </div>
 
       <div className="flex items-center gap-1 border-b border-gray-200 bg-gray-50 p-2">
         {[
-          { key: 'templates', label: 'Templates', icon: IconTemplate },
-          { key: 'preferences', label: 'Settings', icon: IconSettings },
-          { key: 'history', label: 'History', icon: IconArchive },
+          { key: "templates", label: "Templates", icon: IconTemplate },
+          { key: "preferences", label: "Settings", icon: IconSettings },
+          { key: "history", label: "History", icon: IconArchive },
         ].map(({ key, label, icon: Icon }) => (
           <button
             key={key}
             onClick={() => setViewMode(key as ViewMode)}
             className={clsx(
-              'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
+              "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
               viewMode === key
-                ? 'border border-gray-200 bg-white text-blue-600 shadow-sm'
-                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
+                ? "border border-gray-200 bg-white text-blue-600 shadow-sm"
+                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900",
             )}
           >
             <Icon size={14} />
@@ -253,17 +283,20 @@ export function ExportTemplateManager({
       </div>
 
       <div className="flex-1 overflow-auto p-4">
-        {viewMode === 'templates' && renderTemplatesView()}
-        {viewMode === 'preferences' && (
-          <PreferencesView preferences={preferences} onUpdate={onUpdatePreferences} />
+        {viewMode === "templates" && renderTemplatesView()}
+        {viewMode === "preferences" && (
+          <PreferencesView
+            preferences={preferences}
+            onUpdate={onUpdatePreferences}
+          />
         )}
-        {viewMode === 'history' && <HistoryView history={exportHistory} />}
+        {viewMode === "history" && <HistoryView history={exportHistory} />}
       </div>
 
       {showCreateDialog && (
         <TemplateDialog
           template={editingTemplate}
-          onSave={template => {
+          onSave={(template) => {
             onSaveTemplate(template);
             setShowCreateDialog(false);
             setEditingTemplate(null);
@@ -327,15 +360,27 @@ function TemplateCard({
             className="flex-shrink-0 rounded-lg p-2"
             style={{ backgroundColor: `${FORMAT_COLORS[template.format]}20` }}
           >
-            <FormatIcon size={16} style={{ color: FORMAT_COLORS[template.format] }} />
+            <FormatIcon
+              size={16}
+              style={{ color: FORMAT_COLORS[template.format] }}
+            />
           </div>
 
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <h4 className="truncate font-medium text-gray-900">{template.name}</h4>
-              {isDefault && <IconStarFilled size={14} className="flex-shrink-0 text-yellow-500" />}
+              <h4 className="truncate font-medium text-gray-900">
+                {template.name}
+              </h4>
+              {isDefault && (
+                <IconStarFilled
+                  size={14}
+                  className="flex-shrink-0 text-yellow-500"
+                />
+              )}
             </div>
-            <p className="text-sm capitalize text-gray-500">{template.format} format</p>
+            <p className="text-sm capitalize text-gray-500">
+              {template.format} format
+            </p>
           </div>
         </div>
 
@@ -359,7 +404,7 @@ function TemplateCard({
           <button
             onClick={onEdit}
             className="rounded p-1.5 text-gray-600 transition-colors hover:bg-gray-100"
-            title={isUserTemplate ? 'Edit template' : 'Create copy'}
+            title={isUserTemplate ? "Edit template" : "Create copy"}
           >
             {isUserTemplate ? <IconEdit size={14} /> : <IconCopy size={14} />}
           </button>
@@ -399,7 +444,9 @@ function PreferencesView({ preferences, onUpdate }: PreferencesViewProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="mb-4 text-lg font-semibold text-gray-900">Export Preferences</h3>
+        <h3 className="mb-4 text-lg font-semibold text-gray-900">
+          Export Preferences
+        </h3>
 
         <div className="space-y-4">
           <div>
@@ -408,7 +455,9 @@ function PreferencesView({ preferences, onUpdate }: PreferencesViewProps) {
             </label>
             <select
               value={preferences.defaultFormat}
-              onChange={e => onUpdate({ defaultFormat: e.target.value as ExportFormat })}
+              onChange={(e) =>
+                onUpdate({ defaultFormat: e.target.value as ExportFormat })
+              }
               className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500"
             >
               <option value="markdown">Markdown</option>
@@ -423,30 +472,38 @@ function PreferencesView({ preferences, onUpdate }: PreferencesViewProps) {
               <input
                 type="checkbox"
                 checked={preferences.includeMetadata}
-                onChange={e => onUpdate({ includeMetadata: e.target.checked })}
+                onChange={(e) =>
+                  onUpdate({ includeMetadata: e.target.checked })
+                }
                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
-              <span className="text-sm text-gray-700">Include metadata in exports</span>
+              <span className="text-sm text-gray-700">
+                Include metadata in exports
+              </span>
             </label>
 
             <label className="flex items-center gap-3">
               <input
                 type="checkbox"
                 checked={preferences.includeAuthor}
-                onChange={e => onUpdate({ includeAuthor: e.target.checked })}
+                onChange={(e) => onUpdate({ includeAuthor: e.target.checked })}
                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
-              <span className="text-sm text-gray-700">Include author information</span>
+              <span className="text-sm text-gray-700">
+                Include author information
+              </span>
             </label>
 
             <label className="flex items-center gap-3">
               <input
                 type="checkbox"
                 checked={preferences.autoDownload}
-                onChange={e => onUpdate({ autoDownload: e.target.checked })}
+                onChange={(e) => onUpdate({ autoDownload: e.target.checked })}
                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
-              <span className="text-sm text-gray-700">Automatically download exports</span>
+              <span className="text-sm text-gray-700">
+                Automatically download exports
+              </span>
             </label>
           </div>
         </div>
@@ -462,11 +519,11 @@ interface HistoryViewProps {
 
 function HistoryView({ history }: HistoryViewProps) {
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 B';
+    if (bytes === 0) return "0 B";
     const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const sizes = ["B", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
   };
 
   return (
@@ -480,7 +537,7 @@ function HistoryView({ history }: HistoryViewProps) {
         </div>
       ) : (
         <div className="space-y-2">
-          {history.map(item => {
+          {history.map((item) => {
             const FormatIcon = FORMAT_ICONS[item.format];
 
             return (
@@ -492,11 +549,16 @@ function HistoryView({ history }: HistoryViewProps) {
                   className="rounded-lg p-2"
                   style={{ backgroundColor: `${FORMAT_COLORS[item.format]}20` }}
                 >
-                  <FormatIcon size={16} style={{ color: FORMAT_COLORS[item.format] }} />
+                  <FormatIcon
+                    size={16}
+                    style={{ color: FORMAT_COLORS[item.format] }}
+                  />
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <h4 className="truncate font-medium text-gray-900">{item.title}</h4>
+                  <h4 className="truncate font-medium text-gray-900">
+                    {item.title}
+                  </h4>
                   <div className="flex items-center gap-4 text-sm text-gray-500">
                     <span>{item.filename}</span>
                     <span>{formatFileSize(item.size)}</span>
@@ -520,11 +582,17 @@ interface TemplateDialogProps {
 }
 
 function TemplateDialog({ template, onSave, onCancel }: TemplateDialogProps) {
-  const [name, setName] = useState(template?.name || '');
-  const [format, setFormat] = useState<ExportFormat>(template?.format || 'markdown');
-  const [includeMetadata, setIncludeMetadata] = useState(template?.options.includeMetadata ?? true);
-  const [title, setTitle] = useState(template?.options.title || '');
-  const [customStyles, setCustomStyles] = useState(template?.customStyles || '');
+  const [name, setName] = useState(template?.name || "");
+  const [format, setFormat] = useState<ExportFormat>(
+    template?.format || "markdown",
+  );
+  const [includeMetadata, setIncludeMetadata] = useState(
+    template?.options.includeMetadata ?? true,
+  );
+  const [title, setTitle] = useState(template?.options.title || "");
+  const [customStyles, setCustomStyles] = useState(
+    template?.customStyles || "",
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -552,20 +620,26 @@ function TemplateDialog({ template, onSave, onCancel }: TemplateDialogProps) {
       >
         <div className="mb-6 flex items-center justify-between">
           <h3 className="text-lg font-semibold">
-            {template ? 'Edit Template' : 'Create Template'}
+            {template ? "Edit Template" : "Create Template"}
           </h3>
-          <button type="button" onClick={onCancel} className="rounded p-1 hover:bg-gray-100">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="rounded p-1 hover:bg-gray-100"
+          >
             <IconX size={16} />
           </button>
         </div>
 
         <div className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Template Name</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Template Name
+            </label>
             <input
               type="text"
               value={name}
-              onChange={e => setName(e.target.value)}
+              onChange={(e) => setName(e.target.value)}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500"
               placeholder="My Custom Template"
               required
@@ -573,10 +647,12 @@ function TemplateDialog({ template, onSave, onCancel }: TemplateDialogProps) {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Export Format</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Export Format
+            </label>
             <select
               value={format}
-              onChange={e => setFormat(e.target.value as ExportFormat)}
+              onChange={(e) => setFormat(e.target.value as ExportFormat)}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500"
             >
               <option value="markdown">Markdown</option>
@@ -587,11 +663,13 @@ function TemplateDialog({ template, onSave, onCancel }: TemplateDialogProps) {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Default Title</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Default Title
+            </label>
             <input
               type="text"
               value={title}
-              onChange={e => setTitle(e.target.value)}
+              onChange={(e) => setTitle(e.target.value)}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500"
               placeholder="Document title (optional)"
             />
@@ -602,21 +680,23 @@ function TemplateDialog({ template, onSave, onCancel }: TemplateDialogProps) {
               <input
                 type="checkbox"
                 checked={includeMetadata}
-                onChange={e => setIncludeMetadata(e.target.checked)}
+                onChange={(e) => setIncludeMetadata(e.target.checked)}
                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
-              <span className="text-sm text-gray-700">Include metadata in exports</span>
+              <span className="text-sm text-gray-700">
+                Include metadata in exports
+              </span>
             </label>
           </div>
 
-          {format === 'html' && (
+          {format === "html" && (
             <div>
               <label className="mb-1 block text-sm font-medium text-gray-700">
                 Custom CSS Styles
               </label>
               <textarea
                 value={customStyles}
-                onChange={e => setCustomStyles(e.target.value)}
+                onChange={(e) => setCustomStyles(e.target.value)}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 font-mono text-sm focus:ring-2 focus:ring-blue-500"
                 rows={6}
                 placeholder="body { font-family: sans-serif; }"
@@ -634,7 +714,7 @@ function TemplateDialog({ template, onSave, onCancel }: TemplateDialogProps) {
             className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
           >
             <IconCheck size={16} className="mr-2 inline" />
-            {template ? 'Update Template' : 'Create Template'}
+            {template ? "Update Template" : "Create Template"}
           </button>
           <button
             type="button"

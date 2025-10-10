@@ -1,0 +1,659 @@
+---
+title: "Prisma ORM Modernization"
+sidebarTitle: "ORM Modernization"
+description:
+  "Modern Prisma ORM patterns with validator fragments, transaction support, and
+  edge optimization"
+icon: "sparkles"
+---
+
+# Prisma ORM Modernization Guide
+
+The database package has been comprehensively modernized with the latest Prisma
+patterns, providing type-safe operations, reusable fragments, and full edge
+runtime support.
+
+<Info>
+  This modernization maintains 100% backward compatibility while introducing
+  significant improvements in type safety, performance, and developer
+  experience.
+</Info>
+
+## Overview
+
+The modernization introduces several key improvements:
+
+<CardGroup cols={2}>
+  <Card title="Validator Fragments" icon="puzzle-piece">
+    Centralized, reusable query patterns using `Prisma.validator<Prisma.ModelDefaultArgs>()`
+  </Card>
+  <Card title="Type-Safe Operations" icon="shield-check">
+    100% compile-time validation with `Prisma.ModelGetPayload<typeof validator>`
+  </Card>
+  <Card title="Transaction Support" icon="arrows-rotate">
+    All ORM functions support both standard and transaction clients
+  </Card>
+  <Card title="Edge Optimization" icon="rocket">
+    Intelligent client resolver for runtime-specific optimization
+  </Card>
+</CardGroup>
+
+## Quick Start
+
+### Basic Usage with Validator Fragments
+
+```typescript
+import {
+  userSelectBasic,
+  productIncludeMedia,
+  type UserBasic,
+  type ProductWithMedia
+} from "@repo/database/prisma/fragments";
+
+// Type-safe selection
+const user = await prisma.user.findUnique({
+  where: { id: userId },
+  select: userSelectBasic.select // Reusable, type-safe
+});
+
+// Type-safe inclusion
+const product = await prisma.product.findUnique({
+  where: { id: productId },
+  ...productIncludeMedia // Automatically typed
+});
+```
+
+### Modern ORM Functions
+
+```typescript
+import {
+  createUserWithValidationOrm,
+  findUserBasicOrm,
+  type PrismaTransactionClient
+} from "@repo/database/prisma";
+
+// Validated input creation
+const newUser = await createUserWithValidationOrm({
+  email: "user@example.com",
+  name: "John Doe"
+});
+
+// Transaction-compatible functions
+async function transferInventory(
+  fromId: string,
+  toId: string,
+  client: PrismaTransactionClient = prisma
+) {
+  // All ORM functions accept client parameter
+  const fromInventory = await findInventoryOrm({ id: fromId }, client);
+  const toInventory = await updateInventoryOrm(
+    {
+      where: { id: toId },
+      data: { quantity: { increment: fromInventory.quantity } }
+    },
+    client
+  );
+
+  return { fromInventory, toInventory };
+}
+```
+
+## Validator Fragments
+
+### Available Fragment Types
+
+The modernized system provides three types of validator fragments:
+
+<Tabs>
+  <Tab title="Select Fragments">
+    Type-safe field selections for optimized queries:
+
+    ```typescript
+    // Basic field selections
+    export const userSelectBasic = Prisma.validator<Prisma.UserDefaultArgs>()({
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        image: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    // Usage
+    const users = await prisma.user.findMany({
+      select: userSelectBasic.select,
+    });
+    ```
+
+  </Tab>
+  
+  <Tab title="Include Fragments">
+    Reusable relationship includes:
+
+    ```typescript
+    // Relationship includes
+    export const productIncludeMedia = Prisma.validator<Prisma.ProductDefaultArgs>()({
+      include: {
+        media: {
+          take: 5,
+          orderBy: { displayOrder: 'asc' },
+        },
+      },
+    });
+
+    // Usage
+    const product = await prisma.product.findUnique({
+      where: { id },
+      ...productIncludeMedia,
+    });
+    ```
+
+  </Tab>
+
+  <Tab title="Input Validators">
+    Validated input creation functions:
+
+    ```typescript
+    // Input validation
+    export function createUserInput(data: {
+      email: string;
+      name?: string | null;
+      image?: string | null;
+      emailVerified?: boolean;
+    }): Prisma.UserCreateInput {
+      return {
+        email: data.email,
+        name: data.name || null,
+        image: data.image || null,
+        emailVerified: data.emailVerified || false,
+      };
+    }
+
+    // Usage with validation
+    const user = await createUserWithValidationOrm({
+      email: 'user@example.com',
+      name: 'John Doe'
+    });
+    ```
+
+  </Tab>
+</Tabs>
+
+### Payload Types
+
+All fragments automatically generate corresponding payload types:
+
+```typescript
+import type {
+  UserBasic,
+  ProductWithMedia,
+  CartWithItems,
+  WorkflowExecutionWithAllRelations
+} from "@repo/database/prisma/fragments";
+
+// Type-safe function signatures
+function processUser(user: UserBasic): string {
+  return `${user.name} (${user.email})`;
+}
+
+function calculateTotal(cart: CartWithItems): number {
+  return cart.items.reduce((total, item) => {
+    return total + (item.product.price || 0) * item.quantity;
+  }, 0);
+}
+```
+
+## Transaction Support
+
+### Enhanced Transaction Compatibility
+
+All ORM functions now support both standard and transaction clients:
+
+```typescript
+import { prisma } from "@repo/database/prisma";
+import type { PrismaTransactionClient } from "@repo/database/prisma";
+
+// Standard client usage
+async function createUser(data: any) {
+  return await createUserOrm({ data }); // Uses standard client
+}
+
+// Transaction client usage
+async function createUserWithProfile(userData: any, profileData: any) {
+  return await prisma.$transaction(async (tx) => {
+    // All ORM functions accept transaction client
+    const user = await createUserOrm({ data: userData }, tx);
+    const profile = await createProfileOrm(
+      {
+        data: { ...profileData, userId: user.id }
+      },
+      tx
+    );
+
+    return { user, profile };
+  });
+}
+```
+
+### Client Parameter Pattern
+
+```typescript
+// Standard pattern for all ORM functions
+export async function updateUserOrm(
+  args: Prisma.UserUpdateArgs,
+  client: PrismaTransactionClient = prisma // Always include client parameter
+) {
+  try {
+    return await client.user.update(args);
+  } catch (error) {
+    if (isNotFoundError(error)) {
+      throw new Error(
+        `User not found for update: ${JSON.stringify(args.where)}`
+      );
+    }
+    handlePrismaError(error);
+  }
+}
+```
+
+## Edge Runtime Optimization
+
+### Client Resolver
+
+The modernized system includes an intelligent client resolver for
+runtime-specific optimization:
+
+```typescript
+import {
+  resolveClient,
+  getOptimalClient,
+  clientResolvers
+} from "@repo/database/prisma/clients/resolver";
+
+// Auto-detect optimal client
+async function getUserProfile(id: string) {
+  const client = await getOptimalClient();
+  return await client.user.findUnique({
+    where: { id },
+    include: { profile: true }
+  });
+}
+
+// Explicit client selection
+async function getProductsForEdge(category: string) {
+  const client = await resolveClient({ runtime: "edge" });
+  return await client.product.findMany({
+    where: { category },
+    select: productSelectBasic.select
+  });
+}
+
+// Pre-configured resolvers
+const client = await clientResolvers.edge(); // Vercel Edge Runtime
+const txClient = await clientResolvers.transaction(); // Transaction-required
+```
+
+### Runtime Detection
+
+```typescript
+// Automatic runtime detection
+const client = await getOptimalClient({
+  runtime: detectRuntime(), // 'node' | 'edge'
+  platform: detectPlatform() // 'vercel' | 'nodejs'
+});
+```
+
+## Server Actions Integration
+
+### Modern Server Actions
+
+```typescript
+"use server";
+
+import { createUserWithValidationOrm } from "@repo/database/prisma";
+
+export async function createUserAction(formData: FormData) {
+  const data = {
+    email: formData.get("email") as string,
+    name: formData.get("name") as string
+  };
+
+  // Validation happens inside the ORM function
+  const user = await createUserWithValidationOrm(data);
+
+  return { success: true, user };
+}
+```
+
+## Migration Guide
+
+### Updating Existing Code
+
+<Tabs>
+  <Tab title="Before (Legacy)">
+    ```typescript
+    // Manual type guards
+    function isProductCreateInput(input: any): input is Prisma.ProductCreateInput {
+      return typeof input?.name === 'string';
+    }
+
+    // Hard-coded includes
+    const product = await prisma.product.findUnique({
+      where: { id },
+      include: {
+        media: { take: 5 },
+      },
+    });
+
+    // No transaction support
+    async function createProduct(data: any) {
+      return await prisma.product.create({ data });
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="After (Modern)">
+    ```typescript
+    // Validator fragments
+    import { productIncludeMedia, createProductInput } from '@repo/database/prisma/fragments';
+
+    // Reusable includes
+    const product = await prisma.product.findUnique({
+      where: { id },
+      ...productIncludeMedia,
+    });
+
+    // Full transaction support
+    async function createProduct(
+      data: Parameters<typeof createProductInput>[0],
+      client: PrismaTransactionClient = prisma
+    ) {
+      const validatedData = createProductInput(data);
+      return await client.product.create({ data: validatedData });
+    }
+    ```
+
+  </Tab>
+</Tabs>
+
+### Step-by-Step Migration
+
+1. **Update Imports**
+
+   ```typescript
+   // Add fragment imports
+   import {
+     userSelectBasic,
+     productIncludeMedia,
+     createUserInput
+   } from "@repo/database/prisma/fragments";
+   ```
+
+2. **Replace Hard-coded Queries**
+
+   ```typescript
+   // Replace hardcoded selections
+   const users = await prisma.user.findMany({
+     select: userSelectBasic.select // Instead of manual select
+   });
+   ```
+
+3. **Add Transaction Support**
+
+   ```typescript
+   // Add client parameter to functions
+   export async function myFunction(
+     args: any,
+     client: PrismaTransactionClient = prisma // Add this parameter
+   ) {
+     return await client.model.operation(args);
+   }
+   ```
+
+4. **Use Validated Inputs**
+   ```typescript
+   // Replace direct data usage
+   const user = await createUserWithValidationOrm(rawData); // Instead of prisma.user.create
+   ```
+
+## Best Practices
+
+### Do's and Don'ts
+
+<Tabs>
+  <Tab title="✅ Best Practices">
+    ```typescript
+    // Always use validator fragments
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: userSelectBasic.select, // Reusable, type-safe
+    });
+
+    // Support transaction clients
+    async function updateUser(
+      id: string,
+      data: Prisma.UserUpdateInput,
+      client: PrismaTransactionClient = prisma
+    ) {
+      return await client.user.update({ where: { id }, data });
+    }
+
+    // Use input validators
+    const user = await createUserWithValidationOrm(validatedData);
+
+    // Leverage type exports
+    function processUsers(users: UserBasic[]) {
+      return users.map(user => ({
+        id: user.id,
+        displayName: user.name || user.email,
+      }));
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="❌ Anti-Patterns">
+    ```typescript
+    // Don't hardcode selections
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: { id: true, email: true }, // Hardcoded, not reusable
+    });
+
+    // Don't assume standard client
+    async function updateUser(id: string, data: any) {
+      return await prisma.user.update({ where: { id }, data }); // No client param
+    }
+
+    // Don't use raw input
+    const user = await prisma.user.create({ data: rawData }); // No validation
+
+    // Don't use any types
+    function processUser(user: any) {
+      return user.name; // No type safety
+    }
+    ```
+
+  </Tab>
+</Tabs>
+
+## Performance Optimization
+
+### Query Optimization
+
+```typescript
+// Use minimal selections
+const users = await prisma.user.findMany({
+  select: userSelectBasic.select // Only essential fields
+});
+
+// Batch operations
+const users = await findManyUsersOrm({
+  where: { status: "ACTIVE" },
+  select: userSelectBasic.select
+});
+
+// Edge-optimized queries
+const client = await getOptimalClient({ runtime: "edge" });
+const products = await client.product.findMany({
+  select: productSelectBasic.select
+});
+```
+
+### Memory Optimization
+
+```typescript
+// Use pagination for large datasets
+const products = await findManyProductsOrm({
+  take: 100,
+  skip: page * 100,
+  select: productSelectBasic.select
+});
+
+// Stream large results
+for await (const batch of batchedProductQuery()) {
+  await processProductBatch(batch);
+}
+```
+
+## Error Handling
+
+### Modern Error Patterns
+
+```typescript
+import {
+  handlePrismaError,
+  isNotFoundError
+} from "@repo/database/prisma/validation";
+
+async function safeUserUpdate(id: string, data: Prisma.UserUpdateInput) {
+  try {
+    return await updateUserOrm({ where: { id }, data });
+  } catch (error) {
+    if (isNotFoundError(error)) {
+      throw new Error(`User not found: ${id}`);
+    }
+    handlePrismaError(error); // Centralized error handling
+  }
+}
+```
+
+## Testing
+
+### Test Patterns
+
+```typescript
+import { createUserWithValidationOrm } from "@repo/database/prisma";
+import type { UserBasic } from "@repo/database/prisma/fragments";
+
+describe("User Operations", () => {
+  it("should create user with validation", async () => {
+    const userData = {
+      email: "test@example.com",
+      name: "Test User"
+    };
+
+    const user = await createUserWithValidationOrm(userData);
+
+    expect(user).toMatchObject({
+      email: userData.email,
+      name: userData.name,
+      emailVerified: false
+    });
+  });
+
+  it("should handle transaction operations", async () => {
+    await prisma.$transaction(async (tx) => {
+      const user = await createUserOrm({ data: userData }, tx);
+      const profile = await createProfileOrm(
+        {
+          data: { userId: user.id }
+        },
+        tx
+      );
+
+      expect(user.id).toBeDefined();
+      expect(profile.userId).toBe(user.id);
+    });
+  });
+});
+```
+
+## Advanced Patterns
+
+### Complex Transactions
+
+```typescript
+async function complexBusinessOperation(data: any) {
+  return await prisma.$transaction(async (tx) => {
+    // Step 1: Create user
+    const user = await createUserOrm({ data: data.user }, tx);
+
+    // Step 2: Create related entities
+    const profile = await createProfileOrm(
+      {
+        data: { ...data.profile, userId: user.id }
+      },
+      tx
+    );
+
+    // Step 3: Update inventory
+    await updateInventoryOrm(
+      {
+        where: { productId: data.productId },
+        data: { quantity: { decrement: 1 } }
+      },
+      tx
+    );
+
+    // Step 4: Create order
+    const order = await createOrderOrm(
+      {
+        data: {
+          userId: user.id,
+          items: { create: data.items }
+        }
+      },
+      tx
+    );
+
+    return { user, profile, order };
+  });
+}
+```
+
+### Custom Client Resolution
+
+```typescript
+// Custom resolver for specific environments
+const customResolver = createClientResolver({
+  runtime: "edge",
+  platform: "vercel"
+});
+
+export async function edgeOptimizedOperation() {
+  const client = await customResolver();
+  return await client.user.findMany({
+    select: userSelectBasic.select
+  });
+}
+```
+
+---
+
+## Summary
+
+The Prisma ORM modernization provides:
+
+- **Type Safety**: 100% compile-time validation
+- **Reusability**: Centralized fragments eliminate duplicate code
+- **Performance**: Edge runtime optimization
+- **Maintainability**: Consistent patterns across all ORM operations
+- **Developer Experience**: Auto-completion, validation, and error handling
+
+The modernized patterns are production-ready and maintain full backward
+compatibility while providing significant improvements in type safety,
+performance, and maintainability.

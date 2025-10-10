@@ -3,7 +3,7 @@
  * Reduces code duplication and provides consistent test patterns
  */
 
-import { expect, vi } from 'vitest';
+import { expect, vi } from "vitest";
 
 // ============================================================================
 // MOCK UTILITIES
@@ -25,14 +25,16 @@ export function createResendMock() {
  * Creates consistent mock for React Email render function
  */
 export function createReactEmailRenderMock() {
-  return vi.fn().mockResolvedValue('<html>Mock rendered email</html>');
+  return vi.fn().mockResolvedValue("<html>Mock rendered email</html>");
 }
 
 /**
  * Creates consistent mock for email templates
  */
 export function createEmailTemplateMock(templateName: string) {
-  return vi.fn().mockImplementation(props => `${templateName}:${JSON.stringify(props)}`);
+  return vi
+    .fn()
+    .mockImplementation((props) => `${templateName}:${JSON.stringify(props)}`);
 }
 
 /**
@@ -40,8 +42,8 @@ export function createEmailTemplateMock(templateName: string) {
  */
 export function createEmailEnvMock() {
   return vi.fn().mockReturnValue({
-    RESEND_FROM: 'noreply@example.com',
-    RESEND_TOKEN: 're_123456789',
+    RESEND_FROM: "noreply@example.com",
+    RESEND_TOKEN: "re_123456789",
   });
 }
 
@@ -54,13 +56,15 @@ export function setupEmailMocks() {
     render: createReactEmailRenderMock(),
     env: createEmailEnvMock(),
     templates: {
-      MagicLinkTemplate: createEmailTemplateMock('MagicLinkTemplate'),
-      VerificationTemplate: createEmailTemplateMock('VerificationTemplate'),
-      PasswordResetTemplate: createEmailTemplateMock('PasswordResetTemplate'),
-      ContactTemplate: createEmailTemplateMock('ContactTemplate'),
-      OrganizationInvitationTemplate: createEmailTemplateMock('OrganizationInvitationTemplate'),
-      WelcomeTemplate: createEmailTemplateMock('WelcomeTemplate'),
-      ApiKeyCreatedTemplate: createEmailTemplateMock('ApiKeyCreatedTemplate'),
+      MagicLinkTemplate: createEmailTemplateMock("MagicLinkTemplate"),
+      VerificationTemplate: createEmailTemplateMock("VerificationTemplate"),
+      PasswordResetTemplate: createEmailTemplateMock("PasswordResetTemplate"),
+      ContactTemplate: createEmailTemplateMock("ContactTemplate"),
+      OrganizationInvitationTemplate: createEmailTemplateMock(
+        "OrganizationInvitationTemplate",
+      ),
+      WelcomeTemplate: createEmailTemplateMock("WelcomeTemplate"),
+      ApiKeyCreatedTemplate: createEmailTemplateMock("ApiKeyCreatedTemplate"),
     },
   };
 }
@@ -74,10 +78,10 @@ export function setupEmailMocks() {
  */
 export function createBaseEmailData(overrides: any = {}) {
   return {
-    email: 'test@example.com',
-    name: 'Test User',
-    subject: 'Test Email',
-    from: 'noreply@example.com',
+    email: "test@example.com",
+    name: "Test User",
+    subject: "Test Email",
+    from: "noreply@example.com",
     ...overrides,
   };
 }
@@ -87,10 +91,10 @@ export function createBaseEmailData(overrides: any = {}) {
  */
 export function createMagicLinkEmailData(overrides: any = {}) {
   return {
-    email: 'test@example.com',
-    name: 'John Doe',
-    expiresIn: '30 minutes',
-    magicLink: 'https://example.com/magic?token=abc123',
+    email: "test@example.com",
+    name: "John Doe",
+    expiresIn: "30 minutes",
+    magicLink: "https://example.com/magic?token=abc123",
     ...overrides,
   };
 }
@@ -100,9 +104,9 @@ export function createMagicLinkEmailData(overrides: any = {}) {
  */
 export function createVerificationEmailData(overrides: any = {}) {
   return {
-    email: 'test@example.com',
-    name: 'Jane Doe',
-    verificationLink: 'https://example.com/verify?token=abc123',
+    email: "test@example.com",
+    name: "Jane Doe",
+    verificationLink: "https://example.com/verify?token=abc123",
     ...overrides,
   };
 }
@@ -112,9 +116,9 @@ export function createVerificationEmailData(overrides: any = {}) {
  */
 export function createPasswordResetEmailData(overrides: any = {}) {
   return {
-    email: 'test@example.com',
-    name: 'Bob Smith',
-    resetLink: 'https://example.com/reset?token=abc123',
+    email: "test@example.com",
+    name: "Bob Smith",
+    resetLink: "https://example.com/reset?token=abc123",
     ...overrides,
   };
 }
@@ -124,10 +128,10 @@ export function createPasswordResetEmailData(overrides: any = {}) {
  */
 export function createOTPEmailData(overrides: any = {}) {
   return {
-    email: 'test@example.com',
-    name: 'Test User',
-    otp: '123456',
-    purpose: 'login verification',
+    email: "test@example.com",
+    name: "Test User",
+    otp: "123456",
+    purpose: "login verification",
     ...overrides,
   };
 }
@@ -137,10 +141,10 @@ export function createOTPEmailData(overrides: any = {}) {
  */
 export function createContactEmailData(overrides: any = {}) {
   return {
-    email: 'customer@example.com',
-    name: 'Customer Name',
-    message: 'This is a test contact message',
-    to: 'support@example.com',
+    email: "customer@example.com",
+    name: "Customer Name",
+    message: "This is a test contact message",
+    to: "support@example.com",
     ...overrides,
   };
 }
@@ -150,12 +154,12 @@ export function createContactEmailData(overrides: any = {}) {
  */
 export function createOrganizationInvitationEmailData(overrides: any = {}) {
   return {
-    email: 'invite@example.com',
-    expiresIn: '72 hours',
-    inviteLink: 'https://example.com/invite?token=abc123',
-    inviterEmail: 'admin@example.com',
-    inviterName: 'John Admin',
-    organizationName: 'Acme Corp',
+    email: "invite@example.com",
+    expiresIn: "72 hours",
+    inviteLink: "https://example.com/invite?token=abc123",
+    inviterEmail: "admin@example.com",
+    inviterName: "John Admin",
+    organizationName: "Acme Corp",
     ...overrides,
   };
 }
@@ -165,10 +169,10 @@ export function createOrganizationInvitationEmailData(overrides: any = {}) {
  */
 export function createWelcomeEmailData(overrides: any = {}) {
   return {
-    email: 'newuser@example.com',
-    name: 'New User',
-    dashboardUrl: 'https://app.example.com/dashboard',
-    organizationName: 'Acme Corp',
+    email: "newuser@example.com",
+    name: "New User",
+    dashboardUrl: "https://app.example.com/dashboard",
+    organizationName: "Acme Corp",
     ...overrides,
   };
 }
@@ -178,11 +182,11 @@ export function createWelcomeEmailData(overrides: any = {}) {
  */
 export function createApiKeyCreatedEmailData(overrides: any = {}) {
   return {
-    email: 'user@example.com',
-    name: 'User Name',
-    apiKeyId: 'ak_123456789',
-    apiKeyName: 'Production API Key',
-    dashboardUrl: 'https://app.example.com/api-keys',
+    email: "user@example.com",
+    name: "User Name",
+    apiKeyId: "ak_123456789",
+    apiKeyName: "Production API Key",
+    dashboardUrl: "https://app.example.com/api-keys",
     ...overrides,
   };
 }
@@ -192,7 +196,7 @@ export function createApiKeyCreatedEmailData(overrides: any = {}) {
  */
 export function createResendResponse(overrides: any = {}) {
   return {
-    data: { id: 'email_123' },
+    data: { id: "email_123" },
     error: null,
     ...overrides,
   };
@@ -211,7 +215,7 @@ export function validateEmailSendingResult(
   expectedSubject: string,
 ) {
   expect(result).toStrictEqual({
-    data: { id: 'email_123' },
+    data: { id: "email_123" },
     error: null,
   });
 }
@@ -232,14 +236,17 @@ export function validateEmailSentWith(
     from: expectedParams.from,
     to: expectedParams.to,
     subject: expectedParams.subject,
-    html: expectedParams.html || '<html>Mock rendered email</html>',
+    html: expectedParams.html || "<html>Mock rendered email</html>",
   });
 }
 
 /**
  * Validates that template was called with correct props
  */
-export function validateTemplateCalledWith(mockTemplate: any, expectedProps: any) {
+export function validateTemplateCalledWith(
+  mockTemplate: any,
+  expectedProps: any,
+) {
   expect(mockTemplate).toHaveBeenCalledWith(expectedProps);
 }
 
@@ -254,8 +261,11 @@ export function validateEmailFormat(email: string) {
 /**
  * Validates required email properties
  */
-export function validateRequiredEmailProperties(emailData: any, requiredProperties: string[]) {
-  requiredProperties.forEach(prop => {
+export function validateRequiredEmailProperties(
+  emailData: any,
+  requiredProperties: string[],
+) {
+  requiredProperties.forEach((prop) => {
     expect(emailData).toHaveProperty(prop);
     expect(emailData[prop]).toBeDefined();
   });
@@ -270,14 +280,14 @@ export function validateTemplateProps(
   optionalProps: string[] = [],
 ) {
   // Check required props
-  requiredProps.forEach(prop => {
+  requiredProps.forEach((prop) => {
     expect(props).toHaveProperty(prop);
     expect(props[prop]).toBeDefined();
   });
 
   // Check that only expected props are present
   const expectedProps = [...requiredProps, ...optionalProps];
-  Object.keys(props).forEach(prop => {
+  Object.keys(props).forEach((prop) => {
     expect(expectedProps).toContain(prop);
   });
 }
@@ -298,7 +308,7 @@ export function generateEmailSendingTestScenarios<T>(
     expectation: (result: any) => void;
   }>,
 ) {
-  return scenarios.map(scenario => ({
+  return scenarios.map((scenario) => ({
     name: scenario.name,
     test: async () => {
       const testData = { ...baseData, ...scenario.data };
@@ -320,7 +330,7 @@ export function generateTemplateRenderingTestScenarios<T>(
     shouldNotThrow?: boolean;
   }>,
 ) {
-  return scenarios.map(scenario => ({
+  return scenarios.map((scenario) => ({
     name: scenario.name,
     test: () => {
       const testProps = { ...baseProps, ...scenario.props };
@@ -346,11 +356,13 @@ export function generateErrorHandlingTestScenarios<T>(
     expectedError: string;
   }>,
 ) {
-  return errorScenarios.map(scenario => ({
+  return errorScenarios.map((scenario) => ({
     name: scenario.name,
     test: async () => {
       scenario.setup();
-      await expect(emailFunction(baseData)).rejects.toThrow(scenario.expectedError);
+      await expect(emailFunction(baseData)).rejects.toThrow(
+        scenario.expectedError,
+      );
     },
   }));
 }
@@ -367,7 +379,7 @@ export function generateEdgeCaseTestScenarios<T>(
     expectation: (result: any) => void;
   }>,
 ) {
-  return edgeCases.map(edgeCase => ({
+  return edgeCases.map((edgeCase) => ({
     name: edgeCase.name,
     test: async () => {
       const testData = { ...baseData, ...edgeCase.data };
@@ -387,11 +399,11 @@ export function generateEdgeCaseTestScenarios<T>(
 export function transformEmailData(emailData: any) {
   return {
     withNullName: { ...emailData, name: null },
-    withEmptyName: { ...emailData, name: '' },
+    withEmptyName: { ...emailData, name: "" },
     withUndefinedName: { ...emailData, name: undefined },
-    withLongName: { ...emailData, name: 'A'.repeat(100) },
-    withSpecialChars: { ...emailData, name: 'Test User!@#$%' },
-    withUnicodeChars: { ...emailData, name: 'Test User 中文' },
+    withLongName: { ...emailData, name: "A".repeat(100) },
+    withSpecialChars: { ...emailData, name: "Test User!@#$%" },
+    withUnicodeChars: { ...emailData, name: "Test User 中文" },
   };
 }
 
@@ -400,19 +412,22 @@ export function transformEmailData(emailData: any) {
  */
 export function createInvalidEmailVariations<T>(baseData: T) {
   return {
-    invalidEmail: { ...baseData, email: 'invalid-email' },
-    emptyEmail: { ...baseData, email: '' },
+    invalidEmail: { ...baseData, email: "invalid-email" },
+    emptyEmail: { ...baseData, email: "" },
     nullEmail: { ...baseData, email: null },
     undefinedEmail: { ...baseData, email: undefined },
-    longEmail: { ...baseData, email: 'a'.repeat(100) + '@example.com' },
-    specialCharsEmail: { ...baseData, email: 'test+special@example.com' },
+    longEmail: { ...baseData, email: "a".repeat(100) + "@example.com" },
+    specialCharsEmail: { ...baseData, email: "test+special@example.com" },
   };
 }
 
 /**
  * Creates missing property variations for testing
  */
-export function createMissingPropertyVariations<T>(baseData: T, requiredProps: Array<keyof T>) {
+export function createMissingPropertyVariations<T>(
+  baseData: T,
+  requiredProps: Array<keyof T>,
+) {
   return requiredProps.reduce((acc, prop) => {
     const variant = { ...baseData };
     delete variant[prop];
@@ -455,7 +470,7 @@ export async function measureEmailExecutionTime<T>(
 export function validateEmailPerformance(
   averageTime: number,
   maxAllowedTime: number = 10, // 10ms default for email operations
-  operation: string = 'email operation',
+  operation: string = "email operation",
 ) {
   expect(averageTime).toBeLessThan(maxAllowedTime);
 
@@ -481,7 +496,7 @@ export function testTemplateAcrossScenarios<T>(
     expectedBehavior: string;
   }>,
 ) {
-  scenarios.forEach(scenario => {
+  scenarios.forEach((scenario) => {
     test(`should ${scenario.expectedBehavior}`, () => {
       expect(() => templateFunction(scenario.props)).not.toThrow();
     });
@@ -499,7 +514,7 @@ export function testEmailSendingAcrossScenarios<T>(
     expectedResult: any;
   }>,
 ) {
-  scenarios.forEach(scenario => {
+  scenarios.forEach((scenario) => {
     test(`should ${scenario.name}`, async () => {
       const result = await emailFunction(scenario.data);
       expect(result).toStrictEqual(scenario.expectedResult);
@@ -516,14 +531,21 @@ export function createTemplateTestUtils() {
       expect(() => templateFunction(props)).not.toThrow();
     },
 
-    expectTemplateToHaveProps: (templateFunction: any, props: any, expectedProps: string[]) => {
+    expectTemplateToHaveProps: (
+      templateFunction: any,
+      props: any,
+      expectedProps: string[],
+    ) => {
       const result = templateFunction(props);
-      expectedProps.forEach(prop => {
+      expectedProps.forEach((prop) => {
         expect(result).toContain(prop);
       });
     },
 
-    expectTemplateToHandleEdgeCases: (templateFunction: any, edgeCaseProps: any) => {
+    expectTemplateToHandleEdgeCases: (
+      templateFunction: any,
+      edgeCaseProps: any,
+    ) => {
       expect(() => templateFunction(edgeCaseProps)).not.toThrow();
     },
   };

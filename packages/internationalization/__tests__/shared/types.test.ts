@@ -5,68 +5,71 @@
  * across the internationalization package.
  */
 
-import { describe, expect, test, vi } from 'vitest';
-import { createTestData } from '../i18n-test-data';
+import { describe, expect, test, vi } from "vitest";
+import { createTestData } from "../i18n-test-data";
 
 // ================================================================================================
 // TYPE VALIDATION TESTS
 // ================================================================================================
 
-describe('type Validation', () => {
-  test('should validate Locale type', async () => {
-    const mockValidateLocale = vi.fn(locale => {
-      const validLocales = ['en', 'fr', 'es', 'pt', 'de'];
+describe("type Validation", () => {
+  test("should validate Locale type", async () => {
+    const mockValidateLocale = vi.fn((locale) => {
+      const validLocales = ["en", "fr", "es", "pt", "de"];
       return validLocales.includes(locale);
     });
 
     // Test valid locales
-    const validLocales = ['en', 'fr', 'es', 'pt', 'de'];
-    validLocales.forEach(locale => {
+    const validLocales = ["en", "fr", "es", "pt", "de"];
+    validLocales.forEach((locale) => {
       expect(mockValidateLocale(locale)).toBeTruthy();
     });
 
     // Test invalid locales
-    const invalidLocales = ['invalid', 'zh', 'ja', 123, null, undefined];
-    invalidLocales.forEach(locale => {
+    const invalidLocales = ["invalid", "zh", "ja", 123, null, undefined];
+    invalidLocales.forEach((locale) => {
       expect(mockValidateLocale(locale)).toBeFalsy();
     });
   });
 
-  test('should validate Dictionary type', async () => {
-    const mockValidateDictionary = vi.fn(dictionary => {
-      if (!dictionary || typeof dictionary !== 'object') {
+  test("should validate Dictionary type", async () => {
+    const mockValidateDictionary = vi.fn((dictionary) => {
+      if (!dictionary || typeof dictionary !== "object") {
         return false;
       }
 
       // Check for required namespaces
-      const requiredNamespaces = ['common', 'navigation'];
+      const requiredNamespaces = ["common", "navigation"];
       for (const namespace of requiredNamespaces) {
-        if (!dictionary[namespace] || typeof dictionary[namespace] !== 'object') {
+        if (
+          !dictionary[namespace] ||
+          typeof dictionary[namespace] !== "object"
+        ) {
           return false;
         }
       }
 
       // Check for required keys
       const requiredKeys = [
-        'common.hello',
-        'common.goodbye',
-        'navigation.home',
-        'navigation.about',
+        "common.hello",
+        "common.goodbye",
+        "navigation.home",
+        "navigation.about",
       ];
 
       for (const key of requiredKeys) {
-        const keys = key.split('.');
+        const keys = key.split(".");
         let current = dictionary;
 
         for (const k of keys) {
-          if (current && typeof current === 'object' && k in current) {
+          if (current && typeof current === "object" && k in current) {
             current = current[k];
           } else {
             return false;
           }
         }
 
-        if (typeof current !== 'string') {
+        if (typeof current !== "string") {
           return false;
         }
       }
@@ -75,34 +78,34 @@ describe('type Validation', () => {
     });
 
     // Test valid dictionary
-    const validDictionary = createTestData.dictionary('en');
+    const validDictionary = createTestData.dictionary("en");
     expect(mockValidateDictionary(validDictionary)).toBeTruthy();
 
     // Test invalid dictionaries
     const invalidDictionaries = [
       null,
       undefined,
-      'not-object',
+      "not-object",
       {},
       { common: null },
       { common: {}, navigation: {} },
-      { common: { hello: 123 }, navigation: { home: 'Home' } },
+      { common: { hello: 123 }, navigation: { home: "Home" } },
     ];
 
-    invalidDictionaries.forEach(dict => {
+    invalidDictionaries.forEach((dict) => {
       expect(mockValidateDictionary(dict)).toBeFalsy();
     });
   });
 
-  test('should validate ExtendedDictionary type', async () => {
+  test("should validate ExtendedDictionary type", async () => {
     const mockValidateExtendedDictionary = vi.fn((dictionary, extension) => {
       // Validate base dictionary
-      if (!dictionary || typeof dictionary !== 'object') {
+      if (!dictionary || typeof dictionary !== "object") {
         return false;
       }
 
       // Validate extension
-      if (!extension || typeof extension !== 'object') {
+      if (!extension || typeof extension !== "object") {
         return false;
       }
 
@@ -113,13 +116,13 @@ describe('type Validation', () => {
       }
 
       // Validate that all extension values are valid
-      const validateValues = obj => {
+      const validateValues = (obj) => {
         for (const [key, value] of Object.entries(obj)) {
-          if (typeof value === 'object' && value !== null) {
+          if (typeof value === "object" && value !== null) {
             if (!validateValues(value)) {
               return false;
             }
-          } else if (typeof value !== 'string') {
+          } else if (typeof value !== "string") {
             return false;
           }
         }
@@ -129,32 +132,36 @@ describe('type Validation', () => {
       return validateValues(extension);
     });
 
-    const baseDictionary = createTestData.dictionary('en');
+    const baseDictionary = createTestData.dictionary("en");
 
     // Test valid extensions
     const validExtensions = [
-      { custom: { brandName: 'Our Brand' } },
-      { forms: { submit: 'Submit', cancel: 'Cancel' } },
-      { api: { loading: 'Loading...', error: 'Error' } },
+      { custom: { brandName: "Our Brand" } },
+      { forms: { submit: "Submit", cancel: "Cancel" } },
+      { api: { loading: "Loading...", error: "Error" } },
     ];
 
-    validExtensions.forEach(extension => {
-      expect(mockValidateExtendedDictionary(baseDictionary, extension)).toBeTruthy();
+    validExtensions.forEach((extension) => {
+      expect(
+        mockValidateExtendedDictionary(baseDictionary, extension),
+      ).toBeTruthy();
     });
 
     // Test invalid extensions
     const invalidExtensions = [
       null,
       undefined,
-      'not-object',
+      "not-object",
       {},
       { custom: null },
       { custom: { brandName: 123 } },
       { custom: { brandName: {} } },
     ];
 
-    invalidExtensions.forEach(extension => {
-      expect(mockValidateExtendedDictionary(baseDictionary, extension)).toBeFalsy();
+    invalidExtensions.forEach((extension) => {
+      expect(
+        mockValidateExtendedDictionary(baseDictionary, extension),
+      ).toBeFalsy();
     });
   });
 });
@@ -163,18 +170,18 @@ describe('type Validation', () => {
 // INTERFACE VALIDATION TESTS
 // ================================================================================================
 
-describe('interface Validation', () => {
-  test('should validate I18nConfig interface', async () => {
-    const mockValidateI18nConfig = vi.fn(config => {
+describe("interface Validation", () => {
+  test("should validate I18nConfig interface", async () => {
+    const mockValidateI18nConfig = vi.fn((config) => {
       const errors = [];
 
       // Check required properties
       if (!config.locales || !Array.isArray(config.locales)) {
-        errors.push('locales must be an array');
+        errors.push("locales must be an array");
       }
 
-      if (!config.defaultLocale || typeof config.defaultLocale !== 'string') {
-        errors.push('defaultLocale must be a string');
+      if (!config.defaultLocale || typeof config.defaultLocale !== "string") {
+        errors.push("defaultLocale must be a string");
       }
 
       if (
@@ -182,20 +189,20 @@ describe('interface Validation', () => {
         config.defaultLocale &&
         !config.locales.includes(config.defaultLocale)
       ) {
-        errors.push('defaultLocale must be included in locales array');
+        errors.push("defaultLocale must be included in locales array");
       }
 
       // Check optional properties
-      if (config.fallbackLocale && typeof config.fallbackLocale !== 'string') {
-        errors.push('fallbackLocale must be a string');
+      if (config.fallbackLocale && typeof config.fallbackLocale !== "string") {
+        errors.push("fallbackLocale must be a string");
       }
 
-      if (config.cookieName && typeof config.cookieName !== 'string') {
-        errors.push('cookieName must be a string');
+      if (config.cookieName && typeof config.cookieName !== "string") {
+        errors.push("cookieName must be a string");
       }
 
-      if (config.headerName && typeof config.headerName !== 'string') {
-        errors.push('headerName must be a string');
+      if (config.headerName && typeof config.headerName !== "string") {
+        errors.push("headerName must be a string");
       }
 
       return errors;
@@ -204,53 +211,53 @@ describe('interface Validation', () => {
     // Test valid configurations
     const validConfigs = [
       {
-        locales: ['en', 'fr'],
-        defaultLocale: 'en',
+        locales: ["en", "fr"],
+        defaultLocale: "en",
       },
       {
-        locales: ['en', 'fr', 'es'],
-        defaultLocale: 'en',
-        fallbackLocale: 'en',
-        cookieName: 'locale',
-        headerName: 'x-locale',
+        locales: ["en", "fr", "es"],
+        defaultLocale: "en",
+        fallbackLocale: "en",
+        cookieName: "locale",
+        headerName: "x-locale",
       },
     ];
 
-    validConfigs.forEach(config => {
+    validConfigs.forEach((config) => {
       expect(mockValidateI18nConfig(config)).toHaveLength(0);
     });
 
     // Test invalid configurations
     const invalidConfigs = [
       {},
-      { locales: null, defaultLocale: 'en' },
-      { locales: ['en'], defaultLocale: null },
-      { locales: ['en'], defaultLocale: 'fr' },
-      { locales: ['en'], defaultLocale: 'en', fallbackLocale: 123 },
+      { locales: null, defaultLocale: "en" },
+      { locales: ["en"], defaultLocale: null },
+      { locales: ["en"], defaultLocale: "fr" },
+      { locales: ["en"], defaultLocale: "en", fallbackLocale: 123 },
     ];
 
-    invalidConfigs.forEach(config => {
+    invalidConfigs.forEach((config) => {
       const errors = mockValidateI18nConfig(config);
       expect(errors.length).toBeGreaterThan(0);
     });
   });
 
-  test('should validate I18nClient interface', async () => {
-    const mockValidateI18nClient = vi.fn(client => {
+  test("should validate I18nClient interface", async () => {
+    const mockValidateI18nClient = vi.fn((client) => {
       const errors = [];
 
       // Check required methods
-      const requiredMethods = ['t', 'getLocale', 'changeLocale', 'isReady'];
+      const requiredMethods = ["t", "getLocale", "changeLocale", "isReady"];
 
-      requiredMethods.forEach(method => {
-        if (!client[method] || typeof client[method] !== 'function') {
+      requiredMethods.forEach((method) => {
+        if (!client[method] || typeof client[method] !== "function") {
           errors.push(`${method} must be a function`);
         }
       });
 
       // Check required properties
-      if (!client.locale || typeof client.locale !== 'string') {
-        errors.push('locale must be a string');
+      if (!client.locale || typeof client.locale !== "string") {
+        errors.push("locale must be a string");
       }
 
       return errors;
@@ -262,7 +269,7 @@ describe('interface Validation', () => {
       getLocale: vi.fn(),
       changeLocale: vi.fn(),
       isReady: vi.fn(),
-      locale: 'en',
+      locale: "en",
     };
 
     expect(mockValidateI18nClient(validClient)).toHaveLength(0);
@@ -276,21 +283,25 @@ describe('interface Validation', () => {
       { t: vi.fn(), getLocale: vi.fn(), locale: 123 },
     ];
 
-    invalidClients.forEach(client => {
+    invalidClients.forEach((client) => {
       const errors = mockValidateI18nClient(client);
       expect(errors.length).toBeGreaterThan(0);
     });
   });
 
-  test('should validate DictionaryLoader interface', async () => {
-    const mockValidateDictionaryLoader = vi.fn(loader => {
+  test("should validate DictionaryLoader interface", async () => {
+    const mockValidateDictionaryLoader = vi.fn((loader) => {
       const errors = [];
 
       // Check required methods
-      const requiredMethods = ['getLocales', 'getDictionary', 'isLocaleSupported'];
+      const requiredMethods = [
+        "getLocales",
+        "getDictionary",
+        "isLocaleSupported",
+      ];
 
-      requiredMethods.forEach(method => {
-        if (!loader[method] || typeof loader[method] !== 'function') {
+      requiredMethods.forEach((method) => {
+        if (!loader[method] || typeof loader[method] !== "function") {
           errors.push(`${method} must be a function`);
         }
       });
@@ -315,7 +326,7 @@ describe('interface Validation', () => {
       { getLocales: vi.fn(), getDictionary: vi.fn(), isLocaleSupported: null },
     ];
 
-    invalidLoaders.forEach(loader => {
+    invalidLoaders.forEach((loader) => {
       const errors = mockValidateDictionaryLoader(loader);
       expect(errors.length).toBeGreaterThan(0);
     });
@@ -326,12 +337,12 @@ describe('interface Validation', () => {
 // TYPE SAFETY TESTS
 // ================================================================================================
 
-describe('type Safety', () => {
-  test('should ensure type safety for locale operations', async () => {
+describe("type Safety", () => {
+  test("should ensure type safety for locale operations", async () => {
     const mockTypeSafeLocaleOperations = vi.fn((locale, operation) => {
       // Simulate compile-time type checking
-      const validLocales = ['en', 'fr', 'es', 'pt', 'de'];
-      const validOperations = ['load', 'validate', 'normalize'];
+      const validLocales = ["en", "fr", "es", "pt", "de"];
+      const validOperations = ["load", "validate", "normalize"];
 
       const isValidLocale = validLocales.includes(locale);
       const isValidOperation = validOperations.includes(operation);
@@ -349,9 +360,9 @@ describe('type Safety', () => {
 
     // Test valid operations
     const validCombinations = [
-      ['en', 'load'],
-      ['fr', 'validate'],
-      ['es', 'normalize'],
+      ["en", "load"],
+      ["fr", "validate"],
+      ["es", "normalize"],
     ];
 
     validCombinations.forEach(([locale, operation]) => {
@@ -361,9 +372,9 @@ describe('type Safety', () => {
 
     // Test invalid operations
     const invalidCombinations = [
-      ['invalid', 'load'],
-      ['en', 'invalid'],
-      ['zh', 'validate'],
+      ["invalid", "load"],
+      ["en", "invalid"],
+      ["zh", "validate"],
     ];
 
     invalidCombinations.forEach(([locale, operation]) => {
@@ -371,31 +382,31 @@ describe('type Safety', () => {
     });
   });
 
-  test('should ensure type safety for dictionary operations', async () => {
+  test("should ensure type safety for dictionary operations", async () => {
     const mockTypeSafeDictionaryOperations = vi.fn((dictionary, key, value) => {
       // Simulate compile-time type checking
-      if (!dictionary || typeof dictionary !== 'object') {
-        throw new Error('Dictionary must be an object');
+      if (!dictionary || typeof dictionary !== "object") {
+        throw new Error("Dictionary must be an object");
       }
 
-      if (!key || typeof key !== 'string') {
-        throw new Error('Key must be a string');
+      if (!key || typeof key !== "string") {
+        throw new Error("Key must be a string");
       }
 
-      if (value !== undefined && typeof value !== 'string') {
-        throw new Error('Value must be a string');
+      if (value !== undefined && typeof value !== "string") {
+        throw new Error("Value must be a string");
       }
 
       return { dictionary, key, value, success: true };
     });
 
-    const validDictionary = createTestData.dictionary('en');
+    const validDictionary = createTestData.dictionary("en");
 
     // Test valid operations
     const validOperations = [
-      [validDictionary, 'common.hello', 'Hello'],
-      [validDictionary, 'navigation.home', 'Home'],
-      [validDictionary, 'new.key', 'New Value'],
+      [validDictionary, "common.hello", "Hello"],
+      [validDictionary, "navigation.home", "Home"],
+      [validDictionary, "new.key", "New Value"],
     ];
 
     validOperations.forEach(([dict, key, value]) => {
@@ -405,43 +416,45 @@ describe('type Safety', () => {
 
     // Test invalid operations
     const invalidOperations = [
-      [null, 'key', 'value'],
-      [validDictionary, null, 'value'],
-      [validDictionary, 123, 'value'],
-      [validDictionary, 'key', 123],
+      [null, "key", "value"],
+      [validDictionary, null, "value"],
+      [validDictionary, 123, "value"],
+      [validDictionary, "key", 123],
     ];
 
     invalidOperations.forEach(([dict, key, value]) => {
-      expect(() => mockTypeSafeDictionaryOperations(dict, key, value)).toThrow();
+      expect(() =>
+        mockTypeSafeDictionaryOperations(dict, key, value),
+      ).toThrow();
     });
   });
 
-  test('should ensure type safety for configuration operations', async () => {
+  test("should ensure type safety for configuration operations", async () => {
     const mockTypeSafeConfigOperations = vi.fn((config, property, value) => {
       // Simulate compile-time type checking
-      if (!config || typeof config !== 'object') {
-        throw new Error('Config must be an object');
+      if (!config || typeof config !== "object") {
+        throw new Error("Config must be an object");
       }
 
-      if (!property || typeof property !== 'string') {
-        throw new Error('Property must be a string');
+      if (!property || typeof property !== "string") {
+        throw new Error("Property must be a string");
       }
 
       // Type-specific validation
       switch (property) {
-        case 'locales':
+        case "locales":
           if (!Array.isArray(value)) {
-            throw new Error('locales must be an array');
+            throw new Error("locales must be an array");
           }
           break;
-        case 'defaultLocale':
-          if (typeof value !== 'string') {
-            throw new Error('defaultLocale must be a string');
+        case "defaultLocale":
+          if (typeof value !== "string") {
+            throw new Error("defaultLocale must be a string");
           }
           break;
-        case 'fallbackLocale':
-          if (value !== undefined && typeof value !== 'string') {
-            throw new Error('fallbackLocale must be a string');
+        case "fallbackLocale":
+          if (value !== undefined && typeof value !== "string") {
+            throw new Error("fallbackLocale must be a string");
           }
           break;
         default:
@@ -453,15 +466,15 @@ describe('type Safety', () => {
     });
 
     const validConfig = {
-      locales: ['en', 'fr'],
-      defaultLocale: 'en',
+      locales: ["en", "fr"],
+      defaultLocale: "en",
     };
 
     // Test valid operations
     const validOperations = [
-      [validConfig, 'locales', ['en', 'fr', 'es']],
-      [validConfig, 'defaultLocale', 'fr'],
-      [validConfig, 'fallbackLocale', 'en'],
+      [validConfig, "locales", ["en", "fr", "es"]],
+      [validConfig, "defaultLocale", "fr"],
+      [validConfig, "fallbackLocale", "en"],
     ];
 
     validOperations.forEach(([config, property, value]) => {
@@ -471,15 +484,17 @@ describe('type Safety', () => {
 
     // Test invalid operations
     const invalidOperations = [
-      [null, 'locales', ['en']],
-      [validConfig, null, 'value'],
-      [validConfig, 'locales', 'not-array'],
-      [validConfig, 'defaultLocale', 123],
-      [validConfig, 'fallbackLocale', []],
+      [null, "locales", ["en"]],
+      [validConfig, null, "value"],
+      [validConfig, "locales", "not-array"],
+      [validConfig, "defaultLocale", 123],
+      [validConfig, "fallbackLocale", []],
     ];
 
     invalidOperations.forEach(([config, property, value]) => {
-      expect(() => mockTypeSafeConfigOperations(config, property, value)).toThrow();
+      expect(() =>
+        mockTypeSafeConfigOperations(config, property, value),
+      ).toThrow();
     });
   });
 });
@@ -488,15 +503,18 @@ describe('type Safety', () => {
 // GENERIC TYPE TESTS
 // ================================================================================================
 
-describe('generic Type Tests', () => {
-  test('should handle generic dictionary types', async () => {
+describe("generic Type Tests", () => {
+  test("should handle generic dictionary types", async () => {
     const mockGenericDictionary = vi.fn(
-      <T extends Record<string, any>>(baseDictionary: T, extension: Record<string, any>) => {
+      <T extends Record<string, any>>(
+        baseDictionary: T,
+        extension: Record<string, any>,
+      ) => {
         // Simulate generic type merging
         const result = { ...baseDictionary };
 
-        Object.keys(extension).forEach(key => {
-          if (typeof extension[key] === 'object' && extension[key] !== null) {
+        Object.keys(extension).forEach((key) => {
+          if (typeof extension[key] === "object" && extension[key] !== null) {
             result[key] = { ...result[key], ...extension[key] };
           } else {
             result[key] = extension[key];
@@ -507,41 +525,43 @@ describe('generic Type Tests', () => {
       },
     );
 
-    const baseDictionary = createTestData.dictionary('en');
-    const extension = { custom: { brandName: 'Our Brand' } };
+    const baseDictionary = createTestData.dictionary("en");
+    const extension = { custom: { brandName: "Our Brand" } };
 
     const result = mockGenericDictionary(baseDictionary, extension);
 
-    expect(result.common.hello).toBe('Hello');
-    expect(result.custom.brandName).toBe('Our Brand');
+    expect(result.common.hello).toBe("Hello");
+    expect(result.custom.brandName).toBe("Our Brand");
   });
 
-  test('should handle generic locale types', async () => {
-    const mockGenericLocale = vi.fn(<T extends string>(locale: T, supportedLocales: T[]) => {
-      // Simulate generic locale validation
-      const isSupported = supportedLocales.includes(locale);
+  test("should handle generic locale types", async () => {
+    const mockGenericLocale = vi.fn(
+      <T extends string>(locale: T, supportedLocales: T[]) => {
+        // Simulate generic locale validation
+        const isSupported = supportedLocales.includes(locale);
 
-      return {
-        locale,
-        supported: isSupported,
-        fallback: isSupported ? locale : supportedLocales[0],
-      };
-    });
+        return {
+          locale,
+          supported: isSupported,
+          fallback: isSupported ? locale : supportedLocales[0],
+        };
+      },
+    );
 
-    const supportedLocales = ['en', 'fr', 'es', 'pt', 'de'];
+    const supportedLocales = ["en", "fr", "es", "pt", "de"];
 
     // Test supported locale
-    const supportedResult = mockGenericLocale('fr', supportedLocales);
+    const supportedResult = mockGenericLocale("fr", supportedLocales);
     expect(supportedResult.supported).toBeTruthy();
-    expect(supportedResult.fallback).toBe('fr');
+    expect(supportedResult.fallback).toBe("fr");
 
     // Test unsupported locale
-    const unsupportedResult = mockGenericLocale('zh', supportedLocales);
+    const unsupportedResult = mockGenericLocale("zh", supportedLocales);
     expect(unsupportedResult.supported).toBeFalsy();
-    expect(unsupportedResult.fallback).toBe('en');
+    expect(unsupportedResult.fallback).toBe("en");
   });
 
-  test('should handle generic configuration types', async () => {
+  test("should handle generic configuration types", async () => {
     const mockGenericConfig = vi.fn(
       <T extends Record<string, any>>(config: T, defaults: Partial<T>) => {
         // Simulate generic configuration merging
@@ -552,25 +572,25 @@ describe('generic Type Tests', () => {
     );
 
     const userConfig = {
-      locales: ['en', 'fr'],
-      defaultLocale: 'en',
-      customProperty: 'custom-value',
+      locales: ["en", "fr"],
+      defaultLocale: "en",
+      customProperty: "custom-value",
     };
 
     const defaults = {
-      locales: ['en'],
-      defaultLocale: 'en',
-      fallbackLocale: 'en',
+      locales: ["en"],
+      defaultLocale: "en",
+      fallbackLocale: "en",
       cache: true,
     };
 
     const result = mockGenericConfig(userConfig, defaults);
 
-    expect(result.locales).toStrictEqual(['en', 'fr']);
-    expect(result.defaultLocale).toBe('en');
-    expect(result.fallbackLocale).toBe('en');
+    expect(result.locales).toStrictEqual(["en", "fr"]);
+    expect(result.defaultLocale).toBe("en");
+    expect(result.fallbackLocale).toBe("en");
     expect(result.cache).toBeTruthy();
-    expect(result.customProperty).toBe('custom-value');
+    expect(result.customProperty).toBe("custom-value");
   });
 });
 
@@ -578,9 +598,9 @@ describe('generic Type Tests', () => {
 // UTILITY TYPE TESTS
 // ================================================================================================
 
-describe('utility Type Tests', () => {
-  test('should handle utility type transformations', async () => {
-    const mockUtilityTypes = vi.fn(dictionary => {
+describe("utility Type Tests", () => {
+  test("should handle utility type transformations", async () => {
+    const mockUtilityTypes = vi.fn((dictionary) => {
       // Simulate utility type operations
       const keys = Object.keys(dictionary);
       const values = Object.values(dictionary);
@@ -602,54 +622,54 @@ describe('utility Type Tests', () => {
       };
     });
 
-    const dictionary = createTestData.dictionary('en');
+    const dictionary = createTestData.dictionary("en");
     const result = mockUtilityTypes(dictionary);
 
-    expect(result.keys).toContain('common');
-    expect(result.keys).toContain('navigation');
+    expect(result.keys).toContain("common");
+    expect(result.keys).toContain("navigation");
     expect(result.values).toContain(dictionary.common);
-    expect(result.entries).toContainEqual(['common', dictionary.common]);
-    expect(result.picked).toHaveProperty('common');
-    expect(result.picked).not.toHaveProperty('navigation');
-    expect(result.omitted).not.toHaveProperty('common');
-    expect(result.omitted).toHaveProperty('navigation');
+    expect(result.entries).toContainEqual(["common", dictionary.common]);
+    expect(result.picked).toHaveProperty("common");
+    expect(result.picked).not.toHaveProperty("navigation");
+    expect(result.omitted).not.toHaveProperty("common");
+    expect(result.omitted).toHaveProperty("navigation");
   });
 
-  test('should handle conditional type operations', async () => {
-    const mockConditionalTypes = vi.fn(value => {
+  test("should handle conditional type operations", async () => {
+    const mockConditionalTypes = vi.fn((value) => {
       // Simulate conditional type checking
-      if (typeof value === 'string') {
-        return { type: 'string', value, length: value.length };
-      } else if (typeof value === 'object' && value !== null) {
-        return { type: 'object', value, keys: Object.keys(value) };
+      if (typeof value === "string") {
+        return { type: "string", value, length: value.length };
+      } else if (typeof value === "object" && value !== null) {
+        return { type: "object", value, keys: Object.keys(value) };
       } else {
-        return { type: 'unknown', value };
+        return { type: "unknown", value };
       }
     });
 
     // Test string value
-    const stringResult = mockConditionalTypes('hello');
-    expect(stringResult.type).toBe('string');
+    const stringResult = mockConditionalTypes("hello");
+    expect(stringResult.type).toBe("string");
     expect(stringResult).toHaveLength(5);
 
     // Test object value
-    const objectResult = mockConditionalTypes({ hello: 'world' });
-    expect(objectResult.type).toBe('object');
-    expect(objectResult.keys).toStrictEqual(['hello']);
+    const objectResult = mockConditionalTypes({ hello: "world" });
+    expect(objectResult.type).toBe("object");
+    expect(objectResult.keys).toStrictEqual(["hello"]);
 
     // Test unknown value
     const unknownResult = mockConditionalTypes(123);
-    expect(unknownResult.type).toBe('unknown');
+    expect(unknownResult.type).toBe("unknown");
   });
 
-  test('should handle mapped type operations', async () => {
-    const mockMappedTypes = vi.fn(dictionary => {
+  test("should handle mapped type operations", async () => {
+    const mockMappedTypes = vi.fn((dictionary) => {
       // Simulate mapped type transformations
       const optional = {};
       const readonly = {};
       const nullable = {};
 
-      Object.keys(dictionary).forEach(key => {
+      Object.keys(dictionary).forEach((key) => {
         optional[key] = dictionary[key]; // Make all properties optional
         readonly[key] = dictionary[key]; // Make all properties readonly
         nullable[key] = dictionary[key] || null; // Make all properties nullable
@@ -662,12 +682,12 @@ describe('utility Type Tests', () => {
       };
     });
 
-    const dictionary = createTestData.dictionary('en');
+    const dictionary = createTestData.dictionary("en");
     const result = mockMappedTypes(dictionary);
 
-    expect(result.optional).toHaveProperty('common');
-    expect(result.readonly).toHaveProperty('navigation');
-    expect(result.nullable).toHaveProperty('common');
+    expect(result.optional).toHaveProperty("common");
+    expect(result.readonly).toHaveProperty("navigation");
+    expect(result.nullable).toHaveProperty("common");
   });
 });
 

@@ -3,11 +3,14 @@
  * Defines supported locales and routing behavior
  */
 
-import { defineRouting } from 'next-intl/routing';
-import languine from '../languine.json';
+import { defineRouting } from "next-intl/routing";
+import languine from "../languine.json";
 
 // Extract locales from languine configuration
-export const locales = [languine.locale.source, ...languine.locale.targets] as const;
+export const locales = [
+  languine.locale.source,
+  ...languine.locale.targets,
+] as const;
 
 export type Locale = (typeof locales)[number];
 
@@ -20,7 +23,7 @@ export const routing = defineRouting({
 
   // Use 'as-needed' to avoid prefix for default locale (en)
   // This means /about for English, /es/about for Spanish, etc.
-  localePrefix: 'as-needed',
+  localePrefix: "as-needed",
 
   // Locale detection based on accept-language header and cookies
   localeDetection: true,

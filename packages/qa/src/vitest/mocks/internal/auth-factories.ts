@@ -5,7 +5,7 @@
  * Previously scattered across individual packages, now centralized for consistency
  */
 
-import { vi } from 'vitest';
+import { vi } from "vitest";
 
 /**
  * Type definitions for auth-related objects
@@ -67,7 +67,7 @@ export const createMockAuthClient = (overrides = {}) => ({
  * Creates a mock auth context for client-side tests
  */
 export const createMockAuthContext = (overrides = {}) => ({
-  user: { id: '1', name: 'Test User', email: 'test@example.com' },
+  user: { id: "1", name: "Test User", email: "test@example.com" },
   isAuthenticated: true,
   isLoading: false,
   requireAuth: vi.fn(),
@@ -81,18 +81,18 @@ export const createMockAuthSession = (
   overrides: { session?: any; user?: any } = {},
 ): MockSession => ({
   session: {
-    id: 'session-123',
-    activeOrganizationId: 'org-123',
+    id: "session-123",
+    activeOrganizationId: "org-123",
     expiresAt: new Date(Date.now() + 86400000),
-    token: 'mock-token',
-    userId: 'user-123',
+    token: "mock-token",
+    userId: "user-123",
     ...overrides.session,
   },
   user: {
-    id: 'user-123',
-    name: 'Test User',
+    id: "user-123",
+    name: "Test User",
     createdAt: new Date(),
-    email: 'test@example.com',
+    email: "test@example.com",
     updatedAt: new Date(),
     banned: false,
     ...overrides.user,
@@ -102,14 +102,16 @@ export const createMockAuthSession = (
 /**
  * Creates a mock organization object
  */
-export const createMockAuthOrganization = (overrides = {}): MockOrganization => ({
-  id: 'org-123',
-  name: 'Test Organization',
-  createdAt: new Date('2023-01-01'),
+export const createMockAuthOrganization = (
+  overrides = {},
+): MockOrganization => ({
+  id: "org-123",
+  name: "Test Organization",
+  createdAt: new Date("2023-01-01"),
   description: null,
   logo: null,
   metadata: {},
-  slug: 'test-org',
+  slug: "test-org",
   updatedAt: null,
   ...overrides,
 });
@@ -118,9 +120,9 @@ export const createMockAuthOrganization = (overrides = {}): MockOrganization => 
  * Creates a mock user object
  */
 export const createMockAuthUser = (overrides = {}): MockUser => ({
-  id: 'user-123',
-  name: 'Test User',
-  email: 'test@example.com',
+  id: "user-123",
+  name: "Test User",
+  email: "test@example.com",
   createdAt: new Date(),
   updatedAt: new Date(),
   banned: false,
@@ -131,10 +133,10 @@ export const createMockAuthUser = (overrides = {}): MockUser => ({
  * Creates a mock organization member
  */
 export const createMockMember = (overrides = {}) => ({
-  id: 'member-123',
-  organizationId: 'org-123',
-  userId: 'user-123',
-  role: 'member',
+  id: "member-123",
+  organizationId: "org-123",
+  userId: "user-123",
+  role: "member",
   createdAt: new Date(),
   updatedAt: new Date(),
   user: createMockAuthUser(),
@@ -145,11 +147,11 @@ export const createMockMember = (overrides = {}) => ({
  * Creates a mock invitation object
  */
 export const createMockInvitation = (overrides = {}) => ({
-  id: 'inv-123',
-  email: 'test@example.com',
-  organizationId: 'org-123',
-  role: 'member',
-  status: 'pending',
+  id: "inv-123",
+  email: "test@example.com",
+  organizationId: "org-123",
+  role: "member",
+  status: "pending",
   createdAt: new Date(),
   expiresAt: new Date(Date.now() + 86400000),
   ...overrides,
@@ -159,13 +161,13 @@ export const createMockInvitation = (overrides = {}) => ({
  * Creates a mock API key object
  */
 export const createMockApiKey = (overrides = {}) => ({
-  id: 'key-123',
-  name: 'Test API Key',
-  keyHash: 'hashed-key',
-  keyPrefix: 'ak_test',
-  userId: 'user-123',
-  organizationId: 'org-123',
-  permissions: ['read', 'write'],
+  id: "key-123",
+  name: "Test API Key",
+  keyHash: "hashed-key",
+  keyPrefix: "ak_test",
+  userId: "user-123",
+  organizationId: "org-123",
+  permissions: ["read", "write"],
   createdAt: new Date(),
   expiresAt: new Date(Date.now() + 86400000),
   lastUsedAt: null,
@@ -176,10 +178,10 @@ export const createMockApiKey = (overrides = {}) => ({
  * Creates a mock team object
  */
 export const createMockTeam = (overrides = {}) => ({
-  id: 'team-123',
-  name: 'Test Team',
-  organizationId: 'org-123',
-  description: 'Test team description',
+  id: "team-123",
+  name: "Test Team",
+  organizationId: "org-123",
+  description: "Test team description",
   createdAt: new Date(),
   updatedAt: new Date(),
   ...overrides,
@@ -188,7 +190,9 @@ export const createMockTeam = (overrides = {}) => ({
 /**
  * Creates a mock headers object for testing
  */
-export const createMockAuthHeaders = (headers: Record<string, string> = {}): Headers => {
+export const createMockAuthHeaders = (
+  headers: Record<string, string> = {},
+): Headers => {
   const mockHeaders = new Headers();
   Object.entries(headers).forEach(([key, value]) => {
     mockHeaders.set(key, value);
@@ -275,9 +279,9 @@ export const createTestDataSets = () => ({
 
   // Admin user with elevated permissions
   adminUser: createMockAuthUser({
-    id: 'admin-123',
-    name: 'Admin User',
-    email: 'admin@example.com',
+    id: "admin-123",
+    name: "Admin User",
+    email: "admin@example.com",
   }),
 
   // Standard organization
@@ -285,10 +289,10 @@ export const createTestDataSets = () => ({
 
   // Enterprise organization
   enterpriseOrganization: createMockAuthOrganization({
-    id: 'enterprise-org',
-    name: 'Enterprise Organization',
-    slug: 'enterprise-org',
-    metadata: { plan: 'enterprise' },
+    id: "enterprise-org",
+    name: "Enterprise Organization",
+    slug: "enterprise-org",
+    metadata: { plan: "enterprise" },
   }),
 
   // Standard session
@@ -297,9 +301,9 @@ export const createTestDataSets = () => ({
   // Admin session
   adminSession: createMockAuthSession({
     user: {
-      id: 'admin-123',
-      name: 'Admin User',
-      email: 'admin@example.com',
+      id: "admin-123",
+      name: "Admin User",
+      email: "admin@example.com",
     },
   }),
 
@@ -308,9 +312,9 @@ export const createTestDataSets = () => ({
 
   // Read-only API key
   readOnlyApiKey: createMockApiKey({
-    id: 'readonly-key',
-    name: 'Read Only Key',
-    permissions: ['read'],
+    id: "readonly-key",
+    name: "Read Only Key",
+    permissions: ["read"],
   }),
 
   // Standard team
@@ -347,7 +351,7 @@ export const createBulkTestData = {
       createMockMember({
         id: `member-${i}`,
         userId: `user-${i}`,
-        role: i === 0 ? 'owner' : i === 1 ? 'admin' : 'member',
+        role: i === 0 ? "owner" : i === 1 ? "admin" : "member",
       }),
     ),
 
@@ -356,7 +360,7 @@ export const createBulkTestData = {
       createMockInvitation({
         id: `inv-${i}`,
         email: `invite${i}@example.com`,
-        status: i % 2 === 0 ? 'pending' : 'accepted',
+        status: i % 2 === 0 ? "pending" : "accepted",
       }),
     ),
 };
@@ -366,9 +370,9 @@ export const createBulkTestData = {
  */
 export const createMockEnvironment = () => {
   let mockEnv = {
-    BETTER_AUTH_SECRET: 'test-secret',
-    NEXT_PUBLIC_APP_URL: 'http://localhost:3000',
-    NEXT_PUBLIC_APP_NAME: 'Test App',
+    BETTER_AUTH_SECRET: "test-secret",
+    NEXT_PUBLIC_APP_URL: "http://localhost:3000",
+    NEXT_PUBLIC_APP_NAME: "Test App",
     AUTH_FEATURES_ADMIN: true,
     AUTH_FEATURES_API_KEYS: true,
     AUTH_FEATURES_ORGANIZATIONS: true,
@@ -385,11 +389,11 @@ export const createMockEnvironment = () => {
     setMockEnv: (newEnv: any) => {
       // Convert string 'true'/'false' to boolean for feature flags
       const processedEnv = { ...newEnv };
-      Object.keys(processedEnv).forEach(key => {
-        if (key.startsWith('AUTH_FEATURES_')) {
-          if (processedEnv[key] === 'true') {
+      Object.keys(processedEnv).forEach((key) => {
+        if (key.startsWith("AUTH_FEATURES_")) {
+          if (processedEnv[key] === "true") {
             processedEnv[key] = true;
-          } else if (processedEnv[key] === 'false') {
+          } else if (processedEnv[key] === "false") {
             processedEnv[key] = false;
           }
         }
@@ -406,44 +410,44 @@ export const authTestScenarios = {
   // Authentication scenarios
   signIn: {
     success: {
-      input: { email: 'test@example.com', password: 'password123' },
+      input: { email: "test@example.com", password: "password123" },
       expected: createMockAuthSession(),
     },
     invalidCredentials: {
-      input: { email: 'wrong@example.com', password: 'wrongpass' },
+      input: { email: "wrong@example.com", password: "wrongpass" },
       shouldThrow: true,
-      error: 'Invalid credentials',
+      error: "Invalid credentials",
     },
     bannedUser: {
-      input: { email: 'banned@example.com', password: 'password123' },
+      input: { email: "banned@example.com", password: "password123" },
       shouldThrow: true,
-      error: 'Account banned',
+      error: "Account banned",
     },
   },
 
   // Organization scenarios
   createOrganization: {
     success: {
-      input: { name: 'Test Org', slug: 'test-org' },
+      input: { name: "Test Org", slug: "test-org" },
       expected: createMockAuthOrganization(),
     },
     duplicateSlug: {
-      input: { name: 'Test Org', slug: 'existing-slug' },
+      input: { name: "Test Org", slug: "existing-slug" },
       shouldThrow: true,
-      error: 'Slug already exists',
+      error: "Slug already exists",
     },
   },
 
   // API key scenarios
   createApiKey: {
     success: {
-      input: { name: 'Test Key', permissions: ['read'] },
+      input: { name: "Test Key", permissions: ["read"] },
       expected: createMockApiKey(),
     },
     invalidPermissions: {
-      input: { name: 'Test Key', permissions: ['invalid'] },
+      input: { name: "Test Key", permissions: ["invalid"] },
       shouldThrow: true,
-      error: 'Invalid permissions',
+      error: "Invalid permissions",
     },
   },
 };

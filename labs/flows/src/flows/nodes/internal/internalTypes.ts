@@ -1,6 +1,6 @@
 import { UseFormReturnType, UseFormInput } from '@mantine/form';
 import { NodeProps } from '@xyflow/react';
-import { ZodType } from 'zod';
+import { ZodType } from 'zod/v4';
 import { FbNode, FbNodeProps, MetaType } from '../../types';
 
 /** Compute function type */

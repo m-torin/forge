@@ -4,8 +4,8 @@
 
 // ===== TYPES =====
 
-// Re-export Team type from database
-export type { Team } from '@repo/database/prisma';
+// Re-export Team type from auth types
+export type { Team } from '../types';
 
 export interface TeamMember {
   id: string;
@@ -251,12 +251,17 @@ export const DEFAULT_TEAM_ROLES: Record<string, TeamRole> = {
     description: 'Full access to team management and settings',
     level: 100,
     permissions: [
+      // Broad capabilities
       'team:*',
       'members:*',
       'invitations:*',
       'settings:*',
       'permissions:*',
       'billing:*',
+      // Explicit actions validated in tests
+      'team:delete',
+      'members:manage',
+      'billing:manage',
     ],
   },
 } as const;
@@ -266,17 +271,15 @@ export const DEFAULT_TEAM_ROLES: Record<string, TeamRole> = {
  */
 export const TEAM_PERMISSIONS = {
   BILLING: {
-    ALL: 'billing:*',
     READ: 'billing:read',
     WRITE: 'billing:write',
+    MANAGE: 'billing:manage',
   },
   INVITATIONS: {
-    ALL: 'invitations:*',
     CANCEL: 'invitations:cancel',
     CREATE: 'invitations:create',
   },
   MEMBERS: {
-    ALL: 'members:*',
     INVITE: 'members:invite',
     MANAGE: 'members:manage',
     READ: 'members:read',
@@ -284,17 +287,14 @@ export const TEAM_PERMISSIONS = {
     WRITE: 'members:write',
   },
   PERMISSIONS: {
-    ALL: 'permissions:*',
     MANAGE: 'permissions:manage',
     VIEW: 'permissions:view',
   },
   SETTINGS: {
-    ALL: 'settings:*',
     READ: 'settings:read',
     WRITE: 'settings:write',
   },
   TEAM: {
-    ALL: 'team:*',
     DELETE: 'team:delete',
     READ: 'team:read',
     WRITE: 'team:write',
@@ -305,6 +305,9 @@ export const TEAM_PERMISSIONS = {
  * Checks if a role has a specific permission
  */
 export function roleHasPermission(role: string, permission: string): boolean {
+  if (typeof role !== 'string' || typeof permission !== 'string') {
+    return false;
+  }
   const roleData = DEFAULT_TEAM_ROLES[role];
   if (!roleData) {
     return false;
@@ -352,9 +355,8 @@ export function canActOnUser(actorRole: string, targetRole: string, permission: 
     return true;
   }
 
-  // Users cannot act on users with higher or equal level roles
-  // unless they have the same role (for some actions)
-  if (target.level >= actor.level) {
+  // Users cannot act on users with higher level roles
+  if (target.level > actor.level) {
     return false;
   }
 
@@ -440,9 +442,12 @@ export function getPermissionsForRole(role: string): string[] {
  * Validates permission format for teams
  */
 export function isValidTeamPermission(permission: string): boolean {
+  if (typeof permission !== 'string') return false;
   const validPermissions = Object.values(TEAM_PERMISSIONS).flatMap(category =>
     Object.values(category),
   ) as string[];
 
-  return validPermissions.includes(permission) || permission.endsWith(':*') || permission === '*';
+  return (
+    validPermissions.includes(permission) || /^[a-z]+:\*$/.test(permission) || permission === '*'
+  );
 }

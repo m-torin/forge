@@ -1,6 +1,8 @@
+// Import globals first to make expect available for jest-dom
 import '@testing-library/jest-dom';
 import { afterEach, beforeEach, vi } from 'vitest';
 import { CONSOLE_PRESETS, setupConsoleSuppression } from '../utils/console';
+import './globals';
 
 // Import environment utilities
 import { setupTestEnvironment } from '../utils/environment';
@@ -29,7 +31,7 @@ export function setTestEnv(envVars: Record<string, string>): void {
 export { createEnvironmentSetup as createSetTestEnv } from '../utils/environment';
 
 // Re-export for backward compatibility
-export { createConsoleSuppression as createSuppressConsoleErrors } from '../utils/console';
+export { setupConsoleSuppression as createSuppressConsoleErrors } from '../utils/console';
 
 // Global afterEach hook
 afterEach(() => {

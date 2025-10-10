@@ -31,7 +31,7 @@ export interface ProfilingConfig {
     /**
      * Profile sampling method
      */
-    samplingMethod?: 'timer' | 'continuous';
+    samplingMethod?: "timer" | "continuous";
 
     /**
      * Maximum profile duration in milliseconds
@@ -65,10 +65,14 @@ export function generateProfilingHeaders(): string {
  * Generate profiling configuration for Next.js
  */
 export function generateProfilingConfig(config: ProfilingConfig): string {
-  const { enabled = false, profilesSampleRate = 0, enableDocumentPolicy = true } = config;
+  const {
+    enabled = false,
+    profilesSampleRate = 0,
+    enableDocumentPolicy = true,
+  } = config;
 
   if (!enabled) {
-    return '// Profiling is disabled';
+    return "// Profiling is disabled";
   }
 
   return `// Profiling configuration
@@ -78,7 +82,7 @@ export function generateProfilingConfig(config: ProfilingConfig): string {
     enableDocumentPolicy
       ? `// Document-Policy header should be added to next.config.js:
   // ${generateProfilingHeaders()}`
-      : ''
+      : ""
   }
 }`;
 }
@@ -95,15 +99,15 @@ export function validateProfilingConfig(config: ProfilingConfig): {
   const warnings: string[] = [];
 
   if (config.enabled && !config.profilesSampleRate) {
-    errors.push('Profiling is enabled but profilesSampleRate is 0');
+    errors.push("Profiling is enabled but profilesSampleRate is 0");
   }
 
   if (config.profilesSampleRate && config.profilesSampleRate > 0.1) {
-    warnings.push('High profiling sample rate may impact performance');
+    warnings.push("High profiling sample rate may impact performance");
   }
 
   if (config.enabled && !config.enableDocumentPolicy) {
-    warnings.push('Document-Policy header is recommended for profiling');
+    warnings.push("Document-Policy header is recommended for profiling");
   }
 
   return {
@@ -117,27 +121,27 @@ export function validateProfilingConfig(config: ProfilingConfig): {
  * Get recommended profiling configuration based on environment
  */
 export function getRecommendedProfilingConfig(
-  env: 'development' | 'preview' | 'production',
+  env: "development" | "preview" | "production",
 ): ProfilingConfig {
   switch (env) {
-    case 'development':
+    case "development":
       return {
         enabled: false, // Usually disabled in dev to avoid overhead
         profilesSampleRate: 0,
       };
-    case 'preview':
+    case "preview":
       return {
         enabled: true,
         profilesSampleRate: 0.05, // 5% sampling
         enableDocumentPolicy: true,
       };
-    case 'production':
+    case "production":
       return {
         enabled: true,
         profilesSampleRate: 0.01, // 1% sampling
         enableDocumentPolicy: true,
         options: {
-          samplingMethod: 'timer',
+          samplingMethod: "timer",
           maxProfileDuration: 30000, // 30 seconds
         },
       };

@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import { logInfo, logError, logWarn } from '@repo/observability';
 import { prisma } from '#/lib/prisma';
 import { isDemoMode, createDemoResponse, saveDemoData } from '#/lib/demoMode';

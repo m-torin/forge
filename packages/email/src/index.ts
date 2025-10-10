@@ -422,6 +422,8 @@ export const sendApiKeyCreatedEmail = async (data: {
   }
 };
 
+// Registry and review email functions removed - templates were deleted
+
 // Export templates for testing/development
 export {
   ApiKeyCreatedTemplate,

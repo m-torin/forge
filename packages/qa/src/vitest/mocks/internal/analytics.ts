@@ -253,7 +253,7 @@ vi.mock('@opentelemetry/api', () => ({
 }));
 
 // Export helper functions
-export const mockAnalyticsEvent = (eventName: string, properties: any = {}) => ({
+const mockAnalyticsEvent = (eventName: string, properties: any = {}) => ({
   event: eventName,
   properties: {
     timestamp: new Date().toISOString(),
@@ -264,7 +264,7 @@ export const mockAnalyticsEvent = (eventName: string, properties: any = {}) => (
   },
 });
 
-export const mockSentryError = (message: string, extra: any = {}) => ({
+const mockSentryError = (message: string, extra: any = {}) => ({
   message,
   name: 'Error',
   stack: `Error: ${message}
@@ -272,12 +272,12 @@ export const mockSentryError = (message: string, extra: any = {}) => ({
   extra,
 });
 
-export const mockFeatureFlag = (flagName: string, enabled = false, payload: any = null) => ({
+const mockFeatureFlag = (flagName: string, enabled = false, payload: any = null) => ({
   flag: flagName,
   enabled,
   payload,
 });
 
-export const resetAnalyticsMonitoringMocks = () => {
+const resetAnalyticsMonitoringMocks = () => {
   vi.clearAllMocks();
 };

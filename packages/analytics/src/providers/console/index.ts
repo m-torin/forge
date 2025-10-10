@@ -24,9 +24,14 @@ export class ConsoleProvider implements AnalyticsProvider {
   async initialize(): Promise<void> {
     if (this.isInitialized) return;
 
-    this.log('Console Analytics Provider initialized', {
-      config: this.config,
-    });
+    // Reduce noisy logs: only log in development or explicit debug
+    const isDev = process.env.NODE_ENV !== 'production';
+    const isDebug = process.env.NEXT_PUBLIC_OBSERVABILITY_DEBUG === 'true';
+    if (isDev || isDebug) {
+      this.log('Console Analytics Provider initialized', {
+        config: this.config,
+      });
+    }
 
     this.isInitialized = true;
   }

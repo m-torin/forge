@@ -6,16 +6,16 @@ import {
   createMockApiKey,
   createMockHeaders,
   createMockSession,
-} from '@repo/qa/vitest/mocks/internal/auth-factories';
-import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { setupAllMocks } from '../../test-helpers/mocks';
+} from "@repo/qa/vitest/mocks/internal/auth-factories";
+import { beforeEach, describe, expect, test, vi } from "vitest";
+import { setupAllMocks } from "../../test-helpers/mocks";
 import {
   createApiKeyValidationTestSuite,
   createComprehensiveValidationTestSuite,
   createHeaderExtractionTestSuite,
   createPermissionCheckTestSuite,
   createRateLimitTestSuite,
-} from '../../test-helpers/validation-builders';
+} from "../../test-helpers/validation-builders";
 
 // Import after mocking
 import {
@@ -24,15 +24,15 @@ import {
   requireAuth,
   validateApiKey,
   validateApiKeyWithRateLimit,
-} from '../../src/server/api-keys/validation';
-import type { PermissionCheck } from '../../src/shared/api-keys';
-import { auth } from '../../src/shared/auth';
+} from "../../src/server/api-keys/validation";
+import type { PermissionCheck } from "../../src/shared/api-keys";
+import { auth } from "../../src/shared/auth";
 
 // Set up all mocks
 setupAllMocks();
 
 // Mock the auth module directly for this test
-vi.mock('../../src/shared/auth', () => ({
+vi.mock("../../src/shared/auth", () => ({
   auth: {
     api: {
       verifyApiKey: vi.fn(),
@@ -41,7 +41,7 @@ vi.mock('../../src/shared/auth', () => ({
   },
 }));
 
-describe('aPI Key Validation (DRY)', () => {
+describe("aPI Key Validation (DRY)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -70,52 +70,54 @@ describe('aPI Key Validation (DRY)', () => {
     testPermissions: true,
     customTests: [
       {
-        name: 'should validate API key from x-api-key header',
+        name: "should validate API key from x-api-key header",
         test: async () => {
-          const headers = createMockHeaders({ 'x-api-key': 'test-api-key' });
+          const headers = createMockHeaders({ "x-api-key": "test-api-key" });
 
           vi.mocked(auth.api.verifyApiKey).mockResolvedValue({
             valid: true,
             error: null,
             key: createMockApiKey({
-              id: 'key-1',
-              name: 'Test Key',
-              permissions: ['read'],
+              id: "key-1",
+              name: "Test Key",
+              permissions: ["read"],
             }),
           });
 
           const result = await validateApiKey(headers);
 
           expect(result.isValid).toBeTruthy();
-          expect(result.keyData?.id).toBe('key-1');
+          expect(result.keyData?.id).toBe("key-1");
         },
       },
       {
-        name: 'should validate API key from Authorization Bearer header',
+        name: "should validate API key from Authorization Bearer header",
         test: async () => {
-          const headers = createMockHeaders({ authorization: 'Bearer test-bearer-token' });
+          const headers = createMockHeaders({
+            authorization: "Bearer test-bearer-token",
+          });
 
           vi.mocked(auth.api.verifyApiKey).mockResolvedValue({
             valid: true,
             error: null,
-            key: createMockApiKey({ id: 'key-2', name: 'Bearer Key' }),
+            key: createMockApiKey({ id: "key-2", name: "Bearer Key" }),
           });
 
           const result = await validateApiKey(headers);
 
           expect(result.isValid).toBeTruthy();
-          expect(result.keyData?.id).toBe('key-2');
+          expect(result.keyData?.id).toBe("key-2");
         },
       },
     ],
   });
 
   // Authentication requirement tests
-  describe('requireAuth', () => {
-    test('should return session when API key is valid', async () => {
-      const headers = createMockHeaders({ 'x-api-key': 'valid-key' });
-      const request = new (await import('next/server')).NextRequest(
-        'http://localhost:3000/api/test',
+  describe("requireAuth", () => {
+    test("should return session when API key is valid", async () => {
+      const headers = createMockHeaders({ "x-api-key": "valid-key" });
+      const request = new (await import("next/server")).NextRequest(
+        "http://localhost:3000/api/test",
         { headers },
       );
 
@@ -133,16 +135,16 @@ describe('aPI Key Validation (DRY)', () => {
       expect(result).toStrictEqual(mockSession);
     });
 
-    test('should return null when API key is invalid and no session', async () => {
-      const headers = createMockHeaders({ 'x-api-key': 'invalid-key' });
-      const request = new (await import('next/server')).NextRequest(
-        'http://localhost:3000/api/test',
+    test("should return null when API key is invalid and no session", async () => {
+      const headers = createMockHeaders({ "x-api-key": "invalid-key" });
+      const request = new (await import("next/server")).NextRequest(
+        "http://localhost:3000/api/test",
         { headers },
       );
 
       vi.mocked(auth.api.verifyApiKey).mockResolvedValue({
         valid: false,
-        error: { message: 'Invalid key' },
+        error: { message: "Invalid key" },
       });
 
       vi.mocked(auth.api.getSession).mockResolvedValue(null);
@@ -152,9 +154,9 @@ describe('aPI Key Validation (DRY)', () => {
       expect(result).toBeNull();
     });
 
-    test('should fall back to session auth when no API key', async () => {
-      const request = new (await import('next/server')).NextRequest(
-        'http://localhost:3000/api/test',
+    test("should fall back to session auth when no API key", async () => {
+      const request = new (await import("next/server")).NextRequest(
+        "http://localhost:3000/api/test",
       );
 
       const mockSession = createMockSession();
@@ -165,12 +167,14 @@ describe('aPI Key Validation (DRY)', () => {
       expect(result).toStrictEqual(mockSession);
     });
 
-    test('should handle session errors gracefully', async () => {
-      const request = new (await import('next/server')).NextRequest(
-        'http://localhost:3000/api/test',
+    test("should handle session errors gracefully", async () => {
+      const request = new (await import("next/server")).NextRequest(
+        "http://localhost:3000/api/test",
       );
 
-      vi.mocked(auth.api.getSession).mockRejectedValue(new Error('Session error'));
+      vi.mocked(auth.api.getSession).mockRejectedValue(
+        new Error("Session error"),
+      );
 
       const result = await requireAuth(request);
 
@@ -179,21 +183,21 @@ describe('aPI Key Validation (DRY)', () => {
   });
 
   // Use DRY permission test suite for hasPermissionForRequest
-  createPermissionCheckTestSuite(hasPermissionForRequest, { users: ['read'] });
+  createPermissionCheckTestSuite(hasPermissionForRequest, { users: ["read"] });
 
   // Additional permission tests
-  describe('hasPermissionForRequest', () => {
-    test('should return true for valid API key with permissions', async () => {
-      const headers = createMockHeaders({ 'x-api-key': 'valid-key' });
-      const request = new (await import('next/server')).NextRequest(
-        'http://localhost:3000/api/test',
+  describe("hasPermissionForRequest", () => {
+    test("should return true for valid API key with permissions", async () => {
+      const headers = createMockHeaders({ "x-api-key": "valid-key" });
+      const request = new (await import("next/server")).NextRequest(
+        "http://localhost:3000/api/test",
         { headers },
       );
-      const permissions: PermissionCheck = { users: ['read'] };
+      const permissions: PermissionCheck = { users: ["read"] };
 
       vi.mocked(auth.api.verifyApiKey).mockResolvedValue({
         valid: true,
-        key: createMockApiKey({ permissions: ['users:read'] }),
+        key: createMockApiKey({ permissions: ["users:read"] }),
       });
 
       const result = await hasPermissionForRequest(request, permissions);
@@ -201,16 +205,16 @@ describe('aPI Key Validation (DRY)', () => {
       expect(result).toBeTruthy();
     });
 
-    test('should return false for invalid API key', async () => {
-      const request = new (await import('next/server')).NextRequest(
-        'http://localhost:3000/api/test',
+    test("should return false for invalid API key", async () => {
+      const request = new (await import("next/server")).NextRequest(
+        "http://localhost:3000/api/test",
       );
-      request.headers.set('x-api-key', 'invalid-key');
-      const permissions: PermissionCheck = { users: ['read'] };
+      request.headers.set("x-api-key", "invalid-key");
+      const permissions: PermissionCheck = { users: ["read"] };
 
       vi.mocked(auth.api.verifyApiKey).mockResolvedValue({
         valid: false,
-        error: { message: 'Invalid key' },
+        error: { message: "Invalid key" },
       });
 
       vi.mocked(auth.api.getSession).mockResolvedValue(null);
@@ -225,9 +229,9 @@ describe('aPI Key Validation (DRY)', () => {
   createRateLimitTestSuite(validateApiKeyWithRateLimit);
 
   // Additional rate limit tests
-  describe('validateApiKeyWithRateLimit', () => {
-    test('should include rate limit data for valid API key', async () => {
-      const headers = createMockHeaders({ 'x-api-key': 'valid-key' });
+  describe("validateApiKeyWithRateLimit", () => {
+    test("should include rate limit data for valid API key", async () => {
+      const headers = createMockHeaders({ "x-api-key": "valid-key" });
 
       vi.mocked(auth.api.verifyApiKey).mockResolvedValue({
         valid: true,
@@ -247,12 +251,12 @@ describe('aPI Key Validation (DRY)', () => {
       });
     });
 
-    test('should not include rate limit for invalid API key', async () => {
-      const headers = createMockHeaders({ 'x-api-key': 'invalid-key' });
+    test("should not include rate limit for invalid API key", async () => {
+      const headers = createMockHeaders({ "x-api-key": "invalid-key" });
 
       vi.mocked(auth.api.verifyApiKey).mockResolvedValue({
         valid: false,
-        error: { message: 'Invalid key' },
+        error: { message: "Invalid key" },
       });
 
       const result = await validateApiKeyWithRateLimit(headers);
@@ -266,29 +270,31 @@ describe('aPI Key Validation (DRY)', () => {
   createHeaderExtractionTestSuite(extractApiKeyFromHeaders);
 
   // Additional header extraction tests
-  describe('extractApiKeyFromHeaders', () => {
-    test('should prioritize x-api-key over other headers', () => {
+  describe("extractApiKeyFromHeaders", () => {
+    test("should prioritize x-api-key over other headers", () => {
       const headers = createMockHeaders({
-        'x-api-key': 'priority-key',
-        authorization: 'Bearer other-token',
-        'api-key': 'another-key',
+        "x-api-key": "priority-key",
+        authorization: "Bearer other-token",
+        "api-key": "another-key",
       });
 
       const result = extractApiKeyFromHeaders(headers);
 
-      expect(result).toBe('priority-key');
+      expect(result).toBe("priority-key");
     });
 
-    test('should return null when no API key is found', () => {
-      const headers = createMockHeaders({ 'content-type': 'application/json' });
+    test("should return null when no API key is found", () => {
+      const headers = createMockHeaders({ "content-type": "application/json" });
 
       const result = extractApiKeyFromHeaders(headers);
 
       expect(result).toBeNull();
     });
 
-    test('should ignore non-Bearer authorization headers', () => {
-      const headers = createMockHeaders({ authorization: 'Basic dXNlcjpwYXNz' });
+    test("should ignore non-Bearer authorization headers", () => {
+      const headers = createMockHeaders({
+        authorization: "Basic dXNlcjpwYXNz",
+      });
 
       const result = extractApiKeyFromHeaders(headers);
 

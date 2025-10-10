@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   ActionIcon,
@@ -24,8 +24,8 @@ import {
   ThemeIcon,
   Title,
   Tooltip,
-} from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
+} from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
 import {
   IconAlertCircle,
   IconClock,
@@ -40,9 +40,13 @@ import {
   IconSearch,
   IconShieldX,
   IconTrash,
-} from '@tabler/icons-react';
-import { useCallback, useEffect, useState } from 'react';
-import { BulkActionResult, EnhancedSession, SessionFilters } from './types/session';
+} from "@tabler/icons-react";
+import { useCallback, useEffect, useState } from "react";
+import {
+  BulkActionResult,
+  EnhancedSession,
+  SessionFilters,
+} from "./types/session";
 
 export interface EnhancedSessionsListProps {
   sessions?: EnhancedSession[];
@@ -77,28 +81,31 @@ export interface EnhancedSessionsListProps {
     session: EnhancedSession,
     defaultCard: React.ReactNode,
   ) => React.ReactNode;
-  renderCustomDetailsModal?: (session: EnhancedSession, onClose: () => void) => React.ReactNode;
+  renderCustomDetailsModal?: (
+    session: EnhancedSession,
+    onClose: () => void,
+  ) => React.ReactNode;
 }
 
 export function EnhancedSessionsList({
   sessions: propSessions,
   loading: propLoading = false,
   error = null,
-  title = 'Sessions',
+  title = "Sessions",
   subtitle,
   showBulkActions = true,
   pageSize = 10,
-  emptyStateTitle = 'No sessions found',
-  emptyStateDescription = 'Try adjusting your filters or refresh the list',
-  filtersTitle = 'Filter Sessions',
-  sessionDetailsTitle = 'Session Details',
-  selectAllLabel = 'Select all on page',
-  clearSelectionLabel = 'Clear selection',
-  revokeSelectedLabel = 'Revoke selected',
-  revokeAllOthersLabel = 'Revoke all other sessions',
-  actionsLabel = 'Actions',
-  refreshLabel = 'Refresh',
-  filtersLabel = 'Filters',
+  emptyStateTitle = "No sessions found",
+  emptyStateDescription = "Try adjusting your filters or refresh the list",
+  filtersTitle = "Filter Sessions",
+  sessionDetailsTitle = "Session Details",
+  selectAllLabel = "Select all on page",
+  clearSelectionLabel = "Clear selection",
+  revokeSelectedLabel = "Revoke selected",
+  revokeAllOthersLabel = "Revoke all other sessions",
+  actionsLabel = "Actions",
+  refreshLabel = "Refresh",
+  filtersLabel = "Filters",
   onSessionRevoke,
   onBulkRevoke,
   onRevokeAllOthers,
@@ -111,16 +118,25 @@ export function EnhancedSessionsList({
   renderCustomDetailsModal,
 }: EnhancedSessionsListProps) {
   const [loading, setLoading] = useState(propLoading);
-  const [sessions, setSessions] = useState<EnhancedSession[]>(propSessions || []);
-  const [filteredSessions, setFilteredSessions] = useState<EnhancedSession[]>([]);
-  const [selectedSessions, setSelectedSessions] = useState<Set<string>>(new Set());
+  const [sessions, setSessions] = useState<EnhancedSession[]>(
+    propSessions || [],
+  );
+  const [filteredSessions, setFilteredSessions] = useState<EnhancedSession[]>(
+    [],
+  );
+  const [selectedSessions, setSelectedSessions] = useState<Set<string>>(
+    new Set(),
+  );
   const [filters, setFilters] = useState<SessionFilters>({});
   const [currentPage, setCurrentPage] = useState(1);
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
 
-  const [filtersOpened, { open: openFilters, close: closeFilters }] = useDisclosure(false);
-  const [detailsOpened, { open: openDetails, close: closeDetails }] = useDisclosure(false);
-  const [selectedSession, setSelectedSession] = useState<EnhancedSession | null>(null);
+  const [filtersOpened, { open: openFilters, close: closeFilters }] =
+    useDisclosure(false);
+  const [detailsOpened, { open: openDetails, close: closeDetails }] =
+    useDisclosure(false);
+  const [selectedSession, setSelectedSession] =
+    useState<EnhancedSession | null>(null);
 
   const loadSessions = useCallback(async () => {
     setLoading(true);
@@ -152,7 +168,7 @@ export function EnhancedSessionsList({
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return 'Just now';
+    if (diffMins < 1) return "Just now";
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
@@ -162,16 +178,16 @@ export function EnhancedSessionsList({
 
   const defaultGetRiskColor = (level: string) => {
     switch (level) {
-      case 'low':
-        return 'green';
-      case 'medium':
-        return 'yellow';
-      case 'high':
-        return 'orange';
-      case 'critical':
-        return 'red';
+      case "low":
+        return "green";
+      case "medium":
+        return "yellow";
+      case "high":
+        return "orange";
+      case "critical":
+        return "red";
       default:
-        return 'gray';
+        return "gray";
     }
   };
 
@@ -179,21 +195,25 @@ export function EnhancedSessionsList({
     let filtered = [...sessions];
 
     if (filters.device?.length) {
-      filtered = filtered.filter(s => filters.device?.includes(s.device.type));
+      filtered = filtered.filter((s) =>
+        filters.device?.includes(s.device.type),
+      );
     }
 
     if (filters.riskLevel?.length) {
-      filtered = filtered.filter(s => filters.riskLevel?.includes(s.security.riskLevel));
+      filtered = filtered.filter((s) =>
+        filters.riskLevel?.includes(s.security.riskLevel),
+      );
     }
 
     if (filters.isActive !== undefined) {
-      filtered = filtered.filter(s => s.isActive === filters.isActive);
+      filtered = filtered.filter((s) => s.isActive === filters.isActive);
     }
 
     if (filters.searchQuery) {
       const query = filters.searchQuery.toLowerCase();
       filtered = filtered.filter(
-        s =>
+        (s) =>
           s.device.browser?.toLowerCase().includes(query) ||
           s.device.os?.toLowerCase().includes(query) ||
           s.location.city?.toLowerCase().includes(query) ||
@@ -222,15 +242,17 @@ export function EnhancedSessionsList({
 
   const handleSelectAll = () => {
     const currentPageSessions = getPaginatedSessions();
-    const allSelected = currentPageSessions.every(s => selectedSessions.has(s.id));
+    const allSelected = currentPageSessions.every((s) =>
+      selectedSessions.has(s.id),
+    );
 
     if (allSelected) {
       const newSelected = new Set(selectedSessions);
-      currentPageSessions.forEach(s => newSelected.delete(s.id));
+      currentPageSessions.forEach((s) => newSelected.delete(s.id));
       setSelectedSessions(newSelected);
     } else {
       const newSelected = new Set(selectedSessions);
-      currentPageSessions.forEach(s => newSelected.add(s.id));
+      currentPageSessions.forEach((s) => newSelected.add(s.id));
       setSelectedSessions(newSelected);
     }
   };
@@ -238,11 +260,11 @@ export function EnhancedSessionsList({
   const handleBulkRevoke = async () => {
     const sessionIds = Array.from(selectedSessions);
     const currentSessionIncluded = sessionIds.some(
-      id => sessions.find(s => s.id === id)?.isCurrent,
+      (id) => sessions.find((s) => s.id === id)?.isCurrent,
     );
 
     if (currentSessionIncluded && onError) {
-      onError(new Error('Cannot revoke current session'));
+      onError(new Error("Cannot revoke current session"));
       return;
     }
 
@@ -250,7 +272,7 @@ export function EnhancedSessionsList({
       setProcessingIds(new Set(sessionIds));
       const _result = await onBulkRevoke(sessionIds);
 
-      setSessions(sessions.filter(s => !sessionIds.includes(s.id)));
+      setSessions(sessions.filter((s) => !sessionIds.includes(s.id)));
       setSelectedSessions(new Set());
 
       if (onSessionRevoked) {
@@ -285,14 +307,14 @@ export function EnhancedSessionsList({
 
   const handleRevokeSession = async (session: EnhancedSession) => {
     if (session.isCurrent && onError) {
-      onError(new Error('Cannot revoke current session'));
+      onError(new Error("Cannot revoke current session"));
       return;
     }
 
     try {
-      setProcessingIds(prev => new Set(prev).add(session.id));
+      setProcessingIds((prev) => new Set(prev).add(session.id));
       await onSessionRevoke(session);
-      setSessions(sessions.filter(s => s.id !== session.id));
+      setSessions(sessions.filter((s) => s.id !== session.id));
 
       if (onSessionRevoked) {
         onSessionRevoked();
@@ -302,7 +324,7 @@ export function EnhancedSessionsList({
         onError(error instanceof Error ? error : new Error(String(error)));
       }
     } finally {
-      setProcessingIds(prev => {
+      setProcessingIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(session.id);
         return newSet;
@@ -317,9 +339,9 @@ export function EnhancedSessionsList({
 
   const getDeviceIcon = (type: string) => {
     switch (type) {
-      case 'mobile':
+      case "mobile":
         return <IconDeviceMobile size={20} />;
-      case 'tablet':
+      case "tablet":
         return <IconDeviceTablet size={20} />;
       default:
         return <IconDeviceLaptop size={20} />;
@@ -349,17 +371,26 @@ export function EnhancedSessionsList({
             </Text>
           )}
           <Text size="sm" c="dimmed">
-            {filteredSessions.length} session{filteredSessions.length !== 1 ? 's' : ''} found
+            {filteredSessions.length} session
+            {filteredSessions.length !== 1 ? "s" : ""} found
           </Text>
         </div>
 
         <Group>
-          <Button variant="subtle" leftSection={<IconFilter size={16} />} onClick={openFilters}>
+          <Button
+            variant="subtle"
+            leftSection={<IconFilter size={16} />}
+            onClick={openFilters}
+          >
             {filtersLabel}
           </Button>
 
           <Tooltip label={refreshLabel}>
-            <ActionIcon variant="subtle" onClick={loadSessions} loading={loading}>
+            <ActionIcon
+              variant="subtle"
+              onClick={loadSessions}
+              loading={loading}
+            >
               <IconRefresh size={16} />
             </ActionIcon>
           </Tooltip>
@@ -367,7 +398,10 @@ export function EnhancedSessionsList({
           {showBulkActions && (
             <Menu>
               <Menu.Target>
-                <Button variant="subtle" leftSection={<IconDotsVertical size={16} />}>
+                <Button
+                  variant="subtle"
+                  leftSection={<IconDotsVertical size={16} />}
+                >
                   {actionsLabel}
                 </Button>
               </Menu.Target>
@@ -389,10 +423,15 @@ export function EnhancedSessionsList({
         <Card withBorder p="sm">
           <Group justify="space-between">
             <Text size="sm">
-              {selectedSessions.size} session{selectedSessions.size !== 1 ? 's' : ''} selected
+              {selectedSessions.size} session
+              {selectedSessions.size !== 1 ? "s" : ""} selected
             </Text>
             <Group>
-              <Button size="xs" variant="subtle" onClick={() => setSelectedSessions(new Set())}>
+              <Button
+                size="xs"
+                variant="subtle"
+                onClick={() => setSelectedSessions(new Set())}
+              >
                 {clearSelectionLabel}
               </Button>
               <Button
@@ -423,7 +462,7 @@ export function EnhancedSessionsList({
               <ThemeIcon size={60} color="gray" variant="light">
                 <IconDeviceLaptop size={30} />
               </ThemeIcon>
-              <div style={{ textAlign: 'center' }}>
+              <div style={{ textAlign: "center" }}>
                 <Text fw={500}>{emptyStateTitle}</Text>
                 <Text c="dimmed" size="sm">
                   {emptyStateDescription}
@@ -434,15 +473,24 @@ export function EnhancedSessionsList({
         ) : (
           <Stack gap="xs">
             {showBulkActions && (
-              <Group p="sm" style={{ borderBottom: '1px solid var(--mantine-color-gray-3)' }}>
+              <Group
+                p="sm"
+                style={{
+                  borderBottom: "1px solid var(--mantine-color-gray-3)",
+                }}
+              >
                 <Checkbox
                   checked={
                     currentPageSessions.length > 0 &&
-                    currentPageSessions.every(s => selectedSessions.has(s.id))
+                    currentPageSessions.every((s) => selectedSessions.has(s.id))
                   }
                   indeterminate={
-                    currentPageSessions.some(s => selectedSessions.has(s.id)) &&
-                    !currentPageSessions.every(s => selectedSessions.has(s.id))
+                    currentPageSessions.some((s) =>
+                      selectedSessions.has(s.id),
+                    ) &&
+                    !currentPageSessions.every((s) =>
+                      selectedSessions.has(s.id),
+                    )
                   }
                   onChange={handleSelectAll}
                 />
@@ -452,7 +500,7 @@ export function EnhancedSessionsList({
               </Group>
             )}
 
-            {currentPageSessions.map(session => {
+            {currentPageSessions.map((session) => {
               const defaultCard = (
                 <Card key={session.id} withBorder p="md" pos="relative">
                   <LoadingOverlay visible={processingIds.has(session.id)} />
@@ -494,7 +542,8 @@ export function EnhancedSessionsList({
                           <Group gap={4}>
                             <IconMapPin size={14} style={{ opacity: 0.5 }} />
                             <Text size="xs" c="dimmed">
-                              {session.location.city}, {session.location.country}
+                              {session.location.city},{" "}
+                              {session.location.country}
                             </Text>
                           </Group>
                           <Text size="xs" c="dimmed">
@@ -518,7 +567,7 @@ export function EnhancedSessionsList({
                           <Group gap={4} mt={4}>
                             <IconShieldX size={14} color="red" />
                             <Text size="xs" c="red">
-                              {session.security.riskFactors.join(', ')}
+                              {session.security.riskFactors.join(", ")}
                             </Text>
                           </Group>
                         )}
@@ -527,7 +576,10 @@ export function EnhancedSessionsList({
 
                     <Group>
                       <Tooltip label="View details">
-                        <ActionIcon variant="subtle" onClick={() => viewSessionDetails(session)}>
+                        <ActionIcon
+                          variant="subtle"
+                          onClick={() => viewSessionDetails(session)}
+                        >
                           <IconEye size={16} />
                         </ActionIcon>
                       </Tooltip>
@@ -581,49 +633,57 @@ export function EnhancedSessionsList({
             label="Search"
             placeholder="Search by browser, OS, location, or IP..."
             leftSection={<IconSearch size={16} />}
-            value={filters.searchQuery || ''}
-            onChange={e => setFilters({ ...filters, searchQuery: e.target.value })}
+            value={filters.searchQuery || ""}
+            onChange={(e) =>
+              setFilters({ ...filters, searchQuery: e.target.value })
+            }
           />
 
           <MultiSelect
             label="Device Type"
             placeholder="Select device types"
             data={[
-              { value: 'desktop', label: 'Desktop' },
-              { value: 'mobile', label: 'Mobile' },
-              { value: 'tablet', label: 'Tablet' },
-              { value: 'unknown', label: 'Unknown' },
+              { value: "desktop", label: "Desktop" },
+              { value: "mobile", label: "Mobile" },
+              { value: "tablet", label: "Tablet" },
+              { value: "unknown", label: "Unknown" },
             ]}
             value={filters.device || []}
-            onChange={value => setFilters({ ...filters, device: value as any })}
+            onChange={(value) =>
+              setFilters({ ...filters, device: value as any })
+            }
           />
 
           <MultiSelect
             label="Risk Level"
             placeholder="Select risk levels"
             data={[
-              { value: 'low', label: 'Low Risk' },
-              { value: 'medium', label: 'Medium Risk' },
-              { value: 'high', label: 'High Risk' },
-              { value: 'critical', label: 'Critical Risk' },
+              { value: "low", label: "Low Risk" },
+              { value: "medium", label: "Medium Risk" },
+              { value: "high", label: "High Risk" },
+              { value: "critical", label: "Critical Risk" },
             ]}
             value={filters.riskLevel || []}
-            onChange={value => setFilters({ ...filters, riskLevel: value as any })}
+            onChange={(value) =>
+              setFilters({ ...filters, riskLevel: value as any })
+            }
           />
 
           <Select
             label="Status"
             placeholder="All sessions"
             data={[
-              { value: '', label: 'All sessions' },
-              { value: 'true', label: 'Active only' },
-              { value: 'false', label: 'Inactive only' },
+              { value: "", label: "All sessions" },
+              { value: "true", label: "Active only" },
+              { value: "false", label: "Inactive only" },
             ]}
-            value={filters.isActive === undefined ? '' : String(filters.isActive)}
-            onChange={value =>
+            value={
+              filters.isActive === undefined ? "" : String(filters.isActive)
+            }
+            onChange={(value) =>
               setFilters({
                 ...filters,
-                isActive: value === '' ? undefined : value === 'true',
+                isActive: value === "" ? undefined : value === "true",
               })
             }
           />
@@ -643,7 +703,12 @@ export function EnhancedSessionsList({
         </Stack>
       </Drawer>
 
-      <Modal opened={detailsOpened} onClose={closeDetails} title={sessionDetailsTitle} size="lg">
+      <Modal
+        opened={detailsOpened}
+        onClose={closeDetails}
+        title={sessionDetailsTitle}
+        size="lg"
+      >
         {selectedSession &&
           (renderCustomDetailsModal ? (
             renderCustomDetailsModal(selectedSession, closeDetails)
@@ -655,7 +720,8 @@ export function EnhancedSessionsList({
                 </ThemeIcon>
                 <div>
                   <Text fw={500} size="lg">
-                    {selectedSession.device.browser} on {selectedSession.device.os}
+                    {selectedSession.device.browser} on{" "}
+                    {selectedSession.device.os}
                   </Text>
                   <Text size="sm" c="dimmed">
                     Session ID: {selectedSession.id}
@@ -675,11 +741,11 @@ export function EnhancedSessionsList({
                       <strong>Type:</strong> {selectedSession.device.type}
                     </Text>
                     <Text size="xs">
-                      <strong>Browser:</strong> {selectedSession.device.browser}{' '}
+                      <strong>Browser:</strong> {selectedSession.device.browser}{" "}
                       {selectedSession.device.browserVersion}
                     </Text>
                     <Text size="xs">
-                      <strong>OS:</strong> {selectedSession.device.os}{' '}
+                      <strong>OS:</strong> {selectedSession.device.os}{" "}
                       {selectedSession.device.osVersion}
                     </Text>
                   </Stack>
@@ -697,10 +763,12 @@ export function EnhancedSessionsList({
                       <strong>City:</strong> {selectedSession.location.city}
                     </Text>
                     <Text size="xs">
-                      <strong>Country:</strong> {selectedSession.location.country}
+                      <strong>Country:</strong>{" "}
+                      {selectedSession.location.country}
                     </Text>
                     <Text size="xs">
-                      <strong>Timezone:</strong> {selectedSession.location.timezone}
+                      <strong>Timezone:</strong>{" "}
+                      {selectedSession.location.timezone}
                     </Text>
                   </Stack>
                 </div>
@@ -714,16 +782,22 @@ export function EnhancedSessionsList({
                       <Text size="xs">
                         <strong>Risk Level:</strong>
                       </Text>
-                      <Badge color={getRiskColorFn(selectedSession.security.riskLevel)} size="xs">
+                      <Badge
+                        color={getRiskColorFn(
+                          selectedSession.security.riskLevel,
+                        )}
+                        size="xs"
+                      >
                         {selectedSession.security.riskLevel}
                       </Badge>
                     </Group>
                     <Text size="xs">
-                      <strong>Risk Score:</strong> {selectedSession.security.riskScore}/100
+                      <strong>Risk Score:</strong>{" "}
+                      {selectedSession.security.riskScore}/100
                     </Text>
                     <Text size="xs">
-                      <strong>Trusted Device:</strong>{' '}
-                      {selectedSession.security.isTrustedDevice ? 'Yes' : 'No'}
+                      <strong>Trusted Device:</strong>{" "}
+                      {selectedSession.security.isTrustedDevice ? "Yes" : "No"}
                     </Text>
                   </Stack>
                 </div>
@@ -734,15 +808,15 @@ export function EnhancedSessionsList({
                   </Text>
                   <Stack gap="xs">
                     <Text size="xs">
-                      <strong>Created:</strong>{' '}
+                      <strong>Created:</strong>{" "}
                       {new Date(selectedSession.createdAt).toLocaleString()}
                     </Text>
                     <Text size="xs">
-                      <strong>Last Active:</strong>{' '}
+                      <strong>Last Active:</strong>{" "}
                       {new Date(selectedSession.lastActiveAt).toLocaleString()}
                     </Text>
                     <Text size="xs">
-                      <strong>Duration:</strong>{' '}
+                      <strong>Duration:</strong>{" "}
                       {Math.round(selectedSession.metrics.duration / 3600)}h
                     </Text>
                   </Stack>
@@ -758,7 +832,9 @@ export function EnhancedSessionsList({
                     variant="light"
                     title="Security Concerns"
                   >
-                    <Text size="sm">{selectedSession.security.riskFactors.join(', ')}</Text>
+                    <Text size="sm">
+                      {selectedSession.security.riskFactors.join(", ")}
+                    </Text>
                   </Alert>
                 </div>
               )}

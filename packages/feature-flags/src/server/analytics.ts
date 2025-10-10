@@ -69,7 +69,7 @@ export async function trackFlagEvaluation(
       context: Object.keys(context),
     });
   } catch (error) {
-    logError(error instanceof Error ? error : new Error('Analytics tracking failed'), {
+    logError(error instanceof Error ? error.message : 'Analytics tracking failed', {
       flagKey,
       flagValue,
       context: 'analytics-tracking',
@@ -136,7 +136,7 @@ export async function trackExperimentAssignment(
       context: Object.keys(context),
     });
   } catch (error) {
-    logError(error instanceof Error ? error : new Error('Experiment tracking failed'), {
+    logError(error instanceof Error ? error.message : 'Experiment tracking failed', {
       experimentKey,
       variant,
       context: 'experiment-tracking',
@@ -202,7 +202,7 @@ export async function trackFlagConversion(
       context: Object.keys(context),
     });
   } catch (error) {
-    logError(error instanceof Error ? error : new Error('Conversion tracking failed'), {
+    logError(error instanceof Error ? error.message : 'Conversion tracking failed', {
       flagKey,
       conversionEvent,
       value,
@@ -276,7 +276,7 @@ export async function trackFlagEvaluationsBatch(
       flags: evaluations.map(e => e.flagKey),
     });
   } catch (error) {
-    logError(error instanceof Error ? error : new Error('Batch tracking failed'), {
+    logError(error instanceof Error ? error.message : 'Batch tracking failed', {
       batchSize: evaluations.length,
       context: 'batch-tracking',
     });

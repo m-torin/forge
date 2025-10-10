@@ -1,10 +1,10 @@
-import { ProviderRegistry } from '#/shared/types/scraping-types';
-import '@testing-library/jest-dom';
-import { beforeEach, vi } from 'vitest';
-import { createMockProvider } from './scraping-test-factory';
+import { ProviderRegistry } from "#/shared/types/scraping-types";
+import "@testing-library/jest-dom";
+import { beforeEach, vi } from "vitest";
+import { createMockProvider } from "./scraping-test-factory";
 
 // Import centralized mocks from @repo/qa
-import '@repo/qa/vitest/mocks/providers/playwright';
+import "@repo/qa/vitest/mocks/providers/playwright";
 
 // Mock console methods for cleaner test output
 const originalConsole = console;
@@ -17,19 +17,21 @@ global.console = {
 };
 
 // Mock Playwright completely
-vi.mock('playwright', () => ({
+vi.mock("playwright", () => ({
   chromium: {
     launch: vi.fn().mockResolvedValue({
       newContext: vi.fn().mockResolvedValue({
         newPage: vi.fn().mockResolvedValue({
           goto: vi.fn().mockResolvedValue({ status: () => 200 }),
-          content: vi.fn().mockResolvedValue('<html><body>Mock content</body></html>'),
-          title: vi.fn().mockResolvedValue('Mock Title'),
+          content: vi
+            .fn()
+            .mockResolvedValue("<html><body>Mock content</body></html>"),
+          title: vi.fn().mockResolvedValue("Mock Title"),
           close: vi.fn().mockResolvedValue(undefined),
           waitForSelector: vi.fn().mockResolvedValue({}),
           $: vi.fn().mockResolvedValue(null),
           $$: vi.fn().mockResolvedValue([]),
-          screenshot: vi.fn().mockResolvedValue(Buffer.from('mock screenshot')),
+          screenshot: vi.fn().mockResolvedValue(Buffer.from("mock screenshot")),
           setViewportSize: vi.fn().mockResolvedValue(undefined),
         }),
         close: vi.fn().mockResolvedValue(undefined),
@@ -42,8 +44,10 @@ vi.mock('playwright', () => ({
       newContext: vi.fn().mockResolvedValue({
         newPage: vi.fn().mockResolvedValue({
           goto: vi.fn().mockResolvedValue({ status: () => 200 }),
-          content: vi.fn().mockResolvedValue('<html><body>Mock content</body></html>'),
-          title: vi.fn().mockResolvedValue('Mock Title'),
+          content: vi
+            .fn()
+            .mockResolvedValue("<html><body>Mock content</body></html>"),
+          title: vi.fn().mockResolvedValue("Mock Title"),
           close: vi.fn().mockResolvedValue(undefined),
         }),
         close: vi.fn().mockResolvedValue(undefined),
@@ -56,8 +60,10 @@ vi.mock('playwright', () => ({
       newContext: vi.fn().mockResolvedValue({
         newPage: vi.fn().mockResolvedValue({
           goto: vi.fn().mockResolvedValue({ status: () => 200 }),
-          content: vi.fn().mockResolvedValue('<html><body>Mock content</body></html>'),
-          title: vi.fn().mockResolvedValue('Mock Title'),
+          content: vi
+            .fn()
+            .mockResolvedValue("<html><body>Mock content</body></html>"),
+          title: vi.fn().mockResolvedValue("Mock Title"),
           close: vi.fn().mockResolvedValue(undefined),
         }),
         close: vi.fn().mockResolvedValue(undefined),
@@ -68,35 +74,39 @@ vi.mock('playwright', () => ({
 }));
 
 // Mock Cheerio
-vi.mock('cheerio', () => ({
+vi.mock("cheerio", () => ({
   load: vi.fn().mockImplementation((html: string) => {
     const mockCheerio = (selector: string) => ({
-      text: vi.fn().mockReturnValue('Mock text'),
-      html: vi.fn().mockReturnValue('<span>Mock HTML</span>'),
-      attr: vi.fn().mockReturnValue('mock-attribute'),
+      text: vi.fn().mockReturnValue("Mock text"),
+      html: vi.fn().mockReturnValue("<span>Mock HTML</span>"),
+      attr: vi.fn().mockReturnValue("mock-attribute"),
       length: 1,
-      get: vi.fn().mockReturnValue([{ tagName: 'div', textContent: 'Mock element' }]),
-      map: vi.fn().mockImplementation((fn: any) => [fn(0, { textContent: 'Mock item' })]),
+      get: vi
+        .fn()
+        .mockReturnValue([{ tagName: "div", textContent: "Mock element" }]),
+      map: vi
+        .fn()
+        .mockImplementation((fn: any) => [fn(0, { textContent: "Mock item" })]),
     });
     return mockCheerio;
   }),
 }));
 
 // Mock global fetch for FetchProvider
-vi.spyOn(global, 'fetch').mockImplementation((url: string | URL | Request) => {
-  const urlString = typeof url === 'string' ? url : url.toString();
-  if (urlString.includes('error')) {
-    return Promise.reject(new Error('Network error'));
+vi.spyOn(global, "fetch").mockImplementation((url: string | URL | Request) => {
+  const urlString = typeof url === "string" ? url : url.toString();
+  if (urlString.includes("error")) {
+    return Promise.reject(new Error("Network error"));
   }
-  if (urlString.includes('404')) {
+  if (urlString.includes("404")) {
     return Promise.resolve({
       ok: false,
       status: 404,
-      statusText: 'Not Found',
-      text: () => Promise.resolve(''),
+      statusText: "Not Found",
+      text: () => Promise.resolve(""),
       headers: new Headers(),
       redirected: false,
-      type: 'basic' as ResponseType,
+      type: "basic" as ResponseType,
       url: urlString,
       json: () => Promise.resolve({}),
       blob: () => Promise.resolve(new Blob()),
@@ -109,20 +119,20 @@ vi.spyOn(global, 'fetch').mockImplementation((url: string | URL | Request) => {
     } as Response);
   }
   return Promise.resolve(
-    new Response('<html><body>Fetch content</body></html>', {
+    new Response("<html><body>Fetch content</body></html>", {
       status: 200,
-      statusText: 'OK',
-      headers: { 'content-type': 'text/html' },
+      statusText: "OK",
+      headers: { "content-type": "text/html" },
     }),
   );
 });
 
 // Mock browser environment detection
 export const setupBrowserMocks = () => {
-  Object.defineProperty(global, 'window', {
+  Object.defineProperty(global, "window", {
     value: {
-      location: { href: 'https://example.com' },
-      navigator: { userAgent: 'Mozilla/5.0 (Test Browser)' },
+      location: { href: "https://example.com" },
+      navigator: { userAgent: "Mozilla/5.0 (Test Browser)" },
       document: {
         createElement: vi.fn().mockReturnValue({}),
         querySelector: vi.fn().mockReturnValue({}),
@@ -131,7 +141,7 @@ export const setupBrowserMocks = () => {
     writable: true,
   });
 
-  Object.defineProperty(global, 'document', {
+  Object.defineProperty(global, "document", {
     value: {
       createElement: vi.fn().mockReturnValue({}),
       querySelector: vi.fn().mockReturnValue({}),
@@ -169,10 +179,10 @@ export const createScrapingTestConfig = (overrides: any = {}) => ({
   },
   extraction: {
     defaultSelectors: {
-      title: 'h1, h2, title',
-      content: 'p, .content, article',
-      links: 'a[href]',
-      images: 'img[src]',
+      title: "h1, h2, title",
+      content: "p, .content, article",
+      links: "a[href]",
+      images: "img[src]",
     },
     timeout: 30000,
     ...overrides.extraction,
@@ -187,27 +197,31 @@ export const createScrapingTestConfig = (overrides: any = {}) => ({
 });
 
 // Common scraper manager creation patterns
-export const createTestScrapingManager = async (config = createScrapingTestConfig()) => {
-  const { createScrapingManager } = await import('#/shared/utils/scraping-manager');
+export const createTestScrapingManager = async (
+  config = createScrapingTestConfig(),
+) => {
+  const { createScrapingManager } = await import(
+    "#/shared/utils/scraping-manager"
+  );
   const mockProviderRegistry: ProviderRegistry = {
-    playwright: () => createMockProvider('playwright'),
-    fetch: () => createMockProvider('fetch'),
+    playwright: () => createMockProvider("playwright"),
+    fetch: () => createMockProvider("fetch"),
   };
   return createScrapingManager(config, mockProviderRegistry);
 };
 
 export const createTestPlaywrightProvider = async () => {
-  return createMockProvider('playwright');
+  return createMockProvider("playwright");
 };
 
 export const createTestFetchProvider = async () => {
-  return createMockProvider('fetch');
+  return createMockProvider("fetch");
 };
 
 // Export test factories and generators
-export * from './scraping-mocks';
-export * from './scraping-test-data';
-export * from './scraping-test-factory';
+export * from "./scraping-mocks";
+export * from "./scraping-test-data";
+export * from "./scraping-test-factory";
 
 // Reset all mocks before each test
 beforeEach(() => {

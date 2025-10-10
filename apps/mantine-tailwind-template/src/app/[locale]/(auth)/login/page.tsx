@@ -5,14 +5,14 @@
  */
 
 // Force dynamic rendering since this page checks authentication state
-import { getAuthContext } from '#/lib/auth-context';
-import { getDictionary, type Locale } from '#/lib/i18n';
-import { createAuthMetadata } from '#/lib/seo';
-import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
-import LoginPageUi from './LoginPageUi';
+import { getAuthContext } from "#/lib/auth-context";
+import { getDictionary, type Locale } from "#/lib/i18n";
+import { createAuthMetadata } from "#/lib/seo";
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import LoginPageUi from "./LoginPageUi";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -20,7 +20,7 @@ export async function generateMetadata({
   params: Promise<{ locale: Locale }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return createAuthMetadata(locale, 'login');
+  return createAuthMetadata(locale, "login");
 }
 
 export default async function LoginPage({
@@ -36,7 +36,7 @@ export default async function LoginPage({
   // Check if user is already authenticated
   const authContext = await getAuthContext();
   if (authContext.isAuthenticated) {
-    redirect(redirectTo || `/${locale}`);
+    redirect((redirectTo || `/${locale}`) as any);
   }
 
   // Get dictionary for translations

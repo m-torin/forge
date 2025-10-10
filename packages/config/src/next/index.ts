@@ -5,7 +5,6 @@
 
 /// <reference path="./prisma-plugin.d.ts" />
 import withBundleAnalyzer from '@next/bundle-analyzer';
-import { PrismaPlugin } from '@prisma/nextjs-monorepo-workaround-plugin';
 import type { NextConfig } from 'next';
 import path from 'path';
 
@@ -14,7 +13,16 @@ const isProd = process.env.NODE_ENV === 'production';
 const isDev = process.env.NODE_ENV === 'development';
 
 // Constants for better maintainability
-const OPTIMIZED_PACKAGES = ['@mantine/core', '@mantine/hooks'];
+const OPTIMIZED_PACKAGES = [
+  '@mantine/core',
+  '@mantine/hooks',
+  '@mantine/notifications',
+  '@mantine/carousel',
+  '@tabler/icons-react',
+  '@heroicons/react',
+  '@hugeicons/react',
+  'react-use',
+];
 
 const IMAGE_DOMAINS = [
   { hostname: 'images.pexels.com' },
@@ -45,7 +53,7 @@ const NODE_BUILTINS = [
 // Packages to externalize on client/edge
 const EXTERNAL_PACKAGES = {
   prisma: ['@prisma/client', '@prisma/engines', 'prisma'],
-  database: ['@repo/database'],
+  database: ['@repo/db-prisma'],
   postgres: ['pg-native', 'pg-query-stream'],
   observability: [
     '@logtail/js',
@@ -95,7 +103,7 @@ const webpackConfig = (config: any, { isServer }: { isServer: boolean }) => {
   // Server-side Node.js configuration
   if (isServer && !isEdgeRuntime) {
     config.plugins ??= [];
-    config.plugins.push(new PrismaPlugin());
+    // Prisma plugin removed - not compatible with custom @repo/db-prisma structure
   }
 
   // Client-side or Edge runtime configuration
@@ -153,16 +161,16 @@ const createExternalsHandler = () => {
     const shouldExternalize =
       patterns.some(pattern => request.includes(pattern)) || request.startsWith('node:');
 
-    // Handle @repo/database more granularly based on package.json exports
-    if (request.startsWith('@repo/database')) {
+    // Handle @repo/db-prisma more granularly based on package.json exports
+    if (request.startsWith('@repo/db-prisma')) {
       // Allow these specific client-safe exports
       const allowedClientExports = [
-        '@repo/database/env',
-        '@repo/database/types',
-        '@repo/database/zod',
-        '@repo/database/prisma/zod',
-        '@repo/database/prisma/generated',
-        '@repo/database/keys', // Legacy support
+        '@repo/db-prisma/env',
+        '@repo/db-prisma/types',
+        '@repo/db-prisma/zod',
+        '@repo/db-prisma/prisma/zod',
+        '@repo/db-prisma/prisma/generated',
+        '@repo/db-prisma/keys', // Legacy support
       ];
 
       const isClientSafe = allowedClientExports.some(
@@ -221,27 +229,21 @@ const configureCache = (config: any) => {
 /**
  * Main Next.js configuration
  */
-export const config: NextConfig = {
+export const config = {
   // ESLint configuration
   eslint: {
     ignoreDuringBuilds: true,
+    // Limit linting to the app directory to prevent cross-app traversal during builds
+    dirs: ['.'],
   },
+
+  // Typed routes (moved from experimental in Next.js 15.6+)
+  typedRoutes: true,
 
   // Experimental features
   experimental: {
-    typedRoutes: true,
     forceSwcTransforms: true,
     optimizePackageImports: OPTIMIZED_PACKAGES,
-  },
-
-  // Turbopack configuration
-  turbopack: {
-    rules: {
-      '*.svg': {
-        as: '*.js',
-        loaders: ['@svgr/webpack'],
-      },
-    },
   },
 
   // SWC compiler configuration
@@ -275,7 +277,7 @@ export const config: NextConfig = {
 
   // Support PostHog trailing slash API requests
   skipTrailingSlashRedirect: true,
-};
+} as NextConfig;
 
 /**
  * Higher-order function to add bundle analyzer
@@ -312,6 +314,11 @@ export const mergeConfig = (base: NextConfig, ...configs: Partial<NextConfig>[])
           ...(config.images.remotePatterns || []),
         ],
       };
+    }
+
+    // Deep merge eslint to preserve shared defaults like dirs
+    if ('eslint' in config && config.eslint) {
+      (merged as any).eslint = { ...((acc as any).eslint ?? {}), ...config.eslint };
     }
 
     // Merge other top-level properties

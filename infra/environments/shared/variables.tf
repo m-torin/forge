@@ -60,7 +60,7 @@ variable "environment" {
 variable "project_name" {
   description = "Project name"
   type        = string
-  default     = "letsfindmy-forge"
+  default     = "forge-forge"
 }
 
 # Domains
@@ -87,7 +87,7 @@ variable "features" {
     email        = optional(bool, false)
     ai           = optional(bool, false)
     workers      = optional(bool, false)
-    
+
     # External Services
     vercel       = optional(bool, false)
     upstash      = optional(bool, false)

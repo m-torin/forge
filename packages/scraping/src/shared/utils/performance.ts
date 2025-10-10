@@ -2,7 +2,7 @@
  * Performance optimization utilities
  */
 
-export interface PerformanceProfile {
+interface PerformanceProfile {
   name: string;
   concurrency: number;
   timeout: number;
@@ -83,7 +83,7 @@ export function optimizeForMemory(config: any): any {
   };
 }
 
-export interface ResourceManager {
+interface ResourceManager {
   acquire(resource: string): Promise<void>;
   release(resource: string): void;
   isAvailable(resource: string): boolean;

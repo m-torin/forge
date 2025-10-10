@@ -235,7 +235,7 @@ export function sanitizeConfig(config: Record<string, any>): Record<string, any>
 /**
  * Validate environment variables required by configuration
  */
-export function validateEnvironmentVariables(requiredVars: string[]): ValidationError[] {
+function validateEnvironmentVariables(requiredVars: string[]): ValidationError[] {
   const errors: ValidationError[] = [];
 
   for (const varName of requiredVars) {
@@ -278,7 +278,7 @@ export function validateProviderConfig(config: unknown): AnyProviderConfig {
 /**
  * Validate retry configuration
  */
-export function validateRetryConfig(config: unknown): RetryConfig {
+function validateRetryConfig(config: unknown): RetryConfig {
   try {
     return retryConfigSchema.parse(config);
   } catch (error: any) {
@@ -296,7 +296,7 @@ export function validateRetryConfig(config: unknown): RetryConfig {
 /**
  * Validate schedule configuration
  */
-export function validateScheduleConfig(config: unknown): ScheduleConfig {
+function validateScheduleConfig(config: unknown): ScheduleConfig {
   try {
     const validated = scheduleConfigSchema.parse(config);
 

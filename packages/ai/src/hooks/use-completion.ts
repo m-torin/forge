@@ -1,10 +1,13 @@
-'use client';
+"use client";
 
-import { useCompletion as useVercelCompletion } from '@ai-sdk/react';
-import { logWarn } from '@repo/observability';
-import { useCallback, useEffect } from 'react';
+import { useCompletion as useVercelCompletion } from "@ai-sdk/react";
+import { logWarn } from "@repo/observability";
+import { useCallback, useEffect } from "react";
 
-import { BaseAIHookOptions, mergeTransportConfig } from '../shared/types/transport';
+import {
+  BaseAIHookOptions,
+  mergeTransportConfig,
+} from "../shared/types/transport";
 
 // AI SDK v5 useCompletion specific options
 export interface UseAICompletionOptions extends BaseAIHookOptions {
@@ -14,11 +17,15 @@ export interface UseAICompletionOptions extends BaseAIHookOptions {
 
   // Advanced options
   generateId?: () => string;
-  streamProtocol?: 'text' | 'data';
+  streamProtocol?: "text" | "data";
 
   // Custom callback options that we implement manually
   onFinish?: (prompt: string, completion: string) => void;
-  onTokenUsage?: (usage: { completion: number; prompt: number; total: number }) => void;
+  onTokenUsage?: (usage: {
+    completion: number;
+    prompt: number;
+    total: number;
+  }) => void;
 }
 
 /**
@@ -37,13 +44,13 @@ export function useCompletion({
   // Configure transport using shared utility
   const { api, ...transportConfig } = mergeTransportConfig(
     { api: apiProp, transport, ...options },
-    '/api/ai/completion',
+    "/api/ai/completion",
   );
 
   const completionConfig = {
     api,
     ...transportConfig,
-    streamProtocol: options.streamProtocol || ('text' as const),
+    streamProtocol: options.streamProtocol || ("text" as const),
     generateId: options.generateId,
     initialInput: options.initialInput,
     initialCompletion: options.initialCompletion,
@@ -55,8 +62,9 @@ export function useCompletion({
   // Handle errors manually since onError callback is removed in v5
   useEffect(() => {
     if (completion.error && onError) {
-      const errorMessage = completion.error?.message || completion.error?.toString() || '';
-      if (errorMessage.includes('429') && onRateLimit) {
+      const errorMessage =
+        completion.error?.message || completion.error?.toString() || "";
+      if (errorMessage.includes("429") && onRateLimit) {
         const match = errorMessage.match(/retry after (\d+)/);
         const retryAfter = match ? parseInt(match[1]) : 60;
         onRateLimit(retryAfter);
@@ -69,11 +77,13 @@ export function useCompletion({
   // These would need to be implemented differently if token usage tracking is needed
   useEffect(() => {
     if (onFinish) {
-      logWarn('onFinish callback is not supported in AI SDK v5. Consider alternative approaches.');
+      logWarn(
+        "onFinish callback is not supported in AI SDK v5. Consider alternative approaches.",
+      );
     }
     if (onTokenUsage) {
       logWarn(
-        'onTokenUsage callback is not supported in AI SDK v5. Consider alternative approaches.',
+        "onTokenUsage callback is not supported in AI SDK v5. Consider alternative approaches.",
       );
     }
   }, [onFinish, onTokenUsage]);
@@ -86,9 +96,12 @@ export function useCompletion({
       } catch (error) {
         if (retries > 0 && error instanceof Error) {
           // Retry on network errors or rate limits
-          if (error.message.includes('fetch') || error.message.includes('429')) {
-            const delay = error.message.includes('429') ? 2000 : 1000;
-            await new Promise(resolve => setTimeout(resolve, delay));
+          if (
+            error.message.includes("fetch") ||
+            error.message.includes("429")
+          ) {
+            const delay = error.message.includes("429") ? 2000 : 1000;
+            await new Promise((resolve) => setTimeout(resolve, delay));
             return complete(prompt, retries - 1);
           }
         }

@@ -1,6 +1,5 @@
-import { vercel } from '@t3-oss/env-core/presets-zod';
 import { createEnv } from '@t3-oss/env-nextjs';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 
 const isProductionEnv = process.env.NODE_ENV === 'production';
 // In local dev or build:local, these env vars might not be set if using .env.local
@@ -23,7 +22,6 @@ export const env = createEnv({
       ? z.string().min(1).url()
       : z.string().min(1).url().optional(),
   },
-  extends: [vercel()],
   runtimeEnv: {
     ANALYZE: process.env.ANALYZE,
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
@@ -38,7 +36,7 @@ export const env = createEnv({
     // Added by Vercel
     NEXT_RUNTIME: z.enum(['nodejs', 'edge']).optional(),
   },
-  onValidationError: error => {
+  onValidationError: (error: unknown) => {
     console.warn('Config environment validation failed:', error);
     // Don't throw in packages - use fallbacks for resilience
     return undefined as never;

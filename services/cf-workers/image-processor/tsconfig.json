@@ -1,13 +1,20 @@
 {
-  "extends": "@repo/config/typescript/cloudflare.json",
   "compilerOptions": {
-    "baseUrl": ".",
-    "types": ["@cloudflare/workers-types", "vite/client"],
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "allowJs": true,
+    "checkJs": false,
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": ["@cloudflare/workers-types"],
     "outDir": "./dist",
-    "rootDir": "./src",
-    "paths": {
-      "#/*": ["./src/*"]
-    }
+    "rootDir": "./src"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

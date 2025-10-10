@@ -8,7 +8,7 @@
  * For Next.js applications, use '@repo/orchestration/server/next' instead.
  */
 
-import { redis } from '@repo/database/redis/server';
+import { redis } from '@repo/db-upstash-redis/server';
 
 import { UpstashWorkflowProvider } from './providers/index';
 import {

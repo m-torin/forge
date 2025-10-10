@@ -39,7 +39,7 @@ export interface NodeFetchOptions {
   body?: any;
   compress?: boolean;
   method?: string;
-  redirect?: 'error' | 'follow' | 'manual';
+  redirect?: "error" | "follow" | "manual";
   signal?: AbortSignal;
   size?: number;
 }

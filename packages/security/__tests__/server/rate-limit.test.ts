@@ -1,14 +1,39 @@
-import { createRatelimitScenarios } from '@repo/qa';
-import { setupVitestUpstashMocks } from '@repo/qa/vitest/mocks/providers/upstash/redis';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { createRateLimiter } from '../../rate-limit';
 
-const upstashMocks = setupVitestUpstashMocks();
-const rateLimit = createRatelimitScenarios();
+// Mock server-only
+vi.mock('server-only', () => ({}));
 
-// Mock the Ratelimit constructor
-const MockRatelimitConstructor = vi.fn();
+// Mock the database Redis module
+vi.mock('@repo/db-upstash-redis/server', () => {
+  const mockRedisStorage = new Map<string, any>();
+
+  return {
+    redis: {
+      async get(key: string) {
+        return mockRedisStorage.get(key) || null;
+      },
+
+      async set(key: string, value: any) {
+        mockRedisStorage.set(key, value);
+        return 'OK';
+      },
+
+      async del(key: string) {
+        return mockRedisStorage.delete(key) ? 1 : 0;
+      },
+
+      async exists(key: string) {
+        return mockRedisStorage.has(key) ? 1 : 0;
+      },
+
+      clear() {
+        mockRedisStorage.clear();
+      },
+    },
+  };
+});
 
 // Mock the env function
 vi.mock('../../env', () => ({
@@ -18,16 +43,49 @@ vi.mock('../../env', () => ({
   })),
 }));
 
+// Override the @upstash/ratelimit mock for more control
+vi.mock('@upstash/ratelimit', () => {
+  const mockSlidingWindow = vi.fn(() => ({ type: 'sliding-window' }));
+  const mockFixedWindow = vi.fn(() => ({ type: 'fixed-window' }));
+  const mockTokenBucket = vi.fn(() => ({ type: 'token-bucket' }));
+  const MockRatelimitConstructor = vi.fn() as any;
+
+  // Make static methods available on the constructor
+  MockRatelimitConstructor.slidingWindow = mockSlidingWindow;
+  MockRatelimitConstructor.fixedWindow = mockFixedWindow;
+  MockRatelimitConstructor.tokenBucket = mockTokenBucket;
+
+  return {
+    default: {
+      slidingWindow: mockSlidingWindow,
+      fixedWindow: mockFixedWindow,
+      tokenBucket: mockTokenBucket,
+    },
+    Ratelimit: MockRatelimitConstructor,
+    slidingWindow: mockSlidingWindow,
+    fixedWindow: mockFixedWindow,
+    tokenBucket: mockTokenBucket,
+  };
+});
+
 describe('rate-limit', () => {
   let mockKeys: any;
+  let mockSlidingWindow: any;
+  let MockRatelimitConstructor: any;
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    MockRatelimitConstructor.mockClear();
 
     // Get the mocked modules
     const envModule = await import('../../env');
     mockKeys = vi.mocked(envModule.safeEnv);
+
+    const ratelimitModule = (await import('@upstash/ratelimit')) as any;
+    mockSlidingWindow = ratelimitModule.slidingWindow;
+    MockRatelimitConstructor = ratelimitModule.Ratelimit;
+
+    // Setup the sliding window mock
+    mockSlidingWindow.mockReturnValue({ limiter: 'sliding-window' });
   });
 
   describe('createRateLimiter', () => {

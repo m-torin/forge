@@ -1,13 +1,6 @@
-import { ErrorBoundary } from '#/components/ErrorBoundary';
-import { ResponsiveLayout } from '#/components/ResponsiveLayout';
-import { SidebarProvider } from '#/components/SidebarProvider';
-import { routing } from '#/i18n/routing';
 import { getDictionary, type Locale } from '#/lib/i18n';
 import { createBaseMetadata, createWebsiteStructuredData } from '#/lib/seo';
-import { hasLocale, setRequestLocale } from '@repo/internationalization/server/next';
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { Providers } from './providers';
 
 type Props = {
   children: React.ReactNode;
@@ -16,10 +9,6 @@ type Props = {
   auth: React.ReactNode;
   params: Promise<{ locale: Locale }>;
 };
-
-export function generateStaticParams() {
-  return routing.locales.map(locale => ({ locale }));
-}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
@@ -65,28 +54,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function LocaleLayout({ children, main, sidebar, auth, params }: Props) {
-  const { locale } = await params;
-
-  // Validate that the incoming locale is valid
-  if (!hasLocale(routing.locales, locale)) {
-    notFound();
-  }
-
-  // Enable static rendering for this locale
-  setRequestLocale(locale);
-
+export default function LocaleLayout({ children, main, sidebar, auth, params }: Props) {
   return (
-    <Providers locale={locale}>
-      <ErrorBoundary>
-        <SidebarProvider>
-          <ResponsiveLayout sidebar={sidebar} auth={auth}>
-            {main || children}
-          </ResponsiveLayout>
-          <LocaleStructuredData params={params} />
-        </SidebarProvider>
-      </ErrorBoundary>
-    </Providers>
+    <>
+      <div className="harmony-bg-background flex min-h-screen">
+        <aside className="harmony-bg-surface harmony-border-r harmony-sidebar w-80 sm:fixed sm:inset-y-0 sm:left-0 sm:z-50 sm:w-0 md:w-64 lg:w-80">
+          {sidebar}
+        </aside>
+        <main className="harmony-bg-background min-w-0 flex-1">
+          <div className="harmony-bg-surface">{main || children}</div>
+        </main>
+      </div>
+      {auth}
+      <LocaleStructuredData params={params} />
+    </>
   );
 }
 

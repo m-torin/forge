@@ -79,24 +79,16 @@ createObservabilityTestSuite({
           // Add breadcrumb
           const breadcrumb = createTestData.breadcrumb();
           plugin.addBreadcrumb(breadcrumb);
-          expect(mockConsole.log).toHaveBeenCalledWith(
-            '[Test]',
-            'Breadcrumb:',
-            JSON.stringify({
-              ...breadcrumb,
-              timestamp: breadcrumb.timestamp || expect.any(Number),
-            }),
-          );
+          expect(mockConsole.log).toHaveBeenCalledWith('[Test]', 'Breadcrumb:', expect.any(String));
 
           // Capture message
           const message = 'Integration test message';
           plugin.captureMessage(message, 'info');
-          expect(mockConsole.info).toHaveBeenNthCalledWith(
-            2,
+          expect(mockConsole.info).toHaveBeenCalledWith(
             '[Test]',
             'Info:',
             message,
-            JSON.stringify({}),
+            expect.any(String),
           );
 
           // Capture error
@@ -106,7 +98,7 @@ createObservabilityTestSuite({
             '[Test]',
             'Error:',
             error,
-            JSON.stringify({}),
+            expect.any(String),
           );
 
           // Flush

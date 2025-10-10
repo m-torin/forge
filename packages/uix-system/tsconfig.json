@@ -2,15 +2,30 @@
   "extends": "@repo/config/typescript/react-library.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "types": ["vitest/globals"],
     "declaration": false,
     "declarationMap": false,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react-jsx",
     "paths": {
       "#/__tests__/*": ["./__tests__/*"],
       "#/root/*": ["./*"],
       "#/*": ["./src/*"]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules", "dist", "build", "coverage", "**/*.stories.tsx"]
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    "coverage",
+    "__tests__",
+    "**/*.stories.tsx",
+    "**/*.test.tsx",
+    "**/*.spec.tsx",
+    "vitest.config.ts",
+    "vitest.a11y.config.ts",
+    "playwright.config.ts"
+  ]
 }

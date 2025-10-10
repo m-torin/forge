@@ -25,14 +25,14 @@
 
 // === CORE EXPORTS ===
 // Re-export vitest mocks and utilities for easy access
-export * from './vitest/mocks/index';
+export * from "./vitest/mocks/index";
 
 // === DATABASE TESTING ===
 // Export database-specific utilities and configs
-export * from './vitest/mocks/internal/database';
-export * from './vitest/mocks/internal/email';
-export * from './vitest/mocks/internal/prisma-with-enums';
-export * from './vitest/utils/prisma-test-setup';
+export * from "./vitest/mocks/internal/database";
+export * from "./vitest/mocks/internal/email";
+export * from "./vitest/mocks/internal/prisma-with-enums";
+export * from "./vitest/utils/prisma-test-setup";
 
 // === TEST FACTORIES ===
 // Export centralized test factories for all packages (avoiding duplicates with existing exports)
@@ -54,16 +54,16 @@ export {
   createMockPrisma,
   createMockTeam,
   createTestDataSets,
-} from './vitest/mocks/internal/auth-factories';
+} from "./vitest/mocks/internal/auth-factories";
 
-export * from './vitest/mocks/internal/security-factories';
-export * from './vitest/mocks/providers/ai-factories';
+export * from "./vitest/mocks/internal/security-factories";
+export * from "./vitest/mocks/providers/ai-factories";
 
 // === TEST PATTERNS & UTILITIES ===
 // Export comprehensive test patterns and utilities
-export * from './vitest/utils/database';
-export * from './vitest/utils/mock-manager';
-export * from './vitest/utils/test-patterns';
+export * from "./vitest/utils/database";
+export * from "./vitest/utils/mock-manager";
+export * from "./vitest/utils/test-patterns";
 
 // === SHARED UTILITIES ===
 // Export shared utilities for cross-framework compatibility
@@ -86,22 +86,27 @@ export * from './vitest/utils/test-patterns';
  */
 export namespace QA {
   // Re-export key types from testing namespace
-  export type DatabaseClient = import('./shared/types/testing').Testing.DatabaseClient;
-  export type RedisClient = import('./shared/types/testing').Testing.RedisClient;
-  export type AuthClient = import('./shared/types/testing').Testing.AuthClient;
-  export type Mock<T extends (...args: any[]) => any = (...args: any[]) => any> =
-    import('./shared/types/testing').Testing.Mock<T>;
-  export type ScenarioConfig = import('./shared/types/testing').Testing.ScenarioConfig;
-  export type PerformanceConfig = import('./shared/types/testing').Testing.PerformanceConfig;
+  export type DatabaseClient =
+    import("./shared/types/testing").Testing.DatabaseClient;
+  export type RedisClient =
+    import("./shared/types/testing").Testing.RedisClient;
+  export type AuthClient = import("./shared/types/testing").Testing.AuthClient;
+  export type Mock<
+    T extends (...args: any[]) => any = (...args: any[]) => any,
+  > = import("./shared/types/testing").Testing.Mock<T>;
+  export type ScenarioConfig =
+    import("./shared/types/testing").Testing.ScenarioConfig;
+  export type PerformanceConfig =
+    import("./shared/types/testing").Testing.PerformanceConfig;
 }
 
 // === VERSION INFORMATION ===
 /**
  * Package version information for debugging and compatibility checking
  */
-export const QA_VERSION = '1.0.0';
-export const SUPPORTED_VITEST_VERSION = '^3.0.0';
-export const SUPPORTED_NODE_VERSION = '>=18.0.0';
+export const QA_VERSION = "1.0.0";
+export const SUPPORTED_VITEST_VERSION = "^3.0.0";
+export const SUPPORTED_NODE_VERSION = ">=18.0.0";
 
 /**
  * Feature flags for conditional functionality
@@ -129,8 +134,12 @@ export const quickStart = {
    */
   setupFullEnvironment: async () => {
     // Dynamic imports for better tree-shaking
-    const { setupVitestUpstashMocks } = await import('./vitest/mocks/providers/upstash/redis');
-    const { setupBetterAuthMocks } = await import('./vitest/mocks/providers/better-auth');
+    const { setupVitestUpstashMocks } = await import(
+      "./vitest/mocks/providers/upstash/redis"
+    );
+    const { setupBetterAuthMocks } = await import(
+      "./vitest/mocks/providers/better-auth"
+    );
 
     return {
       redis: setupVitestUpstashMocks(),
@@ -142,8 +151,8 @@ export const quickStart = {
    * Clean up all registered mocks and reset testing state
    */
   cleanupAll: async () => {
-    const { mockManager } = await import('./vitest/utils/mock-manager');
-    const { resetAllMocks } = await import('./vitest/mocks');
+    const { mockManager } = await import("./vitest/utils/mock-manager");
+    const { resetAllMocks } = await import("./vitest/mocks");
 
     mockManager.cleanup({ resetAll: true });
     await resetAllMocks();

@@ -7,30 +7,30 @@
  * Standard environment variables for tests
  */
 export const TEST_ENV = {
-  NODE_ENV: 'test',
-  CI: 'true',
-  SKIP_ENV_VALIDATION: 'true',
-  BETTER_AUTH_SECRET: 'test_auth_secret_key_1234567890',
-  BETTER_AUTH_URL: 'http://localhost:3000',
-  SESSION_MAX_AGE: '2592000',
-  ORGANIZATION_INVITE_TTL: '86400',
-  DATABASE_URL: 'postgresql://test:test@localhost:5432/auth_test',
-  RESEND_API_KEY: 're_test_1234567890',
-  EMAIL_FROM: 'noreply@test.example.com',
-  EMAIL_REPLY_TO: 'support@test.example.com',
-  PACKAGE_NAME: 'auth',
-  AUTH_TEST_MODE: 'true',
-  ORGANIZATION_FEATURES_ENABLED: 'true',
-  API_KEY_FEATURES_ENABLED: 'true',
-  NEXT_PUBLIC_APP_NAME: 'Auth Package Tests',
-  NEXT_PUBLIC_APP_URL: 'http://localhost:3000',
-  AUTH_FEATURES_ADMIN: 'true',
-  AUTH_FEATURES_API_KEYS: 'true',
-  AUTH_FEATURES_ORGANIZATIONS: 'true',
-  AUTH_FEATURES_MAGIC_LINKS: 'true',
-  AUTH_FEATURES_TWO_FACTOR: 'true',
-  AUTH_FEATURES_TEAMS: 'true',
-  AUTH_FEATURES_IMPERSONATION: 'true',
+  NODE_ENV: "test",
+  CI: "true",
+  SKIP_ENV_VALIDATION: "true",
+  BETTER_AUTH_SECRET: "test_auth_secret_key_1234567890",
+  BETTER_AUTH_URL: "http://localhost:3000",
+  SESSION_MAX_AGE: "2592000",
+  ORGANIZATION_INVITE_TTL: "86400",
+  DATABASE_URL: "postgresql://test:test@localhost:5432/auth_test",
+  RESEND_API_KEY: "re_test_1234567890",
+  EMAIL_FROM: "noreply@test.example.com",
+  EMAIL_REPLY_TO: "support@test.example.com",
+  PACKAGE_NAME: "auth",
+  AUTH_TEST_MODE: "true",
+  ORGANIZATION_FEATURES_ENABLED: "true",
+  API_KEY_FEATURES_ENABLED: "true",
+  NEXT_PUBLIC_APP_NAME: "Auth Package Tests",
+  NEXT_PUBLIC_APP_URL: "http://localhost:3000",
+  AUTH_FEATURES_ADMIN: "true",
+  AUTH_FEATURES_API_KEYS: "true",
+  AUTH_FEATURES_ORGANIZATIONS: "true",
+  AUTH_FEATURES_MAGIC_LINKS: "true",
+  AUTH_FEATURES_TWO_FACTOR: "true",
+  AUTH_FEATURES_TEAMS: "true",
+  AUTH_FEATURES_IMPERSONATION: "true",
 };
 
 /**
@@ -79,7 +79,7 @@ export const createUnifiedMockSetup = (
 
   // Apply mocks based on options
   if (mockAuth) {
-    vi.mock('../../src/shared/auth', () => ({
+    vi.mock("../../src/shared/auth", () => ({
       auth: {
         api: mockObjects.auth,
       },
@@ -87,17 +87,17 @@ export const createUnifiedMockSetup = (
   }
 
   if (mockDatabase) {
-    vi.mock('@repo/database', () => ({
+    vi.mock("@repo/db-prisma", () => ({
       db: mockObjects.prisma,
     }));
 
-    vi.mock('@repo/database/prisma', () => ({
+    vi.mock("@repo/db-prisma/client", () => ({
       prisma: mockObjects.prisma,
     }));
   }
 
   if (mockHeaders) {
-    vi.mock('next/headers', () => ({
+    vi.mock("next/headers", () => ({
       headers: mockObjects.headers,
       cookies: vi.fn(() => ({
         get: vi.fn(),
@@ -111,7 +111,7 @@ export const createUnifiedMockSetup = (
 
   if (mockEnv) {
     const envMock = mockObjects.env;
-    vi.mock('../env', () => ({
+    vi.mock("../env", () => ({
       env: envMock,
       envError: null,
       safeEnv: () => envMock,
@@ -127,7 +127,7 @@ export const createUnifiedMockSetup = (
   }
 
   if (mockPlugins) {
-    vi.mock('better-auth/plugins', () => ({
+    vi.mock("better-auth/plugins", () => ({
       admin: vi.fn(() => ({})),
       apiKey: vi.fn(() => ({})),
       bearer: vi.fn(() => ({})),
@@ -148,7 +148,7 @@ export const createUnifiedMockSetup = (
       username: vi.fn(() => ({})),
     }));
 
-    vi.mock('better-auth/client/plugins', () => ({
+    vi.mock("better-auth/client/plugins", () => ({
       organizationClient: vi.fn(() => ({})),
       adminClient: vi.fn(() => ({})),
       apiKeyClient: vi.fn(() => ({})),
@@ -162,9 +162,9 @@ export const createUnifiedMockSetup = (
   }
 
   // Additional utility mocks
-  vi.mock('server-only', () => ({}));
+  vi.mock("server-only", () => ({}));
 
-  vi.mock('@repo/observability/server/next', () => ({
+  vi.mock("@repo/observability/server/next", () => ({
     logError: vi.fn(),
     logWarn: vi.fn(),
     logInfo: vi.fn(),
@@ -177,7 +177,7 @@ export const createUnifiedMockSetup = (
     }),
   }));
 
-  vi.mock('@repo/email/server', () => ({
+  vi.mock("@repo/email/server", () => ({
     sendEmail: vi.fn(),
     sendTemplatedEmail: vi.fn(),
     sendApiKeyCreatedEmail: vi.fn(),
@@ -235,9 +235,9 @@ export const createFullMockSetup = (
  */
 export const createClientMockSetup = () => {
   // Mock window for client-side tests
-  Object.defineProperty(window, 'location', {
+  Object.defineProperty(window, "location", {
     value: {
-      href: '',
+      href: "",
       assign: vi.fn(),
       replace: vi.fn(),
       reload: vi.fn(),
@@ -246,16 +246,16 @@ export const createClientMockSetup = () => {
   });
 
   // Mock document
-  Object.defineProperty(document, 'cookie', {
-    value: '',
+  Object.defineProperty(document, "cookie", {
+    value: "",
     writable: true,
   });
 
   // Mock fetch
-  vi.spyOn(global, 'fetch').mockResolvedValue(new Response());
+  vi.spyOn(global, "fetch").mockResolvedValue(new Response());
 
   // Mock localStorage
-  Object.defineProperty(window, 'localStorage', {
+  Object.defineProperty(window, "localStorage", {
     value: {
       getItem: vi.fn(),
       setItem: vi.fn(),
@@ -266,14 +266,14 @@ export const createClientMockSetup = () => {
   });
 
   // Mock Better Auth client
-  vi.mock('better-auth/react', () => ({
+  vi.mock("better-auth/react", () => ({
     createAuthClient: vi.fn(() => createMockBetterAuthApi()),
   }));
 
   // Mock React Testing Library
-  vi.mock('@testing-library/jest-dom');
+  vi.mock("@testing-library/jest-dom");
 
-  const React = require('react');
+  const React = require("react");
   global.React = React;
 };
 
@@ -344,9 +344,9 @@ export const mockConfigurations = {
     createUnifiedMockSetup({
       session: createMockSession({
         user: {
-          role: 'admin',
-          email: 'admin@example.com',
-          name: 'Admin User',
+          role: "admin",
+          email: "admin@example.com",
+          name: "Admin User",
         },
       }),
     }),

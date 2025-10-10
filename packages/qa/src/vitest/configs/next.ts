@@ -47,5 +47,3 @@ export function createNextConfig(options: NextConfigOptions = {}): UserConfig {
     },
   };
 }
-
-export default createNextConfig();

@@ -5,8 +5,11 @@
  * Provides reusable patterns for complex test scenarios.
  */
 
-import { describe, expect, test } from 'vitest';
-import { performanceHelpers, scrapingAssertions } from './shared-test-utilities';
+import { describe, expect, test } from "vitest";
+import {
+  performanceHelpers,
+  scrapingAssertions,
+} from "./shared-test-utilities";
 
 /**
  * Provider functionality test patterns
@@ -27,25 +30,27 @@ export const providerTestPatterns = {
     }>,
   ) => {
     describe(`${providerName} functionality`, () => {
-      testScenarios.forEach(({ name, method, args, expectedResult, customAssertions }) => {
-        test(`should ${name}`, async () => {
-          const module = await import(importPath);
-          const provider = new module[providerName]();
+      testScenarios.forEach(
+        ({ name, method, args, expectedResult, customAssertions }) => {
+          test(`should ${name}`, async () => {
+            const module = await import(importPath);
+            const provider = new module[providerName]();
 
-          await provider.initialize();
-          const result = await provider[method](...args);
+            await provider.initialize();
+            const result = await provider[method](...args);
 
-          if (expectedResult) {
-            expect(result).toStrictEqual(expectedResult);
-          }
+            if (expectedResult) {
+              expect(result).toStrictEqual(expectedResult);
+            }
 
-          if (customAssertions) {
-            customAssertions(result);
-          }
+            if (customAssertions) {
+              customAssertions(result);
+            }
 
-          scrapingAssertions.hasValidScrapingResult(result);
-        });
-      });
+            scrapingAssertions.hasValidScrapingResult(result);
+          });
+        },
+      );
     });
   },
 
@@ -69,7 +74,9 @@ export const providerTestPatterns = {
           const provider = new module[providerName]();
 
           await provider.initialize();
-          await expect(provider[method](...args)).rejects.toThrow(expectedError);
+          await expect(provider[method](...args)).rejects.toThrow(
+            expectedError,
+          );
         });
       });
     });
@@ -96,9 +103,10 @@ export const providerTestPatterns = {
 
           await provider.initialize();
 
-          const { result, duration } = await performanceHelpers.measureExecutionTime(() =>
-            provider[method](...args),
-          );
+          const { result, duration } =
+            await performanceHelpers.measureExecutionTime(() =>
+              provider[method](...args),
+            );
 
           expect(result).toBeDefined();
           expect(duration).toBeLessThan(maxDuration);
@@ -136,7 +144,10 @@ export const extractionTestPatterns = {
           expect(result).toBeDefined();
           expect(result).toStrictEqual(expectedData);
 
-          scrapingAssertions.hasValidExtractedData(result, Object.keys(expectedData));
+          scrapingAssertions.hasValidExtractedData(
+            result,
+            Object.keys(expectedData),
+          );
         });
       });
     });
@@ -156,21 +167,24 @@ export const extractionTestPatterns = {
     }>,
   ) => {
     describe(`${extractorName} extraction performance`, () => {
-      performanceScenarios.forEach(({ name, htmlGenerator, selectors, maxDuration }) => {
-        test(`should handle ${name} within ${maxDuration}ms`, async () => {
-          const module = await import(importPath);
-          const extractor = module[extractorName] || module.default;
+      performanceScenarios.forEach(
+        ({ name, htmlGenerator, selectors, maxDuration }) => {
+          test(`should handle ${name} within ${maxDuration}ms`, async () => {
+            const module = await import(importPath);
+            const extractor = module[extractorName] || module.default;
 
-          const html = htmlGenerator();
+            const html = htmlGenerator();
 
-          const { result, duration } = await performanceHelpers.measureExecutionTime(() =>
-            extractor(html, selectors),
-          );
+            const { result, duration } =
+              await performanceHelpers.measureExecutionTime(() =>
+                extractor(html, selectors),
+              );
 
-          expect(result).toBeDefined();
-          expect(duration).toBeLessThan(maxDuration);
-        });
-      });
+            expect(result).toBeDefined();
+            expect(duration).toBeLessThan(maxDuration);
+          });
+        },
+      );
     });
   },
 
@@ -184,28 +198,30 @@ export const extractionTestPatterns = {
       name: string;
       html: string;
       selectors: any;
-      expectedBehavior: 'return_null' | 'return_empty' | 'throw_error';
+      expectedBehavior: "return_null" | "return_empty" | "throw_error";
     }>,
   ) => {
     describe(`${extractorName} edge cases`, () => {
-      edgeCaseScenarios.forEach(({ name, html, selectors, expectedBehavior }) => {
-        test(`should handle ${name}`, async () => {
-          const module = await import(importPath);
-          const extractor = module[extractorName] || module.default;
+      edgeCaseScenarios.forEach(
+        ({ name, html, selectors, expectedBehavior }) => {
+          test(`should handle ${name}`, async () => {
+            const module = await import(importPath);
+            const extractor = module[extractorName] || module.default;
 
-          if (expectedBehavior === 'throw_error') {
-            await expect(extractor(html, selectors)).rejects.toThrow();
-          } else {
-            const result = await extractor(html, selectors);
+            if (expectedBehavior === "throw_error") {
+              await expect(extractor(html, selectors)).rejects.toThrow();
+            } else {
+              const result = await extractor(html, selectors);
 
-            if (expectedBehavior === 'return_null') {
-              expect(result).toBeNull();
-            } else if (expectedBehavior === 'return_empty') {
-              expect(result).toStrictEqual({});
+              if (expectedBehavior === "return_null") {
+                expect(result).toBeNull();
+              } else if (expectedBehavior === "return_empty") {
+                expect(result).toStrictEqual({});
+              }
             }
-          }
-        });
-      });
+          });
+        },
+      );
     });
   },
 };
@@ -229,14 +245,14 @@ export const configurationTestPatterns = {
   ) => {
     describe(`${validatorName} configuration validation`, () => {
       configScenarios.forEach(({ name, config, shouldPass, expectedError }) => {
-        test(`should ${shouldPass ? 'accept' : 'reject'} ${name}`, async () => {
+        test(`should ${shouldPass ? "accept" : "reject"} ${name}`, async () => {
           const module = await import(importPath);
           const validator = module[validatorName] || module.default;
 
           if (shouldPass) {
             expect(() => validator(config)).not.toThrow();
           } else {
-            expect(() => validator(config)).toThrow(expectedError || '');
+            expect(() => validator(config)).toThrow(expectedError || "");
           }
         });
       });
@@ -288,7 +304,7 @@ export const integrationTestPatterns = {
     }>,
   ) => {
     describe(`${workflowName} full workflow`, () => {
-      test('should complete entire scraping workflow', async () => {
+      test("should complete entire scraping workflow", async () => {
         let context: any = {};
 
         for (const step of workflowSteps) {
@@ -318,37 +334,40 @@ export const integrationTestPatterns = {
     }>,
   ) => {
     describe(`${scraperName} concurrent scraping`, () => {
-      concurrencyScenarios.forEach(({ name, urls, maxConcurrency, maxTotalDuration }) => {
-        test(`should handle ${name}`, async () => {
-          const module = await import(importPath);
-          const scraper = module[scraperName] || module.default;
+      concurrencyScenarios.forEach(
+        ({ name, urls, maxConcurrency, maxTotalDuration }) => {
+          test(`should handle ${name}`, async () => {
+            const module = await import(importPath);
+            const scraper = module[scraperName] || module.default;
 
-          const { results, averageDuration } = await performanceHelpers.measureAverageTime(
-            async () => {
-              const chunks = [];
-              for (let i = 0; i < urls.length; i += maxConcurrency) {
-                chunks.push(urls.slice(i, i + maxConcurrency));
-              }
+            const { results, averageDuration } =
+              await performanceHelpers.measureAverageTime(async () => {
+                const chunks = [];
+                for (let i = 0; i < urls.length; i += maxConcurrency) {
+                  chunks.push(urls.slice(i, i + maxConcurrency));
+                }
 
-              const allResults = [];
-              for (const chunk of chunks) {
-                const chunkResults = await Promise.all(chunk.map(url => scraper.scrape(url)));
-                allResults.push(...chunkResults);
-              }
+                const allResults = [];
+                for (const chunk of chunks) {
+                  const chunkResults = await Promise.all(
+                    chunk.map((url) => scraper.scrape(url)),
+                  );
+                  allResults.push(...chunkResults);
+                }
 
-              return allResults;
-            },
-          );
+                return allResults;
+              });
 
-          expect(results[0]).toHaveLength(urls.length);
-          expect(averageDuration).toBeLessThan(maxTotalDuration);
+            expect(results[0]).toHaveLength(urls.length);
+            expect(averageDuration).toBeLessThan(maxTotalDuration);
 
-          // Validate each result
-          results[0].forEach((result: any) => {
-            scrapingAssertions.hasValidScrapingResult(result);
+            // Validate each result
+            results[0].forEach((result: any) => {
+              scrapingAssertions.hasValidScrapingResult(result);
+            });
           });
-        });
-      });
+        },
+      );
     });
   },
 };
@@ -366,7 +385,7 @@ export const securityTestPatterns = {
     xssScenarios: Array<{
       name: string;
       maliciousInput: string;
-      expectedBehavior: 'remove' | 'escape' | 'reject';
+      expectedBehavior: "remove" | "escape" | "reject";
     }>,
   ) => {
     describe(`${sanitizerName} XSS prevention`, () => {
@@ -375,16 +394,16 @@ export const securityTestPatterns = {
           const module = await import(importPath);
           const sanitizer = module[sanitizerName] || module.default;
 
-          if (expectedBehavior === 'reject') {
+          if (expectedBehavior === "reject") {
             expect(() => sanitizer(maliciousInput)).toThrow();
           } else {
             const result = sanitizer(maliciousInput);
 
-            if (expectedBehavior === 'remove') {
-              expect(result).not.toContain('<script>');
-              expect(result).not.toContain('javascript:');
-            } else if (expectedBehavior === 'escape') {
-              expect(result).toContain('&lt;script&gt;');
+            if (expectedBehavior === "remove") {
+              expect(result).not.toContain("<script>");
+              expect(result).not.toContain("javascript:");
+            } else if (expectedBehavior === "escape") {
+              expect(result).toContain("&lt;script&gt;");
             }
 
             scrapingAssertions.hasCleanHTML(result);
@@ -409,7 +428,7 @@ export const securityTestPatterns = {
   ) => {
     describe(`${validatorName} URL security`, () => {
       urlScenarios.forEach(({ name, url, shouldAllow, reason }) => {
-        test(`should ${shouldAllow ? 'allow' : 'block'} ${name}`, async () => {
+        test(`should ${shouldAllow ? "allow" : "block"} ${name}`, async () => {
           const module = await import(importPath);
           const validator = module[validatorName] || module.default;
 
@@ -435,19 +454,26 @@ export const createTestScenarios = {
    */
   basicScraping: () => [
     {
-      name: 'simple HTML page',
-      url: 'https://example.com',
-      expectedData: { title: 'Example Domain' },
+      name: "simple HTML page",
+      url: "https://example.com",
+      expectedData: { title: "Example Domain" },
     },
     {
-      name: 'page with links',
-      url: 'https://example.com/links',
-      expectedData: { links: ['https://example.com/page1', 'https://example.com/page2'] },
+      name: "page with links",
+      url: "https://example.com/links",
+      expectedData: {
+        links: ["https://example.com/page1", "https://example.com/page2"],
+      },
     },
     {
-      name: 'page with images',
-      url: 'https://example.com/images',
-      expectedData: { images: ['https://example.com/img1.jpg', 'https://example.com/img2.jpg'] },
+      name: "page with images",
+      url: "https://example.com/images",
+      expectedData: {
+        images: [
+          "https://example.com/img1.jpg",
+          "https://example.com/img2.jpg",
+        ],
+      },
     },
   ],
 
@@ -456,19 +482,21 @@ export const createTestScenarios = {
    */
   performanceScenarios: () => [
     {
-      name: 'large page (1MB)',
-      htmlGenerator: () => `<html><body>${'<p>Content</p>'.repeat(10000)}</body></html>`,
+      name: "large page (1MB)",
+      htmlGenerator: () =>
+        `<html><body>${"<p>Content</p>".repeat(10000)}</body></html>`,
       maxDuration: 2000,
     },
     {
-      name: 'deeply nested structure',
-      htmlGenerator: () => `${'<div>'.repeat(100)}Content${'</div>'.repeat(100)}`,
+      name: "deeply nested structure",
+      htmlGenerator: () =>
+        `${"<div>".repeat(100)}Content${"</div>".repeat(100)}`,
       maxDuration: 1000,
     },
     {
-      name: 'many elements (10k)',
+      name: "many elements (10k)",
       htmlGenerator: () =>
-        `<html><body>${Array.from({ length: 10000 }, (_, i) => `<span id="item-${i}">Item ${i}</span>`).join('')}</body></html>`,
+        `<html><body>${Array.from({ length: 10000 }, (_, i) => `<span id="item-${i}">Item ${i}</span>`).join("")}</body></html>`,
       maxDuration: 3000,
     },
   ],
@@ -478,24 +506,24 @@ export const createTestScenarios = {
    */
   errorScenarios: () => [
     {
-      name: 'invalid URL',
-      input: 'not-a-url',
-      expectedError: 'Invalid URL',
+      name: "invalid URL",
+      input: "not-a-url",
+      expectedError: "Invalid URL",
     },
     {
-      name: '404 error',
-      input: 'https://httpbin.org/status/404',
-      expectedError: '404',
+      name: "404 error",
+      input: "https://httpbin.org/status/404",
+      expectedError: "404",
     },
     {
-      name: 'timeout',
-      input: 'https://httpbin.org/delay/10',
-      expectedError: 'timeout',
+      name: "timeout",
+      input: "https://httpbin.org/delay/10",
+      expectedError: "timeout",
     },
     {
-      name: 'malformed HTML',
-      input: '<html><body><div>Unclosed div</body></html>',
-      expectedError: 'parse',
+      name: "malformed HTML",
+      input: "<html><body><div>Unclosed div</body></html>",
+      expectedError: "parse",
     },
   ],
 
@@ -504,24 +532,24 @@ export const createTestScenarios = {
    */
   securityScenarios: () => [
     {
-      name: 'script injection',
+      name: "script injection",
       maliciousInput: '<script>alert("xss")</script>',
-      expectedBehavior: 'remove' as const,
+      expectedBehavior: "remove" as const,
     },
     {
-      name: 'javascript URL',
-      maliciousInput: 'javascript:alert(1)',
-      expectedBehavior: 'reject' as const,
+      name: "javascript URL",
+      maliciousInput: "javascript:alert(1)",
+      expectedBehavior: "reject" as const,
     },
     {
-      name: 'data URL with script',
-      maliciousInput: 'data:text/html,<script>alert(1)</script>',
-      expectedBehavior: 'reject' as const,
+      name: "data URL with script",
+      maliciousInput: "data:text/html,<script>alert(1)</script>",
+      expectedBehavior: "reject" as const,
     },
     {
-      name: 'iframe injection',
+      name: "iframe injection",
       maliciousInput: '<iframe src="javascript:alert(1)"></iframe>',
-      expectedBehavior: 'remove' as const,
+      expectedBehavior: "remove" as const,
     },
   ],
 };

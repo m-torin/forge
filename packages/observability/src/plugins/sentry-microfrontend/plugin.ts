@@ -7,16 +7,16 @@
 import type { LogLevel, ObservabilityContext } from '../../core/types';
 import { SentryPlugin } from '../sentry/plugin';
 import {
+  createBackstageBeforeSend,
   createMultiplexedTransport,
-  createZoneBeforeSend,
-  enhanceEventWithZone,
+  enhanceEventWithBackstageApp,
 } from './multiplexed-transport';
 import type { SentryScope, SentrySDK } from './sentry-types';
 import { mapLogLevelToSentrySeverity } from './sentry-types';
 import type { MicroFrontendMode, SentryMicroFrontendConfig } from './types';
 import {
-  createZoneScope,
-  detectCurrentZone,
+  createBackstageScope,
+  detectCurrentBackstageApp,
   ensureSingleInit,
   getParentSentry,
   hasParentSentry,
@@ -28,9 +28,9 @@ import {
  */
 export class SentryMicroFrontendPlugin extends SentryPlugin {
   private mode: MicroFrontendMode;
-  private zone: string | undefined;
+  private backstageApp: string | undefined;
   private parentSentry: SentrySDK | undefined;
-  private zoneScope: SentryScope | undefined;
+  private backstageScope: SentryScope | undefined;
   private microFrontendConfig: SentryMicroFrontendConfig;
   private eventProcessorCleanup?: () => void;
 
@@ -46,7 +46,7 @@ export class SentryMicroFrontendPlugin extends SentryPlugin {
 
     this.mode = mode;
     this.microFrontendConfig = config;
-    this.zone = config.zone || detectCurrentZone(config.zones);
+    this.backstageApp = config.backstageApp || detectCurrentBackstageApp(config.backstageApps);
 
     // Handle parent Sentry if in child mode
     if (this.mode === 'child') {
@@ -55,16 +55,19 @@ export class SentryMicroFrontendPlugin extends SentryPlugin {
         this.parentSentry = parent as SentrySDK;
         this.enabled = true; // Re-enable since we'll use parent
 
-        // Create zone-specific scope
-        if (this.zone && this.parentSentry.Scope) {
-          this.zoneScope = createZoneScope(this.zone, config.globalTags) as SentryScope;
+        // Create backstageApp-specific scope
+        if (this.backstageApp && this.parentSentry.Scope) {
+          this.backstageScope = createBackstageScope(
+            this.backstageApp,
+            config.globalTags,
+          ) as SentryScope;
         }
       }
     }
 
     // Mark as host if applicable
     if (this.mode === 'host') {
-      markAsHost(this.zone);
+      markAsHost(this.backstageApp);
     }
   }
 
@@ -98,7 +101,11 @@ export class SentryMicroFrontendPlugin extends SentryPlugin {
     if (mode === 'child') {
       // Disable initialization in child mode
       preparedConfig.enabled = false;
-    } else if (mode === 'host' && config.zones && config.useMultiplexedTransport !== false) {
+    } else if (
+      mode === 'host' &&
+      config.backstageApps &&
+      config.useMultiplexedTransport !== false
+    ) {
       // Host mode with multiplexed transport is handled in initialize()
       // Don't set transport here as it needs Sentry to be loaded first
     }
@@ -118,8 +125,8 @@ export class SentryMicroFrontendPlugin extends SentryPlugin {
         this.client = this.parentSentry;
         this.initialized = true;
 
-        // Configure parent Sentry to include zone information
-        if (this.zone && mergedConfig.addZoneContext !== false) {
+        // Configure parent Sentry to include backstageApp information
+        if (this.backstageApp && mergedConfig.addBackstageContext !== false) {
           this.configureParentSentry();
         }
       }
@@ -141,7 +148,7 @@ export class SentryMicroFrontendPlugin extends SentryPlugin {
     await super.initialize(mergedConfig);
 
     // Additional setup for host mode
-    if (this.mode === 'host' && this.client && mergedConfig.zones) {
+    if (this.mode === 'host' && this.client && mergedConfig.backstageApps) {
       this.setupHostMode(mergedConfig);
     }
   }
@@ -150,9 +157,9 @@ export class SentryMicroFrontendPlugin extends SentryPlugin {
    * Configure parent Sentry instance for child mode
    */
   private configureParentSentry(): void {
-    if (!this.parentSentry || !this.zone) {
+    if (!this.parentSentry || !this.backstageApp) {
       console.warn(
-        '[SentryMicroFrontendPlugin] Cannot configure parent Sentry: missing parentSentry or zone',
+        '[SentryMicroFrontendPlugin] Cannot configure parent Sentry: missing parentSentry or backstageApp',
       );
       return;
     }
@@ -162,7 +169,7 @@ export class SentryMicroFrontendPlugin extends SentryPlugin {
       const processor = (event: any) => {
         try {
           if (this.shouldProcessEvent(event)) {
-            enhanceEventWithZone(event, this.zone || '', {
+            enhanceEventWithBackstageApp(event, this.backstageApp || '', {
               mode: this.mode,
               plugin: 'SentryMicroFrontendPlugin',
             });
@@ -173,7 +180,7 @@ export class SentryMicroFrontendPlugin extends SentryPlugin {
         return event;
       };
 
-      // Add global event processor to include zone information
+      // Add global event processor to include backstageApp information
       if (typeof this.parentSentry.addEventProcessor === 'function') {
         this.parentSentry.addEventProcessor(processor);
 
@@ -196,15 +203,17 @@ export class SentryMicroFrontendPlugin extends SentryPlugin {
    * Set up host mode with multiplexed transport
    */
   private setupHostMode(config: SentryMicroFrontendConfig): void {
-    if (!config.zones || !this.client) {
-      console.warn('[SentryMicroFrontendPlugin] Cannot setup host mode: missing zones or client');
+    if (!config.backstageApps || !this.client) {
+      console.warn(
+        '[SentryMicroFrontendPlugin] Cannot setup host mode: missing backstageApps or client',
+      );
       return;
     }
 
     try {
       // Create multiplexed transport
       const transport = createMultiplexedTransport(
-        config.zones,
+        config.backstageApps,
         config.fallbackDsn || config.dsn,
         this.client,
       );
@@ -219,7 +228,7 @@ export class SentryMicroFrontendPlugin extends SentryPlugin {
         (this.client as any).init({
           ...currentOptions,
           transport,
-          beforeSend: createZoneBeforeSend(this.zone || 'main', config.beforeSend),
+          beforeSend: createBackstageBeforeSend(this.backstageApp || 'main', config.beforeSend),
         });
       } else {
         console.warn(
@@ -240,8 +249,12 @@ export class SentryMicroFrontendPlugin extends SentryPlugin {
       return false;
     }
 
-    // Check if event is from our zone
-    if (this.zone && event.tags?.zone && event.tags.zone !== this.zone) {
+    // Check if event is from our backstageApp
+    if (
+      this.backstageApp &&
+      event.tags?.backstageApp &&
+      event.tags.backstageApp !== this.backstageApp
+    ) {
       return false;
     }
 
@@ -249,23 +262,23 @@ export class SentryMicroFrontendPlugin extends SentryPlugin {
   }
 
   /**
-   * Capture an exception with zone context
+   * Capture an exception with backstageApp context
    */
   captureException(error: Error | unknown, context?: ObservabilityContext): void {
     if (!this.enabled) return;
 
     try {
-      if (this.mode === 'child' && this.parentSentry && this.zoneScope) {
-        // Use parent Sentry with zone scope
+      if (this.mode === 'child' && this.parentSentry && this.backstageScope) {
+        // Use parent Sentry with backstageApp scope
         if (typeof this.parentSentry.withScope === 'function') {
           this.parentSentry.withScope((scope: any) => {
             try {
-              // Copy zone scope properties
-              if (this.zoneScope && typeof scope.setTag === 'function') {
-                scope.setTag('zone', this.zone || 'unknown');
+              // Copy backstageApp scope properties
+              if (this.backstageScope && typeof scope.setTag === 'function') {
+                scope.setTag('backstageApp', this.backstageApp || 'unknown');
                 scope.setTag('microFrontend', true);
                 scope.setContext('microFrontend', {
-                  zone: this.zone,
+                  backstageApp: this.backstageApp,
                   mode: this.mode,
                 });
               }
@@ -286,11 +299,11 @@ export class SentryMicroFrontendPlugin extends SentryPlugin {
           console.warn('[SentryMicroFrontendPlugin] Parent Sentry does not support withScope');
         }
       } else {
-        // Use standard capture with zone enhancement
+        // Use standard capture with backstageApp enhancement
         const enhancedContext = {
           ...context,
           microFrontend: {
-            zone: this.zone,
+            backstageApp: this.backstageApp,
             mode: this.mode,
           },
         };
@@ -302,7 +315,7 @@ export class SentryMicroFrontendPlugin extends SentryPlugin {
   }
 
   /**
-   * Capture a message with zone context
+   * Capture a message with backstageApp context
    */
   captureMessage(message: string, level: LogLevel = 'info', context?: ObservabilityContext): void {
     if (!this.enabled) return;
@@ -310,18 +323,18 @@ export class SentryMicroFrontendPlugin extends SentryPlugin {
     try {
       const sentryLevel = mapLogLevelToSentrySeverity(level);
 
-      if (this.mode === 'child' && this.parentSentry && this.zoneScope) {
-        // Use parent Sentry with zone scope
+      if (this.mode === 'child' && this.parentSentry && this.backstageScope) {
+        // Use parent Sentry with backstageApp scope
         if (typeof this.parentSentry.withScope === 'function') {
           this.parentSentry.withScope((scope: SentryScope) => {
             try {
-              // Copy zone scope properties
-              if (this.zoneScope && typeof scope.setTag === 'function') {
-                scope.setTag('zone', this.zone || 'unknown');
+              // Copy backstageApp scope properties
+              if (this.backstageScope && typeof scope.setTag === 'function') {
+                scope.setTag('backstageApp', this.backstageApp || 'unknown');
                 scope.setTag('microFrontend', true);
                 if (typeof scope.setContext === 'function') {
                   scope.setContext('microFrontend', {
-                    zone: this.zone,
+                    backstageApp: this.backstageApp,
                     mode: this.mode,
                   });
                 }
@@ -359,10 +372,17 @@ export class SentryMicroFrontendPlugin extends SentryPlugin {
   }
 
   /**
-   * Get the current zone
+   * Get the current Backstage app identifier
+   */
+  getBackstageApp(): string | undefined {
+    return this.backstageApp;
+  }
+
+  /**
+   * @deprecated Use getBackstageApp instead.
    */
   getZone(): string | undefined {
-    return this.zone;
+    return this.getBackstageApp();
   }
 
   /**
@@ -371,7 +391,7 @@ export class SentryMicroFrontendPlugin extends SentryPlugin {
   getDebugInfo(): Record<string, any> {
     return {
       mode: this.mode,
-      zone: this.zone,
+      backstageApp: this.backstageApp,
       enabled: this.enabled,
       initialized: this.initialized,
       hasParentSentry: this.mode === 'child' && !!this.parentSentry,
@@ -390,11 +410,11 @@ export class SentryMicroFrontendPlugin extends SentryPlugin {
         this.eventProcessorCleanup = undefined;
       }
 
-      // Clear zone scope
-      if (this.zoneScope && typeof (this.zoneScope as any).clear === 'function') {
-        (this.zoneScope as any).clear();
+      // Clear backstageApp scope
+      if (this.backstageScope && typeof (this.backstageScope as any).clear === 'function') {
+        (this.backstageScope as any).clear();
       }
-      this.zoneScope = undefined;
+      this.backstageScope = undefined;
 
       // Clear parent Sentry reference
       this.parentSentry = undefined;

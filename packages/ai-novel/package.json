@@ -1,0 +1,103 @@
+{
+  "name": "@repo/ai-novel",
+  "version": "1.0.0",
+  "description": "Notion-style WYSIWYG editor with AI-powered autocompletions",
+  "keywords": [
+    "ai",
+    "novel",
+    "editor",
+    "markdown",
+    "nextjs",
+    "react"
+  ],
+  "homepage": "https://novel.sh",
+  "bugs": {
+    "url": "https://github.com/steven-tey/novel/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/steven-tey/novel.git"
+  },
+  "license": "Apache-2.0",
+  "author": "Steven Tey <stevensteel97@gmail.com>",
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "format": "prettier --write ./src",
+    "knip": "knip --reporter json --exclude unlisted,unresolved,exports,dependencies,files,binaries,types,duplicates",
+    "lint": "eslint . --fix --cache",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "test:watch": "vitest --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@radix-ui/react-slot": "^1.1.1",
+    "@tiptap/core": "^3.2.0",
+    "@tiptap/extension-character-count": "^3.2.0",
+    "@tiptap/extension-code-block-lowlight": "^3.2.0",
+    "@tiptap/extension-color": "^3.2.0",
+    "@tiptap/extension-highlight": "^3.2.0",
+    "@tiptap/extension-horizontal-rule": "^3.2.0",
+    "@tiptap/extension-image": "^3.2.0",
+    "@tiptap/extension-link": "^3.2.0",
+    "@tiptap/extension-placeholder": "^3.2.0",
+    "@tiptap/extension-task-item": "^3.2.0",
+    "@tiptap/extension-task-list": "^3.2.0",
+    "@tiptap/extension-text-style": "^3.2.0",
+    "@tiptap/extension-underline": "^3.2.0",
+    "@tiptap/extension-youtube": "^3.2.0",
+    "@tiptap/pm": "^3.2.0",
+    "@tiptap/react": "^3.2.0",
+    "@tiptap/starter-kit": "^3.2.0",
+    "@tiptap/suggestion": "^3.2.0",
+    "@types/node": "catalog:",
+    "cmdk": "catalog:",
+    "jotai": "^2.11.0",
+    "katex": "^0.16.20",
+    "react-markdown": "catalog:",
+    "react-moveable": "^0.56.0",
+    "react-tweet": "^3.2.1",
+    "tippy.js": "^6.3.7",
+    "tiptap-extension-global-drag-handle": "^0.1.16",
+    "tiptap-markdown": "^0.8.10",
+    "tunnel-rat": "^0.1.2"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/qa": "workspace:*",
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:",
+    "@tiptap/extension-document": "^3.2.0",
+    "@tiptap/extension-paragraph": "^3.2.0",
+    "@tiptap/extension-text": "^3.2.0",
+    "@types/katex": "^0.16.7",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "eslint": "catalog:",
+    "knip": "catalog:",
+    "madge": "catalog:",
+    "prettier": "^3.6.2",
+    "tsup": "^8.3.5",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  }
+}

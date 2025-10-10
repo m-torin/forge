@@ -39,7 +39,7 @@ variable "doppler_config" {
         "CLOUDFLARE_ACCOUNT_ID"
       ])
     }), {})
-    
+
     upstash = optional(object({
       config_name = optional(string)
       secrets = optional(list(string), [
@@ -48,7 +48,7 @@ variable "doppler_config" {
         "UPSTASH_TEAM_NAME"
       ])
     }), {})
-    
+
     vercel = optional(object({
       config_name = optional(string)
       secrets = optional(list(string), [
@@ -57,7 +57,7 @@ variable "doppler_config" {
         "VERCEL_TEAM_ID"
       ])
     }), {})
-    
+
     monitoring = optional(object({
       config_name = optional(string)
       secrets = optional(list(string), [
@@ -68,7 +68,7 @@ variable "doppler_config" {
         "SENTRY_DSN"
       ])
     }), {})
-    
+
     integrations = optional(object({
       config_name = optional(string)
       secrets = optional(list(string), [
@@ -77,7 +77,8 @@ variable "doppler_config" {
         "GITHUB_TOKEN",
         "OPENAI_API_KEY",
         "RESEND_API_KEY",
-        "KNOCK_API_KEY"
+        "KNOCK_API_KEY",
+        "IMAGE_SIGNING_KEY"
       ])
     }), {})
   })
@@ -107,6 +108,7 @@ variable "fallback_secrets" {
     openai_api_key          = optional(string, "")
     resend_api_key          = optional(string, "")
     knock_api_key           = optional(string, "")
+    image_signing_key       = optional(string, "")
   })
   sensitive = true
   default   = {}

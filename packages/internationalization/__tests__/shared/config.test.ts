@@ -5,28 +5,28 @@
  * languine.json validation, configuration merging, and validation patterns.
  */
 
-import { describe, expect, test, vi } from 'vitest';
-import { i18nTestPatterns } from '../i18n-test-factory';
+import { describe, expect, test, vi } from "vitest";
+import { i18nTestPatterns } from "../i18n-test-factory";
 
 // ================================================================================================
 // CONFIGURATION VALIDATION TESTS
 // ================================================================================================
 
-describe('configuration Validation', () => {
-  test('should validate languine.json structure', async () => {
-    const mockValidateConfig = vi.fn(config => {
+describe("configuration Validation", () => {
+  test("should validate languine.json structure", async () => {
+    const mockValidateConfig = vi.fn((config) => {
       const errors = [];
 
       if (!config.locale) {
-        errors.push('Missing locale configuration');
+        errors.push("Missing locale configuration");
       }
 
       if (config.locale && !config.locale.source) {
-        errors.push('Missing source locale');
+        errors.push("Missing source locale");
       }
 
       if (config.locale && !Array.isArray(config.locale.targets)) {
-        errors.push('Targets must be an array');
+        errors.push("Targets must be an array");
       }
 
       return errors;
@@ -35,11 +35,11 @@ describe('configuration Validation', () => {
     // Test valid configuration
     const validConfig = {
       locale: {
-        source: 'en',
-        targets: ['fr', 'es', 'pt', 'de'],
+        source: "en",
+        targets: ["fr", "es", "pt", "de"],
       },
-      ns: ['common', 'navigation'],
-      dictionary: 'locales',
+      ns: ["common", "navigation"],
+      dictionary: "locales",
     };
 
     expect(mockValidateConfig(validConfig)).toHaveLength(0);
@@ -49,34 +49,34 @@ describe('configuration Validation', () => {
       {},
       { locale: null },
       { locale: { source: null, targets: [] } },
-      { locale: { source: 'en', targets: null } },
-      { locale: { source: 'en', targets: 'not-array' } },
+      { locale: { source: "en", targets: null } },
+      { locale: { source: "en", targets: "not-array" } },
     ];
 
-    invalidConfigs.forEach(config => {
+    invalidConfigs.forEach((config) => {
       const errors = mockValidateConfig(config);
       expect(errors.length).toBeGreaterThan(0);
     });
   });
 
-  test('should validate namespace configuration', async () => {
-    const mockValidateNamespaces = vi.fn(config => {
+  test("should validate namespace configuration", async () => {
+    const mockValidateNamespaces = vi.fn((config) => {
       const errors = [];
 
       if (!config.ns) {
-        errors.push('Missing namespace configuration');
+        errors.push("Missing namespace configuration");
       }
 
       if (config.ns && !Array.isArray(config.ns)) {
-        errors.push('Namespaces must be an array');
+        errors.push("Namespaces must be an array");
       }
 
       if (config.ns && config.ns.length === 0) {
-        errors.push('At least one namespace is required');
+        errors.push("At least one namespace is required");
       }
 
-      if (config.ns && config.ns.some(ns => typeof ns !== 'string')) {
-        errors.push('All namespaces must be strings');
+      if (config.ns && config.ns.some((ns) => typeof ns !== "string")) {
+        errors.push("All namespaces must be strings");
       }
 
       return errors;
@@ -84,12 +84,12 @@ describe('configuration Validation', () => {
 
     // Test valid namespace configurations
     const validConfigs = [
-      { ns: ['common'] },
-      { ns: ['common', 'navigation'] },
-      { ns: ['common', 'navigation', 'forms', 'errors'] },
+      { ns: ["common"] },
+      { ns: ["common", "navigation"] },
+      { ns: ["common", "navigation", "forms", "errors"] },
     ];
 
-    validConfigs.forEach(config => {
+    validConfigs.forEach((config) => {
       expect(mockValidateNamespaces(config)).toHaveLength(0);
     });
 
@@ -98,31 +98,31 @@ describe('configuration Validation', () => {
       {},
       { ns: null },
       { ns: [] },
-      { ns: 'not-array' },
-      { ns: [123, 'common'] },
-      { ns: ['common', null] },
+      { ns: "not-array" },
+      { ns: [123, "common"] },
+      { ns: ["common", null] },
     ];
 
-    invalidConfigs.forEach(config => {
+    invalidConfigs.forEach((config) => {
       const errors = mockValidateNamespaces(config);
       expect(errors.length).toBeGreaterThan(0);
     });
   });
 
-  test('should validate dictionary path configuration', async () => {
-    const mockValidateDictionary = vi.fn(config => {
+  test("should validate dictionary path configuration", async () => {
+    const mockValidateDictionary = vi.fn((config) => {
       const errors = [];
 
       if (!config.dictionary) {
-        errors.push('Missing dictionary path');
+        errors.push("Missing dictionary path");
       }
 
-      if (config.dictionary && typeof config.dictionary !== 'string') {
-        errors.push('Dictionary path must be a string');
+      if (config.dictionary && typeof config.dictionary !== "string") {
+        errors.push("Dictionary path must be a string");
       }
 
       if (config.dictionary && config.dictionary.length === 0) {
-        errors.push('Dictionary path cannot be empty');
+        errors.push("Dictionary path cannot be empty");
       }
 
       return errors;
@@ -130,13 +130,13 @@ describe('configuration Validation', () => {
 
     // Test valid dictionary configurations
     const validConfigs = [
-      { dictionary: 'locales' },
-      { dictionary: 'i18n' },
-      { dictionary: 'dictionaries' },
-      { dictionary: 'src/locales' },
+      { dictionary: "locales" },
+      { dictionary: "i18n" },
+      { dictionary: "dictionaries" },
+      { dictionary: "src/locales" },
     ];
 
-    validConfigs.forEach(config => {
+    validConfigs.forEach((config) => {
       expect(mockValidateDictionary(config)).toHaveLength(0);
     });
 
@@ -144,13 +144,13 @@ describe('configuration Validation', () => {
     const invalidConfigs = [
       {},
       { dictionary: null },
-      { dictionary: '' },
+      { dictionary: "" },
       { dictionary: 123 },
       { dictionary: [] },
       { dictionary: {} },
     ];
 
-    invalidConfigs.forEach(config => {
+    invalidConfigs.forEach((config) => {
       const errors = mockValidateDictionary(config);
       expect(errors.length).toBeGreaterThan(0);
     });
@@ -161,8 +161,8 @@ describe('configuration Validation', () => {
 // CONFIGURATION MERGING TESTS
 // ================================================================================================
 
-describe('configuration Merging', () => {
-  test('should merge configurations properly', async () => {
+describe("configuration Merging", () => {
+  test("should merge configurations properly", async () => {
     const mockMergeConfigs = vi.fn((baseConfig, userConfig) => {
       return {
         ...baseConfig,
@@ -178,35 +178,39 @@ describe('configuration Merging', () => {
 
     const baseConfig = {
       locale: {
-        source: 'en',
-        targets: ['fr', 'es'],
+        source: "en",
+        targets: ["fr", "es"],
       },
-      ns: ['common'],
-      dictionary: 'locales',
+      ns: ["common"],
+      dictionary: "locales",
     };
 
     const userConfig = {
       locale: {
-        targets: ['fr', 'es', 'pt', 'de'],
+        targets: ["fr", "es", "pt", "de"],
       },
-      ns: ['common', 'navigation'],
+      ns: ["common", "navigation"],
     };
 
     const merged = mockMergeConfigs(baseConfig, userConfig);
 
-    expect(merged.locale.source).toBe('en');
-    expect(merged.locale.targets).toStrictEqual(['fr', 'es', 'pt', 'de']);
-    expect(merged.ns).toStrictEqual(['common', 'navigation']);
-    expect(merged.dictionary).toBe('locales');
+    expect(merged.locale.source).toBe("en");
+    expect(merged.locale.targets).toStrictEqual(["fr", "es", "pt", "de"]);
+    expect(merged.ns).toStrictEqual(["common", "navigation"]);
+    expect(merged.dictionary).toBe("locales");
   });
 
-  test('should handle deep configuration merging', async () => {
+  test("should handle deep configuration merging", async () => {
     const mockDeepMerge = vi.fn((base, user) => {
       const mergeDeep = (target, source) => {
         const result = { ...target };
 
         for (const key in source) {
-          if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+          if (
+            source[key] &&
+            typeof source[key] === "object" &&
+            !Array.isArray(source[key])
+          ) {
             result[key] = mergeDeep(result[key] || {}, source[key]);
           } else {
             result[key] = source[key];
@@ -221,53 +225,53 @@ describe('configuration Merging', () => {
 
     const baseConfig = {
       locale: {
-        source: 'en',
-        targets: ['fr'],
+        source: "en",
+        targets: ["fr"],
       },
       options: {
         fallback: true,
         cache: true,
       },
       paths: {
-        dictionaries: './locales',
-        output: './dist',
+        dictionaries: "./locales",
+        output: "./dist",
       },
     };
 
     const userConfig = {
       locale: {
-        targets: ['fr', 'es'],
+        targets: ["fr", "es"],
       },
       options: {
         cache: false,
         minify: true,
       },
       paths: {
-        output: './build',
+        output: "./build",
       },
     };
 
     const merged = mockDeepMerge(baseConfig, userConfig);
 
-    expect(merged.locale.source).toBe('en');
-    expect(merged.locale.targets).toStrictEqual(['fr', 'es']);
+    expect(merged.locale.source).toBe("en");
+    expect(merged.locale.targets).toStrictEqual(["fr", "es"]);
     expect(merged.options.fallback).toBeTruthy();
     expect(merged.options.cache).toBeFalsy();
     expect(merged.options.minify).toBeTruthy();
-    expect(merged.paths.dictionaries).toBe('./locales');
-    expect(merged.paths.output).toBe('./build');
+    expect(merged.paths.dictionaries).toBe("./locales");
+    expect(merged.paths.output).toBe("./build");
   });
 
-  test('should handle configuration conflicts', async () => {
-    const mockResolveConflicts = vi.fn((base, user, strategy = 'user-wins') => {
+  test("should handle configuration conflicts", async () => {
+    const mockResolveConflicts = vi.fn((base, user, strategy = "user-wins") => {
       switch (strategy) {
-        case 'user-wins':
+        case "user-wins":
           return { ...base, ...user };
-        case 'base-wins':
+        case "base-wins":
           return { ...user, ...base };
-        case 'merge-arrays':
+        case "merge-arrays":
           const result = { ...base, ...user };
-          Object.keys(result).forEach(key => {
+          Object.keys(result).forEach((key) => {
             if (Array.isArray(base[key]) && Array.isArray(user[key])) {
               result[key] = [...new Set([...base[key], ...user[key]])];
             }
@@ -279,27 +283,35 @@ describe('configuration Merging', () => {
     });
 
     const baseConfig = {
-      locales: ['en', 'fr'],
-      features: ['translation', 'pluralization'],
+      locales: ["en", "fr"],
+      features: ["translation", "pluralization"],
     };
 
     const userConfig = {
-      locales: ['en', 'es'],
-      features: ['translation', 'interpolation'],
+      locales: ["en", "es"],
+      features: ["translation", "interpolation"],
     };
 
     // Test different conflict resolution strategies
-    const userWins = mockResolveConflicts(baseConfig, userConfig, 'user-wins');
-    expect(userWins.locales).toStrictEqual(['en', 'es']);
-    expect(userWins.features).toStrictEqual(['translation', 'interpolation']);
+    const userWins = mockResolveConflicts(baseConfig, userConfig, "user-wins");
+    expect(userWins.locales).toStrictEqual(["en", "es"]);
+    expect(userWins.features).toStrictEqual(["translation", "interpolation"]);
 
-    const baseWins = mockResolveConflicts(baseConfig, userConfig, 'base-wins');
-    expect(baseWins.locales).toStrictEqual(['en', 'fr']);
-    expect(baseWins.features).toStrictEqual(['translation', 'pluralization']);
+    const baseWins = mockResolveConflicts(baseConfig, userConfig, "base-wins");
+    expect(baseWins.locales).toStrictEqual(["en", "fr"]);
+    expect(baseWins.features).toStrictEqual(["translation", "pluralization"]);
 
-    const mergeArrays = mockResolveConflicts(baseConfig, userConfig, 'merge-arrays');
-    expect(mergeArrays.locales).toStrictEqual(['en', 'fr', 'es']);
-    expect(mergeArrays.features).toStrictEqual(['translation', 'pluralization', 'interpolation']);
+    const mergeArrays = mockResolveConflicts(
+      baseConfig,
+      userConfig,
+      "merge-arrays",
+    );
+    expect(mergeArrays.locales).toStrictEqual(["en", "fr", "es"]);
+    expect(mergeArrays.features).toStrictEqual([
+      "translation",
+      "pluralization",
+      "interpolation",
+    ]);
   });
 });
 
@@ -307,30 +319,30 @@ describe('configuration Merging', () => {
 // CONFIGURATION LOADING TESTS
 // ================================================================================================
 
-describe('configuration Loading', () => {
-  test('should load configuration from multiple sources', async () => {
-    const mockLoadConfig = vi.fn(async sources => {
+describe("configuration Loading", () => {
+  test("should load configuration from multiple sources", async () => {
+    const mockLoadConfig = vi.fn(async (sources) => {
       const configs = [];
 
       for (const source of sources) {
         switch (source.type) {
-          case 'file':
+          case "file":
             configs.push({
-              locale: { source: 'en', targets: ['fr'] },
-              ns: ['common'],
-              dictionary: 'locales',
+              locale: { source: "en", targets: ["fr"] },
+              ns: ["common"],
+              dictionary: "locales",
             });
             break;
-          case 'package':
+          case "package":
             configs.push({
-              locale: { targets: ['fr', 'es'] },
-              ns: ['common', 'navigation'],
+              locale: { targets: ["fr", "es"] },
+              ns: ["common", "navigation"],
             });
             break;
-          case 'user':
+          case "user":
             configs.push({
-              locale: { targets: ['fr', 'es', 'pt'] },
-              dictionary: 'i18n',
+              locale: { targets: ["fr", "es", "pt"] },
+              dictionary: "i18n",
             });
             break;
         }
@@ -353,41 +365,41 @@ describe('configuration Loading', () => {
     });
 
     const sources = [
-      { type: 'file', path: './languine.json' },
-      { type: 'package', path: './package.json' },
-      { type: 'user', path: './i18n.config.js' },
+      { type: "file", path: "./languine.json" },
+      { type: "package", path: "./package.json" },
+      { type: "user", path: "./i18n.config.js" },
     ];
 
     const config = await mockLoadConfig(sources);
 
-    expect(config.locale.source).toBe('en');
-    expect(config.locale.targets).toStrictEqual(['fr', 'es', 'pt']);
-    expect(config.ns).toStrictEqual(['common', 'navigation']);
-    expect(config.dictionary).toBe('i18n');
+    expect(config.locale.source).toBe("en");
+    expect(config.locale.targets).toStrictEqual(["fr", "es", "pt"]);
+    expect(config.ns).toStrictEqual(["common", "navigation"]);
+    expect(config.dictionary).toBe("i18n");
   });
 
-  test('should handle configuration loading errors', async () => {
-    const mockLoadConfigWithErrors = vi.fn(async sources => {
+  test("should handle configuration loading errors", async () => {
+    const mockLoadConfigWithErrors = vi.fn(async (sources) => {
       const configs = [];
       const errors = [];
 
       for (const source of sources) {
         try {
           switch (source.type) {
-            case 'file':
-              if (source.path === './invalid.json') {
-                throw new Error('File not found');
+            case "file":
+              if (source.path === "./invalid.json") {
+                throw new Error("File not found");
               }
-              configs.push({ locale: { source: 'en' } });
+              configs.push({ locale: { source: "en" } });
               break;
-            case 'package':
-              if (source.path === './invalid-package.json') {
-                throw new Error('Invalid JSON');
+            case "package":
+              if (source.path === "./invalid-package.json") {
+                throw new Error("Invalid JSON");
               }
-              configs.push({ ns: ['common'] });
+              configs.push({ ns: ["common"] });
               break;
             default:
-              throw new Error('Unknown source type');
+              throw new Error("Unknown source type");
           }
         } catch (error) {
           errors.push({ source, error: error.message });
@@ -398,17 +410,17 @@ describe('configuration Loading', () => {
     });
 
     const sources = [
-      { type: 'file', path: './languine.json' },
-      { type: 'file', path: './invalid.json' },
-      { type: 'package', path: './invalid-package.json' },
+      { type: "file", path: "./languine.json" },
+      { type: "file", path: "./invalid.json" },
+      { type: "package", path: "./invalid-package.json" },
     ];
 
     const result = await mockLoadConfigWithErrors(sources);
 
     expect(result.configs).toHaveLength(1);
     expect(result.errors).toHaveLength(2);
-    expect(result.errors[0].error).toBe('File not found');
-    expect(result.errors[1].error).toBe('Invalid JSON');
+    expect(result.errors[0].error).toBe("File not found");
+    expect(result.errors[1].error).toBe("Invalid JSON");
   });
 });
 
@@ -416,19 +428,19 @@ describe('configuration Loading', () => {
 // CONFIGURATION CACHING TESTS
 // ================================================================================================
 
-describe('configuration Caching', () => {
-  test('should cache configuration after first load', async () => {
+describe("configuration Caching", () => {
+  test("should cache configuration after first load", async () => {
     const mockConfigCache = {
       cache: new Map(),
-      loadConfig: vi.fn(async key => {
+      loadConfig: vi.fn(async (key) => {
         if (mockConfigCache.cache.has(key)) {
           return mockConfigCache.cache.get(key);
         }
 
         const config = {
-          locale: { source: 'en', targets: ['fr', 'es'] },
-          ns: ['common'],
-          dictionary: 'locales',
+          locale: { source: "en", targets: ["fr", "es"] },
+          ns: ["common"],
+          dictionary: "locales",
           loadTime: Date.now(),
         };
 
@@ -440,7 +452,7 @@ describe('configuration Caching', () => {
       }),
     };
 
-    const key = 'test-config';
+    const key = "test-config";
 
     // First load
     const config1 = await mockConfigCache.loadConfig(key);
@@ -456,7 +468,7 @@ describe('configuration Caching', () => {
     expect(config3.loadTime).toBeGreaterThan(config1.loadTime);
   });
 
-  test('should invalidate cache when configuration changes', async () => {
+  test("should invalidate cache when configuration changes", async () => {
     const mockConfigWatcher = {
       cache: new Map(),
       watchers: new Map(),
@@ -467,9 +479,9 @@ describe('configuration Caching', () => {
         }
 
         const config = {
-          locale: { source: 'en', targets: ['fr'] },
-          ns: ['common'],
-          dictionary: 'locales',
+          locale: { source: "en", targets: ["fr"] },
+          ns: ["common"],
+          dictionary: "locales",
           file,
           loadTime: Date.now(),
         };
@@ -478,17 +490,17 @@ describe('configuration Caching', () => {
         return config;
       }),
 
-      invalidateCache: vi.fn(key => {
+      invalidateCache: vi.fn((key) => {
         mockConfigWatcher.cache.delete(key);
       }),
 
-      simulateFileChange: vi.fn(key => {
+      simulateFileChange: vi.fn((key) => {
         mockConfigWatcher.invalidateCache(key);
       }),
     };
 
-    const key = 'test-config';
-    const file = './languine.json';
+    const key = "test-config";
+    const file = "./languine.json";
 
     // Load configuration
     const config1 = await mockConfigWatcher.loadConfig(key, file);
@@ -509,33 +521,33 @@ describe('configuration Caching', () => {
 
 i18nTestPatterns.testConfigurationValidation([
   {
-    name: 'validate minimal configuration',
+    name: "validate minimal configuration",
     configData: {
       locale: {
-        source: 'en',
-        targets: ['fr'],
+        source: "en",
+        targets: ["fr"],
       },
-      ns: ['common'],
-      dictionary: 'locales',
+      ns: ["common"],
+      dictionary: "locales",
     },
     expectedValid: true,
-    expectedProperties: ['locale', 'ns', 'dictionary'],
-    customAssertions: config => {
-      expect(config.locale.source).toBe('en');
-      expect(config.locale.targets).toStrictEqual(['fr']);
-      expect(config.ns).toStrictEqual(['common']);
-      expect(config.dictionary).toBe('locales');
+    expectedProperties: ["locale", "ns", "dictionary"],
+    customAssertions: (config) => {
+      expect(config.locale.source).toBe("en");
+      expect(config.locale.targets).toStrictEqual(["fr"]);
+      expect(config.ns).toStrictEqual(["common"]);
+      expect(config.dictionary).toBe("locales");
     },
   },
   {
-    name: 'validate complete configuration',
+    name: "validate complete configuration",
     configData: {
       locale: {
-        source: 'en',
-        targets: ['fr', 'es', 'pt', 'de'],
+        source: "en",
+        targets: ["fr", "es", "pt", "de"],
       },
-      ns: ['common', 'navigation', 'forms'],
-      dictionary: 'i18n',
+      ns: ["common", "navigation", "forms"],
+      dictionary: "i18n",
       options: {
         fallback: true,
         cache: true,
@@ -543,8 +555,8 @@ i18nTestPatterns.testConfigurationValidation([
       },
     },
     expectedValid: true,
-    expectedProperties: ['locale', 'ns', 'dictionary', 'options'],
-    customAssertions: config => {
+    expectedProperties: ["locale", "ns", "dictionary", "options"],
+    customAssertions: (config) => {
       expect(config.locale.targets).toHaveLength(4);
       expect(config.ns).toHaveLength(3);
       expect(config.options.fallback).toBeTruthy();
@@ -553,35 +565,35 @@ i18nTestPatterns.testConfigurationValidation([
     },
   },
   {
-    name: 'validate extended configuration',
+    name: "validate extended configuration",
     configData: {
       locale: {
-        source: 'en',
-        targets: ['fr', 'es', 'pt', 'de', 'it', 'ru'],
+        source: "en",
+        targets: ["fr", "es", "pt", "de", "it", "ru"],
       },
-      ns: ['common', 'navigation', 'forms', 'errors', 'api'],
-      dictionary: 'src/locales',
+      ns: ["common", "navigation", "forms", "errors", "api"],
+      dictionary: "src/locales",
       options: {
         fallback: true,
         cache: true,
         minify: true,
         interpolation: {
-          prefix: '{{',
-          suffix: '}}',
+          prefix: "{{",
+          suffix: "}}",
         },
       },
       paths: {
-        input: './src/locales',
-        output: './dist/locales',
+        input: "./src/locales",
+        output: "./dist/locales",
       },
     },
     expectedValid: true,
-    expectedProperties: ['locale', 'ns', 'dictionary', 'options', 'paths'],
-    customAssertions: config => {
+    expectedProperties: ["locale", "ns", "dictionary", "options", "paths"],
+    customAssertions: (config) => {
       expect(config.locale.targets).toHaveLength(6);
       expect(config.ns).toHaveLength(5);
-      expect(config.options.interpolation.prefix).toBe('{{');
-      expect(config.paths.input).toBe('./src/locales');
+      expect(config.options.interpolation.prefix).toBe("{{");
+      expect(config.paths.input).toBe("./src/locales");
     },
   },
 ]);
@@ -590,17 +602,17 @@ i18nTestPatterns.testConfigurationValidation([
 // CONFIGURATION ENVIRONMENT TESTS
 // ================================================================================================
 
-describe('configuration Environment', () => {
-  test('should adapt configuration based on environment', async () => {
-    const mockGetEnvConfig = vi.fn(env => {
+describe("configuration Environment", () => {
+  test("should adapt configuration based on environment", async () => {
+    const mockGetEnvConfig = vi.fn((env) => {
       const baseConfig = {
-        locale: { source: 'en', targets: ['fr', 'es'] },
-        ns: ['common'],
-        dictionary: 'locales',
+        locale: { source: "en", targets: ["fr", "es"] },
+        ns: ["common"],
+        dictionary: "locales",
       };
 
       switch (env) {
-        case 'development':
+        case "development":
           return {
             ...baseConfig,
             options: {
@@ -609,7 +621,7 @@ describe('configuration Environment', () => {
               watch: true,
             },
           };
-        case 'production':
+        case "production":
           return {
             ...baseConfig,
             options: {
@@ -618,10 +630,10 @@ describe('configuration Environment', () => {
               watch: false,
             },
           };
-        case 'test':
+        case "test":
           return {
             ...baseConfig,
-            locale: { source: 'en', targets: ['en'] }, // Only English in tests
+            locale: { source: "en", targets: ["en"] }, // Only English in tests
             options: {
               cache: false,
               minify: false,
@@ -633,33 +645,33 @@ describe('configuration Environment', () => {
       }
     });
 
-    const devConfig = mockGetEnvConfig('development');
+    const devConfig = mockGetEnvConfig("development");
     expect(devConfig.options.cache).toBeFalsy();
     expect(devConfig.options.watch).toBeTruthy();
 
-    const prodConfig = mockGetEnvConfig('production');
+    const prodConfig = mockGetEnvConfig("production");
     expect(prodConfig.options.cache).toBeTruthy();
     expect(prodConfig.options.minify).toBeTruthy();
 
-    const testConfig = mockGetEnvConfig('test');
-    expect(testConfig.locale.targets).toStrictEqual(['en']);
+    const testConfig = mockGetEnvConfig("test");
+    expect(testConfig.locale.targets).toStrictEqual(["en"]);
     expect(testConfig.options.watch).toBeFalsy();
   });
 
-  test('should handle environment variable overrides', async () => {
+  test("should handle environment variable overrides", async () => {
     const mockApplyEnvOverrides = vi.fn((config, env) => {
       const overrides = {};
 
       if (env.I18N_CACHE) {
-        overrides.cache = env.I18N_CACHE === 'true';
+        overrides.cache = env.I18N_CACHE === "true";
       }
 
       if (env.I18N_MINIFY) {
-        overrides.minify = env.I18N_MINIFY === 'true';
+        overrides.minify = env.I18N_MINIFY === "true";
       }
 
       if (env.I18N_LOCALES) {
-        overrides.locales = env.I18N_LOCALES.split(',');
+        overrides.locales = env.I18N_LOCALES.split(",");
       }
 
       return {
@@ -672,9 +684,9 @@ describe('configuration Environment', () => {
     });
 
     const baseConfig = {
-      locale: { source: 'en', targets: ['fr'] },
-      ns: ['common'],
-      dictionary: 'locales',
+      locale: { source: "en", targets: ["fr"] },
+      ns: ["common"],
+      dictionary: "locales",
       options: {
         cache: true,
         minify: false,
@@ -682,16 +694,21 @@ describe('configuration Environment', () => {
     };
 
     const env = {
-      I18N_CACHE: 'false',
-      I18N_MINIFY: 'true',
-      I18N_LOCALES: 'en,fr,es,pt',
+      I18N_CACHE: "false",
+      I18N_MINIFY: "true",
+      I18N_LOCALES: "en,fr,es,pt",
     };
 
     const configWithOverrides = mockApplyEnvOverrides(baseConfig, env);
 
     expect(configWithOverrides.options.cache).toBeFalsy();
     expect(configWithOverrides.options.minify).toBeTruthy();
-    expect(configWithOverrides.options.locales).toStrictEqual(['en', 'fr', 'es', 'pt']);
+    expect(configWithOverrides.options.locales).toStrictEqual([
+      "en",
+      "fr",
+      "es",
+      "pt",
+    ]);
   });
 });
 

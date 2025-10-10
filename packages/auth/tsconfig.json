@@ -1,5 +1,5 @@
 {
-  "extends": "@repo/config/typescript/nextjs.json",
+  "extends": "../config/src/typescript/nextjs.json",
   "compilerOptions": {
     "baseUrl": ".",
     "types": ["vitest/globals"],

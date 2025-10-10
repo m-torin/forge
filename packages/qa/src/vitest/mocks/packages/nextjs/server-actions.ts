@@ -6,11 +6,11 @@ import { vi } from 'vitest';
 // Note: "use server" is a directive, not a function, so we don't need to mock it
 
 // Server Action utilities
-export const createServerActionId = vi.fn((action: Function) => {
+const createServerActionId = vi.fn((action: Function) => {
   return `__server_action_${action.name || 'anonymous'}_${Math.random().toString(36).substring(2, 15)}`;
 });
 
-export const createServerActionWrapper = vi.fn((action: Function, actionId: string) => {
+const createServerActionWrapper = vi.fn((action: Function, actionId: string) => {
   const wrappedAction = async (...args: any[]) => {
     // Simulate server action execution
     return await action(...args);
@@ -22,7 +22,7 @@ export const createServerActionWrapper = vi.fn((action: Function, actionId: stri
 });
 
 // Mock form action handling
-export const mockFormAction = vi.fn((action: Function) => {
+const mockFormAction = vi.fn((action: Function) => {
   return async (formData: FormData) => {
     // Convert FormData to object for easier testing
     const data = Object.fromEntries(formData.entries());
@@ -31,7 +31,7 @@ export const mockFormAction = vi.fn((action: Function) => {
 });
 
 // Mock server action binding
-export const mockServerActionBinding = vi.fn((action: Function, ...boundArgs: any[]) => {
+const mockServerActionBinding = vi.fn((action: Function, ...boundArgs: any[]) => {
   return async (...args: any[]) => {
     return await action(...boundArgs, ...args);
   };
@@ -60,7 +60,7 @@ export const mockServerActionError = vi.fn((error: Error) => {
 });
 
 // Mock progressive enhancement
-export const mockProgressiveEnhancement = vi.fn((fallbackUrl: string) => {
+const mockProgressiveEnhancement = vi.fn((fallbackUrl: string) => {
   return {
     action: fallbackUrl,
     method: 'POST',
@@ -69,7 +69,7 @@ export const mockProgressiveEnhancement = vi.fn((fallbackUrl: string) => {
 });
 
 // Mock server action middleware
-export const mockServerActionMiddleware = vi.fn((action: Function) => {
+const mockServerActionMiddleware = vi.fn((action: Function) => {
   return async (request: any, context: any) => {
     // Simulate middleware execution
     return await action(request, context);
@@ -77,7 +77,7 @@ export const mockServerActionMiddleware = vi.fn((action: Function) => {
 });
 
 // Mock server action validation
-export const mockServerActionValidation = vi.fn((schema: any) => {
+const mockServerActionValidation = vi.fn((schema: any) => {
   return (action: Function) => {
     return async (data: any) => {
       // Simulate validation
@@ -93,7 +93,7 @@ export const mockServerActionValidation = vi.fn((schema: any) => {
 });
 
 // Mock server action with redirect
-export const mockServerActionWithRedirect = vi.fn((action: Function, redirectUrl: string) => {
+const mockServerActionWithRedirect = vi.fn((action: Function, redirectUrl: string) => {
   return async (...args: any[]) => {
     const result = await action(...args);
     // Simulate redirect after action
@@ -102,7 +102,7 @@ export const mockServerActionWithRedirect = vi.fn((action: Function, redirectUrl
 });
 
 // Mock server action with revalidation
-export const mockServerActionWithRevalidation = vi.fn((action: Function, paths: string[]) => {
+const mockServerActionWithRevalidation = vi.fn((action: Function, paths: string[]) => {
   return async (...args: any[]) => {
     const result = await action(...args);
     // Simulate revalidation
@@ -114,7 +114,7 @@ export const mockServerActionWithRevalidation = vi.fn((action: Function, paths: 
 });
 
 // Mock server action hooks for testing
-export const mockServerActionHooks = {
+const mockServerActionHooks = {
   onStart: vi.fn(),
   onSuccess: vi.fn(),
   onError: vi.fn(),
@@ -122,7 +122,7 @@ export const mockServerActionHooks = {
 };
 
 // Mock server action state
-export const mockServerActionState = vi.fn(() => ({
+const mockServerActionState = vi.fn(() => ({
   pending: false,
   error: null,
   data: null,

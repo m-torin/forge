@@ -3,6 +3,8 @@
  * Workflow metrics, execution history tracking, and performance monitoring
  */
 
+import { randomUUID } from 'crypto';
+
 import { createServerObservability } from '@repo/observability/server/next';
 import { WorkflowProvider } from '../types/index';
 
@@ -90,7 +92,7 @@ export interface ExecutionHistory {
   workflowId: string;
 }
 
-export interface PerformanceMetrics {
+interface PerformanceMetrics {
   /** Error metrics */
   errors: {
     errorRate: number;
@@ -355,8 +357,8 @@ export class WorkflowMonitor {
       history = history.filter((e: any) => e.startedAt >= start && e.startedAt <= end);
     }
 
-    // Sort by start time (newest first)
-    history.sort((a, b: any) => b.startedAt.getTime() - a.startedAt.getTime());
+    // Sort by start time (newest first) - ES2023 immutable sorting
+    history = history.toSorted((a, b: any) => b.startedAt.getTime() - a.startedAt.getTime());
 
     // Apply pagination
     if (options?.offset || options?.limit) {
@@ -646,7 +648,7 @@ export class WorkflowMonitor {
     );
     const commonErrors = Object.entries(errorCounts)
       .map(([error, count]: any) => ({ count, error }))
-      .sort((a, b: any) => b.count - a.count)
+      .toSorted((a, b: any) => b.count - a.count)
       .slice(0, 5);
 
     const now = new Date();
@@ -654,9 +656,25 @@ export class WorkflowMonitor {
     const recentExecutions = executions.filter((e: any) => e.startedAt >= oneHourAgo);
     const executionFrequency = recentExecutions.length;
 
-    const lastExecution = executions.sort(
-      (a, b: any) => b.startedAt.getTime() - a.startedAt.getTime(),
-    )[0]?.startedAt;
+    // Use Array.findLast() (ES2023/Node 22+) optimization instead of expensive sorting
+    // Assumes executions are roughly ordered chronologically (most common case)
+    // Falls back to reduce for accuracy if array might be unordered
+    const lastExecution =
+      executions.length > 0
+        ? (() => {
+            // If array seems chronologically ordered, use findLast for O(n) efficiency
+            if (
+              executions.length < 2 ||
+              executions[executions.length - 1].startedAt >= executions[0].startedAt
+            ) {
+              return executions.findLast((e: any) => e.startedAt)?.startedAt;
+            }
+            // Fallback: find maximum timestamp for unordered arrays
+            return executions.reduce((latest: any, current: any) =>
+              current.startedAt > latest.startedAt ? current : latest,
+            ).startedAt;
+          })()
+        : undefined;
 
     return {
       avgExecutionDuration,
@@ -694,7 +712,7 @@ export class WorkflowMonitor {
       .filter((e: any) => e.duration !== undefined)
       .map((e: any) => e.duration)
       .filter(d => d !== undefined)
-      .sort((a, b: any) => a - b);
+      .toSorted((a, b: any) => a - b);
 
     const errors = executions.filter((e: any) => e.status === 'failed');
     const errorsByType = errors.reduce(
@@ -813,11 +831,11 @@ export class WorkflowMonitor {
   }
 
   private generateAlertId(): string {
-    return `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `alert_${Date.now()}_${randomUUID()}`;
   }
 
   private generateAlertRuleId(): string {
-    return `alert_rule_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `alert_rule_${Date.now()}_${randomUUID()}`;
   }
 
   private async sendAlertNotifications(alert: WorkflowAlert, _rule: AlertRule): Promise<void> {
@@ -851,9 +869,14 @@ export class WorkflowMonitor {
     if (this.activeAlerts.size > this.MAX_ACTIVE_ALERTS) {
       // Remove oldest alerts first
       const alertEntries = Array.from(this.activeAlerts.entries());
-      alertEntries.sort((a, b: any) => a[1].triggeredAt.getTime() - b[1].triggeredAt.getTime());
+      const sortedAlertEntries = alertEntries.toSorted(
+        (a, b: any) => a[1].triggeredAt.getTime() - b[1].triggeredAt.getTime(),
+      );
 
-      const alertsToRemove = alertEntries.slice(0, alertEntries.length - this.MAX_ACTIVE_ALERTS);
+      const alertsToRemove = sortedAlertEntries.slice(
+        0,
+        sortedAlertEntries.length - this.MAX_ACTIVE_ALERTS,
+      );
       for (const [alertId] of alertsToRemove) {
         this.activeAlerts.delete(alertId);
       }
@@ -927,7 +950,7 @@ export function createWorkflowMonitor(provider: WorkflowProvider): WorkflowMonit
 /**
  * Utility functions for monitoring
  */
-export const MonitoringUtils = {
+const MonitoringUtils = {
   /**
    * Calculate average execution duration
    */
@@ -960,7 +983,7 @@ export const MonitoringUtils = {
       return { p50: 0, p95: 0, p99: 0 };
     }
 
-    const sorted = [...values].sort((a, b: any) => a - b);
+    const sorted = [...values].toSorted((a, b: any) => a - b);
     return {
       p50: sorted[Math.floor(sorted.length * 0.5)] || 0,
       p95: sorted[Math.floor(sorted.length * 0.95)] || 0,
@@ -994,14 +1017,14 @@ export const MonitoringUtils = {
 /**
  * Create a monitor instance
  */
-export function createMonitor(provider: WorkflowProvider) {
+function createMonitor(provider: WorkflowProvider) {
   return new WorkflowMonitor(provider);
 }
 
 /**
  * Create a metrics collector service
  */
-export function createMetricsCollector(provider: WorkflowProvider) {
+function createMetricsCollector(provider: WorkflowProvider) {
   const monitor = new WorkflowMonitor(provider);
 
   return {
@@ -1023,7 +1046,7 @@ export function createMetricsCollector(provider: WorkflowProvider) {
 /**
  * Create an alerts management service
  */
-export function createAlertsManager(provider: WorkflowProvider) {
+function createAlertsManager(provider: WorkflowProvider) {
   const monitor = new WorkflowMonitor(provider);
 
   return {
@@ -1041,7 +1064,7 @@ export function createAlertsManager(provider: WorkflowProvider) {
 /**
  * Create a performance monitoring service
  */
-export function createPerformanceMonitor(provider: WorkflowProvider) {
+function createPerformanceMonitor(provider: WorkflowProvider) {
   const monitor = new WorkflowMonitor(provider);
 
   return {
@@ -1058,7 +1081,7 @@ export function createPerformanceMonitor(provider: WorkflowProvider) {
 /**
  * Create a real-time monitoring service
  */
-export function createRealtimeMonitor(provider: WorkflowProvider) {
+function createRealtimeMonitor(provider: WorkflowProvider) {
   const monitor = new WorkflowMonitor(provider);
 
   return {
@@ -1093,7 +1116,7 @@ export function createRealtimeMonitor(provider: WorkflowProvider) {
 /**
  * Create an error tracking service
  */
-export function createErrorTracker(provider: WorkflowProvider) {
+function createErrorTracker(provider: WorkflowProvider) {
   const monitor = new WorkflowMonitor(provider);
 
   return {
@@ -1132,7 +1155,7 @@ export function createErrorTracker(provider: WorkflowProvider) {
 /**
  * Create a health checking service
  */
-export function createHealthChecker(provider: WorkflowProvider) {
+function createHealthChecker(provider: WorkflowProvider) {
   const monitor = new WorkflowMonitor(provider);
 
   return {

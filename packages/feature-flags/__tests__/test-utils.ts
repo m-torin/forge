@@ -195,9 +195,7 @@ export function createMockObservability() {
 /**
  * Creates adapter scenarios for comprehensive testing
  */
-export function createAdapterScenarios(
-  adapterType: 'edge-config' | 'posthog-client' | 'posthog-server',
-) {
+function createAdapterScenarios(adapterType: 'edge-config' | 'posthog-client' | 'posthog-server') {
   const baseScenarios = {
     success: {
       description: 'should return flag value successfully',

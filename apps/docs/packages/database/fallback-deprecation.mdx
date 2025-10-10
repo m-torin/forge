@@ -1,0 +1,336 @@
+---
+title: Demo Data Fallback Deprecation
+description:
+  Important changes to demo data fallbacks - now restricted to development only
+  for better production data integrity and user experience
+icon: "triangle-exclamation"
+---
+
+# Demo Data Fallback Deprecation
+
+<Warning>
+  **Breaking Change**: Demo data fallbacks have been restricted to development
+  environment only as of the database integration audit. Production applications
+  now return proper error states instead of misleading demo data.
+</Warning>
+
+## 🚨 What Changed
+
+During the database integration audit, we identified that several components
+were falling back to demo/mock data in production when real database queries
+failed. This created misleading user experiences and made it difficult to
+identify actual data issues.
+
+### Before: Unsafe Fallbacks
+
+```typescript
+// ❌ OLD PATTERN: Demo data in production
+export async function getProducts() {
+  try {
+    const products = await prisma.product.findMany();
+    return products;
+  } catch (error) {
+    console.log("DB failed, using demo data");
+    // This was happening in PRODUCTION! 🚨
+    return DEMO_PRODUCTS;
+  }
+}
+```
+
+### After: Environment-Aware Fallbacks
+
+```typescript
+// ✅ NEW PATTERN: Demo data only in development
+export async function getProducts() {
+  try {
+    const products = await prisma.product.findMany();
+    return products;
+  } catch (error) {
+    // Log error for monitoring
+    logger.error("Failed to fetch products", { error });
+
+    // Only provide demo data in development
+    if (process.env.NODE_ENV === "development") {
+      logger.warn("Using demo data in development mode");
+      return DEMO_PRODUCTS;
+    }
+
+    // Return empty state in production
+    return [];
+  }
+}
+```
+
+## 📋 Affected Components
+
+The following components have been updated to use the new fallback pattern:
+
+### Server Data Functions
+
+| Function           | Location                      | Change                             |
+| ------------------ | ----------------------------- | ---------------------------------- |
+| `getProducts()`    | `src/data/server-data.ts:47`  | Demo fallback gated to development |
+| `getCollections()` | `src/data/server-data.ts:67`  | Demo fallback gated to development |
+| `getBlogPosts()`   | `src/data/server-data.ts:87`  | Demo fallback gated to development |
+| `getRegistries()`  | `src/data/server-data.ts:107` | Demo fallback removed entirely     |
+
+### Page Components
+
+| Component        | Location                                          | Behavior Change                                        |
+| ---------------- | ------------------------------------------------- | ------------------------------------------------------ |
+| Products page    | `app/(shop)/(other-pages)/products/page.tsx`      | Shows "No products available" instead of demo products |
+| Collections page | `app/(shop)/(other-pages)/collections/page.tsx`   | Shows empty state instead of demo collections          |
+| Blog page        | `app/(shop)/(other-pages)/blog/page.tsx`          | Shows "No posts available" instead of demo posts       |
+| Registry search  | `app/(shop)/(other-pages)/registry/find/page.tsx` | Shows proper search results or empty state             |
+
+## 🔧 Implementation Details
+
+### Environment Detection Pattern
+
+```typescript
+// utils/environment.ts
+export function isDevelopment(): boolean {
+  return process.env.NODE_ENV === "development";
+}
+
+export function isProduction(): boolean {
+  return process.env.NODE_ENV === "production";
+}
+```
+
+### Error Handling with Observability
+
+```typescript
+// Enhanced error handling with logging
+import { logger } from "@repo/observability/server/next";
+
+export async function getProductsWithFallback() {
+  try {
+    const products = await findManyProductsOrm({
+      where: { deletedAt: null },
+      include: { media: true },
+      orderBy: { createdAt: "desc" },
+      take: 20
+    });
+
+    return {
+      success: true,
+      data: products,
+      error: null
+    };
+  } catch (error) {
+    // Always log errors for monitoring
+    logger.error("Database query failed", {
+      function: "getProductsWithFallback",
+      error: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined
+    });
+
+    // Development: Provide demo data with warning
+    if (isDevelopment()) {
+      logger.warn("Falling back to demo data in development");
+      return {
+        success: true,
+        data: DEMO_PRODUCTS,
+        error: null,
+        isDemoData: true // Flag for UI indication
+      };
+    }
+
+    // Production: Return proper error state
+    return {
+      success: false,
+      data: [],
+      error: "Unable to load products. Please try again later."
+    };
+  }
+}
+```
+
+### Component Error States
+
+```typescript
+// Component handling both demo and error states
+export default async function ProductsPage() {
+  const result = await getProductsWithFallback();
+
+  if (!result.success) {
+    return (
+      <div className="empty-state">
+        <h2>Unable to Load Products</h2>
+        <p>{result.error}</p>
+        <Button onClick={() => window.location.reload()}>
+          Try Again
+        </Button>
+      </div>
+    );
+  }
+
+  if (result.data.length === 0) {
+    return (
+      <div className="empty-state">
+        <h2>No Products Available</h2>
+        <p>Check back later for new products.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {/* Development indicator for demo data */}
+      {result.isDemoData && (
+        <div className="demo-banner bg-yellow-100 p-2">
+          ⚠️ Showing demo data (development mode)
+        </div>
+      )}
+
+      <ProductGrid products={result.data} />
+    </div>
+  );
+}
+```
+
+## 🎯 Migration Guide
+
+### For Existing Code
+
+1. **Identify fallback usage**:
+
+   ```bash
+   # Find components using demo data
+   grep -r "DEMO_" src/
+   grep -r "mock.*data" src/
+   ```
+
+2. **Update fallback logic**:
+
+   ```typescript
+   // Before
+   } catch (error) {
+     return DEMO_DATA;
+   }
+
+   // After
+   } catch (error) {
+     logger.error('Query failed', { error });
+
+     if (isDevelopment()) {
+       logger.warn('Using demo data in development');
+       return DEMO_DATA;
+     }
+
+     return { success: false, data: [], error: 'Query failed' };
+   }
+   ```
+
+3. **Add error handling in components**:
+
+   ```typescript
+   // Handle both empty and error states
+   if (!result.success) {
+     return <ErrorState message={result.error} />;
+   }
+
+   if (result.data.length === 0) {
+     return <EmptyState />;
+   }
+   ```
+
+### For New Code
+
+1. **Never use demo data as production fallback**
+2. **Always log errors with proper context**
+3. **Return structured response objects**
+4. **Handle error states in UI components**
+5. **Use observability for production monitoring**
+
+## 🔍 Monitoring & Debugging
+
+### Development Mode
+
+- Demo data usage is logged as warnings
+- UI indicators show when demo data is active
+- Full error details available in console
+- Database connection issues don't break development workflow
+
+### Production Mode
+
+- All errors logged to monitoring service
+- Users see helpful error messages
+- No misleading demo data displayed
+- Clear indication when services are unavailable
+
+### Error Tracking
+
+```typescript
+// Production error monitoring
+import { logger } from "@repo/observability/server/next";
+
+export async function handleDatabaseError(
+  error: Error,
+  context: Record<string, any>
+) {
+  // Structured logging for monitoring
+  logger.error("Database operation failed", {
+    ...context,
+    error: error.message,
+    stack: error.stack,
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV
+  });
+
+  // Send to error tracking service (e.g., Sentry)
+  if (isProduction()) {
+    // Integration with @repo/observability handles this
+    console.error("Production database error:", error);
+  }
+}
+```
+
+## ✅ Benefits
+
+### For Users
+
+- **Honest UX**: No misleading demo content in production
+- **Clear Error States**: Helpful messages when things go wrong
+- **Better Performance**: No unnecessary demo data processing
+- **Trust**: Users know when real data is unavailable
+
+### For Developers
+
+- **Faster Debugging**: Production errors are immediately visible
+- **Better Monitoring**: All errors logged with context
+- **Cleaner Code**: Clear separation of concerns
+- **Development Workflow**: Demo data still available for development
+
+### For Operations
+
+- **Real Error Rates**: Accurate monitoring of system health
+- **Faster Issue Resolution**: Clear error logs with context
+- **Better Alerting**: Production errors trigger proper alerts
+- **Data Integrity**: No confusion between real and demo data
+
+## 🚨 Important Notes
+
+<Warning>
+  This change may reveal previously hidden database connectivity issues in
+  production. This is intentional and beneficial for system health.
+</Warning>
+
+### Before Deploying
+
+1. **Test error states** - Ensure error UI components work properly
+2. **Verify logging** - Check that errors are being captured
+3. **Update monitoring** - Set up alerts for new error patterns
+4. **Review fallback logic** - Ensure no demo data leaks to production
+
+### After Deploying
+
+1. **Monitor error rates** - Watch for increased error reporting
+2. **Validate user experience** - Check that error states are user-friendly
+3. **Review logs** - Look for patterns in database failures
+4. **Update documentation** - Keep error handling patterns current
+
+This change represents a significant improvement in production data integrity
+and user trust, while maintaining a smooth development experience with
+appropriate fallbacks.

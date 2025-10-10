@@ -10,7 +10,6 @@ import { trackEvent } from '#/lib/analytics';
 import { auth } from '#/lib/auth-config';
 import { AuthAnalyticsEvents } from '#/lib/auth-events';
 import { logInfo, logWarn } from '@repo/observability';
-import { APIError } from 'better-auth/api';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
@@ -46,15 +45,13 @@ export async function signInAction(prevState: any, formData: FormData) {
 
     logInfo('[Auth Action] Sign in attempt', { email });
 
-    // Use Better Auth API for sign in (proper server action method)
-    const requestHeaders = await headers();
+    // Use Better Auth API for sign in
     const result = await auth.api.signInEmail({
       body: {
         email,
         password,
         rememberMe,
       },
-      headers: requestHeaders,
     });
 
     if (result?.user) {
@@ -82,7 +79,7 @@ export async function signInAction(prevState: any, formData: FormData) {
       }
 
       // For non-modal context, redirect as normal
-      redirect(redirectTo);
+      redirect(redirectTo as any);
     } else {
       // Better Auth returns error or null, not a result object
       const errorMessage = 'Invalid email or password';
@@ -103,28 +100,12 @@ export async function signInAction(prevState: any, formData: FormData) {
       };
     }
   } catch (error) {
-    let errorMessage = 'Authentication failed';
+    const errorMessage = error instanceof Error ? error.message : 'Authentication failed';
 
-    if (error instanceof APIError) {
-      // Better Auth API error with specific message and status
-      errorMessage = error.message || 'Invalid email or password';
-      logWarn('[Auth Action] Better Auth API error', {
-        email,
-        error: errorMessage,
-        status: error.status,
-      });
-    } else if (error instanceof Error) {
-      errorMessage = error.message;
-      logWarn('[Auth Action] Sign in error', {
-        email,
-        error: errorMessage,
-      });
-    } else {
-      logWarn('[Auth Action] Unknown sign in error', {
-        email,
-        error: String(error),
-      });
-    }
+    logWarn('[Auth Action] Sign in error', {
+      email,
+      error: errorMessage,
+    });
 
     // Track error
     await trackEvent(AuthAnalyticsEvents.LOGIN_FAILED, {
@@ -142,7 +123,7 @@ export async function signInAction(prevState: any, formData: FormData) {
 }
 
 // Sign up server action
-export async function signUpAction(prevState: any, formData: FormData) {
+async function _signUpAction(prevState: any, formData: FormData) {
   const name = formData.get('name') as string;
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
@@ -209,7 +190,7 @@ export async function signUpAction(prevState: any, formData: FormData) {
         userRole: getUserRole(result.user) || 'user',
       });
 
-      redirect(redirectTo);
+      redirect(redirectTo as any);
     } else {
       // Better Auth returns error or null, not a result object
       const errorMessage = 'Registration failed. User may already exist.';
@@ -287,7 +268,7 @@ export async function signOutAction() {
 }
 
 // Get current user action (for client components)
-export async function getCurrentUserAction() {
+async function _getCurrentUserAction() {
   try {
     const session = await auth.api.getSession({
       headers: await headers(),
@@ -326,7 +307,7 @@ export async function trackProfileViewAction() {
 }
 
 // Track protected feature access
-export async function trackProtectedAccessAction(feature: string) {
+async function _trackProtectedAccessAction(feature: string) {
   try {
     const session = await auth.api.getSession({
       headers: await headers(),
@@ -354,11 +335,7 @@ export async function trackProtectedAccessAction(feature: string) {
 }
 
 // Track auth-specific feature flag evaluations
-export async function trackAuthFeatureFlagAction(
-  flagName: string,
-  flagResult: any,
-  context?: string,
-) {
+async function _trackAuthFeatureFlagAction(flagName: string, flagResult: any, context?: string) {
   try {
     const session = await auth.api.getSession({
       headers: await headers(),
@@ -478,10 +455,7 @@ export async function trackPremiumFeaturePreviewAction(feature: string, previewL
 }
 
 // Track complete authentication flow
-export async function trackAuthFlowCompletedAction(
-  flowType: 'login' | 'logout',
-  duration?: number,
-) {
+async function _trackAuthFlowCompletedAction(flowType: 'login' | 'logout', duration?: number) {
   try {
     const session = await auth.api.getSession({
       headers: await headers(),

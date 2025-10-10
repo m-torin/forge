@@ -13,17 +13,17 @@ export interface PostHogConfig {
     capture_pageleave?: boolean;
     disable_session_recording?: boolean;
     cross_subdomain_cookie?: boolean;
-    persistence?: 'localStorage' | 'cookie' | 'memory' | 'localStorage+cookie';
+    persistence?: "localStorage" | "cookie" | "memory" | "localStorage+cookie";
     persistence_name?: string;
     loaded?: (posthog: any) => void;
 
     // Privacy & GDPR compliance (NEW SECTION)
-    person_profiles?: 'always' | 'never' | 'identified_only';
+    person_profiles?: "always" | "never" | "identified_only";
     opt_in_site_apps?: boolean;
     respect_dnt?: boolean;
 
     // Performance optimizations (NEW)
-    uuid_version?: 'v4' | 'v7';
+    uuid_version?: "v4" | "v7";
     request_batching?: boolean;
     batch_flush_interval_ms?: number;
 
@@ -33,7 +33,7 @@ export interface PostHogConfig {
       maskInputOptions?: {
         color?: boolean;
         date?: boolean;
-        'datetime-local'?: boolean;
+        "datetime-local"?: boolean;
         email?: boolean;
         month?: boolean;
         number?: boolean;
@@ -82,14 +82,14 @@ export interface PostHogConfig {
   };
 }
 
-export interface PostHogProperties {
+interface _PostHogProperties {
   $set?: Record<string, any>;
   $set_once?: Record<string, any>;
   $unset?: string[];
   [key: string]: any;
 }
 
-export interface PostHogUserProperties {
+interface _PostHogUserProperties {
   [key: string]: any;
   avatar?: string;
   email?: string;

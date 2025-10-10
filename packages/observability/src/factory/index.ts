@@ -3,7 +3,7 @@
  */
 
 import { ObservabilityManager } from '../core/manager';
-import type { ObservabilityPlugin, ObservabilityServerPlugin } from '../core/plugin';
+import { ObservabilityPlugin, ObservabilityServerPlugin } from '../core/plugin';
 import { ObservabilityBuilder } from './builder';
 
 export { ObservabilityManager } from '../core/manager';

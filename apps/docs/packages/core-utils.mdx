@@ -1,0 +1,355 @@
+---
+title: "@repo/core-utils"
+description:
+  "Environment-safe core utilities for TypeScript/JavaScript projects"
+---
+
+# @repo/core-utils
+
+Generic, reusable utilities consolidated from across the monorepo with
+environment-safe exports and comprehensive test coverage.
+
+## Overview
+
+`@repo/core-utils` provides battle-tested utilities for common development
+tasks:
+
+- **Stringify utilities** - Safe JSON serialization with circular reference
+  handling
+- **Cache management** - LRU cache with analytics and memory pressure monitoring
+- **Logger system** - Pluggable async logger with transport hooks
+- **Timeout utilities** - Environment-neutral timeout and AbortController
+  helpers
+
+## Architecture
+
+### Environment Safety
+
+The package uses conditional exports to provide environment-safe modules:
+
+```json
+{
+  "exports": {
+    "./shared/*": "./src/shared/*.ts", // Browser/Edge/Node safe
+    "./server/*": {
+      "node": "./src/server/*.ts", // Node.js only
+      "default": "./src/server/browser-stub.ts" // Throws clear errors
+    }
+  }
+}
+```
+
+### Module Organization
+
+- **`shared/`** - Pure utilities safe for all environments
+- **`server/`** - Node.js-specific utilities using process, Buffer, etc.
+- **Browser stub** - Provides clear error messages when server modules are
+  imported in non-Node environments
+
+## Usage
+
+### Shared Utilities (Environment-Neutral)
+
+#### Safe Stringify
+
+```typescript
+import {
+  safeStringify,
+  safeStringifyPure
+} from "@repo/core-utils/shared/stringify";
+
+// Basic usage
+const result = safeStringify({ user: "john", data: circularObject });
+
+// Advanced usage with metadata
+const advanced = safeStringifyPure(complexObject, {
+  maxLength: 5000,
+  maxDepth: 15,
+  prettify: true
+});
+
+console.log(advanced.result);
+console.log(advanced.metadata?.circularRefs);
+```
+
+#### Timeout Utilities
+
+```typescript
+import {
+  createTimeoutSignal,
+  withTimeout,
+  delay,
+  withRetryTimeout
+} from "@repo/core-utils/shared/timeout";
+
+// Basic timeout signal
+const signal = createTimeoutSignal(5000);
+const response = await fetch("/api/data", { signal });
+
+// Timeout wrapper for promises
+const result = await withTimeout(fetch("/slow-api"), 3000, {
+  name: "api-call"
+});
+
+// Retry with timeout
+const data = await withRetryTimeout(
+  () => fetch("/unreliable-api").then((r) => r.json()),
+  {
+    maxAttempts: 3,
+    initialDelay: 1000,
+    timeout: 5000
+  }
+);
+```
+
+### Server Utilities (Node.js Only)
+
+#### Advanced Stringify with Memory Tracking
+
+```typescript
+import {
+  safeStringifyAdvanced,
+  SafeStringifier
+} from "@repo/core-utils/server/stringify-advanced";
+
+// One-off usage with Node.js features
+const result = safeStringifyAdvanced(complexObject, {
+  includeMetadata: true,
+  maxLength: 10000
+});
+
+console.log(`Memory usage: ${result.metadata?.memoryUsage} bytes`);
+
+// Reusable stringifier instance
+const stringifier = new SafeStringifier({
+  includeMetadata: true,
+  prettify: process.env.NODE_ENV === "development"
+});
+```
+
+#### Cache Management
+
+```typescript
+import {
+  BoundedCache,
+  CacheRegistry,
+  globalCacheRegistry
+} from "@repo/core-utils/server/cache";
+
+// Individual cache with analytics
+const cache = new BoundedCache({
+  maxSize: 100,
+  ttl: 30 * 60 * 1000, // 30 minutes
+  enableAnalytics: true
+});
+
+cache.set("key", { data: "value" });
+const value = cache.get("key");
+
+// Global cache registry
+const userCache = globalCacheRegistry.create("users", { maxSize: 500 });
+const sessionCache = globalCacheRegistry.create("sessions", { ttl: 3600000 });
+
+// Analytics and monitoring
+console.log(cache.getAnalytics());
+console.log(globalCacheRegistry.getGlobalAnalytics());
+```
+
+#### Enhanced Logging
+
+```typescript
+import {
+  AsyncLogger,
+  LoggerRegistry,
+  createObservabilityTransport,
+  globalLoggerRegistry
+} from "@repo/core-utils/server/logger";
+
+// Basic logger with console transport
+const logger = new AsyncLogger({
+  sessionId: "user-session-123",
+  logLevel: "info"
+});
+
+logger.info("User logged in", {
+  extra: { userId: "123" },
+  tags: { component: "auth" }
+});
+
+// Integration with observability system
+import {
+  logDebug,
+  logInfo,
+  logWarn,
+  logError
+} from "@repo/observability/server";
+
+const observabilityTransport = createObservabilityTransport({
+  logDebug,
+  logInfo,
+  logWarn,
+  logError
+});
+
+logger.addTransport(observabilityTransport);
+
+// Registry management
+const workflowLogger = globalLoggerRegistry.create("workflow-engine", {
+  logLevel: "debug",
+  transports: [observabilityTransport]
+});
+```
+
+## Migration Guide
+
+### From @repo/mcp-server
+
+The utilities have been moved but **backwards compatibility is maintained**:
+
+```typescript
+// ✅ Old imports still work (re-exported)
+import { safeStringify, BoundedCache, AsyncLogger } from "@repo/mcp-server";
+
+// ✅ New recommended imports
+import { safeStringify } from "@repo/core-utils/shared/stringify";
+import { BoundedCache } from "@repo/core-utils/server/cache";
+import { AsyncLogger } from "@repo/core-utils/server/logger";
+```
+
+### From @repo/orchestration
+
+Timeout utilities are now consolidated:
+
+```typescript
+// ✅ Old imports still work (re-exported)
+import { createTimeoutSignal } from "@repo/orchestration";
+
+// ✅ New consolidated imports
+import {
+  createTimeoutSignal,
+  withTimeout,
+  delay
+} from "@repo/core-utils/shared/timeout";
+```
+
+## Do's and Don'ts
+
+### ✅ Do
+
+- Use `shared/*` modules in browser/edge/Node environments
+- Use `server/*` modules only in Node.js applications
+- Import specific utilities rather than entire modules
+- Use cache analytics for monitoring memory usage
+- Add observability transports to loggers for centralized logging
+
+### ❌ Don't
+
+- Import `server/*` modules in browser or edge runtime (will throw clear errors)
+- Create multiple cache instances for the same use case (use registry)
+- Ignore memory pressure cleanup results
+- Log sensitive data without masking
+- Mix shared and server stringify utilities unnecessarily
+
+## API Reference
+
+### Shared Module Types
+
+```typescript
+// Stringify
+interface SafeStringifyOptions {
+  maxLength?: number;
+  maxDepth?: number;
+  prettify?: boolean;
+}
+
+// Timeout
+interface TimeoutOptions {
+  name?: string;
+  onTimeout?: (timeoutMs: number) => void;
+}
+```
+
+### Server Module Types
+
+```typescript
+// Cache
+interface BoundedCacheOptions {
+  maxSize?: number;
+  ttl?: number;
+  enableAnalytics?: boolean;
+}
+
+// Logger
+interface LoggerOptions {
+  sessionId?: string;
+  logLevel?: "debug" | "info" | "warn" | "error";
+  transports?: LogTransport[];
+}
+```
+
+## Performance Considerations
+
+- **Stringify**: Use `shared/stringify` for client-side,
+  `server/stringify-advanced` only when you need Node.js memory tracking
+- **Cache**: Enable analytics only in development or when monitoring is required
+- **Logger**: Use appropriate log levels to reduce overhead in production
+- **Timeout**: Prefer `createTimeoutSignal()` over manual AbortController
+  management
+
+## Testing
+
+The package includes comprehensive test coverage:
+
+```bash
+# Run tests
+pnpm --filter @repo/core-utils test
+
+# Run with coverage
+pnpm --filter @repo/core-utils test --coverage
+
+# Test browser stub behavior
+pnpm --filter @repo/core-utils test browser-stub.test.ts
+```
+
+## Integration Examples
+
+### Next.js Application
+
+```typescript
+// pages/api/data.ts - Server-side
+import { safeStringifyAdvanced } from "@repo/core-utils/server/stringify-advanced";
+import { globalCacheRegistry } from "@repo/core-utils/server/cache";
+
+const cache = globalCacheRegistry.create("api-cache");
+
+// components/DataFetcher.tsx - Client-side
+import { withTimeout } from "@repo/core-utils/shared/timeout";
+
+const data = await withTimeout(fetch("/api/data"), 5000);
+```
+
+### Microservice
+
+```typescript
+import {
+  AsyncLogger,
+  createObservabilityTransport
+} from "@repo/core-utils/server/logger";
+import { BoundedCache } from "@repo/core-utils/server/cache";
+
+const logger = new AsyncLogger({ sessionId: "microservice-1" });
+const cache = new BoundedCache({ maxSize: 1000, enableAnalytics: true });
+
+// Service logic with logging and caching
+```
+
+## Changelog
+
+### v0.1.0
+
+- Initial release with consolidated utilities
+- Environment-safe exports with browser stub
+- Comprehensive test coverage
+- Migration from `@repo/mcp-utils` and `@repo/orchestration`
+- Enhanced logger with pluggable transports
+- Unified timeout utilities with modern AbortSignal support

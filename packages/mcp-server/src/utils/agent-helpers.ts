@@ -1,0 +1,126 @@
+/**
+ * Agent helper utilities
+ * Direct function exports for use in TypeScript code
+ */
+
+export interface AgentRequest {
+  version: string;
+  [key: string]: any;
+}
+
+export interface AgentResponse {
+  success: boolean;
+  timestamp: number;
+  data?: any;
+  error?: string;
+}
+
+export interface ValidationResult {
+  valid: boolean;
+  errors: string[];
+  request: AgentRequest;
+}
+
+export type EntityType =
+  | 'AnalysisSession'
+  | 'CodeQualitySession'
+  | 'AnalysisResult'
+  | 'FileAnalysis'
+  | 'GitWorktree'
+  | 'Worktree'
+  | 'PullRequest'
+  | 'ArchitecturalPattern'
+  | 'VercelOptimization'
+  | 'MockAnalysis'
+  | 'UtilizationAnalysis'
+  | 'WordRemoval'
+  | 'Session'
+  | string; // Allow custom entity types
+
+/**
+ * Create standardized entity name for MCP memory
+ */
+export function createEntityName(
+  entityType: EntityType,
+  sessionId: string,
+  additionalIds: string[] = [],
+): string {
+  let name = `${entityType}_${sessionId}`;
+
+  if (additionalIds.length > 0) {
+    name += '_' + additionalIds.join('_');
+  }
+
+  return name;
+}
+
+/**
+ * Validate agent request format
+ */
+export function validateAgentRequest(
+  request: any,
+  requiredFields: string[],
+  version = '1.0',
+): ValidationResult {
+  const errors: string[] = [];
+
+  // Check if request exists
+  if (!request || request === null || request === undefined) {
+    errors.push('Request is null or undefined');
+    return {
+      valid: false,
+      errors: errors,
+      request: null as any,
+    };
+  }
+
+  // Check if request is an object
+  if (typeof request !== 'object' || Array.isArray(request)) {
+    errors.push('Request must be an object');
+    return {
+      valid: false,
+      errors: errors,
+      request: request as any,
+    };
+  }
+
+  // Check version
+  if (!request.version) {
+    errors.push('Missing required field: version');
+  } else if (request.version !== version) {
+    errors.push(`Version mismatch: expected ${version}, got ${request.version}`);
+  }
+
+  // Check required fields
+  for (const field of requiredFields) {
+    if (!(field in request) || request[field] === null || request[field] === undefined) {
+      errors.push(`Missing required field: ${field}`);
+    }
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors: errors,
+    request: request,
+  };
+}
+
+/**
+ * Format agent response
+ */
+export function formatAgentResponse(success: boolean, data?: any, error?: string): AgentResponse {
+  const response: AgentResponse = {
+    success,
+    timestamp: Date.now(),
+  };
+
+  if (data !== undefined) {
+    response.data = data;
+  }
+
+  if (error !== undefined) {
+    response.error = error;
+  }
+
+  return response;
+}

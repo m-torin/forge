@@ -9,7 +9,7 @@ export const SEVERITY = {
   ERROR: 'error',
 } as const;
 
-export type Severity = (typeof SEVERITY)[keyof typeof SEVERITY];
+type Severity = (typeof SEVERITY)[keyof typeof SEVERITY];
 
 /**
  * ESLint rules record with proper typing
@@ -80,6 +80,7 @@ export const IGNORE_PATTERNS = [
   '**/.vercel/**',
   '**/*.md',
   '**/*.mdx',
+  '**/.kniprc.json',
   'labs/**',
   'services/**',
 ];
@@ -87,7 +88,7 @@ export const IGNORE_PATTERNS = [
 /**
  * Shared plugin instances type helper
  */
-export type PluginInstances = Record<string, any>;
+type PluginInstances = Record<string, any>;
 
 /**
  * Helper to create a typed flat config

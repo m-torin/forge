@@ -1,20 +1,27 @@
-'use client';
+"use client";
 
-import { logInfo } from '@repo/observability';
-import { Editor } from '@tiptap/react';
-import { BubbleMenu } from '@tiptap/react/menus';
-import { clsx } from 'clsx';
-import { useCallback, useState } from 'react';
-import { HIGHLIGHT_COLORS, TEXT_COLORS } from './constants';
-import { HeadingDropdownMenu, ListDropdownMenu, TurnIntoDropdownMenu } from './DropdownMenu';
-import { LinkEditor } from './LinkPreview';
+import { logInfo } from "@repo/observability";
+import { Editor } from "@tiptap/react";
+import { BubbleMenu } from "@tiptap/react/menus";
+import { clsx } from "clsx";
+import { useCallback, useState } from "react";
+import { HIGHLIGHT_COLORS, TEXT_COLORS } from "./constants";
+import {
+  HeadingDropdownMenu,
+  ListDropdownMenu,
+  TurnIntoDropdownMenu,
+} from "./DropdownMenu";
+import { LinkEditor } from "./LinkPreview";
 
 interface FloatingToolbarProps {
   editor: Editor;
   showDropdowns?: boolean;
 }
 
-export function FloatingToolbar({ editor, showDropdowns = true }: FloatingToolbarProps) {
+export function FloatingToolbar({
+  editor,
+  showDropdowns = true,
+}: FloatingToolbarProps) {
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [isHighlightPickerOpen, setIsHighlightPickerOpen] = useState(false);
   const [isLinkEditorOpen, setIsLinkEditorOpen] = useState(false);
@@ -55,7 +62,7 @@ export function FloatingToolbar({ editor, showDropdowns = true }: FloatingToolba
       className="notion-floating-toolbar"
       data-testid="floating-toolbar"
       options={{
-        placement: 'top',
+        placement: "top",
         offset: 8,
       }}
     >
@@ -73,9 +80,15 @@ export function FloatingToolbar({ editor, showDropdowns = true }: FloatingToolba
 
             <div className="mx-1 h-6 w-px bg-gray-300" />
 
-            <HeadingDropdownMenu editor={editor} className="rounded-sm border-0 hover:bg-gray-50" />
+            <HeadingDropdownMenu
+              editor={editor}
+              className="rounded-sm border-0 hover:bg-gray-50"
+            />
 
-            <ListDropdownMenu editor={editor} className="rounded-sm border-0 hover:bg-gray-50" />
+            <ListDropdownMenu
+              editor={editor}
+              className="rounded-sm border-0 hover:bg-gray-50"
+            />
 
             <div className="mx-1 h-6 w-px bg-gray-300" />
           </>
@@ -83,8 +96,10 @@ export function FloatingToolbar({ editor, showDropdowns = true }: FloatingToolba
         <button
           onClick={() => editor.chain().focus().toggleBold().run()}
           className={clsx(
-            'rounded p-2 transition-colors hover:bg-gray-100',
-            editor.isActive('bold') ? 'bg-gray-100 text-blue-600' : 'text-gray-700',
+            "rounded p-2 transition-colors hover:bg-gray-100",
+            editor.isActive("bold")
+              ? "bg-gray-100 text-blue-600"
+              : "text-gray-700",
           )}
           title="Bold (⌘B)"
         >
@@ -94,8 +109,10 @@ export function FloatingToolbar({ editor, showDropdowns = true }: FloatingToolba
         <button
           onClick={() => editor.chain().focus().toggleItalic().run()}
           className={clsx(
-            'rounded p-2 transition-colors hover:bg-gray-100',
-            editor.isActive('italic') ? 'bg-gray-100 text-blue-600' : 'text-gray-700',
+            "rounded p-2 transition-colors hover:bg-gray-100",
+            editor.isActive("italic")
+              ? "bg-gray-100 text-blue-600"
+              : "text-gray-700",
           )}
           title="Italic (⌘I)"
         >
@@ -105,8 +122,10 @@ export function FloatingToolbar({ editor, showDropdowns = true }: FloatingToolba
         <button
           onClick={() => editor.chain().focus().toggleUnderline().run()}
           className={clsx(
-            'rounded p-2 transition-colors hover:bg-gray-100',
-            editor.isActive('underline') ? 'bg-gray-100 text-blue-600' : 'text-gray-700',
+            "rounded p-2 transition-colors hover:bg-gray-100",
+            editor.isActive("underline")
+              ? "bg-gray-100 text-blue-600"
+              : "text-gray-700",
           )}
           title="Underline (⌘U)"
         >
@@ -116,8 +135,10 @@ export function FloatingToolbar({ editor, showDropdowns = true }: FloatingToolba
         <button
           onClick={() => editor.chain().focus().toggleStrike().run()}
           className={clsx(
-            'rounded p-2 transition-colors hover:bg-gray-100',
-            editor.isActive('strike') ? 'bg-gray-100 text-blue-600' : 'text-gray-700',
+            "rounded p-2 transition-colors hover:bg-gray-100",
+            editor.isActive("strike")
+              ? "bg-gray-100 text-blue-600"
+              : "text-gray-700",
           )}
           title="Strikethrough"
         >
@@ -127,8 +148,10 @@ export function FloatingToolbar({ editor, showDropdowns = true }: FloatingToolba
         <button
           onClick={() => editor.chain().focus().toggleCode().run()}
           className={clsx(
-            'rounded p-2 transition-colors hover:bg-gray-100',
-            editor.isActive('code') ? 'bg-gray-100 text-blue-600' : 'text-gray-700',
+            "rounded p-2 transition-colors hover:bg-gray-100",
+            editor.isActive("code")
+              ? "bg-gray-100 text-blue-600"
+              : "text-gray-700",
           )}
           title="Code (⌘E)"
         >
@@ -146,14 +169,17 @@ export function FloatingToolbar({ editor, showDropdowns = true }: FloatingToolba
             <span className="text-sm">A</span>
             <div
               className="mt-0.5 h-0.5 w-full rounded"
-              style={{ backgroundColor: editor.getAttributes('textStyle').color || '#000000' }}
+              style={{
+                backgroundColor:
+                  editor.getAttributes("textStyle").color || "#000000",
+              }}
             />
           </button>
 
           {isColorPickerOpen && (
             <div className="absolute left-0 top-full z-10 mt-1 rounded-lg border border-gray-200 bg-white p-2 shadow-lg">
               <div className="grid w-24 grid-cols-3 gap-1">
-                {TEXT_COLORS.map(color => (
+                {TEXT_COLORS.map((color) => (
                   <button
                     key={color.value}
                     onClick={() => handleColorChange(color.value)}
@@ -176,8 +202,11 @@ export function FloatingToolbar({ editor, showDropdowns = true }: FloatingToolba
             <span
               className="rounded px-1 text-sm"
               style={{
-                backgroundColor: editor.getAttributes('highlight').color || 'transparent',
-                color: editor.getAttributes('highlight').color ? '#000' : 'currentColor',
+                backgroundColor:
+                  editor.getAttributes("highlight").color || "transparent",
+                color: editor.getAttributes("highlight").color
+                  ? "#000"
+                  : "currentColor",
               }}
             >
               H
@@ -187,12 +216,12 @@ export function FloatingToolbar({ editor, showDropdowns = true }: FloatingToolba
           {isHighlightPickerOpen && (
             <div className="absolute left-0 top-full z-10 mt-1 rounded-lg border border-gray-200 bg-white p-2 shadow-lg">
               <div className="grid w-24 grid-cols-3 gap-1">
-                {HIGHLIGHT_COLORS.map(color => (
+                {HIGHLIGHT_COLORS.map((color) => (
                   <button
                     key={color.name}
                     onClick={() => handleHighlightChange(color.value)}
                     className="flex h-6 w-6 items-center justify-center rounded border border-gray-300 transition-transform hover:scale-110"
-                    style={{ backgroundColor: color.value || 'transparent' }}
+                    style={{ backgroundColor: color.value || "transparent" }}
                     title={color.name}
                   >
                     {!color.value && <span className="text-xs">×</span>}
@@ -208,8 +237,10 @@ export function FloatingToolbar({ editor, showDropdowns = true }: FloatingToolba
         <button
           onClick={() => setIsLinkEditorOpen(true)}
           className={clsx(
-            'rounded p-2 transition-colors hover:bg-gray-100',
-            editor.isActive('link') ? 'bg-gray-100 text-blue-600' : 'text-gray-700',
+            "rounded p-2 transition-colors hover:bg-gray-100",
+            editor.isActive("link")
+              ? "bg-gray-100 text-blue-600"
+              : "text-gray-700",
           )}
           title="Add Link (⌘K)"
         >
@@ -219,7 +250,7 @@ export function FloatingToolbar({ editor, showDropdowns = true }: FloatingToolba
         <button
           onClick={() => {
             // This would integrate with a commenting system
-            logInfo('Add comment functionality here');
+            logInfo("Add comment functionality here");
           }}
           className="rounded p-2 text-gray-700 transition-colors hover:bg-gray-100"
           title="Add Comment"
@@ -232,7 +263,9 @@ export function FloatingToolbar({ editor, showDropdowns = true }: FloatingToolba
         editor={editor}
         isOpen={isLinkEditorOpen}
         onClose={() => setIsLinkEditorOpen(false)}
-        initialUrl={editor.isActive('link') ? editor.getAttributes('link').href || '' : ''}
+        initialUrl={
+          editor.isActive("link") ? editor.getAttributes("link").href || "" : ""
+        }
       />
     </BubbleMenu>
   );

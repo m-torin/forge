@@ -8,7 +8,7 @@ export interface VercelConfig {
   options?: VercelOptions;
 }
 
-export interface VercelOptions {
+interface VercelOptions {
   // Vercel Web Analytics options
   debug?: boolean;
   disabled?: boolean;

@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { Editor } from '@tiptap/core';
-import { clsx } from 'clsx';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Editor } from "@tiptap/core";
+import { clsx } from "clsx";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 interface User {
   id: string;
@@ -22,11 +22,11 @@ interface MentionDropdownProps {
 
 // Default mock users for demo purposes
 const DEFAULT_USERS: User[] = [
-  { id: '1', name: 'John Doe', email: 'john@example.com' },
-  { id: '2', name: 'Jane Smith', email: 'jane@example.com' },
-  { id: '3', name: 'Bob Johnson', email: 'bob@example.com' },
-  { id: '4', name: 'Alice Wilson', email: 'alice@example.com' },
-  { id: '5', name: 'Charlie Brown', email: 'charlie@example.com' },
+  { id: "1", name: "John Doe", email: "john@example.com" },
+  { id: "2", name: "Jane Smith", email: "jane@example.com" },
+  { id: "3", name: "Bob Johnson", email: "bob@example.com" },
+  { id: "4", name: "Alice Wilson", email: "alice@example.com" },
+  { id: "5", name: "Charlie Brown", email: "charlie@example.com" },
 ];
 
 export function MentionDropdown({
@@ -44,7 +44,7 @@ export function MentionDropdown({
 
     return users
       .filter(
-        user =>
+        (user) =>
           user.name.toLowerCase().includes(query.toLowerCase()) ||
           user.email?.toLowerCase().includes(query.toLowerCase()),
       )
@@ -59,7 +59,7 @@ export function MentionDropdown({
         .chain()
         .focus()
         .insertContent({
-          type: 'mention',
+          type: "mention",
           attrs: {
             id: user.id,
             label: user.name,
@@ -77,24 +77,28 @@ export function MentionDropdown({
       if (!isOpen) return false;
 
       switch (event.key) {
-        case 'ArrowDown':
+        case "ArrowDown":
           event.preventDefault();
-          setSelectedIndex(prev => (prev < filteredUsers.length - 1 ? prev + 1 : 0));
+          setSelectedIndex((prev) =>
+            prev < filteredUsers.length - 1 ? prev + 1 : 0,
+          );
           return true;
 
-        case 'ArrowUp':
+        case "ArrowUp":
           event.preventDefault();
-          setSelectedIndex(prev => (prev > 0 ? prev - 1 : filteredUsers.length - 1));
+          setSelectedIndex((prev) =>
+            prev > 0 ? prev - 1 : filteredUsers.length - 1,
+          );
           return true;
 
-        case 'Enter':
+        case "Enter":
           event.preventDefault();
           if (filteredUsers[selectedIndex]) {
             selectUser(filteredUsers[selectedIndex]);
           }
           return true;
 
-        case 'Escape':
+        case "Escape":
           event.preventDefault();
           onClose();
           return true;
@@ -122,14 +126,14 @@ export function MentionDropdown({
       }}
     >
       <div className="max-h-64 overflow-y-auto">
-        {filteredUsers.map(user => (
+        {filteredUsers.map((user) => (
           <button
             key={user.id}
             className={clsx(
-              'flex w-full items-center gap-3 px-4 py-3 text-left transition-colors',
+              "flex w-full items-center gap-3 px-4 py-3 text-left transition-colors",
               user.id === filteredUsers[selectedIndex]?.id
-                ? 'bg-blue-50 text-blue-900'
-                : 'text-gray-700 hover:bg-gray-50',
+                ? "bg-blue-50 text-blue-900"
+                : "text-gray-700 hover:bg-gray-50",
             )}
             onClick={() => selectUser(user)}
             onMouseEnter={() => setSelectedIndex(filteredUsers.indexOf(user))}
@@ -150,7 +154,11 @@ export function MentionDropdown({
 
             <div className="min-w-0 flex-1">
               <div className="truncate text-sm font-medium">{user.name}</div>
-              {user.email && <div className="truncate text-xs text-gray-500">{user.email}</div>}
+              {user.email && (
+                <div className="truncate text-xs text-gray-500">
+                  {user.email}
+                </div>
+              )}
             </div>
           </button>
         ))}

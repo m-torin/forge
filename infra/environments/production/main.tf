@@ -2,7 +2,7 @@
 
 terraform {
   required_version = ">= 1.5.0"
-  
+
   required_providers {
     cloudflare = {
       source  = "cloudflare/cloudflare"
@@ -29,10 +29,10 @@ module "environment" {
 
   environment  = "production"
   project_name = "forge"
-  
+
   # Doppler token should be provided via TF_VAR_doppler_token or DOPPLER_TOKEN
   doppler_token = var.doppler_token
-  
+
   # Secret rotation settings
   enable_secret_rotation = true
   secret_rotation_days = {
@@ -40,7 +40,7 @@ module "environment" {
     api_keys   = 180
     webhooks   = 365
   }
-  
+
   # Production-specific configuration
   environment_config = {
     allowed_ips  = []  # No IP restrictions in production
@@ -53,7 +53,7 @@ module "environment" {
       maintenance_mode = false
     }
   }
-  
+
   tags = {
     Environment = "production"
     ManagedBy   = "terraform"
@@ -79,30 +79,30 @@ provider "vercel" {
 # Cloudflare Zone
 module "zone" {
   source = "../../modules/cloudflare/zone"
-  
+
   domain          = var.domain
   account_id      = module.environment.cloudflare_account_id
   plan            = "enterprise"
   enable_dnssec   = true
-  
+
   tags = module.environment.environment_tags
 }
 
 # Security Module
 module "security" {
   source = "../../modules/cloudflare/security"
-  
+
   zone_id    = module.zone.zone_id
   account_id = module.environment.cloudflare_account_id
-  
+
   # WAF Configuration
   enable_waf = true
   waf_sensitivity = "high"
-  
+
   # DDoS Protection
   enable_ddos_protection = true
   ddos_sensitivity = "high"
-  
+
   # Rate Limiting
   enable_rate_limiting = module.environment.feature_flags.rate_limiting
   rate_limit_rules = {
@@ -112,43 +112,56 @@ module "security" {
       action    = "challenge"
     }
   }
-  
+
   # Advanced features
   enable_bot_management = true
   enable_casb          = true
   enable_leaked_credentials = true
-  
+
+  tags = module.environment.environment_tags
+}
+
+# Image Workers Module
+module "image_workers" {
+  source = "../../modules/cloudflare/image-workers"
+
+  account_id  = module.environment.cloudflare_account_id
+  zone_id     = module.zone.zone_id
+  domain      = var.domain
+  environment = "production"
+  signing_key = module.environment.integration_api_keys.image_signing_key
+
   tags = module.environment.environment_tags
 }
 
 # Workers Module
 module "workers" {
   source = "../../modules/cloudflare/workers"
-  
+
   account_id = module.environment.cloudflare_account_id
-  
+
   # Workers configuration
   workers = {
     api_gateway = {
       script_name = "api-gateway"
       content     = file("${path.module}/workers/api-gateway.js")
-      
+
       environment_variables = {
         ENVIRONMENT = "production"
         LOG_LEVEL   = module.environment.environment_config.log_level
       }
-      
+
       secrets = {
         STRIPE_API_KEY = module.environment.integration_api_keys.stripe_api_key
         OPENAI_API_KEY = module.environment.integration_api_keys.openai_api_key
       }
-      
+
       routes = [
         "api.${var.domain}/*"
       ]
     }
   }
-  
+
   # D1 Databases
   enable_d1 = true
   d1_databases = {
@@ -163,21 +176,21 @@ module "workers" {
       admin_allowed_emails  = ["admin@${var.domain}"]
     }
   }
-  
+
   tags = module.environment.environment_tags
 }
 
 # Monitoring Module
 module "monitoring" {
   source = "../../modules/cloudflare/monitoring"
-  
+
   account_id  = module.environment.cloudflare_account_id
   zone_id     = module.zone.zone_id
   environment = "production"
-  
+
   # Enable monitoring based on feature flag
   enable_monitoring = module.environment.feature_flags.monitoring
-  
+
   # Notification channels from environment module
   notification_channels = {
     slack = {
@@ -185,7 +198,7 @@ module "monitoring" {
       webhook_url = module.environment.monitoring_webhooks.slack_webhook_url
       channel     = "#alerts-production"
     }
-    
+
     pagerduty = {
       enabled         = module.environment.monitoring_webhooks.pagerduty_integration_key != ""
       integration_key = module.environment.monitoring_webhooks.pagerduty_integration_key
@@ -197,20 +210,20 @@ module "monitoring" {
       }
     }
   }
-  
+
   # Alert configuration
   worker_alerts = {
     error_alerts = true
     cpu_alerts   = true
     usage_alerts = true
   }
-  
+
   http_alerts = {
     enabled = true
     error_threshold = 50
     latency_threshold = 2000
   }
-  
+
   # Logpush to Datadog if configured
   logpush_jobs = module.environment.monitoring_api_keys.datadog_api_key != "" ? {
     http_requests = {
@@ -218,17 +231,17 @@ module "monitoring" {
       destination = "datadog://http-intake.logs.datadoghq.com/v1/input/${module.environment.monitoring_api_keys.datadog_api_key}?ddsource=cloudflare&service=forge"
     }
   } : {}
-  
+
   tags = module.environment.environment_tags
 }
 
 # Upstash Module
 module "upstash" {
   source = "../../modules/upstash"
-  
+
   name_prefix = "forge-prod"
   environment = "production"
-  
+
   # Redis for caching and rate limiting
   enable_redis = true
   redis_config = {
@@ -236,7 +249,7 @@ module "upstash" {
     multizone = true
     eviction  = true
   }
-  
+
   # QStash for job processing
   enable_qstash = true
   qstash_config = {
@@ -244,7 +257,7 @@ module "upstash" {
     enable_schedules = true
     enable_dlq       = true
   }
-  
+
   # Rate limiting configuration
   enable_ratelimit = module.environment.feature_flags.rate_limiting
   rate_limit_rules = {
@@ -257,29 +270,29 @@ module "upstash" {
       window = "1m"
     }
   }
-  
+
   tags = module.environment.environment_tags
 }
 
 # Vercel Module
 module "vercel" {
   source = "../../modules/vercel"
-  
+
   project_name = "forge-web"
   environment  = "production"
-  
+
   # Domain configuration
   domains = [
     var.domain,
     "www.${var.domain}"
   ]
-  
+
   # Environment variables
   environment_variables = {
     NEXT_PUBLIC_API_URL = "https://api.${var.domain}"
     NEXT_PUBLIC_ENVIRONMENT = "production"
   }
-  
+
   # Sensitive environment variables
   environment_variables_sensitive = {
     DATABASE_URL     = module.workers.d1_connection_strings["main"]
@@ -288,15 +301,15 @@ module "vercel" {
     KNOCK_API_KEY    = module.environment.integration_api_keys.knock_api_key
     SENTRY_DSN       = module.environment.monitoring_api_keys.sentry_dsn
   }
-  
+
   # Build configuration
   build_command    = "pnpm build"
   output_directory = ".next"
   install_command  = "pnpm install"
-  
+
   # Production settings
   production_deployment_protection = true
   password_protection_password     = null  # No password in production
-  
+
   tags = module.environment.environment_tags
 }

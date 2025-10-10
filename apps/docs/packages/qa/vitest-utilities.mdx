@@ -159,7 +159,7 @@ import {
   suppressConsoleWarnings,
   suppressConsoleErrors,
   restoreConsole,
-  captureConsoleOutput
+  captureConsoleOutput,
 } from "@repo/qa/vitest/utils/console";
 
 // Suppress all console output during tests
@@ -233,7 +233,7 @@ import {
   createTestDatabase,
   cleanupDatabase,
   seedTestData,
-  resetDatabase
+  resetDatabase,
 } from "@repo/qa/vitest/utils/database";
 
 describe("User Management", () => {
@@ -247,8 +247,8 @@ describe("User Management", () => {
     await seedTestData(dbHelper, {
       users: [
         { name: "John Doe", email: "john@example.com" },
-        { name: "Jane Smith", email: "jane@example.com" }
-      ]
+        { name: "Jane Smith", email: "jane@example.com" },
+      ],
     });
   });
 
@@ -260,7 +260,7 @@ describe("User Management", () => {
   test("creates new user successfully", async () => {
     const userData = {
       name: "New User",
-      email: "newuser@example.com"
+      email: "newuser@example.com",
     };
 
     const user = await dbHelper.create("user", userData);
@@ -272,7 +272,7 @@ describe("User Management", () => {
 
   test("finds users by criteria", async () => {
     const users = await dbHelper.findMany("user", {
-      where: { email: { contains: "@example.com" } }
+      where: { email: { contains: "@example.com" } },
     });
 
     expect(users).toHaveLength(2);
@@ -287,25 +287,25 @@ describe("User Management", () => {
 import {
   withTransaction,
   rollbackTransaction,
-  commitTransaction
+  commitTransaction,
 } from "@repo/qa/vitest/utils/database";
 
 test("handles database transactions", async () => {
   await withTransaction(async (tx) => {
     // Create user within transaction
     const user = await tx.user.create({
-      data: { name: "Test User", email: "test@example.com" }
+      data: { name: "Test User", email: "test@example.com" },
     });
 
     // Create related records
     await tx.profile.create({
-      data: { userId: user.id, bio: "Test bio" }
+      data: { userId: user.id, bio: "Test bio" },
     });
 
     // Verify within transaction
     const userWithProfile = await tx.user.findUnique({
       where: { id: user.id },
-      include: { profile: true }
+      include: { profile: true },
     });
 
     expect(userWithProfile?.profile?.bio).toBe("Test bio");
@@ -318,17 +318,17 @@ test("handles transaction rollback on error", async () => {
   await expect(
     withTransaction(async (tx) => {
       await tx.user.create({
-        data: { name: "Test User", email: "test@example.com" }
+        data: { name: "Test User", email: "test@example.com" },
       });
 
       // Simulate error
       throw new Error("Simulated error");
-    })
+    }),
   ).rejects.toThrow("Simulated error");
 
   // Verify rollback - user should not exist
   const user = await db.user.findFirst({
-    where: { email: "test@example.com" }
+    where: { email: "test@example.com" },
   });
 
   expect(user).toBeNull();
@@ -343,7 +343,7 @@ import {
   seedUsers,
   seedProducts,
   seedOrders,
-  clearAllData
+  clearAllData,
 } from "@repo/qa/vitest/utils/database";
 
 // Create custom seeder
@@ -351,7 +351,7 @@ const customSeeder = createSeeder({
   users: 10,
   products: 50,
   categories: 5,
-  orders: 25
+  orders: 25,
 });
 
 test("works with seeded data", async () => {
@@ -370,12 +370,12 @@ test("works with seeded data", async () => {
 test("seeds specific test data", async () => {
   const testUsers = await seedUsers([
     { name: "Admin User", email: "admin@example.com", role: "ADMIN" },
-    { name: "Regular User", email: "user@example.com", role: "USER" }
+    { name: "Regular User", email: "user@example.com", role: "USER" },
   ]);
 
   const testProducts = await seedProducts([
     { name: "Test Product 1", price: 29.99, categoryId: testUsers[0].id },
-    { name: "Test Product 2", price: 49.99, categoryId: testUsers[0].id }
+    { name: "Test Product 2", price: 49.99, categoryId: testUsers[0].id },
   ]);
 
   expect(testUsers).toHaveLength(2);
@@ -393,7 +393,7 @@ import {
   getTestEnvironment,
   withEnvironment,
   mockEnvironmentVariable,
-  restoreEnvironment
+  restoreEnvironment,
 } from "@repo/qa/vitest/utils/environment";
 
 // Set test environment
@@ -401,7 +401,7 @@ test("runs in test environment", () => {
   setTestEnvironment({
     NODE_ENV: "test",
     DATABASE_URL: "postgresql://test:test@localhost:5432/test_db",
-    REDIS_URL: "redis://localhost:6379/1"
+    REDIS_URL: "redis://localhost:6379/1",
   });
 
   const env = getTestEnvironment();
@@ -416,7 +416,7 @@ test("handles temporary environment changes", async () => {
       // Test code that depends on these environment variables
       const featureEnabled = process.env.FEATURE_FLAG_X === "true";
       expect(featureEnabled).toBe(true);
-    }
+    },
   );
 
   // Environment is restored after test
@@ -440,14 +440,14 @@ test("mocks individual environment variables", () => {
 import {
   validateConfig,
   createTestConfig,
-  configFactory
+  configFactory,
 } from "@repo/qa/vitest/utils/environment";
 
 test("validates configuration", () => {
   const config = {
     database: { url: "postgresql://localhost:5432/mydb" },
     redis: { url: "redis://localhost:6379" },
-    auth: { secret: "test-secret" }
+    auth: { secret: "test-secret" },
   };
 
   const validation = validateConfig(config);
@@ -460,8 +460,8 @@ test("creates test-specific configuration", () => {
   const testConfig = createTestConfig({
     overrides: {
       database: { url: "sqlite::memory:" },
-      email: { provider: "mock" }
-    }
+      email: { provider: "mock" },
+    },
   });
 
   expect(testConfig.database.url).toBe("sqlite::memory:");
@@ -490,7 +490,7 @@ import {
   testHook,
   testAsyncFunction,
   testErrorHandling,
-  testPerformance
+  testPerformance,
 } from "@repo/qa/vitest/utils/patterns";
 
 // Component testing pattern
@@ -499,12 +499,12 @@ test("tests component with standard pattern", () => {
     props: { title: "Test Title", visible: true },
     expectations: [
       { selector: '[data-testid="title"]', text: "Test Title" },
-      { selector: '[data-testid="container"]', visible: true }
+      { selector: '[data-testid="container"]', visible: true },
     ],
     interactions: [
       { type: "click", selector: '[data-testid="button"]' },
-      { type: "type", selector: '[data-testid="input"]', value: "test" }
-    ]
+      { type: "type", selector: '[data-testid="input"]', value: "test" },
+    ],
   });
 });
 
@@ -514,12 +514,12 @@ test("tests custom hook", () => {
     initialProps: { initialValue: 5 },
     expectations: [
       { property: "count", value: 5 },
-      { property: "increment", type: "function" }
+      { property: "increment", type: "function" },
     ],
     actions: [
       { method: "increment", times: 3 },
-      { expectation: { property: "count", value: 8 } }
-    ]
+      { expectation: { property: "count", value: 8 } },
+    ],
   });
 });
 
@@ -530,8 +530,8 @@ test("tests async function", async () => {
     mockResponses: [{ data: { id: "user123", name: "John Doe" } }],
     expectations: [
       { property: "id", value: "user123" },
-      { property: "name", value: "John Doe" }
-    ]
+      { property: "name", value: "John Doe" },
+    ],
   });
 });
 ```
@@ -543,7 +543,7 @@ import {
   expectError,
   expectErrorMessage,
   expectErrorType,
-  testErrorBoundary
+  testErrorBoundary,
 } from "@repo/qa/vitest/utils/patterns";
 
 test("handles various error scenarios", async () => {
@@ -556,7 +556,7 @@ test("handles various error scenarios", async () => {
   // Test error boundary
   testErrorBoundary(ProblematicComponent, {
     errorMessage: "Something went wrong",
-    fallbackComponent: ErrorFallback
+    fallbackComponent: ErrorFallback,
   });
 });
 
@@ -570,7 +570,7 @@ test("validates error scenarios", () => {
     await authenticateUser("invalid-token");
   }).rejects.toMatchObject({
     code: "INVALID_TOKEN",
-    statusCode: 401
+    statusCode: 401,
   });
 });
 ```
@@ -700,7 +700,7 @@ import {
   randomString,
   randomEmail,
   randomDate,
-  randomNumber
+  randomNumber,
 } from "@repo/qa/vitest/utils/test-helpers";
 
 test("generates random test data", () => {
@@ -708,7 +708,7 @@ test("generates random test data", () => {
     name: randomString(10),
     email: randomEmail(),
     age: randomNumber(18, 65),
-    createdAt: randomDate()
+    createdAt: randomDate(),
   });
 
   expect(testUser.name).toHaveLength(10);
